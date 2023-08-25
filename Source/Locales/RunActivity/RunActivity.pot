@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2022-08-17 02:43:31+0200\n"
-"PO-Revision-Date: 2022-08-17 02:43:31+0200\n"
+"POT-Creation-Date: 2023-08-25 09:18:12+0200\n"
+"PO-Revision-Date: 2023-08-25 09:18:13+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -75,127 +75,345 @@ msgid_plural "{0:F0} tiles"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:829
-#: ../../RunActivity/Viewer3D/Viewer.cs:1017
+#: ../../RunActivity/Viewer3D/Viewer.cs:830
+#: ../../RunActivity/Viewer3D/Viewer.cs:1018
 msgid "Cab view not available"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:914
+#: ../../RunActivity/Viewer3D/Viewer.cs:915
 msgid "In MP, use Alt-F4 to quit directly"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:946
+#: ../../RunActivity/Viewer3D/Viewer.cs:947
 msgid "Automatic platform and siding labels visible."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:949
+#: ../../RunActivity/Viewer3D/Viewer.cs:950
 msgid "Platform and siding labels visible."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:952
+#: ../../RunActivity/Viewer3D/Viewer.cs:953
 msgid "Platform labels visible."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:955
+#: ../../RunActivity/Viewer3D/Viewer.cs:956
 msgid "Siding labels visible."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:961
+#: ../../RunActivity/Viewer3D/Viewer.cs:962
 msgid "Platform and siding labels hidden."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:972
+#: ../../RunActivity/Viewer3D/Viewer.cs:973
 msgid "Train labels visible."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:975
+#: ../../RunActivity/Viewer3D/Viewer.cs:976
 msgid "Car labels visible."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:981
+#: ../../RunActivity/Viewer3D/Viewer.cs:982
 msgid "Train and car labels hidden."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1024
+#: ../../RunActivity/Viewer3D/Viewer.cs:1025
 msgid "This car doesn't have a 2D cab"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1028
+#: ../../RunActivity/Viewer3D/Viewer.cs:1029
 msgid "This car doesn't have a 3D cab"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1059
-msgid "Confirmations suppressed"
+#: ../../RunActivity/Viewer3D/Viewer.cs:1074
+msgid "messages suppressed"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1061
-msgid "Confirmations visible"
+#: ../../RunActivity/Viewer3D/Viewer.cs:1078
+msgid "All messages visible"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1210
+#: ../../RunActivity/Viewer3D/Viewer.cs:1231
 msgid "Switched to player control"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1217
+#: ../../RunActivity/Viewer3D/Viewer.cs:1238
 msgid "You can't switch from manual to autopilot mode"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1223
+#: ../../RunActivity/Viewer3D/Viewer.cs:1244
 msgid "Switched to autopilot"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1896
+#: ../../RunActivity/Viewer3D/Viewer.cs:1919
 msgid "Game saved"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:348
+#: ../../RunActivity/Viewer3D/Viewer.cs:349
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1050
+#: ../../RunActivity/Viewer3D/Viewer.cs:1051
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1241
+#: ../../RunActivity/Viewer3D/Viewer.cs:1262
 #, csharp-format
 msgid "Keyboard map list saved to '{0}'."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1245
+#: ../../RunActivity/Viewer3D/Viewer.cs:1266
 #, csharp-format
 msgid "Keyboard map image saved to '{0}'."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1097
+#: ../../RunActivity/Viewer3D/Viewer.cs:1117
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../../RunActivity/Viewer3D/Weather.cs:145
+#: ../../RunActivity/Viewer3D/Weather.cs:144
 msgid ""
 "Restoring wrong weather type : trying to restore dynamic weather but save "
 "contains user controlled weather"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Weather.cs:1642
+#: ../../RunActivity/Viewer3D/Weather.cs:1640
 msgid ""
 "Restoring wrong weather type : trying to restore user controlled weather but "
 "save contains dynamic weather"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:2004
+#: ../../RunActivity/Viewer3D/Weather.cs:494
+#, csharp-format
+msgid "Increased daylight offset to {0} h"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Weather.cs:499
+#, csharp-format
+msgid "Decreased daylight offset to {0} h"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.cs:1484
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:1918
 msgid "Switching Request Sent to the Server"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:580
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:155
+msgid "Learn more"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:167
+msgid "You are the dispatcher in this multiplayer session"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:257
+msgid "Message all players"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:271
+msgid ">"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:291
+msgid "Messages:"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:318
+msgid "Simulation time"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:331
+msgid "Map customization"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:366
+msgid "All trains"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:378
+msgid "Only active trains"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:388
+msgid "Train state"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:398
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:572
+msgid "Train labels"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:408
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:556
+msgid "Signal state"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:418
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:543
+msgid "Signals"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:428
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:673
+msgid "Switches"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:438
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:530
+msgid "Siding labels"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:448
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:517
+msgid "Platform labels"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:458
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:793
+msgid "Platforms"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:469
+msgid "Map features"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:478
+msgid "Rotate between themes"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:491
+msgid "Show simulation time"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:501
+msgid "Use anti-aliasing"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:566
+msgid "Multiplayer settings"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:577
+msgid "Penalty for speeding && SPAD"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:589
+msgid "Prefer green (?)"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:601
+msgid "Allow new players to join"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:631
+msgid "Map settings and controls"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:641
+msgid "Follow my train on the map"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:651
+msgid "Jump to my train on the map"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:663
+msgid "Jump to my train in game"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:674
+msgid "Map resolution (m):"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:715
+msgid "Allow throwing switches"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:727
+msgid "Allow changing signals"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:739
+msgid "Draw next path section"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:766
+msgid "Players"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:807
+msgid "Message the selected player"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:815
+msgid "Reply to the selected player"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:833
+msgid "Make this player an assistant"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:840
+msgid "Jump to this player in game"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:847
+msgid "Follow on the map"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:854
+msgid "Kick from multiplayer session"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:872
+msgid "Set switch to..."
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:881
+msgid "Main route"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:889
+msgid "Side route"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:911
+msgid "Set signal aspect to..."
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:918
+msgid "System controlled"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:927
+msgid "Stop"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:935
+msgid "Approach"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:944
+msgid "Proceed"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:957
+msgid "Allow call on"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerBetaForm.Designer.cs:967
+msgid "Map window"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:555
 msgid "MSG to Server"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:584
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:559
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:256
 msgid "MSG to All"
 msgstr ""
@@ -258,11 +476,11 @@ msgid "Assist"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:417
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1195
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1244
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1310
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:718
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:766
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1226
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1275
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1341
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:719
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:767
 msgid "Normal"
 msgstr ""
 
@@ -294,26 +512,6 @@ msgstr ""
 msgid "Show:"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:517
-msgid "Platform labels"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:530
-msgid "Siding labels"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:543
-msgid "Signals"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:556
-msgid "Signal state"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:572
-msgid "Train labels"
-msgstr ""
-
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:583
 msgid "Key"
 msgstr ""
@@ -332,10 +530,6 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:659
 msgid "Background color"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:673
-msgid "Switches"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:685
@@ -369,10 +563,6 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:779
 msgid "To zoom out of a location, press Alt and click the left mouse."
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:793
-msgid "Platforms"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:852
@@ -423,14 +613,14 @@ msgid "3D"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:284
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:430
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:615
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1182
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:146
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:668
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:431
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:629
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1193
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:148
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:671
 #: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:291
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:109
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:230
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:110
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:231
 msgid "Speed"
 msgstr ""
 
@@ -447,8 +637,8 @@ msgid "Variable 1"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:351
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1188
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1190
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1199
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1201
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:78
 msgid "Distance"
 msgstr ""
@@ -706,11 +896,11 @@ msgstr ""
 msgid "Can't attach EOT if player train not stopped"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/EOTListWindow.cs:110
+#: ../../RunActivity/Viewer3D/Popups/EOTListWindow.cs:111
 msgid "Player train already has a mounted EOT"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/EOTListWindow.cs:122
+#: ../../RunActivity/Viewer3D/Popups/EOTListWindow.cs:124
 msgid "Can't mount an EOT if another one is mounted"
 msgstr ""
 
@@ -838,8 +1028,8 @@ msgid "- Missed station stops: "
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:416
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:963
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1126
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:980
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1137
 msgid " "
 msgstr ""
 
@@ -918,962 +1108,981 @@ msgid_plural "{0} minutes"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:105
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:433
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:601
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:614
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:106
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:434
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:615
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:628
 #: ../../RunActivity/Viewer3D/Popups/TrainDPUWindow.cs:146
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:148
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:151
 #: ../../RunActivity/Viewer3D/WebServices/TrainDpuDisplay.cs:85
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:111
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:112
 msgid "Throttle"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:106
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:107
 msgid "Power In/Out"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:110
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:111
 msgid "Motive force"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:112
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:113
 msgid "Num of substeps"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:115
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1336
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:116
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1347
 msgid "Memory"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:116
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:117
 msgid "GCs"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:117
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:118
 msgid "Frame time"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:118
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1350
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:119
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1361
 msgid "Render process"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:119
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1351
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:120
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1362
 msgid "Updater process"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:120
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1352
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:121
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1363
 msgid "Loader process"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:121
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1353
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:122
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1364
 msgid "Sound process"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:419
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:420
 msgid "Version"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:423
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:425
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:424
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:426
 #: ../../RunActivity/Viewer3D/Popups/MultiPlayerWindow.cs:158
 #: ../../RunActivity/Viewer3D/Popups/MultiPlayerWindow.cs:164
 #: ../../RunActivity/Viewer3D/Popups/MultiPlayerWindow.cs:332
 #: ../../RunActivity/Viewer3D/Popups/TrainDPUWindow.cs:147
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:149
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:645
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:152
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:648
 #: ../../RunActivity/Viewer3D/WebServices/TrainDpuDisplay.cs:86
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:112
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:207
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:113
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:208
 msgid "Time"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:428
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:142
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:652
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:105
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:214
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:429
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:144
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:655
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:106
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:215
 msgid "Replay"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:431
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1121
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:135
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:686
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:432
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1132
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:136
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:689
 #: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:322
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:99
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:248
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:100
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:249
 msgid "Gradient"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:432
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:599
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:611
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:124
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:433
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:613
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:625
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:125
 #: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:332
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:89
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:90
 msgid "Direction"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:433
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:601
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:141
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:104
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:434
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:615
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:143
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:105
 msgid "Regulator"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:437
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:151
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:823
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:880
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:914
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:114
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:383
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:428
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:462
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:438
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:154
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:826
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:883
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:917
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:115
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:384
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:429
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:463
 msgid "Train brake"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:439
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:143
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:931
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:106
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:479
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:440
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:145
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:934
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:107
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:480
 msgid "Retainers"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:441
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:129
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:940
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:955
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:93
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:488
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:503
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:442
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:130
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:943
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:958
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:94
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:489
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:504
 msgid "Engine brake"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:443
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:444
 msgid "Brakemen brake"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:445
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:602
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:127
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:966
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:975
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:91
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:514
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:522
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:446
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:616
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:128
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:969
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:978
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:92
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:515
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:523
 msgid "Dynamic brake"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:459
-msgid "Multiple Units"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:461
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1116
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:639
-msgid "FPS"
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:462
+msgid "Cruise control status"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:465
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:117
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1126
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:82
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:649
-msgid "Autopilot"
+msgid "Speed target"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:468
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1068
-msgid "Wheel slip"
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:466
+msgid "Max acceleration"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:470
-msgid "Wheel slip warning"
+msgid "Multiple Units"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:473
-msgid "Wheel skid"
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:472
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1147
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:640
+msgid "FPS"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:476
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:117
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1157
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:83
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:650
+msgid "Autopilot"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:479
-msgid "Sander blocked"
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1078
+msgid "Wheel slip"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:481
+msgid "Wheel slip warning"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:484
+msgid "Wheel skid"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:490
+msgid "Sander blocked"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:492
 msgid "Sander on"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:494
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:126
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1331
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1345
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:90
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:786
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:800
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:503
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1358
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:783
+msgid "Left"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:505
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1360
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:785
+msgid "Right"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:508
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:127
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1364
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1378
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:91
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:789
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:803
 msgid "Doors open"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:500
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:514
 msgid "MultiPlayerStatus: "
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:501
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:515
 #: ../../RunActivity/Viewer3D/Popups/MultiPlayerWindow.cs:344
 msgid "Dispatcher"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:502
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:516
 #: ../../RunActivity/Viewer3D/Popups/MultiPlayerWindow.cs:345
 msgid "Helper"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:503
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:517
 #: ../../RunActivity/Viewer3D/Popups/MultiPlayerWindow.cs:346
 msgid "Client"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:512
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:526
 msgid "CONSIST INFORMATION"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:524
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:538
 msgid "Player"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:525
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:539
 msgid "Tilted"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:526
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:548
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:669
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:904
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:923
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:953
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:983
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1012
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:540
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:562
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:683
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:918
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:938
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:969
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1000
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1030
 msgid "Type"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:527
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:549
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:541
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:563
 msgid "Length"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:528
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:550
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:542
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:564
 msgid "Weight"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:529
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:543
 msgid "Tonnage"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:530
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:544
 msgid "Control Mode"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:531
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:545
 msgid "Out of Control"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:532
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:546
 msgid "Cab Aspect"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:535
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:558
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1153
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1332
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:549
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:572
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1164
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1343
 #: ../../RunActivity/Viewer3D/RollingStock/SubSystems/ETCS/DataEntry.cs:460
 #: ../../RunActivity/Viewer3D/RollingStock/SubSystems/ETCS/DataEntry.cs:485
 msgid "Yes"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:535
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:558
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1153
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1332
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:549
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:572
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1164
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1343
 msgid "No"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:536
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:559
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:550
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:573
 msgid "Freight"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:536
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:559
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:550
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:573
 msgid "Pass"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:546
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:903
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:922
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:952
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:982
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1011
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1108
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:560
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:917
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:937
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:968
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:999
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1029
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1119
 msgid "Car"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:547
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:612
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1155
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:561
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:626
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1166
 msgid "Flipped"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:551
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:565
 msgid "Drv/Cabs"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:552
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:566
 msgid "Wheels"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:553
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:567
 msgid "Temp"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:593
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:607
 msgid "LOCOMOTIVE INFORMATION"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:606
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:790
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:799
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:801
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:805
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:814
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:816
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:824
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:826
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:861
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:891
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:620
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:804
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:813
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:815
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:819
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:828
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:830
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:838
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:840
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:875
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:905
 msgid "off"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:607
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:788
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:797
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:812
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:822
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:849
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:857
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:621
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:802
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:811
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:826
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:836
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:863
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:871
 msgid "PlayerLoco"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:610
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:878
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:885
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:624
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:892
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:899
 msgid "Loco"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:613
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:627
 msgid "MU'd"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:617
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:681
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:631
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:695
 #: ../../RunActivity/Viewer3D/Popups/TrainDPUWindow.cs:140
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:140
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:142
 #: ../../RunActivity/Viewer3D/WebServices/TrainDpuDisplay.cs:79
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:103
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:104
 msgid "Power"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:618
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:632
 msgid "Force"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:628
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:642
 msgid "DISTRIBUTED POWER INFORMATION"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:662
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:676
 msgid "POWER SUPPLY INFORMATION"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:668
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:682
 msgid "Wagon"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:674
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:688
 msgid "MainPS"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:675
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:689
 msgid "AuxPS"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:676
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:690
 msgid "Battery"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:677
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:691
 msgid "LowVoltPS"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:678
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:692
 msgid "CabPS"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:679
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:693
 msgid "ETS"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:680
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:694
 msgid "ETSCable"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:707
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:720
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:735
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:744
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:721
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:734
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:749
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:758
 msgid "connected"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:707
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:720
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:735
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:744
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:721
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:734
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:749
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:758
 msgid "disconnected"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:772
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:786
 msgid "BRAKE INFORMATION"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:789
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:803
 msgid "Exhauster"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:790
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:799
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:801
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:805
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:814
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:816
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:824
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:826
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:861
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:891
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:804
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:813
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:815
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:819
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:828
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:830
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:838
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:840
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:875
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:905
 msgid "on"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:798
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:813
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:823
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:812
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:827
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:837
 msgid "Large Ejector"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:800
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:825
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:814
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:839
 msgid "Small Ejector"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:802
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:827
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:816
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:841
 msgid "Pressure"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:804
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:815
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:818
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:829
 msgid "Vacuum Pump"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:833
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:847
 msgid "Brake Sys Vol"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:834
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:848
 msgid "Train Pipe"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:836
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:850
 msgid "Brake Cyl"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:838
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:852
 msgid "Air Vol"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:850
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:864
 msgid "No compressor or reservoir fitted"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:858
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:888
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:872
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:902
 msgid "Main reservoir"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:860
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:890
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:874
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:904
 msgid "Compressor"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:905
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:924
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:984
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1013
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:919
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:939
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1001
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1031
 msgid "BrkCyl"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:906
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:925
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1014
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:920
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:940
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1032
 msgid "BrkPipe"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:913
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:932
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:962
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:992
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1021
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:928
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:948
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:979
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1010
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1040
 msgid "Handbrk"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:914
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:933
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:993
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1022
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:929
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:949
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1011
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1041
 msgid "Conn"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:915
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:934
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:994
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1023
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:930
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:950
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1012
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1042
 msgid "AnglCock"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:926
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:941
 msgid "VacRes"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:954
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:970
 msgid "Brk"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:985
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1002
 msgid "SrvPipe"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:986
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1015
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1003
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1033
 msgid "AuxRes"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:987
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1016
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1004
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1034
 msgid "ErgRes"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:988
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1005
 msgid "StrPipe"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:989
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1018
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1006
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1036
+msgid "CtrlRes"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1007
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1037
 msgid "RetValve"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:990
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1019
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1008
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1038
 msgid "TripleValve"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:995
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1024
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1013
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1043
 msgid "BleedOff"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1017
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1035
 msgid "MRPipe"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1041
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1061
 msgid "FORCE INFORMATION"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1058
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1067
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1077
 msgid "(Advanced adhesion model)"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1059
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1084
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1092
-msgid "Loco Adhesion"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1060
-msgid "Wag Adhesion"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1061
-msgid "Tang. Force"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1062
-msgid "Static Force"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1069
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1079
 msgid "Conditions"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1070
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1080
 msgid "Axle drive force"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1072
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1082
 msgid "Axle brake force"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1073
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1083
 msgid "Number of substeps"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1074
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1091
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1084
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1102
 msgid "Axle out force"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1077
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1087
 msgid "Comp Axle out force"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1080
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1090
 msgid "Wheel Speed"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1085
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1093
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1094
+msgid "Wheel ang. pos."
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1095
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1103
+msgid "Loco Adhesion"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1096
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1104
 msgid "Wagon Adhesion"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1090
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1101
 msgid "(Simple adhesion model)"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1099
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1110
 msgid "Wind Speed:"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1100
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1111
 msgid "Wind Direction:"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1101
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1112
 msgid "Train Direction:"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1102
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1113
 msgid "ResWind:"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1103
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1114
 msgid "ResSpeed:"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1109
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1120
 msgid "Total"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1110
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1121
 msgid "Motive"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1111
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1122
 msgid "Brake"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1112
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1123
 msgid "Friction"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1113
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1124
 msgid "Gravity"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1114
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1122
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1125
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1133
 msgid "Curve"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1115
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1126
 msgid "Tunnel"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1116
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1323
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1127
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1334
 msgid "Wind"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1117
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1118
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1128
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1129
 msgid "Coupler"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1119
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1130
 msgid "Slack"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1120
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1131
 msgid "Mass"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1123
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1134
 msgid "Brk Frict."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1124
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1135
 msgid "Brk Slide"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1125
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1136
 msgid "Bear Temp"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1127
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:125
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1286
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1294
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1309
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1138
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:126
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1317
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1325
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1340
 msgid "DerailCoeff"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1177
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1188
 msgid "DISPATCHER INFORMATION : active trains : "
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1180
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1191
 msgid "Train"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1181
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1192
 msgid "Travelled"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1183
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1194
 msgid "Max"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1184
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1195
 msgid "AI mode"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1185
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1196
 msgid "AI data"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1186
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1197
 msgid "Mode"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1187
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1198
 msgid "Auth"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1189
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1200
 msgid "Signal"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1191
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1202
 msgid "Consist"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1192
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1203
 msgid "Path"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1317
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1328
 msgid "WEATHER INFORMATION"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1319
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1330
 msgid "Visibility"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1320
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1331
 msgid "Cloud cover"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1321
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1332
 msgid "Intensity"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1322
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1333
 msgid "Liquidity"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1324
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1335
 msgid "Amb Temp"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1330
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1341
 msgid "DEBUG INFORMATION"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1332
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1343
 msgid "Logging enabled"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1333
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1344
 msgid "Build"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1334
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1345
 msgid "CPU"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1335
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1346
 msgid "GPU"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1337
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1348
 msgid "CPU Memory"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1338
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1349
 msgid "GPU Memory"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1339
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1350
 msgid "Adapter"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1344
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1355
 msgid "Shadow maps"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1346
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1357
 msgid "Shadow primitives"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1349
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1360
 msgid "Render primitives"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1350
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1351
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1352
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1353
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1354
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1361
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1362
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1363
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1364
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1365
 msgid "wait"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1354
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1365
 msgid "Total process"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1355
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1366
 msgid "Camera"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1099
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1103
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1110
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1114
 #, csharp-format
 msgid "{0:N2} mph"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1100
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1101
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1102
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1111
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1112
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1113
 #, csharp-format
 msgid "{0:N2} Deg"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1319
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1330
 #, csharp-format
 msgid "{0:N0} m"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1320
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1322
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1331
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1333
 #, csharp-format
 msgid "{0:F0} %"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1321
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1332
 #, csharp-format
 msgid "{0:F4} p/s/m^2"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1323
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1334
 #, csharp-format
 msgid "{0:F1},{1:F1} m/s"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1334
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1345
 #, csharp-format
 msgid "{0:F0}% ({1})"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1335
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1346
 #, csharp-format
 msgid ""
 "{0:F0} FPS (50th/95th/99th percentiles {1:F1} / {2:F1} / {3:F1} ms, DirectX "
 "feature level >= {4})"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1336
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1347
 #, csharp-format
 msgid ""
 "{3}, {4}, {5}, {6} ({7:F0} kB/frame allocated, {0:F0}/{1:F0}/{2:F0} GCs)"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1337
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1348
 #, csharp-format
 msgid ""
 "{0:F0} MB private, {1:F0} MB working set, {2:F0} MB private working set, "
 "{3:F0} MB managed, {4:F0} MB virtual"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1338
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1349
 #, csharp-format
 msgid "{0:F0} MB committed, {1:F0} MB dedicated, {2:F0} MB shared"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1339
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1350
 #, csharp-format
 msgid "{0} ({1:F0} MB)"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1342
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1353
 #, csharp-format
 msgid "{0}/{1}"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1343
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1354
 #, csharp-format
 msgid "({0}x{0})"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1346
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1349
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1357
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1360
 #, csharp-format
 msgid "{0:F0}"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1350
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1351
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1352
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1353
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1354
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1361
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1362
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1363
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1364
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1365
 #, csharp-format
 msgid "{0:F0}% ({1:F0}% {2})"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1334
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1345
 #, csharp-format
 msgid "{0} logical processor"
 msgid_plural "{0} logical processors"
@@ -1881,57 +2090,57 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. Context: Cab
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:534
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:562
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:548
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:576
 msgctxt "Cab"
 msgid "R"
 msgstr ""
 
 #. Context: Cab
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:534
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:562
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:548
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:576
 msgctxt "Cab"
 msgid "F"
 msgstr ""
 
 #. Context: Cab
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:562
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:576
 msgctxt "Cab"
 msgid "D"
 msgstr ""
 
 #. Context: Steam
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:600
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:614
 msgctxt "Steam"
 msgid "Reverser"
 msgstr ""
 
 #. Context: NonSteam
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:600
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:614
 msgctxt "NonSteam"
 msgid "Reverser"
 msgstr ""
 
 #. Context: Pantograph
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:670
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:684
 msgctxt "Pantograph"
 msgid "Panto"
 msgstr ""
 
 #. Context: Engine
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:671
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:685
 msgctxt "Engine"
 msgid "Eng"
 msgstr ""
 
 #. Context: CircuitBreaker
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:672
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:686
 msgctxt "CircuitBreaker"
 msgid "CB"
 msgstr ""
 
 #. Context: TractionCutOffRelay
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:673
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:687
 msgctxt "TractionCutOffRelay"
 msgid "TCOR"
 msgstr ""
@@ -2024,12 +2233,12 @@ msgstr ""
 msgid "Activity completed."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:96
+#: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:97
 #, csharp-format
 msgid "Odometer {0}"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:110
+#: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:113
 #, csharp-format
 msgid "FOV: {0:F0}°"
 msgstr ""
@@ -2133,9 +2342,9 @@ msgid "Fuel"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDPUWindow.cs:136
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:133
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:134
 #: ../../RunActivity/Viewer3D/WebServices/TrainDpuDisplay.cs:75
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:97
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:98
 msgid "FUEL"
 msgstr ""
 
@@ -2152,8 +2361,8 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Popups/TrainDPUWindow.cs:138
 #: ../../RunActivity/Viewer3D/Popups/TrainDPUWindow.cs:239
 #: ../../RunActivity/Viewer3D/Popups/TrainDPUWindow.cs:615
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:137
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1105
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:138
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1136
 #: ../../RunActivity/Viewer3D/WebServices/TrainDpuDisplay.cs:77
 #: ../../RunActivity/Viewer3D/WebServices/TrainDpuDisplay.cs:197
 msgid "Loco Groups"
@@ -2161,7 +2370,7 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDPUWindow.cs:138
 #: ../../RunActivity/Viewer3D/Popups/TrainDPUWindow.cs:239
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:137
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:138
 #: ../../RunActivity/Viewer3D/WebServices/TrainDpuDisplay.cs:77
 msgid "GRUP"
 msgstr ""
@@ -2177,9 +2386,9 @@ msgid "OIL"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDPUWindow.cs:140
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:140
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:142
 #: ../../RunActivity/Viewer3D/WebServices/TrainDpuDisplay.cs:79
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:103
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:104
 msgid "POWR"
 msgstr ""
 
@@ -2199,17 +2408,17 @@ msgid "RPM"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDPUWindow.cs:143
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:144
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:146
 #: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:332
 #: ../../RunActivity/Viewer3D/WebServices/TrainDpuDisplay.cs:82
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:107
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:108
 msgid "Reverser"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDPUWindow.cs:143
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:144
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:146
 #: ../../RunActivity/Viewer3D/WebServices/TrainDpuDisplay.cs:82
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:107
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:108
 msgid "REVR"
 msgstr ""
 
@@ -2229,16 +2438,16 @@ msgid "TEMP"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDPUWindow.cs:146
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:148
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:151
 #: ../../RunActivity/Viewer3D/WebServices/TrainDpuDisplay.cs:85
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:111
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:112
 msgid "THRO"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDPUWindow.cs:147
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:149
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:152
 #: ../../RunActivity/Viewer3D/WebServices/TrainDpuDisplay.cs:86
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:112
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:113
 msgid "TIME"
 msgstr ""
 
@@ -2292,601 +2501,628 @@ msgid "BP"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:52
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:805
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:820
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:829
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:365
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:380
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:389
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:808
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:823
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:832
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:366
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:381
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:390
 msgid "EQ"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:53
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:830
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:831
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:843
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:844
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:862
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:863
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:833
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:834
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:846
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:847
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:865
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:866
 msgid "V"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:116
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1163
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:81
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:686
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1194
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:82
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:687
 msgid "AI Fireman"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:116
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:81
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:82
 msgid "AIFR"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:117
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:82
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:83
 msgid "AUTO"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:118
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:83
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:84
 msgid "Battery switch"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:118
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:83
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:84
 msgid "BATT"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:119
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:990
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1008
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:84
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:537
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:555
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:993
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1011
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:85
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:538
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:556
 msgid "Boiler pressure"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:119
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:84
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:85
 msgid "PRES"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:120
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:85
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:86
 msgid "Boiler water glass"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:120
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:85
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:86
 msgid "WATR"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:121
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:86
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:87
 msgid "Boiler water level"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:121
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:86
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:87
 msgid "LEVL"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:122
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:87
-msgid "Circuit breaker"
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1096
+msgid "CCStatus"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:122
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:87
+msgid "CCST"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:123
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:88
+msgid "Circuit breaker"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:123
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:88
 msgid "CIRC"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:123
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:765
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:88
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:325
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:124
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:768
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:89
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:326
 msgid "Cylinder cocks"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:123
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:88
-msgid "CCOK"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:124
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:89
-msgid "DIRC"
+msgid "CCOK"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:125
-msgid "DRLC"
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:90
+msgid "DIRC"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:126
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:90
-msgid "DOOR"
+msgid "DRLC"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:127
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:91
+msgid "DOOR"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:128
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:92
 msgid "BDYN"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:128
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:92
-msgid "Electric train supply"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:128
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:92
-msgid "TSUP"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:129
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:93
+msgid "Electric train supply"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:129
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:93
+msgid "TSUP"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:130
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:94
 msgid "BLOC"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:130
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1066
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:94
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:614
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:131
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1069
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:95
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:615
 msgid "Engine"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:130
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:94
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:131
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:95
 msgid "ENGN"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:131
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:95
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:132
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:96
 msgid "Fire mass"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:131
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:95
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:132
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:96
 msgid "FIRE"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:132
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:96
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:133
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:97
 msgid "Fixed gear"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:132
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:134
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:96
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:98
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:133
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:135
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:97
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:99
 msgid "GEAR"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:133
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1013
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:97
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:560
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:134
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1016
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:98
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:561
 msgid "Fuel levels"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:134
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1021
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:98
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:568
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:135
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1024
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:99
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:569
 msgid "Gear"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:135
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:99
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:136
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:100
 msgid "GRAD"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:136
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1180
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1194
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:100
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:703
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:717
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:137
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1211
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1225
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:101
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:704
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:718
 msgid "Grate limit"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:136
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:100
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:137
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:101
 msgid "GRAT"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:138
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:101
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:139
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:102
 msgid "Master key"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:138
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:101
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:139
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:102
 msgid "MAST"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:139
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1045
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:102
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:592
-msgid "Pantographs"
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:140
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1111
+msgid "MaxAccel"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:139
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:102
-msgid "PANT"
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:140
+msgid "MACC"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:141
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:104
-msgid "REGL"
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1048
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:103
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:593
+msgid "Pantographs"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:142
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:105
-msgid "RPLY"
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:141
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:103
+msgid "PANT"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:143
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:105
+msgid "REGL"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:144
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:106
+msgid "RPLY"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:145
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:107
 msgid "RETN"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:145
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:779
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:789
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:108
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:339
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:349
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:147
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:782
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:792
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:109
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:340
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:350
 msgid "Sander"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:145
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:108
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:147
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:109
 msgid "SAND"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:146
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:109
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:148
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:110
 msgid "SPED"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:147
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:110
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:149
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:111
 msgid "Steam usage"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:147
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:110
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:149
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:111
 msgid "STEM"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:150
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:113
-msgid "Traction cut-off relay"
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1104
+msgid "Target"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:150
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:113
+msgid "TARG"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:153
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:114
+msgid "Traction cut-off relay"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:153
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:114
 msgid "TRAC"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:151
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:114
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:154
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:115
 msgid "BTRN"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:152
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1213
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1221
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1229
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1243
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:115
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:735
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:743
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:751
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:765
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:155
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1244
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1252
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1260
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1274
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:116
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:736
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:744
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:752
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:766
 msgid "Wheel"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:152
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:115
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:155
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:116
 msgid "WHEL"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:157
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:120
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:160
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:121
 msgid "(absolute)"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:157
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:120
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:160
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:121
 msgid "(Abs.)"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:158
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:121
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:161
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:122
 msgid "apply Service"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:158
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:121
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:161
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:122
 msgid "Apply"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:159
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:122
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:162
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:123
 msgid "Apply Quick"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:159
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:122
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:162
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:123
 msgid "ApplQ"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:160
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:123
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:163
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:124
 msgid "Apply Slow"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:160
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:123
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:163
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:124
 msgid "ApplS"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:161
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:407
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:124
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:164
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:442
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:125
 msgid "coal"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:161
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:124
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:164
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:125
 msgid "c"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:162
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:165
 msgid "Cont. Service"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:162
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:165
 msgid "Serv"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:163
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:125
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:166
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:126
 msgid "Emergency Braking Push Button"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:163
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:125
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:166
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:126
 msgid "EmerBPB"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:164
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:126
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:167
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:127
 msgid "Lap Self"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:164
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:126
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:167
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:127
 msgid "LapS"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:165
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:127
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:168
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:128
 msgid "Minimum Reduction"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:165
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:127
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:168
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:128
 msgid "MRedc"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:166
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:128
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:169
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:129
 msgid "(safe range)"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:166
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:128
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:169
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:129
 msgid "(safe)"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:167
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1230
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:129
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:752
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:170
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1261
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:130
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:753
 msgid "skid"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:167
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:129
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:170
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:130
 msgid "Skid"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:168
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1222
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:130
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:744
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:171
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1253
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:131
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:745
 msgid "slip warning"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:168
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1295
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:130
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:171
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1326
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:131
 msgid "Warning"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:169
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1214
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:131
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:736
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:172
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1245
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:132
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:737
 msgid "slip"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:169
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:131
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:172
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:132
 msgid "Slip"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:170
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:173
 msgid "Vac. Cont. Service"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:170
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:173
 msgid "Vac.Serv"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:171
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:406
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:132
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:174
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:441
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:133
 msgid "water"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:171
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:132
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:174
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:133
 msgid "w"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:219
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:222
 msgid "Train Driving Info"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:631
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:634
 msgid "bar"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:632
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:635
 msgid "inHg"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:633
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:636
 msgid "kgf/cm²"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:634
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:637
 msgid "kPa"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:635
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:638
 msgid "psi"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:636
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:639
 msgid "lib./pal."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:637
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:640
 msgid "pal.rtuti"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:755
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:315
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:758
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:316
 msgid "Open"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:760
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1346
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:320
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:801
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:763
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1379
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:321
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:804
 msgid "Closed"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:780
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:340
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:783
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:341
 msgid "Blocked"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:780
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1127
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1164
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:340
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:650
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:687
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:783
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1158
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1195
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:341
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:651
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:688
 msgid "On"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:790
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:976
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1127
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1164
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:350
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:523
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:650
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:687
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:793
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:979
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1158
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1195
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:351
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:524
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:651
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:688
 msgid "Off"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:833
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:846
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:865
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:909
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:911
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:918
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:936
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:943
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:390
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:399
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:414
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:457
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:459
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:466
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:484
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:491
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:836
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:849
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:868
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:912
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:914
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:921
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:939
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:946
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:391
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:400
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:415
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:458
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:460
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:467
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:485
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:492
 msgid "BC"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:840
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:842
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:848
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:853
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:885
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:887
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:893
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1093
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:396
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:398
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:400
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:405
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:433
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:435
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:441
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:843
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:845
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:851
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:856
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:888
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:890
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:896
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1124
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:397
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:399
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:401
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:406
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:434
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:436
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:442
 msgid "EOT"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:874
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:876
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:877
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:884
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:422
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:424
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:879
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:880
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:887
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:423
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:425
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:432
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:426
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:433
 msgid "Lead"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:967
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:515
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:970
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:516
 msgid "Setup"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1051
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:598
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1054
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:599
 msgid "Up"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1164
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:687
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1195
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:688
 msgid "Reset"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1181
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:704
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1212
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:705
 msgid "Exceeded"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1287
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1318
 msgid "Derailed"
 msgstr ""
 
@@ -2971,137 +3207,137 @@ msgid ""
 "\",.-+|!$%&/()=?;:'_[]"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Processes/GameStateRunActivity.cs:367
+#: ../../RunActivity/Viewer3D/Processes/GameStateRunActivity.cs:379
 msgid "Game save is not allowed during container load/unload"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Processes/GameStateRunActivity.cs:1257
+#: ../../RunActivity/Viewer3D/Processes/GameStateRunActivity.cs:1270
 #, csharp-format
 msgid "Activity Save file '*.save' not found in folder {0}"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:402
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:437
 msgid "freight-grain"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:403
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:438
 msgid "freight-coal"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:404
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:439
 msgid "freight-gravel"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:405
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:440
 msgid "freight-sand"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:408
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:443
 msgid "diesel oil"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:409
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:444
 msgid "wood"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:410
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:445
 msgid "sand"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:411
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:446
 msgid "freight-general"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:412
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:447
 msgid "freight-livestock"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:413
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:448
 msgid "freight-fuel"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:414
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:449
 msgid "freight-milk"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:415
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:450
 msgid "mail"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:416
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:451
 msgid "container"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:564
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:599
 msgid "Refill: Immediate refill process selected, refilling immediately."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:585
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:620
 msgid "Refill: Electric loco and no pickup. Command rejected"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:745
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:764
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:780
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:799
 msgid "Incompatible pickup type"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:751
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:769
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:786
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:804
 msgid "Starting refill"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:595
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:630
 #, csharp-format
 msgid "Container crane: Distance to {0} supply is {1}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:606
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:641
 #, csharp-format
 msgid "Refill: Distance to {0} supply is {1}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:616
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:651
 #, csharp-format
 msgid "Refill: Loco must be stationary to refill {0}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:622
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:657
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:629
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:664
 #, csharp-format
 msgid "Refill: Loco speed must not exceed {0}."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:647
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:668
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:682
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:703
 #, csharp-format
 msgid "Refill: {0} supply now replenished."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:674
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:709
 #, csharp-format
 msgid "Unload: {0} fuel or freight now unloaded."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:692
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:727
 msgid "wag file not equipped for containers"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:697
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:732
 #, csharp-format
 msgid "{0} now loaded."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:703
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:738
 #, csharp-format
 msgid "{0} now unloaded."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:596
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:607
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:631
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:642
 #, csharp-format
 msgid "{0} meter"
 msgid_plural "{0} meters"
