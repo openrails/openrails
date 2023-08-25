@@ -424,10 +424,10 @@ namespace Orts.Viewer3D
                     // here check for curve
                     var carPreviouslyOnCurve = CarOnCurve;
                     CarOnCurve = false;
-                    if ((Car.CurrentCurveRadius > 0 && (Car.CurrentCurveRadius < 301
-                         || (Car.CurrentCurveRadius < 350 && Car.WagonType == TrainCar.WagonTypes.Freight))) ||
-                        (CarBehind.CurrentCurveRadius > 0 && (CarBehind.CurrentCurveRadius < 301
-                         || (CarBehind.CurrentCurveRadius < 350 && Car.WagonType == TrainCar.WagonTypes.Freight))))
+                    if ((Car.CurrentCurveRadiusM > 0 && (Car.CurrentCurveRadiusM < 301
+                         || (Car.CurrentCurveRadiusM < 350 && Car.WagonType == TrainCar.WagonTypes.Freight))) ||
+                        (CarBehind.CurrentCurveRadiusM > 0 && (CarBehind.CurrentCurveRadiusM < 301
+                         || (CarBehind.CurrentCurveRadiusM < 350 && Car.WagonType == TrainCar.WagonTypes.Freight))))
                     {
                         CarOnCurve = true;
                     }
