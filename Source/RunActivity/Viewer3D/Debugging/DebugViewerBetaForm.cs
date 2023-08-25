@@ -665,14 +665,9 @@ namespace Orts.Viewer3D.Debugging
             // inactive car: RGB 0,153,0
             if (MapDataProvider.IsActiveTrain(t as AITrain))
             {
-                if (car is MSTSLocomotive)
-                {
-                    trainPen.Color = (car == locoCar) ? Color.FromArgb(204, 170, 0) : Color.FromArgb(153, 128, 0);
-                }
-                else
-                {
-                    trainPen.Color = Color.FromArgb(0, 204, 0);
-                }
+                trainPen.Color = car is MSTSLocomotive
+                    ? (car == locoCar) ? Color.FromArgb(204, 170, 0) : Color.FromArgb(153, 128, 0)
+                    : Color.FromArgb(0, 204, 0);
             }
             else
             {
