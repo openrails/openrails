@@ -812,13 +812,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         EmergResPressurePSI -= dp;
                         BrakeLine1PressurePSI += dp * EmergBrakeLineVolumeRatio;
                     }
-                    else // Quick recharge: Emergency res air used to recharge aux res on older control valves
+                    else if (!EmergResQuickRelease) // Quick recharge: Emergency res air used to recharge aux res on older control valves
                     {
                         float dp = elapsedClockSeconds * MaxAuxilaryChargingRatePSIpS;
                         if (AuxResPressurePSI + dp > EmergResPressurePSI - dp / EmergAuxVolumeRatio)
                             dp = (EmergResPressurePSI - AuxResPressurePSI) * EmergAuxVolumeRatio / (1 + EmergAuxVolumeRatio);
                         if (BrakeLine1PressurePSI < AuxResPressurePSI + dp)
                             dp = (BrakeLine1PressurePSI - AuxResPressurePSI);
+                        if (dp < 0)
+                            dp = 0;
                         AuxResPressurePSI += dp;
                         EmergResPressurePSI -= dp / EmergAuxVolumeRatio;
                     }
