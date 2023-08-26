@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.MultiPlayer;
 using Orts.Simulation;
+using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
@@ -333,36 +334,6 @@ namespace Orts.Viewer3D.Debugging
 
             if (mapCanvas.Image == null || firstShow) InitializeImage();
 
-            /*if (firstShow)
-            {
-                if (!MPManager.IsServer())
-                {
-                    chkAllowUserSwitch.Visible = false;
-                    chkAllowUserSwitch.Checked = false;
-                    rmvButton.Visible = false;
-                    btnAssist.Visible = false;
-                    btnNormal.Visible = false;
-                    msgAll.Text = "MSG to Server";
-                }
-                else
-                {
-                    msgAll.Text = "MSG to All";
-                }
-                if (MPManager.IsServer())
-                {
-                    rmvButton.Visible = true;
-                    chkAllowNew.Visible = true;
-                    chkAllowUserSwitch.Visible = true;
-                }
-                else
-                {
-                    rmvButton.Visible = false;
-                    chkAllowNew.Visible = false;
-                    chkAllowUserSwitch.Visible = false;
-                    chkBoxPenalty.Visible = false;
-                    chkPreferGreen.Visible = false;
-                }
-            }*/
             if (firstShow || followTrain)
             {
                 //see who should I look at:
@@ -515,23 +486,29 @@ namespace Orts.Viewer3D.Debugging
 
         private void DrawTrains(Graphics g, PointF scaledA, PointF scaledB)
         {
-            var margin = 30 * xScale;   //margins to determine if we want to draw a train
+            var margin = 30 * xScale; // Margins to determine if we want to draw a train
             var margin2 = 5000 * xScale;
 
-            //variable for drawing train path
-            var mDist = 5000f; var pDist = 50; //segment length when drawing path
+            // Variable for drawing train path
+            var mDist = 5000f; var pDist = 50; // Segment length when drawing path
 
             selectedTrainList.Clear();
 
             if (simulator.TimetableMode)
             {
-                // Add the player's train
-                if (simulator.PlayerLocomotive.Train is Orts.Simulation.AIs.AITrain)
-                    selectedTrainList.Add(simulator.PlayerLocomotive.Train as Orts.Simulation.AIs.AITrain);
+                // Add the player's train...
+                if (simulator.PlayerLocomotive.Train is Simulation.AIs.AITrain)
+                    selectedTrainList.Add(simulator.PlayerLocomotive.Train as Simulation.AIs.AITrain);
 
-                // and all the other trains
-                foreach (var train in simulator.AI.AITrains)
+                // ...then all the AI trains...
+                foreach (AITrain train in simulator.AI.AITrains)
                     selectedTrainList.Add(train);
+
+                // ...and finally the static consists.
+                foreach (Train staticConsist in simulator.Trains.Where(c => c.TrainType == Train.TRAINTYPE.STATIC))
+                {
+                    selectedTrainList.Add(staticConsist);
+                }
             }
             else
             {
@@ -552,7 +529,7 @@ namespace Orts.Viewer3D.Debugging
                 else if (train.Cars != null && train.Cars.Count > 0)
                 {
                     trainName = train.GetTrainName(train.Cars[0].CarID);
-                    if (train.TrainType == Train.TRAINTYPE.AI)
+                    if (train.TrainType == Train.TRAINTYPE.AI || train.TrainType == Train.TRAINTYPE.STATIC)
                         trainName = train.Number.ToString() + ":" + train.Name;
 
                     locoCar = train.Cars.Where(r => r is MSTSLocomotive).FirstOrDefault();
@@ -686,11 +663,21 @@ namespace Orts.Viewer3D.Debugging
             // inactive loco: RGB 153,128,0
             // active car: RGB 0,204,0
             // inactive car: RGB 0,153,0
-            trainPen.Color = MapDataProvider.IsActiveTrain(t as Simulation.AIs.AITrain)
-                ? car is MSTSLocomotive
+            if (MapDataProvider.IsActiveTrain(t as AITrain))
+            {
+                trainPen.Color = car is MSTSLocomotive
                     ? (car == locoCar) ? Color.FromArgb(204, 170, 0) : Color.FromArgb(153, 128, 0)
-                    : Color.FromArgb(0, 204, 0)
-                : car is MSTSLocomotive ? Color.FromArgb(153, 128, 0) : Color.FromArgb(0, 153, 0);
+                    : Color.FromArgb(0, 204, 0);
+            }
+            else
+            {
+                trainPen.Color = car is MSTSLocomotive ? Color.FromArgb(153, 128, 0) : Color.FromArgb(0, 153, 0);
+            }
+
+            if (t.TrainType == Train.TRAINTYPE.STATIC)
+            {
+                trainPen.Color = Color.FromArgb(83, 237, 214);
+            }
 
             // Draw player train with loco in red
             if (t.TrainType == Train.TRAINTYPE.PLAYER && car == locoCar)
