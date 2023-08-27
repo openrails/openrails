@@ -407,6 +407,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 Trace.TraceWarning("{0} does not define a brake valve, defaulting to a plain triple valve", (Car as MSTSWagon).WagFilePath);
             }
 
+            // Reducing reservoir charging rates when set unrealistically high
+            if (Car.Simulator.Settings.CorrectQuestionableBrakingParams && (MaxAuxilaryChargingRatePSIpS > 10 || EmergResChargingRatePSIpS > 10))
+            {
+                MaxAuxilaryChargingRatePSIpS = Math.Min(MaxAuxilaryChargingRatePSIpS, 10.0f);
+                EmergResChargingRatePSIpS = Math.Min(EmergResChargingRatePSIpS, 10.0f);
+            }
+
             // In simple brake mode set emergency reservoir volume, override high volume values to allow faster brake release.
             if (Car.Simulator.Settings.SimpleControlPhysics && EmergResVolumeM3 > 2.0)
                 EmergResVolumeM3 = 0.7f;
@@ -468,7 +475,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             bool disableGradient = !(Car.Train.LeadLocomotive is MSTSLocomotive) && Car.Train.TrainType != Orts.Simulation.Physics.Train.TRAINTYPE.STATIC;
             // Small workaround to allow trains to more reliably go into emergency after uncoupling
             bool emergencyTripped = (Car.Train.TrainType == Orts.Simulation.Physics.Train.TRAINTYPE.STATIC) ?
-                BrakeLine1PressurePSI <= EmergResPressurePSI * AuxCylVolumeRatio / (AuxCylVolumeRatio + 1) : Math.Max(-SmoothedBrakePipeChangePSIpS.SmoothedValue, 0) > EmergencyValveActuationRatePSIpS;
+                BrakeLine1PressurePSI <= 0.75f * EmergResPressurePSI * AuxCylVolumeRatio / (AuxCylVolumeRatio + 1) : Math.Max(-SmoothedBrakePipeChangePSIpS.SmoothedValue, 0) > EmergencyValveActuationRatePSIpS;
 
             if (valveType == MSTSWagon.BrakeValveType.Distributor)
             {
