@@ -12,6 +12,7 @@ using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
+using Orts.Simulation.Timetables;
 using Orts.Viewer3D.Popups;
 using ORTS.Common;
 using Color = System.Drawing.Color;
@@ -27,6 +28,7 @@ namespace Orts.Viewer3D.Debugging
         public readonly Simulator simulator;
         private readonly MapDataProvider MapDataProvider;
         private readonly MapThemeProvider MapThemeProvider;
+        private string ThemeName = "light";
         private ThemeStyle Theme;
         /// <summary>
         /// Used to periodically check if we should shift the view when the
@@ -140,7 +142,7 @@ namespace Orts.Viewer3D.Debugging
         {
             MapDataProvider.SetControls();
             MapThemeProvider.InitializeThemes();
-            Theme = MapThemeProvider.LightTheme;
+            Theme = MapThemeProvider.GetTheme(ThemeName);
 
             float[] dashPattern = { 4, 2 };
             ZoomTargetPen.DashPattern = dashPattern;
@@ -497,18 +499,12 @@ namespace Orts.Viewer3D.Debugging
             if (simulator.TimetableMode)
             {
                 // Add the player's train...
-                if (simulator.PlayerLocomotive.Train is Simulation.AIs.AITrain)
-                    selectedTrainList.Add(simulator.PlayerLocomotive.Train as Simulation.AIs.AITrain);
+                if (simulator.PlayerLocomotive.Train is AITrain)
+                    selectedTrainList.Add(simulator.PlayerLocomotive.Train as AITrain);
 
-                // ...then all the AI trains...
+                // ...then all the AI trains, including static consists.
                 foreach (AITrain train in simulator.AI.AITrains)
                     selectedTrainList.Add(train);
-
-                // ...and finally the static consists.
-                foreach (Train staticConsist in simulator.Trains.Where(c => c.TrainType == Train.TRAINTYPE.STATIC))
-                {
-                    selectedTrainList.Add(staticConsist);
-                }
             }
             else
             {
@@ -674,7 +670,7 @@ namespace Orts.Viewer3D.Debugging
                 trainPen.Color = car is MSTSLocomotive ? Color.FromArgb(153, 128, 0) : Color.FromArgb(0, 153, 0);
             }
 
-            if (t.TrainType == Train.TRAINTYPE.STATIC)
+            if (t.TrainType == Train.TRAINTYPE.STATIC || (t.TrainType == Train.TRAINTYPE.AI && t.GetAIMovementState() == AITrain.AI_MOVEMENT_STATE.AI_STATIC))
             {
                 trainPen.Color = Color.FromArgb(83, 237, 214);
             }
@@ -691,7 +687,7 @@ namespace Orts.Viewer3D.Debugging
             scaledTrain.Y = -25 + mapCanvas.Height - (((worldPos.TileZ * 2048) - subY + worldPos.Location.Z) * yScale);
             if (showActiveTrainsRadio.Checked)
             {
-                if (t is Simulation.AIs.AITrain && MapDataProvider.IsActiveTrain(t as Simulation.AIs.AITrain))
+                if (t is AITrain && MapDataProvider.IsActiveTrain(t as AITrain))
                     ShowTrainNameAndState(g, scaledTrain, t, trainName);
             }
             else
@@ -704,7 +700,7 @@ namespace Orts.Viewer3D.Debugging
         {
             if (simulator.TimetableMode)
             {
-                if (t is Simulation.Timetables.TTTrain tTTrain)
+                if (t is TTTrain tTTrain)
                 {
                     // Remove name of timetable, e.g.: ":SCE"
                     var lastPos = trainName.LastIndexOf(":");
@@ -1714,7 +1710,12 @@ namespace Orts.Viewer3D.Debugging
 
         private void rotateThemesButton_Click(object sender, EventArgs e)
         {
-            Theme = Theme == MapThemeProvider.LightTheme ? MapThemeProvider.DarkTheme : MapThemeProvider.LightTheme;
+            // Cycles through the array of available themes
+            string[] themes = MapThemeProvider.GetThemes();
+            int i = Array.IndexOf(themes, ThemeName);
+            ThemeName = i >= 0 && i < themes.Length - 1 ? themes[i + 1] : themes[0];
+
+            Theme = MapThemeProvider.GetTheme(ThemeName);
 
             ApplyThemeRecursively(this);
             MapCanvasColor = Theme.MapCanvasColor;

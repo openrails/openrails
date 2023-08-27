@@ -1,16 +1,15 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Orts.Viewer3D.Debugging
 {
     public class MapThemeProvider
     {
-        public ThemeStyle LightTheme;
-        public ThemeStyle DarkTheme;
-
         public void InitializeThemes()
         {
-            LightTheme = new ThemeStyle
+            ThemeStyle LightTheme = new ThemeStyle
             {
                 BackColor = Color.Transparent,
                 ForeColor = SystemColors.ControlText,
@@ -20,7 +19,7 @@ namespace Orts.Viewer3D.Debugging
                 TrackColor = Color.FromArgb(46, 64, 83),
             };
 
-            DarkTheme = new ThemeStyle
+            ThemeStyle DarkTheme = new ThemeStyle
             {
                 BackColor = Color.FromArgb(44, 62, 80),
                 ForeColor = Color.FromArgb(247, 249, 249),
@@ -29,6 +28,50 @@ namespace Orts.Viewer3D.Debugging
                 MapCanvasColor = Color.FromArgb(44, 62, 80),
                 TrackColor = Color.FromArgb(234, 236, 238),
             };
+
+            // Reference for "solarized" themes: https://github.com/altercation/solarized?tab=readme-ov-file#the-values
+            ThemeStyle LightSolarizedTheme = new ThemeStyle
+            {
+                BackColor = Color.FromArgb(253, 246, 227),
+                ForeColor = Color.FromArgb(101, 123, 131),
+                PanelBackColor = Color.FromArgb(238, 232, 213),
+                FlatStyle = FlatStyle.Flat,
+                MapCanvasColor = Color.FromArgb(253, 246, 227),
+                TrackColor = Color.FromArgb(88, 110, 117),
+            };
+
+            ThemeStyle DarkSolarizedTheme = new ThemeStyle
+            {
+                BackColor = Color.FromArgb(0, 43, 54),
+                ForeColor = Color.FromArgb(131, 148, 150),
+                PanelBackColor = Color.FromArgb(28, 40, 51),
+                FlatStyle = FlatStyle.Flat,
+                MapCanvasColor = Color.FromArgb(0, 43, 54),
+                TrackColor = Color.FromArgb(147, 161, 161),
+            };
+
+            Themes.Add("light", LightTheme);
+            Themes.Add("light-solarized", LightSolarizedTheme);
+            Themes.Add("dark-solarized", DarkSolarizedTheme);
+            Themes.Add("dark", DarkTheme);
+        }
+
+        private Dictionary<string, ThemeStyle> Themes = new Dictionary<string, ThemeStyle>();
+
+        public ThemeStyle GetTheme(string themeName)
+        {
+            if (Themes.TryGetValue(themeName, out ThemeStyle theme))
+            {
+                return theme;
+            }
+
+            // Handle the case when the theme doesn't exist
+            return null;
+        }
+
+        public string[] GetThemes()
+        {
+            return Themes.Keys.ToArray();
         }
     }
 
