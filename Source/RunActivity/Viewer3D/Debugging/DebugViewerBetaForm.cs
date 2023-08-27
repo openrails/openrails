@@ -27,6 +27,7 @@ namespace Orts.Viewer3D.Debugging
         public readonly Simulator simulator;
         private readonly MapDataProvider MapDataProvider;
         private readonly MapThemeProvider MapThemeProvider;
+        private string ThemeName = "light";
         private ThemeStyle Theme;
         /// <summary>
         /// Used to periodically check if we should shift the view when the
@@ -140,7 +141,7 @@ namespace Orts.Viewer3D.Debugging
         {
             MapDataProvider.SetControls();
             MapThemeProvider.InitializeThemes();
-            Theme = MapThemeProvider.LightTheme;
+            Theme = MapThemeProvider.GetTheme(ThemeName);
 
             float[] dashPattern = { 4, 2 };
             ZoomTargetPen.DashPattern = dashPattern;
@@ -1714,7 +1715,12 @@ namespace Orts.Viewer3D.Debugging
 
         private void rotateThemesButton_Click(object sender, EventArgs e)
         {
-            Theme = Theme == MapThemeProvider.LightTheme ? MapThemeProvider.DarkTheme : MapThemeProvider.LightTheme;
+            // Cycles through the array of available themes
+            string[] themes = MapThemeProvider.GetThemes();
+            int i = Array.IndexOf(themes, ThemeName);
+            ThemeName = i >= 0 && i < themes.Length - 1 ? themes[i + 1] : themes[0];
+
+            Theme = MapThemeProvider.GetTheme(ThemeName);
 
             ApplyThemeRecursively(this);
             MapCanvasColor = Theme.MapCanvasColor;
