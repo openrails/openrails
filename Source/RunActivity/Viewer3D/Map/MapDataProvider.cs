@@ -23,14 +23,15 @@ using Orts.Formats.Msts;
 using Orts.MultiPlayer;
 using Orts.Simulation.Physics;
 using Orts.Simulation.Signalling;
+using Orts.Viewer3D.Debugging;
 
-namespace Orts.Viewer3D.Debugging
+namespace Orts.Viewer3D.Map
 {
     public class MapDataProvider
     {
-        public DispatchViewerBeta F { get; set; } // Shortest possible abbreviation so code is easier to read
+        public MapViewer F { get; set; } // Shortest possible abbreviation so code is easier to read
 
-        public MapDataProvider(DispatchViewerBeta form)
+        public MapDataProvider(MapViewer form)
         {
             F = form;
         }
@@ -174,7 +175,7 @@ namespace Orts.Viewer3D.Debugging
 
         private PointF GetRightHandPoint(PointF location1, PointF location2)
         {
-            return (location1.X > location2.X) ? location1 : location2;
+            return location1.X > location2.X ? location1 : location2;
         }
 
         public void ShowSimulationTime()
@@ -203,9 +204,9 @@ namespace Orts.Viewer3D.Debugging
         public bool IsActiveTrain(Simulation.AIs.AITrain t)
         {
             return t != null
-&& ((t.MovementState != Simulation.AIs.AITrain.AI_MOVEMENT_STATE.AI_STATIC
+&& (t.MovementState != Simulation.AIs.AITrain.AI_MOVEMENT_STATE.AI_STATIC
                         && !(t.TrainType == Train.TRAINTYPE.AI_INCORPORATED && !t.IncorporatingTrain.IsPathless)
-                    )
+
                     || t.TrainType == Train.TRAINTYPE.PLAYER);
         }
 
@@ -254,14 +255,14 @@ namespace Orts.Viewer3D.Debugging
             if (endX < 0)
                 return noFreeSlotFound;
 
-            int positionY = desiredPositionY;
+            var positionY = desiredPositionY;
             while (positionY >= 0 && positionY < F.alignedTextY.Length)
             {
                 //if the line contains no text yet, put it there
                 if (F.alignedTextNum[positionY] == 0)
                     return SaveLabelLocation(startX, endX, positionY);
 
-                bool conflict = false;
+                var conflict = false;
 
                 //check if it intersects with any labels already in this row
                 for (var col = 0; col < F.alignedTextNum[positionY]; col++)

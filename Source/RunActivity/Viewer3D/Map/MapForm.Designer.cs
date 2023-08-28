@@ -1,6 +1,6 @@
 ﻿namespace Orts.Viewer3D.Debugging
 {
-    partial class DispatchViewerBeta
+    partial class MapViewer
     {
         /// <summary>
         /// Required designer variable.
