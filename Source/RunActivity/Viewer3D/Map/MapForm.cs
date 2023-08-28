@@ -13,13 +13,14 @@ using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
 using Orts.Simulation.Timetables;
+using Orts.Viewer3D.Map;
 using Orts.Viewer3D.Popups;
 using ORTS.Common;
 using Color = System.Drawing.Color;
 
 namespace Orts.Viewer3D.Debugging
 {
-    public partial class DispatchViewerBeta : Form
+    public partial class MapViewer : Form
     {
         #region Variables
         /// <summary>
@@ -104,7 +105,7 @@ namespace Orts.Viewer3D.Debugging
         private bool MapCustomizationVisible = false;
         #endregion
 
-        public DispatchViewerBeta(Simulator simulator, Viewer viewer)
+        public MapViewer(Simulator simulator, Viewer viewer)
         {
             InitializeComponent();
 

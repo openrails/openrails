@@ -3,13 +3,13 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace Orts.Viewer3D.Debugging
+namespace Orts.Viewer3D.Map
 {
     public class MapThemeProvider
     {
         public void InitializeThemes()
         {
-            ThemeStyle LightTheme = new ThemeStyle
+            var LightTheme = new ThemeStyle
             {
                 BackColor = Color.Transparent,
                 ForeColor = SystemColors.ControlText,
@@ -19,7 +19,7 @@ namespace Orts.Viewer3D.Debugging
                 TrackColor = Color.FromArgb(46, 64, 83),
             };
 
-            ThemeStyle DarkTheme = new ThemeStyle
+            var DarkTheme = new ThemeStyle
             {
                 BackColor = Color.FromArgb(44, 62, 80),
                 ForeColor = Color.FromArgb(247, 249, 249),
@@ -30,7 +30,7 @@ namespace Orts.Viewer3D.Debugging
             };
 
             // Reference for "solarized" themes: https://github.com/altercation/solarized?tab=readme-ov-file#the-values
-            ThemeStyle LightSolarizedTheme = new ThemeStyle
+            var LightSolarizedTheme = new ThemeStyle
             {
                 BackColor = Color.FromArgb(253, 246, 227),
                 ForeColor = Color.FromArgb(101, 123, 131),
@@ -40,7 +40,7 @@ namespace Orts.Viewer3D.Debugging
                 TrackColor = Color.FromArgb(88, 110, 117),
             };
 
-            ThemeStyle DarkSolarizedTheme = new ThemeStyle
+            var DarkSolarizedTheme = new ThemeStyle
             {
                 BackColor = Color.FromArgb(0, 43, 54),
                 ForeColor = Color.FromArgb(131, 148, 150),
@@ -60,7 +60,7 @@ namespace Orts.Viewer3D.Debugging
 
         public ThemeStyle GetTheme(string themeName)
         {
-            if (Themes.TryGetValue(themeName, out ThemeStyle theme))
+            if (Themes.TryGetValue(themeName, out var theme))
             {
                 return theme;
             }
