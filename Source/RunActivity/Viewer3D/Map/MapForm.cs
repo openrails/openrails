@@ -497,7 +497,7 @@ namespace Orts.Viewer3D.Debugging
 
             selectedTrainList.Clear();
 
-            if (simulator.TimetableMode)
+            /*if (simulator.TimetableMode)
             {
                 // Add the player's train...
                 if (simulator.PlayerLocomotive.Train is AITrain)
@@ -508,10 +508,10 @@ namespace Orts.Viewer3D.Debugging
                     selectedTrainList.Add(train);
             }
             else
-            {
+            {*/
                 foreach (var train in simulator.Trains)
                     selectedTrainList.Add(train);
-            }
+            /*}*/
 
             foreach (var train in selectedTrainList)
             {
@@ -533,7 +533,7 @@ namespace Orts.Viewer3D.Debugging
 
                     // Skip trains with no loco
                     if (locoCar == null)
-                        continue;
+                        locoCar = train.Cars[0];
                 }
                 else
                     continue;
@@ -544,8 +544,7 @@ namespace Orts.Viewer3D.Debugging
                 float y = mapCanvas.Height - (((loc.TileZ * 2048) + loc.Location.Z - subY) * yScale);
 
                 // If train out of view then skip it.
-                if (x < -margin2
-                    || y < -margin2)
+                if (x < -margin2 || y < -margin2)
                     continue;
 
                 DrawTrainPath(train, subX, subY, pathPen, g, scaledA, scaledB, pDist, mDist);
@@ -574,7 +573,7 @@ namespace Orts.Viewer3D.Debugging
                     Y = -25 + mapCanvas.Height - (((worldPos.TileZ * 2048) - subY + worldPos.Location.Z) * yScale)
                 };
                 if (showTrainLabelsCheckbox.Checked)
-                    DrawTrainLabels(g, train, trainName, locoCar, scaledTrain);
+                    DrawTrainLabels(g, train, trainName, scaledTrain);
             }
         }
 
@@ -603,7 +602,7 @@ namespace Orts.Viewer3D.Debugging
                     if (x < -margin || y < -margin)
                         return;
 
-                    t.Move(-car.CarLengthM + (1 / xScale)); // Move from front of car to rear less 1 pixel to create a visible gap
+                    t.Move(-car.CarLengthM + (2 / xScale)); // Move from front of car to rear less 1 pixel to create a visible gap // TODO: investigate `(1 / xScale)` ==> `(2 / xScale)` car gap consequences
                     scaledTrain.X = x; scaledTrain.Y = y;
                 }
                 else // Draw the train as 2 boxes of fixed size
@@ -673,7 +672,7 @@ namespace Orts.Viewer3D.Debugging
 
             if (t.TrainType == Train.TRAINTYPE.STATIC || (t.TrainType == Train.TRAINTYPE.AI && t.GetAIMovementState() == AITrain.AI_MOVEMENT_STATE.AI_STATIC))
             {
-                trainPen.Color = Color.FromArgb(83, 237, 214);
+                trainPen.Color = car is MSTSLocomotive ? Color.FromArgb(19, 185, 160) : Color.FromArgb(83, 237, 214);
             }
 
             // Draw player train with loco in red
@@ -681,11 +680,11 @@ namespace Orts.Viewer3D.Debugging
                 trainPen.Color = Color.Red;
         }
 
-        private void DrawTrainLabels(Graphics g, Train t, string trainName, TrainCar firstCar, PointF scaledTrain)
+        private void DrawTrainLabels(Graphics g, Train t, string trainName, PointF scaledTrain)
         {
-            WorldPosition worldPos = firstCar.WorldPosition;
+            /*WorldPosition worldPos = firstCar.WorldPosition;
             scaledTrain.X = ((worldPos.TileX * 2048) - subX + worldPos.Location.X) * xScale;
-            scaledTrain.Y = -25 + mapCanvas.Height - (((worldPos.TileZ * 2048) - subY + worldPos.Location.Z) * yScale);
+            scaledTrain.Y = -25 + mapCanvas.Height - (((worldPos.TileZ * 2048) - subY + worldPos.Location.Z) * yScale);*/
             if (showActiveTrainsRadio.Checked)
             {
                 if (t is AITrain && MapDataProvider.IsActiveTrain(t as AITrain))
