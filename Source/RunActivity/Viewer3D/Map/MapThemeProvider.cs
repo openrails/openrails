@@ -56,7 +56,7 @@ namespace Orts.Viewer3D.Map
             Themes.Add("dark", DarkTheme);
         }
 
-        private Dictionary<string, ThemeStyle> Themes = new Dictionary<string, ThemeStyle>();
+        private readonly Dictionary<string, ThemeStyle> Themes = new Dictionary<string, ThemeStyle>();
 
         public ThemeStyle GetTheme(string themeName)
         {

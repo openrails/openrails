@@ -46,8 +46,6 @@ namespace Orts.Viewer3D.Debugging
         public float xScale = 1; // pixels / metre
         public float yScale = 1; // pixels / metre
 
-        readonly string name = "";
-
         public List<SwitchWidget> switchItemsDrawn;
         public List<SignalWidget> signalItemsDrawn;
         public SwitchWidget switchPickedItem;
@@ -509,8 +507,8 @@ namespace Orts.Viewer3D.Debugging
             }
             else
             {*/
-                foreach (var train in simulator.Trains)
-                    selectedTrainList.Add(train);
+            foreach (var train in simulator.Trains)
+                selectedTrainList.Add(train);
             /*}*/
 
             foreach (var train in selectedTrainList)
@@ -659,16 +657,11 @@ namespace Orts.Viewer3D.Debugging
             // inactive loco: RGB 153,128,0
             // active car: RGB 0,204,0
             // inactive car: RGB 0,153,0
-            if (MapDataProvider.IsActiveTrain(t as AITrain))
-            {
-                trainPen.Color = car is MSTSLocomotive
+            trainPen.Color = MapDataProvider.IsActiveTrain(t as AITrain)
+                ? car is MSTSLocomotive
                     ? (car == locoCar) ? Color.FromArgb(204, 170, 0) : Color.FromArgb(153, 128, 0)
-                    : Color.FromArgb(0, 204, 0);
-            }
-            else
-            {
-                trainPen.Color = car is MSTSLocomotive ? Color.FromArgb(153, 128, 0) : Color.FromArgb(0, 153, 0);
-            }
+                    : Color.FromArgb(0, 204, 0)
+                : car is MSTSLocomotive ? Color.FromArgb(153, 128, 0) : Color.FromArgb(0, 153, 0);
 
             if (t.TrainType == Train.TRAINTYPE.STATIC || (t.TrainType == Train.TRAINTYPE.AI && t.GetAIMovementState() == AITrain.AI_MOVEMENT_STATE.AI_STATIC))
             {

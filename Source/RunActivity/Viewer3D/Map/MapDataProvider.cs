@@ -93,7 +93,7 @@ namespace Orts.Viewer3D.Map
                         {
                             var oldSiding = F.sidings[oldSidingIndex];
                             var oldLocation = oldSiding.Location;
-                            var newLocation = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+                            var newLocation = new PointF((item.TileX * 2048) + item.X, (item.TileZ * 2048) + item.Z);
 
                             // Because these are structs, not classes, compiler won't let you overwrite them.
                             // Instead create a single item which replaces the 2 platform items.
@@ -118,7 +118,7 @@ namespace Orts.Viewer3D.Map
                         {
                             var newPlatform = new PlatformWidget(item as PlatformItem)
                             {
-                                Extent1 = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z)
+                                Extent1 = new PointF((item.TileX * 2048) + item.X, (item.TileZ * 2048) + item.Z)
                             };
                             F.platforms.Add(newPlatform);
                         }
@@ -126,7 +126,7 @@ namespace Orts.Viewer3D.Map
                         {
                             var oldPlatform = F.platforms[oldPlatformIndex];
                             var oldLocation = oldPlatform.Location;
-                            var newLocation = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+                            var newLocation = new PointF((item.TileX * 2048) + item.X, (item.TileZ * 2048) + item.Z);
 
                             // Because these are structs, not classes, compiler won't let you overwrite them.
                             // Instead create a single item which replaces the 2 platform items.
@@ -206,7 +206,7 @@ namespace Orts.Viewer3D.Map
             return t != null
 && (t.MovementState != Simulation.AIs.AITrain.AI_MOVEMENT_STATE.AI_STATIC
                         && !(t.TrainType == Train.TRAINTYPE.AI_INCORPORATED && !t.IncorporatingTrain.IsPathless)
-                    
+
                     || t.TrainType == Train.TRAINTYPE.PLAYER);
         }
 
@@ -250,7 +250,7 @@ namespace Orts.Viewer3D.Map
             const float noFreeSlotFound = -1f;
 
             var desiredPositionY = (int)(wantY / DispatchViewer.spacing);  // The positionY of the ideal row for the text.
-            var endX = startX + name.Length * F.trainFont.Size;
+            var endX = startX + (name.Length * F.trainFont.Size);
             //out of drawing area
             if (endX < 0)
                 return noFreeSlotFound;
