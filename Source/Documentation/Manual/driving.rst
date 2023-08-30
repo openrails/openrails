@@ -537,7 +537,7 @@ By clicking in this menu it is possible:
   for both electric and diesel locomotives;
 - to connect or disconnect locomotive operation with that of the player 
   locomotive;
-- to connect of disconnect the battery;
+- enable or disable the battery switch;
 - to connect or disconnect the Electric Train Supply;
 - to connect or disconnect the car's brake hoses from the rest of the consist;
 - to open or close the angle cocks on the air hoses at either end of the car;
