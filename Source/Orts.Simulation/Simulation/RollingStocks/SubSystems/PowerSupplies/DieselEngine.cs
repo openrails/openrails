@@ -987,6 +987,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             DieselMaxOilPressurePSI = other.DieselMaxOilPressurePSI;
             DieselMinOilPressurePSI = other.DieselMinOilPressurePSI;
             DieselMaxTemperatureDeg = other.DieselMaxTemperatureDeg;
+            ExhaustAccelIncrease = other.ExhaustAccelIncrease;
+            ExhaustDecelReduction = other.ExhaustDecelReduction;
+            EngineCooling = other.EngineCooling;
+            DieselTempTimeConstantSec = other.DieselTempTimeConstantSec;
+            DieselOptimalTemperatureDegC = other.DieselOptimalTemperatureDegC;
+            DieselIdleTemperatureDegC = other.DieselIdleTemperatureDegC;
         }
 
         public void Initialize()
