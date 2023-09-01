@@ -102,6 +102,8 @@ namespace Orts.Simulation.RollingStocks
         public MSTSNotchController SmallEjectorController = new MSTSNotchController(0, 1, 0.1f);
         public MSTSNotchController LargeEjectorController = new MSTSNotchController(0, 1, 0.1f);
 
+        float DebugTimerS;
+
         public bool Injector1IsOn;
         bool Injector1SoundIsOn = false;
         public bool Injector2IsOn;
@@ -2105,29 +2107,7 @@ namespace Orts.Simulation.RollingStocks
                 for (int i = 0; i < NumCylinders; i++)
                 {
 
-//                    Trace.TraceInformation("NumCyl - {0} i {1}", NumCylinders, i);
-                    
-                    // float realCrankAngleRad = (float)(LocomotiveAxle.AxlePositionRad + i * WheelCrankAngleDiffRad[i]);
-                    float realCrankAngleRad = (float)(LocomotiveAxles[0].AxlePositionRad);
-                    float normalisedCrankAngleRad = 0;
-
-                    realCrankAngleRad = (float)(MathHelper.WrapAngle(realCrankAngleRad));
-
-                    if (realCrankAngleRad < 0)
-                    {
-                        realCrankAngleRad = (float)(2.0f * Math.PI + realCrankAngleRad); // angle must be maintained in a +ve range, ie 0 - 360
-                    }
-
-                    // Normalise crank angle so that it is a value between 0 and 360 starting at the real crank angle difference
-                    if (realCrankAngleRad >= WheelCrankAngleDiffRad[i])
-                    {
-                        normalisedCrankAngleRad = realCrankAngleRad - WheelCrankAngleDiffRad[i];
-                    }
-                    else
-                    {
-                        float diff = WheelCrankAngleDiffRad[i] - realCrankAngleRad;
-                        normalisedCrankAngleRad = (float)(2.0f * Math.PI - diff);
-                    }
+                    float normalisedCrankAngleRad = NormalisedCrankAngle(i);
 
                     // Exhaust crank angle
                     float exhaustCrankAngleRad = 0;
@@ -5043,7 +5023,6 @@ namespace Orts.Simulation.RollingStocks
                         LPslipBackPressureAtmPSI = LPCompPressure_m_AtmPSI;
                         LPslipCompressionPressureAtmPSI = LPCompPressure_n_AtmPSI;
                         LPslipAdmissionPressureAtmPSI = LPCompPressure_q_AtmPSI;
-
                     }
                     else  // Simple mode
                     {
@@ -5062,7 +5041,6 @@ namespace Orts.Simulation.RollingStocks
                         LPslipBackPressureAtmPSI = LPPressure_d_AtmPSI;
                         LPslipCompressionPressureAtmPSI = LPPressure_e_AtmPSI;
                         LPslipAdmissionPressureAtmPSI = LPPressure_f_AtmPSI;
-
                     }
                 }
                 else // simple locomotive
@@ -5073,28 +5051,25 @@ namespace Orts.Simulation.RollingStocks
                     slipBackPressureAtmPSI = Pressure_d_AtmPSI;
                     slipCompressionPressureAtmPSI = Pressure_e_AtmPSI;
                     slipAdmissionPressureAtmPSI = Pressure_f_AtmPSI;
-
-                    //   Trace.TraceInformation("Initialise IntialPressure {0} Pressure A {1}", slipInitialPressureAtmPSI, Pressure_a_AtmPSI);
-
                 }
 
                 TractiveForceN = 0;
                 float totalDrvWeightN = 0;
                 DisplayTangentialWheelTreadForceLbf = 0;
-                float testCrankAngle = 0;
-
+               
                 for (int i = 0; i < NumCylinders; i++)
                 {
-                    float crankAngleRad = (float)(LocomotiveAxles[0].AxlePositionRad + i * WheelCrankAngleDiffRad[i]);
+                    // This feature sues some different reference angles as follows:
+                    // AxlePositionRad - comes from the axle module and is -180 - 0 - 180
+                    // Crank Angle - converts the above range to 0 - 180 - 0 - this is the principle reference used so that it lines up with reference
+                    // tables used to buold this function
+                    // Normalised Crank Angle - converts the above to a 0 - 360 range, this is used for triggering special steam effects, etc.
+                    float axlePostionRad = LocomotiveAxles[0].AxlePositionRad;
+                    float crankAngleRad = (float)(axlePostionRad + WheelCrankAngleDiffRad[i]);
 
-                    testCrankAngle = crankAngleRad;
-
-                    crankAngleRad = (float)(MathHelper.WrapAngle(crankAngleRad));
-
-//                    Trace.TraceInformation("Cyl {0} crankAng {1} Position {2} Diff {3}", NumCylinders, MathHelper.ToDegrees(crankAngleRad), MathHelper.ToDegrees(LocomotiveAxle.AxlePositionRad), MathHelper.ToDegrees(WheelCrankAngleDiffRad));
+                    crankAngleRad = (float)(MathHelper.WrapAngle(crankAngleRad)); // Ensures that crank angle is in the range 0 - 180 - 0
 
                     float crankCylinderPressure = (MeanEffectivePressurePSI * CylinderEfficiencyRate); // fallback default value
-
 
                     // Calculate cylinder position in relation to crank (and hence wheel) position.
                     // For each full wheel revolution, the cylinder will do two storkes (forward and backwards).
@@ -5122,9 +5097,7 @@ namespace Orts.Simulation.RollingStocks
                         backwardCylinderPosition = crankCylinderPosition;
                     }
 
-/*
-                    Trace.TraceInformation("Cyl {0} Position {1} testcrankAng {2} crankAngle {3} CrankPosition {4} forwardCrankPosition {5} backwardCrankPosition {6}", i+1, LocomotiveAxle.AxlePositionRad, MathHelper.ToDegrees(testCrankAngle), MathHelper.ToDegrees(crankAngleRad), crankCylinderPosition, forwardCylinderPosition, backwardCylinderPosition);
-*/
+                    float normalisedCrankAngleRad = NormalisedCrankAngle( i );
 
                     // Crank angles
                     float sin = (float)Math.Sin(crankAngleRad);
@@ -5177,13 +5150,6 @@ namespace Orts.Simulation.RollingStocks
                         crankCylinderPressure = 0;
                     }
 
-#if DEBUG_STEAM_SLIP
-                    if (throttle > 0.01 && (absSpeedMpS < 0.2 || absSpeedMpS > 17.9 && absSpeedMpS < 18.1 || absSpeedMpS > 35.5 && absSpeedMpS < 35.9))
-                    {
-                        Trace.TraceInformation("Cylinder {0} CrankAngle {1} FwdCylPosition {2} FwdCylPressure {3} BwdCylPosition {4} BwdCylPressure {5} CrankPressure {6} ForwardStroke {7} Speed {8}", i, MathHelper.ToDegrees(crankAngleRad), forwardCylinderPosition, forwardCylinderPressure, backwardCylinderPosition, backwardCylinderPressure, crankCylinderPressure, forwardStroke, MpS.ToMpH(absSpeedMpS));
-                    }
-#endif
-
                     // Calculate wheel tangential forces = Force applied to wheels
 
                     float pistonForceLbf = Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * crankCylinderPressure;
@@ -5192,24 +5158,12 @@ namespace Orts.Simulation.RollingStocks
 
                     float tangentialForcelbf = tangentialCrankForceFactor * pistonForceLbf;
 
-
                     float reciprocatingInertiaAngleFactor = 0;
                     float connectRodInertiaAngleFactor = 0;
 
                     // Calculate the "angle variation factors" for the Inertia
-                    // Account for the position of the crosshead position. In other words it depends upon whether the Rods and Reciporating gear is above or below the axle.
-                    if (crankAngleRad > 0 && crankAngleRad < Math.PI)
-                    {
-                        // forward stroke
-                        reciprocatingInertiaAngleFactor = (cos + ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Cos(2 * crankAngleRad)));
-                        connectRodInertiaAngleFactor = (cos + ((CrankRadiusFt * RodCoGFt) / (ConnectRodLengthFt * ConnectRodLengthFt)) * (float)Math.Cos(2 * crankAngleRad));
-                    }
-                    else
-                    {   
-                        // reverse stroke
-                        reciprocatingInertiaAngleFactor = (cos - ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Cos(2 * crankAngleRad)));
-                        connectRodInertiaAngleFactor = (cos - ((CrankRadiusFt * RodCoGFt) / (ConnectRodLengthFt * ConnectRodLengthFt)) * (float)Math.Cos(2 * crankAngleRad));
-                    }
+                    reciprocatingInertiaAngleFactor = (cos + ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Cos(2 * crankAngleRad)));
+                    connectRodInertiaAngleFactor = (cos + ((CrankRadiusFt * RodCoGFt) / (ConnectRodLengthFt * ConnectRodLengthFt)) * (float)Math.Cos(2 * crankAngleRad));
 
                     // Calculate the speed factor to allow for variation in speed
                     // Adjust the above factor to allow for the speed of rotation on the parts - based upon Eq 8 (pg 21)
@@ -5223,7 +5177,8 @@ namespace Orts.Simulation.RollingStocks
                     float connectRodInertiaForcelbf = inertiaSpeedCorrectionFactor * connectRodInertiaAngleFactor * ConnectingRodWeightLb;
 
                     // Account for the position of the crosshead position. In other words it depends upon whether the Rods and Reciporating gear is above or below the axle.
-                    if (crankAngleRad > 0 && crankAngleRad < Math.PI)
+                    // The crosshead will be -ve for normalised angles between 0 - 180, and +ve for normalised angles between 180 - 360
+                    if (normalisedCrankAngleRad > 0 && normalisedCrankAngleRad < Math.PI )
                     {
                         reciprocatingInertiaForcelbf *= -1;
                         connectRodInertiaForcelbf *= -1;
@@ -5247,8 +5202,24 @@ namespace Orts.Simulation.RollingStocks
                     // To convert the force at the crank to the force at wheel tread = Crank Force * Cylinder Stroke / Diameter of Drive Wheel (inches) - internal friction
                     // should be deducted from this as well.
                     float tangentialWheelTreadForceLbf = tangentialCrankWheelForceLbf * Me.ToIn(CylinderStrokeM) / Me.ToIn(DrvWheelDiaM);
+
+#if DEBUG_STEAM_SLIP
+                    if (SpeedMpS > 17.88 && SpeedMpS < 18.5 || SpeedMpS > 34.0 && throttle == 0)
+                                        {
+                                            Trace.TraceInformation("Adhesion Debug - Cyl {0} Time {1} Speed {2} WheelRpM {3} CrankAngle {4} TotalTangForce {5} TangForce {6} TotalInertiaForce {7} TotalTangInertiaForce {8} RecipForce {9} RecipANgleFactor {10}  RecipWeight {11} SpeedFactor {12}  RodForce {13} RodAngleFactor {14} ForwardCyLPos {15} BackCylPos {16}  CrankCylPos {17} NormCrankAngle {18} AxlePosnRad {19}", i + 1, DebugTimerS, MpS.ToMpH(SpeedMpS), DrvWheelRevRpS * 60.0f, MathHelper.ToDegrees(crankAngleRad), tangentialWheelTreadForceLbf, tangentialForcelbf, totalInertiaForcelbf, totalTangentialInertiaForcelbf, reciprocatingInertiaForcelbf, reciprocatingInertiaAngleFactor, ReciprocatingWeightLb, inertiaSpeedCorrectionFactor, connectRodInertiaForcelbf, connectRodInertiaAngleFactor, forwardCylinderPosition, backwardCylinderPosition, crankCylinderPosition, normalisedCrankAngleRad, axlePostionRad);
+
+                                            DebugTimerS += elapsedClockSeconds;
+                                        }
+
+                    if (SpeedMpS > 18.5 && SpeedMpS < 19)
+                    {
+                        DebugTimerS = 0;
+                    }
+
+#endif
+
                     DisplayTangentialWheelTreadForceLbf += tangentialWheelTreadForceLbf;
-                    TractiveForceN += N.FromLbf(Math.Max(tangentialWheelTreadForceLbf, -1000));
+                    TractiveForceN += N.FromLbf(tangentialWheelTreadForceLbf);
 
                     // ++++ Adhesive Force Calculation ++++++
                     // Calculation of components for use in wheel adhesive force calculation
@@ -5266,7 +5237,8 @@ namespace Orts.Simulation.RollingStocks
                     float excessBalanceForcelbf = inertiaSpeedCorrectionFactor * excessBalanceWeightLb * sin;
 
                     // Account for the position of the crosshead position. In other words it depends upon whether the ExcessBalance is above or below the axle.
-                    if (crankAngleRad > 0 && crankAngleRad < Math.PI)
+                    // The crosshead will be -ve for normalised angles between 0 - 180, and +ve for normalised angles between 180 - 360
+                    if (normalisedCrankAngleRad > 0 && normalisedCrankAngleRad < Math.PI)
                     {
                         excessBalanceForcelbf *= -1;
                     }
@@ -5289,70 +5261,10 @@ namespace Orts.Simulation.RollingStocks
                     {
                         totalDrvWeightN += N.FromLbf(excessBalanceForcelbf - verticalThrustForcelbf);
                     }
-
-/*                    if (DisplayTangentialWheelTreadForceLbf > SteamStaticWheelForce || WheelSlip)
-                    {
-                        //  Trace.TraceInformation("MaxSpeed {0}", MaxLocoSpeedMpH);
-
-                        Trace.TraceInformation("Cylinder Pressures - Cylinder {0} CylinderPressure {1} forwardPressure {2} backwardPressure {3} InitialPressure {4} CutoffPressure {5} forwardPosition {6} backwardPosition {7}", i+1, crankCylinderPressure, forwardCylinderPressure, backwardCylinderPressure, slipInitialPressureAtmPSI, slipCutoffPressureAtmPSI, forwardCylinderPosition, backwardCylinderPosition);
-
-                        Trace.TraceInformation("Crank Angle {0} Cylinder Position {1} AxlePosition {2} Cylinder {3} CylArea {4} CylPress {5}", MathHelper.ToDegrees(crankAngleRad), crankCylinderPosition, MathHelper.ToDegrees(LocomotiveAxle.AxlePositionRad), i, Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)), crankCylinderPressure);
-
-                        Trace.TraceInformation("Tang.CrankFactor {0} RecInertiaFactor {1}, ConInertiaFactor {2} VerticalForceFactor {3} InertiaSpeedFactor {4}", tangentialCrankForceFactor, reciprocatingInertiaAngleFactor, connectRodInertiaAngleFactor, verticalThrustFactor, inertiaSpeedCorrectionFactor);
-
-                        Trace.TraceInformation("PistonForce {0}lbf RodForce {1}lbf RecForce {2}lbf", pistonForceLbf, connectRodInertiaForcelbf, reciprocatingInertiaForcelbf);
-
-                        Trace.TraceInformation("VerticalThrustForce {0}lbf ExcessBalanceForce {1}lbf", verticalThrustForcelbf, excessBalanceForcelbf);
-
-                    }
-*/
-
-#if DEBUG_STEAM_SLIP
-                    if (throttle > 0.01 && (absSpeedMpS < 0.2 || absSpeedMpS > 17.7 && absSpeedMpS < 18.2))
-                    {
-                      //  Trace.TraceInformation("MaxSpeed {0}", MaxLocoSpeedMpH);
-                       
-                        Trace.TraceInformation("Crank Angle {0} Cylinder Position {1} AxlePosition {2} Cylinder {3} CylArea {4} CylPress {5}", MathHelper.ToDegrees(crankAngleRad), crankCylinderPosition, MathHelper.ToDegrees(LocomotiveAxle.AxlePositionRad), i, Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)), crankCylinderPressure);
-
-                        Trace.TraceInformation("Tang.CrankFactor {0} RecInertiaFactor {1}, ConInertiaFactor {2} VerticalForceFactor {3} InertiaSpeedFactor {4}", tangentialCrankForceFactor, reciprocatingInertiaFactor, connectRodInertiaFactor, verticalThrustFactor, inertiaSpeedCorrectionFactor);
-
-                        Trace.TraceInformation("PistonForce {0} RodForce {1} RecForce {2}", pistonForceLbf, connectRodInertiaForce, reciprocatingInertiaForce);
-
-                        Trace.TraceInformation("VerticalThrustForce {0} ExcessBalanceForce {1}", verticalThrustForce, excessBalanceForce);
-                        
-                    }
-#endif
                 }
 
                 LocomotiveAxles[0].AxleWeightN = totalDrvWeightN + 9.81f * DrvWheelWeightKg;
                 SteamStaticWheelForce = N.ToLbf(totalDrvWeightN + 9.81f * DrvWheelWeightKg) * LocomotiveCoefficientFrictionHUD;
-/*
-                if (DisplayTangentialWheelTreadForceLbf > SteamStaticWheelForce)
-                {
-                    Trace.TraceInformation("Static Wheel Slip (initiated by static comparison) - TangForce {0}lbf: AdhesiveForce {1}lbf: Speed {2}mph, WheelSpeed {3}mph, CrankAngle {4}deg, AdvSlip {5}, AdvSlipWarn {6}, AxleInput - DriveForceCorrect {7}lbf, TotalDriveW {8}lbf, AxleWeightForce {9}lbf, Friction {10}, throttle {11}, Reverser {12} SlipThresholdSpeed {13}mph, WheelSlipSpeed {14}mph, AxleDriveForce {15}lbf", DisplayTangentialWheelTreadForceLbf, SteamStaticWheelForce, MpS.ToMpH(absSpeedMpS), MpS.ToMpH(WheelSpeedMpS), MathHelper.ToDegrees(testCrankAngle), WheelSlip, WheelSlipWarning, N.ToLbf(totalDrvWeightN), N.ToLbf(9.81f * DrvWheelWeightKg), N.ToLbf(LocomotiveAxle.AxleWeightN), LocomotiveCoefficientFrictionHUD, throttle, cutoff, MpS.ToMpH(LocomotiveAxle.WheelSlipThresholdMpS), MpS.ToMpH(LocomotiveAxle.SlipSpeedMpS), N.ToLbf(LocomotiveAxle.DriveForceN));
-
-                }
-
-                if (WheelSlip && DisplayTangentialWheelTreadForceLbf < SteamStaticWheelForce)
-                {
-                    Trace.TraceInformation("Static Wheel Slip (initiated by axle model) - TangForce {0}lbf: AdhesiveForce {1}lbf: Speed {2}mph, WheelSpeed {3}mph, CrankAngle {4}deg, AdvSlip {5}, AdvSlipWarn {6}, AxleInput - DriveForceCorrect {7}lbf, TotalDriveW {8}lbf, AxleWeightForce {9}lbf, Friction {10}, throttle {11}, Reverser {12} SlipThresholdSpeed {13}mph, WheelSlipSpeed {14}mph, AxleDriveForce {15}lbf", DisplayTangentialWheelTreadForceLbf, SteamStaticWheelForce, MpS.ToMpH(absSpeedMpS), MpS.ToMpH(WheelSpeedMpS), MathHelper.ToDegrees(testCrankAngle), WheelSlip, WheelSlipWarning, N.ToLbf(totalDrvWeightN), N.ToLbf(9.81f * DrvWheelWeightKg), N.ToLbf(LocomotiveAxle.AxleWeightN), LocomotiveCoefficientFrictionHUD, throttle, cutoff, MpS.ToMpH(LocomotiveAxle.WheelSlipThresholdMpS), MpS.ToMpH(LocomotiveAxle.SlipSpeedMpS), N.ToLbf(LocomotiveAxle.DriveForceN));
-
-                }
-
-*/
-
-#if DEBUG_STEAM_SLIP
-
-                if (throttle > 0.01 && (absSpeedMpS < 0.2 || absSpeedMpS > 17.7 && absSpeedMpS < 18.2))
-                {
-                    Trace.TraceInformation("RotationalForce {0} AdhesiveForce {1}", N.ToLbf(TractiveForceN), SteamStaticWheelForce);
-                    
-
-                }
-
-#endif
-
-
             }
             else // Set wheel speed if "simple" friction is used
             {
@@ -5399,6 +5311,20 @@ namespace Orts.Simulation.RollingStocks
             ApplyDirectionToTractiveForce();
             
             LocomotiveAxles[0].DriveForceN = TractiveForceN;
+        }
+
+        /// <summary>
+        /// Normalise crank angle so that it is a value between 0 and 360 starting at the real crank angle difference
+        /// </summary>
+        private float NormalisedCrankAngle(int cylinderNumber)
+        {
+            float normalisedCrankAngleRad = (float)MathHelper.WrapAngle(LocomotiveAxles[0].AxlePositionRad + WheelCrankAngleDiffRad[cylinderNumber]);
+            
+            if (normalisedCrankAngleRad < 0)
+            {
+                normalisedCrankAngleRad += (float)(2 * Math.PI);
+            }
+            return normalisedCrankAngleRad;
         }
 
 
