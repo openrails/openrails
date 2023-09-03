@@ -1464,7 +1464,7 @@ public List<CabView> CabViewList = new List<CabView>();
             // Ensure Drive Axles is set with a default value if user doesn't supply an OR value in ENG file
             if (LocoNumDrvAxles == 0)
             {
-                if (MSTSLocoNumDrvWheels != 0 && MSTSLocoNumDrvWheels < 6)
+                if (MSTSLocoNumDrvWheels != 0 && MSTSLocoNumDrvWheels < 7)
                 {
                     LocoNumDrvAxles = (int) MSTSLocoNumDrvWheels;
                 }
@@ -2795,6 +2795,9 @@ public List<CabView> CabViewList = new List<CabView>();
                 axle.BrakeRetardForceN = BrakeRetardForceN/LocomotiveAxles.Count;
                 axle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
                 axle.WheelRadiusM = DriverWheelRadiusM;
+                axle.WheelDistanceGaugeM = TrackGaugeM;
+                axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
+                axle.BogieRigidWheelBaseM = RigidWheelBaseM;
             }
             LocomotiveAxles.Update(elapsedClockSeconds);
             MotiveForceN = LocomotiveAxles.CompensatedForceN;
@@ -2808,10 +2811,10 @@ public List<CabView> CabViewList = new List<CabView>();
             // This enables steam locomotives to have different speeds for driven and non-driven wheels.
             if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
             {
-                WheelSpeedSlipMpS = LocomotiveAxles[0].AxleSpeedMpS;
+                WheelSpeedSlipMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
                 WheelSpeedMpS = SpeedMpS;
             }
-            else WheelSpeedMpS = LocomotiveAxles[0].AxleSpeedMpS; 
+            else WheelSpeedMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
 
         }
 
