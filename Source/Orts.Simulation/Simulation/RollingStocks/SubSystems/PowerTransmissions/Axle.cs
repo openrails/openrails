@@ -324,6 +324,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         protected float frictionN;
 
+        int count;
+
         public float FrictionN { set { frictionN = Math.Abs(value); } get { return frictionN; } }
 
         /// <summary>
@@ -359,7 +361,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 return motor;
             }
-
         }
 
         /// <summary>
@@ -490,7 +491,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// Bogie Rigid Wheel Base - distance between wheel in the bogie
         /// </summary>
         public float BogieRigidWheelBaseM;
-
 
         /// <summary>
         /// Axles in group of wheels
@@ -860,7 +860,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             AxlePositionRad = MathHelper.WrapAngle((float)AxlePositionRad);
         }
 
-
         /// <summary>
         /// Main Update method
         /// - computes slip characteristics to get new axle force
@@ -868,9 +867,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// - computes wheelslip indicators
         /// </summary>
         /// <param name="timeSpan"></param>
-        
-        int foo;
-        public virtual void Update(float timeSpan)
+         public virtual void Update(float timeSpan)
         {
             AdhesionLimit = 0.45f;
             forceToAccelerationFactor = WheelRadiusM * WheelRadiusM / totalInertiaKgm2;
@@ -878,7 +875,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             axleStaticForceN = AxleWeightN * SlipCharacteristics(0);
             ComputeWheelSlipThresholdMpS();
 
-            if (foo < 6 && foo++ == 5)
+            if (count < 6 && count++ == 5)
             {
                 TrainSpeedMpS = 10 / 3.6f;
                 Polach.Update();
