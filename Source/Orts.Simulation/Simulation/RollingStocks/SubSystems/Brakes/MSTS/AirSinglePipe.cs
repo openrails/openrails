@@ -53,6 +53,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float MaxAuxilaryChargingRatePSIpS = 1.684f;
         protected float BrakeInsensitivityPSIpS = 0.07f;
         protected float EmergencyValveActuationRatePSIpS = 0;
+        protected bool LegacyEmergencyValve = false;
         protected float EmergencyDumpValveRatePSIpS = 0;
         protected float EmergencyDumpValveTimerS = 120;
         protected float? EmergencyDumpStartTime;
@@ -173,6 +174,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             TripleValveSensitivityPSI = thiscopy.TripleValveSensitivityPSI;
             BrakeCylinderSpringPressurePSI = thiscopy.BrakeCylinderSpringPressurePSI;
             ServiceMaxCylPressurePSI = thiscopy.ServiceMaxCylPressurePSI;
+            LegacyEmergencyValve = thiscopy.LegacyEmergencyValve;
         }
 
         // Get the brake BC & BP for EOT conditions
@@ -341,6 +343,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             outf.Write((int)HoldingValve);
             outf.Write(UniformChargingActive);
             outf.Write(QuickServiceActive);
+            outf.Write(LegacyEmergencyValve);
         }
 
         public override void Restore(BinaryReader inf)
@@ -366,6 +369,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             HoldingValve = (ValveState)inf.ReadInt32();
             UniformChargingActive = inf.ReadBoolean();
             QuickServiceActive = inf.ReadBoolean();
+            LegacyEmergencyValve = inf.ReadBoolean();
         }
 
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)
@@ -422,7 +426,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (EngineRelayValveRatio == 0) EngineRelayValveRatio = RelayValveRatio;
 
             if ((Car as MSTSWagon).EmergencyReservoirPresent && EmergencyValveActuationRatePSIpS == 0)
+            {
                 EmergencyValveActuationRatePSIpS = 15;
+                LegacyEmergencyValve = true;
+            }
 
             if (InitialApplicationThresholdPSI == 0)
             {
@@ -473,8 +480,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             var prevState = TripleValveState;
             var valveType = (Car as MSTSWagon).BrakeValve;
             bool disableGradient = !(Car.Train.LeadLocomotive is MSTSLocomotive) && Car.Train.TrainType != Orts.Simulation.Physics.Train.TRAINTYPE.STATIC;
-            // Small workaround to allow trains to more reliably go into emergency after uncoupling
-            bool emergencyTripped = (Car.Train.TrainType == Orts.Simulation.Physics.Train.TRAINTYPE.STATIC) ?
+            // Legacy cars and static cars use a simpler check for emergency applications to ensure emergency applications occur despite simplified physics
+            bool emergencyTripped = (Car.Train.TrainType == Orts.Simulation.Physics.Train.TRAINTYPE.STATIC || LegacyEmergencyValve) ?
                 BrakeLine1PressurePSI <= 0.75f * EmergResPressurePSI * AuxCylVolumeRatio / (AuxCylVolumeRatio + 1) : Math.Max(-SmoothedBrakePipeChangePSIpS.SmoothedValue, 0) > EmergencyValveActuationRatePSIpS;
 
             if (valveType == MSTSWagon.BrakeValveType.Distributor)
