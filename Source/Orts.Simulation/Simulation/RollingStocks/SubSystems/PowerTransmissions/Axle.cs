@@ -508,11 +508,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float WheelAdhesion;
 
         /// <summary>
-        /// Old Wheel adhesion as calculated by Pacha
-        /// </summary>
-        public float OldWheelAdhesion;
-
-        /// <summary>
         /// Correction parameter of adhesion, it has proportional impact on adhesion limit
         /// Should be set to 1.0 for most cases
         /// </summary>
@@ -869,7 +864,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="timeSpan"></param>
          public virtual void Update(float timeSpan)
         {
-            AdhesionLimit = 0.45f;
             forceToAccelerationFactor = WheelRadiusM * WheelRadiusM / totalInertiaKgm2;
             Polach.Update();
             axleStaticForceN = AxleWeightN * SlipCharacteristics(0);
@@ -981,11 +975,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 var wheelDistanceGaugeMM = Axle.WheelDistanceGaugeM * 1000;
                 var GNm2 = 8.40E+10;
                 var wheelLoadN = Axle.AxleWeightN / (Axle.NumAxles * 2); // Assume two wheels per axle, and thus wheel weight will be have the value - multiple axles????
+                var wheelLoadkN = Axle.AxleWeightN / (Axle.NumAxles * 2 * 1000); // Assume two wheels per axle, and thus wheel weight will be have the value - multiple axles????
                 var Young_ModulusMPa = 207000;
 
                 // Calculate Hertzian values - assume 2b = 12mm.
                 var b_HertzianMM = 6.0;
-                var a_HertzianMM = (3.04f / 2) * Math.Sqrt(((wheelLoadN * wheelRadiusMM) / (2 * b_HertzianMM * Young_ModulusMPa)));
+                var a_HertzianMM = (3.04f / 2) * Math.Sqrt(((wheelLoadkN * wheelRadiusMM) / (2 * b_HertzianMM * Young_ModulusMPa)));
 
                 var hertzianMM = a_HertzianMM / b_HertzianMM;
                 var hertzianMM2 = hertzianMM * hertzianMM;
@@ -1065,23 +1060,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             slipSpeedMpS = Math.Abs(slipSpeedMpS);
             double fx = Polach.SlipCharacteristics(slipSpeedMpS);
             WheelAdhesion = (float)fx;
-/*
-            double umax = AdhesionLimit;
-            double x = slipSpeedMpS * 3.6 * umax / 0.7; // Slip percentage
-            double sqrt3 = Math.Sqrt(3);
-            if (x > sqrt3)
-            {
-                // At infinity, adhesion is 40% of maximum (Polach, 2005)
-                // The value must be lower than 85% for the formula to work
-                float inftyFactor = 0.4f;
-                OldWheelAdhesion = (float)(umax * ((sqrt3 / 2 - inftyFactor) * Math.Exp((sqrt3 - x) / (2 * sqrt3 - 4 * inftyFactor)) + inftyFactor));
-            }
-            else
-            {
-                OldWheelAdhesion = (float)(2.0f * umax * x / (1 + x * x));
-            }
-*/
-
             return fx;
         }
     }
