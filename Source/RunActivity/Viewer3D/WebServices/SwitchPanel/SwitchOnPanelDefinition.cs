@@ -115,6 +115,10 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     init2(ORTS.Common.Input.UserCommand.ControlBrakeHoseConnect, ORTS.Common.Input.UserCommand.ControlBrakeHoseDisconnect);
                     break;
 
+                case ORTS.Common.Input.UserCommand.ControlRetainersOn:
+                    init2(ORTS.Common.Input.UserCommand.ControlRetainersOn, ORTS.Common.Input.UserCommand.ControlRetainersOff);
+                    break;
+
                 default:
                     init1(userCommand);
                     break;
@@ -272,6 +276,9 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     break;
                 case ORTS.Common.Input.UserCommand.ControlCylinderCocks:
                     description = Viewer.Catalog.GetParticularString("SwitchPanel", "Cyl Cocks");
+                    break;
+                case ORTS.Common.Input.UserCommand.ControlRetainersOn:
+                    description = Viewer.Catalog.GetParticularString("SwitchPanel", "Retainers");
                     break;
             }
 
