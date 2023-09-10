@@ -454,6 +454,17 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             }
         }
 
+        private static void getStatusRetainers(ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            Train train = Viewer.PlayerLocomotive.Train;
+
+            if (train.RetainerSetting != Orts.Simulation.RollingStocks.SubSystems.Brakes.RetainerSetting.Exhaust)
+            {
+                switchOnPanelStatus.Status = train.RetainerPercent + "% " + Viewer.Catalog.GetString(GetStringAttribute.GetPrettyName(train.RetainerSetting));
+                switchOnPanelStatus.Color = "orange";
+            }
+        }
+
         public static void getStatus(UserCommand userCommand, ref SwitchOnPanelStatus switchOnPanelStatus)
         {
             switchOnPanelStatus.Status = "";
@@ -526,6 +537,9 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                         break;
                     case UserCommand.ControlCylinderCocks:
                         getStatusCylinderCocks(ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.ControlRetainersOn:
+                        getStatusRetainers(ref switchOnPanelStatus);
                         break;
                 }
             }

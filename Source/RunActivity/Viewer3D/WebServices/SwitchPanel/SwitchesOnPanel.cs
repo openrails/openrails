@@ -77,6 +77,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     SwitchesOnPanelArray[1, 5].initDefinition(UserCommand.ControlHeadlightIncrease);
                     SwitchesOnPanelArray[1, 6].initDefinition(UserCommand.ControlHandbrakeFull);
                     SwitchesOnPanelArray[1, 7].initDefinition(UserCommand.ControlBrakeHoseConnect);
+                    SwitchesOnPanelArray[1, 8].initDefinition(UserCommand.ControlRetainersOn);
                     break;
 
                 case TrainCar.EngineTypes.Diesel:
@@ -98,6 +99,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     SwitchesOnPanelArray[1, 5].initDefinition(UserCommand.ControlHeadlightIncrease);
                     SwitchesOnPanelArray[1, 6].initDefinition(UserCommand.ControlHandbrakeFull);
                     SwitchesOnPanelArray[1, 7].initDefinition(UserCommand.ControlBrakeHoseConnect);
+                    SwitchesOnPanelArray[1, 8].initDefinition(UserCommand.ControlRetainersOn);
                     break;
 
                 case TrainCar.EngineTypes.Steam:
@@ -116,6 +118,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     SwitchesOnPanelArray[1, 2].initDefinition(UserCommand.ControlHeadlightIncrease);
                     SwitchesOnPanelArray[1, 3].initDefinition(UserCommand.ControlHandbrakeFull);
                     SwitchesOnPanelArray[1, 4].initDefinition(UserCommand.ControlBrakeHoseConnect);
+                    SwitchesOnPanelArray[1, 5].initDefinition(UserCommand.ControlRetainersOn);
                     break;
 
                 case TrainCar.EngineTypes.Control:
