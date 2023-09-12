@@ -321,6 +321,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             outf.Write(HandbrakePercent);
             outf.Write(ReleaseRatePSIpS);
             outf.Write(RetainerPressureThresholdPSI);
+            outf.Write(RetainerDebugState);
             outf.Write(AutoCylPressurePSI);
             outf.Write(CylPressurePSI);
             outf.Write(AuxResPressurePSI);
@@ -345,6 +346,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             HandbrakePercent = inf.ReadSingle();
             ReleaseRatePSIpS = inf.ReadSingle();
             RetainerPressureThresholdPSI = inf.ReadSingle();
+            RetainerDebugState = inf.ReadString();
             AutoCylPressurePSI = inf.ReadSingle();
             CylPressurePSI = inf.ReadSingle();
             AuxResPressurePSI = inf.ReadSingle();
