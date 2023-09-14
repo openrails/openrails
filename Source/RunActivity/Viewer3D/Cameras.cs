@@ -1891,7 +1891,7 @@ namespace Orts.Viewer3D
                 var mstsLocomotive = newCar as MSTSLocomotive;
                 if (PrevCabWasRear != mstsLocomotive.UsingRearCab)
                     RotationYRadians += MathHelper.Pi;
-                ActViewPoint = mstsLocomotive.UsingRearCab ? 1 : 0;
+                ActViewPoint = mstsLocomotive.UsingRearCab && mstsLocomotive.HasFront3DCab ? 1 : 0;
                 PrevCabWasRear = mstsLocomotive.UsingRearCab;
                 SetCameraCar(newCar);
             }
