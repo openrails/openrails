@@ -5024,7 +5024,7 @@ public List<CabView> CabViewList = new List<CabView>();
                                 data = this.LocomotiveAxles[cvc.ControlId].DriveForceN / MaxForceN * MaxCurrentA;
                             data = Math.Abs(data);
                         }
-                        if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
+                        if (DynamicBrake && DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
                         {
                             data = DynamicBrakeForceN / MaxDynamicBrakeForceN * DynamicBrakeMaxCurrentA;
                             data = -Math.Abs(data); // Ensure that dynamic force is seen as a "-ve force", changes colour on the load meter
@@ -5043,7 +5043,7 @@ public List<CabView> CabViewList = new List<CabView>();
                             data = this.FilteredMotiveForceN;
                         else
                             data = this.LocomotiveAxles[cvc.ControlId].DriveForceN;
-                        if (DynamicBrakePercent > 0)
+                        if (DynamicBrake && DynamicBrakePercent > 0)
                         {
                             data = DynamicBrakeForceN;
                         }
@@ -5091,7 +5091,7 @@ public List<CabView> CabViewList = new List<CabView>();
                             data = Math.Abs(this.FilteredMotiveForceN);
                         else
                             data = Math.Abs(this.LocomotiveAxles[cvc.ControlId].DriveForceN);
-                        if (DynamicBrakePercent > 0)
+                        if (DynamicBrake && DynamicBrakePercent > 0)
                         {
                             data = -Math.Abs(DynamicBrakeForceN);
                         }
