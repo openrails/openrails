@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Orts.Parsers.Msts;
 using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
@@ -37,8 +38,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         public bool ForceControllerReleaseGraduated;
         bool BrakeControllerInitialised; // flag to allow PreviousNotchPosition to be initially set.
         MSTSNotch PreviousNotchPosition;
-
         bool EnforceMinimalReduction = false;
+
+        public InterpolatorDiesel2D DynamicBrakeBlendingTable;
 
         public MSTSBrakeController()
         {
@@ -70,6 +72,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             IntermediateValue = NotchController.IntermediateValue;
             SetUpdateValue(NotchController.UpdateValue);
             CurrentNotch = NotchController.CurrentNotch;
+            if (DynamicBrakeBlendingTable != null)
+            {
+                SetDynamicBrakeIntervention(DynamicBrakeBlendingTable.Get(CurrentValue(), SpeedMpS()));
+            }
             return value;
         }
 
