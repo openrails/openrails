@@ -162,7 +162,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             string description = "";
 
             /*
-             * this code could be simplified, however the GetParticularString is necessar to make translations possible
+             * this code could be simplified, however the GetParticularString is necessary to make translations possible
              */
             switch (userCommand)
             {
