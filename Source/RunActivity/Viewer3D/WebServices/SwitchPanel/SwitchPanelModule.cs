@@ -65,7 +65,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             return Task.CompletedTask;
         }
 
-        public static bool IsDown(UserCommand userCommand)
+        public static bool IsPressed(UserCommand userCommand)
         {
             if ((Connections > 0) && InitDone)
                 return SwitchesOnPanelStatic.IsPressed(userCommand);
@@ -73,7 +73,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                 return false;
         }
 
-        public static bool IsUp(UserCommand userCommand)
+        public static bool IsReleased(UserCommand userCommand)
         {
             if ((Connections > 0) && InitDone)
                 return SwitchesOnPanelStatic.IsReleased(userCommand);
