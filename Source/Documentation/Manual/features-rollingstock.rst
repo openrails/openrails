@@ -1250,7 +1250,7 @@ To have a volume difference, two lines as follows must be added to the wagon sec
   ORTSTrackSoundPassedThroughPercent ( 25 )
 
 Numbers in parenthesis may vary from 0 (no sound heard internally) to 100 (sound heard unattenuated).
-Note that, if these two lines are'nt added, but audio option "% of external sound heard internally" is set 
+Note that, if these two lines aren't added, but audio option "% of external sound heard internally" is set 
 to a value lower than 100, the above effect will  be still available with external sounds, but not with 
 the track sound.
 
