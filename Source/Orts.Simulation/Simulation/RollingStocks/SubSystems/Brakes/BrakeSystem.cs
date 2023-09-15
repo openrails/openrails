@@ -40,6 +40,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         public float BrakePipeVolumeM3 = 1.4e-2f;      // volume of a single brake line
         public bool ControllerRunningLock = false;  // Stops Running controller from becoming active until BP = EQ Res, used in EQ vacuum brakes
         public float BrakeCylFraction;
+        public float AngleCockOpeningTime = 30.0f;  // Time taken to fully open a closed anglecock
 
         /// <summary>
         /// Front brake hoses connection status
@@ -49,10 +50,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         /// Front angle cock opened/closed status
         /// </summary>
         public bool AngleCockAOpen = true;
+        public float AngleCockAOpenAmount = 1.0f; // 0 - anglecock fully closed, 1 - anglecock fully open, allows for partial opening
+        public float? AngleCockAOpenTime = null;   // Time elapsed since anglecock open command was sent
         /// <summary>
         /// Rear angle cock opened/closed status
         /// </summary>
         public bool AngleCockBOpen = true;
+        public float AngleCockBOpenAmount = 1.0f; // 0 - anglecock fully closed, 1 - anglecock fully open, allows for partial opening
+        public float? AngleCockBOpenTime = null;   // Time elapsed since anglecock open command was sent
         /// <summary>
         /// Auxiliary brake reservoir vent valve open/closed status
         /// </summary>

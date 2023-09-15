@@ -162,6 +162,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             float brakeShoeFriction = Car.GetBrakeShoeFrictionFactor();
             Car.HuDBrakeShoeFriction = Car.GetBrakeShoeFrictionCoefficientHuD();
 
+            // Update anglecock opening. Anglecocks set to gradually open over 30 seconds, but close instantly.
+            // Gradual opening prevents undesired emergency applications
+            UpdateAngleCockState(AngleCockAOpen, ref AngleCockAOpenAmount, ref AngleCockAOpenTime);
+            UpdateAngleCockState(AngleCockBOpen, ref AngleCockBOpenAmount, ref AngleCockBOpenTime);
+
             Car.BrakeRetardForceN = ( Car.MaxHandbrakeForceN * HandbrakePercent / 100) * brakeShoeFriction; // calculates value of force applied to wheel, independent of wheel skid
             if (Car.BrakeSkid) // Test to see if wheels are skiding to excessive brake force
             {
