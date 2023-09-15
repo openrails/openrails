@@ -2291,8 +2291,9 @@ namespace Orts.Simulation.RollingStocks
             {
                 var loco = this as MSTSLocomotive;
                 var i = (int)CabViewType.Rear;
-                if (loco == null || loco.CabView3D == null) return false;
-                return (loco.CabView3D.ViewPointList.Count > i);
+                if (loco == null || loco.CabView3D == null || loco.CabView3D.ViewPointList.Count <= i) return false;
+                var cabViewAngle = loco.CabView3D.ViewPointList[i].StartDirection.Y;
+                return ((cabViewAngle >= 90 && cabViewAngle <= 270) || (cabViewAngle <= -90 && cabViewAngle >= -270));
             }
         }
 
