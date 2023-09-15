@@ -327,7 +327,7 @@ namespace Orts.Viewer3D.RollingStock
                         train.DbfEvalValueChanged = true;//Debrief eval
                     }
                 }
-                else if (UserInput.IsReleased(command) || SwitchPanelModule.IsUp(command))
+                else if (UserInput.IsReleased(command))
                 {
                     UserInputCommands[command][0]();
                     //Debrief eval
