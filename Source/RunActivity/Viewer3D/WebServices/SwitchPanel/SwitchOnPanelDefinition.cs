@@ -37,7 +37,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             Viewer = viewer;
         }
 
-        public void init(UserCommand userCommand)
+        public void Init(UserCommand userCommand)
         {
             MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
 
@@ -126,7 +126,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
         }
 
         // empty button
-        public void initEmpty()
+        public void InitEmpty()
         {
             NoOffButtons = 0;
             UserCommand = new UserCommand[] { ORTS.Common.Input.UserCommand.GamePauseMenu };
@@ -312,7 +312,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             return ((SwitchOnPanelDefinition)obj).Description == Description;
         }
 
-        public static void deepCopy(SwitchOnPanelDefinition to, SwitchOnPanelDefinition from)
+        public static void DeepCopy(SwitchOnPanelDefinition to, SwitchOnPanelDefinition from)
         {
             to.NoOffButtons = from.NoOffButtons;
             to.Description = from.Description;

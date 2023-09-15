@@ -37,17 +37,17 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             Status = new SwitchOnPanelStatus(Viewer);
         }
 
-        public void initDefinition(UserCommand userCommand)
+        public void InitDefinition(UserCommand userCommand)
         {
-            Definition.init(userCommand);
+            Definition.Init(userCommand);
         }
 
-        public void initDefinitionEmpty()
+        public void InitDefinitionEmpty()
         {
-            Definition.initEmpty();
+            Definition.InitEmpty();
         }
 
-        public void initIs()
+        public void InitIs()
         {
             if (Definition.NoOffButtons == 1)
             {

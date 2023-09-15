@@ -44,107 +44,107 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             }
 
             foreach (SwitchOnPanel switchOnPanel in SwitchesOnPanelArray)
-                switchOnPanel.initDefinitionEmpty();
+                switchOnPanel.InitDefinitionEmpty();
 
             foreach (SwitchOnPanel switchOnPanel in SwitchesOnPanelArray)
-                switchOnPanel.initIs();
+                switchOnPanel.InitIs();
         }
 
-        public void setDefinitions(SwitchOnPanel[,] SwitchesOnPanelArray)
+        public void SetDefinitions(SwitchOnPanel[,] SwitchesOnPanelArray)
         {
             MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
 
             foreach (SwitchOnPanel switchOnPanel in SwitchesOnPanelArray)
-                switchOnPanel.initDefinitionEmpty();
+                switchOnPanel.InitDefinitionEmpty();
 
             switch (locomotive.EngineType)
             {
                 case TrainCar.EngineTypes.Electric:
-                    SwitchesOnPanelArray[0, 0].initDefinition(UserCommand.ControlDoorLeft);
-                    SwitchesOnPanelArray[0, 1].initDefinition(UserCommand.ControlForwards);
-                    SwitchesOnPanelArray[0, 2].initDefinition(UserCommand.ControlLight);
-                    SwitchesOnPanelArray[0, 3].initDefinition(UserCommand.ControlEmergencyPushButton); 
-                    SwitchesOnPanelArray[0, 4].initDefinition(UserCommand.ControlAlerter);
-                    SwitchesOnPanelArray[0, 5].initDefinition(UserCommand.ControlSander);
-                    SwitchesOnPanelArray[0, 6].initDefinition(UserCommand.ControlWiper);
-                    SwitchesOnPanelArray[0, 9].initDefinition(UserCommand.ControlDoorRight);
+                    SwitchesOnPanelArray[0, 0].InitDefinition(UserCommand.ControlDoorLeft);
+                    SwitchesOnPanelArray[0, 1].InitDefinition(UserCommand.ControlForwards);
+                    SwitchesOnPanelArray[0, 2].InitDefinition(UserCommand.ControlLight);
+                    SwitchesOnPanelArray[0, 3].InitDefinition(UserCommand.ControlEmergencyPushButton); 
+                    SwitchesOnPanelArray[0, 4].InitDefinition(UserCommand.ControlAlerter);
+                    SwitchesOnPanelArray[0, 5].InitDefinition(UserCommand.ControlSander);
+                    SwitchesOnPanelArray[0, 6].InitDefinition(UserCommand.ControlWiper);
+                    SwitchesOnPanelArray[0, 9].InitDefinition(UserCommand.ControlDoorRight);
 
-                    SwitchesOnPanelArray[1, 0].initDefinition(UserCommand.ControlBatterySwitchClose);
-                    SwitchesOnPanelArray[1, 1].initDefinition(UserCommand.ControlMasterKey);
-                    SwitchesOnPanelArray[1, 2].initDefinition(UserCommand.ControlPantograph1);
-                    SwitchesOnPanelArray[1, 3].initDefinition(UserCommand.ControlPantograph2);
-                    SwitchesOnPanelArray[1, 4].initDefinition(UserCommand.ControlCircuitBreakerClosingOrder);
-                    SwitchesOnPanelArray[1, 5].initDefinition(UserCommand.ControlHeadlightIncrease);
-                    SwitchesOnPanelArray[1, 6].initDefinition(UserCommand.ControlHandbrakeFull);
-                    SwitchesOnPanelArray[1, 7].initDefinition(UserCommand.ControlBrakeHoseConnect);
-                    SwitchesOnPanelArray[1, 8].initDefinition(UserCommand.ControlRetainersOn);
+                    SwitchesOnPanelArray[1, 0].InitDefinition(UserCommand.ControlBatterySwitchClose);
+                    SwitchesOnPanelArray[1, 1].InitDefinition(UserCommand.ControlMasterKey);
+                    SwitchesOnPanelArray[1, 2].InitDefinition(UserCommand.ControlPantograph1);
+                    SwitchesOnPanelArray[1, 3].InitDefinition(UserCommand.ControlPantograph2);
+                    SwitchesOnPanelArray[1, 4].InitDefinition(UserCommand.ControlCircuitBreakerClosingOrder);
+                    SwitchesOnPanelArray[1, 5].InitDefinition(UserCommand.ControlHeadlightIncrease);
+                    SwitchesOnPanelArray[1, 6].InitDefinition(UserCommand.ControlHandbrakeFull);
+                    SwitchesOnPanelArray[1, 7].InitDefinition(UserCommand.ControlBrakeHoseConnect);
+                    SwitchesOnPanelArray[1, 8].InitDefinition(UserCommand.ControlRetainersOn);
                     break;
 
                 case TrainCar.EngineTypes.Diesel:
-                    SwitchesOnPanelArray[0, 0].initDefinition(UserCommand.ControlDoorLeft);
-                    SwitchesOnPanelArray[0, 1].initDefinition(UserCommand.ControlForwards);
-                    SwitchesOnPanelArray[0, 2].initDefinition(UserCommand.ControlGearUp);
-                    SwitchesOnPanelArray[0, 3].initDefinition(UserCommand.ControlLight);
-                    SwitchesOnPanelArray[0, 4].initDefinition(UserCommand.ControlEmergencyPushButton);
-                    SwitchesOnPanelArray[0, 5].initDefinition(UserCommand.ControlAlerter);
-                    SwitchesOnPanelArray[0, 6].initDefinition(UserCommand.ControlSander);
-                    SwitchesOnPanelArray[0, 7].initDefinition(UserCommand.ControlWiper);
-                    SwitchesOnPanelArray[0, 9].initDefinition(UserCommand.ControlDoorRight);
+                    SwitchesOnPanelArray[0, 0].InitDefinition(UserCommand.ControlDoorLeft);
+                    SwitchesOnPanelArray[0, 1].InitDefinition(UserCommand.ControlForwards);
+                    SwitchesOnPanelArray[0, 2].InitDefinition(UserCommand.ControlGearUp);
+                    SwitchesOnPanelArray[0, 3].InitDefinition(UserCommand.ControlLight);
+                    SwitchesOnPanelArray[0, 4].InitDefinition(UserCommand.ControlEmergencyPushButton);
+                    SwitchesOnPanelArray[0, 5].InitDefinition(UserCommand.ControlAlerter);
+                    SwitchesOnPanelArray[0, 6].InitDefinition(UserCommand.ControlSander);
+                    SwitchesOnPanelArray[0, 7].InitDefinition(UserCommand.ControlWiper);
+                    SwitchesOnPanelArray[0, 9].InitDefinition(UserCommand.ControlDoorRight);
 
-                    SwitchesOnPanelArray[1, 0].initDefinition(UserCommand.ControlBatterySwitchClose);
-                    SwitchesOnPanelArray[1, 1].initDefinition(UserCommand.ControlMasterKey);
-                    SwitchesOnPanelArray[1, 2].initDefinition(UserCommand.ControlDieselPlayer);
-                    SwitchesOnPanelArray[1, 3].initDefinition(UserCommand.ControlDieselHelper);
-                    SwitchesOnPanelArray[1, 4].initDefinition(UserCommand.ControlTractionCutOffRelayClosingOrder);
-                    SwitchesOnPanelArray[1, 5].initDefinition(UserCommand.ControlHeadlightIncrease);
-                    SwitchesOnPanelArray[1, 6].initDefinition(UserCommand.ControlHandbrakeFull);
-                    SwitchesOnPanelArray[1, 7].initDefinition(UserCommand.ControlBrakeHoseConnect);
-                    SwitchesOnPanelArray[1, 8].initDefinition(UserCommand.ControlRetainersOn);
+                    SwitchesOnPanelArray[1, 0].InitDefinition(UserCommand.ControlBatterySwitchClose);
+                    SwitchesOnPanelArray[1, 1].InitDefinition(UserCommand.ControlMasterKey);
+                    SwitchesOnPanelArray[1, 2].InitDefinition(UserCommand.ControlDieselPlayer);
+                    SwitchesOnPanelArray[1, 3].InitDefinition(UserCommand.ControlDieselHelper);
+                    SwitchesOnPanelArray[1, 4].InitDefinition(UserCommand.ControlTractionCutOffRelayClosingOrder);
+                    SwitchesOnPanelArray[1, 5].InitDefinition(UserCommand.ControlHeadlightIncrease);
+                    SwitchesOnPanelArray[1, 6].InitDefinition(UserCommand.ControlHandbrakeFull);
+                    SwitchesOnPanelArray[1, 7].InitDefinition(UserCommand.ControlBrakeHoseConnect);
+                    SwitchesOnPanelArray[1, 8].InitDefinition(UserCommand.ControlRetainersOn);
                     break;
 
                 case TrainCar.EngineTypes.Steam:
-                    SwitchesOnPanelArray[0, 0].initDefinition(UserCommand.ControlDoorLeft);
-                    SwitchesOnPanelArray[0, 1].initDefinition(UserCommand.ControlForwards);
-                    SwitchesOnPanelArray[0, 2].initDefinition(UserCommand.ControlCylinderCocks);
-                    SwitchesOnPanelArray[0, 3].initDefinition(UserCommand.ControlLight);
-                    SwitchesOnPanelArray[0, 4].initDefinition(UserCommand.ControlEmergencyPushButton);
-                    SwitchesOnPanelArray[0, 5].initDefinition(UserCommand.ControlAlerter);
-                    SwitchesOnPanelArray[0, 6].initDefinition(UserCommand.ControlSander);
-                    SwitchesOnPanelArray[0, 7].initDefinition(UserCommand.ControlWiper);
-                    SwitchesOnPanelArray[0, 9].initDefinition(UserCommand.ControlDoorRight);
+                    SwitchesOnPanelArray[0, 0].InitDefinition(UserCommand.ControlDoorLeft);
+                    SwitchesOnPanelArray[0, 1].InitDefinition(UserCommand.ControlForwards);
+                    SwitchesOnPanelArray[0, 2].InitDefinition(UserCommand.ControlCylinderCocks);
+                    SwitchesOnPanelArray[0, 3].InitDefinition(UserCommand.ControlLight);
+                    SwitchesOnPanelArray[0, 4].InitDefinition(UserCommand.ControlEmergencyPushButton);
+                    SwitchesOnPanelArray[0, 5].InitDefinition(UserCommand.ControlAlerter);
+                    SwitchesOnPanelArray[0, 6].InitDefinition(UserCommand.ControlSander);
+                    SwitchesOnPanelArray[0, 7].InitDefinition(UserCommand.ControlWiper);
+                    SwitchesOnPanelArray[0, 9].InitDefinition(UserCommand.ControlDoorRight);
 
-                    SwitchesOnPanelArray[1, 0].initDefinition(UserCommand.ControlBatterySwitchClose);
-                    SwitchesOnPanelArray[1, 1].initDefinition(UserCommand.ControlMasterKey);
-                    SwitchesOnPanelArray[1, 2].initDefinition(UserCommand.ControlHeadlightIncrease);
-                    SwitchesOnPanelArray[1, 3].initDefinition(UserCommand.ControlHandbrakeFull);
-                    SwitchesOnPanelArray[1, 4].initDefinition(UserCommand.ControlBrakeHoseConnect);
-                    SwitchesOnPanelArray[1, 5].initDefinition(UserCommand.ControlRetainersOn);
+                    SwitchesOnPanelArray[1, 0].InitDefinition(UserCommand.ControlBatterySwitchClose);
+                    SwitchesOnPanelArray[1, 1].InitDefinition(UserCommand.ControlMasterKey);
+                    SwitchesOnPanelArray[1, 2].InitDefinition(UserCommand.ControlHeadlightIncrease);
+                    SwitchesOnPanelArray[1, 3].InitDefinition(UserCommand.ControlHandbrakeFull);
+                    SwitchesOnPanelArray[1, 4].InitDefinition(UserCommand.ControlBrakeHoseConnect);
+                    SwitchesOnPanelArray[1, 5].InitDefinition(UserCommand.ControlRetainersOn);
                     break;
 
                 case TrainCar.EngineTypes.Control:
                     // currently do not know what to do with this type as I have no example
-                    SwitchesOnPanelArray[0, 0].initDefinition(UserCommand.ControlDoorLeft);
-                    SwitchesOnPanelArray[0, 9].initDefinition(UserCommand.ControlDoorRight);
+                    SwitchesOnPanelArray[0, 0].InitDefinition(UserCommand.ControlDoorLeft);
+                    SwitchesOnPanelArray[0, 9].InitDefinition(UserCommand.ControlDoorRight);
                     break;
             }
 
-            SwitchesOnPanelArray[2, 0].initDefinition(UserCommand.GameChangeCab);
-            SwitchesOnPanelArray[2, 1].initDefinition(UserCommand.GameSwitchManualMode);
-            SwitchesOnPanelArray[2, 2].initDefinition(UserCommand.GameAutopilotMode);
-            SwitchesOnPanelArray[2, 3].initDefinition(UserCommand.GameSwitchAhead);
-            SwitchesOnPanelArray[2, 4].initDefinition(UserCommand.GameSwitchBehind);
-            SwitchesOnPanelArray[2, 5].initDefinition(UserCommand.GameClearSignalForward);
+            SwitchesOnPanelArray[2, 0].InitDefinition(UserCommand.GameChangeCab);
+            SwitchesOnPanelArray[2, 1].InitDefinition(UserCommand.GameSwitchManualMode);
+            SwitchesOnPanelArray[2, 2].InitDefinition(UserCommand.GameAutopilotMode);
+            SwitchesOnPanelArray[2, 3].InitDefinition(UserCommand.GameSwitchAhead);
+            SwitchesOnPanelArray[2, 4].InitDefinition(UserCommand.GameSwitchBehind);
+            SwitchesOnPanelArray[2, 5].InitDefinition(UserCommand.GameClearSignalForward);
 
-            SwitchesOnPanelArray[3, 0].initDefinition(UserCommand.GameMultiPlayerDispatcher);
-            SwitchesOnPanelArray[3, 1].initDefinition(UserCommand.DisplayTrackMonitorWindow);
-            SwitchesOnPanelArray[3, 2].initDefinition(UserCommand.DisplayTrainDrivingWindow);
-            SwitchesOnPanelArray[3, 3].initDefinition(UserCommand.DisplayNextStationWindow);
-            SwitchesOnPanelArray[3, 4].initDefinition(UserCommand.DisplaySwitchWindow);
-            SwitchesOnPanelArray[3, 5].initDefinition(UserCommand.DisplayTrainOperationsWindow);
-            SwitchesOnPanelArray[3, 6].initDefinition(UserCommand.DisplayTrainDpuWindow);
-            SwitchesOnPanelArray[3, 7].initDefinition(UserCommand.DisplayTrainListWindow);
-            SwitchesOnPanelArray[3, 8].initDefinition(UserCommand.DisplayEOTListWindow);
-            SwitchesOnPanelArray[3, 9].initDefinition(UserCommand.DisplayHUD);
+            SwitchesOnPanelArray[3, 0].InitDefinition(UserCommand.GameMultiPlayerDispatcher);
+            SwitchesOnPanelArray[3, 1].InitDefinition(UserCommand.DisplayTrackMonitorWindow);
+            SwitchesOnPanelArray[3, 2].InitDefinition(UserCommand.DisplayTrainDrivingWindow);
+            SwitchesOnPanelArray[3, 3].InitDefinition(UserCommand.DisplayNextStationWindow);
+            SwitchesOnPanelArray[3, 4].InitDefinition(UserCommand.DisplaySwitchWindow);
+            SwitchesOnPanelArray[3, 5].InitDefinition(UserCommand.DisplayTrainOperationsWindow);
+            SwitchesOnPanelArray[3, 6].InitDefinition(UserCommand.DisplayTrainDpuWindow);
+            SwitchesOnPanelArray[3, 7].InitDefinition(UserCommand.DisplayTrainListWindow);
+            SwitchesOnPanelArray[3, 8].InitDefinition(UserCommand.DisplayEOTListWindow);
+            SwitchesOnPanelArray[3, 9].InitDefinition(UserCommand.DisplayHUD);
         }
 
         private enum isTypeOfButtonAction
@@ -153,12 +153,12 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             isReleased
         }
 
-        public void setIsPressed(UserCommand userCommand)
+        public void SetIsPressed(UserCommand userCommand)
         {
             setIs(userCommand, isTypeOfButtonAction.isPressed);
         }
 
-        public void setIsReleased(UserCommand userCommand)
+        public void SetIsReleased(UserCommand userCommand)
         {
             setIs(userCommand, isTypeOfButtonAction.isReleased);
         }
@@ -332,7 +332,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
         {
             bool changed = false;
 
-            setDefinitions(SwitchesOnPanelArray);
+            SetDefinitions(SwitchesOnPanelArray);
 
             for (int i = 0; i < Rows; i++)
             {
@@ -343,16 +343,16 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
 
                     if (!switchOnPanel.Definition.Equals(previousSwitchOnPanel.Definition))
                     {
-                        SwitchOnPanelDefinition.deepCopy(previousSwitchOnPanel.Definition, switchOnPanel.Definition);
+                        SwitchOnPanelDefinition.DeepCopy(previousSwitchOnPanel.Definition, switchOnPanel.Definition);
                         // initIs just in case the amount of buttons has changed after a cab change
-                        switchOnPanel.initIs();
+                        switchOnPanel.InitIs();
                         changed = true;
                     }
 
                     SwitchOnPanelStatus.getStatus(switchOnPanel.Definition.UserCommand[0], ref switchOnPanel.Status);
                     if (!switchOnPanel.Status.Equals(previousSwitchOnPanel.Status))
                     {
-                        SwitchOnPanelStatus.deepCopy(previousSwitchOnPanel.Status, switchOnPanel.Status);
+                        SwitchOnPanelStatus.DeepCopy(previousSwitchOnPanel.Status, switchOnPanel.Status);
                         changed = true;
                     }
                 }

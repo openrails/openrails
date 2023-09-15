@@ -55,11 +55,11 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     break;
                 case "buttonDown":
                     value = int.Parse(switchPanelEvent.Data.ToString());
-                    SwitchesOnPanelStatic.setIsPressed((UserCommand)Enum.ToObject(typeof(UserCommand), value));
+                    SwitchesOnPanelStatic.SetIsPressed((UserCommand)Enum.ToObject(typeof(UserCommand), value));
                     break;
                 case "buttonUp":
                     value = int.Parse(switchPanelEvent.Data.ToString());
-                    SwitchesOnPanelStatic.setIsReleased((UserCommand)Enum.ToObject(typeof(UserCommand), value));
+                    SwitchesOnPanelStatic.SetIsReleased((UserCommand)Enum.ToObject(typeof(UserCommand), value));
                     break;
             }
             return Task.CompletedTask;
