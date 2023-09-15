@@ -563,7 +563,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                 ((SwitchOnPanelStatus)obj).Blinking == Blinking;
         }
 
-        public static void deepCopy(SwitchOnPanelStatus to, SwitchOnPanelStatus from)
+        public static void DeepCopy(SwitchOnPanelStatus to, SwitchOnPanelStatus from)
         {
             to.Status = from.Status;
             to.Color = from.Color;
