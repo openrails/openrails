@@ -2735,12 +2735,11 @@ namespace Orts.Simulation.RollingStocks
             var carIndex = Train.Cars.IndexOf(this);
             //Certain locomotives are testing as articulated wagons for some reason.
             if (WagonType != WagonTypes.Engine)
-                if (WheelAxles.Count >= 2)
-                    if (articulatedFront || articulatedRear)
-                    {
-                        WheelAxlesLoaded = true;
-                        SetUpWheelsArticulation(carIndex);
-                    }
+                if (WheelAxles.Count != 1 && (articulatedFront || articulatedRear))
+                {
+                    WheelAxlesLoaded = true;
+                    SetUpWheelsArticulation(carIndex);
+                }
         } // end SetUpWheels()
 
         protected void SetUpWheelsArticulation(int carIndex)
