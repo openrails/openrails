@@ -155,8 +155,6 @@ namespace Orts.Simulation.RollingStocks
         float PrevCombinedTenderWaterVolumeUKG;
         float PreviousTenderWaterVolumeUKG;
         public float MaxLocoTenderWaterMassKG = 1;         // Maximum read from Eng file - this value must be non-zero, if not defined in ENG file, can cause NaN errors
-        float RestoredMaxTotalCombinedWaterVolumeUKG; // Values to restore after game save
-        float RestoredCombinedTenderWaterVolumeUKG;     // Values to restore after game save
 
         // Tender
 
@@ -184,7 +182,6 @@ namespace Orts.Simulation.RollingStocks
         float baseStartTempK;     // Starting water temp
         float StartBoilerHeatBTU;
         public float BoilerMassLB;         // current total mass of water and steam in boiler (changes as boiler usage changes)
-        bool RestoredGame = false; // Flag to indicate that game is being restored. This will stop some values from being "initialised", as this will overwrite restored values.
 
         float BoilerKW;                 // power of boiler
         float MaxBoilerKW;              // power of boiler at full performance
@@ -971,15 +968,14 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Save(BinaryWriter outf)
         {
-            outf.Write(RestoredGame);
             outf.Write(BoilerHeatOutBTUpS);
             outf.Write(BoilerHeatInBTUpS);
             outf.Write(PreviousBoilerHeatOutBTUpS);
             outf.Write(PreviousBoilerHeatSmoothedBTU);
             outf.Write(BurnRateRawKGpS);
             outf.Write(TenderCoalMassKG);
-            outf.Write(RestoredMaxTotalCombinedWaterVolumeUKG);
-            outf.Write(RestoredCombinedTenderWaterVolumeUKG);
+            outf.Write(MaxTotalCombinedWaterVolumeUKG);
+            outf.Write(CombinedTenderWaterVolumeUKG);
             outf.Write(CumulativeWaterConsumptionLbs);
             outf.Write(CurrentAuxTenderWaterVolumeUKG);
             outf.Write(CurrentLocoTenderWaterVolumeUKG);
@@ -1035,15 +1031,14 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Restore(BinaryReader inf)
         {
-            RestoredGame = inf.ReadBoolean();
             BoilerHeatOutBTUpS = inf.ReadSingle();
             BoilerHeatInBTUpS = inf.ReadSingle();
             PreviousBoilerHeatOutBTUpS = inf.ReadSingle();
             PreviousBoilerHeatSmoothedBTU = inf.ReadSingle();
             BurnRateRawKGpS = inf.ReadSingle();
             TenderCoalMassKG = inf.ReadSingle();
-            RestoredMaxTotalCombinedWaterVolumeUKG = inf.ReadSingle();
-            RestoredCombinedTenderWaterVolumeUKG = inf.ReadSingle();
+            MaxTotalCombinedWaterVolumeUKG = inf.ReadSingle();
+            CombinedTenderWaterVolumeUKG = inf.ReadSingle();
             CumulativeWaterConsumptionLbs = inf.ReadSingle();
             CurrentAuxTenderWaterVolumeUKG = inf.ReadSingle();
             CurrentLocoTenderWaterVolumeUKG = inf.ReadSingle();
@@ -1450,12 +1445,6 @@ namespace Orts.Simulation.RollingStocks
 
             MaxTotalCombinedWaterVolumeUKG = (Kg.ToLb(MaxLocoTenderWaterMassKG) / WaterLBpUKG); // Initialise loco with tender water only - will be updated as appropriate
 
-            if (RestoredCombinedTenderWaterVolumeUKG > 1.0)// Check to see if this is a restored game -(assumed so if Restored >0), then set water controller values based upon saved values
-            {
-                MaxTotalCombinedWaterVolumeUKG = RestoredMaxTotalCombinedWaterVolumeUKG;
-                CombinedTenderWaterVolumeUKG = RestoredCombinedTenderWaterVolumeUKG;
-            }
-
             InitializeTenderWithWater();
 
             InitializeTenderWithCoal();
@@ -1509,11 +1498,9 @@ namespace Orts.Simulation.RollingStocks
                 Trace.TraceWarning("Evaporation Area not found in ENG file and has been set to {0} m^2", EvaporationAreaM2); // Advise player that Evaporation Area is missing from ENG file
             }
 
-            if (!RestoredGame)  // If this is not a restored game, then initialise these values
-            {
-                CylinderSteamUsageLBpS = 1.0f;  // Set to 1 to ensure that there are no divide by zero errors
-                WaterFraction = 0.9f;  // Initialise boiler water level at 90%
-            }
+            CylinderSteamUsageLBpS = 1.0f;  // Set to 1 to ensure that there are no divide by zero errors
+            WaterFraction = 0.9f;  // Initialise boiler water level at 90%
+            
             float MaxWaterFraction = 0.9f; // Initialise the max water fraction when the boiler starts
             if (BoilerEvapRateLbspFt2 == 0) // If boiler evaporation rate is not in ENG file then set a default value
             {
@@ -1895,39 +1882,36 @@ namespace Orts.Simulation.RollingStocks
 
             // Initialise Locomotive in a Hot or Cold Start Condition
 
-            if (!RestoredGame) // Only initialise the following values if game is not being restored.
+            if (HotStart)
             {
-                if (HotStart)
-                {
-                    // Hot Start - set so that FlueTemp is at maximum, boilerpressure slightly below max
-                    BoilerPressurePSI = MaxBoilerPressurePSI - 5.0f;
-                    baseStartTempK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]));
-                    BoilerStartkW = Kg.FromLb((BoilerPressurePSI / MaxBoilerPressurePSI) * TheoreticalMaxSteamOutputLBpS) * W.ToKW(W.FromBTUpS(SteamHeatPSItoBTUpLB[BoilerPressurePSI])); // Given pressure is slightly less then max, this figure should be slightly less, ie reduce TheoreticalMaxSteamOutputLBpS, for the time being assume a ratio of bp to MaxBP
-                    FlueTempK = (BoilerStartkW / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 * HeatMaterialThicknessFactor)) + baseStartTempK;
-                    BoilerMassLB = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI];
-                    BoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] * WaterHeatPSItoBTUpLB[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI] * SteamHeatPSItoBTUpLB[BoilerPressurePSI];
-                    StartBoilerHeatBTU = BoilerHeatBTU;
-                }
-                else
-                {
-                    // Cold Start - as per current
-                    BoilerPressurePSI = MaxBoilerPressurePSI * 0.66f; // Allow for cold start - start at 66% of max boiler pressure - check pressure value given heat in boiler????
-                    baseStartTempK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]));
-                    BoilerStartkW = Kg.FromLb((BoilerPressurePSI / MaxBoilerPressurePSI) * TheoreticalMaxSteamOutputLBpS) * W.ToKW(W.FromBTUpS(SteamHeatPSItoBTUpLB[BoilerPressurePSI]));
-                    FlueTempK = (BoilerStartkW / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 * HeatMaterialThicknessFactor)) + baseStartTempK;
-                    BoilerMassLB = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI];
-                    BoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] * WaterHeatPSItoBTUpLB[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI] * SteamHeatPSItoBTUpLB[BoilerPressurePSI];
-                }
-
-                WaterTempNewK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI])); // Initialise new boiler pressure
-                FireMassKG = IdealFireMassKG;
-
-                BoilerSteamHeatBTUpLB = SteamHeatPSItoBTUpLB[BoilerPressurePSI];
-                BoilerWaterHeatBTUpLB = WaterHeatPSItoBTUpLB[BoilerPressurePSI];
-                BoilerSteamDensityLBpFT3 = SteamDensityPSItoLBpFT3[BoilerPressurePSI];
-                BoilerWaterDensityLBpFT3 = WaterDensityPSItoLBpFT3[BoilerPressurePSI];
-
+                // Hot Start - set so that FlueTemp is at maximum, boilerpressure slightly below max
+                BoilerPressurePSI = MaxBoilerPressurePSI - 5.0f;
+                baseStartTempK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]));
+                BoilerStartkW = Kg.FromLb((BoilerPressurePSI / MaxBoilerPressurePSI) * TheoreticalMaxSteamOutputLBpS) * W.ToKW(W.FromBTUpS(SteamHeatPSItoBTUpLB[BoilerPressurePSI])); // Given pressure is slightly less then max, this figure should be slightly less, ie reduce TheoreticalMaxSteamOutputLBpS, for the time being assume a ratio of bp to MaxBP
+                FlueTempK = (BoilerStartkW / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 * HeatMaterialThicknessFactor)) + baseStartTempK;
+                BoilerMassLB = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI];
+                BoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] * WaterHeatPSItoBTUpLB[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI] * SteamHeatPSItoBTUpLB[BoilerPressurePSI];
+                StartBoilerHeatBTU = BoilerHeatBTU;
             }
+            else
+            {
+                // Cold Start - as per current
+                BoilerPressurePSI = MaxBoilerPressurePSI * 0.66f; // Allow for cold start - start at 66% of max boiler pressure - check pressure value given heat in boiler????
+                baseStartTempK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]));
+                BoilerStartkW = Kg.FromLb((BoilerPressurePSI / MaxBoilerPressurePSI) * TheoreticalMaxSteamOutputLBpS) * W.ToKW(W.FromBTUpS(SteamHeatPSItoBTUpLB[BoilerPressurePSI]));
+                FlueTempK = (BoilerStartkW / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 * HeatMaterialThicknessFactor)) + baseStartTempK;
+                BoilerMassLB = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI];
+                BoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] * WaterHeatPSItoBTUpLB[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI] * SteamHeatPSItoBTUpLB[BoilerPressurePSI];
+            }
+
+            WaterTempNewK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI])); // Initialise new boiler pressure
+            FireMassKG = IdealFireMassKG;
+
+            BoilerSteamHeatBTUpLB = SteamHeatPSItoBTUpLB[BoilerPressurePSI];
+            BoilerWaterHeatBTUpLB = WaterHeatPSItoBTUpLB[BoilerPressurePSI];
+            BoilerSteamDensityLBpFT3 = SteamDensityPSItoLBpFT3[BoilerPressurePSI];
+            BoilerWaterDensityLBpFT3 = WaterDensityPSItoLBpFT3[BoilerPressurePSI];
+
             DamperFactorManual = TheoreticalMaxSteamOutputLBpS / SpeedEquivMpS; // Calculate a factor for damper control that will vary with speed.
             BlowerSteamUsageFactor = 0.04f * MaxBoilerOutputLBpH / 3600 / MaxBoilerPressurePSI;
 
@@ -1986,7 +1970,6 @@ namespace Orts.Simulation.RollingStocks
                 Trace.TraceInformation("========================================================================================================================================================");
 
             }
-            RestoredGame = true; // Set flag for restored game indication
             #endregion
         }
 
@@ -2779,8 +2762,6 @@ namespace Orts.Simulation.RollingStocks
             }
 
             TenderWaterPercent = CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG;  // Calculate the current % of water in tender
-            RestoredMaxTotalCombinedWaterVolumeUKG = MaxTotalCombinedWaterVolumeUKG;
-            RestoredCombinedTenderWaterVolumeUKG = CombinedTenderWaterVolumeUKG;
             CurrentAuxTenderWaterVolumeUKG = (Kg.ToLb(Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG) * TenderWaterPercent; // Adjust water level in aux tender
             CurrentLocoTenderWaterVolumeUKG = (Kg.ToLb(MaxLocoTenderWaterMassKG) / WaterLBpUKG) * TenderWaterPercent; // Adjust water level in locomotive tender
             PrevCombinedTenderWaterVolumeUKG = CombinedTenderWaterVolumeUKG;   // Store value for next iteration
