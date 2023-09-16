@@ -2881,19 +2881,19 @@ namespace Orts.Viewer3D.RollingStock
             switch (ControlDiscrete.ControlType.Type)
             {
                 case CABViewControlTypes.ORTS_2DEXTERNALWIPERS:
-            var halfCycleS = CycleTimeS / 2f;
-            if (AnimationOn)
-            {
-                CumulativeTime += elapsedTime.ClockSeconds;
-                if (CumulativeTime > CycleTimeS && !animate)
-                    AnimationOn = false;
-                CumulativeTime %= CycleTimeS;
+                    var halfCycleS = CycleTimeS / 2f;
+                    if (AnimationOn)
+                    {
+                        CumulativeTime += elapsedTime.ClockSeconds;
+                        if (CumulativeTime > CycleTimeS && !animate)
+                            AnimationOn = false;
+                        CumulativeTime %= CycleTimeS;
 
-                if (CumulativeTime < halfCycleS)
-                    index = PercentToIndex(CumulativeTime / halfCycleS);
-                else
-                    index = PercentToIndex((CycleTimeS - CumulativeTime) / halfCycleS);
-            }
+                        if (CumulativeTime < halfCycleS)
+                            index = PercentToIndex(CumulativeTime / halfCycleS);
+                        else
+                            index = PercentToIndex((CycleTimeS - CumulativeTime) / halfCycleS);
+                    }
                     break;
                 
                 case CABViewControlTypes.ORTS_2DEXTERNALLEFTWINDOW:
@@ -2923,8 +2923,8 @@ namespace Orts.Viewer3D.RollingStock
                                 CumulativeTime = 0;
                             }
                         }
-            else
-            {
+                        else
+                        {
                             index = PercentToIndex((CycleTimeS - CumulativeTime) / CycleTimeS);
                             Locomotive.SoundHeardInternallyCorrection[soundCorrectionIndex] = (CycleTimeS - CumulativeTime) / CycleTimeS;
                             if (!AnimationOn)
