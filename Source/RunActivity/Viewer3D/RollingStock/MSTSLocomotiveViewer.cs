@@ -2185,6 +2185,8 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.LEFTDOOR:
                 case CABViewControlTypes.RIGHTDOOR:
                 case CABViewControlTypes.MIRRORS:
+                case CABViewControlTypes.ORTS_LEFTWINDOW:
+                case CABViewControlTypes.ORTS_RIGHTWINDOW:
                 case CABViewControlTypes.HORN:
                 case CABViewControlTypes.VACUUM_EXHAUSTER:
                 case CABViewControlTypes.WHISTLE:
@@ -2566,6 +2568,20 @@ namespace Orts.Viewer3D.RollingStock
                         }
                     ButtonState = buttonState;
                     break;
+                case CABViewControlTypes.ORTS_LEFTWINDOW:
+                case CABViewControlTypes.ORTS_RIGHTWINDOW:
+                    {
+                        bool left = (Control.ControlType.Type == CABViewControlTypes.ORTS_LEFTWINDOW);
+                        var windowIndex = (left ? 0 : 1) + 2 * (Locomotive.UsingRearCab ? 1 : 0);
+                        var state = Locomotive.WindowStates[windowIndex];
+                        int open = state >= MSTSWagon.WindowState.Opening ? 1 : 0;
+                        if (open != ChangedValue(open))
+                        {
+                            if (left) new ToggleWindowLeftCommand(Viewer.Log);
+                            else new ToggleWindowRightCommand(Viewer.Log);
+                        }
+                    }
+                    break;
 
                 // Train Control System controls
                 case CABViewControlTypes.ORTS_TCS:
@@ -2854,23 +2870,78 @@ namespace Orts.Viewer3D.RollingStock
             if (animate)
                 AnimationOn = true;
 
-            int index;
-            var halfCycleS = CycleTimeS / 2f;
-            if (AnimationOn)
+            int index = 0;
+            switch (ControlDiscrete.ControlType.Type)
             {
-                CumulativeTime += elapsedTime.ClockSeconds;
-                if (CumulativeTime > CycleTimeS && !animate)
-                    AnimationOn = false;
-                CumulativeTime %= CycleTimeS;
+                case CABViewControlTypes.ORTS_2DEXTERNALWIPERS:
+                    var halfCycleS = CycleTimeS / 2f;
+                    if (AnimationOn)
+                    {
+                        CumulativeTime += elapsedTime.ClockSeconds;
+                        if (CumulativeTime > CycleTimeS && !animate)
+                            AnimationOn = false;
+                        CumulativeTime %= CycleTimeS;
 
-                if (CumulativeTime < halfCycleS)
-                    index = PercentToIndex(CumulativeTime / halfCycleS);
-                else
-                    index = PercentToIndex((CycleTimeS - CumulativeTime) / halfCycleS);
-            }
-            else
-            {
-                index = 0;
+                        if (CumulativeTime < halfCycleS)
+                            index = PercentToIndex(CumulativeTime / halfCycleS);
+                        else
+                            index = PercentToIndex((CycleTimeS - CumulativeTime) / halfCycleS);
+                    }
+                    break;
+                
+                case CABViewControlTypes.ORTS_2DEXTERNALLEFTWINDOW:
+                case CABViewControlTypes.ORTS_2DEXTERNALRIGHTWINDOW:
+                    var windowIndex = Locomotive.UsingRearCab ? MSTSWagon.RightWindowRearIndex : MSTSWagon.LeftWindowFrontIndex;
+                    var soundCorrectionIndex = windowIndex;
+                    if (ControlDiscrete.ControlType.Type == CABViewControlTypes.ORTS_2DEXTERNALRIGHTWINDOW)
+                    {
+                        windowIndex = Locomotive.UsingRearCab ? MSTSWagon.LeftWindowRearIndex : MSTSWagon.RightWindowFrontIndex;
+                    }
+                    Locomotive.SoundHeardInternallyCorrection[soundCorrectionIndex] = 0;
+                    if (AnimationOn)
+                    {
+                        CumulativeTime += elapsedTime.ClockSeconds;
+                        if (CumulativeTime >= CycleTimeS)
+                        {
+                            AnimationOn = false;
+                            CumulativeTime = CycleTimeS;
+                        }
+                        if (Locomotive.WindowStates[windowIndex] == MSTSWagon.WindowState.Opening)
+                        {
+                            index = PercentToIndex(CumulativeTime / CycleTimeS);
+                            Locomotive.SoundHeardInternallyCorrection[soundCorrectionIndex] = CumulativeTime / CycleTimeS;
+                            if (!AnimationOn)
+                            {
+                                Locomotive.WindowStates[windowIndex] = MSTSWagon.WindowState.Open;
+                                CumulativeTime = 0;
+                            }
+                        }
+                        else
+                        {
+                            index = PercentToIndex((CycleTimeS - CumulativeTime) / CycleTimeS);
+                            Locomotive.SoundHeardInternallyCorrection[soundCorrectionIndex] = (CycleTimeS - CumulativeTime) / CycleTimeS;
+                            if (!AnimationOn)
+                            {
+                                Locomotive.WindowStates[windowIndex] = MSTSWagon.WindowState.Closed;
+                                CumulativeTime = 0;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        CumulativeTime = 0;
+                        if (Locomotive.WindowStates[windowIndex] == MSTSWagon.WindowState.Open)
+                        {
+                            index = PercentToIndex(1);
+                            Locomotive.SoundHeardInternallyCorrection[soundCorrectionIndex] = 1;
+                        }
+                        else
+                        {
+                            index = PercentToIndex(0);
+                            Locomotive.SoundHeardInternallyCorrection[soundCorrectionIndex] = 0;
+                        }
+                    }
+                    break;
             }
 
             PrepareFrameForIndex(frame, elapsedTime, index);
@@ -3248,6 +3319,10 @@ namespace Orts.Viewer3D.RollingStock
                         case CABViewControlTypes.ORTS_ITEM2CONTINUOUS:
                         case CABViewControlTypes.ORTS_ITEM1TWOSTATE:
                         case CABViewControlTypes.ORTS_ITEM2TWOSTATE:
+                        case CABViewControlTypes.ORTS_EXTERNALLEFTWINDOWFRONT:
+                        case CABViewControlTypes.ORTS_EXTERNALRIGHTWINDOWFRONT:
+                        case CABViewControlTypes.ORTS_EXTERNALLEFTWINDOWREAR:
+                        case CABViewControlTypes.ORTS_EXTERNALRIGHTWINDOWREAR:
                             //cvf file has no external wipers, left door, right door and mirrors key word
                             break;
                         default:
@@ -3328,6 +3403,8 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+
+            Locomotive.SoundHeardInternallyCorrection[0] = Locomotive.SoundHeardInternallyCorrection[1] = 0;
             foreach (var p in AnimateParts)
             {
                 if (p.Value.Type.Type >= CABViewControlTypes.EXTERNALWIPERS) //for wipers, doors and mirrors
@@ -3347,6 +3424,18 @@ namespace Orts.Viewer3D.RollingStock
                             break;
                         case CABViewControlTypes.MIRRORS:
                             p.Value.UpdateState(Locomotive.MirrorOpen, elapsedTime);
+                            break;
+                        case CABViewControlTypes.ORTS_EXTERNALLEFTWINDOWFRONT:
+                            PrepareFrameForWindow(MSTSWagon.LeftWindowFrontIndex, p.Value, elapsedTime);
+                            break;
+                        case CABViewControlTypes.ORTS_EXTERNALRIGHTWINDOWFRONT:
+                            PrepareFrameForWindow(MSTSWagon.RightWindowFrontIndex, p.Value, elapsedTime);
+                            break;
+                        case CABViewControlTypes.ORTS_EXTERNALLEFTWINDOWREAR:
+                            PrepareFrameForWindow(MSTSWagon.LeftWindowRearIndex, p.Value, elapsedTime);
+                            break;
+                        case CABViewControlTypes.ORTS_EXTERNALRIGHTWINDOWREAR:
+                            PrepareFrameForWindow(MSTSWagon.RightWindowRearIndex, p.Value, elapsedTime);
                             break;
                         case CABViewControlTypes.ORTS_ITEM1CONTINUOUS:
                             p.Value.UpdateLoop(Locomotive.GenericItem1, elapsedTime);
@@ -3454,6 +3543,19 @@ namespace Orts.Viewer3D.RollingStock
 
             if (TrainCarShape != null)
                 TrainCarShape.ConditionallyPrepareFrame(frame, elapsedTime, MatrixVisible);
+        }
+
+        internal void PrepareFrameForWindow(int windowIndex, AnimatedPartMultiState anim, ElapsedTime elapsedTime)
+        {
+            if (Locomotive.WindowStates[windowIndex] == MSTSWagon.WindowState.Closed) anim.SetState(false);
+            else if (Locomotive.WindowStates[windowIndex] == MSTSWagon.WindowState.Open) anim.SetState(true);
+            var animationFraction =  anim.UpdateAndReturnState(Locomotive.WindowStates[windowIndex] >= MSTSWagon.WindowState.Opening, elapsedTime);
+            if (animationFraction == 0 && Locomotive.WindowStates[windowIndex] < MSTSWagon.WindowState.Opening)
+                Locomotive.WindowStates[windowIndex] = MSTSWagon.WindowState.Closed;
+            else if (animationFraction == 1 && Locomotive.WindowStates[windowIndex] >= MSTSWagon.WindowState.Opening)
+                Locomotive.WindowStates[windowIndex] = MSTSWagon.WindowState.Open;
+            if (Locomotive.UsingRearCab ^ windowIndex < 2)
+                Locomotive.SoundHeardInternallyCorrection[windowIndex > 1 ? windowIndex - 2 : windowIndex] = animationFraction;
         }
 
         internal override void Mark()

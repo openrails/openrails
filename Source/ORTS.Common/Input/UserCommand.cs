@@ -163,6 +163,8 @@
         [GetString("Control Pantograph 2")] ControlPantograph2,
         [GetString("Control Pantograph 3")] ControlPantograph3,
         [GetString("Control Pantograph 4")] ControlPantograph4,
+        [GetString("Control Window Left")] ControlWindowLeft,
+        [GetString("Control Window Right")] ControlWindowRight,
         [GetString("Control Battery Close")] ControlBatterySwitchClose,
         [GetString("Control Battery Open")] ControlBatterySwitchOpen,
         [GetString("Control Master Key")] ControlMasterKey,
