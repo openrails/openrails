@@ -1676,11 +1676,13 @@ namespace Orts.Viewer3D
         void PlayerLocomotiveChanged(object sender, EventArgs e)
         {
             PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
-            CabCamera.Activate(); // If you need anything else here the cameras should check for it.
-            SetCommandReceivers();
             ThreeDimCabCamera.ChangeCab(Simulator.PlayerLocomotive);
             HeadOutForwardCamera.ChangeCab(Simulator.PlayerLocomotive);
             HeadOutBackCamera.ChangeCab(Simulator.PlayerLocomotive);
+            if (!Simulator.PlayerLocomotive.HasFront3DCab && !Simulator.PlayerLocomotive.HasRear3DCab)
+                CabCamera.Activate(); // If you need anything else here the cameras should check for it.
+            else ThreeDimCabCamera.Activate();
+            SetCommandReceivers();
         }
 
         // change reference to player train when switching train in Timetable mode
