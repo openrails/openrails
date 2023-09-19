@@ -39,6 +39,7 @@ using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.Popups;
 using Orts.Viewer3D.Processes;
 using Orts.Viewer3D.RollingStock;
+using Orts.Viewer3D.WebServices.SwitchPanel;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Scripting.Api;
@@ -857,6 +858,8 @@ namespace Orts.Viewer3D
             if (Simulator.ActivityRun != null) ActivityWindow.PrepareFrame(elapsedTime, true);
 
             WindowManager.PrepareFrame(frame, elapsedTime);
+
+            SwitchPanelModule.SendSwitchPanelIfChanged();
         }
 
         private void LoadDefectCarSound(TrainCar car, string filename)
