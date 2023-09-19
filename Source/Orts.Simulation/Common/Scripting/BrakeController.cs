@@ -277,6 +277,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         /// <returns>The nullable state fraction</returns>
         public abstract float? GetStateFraction();
+        public virtual string GetStateName()
+        {
+            return ControllerStateDictionary.Dict[GetState()];
+        }
     }
 
     public enum BrakeControllerEvent
