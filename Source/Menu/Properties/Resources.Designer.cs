@@ -93,6 +93,16 @@ namespace ORTS.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap RailDriverLegend {
+            get {
+                object obj = ResourceManager.GetObject("RailDriverLegend", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap info_18 {
             get {
                 object obj = ResourceManager.GetObject("info_18", resourceCulture);

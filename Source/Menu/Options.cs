@@ -189,6 +189,9 @@ namespace ORTS
             // Keyboard tab
             InitializeKeyboardSettings();
 
+            // Raildriver Tab
+            InitializeRailDriverSettings();
+
             // DataLogger tab
             var dictionaryDataLoggerSeparator = new Dictionary<string, string>();
             dictionaryDataLoggerSeparator.Add("comma", catalog.GetString("comma"));
@@ -473,6 +476,9 @@ namespace ORTS
 
             // Keyboard tab
             // These are edited live.
+
+            // Raildriver Tab
+            SaveRailDriverSettings();
 
             // DataLogger tab
             Settings.DataLoggerSeparator = comboDataLoggerSeparator.SelectedValue.ToString();
