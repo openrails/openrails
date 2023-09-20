@@ -313,8 +313,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             float value = stf.ReadFloat(STFReader.UNITS.None, null);
                             int smooth = stf.ReadInt(null);
                             string type = stf.ReadString();
-                            Notches.Add(new MSTSNotch(value, smooth, type, stf));
-                            if (type != ")") stf.SkipRestOfBlock();
+                            string name = null;
+                            while(type != ")" && !stf.EndOfBlock())
+                            {
+                                switch (stf.ReadItem().ToLower())
+                                {
+                                    case "(":
+                                        stf.SkipRestOfBlock();
+                                        break;
+                                    case "ortslabel":
+                                        name = stf.ReadStringBlock(null);
+                                        break;
+                                }
+                            }
+                            Notches.Add(new MSTSNotch(value, smooth, type, name, stf));
                         }),
                     });
                     break;
@@ -484,7 +496,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         {
             if (Script != null)
             {
-                string state = ControllerStateDictionary.Dict[Script.GetState()];
+                string state = Script.GetStateName();
                 string fraction = GetStateFractionScripted();
 
                 if (String.IsNullOrEmpty(state) && String.IsNullOrEmpty(fraction))

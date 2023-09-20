@@ -1202,6 +1202,7 @@ namespace Orts.Simulation.RollingStocks
             DynamicBrakeCommandStartTime = locoCopy.DynamicBrakeCommandStartTime;
             DynamicBrakeBlendingOverride = locoCopy.DynamicBrakeBlendingOverride;
             DynamicBrakeBlendingForceMatch = locoCopy.DynamicBrakeBlendingForceMatch;
+            DynamicBrakeControllerSetupLock = locoCopy.DynamicBrakeControllerSetupLock;
 
             MainPressureUnit = locoCopy.MainPressureUnit;
             BrakeSystemPressureUnits = locoCopy.BrakeSystemPressureUnits;
@@ -4454,6 +4455,11 @@ namespace Orts.Simulation.RollingStocks
     #region DynamicBrakeController
     public void StartDynamicBrakeIncrease(float? target)
         {
+            if (Direction == Direction.N)
+            {
+                Simulator.Confirmer.Warning(CabControl.DynamicBrake, CabSetting.Warn1);
+                return;
+            }
             AlerterReset(TCSEvent.DynamicBrakeChanged);
             if (CruiseControl != null && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && (CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl ||
                 (CruiseControl.DisableCruiseControlOnThrottleAndZeroForce && CruiseControl.SelectedMaxAccelerationPercent == 0)))
@@ -4492,6 +4498,11 @@ namespace Orts.Simulation.RollingStocks
 
         public void StartDynamicBrakeDecrease(float? target)
         {
+            if (Direction == Direction.N)
+            {
+                Simulator.Confirmer.Warning(CabControl.DynamicBrake, CabSetting.Warn1);
+                return;
+            }
             AlerterReset(TCSEvent.DynamicBrakeChanged);
             if (!CanUseDynamicBrake())
                 return;
@@ -4573,6 +4584,11 @@ namespace Orts.Simulation.RollingStocks
 
         public void SetDynamicBrakePercent(float percent)
         {
+            if (Direction == Direction.N)
+            {
+                Simulator.Confirmer.Warning(CabControl.DynamicBrake, CabSetting.Warn1);
+                return;
+            }
             if (!CanUseDynamicBrake())
                 return;
             DynamicBrakeController.SetPercent(percent);
@@ -4581,6 +4597,11 @@ namespace Orts.Simulation.RollingStocks
 
         public void SetDynamicBrakePercentWithSound(float percent)
         {
+            if (Direction == Direction.N)
+            {
+                Simulator.Confirmer.Warning(CabControl.DynamicBrake, CabSetting.Warn1);
+                return;
+            }
             if (!CanUseDynamicBrake())
                 return;
             var oldDynamicBrakePercent = DynamicBrakeController.CurrentValue * 100;

@@ -382,6 +382,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 return ControllerState.Dummy;
         }
 
+        public override string GetStateName()
+        {
+            if (!EmergencyBrakingPushButton() && !TCSEmergencyBraking() && !TCSFullServiceBraking() &&
+                !OverchargeButtonPressed() && !QuickReleaseButtonPressed() &&
+                NotchController != null && NotchController.NotchCount() > 0)
+            {
+                var notch = NotchController.GetCurrentNotch();
+                if (!string.IsNullOrEmpty(notch.Name))
+                    return notch.Name;
+            }
+            return base.GetStateName();
+        }
+
         public override float? GetStateFraction()
         {
             if (EmergencyBrakingPushButton() || TCSEmergencyBraking() || TCSFullServiceBraking() || QuickReleaseButtonPressed() || OverchargeButtonPressed())
