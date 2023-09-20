@@ -1197,6 +1197,7 @@ public List<CabView> CabViewList = new List<CabView>();
             DynamicBrakeCommandStartTime = locoCopy.DynamicBrakeCommandStartTime;
             DynamicBrakeBlendingOverride = locoCopy.DynamicBrakeBlendingOverride;
             DynamicBrakeBlendingForceMatch = locoCopy.DynamicBrakeBlendingForceMatch;
+            DynamicBrakeControllerSetupLock = locoCopy.DynamicBrakeControllerSetupLock;
 
             MainPressureUnit = locoCopy.MainPressureUnit;
             BrakeSystemPressureUnits = locoCopy.BrakeSystemPressureUnits;
@@ -4448,6 +4449,11 @@ public List<CabView> CabViewList = new List<CabView>();
     #region DynamicBrakeController
     public void StartDynamicBrakeIncrease(float? target)
         {
+            if (Direction == Direction.N)
+            {
+                Simulator.Confirmer.Warning(CabControl.DynamicBrake, CabSetting.Warn1);
+                return;
+            }
             AlerterReset(TCSEvent.DynamicBrakeChanged);
             if (CruiseControl != null && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && (CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl ||
                 (CruiseControl.DisableCruiseControlOnThrottleAndZeroForce && CruiseControl.SelectedMaxAccelerationPercent == 0)))
@@ -4486,6 +4492,11 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public void StartDynamicBrakeDecrease(float? target)
         {
+            if (Direction == Direction.N)
+            {
+                Simulator.Confirmer.Warning(CabControl.DynamicBrake, CabSetting.Warn1);
+                return;
+            }
             AlerterReset(TCSEvent.DynamicBrakeChanged);
             if (!CanUseDynamicBrake())
                 return;
@@ -4567,6 +4578,11 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public void SetDynamicBrakePercent(float percent)
         {
+            if (Direction == Direction.N)
+            {
+                Simulator.Confirmer.Warning(CabControl.DynamicBrake, CabSetting.Warn1);
+                return;
+            }
             if (!CanUseDynamicBrake())
                 return;
             DynamicBrakeController.SetPercent(percent);
@@ -4575,6 +4591,11 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public void SetDynamicBrakePercentWithSound(float percent)
         {
+            if (Direction == Direction.N)
+            {
+                Simulator.Confirmer.Warning(CabControl.DynamicBrake, CabSetting.Warn1);
+                return;
+            }
             if (!CanUseDynamicBrake())
                 return;
             var oldDynamicBrakePercent = DynamicBrakeController.CurrentValue * 100;
