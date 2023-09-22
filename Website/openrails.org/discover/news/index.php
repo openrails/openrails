@@ -1,4 +1,4 @@
-<?php include "../../shared/head.php" ?>
+<?php include "../../shared/head.php" ?> 
     <link rel="stylesheet" href="../../shared/iframe/iframe.css" type="text/css" />
   </head>
 
@@ -15,6 +15,10 @@
 		<div class="row">
 			<div class="col-md-1"></div>
 			<div class="col-md-5">
+        <h2>Jul 2023</h2>
+        <p>
+          Train Simulations publishes new <a href="https://www.trainsimulations.net/sp-shasta">Southern Pacific Shasta</a> route.
+        </p>
         <h2>Jan 2023 - Portugal '79</h2>
         <p>
           <a href="https://github.com/cpvirtual/OR_CPV.git">Portugal '79</a> has been published. 
