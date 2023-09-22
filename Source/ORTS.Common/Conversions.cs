@@ -573,6 +573,7 @@ namespace ORTS.Common
         public static string kN = Catalog.GetString("kN");
         public static string lbf = Catalog.GetString("lbf");
         public static string klbf = Catalog.GetString("klbf");
+        public static string deg = Catalog.GetString("°");
 
         /// <summary>
         /// Formatted unlocalized speed string, used in reports and logs.
@@ -812,6 +813,11 @@ namespace ORTS.Common
             }
 
             return String.Format(CultureInfo.CurrentCulture, format, pressureOut);
+        }
+
+        public static string FormatAngleDeg(float angleDeg)
+        {
+            return String.Format(CultureInfo.CurrentCulture, "{0:F0} {1}", angleDeg, deg);
         }
 
         /// <summary>
