@@ -77,6 +77,7 @@ using System.IO;
 using System.Text;
 using Event = Orts.Common.Event;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using Orts.Simulation;
 
 namespace Orts.Simulation.RollingStocks
 {
@@ -101,6 +102,7 @@ namespace Orts.Simulation.RollingStocks
         public MSTSNotchController FuelController = new MSTSNotchController(0, 1, 0.01f); // Could be coal, wood, oil or even peat !
         public MSTSNotchController SmallEjectorController = new MSTSNotchController(0, 1, 0.1f);
         public MSTSNotchController LargeEjectorController = new MSTSNotchController(0, 1, 0.1f);
+        public MSTSNotchController SteamBoosterController = new MSTSNotchController(0, 1, 0.1f);
 
         float DebugTimerS;
 
@@ -124,6 +126,7 @@ namespace Orts.Simulation.RollingStocks
         bool FullBoilerHeat = false;    // Boiler heat has exceeded max possible heat in boiler (max operating steam pressure)
         bool FullMaxPressBoilerHeat = false; // Boiler heat has exceed the max total possible heat in boiler (max safety valve pressure)
         bool ShovelAnyway = false; // Predicts when the AI fireman should be increasing the fire burn rate despite the heat in the boiler
+        bool SteamBoosterControllerFitted = false;
         /// <summary>
         /// Grate limit of locomotive exceedeed?
         /// </summary>
@@ -820,6 +823,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(enginecontrollers(dampersfront": DamperController.Parse(stf); break;
                 case "engine(enginecontrollers(shovel": FiringRateController.Parse(stf); break;
                 case "engine(enginecontrollers(firedoor": FireboxDoorController.Parse(stf); break;
+                case "engine(enginecontrollers(steambooster": SteamBoosterController.Parse(stf); SteamBoosterControllerFitted = true; break;
                 case "engine(effects(steamspecialeffects": ParseEffects(lowercasetoken, stf); break;
                 case "engine(ortsgratearea": GrateAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
                 case "engine(superheater": SuperheaterFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
@@ -933,6 +937,7 @@ namespace Orts.Simulation.RollingStocks
             FireboxDoorController = (MSTSNotchController)locoCopy.FireboxDoorController.Clone();
             SmallEjectorController = (MSTSNotchController)locoCopy.SmallEjectorController.Clone();
             LargeEjectorController = (MSTSNotchController)locoCopy.LargeEjectorController.Clone();
+            SteamBoosterController = (MSTSNotchController)locoCopy.SteamBoosterController.Clone();
             GrateAreaM2 = locoCopy.GrateAreaM2;
             SuperheaterFactor = locoCopy.SuperheaterFactor;
             EvaporationAreaM2 = locoCopy.EvaporationAreaM2;
@@ -957,6 +962,7 @@ namespace Orts.Simulation.RollingStocks
             IsFixGeared = locoCopy.IsFixGeared;
             IsSelectGeared = locoCopy.IsSelectGeared;
             LargeEjectorControllerFitted = locoCopy.LargeEjectorControllerFitted;
+            SteamBoosterControllerFitted = locoCopy.SteamBoosterControllerFitted;
             CylinderExhausttoCutoff = locoCopy.CylinderExhausttoCutoff;
             CylinderCompressiontoCutoff = locoCopy.CylinderCompressiontoCutoff;
             CylinderAdmissiontoCutoff = locoCopy.CylinderAdmissiontoCutoff;
@@ -1019,6 +1025,7 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Save(FiringRateController, outf);
             ControllerFactory.Save(SmallEjectorController, outf);
             ControllerFactory.Save(LargeEjectorController, outf);
+            ControllerFactory.Save(SteamBoosterController, outf);
             outf.Write(FuelBurnRateSmoothedKGpS);
             outf.Write(BoilerHeatSmoothedBTU);
             outf.Write(FuelRateSmoothed);
@@ -1082,6 +1089,7 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Restore(FiringRateController, inf);
             ControllerFactory.Restore(SmallEjectorController, inf);
             ControllerFactory.Restore(LargeEjectorController, inf);
+            ControllerFactory.Restore(SteamBoosterController, inf);
             FuelBurnRateSmoothedKGpS = inf.ReadSingle();
             BurnRateSmoothKGpS.ForceSmoothValue(FuelBurnRateSmoothedKGpS);
             BoilerHeatSmoothedBTU = inf.ReadSingle();
@@ -2593,6 +2601,15 @@ namespace Orts.Simulation.RollingStocks
                     if (LargeEjectorController.UpdateValue < 0.0)
                         Simulator.Confirmer.UpdateWithPerCent(CabControl.LargeEjector, CabSetting.Decrease, LargeEjectorController.CurrentValue * 100);
                 }
+            }
+
+            SteamBoosterController.Update(elapsedClockSeconds);
+            if (IsPlayerTrain)
+            {
+                if (SteamBoosterController.UpdateValue > 0.0)
+                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamBooster, CabSetting.Increase, SteamBoosterController.CurrentValue * 100);
+                if (SteamBoosterController.UpdateValue < 0.0)
+                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamBooster, CabSetting.Decrease, SteamBoosterController.CurrentValue * 100);
             }
 
             Injector1Controller.Update(elapsedClockSeconds);
@@ -6123,6 +6140,9 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.REVERSER_PLATE:
                     data = Train.MUReverserPercent / 100f;
                     break;
+                case CABViewControlTypes.STEAM_BOOSTER:
+                    data = SteamBoosterController.CurrentValue;
+                    break;
                 case CABViewControlTypes.CYL_COCKS:
                     data = CylinderCocksAreOpen ? 1 : 0;
                     break;
@@ -7175,7 +7195,71 @@ public void SteamStartGearBoxIncrease()
 
         }
 
-        //Small Ejector Controller
+        #region Steam booster controller
+
+        public void StartSteamBoosterIncrease(float? target)
+        {
+            SteamBoosterController.CommandStartTime = Simulator.ClockTime;
+            if (IsPlayerTrain)
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.SteamBooster, CabSetting.Increase, SteamBoosterController.CurrentValue* 100);
+            SteamBoosterController.StartIncrease(target);
+            SignalEvent(Event.SteamBoosterChange);
+        }
+
+        public void StopSteamBoosterIncrease()
+        {
+            SteamBoosterController.StopIncrease();
+            new ContinuousSteamBoosterCommand(Simulator.Log, 1, true, SteamBoosterController.CurrentValue, SteamBoosterController.CommandStartTime);
+        }
+
+        public void StartSteamBoosterDecrease(float? target)
+        {
+            if (IsPlayerTrain)
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.SteamBooster, CabSetting.Decrease, SteamBoosterController.CurrentValue * 100);
+            SteamBoosterController.StartDecrease(target);
+            SignalEvent(Event.SteamBoosterChange);
+        }
+
+        public void StopSteamBoosterDecrease()
+        {
+            SteamBoosterController.StopDecrease();
+            if (IsPlayerTrain)
+                new ContinuousSteamBoosterCommand(Simulator.Log, 1, false, SteamBoosterController.CurrentValue, SteamBoosterController.CommandStartTime);
+        }
+
+        public void SteamBoosterChangeTo(bool increase, float? target)
+        {
+            if (increase)
+            {
+                if (target > SteamBoosterController.CurrentValue)
+                {
+                    StartSteamBoosterIncrease(target);
+                }
+            }
+            else
+            {
+                if (target < SteamBoosterController.CurrentValue)
+                {
+                    StartSteamBoosterDecrease(target);
+                }
+            }
+        }
+
+        public void SetSteamBoosterValue(float value)
+        {
+            var controller = SteamBoosterController;
+            var oldValue = controller.IntermediateValue;
+            var change = controller.SetValue(value);
+            if (change != 0)
+            {
+                new ContinuousSteamBoosterCommand(Simulator.Log, 1, change > 0, controller.CurrentValue, Simulator.GameTime);
+            }
+            if (oldValue != controller.IntermediateValue)
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamBooster, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
+        }
+#endregion
+
+//Small Ejector Controller
 
 #region Small Ejector controller
 
