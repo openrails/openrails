@@ -1401,15 +1401,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                     // Equalize main reservoir with MR pipe for every locomotive
                     if (car.BrakeSystem.TwoPipes)
-                {
-                    float volumeRatio = loco.BrakeSystem.BrakePipeVolumeM3 / loco.MainResVolumeM3;
-                    float dp = Math.Min((loco.MainResPressurePSI - loco.BrakeSystem.BrakeLine2PressurePSI) / (1 + volumeRatio), loco.MaximumMainReservoirPipePressurePSI - loco.BrakeSystem.BrakeLine2PressurePSI);
-                    loco.MainResPressurePSI -= dp * volumeRatio;
-                    loco.BrakeSystem.BrakeLine2PressurePSI += dp;
-                    if (loco.MainResPressurePSI < 0) loco.MainResPressurePSI = 0;
-                    if (loco.BrakeSystem.BrakeLine2PressurePSI < 0) loco.BrakeSystem.BrakeLine2PressurePSI = 0;
+                    {
+                        float volumeRatio = loco.BrakeSystem.BrakePipeVolumeM3 / loco.MainResVolumeM3;
+                        float dp = Math.Min((loco.MainResPressurePSI - loco.BrakeSystem.BrakeLine2PressurePSI) / (1 + volumeRatio), loco.MaximumMainReservoirPipePressurePSI - loco.BrakeSystem.BrakeLine2PressurePSI);
+                        loco.MainResPressurePSI -= dp * volumeRatio;
+                        loco.BrakeSystem.BrakeLine2PressurePSI += dp;
+                        if (loco.MainResPressurePSI < 0) loco.MainResPressurePSI = 0;
+                        if (loco.BrakeSystem.BrakeLine2PressurePSI < 0) loco.BrakeSystem.BrakeLine2PressurePSI = 0;
+                    }
                 }
-            }
             }
 
             // Propagate engine brake pipe (3) data
