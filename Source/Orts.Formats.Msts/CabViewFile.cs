@@ -196,6 +196,7 @@ namespace Orts.Formats.Msts
         ORTS_BAILOFF,
         ORTS_QUICKRELEASE,
         ORTS_OVERCHARGE,
+        ORTS_AIR_FLOW_METER,
         ORTS_BATTERY_SWITCH_COMMAND_SWITCH,
         ORTS_BATTERY_SWITCH_COMMAND_BUTTON_CLOSE,
         ORTS_BATTERY_SWITCH_COMMAND_BUTTON_OPEN,
@@ -328,6 +329,7 @@ namespace Orts.Formats.Msts
         KILO_LBS,
         METRES_PER_SEC,
         LITRES,
+        LITERS,
         GALLONS,
         INCHES_OF_MERCURY,
         MILI_AMPS,
@@ -338,7 +340,14 @@ namespace Orts.Formats.Msts
         METRES,
         MILES,
         FEET,
-        YARDS
+        YARDS,
+
+        CUBIC_FT_MIN,
+        LITRES_MIN,
+        LITERS_MIN,
+        LITRES_S,
+        LITERS_S,
+        CUBIC_M_S
     }
 
     public enum DiscreteStates

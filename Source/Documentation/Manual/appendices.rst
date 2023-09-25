@@ -58,6 +58,11 @@ Voltage                 volt                        V
 Mass Flow                                           g/h
 \                                                   kg/h
 \                       lb/h                        lb/h        lb/h
+Volumetric Flow         m^3/s           air flow    m^3/s
+                                        meters
+\                                                   ft^3/min
+\                                                   L/min
+\                                                   L/s
 Speed                   m/s             other       m/s         m/s             meter per second
 \                                                   km/h
 \                                                   kph         kph             kilometer per hour

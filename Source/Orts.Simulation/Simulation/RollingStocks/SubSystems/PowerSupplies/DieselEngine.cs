@@ -467,7 +467,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             result.AppendFormat("\t{0}", FormatStrings.FormatPower(eng.CurrentDieselOutputPowerW, Locomotive.IsMetric, false, false));
             result.AppendFormat("\t{0:F1}%", eng.LoadPercent);
             result.AppendFormat("\t{0:F0} {1}", eng.RealRPM, FormatStrings.rpm);
-            result.AppendFormat("\t{0}/{1}", FormatStrings.FormatFuelVolume(pS.TopH(eng.DieselFlowLps), Locomotive.IsMetric, Locomotive.IsUK), FormatStrings.h);
+            result.AppendFormat("\t{0}", FormatStrings.FormatAirFlow(Locomotive.FilteredBrakePipeFlowM3pS, Locomotive.IsMetric));
             result.AppendFormat("\t{0}", FormatStrings.FormatTemperature(eng.DieselTemperatureDeg, Locomotive.IsMetric, false));
             result.AppendFormat("\t{0}", FormatStrings.FormatPressure(eng.DieselOilPressurePSI, PressureUnit.PSI, Locomotive.MainPressureUnit, true));
 

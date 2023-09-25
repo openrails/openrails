@@ -767,7 +767,9 @@ The following information is displayed in the basic display:
   Train brake HUD line has two Brake Reservoir pressure numbers: the first is 
   the Equalization Reservoir (EQ) and the second is the Brake Cylinder (BC) 
   pressure. The two BP numbers report the brake pressure in the lead engine 
-  and in the last car of the train. The unit of measure used for brake 
+  and in the last car of the train. Additionally, the brake flow is shown,
+  which measures the rate of air flowing into the brake pipe during release
+  and recharge. The unit of measure used for brake 
   pressure is defined by the option :ref:`Pressure unit <options-pressure>`.
 - Engine Brake = percentage of independent engine brake. Not fully 
   releasing the engine brake will affect train brake pressures.
