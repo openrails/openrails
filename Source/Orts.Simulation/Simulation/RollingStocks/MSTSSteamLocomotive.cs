@@ -7201,7 +7201,7 @@ public void SteamStartGearBoxIncrease()
         {
             SteamBoosterController.CommandStartTime = Simulator.ClockTime;
             if (IsPlayerTrain)
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.SteamBooster, CabSetting.Increase, SteamBoosterController.CurrentValue* 100);
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.SteamBooster, CabSetting.Increase, SteamBoosterController.CurrentValue * 100);
             SteamBoosterController.StartIncrease(target);
             SignalEvent(Event.SteamBoosterChange);
         }
@@ -7334,7 +7334,7 @@ public void SteamStartGearBoxIncrease()
         {
             LargeEjectorController.CommandStartTime = Simulator.ClockTime;
             if (IsPlayerTrain)
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.LargeEjector, CabSetting.Increase, LargeEjectorController.CurrentValue* 100);
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.LargeEjector, CabSetting.Increase, LargeEjectorController.CurrentValue * 100);
             LargeEjectorController.StartIncrease(target);
             SignalEvent(Event.LargeEjectorChange);
         }
@@ -7348,7 +7348,7 @@ public void SteamStartGearBoxIncrease()
         public void StartLargeEjectorDecrease(float? target)
         {
             if (IsPlayerTrain)
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.LargeEjector, CabSetting.Decrease, LargeEjectorController.CurrentValue* 100);
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.LargeEjector, CabSetting.Decrease, LargeEjectorController.CurrentValue * 100);
             LargeEjectorController.StartDecrease(target);
             SignalEvent(Event.LargeEjectorChange);
         }
@@ -7388,7 +7388,7 @@ public void SteamStartGearBoxIncrease()
                 new ContinuousLargeEjectorCommand(Simulator.Log, 1, change > 0, controller.CurrentValue, Simulator.GameTime);
             }
             if (oldValue != controller.IntermediateValue)
-                Simulator.Confirmer.UpdateWithPerCent(CabControl.LargeEjector, oldValue<controller.IntermediateValue? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue* 100);
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.LargeEjector, oldValue<controller.IntermediateValue? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
         }
 
 #endregion

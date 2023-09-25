@@ -357,7 +357,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.ControlSteamHeatDecrease] = new UserCommandKeyInput(0x20, KeyModifiers.Alt);
             Commands[(int)UserCommand.ControlSteamHeatIncrease] = new UserCommandKeyInput(0x16, KeyModifiers.Alt);
             Commands[(int)UserCommand.ControlSteamBoosterDecrease] = new UserCommandKeyInput(0x11, KeyModifiers.Shift);
-            Commands[(int)UserCommand.ControlSteamBoosterIncrease] = new UserCommandKeyInput(0x11, KeyModifiers.Control);
+            Commands[(int)UserCommand.ControlSteamBoosterIncrease] = new UserCommandKeyInput(0x11, KeyModifiers.Alt);
             Commands[(int)UserCommand.ControlBrakeHoseConnect] = new UserCommandKeyInput(0x2B);
             Commands[(int)UserCommand.ControlBrakeHoseDisconnect] = new UserCommandKeyInput(0x2B, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlCabRadio] = new UserCommandKeyInput(0x13, KeyModifiers.Alt);
