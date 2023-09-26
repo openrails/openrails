@@ -1589,9 +1589,7 @@ namespace Orts.Common
         public override void Redo()
         {
             if (Receiver == null) return;
-            {
                 Receiver.SteamBoosterChangeTo(ToState, Target);
-            }
             // Report();
         }
     }
