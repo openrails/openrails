@@ -623,7 +623,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 var temp = SlipSpeedMpS / WheelSlipThresholdMpS * 100.0f;
                 if (float.IsNaN(temp)) temp = 0;//avoid NaN on HuD display when first starting OR
-                return temp;
+                return Math.Abs(temp);
             }
         }
 
@@ -1009,11 +1009,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 var Syc = Sy + spinM1 * a_HertzianMM;
                 Syc2 = Syc * Syc;
 
-                // calculate "standard" Polach adhesion parameters as straight line approximations as u varies
+                // calculate "standard" Polach adhesion parameters as straight line approximations as u varies - these values are capped at the moment at the u=0.3 level
+                // Taking them lower may reduce the stability of the calculations
                 polach_A = 0.4;
                 polach_B = (1.6 * umax) - 0.28;
+                if (polach_B < 0.2) polach_B = 0.2f;
+
                 polach_Ka = (2.8 * umax) - 0.54;
+                if (polach_Ka < 0.3) polach_Ka = 0.3f;
+
                 polach_Ks = (1.2 * umax) - 0.26;
+                if (polach_Ks < 0.1) polach_Ks = 0.1f;
             }
             public double SlipCharacteristics(double slipSpeedMpS)
             {
@@ -1041,6 +1047,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 var slipComponent = Math.Atan(polach_Ks * Stiffness);
                 var f = polach_uadhesion / (Math.PI / 2) * (adhesionComponent + slipComponent);
                 var fx = f * Sx / Sc;
+/*
+                if (fx < 0)
+                {
+                    Trace.TraceInformation("Negative Fx - Fx {0} Speed {1} SlipSpeed {2} Sx {3} PolachAdhesion {4} adhesionComponent {5} slipComponent {6} Polach_Ks {7}", fx, MpS.ToMpH((float)speedMpS), MpS.ToMpH((float)slipSpeedMpS), MpS.ToMpH((float)Sx), polach_uadhesion, adhesionComponent, slipComponent, polach_Ks);
+
+                }
+*/
+
                 return fx;
             }
         }
