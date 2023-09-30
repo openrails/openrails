@@ -266,22 +266,22 @@ namespace Orts.Simulation.Timetables
         public TTTrain(Simulator simulator, TTTrain TTrain)
             : base(simulator)
         {
-            // set AI reference
+            // Set AI reference
             AI = simulator.AI;
 
-            // preset accel and decel values
+            // Preset accel and decel values
             MaxAccelMpSSP = DefMaxAccelMpSSP;
             MaxAccelMpSSF = DefMaxAccelMpSSF;
             MaxDecelMpSSP = DefMaxDecelMpSSP;
             MaxDecelMpSSF = DefMaxDecelMpSSF;
 
-            // preset movement state
+            // Preset movement state
             MovementState = AI_MOVEMENT_STATE.AI_STATIC;
 
-            // copy restart delays
+            // Copy restart delays
             DelayedStartSettings = TTrain.DelayedStartSettings;
 
-            // copy speed values
+            // Copy speed values
             SpeedSettings = TTrain.SpeedSettings;
         }
 
@@ -514,7 +514,7 @@ namespace Orts.Simulation.Timetables
             DelayedStartState = (AI_START_MOVEMENT)inf.ReadInt32();
             RestdelayS = inf.ReadSingle();
 
-            // preset speed values
+            // Preset speed values
             SpeedSettings = new SpeedValues
             {
                 routeSpeedMpS = inf.ReadSingle(),
@@ -534,7 +534,7 @@ namespace Orts.Simulation.Timetables
 
             Briefing = inf.ReadString();
 
-            // reset actions if train is active
+            // Reset actions if train is active
             bool activeTrain = true;
 
             if (TrainType == TRAINTYPE.AI_NOTSTARTED) activeTrain = false;
@@ -556,7 +556,6 @@ namespace Orts.Simulation.Timetables
         /// Save
         /// Override from Train class
         /// </summary>
-
         public override void Save(BinaryWriter outf)
         {
             outf.Write("TT");
@@ -584,13 +583,13 @@ namespace Orts.Simulation.Timetables
             outf.Write(UncondAttach);
             outf.Write(doorCloseAdvance);
             outf.Write(doorOpenDelay);
-            // dummy for level crossing horn pattern
+            // Dummy for level crossing horn pattern
             outf.Write(-1);
 
-            // dummy for service list count
+            // Dummy for service list count
             outf.Write(-1);
 
-            //TTTrains own additional fields
+            // TTTrains own additional fields
             outf.Write(Closeup);
             outf.Write(Created);
             outf.Write(CreateAhead);
@@ -844,12 +843,10 @@ namespace Orts.Simulation.Timetables
             outf.Write(Briefing);
         }
 
-
         //================================================================================================//
         /// <summary>
         /// Terminate route at last signal in train's direction
         /// </summary>
-
         public void EndRouteAtLastSignal()
         {
             // no action required
@@ -863,7 +860,7 @@ namespace Orts.Simulation.Timetables
 
             int lastSectionIndex = -1;
 
-            // search for last signal in required direction
+            // Search for last signal in required direction
             for (int iIndex = lastSubpath.Count - 1; iIndex >= 0 && lastSectionIndex < 0; iIndex--)
             {
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[lastSubpath[iIndex].TCSectionIndex];
@@ -875,13 +872,13 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-            // remove sections beyond last signal
+            // Remove sections beyond last signal
             for (int iIndex = lastSubpath.Count - 1; iIndex > lastSectionIndex; iIndex--)
             {
                 lastSubpath.RemoveAt(iIndex);
             }
 
-            // reinsert subroute
+            // Reinsert subroute
             TCRoute.TCRouteSubpaths.RemoveAt(lastIndex);
             TCRoute.TCRouteSubpaths.Add(new TCSubpathRoute(lastSubpath));
         }
@@ -894,23 +891,22 @@ namespace Orts.Simulation.Timetables
         /// <param name="orgStop"></param>
         /// <param name="newRoute"></param>
         /// <returns></returns>
-
         public override StationStop SetAlternativeStationStop(StationStop orgStop, TCSubpathRoute newRoute)
         {
             int altPlatformIndex = -1;
 
-            // get station platform list
+            // Get station platform list
             if (signalRef.StationXRefList.ContainsKey(orgStop.PlatformItem.Name))
             {
                 List<int> XRefKeys = signalRef.StationXRefList[orgStop.PlatformItem.Name];
 
-                // search through all available platforms
+                // Search through all available platforms
                 for (int platformIndex = 0; platformIndex <= XRefKeys.Count - 1 && altPlatformIndex < 0; platformIndex++)
                 {
                     int platformXRefIndex = XRefKeys[platformIndex];
                     PlatformDetails altPlatform = signalRef.PlatformDetailsList[platformXRefIndex];
 
-                    // check if section is in new route
+                    // Check if section is in new route
                     for (int iSectionIndex = 0; iSectionIndex <= altPlatform.TCSectionIndex.Count - 1 && altPlatformIndex < 0; iSectionIndex++)
                     {
                         if (newRoute.GetRouteIndex(altPlatform.TCSectionIndex[iSectionIndex], 0) > 0)
@@ -920,7 +916,7 @@ namespace Orts.Simulation.Timetables
                     }
                 }
 
-                // remove holding signal if set
+                // Remove holding signal if set
                 int holdSig = -1;
                 if (orgStop.HoldSignal && orgStop.ExitSignal >= 0 && HoldingSignals.Contains(orgStop.ExitSignal))
                 {
@@ -928,11 +924,11 @@ namespace Orts.Simulation.Timetables
                     HoldingSignals.Remove(holdSig);
                 }
 
-                // section found in new route - set new station details using old details
+                // Section found in new route - set new station details using old details
                 if (altPlatformIndex >= 0)
                 {
                     bool isNewPlatform = true;
-                    // check if new found platform is actually same as original
+                    // Check if new found platform is actually same as original
                     foreach (int platfReference in signalRef.PlatformDetailsList[altPlatformIndex].PlatformReference)
                     {
                         if (platfReference == orgStop.PlatformReference)
@@ -942,7 +938,7 @@ namespace Orts.Simulation.Timetables
                         }
                     }
 
-                    // if platform found is original platform, reinstate hold signal but take no further action
+                    // If platform found is original platform, reinstate hold signal but take no further action
                     if (!isNewPlatform)
                     {
                         if (holdSig >= 0) HoldingSignals.Add(holdSig);
@@ -950,13 +946,13 @@ namespace Orts.Simulation.Timetables
                     }
                     else
                     {
-                        // calculate new stop
+                        // Calculate new stop
                         StationStop newStop = CalculateStationStop(signalRef.PlatformDetailsList[altPlatformIndex].PlatformReference[0],
                         orgStop.ArrivalTime, orgStop.DepartTime, orgStop.arrivalDT, orgStop.departureDT, clearingDistanceM, minStopDistanceM,
                         orgStop.Terminal, orgStop.ActualMinStopTime, orgStop.KeepClearFront, orgStop.KeepClearRear, orgStop.ForcePosition,
                         orgStop.CloseupSignal, orgStop.Closeup, orgStop.RestrictPlatformToSignal, orgStop.ExtendPlatformToSignal, orgStop.EndStop);
 
-                        // add new holding signal if required
+                        // Add new holding signal if required
                         if (newStop.HoldSignal && newStop.ExitSignal >= 0)
                         {
                             HoldingSignals.Add(newStop.ExitSignal);
@@ -1012,9 +1008,8 @@ namespace Orts.Simulation.Timetables
         //================================================================================================//
         /// <summary>
         /// Post Init (override from Train) (with activate train option)
-        /// perform all actions required to start
+        /// Perform all actions required to start
         /// </summary>
-
         public bool PostInit(bool activateTrain)
         {
 
@@ -1035,8 +1030,7 @@ namespace Orts.Simulation.Timetables
                 }
             }
 #endif
-            // if train itself forms other train, check if train is to end at station (only if other train is not autogen and this train has SetStop set)
-
+            // If train itself forms other train, check if train is to end at station (only if other train is not autogen and this train has SetStop set)
             if (Forms >= 0 && SetStop)
             {
                 TTTrain nextTrain = AI.StartList.GetNotStartedTTTrainByNumber(Forms, false);
@@ -1061,9 +1055,9 @@ namespace Orts.Simulation.Timetables
                         newStop.SubrouteIndex = TCRoute.TCRouteSubpaths.Count - 1;
                         if (newStop.RouteIndex >= 0)
                         {
-                            StationStops.Add(newStop); // do not set stop if platform is not on route
+                            StationStops.Add(newStop); // Do not set stop if platform is not on route
 
-                            // switch stop position if train is to reverse
+                            // Switch stop position if train is to reverse
                             int nextTrainRouteIndex = nextTrain.TCRoute.TCRouteSubpaths[0].GetRouteIndex(lastSectionIndex, 0);
                             if (nextTrainRouteIndex >= 0 && nextTrain.TCRoute.TCRouteSubpaths[0][nextTrainRouteIndex].Direction != lastSubpath[newStop.RouteIndex].Direction)
                             {
@@ -1075,8 +1069,9 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-            if (Forms >= 0 && FormsAtStation && StationStops != null && StationStops.Count > 0)  // curtail route to last station stop
+            if (Forms >= 0 && FormsAtStation && StationStops != null && StationStops.Count > 0)
             {
+                // Curtail route to last station stop
                 StationStop lastStop = StationStops[StationStops.Count - 1];
                 TCSubpathRoute reqSubroute = TCRoute.TCRouteSubpaths[lastStop.SubrouteIndex];
                 for (int iRouteIndex = reqSubroute.Count - 1; iRouteIndex > lastStop.RouteIndex; iRouteIndex--)
@@ -1084,16 +1079,15 @@ namespace Orts.Simulation.Timetables
                     reqSubroute.RemoveAt(iRouteIndex);
                 }
 
-                // if subroute is present route, create new ValidRoute
+                // If subroute is present route, create new ValidRoute
                 if (lastStop.SubrouteIndex == TCRoute.activeSubpath)
                 {
                     ValidRoute[0] = new TCSubpathRoute(TCRoute.TCRouteSubpaths[TCRoute.activeSubpath]);
                 }
             }
 
-            // on activation : if train is to join pool, set proper dispose details
-            // copy new route if required
-
+            // On activation: if train is to join pool, set proper dispose details
+            // Copy new route if required
             if (activateTrain && !String.IsNullOrEmpty(ExitPool) && ActiveTurntable == null)
             {
                 TimetablePool thisPool = Simulator.PoolHolder.Pools[ExitPool];
@@ -1109,51 +1103,48 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-            // check deadlocks (if train has valid activate time only - otherwise it is static and won't move)
-
+            // Check deadlocks (if train has valid activate time only - otherwise it is static and won't move)
             if (ActivateTime.HasValue)
             {
                 CheckDeadlock(ValidRoute[0], Number);
             }
 
-            // set initial position and state
-
+            // Set initial position and state
             bool atStation = AtStation;
-            bool validPosition = InitialTrainPlacement(String.IsNullOrEmpty(CreateAhead));     // Check track and if clear, set occupied
+            bool validPosition = InitialTrainPlacement(String.IsNullOrEmpty(CreateAhead)); // Check track and if clear, set occupied
 
             if (validPosition)
             {
                 if (IsFreight)
                 {
-                    MaxAccelMpSS = MaxAccelMpSSF;  // set freigth accel and decel
+                    MaxAccelMpSS = MaxAccelMpSSF; // Set freight accel and decel
                     MaxDecelMpSS = MaxAccelMpSSF;
                 }
                 else
                 {
-                    MaxAccelMpSS = MaxAccelMpSSP;  // set passenger accel and decel
+                    MaxAccelMpSS = MaxAccelMpSSP; // Set passenger accel and decel
                     MaxDecelMpSS = MaxDecelMpSSP;
                     if (TrainMaxSpeedMpS > 40.0f)
                     {
-                        MaxDecelMpSS = 1.5f * MaxDecelMpSSP;  // higher decel for high speed trains
+                        MaxDecelMpSS = 1.5f * MaxDecelMpSSP; // Higher deceleration for high speed trains
                     }
                     if (TrainMaxSpeedMpS > 55.0f)
                     {
-                        MaxDecelMpSS = 2.5f * MaxDecelMpSSP;  // higher decel for very high speed trains
+                        MaxDecelMpSS = 2.5f * MaxDecelMpSSP; // Higher deceleration for very high speed trains
                     }
                 }
 
-                InitializeSignals(false);               // Get signal information
-                TCRoute.SetReversalOffset(Length);      // set reversal information for first subpath
-                SetEndOfRouteAction();                  // set action to ensure train stops at end of route
-                ControlMode = TRAIN_CONTROL.INACTIVE;   // set control mode to INACTIVE
+                InitializeSignals(false);             // Get signal information
+                TCRoute.SetReversalOffset(Length);    // Set reversal information for first subpath
+                SetEndOfRouteAction();                // Set action to ensure train stops at end of route
+                ControlMode = TRAIN_CONTROL.INACTIVE; // Set control mode to INACTIVE
 
-                // active train
                 if (activateTrain)
                 {
-                    MovementState = AI_MOVEMENT_STATE.INIT;        // start in INIT mode to collect info
-                    ControlMode = TRAIN_CONTROL.AUTO_NODE;         // start up in NODE control
+                    MovementState = AI_MOVEMENT_STATE.INIT; // Start in INIT mode to collect info
+                    ControlMode = TRAIN_CONTROL.AUTO_NODE;  // Start up in NODE control
 
-                    // if there is an active turntable and action is not completed, start in turntable state
+                    // If there is an active turntable and action is not completed, start in turntable state
                     if (ActiveTurntable != null && ActiveTurntable.MovingTableState != TimetableTurntableControl.MovingTableStateEnum.Completed)
                     {
                         MovementState = AI_MOVEMENT_STATE.TURNTABLE;
@@ -1166,10 +1157,10 @@ namespace Orts.Simulation.Timetables
                         }
                     }
 
-                    // recalculate station stops based on present train length
+                    // Recalculate station stops based on present train length
                     RecalculateStationStops(atStation);
 
-                    // check if train starts at station stop
+                    // Check if train starts at station stop
                     if (StationStops.Count > 0 && !atStation)
                     {
                         atStation = CheckInitialStation();
@@ -1178,7 +1169,7 @@ namespace Orts.Simulation.Timetables
                         {
                             if (StationStops.Count > 0)
                             {
-                                SetNextStationAction();               // set station details
+                                SetNextStationAction(); // Set station details
                             }
                         }
                     }
@@ -1198,10 +1189,10 @@ namespace Orts.Simulation.Timetables
 #endif
                     }
                 }
-                // start train as static
                 else
                 {
-                    MovementState = AI_MOVEMENT_STATE.AI_STATIC;   // start in STATIC mode until required activate time
+                    // start in STATIC mode until required activate time
+                    MovementState = AI_MOVEMENT_STATE.AI_STATIC;
                 }
             }
 
@@ -1243,7 +1234,6 @@ namespace Orts.Simulation.Timetables
                     File.AppendAllText(@"C:\temp\checktrain.txt", "    Exit to Pool : " + ExitPool + "\n");
                     File.AppendAllText(@"C:\temp\checktrain.txt", "    From section : " + PoolAccessSection + "\n");
                 }
-
             }
 
             return validPosition;
@@ -1254,7 +1244,6 @@ namespace Orts.Simulation.Timetables
         /// Post Init : perform all actions required to start
         /// Override from Train class
         /// </summary>
-
         public override bool PostInit()
         {
 #if DEBUG_CHECKTRAIN
@@ -1274,8 +1263,7 @@ namespace Orts.Simulation.Timetables
                 }
             }
 #endif
-            // start ahead of train if required
-
+            // Start ahead of train if required
             bool validPosition = true;
 
             if (!String.IsNullOrEmpty(CreateAhead))
@@ -1283,8 +1271,7 @@ namespace Orts.Simulation.Timetables
                 CalculateInitialTTTrainPosition(ref validPosition, null);
             }
 
-            // if not yet started, start normally
-
+            // If not yet started, start normally
             if (validPosition)
             {
                 validPosition = InitialTrainPlacement(true);
@@ -1292,17 +1279,16 @@ namespace Orts.Simulation.Timetables
 
             if (validPosition)
             {
-                InitializeSignals(false);     // Get signal information - only if train has route //
+                InitializeSignals(false); // Get signal information - only if train has route
                 if (TrainType != TRAINTYPE.STATIC)
-                    CheckDeadlock(ValidRoute[0], Number);    // Check deadlock against all other trains (not for static trains)
+                    CheckDeadlock(ValidRoute[0], Number); // Check deadlock against all other trains (not for static trains)
                 TCRoute?.SetReversalOffset(Length);
             }
 
-            // set train speed logging flag (valid per activity, so will be restored after save)
-
+            // Set train speed logging flag (valid per activity, so will be restored after save)
             if (TrainType == TRAINTYPE.PLAYER)
             {
-                SetupStationStopHandling(); // player train must now perform own station stop handling (no activity function available)
+                SetupStationStopHandling(); // Player train must now perform own station stop handling (no activity function available)
 
                 DatalogTrainSpeed = Simulator.Settings.DataLogTrainSpeed;
                 DatalogTSInterval = Simulator.Settings.DataLogTSInterval;
@@ -1310,7 +1296,7 @@ namespace Orts.Simulation.Timetables
                 DatalogTSContents = new int[Simulator.Settings.DataLogTSContents.Length];
                 Simulator.Settings.DataLogTSContents.CopyTo(DatalogTSContents, 0);
 
-                // if logging required, derive filename and open file
+                // If logging required, derive filename and open file
                 if (DatalogTrainSpeed)
                 {
                     DataLogFile = Simulator.DeriveLogFile("Speed");
@@ -1324,8 +1310,7 @@ namespace Orts.Simulation.Timetables
                     }
                 }
 
-                // if debug, print out all passing paths
-
+                // If debug, print out all passing paths
 #if DEBUG_DEADLOCK
                 Printout_PassingPaths();
 #endif
@@ -1334,12 +1319,10 @@ namespace Orts.Simulation.Timetables
             return validPosition;
         }
 
-
         //================================================================================================//
         /// <summary>
         /// Calculate actual station stop details
         /// <\summary>
-
         public StationStop CalculateStationStop(int platformStartID, int arrivalTime, int departTime, DateTime arrivalDT, DateTime departureDT, float clearingDistanceM,
             float minStopDistance, bool terminal, int? actMinStopTime, float? keepClearFront, float? keepClearRear, bool forcePosition, bool closeupSignal,
             bool closeup, bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop)
@@ -1349,11 +1332,10 @@ namespace Orts.Simulation.Timetables
 
             TCSubpathRoute thisRoute = TCRoute.TCRouteSubpaths[activeSubroute];
 
-            // get platform details
-
+            // Get platform details
             if (!signalRef.PlatformXRefList.TryGetValue(platformStartID, out platformIndex))
             {
-                return null; // station not found
+                return null; // Station not found
             }
             else
             {
@@ -1361,24 +1343,21 @@ namespace Orts.Simulation.Timetables
                 int sectionIndex = thisPlatform.TCSectionIndex[0];
                 int routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
 
-                // if first section not found in route, try last
-
+                // If first section not found in route, try last
                 if (routeIndex < 0)
                 {
                     sectionIndex = thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
                     routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
                 }
 
-                // if neither section found - try next subroute - keep trying till found or out of subroutes
-
+                // If neither section found - try next subroute - keep trying till found or out of subroutes
                 while (routeIndex < 0 && activeSubroute < (TCRoute.TCRouteSubpaths.Count - 1))
                 {
                     activeSubroute++;
                     thisRoute = TCRoute.TCRouteSubpaths[activeSubroute];
                     routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
 
-                    // if first section not found in route, try last
-
+                    // If first section not found in route, try last
                     if (routeIndex < 0)
                     {
                         sectionIndex = thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
@@ -1386,8 +1365,7 @@ namespace Orts.Simulation.Timetables
                     }
                 }
 
-                // if neither section found - platform is not on route - skip
-
+                // If neither section found - platform is not on route - skip
                 if (routeIndex < 0)
                 {
                     Trace.TraceWarning("Train {0} ({1}) : platform {2} is not on route",
@@ -1395,14 +1373,12 @@ namespace Orts.Simulation.Timetables
                     return null;
                 }
 
-                // determine end stop position depending on direction
-
+                // Determine end stop position depending on direction
                 StationStop dummyStop = CalculateStationStopPosition(thisRoute, routeIndex, thisPlatform, activeSubroute,
                     keepClearFront, keepClearRear, forcePosition, closeupSignal, closeup, restrictPlatformToSignal, extendPlatformToSignal,
                     terminal, platformIndex);
 
-                // build and add station stop
-
+                // Build and add station stop
                 StationStop thisStation = new StationStop(
                         platformStartID,
                         thisPlatform,
@@ -1472,9 +1448,9 @@ namespace Orts.Simulation.Timetables
             float endOffset = thisPlatform.TCOffset[1, thisElement.Direction];
             float beginOffset = thisPlatform.TCOffset[0, thisElement.Direction];
 
-            float deltaLength = thisPlatform.Length - Length; // platform length - train length
+            float deltaLength = thisPlatform.Length - Length; // Platform length - train length
 
-            // get all sections which form platform
+            // Get all sections which form platform
             TCSubpathRoute platformRoute = signalRef.BuildTempRoute(this, beginSectionIndex, beginOffset, thisElement.Direction, thisPlatform.Length, true, true, false);
             int platformRouteIndex = platformRoute.GetRouteIndex(routeSectionIndex, 0);
 
@@ -1490,7 +1466,7 @@ namespace Orts.Simulation.Timetables
 
             float fullLength = thisPlatform.Length;
 
-            // path does not extend through station : adjust variables to last section
+            // Path does not extend through station: adjust variables to last section
             if (lastRouteIndex < 0)
             {
                 lastRouteIndex = thisRoute.Count - 1;
@@ -1502,7 +1478,7 @@ namespace Orts.Simulation.Timetables
                 platformHasEndSignal = endSection.EndSignals[thisRoute[lastRouteIndex].Direction] != null;
                 distanceToEndSignal = 1.0f;
 
-                float newLength = -beginOffset;  // correct new length for begin offset
+                float newLength = -beginOffset; // Correct new length for begin offset
                 for (int sectionRouteIndex = firstRouteIndex; sectionRouteIndex <= lastRouteIndex; sectionRouteIndex++)
                 {
                     TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisRoute[sectionRouteIndex].TCSectionIndex];
@@ -1512,12 +1488,12 @@ namespace Orts.Simulation.Timetables
                 platformRoute = signalRef.BuildTempRoute(this, beginSectionIndex, beginOffset, thisElement.Direction, newLength, true, true, false);
                 platformRouteIndex = routeIndex;
 
-                deltaLength = newLength - Length; // platform length - train length
+                deltaLength = newLength - Length; // Platform length - train length
                 fullLength = newLength;
             }
 
-            // if required, check if there is a signal within the platform
-            // not possible if there is only one section
+            // If required, check if there is a signal within the platform
+            // Not possible if there is only one section
             else if (restrictPlatformToSignal && !platformHasEndSignal && firstRouteIndex != lastRouteIndex)
             {
                 bool intermediateSignal = false;
@@ -1535,7 +1511,7 @@ namespace Orts.Simulation.Timetables
                     }
                 }
 
-                // if signal found, reset all end indicators
+                // If signal found, reset all end indicators
                 if (intermediateSignal)
                 {
                     routeSectionIndex = signalRouteIndex;
@@ -1563,13 +1539,13 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-            // extend platform to next signal
-            // only if required, platform has no signal and train does not fit into platform
+            // Extend platform to next signal
+            // Only if required, platform has no signal and train does not fit into platform
             else if (ExtendPlatformToSignal && !platformHasEndSignal && deltaLength < 0)
             {
                 bool nextSignal = false;
 
-                // find next signal in route
+                // Find next signal in route
                 for (int sectionRouteIndex = lastRouteIndex + 1; sectionRouteIndex < thisRoute.Count; sectionRouteIndex++)
                 {
                     TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisRoute[sectionRouteIndex].TCSectionIndex];
@@ -1584,7 +1560,7 @@ namespace Orts.Simulation.Timetables
 
                 }
 
-                // if signal found, reset all end indicators
+                // If signal found, reset all end indicators
                 if (nextSignal)
                 {
                     routeSectionIndex = signalRouteIndex;
@@ -1597,8 +1573,8 @@ namespace Orts.Simulation.Timetables
 
                     endSection = signalSection;
 
-                    float newLength = -beginOffset + endOffset;  // correct new length for begin offset and end offset
-                    // do not add last section as that is included through endOffset
+                    float newLength = -beginOffset + endOffset;  // Correct new length for begin offset and end offset
+                    // Do not add last section as that is included through endOffset
                     for (int sectionRouteIndex = firstRouteIndex; sectionRouteIndex < lastRouteIndex; sectionRouteIndex++)
                     {
                         TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisRoute[sectionRouteIndex].TCSectionIndex];
@@ -1608,12 +1584,12 @@ namespace Orts.Simulation.Timetables
                     platformRoute = signalRef.BuildTempRoute(this, beginSectionIndex, beginOffset, thisElement.Direction, newLength, true, true, false);
                     platformRouteIndex = routeIndex;
 
-                    deltaLength = newLength - Length; // platform length - train length
+                    deltaLength = newLength - Length; // Platform length - train length
                     fullLength = newLength;
                 }
             }
 
-            // calculate corrected offsets related to last section
+            // Calculate corrected offsets related to last section
             float beginOffsetCorrection = 0;
             float endOffsetCorrection = 0;
 
@@ -1655,14 +1631,12 @@ namespace Orts.Simulation.Timetables
                 endOffset += endOffsetCorrection;
             }
 
-            // relate beginoffset and endoffset to section defined as platform section
-
-            // if station is terminal, check if train is starting or terminating, and set stop position at 0.5 clearing distance from end
-
+            // Relate `beginoffset` and `endoffset` to section defined as platform section
+            // If station is terminal, check if train is starting or terminating, and set stop position at 0.5 clearing distance from end
             float stopOffset = 0;
-            bool forceThroughSignal = false;  // set if rear clearance is defined with force parameter
+            bool forceThroughSignal = false; // Set if rear clearance is defined with force parameter
 
-            // check for terminal position
+            // Check for terminal position
             if (terminal)
             {
                 int startRouteIndex = firstRouteIndex < lastRouteIndex ? firstRouteIndex : lastRouteIndex;
@@ -1671,29 +1645,28 @@ namespace Orts.Simulation.Timetables
                 bool routeNodeBeforeStart = false;
                 bool routeNodeAfterEnd = false;
 
-                // check if any junctions in path before start
+                // Check if any junctions in path before start
                 for (int iIndex = 0; iIndex < startRouteIndex && !routeNodeBeforeStart; iIndex++)
                 {
                     routeNodeBeforeStart = signalRef.TrackCircuitList[thisRoute[iIndex].TCSectionIndex].CircuitType == TrackCircuitSection.TrackCircuitType.Junction;
                 }
 
-                // check if any junctions in path after end
+                // Check if any junctions in path after end
                 for (int iIndex = lastRouteIndex + 1; iIndex < (thisRoute.Count - 1) && !routeNodeAfterEnd; iIndex++)
                 {
                     routeNodeAfterEnd = signalRef.TrackCircuitList[thisRoute[iIndex].TCSectionIndex].CircuitType == TrackCircuitSection.TrackCircuitType.Junction;
                 }
 
-                // check if terminal is at start of route
+                // Check if terminal is at start of route
                 stopOffset = firstRouteIndex == 0 || !routeNodeBeforeStart
                     ? beginOffset + (0.5f * clearingDistanceM) + Length
                     : lastRouteIndex == thisRoute.Count - 1 || !routeNodeAfterEnd
                         ? endOffset - keepDistanceCloseupM
                         : endOffset - (0.5f * clearingDistanceM);
             }
-
-            // if train too long : search back for platform with same name
             else
             {
+                // Train is too long: search back for platform with same name
                 if (deltaLength < 0)
                 {
                     float actualBegin = beginOffset;
@@ -1701,7 +1674,6 @@ namespace Orts.Simulation.Timetables
                     TrackCircuitSection thisSection = signalRef.TrackCircuitList[beginSectionIndex];
 
                     // Other platforms in same section
-
                     if (thisSection.PlatformIndex.Count > 1)
                     {
                         foreach (int nextIndex in thisSection.PlatformIndex)
@@ -1727,7 +1699,6 @@ namespace Orts.Simulation.Timetables
                                         int addRouteIndex = thisRoute.GetRouteIndex(otherSectionIndex, 0);
                                         float addOffset = otherPlatform.TCOffset[1, thisElement.Direction == 0 ? 1 : 0];
                                         // offset of begin in other direction is length of available track
-
                                         if (lastRouteIndex > 0)
                                         {
                                             float thisLength =
@@ -1745,8 +1716,7 @@ namespace Orts.Simulation.Timetables
                     deltaLength = fullLength - Length;
                 }
 
-                // search back along route
-
+                // Search back along route
                 if (deltaLength < 0)
                 {
                     float distance = fullLength + beginOffset;
@@ -1765,8 +1735,8 @@ namespace Orts.Simulation.Timetables
                             if (String.Compare(otherPlatform.Name, thisPlatform.Name) == 0)
                             {
                                 fullLength = otherPlatform.Length + distance;
-                                // we miss a little bit (offset) - that's because we don't know direction of other platform
-                                platformFound = true; // only check for one more
+                                // We miss a little bit (offset) - that's because we don't know direction of other platform
+                                platformFound = true; // Only check for one more
                             }
                         }
                         distance += nextSection.Length;
@@ -1775,10 +1745,10 @@ namespace Orts.Simulation.Timetables
                     deltaLength = fullLength - Length;
                 }
 
-                // default stopposition : place train in middle of platform
+                // Default stop position: place train in middle of platform
                 stopOffset = endOffset - (0.5f * deltaLength);
 
-                // check if position is not beyond end of route
+                // Check if position is not beyond end of route
                 TrackCircuitSection followingSection = signalRef.TrackCircuitList[endSectionIndex];
                 float remLength = followingSection.Length - endOffset;
 
@@ -1788,38 +1758,38 @@ namespace Orts.Simulation.Timetables
                     remLength += followingSection.Length;
                     if (followingSection.CircuitType == TrackCircuitSection.TrackCircuitType.EndOfTrack)
                     {
-                        remLength -= keepDistanceCloseupM; // stay clear from end of track
+                        remLength -= keepDistanceCloseupM; // Stay clear from end of track
                     }
-                    if (remLength > (0.5f * deltaLength)) break; // stop check if length exceeds required overshoot
+                    if (remLength > (0.5f * deltaLength)) break; // Stop check if length exceeds required overshoot
                 }
 
                 stopOffset = Math.Min(stopOffset, endOffset + remLength);
 
-                // keep clear at front
+                // Keep clear at front
                 if (keepClearFront.HasValue)
                 {
-                    // if force position is set, stop train as required regardless of rear position of train
+                    // If force position is set, stop train as required regardless of rear position of train
                     if (forcePosition)
                     {
                         stopOffset = endOffset - keepClearFront.Value;
                     }
-                    else
-                    // keep clear at front but ensure train is in station
+                    else                   
                     {
+                        // Keep clear at front but ensure train is in station
                         float frontClear = Math.Min(keepClearFront.Value, endOffset - Length - beginOffset);
                         if (frontClear > 0) stopOffset = endOffset - frontClear;
                     }
                 }
                 else if (keepClearRear.HasValue)
                 {
-                    // if force position is set, stop train as required regardless of front position of train
-                    // reset hold signal state if front position is passed signal
+                    // If force position is set, stop train as required regardless of front position of train
+                    // Reset hold signal state if front position is passed signal
                     if (forcePosition)
                     {
                         stopOffset = beginOffset + keepClearRear.Value + Length;
                         forceThroughSignal = true;
 
-                        // beyond original platform and beyond section : check for route validity (may not exceed route)
+                        // Beyond original platform and beyond section : check for route validity (may not exceed route)
                         if (stopOffset > endOffset && stopOffset > endSection.Length)
                         {
                             float addOffset = stopOffset - endOffset;
@@ -1837,30 +1807,29 @@ namespace Orts.Simulation.Timetables
                     }
                     else
                     {
-                        // check if space available between end of platform and exit signal
+                        // Check if space available between end of platform and exit signal
                         float endPosition = endOffset;
                         if (platformHasEndSignal)
                         {
-                            endPosition = endOffset + distanceToEndSignal;   // distance to signal
+                            endPosition = endOffset + distanceToEndSignal; // Distance to signal
                             endPosition = closeupSignal ? (endPosition - keepDistanceCloseupSignalM - 1.0f) : (endPosition - clearingDistanceM - 1.0f);   // correct for clearing distance
                         }
 
                         stopOffset = Math.Min(beginOffset + keepClearRear.Value + Length, endPosition);
 
+                        // TODO: Remove?
                         //float rearClear = Math.Min(keepClearRear.Value, (endOffset - stopOffset));
                         //if (rearClear > 0) stopOffset = beginOffset + rearClear + Length;
                     }
                 }
             }
 
-            // check if stop offset beyond end signal - do not hold at signal
-
+            // Check if stop offset beyond end signal - do not hold at signal
             int EndSignal = -1;
             bool HoldSignal = false;
 
-            // check if train is to reverse in platform
-            // if so, set signal at other end as hold signal
-
+            // Check if train is to reverse in platform
+            // If so, set signal at other end as hold signal
             int useDirection = thisElement.Direction;
             bool inDirection = true;
 
@@ -1875,21 +1844,20 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-            // check for end signal
-
+            // Check for end signal
             if (inDirection)
             {
                 if (distanceToEndSignal >= 0)
                 {
                     EndSignal = thisPlatform.EndSignals[useDirection];
 
-                    // stop location is in front of signal
+                    // Stop location is in front of signal
                     if (distanceToEndSignal > (stopOffset - endOffset))
                     {
                         HoldSignal = true;
 
-                        // check if stop is too close to signal
-                        // if platform length is forced always use closeup
+                        // Check if stop is too close to signal
+                        // If platform length is forced always use closeup
                         if (ExtendPlatformToSignal || restrictPlatformToSignal)
                         {
                             stopOffset = Math.Min(stopOffset, endOffset + distanceToEndSignal - keepDistanceCloseupSignalM - 1.0f);
@@ -1904,7 +1872,7 @@ namespace Orts.Simulation.Timetables
                             else
                             {
                                 stopOffset = endOffset + distanceToEndSignal - clearingDistanceM - 1.0f;
-                                // check if train still fits in platform
+                                // Check if train still fits in platform
                                 if ((stopOffset - beginOffset) < Length)
                                 {
                                     float keepDistanceM = Math.Max(0.5f * clearingDistanceM, endOffset + distanceToEndSignal - (beginOffset + Length));
@@ -1925,39 +1893,39 @@ namespace Orts.Simulation.Timetables
                             }
                         }
                     }
-                    // reset hold signal if stop is forced beyond signal
                     else if (forceThroughSignal)
                     {
+                        // Reset hold signal if stop is forced beyond signal
                         HoldSignal = false;
                         EndSignal = -1;
                     }
-                    // if most of train fits in platform then stop at signal
                     else if ((distanceToEndSignal - clearingDistanceM + thisPlatform.Length) > (0.6 * Length))
                     {
+                        // If most of train fits in platform then stop at signal
                         HoldSignal = true;
                         stopOffset = closeupSignal || ExtendPlatformToSignal || restrictPlatformToSignal
                             ? endOffset + distanceToEndSignal - keepDistanceCloseupSignalM - 1.0f
                             : endOffset + distanceToEndSignal - clearingDistanceM - 1.0f;
-                        // set 1m earlier to give priority to station stop over signal
+                        // Set 1m earlier to give priority to station stop over signal
                     }
-                    // if platform positions forced always use closeup
                     else if (ExtendPlatformToSignal || restrictPlatformToSignal)
                     {
+                        // If platform positions forced always use closeup
                         HoldSignal = true;
                         stopOffset = endOffset + distanceToEndSignal - keepDistanceCloseupSignalM - 1.0f;
-                        // set 1m earlier to give priority to station stop over signal
+                        // Set 1m earlier to give priority to station stop over signal
                     }
-                    // train does not fit in platform - reset exit signal
                     else
                     {
+                        // Train does not fit in platform - reset exit signal
                         EndSignal = -1;
                     }
                 }
             }
             else
-            // check in reverse direction
-            // end of train is beyond signal
             {
+                // Check in reverse direction
+                // End of train is beyond signal
                 if (thisPlatform.EndSignals[useDirection] >= 0)
                 {
                     if ((beginOffset - thisPlatform.DistanceToSignals[useDirection]) < (stopOffset - Length))
@@ -1969,35 +1937,35 @@ namespace Orts.Simulation.Timetables
                             stopOffset = beginOffset - thisPlatform.DistanceToSignals[useDirection] + Length + clearingDistanceM + 1.0f;
                         }
                     }
-                    // if most of train fits in platform then stop at signal
+                    // If most of train fits in platform then stop at signal
                     else if ((thisPlatform.DistanceToSignals[useDirection] - clearingDistanceM + thisPlatform.Length) >
                                   (0.6 * Length))
                     {
-                        // set 1m earlier to give priority to station stop over signal
+                        // Set 1m earlier to give priority to station stop over signal
                         stopOffset = beginOffset - thisPlatform.DistanceToSignals[useDirection] + Length + clearingDistanceM + 1.0f;
 
-                        // check if stop is clear of end signal (if any)
+                        // Check if stop is clear of end signal (if any)
                         if (thisPlatform.EndSignals[thisElement.Direction] != -1)
                         {
                             if (stopOffset < (endOffset + thisPlatform.DistanceToSignals[thisElement.Direction]))
                             {
-                                HoldSignal = true; // if train fits between signals
+                                HoldSignal = true; // If train fits between signals
                             }
                             else
                             {
-                                stopOffset = endOffset + thisPlatform.DistanceToSignals[thisElement.Direction] - 1.0f; // stop at end signal
+                                stopOffset = endOffset + thisPlatform.DistanceToSignals[thisElement.Direction] - 1.0f; // Stop at end signal
                             }
                         }
                     }
-                    // train does not fit in platform - reset exit signal
                     else
                     {
+                        // Train does not fit in platform - reset exit signal
                         EndSignal = -1;
                     }
                 }
             }
 
-            // store details
+            // Store details
             TCRouteElement lastElement = thisRoute[lastRouteIndex];
             dummyStop.TCSectionIndex = lastElement.TCSectionIndex;
             dummyStop.Direction = lastElement.Direction;
@@ -2041,8 +2009,7 @@ namespace Orts.Simulation.Timetables
 
                 StationStops.Add(thisStation);
 
-                // if station has hold signal and this signal is the same as the exit signal for previous station, remove the exit signal from the previous station
-
+                // If station has hold signal and this signal is the same as the exit signal for previous station, remove the exit signal from the previous station
                 if (HoldSignal && StationStops.Count > 1)
                 {
                     if (EndSignal == StationStops[StationStops.Count - 2].ExitSignal && StationStops[StationStops.Count - 2].HoldSignal)
@@ -2056,8 +2023,7 @@ namespace Orts.Simulation.Timetables
                     }
                 }
 
-                // add signal to list of hold signals
-
+                // Add signal to list of hold signals
                 if (HoldSignal)
                 {
                     HoldingSignals.Add(EndSignal);
@@ -2116,17 +2082,15 @@ namespace Orts.Simulation.Timetables
         /// Check initial station
         /// Override from AITrain class
         /// <\summary>
-
         public override bool CheckInitialStation()
         {
             bool atStation = false;
-            if (FormedOf > 0 && AtStation)  // if train was formed and at station, train is in initial station
+            if (FormedOf > 0 && AtStation) // If train was formed and at station, train is in initial station
             {
                 return true;
             }
 
-            // get station details
-
+            // Get station details
             StationStop thisStation = StationStops[0];
             if (thisStation.SubrouteIndex != TCRoute.activeSubpath)
             {
@@ -2140,8 +2104,7 @@ namespace Orts.Simulation.Timetables
 
             atStation = CheckStationPosition(thisStation.PlatformItem, thisStation.Direction, thisStation.TCSectionIndex);
 
-            // At station : set state, create action item
-
+            // At station: set state, create action item
             if (atStation)
             {
                 thisStation.ActualArrival = -1;
@@ -2174,7 +2137,7 @@ namespace Orts.Simulation.Timetables
         public override bool CheckStationPosition(PlatformDetails thisPlatform, int stationDirection, int stationTCSectionIndex)
         {
             bool atStation = false;
-            //            PlatformDetails thisPlatform = thisStation.PlatformItem;
+            // PlatformDetails thisPlatform = thisStation.PlatformItem; // TODO: Remove?
 
             float platformBeginOffset = thisPlatform.TCOffset[0, stationDirection];
             float platformEndOffset = thisPlatform.TCOffset[1, stationDirection];
@@ -2188,42 +2151,38 @@ namespace Orts.Simulation.Timetables
                     thisPlatform.TCSectionIndex[0];
             int beginSectionRouteIndex = ValidRoute[0].GetRouteIndex(beginSectionIndex, 0);
 
-            // check position
-
+            // Check position
             float margin = 0.0f;
             if (Simulator.PreUpdate)
-                margin = 2.0f * clearingDistanceM;  // allow margin in pre-update due to low update rate
+                margin = 2.0f * clearingDistanceM; // Allow margin in pre-update due to low update rate
 
             int stationIndex = ValidRoute[0].GetRouteIndex(stationTCSectionIndex, PresentPosition[0].RouteListIndex);
 
-            // if not found from front of train, try from rear of train (front may be beyond platform)
+            // If not found from front of train, try from rear of train (front may be beyond platform)
             if (stationIndex < 0)
             {
                 stationIndex = ValidRoute[0].GetRouteIndex(stationTCSectionIndex, PresentPosition[1].RouteListIndex);
             }
 
-            // if rear is in platform, station is valid
             if (PresentPosition[1].RouteListIndex == stationIndex && PresentPosition[1].TCOffset > platformEndOffset)
             {
+                // If rear is in platform, station is valid
                 atStation = true;
             }
-
-            // if front is in platform and most of the train is as well, station is valid
             else if (PresentPosition[0].RouteListIndex == stationIndex &&
                     ((thisPlatform.Length - (platformBeginOffset - PresentPosition[0].TCOffset)) > (Length / 2)))
             {
+                // If front is in platform and most of the train is as well, station is valid
                 atStation = true;
             }
-
-            // if front is beyond platform and rear is not on route or before platform : train spans platform
             else if (PresentPosition[0].RouteListIndex > stationIndex && PresentPosition[1].RouteListIndex < stationIndex)
             {
+                // If front is beyond platform and rear is not on route or before platform: train spans platform
                 atStation = true;
             }
-
-            // if front is beyond platform and rear is in platform section but ahead of position : train spans platform
             else if (PresentPosition[0].RouteListIndex > stationIndex && PresentPosition[1].RouteListIndex == stationIndex && PresentPosition[1].TCOffset < platformEndOffset)
             {
+                // If front is beyond platform and rear is in platform section but ahead of position: train spans platform
                 atStation = true;
             }
 
@@ -2235,50 +2194,48 @@ namespace Orts.Simulation.Timetables
         /// Check for next station
         /// Override from AITrain
         /// <\summary>
-
         public override void SetNextStationAction(bool fromAutopilotSwitch = false)
         {
-            // do not set action if stopped in station
+            // Do not set action if stopped in station
             if (MovementState == AI_MOVEMENT_STATE.STATION_STOP || AtStation)
             {
                 return;
             }
 
-            // check if station in this subpath
-
+            // Check if station in this subpath
             int stationIndex = 0;
             StationStop thisStation = StationStops[stationIndex];
-            while (thisStation.SubrouteIndex < TCRoute.activeSubpath) // station was in previous subpath
+            while (thisStation.SubrouteIndex < TCRoute.activeSubpath) // Station was in previous subpath
             {
                 StationStops.RemoveAt(0);
-                if (StationStops.Count == 0) // no more stations
+                if (StationStops.Count == 0) // No more stations
                 {
                     return;
                 }
                 thisStation = StationStops[0];
             }
 
-            if (thisStation.SubrouteIndex > TCRoute.activeSubpath)    // station is not in this subpath
+            if (thisStation.SubrouteIndex > TCRoute.activeSubpath) // Station is not in this subpath
             {
                 return;
             }
 
-            // get distance to station, but not if just after switch to Autopilot and not during station stop
+            // Get distance to station, but not if just after switch to Autopilot and not during station stop
             bool validStop = false;
             while (!validStop)
             {
                 float[] distancesM = CalculateDistancesToNextStation(thisStation, TrainMaxSpeedMpS, false);
-                if (distancesM[0] < 0f && !(MovementState == AI_MOVEMENT_STATE.STATION_STOP && distancesM[0] != -1)) // stop is not valid
+                if (distancesM[0] < 0f && !(MovementState == AI_MOVEMENT_STATE.STATION_STOP && distancesM[0] != -1)) // Stop is not valid
                 {
 
                     StationStops.RemoveAt(0);
                     if (StationStops.Count == 0)
                     {
-                        return;  // no more stations - exit
+                        return; // No more stations - exit
                     }
 
                     thisStation = StationStops[0];
-                    if (thisStation.SubrouteIndex > TCRoute.activeSubpath) return;  // station not in this subpath - exit
+                    if (thisStation.SubrouteIndex > TCRoute.activeSubpath) return; // Station not in this subpath - exit
                 }
                 else
                 {
@@ -2380,7 +2337,7 @@ namespace Orts.Simulation.Timetables
 
         public bool StartFromAITrain(TTTrain otherTrain, int presentTime, TrackCircuitSection[] occupiedTrack)
         {
-            // check if new train has route at present position of front of train
+            // Check if new train has route at present position of front of train
             int usedRefPosition = 0;
             int startPositionIndex = TCRoute.TCRouteSubpaths[0].GetRouteIndex(otherTrain.PresentPosition[0].TCSectionIndex, 0);
             int usedPositionIndex = startPositionIndex;
@@ -2393,7 +2350,7 @@ namespace Orts.Simulation.Timetables
                 usedPositionIndex = rearPositionIndex;
             }
 
-            // if not found - train cannot start out of other train as there is no valid route - let train start of its own
+            // If not found - train cannot start out of other train as there is no valid route - let train start of its own
             if (startPositionIndex < 0 && rearPositionIndex < 0)
             {
                 FormedOf = -1;
@@ -2410,8 +2367,7 @@ namespace Orts.Simulation.Timetables
             int addedSections = AdjustTrainRouteOnStart(startPositionIndex, rearPositionIndex, otherTrain);
             usedPositionIndex += addedSections;
 
-            // copy consist information incl. max speed and type
-
+            // Copy consist information incl. max speed and type
             if (FormedOfType == FormCommand.TerminationFormed)
             {
                 Cars.Clear();
@@ -2428,7 +2384,7 @@ namespace Orts.Simulation.Timetables
                 MassKg = otherTrain.MassKg;
                 LeadLocomotiveIndex = otherTrain.LeadLocomotiveIndex;
 
-                // copy other train speed if not restricted for either train
+                // Copy other train speed if not restricted for either train
                 if (!otherTrain.SpeedSettings.restrictedSet && !SpeedSettings.restrictedSet)
                 {
                     TrainMaxSpeedMpS = otherTrain.TrainMaxSpeedMpS;
@@ -2440,13 +2396,12 @@ namespace Orts.Simulation.Timetables
                 FrontTDBTraveller = new Traveller(otherTrain.FrontTDBTraveller);
                 RearTDBTraveller = new Traveller(otherTrain.RearTDBTraveller);
 
-                // check if train reversal is required
-
+                // Check if train reversal is required
                 if (TCRoute.TCRouteSubpaths[0][usedPositionIndex].Direction != otherTrain.PresentPosition[usedRefPosition].TCDirection)
                 {
                     ReverseFormation(false);
 
-                    // if reversal is required and units must be detached at start : reverse detached units position
+                    // If reversal is required and units must be detached at start : reverse detached units position
                     if (DetachDetails.ContainsKey(-1))
                     {
                         List<DetachInfo> detachList = DetachDetails[-1];
@@ -2501,21 +2456,21 @@ namespace Orts.Simulation.Timetables
                 InitialTrainPlacement(true);
             }
 
-            // set state
+            // Set state
             MovementState = AI_MOVEMENT_STATE.AI_STATIC;
             ControlMode = TRAIN_CONTROL.INACTIVE;
 
             int eightHundredHours = 8 * 3600;
             int sixteenHundredHours = 16 * 3600;
 
-            // if no activate time, set to now + 30
             if (!ActivateTime.HasValue)
             {
+                // If no activate time, set to now + 30
                 ActivateTime = presentTime + 30;
             }
-            // if activate time < 08:00 and present time > 16:00, assume activate time is after midnight
             else if (ActivateTime.Value < eightHundredHours && presentTime > sixteenHundredHours)
             {
+                // If activate time < 08:00 and present time > 16:00, assume activate time is after midnight
                 ActivateTime = ActivateTime.Value + (24 * 3600);
             }
 
@@ -2527,13 +2482,12 @@ namespace Orts.Simulation.Timetables
         /// Update for pre-update state
         /// Override from AITrain class
         /// <\summary>
-
         public override void AIPreUpdate(float elapsedClockSeconds)
         {
-            // calculate delta speed and speed
+            // Calculate delta speed and speed
             float distanceM = physicsPreUpdate(elapsedClockSeconds);
 
-            // force stop - no forced stop if mode is following and attach is true
+            // Force stop - no forced stop if mode is following and attach is true
             if (distanceM > NextStopDistanceM)
             {
 #if DEBUG_REPORTS
@@ -2550,6 +2504,7 @@ namespace Orts.Simulation.Timetables
                     File.AppendAllText(@"C:\temp\checktrain.txt", "Train " +
                         Number.ToString() + " forced stop : calculated " +
                         FormatStrings.FormatSpeed(SpeedMpS, true) + " > " +
+                        // TODO: Remove?
                         //FormatStrings.FormatDistance(distanceM, true) + " set to " +
                         //"0.0 > " + FormatStrings.FormatDistance(NextStopDistanceM, true) + " at " +
                         //FormatStrings.FormatDistance(DistanceTravelledM, true) + "\n");
@@ -2562,8 +2517,7 @@ namespace Orts.Simulation.Timetables
                 SpeedMpS = 0;
             }
 
-            // set speed and position
-
+            // Set speed and position
             foreach (TrainCar car in Cars)
             {
                 car.SpeedMpS = car.Flipped ? -SpeedMpS : SpeedMpS;
@@ -2573,26 +2527,25 @@ namespace Orts.Simulation.Timetables
 
             DistanceTravelledM += distanceM;
 
-            // perform overall update
-
+            // Perform overall update
             if (ControlMode == TRAIN_CONTROL.TURNTABLE)
             {
                 UpdateTurntable(elapsedClockSeconds);
             }
-            else if (ValidRoute != null && MovementState != AI_MOVEMENT_STATE.AI_STATIC)        // no actions required for static objects //
+            else if (ValidRoute != null && MovementState != AI_MOVEMENT_STATE.AI_STATIC) // No actions required for static objects
             {
-                movedBackward = CheckBackwardClearance();                                       // check clearance at rear //
-                UpdateTrainPosition();                                                          // position update         //              
-                UpdateTrainPositionInformation();                                               // position linked info    //
-                int SignalObjIndex = CheckSignalPassed(0, PresentPosition[0], PreviousPosition[0]);    // check if passed signal  //
-                UpdateSectionState(movedBackward);                                              // update track occupation //
-                ObtainRequiredActions(movedBackward);                                           // process Actions         //
-                UpdateRouteClearanceAhead(SignalObjIndex, movedBackward, elapsedClockSeconds);  // update route clearance  //
-                UpdateSignalState(movedBackward);                                               // update signal state     //
+                movedBackward = CheckBackwardClearance();                                           // Check clearance at rear
+                UpdateTrainPosition();                                                              // Position update
+                UpdateTrainPositionInformation();                                                   // Pposition linked info
+                int SignalObjIndex = CheckSignalPassed(0, PresentPosition[0], PreviousPosition[0]); // Check if passed signal
+                UpdateSectionState(movedBackward);                                                  // Update track occupation
+                ObtainRequiredActions(movedBackward);                                               // Process Actions
+                UpdateRouteClearanceAhead(SignalObjIndex, movedBackward, elapsedClockSeconds);      // Update route clearance
+                UpdateSignalState(movedBackward);                                                   // Update signal state
 
                 UpdateMinimalDelay();
 
-                // if train ahead and approaching turntable, check if train is beyond turntable
+                // If train ahead and approaching turntable, check if train is beyond turntable
                 if (ValidRoute[0].Last().MovingTableApproachPath > -1 && EndAuthorityType[0] == END_AUTHORITY.TRAIN_AHEAD)
                 {
                     CheckTrainBeyondTurntable();
@@ -2605,7 +2558,6 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// Update train physics during Pre-Update
         /// <\summary>
-
         public float physicsPreUpdate(float elapsedClockSeconds)
         {
 
