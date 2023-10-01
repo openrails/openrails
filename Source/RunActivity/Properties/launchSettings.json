@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RunActivity": {
+      "commandName": "Project",
+      "commandLineArgs": "-start -exploreactivity \"C:\\Open Rails\\CTN Test Route\\ROUTES\\au_ctn_test_route\\PATHS\\bottom_100.pat\" \"C:\\Open Rails\\CTN Test Route\\TRAINS\\CONSISTS\\~CTN-BR-Deltic-or-advanced-642.con\" 12:00 1 0"
+    }
+  }
+}
