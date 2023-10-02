@@ -571,7 +571,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (fa * fb > 0)
             {
                 // If sign does not change, bisection fails
-                WheelSlipThresholdMpS = MpS.FromKpH(0.2f);
+                WheelSlipThresholdMpS = MpS.FromKpH(0.05f);
                 return;
             }
             while (Math.Abs(b - a) > MpS.FromKpH(0.05f))
@@ -873,6 +873,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             Polach.Update();
             axleStaticForceN = AxleWeightN * SlipCharacteristics(0);
             ComputeWheelSlipThresholdMpS();
+
+//            Trace.TraceInformation("Threshold - Threshold {0} SlipSpeed {1} Speed {2}", WheelSlipThresholdMpS, SlipSpeedMpS, TrainSpeedMpS);
 
             if (count < 6 && count++ == 5)
             {
