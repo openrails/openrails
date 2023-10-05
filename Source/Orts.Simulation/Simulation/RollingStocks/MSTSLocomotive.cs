@@ -1284,6 +1284,8 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(DPUnitID);
             outf.Write(PreviousGearBoxNotch);
             outf.Write(previousChangedGearBoxNotch);
+            outf.Write(DynamicBrake);
+            outf.Write(DynamicBrakeIntervention);
 
             base.Save(outf);
 
@@ -1338,6 +1340,9 @@ namespace Orts.Simulation.RollingStocks
             DPUnitID = inf.ReadInt32();
             PreviousGearBoxNotch = inf.ReadInt32();
             previousChangedGearBoxNotch = inf.ReadInt32();
+
+            DynamicBrake = inf.ReadBoolean();
+            DynamicBrakeIntervention = inf.ReadSingle();
 
             base.Restore(inf);
 
