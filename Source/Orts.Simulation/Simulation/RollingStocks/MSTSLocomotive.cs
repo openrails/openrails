@@ -1279,6 +1279,8 @@ public List<CabView> CabViewList = new List<CabView>();
             outf.Write(DPUnitID);
             outf.Write(PreviousGearBoxNotch);
             outf.Write(previousChangedGearBoxNotch);
+            outf.Write(DynamicBrake);
+            outf.Write(DynamicBrakeIntervention);
 
             base.Save(outf);
 
@@ -1333,6 +1335,9 @@ public List<CabView> CabViewList = new List<CabView>();
             DPUnitID = inf.ReadInt32();
             PreviousGearBoxNotch = inf.ReadInt32();
             previousChangedGearBoxNotch = inf.ReadInt32();
+
+            DynamicBrake = inf.ReadBoolean();
+            DynamicBrakeIntervention = inf.ReadSingle();
 
             base.Restore(inf);
 
