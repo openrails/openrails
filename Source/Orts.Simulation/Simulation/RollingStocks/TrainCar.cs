@@ -640,7 +640,7 @@ namespace Orts.Simulation.RollingStocks
         protected int WagonNumAxles; // Number of axles on a wagon
         protected int InitWagonNumAxles; // Initial read of number of axles on a wagon
         protected float MSTSWagonNumWheels; // Number of axles on a wagon - used to read MSTS value as default
-        protected int LocoNumDrvAxles; // Number of drive axles on locomotive
+        public int LocoNumDrvAxles; // Number of drive axles on locomotive
         protected float MSTSLocoNumDrvWheels; // Number of drive axles on locomotive - used to read MSTS value as default
         public float DriverWheelRadiusM = Me.FromIn(30.0f); // Drive wheel radius of locomotive wheels - Wheel radius of loco drive wheels can be anywhere from about 10" to 40".
 
