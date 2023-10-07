@@ -147,6 +147,8 @@ namespace Orts.Simulation.RollingStocks
         public bool OnLineCabRadio;
         public string OnLineCabRadioURL;
 
+        float ZeroSpeedAdhesionBase;
+
         public float FilteredBrakePipeFlowM3pS;
         public IIRFilter AFMFilter;
 
@@ -2803,6 +2805,7 @@ namespace Orts.Simulation.RollingStocks
                 axle.WheelDistanceGaugeM = TrackGaugeM;
                 axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
                 axle.BogieRigidWheelBaseM = RigidWheelBaseM;
+                axle.CurtiusKnifflerZeroSpeed = ZeroSpeedAdhesionBase;
             }
             LocomotiveAxles.Update(elapsedClockSeconds);
             MotiveForceN = LocomotiveAxles.CompensatedForceN;
@@ -3186,6 +3189,9 @@ namespace Orts.Simulation.RollingStocks
             Train.LocomotiveCoefficientFriction = BaseuMax * BaseFrictionCoefficientFactor * AdhesionMultiplier;  // Find friction coefficient factor for locomotive
             Train.LocomotiveCoefficientFriction = MathHelper.Clamp(Train.LocomotiveCoefficientFriction, 0.05f, 0.8f); // Ensure friction coefficient never exceeds a "reasonable" value
 
+            float ZeroBaseuMax = (Curtius_KnifflerA / (Curtius_KnifflerB) + Curtius_KnifflerC); // Base Curtius - Kniffler equation - u = 0.33, all other values are scaled off this formula
+            ZeroSpeedAdhesionBase = ZeroBaseuMax * BaseFrictionCoefficientFactor * AdhesionMultiplier;
+
             // Set adhesion conditions for diesel, electric or steam geared locomotives
             if (elapsedClockSeconds > 0)
             {
@@ -3194,6 +3200,7 @@ namespace Orts.Simulation.RollingStocks
                 foreach (var axle in LocomotiveAxles)
                 {
                     axle.AdhesionLimit = AdhesionConditions * BaseuMax;
+                    axle.CurtiusKnifflerZeroSpeed = ZeroBaseuMax;
                 }
             }
 
