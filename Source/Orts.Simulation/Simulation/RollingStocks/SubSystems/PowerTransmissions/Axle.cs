@@ -1021,8 +1021,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 var wheelLoadkN = Axle.AxleWeightN / (Axle.NumAxles * 2 * 1000); // Assume two wheels per axle, and thus wheel weight will be have the value - multiple axles????
                 var Young_ModulusMPa = 207000;
 
-   //             Trace.TraceInformation("Wheel Load - WheelLoad {0} AxleWeight {1} AxleNumbers {2}", wheelLoadN, Axle.AxleWeightN, Axle.NumAxles);
-
                 // Calculate Hertzian values - assume 2b = 12mm.
                 var b_HertzianMM = 6.0;
                 a_HertzianMM = (3.04f / 2) * Math.Sqrt(((wheelLoadkN * wheelRadiusMM * 1000) / (2 * b_HertzianMM * Young_ModulusMPa)));
@@ -1035,12 +1033,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
                 StiffnessPreFactors1 = (GNm2 * Math.PI * a_HertzianMM * b_HertzianMM) / (4.0 * wheelLoadN);
 
-                
-
-           //     Trace.TraceInformation("Prefactor 2 - Stiffness2 {0} WheelLoadN {1} AxleWeight {2} NumAxles {3}", StiffnessPreFactors2, wheelLoadN, Axle.AxleWeightN, Axle.NumAxles);
-
                 // Calculate slip and creep values
                 var wheelProfileConicityRad = 0.5f;
+                var wheelContactAngleRad = MathHelper.ToRadians(60);
                 var wheelCentreDeviationMM = 3.0f;
                 double YawAngleRad = 0;
                 if (Axle.CurrentCurveRadiusM > 0)
@@ -1051,12 +1046,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 var supplenessFactor = (wheelDistanceGaugeMM * wheelRadiusMM) / (wheelProfileConicityRad * wheelCentreDeviationMM);
                 var lateralSlipVelocityMpS = Math.Abs(((-1 * Axle.CurrentCurveRadiusM * YawAngleRad) / supplenessFactor) * trainSpeedMpS);
                 Sy = lateralSlipVelocityMpS / trainSpeedMpS;
-                if (float.IsNaN((float)Sy)) Sy = 0;//avoid NaN on HuD display when first starting OR
+                if (float.IsNaN((float)Sy)) Sy = 0;//avoid NaN when first starting OR
                 Sy2 = Sy * Sy;
 
-                spinM1 = Math.Sin(wheelProfileConicityRad) / wheelRadiusMM;
+                spinM1 = Math.Sin(wheelContactAngleRad) / wheelRadiusMM;
                 Syc = Sy + (spinM1 * a_HertzianMM);
                 Syc2 = Syc * Syc;
+
+           //     Trace.TraceInformation("Sy - {0} Syc {1} Spin {2} a_hertz {3}", Sy, Syc, spinM1, a_HertzianMM);
 
                 // calculate "standard" Polach adhesion parameters as straight line approximations as u varies - these values are capped at the moment at the u=0.3 level
                 // Taking them lower may reduce the stability of the calculations
