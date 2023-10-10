@@ -522,6 +522,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float WheelAdhesion;
 
         /// <summary>
+        /// Maximum wheel adhesion as calculated by Polach at the slip threshold speed
+        /// </summary>
+        public float MaximumPolachWheelAdhesion;
+
+        /// <summary>
         /// Correction parameter of adhesion, it has proportional impact on adhesion limit
         /// Should be set to 1.0 for most cases
         /// </summary>
@@ -600,7 +605,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             double SlipSpeedMpS = AxleSpeedMpS - TrainSpeedMpS;
             double fslip = SlipCharacteristics(SlipSpeedMpS);
 
-            if(SlipSpeedMpS == 0)
+            MaximumPolachWheelAdhesion = (float)SlipCharacteristics(WheelSlipThresholdMpS);
+
+            if (SlipSpeedMpS == 0)
             {
                 // For display purposes threshold = 0 when no slip speed
                 WheelSlipThresholdMpS = 0;
