@@ -231,6 +231,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     if (axle.AxleWeightN <= 0) axle.AxleWeightN = 9.81f * locomotive.DrvWheelWeightKg / AxleList.Count;  //remains fixed for diesel/electric locomotives, but varies for steam locomotives
                     if (axle.NumAxles <= 0) axle.NumAxles = locomotive.LocoNumDrvAxles;
                     if (axle.WheelRadiusM <= 0) axle.WheelRadiusM = locomotive.DriverWheelRadiusM;
+                    if (axle.WheelFlangeAngleRad <= 0) axle.WheelFlangeAngleRad = locomotive.MaximumWheelFlangeAngleRad;
                     if (axle.DampingNs <= 0) axle.DampingNs = locomotive.MassKG / 1000.0f / AxleList.Count;
                     if (axle.FrictionN <= 0) axle.FrictionN = locomotive.MassKG / 1000.0f / AxleList.Count;
                 }
@@ -481,6 +482,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float WheelRadiusM;
 
         /// <summary>
+        /// Flange angle wheels connected to axle
+        /// </summary>
+        public float WheelFlangeAngleRad;
+
+        /// <summary>
         /// Gauge of Track
         /// </summary>
         public float WheelDistanceGaugeM;
@@ -594,7 +600,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             double SlipSpeedMpS = AxleSpeedMpS - TrainSpeedMpS;
             double fslip = SlipCharacteristics(SlipSpeedMpS);
 
-                if (fa * fb > 0)
+            if(SlipSpeedMpS == 0)
+            {
+                // For display purposes threshold = 0 when no slip speed
+                WheelSlipThresholdMpS = 0;
+                return;
+            }
+
+            if (fa * fb > 0)
             {
                 // If sign does not change, bisection fails
                 WheelSlipThresholdMpS = MpS.FromKpH(0.05f);
@@ -615,7 +628,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     fb = fc;
                 }
             }
-            WheelSlipThresholdMpS = (float)Math.Max((a + b) / 2, MpS.FromKpH(0.2f));
+            WheelSlipThresholdMpS = (float)Math.Max((a + b) / 2, MpS.FromKpH(0.05f));
 
 //            if (SlipSpeedMpS > 0)
 //                Trace.TraceInformation("Fx Values - a {0} fa1 {1} b {2} fb1 {3} s {4} fs {5} t {6} ft {7} u {8} fu {9} v {10} fv {11} x {12} fx {13} y {14} fy {15} Speed {16} Threshold {17} Fslip {18} SlipSpeed {19}", a, fa1, b, fb1, s, fs, t, ft, u, fu, v, fv, x, fx, y, fy, TrainSpeedMpS, WheelSlipThresholdMpS, fslip, SlipSpeedMpS);
@@ -651,7 +664,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             get
             {
-                var temp = SlipSpeedMpS / WheelSlipThresholdMpS * 100.0f;
+                var temp = (SlipSpeedMpS / WheelSlipThresholdMpS) * 100.0f;
                 if (float.IsNaN(temp)) temp = 0;//avoid NaN on HuD display when first starting OR
                 return Math.Abs(temp);
             }
@@ -742,6 +755,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     case "ortsradius":
                         WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
                         break;
+                    case "ortsflangeangle":
+                        WheelFlangeAngleRad = stf.ReadFloatBlock(STFReader.UNITS.Angle, null);
+                        break;
                     case "ortsnumberwheelaxles":
                         NumAxles = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
                         break;
@@ -766,6 +782,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public void Copy(Axle other)
         {
             WheelRadiusM = other.WheelRadiusM;
+            WheelFlangeAngleRad = other.WheelFlangeAngleRad;
             NumAxles = other.NumAxles;
             InertiaKgm2 = other.InertiaKgm2;
             AxleWeightN = other.AxleWeightN;
@@ -1049,7 +1066,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 if (float.IsNaN((float)Sy)) Sy = 0;//avoid NaN when first starting OR
                 Sy2 = Sy * Sy;
 
-                spinM1 = Math.Sin(wheelContactAngleRad) / wheelRadiusMM;
+                spinM1 = Math.Sin(Axle.WheelFlangeAngleRad) / wheelRadiusMM;
+
+ //               Trace.TraceInformation("Spin - {0} FlangeAngle {1} wheelRadius {2} Speed {3}", spinM1, Axle.WheelFlangeAngleRad, wheelRadiusMM, trainSpeedMpS);
+
+                if (float.IsNaN((float)spinM1)) spinM1 = 0;//avoid NaN when first starting OR
+
                 Syc = Sy + (spinM1 * a_HertzianMM);
                 Syc2 = Syc * Syc;
 
