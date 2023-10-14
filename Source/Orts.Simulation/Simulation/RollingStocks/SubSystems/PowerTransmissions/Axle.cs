@@ -587,8 +587,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             double fa = SlipCharacteristics(a + dx) - SlipCharacteristics(a);
             double fb = SlipCharacteristics(b + dx) - SlipCharacteristics(b);
 
+            double p = 0.025f;
             double s = 0.05f;
             double t = 0.1f;
+            double q = 0.15f;
+            double r = 0.2f;
             double u = 0.25f;
             double v = 0.5f;
             double x = 0.75f;
@@ -596,8 +599,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
             double fa1 = SlipCharacteristics(a);
             double fb1 = SlipCharacteristics(b);
+                        
+            double fp = SlipCharacteristics(p);
             double fs = SlipCharacteristics(s);
             double ft = SlipCharacteristics(t);
+            double fq = SlipCharacteristics(q);
+            double fr = SlipCharacteristics(r);
             double fu = SlipCharacteristics(u);
             double fv = SlipCharacteristics(v);
             double fx = SlipCharacteristics(x);
@@ -617,10 +624,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (fa * fb > 0)
             {
                 // If sign does not change, bisection fails
-                WheelSlipThresholdMpS = MpS.FromKpH(0.05f);
+                WheelSlipThresholdMpS = MpS.FromKpH(0.1f);
                 return;
             }
-            while (Math.Abs(b - a) > MpS.FromKpH(0.05f))
+            while (Math.Abs(b - a) > MpS.FromKpH(0.1f))
             {
                 double c = (a + b) / 2;
                 double fc = SlipCharacteristics(c + dx) - SlipCharacteristics(c);
@@ -635,10 +642,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     fb = fc;
                 }
             }
-            WheelSlipThresholdMpS = (float)Math.Max((a + b) / 2, MpS.FromKpH(0.05f));
+            WheelSlipThresholdMpS = (float)Math.Max((a + b) / 2, MpS.FromKpH(0.1f));
 
-//            if (SlipSpeedMpS > 0)
-//                Trace.TraceInformation("Fx Values - a {0} fa1 {1} b {2} fb1 {3} s {4} fs {5} t {6} ft {7} u {8} fu {9} v {10} fv {11} x {12} fx {13} y {14} fy {15} Speed {16} Threshold {17} Fslip {18} SlipSpeed {19}", a, fa1, b, fb1, s, fs, t, ft, u, fu, v, fv, x, fx, y, fy, TrainSpeedMpS, WheelSlipThresholdMpS, fslip, SlipSpeedMpS);
+ //           if (SlipSpeedMpS > 0)
+ //               Trace.TraceInformation("Fx Values - a {0} fa1 {1} b {2} fb1 {3} s {4} fs {5} t {6} ft {7} u {8} fu {9} v {10} fv {11} x {12} fx {13} y {14} fy {15} Speed {16} Threshold {17} Fslip {18} SlipSpeed {19}", a, fa1, b, fb1, s, fs, t, ft, u, fu, v, fv, x, fx, y, fy, TrainSpeedMpS, WheelSlipThresholdMpS, fslip, SlipSpeedMpS);
 
         }
 
@@ -659,7 +666,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             get
             {
-                return (float)(AxleSpeedMpS - TrainSpeedMpS);
+                return Math.Abs((float)(AxleSpeedMpS - TrainSpeedMpS));
             }
         }
 
@@ -976,7 +983,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (Math.Abs(SlipSpeedMpS) > WheelSlipThresholdMpS)
             {
                 // Wait some time before indicating wheelslip to avoid false triggers
-                if (WheelSlipTimeS > 0.1f)
+                if (WheelSlipTimeS > 0.75f)
                 {
                     IsWheelSlip = IsWheelSlipWarning = true;
                 }
@@ -985,7 +992,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             else if (Math.Abs(SlipSpeedPercent) > SlipWarningTresholdPercent)
             {
                 // Wait some time before indicating wheelslip to avoid false triggers
-                if (WheelSlipWarningTimeS > 0.1f) IsWheelSlipWarning = true;
+                if (WheelSlipWarningTimeS > 0.75f) IsWheelSlipWarning = true;
                 IsWheelSlip = false;
                 WheelSlipWarningTimeS += timeSpan;
             }
@@ -1048,6 +1055,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 // Calculate Hertzian values - assume 2b = 12mm.
                 var b_HertzianMM = 6.0;
                 a_HertzianMM = (3.04f / 2) * Math.Sqrt(((wheelLoadkN * wheelRadiusMM * 1000) / (2 * b_HertzianMM * Young_ModulusMPa)));
+                var a_HertzianM = a_HertzianMM / 1000;
 
                 var hertzianMM = a_HertzianMM / b_HertzianMM;
                 var hertzianMM2 = hertzianMM * hertzianMM;
@@ -1059,13 +1067,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
                 // Calculate slip and creep values
                 var wheelProfileConicityRad = 0.5f;
-                var wheelContactAngleRad = MathHelper.ToRadians(60);
+                var wheelContactAngleRad = MathHelper.ToRadians(3); // Assume that on straight track wheel runs on the tread which has a 1 in 20 slope = 3 deg 
+                // At a later date this could be changed when in a curve to run on the flange at a steeper angle.
                 var wheelCentreDeviationMM = 3.0f;
+
+                spinM1 = Math.Sin(wheelContactAngleRad) / Axle.WheelRadiusM; // set spin assuming wheel running on tread
+
                 double YawAngleRad = 0;
                 if (Axle.CurrentCurveRadiusM > 0)
                 {
                     YawAngleRad = Math.Asin(2.0f * Axle.BogieRigidWheelBaseM / Axle.CurrentCurveRadiusM);
+                    spinM1 = Math.Sin(Axle.WheelFlangeAngleRad) / Axle.WheelRadiusM; // Overwrite spin if locomotive is on a curve. Assume wheel running on flange
                 }
+
+                if (float.IsNaN((float)spinM1)) spinM1 = 0;//avoid NaN when first starting OR
 
                 var supplenessFactor = (wheelDistanceGaugeMM * wheelRadiusMM) / (wheelProfileConicityRad * wheelCentreDeviationMM);
                 var lateralSlipVelocityMpS = Math.Abs(((-1 * Axle.CurrentCurveRadiusM * YawAngleRad) / supplenessFactor) * trainSpeedMpS);
@@ -1073,13 +1088,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 if (float.IsNaN((float)Sy)) Sy = 0;//avoid NaN when first starting OR
                 Sy2 = Sy * Sy;
 
-                spinM1 = Math.Sin(Axle.WheelFlangeAngleRad) / wheelRadiusMM;
-
  //               Trace.TraceInformation("Spin - {0} FlangeAngle {1} wheelRadius {2} Speed {3}", spinM1, Axle.WheelFlangeAngleRad, wheelRadiusMM, trainSpeedMpS);
 
-                if (float.IsNaN((float)spinM1)) spinM1 = 0;//avoid NaN when first starting OR
-
-                Syc = Sy + (spinM1 * a_HertzianMM);
+                Syc = Sy + (spinM1 * a_HertzianM);
                 Syc2 = Syc * Syc;
 
            //     Trace.TraceInformation("Sy - {0} Syc {1} Spin {2} a_hertz {3}", Sy, Syc, spinM1, a_HertzianMM);
@@ -1099,6 +1110,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             public double SlipCharacteristics(double slipSpeedMpS)
             {
                 var polach_uadhesion = zeroSpeedAdhesion * (((1 - polach_A) * Math.Exp(-polach_B * slipSpeedMpS)) + polach_A);
+
+         //       Trace.TraceInformation("Polach Adhesion - {0} ZeroAdhesion {1} RawPolach {2} SlipSpeed {3}", polach_uadhesion, zeroSpeedAdhesion, (((1 - polach_A) * Math.Exp(-polach_B * slipSpeedMpS)) + polach_A), slipSpeedMpS);
 
                 if (trainSpeedMpS < 0.05f)
                     return polach_uadhesion;
@@ -1127,15 +1140,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
                 var fx = (f * Sx / Sc) / wheelLoadN;
 
-//                if (fx < 0)
+ /*
+                //               if (slipSpeedMpS == 0.025f || slipSpeedMpS == 0.05f || slipSpeedMpS == 0.1f || slipSpeedMpS == 0.15f || slipSpeedMpS == 0.2f)
+                if (Axle.IsWheelSlip)
                 {
-      //              Trace.TraceInformation("Negative Fx - Fx {0} Speed {1} SlipSpeed {2} Sx {3} PolachAdhesion {4} adhesionComponent {5} slipComponent {6} Polach_Ks {7} Stiffness2 {8} SlipForce {9} Sc {10} WheelLoad {11} Syc {12} Hertz_a {13}", fx, (float)trainSpeedMpS, (float)slipSpeedMpS, (float)Sx, polach_uadhesion, adhesionComponent, slipComponent, polach_Ks, Stiffness2, f, Sc, wheelLoadN, Syc, a_HertzianMM);
+                    Trace.TraceInformation("Negative Fx - Fx {0} Speed {1} SlipSpeed {2} Sx {3} PolachAdhesion {4} adhesionComponent {5} slipComponent {6} Polach_Ks {7} Stiffness2 {8} SlipForce {9} Sc {10} WheelLoad {11} Syc {12} Hertz_a {13} Sy {14} Threshold {15}", fx, (float)trainSpeedMpS, (float)slipSpeedMpS, (float)Sx, polach_uadhesion, adhesionComponent, slipComponent, polach_Ks, Stiffness2, f, Sc, wheelLoadN, Syc, a_HertzianMM, Sy, Axle.WheelSlipThresholdMpS);
 
                 }
+ */
 
                 return fx;
             }
         }
+
 
         /// <summary>
         /// Uses the Polach creep force curves calculation described in the following document
