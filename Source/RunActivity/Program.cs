@@ -20,7 +20,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 using Orts.Common;
 using Orts.Simulation;
 using Orts.Viewer3D;
@@ -42,7 +41,6 @@ namespace Orts
         public static Simulator Simulator;
         public static Viewer Viewer;
         public static DispatchViewer DebugViewer;
-        public static MapViewer DebugViewerBeta;
         public static SoundDebugForm SoundDebugForm;
         public static ORTraceListener ORTraceListener;
         public static string logFileName = "";          // contains path to file
@@ -61,9 +59,6 @@ namespace Orts
             string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Native");
             path = Path.Combine(path, (Environment.Is64BitProcess) ? "X64" : "X86");
             NativeMethods.SetDllDirectory(path);
-
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
 
             var game = new Game(settings);
             game.PushState(new GameStateRunActivity(args));

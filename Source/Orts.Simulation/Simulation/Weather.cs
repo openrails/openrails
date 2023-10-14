@@ -44,9 +44,6 @@ namespace Orts.Simulation
         
         // Fog/visibility distance. Ranges from 10m (can't see anything), 5km (medium), 20km (clear) to 100km (clear arctic).
         public float FogDistance;
-
-        // Daylight offset (-12h to +12h)
-        public int DaylightOffset = 0;
         
         // Precipitation liquidity; =1 for rain, =0 for snow; intermediate values possible with dynamic weather;
         public float PrecipitationLiquidity;

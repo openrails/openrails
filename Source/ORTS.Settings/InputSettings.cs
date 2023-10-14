@@ -480,8 +480,6 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.DebugLockShadows] = new UserCommandKeyInput(0x1F, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommand.DebugLogger] = new UserCommandKeyInput(0x58);
             Commands[(int)UserCommand.DebugLogRenderFrame] = new UserCommandKeyInput(0x58, KeyModifiers.Alt);
-            Commands[(int)UserCommand.DebugDaylightOffsetDecrease] = new UserCommandKeyInput(0x0C, KeyModifiers.Shift |  KeyModifiers.Alt);
-            Commands[(int)UserCommand.DebugDaylightOffsetIncrease] = new UserCommandKeyInput(0x0D, KeyModifiers.Shift |  KeyModifiers.Alt);
             Commands[(int)UserCommand.DebugOvercastDecrease] = new UserCommandKeyInput(0x0C, KeyModifiers.Control);
             Commands[(int)UserCommand.DebugOvercastIncrease] = new UserCommandKeyInput(0x0D, KeyModifiers.Control);
             Commands[(int)UserCommand.DebugPhysicsForm] = new UserCommandKeyInput(0x3D, KeyModifiers.Alt);
@@ -522,7 +520,6 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.GameExternalCabController] = new UserCommandKeyInput(0x29);
             Commands[(int)UserCommand.GameFullscreen] = new UserCommandKeyInput(0x1C, KeyModifiers.Alt);
             Commands[(int)UserCommand.GameMultiPlayerDispatcher] = new UserCommandKeyInput(0x0A, KeyModifiers.Control);
-            Commands[(int)UserCommand.GameMultiPlayerDispatcherBeta] = new UserCommandKeyInput(0x0A, KeyModifiers.Control | KeyModifiers.Shift);
             Commands[(int)UserCommand.GameMultiPlayerTexting] = new UserCommandKeyInput(0x14, KeyModifiers.Alt);
             Commands[(int)UserCommand.GamePause] = new UserCommandKeyInput(Keys.Pause);
             Commands[(int)UserCommand.GamePauseMenu] = new UserCommandKeyInput(0x01);
