@@ -220,6 +220,8 @@ namespace ORTS.TrackViewer
 
             drawPathChart = new DrawPathChart();
 
+            Properties.Settings.Default.CurrentActivityName = ""; 
+
             base.Initialize();
         }
 
@@ -519,6 +521,8 @@ namespace ORTS.TrackViewer
             base.Update(gameTime);
 
             HandleCommandLineArgs();
+
+            SetTitle();
         }
 
         /// <summary>
@@ -933,6 +937,7 @@ namespace ORTS.TrackViewer
             menuControl.PopulatePlatforms();
             menuControl.PopulateStations();
             menuControl.PopulateSidings();
+            menuControl.PopulateActivitiesMenu();
         }
 
         /// <summary>
@@ -942,7 +947,15 @@ namespace ORTS.TrackViewer
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
             AssemblyTitleAttribute assemblyTitle = assembly.GetCustomAttributes(typeof(AssemblyTitleAttribute), false)[0] as AssemblyTitleAttribute;
-            Window.Title = assemblyTitle.Title + ": " + RouteData.RouteName;
+            Window.Title = assemblyTitle.Title;
+            if ((RouteData != null) && (RouteData.RouteName != null))
+            {
+                Window.Title += ": " + RouteData.RouteName;
+            }
+            if (!String.IsNullOrEmpty(Properties.Settings.Default.CurrentActivityName))
+            { 
+                Window.Title += "  Activity: " + Properties.Settings.Default.CurrentActivityName;
+            }
         }
 
         #endregion

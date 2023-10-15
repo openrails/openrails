@@ -67,6 +67,7 @@ namespace ORTS.Settings
 
         public static readonly UserCommandInput[] DefaultCommands = new UserCommandInput[Enum.GetNames(typeof(UserCommand)).Length];
         public readonly UserCommandInput[] Commands = new UserCommandInput[Enum.GetNames(typeof(UserCommand)).Length];
+        static readonly UserCommand[] UserCommandValues = (UserCommand[])Enum.GetValues(typeof(UserCommand));
 
         static InputSettings()
         {
@@ -91,7 +92,7 @@ namespace ORTS.Settings
 
         UserCommand[] GetCommands()
         {
-            return (UserCommand[])Enum.GetValues(typeof(UserCommand));
+            return UserCommandValues;
         }
 
         public override object GetDefaultValue(string name)
@@ -331,6 +332,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.CameraScrollLeft] = new UserCommandModifiableKeyInput(0x4B, KeyModifiers.Alt);
             Commands[(int)UserCommand.CameraScrollRight] = new UserCommandModifiableKeyInput(0x4D, KeyModifiers.Alt);
             Commands[(int)UserCommand.CameraChangePassengerViewPoint] = new UserCommandKeyInput(0x06, KeyModifiers.Shift);
+            Commands[(int)UserCommand.CameraChange3DCabViewPoint] = new UserCommandKeyInput(0x02, KeyModifiers.Control | KeyModifiers.Shift);
             Commands[(int)UserCommand.CameraToggleLetterboxCab] = new UserCommandKeyInput(0x02, KeyModifiers.Control);
             Commands[(int)UserCommand.CameraToggleShowCab] = new UserCommandKeyInput(0x02, KeyModifiers.Shift);
             Commands[(int)UserCommand.CameraTrackside] = new UserCommandKeyInput(0x05);
@@ -344,6 +346,8 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.ControlAlerter] = new UserCommandKeyInput(0x2C);
             Commands[(int)UserCommand.ControlBackwards] = new UserCommandKeyInput(0x1F);
             Commands[(int)UserCommand.ControlBailOff] = new UserCommandKeyInput(0x35);
+            Commands[(int)UserCommand.ControlBrakeQuickRelease] = new UserCommandKeyInput(0x35, KeyModifiers.Control);
+            Commands[(int)UserCommand.ControlBrakeOvercharge] = new UserCommandKeyInput(0x35, KeyModifiers.Control | KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlBatterySwitchClose] = new UserCommandKeyInput(0x52);
             Commands[(int)UserCommand.ControlBatterySwitchOpen] = new UserCommandKeyInput(0x52, KeyModifiers.Control);
             Commands[(int)UserCommand.ControlBell] = new UserCommandKeyInput(0x30);
@@ -352,6 +356,8 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.ControlBlowerIncrease] = new UserCommandKeyInput(0x31);
             Commands[(int)UserCommand.ControlSteamHeatDecrease] = new UserCommandKeyInput(0x20, KeyModifiers.Alt);
             Commands[(int)UserCommand.ControlSteamHeatIncrease] = new UserCommandKeyInput(0x16, KeyModifiers.Alt);
+            Commands[(int)UserCommand.ControlSteamBoosterDecrease] = new UserCommandKeyInput(0x11, KeyModifiers.Shift);
+            Commands[(int)UserCommand.ControlSteamBoosterIncrease] = new UserCommandKeyInput(0x11, KeyModifiers.Alt);
             Commands[(int)UserCommand.ControlBrakeHoseConnect] = new UserCommandKeyInput(0x2B);
             Commands[(int)UserCommand.ControlBrakeHoseDisconnect] = new UserCommandKeyInput(0x2B, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlCabRadio] = new UserCommandKeyInput(0x13, KeyModifiers.Alt);
@@ -371,6 +377,8 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.ControlDieselPlayer] = new UserCommandKeyInput(0x15, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlDoorLeft] = new UserCommandKeyInput(0x10);
             Commands[(int)UserCommand.ControlDoorRight] = new UserCommandKeyInput(0x10, KeyModifiers.Shift);
+            Commands[(int)UserCommand.ControlWindowLeft] = new UserCommandKeyInput(0x10, KeyModifiers.Control);
+            Commands[(int)UserCommand.ControlWindowRight] = new UserCommandKeyInput(0x10, KeyModifiers.Control | KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlDynamicBrakeDecrease] = new UserCommandKeyInput(0x33);
             Commands[(int)UserCommand.ControlDynamicBrakeIncrease] = new UserCommandKeyInput(0x34);
             Commands[(int)UserCommand.ControlElectricTrainSupply] = new UserCommandKeyInput(0x30, KeyModifiers.Alt);
@@ -509,6 +517,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.GameChangeCab] = new UserCommandKeyInput(0x12, KeyModifiers.Control);
             Commands[(int)UserCommand.GameClearSignalBackward] = new UserCommandKeyInput(0x0F, KeyModifiers.Shift);
             Commands[(int)UserCommand.GameClearSignalForward] = new UserCommandKeyInput(0x0F);
+            Commands[(int)UserCommand.GameExternalCabController] = new UserCommandKeyInput(0x29);
             Commands[(int)UserCommand.GameFullscreen] = new UserCommandKeyInput(0x1C, KeyModifiers.Alt);
             Commands[(int)UserCommand.GameMultiPlayerDispatcher] = new UserCommandKeyInput(0x0A, KeyModifiers.Control);
             Commands[(int)UserCommand.GameMultiPlayerTexting] = new UserCommandKeyInput(0x14, KeyModifiers.Alt);

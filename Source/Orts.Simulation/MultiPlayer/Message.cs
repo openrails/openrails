@@ -1634,11 +1634,11 @@ namespace Orts.MultiPlayer
 
                 train.MUDirection = (Direction)mDirection;
                 train.RearTDBTraveller = traveller;
+                train.ReinitializeEOT();
                 train.CalculatePositionOfCars();
                 train.travelled = Travelled;
                 train.CheckFreight();
                 train.SetDPUnitIDs();
-                train.ReinitializeEOT();
             }
             // New train
             else

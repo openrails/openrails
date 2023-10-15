@@ -22,12 +22,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using Orts.Simulation.Signalling;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using ORTS.Scripting.Api.ETCS;
@@ -648,7 +648,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             {
                 case Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL:
                 case Train.TrainObjectItem.TRAINOBJECTTYPE.SPEED_SIGNAL:
-                {
                     var playerTrainSignalList = Locomotive.Train.PlayerTrainSignals[dir][function];
                     if (itemSequenceIndex > playerTrainSignalList.Count - 1)
                         goto Exit; // no n-th signal available
@@ -670,29 +669,37 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         aspect = (Aspect)Locomotive.Train.signalRef.TranslateToTCSAspect(trainSignal.SignalObject.this_sig_lr(function));
                     }
 
-                    var functionHead = trainSignal.SignalObject.SignalHeads.Find(head => head.Function == function);
+                    var functionHead = default(SignalHead);
+                    foreach (var head in trainSignal.SignalObject.SignalHeads)
+                        if (head.Function == function)
+                            functionHead = head;
                     signalTypeName = functionHead.SignalTypeName;
-                    if (functionHead.signalType.DrawStates.Any(d => d.Value.Index == functionHead.draw_state))
+                    foreach (var key in functionHead.signalType.DrawStates.Keys)
                     {
-                        drawStateName = functionHead.signalType.DrawStates.First(d => d.Value.Index == functionHead.draw_state).Value.Name;
+                        if (functionHead.signalType.DrawStates[key].Index == functionHead.draw_state)
+                            drawStateName = functionHead.signalType.DrawStates[key].Name;
+                        break;
                     }
                     textAspect = functionHead?.TextSignalAspect ?? "";
                     break;
-                }
                 case Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST:
-                {
-                    var playerTrainSpeedpostList = Locomotive.Train.PlayerTrainSpeedposts[dir].Where(x => !x.IsWarning).ToList();
-                    if (itemSequenceIndex > playerTrainSpeedpostList.Count - 1)
-                        goto Exit; // no n-th speedpost available
-                    var trainSpeedpost = playerTrainSpeedpostList[itemSequenceIndex];
-                    if (trainSpeedpost.DistanceToTrainM > maxDistanceM)
-                        goto Exit; // the requested speedpost is too distant
-
-                    // All OK, we can retrieve the data for the required speedpost;
-                    distanceM = trainSpeedpost.DistanceToTrainM;
-                    speedLimitMpS = trainSpeedpost.AllowedSpeedMpS;
+                    var j = 0;
+                    for (var i = 0; i < Locomotive.Train.PlayerTrainSpeedposts[dir].Count; i++)
+                    {
+                        if (Locomotive.Train.PlayerTrainSpeedposts[dir][i].IsWarning)
+                            continue;
+                        if (itemSequenceIndex == j++)
+                        {
+                            var trainSpeedpost = Locomotive.Train.PlayerTrainSpeedposts[dir][i];
+                            if (trainSpeedpost.DistanceToTrainM <= maxDistanceM)
+                            {
+                                distanceM = trainSpeedpost.DistanceToTrainM;
+                                speedLimitMpS = trainSpeedpost.AllowedSpeedMpS;
+                            }
+                            break;
+                        }
+                    }
                     break;
-                }
             }
 
         Exit:
@@ -939,19 +946,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         public void Save(BinaryWriter outf)
         {
-            outf.Write(ScriptName ?? "");
-            if (ScriptName != "")
+            if (!string.IsNullOrEmpty(ScriptName))
                 Script.Save(outf);
         }
 
         public void Restore(BinaryReader inf)
         {
-            ScriptName = inf.ReadString();
-            if (ScriptName != "")
-            {
-                Initialize();
+            if (!string.IsNullOrEmpty(ScriptName))
                 Script.Restore(inf);
-            }
         }
     }
 
@@ -1249,7 +1251,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             float maxDistanceAheadM = 0;
             ETCSStatus.SpeedTargets.Clear();
             ETCSStatus.SpeedTargets.Add(new PlanningTarget(0, CurrentSpeedLimitMpS));
-            foreach (int i in Enumerable.Range(0, 5))
+            for (int i = 0; i < 5; i++)
             {
                 maxDistanceAheadM = NextSignalDistanceM(i);
                 if (NextSignalAspect(i) == Aspect.Stop || NextSignalAspect(i) == Aspect.None) break;
@@ -1258,7 +1260,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
             float prevDist = 0;
             float prevSpeed = 0;
-            foreach (int i in Enumerable.Range(0, 10))
+            for (int i = 0; i < 10; i++)
             {
                 float distanceM = NextPostDistanceM(i);
                 if (distanceM >= maxDistanceAheadM) break;

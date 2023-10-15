@@ -79,6 +79,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "brakenotchstart": Type = ControllerState.BrakeNotch; break;
                 case "overchargestart": Type = ControllerState.Overcharge; break;
                 case "slowservicestart": Type = ControllerState.SlowService; break;
+                case "holdenginestart": Type = ControllerState.HoldEngine; break;
+                case "bailoffstart": Type = ControllerState.BailOff; break;
                 default:
                     STFException.TraceInformation(stf, "Skipped unknown notch type " + type);
                     break;
@@ -281,6 +283,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
         public float SetPercent(float percent)
         {
+            if (percent > 100) SetValue(1);
             float v = (MinimumValue < 0 && percent < 0 ? -MinimumValue : MaximumValue) * percent / 100;
             CurrentValue = MathHelper.Clamp(v, MinimumValue, MaximumValue);
 

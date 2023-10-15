@@ -204,6 +204,8 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommand.ControlSmallEjectorDecrease, new Action[] { () => SteamLocomotive.StopSmallEjectorDecrease(), () => SteamLocomotive.StartSmallEjectorDecrease(null) });
             UserInputCommands.Add(UserCommand.ControlLargeEjectorIncrease, new Action[] { () => SteamLocomotive.StopLargeEjectorIncrease(), () => SteamLocomotive.StartLargeEjectorIncrease(null) });
             UserInputCommands.Add(UserCommand.ControlLargeEjectorDecrease, new Action[] { () => SteamLocomotive.StopLargeEjectorDecrease(), () => SteamLocomotive.StartLargeEjectorDecrease(null) });
+            UserInputCommands.Add(UserCommand.ControlSteamBoosterIncrease, new Action[] { () => SteamLocomotive.StopSteamBoosterIncrease(), () => SteamLocomotive.StartSteamBoosterIncrease(null) });
+            UserInputCommands.Add(UserCommand.ControlSteamBoosterDecrease, new Action[] { () => SteamLocomotive.StopSteamBoosterDecrease(), () => SteamLocomotive.StartSteamBoosterDecrease(null) });
             base.InitializeUserInputCommands();
         }
 
@@ -224,9 +226,6 @@ namespace Orts.Viewer3D.RollingStock
 
             // Keeping separated, since it is not a real engine control. (Probably wrong classification?)
             if (UserInput.IsPressed(UserCommand.ControlAIFireReset)) new AIFireResetCommand(Viewer.Log);
-
-            if (UserInput.RDState != null && UserInput.RDState.Changed)
-                SteamLocomotive.SetCutoffPercent(UserInput.RDState.DirectionPercent);
 
             base.HandleUserInput(elapsedTime);
 

@@ -699,6 +699,8 @@ namespace Orts.Simulation
             ToggleDoorsLeftCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleDoorsRightCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleMirrorsCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleWindowLeftCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleWindowRightCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             CabRadioCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleHelpersEngineCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             BatterySwitchCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
@@ -729,6 +731,12 @@ namespace Orts.Simulation
             EOTEmergencyBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleEOTEmergencyBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             EOTMountCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+        }
+
+        public void SetWagonCommandReceivers(MSTSWagon wag)
+        {
+            ToggleWindowLeftCommand.Receiver = wag;
+            ToggleWindowRightCommand.Receiver = wag;
         }
 
         public TrainCar SetPlayerLocomotive(Train playerTrain)
@@ -1749,6 +1757,10 @@ namespace Orts.Simulation
 
             }
 
+            // update EOT state
+            train.ReinitializeEOT();
+            train2.ReinitializeEOT();
+
             // and fix up the travellers
             if (train.IsActualPlayerTrain && j >= i || !keepFront)
             {
@@ -1846,10 +1858,8 @@ namespace Orts.Simulation
 
             train.CheckFreight();
             train.SetDPUnitIDs();
-            train.ReinitializeEOT();
             train2.CheckFreight();
             train2.SetDPUnitIDs();
-            train2.ReinitializeEOT();
 
             train.Update(0);   // stop the wheels from moving etc
             train2.Update(0);  // stop the wheels from moving etc

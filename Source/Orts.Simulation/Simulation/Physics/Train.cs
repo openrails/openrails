@@ -96,6 +96,7 @@ namespace Orts.Simulation.Physics
         }
         public Traveller RearTDBTraveller;               // positioned at the back of the last car in the train
         public Traveller FrontTDBTraveller;              // positioned at the front of the train by CalculatePositionOfCars
+        Traveller CalculatorTraveller;            // CalculatePositionOfCars uses it for the calculations
         public float Length;                             // length of train from FrontTDBTraveller to RearTDBTraveller
         public float MassKg;                             // weight of the train
         public float SpeedMpS;                           // meters per second +ve forward, -ve when backing
@@ -134,7 +135,7 @@ namespace Orts.Simulation.Physics
         // but Class VacuumSinglePipe uses it for vacuum in InHg.
         public float BrakeLine2PressurePSI;              // extra line for dual line systems, main reservoir
         public float BrakeLine3PressurePSI;              // extra line just in case, engine brake pressure
-        public float BrakeLine4 = -1;                    // extra line just in case, ep brake control line. -1: release/inactive, 0: hold, 0 < value <=1: apply
+        public float BrakeLine4 = -1;                    // extra line just in case, ep brake control line. -2: hold, -1: inactive, 0: release, 0 < value <=1: apply
         public RetainerSetting RetainerSetting = RetainerSetting.Exhaust;
         public int RetainerPercent = 100;
         public float TotalTrainBrakePipeVolumeM3; // Total volume of train brake pipe
@@ -318,14 +319,14 @@ namespace Orts.Simulation.Physics
 
         public enum TRAIN_CONTROL
         {
-            AUTO_SIGNAL,
-            AUTO_NODE,
-            MANUAL,
-            EXPLORER,
-            OUT_OF_CONTROL,
-            INACTIVE,
-            TURNTABLE,
-            UNDEFINED
+            [GetParticularString("TrainControl", "Auto Signal")] AUTO_SIGNAL,
+            [GetParticularString("TrainControl", "Auto Node")] AUTO_NODE,
+            [GetParticularString("TrainControl", "Manual")] MANUAL,
+            [GetParticularString("TrainControl", "Explorer")] EXPLORER,
+            [GetParticularString("TrainControl", "Out of Control")] OUT_OF_CONTROL,
+            [GetParticularString("TrainControl", "Inactive")] INACTIVE,
+            [GetParticularString("TrainControl", "Turntable")] TURNTABLE,
+            [GetParticularString("TrainControl", "Undefined")] UNDEFINED
         }
 
         private TRAIN_CONTROL controlMode = TRAIN_CONTROL.UNDEFINED;
@@ -419,6 +420,8 @@ namespace Orts.Simulation.Physics
         public int LoopSection = -1;                                    // section where route loops back onto itself
 
         public bool nextRouteReady = false;                             // indication to activity.cs that a reversal has taken place
+
+        readonly List<int[]> sectionList = new List<int[]>(); // internally used in UpdateSectionState()
 
         // Deadlock Info : 
         // list of sections where deadlock begins
@@ -949,9 +952,8 @@ namespace Orts.Simulation.Physics
             {
                 for (int i = 0; i < count; ++i)
                 {
-                    TrainCar car = RollingStock.Load(simulator, this, inf.ReadString(), false);
+                    TrainCar car = RollingStock.Load(simulator, this, inf.ReadString());
                     car.Restore(inf);
-                    car.Initialize();
                 }
             }
             SetDPUnitIDs(true);
@@ -4017,6 +4019,8 @@ namespace Orts.Simulation.Physics
                     fullServPressurePSI = lead.BrakeSystem is VacuumSinglePipe ? 16 : maxPressurePSI - lead.TrainBrakeController.FullServReductionPSI;
                     EqualReservoirPressurePSIorInHg = Math.Min(maxPressurePSI, EqualReservoirPressurePSIorInHg);
                     lead.TrainBrakeController.UpdatePressure(ref EqualReservoirPressurePSIorInHg, 1000, ref BrakeLine4);
+                    if (!(lead.BrakeSystem is EPBrakeSystem))
+                        BrakeLine4 = -1;
                     EqualReservoirPressurePSIorInHg =
                             MathHelper.Max(EqualReservoirPressurePSIorInHg, fullServPressurePSI);
                 }
@@ -4223,7 +4227,11 @@ namespace Orts.Simulation.Physics
             if (LeadLocomotive is MSTSLocomotive lead)
             {
                 if (lead.TrainBrakeController != null)
+                {
                     lead.TrainBrakeController.UpdatePressure(ref EqualReservoirPressurePSIorInHg, elapsedClockSeconds, ref BrakeLine4);
+                    if (!(lead.BrakeSystem is EPBrakeSystem))
+                        BrakeLine4 = -1;
+                }
                 if (lead.EngineBrakeController != null)
                     lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, elapsedClockSeconds);
                 lead.BrakeSystem.PropagateBrakePressure(elapsedClockSeconds);
@@ -4378,7 +4386,9 @@ namespace Orts.Simulation.Physics
 
             // TODO : check if train moved back into previous section
 
-            var traveller = new Traveller(RearTDBTraveller);
+            CalculatorTraveller = CalculatorTraveller ?? new Traveller(RearTDBTraveller);
+            var traveller = CalculatorTraveller;
+            traveller.Copy(RearTDBTraveller);
             // The traveller location represents the back of the train.
             var length = 0f;
 
@@ -4453,7 +4463,7 @@ namespace Orts.Simulation.Physics
                 car.UpdateFreightAnimationDiscretePositions();
             }
 
-            FrontTDBTraveller = traveller;
+            (FrontTDBTraveller, CalculatorTraveller) = (CalculatorTraveller, FrontTDBTraveller);
             Length = length;
             travelled += distance;
         } // CalculatePositionOfCars
@@ -5454,7 +5464,7 @@ namespace Orts.Simulation.Physics
                 if (car is MSTSLocomotive) locoBehind = false;
                 if (car.SpeedMpS > 0)
                 {
-                    car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
+                    car.SpeedMpS += (car.TotalForceN / car.MassKG) * elapsedTime;
                     if (car.SpeedMpS < 0)
                         car.SpeedMpS = 0;
                     // If car is manual braked, air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  
@@ -5467,7 +5477,7 @@ namespace Orts.Simulation.Physics
                 }
                 else if (car.SpeedMpS < 0)
                 {
-                    car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
+                    car.SpeedMpS += (car.TotalForceN / car.MassKG) * elapsedTime;
                     if (car.SpeedMpS > 0)
                         car.SpeedMpS = 0;
                     // If car is manual braked, air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  
@@ -6521,7 +6531,7 @@ namespace Orts.Simulation.Physics
         public void UpdateSectionState(int backward)
         {
 
-            List<int[]> sectionList = new List<int[]>();
+            sectionList.Clear();
 
             int lastIndex = PreviousPosition[0].RouteListIndex;
             int presentIndex = PresentPosition[0].RouteListIndex;
@@ -20025,6 +20035,7 @@ namespace Orts.Simulation.Physics
 
         public class DistanceTravelledActions : LinkedList<DistanceTravelledItem>
         {
+            readonly List<DistanceTravelledItem> itemList = new List<DistanceTravelledItem>();
 
             //================================================================================================//
             //
@@ -20111,7 +20122,7 @@ namespace Orts.Simulation.Physics
 
             public List<DistanceTravelledItem> GetActions(float distance)
             {
-                List<DistanceTravelledItem> itemList = new List<DistanceTravelledItem>();
+                itemList.Clear();
 
                 bool itemsCollected = false;
                 LinkedListNode<DistanceTravelledItem> nextNode = this.First;
@@ -20136,7 +20147,7 @@ namespace Orts.Simulation.Physics
 
             public List<DistanceTravelledItem> GetAuxActions(Train thisTrain, float distance)
             {
-                List<DistanceTravelledItem> itemList = new List<DistanceTravelledItem>();
+                itemList.Clear();
                 LinkedListNode<DistanceTravelledItem> nextNode = this.First;
 
                 while (nextNode != null)
@@ -20159,7 +20170,7 @@ namespace Orts.Simulation.Physics
 
             public List<DistanceTravelledItem> GetActions(float distance, Type reqType)
             {
-                List<DistanceTravelledItem> itemList = new List<DistanceTravelledItem>();
+                itemList.Clear();
 
                 bool itemsCollected = false;
                 LinkedListNode<DistanceTravelledItem> nextNode = this.First;

@@ -1234,6 +1234,181 @@ ENG or WAG file::
   )
 
 
+.. _features-windows:
+
+Trainset windows
+================
+
+
+Left and right 2D- or 3D-cab windows can be animated, showing the animation both in cabview and in 
+external views. For locomotives also two windows for the rear cab can be defined.
+
+The external sounds and the track sound are reproduced unattenuated with open window. 
+To have a volume difference, two lines as follows must be added to the wagon section of the .eng or .wag file::
+
+  ORTSExternalSoundPassedThroughPercent ( 30 )
+  ORTSTrackSoundPassedThroughPercent ( 25 )
+
+Numbers in parenthesis may vary from 0 (no sound heard internally) to 100 (sound heard unattenuated).
+Note that, if these two lines aren't added, but audio option "% of external sound heard internally" is set 
+to a value lower than 100, the above effect will  be still available with external sounds, but not with 
+the track sound.
+
+Keyboard commands to toggle window state are listed :ref:`here <driving-anim-commands>` .
+
+Names of the animations are as follows.
+
+Names for the windows animations as seen from the external camera views (the ones to be inserted in the .s 
+file of the trainset) must start with following strings::
+
+  LEFTWINDOWFRONT
+  RIGHTWINDOWFRONT
+  LEFTWINDOWREAR
+  RIGHTWINDOWREAR
+
+In case of carriages, only the first two apply.
+
+Names for the windows animations as seen from within a 2D cab (same names are valid for 
+front and rear cab); left and right are considered as seen from the related cab::
+
+  ORTS_2DEXTERNALLEFTWINDOW
+  ORTS_2DEXTERNALRIGHTTWINDOW
+
+Note that in general the lateral windows will be located in the side views of the 2D cab.
+Therefore the related control blocks in the .cvf file will have to be located as described 
+:ref:`here <cabs-side-views>` .
+
+Names for the window animations as seen from within a 3D cab (the ones to be inserted in the .s 
+file of the 3D cab); Left and right are considered 
+as seen in the forward direction of the first cab. The convention difference between 2D and 
+3D cabs is due to the difference in the handling of the cabs. NOTE: these 4 controls are not 
+needed in the .cvf file (same applies also for wipers, doors and so on as seen from within a 
+3D cab)::
+
+  ORTS_EXTERNALLEFTWINDOWFRONT
+  ORTS_EXTERNALRIGHTWINDOWFRONT
+  ORTS_EXTERNALLEFTWINDOWREAR
+  ORTS_EXTERNALRIGHTWINDOWREAR
+
+LEFTWINDOW and RIGHTWINDOW are the names of the controls that can be inserted in the 
+.cvf file and in the 3Dcab .s file to command the state change with the mouse.
+
+Here is an example of the animation of the left window in a 2D cab::
+
+	ORTSCabViewControls
+	( 1
+			ORTSAnimatedDisplay  (
+			Type ( ORTS_2DEXTERNALLEFTWINDOW MULTI_STATE_DISPLAY )
+			Position ( 101 69 235 365 )
+			Graphic ( ../../Common.Cab/CabE464/FinestraSX.ace )
+			ORTSCycleTime ( 0.6 )
+				States ( 16 4 4
+				State (
+					Style ( 0 )
+					SwitchVal ( 0 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.0625 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.125 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.1875 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.25 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.3125 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.375 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.4375 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.5 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.5625 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.625 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.6875 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.75 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.825 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.88 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.94 )
+				)
+			)
+			ORTSCabviewpoint ( 1 )
+		)
+	)
+
+FinestraSX.ace contains the various frames, from window fully close to window fully open. 
+ORTSCycleTime means that the opening/closing time of the window is 0.6 seconds. If one wants to use higher times, 
+more frames are needed to get a smooth animation. Note that, as explained above,
+the control is within the ORTSCabviewControls block, which is skipped by MSTS and older OR versions to avoid 
+error messages, and note that the  ORTSCabviewpoint ( 1 ) line specifies that that animation is in the left cabview.
+
+A simple control block to move a window by clicking the mouse can be as follows::
+
+	TwoState (
+			Type ( ORTS_LEFTWINDOW TWO_STATE )
+			Position ( 120 425 30 21 )
+			Graphic ( cab.ace )
+			NumFrames ( 2 2 1 )
+			Style ( ONOFF )
+			MouseControl ( 1 )
+			)
+
+If there is no specific window control in the real cab, you can locate this control on the window itself, 
+using a transparent graphic. So, clicking on the window, you change its state. This can be applied 
+both to 2D and 3D cabs.
+
+Sound triggers for windows animation are listed :ref:`here <sound-windows>` .
+
+Specifics for carriage window animations
+----------------------------------------
+
+One window to the left and one window to the right of the carriage may be animated. 
+They can be opened and closed only via keyboard (Ctrl-Q for left window and 
+Ctrl-Shift-Q for right window, as for locomotives).
+
+Note that the carriage must have only the main shape file (no passenger view shape file). 
+This main shape file can include also the inside structure of the carriage; note that when 
+a .wag or .eng file has an Inside block defined, and such block doesn't include a line 
+specifying the .s file, OR will use the main shape file to display the 
+inside. So such shape file will display the window animation both with 
+the passenger camera (inside view) and with the external cameras (outside views).
+
 C# engine scripting
 ===================
 .. _features-scripting-csharp:

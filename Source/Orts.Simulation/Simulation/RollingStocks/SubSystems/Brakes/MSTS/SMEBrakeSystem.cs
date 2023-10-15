@@ -41,7 +41,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             float demandedAutoCylPressurePSI = 0;
 
             // Only allow SME brake tokens to operate if car is connected to an SME system
-            if (lead == null || !(lead.BrakeSystem is SMEBrakeSystem))
+            if (lead == null || !(lead.BrakeSystem is SMEBrakeSystem) || Car.Train.BrakeLine4 < 0)
             {
                 HoldingValve = ValveState.Release;
                 base.Update(elapsedClockSeconds);
@@ -50,21 +50,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
             // process valid SME brake tokens
 
-            if (BrakeLine3PressurePSI >= 1000f || Car.Train.BrakeLine4 < 0)
+            if (BrakeLine3PressurePSI >= 1000f)
             {
                 HoldingValve = ValveState.Release;
             }
-            else if (Car.Train.BrakeLine4 == 0)
-            {
-                HoldingValve = ValveState.Lap;
-            }
             else
             {
-                demandedAutoCylPressurePSI = Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * MaxCylPressurePSI;
+                demandedAutoCylPressurePSI = Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * MaxTripleValveCylPressurePSI;
                 HoldingValve = AutoCylPressurePSI <= demandedAutoCylPressurePSI ? ValveState.Lap : ValveState.Release;
             }
             
-                base.Update(elapsedClockSeconds); // Allow processing of other valid tokens
+            base.Update(elapsedClockSeconds); // Allow processing of other valid tokens
 
 
             if (AutoCylPressurePSI < demandedAutoCylPressurePSI && !Car.WheelBrakeSlideProtectionActive)
@@ -78,6 +74,26 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 AutoCylPressurePSI += dp;
             }
             
+        }
+
+        public override string[] GetDebugStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
+        {
+            return new string[] {
+                DebugType,
+                string.Format("{0}{1}",FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true), (Car as MSTSWagon).WheelBrakeSlideProtectionActive ? "???" : ""),
+                FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true),
+                FormatStrings.FormatPressure(AuxResPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.AuxiliaryReservoir], true),
+                (Car as MSTSWagon).EmergencyReservoirPresent ? FormatStrings.FormatPressure(EmergResPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.EmergencyReservoir], true) : string.Empty,
+                TwoPipes ? FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.MainPipe], true) : string.Empty,
+                (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.Distributor ? FormatStrings.FormatPressure(ControlResPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.AuxiliaryReservoir], true) : string.Empty,
+                (Car as MSTSWagon).RetainerPositions == 0 ? string.Empty : RetainerDebugState,
+                Simulator.Catalog.GetString(GetStringAttribute.GetPrettyName(TripleValveState)),
+                string.Empty, // Spacer because the state above needs 2 columns.
+                (Car as MSTSWagon).HandBrakePresent ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
+                FrontBrakeHoseConnected ? "I" : "T",
+                string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
+                BleedOffValveOpen ? Simulator.Catalog.GetString("Open") : string.Empty,
+            };
         }
 
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, Dictionary<BrakeSystemComponent, PressureUnit> units)

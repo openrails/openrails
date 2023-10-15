@@ -107,6 +107,8 @@ namespace Orts.Viewer3D.Processes
             GraphicsDeviceManager.PreferMultiSampling = (AntiAliasingMethod)Game.Settings.AntiAliasing != AntiAliasingMethod.None;
             GraphicsDeviceManager.HardwareModeSwitch = false; // for fast full-screen Alt-Tab switching
             GraphicsDeviceManager.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(GDM_PreparingDeviceSettings);
+
+            UserInput.Initialize(game);
         }
 
         void GDM_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)

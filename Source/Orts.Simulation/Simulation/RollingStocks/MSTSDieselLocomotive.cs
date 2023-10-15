@@ -91,11 +91,6 @@ namespace Orts.Simulation.RollingStocks
 
         public float LocomotiveMaxRailOutputPowerW;
 
-        public int currentGearIndexRestore = -1;
-        public int currentnextGearRestore = -1;
-        public bool gearSaved;
-        public int dieselEngineRestoreState;
-
         public float EngineRPM;
         public SmoothedData ExhaustParticles = new SmoothedData(1);
         public SmoothedData ExhaustMagnitude = new SmoothedData(1);
@@ -476,17 +471,6 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-            // TO BE LOOKED AT - fix restoration process for gearbox and gear controller
-            // It appears that the gearbox is initialised in two different places to cater for Basic and Advanced ENG file configurations(?).
-            // Hence the restore values recovered in gearbox class are being overwritten , and resume was not working correctly
-            // Hence restore gear position values are read as part of the diesel and restored at this point.
-            if (gearSaved)
-            {
-                DieselEngines[0].GearBox.nextGearIndex = currentnextGearRestore;
-                DieselEngines[0].GearBox.currentGearIndex = currentGearIndexRestore;
-                GearBoxController.SetValue((float)DieselEngines[0].GearBox.currentGearIndex);
-            }
-
             if (Simulator.Settings.VerboseConfigurationMessages)
             {
                 if (DieselEngines.HasGearBox)
@@ -676,11 +660,6 @@ namespace Orts.Simulation.RollingStocks
                 if (TractionMotorType == TractionMotorTypes.AC)
                 {
                     AbsTractionSpeedMpS = AbsSpeedMpS;
-                    if (AbsWheelSpeedMpS > 1.1 * MaxSpeedMpS)
-                    {
-                        AverageForceN = TractiveForceN = 0;
-                        return;
-                    }
                 }
                 else
                 {
@@ -770,6 +749,53 @@ namespace Orts.Simulation.RollingStocks
             {
                 SignalEvent(Event.EnginePowerOff);
                 DieselEngines.HandleEvent(PowerSupplyEvent.StopEngine);
+            }
+
+            ApplyDirectionToTractiveForce();
+
+            // Calculate the total tractive force for the locomotive - ie Traction + Dynamic Braking force.
+            // Note typically only one of the above will only ever be non-zero at the one time.
+            // For flipped locomotives the force is "flipped" elsewhere, whereas dynamic brake force is "flipped" below by the direction of the speed.
+
+            if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
+            {
+                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsTractionSpeedMpS);
+                if (f > 0 && LocomotivePowerSupply.DynamicBrakeAvailable)
+                {
+                    DynamicBrakeForceN = f * (1 - PowerReduction);
+                    TractiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * DynamicBrakeForceN;                 
+                }
+                else
+                {
+                    DynamicBrakeForceN = 0f;
+                }
+            }
+            else
+                DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0 position
+
+            foreach (var motor in TractionMotors)
+            {
+                motor.UpdateTractiveForce(elapsedClockSeconds, t);
+            }
+
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics)
+            {
+                UpdateAxleDriveForce();
+            }
+        }
+
+        protected override void UpdateAxleDriveForce()
+        {
+            /* TODO: connect different engines to different axles
+            if (DieselEngines.HasGearBox && DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+            {
+                foreach (var de in DieselEngines)
+                {
+                }
+            }
+            else */
+            {
+                base.UpdateAxleDriveForce();
             }
         }
 
@@ -1088,7 +1114,7 @@ namespace Orts.Simulation.RollingStocks
             if (FilteredMotiveForceN != 0)
                 data = Math.Abs(this.FilteredMotiveForceN);
             else
-                data = Math.Abs(this.LocomotiveAxle.DriveForceN);
+                data = Math.Abs(TractiveForceN);
             if (DynamicBrakePercent > 0)
             {
                 data = -Math.Abs(DynamicBrakeForceN);
@@ -1133,11 +1159,11 @@ namespace Orts.Simulation.RollingStocks
             status.AppendFormat((data < 0 ? "???" : " ") + "\t");
 
             // BP
-            var brakeInfoValue = brakeValue(Simulator.Catalog.GetString("BP"), Simulator.Catalog.GetString("EOT"));
+            var brakeInfoValue = brakeValue(Simulator.Catalog.GetString("BP"), Simulator.Catalog.GetString("Flow"));
             status.AppendFormat("{0:F0}\t", brakeInfoValue);
-
-            // Flow.
-            // TODO:The BP air flow that feeds the brake tube is not yet modeled in Open Rails.
+            // Air flow meter
+            brakeInfoValue = brakeValue(Simulator.Catalog.GetString("Flow"), Simulator.Catalog.GetString("EOT"));
+            status.AppendFormat("{0:F0}\t", brakeInfoValue);
 
             // Remote
             if (dataDpu)
@@ -1235,6 +1261,7 @@ namespace Orts.Simulation.RollingStocks
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Throttle"));
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Load"));
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("BP"));
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Flow"));
             if (!dpuFull)
             {
                 labels.AppendFormat("{0}", Simulator.Catalog.GetString("Remote"));
