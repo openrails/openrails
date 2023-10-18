@@ -10,7 +10,7 @@ Open Rails is a free train simulator supporting the world's largest range of dig
 ## Documentation
 
 * [Read the FAQ](http://www.openrails.org/learn/faq/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
-* [Read the manual online](https://open-rails.readthedocs.io/en/1.3.1/) or the PDF included with the program, found in the main menu under "Documents"
+* [Read the manual online](https://open-rails.readthedocs.io/en/1.5.1/) or the PDF included with the program, found in the main menu under "Documents"
 * [Get additional materials, including tutorials, from our website](http://www.openrails.org/learn/manual-and-tutorials/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
 * [Read more about the project on our website](http://www.openrails.org/discover/open-rails/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
 
