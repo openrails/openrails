@@ -2807,7 +2807,9 @@ namespace Orts.Simulation.RollingStocks
                 axle.BogieRigidWheelBaseM = RigidWheelBaseM;
                 axle.CurtiusKnifflerZeroSpeed = ZeroSpeedAdhesionBase;
             }
+
             LocomotiveAxles.Update(elapsedClockSeconds);
+
             MotiveForceN = LocomotiveAxles.CompensatedForceN;
 
             if (elapsedClockSeconds > 0)
