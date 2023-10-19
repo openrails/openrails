@@ -644,8 +644,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             }
             WheelSlipThresholdMpS = (float)Math.Max((a + b) / 2, MpS.FromKpH(0.1f));
 
- //           if (SlipSpeedMpS > 0)
- //               Trace.TraceInformation("Fx Values - a {0} fa1 {1} b {2} fb1 {3} s {4} fs {5} t {6} ft {7} u {8} fu {9} v {10} fv {11} x {12} fx {13} y {14} fy {15} Speed {16} Threshold {17} Fslip {18} SlipSpeed {19}", a, fa1, b, fb1, s, fs, t, ft, u, fu, v, fv, x, fx, y, fy, TrainSpeedMpS, WheelSlipThresholdMpS, fslip, SlipSpeedMpS);
+            if (IsWheelSlip)
+            {
+                //               Trace.TraceInformation("Fx Values - a {0} fa1 {1} b {2} fb1 {3} s {4} fs {5} t {6} ft {7} u {8} fu {9} v {10} fv {11} x {12} fx {13} y {14} fy {15} Speed {16} Threshold {17} Fslip {18} SlipSpeed {19}", a, fa1, b, fb1, s, fs, t, ft, u, fu, v, fv, x, fx, y, fy, TrainSpeedMpS, WheelSlipThresholdMpS, fslip, SlipSpeedMpS);
+
+           //     Trace.TraceInformation("Threshold Speed - {0}", WheelSlipThresholdMpS);
+
+            }
 
         }
 
@@ -878,6 +883,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 ++NumOfSubstepsPS;
                 waitBeforeSpeedingUp = 100;
+
+          //      Trace.TraceInformation("Algorithim Increase - Steps {0} Err {1}", NumOfSubstepsPS, integratorError);
+
             }
             else
             {
@@ -885,11 +893,36 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 {
                     --NumOfSubstepsPS;
                     waitBeforeSpeedingUp = 10;      //not so fast ;)
+
+        //            Trace.TraceInformation("Algorithim Decrease - Steps {0} Err {1}", NumOfSubstepsPS, integratorError);
                 }
             }
 
-            NumOfSubstepsPS = Math.Max(Math.Min(NumOfSubstepsPS, 50), 1);
-            
+            NumOfSubstepsPS = Math.Max(Math.Min(NumOfSubstepsPS, 130), 1);
+
+            //      use straight line graph approximation
+            // Points are 1 = (0, 150) and 2 = (threshold, 0)
+
+
+            if (SlipSpeedMpS > 0.7 * WheelSlipThresholdMpS)
+            {
+                var upperLimit = 130;
+                var AdhesGrad = ((0 - upperLimit) / (WheelSlipThresholdMpS - 0));
+                var temp = Math.Abs((AdhesGrad * SlipSpeedMpS) + upperLimit);
+                if (float.IsNaN((float)temp)) temp = 1;
+           //                 Trace.TraceInformation("Grad - {0} AdhesGrad {1} SlipSpeedMps {2} Threshold {3}", temp, AdhesGrad, SlipSpeedMpS, WheelSlipThresholdMpS);
+
+                NumOfSubstepsPS = (int)temp;
+
+                if (NumOfSubstepsPS < 1)
+                    NumOfSubstepsPS = 1;
+
+                if (NumOfSubstepsPS > upperLimit)
+                    NumOfSubstepsPS = upperLimit;
+
+                //            Trace.TraceInformation("Number of Steps {0}", NumOfSubstepsPS);
+            }
+
             double dt = elapsedClockSeconds / NumOfSubstepsPS;
             double hdt = dt / 2;
             double axleInForceSumN = 0;
@@ -901,7 +934,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 {
                     if (k1.Item1 * dt > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 10, 1) / 100)
                     {
-                        NumOfSubstepsPS = Math.Min(NumOfSubstepsPS + 5, 50);
+                        NumOfSubstepsPS = Math.Min(NumOfSubstepsPS + 5, 130);
+               //         Trace.TraceInformation("Algorithim Change - k1 - Number of Steps {0}", NumOfSubstepsPS);
                         dt = elapsedClockSeconds / NumOfSubstepsPS;
                         hdt = dt / 2;
                     }       
@@ -974,18 +1008,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             // Adding and substracting the brake force is correct for normal operation,
             // but during wheelslip this will produce wrong results.
             // The Axle module subtracts brake force from the motive force for calculation purposes. However brake force is already taken into account in the braking module.
-            // And thus there is a duplication of the braking effect in OR. To compensate for this, after the slip characteristics have been calculated, the output of the axle module
-            // has the brake force "added" back in to give the appropriate motive force output for the locomotive. Braking force is handled separately.
-            // Hence CompensatedAxleForce is the actual output force on the axle.
+            // And thus there is a duplication of the braking effect in OR. To compensate for this, after the slip characteristics have been calculated, the output of the axle
+            // module has the brake force "added" back in to give the appropriate motive force output for the locomotive. Braking force is handled separately.
+            // Hence CompensatedAxleForce is the actual output force on the axle. Similarly friction is also handled separately so it is also discounted from the CompensatedForce.
             if (Math.Abs(TrainSpeedMpS) < 0.001f && AxleForceN == 0) CompensatedAxleForceN = DriveForceN;
-            else if (TrainSpeedMpS < 0) CompensatedAxleForceN = AxleForceN - BrakeRetardForceN;
-            else CompensatedAxleForceN = AxleForceN + BrakeRetardForceN;
+            else if (TrainSpeedMpS < 0) CompensatedAxleForceN = AxleForceN - BrakeRetardForceN - FrictionN;
+            else CompensatedAxleForceN = AxleForceN + BrakeRetardForceN + FrictionN;
+
             if (Math.Abs(SlipSpeedMpS) > WheelSlipThresholdMpS)
             {
                 // Wait some time before indicating wheelslip to avoid false triggers
                 if (WheelSlipTimeS > 0.75f)
                 {
                     IsWheelSlip = IsWheelSlipWarning = true;
+                    Trace.TraceInformation("Wheel Slip Triggered");
                 }
                 WheelSlipTimeS += timeSpan;
             }
@@ -1140,14 +1176,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
                 var fx = (f * Sx / Sc) / wheelLoadN;
 
- /*
+ 
                 //               if (slipSpeedMpS == 0.025f || slipSpeedMpS == 0.05f || slipSpeedMpS == 0.1f || slipSpeedMpS == 0.15f || slipSpeedMpS == 0.2f)
                 if (Axle.IsWheelSlip)
                 {
-                    Trace.TraceInformation("Negative Fx - Fx {0} Speed {1} SlipSpeed {2} Sx {3} PolachAdhesion {4} adhesionComponent {5} slipComponent {6} Polach_Ks {7} Stiffness2 {8} SlipForce {9} Sc {10} WheelLoad {11} Syc {12} Hertz_a {13} Sy {14} Threshold {15}", fx, (float)trainSpeedMpS, (float)slipSpeedMpS, (float)Sx, polach_uadhesion, adhesionComponent, slipComponent, polach_Ks, Stiffness2, f, Sc, wheelLoadN, Syc, a_HertzianMM, Sy, Axle.WheelSlipThresholdMpS);
+//                    Trace.TraceInformation("Negative Fx - Fx {0} Speed {1} SlipSpeed {2} Sx {3} PolachAdhesion {4} adhesionComponent {5} slipComponent {6} Polach_Ks {7} Stiffness2 {8} SlipForce {9} Sc {10} WheelLoad {11} Syc {12} Hertz_a {13} Sy {14} Threshold {15} DriveForce {16} Steps {17} IsWheelSlip {18} IsWheelSlipWarning {19}", fx, (float)trainSpeedMpS, (float)slipSpeedMpS, (float)Sx, polach_uadhesion, adhesionComponent, slipComponent, polach_Ks, Stiffness2, f, Sc, wheelLoadN, Syc, a_HertzianMM, Sy, Axle.WheelSlipThresholdMpS, Axle.DriveForceN, Axle.NumOfSubstepsPS, Axle.IsWheelSlip, Axle.IsWheelSlipWarning);
 
                 }
- */
+ 
 
                 return fx;
             }
