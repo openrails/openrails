@@ -1,1 +1,0 @@
-<?php echo "<title>Open Rails - Download - Versions</title>"; ?>

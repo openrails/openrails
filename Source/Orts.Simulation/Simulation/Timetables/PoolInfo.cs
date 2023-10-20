@@ -1,4 +1,4 @@
-// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -15,8 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-// This code processes the Timetable definition and converts it into playable train information
-//
+/* This code processes the Timetable definition and converts it into playable train information */
 
 using System;
 using System.Collections.Generic;
@@ -44,7 +43,6 @@ namespace Orts.Simulation.Timetables
             simulator = simulatorref;
         }
 
-
         //================================================================================================//
         /// <summary>
         /// Read pool files
@@ -57,33 +55,33 @@ namespace Orts.Simulation.Timetables
             Dictionary<string, TimetablePool> pools = new Dictionary<string, TimetablePool>();
             List<string> filenames;
 
-            // get filenames to process
+            // Get filenames to process
             filenames = GetFilenames(arguments[0]);
 
-            // get file contents as strings
+            // Get file contents as strings
             Trace.Write("\n");
             foreach (string filePath in filenames)
             {
-                // get contents as strings
+                // Get contents as strings
                 Trace.Write("Pool File : " + filePath + "\n");
                 var poolInfo = new TimetableReader(filePath);
 
-                // read lines from input until 'Name' definition is found
+                // Read lines from input until 'Name' definition is found
                 int lineindex = 1;
                 while (lineindex < poolInfo.Strings.Count)
                 {
                     switch (poolInfo.Strings[lineindex][0].ToLower().Trim())
                     {
-                        // skip comment
-                        case "#comment" :
+                        // Skip comment
+                        case "#comment":
                             lineindex++;
                             break;
-                         
-                        // process name
-                        // do not increase lineindex as that is done in called method
-                        case "#name" :
+
+                        // Process name
+                        // Do not increase lineindex as that is done in called method
+                        case "#name":
                             TimetablePool newPool = new TimetablePool(poolInfo, ref lineindex, simulator);
-                            // store if valid pool
+                            // Store if valid pool
                             if (!String.IsNullOrEmpty(newPool.PoolName))
                             {
                                 if (pools.ContainsKey(newPool.PoolName))
@@ -96,8 +94,7 @@ namespace Orts.Simulation.Timetables
                                 }
                             }
                             break;
-
-                        default :
+                        default:
                             if (!String.IsNullOrEmpty(poolInfo.Strings[lineindex][0]))
                             {
                                 Trace.TraceInformation("Invalid definition in file " + filePath + " at line " + lineindex + " : " +
@@ -109,7 +106,7 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-            return (pools);
+            return pools;
         }
 
         //================================================================================================//
@@ -122,7 +119,7 @@ namespace Orts.Simulation.Timetables
         {
             List<string> filenames = new List<string>();
 
-            // check type of timetable file - list or single
+            // Check type of timetable file - list or single
             string fileDirectory = Path.GetDirectoryName(filePath);
 
             foreach (var ORPoolFile in Directory.GetFiles(fileDirectory, "*.pool_or"))
@@ -134,9 +131,8 @@ namespace Orts.Simulation.Timetables
                 filenames.Add(ORPoolFile);
             }
 
-            return (filenames);
+            return filenames;
         }
-
     }
 }
 
