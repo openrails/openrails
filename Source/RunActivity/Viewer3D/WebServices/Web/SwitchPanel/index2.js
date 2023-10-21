@@ -30,12 +30,14 @@ function createSocket() {
     const connection = new WebSocket(uri, "json");
 
     connection.onopen = function (evt) {
-        console.log("websocket opened: " + evt.type);
+        console.log("Websocket opened: " + evt.type);
+        // connected, turn off the dark overlay
+        document.getElementById("overlay").style.display = "none"; 
     };
 
     connection.onmessage = function (evt) {
         const json = JSON.parse(evt.data);
-        console.log("websocket message received: ", json);
+        console.log("Websocket message received: ", json);
         if (initStillToBeDone) {
             if (json.type == "init") {
                 initReceived(json.data);
@@ -48,12 +50,27 @@ function createSocket() {
     }
 
     connection.onerror = function (evt) {
-        console.error("websocket error: ", evt.type);
+        console.error("Websocket error: ", evt.type);
+        // this will also fire the onclose after this
     }
 
     connection.onclose = function (evt) {
-        console.log("WebSocket is closed now: " + evt.type);
+        console.log("WebSocket is closed: ", evt.type);
+        // dark overlay displayed so that it's clear the connection has gone
+        document.getElementById("overlay").style.display = "block"; 
+        // try to reconnect after 1 second
+        setTimeout(function () {
+            websocket = createSocket();
+        }, 1000);
     };
+
+    setTimeout(function () {
+        // close the socket if no connection established after 1 second
+        // otherwise it will wait with the reconnect after a timeout of 2 minutes
+        if (websocket.readyState != 1) {
+            websocket.close();
+        }
+    }, 1000);
 
     return connection;
 }
