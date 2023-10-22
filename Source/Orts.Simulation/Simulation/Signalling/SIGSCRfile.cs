@@ -129,8 +129,11 @@ namespace Orts.Simulation.Signalling
 
         public void SH_process_script(SignalHead thisHead, SignalScripts.SCRScripts signalScript, SIGSCRfile sigscr)
         {
-
-            int[] localFloats = new int[signalScript.totalLocalFloats];
+            if (thisHead.LocalFloats == null)
+                thisHead.LocalFloats = signalScript.totalLocalFloats == 0 ? Array.Empty<int>() : new int[signalScript.totalLocalFloats];
+            else
+                Array.Clear(thisHead.LocalFloats, 0, thisHead.LocalFloats.Length);
+            int[] localFloats = thisHead.LocalFloats;
 
             // process script
 
@@ -197,8 +200,9 @@ namespace Orts.Simulation.Signalling
 
             // loop through all lines
 
-            foreach (object scriptstat in Statements)
+            for (int i = 0; i < Statements.Count; i++)
             {
+                object scriptstat = Statements[i];
 
                 // process statement lines
 
@@ -1553,8 +1557,9 @@ namespace Orts.Simulation.Signalling
             bool termnegate = false;
             SignalScripts.SCRAndOr condstring = SignalScripts.SCRAndOr.NONE;
 
-            foreach (object thisCond in thisCStatList)
+            for (int i = 0; i < thisCStatList.Count; i++)
             {
+                object thisCond = thisCStatList[i];
 
                 // single condition : process
 

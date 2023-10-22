@@ -178,18 +178,19 @@ namespace ORTS
 
             checkSimpleControlsPhysics.Checked = Settings.SimpleControlPhysics;
             checkUseAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
-            labelAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
-            numericAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked; 
-            numericAdhesionMovingAverageFilterSize.Value = Settings.AdhesionMovingAverageFilterSize;
             checkBreakCouplers.Checked = Settings.BreakCouplers;
             checkCurveSpeedDependent.Checked = Settings.CurveSpeedDependent;
             checkBoilerPreheated.Checked = Settings.HotStart;
             checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
             checkDoorsAITrains.Checked = Settings.OpenDoorsInAITrains;
             checkDieselEnginesStarted.Checked = !Settings.NoDieselEngineStart; // Inverted as "EngineStart" is better UI than "NoEngineStart"
+            checkElectricPowerConnected.Checked = Settings.ElectricHotStart;
 
             // Keyboard tab
             InitializeKeyboardSettings();
+
+            // Raildriver Tab
+            InitializeRailDriverSettings();
 
             // DataLogger tab
             var dictionaryDataLoggerSeparator = new Dictionary<string, string>();
@@ -465,16 +466,19 @@ namespace ORTS
             // Simulation tab
             Settings.SimpleControlPhysics = checkSimpleControlsPhysics.Checked;
             Settings.UseAdvancedAdhesion = checkUseAdvancedAdhesion.Checked;
-            Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
             Settings.BreakCouplers = checkBreakCouplers.Checked;
             Settings.CurveSpeedDependent = checkCurveSpeedDependent.Checked;
             Settings.HotStart = checkBoilerPreheated.Checked;
             Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
             Settings.OpenDoorsInAITrains = checkDoorsAITrains.Checked;
             Settings.NoDieselEngineStart = !checkDieselEnginesStarted.Checked; // Inverted as "EngineStart" is better UI than "NoEngineStart"
+            Settings.ElectricHotStart = checkElectricPowerConnected.Checked;
 
             // Keyboard tab
             // These are edited live.
+
+            // Raildriver Tab
+            SaveRailDriverSettings();
 
             // DataLogger tab
             Settings.DataLoggerSeparator = comboDataLoggerSeparator.SelectedValue.ToString();
@@ -587,8 +591,6 @@ namespace ORTS
         private void SetAdhesionLevelValue()
         {
             int level = trackAdhesionFactor.Value - trackAdhesionFactorChange.Value;
-            // Adjust level to be proportional to weather 
-            level -= 40;
 
             if (level > 159)
                 AdhesionLevelValue.Text = catalog.GetString("Very easy");
@@ -775,12 +777,6 @@ namespace ORTS
         {
            labelDistantMountainsViewingDistance.Enabled = checkDistantMountains.Checked;
            numericDistantMountainsViewingDistance.Enabled = checkDistantMountains.Checked;
-        }
-
-        private void checkUseAdvancedAdhesion_Click(object sender, EventArgs e)
-        {
-            labelAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
-            numericAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
         }
 
         private void checkDataLogTrainSpeed_Click(object sender, EventArgs e)

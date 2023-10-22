@@ -171,14 +171,24 @@ namespace Orts.Viewer3D.Popups
         public void Save(BinaryWriter outf)
         {
             foreach (var window in Windows)
-                window.Save(outf);
+                if (!window.DoNotDisplayWindow)
+                {
+                    // This if is added to not do the save in case of the out of focus window
+                    // See Source\RunActivity\Viewer3D\Popups\OutOfFocusWindow.cs
+                    window.Save(outf);
+                }
         }
 
         [CallOnThread("Render")]
         public void Restore(BinaryReader inf)
         {
             foreach (var window in Windows)
-                window.Restore(inf);
+                if (!window.DoNotDisplayWindow)
+                {
+                    // This if is added to not do the restore in case of the out of focus window
+                    // See Source\RunActivity\Viewer3D\Popups\OutOfFocusWindow.cs
+                    window.Restore(inf);
+                }
         }
 
 		[CallOnThread("Updater")]

@@ -355,13 +355,6 @@ by MSTS, while the advanced one is based on a model more similar to reality.
 For more information read the section on :ref:`Adhesion Models <physics-adhesion>` later in this
 manual.
 
-Adhesion moving average filter size
------------------------------------
-
-The computations related to adhesion are passed through a moving average
-filter. Higher values cause smoother operation, but also less
-responsiveness. 10 is the default filter size.
-
 Break couplers
 --------------
 
@@ -406,6 +399,16 @@ Uncheck this option for a more detailed behaviour in which the player has to sta
 
 The default setting is checked.
 
+
+At game start, Electric - power connected
+-----------------------------------
+
+When this option is checked, stationary electric locos start the simulation with power available.
+Uncheck this option for a more detailed behaviour in which the player has to switch on electrical equipment.
+
+The default setting is checked.
+
+In timetable mode, power status is not affected by these options.
 
 .. _options-forced-red:
 
@@ -501,6 +504,33 @@ default values are reloaded.
 By clicking on *Export* a printable text file ``Open Rails
 Keyboard.txt`` is generated on the desktop, showing all links between
 commands and keys.
+
+RailDriver Options
+==================
+
+.. image:: images/options-raildriver.png
+
+This tab allows configuring a RailDriver device. In this panel you will
+find listed the RailDriver buttons that are associated
+with all ORTS commands.
+
+You can modify them by clicking on a field and pressing the new desired
+button. Three symbols will appear at the right of the field: with the first
+one you validate the change, with the second one you cancel it, with the
+third one you return to the default value.
+
+By clicking on *Check* ORTS verifies that the changes made are compatible,
+that is, that there is no button that is used for more than one command.
+
+By clicking on *Defaults* all changes that were made are reset, and the
+default values are reloaded.
+
+By clicking on *Export* a printable text file ``Open Rails
+RailDriver.txt`` is generated on the desktop, showing all links between
+commands and buttons.
+
+By clicking on *Calibrate* a guided procedure will be started to
+calibrate all RailDriver levers.
 
 Data Logger Options
 ===================

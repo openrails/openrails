@@ -1244,6 +1244,47 @@ namespace Orts.Common
     }
 
     [Serializable()]
+    public sealed class ToggleWindowLeftCommand : Command
+    {
+        public static MSTSWagon Receiver { get; set; }
+
+        public ToggleWindowLeftCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver is MSTSLocomotive locomotive && locomotive.UsingRearCab)
+                locomotive.ToggleWindow(rear: true, left: false);
+            else
+                Receiver.ToggleWindow(rear: false, left: true);
+        }
+    }
+
+    [Serializable()]
+    public sealed class ToggleWindowRightCommand : Command
+    {
+        public static MSTSWagon Receiver { get; set; }
+
+        public ToggleWindowRightCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver is MSTSLocomotive locomotive && locomotive.UsingRearCab)
+                locomotive.ToggleWindow(rear: true, left: true);
+            else
+                Receiver.ToggleWindow(rear: false, left: false);
+        }
+    }
+
+
+    [Serializable()]
     public sealed class ToggleBatterySwitchCommand : BooleanCommand
     {
         public static BatterySwitch Receiver { get; set; }
@@ -1532,6 +1573,28 @@ namespace Orts.Common
 
 
     // Steam controls
+
+    // Steam booster command
+    [Serializable()]
+    public sealed class ContinuousSteamBoosterCommand : ContinuousCommand
+    {
+        public static MSTSSteamLocomotive Receiver { get; set; }
+
+        public ContinuousSteamBoosterCommand(CommandLog log, int injector, bool toState, float? target, double startTime)
+            : base(log, toState, target, startTime)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver == null) return;
+            Receiver.SteamBoosterChangeTo(ToState, Target);
+            // Report();
+        }
+    }
+
+    // Steam heat command
     [Serializable()]
     public sealed class ContinuousSteamHeatCommand : ContinuousCommand
     {

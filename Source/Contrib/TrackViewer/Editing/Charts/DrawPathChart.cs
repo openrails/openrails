@@ -161,7 +161,6 @@ namespace ORTS.TrackViewer.Editing.Charts
             }
             pathData.Update(trainpath);
             chartWindow.Draw();
-            chartWindow.SetTitle(pathEditor.CurrentTrainPath.PathName);
         }
         
         /// <summary>

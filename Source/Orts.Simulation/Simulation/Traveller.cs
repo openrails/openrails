@@ -47,8 +47,8 @@ namespace Orts.Simulation
         // experimentally to match MSTS's 'capture range'.
         const float MaximumCenterlineOffset = 2.5f;
 
-        readonly TrackSectionsFile TSectionDat;
-        readonly TrackNode[] TrackNodes;
+        TrackSectionsFile TSectionDat;
+        TrackNode[] TrackNodes;
         TravellerDirection direction = TravellerDirection.Forward;
         float trackOffset; // Offset into track (vector) section; meters for straight sections, radians for curved sections.
         TrackNode trackNode;
@@ -333,8 +333,6 @@ namespace Orts.Simulation
         public Traveller(Traveller copy)
         {
             if (copy == null) throw new ArgumentNullException("copy");
-            TSectionDat = copy.TSectionDat;
-            TrackNodes = copy.TrackNodes;
             Copy(copy);
         }
 
@@ -600,8 +598,10 @@ namespace Orts.Simulation
 
 
 
-        void Copy(Traveller copy)
+        public void Copy(Traveller copy)
         {
+            TSectionDat = copy.TSectionDat;
+            TrackNodes = copy.TrackNodes;
             locationSet = copy.locationSet;
             location.TileX = copy.location.TileX;
             location.TileZ = copy.location.TileZ;

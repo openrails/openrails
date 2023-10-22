@@ -19,9 +19,10 @@ Open Rails is a free train simulator supporting the world's largest range of dig
 * [Join the community](http://www.openrails.org/share/community/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
 * [Report bugs or offer suggestions](http://www.openrails.org/contribute/reporting-bugs/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
 * [Create content](http://www.openrails.org/contribute/building-models/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
+* [How to propose and submit work](Contributing.md)
 * [Write code](http://www.openrails.org/contribute/developing-code/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
 * [Join the team](http://www.openrails.org/contribute/joining-the-team/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
-* [More details](Contributing.md)
+
 
 ## Build status
 

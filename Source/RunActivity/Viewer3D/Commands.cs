@@ -948,6 +948,24 @@ namespace Orts.Viewer3D
     }
 
     [Serializable()]
+    public sealed class CameraChange3DCabViewPointCommand : UseCameraCommand
+    {
+
+        public CameraChange3DCabViewPointCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver.Camera.AttachedCar.CabViewpoints.Count == 1)
+                Receiver.ThreeDimCabCamera.SwitchSideCameraCar(Receiver.Camera.AttachedCar);
+            else Receiver.ThreeDimCabCamera.Change3DCabViewPoint(Receiver.Camera.AttachedCar);
+            // Report();
+        }
+    }
+    [Serializable()]
     public sealed class ToggleBrowseBackwardsCommand : UseCameraCommand
     {
 
