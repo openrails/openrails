@@ -56,6 +56,10 @@ namespace Orts.Viewer3D.Processes
                 Program.DebugViewer.Hide();
                 Viewer.DebugViewerEnabled = false;
 
+                Program.DebugViewerBeta = new MapViewer(Viewer.Simulator, Viewer);
+                Program.DebugViewerBeta.Hide();
+                Viewer.DebugViewerBetaEnabled = false;
+
                 Program.SoundDebugForm = new SoundDebugForm(Viewer);
                 Program.SoundDebugForm.Hide();
                 Viewer.SoundDebugFormEnabled = false;

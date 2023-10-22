@@ -2138,6 +2138,9 @@ namespace Orts.Viewer3D.Debugging
         #endregion
     }
 
+    
+    /* NOTE: Commented out to avoid duplication in namespace; copied to `DebugViewerBetaForm.cs` */
+    /*
     #region SignalWidget
     /// <summary>
     /// Defines a signal being drawn in a 2D view.
@@ -2448,5 +2451,5 @@ namespace Orts.Viewer3D.Debugging
             return Math.Pow((v1.TileX - v2.TileX) * 2048 + v1.X - v2.X, 2)
                 + Math.Pow((v1.TileZ - v2.TileZ) * 2048 + v1.Z - v2.Z, 2);
         }
-    }
+    }*/
 }
