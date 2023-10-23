@@ -904,15 +904,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             // Points are 1 = (0, upperLimit) and 2 = (threshold, lowerLimit)
 
             var upperLimit = 130;
-            var lowerLimit = 10;
+            var lowerLimit = 1;
             var AdhesGrad = ((upperLimit - lowerLimit) / (WheelSlipThresholdMpS - 0));
             var targetNumOfSubstepsPS = Math.Abs((AdhesGrad * SlipSpeedMpS) + lowerLimit);
             if (float.IsNaN((float)targetNumOfSubstepsPS)) targetNumOfSubstepsPS = 1;
             //                 Trace.TraceInformation("Grad - {0} AdhesGrad {1} SlipSpeedMps {2} Threshold {3}", temp, AdhesGrad, SlipSpeedMpS, WheelSlipThresholdMpS);
 
-            if (targetNumOfSubstepsPS > NumOfSubstepsPS) // increase substeps
+            //  if (targetNumOfSubstepsPS > NumOfSubstepsPS && Math.Abs(integratorError) > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 0.01, 0.001)) // increase substeps
+            if (targetNumOfSubstepsPS > NumOfSubstepsPS && Math.Abs(integratorError) > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 0.01, 0.001)) // increase substeps
             {
-                if (--waitBeforeSpeedingUp <= 0) //wait for a while before speeding up the integration
+                if (--waitBeforeSpeedingUp <= 0 ) //wait for a while before speeding up the integration
                 {
                     NumOfSubstepsPS += 5;
                     waitBeforeSpeedingUp = 5;      //not so fast ;)
@@ -923,6 +924,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 NumOfSubstepsPS -= 5;
                 waitBeforeSpeedingUp = 5;
             }
+            else if (Math.Abs(integratorError) < 0.005)
+            {
+                NumOfSubstepsPS -= 2;
+                waitBeforeSpeedingUp = 5;
+            }
 
             if (NumOfSubstepsPS < lowerLimit)
                 NumOfSubstepsPS = lowerLimit;
@@ -930,7 +936,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (NumOfSubstepsPS > upperLimit)
                 NumOfSubstepsPS = upperLimit;        
 
-      //      Trace.TraceInformation("Grad - {0} AdhesGrad {1} SlipSpeedMps {2} Threshold {3} NumStepsPS {4}", targetNumOfSubstepsPS, AdhesGrad, SlipSpeedMpS, WheelSlipThresholdMpS, NumOfSubstepsPS);
+ //          Trace.TraceInformation("Grad - {0} AdhesGrad {1} SlipSpeedMps {2} Threshold {3} NumStepsPS {4} Error {5}", targetNumOfSubstepsPS, AdhesGrad, SlipSpeedMpS, WheelSlipThresholdMpS, NumOfSubstepsPS, integratorError);
 
             double dt = elapsedClockSeconds / NumOfSubstepsPS;
             double hdt = dt / 2;
