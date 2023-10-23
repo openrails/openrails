@@ -878,13 +878,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             if (elapsedClockSeconds <= 0) return;
             double prevSpeedMpS = AxleSpeedMpS;
-
+/*
             if (Math.Abs(integratorError) > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 0.01, 0.001))
             {
                 ++NumOfSubstepsPS;
                 waitBeforeSpeedingUp = 100;
 
-          //      Trace.TraceInformation("Algorithim Increase - Steps {0} Err {1}", NumOfSubstepsPS, integratorError);
+                //      Trace.TraceInformation("Algorithim Increase - Steps {0} Err {1}", NumOfSubstepsPS, integratorError);
 
             }
             else
@@ -894,34 +894,43 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     --NumOfSubstepsPS;
                     waitBeforeSpeedingUp = 10;      //not so fast ;)
 
-        //            Trace.TraceInformation("Algorithim Decrease - Steps {0} Err {1}", NumOfSubstepsPS, integratorError);
+                    //            Trace.TraceInformation("Algorithim Decrease - Steps {0} Err {1}", NumOfSubstepsPS, integratorError);
                 }
             }
 
             NumOfSubstepsPS = Math.Max(Math.Min(NumOfSubstepsPS, 130), 1);
+*/
+            // use straight line graph approximation
+            // Points are 1 = (0, upperLimit) and 2 = (threshold, lowerLimit)
 
-            //      use straight line graph approximation
-            // Points are 1 = (0, 150) and 2 = (threshold, 0)
+            var upperLimit = 130;
+            var lowerLimit = 10;
+            var AdhesGrad = ((upperLimit - lowerLimit) / (WheelSlipThresholdMpS - 0));
+            var targetNumOfSubstepsPS = Math.Abs((AdhesGrad * SlipSpeedMpS) + lowerLimit);
+            if (float.IsNaN((float)targetNumOfSubstepsPS)) targetNumOfSubstepsPS = 1;
+            //                 Trace.TraceInformation("Grad - {0} AdhesGrad {1} SlipSpeedMps {2} Threshold {3}", temp, AdhesGrad, SlipSpeedMpS, WheelSlipThresholdMpS);
 
-
-            if (SlipSpeedMpS > 0.7 * WheelSlipThresholdMpS)
+            if (targetNumOfSubstepsPS > NumOfSubstepsPS) // increase substeps
             {
-                var upperLimit = 130;
-                var AdhesGrad = ((0 - upperLimit) / (WheelSlipThresholdMpS - 0));
-                var temp = Math.Abs((AdhesGrad * SlipSpeedMpS) + upperLimit);
-                if (float.IsNaN((float)temp)) temp = 1;
-           //                 Trace.TraceInformation("Grad - {0} AdhesGrad {1} SlipSpeedMps {2} Threshold {3}", temp, AdhesGrad, SlipSpeedMpS, WheelSlipThresholdMpS);
-
-                NumOfSubstepsPS = (int)temp;
-
-                if (NumOfSubstepsPS < 1)
-                    NumOfSubstepsPS = 1;
-
-                if (NumOfSubstepsPS > upperLimit)
-                    NumOfSubstepsPS = upperLimit;
-
-                //            Trace.TraceInformation("Number of Steps {0}", NumOfSubstepsPS);
+                if (--waitBeforeSpeedingUp <= 0) //wait for a while before speeding up the integration
+                {
+                    NumOfSubstepsPS += 5;
+                    waitBeforeSpeedingUp = 5;      //not so fast ;)
+                }
             }
+            else if (targetNumOfSubstepsPS < NumOfSubstepsPS) // decrease sub steps
+            {
+                NumOfSubstepsPS -= 5;
+                waitBeforeSpeedingUp = 5;
+            }
+
+            if (NumOfSubstepsPS < lowerLimit)
+                NumOfSubstepsPS = lowerLimit;
+
+            if (NumOfSubstepsPS > upperLimit)
+                NumOfSubstepsPS = upperLimit;        
+
+      //      Trace.TraceInformation("Grad - {0} AdhesGrad {1} SlipSpeedMps {2} Threshold {3} NumStepsPS {4}", targetNumOfSubstepsPS, AdhesGrad, SlipSpeedMpS, WheelSlipThresholdMpS, NumOfSubstepsPS);
 
             double dt = elapsedClockSeconds / NumOfSubstepsPS;
             double hdt = dt / 2;
@@ -934,16 +943,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 {
                     if (k1.Item1 * dt > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 10, 1) / 100)
                     {
-                        NumOfSubstepsPS = Math.Min(NumOfSubstepsPS + 5, 130);
-               //         Trace.TraceInformation("Algorithim Change - k1 - Number of Steps {0}", NumOfSubstepsPS);
+                        //        NumOfSubstepsPS = Math.Min(NumOfSubstepsPS + 5, 130);
+                        //         Trace.TraceInformation("Algorithim Change - k1 - Number of Steps {0}", NumOfSubstepsPS);
                         dt = elapsedClockSeconds / NumOfSubstepsPS;
                         hdt = dt / 2;
-                    }       
+                    }
                 }
                 var k2 = GetAxleMotionVariation(AxleSpeedMpS + k1.Item1 * hdt, hdt);
                 var k3 = GetAxleMotionVariation(AxleSpeedMpS + k2.Item1 * hdt, hdt);
                 var k4 = GetAxleMotionVariation(AxleSpeedMpS + k3.Item1 * dt, dt);
-                
+
                 AxleSpeedMpS += (integratorError = (k1.Item1 + 2 * (k2.Item1 + k3.Item1) + k4.Item1) * dt / 6);
                 AxlePositionRad += (k1.Item2 + 2 * (k2.Item2 + k3.Item2) + k4.Item2) * dt / 6;
                 axleOutForceSumN += (k1.Item3 + 2 * (k2.Item3 + k3.Item3) + k4.Item3);
