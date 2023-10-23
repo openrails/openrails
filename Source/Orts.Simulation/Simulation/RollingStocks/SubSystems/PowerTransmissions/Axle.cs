@@ -924,7 +924,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 NumOfSubstepsPS -= 5;
                 waitBeforeSpeedingUp = 5;
             }
-            else if (Math.Abs(integratorError) < 0.005)
+            else if (Math.Abs(integratorError) < 0.000277)
             {
                 NumOfSubstepsPS -= 2;
                 waitBeforeSpeedingUp = 5;
@@ -945,6 +945,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             for (int i = 0; i < NumOfSubstepsPS; i++)
             {
                 var k1 = GetAxleMotionVariation(AxleSpeedMpS, dt);
+/*
                 if (i == 0)
                 {
                     if (k1.Item1 * dt > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 10, 1) / 100)
@@ -955,6 +956,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         hdt = dt / 2;
                     }
                 }
+*/
                 var k2 = GetAxleMotionVariation(AxleSpeedMpS + k1.Item1 * hdt, hdt);
                 var k3 = GetAxleMotionVariation(AxleSpeedMpS + k2.Item1 * hdt, hdt);
                 var k4 = GetAxleMotionVariation(AxleSpeedMpS + k3.Item1 * dt, dt);
@@ -1033,17 +1035,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (Math.Abs(SlipSpeedMpS) > WheelSlipThresholdMpS)
             {
                 // Wait some time before indicating wheelslip to avoid false triggers
-                if (WheelSlipTimeS > 0.75f)
+                if (WheelSlipTimeS > 1)
                 {
                     IsWheelSlip = IsWheelSlipWarning = true;
-                    Trace.TraceInformation("Wheel Slip Triggered");
+//                    Trace.TraceInformation("Wheel Slip Triggered");
                 }
                 WheelSlipTimeS += timeSpan;
             }
             else if (Math.Abs(SlipSpeedPercent) > SlipWarningTresholdPercent)
             {
                 // Wait some time before indicating wheelslip to avoid false triggers
-                if (WheelSlipWarningTimeS > 0.75f) IsWheelSlipWarning = true;
+                if (WheelSlipWarningTimeS > 1) IsWheelSlipWarning = true;
                 IsWheelSlip = false;
                 WheelSlipWarningTimeS += timeSpan;
             }
