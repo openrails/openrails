@@ -34,6 +34,7 @@ namespace Orts.Viewer3D.Popups
         Train PlayerTrain;
         int LastPlayerTrainCars;
         bool LastPlayerLocomotiveFlippedState;
+        public bool TrainOperationsChanged { get; set; }
 
         public TrainOperationsWindow(WindowManager owner)
             : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 37, Window.DecorationSize.Y + CarListPadding + owner.TextFontDefault.Height * 2, Viewer.Catalog.GetString("Train Operations"))
@@ -145,6 +146,7 @@ namespace Orts.Viewer3D.Popups
         {
             Viewer.CarOperationsWindow.CarPosition = CarPosition;
             Viewer.CarOperationsWindow.Visible = true;
+            Viewer.TrainOperationsWindow.TrainOperationsChanged = true;
         }
     }
 }

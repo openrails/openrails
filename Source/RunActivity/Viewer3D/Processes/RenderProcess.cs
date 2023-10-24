@@ -66,6 +66,7 @@ namespace Orts.Viewer3D.Processes
         public static int[] ShadowMapDistance; // distance of shadow map center from camera
         public static int[] ShadowMapDiameter; // diameter of shadow map
         public static float[] ShadowMapLimit; // diameter of shadow map far edge from camera
+        public bool isFullScreen { get; set; }
 
         public const int MAX_BONES = 128;
         public const int MAX_LIGHTS = 20; // must not be lower than 2.
@@ -148,6 +149,8 @@ namespace Orts.Viewer3D.Processes
                     pp.MultiSampleCount = 32;
                     break;
             }
+
+            isFullScreen = pp.IsFullScreen;
             if (pp.IsFullScreen)
             {
                 var screen = Screen.FromControl(GameForm);
