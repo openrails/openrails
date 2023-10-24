@@ -29,11 +29,11 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem17 = new System.Windows.Forms.ListViewItem(new string[] {
             "Player1 (you)"}, -1, System.Drawing.Color.Empty, System.Drawing.Color.Empty, new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0))));
-            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("Player2");
-            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("Player3");
-            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem("...");
+            System.Windows.Forms.ListViewItem listViewItem18 = new System.Windows.Forms.ListViewItem("Player2");
+            System.Windows.Forms.ListViewItem listViewItem19 = new System.Windows.Forms.ListViewItem("Player3");
+            System.Windows.Forms.ListViewItem listViewItem20 = new System.Windows.Forms.ListViewItem("...");
             this.playerRolePanel = new System.Windows.Forms.Panel();
             this.playerRoleLink = new System.Windows.Forms.LinkLabel();
             this.playerRoleExplanation = new System.Windows.Forms.Label();
@@ -42,9 +42,9 @@
             this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.messagesPanel = new System.Windows.Forms.Panel();
             this.messages = new System.Windows.Forms.ListBox();
-            this.button2 = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.messageAllButton = new System.Windows.Forms.Button();
+            this.moreReplyOptionsButton = new System.Windows.Forms.Button();
+            this.messageInput = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.canvasPanel = new System.Windows.Forms.Panel();
             this.timeLabel = new System.Windows.Forms.Label();
@@ -70,11 +70,11 @@
             this.multiplayerSettingsPanel = new System.Windows.Forms.Panel();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.penaltyCheckbox = new System.Windows.Forms.CheckBox();
-            this.checkBox5 = new System.Windows.Forms.CheckBox();
+            this.preferGreenCheckbox = new System.Windows.Forms.CheckBox();
             this.allowJoiningCheckbox = new System.Windows.Forms.CheckBox();
             this.mapSettingsPanel = new System.Windows.Forms.Panel();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.button5 = new System.Windows.Forms.Button();
+            this.followMyTrainOnMap = new System.Windows.Forms.Button();
             this.centerOnMyTrainButton = new System.Windows.Forms.Button();
             this.seeTrainInGameButton = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
@@ -89,6 +89,7 @@
             this.messageSelectedPlayerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.replyToSelectedPlayerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.playerActionsMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.playerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.makeThisPlayerAnAssistantToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.jumpToThisPlayerInGameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.followToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -105,6 +106,9 @@
             this.proceedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.allowCallOnToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.trainActionsMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.jumpToThisTrainInGameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.followThisTrainOnTheMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.playerRolePanel.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
@@ -125,6 +129,7 @@
             this.playerActionsMenu.SuspendLayout();
             this.setSwitchMenu.SuspendLayout();
             this.setSignalMenu.SuspendLayout();
+            this.trainActionsMenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // playerRolePanel
@@ -144,10 +149,10 @@
             // playerRoleLink
             // 
             this.playerRoleLink.ActiveLinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(27)))), ((int)(((byte)(79)))), ((int)(((byte)(114)))));
-            this.playerRoleLink.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.playerRoleLink.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.playerRoleLink.AutoSize = true;
             this.playerRoleLink.LinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(116)))), ((int)(((byte)(166)))));
-            this.playerRoleLink.Location = new System.Drawing.Point(717, 9);
+            this.playerRoleLink.Location = new System.Drawing.Point(714, 9);
             this.playerRoleLink.Name = "playerRoleLink";
             this.playerRoleLink.Size = new System.Drawing.Size(60, 13);
             this.playerRoleLink.TabIndex = 1;
@@ -221,9 +226,9 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.messagesPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.messagesPanel.Controls.Add(this.messages);
-            this.messagesPanel.Controls.Add(this.button2);
-            this.messagesPanel.Controls.Add(this.button1);
-            this.messagesPanel.Controls.Add(this.textBox1);
+            this.messagesPanel.Controls.Add(this.messageAllButton);
+            this.messagesPanel.Controls.Add(this.moreReplyOptionsButton);
+            this.messagesPanel.Controls.Add(this.messageInput);
             this.messagesPanel.Controls.Add(this.label2);
             this.messagesPanel.Location = new System.Drawing.Point(0, 0);
             this.messagesPanel.Margin = new System.Windows.Forms.Padding(0);
@@ -245,41 +250,43 @@
             this.messages.Size = new System.Drawing.Size(554, 97);
             this.messages.TabIndex = 5;
             // 
-            // button2
+            // messageAllButton
             // 
-            this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button2.Enabled = false;
-            this.button2.Location = new System.Drawing.Point(421, 128);
-            this.button2.Margin = new System.Windows.Forms.Padding(0);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(126, 23);
-            this.button2.TabIndex = 4;
-            this.button2.Text = "Message all players";
-            this.button2.UseVisualStyleBackColor = true;
+            this.messageAllButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.messageAllButton.AutoEllipsis = true;
+            this.messageAllButton.Location = new System.Drawing.Point(421, 128);
+            this.messageAllButton.Margin = new System.Windows.Forms.Padding(0);
+            this.messageAllButton.Name = "messageAllButton";
+            this.messageAllButton.Size = new System.Drawing.Size(126, 23);
+            this.messageAllButton.TabIndex = 4;
+            this.messageAllButton.Text = "Message all players";
+            this.messageAllButton.UseVisualStyleBackColor = true;
+            this.messageAllButton.Click += new System.EventHandler(this.messageAllButton_Click);
             // 
-            // button1
+            // moreReplyOptionsButton
             // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.AutoSize = true;
-            this.button1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.button1.Enabled = false;
-            this.button1.Location = new System.Drawing.Point(547, 128);
-            this.button1.Margin = new System.Windows.Forms.Padding(0);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(23, 23);
-            this.button1.TabIndex = 3;
-            this.button1.Text = ">";
-            this.button1.UseVisualStyleBackColor = true;
+            this.moreReplyOptionsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.moreReplyOptionsButton.AutoSize = true;
+            this.moreReplyOptionsButton.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.moreReplyOptionsButton.Location = new System.Drawing.Point(547, 128);
+            this.moreReplyOptionsButton.Margin = new System.Windows.Forms.Padding(0);
+            this.moreReplyOptionsButton.Name = "moreReplyOptionsButton";
+            this.moreReplyOptionsButton.Size = new System.Drawing.Size(23, 23);
+            this.moreReplyOptionsButton.TabIndex = 3;
+            this.moreReplyOptionsButton.Text = ">";
+            this.moreReplyOptionsButton.UseVisualStyleBackColor = true;
+            this.moreReplyOptionsButton.Click += new System.EventHandler(this.moreReplyOptionsButton_Click);
             // 
-            // textBox1
+            // messageInput
             // 
-            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.messageInput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBox1.Enabled = false;
-            this.textBox1.Location = new System.Drawing.Point(16, 130);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(402, 20);
-            this.textBox1.TabIndex = 2;
+            this.messageInput.Location = new System.Drawing.Point(16, 130);
+            this.messageInput.Name = "messageInput";
+            this.messageInput.Size = new System.Drawing.Size(402, 20);
+            this.messageInput.TabIndex = 2;
+            this.messageInput.Enter += new System.EventHandler(this.messageInput_Enter);
+            this.messageInput.Leave += new System.EventHandler(this.messageInput_Leave);
             // 
             // label2
             // 
@@ -556,7 +563,7 @@
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.penaltyCheckbox);
-            this.groupBox2.Controls.Add(this.checkBox5);
+            this.groupBox2.Controls.Add(this.preferGreenCheckbox);
             this.groupBox2.Controls.Add(this.allowJoiningCheckbox);
             this.groupBox2.Location = new System.Drawing.Point(10, 0);
             this.groupBox2.Name = "groupBox2";
@@ -578,16 +585,18 @@
             this.penaltyCheckbox.UseVisualStyleBackColor = true;
             this.penaltyCheckbox.CheckedChanged += new System.EventHandler(this.penaltyCheckbox_CheckedChanged);
             // 
-            // checkBox5
+            // preferGreenCheckbox
             // 
-            this.checkBox5.AutoSize = true;
-            this.checkBox5.Enabled = false;
-            this.checkBox5.Location = new System.Drawing.Point(7, 38);
-            this.checkBox5.Name = "checkBox5";
-            this.checkBox5.Size = new System.Drawing.Size(99, 17);
-            this.checkBox5.TabIndex = 1;
-            this.checkBox5.Text = "Prefer green (?)";
-            this.checkBox5.UseVisualStyleBackColor = true;
+            this.preferGreenCheckbox.AutoSize = true;
+            this.preferGreenCheckbox.Checked = true;
+            this.preferGreenCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.preferGreenCheckbox.Location = new System.Drawing.Point(7, 38);
+            this.preferGreenCheckbox.Name = "preferGreenCheckbox";
+            this.preferGreenCheckbox.Size = new System.Drawing.Size(119, 17);
+            this.preferGreenCheckbox.TabIndex = 1;
+            this.preferGreenCheckbox.Text = "Prefer green signals";
+            this.preferGreenCheckbox.UseVisualStyleBackColor = true;
+            this.preferGreenCheckbox.CheckedChanged += new System.EventHandler(this.preferGreenCheckbox_CheckedChanged);
             // 
             // allowJoiningCheckbox
             // 
@@ -615,7 +624,7 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.button5);
+            this.groupBox1.Controls.Add(this.followMyTrainOnMap);
             this.groupBox1.Controls.Add(this.centerOnMyTrainButton);
             this.groupBox1.Controls.Add(this.seeTrainInGameButton);
             this.groupBox1.Controls.Add(this.label3);
@@ -630,16 +639,16 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Map settings and controls";
             // 
-            // button5
+            // followMyTrainOnMap
             // 
-            this.button5.AutoSize = true;
-            this.button5.Enabled = false;
-            this.button5.Location = new System.Drawing.Point(7, 156);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(167, 23);
-            this.button5.TabIndex = 7;
-            this.button5.Text = "Follow my train on the map";
-            this.button5.UseVisualStyleBackColor = true;
+            this.followMyTrainOnMap.AutoSize = true;
+            this.followMyTrainOnMap.Location = new System.Drawing.Point(7, 156);
+            this.followMyTrainOnMap.Name = "followMyTrainOnMap";
+            this.followMyTrainOnMap.Size = new System.Drawing.Size(167, 23);
+            this.followMyTrainOnMap.TabIndex = 7;
+            this.followMyTrainOnMap.Text = "Follow my train on the map";
+            this.followMyTrainOnMap.UseVisualStyleBackColor = true;
+            this.followMyTrainOnMap.Click += new System.EventHandler(this.followMyTrainOnMap_Click);
             // 
             // centerOnMyTrainButton
             // 
@@ -655,7 +664,6 @@
             // seeTrainInGameButton
             // 
             this.seeTrainInGameButton.AutoSize = true;
-            this.seeTrainInGameButton.Enabled = false;
             this.seeTrainInGameButton.Location = new System.Drawing.Point(7, 98);
             this.seeTrainInGameButton.Name = "seeTrainInGameButton";
             this.seeTrainInGameButton.Size = new System.Drawing.Size(167, 23);
@@ -729,6 +737,7 @@
             // 
             // drawPathCheckbox
             // 
+            this.drawPathCheckbox.AutoEllipsis = true;
             this.drawPathCheckbox.AutoSize = true;
             this.drawPathCheckbox.Checked = true;
             this.drawPathCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -775,12 +784,11 @@
             this.playersView.HideSelection = false;
             this.playersView.HoverSelection = true;
             this.playersView.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem1,
-            listViewItem2,
-            listViewItem3,
-            listViewItem4});
+            listViewItem17,
+            listViewItem18,
+            listViewItem19,
+            listViewItem20});
             this.playersView.Location = new System.Drawing.Point(7, 19);
-            this.playersView.MultiSelect = false;
             this.playersView.Name = "playersView";
             this.playersView.Size = new System.Drawing.Size(167, 202);
             this.playersView.TabIndex = 1;
@@ -790,67 +798,76 @@
             // 
             // messageActionsMenu
             // 
-            this.messageActionsMenu.Enabled = false;
             this.messageActionsMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.messageSelectedPlayerMenuItem,
             this.replyToSelectedPlayerMenuItem});
             this.messageActionsMenu.Name = "contextMenuStrip2";
             this.messageActionsMenu.ShowImageMargin = false;
             this.messageActionsMenu.Size = new System.Drawing.Size(197, 48);
+            this.messageActionsMenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.messageActionsMenu_ItemClicked);
             // 
             // messageSelectedPlayerMenuItem
             // 
             this.messageSelectedPlayerMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.messageSelectedPlayerMenuItem.Enabled = false;
             this.messageSelectedPlayerMenuItem.Name = "messageSelectedPlayerMenuItem";
             this.messageSelectedPlayerMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.messageSelectedPlayerMenuItem.Tag = "message";
             this.messageSelectedPlayerMenuItem.Text = "Message the selected player";
             // 
             // replyToSelectedPlayerMenuItem
             // 
             this.replyToSelectedPlayerMenuItem.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.replyToSelectedPlayerMenuItem.Enabled = false;
             this.replyToSelectedPlayerMenuItem.Name = "replyToSelectedPlayerMenuItem";
             this.replyToSelectedPlayerMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.replyToSelectedPlayerMenuItem.Tag = "reply";
             this.replyToSelectedPlayerMenuItem.Text = "Reply to the selected player";
             // 
             // playerActionsMenu
             // 
-            this.playerActionsMenu.Enabled = false;
             this.playerActionsMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.playerToolStripMenuItem,
             this.makeThisPlayerAnAssistantToolStripMenuItem,
             this.jumpToThisPlayerInGameToolStripMenuItem,
             this.followToolStripMenuItem,
             this.kickFromMultiplayerSessionToolStripMenuItem});
             this.playerActionsMenu.Name = "contextMenuStrip3";
-            this.playerActionsMenu.Size = new System.Drawing.Size(230, 92);
+            this.playerActionsMenu.Size = new System.Drawing.Size(230, 114);
+            this.playerActionsMenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.playerActionsMenu_ItemClicked);
+            // 
+            // playerToolStripMenuItem
+            // 
+            this.playerToolStripMenuItem.Enabled = false;
+            this.playerToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.playerToolStripMenuItem.Name = "playerToolStripMenuItem";
+            this.playerToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
+            this.playerToolStripMenuItem.Text = "Player";
             // 
             // makeThisPlayerAnAssistantToolStripMenuItem
             // 
-            this.makeThisPlayerAnAssistantToolStripMenuItem.Enabled = false;
             this.makeThisPlayerAnAssistantToolStripMenuItem.Name = "makeThisPlayerAnAssistantToolStripMenuItem";
             this.makeThisPlayerAnAssistantToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
+            this.makeThisPlayerAnAssistantToolStripMenuItem.Tag = "assistant";
             this.makeThisPlayerAnAssistantToolStripMenuItem.Text = "Make this player an assistant";
             // 
             // jumpToThisPlayerInGameToolStripMenuItem
             // 
-            this.jumpToThisPlayerInGameToolStripMenuItem.Enabled = false;
             this.jumpToThisPlayerInGameToolStripMenuItem.Name = "jumpToThisPlayerInGameToolStripMenuItem";
             this.jumpToThisPlayerInGameToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
+            this.jumpToThisPlayerInGameToolStripMenuItem.Tag = "seeInGame";
             this.jumpToThisPlayerInGameToolStripMenuItem.Text = "Jump to this player in game";
             // 
             // followToolStripMenuItem
             // 
-            this.followToolStripMenuItem.Enabled = false;
             this.followToolStripMenuItem.Name = "followToolStripMenuItem";
             this.followToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
+            this.followToolStripMenuItem.Tag = "followOnMap";
             this.followToolStripMenuItem.Text = "Follow on the map";
             // 
             // kickFromMultiplayerSessionToolStripMenuItem
             // 
-            this.kickFromMultiplayerSessionToolStripMenuItem.Enabled = false;
             this.kickFromMultiplayerSessionToolStripMenuItem.Name = "kickFromMultiplayerSessionToolStripMenuItem";
             this.kickFromMultiplayerSessionToolStripMenuItem.Size = new System.Drawing.Size(229, 22);
+            this.kickFromMultiplayerSessionToolStripMenuItem.Tag = "kick";
             this.kickFromMultiplayerSessionToolStripMenuItem.Text = "Kick from multiplayer session";
             // 
             // setSwitchMenu
@@ -956,14 +973,37 @@
             this.allowCallOnToolStripMenuItem.Tag = "callOn";
             this.allowCallOnToolStripMenuItem.Text = "Allow call on";
             // 
-            // DispatchViewerBeta
+            // trainActionsMenu
+            // 
+            this.trainActionsMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.jumpToThisTrainInGameToolStripMenuItem,
+            this.followThisTrainOnTheMapToolStripMenuItem});
+            this.trainActionsMenu.Name = "trainActionsMenu";
+            this.trainActionsMenu.Size = new System.Drawing.Size(223, 48);
+            this.trainActionsMenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.trainActionsMenu_ItemClicked);
+            // 
+            // jumpToThisTrainInGameToolStripMenuItem
+            // 
+            this.jumpToThisTrainInGameToolStripMenuItem.Name = "jumpToThisTrainInGameToolStripMenuItem";
+            this.jumpToThisTrainInGameToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
+            this.jumpToThisTrainInGameToolStripMenuItem.Tag = "seeInGame";
+            this.jumpToThisTrainInGameToolStripMenuItem.Text = "Jump to this train in game";
+            // 
+            // followThisTrainOnTheMapToolStripMenuItem
+            // 
+            this.followThisTrainOnTheMapToolStripMenuItem.Name = "followThisTrainOnTheMapToolStripMenuItem";
+            this.followThisTrainOnTheMapToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
+            this.followThisTrainOnTheMapToolStripMenuItem.Tag = "followOnMap";
+            this.followThisTrainOnTheMapToolStripMenuItem.Text = "Follow this train on the map";
+            // 
+            // MapViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 561);
             this.Controls.Add(this.tableLayoutPanel1);
             this.MinimumSize = new System.Drawing.Size(600, 400);
-            this.Name = "DispatchViewerBeta";
+            this.Name = "MapViewer";
             this.Text = "Map window";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DispatchViewerBeta_FormClosing);
             this.Resize += new System.EventHandler(this.DispatchViewerBeta_Resize);
@@ -994,6 +1034,7 @@
             this.playerActionsMenu.ResumeLayout(false);
             this.setSwitchMenu.ResumeLayout(false);
             this.setSignalMenu.ResumeLayout(false);
+            this.trainActionsMenu.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -1008,9 +1049,9 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel3;
         public System.Windows.Forms.Panel messagesPanel;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Button messageAllButton;
+        private System.Windows.Forms.Button moreReplyOptionsButton;
+        private System.Windows.Forms.TextBox messageInput;
         private System.Windows.Forms.ContextMenuStrip messageActionsMenu;
         private System.Windows.Forms.ToolStripMenuItem messageSelectedPlayerMenuItem;
         private System.Windows.Forms.ToolStripMenuItem replyToSelectedPlayerMenuItem;
@@ -1023,11 +1064,11 @@
         public System.Windows.Forms.Panel multiplayerSettingsPanel;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.CheckBox penaltyCheckbox;
-        private System.Windows.Forms.CheckBox checkBox5;
+        private System.Windows.Forms.CheckBox preferGreenCheckbox;
         private System.Windows.Forms.CheckBox allowJoiningCheckbox;
         private System.Windows.Forms.NumericUpDown mapResolutionUpDown;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Button followMyTrainOnMap;
         private System.Windows.Forms.Button centerOnMyTrainButton;
         private System.Windows.Forms.Button seeTrainInGameButton;
         public System.Windows.Forms.Panel playersPanel;
@@ -1071,6 +1112,10 @@
         private System.Windows.Forms.ToolStripMenuItem proceedToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem allowCallOnToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem playerToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip trainActionsMenu;
+        private System.Windows.Forms.ToolStripMenuItem jumpToThisTrainInGameToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem followThisTrainOnTheMapToolStripMenuItem;
     }
 }
 

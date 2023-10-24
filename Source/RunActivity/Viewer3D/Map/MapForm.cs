@@ -1,9 +1,29 @@
-﻿using System;
+﻿// COPYRIGHT 2023 by the Open Rails project.
+// 
+// This file is part of Open Rails.
+// 
+// Open Rails is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// Open Rails is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.MultiPlayer;
@@ -27,13 +47,13 @@ namespace Orts.Viewer3D.Debugging
         /// Reference to the main simulator object.
         /// </summary>
         public readonly Simulator simulator;
+        private GettextResourceManager catalog = new GettextResourceManager("RunActivity");
         private readonly MapDataProvider MapDataProvider;
         private readonly MapThemeProvider MapThemeProvider;
         private string ThemeName = "light";
         private ThemeStyle Theme;
         /// <summary>
-        /// Used to periodically check if we should shift the view when the
-        /// user is holding down a "shift view" button.
+        /// Used to periodically check if we should shift the view when the user is holding down a "shift view" button.
         /// </summary>
         private readonly Timer UITimer;
         public Viewer Viewer;
@@ -50,6 +70,7 @@ namespace Orts.Viewer3D.Debugging
         public List<SignalWidget> signalItemsDrawn;
         public SwitchWidget switchPickedItem;
         public SignalWidget signalPickedItem;
+        public TrainWidget trainPickedItem;
         public bool switchPickedItemHandled;
         public double switchPickedTime;
         public bool signalPickedItemHandled;
@@ -59,7 +80,7 @@ namespace Orts.Viewer3D.Debugging
 
         public List<Train> selectedTrainList;
         /// <summary>
-        /// contains the last position of the mouse
+        /// Contains the last position of the mouse
         /// </summary>
         private System.Drawing.Point LastCursorPosition = new System.Drawing.Point();
 
@@ -84,8 +105,8 @@ namespace Orts.Viewer3D.Debugging
         public SolidBrush InactiveTrainBrush = new SolidBrush(Color.DarkRed);
         private Color MapCanvasColor = Color.White;
 
-        // the train selected by leftclicking the mouse
-        public Train PickedTrain;
+        // The train selected by clicking on it on the map or indirectly via the "follow" or "jump to" train options
+        public Train PickedTrain = Program.Simulator.PlayerLocomotive.Train;
         /// <summary>
         /// Defines the area to view, in meters. The left edge is meters from the leftmost extent of the route.
         /// </summary>
@@ -107,6 +128,8 @@ namespace Orts.Viewer3D.Debugging
         {
             InitializeComponent();
 
+            Localizer.Localize(this, catalog);
+
             if (simulator == null)
                 throw new ArgumentNullException("simulator", "Simulator object cannot be null.");
 
@@ -120,20 +143,20 @@ namespace Orts.Viewer3D.Debugging
 
             ViewWindow = new RectangleF(0, 0, 5000f, 5000f);
             mapResolutionUpDown.Accelerations.Add(new NumericUpDownAcceleration(1, 100));
-            /*boxSetSignal.Items.Add("System Controlled");
-            boxSetSignal.Items.Add("Stop");
-            boxSetSignal.Items.Add("Approach");
-            boxSetSignal.Items.Add("Proceed");
-            chkAllowUserSwitch.Checked = false;*/
             selectedTrainList = new List<Train>();
 
             InitializeData();
             InitializeImage();
 
+            MPManager.Instance().MessageReceived += (sender, e) =>
+            {
+                AddNewMessage(e.Time, e.Message);
+            };
+
             // Initialise the timer used to handle user input
             UITimer = new Timer();
             UITimer.Interval = 100;
-            UITimer.Tick += new EventHandler(UITimer_Tick);
+            UITimer.Tick += new System.EventHandler(UITimer_Tick);
             UITimer.Start();
         }
 
@@ -151,14 +174,6 @@ namespace Orts.Viewer3D.Debugging
         #region initData
         private void InitializeData()
         {
-            /*if (!loaded)
-            {
-                // do this only once
-                loaded = true;
-                //trackSections.DataSource = new List<InterlockingTrack>(simulator.InterlockingSystem.Tracks.Values).ToArray();
-                Localizer.Localize(this, Viewer.Catalog);
-            }*/
-
             switchItemsDrawn = new List<SwitchWidget>();
             signalItemsDrawn = new List<SignalWidget>();
             switches = new List<SwitchWidget>();
@@ -254,69 +269,71 @@ namespace Orts.Viewer3D.Debugging
             PlayersList.Add(name);
         }
 
-        // TODO: Colour code players based on their roles
-        // TODO: FUNCTION NOT WORKING CORRECTLY
+        int DisconnectedPlayersCount = 0;
+        int AssistantPlayersCount = 0;
         public void CheckPlayers()
         {
-            if (!MPManager.IsMultiPlayer() || MPManager.OnlineTrains == null || MPManager.OnlineTrains.Players == null) return;
+            if (Dragging || !MPManager.IsMultiPlayer() || MPManager.OnlineTrains == null || MPManager.OnlineTrains.Players == null) return;
             var players = MPManager.OnlineTrains.Players;
             var username = MPManager.GetUserName();
             players = players.Concat(MPManager.Instance().lostPlayer).ToDictionary(x => x.Key, x => x.Value);
+            if (playersView.Items.Count == players.Count + 1 && DisconnectedPlayersCount == MPManager.Instance().lostPlayer.Count && AssistantPlayersCount == MPManager.Instance().aiderList.Count) return;
 
-            bool PlayersListChanged = false;
+            DisconnectedPlayersCount = MPManager.Instance().lostPlayer.Count;
+            AssistantPlayersCount = MPManager.Instance().aiderList.Count;
 
-            // Add myself
-            if (!PlayersList.Contains(username))
-            {
-                AddPlayer(username);
-                PlayersListChanged = true;
-            }
-
+            // Repopuale `PlayersList`
+            PlayersList.Clear();
+            AddPlayer(username);
             foreach (var p in players)
             {
                 if (PlayersList.Contains(p.Key)) continue;
                 AddPlayer(p.Key);
-                PlayersListChanged = true;
             }
-
-            // Remove players from `PlayersList` if they are no longer on the server
-            foreach (var p in PlayersList.ToList()) // https://stackoverflow.com/a/604843/
-            {
-                if (players.ContainsKey(p) || p == username) continue;
-                PlayersList.Remove(p);
-                PlayersListChanged = true;
-            }
-
-            // If `PlayersList` hasn't changed since we've last checked, we should not clear/update
-            // `playersView` to avoid flickering
-            if (!PlayersListChanged) return;
 
             playersView.Items.Clear();
-            Console.Beep();
             foreach (var p in PlayersList)
             {
-                if (p == username)
-                    playersView.Items.Add(p);
+                ListViewItem item = new ListViewItem(p);
 
-                if (MPManager.Instance().aiderList.Contains(p))
+                if (p == username)
                 {
-                    playersView.Items.Add(p + " (Helper)");
+                    item.Text += " [" + Viewer.Catalog.GetString("You") + "]";
+                    item.Font = new Font(item.Font, FontStyle.Bold);
+                    playersView.Items.Add(item);
+
+                }
+                else if (MPManager.Instance().aiderList.Contains(p))
+                {
+                    item.Text += " [" + Viewer.Catalog.GetString("Helper") + "]";
+                    item.ForeColor = Color.FromArgb(40, 116, 166);
+                    playersView.Items.Add(item);
                 }
                 else if (MPManager.Instance().lostPlayer.ContainsKey(p))
                 {
-                    playersView.Items.Add(p + " (Disconnected)");
+                    item.Text += " [" + Viewer.Catalog.GetString("Disconnected") + "]";
+                    item.ForeColor = SystemColors.GrayText;
+                    playersView.Items.Add(item);
                 }
                 else
                 {
-                    playersView.Items.Add(p);
+                    playersView.Items.Add(item);
                 }
             }
+        }
+
+        static string TrimBracketsFromEnd(string input)
+        {
+            string pattern = @"\s\[[^\]]*\]\s*$";
+            string result = Regex.Replace(input, pattern, "");
+
+            return result;
         }
         #endregion
 
         #region Draw
-        public bool firstShow = true;
-        public bool followTrain;
+        public bool FirstShow = true;
+        public bool FollowTrain;
         public float subX, subY;
         public float oldWidth;
         public float oldHeight;
@@ -325,7 +342,7 @@ namespace Orts.Viewer3D.Debugging
         /// Regenerates the 2D view. At the moment, examines the track network
         /// each time the view is drawn. Later, the traversal and drawing can be separated.
         /// </summary>
-        public void GenerateView(bool dragging = false)
+        public void GenerateView()
         {
             if (!Inited) return;
 
@@ -333,29 +350,17 @@ namespace Orts.Viewer3D.Debugging
             if (showTimeCheckbox.Checked)
                 MapDataProvider.ShowSimulationTime();
 
-            if (mapCanvas.Image == null || firstShow) InitializeImage();
+            if (mapCanvas.Image == null || FirstShow) InitializeImage();
 
-            if (firstShow || followTrain)
+            if (FirstShow || FollowTrain)
             {
-                //see who should I look at:
-                //if the player is selected in the avatar list, show the player, otherwise, show the one with the lowest index
-                WorldPosition pos = Program.Simulator.PlayerLocomotive == null ? Program.Simulator.Trains.First().Cars.First().WorldPosition : Program.Simulator.PlayerLocomotive.WorldPosition;
-                if (playersView.SelectedIndices.Count > 0 && !playersView.SelectedIndices.Contains(0))
-                {
-                    int i = playersView.SelectedIndices.Cast<int>().Min();
-                    string name = (playersView.Items[i].Text ?? "").Split(' ').First().Trim();
-                    if (MPManager.OnlineTrains.Players.TryGetValue(name, out OnlinePlayer player))
-                        pos = player?.Train?.Cars?.FirstOrDefault()?.WorldPosition;
-                    else if (MPManager.Instance().lostPlayer.TryGetValue(name, out OnlinePlayer lost))
-                        pos = lost?.Train?.Cars?.FirstOrDefault()?.WorldPosition;
-                }
-                if (pos == null)
-                    pos = PickedTrain?.Cars?.FirstOrDefault()?.WorldPosition;
+                WorldPosition pos = PickedTrain?.Cars?.FirstOrDefault()?.WorldPosition;
+
                 if (pos != null)
                 {
                     var ploc = new PointF((pos.TileX * 2048) + pos.Location.X, (pos.TileZ * 2048) + pos.Location.Z);
                     ViewWindow.X = ploc.X - minX - (ViewWindow.Width / 2); ViewWindow.Y = ploc.Y - minY - (ViewWindow.Width / 2);
-                    firstShow = false;
+                    FirstShow = false;
                 }
             }
 
@@ -401,27 +406,24 @@ namespace Orts.Viewer3D.Debugging
                 PointF scaledA, scaledB;
                 DrawTrack(g, p, out scaledA, out scaledB);
 
-                if (Dragging == false)
-                {
-                    // Draw trains and path
-                    DrawTrains(g, scaledA, scaledB);
+                // Draw trains and path
+                DrawTrains(g, scaledA, scaledB);
 
-                    // Keep widgetWidth <= 15 pixels
-                    var widgetWidth = Math.Min(penWidth * 6, 15);
+                // Keep widgetWidth <= 15 pixels
+                var widgetWidth = Math.Min(penWidth * 6, 15);
 
-                    // Draw signals on top of path so they are easier to see.
-                    signalItemsDrawn.Clear();
-                    ShowSignals(g, scaledB, widgetWidth);
+                // Draw signals on top of path so they are easier to see.
+                signalItemsDrawn.Clear();
+                ShowSignals(g, scaledB, widgetWidth);
 
-                    // Draw switches
-                    switchItemsDrawn.Clear();
-                    ShowSwitches(g, widgetWidth);
+                // Draw switches
+                switchItemsDrawn.Clear();
+                ShowSwitches(g, widgetWidth);
 
-                    // Draw labels for sidings and platforms last so they go on top for readability
-                    MapDataProvider.CleanTextCells();  // Empty the listing of labels ready for adding labels again
-                    ShowPlatformLabels(g); // Platforms take priority over sidings and signal states
-                    ShowSidingLabels(g);
-                }
+                // Draw labels for sidings and platforms last so they go on top for readability
+                MapDataProvider.CleanTextCells();  // Empty the listing of labels ready for adding labels again
+                ShowPlatformLabels(g); // Platforms take priority over sidings and signal states
+                ShowSidingLabels(g);
 
                 DrawZoomTarget(g);
             }
@@ -1301,6 +1303,7 @@ namespace Orts.Viewer3D.Debugging
                 if (Dragging == false)
                 {
                     Dragging = true;
+                    FollowTrain = false;
                     Cursor.Current = Cursors.NoMove2D;
                 }
             }
@@ -1352,13 +1355,22 @@ namespace Orts.Viewer3D.Debugging
                         {
                             switchPickedItem = widget;
                             signalPickedItem = null;
+                            trainPickedItem = null;
                             HandlePickedSwitch();
                         }
                         if (temp is SignalWidget widget1)
                         {
                             signalPickedItem = widget1;
                             switchPickedItem = null;
+                            trainPickedItem = null;
                             HandlePickedSignal();
+                        }
+                        if (temp is TrainWidget widget2)
+                        {
+                            trainPickedItem = widget2;
+                            signalPickedItem = null;
+                            switchPickedItem = null;
+                            HandlePickedTrain();
                         }
                     }
                     else
@@ -1415,6 +1427,18 @@ namespace Orts.Viewer3D.Debugging
             return;
         }
 
+        private void HandlePickedTrain()
+        {
+            trainActionsMenu.Visible = false;
+            if (trainPickedItem == null) return;
+            PickedTrain = trainPickedItem.Train;
+            trainActionsMenu.Show(Cursor.Position);
+            trainActionsMenu.Enabled = true;
+            trainActionsMenu.Focus();
+            trainActionsMenu.Visible = true;
+            return;
+        }
+
         private void setSignalMenu_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
             if (signalPickedItem == null)
@@ -1426,8 +1450,8 @@ namespace Orts.Viewer3D.Debugging
             var signal = signalPickedItem.Signal;
             var type = e.ClickedItem.Tag.ToString();
 
-            string[] signalAspects = { "system", "stop", "approach", "proceed" };
-            int numericSignalAspect = Array.IndexOf(signalAspects, "stop");
+            string[] signalAspects = { "system", "stop", "approach", "proceed", "callOn" };
+            int numericSignalAspect = Array.IndexOf(signalAspects, type);
 
             if (MPManager.Instance().AmAider)
             {
@@ -1606,6 +1630,48 @@ namespace Orts.Viewer3D.Debugging
             return null;
         }
 
+        // TODO: Use this function to show additional data about hovered train
+        private ItemWidget searchForTrainOnMouseMove(int x, int y, int range)
+        {
+            if (range < 5) range = 5;
+            Train hoveredTrain = null;
+            TrainCar firstCar;
+            float tX, tY;
+
+            foreach (var t in Program.Simulator.Trains)
+            {
+                firstCar = null;
+                if (t.LeadLocomotive != null)
+                {
+                    worldPos = t.LeadLocomotive.WorldPosition;
+                    firstCar = t.LeadLocomotive;
+                }
+                else if (t.Cars != null && t.Cars.Count > 0)
+                {
+                    worldPos = t.Cars[0].WorldPosition;
+                    firstCar = t.Cars[0];
+                }
+                else
+                {
+                    continue;
+                }
+
+                worldPos = firstCar.WorldPosition;
+                tX = ((worldPos.TileX * 2048) - subX + worldPos.Location.X) * xScale;
+                tY = mapCanvas.Height - (((worldPos.TileZ * 2048) - subY + worldPos.Location.Z) * yScale);
+                float xSpeedCorr = Math.Abs(t.SpeedMpS) * xScale * 1.5f;
+                float ySpeedCorr = Math.Abs(t.SpeedMpS) * yScale * 1.5f;
+
+                if (tX < x - range - xSpeedCorr || tX > x + range + xSpeedCorr || tY < y - range - ySpeedCorr || tY > y + range + ySpeedCorr)
+                    continue;
+
+                if (hoveredTrain == null)
+                    hoveredTrain = t;
+            }
+
+            return hoveredTrain != null ? new TrainWidget(hoveredTrain) : null;
+        }
+
         private void mapCanvas_MouseMove(object sender, MouseEventArgs e)
         {
             if (Dragging && !Zooming)
@@ -1666,26 +1732,38 @@ namespace Orts.Viewer3D.Debugging
 
         private void playersView_MouseClick(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Right)
+            if (e.Button != MouseButtons.Right || playersView.FocusedItem == null || playersView.SelectedItems.Count != 1) return;
+
+            var focusedItem = playersView.FocusedItem;
+            var player = TrimBracketsFromEnd(focusedItem.Text);
+
+            if (focusedItem.Bounds.Contains(e.Location) && player != MPManager.GetUserName())
             {
-                var focusedItem = playersView.FocusedItem;
-                if (focusedItem != null && focusedItem.Bounds.Contains(e.Location))
-                {
-                    playerActionsMenu.Show(Cursor.Position);
-                }
+                makeThisPlayerAnAssistantToolStripMenuItem.Text = MPManager.Instance().aiderList.Contains(player) ? Viewer.Catalog.GetString("Demote this player") : Viewer.Catalog.GetString("Make this player an assistant");
+                var isDisconnected = MPManager.Instance().lostPlayer.ContainsKey(player);
+                makeThisPlayerAnAssistantToolStripMenuItem.Enabled = !isDisconnected;
+                jumpToThisPlayerInGameToolStripMenuItem.Enabled = !isDisconnected;
+                followToolStripMenuItem.Enabled = !isDisconnected;
+                // TODO: Figure out a way to allow removing disconnected players
+
+                playerActionsMenu.Show(Cursor.Position);
+                playerToolStripMenuItem.Text = player;
             }
+
         }
 
         public bool ClickedTrain;
         private void seeTrainInGameButton_Click(object sender, EventArgs e)
         {
-            ClickedTrain = PickedTrain != null;
+            PickedTrain = Program.Simulator.PlayerLocomotive.Train;
+            ClickedTrain = true;
         }
 
         private void centerOnMyTrainButton_Click(object sender, EventArgs e)
         {
-            followTrain = false;
-            firstShow = true;
+            PickedTrain = Program.Simulator.PlayerLocomotive.Train;
+            FollowTrain = false;
+            FirstShow = true;
             GenerateView();
         }
 
@@ -1714,6 +1792,209 @@ namespace Orts.Viewer3D.Debugging
             MapCanvasColor = Theme.MapCanvasColor;
             TrackPen.Color = Theme.TrackColor;
             InitializeImage();
+        }
+
+        private void playerActionsMenu_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+            var type = e.ClickedItem.Tag.ToString();
+            var player = playerToolStripMenuItem.Text;
+
+            switch (type)
+            {
+                case "assistant":
+                    if (!MPManager.OnlineTrains.Players.ContainsKey(player)) break;
+
+                    if (MPManager.Instance().aiderList.Contains(player))
+                    {
+                        // Selected player is already an assistant, so the intent is to demote them
+                        MPManager.BroadCast(new MSGAider(player, false).ToString());
+                        MPManager.Instance().aiderList.Remove(player);
+                    }
+                    else
+                    {
+                        // Promote player to be an assistant
+                        MPManager.BroadCast(new MSGAider(player, true).ToString());
+                        MPManager.Instance().aiderList.Add(player);
+                    }
+
+                    break;
+
+                case "seeInGame":
+                    MPManager.OnlineTrains.Players.TryGetValue(player, out OnlinePlayer p);
+                    PickedTrain = p?.Train;
+                    ClickedTrain = true;
+                    break;
+
+                case "followOnMap":
+                    MPManager.OnlineTrains.Players.TryGetValue(player, out OnlinePlayer p1);
+                    PickedTrain = p1?.Train;
+                    FollowTrain = true;
+                    break;
+
+                case "kick":
+                    if (!MPManager.IsServer() || !MPManager.OnlineTrains.Players.ContainsKey(player)) return;
+
+                    MPManager.OnlineTrains.Players[player].status = OnlinePlayer.Status.Removed;
+                    MPManager.BroadCast(new MSGMessage(player, "Error", "Sorry the server has removed you").ToString());
+
+                    break;
+            }
+        }
+
+        private void followMyTrainOnMap_Click(object sender, EventArgs e)
+        {
+            PickedTrain = Program.Simulator.PlayerLocomotive.Train;
+            FollowTrain = true;
+        }
+
+        private void trainActionsMenu_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+            var type = e.ClickedItem.Tag.ToString();
+
+            switch (type)
+            {
+                case "seeInGame":
+                    ClickedTrain = true;
+                    break;
+
+                case "followOnMap":
+                    FollowTrain = true;
+                    break;
+            }
+        }
+
+        private void preferGreenCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            MPManager.PreferGreen = preferGreenCheckbox.Checked;
+        }
+
+        public bool AddNewMessage(double _, string msg)
+        {
+            if (messages.Items.Count > 30) messages.Items.RemoveAt(0);
+
+            messages.Items.Add(msg);
+            messages.SelectedIndex = messages.Items.Count - 1;
+            messages.SelectedIndex = -1;
+
+            return true;
+        }
+
+        private void messageAllButton_Click(object sender, EventArgs e)
+        {
+            if (!MPManager.IsMultiPlayer()) return;
+
+            var message = messageInput.Text;
+            message = message.Replace("\r", "");
+            message = message.Replace("\t", "");
+            MPManager.Instance().ComposingText = false;
+
+            if (message == "") return;
+
+            if (MPManager.IsServer())
+            {
+                var users = MPManager.OnlineTrains.Players.Keys
+                    .Select((string u) => $"{u}\r");
+                string user = string.Join("", users) + "0END";
+                string msgText = new MSGText(MPManager.GetUserName(), user, message).ToString();
+                try
+                {
+                    MPManager.Notify(msgText);
+                }
+                catch { }
+                finally
+                {
+                    messageInput.Text = "";
+                }
+            }
+            else
+            {
+                var user = "0Server\r+0END";
+                MPManager.Notify(new MSGText(MPManager.GetUserName(), user, message).ToString());
+                messageInput.Text = "";
+            }
+        }
+
+        private void messageInput_Enter(object sender, EventArgs e)
+        {
+            MPManager.Instance().ComposingText = true;
+        }
+
+        private void messageInput_Leave(object sender, EventArgs e)
+        {
+            MPManager.Instance().ComposingText = false;
+        }
+
+        private void moreReplyOptionsButton_Click(object sender, EventArgs e)
+        {
+            messageActionsMenu.Show(Cursor.Position);
+            messageActionsMenu.Enabled = true;
+            messageActionsMenu.Focus();
+            messageActionsMenu.Visible = true;
+        }
+
+        private void messageActionsMenu_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+            var type = e.ClickedItem.Tag.ToString();
+
+            switch (type)
+            {
+                case "message":
+                    if (!MPManager.IsMultiPlayer()) return;
+
+                    var message = messageInput.Text;
+                    messageInput.Text = "";
+                    message = message.Replace("\r", "");
+                    message = message.Replace("\t", "");
+                    if (message == "") return;
+                    var users = "";
+
+                    if (playersView.SelectedItems.Count > 0)
+                    {
+                        var chosen = playersView.SelectedItems;
+                        for (var i = 0; i < chosen.Count; i++)
+                        {
+                            var name = TrimBracketsFromEnd(chosen[i].Text);
+                            if (name == MPManager.GetUserName())
+                                continue;
+                            users += name + "\r";
+                        }
+                        users += "0END";
+                    }
+                    else { return; }
+
+                    MPManager.Notify(new MSGText(MPManager.GetUserName(), users, message).ToString());
+                    break;
+
+                case "reply":
+                    if (!MPManager.IsMultiPlayer()) return;
+
+                    var message1 = messageInput.Text;
+                    message1 = message1.Replace("\r", "");
+                    message1 = message1.Replace("\t", "");
+                    MPManager.Instance().ComposingText = false;
+                    messageInput.Text = "";
+                    if (message1 == "") return;
+                    var users1 = "";
+
+                    if (messages.SelectedItems.Count > 0)
+                    {
+                        var chosen = messages.SelectedItems;
+                        for (var i = 0; i < chosen.Count; i++)
+                        {
+                            var tmp = (string)chosen[i];
+                            var index = tmp.IndexOf(':');
+                            if (index < 0) continue;
+                            tmp = tmp.Substring(0, index) + "\r";
+                            if (users1.Contains(tmp)) continue;
+                            users1 += tmp;
+                        }
+                        users1 += "0END";
+                    }
+                    else { return; }
+
+                    MPManager.Notify(new MSGText(MPManager.GetUserName(), users1, message1).ToString());
+                    break;
+            }
         }
 
         private void DispatchViewerBeta_FormClosing(object sender, FormClosingEventArgs e)

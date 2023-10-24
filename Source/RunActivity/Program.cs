@@ -42,7 +42,7 @@ namespace Orts
         public static Simulator Simulator;
         public static Viewer Viewer;
         public static DispatchViewer DebugViewer;
-        public static MapViewer DebugViewerBeta;
+        public static MapViewer MapForm;
         public static SoundDebugForm SoundDebugForm;
         public static ORTraceListener ORTraceListener;
         public static string logFileName = "";          // contains path to file

@@ -1308,13 +1308,14 @@ namespace Orts.Viewer3D
             //}
 
             //in the dispatcher window, when one clicks a train and "See in Game", will jump to see that train
-            if ((Program.DebugViewer != null && Program.DebugViewer.ClickedTrain == true) || (Program.DebugViewerBeta != null && Program.DebugViewerBeta.ClickedTrain == true))
+            // TODO: Remove `DebugViewer` in the future
+            if ((Program.DebugViewer != null && Program.DebugViewer.ClickedTrain == true) || (Program.MapForm != null && Program.MapForm.ClickedTrain == true))
             {
                 Program.DebugViewer.ClickedTrain = false;
-                Program.DebugViewerBeta.ClickedTrain = false;
-                if (SelectedTrain != Program.DebugViewer.PickedTrain)
+                Program.MapForm.ClickedTrain = false;
+                if (SelectedTrain != Program.DebugViewer.PickedTrain || SelectedTrain != Program.MapForm.PickedTrain)
                 {
-                    SelectedTrain = Program.DebugViewer.PickedTrain;
+                    SelectedTrain = Program.MapForm.PickedTrain;
                     Simulator.AI.aiListChanged = true;
 
                     if (SelectedTrain.Cars == null || SelectedTrain.Cars.Count == 0) SelectedTrain = PlayerTrain;
