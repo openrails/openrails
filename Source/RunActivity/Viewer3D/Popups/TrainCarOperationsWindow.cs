@@ -71,14 +71,14 @@ namespace Orts.Viewer3D.Popups
         internal static Texture2D RearAngleCockOpened;
 
 
-        public int DisplaySizeY = 0;
+        public int DisplaySizeY;
         public bool LayoutUpdated = false;
         public bool allSymbolsMode = true;
-        public int locoRowCount = 0;
-        public int rowsCount = 0;
-        public int separatorCount = 0;
-        public int spacerRowCount = 0;
-        public int symbolsRowCount = 0;
+        public int locoRowCount;
+        public int rowsCount;
+        public int separatorCount;
+        public int spacerRowCount;
+        public int symbolsRowCount;
 
         public int carPositionVisible;
         public ControlLayout Client;
@@ -89,10 +89,10 @@ namespace Orts.Viewer3D.Popups
         public int selectedCarPosition;
         const int symbolSize = 16;
 
-        public int WindowHeightMax = 0;
-        public int WindowHeightMin = 0;
-        public int WindowWidthMax = 0;
-        public int WindowWidthMin = 0;
+        public int WindowHeightMax;
+        public int WindowHeightMin;
+        public int WindowWidthMax;
+        public int WindowWidthMin;
         public int currentDisplaySizeY;
         public bool isFullScreen = false;
         public int rowHeight;
@@ -100,8 +100,8 @@ namespace Orts.Viewer3D.Popups
 
         //Rectangle carLabelPosition;
         public string carLabelText;
-        public int CarPosition = 0;
-        public int CarUIDLenght = 0;
+        public int CarPosition;
+        public int CarUIDLenght;
         public int desiredHeight;
         public static bool FontChanged;
         public static bool FontToBold;
@@ -132,31 +132,17 @@ namespace Orts.Viewer3D.Popups
         }
         public List<ListLabel> Labels = new List<ListLabel>();
 
-        public struct ListSettings
-        {
-            public bool BleedOffValve;
-            public string CarID;
-            public bool HandBrakeSet;
-            public bool FrontBrakeHose;
-            public bool RearBrakeHose;
-            public bool FrontAngleCock;
-            public bool RearAngleCock;
-
-        }
-        public List<ListSettings> CarOperations = new List<ListSettings>();
-        public List<ListSettings> TrainCarOperations = new List<ListSettings>();
-
         Train PlayerTrain;
         int LastPlayerTrainCars;
         bool LastPlayerLocomotiveFlippedState;
 
         public TrainCarOperationsWindow(WindowManager owner)
-            : base(owner, Window.DecorationSize.X + CarListPadding + owner.TextFontDefault.Height * 15, Window.DecorationSize.Y + owner.TextFontDefault.Height * 5, Viewer.Catalog.GetString("Train Car Operations "))
+            : base(owner, Window.DecorationSize.X + CarListPadding + (owner.TextFontDefault.Height * 15), Window.DecorationSize.Y + (owner.TextFontDefault.Height * 5), Viewer.Catalog.GetString("Train Car Operations"))
         {
             WindowHeightMin = Location.Height;
-            WindowHeightMax = Location.Height + owner.TextFontDefault.Height * 20;
+            WindowHeightMax = Location.Height + (owner.TextFontDefault.Height * 20);
             WindowWidthMin = Location.Width;
-            WindowWidthMax = Location.Width + owner.TextFontDefault.Height * 20;
+            WindowWidthMax = Location.Width + (owner.TextFontDefault.Height * 20);
             currentDisplaySizeY = Owner.Viewer.DisplaySize.Y;
         }
         protected internal override void Save(BinaryWriter outf)
@@ -240,7 +226,7 @@ namespace Orts.Viewer3D.Popups
         void updateLayoutSize()
         {
             Labels.Clear();
-            CarOperations.Clear();
+
             if (PlayerTrain != null)
             {
                 int carPosition = 0;
@@ -273,7 +259,6 @@ namespace Orts.Viewer3D.Popups
 
                 DisplaySizeY = Owner.Viewer.DisplaySize.Y;
                 isFullScreen = Owner.Viewer.RenderProcess.isFullScreen;
-                // Owner.Viewer.GraphicsDevice.DisplayMode.Height == DisplaySizeY;
 
                 // Validates rows with windows DPI settings
                 var dpiScale = System.Drawing.Graphics.FromHwnd(IntPtr.Zero).DpiY / 96;
@@ -296,7 +281,7 @@ namespace Orts.Viewer3D.Popups
                 var newWidth = MathHelper.Clamp(desiredWidth, 100, WindowWidthMax);
 
                 // Move the dialog up if we're expanding it, or down if not; this keeps the center in the same place.
-                var newTop = Location.Y + (Location.Height - newHeight) / 2;
+                var newTop = Location.Y + ((Location.Height - newHeight) / 2);
 
                 // Display window
                 SizeTo(newWidth, newHeight);
