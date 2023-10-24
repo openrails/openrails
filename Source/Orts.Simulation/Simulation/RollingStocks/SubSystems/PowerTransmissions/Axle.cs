@@ -728,7 +728,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
 
         double integratorError;
-        int waitBeforeSpeedingUp;
+        int waitBeforeIntegreationRate;
 
         /// <summary>
         /// Read/Write relative slip speed warning threshold value, in percent of maximal effective slip
@@ -908,26 +908,38 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             var AdhesGrad = ((upperLimit - lowerLimit) / (WheelSlipThresholdMpS - 0));
             var targetNumOfSubstepsPS = Math.Abs((AdhesGrad * SlipSpeedMpS) + lowerLimit);
             if (float.IsNaN((float)targetNumOfSubstepsPS)) targetNumOfSubstepsPS = 1;
+            
+            if (SlipSpeedMpS > WheelSlipThresholdMpS) // if in wheel slip then maximise the substeps
+            {
+                targetNumOfSubstepsPS = 130;
+            }
+
             //                 Trace.TraceInformation("Grad - {0} AdhesGrad {1} SlipSpeedMps {2} Threshold {3}", temp, AdhesGrad, SlipSpeedMpS, WheelSlipThresholdMpS);
 
-            //  if (targetNumOfSubstepsPS > NumOfSubstepsPS && Math.Abs(integratorError) > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 0.01, 0.001)) // increase substeps
-            if (targetNumOfSubstepsPS > NumOfSubstepsPS && Math.Abs(integratorError) > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 0.01, 0.001)) // increase substeps
+            if (Math.Abs(integratorError) < 0.000277 && !IsWheelSlip && !IsWheelSlipWarning && SlipSpeedMpS < 0.4 * WheelSlipThresholdMpS)
             {
-                if (--waitBeforeSpeedingUp <= 0 ) //wait for a while before speeding up the integration
+                if (--waitBeforeIntegreationRate <= 0) //wait for a while before changing the integration rate
+                {
+                    NumOfSubstepsPS -= 2;
+                    waitBeforeIntegreationRate = 20;
+                }
+            }
+     //       else if (targetNumOfSubstepsPS > NumOfSubstepsPS && Math.Abs(integratorError) > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 0.01, 0.001)) // increase substeps
+            else if (targetNumOfSubstepsPS > NumOfSubstepsPS) // increase substeps
+            {
+                if (--waitBeforeIntegreationRate <= 0 ) //wait for a while before changing the integration rate
                 {
                     NumOfSubstepsPS += 5;
-                    waitBeforeSpeedingUp = 5;      //not so fast ;)
+                    waitBeforeIntegreationRate = 30;      //not so fast ;)
                 }
             }
             else if (targetNumOfSubstepsPS < NumOfSubstepsPS) // decrease sub steps
             {
-                NumOfSubstepsPS -= 5;
-                waitBeforeSpeedingUp = 5;
-            }
-            else if (Math.Abs(integratorError) < 0.000277)
-            {
-                NumOfSubstepsPS -= 2;
-                waitBeforeSpeedingUp = 5;
+                if (--waitBeforeIntegreationRate <= 0) //wait for a while before changing the integration rate
+                {
+                    NumOfSubstepsPS -= 5;
+                    waitBeforeIntegreationRate = 20;
+                }
             }
 
             if (NumOfSubstepsPS < lowerLimit)
