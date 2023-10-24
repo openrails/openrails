@@ -489,12 +489,12 @@ namespace Orts.Viewer3D
                 if (UserInput.IsPressed(UserCommand.DebugDaylightOffsetIncrease) && Weather.DaylightOffset < 12)
                 {
                     Weather.DaylightOffset += 1;
-                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Simulator.Catalog.GetStringFmt("Increased daylight offset to {0} h", FormatDaylightOffsetHour(Weather.DaylightOffset)));
+                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Increased daylight offset to {0} h", FormatDaylightOffsetHour(Weather.DaylightOffset)));
                 }
                 if (UserInput.IsPressed(UserCommand.DebugDaylightOffsetDecrease) && Weather.DaylightOffset > -12)
                 {
                     Weather.DaylightOffset -= 1;
-                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Simulator.Catalog.GetStringFmt("Decreased daylight offset to {0} h", FormatDaylightOffsetHour(Weather.DaylightOffset)));
+                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Decreased daylight offset to {0} h", FormatDaylightOffsetHour(Weather.DaylightOffset)));
                 }
 
                 UpdateWind(elapsedTime);

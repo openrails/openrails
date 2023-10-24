@@ -277,10 +277,7 @@ namespace Orts.Viewer3D.Debugging
             var players = MPManager.OnlineTrains.Players;
             var username = MPManager.GetUserName();
             players = players.Concat(MPManager.Instance().lostPlayer).ToDictionary(x => x.Key, x => x.Value);
-            Trace.TraceInformation("Players: {0}", players);
-            Trace.TraceInformation("DP: {0}; AP: {1}", MPManager.Instance().lostPlayer.Count, MPManager.Instance().aiderList.Count);
             if (playersView.Items.Count == players.Count + 1 && DisconnectedPlayersCount == MPManager.Instance().lostPlayer.Count && AssistantPlayersCount == MPManager.Instance().aiderList.Count) return;
-            Trace.TraceInformation("Entered function!");
 
             DisconnectedPlayersCount = MPManager.Instance().lostPlayer.Count;
             AssistantPlayersCount = MPManager.Instance().aiderList.Count;
@@ -292,31 +289,29 @@ namespace Orts.Viewer3D.Debugging
             {
                 if (PlayersList.Contains(p.Key)) continue;
                 AddPlayer(p.Key);
-                Trace.TraceInformation("Added player: {0}", p.Key);
             }
 
             playersView.Items.Clear();
-            Console.Beep();
             foreach (var p in PlayersList)
             {
                 ListViewItem item = new ListViewItem(p);
 
                 if (p == username)
                 {
-                    item.Text += " [You]";
+                    item.Text += " [" + Viewer.Catalog.GetString("You") + "]";
                     item.Font = new Font(item.Font, FontStyle.Bold);
                     playersView.Items.Add(item);
 
                 }
                 else if (MPManager.Instance().aiderList.Contains(p))
                 {
-                    item.Text += " [Helper]";
+                    item.Text += " [" + Viewer.Catalog.GetString("Helper") + "]";
                     item.ForeColor = Color.FromArgb(40, 116, 166);
                     playersView.Items.Add(item);
                 }
                 else if (MPManager.Instance().lostPlayer.ContainsKey(p))
                 {
-                    item.Text += " [Disconnected]";
+                    item.Text += " [" + Viewer.Catalog.GetString("Disconnected") + "]";
                     item.ForeColor = SystemColors.GrayText;
                     playersView.Items.Add(item);
                 }
@@ -1744,7 +1739,7 @@ namespace Orts.Viewer3D.Debugging
 
             if (focusedItem.Bounds.Contains(e.Location) && player != MPManager.GetUserName())
             {
-                makeThisPlayerAnAssistantToolStripMenuItem.Text = MPManager.Instance().aiderList.Contains(player) ? "Demote this player" : "Make this player an assistant";
+                makeThisPlayerAnAssistantToolStripMenuItem.Text = MPManager.Instance().aiderList.Contains(player) ? Viewer.Catalog.GetString("Demote this player") : Viewer.Catalog.GetString("Make this player an assistant");
                 var isDisconnected = MPManager.Instance().lostPlayer.ContainsKey(player);
                 makeThisPlayerAnAssistantToolStripMenuItem.Enabled = !isDisconnected;
                 jumpToThisPlayerInGameToolStripMenuItem.Enabled = !isDisconnected;
@@ -1995,7 +1990,7 @@ namespace Orts.Viewer3D.Debugging
                         }
                         users1 += "0END";
                     }
-                    else { return;}
+                    else { return; }
 
                     MPManager.Notify(new MSGText(MPManager.GetUserName(), users1, message1).ToString());
                     break;

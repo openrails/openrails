@@ -29,11 +29,11 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem17 = new System.Windows.Forms.ListViewItem(new string[] {
             "Player1 (you)"}, -1, System.Drawing.Color.Empty, System.Drawing.Color.Empty, new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0))));
-            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("Player2");
-            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("Player3");
-            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem("...");
+            System.Windows.Forms.ListViewItem listViewItem18 = new System.Windows.Forms.ListViewItem("Player2");
+            System.Windows.Forms.ListViewItem listViewItem19 = new System.Windows.Forms.ListViewItem("Player3");
+            System.Windows.Forms.ListViewItem listViewItem20 = new System.Windows.Forms.ListViewItem("...");
             this.playerRolePanel = new System.Windows.Forms.Panel();
             this.playerRoleLink = new System.Windows.Forms.LinkLabel();
             this.playerRoleExplanation = new System.Windows.Forms.Label();
@@ -149,10 +149,10 @@
             // playerRoleLink
             // 
             this.playerRoleLink.ActiveLinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(27)))), ((int)(((byte)(79)))), ((int)(((byte)(114)))));
-            this.playerRoleLink.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.playerRoleLink.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.playerRoleLink.AutoSize = true;
             this.playerRoleLink.LinkColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(116)))), ((int)(((byte)(166)))));
-            this.playerRoleLink.Location = new System.Drawing.Point(717, 9);
+            this.playerRoleLink.Location = new System.Drawing.Point(714, 9);
             this.playerRoleLink.Name = "playerRoleLink";
             this.playerRoleLink.Size = new System.Drawing.Size(60, 13);
             this.playerRoleLink.TabIndex = 1;
@@ -253,6 +253,7 @@
             // messageAllButton
             // 
             this.messageAllButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.messageAllButton.AutoEllipsis = true;
             this.messageAllButton.Location = new System.Drawing.Point(421, 128);
             this.messageAllButton.Margin = new System.Windows.Forms.Padding(0);
             this.messageAllButton.Name = "messageAllButton";
@@ -736,6 +737,7 @@
             // 
             // drawPathCheckbox
             // 
+            this.drawPathCheckbox.AutoEllipsis = true;
             this.drawPathCheckbox.AutoSize = true;
             this.drawPathCheckbox.Checked = true;
             this.drawPathCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -782,10 +784,10 @@
             this.playersView.HideSelection = false;
             this.playersView.HoverSelection = true;
             this.playersView.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem1,
-            listViewItem2,
-            listViewItem3,
-            listViewItem4});
+            listViewItem17,
+            listViewItem18,
+            listViewItem19,
+            listViewItem20});
             this.playersView.Location = new System.Drawing.Point(7, 19);
             this.playersView.Name = "playersView";
             this.playersView.Size = new System.Drawing.Size(167, 202);
