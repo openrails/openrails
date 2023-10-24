@@ -112,7 +112,7 @@ namespace Orts.Viewer3D.Popups
             ForceGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
             ForceGraphMotiveForce = ForceGraphs.Add(Viewer.Catalog.GetString("Motive force"), "0%", "100%", Color.Green, 75);
             ForceGraphDynamicForce = ForceGraphs.AddOverlapped(Color.Red, 75);
-            ForceGraphNumOfSubsteps = ForceGraphs.Add(Viewer.Catalog.GetString("Num of substeps"), "0", "50", Color.Blue, 25);
+            ForceGraphNumOfSubsteps = ForceGraphs.Add(Viewer.Catalog.GetString("Num of substeps"), "0", "100", Color.Blue, 25);
 
             DebugGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
             DebugGraphMemory = DebugGraphs.Add(Viewer.Catalog.GetString("Memory"), "0GB", String.Format("{0:F0}GB", (float)Host.CPUMemoryVirtualLimit / 1024 / 1024 / 1024), Color.Orange, 50);
@@ -201,7 +201,7 @@ namespace Orts.Viewer3D.Popups
                     ForceGraphDynamicForce.AddSample(-loco.MotiveForceN / loco.MaxForceN);
                 }
 
-                ForceGraphNumOfSubsteps.AddSample(loco.LocomotiveAxles.NumOfSubstepsPS / 50.0f);
+                ForceGraphNumOfSubsteps.AddSample(loco.LocomotiveAxles.NumOfSubstepsPS / 100.0f);
 
                 ForceGraphs.PrepareFrame(frame);
             }
