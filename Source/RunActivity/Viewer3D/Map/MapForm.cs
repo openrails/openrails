@@ -22,6 +22,8 @@ using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.MultiPlayer;
@@ -45,6 +47,7 @@ namespace Orts.Viewer3D.Debugging
         /// Reference to the main simulator object.
         /// </summary>
         public readonly Simulator simulator;
+        private GettextResourceManager catalog = new GettextResourceManager("RunActivity");
         private readonly MapDataProvider MapDataProvider;
         private readonly MapThemeProvider MapThemeProvider;
         private string ThemeName = "light";
@@ -125,6 +128,8 @@ namespace Orts.Viewer3D.Debugging
         {
             InitializeComponent();
 
+            Localizer.Localize(this, catalog);
+
             if (simulator == null)
                 throw new ArgumentNullException("simulator", "Simulator object cannot be null.");
 
@@ -169,14 +174,6 @@ namespace Orts.Viewer3D.Debugging
         #region initData
         private void InitializeData()
         {
-            /*if (!loaded)
-            {
-                // do this only once
-                loaded = true;
-                //trackSections.DataSource = new List<InterlockingTrack>(simulator.InterlockingSystem.Tracks.Values).ToArray();
-                Localizer.Localize(this, Viewer.Catalog);
-            }*/
-
             switchItemsDrawn = new List<SwitchWidget>();
             signalItemsDrawn = new List<SignalWidget>();
             switches = new List<SwitchWidget>();
