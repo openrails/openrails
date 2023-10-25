@@ -195,6 +195,8 @@ namespace Orts.Simulation.Physics
 
         public bool HasControlCarWithGear = false;
 
+        public float ScreenFrameRate;
+
         //To investigate coupler breaks on route
         private bool numOfCouplerBreaksNoted = false;
         public static int NumOfCouplerBreaks = 0;//Debrief Eval

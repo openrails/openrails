@@ -517,6 +517,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float CurtiusKnifflerZeroSpeed;
 
         /// <summary>
+        /// Simulator FPS
+        /// </summary>
+        public float ScreenFrameRate;
+
+        /// <summary>
         /// Wheel adhesion as calculated by Polach
         /// </summary>
         public float WheelAdhesion;
@@ -643,15 +648,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 }
             }
             WheelSlipThresholdMpS = (float)Math.Max((a + b) / 2, MpS.FromKpH(0.1f));
-
-            if (IsWheelSlip)
-            {
-                //               Trace.TraceInformation("Fx Values - a {0} fa1 {1} b {2} fb1 {3} s {4} fs {5} t {6} ft {7} u {8} fu {9} v {10} fv {11} x {12} fx {13} y {14} fy {15} Speed {16} Threshold {17} Fslip {18} SlipSpeed {19}", a, fa1, b, fb1, s, fs, t, ft, u, fu, v, fv, x, fx, y, fy, TrainSpeedMpS, WheelSlipThresholdMpS, fslip, SlipSpeedMpS);
-
-           //     Trace.TraceInformation("Threshold Speed - {0}", WheelSlipThresholdMpS);
-
-            }
-
         }
 
         /// <summary>
@@ -878,53 +874,47 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             if (elapsedClockSeconds <= 0) return;
             double prevSpeedMpS = AxleSpeedMpS;
-/*
-            if (Math.Abs(integratorError) > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 0.01, 0.001))
+            
+            var upperSubStepStartingLimit = 120;
+            var upperSubStepLimit = upperSubStepStartingLimit;
+            var lowerSubStepLimit = 1;
+
+            var screenFrameUpperLimit = 60;
+            var screenFrameLowerLimit = 40;
+
+            // Reduces the number of substeps if screen FPS drops
+            if (ScreenFrameRate >= screenFrameUpperLimit)
             {
-                ++NumOfSubstepsPS;
-                waitBeforeSpeedingUp = 100;
-
-                //      Trace.TraceInformation("Algorithim Increase - Steps {0} Err {1}", NumOfSubstepsPS, integratorError);
-
+                upperSubStepLimit = upperSubStepStartingLimit;
+            }
+            else if (ScreenFrameRate < screenFrameLowerLimit)
+            {
+                upperSubStepLimit = upperSubStepStartingLimit * (screenFrameLowerLimit / screenFrameUpperLimit);
             }
             else
             {
-                if (--waitBeforeSpeedingUp <= 0)    //wait for a while before speeding up the integration
-                {
-                    --NumOfSubstepsPS;
-                    waitBeforeSpeedingUp = 10;      //not so fast ;)
-
-                    //            Trace.TraceInformation("Algorithim Decrease - Steps {0} Err {1}", NumOfSubstepsPS, integratorError);
-                }
+                upperSubStepLimit = (int) ((ScreenFrameRate / 60) * upperSubStepStartingLimit);
             }
 
-            NumOfSubstepsPS = Math.Max(Math.Min(NumOfSubstepsPS, 130), 1);
-*/
-            // use straight line graph approximation
-            // Points are 1 = (0, upperLimit) and 2 = (threshold, lowerLimit)
-
-            var upperLimit = 130;
-            var lowerLimit = 1;
-            var AdhesGrad = ((upperLimit - lowerLimit) / (WheelSlipThresholdMpS - 0));
-            var targetNumOfSubstepsPS = Math.Abs((AdhesGrad * SlipSpeedMpS) + lowerLimit);
+            // use straight line graph approximation to increase substeps as slipspeed increases towards the threshold speed point
+            // Points are 1 = (0, upperLimit) and 2 = (threshold, lowerLimit)           
+            var AdhesGrad = ((upperSubStepLimit - lowerSubStepLimit) / (WheelSlipThresholdMpS - 0));
+            var targetNumOfSubstepsPS = Math.Abs((AdhesGrad * SlipSpeedMpS) + lowerSubStepLimit);
             if (float.IsNaN((float)targetNumOfSubstepsPS)) targetNumOfSubstepsPS = 1;
             
             if (SlipSpeedMpS > WheelSlipThresholdMpS) // if in wheel slip then maximise the substeps
             {
-                targetNumOfSubstepsPS = 130;
+                targetNumOfSubstepsPS = upperSubStepLimit;
             }
-
-            //                 Trace.TraceInformation("Grad - {0} AdhesGrad {1} SlipSpeedMps {2} Threshold {3}", temp, AdhesGrad, SlipSpeedMpS, WheelSlipThresholdMpS);
 
             if (Math.Abs(integratorError) < 0.000277 && !IsWheelSlip && !IsWheelSlipWarning && SlipSpeedMpS < 0.4 * WheelSlipThresholdMpS)
             {
                 if (--waitBeforeIntegreationRate <= 0) //wait for a while before changing the integration rate
                 {
-                    NumOfSubstepsPS -= 2;
+                    NumOfSubstepsPS -= 2; // decrease substeps when under low slip conditions
                     waitBeforeIntegreationRate = 20;
                 }
             }
-     //       else if (targetNumOfSubstepsPS > NumOfSubstepsPS && Math.Abs(integratorError) > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 0.01, 0.001)) // increase substeps
             else if (targetNumOfSubstepsPS > NumOfSubstepsPS) // increase substeps
             {
                 if (--waitBeforeIntegreationRate <= 0 ) //wait for a while before changing the integration rate
@@ -942,13 +932,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 }
             }
 
-            if (NumOfSubstepsPS < lowerLimit)
-                NumOfSubstepsPS = lowerLimit;
+            if (NumOfSubstepsPS < lowerSubStepLimit)
+                NumOfSubstepsPS = lowerSubStepLimit;
 
-            if (NumOfSubstepsPS > upperLimit)
-                NumOfSubstepsPS = upperLimit;        
-
- //          Trace.TraceInformation("Grad - {0} AdhesGrad {1} SlipSpeedMps {2} Threshold {3} NumStepsPS {4} Error {5}", targetNumOfSubstepsPS, AdhesGrad, SlipSpeedMpS, WheelSlipThresholdMpS, NumOfSubstepsPS, integratorError);
+            if (NumOfSubstepsPS > upperSubStepLimit)
+                NumOfSubstepsPS = upperSubStepLimit;        
 
             double dt = elapsedClockSeconds / NumOfSubstepsPS;
             double hdt = dt / 2;
@@ -957,18 +945,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             for (int i = 0; i < NumOfSubstepsPS; i++)
             {
                 var k1 = GetAxleMotionVariation(AxleSpeedMpS, dt);
-/*
-                if (i == 0)
-                {
-                    if (k1.Item1 * dt > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 10, 1) / 100)
-                    {
-                        //        NumOfSubstepsPS = Math.Min(NumOfSubstepsPS + 5, 130);
-                        //         Trace.TraceInformation("Algorithim Change - k1 - Number of Steps {0}", NumOfSubstepsPS);
-                        dt = elapsedClockSeconds / NumOfSubstepsPS;
-                        hdt = dt / 2;
-                    }
-                }
-*/
                 var k2 = GetAxleMotionVariation(AxleSpeedMpS + k1.Item1 * hdt, hdt);
                 var k3 = GetAxleMotionVariation(AxleSpeedMpS + k2.Item1 * hdt, hdt);
                 var k4 = GetAxleMotionVariation(AxleSpeedMpS + k3.Item1 * dt, dt);
@@ -997,8 +973,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             Polach.Update();
             axleStaticForceN = AxleWeightN * SlipCharacteristics(0);
             ComputeWheelSlipThresholdMpS();
-
-//            Trace.TraceInformation("Threshold - Threshold {0} SlipSpeed {1} Speed {2}", WheelSlipThresholdMpS, SlipSpeedMpS, TrainSpeedMpS);
 
             if (count < 6 && count++ == 5)
             {
@@ -1050,7 +1024,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 if (WheelSlipTimeS > 1)
                 {
                     IsWheelSlip = IsWheelSlipWarning = true;
-//                    Trace.TraceInformation("Wheel Slip Triggered");
                 }
                 WheelSlipTimeS += timeSpan;
             }
@@ -1153,12 +1126,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 if (float.IsNaN((float)Sy)) Sy = 0;//avoid NaN when first starting OR
                 Sy2 = Sy * Sy;
 
- //               Trace.TraceInformation("Spin - {0} FlangeAngle {1} wheelRadius {2} Speed {3}", spinM1, Axle.WheelFlangeAngleRad, wheelRadiusMM, trainSpeedMpS);
-
                 Syc = Sy + (spinM1 * a_HertzianM);
                 Syc2 = Syc * Syc;
-
-           //     Trace.TraceInformation("Sy - {0} Syc {1} Spin {2} a_hertz {3}", Sy, Syc, spinM1, a_HertzianMM);
 
                 // calculate "standard" Polach adhesion parameters as straight line approximations as u varies - these values are capped at the moment at the u=0.3 level
                 // Taking them lower may reduce the stability of the calculations
@@ -1175,8 +1144,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             public double SlipCharacteristics(double slipSpeedMpS)
             {
                 var polach_uadhesion = zeroSpeedAdhesion * (((1 - polach_A) * Math.Exp(-polach_B * slipSpeedMpS)) + polach_A);
-
-         //       Trace.TraceInformation("Polach Adhesion - {0} ZeroAdhesion {1} RawPolach {2} SlipSpeed {3}", polach_uadhesion, zeroSpeedAdhesion, (((1 - polach_A) * Math.Exp(-polach_B * slipSpeedMpS)) + polach_A), slipSpeedMpS);
 
                 if (trainSpeedMpS < 0.05f)
                     return polach_uadhesion;
@@ -1204,15 +1171,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 var f = Stiffness2 * (adhesionComponent + slipComponent);
 
                 var fx = (f * Sx / Sc) / wheelLoadN;
-
- 
-                //               if (slipSpeedMpS == 0.025f || slipSpeedMpS == 0.05f || slipSpeedMpS == 0.1f || slipSpeedMpS == 0.15f || slipSpeedMpS == 0.2f)
-                if (Axle.IsWheelSlip)
-                {
-//                    Trace.TraceInformation("Negative Fx - Fx {0} Speed {1} SlipSpeed {2} Sx {3} PolachAdhesion {4} adhesionComponent {5} slipComponent {6} Polach_Ks {7} Stiffness2 {8} SlipForce {9} Sc {10} WheelLoad {11} Syc {12} Hertz_a {13} Sy {14} Threshold {15} DriveForce {16} Steps {17} IsWheelSlip {18} IsWheelSlipWarning {19}", fx, (float)trainSpeedMpS, (float)slipSpeedMpS, (float)Sx, polach_uadhesion, adhesionComponent, slipComponent, polach_Ks, Stiffness2, f, Sc, wheelLoadN, Syc, a_HertzianMM, Sy, Axle.WheelSlipThresholdMpS, Axle.DriveForceN, Axle.NumOfSubstepsPS, Axle.IsWheelSlip, Axle.IsWheelSlipWarning);
-
-                }
- 
 
                 return fx;
             }
