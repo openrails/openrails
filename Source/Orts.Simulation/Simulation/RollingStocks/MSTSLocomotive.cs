@@ -149,6 +149,7 @@ namespace Orts.Simulation.RollingStocks
 
         float ZeroSpeedAdhesionBase;
 
+
         public float FilteredBrakePipeFlowM3pS;
         public IIRFilter AFMFilter;
 
@@ -2759,13 +2760,14 @@ namespace Orts.Simulation.RollingStocks
 
             foreach (var axle in LocomotiveAxles)
             {
-                axle.BrakeRetardForceN = BrakeRetardForceN/LocomotiveAxles.Count;
+                axle.BrakeRetardForceN = BrakeRetardForceN / LocomotiveAxles.Count;
                 axle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
                 axle.WheelRadiusM = DriverWheelRadiusM;
                 axle.WheelDistanceGaugeM = TrackGaugeM;
                 axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
                 axle.BogieRigidWheelBaseM = RigidWheelBaseM;
                 axle.CurtiusKnifflerZeroSpeed = ZeroSpeedAdhesionBase;
+                axle.ScreenFrameRate = Train.ScreenFrameRate;
             }
 
             LocomotiveAxles.Update(elapsedClockSeconds);
