@@ -526,8 +526,8 @@ namespace Orts.Viewer3D.Popups
                     localScrollLayout(selectedCarPosition);
                 }
 
-                UserCommand? controlDiesel = GetPressedKey(UserCommand.ControlDieselHelper, UserCommand.ControlDieselPlayer);
-                if (controlDiesel == UserCommand.ControlDieselHelper || controlDiesel == UserCommand.ControlDieselPlayer)
+                UserCommand ? controlDiesel = GetPressedKey(UserCommand.ControlDieselHelper, UserCommand.ControlDieselPlayer, UserCommand.ControlInitializeBrakes);
+                if (controlDiesel == UserCommand.ControlDieselHelper || controlDiesel == UserCommand.ControlDieselPlayer || controlDiesel == UserCommand.ControlInitializeBrakes)
                 {
                     Layout();
                     powerSupplyStatus = Owner.Viewer.PlayerTrain.Cars[CarPosition].GetStatus();

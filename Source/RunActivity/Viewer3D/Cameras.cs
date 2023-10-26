@@ -1066,6 +1066,7 @@ namespace Orts.Viewer3D
             var isDownCameraOutsideFront = UserInput.IsDown(UserCommand.CameraOutsideFront);
             var isDownCameraOutsideRear = UserInput.IsDown(UserCommand.CameraOutsideRear);
             var isVisibleTrainCarViewer = Viewer.TrainCarOperationsViewerWindow.Visible;
+            var trainCars = GetCameraCars();
 
             if (attachedCar == null || attachedCar.Train != Viewer.SelectedTrain || carPosition != oldCarPosition || isDownCameraOutsideFront || isDownCameraOutsideRear)
             {
@@ -1076,9 +1077,8 @@ namespace Orts.Viewer3D
                         SetCameraCar(GetCameraCars().First());
                         oldCarPosition = 0;
                     }
-                    else if (isVisibleTrainCarViewer && carPosition >= 0)
-                    {
-                        var trainCars = GetCameraCars();
+                    else if (isVisibleTrainCarViewer && carPosition >= 0 && carPosition < trainCars.Count())
+                    {                        
                         SetCameraCar(trainCars[carPosition]);
                         oldCarPosition = carPosition;
                     }
@@ -1092,13 +1092,12 @@ namespace Orts.Viewer3D
                 }
                 else
                 {
-                    var trainCars = GetCameraCars();
                     if (!isVisibleTrainCarViewer && isDownCameraOutsideRear)
                     {
                         SetCameraCar(GetCameraCars().Last());
                         oldCarPosition = 0;
                     }
-                    else if (isVisibleTrainCarViewer && carPosition >= 0)
+                    else if (isVisibleTrainCarViewer && carPosition >= 0 && carPosition < trainCars.Count())
                     {
                         SetCameraCar(trainCars[carPosition]);
                         oldCarPosition = carPosition;

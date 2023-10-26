@@ -25,6 +25,7 @@ using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using Orts.Viewer3D.RollingStock;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Scripting.Api;
@@ -123,6 +124,7 @@ namespace Orts.Viewer3D.Popups
         int LastPlayerTrainCars;
         bool LastPlayerLocomotiveFlippedState;
         int carPosition;
+        bool couplerFront = false;
         public TrainCarOperationsViewerWindow(WindowManager owner)
             : base(owner, Window.DecorationSize.X + CarListPadding + ((owner.TextFontDefault.Height + 12) * 20), Window.DecorationSize.Y + ((owner.TextFontDefault.Height + 12) * 2), Viewer.Catalog.GetString("Train Operations Viewer"))
         {
@@ -335,7 +337,7 @@ namespace Orts.Viewer3D.Popups
                         AddSpace(false);
                         if ((wagon != null) && (wagon.PowerSupply is IPowerSupply))
                         {
-                            line.Add(new ToggleBatterySwitch(0, 0, textHeight, Owner.Viewer, carPosition));
+                            line.Add(new ToggleBatterySwitch(0, 0, textHeight, Owner.Viewer, CarPosition));
                             AddSpace(false);
                         }
                     }
@@ -361,24 +363,27 @@ namespace Orts.Viewer3D.Popups
             if (updateFull)
             {
                 var carOperations = Owner.Viewer.CarOperationsWindow;
-                var trainCarOperations = Owner.Viewer.TrainCarOperationsWindow;
-                TrainCar trainCar = Owner.Viewer.PlayerTrain.Cars[CarPosition];
-                bool isElectricDieselLocomotive = (trainCar is MSTSElectricLocomotive) || (trainCar is MSTSDieselLocomotive);
+                var trainCarOperations = Owner.Viewer.TrainCarOperationsWindow;                
 
-                if (PlayerTrain != Owner.Viewer.PlayerTrain || Owner.Viewer.PlayerTrain.Cars.Count != LastPlayerTrainCars || (Owner.Viewer.PlayerLocomotive != null &&
+                if (couplerFront || PlayerTrain != Owner.Viewer.PlayerTrain || Owner.Viewer.PlayerTrain.Cars.Count != LastPlayerTrainCars || (Owner.Viewer.PlayerLocomotive != null &&
                 LastPlayerLocomotiveFlippedState != Owner.Viewer.PlayerLocomotive.Flipped))
                 {
+                    couplerFront = false;
                     PlayerTrain = Owner.Viewer.PlayerTrain;
 
-                    if (LastPlayerTrainCars != Owner.Viewer.PlayerTrain.Cars.Count) { Visible = false; }
+                    if (LastPlayerTrainCars != Owner.Viewer.PlayerTrain.Cars.Count){ Visible = false; }
 
                     LastPlayerTrainCars = Owner.Viewer.PlayerTrain.Cars.Count;
+                    CarPosition = CarPosition >= LastPlayerTrainCars? LastPlayerTrainCars - 1: CarPosition;
                     if (Owner.Viewer.PlayerLocomotive != null) LastPlayerLocomotiveFlippedState = Owner.Viewer.PlayerLocomotive.Flipped;
  
                     Layout();
                     UpdateWindowSize();
                 }
 
+                TrainCar trainCar = Owner.Viewer.PlayerTrain.Cars[CarPosition];
+                bool isElectricDieselLocomotive = (trainCar is MSTSElectricLocomotive) || (trainCar is MSTSDieselLocomotive);
+                
                 if (carPosition != CarPosition || TrainCarOperationsChanged || carOperations.CarOperationChanged
                     || trainCarOperations.modifiedSetting || carOperations.RearBrakeHoseChanged || carOperations.FrontBrakeHoseChanged)
                 {
@@ -453,8 +458,9 @@ namespace Orts.Viewer3D.Popups
                 }
                 else
                 {
-                    new UncoupleCommand(Viewer.Log, CarPosition);
-                    if (Viewer.CarOperationsWindow.CarPosition > CarPosition)
+                    new UncoupleCommand(Viewer.Log, CarPosition - 1);
+                    TrainCarViewer.couplerFront = true;
+                    if (Viewer.CarOperationsWindow.CarPosition > CarPosition - 1)
                         Viewer.CarOperationsWindow.Visible = false;
                 }
             }
