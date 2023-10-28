@@ -875,26 +875,28 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (elapsedClockSeconds <= 0) return;
             double prevSpeedMpS = AxleSpeedMpS;
             
-            var upperSubStepStartingLimit = 120;
-            var upperSubStepLimit = upperSubStepStartingLimit;
-            var lowerSubStepLimit = 1;
+            float upperSubStepStartingLimit = 120;
+            float tempupperSubStepLimit = upperSubStepStartingLimit;
+            float lowerSubStepLimit = 1;
 
-            var screenFrameUpperLimit = 60;
-            var screenFrameLowerLimit = 40;
+            float screenFrameUpperLimit = 60;
+            float screenFrameLowerLimit = 40;
 
             // Reduces the number of substeps if screen FPS drops
-            if (ScreenFrameRate >= screenFrameUpperLimit)
+            if ( (int)ScreenFrameRate >= screenFrameUpperLimit) // Screen FPS > 60, hold substeps @ maximum value
             {
-                upperSubStepLimit = upperSubStepStartingLimit;
+                tempupperSubStepLimit = upperSubStepStartingLimit;
             }
-            else if (ScreenFrameRate < screenFrameLowerLimit)
+            else if ((int)ScreenFrameRate < screenFrameLowerLimit) // Screen FPS < 40, hold substeps @ minimum value
             {
-                upperSubStepLimit = upperSubStepStartingLimit * (screenFrameLowerLimit / screenFrameUpperLimit);
+                tempupperSubStepLimit = upperSubStepStartingLimit * (screenFrameLowerLimit / screenFrameUpperLimit);
             }
             else
             {
-                upperSubStepLimit = (int) ((ScreenFrameRate / 60) * upperSubStepStartingLimit);
+                tempupperSubStepLimit = (int) ((ScreenFrameRate / 60) * upperSubStepStartingLimit);
             }
+
+            var upperSubStepLimit = tempupperSubStepLimit;
 
             // use straight line graph approximation to increase substeps as slipspeed increases towards the threshold speed point
             // Points are 1 = (0, upperLimit) and 2 = (threshold, lowerLimit)           
@@ -933,10 +935,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             }
 
             if (NumOfSubstepsPS < lowerSubStepLimit)
-                NumOfSubstepsPS = lowerSubStepLimit;
+                NumOfSubstepsPS = (int)lowerSubStepLimit;
 
             if (NumOfSubstepsPS > upperSubStepLimit)
-                NumOfSubstepsPS = upperSubStepLimit;        
+                NumOfSubstepsPS = (int)upperSubStepLimit;        
 
             double dt = elapsedClockSeconds / NumOfSubstepsPS;
             double hdt = dt / 2;
