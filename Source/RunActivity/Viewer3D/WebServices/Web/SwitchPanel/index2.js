@@ -65,12 +65,12 @@ function createSocket() {
     };
 
     setTimeout(function () {
-        // close the socket if no connection established after 1 second
+        // close the socket if no connection established after 3 seconds
         // otherwise it will wait with the reconnect after a timeout of 2 minutes
         if (websocket.readyState != 1) {
             websocket.close();
         }
-    }, 1000);
+    }, 3000);
 
     return connection;
 }
