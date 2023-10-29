@@ -54,7 +54,6 @@ namespace ORTS
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
             this.panelDetails = new System.Windows.Forms.Panel();
-            this.pictureBoxLogo = new System.Windows.Forms.PictureBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.buttonDocuments = new System.Windows.Forms.Button();
             this.label25 = new System.Windows.Forms.Label();
@@ -101,13 +100,16 @@ namespace ORTS
             this.contextMenuStripTools = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.linkLabelChangeLog = new System.Windows.Forms.LinkLabel();
             this.contextMenuStripDocuments = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.pbNotifications = new System.Windows.Forms.PictureBox();
+            this.pictureBoxLogo = new System.Windows.Forms.PictureBox();
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).BeginInit();
             this.panel1.SuspendLayout();
             this.panelModeActivity.SuspendLayout();
             this.panelModeTimetable.SuspendLayout();
             this.contextMenuStripTools.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbNotifications)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonStart
@@ -347,17 +349,6 @@ namespace ORTS
             this.panelDetails.Name = "panelDetails";
             this.panelDetails.Size = new System.Drawing.Size(543, 379);
             this.panelDetails.TabIndex = 20;
-            // 
-            // pictureBoxLogo
-            // 
-            this.pictureBoxLogo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.pictureBoxLogo.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxLogo.Image")));
-            this.pictureBoxLogo.Location = new System.Drawing.Point(12, 472);
-            this.pictureBoxLogo.Name = "pictureBoxLogo";
-            this.pictureBoxLogo.Size = new System.Drawing.Size(64, 64);
-            this.pictureBoxLogo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBoxLogo.TabIndex = 5;
-            this.pictureBoxLogo.TabStop = false;
             // 
             // panel1
             // 
@@ -856,9 +847,9 @@ namespace ORTS
             // 
             this.linkLabelUpdate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.linkLabelUpdate.ImageAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.linkLabelUpdate.Location = new System.Drawing.Point(577, 9);
+            this.linkLabelUpdate.Location = new System.Drawing.Point(457, 9);
             this.linkLabelUpdate.Name = "linkLabelUpdate";
-            this.linkLabelUpdate.Size = new System.Drawing.Size(265, 16);
+            this.linkLabelUpdate.Size = new System.Drawing.Size(200, 16);
             this.linkLabelUpdate.TabIndex = 37;
             this.linkLabelUpdate.TextAlign = System.Drawing.ContentAlignment.TopRight;
             this.linkLabelUpdate.UseMnemonic = false;
@@ -898,11 +889,34 @@ namespace ORTS
             this.contextMenuStripDocuments.Name = "contextMenuStripDocuments";
             this.contextMenuStripDocuments.Size = new System.Drawing.Size(61, 4);
             // 
+            // pbNotifications
+            // 
+            this.pbNotifications.Image = global::ORTS.Properties.Resources.chat_icon_no_message_transparent;
+            this.pbNotifications.InitialImage = ((System.Drawing.Image)(resources.GetObject("pbNotifications.InitialImage")));
+            this.pbNotifications.Location = new System.Drawing.Point(805, 0);
+            this.pbNotifications.Name = "pbNotifications";
+            this.pbNotifications.Size = new System.Drawing.Size(37, 31);
+            this.pbNotifications.TabIndex = 40;
+            this.pbNotifications.TabStop = false;
+            this.pbNotifications.Click += new System.EventHandler(this.pbNotifications_Click);
+            // 
+            // pictureBoxLogo
+            // 
+            this.pictureBoxLogo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.pictureBoxLogo.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxLogo.Image")));
+            this.pictureBoxLogo.Location = new System.Drawing.Point(12, 472);
+            this.pictureBoxLogo.Name = "pictureBoxLogo";
+            this.pictureBoxLogo.Size = new System.Drawing.Size(64, 64);
+            this.pictureBoxLogo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBoxLogo.TabIndex = 5;
+            this.pictureBoxLogo.TabStop = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(854, 548);
+            this.Controls.Add(this.pbNotifications);
             this.Controls.Add(this.linkLabelChangeLog);
             this.Controls.Add(this.panelModeTimetable);
             this.Controls.Add(this.panelModeActivity);
@@ -931,7 +945,6 @@ namespace ORTS
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox3.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).EndInit();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.panelModeActivity.ResumeLayout(false);
@@ -939,6 +952,8 @@ namespace ORTS
             this.panelModeTimetable.ResumeLayout(false);
             this.panelModeTimetable.PerformLayout();
             this.contextMenuStripTools.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pbNotifications)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1014,5 +1029,6 @@ namespace ORTS
         private System.Windows.Forms.Button buttonStartMP;
         private System.Windows.Forms.Label labelTimetableWeatherFile;
         private System.Windows.Forms.ComboBox comboBoxTimetableWeatherFile;
+        private System.Windows.Forms.PictureBox pbNotifications;
     }
 }
