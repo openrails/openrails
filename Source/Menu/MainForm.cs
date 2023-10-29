@@ -334,6 +334,7 @@ namespace ORTS
                 linkLabelUpdate.Left = panelDetails.Right - linkLabelUpdate.Width - ElevationIcon.Width;
                 linkLabelUpdate.AutoSize = false;
                 linkLabelUpdate.Width = panelDetails.Right - linkLabelUpdate.Left;
+                linkLabelUpdate.Location = new System.Drawing.Point(700, 9);
             });
         }
 
@@ -1465,5 +1466,70 @@ namespace ORTS
             }
             //TO DO: Debrief Eval TTActivity
         }
+
+        #region Notifications
+
+        bool IsNotificationsVisible = false;
+
+        List<Notification> NotificationList = new List<Notification>();
+        class Notification
+        {
+            //readonly Control Title;
+            //readonly Control Expander;
+            //readonly Control Summary;
+            //readonly Control Description;
+            //bool Expanded;
+            //Notification(Control title, Control expander, Control summary, Control lines)
+            //{
+            //    Title = title;
+            //    Expander = expander;
+            //    Summary = summary;
+            //    Description = lines;
+            //    Expanded = false;
+            //}
+        }
+
+        void ClearNotifications()
+        {
+            NotificationList.Clear();
+            while (panelDetails.Controls.Count > 0)
+                panelDetails.Controls.RemoveAt(0);
+        }
+
+        private void pbNotifications_Click(object sender, EventArgs e)
+        {
+            // Show/hide notifications
+            IsNotificationsVisible = !IsNotificationsVisible;
+            if (IsNotificationsVisible)
+            {
+                ClearDetails();
+                ShowNotifications();
+            }
+            else
+            {
+                ClearNotifications();
+                ShowDetails();
+            }
+        }
+
+        void ShowNotifications()
+        {
+            if (NotificationList.Count == 0)
+            {
+                var titleControl = new Label 
+                    { Margin = new Padding(2)
+                    , Text = "No notifications are available"
+                    , UseMnemonic = false
+                    , Font = new Font(panelDetails.Font, FontStyle.Bold)
+                    , TextAlign = ContentAlignment.BottomLeft 
+                    };
+                panelDetails.Controls.Add(titleControl);
+                titleControl.Left = titleControl.Margin.Left;
+                titleControl.Width = panelDetails.ClientSize.Width - titleControl.Margin.Horizontal - titleControl.PreferredHeight;
+                titleControl.Height = titleControl.PreferredHeight;
+                titleControl.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right;
+            }
+        }
+        #endregion Notifications
     }
 }
