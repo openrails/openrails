@@ -117,7 +117,7 @@ namespace Orts.Viewer3D.Popups
         public bool updatingPowerSupply = false;
 
         public bool warningEnabled = false;
-
+        public bool carIdClicked = false;
         public bool modifiedSetting
         {
             set;
@@ -440,29 +440,21 @@ namespace Orts.Viewer3D.Popups
         {   // Allows to find the last carposition, visible at the window bottom.
             if ((!lastRowVisible && labelTop >= 0) || labelTop > DisplaySizeY)
             {
-                if (DisplaySizeY > desiredHeight)
+                for (int carPosition = 0; carPosition < rowsCount; carPosition++)
                 {
-                    lastRowVisible = true;
-                    carPositionVisible = rowsCount;
-                    oldPositionHeight = vbox.Position.Height;
-                }
-                else
-                {
-                    for (int carPosition = 0; carPosition < rowsCount; carPosition++)
+                    var labelTop = carPosition * rowHeight;
+                    if (labelTop > vbox.Position.Height - Owner.TextFontDefault.Height)
                     {
-                        var labelTop = carPosition * rowHeight;
-                        if (labelTop > vbox.Position.Height - Owner.TextFontDefault.Height)
+                        if (!lastRowVisible && labelTop > 0)
                         {
-                            if (!lastRowVisible && labelTop > 0)
-                            {
-                                lastRowVisible = true;
-                                carPositionVisible = carPosition - 1;
-                                oldPositionHeight = vbox.Position.Height;
-                                break;
-                            }
+                            lastRowVisible = true;
+                            carPositionVisible = carPosition - 1;
+                            oldPositionHeight = vbox.Position.Height;
+                            var carid = PlayerTrain.Cars[carPositionVisible].CarID;
+                            break;
                         }
                     }
-                }
+                }               
             }
         }
         public void localScrollLayout(int selectedCarPosition)
@@ -512,7 +504,7 @@ namespace Orts.Viewer3D.Popups
                 trainCarViewer.TrainCarOperationsChanged = !trainCarViewer.Visible && trainCarViewer.TrainCarOperationsChanged ? false : trainCarViewer.TrainCarOperationsChanged;
 
                 currentDisplaySizeY = DisplaySizeY;
-                if (Owner.Viewer.DisplaySize.Y != DisplaySizeY || modifiedSetting)
+                if (Owner.Viewer.DisplaySize.Y != DisplaySizeY || modifiedSetting || trainCarViewer.CouplerChanged)
                 {
                     lastRowVisible = false;
                     supplyStatusChanged = false;
@@ -568,13 +560,14 @@ namespace Orts.Viewer3D.Popups
                         }
                     }
                 }
-                if (trainCarViewer.TrainCarOperationsChanged || trainCarViewer.RearBrakeHoseChanged
-                    || trainCarViewer.FrontBrakeHoseChanged || modifiedSetting || carOperations.CarOperationChanged)
+                if (trainCarViewer.TrainCarOperationsChanged || trainCarViewer.TrainCarOperationsChanged || trainCarViewer.RearBrakeHoseChanged
+                    || trainCarViewer.FrontBrakeHoseChanged || modifiedSetting || carIdClicked || carOperations.CarOperationChanged)
                 {
                     Layout();
                     localScrollLayout(selectedCarPosition);
                     updateLayoutSize();
                     modifiedSetting = false;
+                    carIdClicked = false;
                     // Avoids bug
                     trainCarViewer.TrainCarOperationsChanged = warningEnabled;
                     carOperations.CarOperationChanged = carOperations.Visible && carOperations.CarOperationChanged;
@@ -613,7 +606,17 @@ namespace Orts.Viewer3D.Popups
             TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
             CarPosition = carPosition;
 
-            Texture = TrainCarViewer.Visible && TrainCarViewer.CarPosition == CarPosition ? Viewer.TrainCarOperationsWindow.allSymbolsMode ? ArrowRight : ArrowLeft : Empty;
+            // Coupler changed requires to modify the arrow position
+            var trainCarViewerCarPosition = TrainCarViewer.CouplerChanged ? TrainCarViewer.NewCarPosition : TrainCarViewer.CarPosition;
+            if (TrainCarViewer.CouplerChanged && trainCarViewerCarPosition == CarPosition)
+            {
+                Texture = TrainCarViewer.Visible ? Viewer.TrainCarOperationsWindow.allSymbolsMode ? ArrowRight : ArrowLeft : Empty;
+                Viewer.TrainCarOperationsWindow.carIdClicked = true;
+                TrainCarViewer.CarPosition = trainCarViewerCarPosition;
+            }
+            else
+                Texture = TrainCarViewer.Visible && trainCarViewerCarPosition == CarPosition? Viewer.TrainCarOperationsWindow.allSymbolsMode ? ArrowRight : ArrowLeft : Empty;
+            
             Source = new Rectangle(0, 0, size, size);
             Click += new Action<Control, Point>(buttonArrowRight_Click);
         }
@@ -639,7 +642,17 @@ namespace Orts.Viewer3D.Popups
             TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
             CarPosition = carPosition;
             Texture = Empty;
-            Texture = TrainCarViewer.CarPosition == CarPosition ? ArrowLeft : Empty;
+            // Coupler changed requires to modify arrow position
+            var trainCarViewerCarPosition = TrainCarViewer.CouplerChanged ? TrainCarViewer.NewCarPosition : TrainCarViewer.CarPosition;
+            if (TrainCarViewer.CouplerChanged && trainCarViewerCarPosition == CarPosition)
+            {
+                Texture = trainCarViewerCarPosition == CarPosition ? ArrowLeft : Empty;
+                Viewer.TrainCarOperationsWindow.carIdClicked = true;
+                TrainCarViewer.CarPosition = trainCarViewerCarPosition;
+            }
+            else
+                Texture = trainCarViewerCarPosition == CarPosition ? ArrowLeft : Empty;
+
             Source = new Rectangle(0, 0, size, size);
             Click += new Action<Control, Point>(buttonArrowLeft_Click);
         }
@@ -700,10 +713,9 @@ namespace Orts.Viewer3D.Popups
             Control control = arg1;
 
             TrainCar.carLabelText = Text;
-            TrainCarViewer.YPosition = control.Position.Y;
             TrainCarViewer.CarPosition = CarPosition;
             TrainCarViewer.Visible = true;
-            TrainCar.modifiedSetting = true;
+            TrainCar.carIdClicked = true;
 
             // required by localScrollLayout()
             TrainCar.selectedCarPosition = CarPosition;

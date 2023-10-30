@@ -1061,12 +1061,12 @@ namespace Orts.Viewer3D
         protected override void OnActivate(bool sameCamera)
         {
             BrowseMode = BrowseForwards = BrowseBackwards = false;
-
-            var carPosition = Viewer.TrainCarOperationsViewerWindow.CarPosition;
+            var trainCars = GetCameraCars();
+            var TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
+            var carPosition = !(TrainCarViewer.CarPosition < trainCars.Count()) ? TrainCarViewer.CarPosition - 1 : TrainCarViewer.CarPosition;
             var isDownCameraOutsideFront = UserInput.IsDown(UserCommand.CameraOutsideFront);
             var isDownCameraOutsideRear = UserInput.IsDown(UserCommand.CameraOutsideRear);
-            var isVisibleTrainCarViewer = Viewer.TrainCarOperationsViewerWindow.Visible;
-            var trainCars = GetCameraCars();
+            var isVisibleTrainCarViewer = Viewer.TrainCarOperationsViewerWindow.Visible;            
 
             if (attachedCar == null || attachedCar.Train != Viewer.SelectedTrain || carPosition != oldCarPosition || isDownCameraOutsideFront || isDownCameraOutsideRear)
             {
@@ -1077,8 +1077,8 @@ namespace Orts.Viewer3D
                         SetCameraCar(GetCameraCars().First());
                         oldCarPosition = 0;
                     }
-                    else if (isVisibleTrainCarViewer && carPosition >= 0 && carPosition < trainCars.Count())
-                    {                        
+                    else if (isVisibleTrainCarViewer && carPosition >= 0)
+                    {
                         SetCameraCar(trainCars[carPosition]);
                         oldCarPosition = carPosition;
                     }
@@ -1097,7 +1097,7 @@ namespace Orts.Viewer3D
                         SetCameraCar(GetCameraCars().Last());
                         oldCarPosition = 0;
                     }
-                    else if (isVisibleTrainCarViewer && carPosition >= 0 && carPosition < trainCars.Count())
+                    else if (isVisibleTrainCarViewer && carPosition >= 0)
                     {
                         SetCameraCar(trainCars[carPosition]);
                         oldCarPosition = carPosition;
