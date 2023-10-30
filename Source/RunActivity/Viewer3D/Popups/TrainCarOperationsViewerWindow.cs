@@ -83,17 +83,16 @@ namespace Orts.Viewer3D.Popups
         public int locoRowCount;
         public int rowsCount;
         const int SymbolWidth = 32;
-
         public static bool FontChanged;
         public static bool FontToBold;
         public int windowHeight { get; set; } //required by TrainCarWindow
-
+        
         public int CarPosition
         {
             set;
             get;
         }
-        public int YPosition
+        public int NewCarPosition
         {
             set;
             get;
@@ -113,6 +112,11 @@ namespace Orts.Viewer3D.Popups
             set;
             get;
         }
+        public bool CouplerChanged
+        {
+            set;
+            get;
+        } = false;
         public struct ListLabel
         {
             public string CarID;
@@ -124,7 +128,7 @@ namespace Orts.Viewer3D.Popups
         int LastPlayerTrainCars;
         bool LastPlayerLocomotiveFlippedState;
         int carPosition;
-        bool couplerFront = false;
+        
         public TrainCarOperationsViewerWindow(WindowManager owner)
             : base(owner, Window.DecorationSize.X + CarListPadding + ((owner.TextFontDefault.Height + 12) * 20), Window.DecorationSize.Y + ((owner.TextFontDefault.Height + 12) * 2), Viewer.Catalog.GetString("Train Operations Viewer"))
         {
@@ -365,13 +369,13 @@ namespace Orts.Viewer3D.Popups
                 var carOperations = Owner.Viewer.CarOperationsWindow;
                 var trainCarOperations = Owner.Viewer.TrainCarOperationsWindow;                
 
-                if (couplerFront || PlayerTrain != Owner.Viewer.PlayerTrain || Owner.Viewer.PlayerTrain.Cars.Count != LastPlayerTrainCars || (Owner.Viewer.PlayerLocomotive != null &&
+                if (CouplerChanged || PlayerTrain != Owner.Viewer.PlayerTrain || Owner.Viewer.PlayerTrain.Cars.Count != LastPlayerTrainCars || (Owner.Viewer.PlayerLocomotive != null &&
                 LastPlayerLocomotiveFlippedState != Owner.Viewer.PlayerLocomotive.Flipped))
                 {
-                    couplerFront = false;
+                    CouplerChanged = false;
                     PlayerTrain = Owner.Viewer.PlayerTrain;
 
-                    if (LastPlayerTrainCars != Owner.Viewer.PlayerTrain.Cars.Count){ Visible = false; }
+                    //if (LastPlayerTrainCars != Owner.Viewer.PlayerTrain.Cars.Count){ Visible = false; }
 
                     LastPlayerTrainCars = Owner.Viewer.PlayerTrain.Cars.Count;
                     CarPosition = CarPosition >= LastPlayerTrainCars? LastPlayerTrainCars - 1: CarPosition;
@@ -385,9 +389,12 @@ namespace Orts.Viewer3D.Popups
                 bool isElectricDieselLocomotive = (trainCar is MSTSElectricLocomotive) || (trainCar is MSTSDieselLocomotive);
                 
                 if (carPosition != CarPosition || TrainCarOperationsChanged || carOperations.CarOperationChanged
-                    || trainCarOperations.modifiedSetting || carOperations.RearBrakeHoseChanged || carOperations.FrontBrakeHoseChanged)
+                    || trainCarOperations.carIdClicked || carOperations.RearBrakeHoseChanged || carOperations.FrontBrakeHoseChanged)
                 {
-                    if (carPosition != CarPosition)
+                    // Updates CarPosition
+                    CarPosition = CouplerChanged ? NewCarPosition : CarPosition;
+
+                    if (carPosition != CarPosition || (trainCarOperations.carIdClicked && CarPosition == 0))
                     {
                         Owner.Viewer.FrontCamera.Activate();
                     }
@@ -459,7 +466,8 @@ namespace Orts.Viewer3D.Popups
                 else
                 {
                     new UncoupleCommand(Viewer.Log, CarPosition - 1);
-                    TrainCarViewer.couplerFront = true;
+                    TrainCarViewer.CouplerChanged = true;
+                    TrainCarViewer.NewCarPosition = CarPosition - 1;
                     if (Viewer.CarOperationsWindow.CarPosition > CarPosition - 1)
                         Viewer.CarOperationsWindow.Visible = false;
                 }

@@ -494,7 +494,7 @@ namespace Orts.Viewer3D
             SwitchWindow = new SwitchWindow(WindowManager);
             TrainOperationsWindow = new TrainOperationsWindow(WindowManager);
             TrainCarOperationsWindow = new TrainCarOperationsWindow(WindowManager);
-            TrainCarOperationsViewerWindow = new TrainCarOperationsViewerWindow(WindowManager); MultiPlayerWindow = new MultiPlayerWindow(WindowManager);
+            TrainCarOperationsViewerWindow = new TrainCarOperationsViewerWindow(WindowManager);
             MultiPlayerWindow = new MultiPlayerWindow(WindowManager);
             CarOperationsWindow = new CarOperationsWindow(WindowManager);
             TrainDpuWindow = new TrainDpuWindow(WindowManager);
