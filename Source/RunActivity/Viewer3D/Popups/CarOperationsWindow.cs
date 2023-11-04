@@ -64,7 +64,7 @@ protected override ControlLayout Layout(ControlLayout layout)
 
             // update carposition from traincaroperations
             if (Viewer.TrainCarOperationsWindow.Visible && Viewer.TrainCarOperationsViewerWindow.Visible)
-                CarPosition = Viewer.TrainCarOperationsWindow.selectedCarPosition;
+                CarPosition = Viewer.TrainCarOperationsWindow.SelectedCarPosition;
 
             TrainCar trainCar = Viewer.PlayerTrain.Cars[CarPosition];
             BrakeSystem brakeSystem = (trainCar as MSTSWagon).BrakeSystem;
