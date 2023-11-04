@@ -70,7 +70,6 @@ namespace Orts.Viewer3D.Popups
         internal static Texture2D RearAngleCockClosed;
         internal static Texture2D RearAngleCockOpened;
 
-
         public int DisplaySizeY;
         public bool LayoutUpdated = false;
         public bool AllSymbolsMode = true;
@@ -266,7 +265,7 @@ namespace Orts.Viewer3D.Popups
 
                 DesiredHeight = FontToBold ? (Owner.TextFontDefaultBold.Height * (RowsCount + 1)) + (separatorSize * (SeparatorCount + 3))
                     : (Owner.TextFontDefault.Height * (RowsCount + 1)) + (separatorSize * (SeparatorCount + 3));
-                var desiredWidth = (SymbolsRowCount * SymbolSize) + (SpacerRowCount * (textWidth / 2)) + CarUIDLenght + textWidth * 2;
+                var desiredWidth = (SymbolsRowCount * SymbolSize) + (SpacerRowCount * (textWidth / 2)) + CarUIDLenght + (textWidth * 2);
 
                 // Takes the height of the TrainOperationsViewer as the margin area.
                 RowHeight = textWidth + separatorSize;
@@ -277,7 +276,7 @@ namespace Orts.Viewer3D.Popups
                     : marginTraincarViewer;
                 WindowHeightMax = DisplaySizeY - marginTraincarViewer;
 
-                var newHeight = MathHelper.Clamp(DesiredHeight, (textWidth + separatorSize) * 3 + separatorSize, WindowHeightMax);
+                var newHeight = MathHelper.Clamp(DesiredHeight, ((textWidth + separatorSize) * 3) + separatorSize, WindowHeightMax);
                 var newWidth = MathHelper.Clamp(desiredWidth, 100, WindowWidthMax);
 
                 // Move the dialog up if we're expanding it, or down if not; this keeps the center in the same place.
@@ -936,7 +935,6 @@ namespace Orts.Viewer3D.Popups
                 string valuePart = parts?[1];
                 if (keyPart.Contains(Viewer.Catalog.GetString("Engine")))
                 {
-
                     TrainCarOperations.PowerSupplyStatus = locomotiveStatus;
 
                     Texture = valuePart.Contains(Viewer.Catalog.GetString("Running")) ? PowerOn
