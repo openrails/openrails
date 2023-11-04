@@ -711,7 +711,13 @@ namespace Orts.Viewer3D
                 return stream;
             }
 
-            internal int GetSizeInBytes(Accessor accessor) => GetComponentNumber(accessor.Type) * GetComponentSizeInBytes(accessor.ComponentType);
+            internal int GetSizeInBytes(Accessor accessor)
+            {
+                var componentNumber = GetComponentNumber(accessor.Type);
+                var size = componentNumber * GetComponentSizeInBytes(accessor.ComponentType);
+                var padding = componentNumber == 1 ? 0 : size % 4; // do not add padding to the index buffers
+                return size + padding;
+            }
             
             int GetComponentNumber(Accessor.TypeEnum type)
             {
@@ -773,6 +779,7 @@ namespace Orts.Viewer3D
                     case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.FLOAT: return VertexElementFormat.Vector4;
 
                     // MSFS twisted out, reversed definitions:
+                    // non-normalized, VEC3 FLOAT, VEC4 BYTE, VEC2 SHORT, VEC4 USHORT, SCALAR FLOAT
                     case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.SHORT && msfsFlavoured: return accessor.Normalized ? VertexElementFormat.Short2 : VertexElementFormat.HalfVector2;
                     case Accessor.TypeEnum.VEC2 when accessor.ComponentType == Accessor.ComponentTypeEnum.UNSIGNED_SHORT && msfsFlavoured: return accessor.Normalized ? VertexElementFormat.Short2 : VertexElementFormat.HalfVector2;
                     case Accessor.TypeEnum.VEC4 when accessor.ComponentType == Accessor.ComponentTypeEnum.BYTE && msfsFlavoured: return VertexElementFormat.Color;
