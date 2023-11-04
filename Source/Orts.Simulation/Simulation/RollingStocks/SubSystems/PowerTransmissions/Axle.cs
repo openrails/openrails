@@ -582,7 +582,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float WheelSlipThresholdMpS;
         public void ComputeWheelSlipThresholdMpS()
         {
-            // Bisection algorithm. We assume adhesion maximum is between 0 and 4 m/s
+            // Bisection algorithm. We assume adhesion maximum is between 0 (0.005) and 4 m/s
             double a = 0.005f;
             double b = 4;
             // We have to find the zero of the derivative of adhesion curve
@@ -592,30 +592,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             double fa = SlipCharacteristics(a + dx) - SlipCharacteristics(a);
             double fb = SlipCharacteristics(b + dx) - SlipCharacteristics(b);
 
-            double p = 0.025f;
-            double s = 0.05f;
-            double t = 0.1f;
-            double q = 0.15f;
-            double r = 0.2f;
-            double u = 0.25f;
-            double v = 0.5f;
-            double x = 0.75f;
-            double y = 1.0f;
-
-            double fa1 = SlipCharacteristics(a);
-            double fb1 = SlipCharacteristics(b);
-                        
-            double fp = SlipCharacteristics(p);
-            double fs = SlipCharacteristics(s);
-            double ft = SlipCharacteristics(t);
-            double fq = SlipCharacteristics(q);
-            double fr = SlipCharacteristics(r);
-            double fu = SlipCharacteristics(u);
-            double fv = SlipCharacteristics(v);
-            double fx = SlipCharacteristics(x);
-            double fy = SlipCharacteristics(y);
             double SlipSpeedMpS = AxleSpeedMpS - TrainSpeedMpS;
-            double fslip = SlipCharacteristics(SlipSpeedMpS);
 
             MaximumPolachWheelAdhesion = (float)SlipCharacteristics(WheelSlipThresholdMpS);
 
@@ -644,7 +621,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 else
                 {
                     b = c;
-                    fb = fc;
                 }
             }
             WheelSlipThresholdMpS = (float)Math.Max((a + b) / 2, MpS.FromKpH(0.1f));
@@ -724,7 +700,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
 
         double integratorError;
-        int waitBeforeIntegreationRate;
+        int waitBeforeChangingRate;
 
         /// <summary>
         /// Read/Write relative slip speed warning threshold value, in percent of maximal effective slip
@@ -868,6 +844,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Integrates the wheel rotation movement using a RK4 method,
         /// calculating the required number of substeps
+        /// To maintain the accuracy of the integration method, the number of substeps needs to increase when slip speed approaches the slip threshold speed.
+        /// The folloi=wing section attempts to calculate the optimal substep limit. This is a trade off between the accuracy of the slips calculations and the CPU load which impacts the screen FPS
         /// Outputs: wheel speed, wheel angular position and motive force
         /// </summary>
         void Integrate(float elapsedClockSeconds)
@@ -875,14 +853,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (elapsedClockSeconds <= 0) return;
             double prevSpeedMpS = AxleSpeedMpS;
             
-            float upperSubStepStartingLimit = 120;
+            float upperSubStepStartingLimit = 100;
             float tempupperSubStepLimit = upperSubStepStartingLimit;
             float lowerSubStepLimit = 1;
 
             float screenFrameUpperLimit = 60;
             float screenFrameLowerLimit = 40;
 
-            // Reduces the number of substeps if screen FPS drops
+            // Reduces the number of substeps if screen FPS drops below a nominal rate of 60 fps
             if ( (int)ScreenFrameRate >= screenFrameUpperLimit) // Screen FPS > 60, hold substeps @ maximum value
             {
                 tempupperSubStepLimit = upperSubStepStartingLimit;
@@ -909,31 +887,44 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 targetNumOfSubstepsPS = upperSubStepLimit;
             }
 
-            if (Math.Abs(integratorError) < 0.000277 && !IsWheelSlip && !IsWheelSlipWarning && SlipSpeedMpS < 0.4 * WheelSlipThresholdMpS)
+            if (Math.Abs(integratorError) < 0.000277 && !IsWheelSlip && !IsWheelSlipWarning && SlipSpeedMpS < 0.25 * WheelSlipThresholdMpS && SlipSpeedMpS < previousSlipSpeedMpS)
             {
-                if (--waitBeforeIntegreationRate <= 0) //wait for a while before changing the integration rate
+                if (--waitBeforeChangingRate <= 0) //wait for a while before changing the integration rate
                 {
                     NumOfSubstepsPS -= 2; // decrease substeps when under low slip conditions
-                    waitBeforeIntegreationRate = 20;
+                    waitBeforeChangingRate = 30;
                 }
             }
             else if (targetNumOfSubstepsPS > NumOfSubstepsPS) // increase substeps
             {
-                if (--waitBeforeIntegreationRate <= 0 ) //wait for a while before changing the integration rate
+                if (--waitBeforeChangingRate <= 0 ) //wait for a while before changing the integration rate
                 {
-                    NumOfSubstepsPS += 5;
-                    waitBeforeIntegreationRate = 30;      //not so fast ;)
+
+                    if (IsWheelSlip || IsWheelSlipWarning || SlipSpeedMpS > previousSlipSpeedMpS)
+                    {
+                        // this speeds up the substep increase if the slip speed approaches the threshold or has exceeded it, ie "critical conditions".
+                        NumOfSubstepsPS += 10;
+                        waitBeforeChangingRate = 5;      
+                    }
+                    else
+                    {
+                        // this speeds ups the substeps under "non critical" conditions
+                        NumOfSubstepsPS += 3;
+                        waitBeforeChangingRate = 30;      
+                    }
+                    
                 }
             }
             else if (targetNumOfSubstepsPS < NumOfSubstepsPS) // decrease sub steps
             {
-                if (--waitBeforeIntegreationRate <= 0) //wait for a while before changing the integration rate
+                if (--waitBeforeChangingRate <= 0) //wait for a while before changing the integration rate
                 {
-                    NumOfSubstepsPS -= 5;
-                    waitBeforeIntegreationRate = 20;
+                    NumOfSubstepsPS -= 3;
+                    waitBeforeChangingRate = 30;
                 }
             }
 
+            // keeps the substeps to a relevant upper and lower limits
             if (NumOfSubstepsPS < lowerSubStepLimit)
                 NumOfSubstepsPS = (int)lowerSubStepLimit;
 
@@ -1177,7 +1168,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 return fx;
             }
         }
-
 
         /// <summary>
         /// Uses the Polach creep force curves calculation described in the following document
