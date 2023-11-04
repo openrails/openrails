@@ -3221,7 +3221,6 @@ namespace Orts.Simulation.RollingStocks
 
         #endregion
 
-
         public void UpdateTrackSander(float elapsedClockSeconds)
         {
         // updates track sander in terms of sand usage and impact on air compressor
