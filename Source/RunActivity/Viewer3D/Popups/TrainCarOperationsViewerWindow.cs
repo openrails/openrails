@@ -226,7 +226,7 @@ namespace Orts.Viewer3D.Popups
             if (SymbolsRowCount > 0)
             {
                 var desiredHeight = FontToBold ? Owner.TextFontDefaultBold.Height * RowsCount
-                    : Owner.TextFontDefault.Height * RowsCount + SymbolWidth;
+                    : (Owner.TextFontDefault.Height * RowsCount) + SymbolWidth;
                 var desiredWidth = (SymbolsRowCount * SymbolWidth) + (SpacerRowCount * (SymbolWidth / 2)) + (LocoRowCount * (SymbolWidth * 2));
 
                 var newHeight = (int)MathHelper.Clamp(desiredHeight, 80, WindowHeightMax);
@@ -406,8 +406,8 @@ namespace Orts.Viewer3D.Popups
                 // Updates power supply status
                 else if (isElectricDieselLocomotive &&
                      (PowerSupplyStatus != null && PowerSupplyStatus != Owner.Viewer.PlayerTrain.Cars[CarPosition].GetStatus()
-                      || BatteryStatus != null && BatteryStatus != Owner.Viewer.PlayerTrain.Cars[CarPosition].GetStatus()
-                      || CircuitBreakerState != null && CircuitBreakerState != (trainCar as MSTSElectricLocomotive).ElectricPowerSupply.CircuitBreaker.State.ToString()))
+                      || (BatteryStatus != null && BatteryStatus != Owner.Viewer.PlayerTrain.Cars[CarPosition].GetStatus())
+                      || (CircuitBreakerState != null && CircuitBreakerState != (trainCar as MSTSElectricLocomotive).ElectricPowerSupply.CircuitBreaker.State.ToString())))
                 {
                     Layout();
                     UpdateWindowSize();
@@ -549,8 +549,6 @@ namespace Orts.Viewer3D.Popups
                         if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).GetTrainHandbrakeStatus())
                         {
                             Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Handbrake set"));
-
-
                             Texture = HandBrakeSet;
                         }
                         else
@@ -849,7 +847,7 @@ namespace Orts.Viewer3D.Popups
                 var multipleUnitsConfiguration = Viewer.PlayerLocomotive.GetMultipleUnitsConfiguration();
                 if (Viewer.PlayerTrain.Cars[CarPosition] is MSTSDieselLocomotive && multipleUnitsConfiguration != null)
                 {
-                    Texture = Viewer.TrainCarOperationsWindow.ModifiedSetting || (Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).RemoteControlGroup == 0 && multipleUnitsConfiguration != "1" ? MUconnected : MUdisconnected;
+                    Texture = Viewer.TrainCarOperationsWindow.ModifiedSetting || ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).RemoteControlGroup == 0 && multipleUnitsConfiguration != "1")? MUconnected : MUdisconnected;
                 }
                 else
                 {
