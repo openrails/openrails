@@ -97,7 +97,7 @@ namespace ORTS.Common
             {
                 foreach (ManagementObject sound in new ManagementClass("Win32_SoundDevice").GetInstances())
                 {
-                    Console.WriteLine("Sound      = {0}{1}", (string)sound["Description"], GetPnPDeviceDrivers(sound));
+                    output.WriteLine("Sound      = {0}{1}", (string)sound["Description"], GetPnPDeviceDrivers(sound));
                 }
             }
             catch (Exception error)

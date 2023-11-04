@@ -55,11 +55,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                return Train.Cars.OfType<MSTSWagon>()
-                    .Where(wagon => wagon.PassengerCarPowerSupply != null)
-                    .Where(wagon => wagon.PassengerCarPowerSupply.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive))
-                    .Select(wagon => wagon.PassengerCarPowerSupply.ElectricTrainSupplyPowerW / wagon.PassengerCarPowerSupply.ElectricTrainSupplyConnectedLocomotives.Count())
-                    .Sum();
+                float result = 0;
+                foreach (var car in Train.Cars)
+                {
+                    if (car == null) continue;
+                    if (!(car is MSTSWagon wagon)) continue;
+                    if (!(wagon.PassengerCarPowerSupply?.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive) ?? false)) continue;
+                    result += wagon.PassengerCarPowerSupply.ElectricTrainSupplyPowerW / wagon.PassengerCarPowerSupply.ElectricTrainSupplyConnectedLocomotives.Count();
+                }
+                return result;
             }
         }
 

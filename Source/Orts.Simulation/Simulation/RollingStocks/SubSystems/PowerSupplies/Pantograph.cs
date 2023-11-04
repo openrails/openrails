@@ -79,13 +79,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Restore(BinaryReader inf)
         {
-            List.Clear();
-
             int n = inf.ReadInt32();
             for (int i = 0; i < n; i++)
             {
-                List.Add(new Pantograph(Wagon));
-                List.Last().Restore(inf);
+                if (i >= List.Count)
+                {
+                    List.Add(new Pantograph(Wagon));
+                }
+                List[i].Restore(inf);
             }
         }
 

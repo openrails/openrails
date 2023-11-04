@@ -213,6 +213,7 @@ namespace Orts.Viewer3D.Debugging
         {
             ViewWindow = new RectangleF(0, 0, 5000f, 5000f);
             windowSizeUpDown.Accelerations.Add(new NumericUpDownAcceleration(1, 100));
+            boxSetSignal.Items.Clear();
             boxSetSignal.Items.Add("System Controlled");
             boxSetSignal.Items.Add("Stop");
             boxSetSignal.Items.Add("Approach");
