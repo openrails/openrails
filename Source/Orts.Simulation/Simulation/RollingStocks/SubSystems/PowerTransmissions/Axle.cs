@@ -14,6 +14,9 @@
 // 
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
+//
+// Debug for Adhesion
+//#define DEBUG_ADHESION
 
 using System;
 using System.IO;
@@ -973,6 +976,29 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 Polach.Update();
                 axleStaticForceN = AxleWeightN * SlipCharacteristics(0);
             }
+
+#if DEBUG_ADHESION
+            double[] spd = new double[50];
+            double[] adh = new double[50];
+            for (int i = 0; i < spd.Length; i++)
+            {
+                spd[i] = i / (float)spd.Length;
+                adh[i] = SlipCharacteristics(spd[i]);
+            }
+            for (int i = 0; i < spd.Length; i++)
+            {
+                Console.Write(spd[i]);
+                Console.Write(" ");
+            }
+            Console.WriteLine("");
+            Console.WriteLine("");
+            for (int i = 0; i < spd.Length; i++)
+            {
+                Console.Write(adh[i]);
+                Console.Write(" ");
+            }
+            Console.WriteLine("");
+#endif
 
             motor?.Update(timeSpan);
 
