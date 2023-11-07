@@ -972,29 +972,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 TrainSpeedMpS = 10 / 3.6f;
                 Polach.Update();
                 axleStaticForceN = AxleWeightN * SlipCharacteristics(0);
-
-                /*
-                double[] spd = new double[50];
-                double[] adh = new double[50];
-                for (int i = 0; i < spd.Length; i++)
-                {
-                    spd[i] = i / (float)spd.Length;
-                    adh[i] = SlipCharacteristics(spd[i]);
-                }
-                for (int i = 0; i < spd.Length; i++)
-                {
-                    Console.Write(spd[i]);
-                    Console.Write(" ");
-                }
-                Console.WriteLine("");
-                Console.WriteLine("");
-                for (int i = 0; i < spd.Length; i++)
-                {
-                    Console.Write(adh[i]);
-                    Console.Write(" ");
-                }
-                Console.WriteLine("");
-            */
             }
 
             motor?.Update(timeSpan);
