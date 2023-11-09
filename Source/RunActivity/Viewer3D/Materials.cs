@@ -650,6 +650,14 @@ namespace Orts.Viewer3D
             BlendState = blendState;
         }
 
+        public SpriteBatchMaterial(GraphicsDevice graphicsDevice, BlendState blendState, Effect effect = null)
+            : base(null, null)
+        {
+            SpriteBatch = new SpriteBatch(graphicsDevice);
+            BlendState = blendState;
+            Effect = effect;
+        }
+
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState, effect: Effect);

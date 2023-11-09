@@ -61,6 +61,8 @@
                 <MenuItem Header="Zoom reset (R)" Name="menuZoomReset" Click="MenuZoomReset_Click"/>
                 <Separator/>
                 <MenuItem Header="Anti aliasing (needs restart)" Name="menuDoAntiAliasing" IsCheckable="True" Click="MenuDoAntiAliasing_Click"/>
+                <Separator/>
+                <MenuItem Header="Scene" Name="menuSceneWindow" IsCheckable="False" Click="MenuSceneWindow_Click"/>
             </MenuItem>
             <MenuItem Header="Track _items" Name="menuTrackItems">
                 <MenuItem Header="Show all items" Name="menuShowAll" IsCheckable="False" Click="MenuShowAll_Click"/>
