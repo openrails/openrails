@@ -112,7 +112,7 @@ namespace Orts.Viewer3D.Processes
         internal override void Dispose()
         {
             Loading.Dispose();
-            LoadingScreen.Dispose();
+            LoadingScreen?.Dispose();
             LoadingBar.Dispose();
             TimetableLoadingBar.Dispose();
             base.Dispose();
@@ -173,7 +173,7 @@ namespace Orts.Viewer3D.Processes
 
             // Look for required type of action
             var acttype = "";
-            var acttypes = new[] { "activity", "explorer", "exploreactivity", "timetable" };
+            var acttypes = new[] { "activity", "explorer", "exploreactivity", "timetable", "viewer" };
             foreach (var possibleActType in acttypes)
                 if (args.Contains("-" + possibleActType) || args.Contains("/" + possibleActType, StringComparer.OrdinalIgnoreCase))
                     acttype = possibleActType;
@@ -340,6 +340,10 @@ namespace Orts.Viewer3D.Processes
             {
                 case "timetable":
                     Simulator.StartTimetable(args, Game.LoaderProcess.CancellationToken);
+                    break;
+
+                case "viewer":
+                    Simulator.StartViewer(args, Game.LoaderProcess.CancellationToken);
                     break;
 
                 default:
@@ -1058,6 +1062,15 @@ namespace Orts.Viewer3D.Processes
                     Console.WriteLine("Weather    = {0} ({1})", GetWeather(args[4]), args[4]);
                     break;
 
+                case "viewer":
+                    if (args.Length < 5) throw new InvalidCommandLine("Mode 'viewer' needs 5 argument: activity file.");
+                    Console.WriteLine("Route      = {0}", GetRouteName(args[0]));
+                    Console.WriteLine("Consist    = {0} ({1})", GetConsistName(args[1]), args[1]);
+                    Console.WriteLine("Time       = {0} ({1})", GetTime(args[2]), args[2]);
+                    Console.WriteLine("Season     = {0} ({1})", GetSeason(args[3]), args[3]);
+                    Console.WriteLine("Weather    = {0} ({1})", GetWeather(args[4]), args[4]);
+                    break;
+
                 default:
                     throw new InvalidCommandLine("Unexpected mode '" + acttype + "' with argument count " + args.Length);
             }
@@ -1111,6 +1124,11 @@ namespace Orts.Viewer3D.Processes
                         Simulator.TimetableFileName = System.IO.Path.GetFileNameWithoutExtension(args[0]);
                         Simulator.PathName = String.Copy(args[1]);
                     }
+                    break;
+
+                case "viewer":
+                    Simulator = new Simulator(settings, args[0], false, true);
+                    Simulator.SetViewer(args[1], args[2], args[3], args[4]);
                     break;
             }
 
