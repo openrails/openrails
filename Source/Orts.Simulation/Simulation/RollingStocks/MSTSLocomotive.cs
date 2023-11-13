@@ -2767,7 +2767,6 @@ namespace Orts.Simulation.RollingStocks
                 axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
                 axle.BogieRigidWheelBaseM = RigidWheelBaseM;
                 axle.CurtiusKnifflerZeroSpeed = ZeroSpeedAdhesionBase;
-                axle.ScreenFrameRate = Train.ScreenFrameRate;
             }
 
             LocomotiveAxles.Update(elapsedClockSeconds);
