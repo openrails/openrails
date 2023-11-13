@@ -2,6 +2,10 @@
 // source code generator, telling that what native functions to generate.
 // Check the result in the project/Dependencies/Analyzers/Microsoft.Windows.CsWin32
 // in the Visual Studio Solution Explorer.
+//
+// Name this file back to NativeMethods.txt to re-enable automatic code generation.
+// Disabled because when active, the file exists only virtually in Visual Studio,
+// thus impossible to include into the git repository.
 
 SetParent
 SetWindowLong
