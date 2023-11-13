@@ -474,10 +474,6 @@ namespace Orts.Viewer3D.Popups
             TableAddLabelValue(table, Viewer.Catalog.GetString("FPS"), "{0:F0}", Viewer.RenderProcess.FrameRate.SmoothedValue);
             TableAddLine(table);
 
-            // Used in axle module to adjust substeps for frame rate drops
-            var mstsLocomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
-            Viewer.PlayerTrain.ScreenFrameRate = Viewer.RenderProcess.FrameRate.SmoothedValue;
-
             if (Viewer.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
                 TableAddLine(table, Viewer.Catalog.GetString("Autopilot") + "???");
 

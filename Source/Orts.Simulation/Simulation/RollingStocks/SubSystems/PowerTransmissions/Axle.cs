@@ -520,11 +520,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float CurtiusKnifflerZeroSpeed;
 
         /// <summary>
-        /// Simulator FPS
-        /// </summary>
-        public float ScreenFrameRate;
-
-        /// <summary>
         /// Wheel adhesion as calculated by Polach
         /// </summary>
         public float WheelAdhesion;
@@ -862,6 +857,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
             float screenFrameUpperLimit = 60;
             float screenFrameLowerLimit = 40;
+
+            var ScreenFrameRate = Simulator.SmoothedFrameRate;
 
             // Reduces the number of substeps if screen FPS drops below a nominal rate of 60 fps
             if ( (int)ScreenFrameRate >= screenFrameUpperLimit) // Screen FPS > 60, hold substeps @ maximum value
