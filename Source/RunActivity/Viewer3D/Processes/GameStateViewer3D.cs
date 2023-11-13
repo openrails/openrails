@@ -19,6 +19,7 @@
 
 using Orts.MultiPlayer;
 using Orts.Viewer3D.Debugging;
+using Orts.Viewer3D.Popups;
 using System;
 
 namespace Orts.Viewer3D.Processes
@@ -34,6 +35,7 @@ namespace Orts.Viewer3D.Processes
         {
             Viewer = viewer;
             Viewer.Simulator.Paused = true;
+            if (Viewer.QuitWindow  != null )
             Viewer.QuitWindow.Visible = true;
         }
 

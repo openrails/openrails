@@ -401,6 +401,12 @@ namespace Orts.Viewer3D
         Vector3[] ShadowMapCenter;
 
         internal RenderTarget2D RenderSurface;
+
+        /// <summary>
+        /// Injected the TrackViewer's second window swapchain here, or null for the backbuffer
+        /// </summary>
+        public static RenderTarget2D FinalRenderTarget;
+
         SpriteBatchMaterial RenderSurfaceMaterial;
 
         readonly Material DummyBlendedMaterial;
@@ -926,7 +932,7 @@ namespace Orts.Viewer3D
 #if DEBUG_RENDER_STATE
             DebugRenderState(graphicsDevice, ShadowMapMaterial.ToString());
 #endif
-            graphicsDevice.SetRenderTarget(null);
+            graphicsDevice.SetRenderTarget(FinalRenderTarget);
 
             // Blur the shadow map.
             if (Game.Settings.ShadowMapBlur)
@@ -949,10 +955,9 @@ namespace Orts.Viewer3D
         /// <param name="logging"></param>
         void DrawSimple(GraphicsDevice graphicsDevice, bool logging)
         {
-            if (RenderSurfaceMaterial != null)
-            {
+            RenderSurfaceMaterial = RenderSurfaceMaterial ?? new SpriteBatchMaterial(graphicsDevice, BlendState.Opaque);
+            
                 graphicsDevice.SetRenderTarget(RenderSurface);
-            }
 
             if (Game.Settings.DistantMountains)
             {
@@ -973,14 +978,14 @@ namespace Orts.Viewer3D
                 if (logging) Console.WriteLine("  }");
             }
 
-            if (RenderSurfaceMaterial != null)
-            {
-                graphicsDevice.SetRenderTarget(null);
+            graphicsDevice.SetRenderTarget(FinalRenderTarget);
+
                 graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
                 RenderSurfaceMaterial.SetState(graphicsDevice, null);
                 RenderSurfaceMaterial.SpriteBatch.Draw(RenderSurface, Vector2.Zero, Color.White);
                 RenderSurfaceMaterial.ResetState(graphicsDevice);
-            }
+
+            graphicsDevice.SetRenderTarget(null);
         }
 
         void DrawSequences(GraphicsDevice graphicsDevice, bool logging)

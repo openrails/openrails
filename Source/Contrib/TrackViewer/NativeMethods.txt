@@ -1,0 +1,8 @@
+// This is the controlling file of the Microsoft.Windows.CsWin32 package's
+// source code generator, telling that what native functions to generate.
+// Check the result in the project/Dependencies/Analyzers/Microsoft.Windows.CsWin32
+// in the Visual Studio Solution Explorer.
+
+SetParent
+SetWindowLong
+WINDOW_STYLE

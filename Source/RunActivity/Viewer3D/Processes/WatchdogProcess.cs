@@ -352,7 +352,7 @@ namespace Orts.Viewer3D.Processes
         {
             // Note: This code is meant to return the same string as Exception's formatting of a stack trace. Do not modify.
             var sb = new StringBuilder(255);
-            var method = frame.GetMethod();
+            var method = frame?.GetMethod();
             if (method != null)
             {
                 sb.Append("   at ");

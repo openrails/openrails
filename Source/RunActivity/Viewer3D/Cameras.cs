@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Simulation;
@@ -286,11 +287,11 @@ namespace Orts.Viewer3D
         }
 
         // TODO: Add a way to record this zoom operation for Replay.
-        protected void ZoomByMouseWheel(float speed)
+        protected virtual void ZoomByMouseWheel(float speed)
         {
             // Will not zoom-in-out when help windows is up.
             // TODO: Property input processing through WindowManager.
-            if (UserInput.IsMouseWheelChanged && !Viewer.HelpWindow.Visible)
+            if (UserInput.IsMouseWheelChanged && (!Viewer.HelpWindow?.Visible ?? true))
             {
                 var fieldOfView = MathHelper.Clamp(FieldOfView - speed * UserInput.MouseWheelChange / 10, 1, 135);
                 new FieldOfViewCommand(Viewer.Log, fieldOfView);
@@ -619,10 +620,15 @@ namespace Orts.Viewer3D
 
     public class FreeRoamCamera : RotatingCamera
     {
-        const float maxCameraHeight = 1000f;
-        const float ZoomFactor = 2f;
+        protected const float maxCameraHeight = 1000f;
+        protected const float ZoomFactor = 2f;
 
         public override string Name { get { return Viewer.Catalog.GetString("Free"); } }
+
+        protected FreeRoamCamera(Viewer viewer)
+            : base(viewer)
+        {
+        }
 
         public FreeRoamCamera(Viewer viewer, Camera previousCamera)
             : base(viewer, previousCamera)
@@ -792,6 +798,105 @@ namespace Orts.Viewer3D
             movement.Z += speed;
             ZRadians += movement.Z;
             MoveCamera(movement);
+        }
+    }
+
+    public class ViewerCamera : FreeRoamCamera
+    {
+        public ViewerCamera(Viewer viewer)
+            : base(viewer)
+        {
+        }
+
+        public override void HandleUserInput(ElapsedTime elapsedTime)
+        {
+            ZoomByMouseWheel(GetSpeed(elapsedTime));
+
+            if (UserInput.IsMouseMiddleButtonDown && !UserInput.IsKeyboardControlDown && !UserInput.IsKeyboardAltDown && UserInput.IsKeyboardShiftDown)
+                PanByMouse();
+
+            if (UserInput.IsMouseMiddleButtonDown && !UserInput.IsKeyboardControlDown && !UserInput.IsKeyboardAltDown && !UserInput.IsKeyboardShiftDown)
+                RotateByMouse();
+        }
+
+        protected override void ZoomByMouseWheel(float speed)
+        {
+            ZoomIn(speed * UserInput.MouseWheelChange * ZoomFactor);
+        }
+
+        protected override void RotateByMouse()
+        {
+            // Mouse movement doesn't use 'var speed' because the MouseMove 
+            // parameters are already scaled down with increasing frame rates, 
+            RotationXRadians += GetMouseDelta(UserInput.MouseMoveY);
+            RotationYRadians += GetMouseDelta(UserInput.MouseMoveX);
+        }
+
+        protected void PanByMouse()
+        {
+            var sourceCurrent = new Vector3(UserInput.MouseX, UserInput.MouseY, 1);
+            var sourcePrevious = new Vector3(UserInput.MouseX - UserInput.MouseMoveX, UserInput.MouseY - UserInput.MouseMoveY, 1);
+
+            var pointCurrent = Viewer.DefaultViewport.Unproject(sourceCurrent, XnaProjection, XnaView, Matrix.Identity);
+            var pointPrevious = Viewer.DefaultViewport.Unproject(sourcePrevious, XnaProjection, XnaView, Matrix.Identity);
+
+            var movement = pointCurrent - pointPrevious;
+            if (movement.X >= 2048) movement.X -= 2048;
+            if (movement.X <= -2048) movement.X += 2048;
+            if (movement.Y >= 2048) movement.Y -= 2048;
+            if (movement.Y <= -2048) movement.Y += 2048;
+
+            var location = CameraWorldLocation;
+            location.Location.X -= movement.X;
+            location.Location.Z += movement.Z;
+            location.Normalize();
+
+            SetLocation(location);
+        }
+
+        protected StaticShape PickByMouse()
+        {
+            var nearSource = new Vector3((float)UserInput.MouseX, (float)UserInput.MouseY, 0f);
+            var farSource = new Vector3((float)UserInput.MouseX, (float)UserInput.MouseY, 1f);
+            var nearPoint = Viewer.DefaultViewport.Unproject(nearSource, XnaProjection, XnaView, Matrix.Identity);
+            var farPoint = Viewer.DefaultViewport.Unproject(farSource, XnaProjection, XnaView, Matrix.Identity);
+            var direction = farPoint - nearPoint;
+            direction.Normalize();
+            var pickRay = new Ray(nearPoint, direction);
+            
+            StaticShape pickedObject = null;
+            var pickedDistance = float.MaxValue;
+            foreach (var worldFile in Viewer.World.Scenery.WorldFiles)
+            {
+                foreach (var wbb in worldFile.sceneryObjects)
+                {
+                    float? distance = null;
+                    var location = XnaLocation(wbb.Location.WorldLocation);
+                    var ccc = cameraLocation;
+                    if (wbb.BoundingBox is BoundingBox boundingBox)
+                    {
+                        var min = location + boundingBox.Min;
+                        var max = location + boundingBox.Max;
+                        var xnabb = new Microsoft.Xna.Framework.BoundingBox(min, max);
+                        distance = pickRay.Intersects(xnabb);
+                    }
+                    else
+                    {
+                        var radius = 10f;
+                        var boundingSphere = new BoundingSphere(location, radius);
+                        distance = pickRay.Intersects(boundingSphere);
+                    }
+                    if (distance != null)
+                    {
+                        if (distance < pickedDistance)
+                        {
+                            pickedDistance = distance.Value;
+                            pickedObject = wbb;
+                        }
+                    }
+                }
+            }
+            return pickedObject;
         }
     }
 
