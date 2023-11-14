@@ -2,6 +2,28 @@
 
 This document will describe the overall structure of Open Rails and how we expect different areas of the program to work together.
 
+## Player application model
+
+The player model describes the desired application components used when playing Open Rails (vs. editing) and their relationships.
+
+```mermaid
+flowchart TB
+  AI["Orts.AI"]
+  Formats["Orts.Formats"]
+  Input["Orts.Input"]
+  Multiplayer["Orts.Multiplayer"]
+  Parsers["Orts.Parsers"]
+  Player["Player"]
+  Simulation["Orts.Simulation"]
+  Sound["Orts.Sound"]
+  UI["Orts.UI"]
+  Viewer["Orts.Viewer"]
+  Web["Orts.Web"]
+  Player --- UI --- Viewer --- Simulation
+  Player --- Input --- Viewer & Simulation --- Formats --- Parsers
+  AI & Sound --- Simulation --- Multiplayer & Web
+```
+
 ## Threading model
 
 The threading in Open Rails has two key threads working together (Render and Updater) to simulate and render the world, with a number of auxiliary threads for other functions.
@@ -28,6 +50,22 @@ The threading in Open Rails has two key threads working together (Render and Upd
   - If a process stops responding for more than 10s (60s for Loader), the whole application is terminated with an error containing the hung process' stack trace
 - Web Server process
   - Handle all web and API requests
+
+## Projects, assemblies, namespaces
+
+Open Rails is made up of several component projects which are organised into subdirectories with the following naming pattern:
+
+- `Orts.Component\Orts.Component.csproj` (project file)
+- `Orts.Component.dll` (assembly name)
+- `Orts.Component` (default namespace)
+
+The namespaces used within code files should match the directory structure like this:
+
+| *Filename* | *Namespace*
+|---|---|
+| `Orts.Component\File.cs` | `Orts.Component` |
+| `Orts.Component\Section\File.cs` | `Orts.Component.Section` |
+| `Orts.Component\Section\Subsection\File.cs` | `Orts.Component.Section.Subsection` |
 
 ## Simulator object relationships
 
