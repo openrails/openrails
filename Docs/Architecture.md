@@ -2,6 +2,28 @@
 
 This document will describe the overall structure of Open Rails and how we expect different areas of the program to work together.
 
+## Player application model
+
+The player model describes the desired application components used when playing Open Rails (vs. editing) and their relationships.
+
+```mermaid
+flowchart TB
+  AI["Orts.AI"]
+  Formats["Orts.Formats"]
+  Input["Orts.Input"]
+  Multiplayer["Orts.Multiplayer"]
+  Parsers["Orts.Parsers"]
+  Player["Player"]
+  Simulation["Orts.Simulation"]
+  Sound["Orts.Sound"]
+  UI["Orts.UI"]
+  Viewer["Orts.Viewer"]
+  Web["Orts.Web"]
+  Player --- UI --- Viewer --- Simulation
+  Player --- Input --- Viewer & Simulation --- Formats --- Parsers
+  AI & Sound --- Simulation --- Multiplayer & Web
+```
+
 ## Threading model
 
 The threading in Open Rails has two key threads working together (Render and Updater) to simulate and render the world, with a number of auxiliary threads for other functions.
