@@ -30,10 +30,10 @@ using ORTS.Settings;
 
 namespace Orts
 {
-    static class NativeMethods
+    public static class NativeMethods
     {
         [DllImport("kernel32.dll", CallingConvention = CallingConvention.StdCall)]
-        internal static extern bool SetDllDirectory(string pathName);
+        public static extern bool SetDllDirectory(string pathName);
     }
 
     static class Program
