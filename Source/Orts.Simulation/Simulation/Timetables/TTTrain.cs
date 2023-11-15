@@ -12177,26 +12177,18 @@ namespace Orts.Simulation.Timetables
             if (TrainType != TRAINTYPE.PLAYER && attachTrain.TrainType != TRAINTYPE.PLAYER && powerChangeAllowed)
             {
                 // switch off power on train - set command for attachtrain as this train is removed
-                if (AttachOnForms)
+                if (AttachOnForms && PowerOffOnFormed != PowerActionType.On)
                 {
-                    AttachOnForms = false;
-                    if (PowerOffOnFormed != PowerActionType.On)
-                    {
-                        powerOn = false;
-                        powerOff = true;
-                        pantoup = PowerOffOnFormed == PowerActionType.Off_PantoUp;
-                    }
+                    powerOn = false;
+                    powerOff = true;
+                    pantoup = PowerOffOnFormed == PowerActionType.Off_PantoUp;
                 }
 
-                if (attachTrain.PickUpStaticOnForms)
+                if (attachTrain.PickUpStaticOnForms && attachTrain.PowerOffOnFormed != PowerActionType.On)
                 {
-                    attachTrain.PickUpStaticOnForms = false;
-                    if (attachTrain.PowerOffOnFormed != PowerActionType.On)
-                    {
-                        powerOn = false;
-                        powerOff = true;
-                        pantoup = attachTrain.PowerOffOnFormed == PowerActionType.Off_PantoUp;
-                    }
+                    powerOn = false;
+                    powerOff = true;
+                    pantoup = attachTrain.PowerOffOnFormed == PowerActionType.Off_PantoUp;
                 }
 
                 // if attach or pickup is to active train, switch power on immediately after couple
@@ -12230,6 +12222,18 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
+            // reset attach states
+            if (attachTrain.PickUpStaticOnForms)
+            {
+                attachTrain.PickUpStaticOnForms = false;
+            }
+
+            if (AttachOnForms)
+            {
+                AttachOnForms = false;
+            }
+
+            // set physics
             attachTrain.physicsUpdate(0);
 
             // set message for checktrain
