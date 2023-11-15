@@ -1241,24 +1241,10 @@ namespace Orts.Simulation.Timetables
                             infpath.Close();
                         }
                         catch
-                    try
-                    {
-                        var infpath = new BinaryReader(new FileStream(formedpathFilefullBinary, FileMode.Open, FileAccess.Read));
-                        outPath = new AIPath(simulator.TDB, simulator.TSectionDat, infpath);
-                        infpath.Close();
-
-                        if (outPath.Nodes != null)
                         {
-                            Paths.Add(formedpathFilefull, outPath);
-                            binaryloaded = true;
+                            binaryloaded = false;
                         }
                     }
-                    }
-                    catch
-                    {
-                        binaryloaded = false;
-                    }
-                    //}
                 }
 
                 if (!binaryloaded)
