@@ -1006,6 +1006,15 @@ namespace Orts.Simulation.Signalling
         }
 
         /// <summary>
+        /// opp_sig_id : returns ident of next opposite signal of required type
+        /// search using trainpath of enabled train
+        /// </summary>
+        public int opp_sig_id_trainpath(SignalFunction function)
+        {
+            return SONextSignalOppTrainpath(function);
+        }
+
+        /// <summary>
         /// this_sig_noSpeedReduction : Returns the setting if speed must be reduced on RESTRICTED or STOP_AND_PROCEED
         /// returns TRUE if speed reduction must be suppressed
         /// </summary>
@@ -1657,6 +1666,51 @@ namespace Orts.Simulation.Signalling
                             thisTC = thisSection.ActivePins[pinIndex, 1].Link;
                             direction = thisSection.ActivePins[pinIndex, 1].Direction;
                         }
+                    }
+                }
+            }
+
+            return signalFound;
+        }
+
+        /// <summary>
+        /// Find next signal in opp direction using path of enabled train
+        /// </summary>
+        public int SONextSignalOppTrainpath(SignalFunction function)
+        {
+            int signalFound = -1;
+
+            // if enabled train is set
+            if (enabledTrain != null)
+            {
+                var pathposindex = enabledTrain.Train.PresentPosition[1].RouteListIndex;
+
+                // get route index of signal
+                var signalindex = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex].GetRouteIndex(TCReference, pathposindex);
+
+                while (signalFound < 0 && signalindex >= 0)
+                {
+                    int tcindex = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex][signalindex].TCSectionIndex;
+                    int direction = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex][signalindex].Direction;
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[tcindex];
+
+                    // check if required type of signal is along this section
+                    if (function == SignalFunction.NORMAL)
+                    {
+                        signalFound = thisSection.EndSignals[direction == 0 ? 1 : 0] != null ? thisSection.EndSignals[direction].thisRef : -1;
+                    }
+                    else
+                    {
+                        TrackCircuitSignalList thisListrev = thisSection.CircuitItems.TrackCircuitSignals[direction == 0 ? 1 : 0][function];
+                        if (thisListrev.TrackCircuitItem.Count > 0)
+                        {
+                            signalFound = thisListrev.TrackCircuitItem[0].SignalRef.thisRef;
+                        }
+                    }
+
+                    if (signalFound < 0)
+                    {
+                        signalindex -= 1;
                     }
                 }
             }
@@ -3905,33 +3959,60 @@ namespace Orts.Simulation.Signalling
         {
             int foundSignal = -1;
 
-            // signal not enabled - no route available
-            if (enabledTrain == null)
+            Train.TrainRouted acttrain = enabledTrain;
+            int reqTC = isSignalNormal() ? TCNextTC : TCReference; // for normal signals, use section beyond signal; for not-normal, use signal section as TCNextTC is not set
+
+            // not normal signals may not have enabled train - check for train at next normal signal (use section ahead of signal in this case)
+            // note - next normal signal may not have the correct normal subtype, so proper search is still required
+            if (enabledTrain == null && !isSignalNormal())
+            {
+                int nextSignalIdent = SONextSignal(SignalFunction.NORMAL);
+
+                if (!String.IsNullOrEmpty(dumpfile))
+                {
+                    var sob = new StringBuilder();
+                    sob.AppendFormat("FIND_REQ_NORMAL_SIGNAL : using next normal signal for not enabled none-normal signal, found {0} \n", nextSignalIdent);
+                    File.AppendAllText(dumpfile, sob.ToString());
+                }
+
+                if (nextSignalIdent >= 0)
+                {
+                    SignalObject nextSignal = signalObjects[nextSignalIdent];
+                    acttrain = nextSignal.enabledTrain;
+                    reqTC = TCReference;
+                }
+            }
+
+            // no train found - no route available
+            if (acttrain == null || acttrain.Train.ValidRoute[acttrain.TrainRouteDirectionIndex] == null)
             {
                 if (!String.IsNullOrEmpty(dumpfile))
                 {
                     var sob = new StringBuilder();
-                    sob.Append("FIND_REQ_NORMAL_SIGNAL : not found : signal is not enabled");
+                    sob.Append("FIND_REQ_NORMAL_SIGNAL : not found : signal is not enabled or train has no valid route\n");
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
             }
             else
             {
-                int startIndex = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex].GetRouteIndex(TCNextTC, enabledTrain.Train.PresentPosition[0].RouteListIndex);
+                int startIndex = acttrain.Train.ValidRoute[acttrain.TrainRouteDirectionIndex].GetRouteIndex(reqTC, acttrain.Train.PresentPosition[0].RouteListIndex);
+
+                // this signal is not on trains route
                 if (startIndex < 0)
                 {
                     if (!String.IsNullOrEmpty(dumpfile))
                     {
                         var sob = new StringBuilder();
-                        sob.AppendFormat("FIND_REQ_NORMAL_SIGNAL : not found : cannot find signal {0} at section {1} in path of train {2}\n", thisRef, TCNextTC, enabledTrain.Train.Name);
+                        sob.AppendFormat("FIND_REQ_NORMAL_SIGNAL : not found : cannot find signal {0} at section {1} in path of train {2}\n", thisRef, TCNextTC, acttrain.Train.Name);
                         File.AppendAllText(dumpfile, sob.ToString());
                     }
                 }
                 else
                 {
-                    for (int iRouteIndex = startIndex; iRouteIndex < enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex].Count; iRouteIndex++)
+                    // search through train route until required signal type is found, or until end of route
+                    for (int iRouteIndex = startIndex; iRouteIndex < acttrain.Train.ValidRoute[acttrain.TrainRouteDirectionIndex].Count; iRouteIndex++)
                     {
-                        Train.TCRouteElement thisElement = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex][iRouteIndex];
+                        Train.TCRouteElement thisElement = acttrain.Train.ValidRoute[acttrain.TrainRouteDirectionIndex][iRouteIndex];
                         TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
                         if (thisSection.EndSignals[thisElement.Direction] != null)
                         {
