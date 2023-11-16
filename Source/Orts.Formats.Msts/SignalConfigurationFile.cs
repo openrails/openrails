@@ -1102,7 +1102,7 @@ namespace Orts.Formats.Msts
                         switch (stf.ReadString().ToLower())
                         {
                             case "asap": Asap = true; break;
-                            case "nospeedupdate": NoSpeedUpdate = true; break;
+                            case "or_nospeedupdate": NoSpeedUpdate = true; break;
                             case "or_speedreset": Reset = true; break;
                             case "or_nospeedreduction": NoSpeedReduction = true; break;
                             default: stf.StepBackOneItem(); STFException.TraceInformation(stf, "Skipped unknown DrawLight flag " + stf.ReadString()); break;
