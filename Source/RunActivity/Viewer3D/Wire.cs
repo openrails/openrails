@@ -45,7 +45,7 @@ namespace Orts.Viewer3D
         /// <param name="trackList">DynamicTrackViewer list.</param>
         /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static int DecomposeStaticWire(Viewer viewer, List<DynamicTrackViewer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput)
+        public static int DecomposeStaticWire(Viewer viewer, List<DynamicTrackViewer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput, int uid)
         {
             // The following vectors represent local positioning relative to root of original (5-part) section:
             Vector3 localV = Vector3.Zero; // Local position (in x-z plane)
@@ -122,7 +122,7 @@ namespace Orts.Viewer3D
                     nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
                     root.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
                     //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                    trackList.Add(new WireViewer(viewer, root, nextRoot, radius, length));
+                    trackList.Add(new WireViewer(viewer, root, nextRoot, radius, length, uid));
                     localV = localProjectedV; // Next subsection
                 }
             }
@@ -136,7 +136,7 @@ namespace Orts.Viewer3D
         /// <param name="trackList">DynamicTrackViewer list.</param>
         /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static void DecomposeConvertedDynamicWire(Viewer viewer, List<DynamicTrackViewer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput)
+        public static void DecomposeConvertedDynamicWire(Viewer viewer, List<DynamicTrackViewer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput, int uid)
         {
             // The following vectors represent local positioning relative to root of original (5-part) section:
             Vector3 localV = Vector3.Zero; // Local position (in x-z plane)
@@ -213,7 +213,7 @@ namespace Orts.Viewer3D
                 nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
                 root.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
                 nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                trackList.Add(new WireViewer(viewer, root, nextRoot, radius, length));
+                trackList.Add(new WireViewer(viewer, root, nextRoot, radius, length, uid));
                 localV = localProjectedV; // Next subsection
             }
         }
@@ -225,7 +225,7 @@ namespace Orts.Viewer3D
         /// <param name="trackList">DynamicTrackViewer list.</param>
         /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static void DecomposeDynamicWire(Viewer viewer, List<DynamicTrackViewer> trackList, DyntrackObj trackObj, WorldPosition worldMatrixInput)
+        public static void DecomposeDynamicWire(Viewer viewer, List<DynamicTrackViewer> trackList, DyntrackObj trackObj, WorldPosition worldMatrixInput, int uid)
         {
             // DYNAMIC WIRE
             // ============
@@ -303,7 +303,7 @@ namespace Orts.Viewer3D
 
 
                 // Create a new WireViewer for the subsection
-                trackList.Add(new WireViewer(viewer, root, nextRoot, radius, length));
+                trackList.Add(new WireViewer(viewer, root, nextRoot, radius, length, uid));
                 localV = localProjectedV; // Next subsection
             }
         }
@@ -311,8 +311,8 @@ namespace Orts.Viewer3D
 
     public class WireViewer : DynamicTrackViewer
     {
-        public WireViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition, float radius, float angle)
-            : base(viewer, position, endPosition)
+        public WireViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition, float radius, float angle, int uid)
+            : base(viewer, position, endPosition, uid)
         {
 
             // Instantiate classes

@@ -39,6 +39,8 @@ using Orts.Viewer3D;
 using Orts.Viewer3D.Processes;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;
+using System.Globalization;
 
 namespace ORTS.TrackViewer
 {
@@ -48,8 +50,9 @@ namespace ORTS.TrackViewer
 
         public SceneWindow SceneWindow;
         public GameWindow SwapChainWindow;
-        TrackViewer TrackViewer;
+        public readonly TrackViewer TrackViewer;
         SwapChainRenderTarget SwapChain;
+        internal StaticShape SelectedObject;
 
         /// <summary>The command-line arguments</summary>
         private string[] CommandLineArgs;
@@ -100,15 +103,12 @@ namespace ORTS.TrackViewer
             // Not "running" this Game, so manual init is needed
             Initialize();
             LoadContent();
-
-            Microsoft.Xna.Framework.Input.Mouse.WindowHandle = SwapChainWindow.Handle;
         }
 
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
         /// This is where it can query for any required services and load any non-graphic
-        /// relation ontent.  Calling base.Initialize will enumerate through any components
-        /// and initialize them as well.
+        /// relation ontent.
         /// </summary>
         public void Initialize()
         {
@@ -130,15 +130,21 @@ namespace ORTS.TrackViewer
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public void Update(GameTime gameTime)
         {
-            SetCameraLocationStatus(TrackViewer.RenderProcess?.Viewer?.Camera?.CameraWorldLocation ?? new WorldLocation());
-        }
+            if (TrackViewer.RenderProcess?.Viewer == null)
+                return;
 
-        /// <summary>
-        /// This is called when the game should draw itself.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        public void Draw(GameTime gameTime)
-        {
+            TrackViewer.RenderProcess.Viewer.EditorShapes.MouseCrosshairEnabled = true;
+
+            if (UserInput.IsMouseLeftButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
+            {
+                if (PickByMouse(out SelectedObject))
+                {
+                    TrackViewer.RenderProcess.Viewer.EditorShapes.SelectedObject = SelectedObject;
+                    FillSelectedObjectData();
+                }
+            }
+            //SetCameraLocationStatus(TrackViewer.RenderProcess?.Viewer?.Camera?.CameraWorldLocation ?? new WorldLocation());
+            FillCursorPositionStatus((TrackViewer.RenderProcess?.Viewer?.Camera as ViewerCamera)?.CursorPoint ?? new Vector3());
         }
 
         public void EndDraw()
@@ -173,6 +179,15 @@ namespace ORTS.TrackViewer
                 "{0,3:F3} ", cameraLocation.Location.Z);
         }
 
+        private void FillCursorPositionStatus(Vector3 cursorPosition)
+        {
+            //SceneWindow.tileXZ.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+            //    "{0,-7} {1,-7}", cameraLocation.TileX, cameraLocation.TileZ);
+            SceneWindow.LocationX.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", cursorPosition.X);
+            SceneWindow.LocationY.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", cursorPosition.Y);
+            SceneWindow.LocationZ.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", -cursorPosition.Z);
+        }
+
         public async Task SetCameraLocation()
         {
             var mouseLocation = TrackViewer.drawLabels.SetLocationMenuItem.CommandParameter as WorldLocation? ?? new WorldLocation();
@@ -195,6 +210,87 @@ namespace ORTS.TrackViewer
             mouseLocation.Location.Y = elevatedLocation + 15;
             TrackViewer.RenderProcess.Viewer.ViewerCamera.SetLocation(mouseLocation);
         }
+
+        protected bool PickByMouse(out StaticShape pickedObject)
+        {
+            var viewer = TrackViewer.RenderProcess.Viewer;
+
+            if (viewer == null)
+            {
+                pickedObject = null;
+                return false;
+            }
+
+            var camera = viewer.Camera;
+
+            var direction = Vector3.Normalize(viewer.FarPoint - viewer.NearPoint);
+            var pickRay = new Ray(viewer.NearPoint, direction);
+
+            pickedObject = null;
+            var pickedDistance = float.MaxValue;
+            foreach (var worldFile in viewer.World.Scenery.WorldFiles)
+            {
+                foreach (var sceneryObject in worldFile.sceneryObjects)
+                {
+                    float? distance = null;
+
+                    if (sceneryObject.BoundingBox is Orts.Viewer3D.BoundingBox boundingBox)
+                    {
+                        // Locate relative to the camera
+                        var dTileX = sceneryObject.Location.TileX - camera.TileX;
+                        var dTileZ = sceneryObject.Location.TileZ - camera.TileZ;
+                        var xnaDTileTranslation = sceneryObject.Location.XNAMatrix;
+                        xnaDTileTranslation.M41 += dTileX * 2048;
+                        xnaDTileTranslation.M43 -= dTileZ * 2048;
+
+                        var min = Vector3.Transform(boundingBox.Min, xnaDTileTranslation);
+                        var max = Vector3.Transform(boundingBox.Max, xnaDTileTranslation);
+
+                        var xnabb = new Microsoft.Xna.Framework.BoundingBox(min, max);
+                        distance = pickRay.Intersects(xnabb);
+                    }
+                    else
+                    {
+                        var radius = 10f;
+                        var boundingSphere = new BoundingSphere(camera.XnaLocation(sceneryObject.Location.WorldLocation), radius);
+                        distance = pickRay.Intersects(boundingSphere);
+                    }
+
+                    if (distance != null)
+                    {
+                        if (distance < pickedDistance)
+                        {
+                            pickedDistance = distance.Value;
+                            pickedObject = sceneryObject;
+                        }
+                    }
+                }
+            }
+            return pickedObject != null;
+        }
+
+        void FillSelectedObjectData()
+        {
+            SceneWindow.Filename.Text = SelectedObject != null ? System.IO.Path.GetFileName(SelectedObject.SharedShape.FilePath) : "";
+            SceneWindow.TileX.Text = SelectedObject?.Location.TileX.ToString(CultureInfo.InvariantCulture).Replace(",", "");
+            SceneWindow.TileZ.Text = SelectedObject?.Location.TileZ.ToString(CultureInfo.InvariantCulture).Replace(",", "");
+            SceneWindow.PosX.Text = SelectedObject?.Location.Location.X.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            SceneWindow.PosY.Text = SelectedObject?.Location.Location.Y.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            SceneWindow.PosZ.Text = SelectedObject?.Location.Location.Z.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            if (SelectedObject?.Location.XNAMatrix.Decompose(out var _, out var q, out var _) ?? false)
+            {
+                var mag = Math.Sqrt(q.W * q.W + q.Y * q.Y);
+                var w = q.W / mag;
+                var ang = 2.0 * Math.Acos(w) / Math.PI * 180;
+                SceneWindow.RotY.Text = ang.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            }
+            else
+            {
+                SceneWindow.RotY.Text = "";
+            }
+            SceneWindow.Uid.Text = SelectedObject.Uid.ToString(CultureInfo.InvariantCulture).Replace(",", "");
+        }
+
     }
 
     public class SceneViewerHwndHost : HwndHost
@@ -225,24 +321,6 @@ namespace ORTS.TrackViewer
 
         protected override void DestroyWindowCore(HandleRef hwnd)
         {
-
-        }
-    }
-
-    public class SceneViewerVisualHost : UIElement
-    {
-        System.Windows.Media.Visual Visual;
-
-        public SceneViewerVisualHost(GameWindow gameWindow)
-        {
-            Visual = HwndSource.FromHwnd(gameWindow.Handle).RootVisual;
-        }
-
-        protected override int VisualChildrenCount { get { return Visual != null ? 1 : 0; } }
-
-        protected override System.Windows.Media.Visual GetVisualChild(int index)
-        {
-            return Visual;
         }
     }
 }

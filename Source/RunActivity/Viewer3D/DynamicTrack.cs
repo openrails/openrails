@@ -43,7 +43,7 @@ namespace Orts.Viewer3D
         /// <param name="trackList">DynamicTrackViewer list.</param>
         /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrix">Position matrix.</param>
-        public static void Decompose(Viewer viewer, List<DynamicTrackViewer> trackList, DyntrackObj trackObj, WorldPosition worldMatrix)
+        public static void Decompose(Viewer viewer, List<DynamicTrackViewer> trackList, DyntrackObj trackObj, WorldPosition worldMatrix, int uid)
         {
             // DYNAMIC TRACK
             // =============
@@ -118,7 +118,7 @@ namespace Orts.Viewer3D
                 nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
 
                 // Create a new DynamicTrackViewer for the subsection
-                trackList.Add(new DynamicTrackViewer(viewer, subsection, root, nextRoot));
+                trackList.Add(new DynamicTrackViewer(viewer, subsection, root, nextRoot, uid));
                 localV = localProjectedV; // Next subsection
             }
         }
@@ -129,8 +129,9 @@ namespace Orts.Viewer3D
         Viewer Viewer;
         WorldPosition worldPosition;
         public DynamicTrackPrimitive Primitive;
+        public readonly int Uid;
 
-        public DynamicTrackViewer(Viewer viewer, DyntrackObj dtrack, WorldPosition position, WorldPosition endPosition)
+        public DynamicTrackViewer(Viewer viewer, DyntrackObj dtrack, WorldPosition position, WorldPosition endPosition, int uid)
         {
             Viewer = viewer;
             worldPosition = position;
@@ -145,12 +146,14 @@ namespace Orts.Viewer3D
 
             // Instantiate classes
             Primitive = new DynamicTrackPrimitive(Viewer, dtrack, worldPosition, endPosition);
+            Uid = uid;
         }
 
-        public DynamicTrackViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition)
+        public DynamicTrackViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition, int uid)
         {
             Viewer = viewer;
             worldPosition = position;
+            Uid = uid;
         }
 
         /// <summary>

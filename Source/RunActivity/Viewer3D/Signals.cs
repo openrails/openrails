@@ -44,8 +44,8 @@ namespace Orts.Viewer3D
         readonly bool[] SubObjVisible;
         readonly List<SignalShapeHead> Heads = new List<SignalShapeHead>();
 
-        public SignalShape(Viewer viewer, SignalObj mstsSignal, string path, WorldPosition position, ShapeFlags flags, BoundingBox? boundingBox)
-            : base(viewer, path, position, flags, boundingBox)
+        public SignalShape(Viewer viewer, SignalObj mstsSignal, string path, WorldPosition position, ShapeFlags flags, BoundingBox? boundingBox, int uid)
+            : base(viewer, path, position, flags, boundingBox, uid)
         {
 #if DEBUG_SIGNAL_SHAPES
             Console.WriteLine("{0} signal {1}:", Location.ToString(), mstsSignal.UID);
