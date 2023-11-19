@@ -118,7 +118,7 @@ namespace Orts.Viewer3D.Processes
             base.Dispose();
         }
 
-        internal override void Update(RenderFrame frame, double totalRealSeconds)
+        public override void Update(RenderFrame frame, double totalRealSeconds)
         {
             UpdateLoading();
 
@@ -1127,6 +1127,8 @@ namespace Orts.Viewer3D.Processes
                     break;
 
                 case "viewer":
+                    settings.ModelInstancing = false; // Instancing doesn't play well with object picking by mouse
+                    settings.WorldObjectDensity = int.MaxValue;
                     Simulator = new Simulator(settings, args[0], false, true);
                     Simulator.SetViewer(args[1], args[2], args[3], args[4]);
                     break;

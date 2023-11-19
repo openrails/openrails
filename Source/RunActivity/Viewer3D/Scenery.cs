@@ -303,7 +303,7 @@ namespace Orts.Viewer3D
             // create all the individual scenery objects specified in the WFile
             foreach (var worldObject in WFile.Tr_Worldfile)
             {
-                if (worldObject.StaticDetailLevel > viewer.Settings.WorldObjectDensity)
+                if (worldObject.StaticDetailLevel > viewer.Settings.WorldObjectDensity && !viewer.EditorMode)
                     continue;
 
                 // If the loader has been asked to temrinate, bail out early.
@@ -319,7 +319,10 @@ namespace Orts.Viewer3D
                 else
                 {
                     Trace.TraceWarning("{0} scenery object {1} is missing Matrix3x3 and QDirection", WFileName, worldObject.UID);
-                    continue;
+                    if (!viewer.EditorMode)
+                        continue;
+                    else
+                        worldMatrix = new WorldPosition();
                 }
 
                 var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0 || viewer.Settings.ShadowAllShapes;
@@ -373,7 +376,7 @@ namespace Orts.Viewer3D
                         if (trJunctionNode != null)
                         {
                             if (viewer.Simulator.UseSuperElevation > 0) SuperElevationManager.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ, shapeFilePath);
-                            sceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, trJunctionNode, boundingBox));
+                            sceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, trJunctionNode, boundingBox, (int)worldObject.UID));
                         }
                         else
                         {
@@ -385,7 +388,7 @@ namespace Orts.Viewer3D
                                 //if (success == 0) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
                             }
                             //otherwise, use shapes
-                            else if (!containsMovingTable) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix, boundingBox));
+                            else if (!containsMovingTable) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix, boundingBox, (int)worldObject.UID));
                             else
                             {
                                 var found = false;
@@ -399,65 +402,66 @@ namespace Orts.Viewer3D
                                             var turntable = movingTable as Simulation.Turntable;
                                             turntable.ComputeCenter(worldMatrix);
                                             var startingY = Math.Asin(-2 * (worldObject.QDirection.A * worldObject.QDirection.C - worldObject.QDirection.B * worldObject.QDirection.D));
-                                            sceneryObjects.Add(new TurntableShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, turntable, startingY, boundingBox));
+                                            sceneryObjects.Add(new TurntableShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, turntable, startingY, boundingBox, (int)worldObject.UID));
                                         }
                                         else
                                         {
                                             var transfertable = movingTable as Simulation.Transfertable;
                                             transfertable.ComputeCenter(worldMatrix);
-                                            sceneryObjects.Add(new TransfertableShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, transfertable, boundingBox));
+                                            sceneryObjects.Add(new TransfertableShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, transfertable, boundingBox, (int)worldObject.UID));
                                         }
                                         break;
                                     }
                                 }
-                                if (!found) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix, boundingBox));
+                                if (!found) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix, boundingBox, (int)worldObject.UID));
                             }
                         }
                         if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true
                             && worldObject.StaticDetailLevel != 2   // Make it compatible with routes that use 'HideWire', a workaround for MSTS that 
                             && worldObject.StaticDetailLevel != 3   // allowed a mix of electrified and non electrified track see http://msts.steam4me.net/tutorials/hidewire.html
+                            || viewer.EditorMode
                             )
                         {
-                            int success = Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, worldMatrix);
+                            int success = Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, worldMatrix, (int)worldObject.UID);
                             //if cannot draw wire, try to see if it is converted. modified for DynaTrax
-                            if (success == 0 && trackObj.FileName.Contains("Dyna")) Wire.DecomposeConvertedDynamicWire(viewer, dTrackList, trackObj, worldMatrix);
+                            if (success == 0 && trackObj.FileName.Contains("Dyna")) Wire.DecomposeConvertedDynamicWire(viewer, dTrackList, trackObj, worldMatrix, (int)worldObject.UID);
                         }
                     }
                     else if (worldObject.GetType() == typeof(DyntrackObj))
                     {
                         if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
-                            Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+                            Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix, (int)worldObject.UID);
                         // Add DyntrackDrawers for individual subsections
                         if (viewer.Simulator.UseSuperElevation > 0 && SuperElevationManager.UseSuperElevationDyn(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix))
-                            SuperElevationManager.DecomposeDynamicSuperElevation(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
-                        else DynamicTrack.Decompose(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+                            SuperElevationManager.DecomposeDynamicSuperElevation(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix, (int)worldObject.UID);
+                        else DynamicTrack.Decompose(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix, (int)worldObject.UID);
 
                     } // end else if DyntrackObj
                     else if (worldObject.GetType() == typeof(ForestObj))
                     {
                         if (!(worldObject as ForestObj).IsYard)
-                            forestList.Add(new ForestViewer(viewer, (ForestObj)worldObject, worldMatrix));
+                            forestList.Add(new ForestViewer(viewer, (ForestObj)worldObject, worldMatrix, (int)worldObject.UID));
                     }
                     else if (worldObject.GetType() == typeof(SignalObj))
                     {
-                        sceneryObjects.Add(new SignalShape(viewer, (SignalObj)worldObject, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, boundingBox));
+                        sceneryObjects.Add(new SignalShape(viewer, (SignalObj)worldObject, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, boundingBox, (int)worldObject.UID));
                     }
                     else if (worldObject.GetType() == typeof(TransferObj))
                     {
-                        sceneryObjects.Add(new TransferShape(viewer, (TransferObj)worldObject, worldMatrix, boundingBox));
+                        sceneryObjects.Add(new TransferShape(viewer, (TransferObj)worldObject, worldMatrix, boundingBox, (int)worldObject.UID));
                     }
                     else if (worldObject.GetType() == typeof(LevelCrossingObj))
                     {
-                        sceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (LevelCrossingObj)worldObject, boundingBox));
+                        sceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (LevelCrossingObj)worldObject, boundingBox, (int)worldObject.UID));
                     }
                     else if (worldObject.GetType() == typeof(HazardObj))
                     {
-                        var h = HazzardShape.CreateHazzard(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (HazardObj)worldObject, boundingBox);
+                        var h = HazzardShape.CreateHazzard(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (HazardObj)worldObject, boundingBox, (int)worldObject.UID);
                         if (h != null) sceneryObjects.Add(h);
                     }
                     else if (worldObject.GetType() == typeof(SpeedPostObj))
                     {
-                        sceneryObjects.Add(new SpeedPostShape(viewer, shapeFilePath, worldMatrix, (SpeedPostObj)worldObject));
+                        sceneryObjects.Add(new SpeedPostShape(viewer, shapeFilePath, worldMatrix, (SpeedPostObj)worldObject, boundingBox, (int)worldObject.UID));
                     }
                     else if (worldObject.GetType() == typeof(CarSpawnerObj))
                     {
@@ -469,15 +473,15 @@ namespace Orts.Viewer3D
                         }
                         else
                             ((CarSpawnerObj)worldObject).CarSpawnerListIdx = 0;
-                        carSpawners.Add(new RoadCarSpawner(viewer, worldMatrix, (CarSpawnerObj)worldObject));
+                        carSpawners.Add(new RoadCarSpawner(viewer, worldMatrix, (CarSpawnerObj)worldObject, (int)worldObject.UID));
                     }
                     else if (worldObject.GetType() == typeof(SidingObj))
                     {
-                        sidings.Add(new TrItemLabel(viewer, worldMatrix, (SidingObj)worldObject));
+                        sidings.Add(new TrItemLabel(viewer, worldMatrix, (SidingObj)worldObject, (int)worldObject.UID));
                     }
                     else if (worldObject.GetType() == typeof(PlatformObj))
                     {
-                        platforms.Add(new TrItemLabel(viewer, worldMatrix, (PlatformObj)worldObject));
+                        platforms.Add(new TrItemLabel(viewer, worldMatrix, (PlatformObj)worldObject, (int)worldObject.UID));
                     }
                     else if (worldObject.GetType() == typeof(StaticObj))
                     {
@@ -491,30 +495,30 @@ namespace Orts.Viewer3D
                         var isAnimatedClock = animNodes.Exists(node => Regex.IsMatch(node.Name, @"^orts_[hmsc]hand_clock", RegexOptions.IgnoreCase));
                         if (isAnimatedClock)
                         {
-                            sceneryObjects.Add(new AnalogClockShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, boundingBox));
+                            sceneryObjects.Add(new AnalogClockShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, boundingBox, (int)worldObject.UID));
                         }
                         else if (animated)
                         {
-                            sceneryObjects.Add(new AnimatedShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, boundingBox));
+                            sceneryObjects.Add(new AnimatedShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, boundingBox, (int)worldObject.UID));
                         }
                         else
                         {
-                            sceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, boundingBox));
+                            sceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, boundingBox, (int)worldObject.UID));
                         }
                     }
                     else if (worldObject.GetType() == typeof(PickupObj))
                     {
                         if ((worldObject as PickupObj).PickupType == (uint)(MSTSWagon.PickupType.Container))
                         {
-                            sceneryObjects.Add(new ContainerHandlingItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject, boundingBox));
+                            sceneryObjects.Add(new ContainerHandlingItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject, boundingBox, (int)worldObject.UID));
                         }
                         else
-                        sceneryObjects.Add(new FuelPickupItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject, boundingBox));
+                        sceneryObjects.Add(new FuelPickupItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject, boundingBox, (int)worldObject.UID));
                         PickupList.Add((PickupObj)worldObject);
                     }
                     else // It's some other type of object - not one of the above.
                     {
-                        sceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, boundingBox));
+                        sceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, boundingBox, (int)worldObject.UID));
                     }
                 }
                 catch (Exception error)

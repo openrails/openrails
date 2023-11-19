@@ -112,6 +112,51 @@
                 <TextBlock Name="statusAdditional" ToolTip="Any other relevant information. Make your choice via Statusbar menu"/>
             </StatusBarItem>
         </StatusBar>
+        <Border BorderThickness="2">
+            <StackPanel Orientation="Vertical" Width="150">
+                <TextBox Text="abcdefgh12345.s" FontWeight="Bold" Name="Filename"/>
+                <DockPanel>
+                    <TextBlock Text="UID: " PreviewTextInput="UintValidationTextBox"/>
+                    <TextBlock Name="Uid"/>
+                </DockPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Tile X: " />
+                    <TextBox Grid.Column="1" Name="TileX" PreviewTextInput="IntValidationTextBox"></TextBox>
+                    <TextBlock Grid.Column="2" Text=" Z: " />
+                    <TextBox Grid.Column="3" Name="TileZ" PreviewTextInput="IntValidationTextBox"></TextBox>
+                </Grid>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="Position" HorizontalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Rotation" HorizontalAlignment="Center"/>
+                    <TextBlock Grid.Row="1" Text="X: "/>
+                    <TextBlock Grid.Row="2" Text="Y: "/>
+                    <TextBlock Grid.Row="3" Text="Z: "/>
+                    <TextBox Grid.Row="1" Grid.Column="1" x:Name="PosX" PreviewTextInput="FloatValidationTextBox"/>
+                    <TextBox Grid.Row="2" Grid.Column="1" x:Name="PosY" PreviewTextInput="FloatValidationTextBox"/>
+                    <TextBox Grid.Row="3" Grid.Column="1" x:Name="PosZ" PreviewTextInput="FloatValidationTextBox"/>
+                    <TextBox Grid.Row="1" Grid.Column="2" x:Name="RotX" PreviewTextInput="FloatValidationTextBox"/>
+                    <TextBox Grid.Row="2" Grid.Column="2" x:Name="RotY" PreviewTextInput="FloatValidationTextBox"/>
+                    <TextBox Grid.Row="3" Grid.Column="2" x:Name="RotZ" PreviewTextInput="FloatValidationTextBox"/>
+                </Grid>
+            </StackPanel>
+        </Border>
         <Grid DockPanel.Dock="Bottom" x:Name="GraphicsHostElement" />
     </DockPanel>
 </Window>

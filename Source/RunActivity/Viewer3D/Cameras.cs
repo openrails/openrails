@@ -779,6 +779,9 @@ namespace Orts.Viewer3D
 
     public class ViewerCamera : FreeRoamCamera
     {
+        Vector3 CursorPoint;
+        bool CursorPointDirtyFlag = true;
+
         public ViewerCamera(Viewer viewer)
             : base(viewer)
         {
@@ -786,13 +789,15 @@ namespace Orts.Viewer3D
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            ZoomByMouseWheel(GetSpeed(elapsedTime));
+            CursorPointDirtyFlag |= UserInput.MouseMoveX != 0 || UserInput.MouseMoveY != 0;
+            
+            var pan = UserInput.IsMouseMiddleButtonDown && UserInput.ModifiersMaskShiftCtrlAlt(true, false, false);
+            //var pick = UserInput.IsMouseLeftButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false);
+            var rotate = UserInput.IsMouseMiddleButtonDown && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false);
 
-            if (UserInput.IsMouseMiddleButtonDown && !UserInput.IsKeyboardControlDown && !UserInput.IsKeyboardAltDown && UserInput.IsKeyboardShiftDown)
-                PanByMouse();
-
-            if (UserInput.IsMouseMiddleButtonDown && !UserInput.IsKeyboardControlDown && !UserInput.IsKeyboardAltDown && !UserInput.IsKeyboardShiftDown)
-                RotateByMouse();
+            if (pan) PanByMouse();
+            else if (rotate) RotateByMouse();
+            else ZoomByMouseWheel(GetSpeed(elapsedTime));
         }
 
         protected override void ZoomByMouseWheel(float speed)
@@ -810,13 +815,9 @@ namespace Orts.Viewer3D
 
         protected void PanByMouse()
         {
-            var sourceCurrent = new Vector3(UserInput.MouseX, UserInput.MouseY, 1);
-            var sourcePrevious = new Vector3(UserInput.MouseX - UserInput.MouseMoveX, UserInput.MouseY - UserInput.MouseMoveY, 1);
-
-            var pointCurrent = Viewer.DefaultViewport.Unproject(sourceCurrent, XnaProjection, XnaView, Matrix.Identity);
-            var pointPrevious = Viewer.DefaultViewport.Unproject(sourcePrevious, XnaProjection, XnaView, Matrix.Identity);
-
-            var movement = pointCurrent - pointPrevious;
+            var previousFarSource = new Vector3(UserInput.MouseX - UserInput.MouseMoveX, UserInput.MouseY - UserInput.MouseMoveY, 1);
+            var previousFarPoint = Viewer.DefaultViewport.Unproject(previousFarSource, XnaProjection, XnaView, Matrix.Identity);
+            var movement = Viewer.FarPoint - previousFarPoint;
             if (movement.X >= 2048) movement.X -= 2048;
             if (movement.X <= -2048) movement.X += 2048;
             if (movement.Y >= 2048) movement.Y -= 2048;
@@ -830,50 +831,47 @@ namespace Orts.Viewer3D
             SetLocation(location);
         }
 
-        protected StaticShape PickByMouse()
+        public Vector3 GetCursorTerrainIntersection()
         {
-            var nearSource = new Vector3((float)UserInput.MouseX, (float)UserInput.MouseY, 0f);
-            var farSource = new Vector3((float)UserInput.MouseX, (float)UserInput.MouseY, 1f);
-            var nearPoint = Viewer.DefaultViewport.Unproject(nearSource, XnaProjection, XnaView, Matrix.Identity);
-            var farPoint = Viewer.DefaultViewport.Unproject(farSource, XnaProjection, XnaView, Matrix.Identity);
-            var direction = farPoint - nearPoint;
-            direction.Normalize();
-            var pickRay = new Ray(nearPoint, direction);
-            
-            StaticShape pickedObject = null;
-            var pickedDistance = float.MaxValue;
-            foreach (var worldFile in Viewer.World.Scenery.WorldFiles)
+            if (!CursorPointDirtyFlag)
+                return CursorPoint;
+
+            var threshold = 0.1f;
+            float interpolation;
+            var nearPoint = Viewer.NearPoint;
+            var farPoint = Viewer.FarPoint;
+            var midPoint = farPoint;
+            for (var i = 0; i < 8; i++)
             {
-                foreach (var wbb in worldFile.sceneryObjects)
+                var terrainLevel = Viewer.Tiles.GetElevation(TileX, TileZ, midPoint.X, midPoint.Z);
+                var delta = Math.Abs(midPoint.Y - terrainLevel);
+                if (delta < threshold)
                 {
-                    float? distance = null;
-                    var location = XnaLocation(wbb.Location.WorldLocation);
-                    var ccc = cameraLocation;
-                    if (wbb.BoundingBox is BoundingBox boundingBox)
-                    {
-                        var min = location + boundingBox.Min;
-                        var max = location + boundingBox.Max;
-                        var xnabb = new Microsoft.Xna.Framework.BoundingBox(min, max);
-                        distance = pickRay.Intersects(xnabb);
-                    }
-                    else
-                    {
-                        var radius = 10f;
-                        var boundingSphere = new BoundingSphere(location, radius);
-                        distance = pickRay.Intersects(boundingSphere);
-                    }
-                    if (distance != null)
-                    {
-                        if (distance < pickedDistance)
-                        {
-                            pickedDistance = distance.Value;
-                            pickedObject = wbb;
-                        }
-                    }
+                    midPoint.Y = terrainLevel;
+                    break;
                 }
+                if ((midPoint.Y > terrainLevel) ^ (nearPoint.Y < farPoint.Y))
+                {
+                    nearPoint = midPoint;
+                    interpolation = farPoint.Y == midPoint.Y ? 1 : MathHelper.Clamp(delta / Math.Abs(farPoint.Y - midPoint.Y), 0, 1);
+                    midPoint += (farPoint - midPoint) * interpolation;
+                }
+                else
+                {
+                    farPoint = midPoint;
+                    interpolation = nearPoint.Y == midPoint.Y ? 1 : MathHelper.Clamp(delta / Math.Abs(nearPoint.Y - midPoint.Y), 0, 1);
+
+
+                    midPoint += (nearPoint - midPoint) * interpolation;
+                }
+                if (interpolation == 1) break; // bail off, no intersection
             }
-            return pickedObject;
+            CursorPoint = midPoint;
+            CursorPointDirtyFlag = false;
+            return CursorPoint;
         }
+
+
     }
 
     public abstract class AttachedCamera : RotatingCamera

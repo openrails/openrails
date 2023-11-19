@@ -178,6 +178,7 @@ namespace Orts.Viewer3D
 
         public static Keys[] GetPressedKeys() { return KeyboardState.GetPressedKeys(); }
         public static Keys[] GetPreviousPressedKeys() { return LastKeyboardState.GetPressedKeys(); }
+        public static bool ModifiersMaskShiftCtrlAlt(bool shift, bool ctrl, bool alt) { return shift == IsKeyboardShiftDown && ctrl == IsKeyboardControlDown && alt == IsKeyboardAltDown; }
 
         public static bool IsMouseMoved { get { return MouseState.X != LastMouseState.X || MouseState.Y != LastMouseState.Y; } }
         public static int MouseMoveX { get { return MouseState.X - LastMouseState.X; } }

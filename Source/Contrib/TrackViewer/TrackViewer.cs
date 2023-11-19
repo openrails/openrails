@@ -557,7 +557,6 @@ namespace ORTS.TrackViewer
         protected override void Draw(GameTime gameTime)
         {
             graphics.GraphicsDevice.SetRenderTarget(null);
-            SceneViewer?.Draw(gameTime);
 
             // Even if there is nothing new to draw for main window, we might still need to draw for the shadow textures.
             if (DrawTrackDB != null && Properties.Settings.Default.showInset)
@@ -1252,5 +1251,18 @@ namespace ORTS.TrackViewer
     class GameStateStandBy : GameState
     {
         public GameStateStandBy() { }
+    }
+
+    class GameStateSceneViewer3D : GameStateViewer3D
+    {
+        public GameStateSceneViewer3D(Viewer viewer)
+            : base(viewer) { }
+
+        public override void Update(RenderFrame frame, double totalRealSeconds)
+        {
+            base.Update(frame, totalRealSeconds);
+
+            
+        }
     }
 }
