@@ -103,8 +103,6 @@ namespace ORTS.TrackViewer
             // Not "running" this Game, so manual init is needed
             Initialize();
             LoadContent();
-
-            Microsoft.Xna.Framework.Input.Mouse.WindowHandle = SwapChainWindow.Handle;
         }
 
         /// <summary>
@@ -132,6 +130,11 @@ namespace ORTS.TrackViewer
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public void Update(GameTime gameTime)
         {
+            if (TrackViewer.RenderProcess?.Viewer == null)
+                return;
+
+            TrackViewer.RenderProcess.Viewer.EditorShapes.MouseCrosshairEnabled = true;
+
             if (UserInput.IsMouseLeftButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
             {
                 if (PickByMouse(out SelectedObject))
@@ -140,7 +143,8 @@ namespace ORTS.TrackViewer
                     FillSelectedObjectData();
                 }
             }
-            SetCameraLocationStatus(TrackViewer.RenderProcess?.Viewer?.Camera?.CameraWorldLocation ?? new WorldLocation());
+            //SetCameraLocationStatus(TrackViewer.RenderProcess?.Viewer?.Camera?.CameraWorldLocation ?? new WorldLocation());
+            FillCursorPositionStatus((TrackViewer.RenderProcess?.Viewer?.Camera as ViewerCamera)?.CursorPoint ?? new Vector3());
         }
 
         public void EndDraw()
@@ -173,6 +177,15 @@ namespace ORTS.TrackViewer
                 "{0,3:F3} ", cameraLocation.Location.Y);
             SceneWindow.LocationZ.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
                 "{0,3:F3} ", cameraLocation.Location.Z);
+        }
+
+        private void FillCursorPositionStatus(Vector3 cursorPosition)
+        {
+            //SceneWindow.tileXZ.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+            //    "{0,-7} {1,-7}", cameraLocation.TileX, cameraLocation.TileZ);
+            SceneWindow.LocationX.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", cursorPosition.X);
+            SceneWindow.LocationY.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", cursorPosition.Y);
+            SceneWindow.LocationZ.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", -cursorPosition.Z);
         }
 
         public async Task SetCameraLocation()

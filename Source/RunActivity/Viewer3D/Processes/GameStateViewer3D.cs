@@ -64,6 +64,12 @@ namespace Orts.Viewer3D.Processes
 
                 FirstFrame = false;
             }
+            if (FirstFrame && Viewer.EditorMode)
+            {
+                Game.IsFixedTimeStep = false;
+                Game.InactiveSleepTime = TimeSpan.Zero;
+                FirstFrame = false;
+            }
             Viewer.BeginRender(frame);
         }
 
