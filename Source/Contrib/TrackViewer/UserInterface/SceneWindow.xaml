@@ -114,7 +114,7 @@
         </StatusBar>
         <Border BorderThickness="2">
             <StackPanel Orientation="Vertical" Width="150">
-                <TextBox Text="abcdefgh12345.s" FontWeight="Bold" Name="Filename"/>
+                <TextBox FontWeight="Bold" Name="Filename"/>
                 <DockPanel>
                     <TextBlock Text="UID: " PreviewTextInput="UintValidationTextBox"/>
                     <TextBlock Name="Uid"/>

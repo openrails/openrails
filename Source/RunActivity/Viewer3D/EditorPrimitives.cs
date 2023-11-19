@@ -54,15 +54,19 @@ namespace Orts.Viewer3D
             {
                 var dTileX = _selectedObject.Location.TileX - Viewer.Camera.TileX;
                 var dTileZ = _selectedObject.Location.TileZ - Viewer.Camera.TileZ;
-                var mstsLocation = _selectedObject.Location.Location + new Vector3(dTileX * 2048, 0, dTileZ * 2048);
-                var xnaMatrix = Matrix.CreateTranslation(mstsLocation.X, mstsLocation.Y, -mstsLocation.Z);
-                frame.AddPrimitive(SelectedObjectBoundingBoxPrimitive.Material, SelectedObjectBoundingBoxPrimitive, RenderPrimitiveGroup.Labels, ref xnaMatrix);
+                var xnaDTileTranslation = _selectedObject.Location.XNAMatrix;
+                xnaDTileTranslation.M41 += dTileX * 2048;
+                xnaDTileTranslation.M43 -= dTileZ * 2048;
+                frame.AddPrimitive(SelectedObjectBoundingBoxPrimitive.Material, SelectedObjectBoundingBoxPrimitive, RenderPrimitiveGroup.Labels, ref xnaDTileTranslation);
             }
             if (MouseCrosshairEnabled)
             {
                 var mouseCrosshairPosition = (Viewer.Camera as ViewerCamera)?.GetCursorTerrainIntersection() ?? Viewer.NearPoint;
-                var mouseCrosshairMatrix = Matrix.CreateTranslation(mouseCrosshairPosition);
-                frame.AddPrimitive(MouseCrosshair.Material, MouseCrosshair, RenderPrimitiveGroup.World, ref mouseCrosshairMatrix);
+                if (mouseCrosshairPosition != Viewer.NearPoint)
+                {
+                    var mouseCrosshairMatrix = Matrix.CreateTranslation(mouseCrosshairPosition);
+                    frame.AddPrimitive(MouseCrosshair.Material, MouseCrosshair, RenderPrimitiveGroup.World, ref mouseCrosshairMatrix);
+                }
             }
         }
 

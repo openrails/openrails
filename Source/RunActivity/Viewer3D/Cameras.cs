@@ -779,7 +779,7 @@ namespace Orts.Viewer3D
 
     public class ViewerCamera : FreeRoamCamera
     {
-        Vector3 CursorPoint;
+        public Vector3 CursorPoint { get; private set; }
         bool CursorPointDirtyFlag = true;
 
         public ViewerCamera(Viewer viewer)
@@ -795,6 +795,9 @@ namespace Orts.Viewer3D
             //var pick = UserInput.IsMouseLeftButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false);
             var rotate = UserInput.IsMouseMiddleButtonDown && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false);
 
+            if (UserInput.IsMouseMiddleButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
+                RotationOrigin = GetCursorTerrainIntersection();
+
             if (pan) PanByMouse();
             else if (rotate) RotateByMouse();
             else ZoomByMouseWheel(GetSpeed(elapsedTime));
@@ -805,8 +808,19 @@ namespace Orts.Viewer3D
             ZoomIn(speed * UserInput.MouseWheelChange * ZoomFactor);
         }
 
+        Vector3 RotationOrigin;
         protected override void RotateByMouse()
         {
+            //var cl = cameraLocation.Location;
+            //cl.Z *= -1;
+            //var l = cl;
+            //l = Vector3.Transform(l, Matrix.CreateTranslation(RotationOrigin - cl));
+            //l = Vector3.Transform(l, Matrix.CreateRotationX(GetMouseDelta(UserInput.MouseMoveY)));
+            //l = Vector3.Transform(l, Matrix.CreateRotationY(GetMouseDelta(UserInput.MouseMoveX)));
+            //l = Vector3.Transform(l, Matrix.CreateTranslation(cl - RotationOrigin));
+            //l.Z *= -1;
+            //cameraLocation.Location = l;
+
             // Mouse movement doesn't use 'var speed' because the MouseMove 
             // parameters are already scaled down with increasing frame rates, 
             RotationXRadians += GetMouseDelta(UserInput.MouseMoveY);
@@ -837,13 +851,12 @@ namespace Orts.Viewer3D
                 return CursorPoint;
 
             var threshold = 0.1f;
-            float interpolation;
             var nearPoint = Viewer.NearPoint;
             var farPoint = Viewer.FarPoint;
             var midPoint = farPoint;
-            for (var i = 0; i < 8; i++)
+            for (var i = 0; i < 16; i++)
             {
-                var terrainLevel = Viewer.Tiles.GetElevation(TileX, TileZ, midPoint.X, midPoint.Z);
+                var terrainLevel = Viewer.Tiles.GetElevation(TileX, TileZ, midPoint.X, -midPoint.Z);
                 var delta = Math.Abs(midPoint.Y - terrainLevel);
                 if (delta < threshold)
                 {
@@ -853,18 +866,13 @@ namespace Orts.Viewer3D
                 if ((midPoint.Y > terrainLevel) ^ (nearPoint.Y < farPoint.Y))
                 {
                     nearPoint = midPoint;
-                    interpolation = farPoint.Y == midPoint.Y ? 1 : MathHelper.Clamp(delta / Math.Abs(farPoint.Y - midPoint.Y), 0, 1);
-                    midPoint += (farPoint - midPoint) * interpolation;
+                    midPoint += (farPoint - midPoint) * 0.5f;
                 }
                 else
                 {
                     farPoint = midPoint;
-                    interpolation = nearPoint.Y == midPoint.Y ? 1 : MathHelper.Clamp(delta / Math.Abs(nearPoint.Y - midPoint.Y), 0, 1);
-
-
-                    midPoint += (nearPoint - midPoint) * interpolation;
+                    midPoint += (nearPoint - midPoint) * 0.5f;
                 }
-                if (interpolation == 1) break; // bail off, no intersection
             }
             CursorPoint = midPoint;
             CursorPointDirtyFlag = false;
