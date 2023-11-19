@@ -46,7 +46,7 @@ namespace Orts.Viewer3D.Processes
                 if ((Game.Settings.ProfilingFrameCount > 0 && ++ProfileFrames > Game.Settings.ProfilingFrameCount) || (Game.Settings.ProfilingTime > 0 && Viewer != null && Viewer.RealTime >= Game.Settings.ProfilingTime))
                     Game.PopState();
 
-            if (FirstFrame)
+            if (FirstFrame && !Viewer.EditorMode)
             {
                 // Turn off the 10FPS fixed-time-step and return to running as fast as we can.
                 Game.IsFixedTimeStep = false;
@@ -77,7 +77,7 @@ namespace Orts.Viewer3D.Processes
         double[] AverageElapsedRealTime = new double[10];
         int AverageElapsedRealTimeIndex;
 
-        internal override void Update(RenderFrame frame, double totalRealSeconds)
+        public override void Update(RenderFrame frame, double totalRealSeconds)
         {
             // Every 250ms, check for new things to load and kick off the loader.
             if (LastLoadRealTime + 0.25 < totalRealSeconds && Game.LoaderProcess.Finished)

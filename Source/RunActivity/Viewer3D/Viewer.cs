@@ -104,6 +104,7 @@ namespace Orts.Viewer3D
         public TTDetachWindow TTDetachWindow { get; private set; } // for detaching player train in timetable mode
         public EOTListWindow EOTListWindow { get; private set; } // to select EOT
         private OutOfFocusWindow OutOfFocusWindow; // to show colored rectangle around the main window when not in focus
+        public EditorShapes EditorShapes { get; set; }
 
         // Route Information
         public TileManager Tiles { get; private set; }
@@ -265,6 +266,8 @@ namespace Orts.Viewer3D
         public static double DbfEvalIniAutoPilotTimeS = 0;//Debrief eval  
         public static bool DbfEvalAutoPilot = false;//DebriefEval
 
+        public bool EditorMode; // Ignore all optimization and speed-up attempts if set
+
         /// <summary>
         /// Finds time of last entry to set ReplayEndsAt and provide the Replay started message.
         /// </summary>
@@ -301,6 +304,7 @@ namespace Orts.Viewer3D
             Game = game;
             Settings = simulator.Settings;
             Use3DCabProperty = Settings.GetSavingProperty<bool>("Use3DCab");
+            EditorMode = Simulator.ViewerMode;
 
             RenderProcess = game.RenderProcess;
             UpdaterProcess = game.UpdaterProcess;
@@ -484,7 +488,11 @@ namespace Orts.Viewer3D
             ShapeManager = new SharedShapeManager(this);
             SignalTypeDataManager = new SignalTypeDataManager(this);
 
-            if (PlayerLocomotive != null) // starting the scene viewer only
+            if (EditorMode)
+            {
+                EditorShapes = new EditorShapes(this);
+            }
+            else
             {
                 WindowManager = new WindowManager(this);
                 MessagesWindow = new MessagesWindow(WindowManager);
@@ -867,6 +875,7 @@ namespace Orts.Viewer3D
             Camera.PrepareFrame(frame, elapsedTime);
             frame.PrepareFrame(elapsedTime);
             World.PrepareFrame(frame, elapsedTime);
+            EditorShapes?.PrepareFrame(frame, elapsedTime);
             InfoDisplay?.PrepareFrame(frame, elapsedTime);
             // TODO: This is not correct. The ActivityWindow's PrepareFrame is already called by the WindowManager!
             if (Simulator.ActivityRun != null) ActivityWindow.PrepareFrame(elapsedTime, true);
@@ -903,7 +912,7 @@ namespace Orts.Viewer3D
         [CallOnThread("Updater")]
         void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsMouseLeftButtonDown || (Camera is ThreeDimCabCamera && RenderProcess.IsMouseVisible))
+            if (UserInput.IsMouseLeftButtonDown || (Camera is ThreeDimCabCamera || Camera is ViewerCamera) && RenderProcess.IsMouseVisible)
             {
                 Vector3 nearsource = new Vector3((float)UserInput.MouseX, (float)UserInput.MouseY, 0f);
                 Vector3 farsource = new Vector3((float)UserInput.MouseX, (float)UserInput.MouseY, 1f);
@@ -916,6 +925,10 @@ namespace Orts.Viewer3D
                 Camera.Reset();
 
             Camera?.HandleUserInput(elapsedTime);
+
+            if (EditorMode)
+                return;
+
             PlayerLocomotiveViewer?.HandleUserInput(elapsedTime);
             InfoDisplay?.HandleUserInput(elapsedTime);
             WindowManager?.HandleUserInput(elapsedTime);

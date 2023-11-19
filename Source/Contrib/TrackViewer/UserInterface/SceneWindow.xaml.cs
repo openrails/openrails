@@ -36,5 +36,20 @@ namespace ORTS.TrackViewer.UserInterface
             e.Cancel = true;
             Hide();
         }
+
+        private void IntValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = int.TryParse(e.Text, out var _);
+        }
+
+        private void UintValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = uint.TryParse(e.Text, out var _);
+        }
+
+        private void FloatValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = float.TryParse(e.Text, out var _);
+        }
     }
 }
