@@ -277,7 +277,8 @@ namespace ORTS.TrackViewer
             SceneWindow.PosX.Text = SelectedObject?.Location.Location.X.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
             SceneWindow.PosY.Text = SelectedObject?.Location.Location.Y.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
             SceneWindow.PosZ.Text = SelectedObject?.Location.Location.Z.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
-            if (SelectedObject?.Location.XNAMatrix.Decompose(out var _, out var q, out var _) ?? false)
+            var q = new Quaternion();
+            if (SelectedObject?.Location.XNAMatrix.Decompose(out var _, out q, out var _) ?? false)
             {
                 var mag = Math.Sqrt(q.W * q.W + q.Y * q.Y);
                 var w = q.W / mag;
