@@ -54,12 +54,12 @@ namespace Orts.Viewer3D
         float LastSpawnedTime;
         float NextSpawnTime;
 
-        public RoadCarSpawner(Viewer viewer, WorldPosition position, CarSpawnerObj carSpawnerObj, int uid)
+        public RoadCarSpawner(Viewer viewer, WorldPosition position, CarSpawnerObj carSpawnerObj)
         {
             Debug.Assert(TrackMergeDistance >= 2 * (RampLength + TrackHalfWidth), "TrackMergeDistance is less than 2 * (RampLength + TrackHalfWidth); vertical inconsistencies will occur at close, but not merged, tracks.");
             Viewer = viewer;
             CarSpawnerObj = carSpawnerObj;
-            Uid = uid;
+            Uid = (int)carSpawnerObj.UID;
 
             if (viewer.Simulator.RDB == null || viewer.Simulator.CarSpawnerFile == null)
                 throw new InvalidOperationException("RoadCarSpawner requires a RDB and CARSPAWN.DAT");

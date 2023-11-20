@@ -139,7 +139,7 @@ namespace Orts.Viewer3D
         public readonly WorldPosition Location;
         public readonly ShapeFlags Flags;
         public readonly SharedShape SharedShape;
-        public readonly BoundingBox? BoundingBox;
+        public readonly BoundingBox[] BoundingBox;
         public readonly int Uid;
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace Orts.Viewer3D
         public StaticShape(Viewer viewer, string path, WorldPosition position, ShapeFlags flags)
             : this(viewer, path, position, flags, null, -1) { }
 
-        public StaticShape(Viewer viewer, string path, WorldPosition position, ShapeFlags flags, BoundingBox? boundingBox, int uid)
+        public StaticShape(Viewer viewer, string path, WorldPosition position, ShapeFlags flags, BoundingBox[] boundingBox, int uid)
         {
             Viewer = viewer;
             Location = position;
@@ -263,7 +263,7 @@ namespace Orts.Viewer3D
 
     public class StaticTrackShape : StaticShape
     {
-        public StaticTrackShape(Viewer viewer, string path, WorldPosition position, BoundingBox? boundingBox, int uid)
+        public StaticTrackShape(Viewer viewer, string path, WorldPosition position, BoundingBox[] boundingBox, int uid)
             : base(viewer, path, position, ShapeFlags.AutoZBias, boundingBox, uid)
         {
         }
@@ -284,7 +284,7 @@ namespace Orts.Viewer3D
         public PoseableShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
             : this(viewer, path, initialPosition, flags, null, -1) { }
 
-        public PoseableShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, BoundingBox? boundingBox, int uid)
+        public PoseableShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, BoundingBox[] boundingBox, int uid)
             : base(viewer, path, initialPosition, flags, boundingBox, uid)
         {
             XNAMatrices = new Matrix[SharedShape.Matrices.Length];
@@ -423,7 +423,7 @@ namespace Orts.Viewer3D
         public AnimatedShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, float frameRateDivisor = 1.0f)
             : this(viewer, path, initialPosition, flags, null, -1, frameRateDivisor) { }
 
-        public AnimatedShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, BoundingBox? boundingBox, int uid, float frameRateDivisor = 1.0f)
+        public AnimatedShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, BoundingBox[] boundingBox, int uid, float frameRateDivisor = 1.0f)
             : base(viewer, path, initialPosition, flags, boundingBox, uid)
         {
             FrameRateMultiplier = 1 / frameRateDivisor;
@@ -449,7 +449,7 @@ namespace Orts.Viewer3D
         //Class AnalogClockShape to animate analog OR-Clocks as child of AnimatedShape <- PoseableShape <- StaticShape
     public class AnalogClockShape : AnimatedShape
     {
-        public AnalogClockShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, BoundingBox? boundingBox, int uid, float frameRateDivisor = 1.0f)
+        public AnalogClockShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, BoundingBox[] boundingBox, int uid, float frameRateDivisor = 1.0f)
             : base(viewer, path, initialPosition, flags, boundingBox, uid)
         {
         }
@@ -583,7 +583,7 @@ namespace Orts.Viewer3D
         TrJunctionNode TrJunctionNode;  // has data on current aligment for the switch
         uint MainRoute;                  // 0 or 1 - which route is considered the main route
 
-        public SwitchTrackShape(Viewer viewer, string path, WorldPosition position, TrJunctionNode trj, BoundingBox? boundingBox, int uid)
+        public SwitchTrackShape(Viewer viewer, string path, WorldPosition position, TrJunctionNode trj, BoundingBox[] boundingBox, int uid)
             : base(viewer, path, position, ShapeFlags.AutoZBias, boundingBox, uid)
         {
             TrJunctionNode = trj;
@@ -623,8 +623,8 @@ namespace Orts.Viewer3D
 
         protected float AnimationKey;  // tracks position of points as they move left and right
         ShapePrimitive shapePrimitive;
-        public SpeedPostShape(Viewer viewer, string path, WorldPosition position, SpeedPostObj spo, BoundingBox? boundingBox, int uid)
-            : base(viewer, path, position, ShapeFlags.None, boundingBox, uid)
+        public SpeedPostShape(Viewer viewer, string path, WorldPosition position, SpeedPostObj spo, BoundingBox[] boundingBox)
+            : base(viewer, path, position, ShapeFlags.None, boundingBox, (int)spo.UID)
         {
 
             SpeedPostObj = spo;
@@ -815,8 +815,8 @@ namespace Orts.Viewer3D
         bool Opening = true;
         float AnimationKey;
 
-        public LevelCrossingShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, LevelCrossingObj crossingObj, BoundingBox? boundingBox, int uid)
-            : base(viewer, path, position, shapeFlags, boundingBox, uid)
+        public LevelCrossingShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, LevelCrossingObj crossingObj, BoundingBox[] boundingBox)
+            : base(viewer, path, position, shapeFlags, boundingBox, (int)crossingObj.UID)
         {
             CrossingObj = crossingObj;
             if (!CrossingObj.silent)
@@ -922,15 +922,15 @@ namespace Orts.Viewer3D
         float AnimationKey;
         float DelayHazAnimation;
 
-        public static HazzardShape CreateHazzard(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj, BoundingBox? boundingBox, int uid)
+        public static HazzardShape CreateHazzard(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj, BoundingBox[] boundingBox)
         {
             var h = viewer.Simulator.HazzardManager.AddHazzardIntoGame(hObj.itemId, hObj.FileName);
             if (h == null) return null;
-            return new HazzardShape(viewer, viewer.Simulator.BasePath + @"\Global\Shapes\" + h.HazFile.Tr_HazardFile.FileName + "\0" + viewer.Simulator.BasePath + @"\Global\Textures", position, shapeFlags, hObj, h, boundingBox, uid);
+            return new HazzardShape(viewer, viewer.Simulator.BasePath + @"\Global\Shapes\" + h.HazFile.Tr_HazardFile.FileName + "\0" + viewer.Simulator.BasePath + @"\Global\Textures", position, shapeFlags, hObj, h, boundingBox, (int)hObj.UID);
 
         }
 
-        public HazzardShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj, Hazzard h, BoundingBox? boundingBox, int uid)
+        public HazzardShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj, Hazzard h, BoundingBox[] boundingBox, int uid)
             : base(viewer, path, position, shapeFlags, boundingBox, uid)
         {
             HazardObj = hObj;
@@ -1025,8 +1025,8 @@ namespace Orts.Viewer3D
         protected int AnimationFrames;
         protected float AnimationKey;
 
-        public FuelPickupItemShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, PickupObj fuelpickupitemObj, BoundingBox? boundingBox, int uid)
-            : base(viewer, path, position, shapeFlags, boundingBox, uid)
+        public FuelPickupItemShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, PickupObj fuelpickupitemObj, BoundingBox[] boundingBox)
+            : base(viewer, path, position, shapeFlags, boundingBox, (int)fuelpickupitemObj.UID)
         {
             FuelPickupItemObj = fuelpickupitemObj;
             Position = position;
@@ -1190,8 +1190,8 @@ namespace Orts.Viewer3D
 
 
         protected ContainerHandlingItem ContainerHandlingItem;
-        public ContainerHandlingItemShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, PickupObj fuelpickupitemObj, BoundingBox? boundingBox, int uid)
-                        : base(viewer, path, position, shapeFlags, fuelpickupitemObj, boundingBox, uid)
+        public ContainerHandlingItemShape(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, PickupObj fuelpickupitemObj, BoundingBox[] boundingBox)
+                        : base(viewer, path, position, shapeFlags, fuelpickupitemObj, boundingBox)
         {
         }
 
@@ -1537,7 +1537,7 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Construct and initialize the class
         /// </summary>
-        public TurntableShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, Turntable turntable, double startingY, BoundingBox? boundingBox, int uid)
+        public TurntableShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, Turntable turntable, double startingY, BoundingBox[] boundingBox, int uid)
             : base(viewer, path, initialPosition, flags, boundingBox, uid)
         {
             Turntable = turntable;
@@ -1660,7 +1660,7 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Construct and initialize the class
         /// </summary>
-        public TransfertableShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, Transfertable transfertable, BoundingBox? boundingBox, int uid)
+        public TransfertableShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, Transfertable transfertable, BoundingBox[] boundingBox, int uid)
             : base(viewer, path, initialPosition, flags, boundingBox, uid)
         {
             Transfertable = transfertable;
@@ -2659,7 +2659,7 @@ namespace Orts.Viewer3D
         /// Construct and initialize the class.
         /// This constructor is for the labels of track items in TDB and W Files such as sidings and platforms.
         /// </summary>
-        public TrItemLabel(Viewer viewer, WorldPosition position, TrObject trObj, int uid)
+        public TrItemLabel(Viewer viewer, WorldPosition position, TrObject trObj)
         {
             Location = position;
             var i = 0;
@@ -2674,7 +2674,7 @@ namespace Orts.Viewer3D
                 ItemName = trItem.ItemName;
                 i++;
             }
-            Uid = uid;
+            Uid = (int)trObj.UID;
         }
     }
 }

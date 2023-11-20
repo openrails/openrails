@@ -31,15 +31,16 @@ namespace Orts.Viewer3D
     public class ForestViewer
     {
         readonly Viewer Viewer;
-        readonly WorldPosition Position;
+        public readonly WorldPosition Position;
         readonly Material Material;
         readonly ForestPrimitive Primitive;
         public readonly int Uid;
+        public readonly Vector2 ForestArea;
 
         public float MaximumCenterlineOffset = 0.0f;
         public bool CheckRoadsToo = false;
 
-        public ForestViewer(Viewer viewer, ForestObj forest, WorldPosition position, int uid)
+        public ForestViewer(Viewer viewer, ForestObj forest, WorldPosition position)
         {
             Viewer = viewer;
             Position = position;
@@ -48,7 +49,8 @@ namespace Orts.Viewer3D
 
             Material = viewer.MaterialManager.Load("Forest", Helpers.GetForestTextureFile(viewer.Simulator, forest.TreeTexture));
             Primitive = new ForestPrimitive(Viewer, forest, position, MaximumCenterlineOffset, CheckRoadsToo);
-            Uid = uid;
+            Uid = (int)forest.UID;
+            ForestArea = new Vector2(forest.forestArea.X, forest.forestArea.Z);
         }
 
         [CallOnThread("Updater")]

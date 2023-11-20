@@ -365,7 +365,7 @@ namespace Orts.Viewer3D
         /// <param name="dTrackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
         public static void DecomposeDynamicSuperElevation(Viewer viewer, List<DynamicTrackViewer> dTrackList, DyntrackObj dTrackObj,
-            WorldPosition worldMatrixInput, int uid)
+            WorldPosition worldMatrixInput)
         {
             // DYNAMIC TRACK
             // =============
@@ -447,7 +447,7 @@ namespace Orts.Viewer3D
                 //                if (section.SectionCurve != null) FindSectionValue(shape, root, nextRoot, viewer.Simulator, section, TileX, TileZ, dTrackObj.UID);
 
                 //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir, uid));
+                dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir, (int)dTrackObj.UID));
 
                 localV = localProjectedV; // Next subsection
             }

@@ -1546,6 +1546,8 @@ namespace Orts.Formats.Msts
         public float Y;
         public float Z;
 
+        public static readonly TWorldPosition Zero = new TWorldPosition(0, 0, 0);
+
         public TWorldPosition(float x, float y, float z) { X = x; Y = y; Z = z; }
         public TWorldPosition() { X = 0.0f; Y = 0.0f; Z = 0.0f; }
         public TWorldPosition(TWorldPosition p)
