@@ -45,7 +45,7 @@ namespace Orts.Viewer3D
         /// <param name="trackList">DynamicTrackViewer list.</param>
         /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static int DecomposeStaticWire(Viewer viewer, List<DynamicTrackViewer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput, int uid)
+        public static int DecomposeStaticWire(Viewer viewer, List<DynamicTrackViewer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput)
         {
             // The following vectors represent local positioning relative to root of original (5-part) section:
             Vector3 localV = Vector3.Zero; // Local position (in x-z plane)
@@ -122,7 +122,7 @@ namespace Orts.Viewer3D
                     nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
                     root.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
                     //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                    trackList.Add(new WireViewer(viewer, root, nextRoot, radius, length, uid));
+                    trackList.Add(new WireViewer(viewer, root, nextRoot, radius, length, (int)trackObj.UID));
                     localV = localProjectedV; // Next subsection
                 }
             }
@@ -136,7 +136,7 @@ namespace Orts.Viewer3D
         /// <param name="trackList">DynamicTrackViewer list.</param>
         /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static void DecomposeConvertedDynamicWire(Viewer viewer, List<DynamicTrackViewer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput, int uid)
+        public static void DecomposeConvertedDynamicWire(Viewer viewer, List<DynamicTrackViewer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput)
         {
             // The following vectors represent local positioning relative to root of original (5-part) section:
             Vector3 localV = Vector3.Zero; // Local position (in x-z plane)
@@ -213,7 +213,7 @@ namespace Orts.Viewer3D
                 nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
                 root.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
                 nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                trackList.Add(new WireViewer(viewer, root, nextRoot, radius, length, uid));
+                trackList.Add(new WireViewer(viewer, root, nextRoot, radius, length, (int)trackObj.UID));
                 localV = localProjectedV; // Next subsection
             }
         }
@@ -225,7 +225,7 @@ namespace Orts.Viewer3D
         /// <param name="trackList">DynamicTrackViewer list.</param>
         /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static void DecomposeDynamicWire(Viewer viewer, List<DynamicTrackViewer> trackList, DyntrackObj trackObj, WorldPosition worldMatrixInput, int uid)
+        public static void DecomposeDynamicWire(Viewer viewer, List<DynamicTrackViewer> trackList, DyntrackObj trackObj, WorldPosition worldMatrixInput)
         {
             // DYNAMIC WIRE
             // ============
@@ -303,7 +303,7 @@ namespace Orts.Viewer3D
 
 
                 // Create a new WireViewer for the subsection
-                trackList.Add(new WireViewer(viewer, root, nextRoot, radius, length, uid));
+                trackList.Add(new WireViewer(viewer, root, nextRoot, radius, length, (int)trackObj.UID));
                 localV = localProjectedV; // Next subsection
             }
         }
