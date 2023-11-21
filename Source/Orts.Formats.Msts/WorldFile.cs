@@ -19,9 +19,13 @@ using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
 using ORTS.Common;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.Text;
+using System.Threading;
 
 namespace Orts.Formats.Msts
 {
@@ -105,6 +109,46 @@ namespace Orts.Formats.Msts
                     }
                 }
             }
+        }
+
+        public void Serialize(StringBuilder sb)
+        {
+            var culture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+
+            sb.Append("﻿SIMISA@@@@@@@@@@JINX0w0t______");
+            sb.AppendLine();
+
+            var watermark = 0;
+            Sort((a, b) => a.StaticDetailLevel.CompareTo(b.StaticDetailLevel));
+            var enumerator = GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                var currentWatermark = enumerator.Current.StaticDetailLevel;
+                if (currentWatermark != watermark)
+                {
+                    watermark = currentWatermark;
+                    sb.AppendLine();
+                    sb.Append("    " + TokenID.Tr_Watermark + "( " + currentWatermark + " )");
+                }
+                switch (enumerator.Current)
+                {
+                    case StaticObj staticObj: staticObj.Serialize(sb); break;
+                    case TrackObj trackObj: trackObj.Serialize(sb); break;
+                    case CarSpawnerObj carSpawnerObj: carSpawnerObj.Serialize(sb); break;
+                    case SidingObj sidingObj: sidingObj.Serialize(sb); break;
+                    case PlatformObj platformObj: platformObj.Serialize(sb); break;
+                    case ForestObj forestObj: forestObj.Serialize(sb); break;
+                    case LevelCrossingObj levelCrossingObj: levelCrossingObj.Serialize(sb); break;
+                    case DyntrackObj dyntrackObj: dyntrackObj.Serialize(sb); break;
+                    case TransferObj transferObj: transferObj.Serialize(sb); break;
+                    case PickupObj pickupObj: pickupObj.Serialize(sb); break;
+                    case HazardObj hazardObj: hazardObj.Serialize(sb); break;
+                    case SignalObj signalObj: signalObj.Serialize(sb); break;
+                    case SpeedPostObj speedPostObj: speedPostObj.Serialize(sb); break;
+                }
+            }
+            Thread.CurrentThread.CurrentCulture = culture;
         }
 
         void LoadObject(SBR subBlock, ref int currentWatermark, string filename)
@@ -267,6 +311,7 @@ namespace Orts.Formats.Msts
 
         public BaseObj(SBR block, int detailLevel)
         {
+            TokenID = TokenID.Gantry;
             StaticDetailLevel = detailLevel;
 
             ReadBlock(block);
@@ -293,6 +338,7 @@ namespace Orts.Formats.Msts
         public StaticObj(SBR block, int detailLevel)
             : base(block, detailLevel)
         {
+            TokenID = TokenID.Static;
         }
 
         public override void AddOrModifyObj(SBR subBlock)
@@ -329,6 +375,7 @@ namespace Orts.Formats.Msts
         /// <param name="detailLevel"></param>
         public PickupObj(SBR block, int detailLevel)
         {
+            TokenID = TokenID.Pickup;
             StaticDetailLevel = detailLevel;
 
             ReadBlock(block);
@@ -379,6 +426,8 @@ namespace Orts.Formats.Msts
                 MaxMpS = block.ReadFloat();
                 block.VerifyEndOfBlock();
             }
+
+            public void Serialize(StringBuilder sb) { sb.Append(MinMpS.ToString("F") + " " + MaxMpS.ToString("F")); }
         }
 
         /// <summary>
@@ -399,6 +448,8 @@ namespace Orts.Formats.Msts
                 if (AnimationSpeed == 0) AnimationSpeed = 1.0f;
                 block.VerifyEndOfBlock();
             }
+
+            public void Serialize(StringBuilder sb) { sb.Append(PickupOptions.ToString("F") + " " + AnimationSpeed.ToString("F")); }
         }
 
         /// <summary>
@@ -417,6 +468,8 @@ namespace Orts.Formats.Msts
                 FeedRateKGpS = Kg.FromLb(block.ReadFloat());
                 block.VerifyEndOfBlock();
             }
+
+            public void Serialize(StringBuilder sb) { sb.Append(QuantityAvailableKG.ToString("F") + " " + FeedRateKGpS.ToString("F")); }
         }
 
         public class StackLocationItems
@@ -443,6 +496,19 @@ namespace Orts.Formats.Msts
                 Locations = locations.ToArray();
                 locations.Clear();
             }
+
+            public void Serialize(StringBuilder sb)
+            {
+                sb.AppendLine();
+                foreach (var location in Locations)
+                {
+                    sb.Append("        Location (");
+                    sb.AppendLine();
+                    location.Serialize(sb);
+                    sb.AppendLine();
+                    sb.Append("        )");
+                }
+            }
         }
 
         public class StackLocation
@@ -463,11 +529,19 @@ namespace Orts.Formats.Msts
                             case TokenID.Position: Position = subBlock.ReadVector3(); break;
                             case TokenID.MaxStackedContainers: MaxStackedContainers = subBlock.ReadInt(); break;
                             case TokenID.Length: Length = subBlock.ReadFloat(); break;
-                            case TokenID.Flipped: subBlock.ReadInt();  Flipped = true; break;
+                            case TokenID.Flipped: Flipped = subBlock.ReadInt() == 1; break;
                             default: subBlock.Skip(); break;
                         }
                     }
                 }
+            }
+
+            public void Serialize(StringBuilder sb)
+            {
+                sb.Append("            Position ( " + Position.ToString() + " )");
+                sb.Append("            MaxStackedContainers ( " + MaxStackedContainers + " )");
+                sb.Append("            Length ( " + Length.ToString("F") + " )");
+                sb.Append("            Flipped ( " + (Flipped ? "1" : "0") + " )");
             }
         }
     }
@@ -479,6 +553,7 @@ namespace Orts.Formats.Msts
 
         public TransferObj(SBR block, int detailLevel)
         {
+            TokenID = TokenID.Transfer;
             StaticDetailLevel = detailLevel;
 
             ReadBlock(block);
@@ -510,6 +585,7 @@ namespace Orts.Formats.Msts
 
         public TrackObj(SBR block, int detailLevel)
         {
+            TokenID = TokenID.TrackObj;
             StaticDetailLevel = detailLevel;
 
             ReadBlock(block);
@@ -546,6 +622,7 @@ namespace Orts.Formats.Msts
 
         public DyntrackObj(SBR block, int detailLevel)
         {
+            TokenID = TokenID.Dyntrack;
             StaticDetailLevel = detailLevel;
 
             while (!block.EndOfBlock())
@@ -650,6 +727,13 @@ namespace Orts.Formats.Msts
                 this.param2 = copy.param2;
                 this.deltaY = copy.deltaY;
             }
+         
+            public void Serialize(StringBuilder sb)
+            {
+                sb.Append("SectionCurve ( " + isCurved + " ) " + UiD + " " + param1.ToString("F") + " " + param2.ToString("F"));
+                if (deltaY != 0)
+                    sb.Append(" " + deltaY);
+            }
         }
     }
 
@@ -664,6 +748,7 @@ namespace Orts.Formats.Msts
 
         public ForestObj(SBR block, int detailLevel)
         {
+            TokenID = TokenID.Forest;
             StaticDetailLevel = detailLevel;
 
             ReadBlock (block);
@@ -700,6 +785,8 @@ namespace Orts.Formats.Msts
                 Maximum = block.ReadFloat();
                 block.VerifyEndOfBlock();
             }
+
+            public void Serialize(StringBuilder sb) { sb.Append(Minimum.ToString("F") + " " + Maximum.ToString("F")); }
         }
 
         public class ForestArea
@@ -714,6 +801,8 @@ namespace Orts.Formats.Msts
                 Z = block.ReadFloat();
                 block.VerifyEndOfBlock();
             }
+
+            public void Serialize(StringBuilder sb) { sb.Append(X.ToString("F") + " " + Z.ToString("F")); }
         }
 
         public class TreeSize
@@ -728,6 +817,8 @@ namespace Orts.Formats.Msts
                 Height = block.ReadFloat();
                 block.VerifyEndOfBlock();
             }
+
+            public void Serialize(StringBuilder sb) { sb.Append(Width.ToString("F") + " " + Height.ToString("F")); }
         }
     }
 
@@ -738,6 +829,7 @@ namespace Orts.Formats.Msts
 
         public SignalObj(SBR block, int detailLevel)
         {
+            TokenID = TokenID.Signal;
             StaticDetailLevel = detailLevel;
 
             ReadBlock(block);
@@ -770,6 +862,7 @@ namespace Orts.Formats.Msts
 
         public SpeedPostObj(SBR block, int detailLevel)
         {
+            TokenID = TokenID.Speedpost;
             StaticDetailLevel = detailLevel;
 
             ReadBlock(block);
@@ -815,6 +908,15 @@ namespace Orts.Formats.Msts
                 }
                 block.VerifyEndOfBlock();
             }
+
+            public void Serialize(StringBuilder sb)
+            {
+                sb.Append(NumShapes);
+                foreach (var shapeInfo in ShapesInfo)
+                {
+                    sb.Append(" " + shapeInfo.ToString("F"));
+                }
+            }
         }
 
         public class Speed_Text_Size
@@ -829,6 +931,8 @@ namespace Orts.Formats.Msts
                 DY = block.ReadFloat();
                 block.VerifyEndOfBlock();
             }
+
+            public void Serialize(StringBuilder sb) { sb.Append(Size.ToString("F") + " " + DX.ToString("F") + " " + DY.ToString("F")); }
         }
 
         public int GetTrItemID(int index)
@@ -858,6 +962,8 @@ namespace Orts.Formats.Msts
             dbID = block.ReadInt();
             block.VerifyEndOfBlock();
         }
+
+        public void Serialize(StringBuilder sb) { sb.Append(db + " " + dbID); }
     }
 
     public class LevelCrossingObj : WorldObject
@@ -873,6 +979,7 @@ namespace Orts.Formats.Msts
 
         public LevelCrossingObj(SBR block, int detailLevel)
         {
+            TokenID = TokenID.LevelCr;
             StaticDetailLevel = detailLevel;
 
             ReadBlock(block);
@@ -911,6 +1018,8 @@ namespace Orts.Formats.Msts
                 minimumDistance = block.ReadFloat();
                 block.VerifyEndOfBlock();
             }
+
+            public void Serialize(StringBuilder sb) { sb.Append(warningTime.ToString("F") + " " + minimumDistance.ToString("F")); }
         }
 
         public class LevelCrData
@@ -924,6 +1033,8 @@ namespace Orts.Formats.Msts
                 crData2 = block.ReadInt();
                 block.VerifyEndOfBlock();
             }
+
+            public void Serialize(StringBuilder sb) { sb.Append(crData1 + " " + crData2); }
         }
 
         public class LevelCrTiming
@@ -938,6 +1049,8 @@ namespace Orts.Formats.Msts
                 animTiming = block.ReadFloat();
                 block.VerifyEndOfBlock();
             }
+
+            public void Serialize(StringBuilder sb) { sb.Append(initialTiming.ToString("F") + " " + seriousTiming.ToString("F") + " " + animTiming.ToString("F")); }
         }
 
         public class TrItemId
@@ -951,15 +1064,18 @@ namespace Orts.Formats.Msts
                 dbID = block.ReadInt();
                 block.VerifyEndOfBlock();
             }
+
+            public void Serialize(StringBuilder sb) { sb.Append(db + " " + dbID); }
         }
     }
 
     public class HazardObj : WorldObject
     {
-        public int itemId;
+        public int TrItemId;
 
         public HazardObj(SBR block, int detailLevel)
         {
+            TokenID = TokenID.Hazard;
             StaticDetailLevel = detailLevel;
 
             ReadBlock(block);
@@ -969,7 +1085,7 @@ namespace Orts.Formats.Msts
         {
             switch (subBlock.ID)
             {
-                case TokenID.TrItemId: itemId = DecodeTrItemId(subBlock); break;
+                case TokenID.TrItemId: TrItemId = DecodeTrItemId(subBlock); break;
                 case TokenID.FileName: FileName = subBlock.ReadString(); break;
                 case TokenID.Position: Position = new STFPositionItem(subBlock); break;
                 case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
@@ -998,6 +1114,7 @@ namespace Orts.Formats.Msts
 
         public CarSpawnerObj(SBR block, int detailLevel)
         {
+            TokenID = TokenID.CarSpawner;
             StaticDetailLevel = detailLevel;
             CarFrequency = 5.0f;
             CarAvSpeed = 20.0f;
@@ -1048,8 +1165,10 @@ namespace Orts.Formats.Msts
                 dbID = block.ReadInt();
                 block.VerifyEndOfBlock();
             }
+
+            public void Serialize(StringBuilder sb) { sb.Append(db + " " + dbID); }
         }
-     }
+    }
 
     /// <summary>
     /// Super-class for similar track items SidingObj and PlatformObj.
@@ -1111,6 +1230,8 @@ namespace Orts.Formats.Msts
                 dbID = block.ReadInt();
                 block.VerifyEndOfBlock();
             }
+
+            public void Serialize(StringBuilder sb) { sb.Append(db + " " + dbID); }
         }
     }
 
@@ -1122,6 +1243,7 @@ namespace Orts.Formats.Msts
         public SidingObj(SBR block, int detailLevel) :
             base(block, detailLevel)
         {
+            TokenID = TokenID.Siding;
         }
     }
 
@@ -1134,6 +1256,7 @@ namespace Orts.Formats.Msts
 
         public PlatformObj(SBR block, int detailLevel)
         {
+            TokenID = TokenID.Platform;
             StaticDetailLevel = detailLevel;
 
             while (!block.EndOfBlock())
@@ -1186,6 +1309,9 @@ namespace Orts.Formats.Msts
         public uint StaticFlags;
         public uint VDbId;
 
+        [NonSerialized]
+        protected TokenID TokenID;
+        
         public virtual void AddOrModifyObj(SBR subBlock)
         {
             
@@ -1204,6 +1330,60 @@ namespace Orts.Formats.Msts
                     }
                 }
             }
+        }
+
+        public virtual void Serialize(StringBuilder sb)
+        {
+            var type = GetType().ToString();
+            if (type == typeof(BaseObj).ToString()) type = "Gantry"; // FIXME
+
+            sb.AppendLine();
+            sb.Append("    " + TokenID + " (");
+            foreach (var field in GetType().GetFields())
+            {
+                if (field.IsNotSerialized)
+                    continue;
+
+                var fieldValue = field.GetValue(this);
+                if (fieldValue == null)
+                    continue;
+
+                if (fieldValue is ICollection)
+                {
+                    foreach (var listItem in fieldValue as IEnumerable)
+                    {
+                        sb.AppendLine();
+                        sb.Append("        " + listItem.GetType().Name + " ( ");
+                        listItem?.GetType().GetMethod("Serialize").Invoke(listItem, new object[] { sb });
+                        sb.Append(" )");
+                    }
+                }
+                else if (field.FieldType.IsClass && field.FieldType != typeof(string))
+                {
+                    sb.AppendLine();
+                    sb.Append("        " + field.Name + " ( ");
+                    fieldValue?.GetType().GetMethod("Serialize").Invoke(fieldValue, new object[] { sb });
+                    sb.Append(" )");
+                }
+                else if (field.FieldType == typeof(Vector3))
+                {
+                    sb.AppendLine();
+                    var fieldVector3 = (Vector3)fieldValue;
+                    sb.Append(fieldVector3.X + " " + fieldVector3.Y + " " + fieldVector3.Z);
+                }
+                else if (field.Name == TokenID.StaticFlags.ToString() || field.Name == TokenID.PlatformData.ToString())
+                {
+                    sb.AppendLine();
+                    sb.Append("        " + field.Name + " ( " + ((uint)fieldValue).ToString("X8") + " ) ");
+                }
+                else
+                {
+                    sb.AppendLine();
+                    sb.Append("        " + field.Name + " ( " + fieldValue + " ) ");
+                }
+            }
+            sb.AppendLine();
+            sb.Append("    )");
         }
     }
 
@@ -1260,6 +1440,13 @@ namespace Orts.Formats.Msts
             CZ = block.ReadFloat();
             block.VerifyEndOfBlock();
         }
+
+        public void Serialize(StringBuilder sb)
+        {
+            sb.Append(AX.ToString("F") + " " + AY.ToString("F") + " " + AZ.ToString("F") + " "
+                + BX.ToString("F") + " " + BY.ToString("F") + " " + BZ.ToString("F") + " "
+                + CX.ToString("F") + " " + CY.ToString("F") + " " + CZ.ToString("F"));
+        }
     }
 
     public class JNodePosn
@@ -1277,6 +1464,8 @@ namespace Orts.Formats.Msts
             Z = block.ReadFloat();
             block.VerifyEndOfBlock();
         }
+
+        public void Serialize(StringBuilder sb) { sb.Append(TileZ + " " + TileZ + " " + X.ToString("F") + " " + Y.ToString("F") + " " + Z.ToString("F")); }
     }
 
     public class TWorldDirection
@@ -1538,6 +1727,8 @@ namespace Orts.Formats.Msts
 
             return p2;
         }
+
+        public void Serialize(StringBuilder sb) { sb.Append(A.ToString("F") + " " + B.ToString("F") + " " + C.ToString("F") + " " + D.ToString("F")); }
     }
 
     public class TWorldPosition
@@ -1546,7 +1737,7 @@ namespace Orts.Formats.Msts
         public float Y;
         public float Z;
 
-        public static readonly TWorldPosition Zero = new TWorldPosition(0, 0, 0);
+        public static readonly TWorldPosition Zero = new TWorldPosition();
 
         public TWorldPosition(float x, float y, float z) { X = x; Y = y; Z = z; }
         public TWorldPosition() { X = 0.0f; Y = 0.0f; Z = 0.0f; }
@@ -1578,6 +1769,8 @@ namespace Orts.Formats.Msts
             var dZ = p1.Z - p2.Z;
             return (float)Math.Sqrt(dX * dX + dZ * dZ);
         }
+
+        public virtual void Serialize(StringBuilder sb) { sb.Append(X.ToString("F") + " " + Y.ToString("F") + " " + Z.ToString("F")); }
     }
 
     public class SignalUnits
@@ -1599,11 +1792,24 @@ namespace Orts.Formats.Msts
             block.VerifyEndOfBlock();
             Units = units.ToArray();
         }
+
+        public void Serialize(StringBuilder sb)
+        {
+            sb.Append(Units.Length);
+            sb.AppendLine();
+            foreach (var unit in Units)
+            {
+                unit.Serialize(sb);
+            }
+            sb.AppendLine();
+            sb.Append("       ");
+        }
     }
 
     public class SignalUnit
     {
         public readonly int SubObj;
+        public readonly uint UnknownFunctionality;
         public readonly uint TrItem;
 
         public SignalUnit(SBR block)
@@ -1613,11 +1819,20 @@ namespace Orts.Formats.Msts
             using (var subBlock = block.ReadSubBlock())
             {
                 subBlock.VerifyID(TokenID.TrItemId);
-                subBlock.ReadUInt(); // Unk?
+                UnknownFunctionality = subBlock.ReadUInt();
                 TrItem = subBlock.ReadUInt();
                 subBlock.VerifyEndOfBlock();
             }
             block.VerifyEndOfBlock();
+        }
+
+        public virtual void Serialize(StringBuilder sb)
+        {
+            sb.Append("            SignalUnit ( " + SubObj);
+            sb.AppendLine();
+            sb.Append("                TrItemId ( " + " " + UnknownFunctionality + " " + TrItem + " )");
+            sb.AppendLine();
+            sb.Append("            )");
         }
     }
 }

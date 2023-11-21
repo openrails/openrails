@@ -924,7 +924,7 @@ namespace Orts.Viewer3D
 
         public static HazzardShape CreateHazzard(Viewer viewer, string path, WorldPosition position, ShapeFlags shapeFlags, HazardObj hObj, BoundingBox[] boundingBox)
         {
-            var h = viewer.Simulator.HazzardManager.AddHazzardIntoGame(hObj.itemId, hObj.FileName);
+            var h = viewer.Simulator.HazzardManager.AddHazzardIntoGame(hObj.TrItemId, hObj.FileName);
             if (h == null) return null;
             return new HazzardShape(viewer, viewer.Simulator.BasePath + @"\Global\Shapes\" + h.HazFile.Tr_HazardFile.FileName + "\0" + viewer.Simulator.BasePath + @"\Global\Textures", position, shapeFlags, hObj, h, boundingBox, (int)hObj.UID);
 
@@ -940,7 +940,7 @@ namespace Orts.Viewer3D
 
         public override void Unload()
         {
-            Viewer.Simulator.HazzardManager.RemoveHazzardFromGame(HazardObj.itemId);
+            Viewer.Simulator.HazzardManager.RemoveHazzardFromGame(HazardObj.TrItemId);
             base.Unload();
         }
 
