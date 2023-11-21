@@ -427,6 +427,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         float forceToAccelerationFactor;
 
         /// <summary>
+        /// switch between Polach and Pacha adhesion calculation
+        /// </summary>
+        bool UsePoalchAdhesion = false;
+
+        /// <summary>
         /// Pre-calculation of slip characteristics at 0 slip speed
         /// </summary>
         double axleStaticForceN;
@@ -587,12 +592,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             // i.e. the point where slope changes from positive (adhesion region)
             // to negative (slip region)
             double dx = 0.001;
-            double fa = SlipCharacteristics(a + dx) - SlipCharacteristics(a);
-            double fb = SlipCharacteristics(b + dx) - SlipCharacteristics(b);
+            double fa = SlipCharacteristicsPolach(a + dx) - SlipCharacteristicsPolach(a);
+            double fb = SlipCharacteristicsPolach(b + dx) - SlipCharacteristicsPolach(b);
 
             double SlipSpeedMpS = AxleSpeedMpS - TrainSpeedMpS;
 
-            MaximumPolachWheelAdhesion = (float)SlipCharacteristics(WheelSlipThresholdMpS);
+            MaximumPolachWheelAdhesion = (float)SlipCharacteristicsPolach(WheelSlipThresholdMpS);
 
             if (SlipSpeedMpS == 0)
             {
@@ -610,7 +615,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             while (Math.Abs(b - a) > MpS.FromKpH(0.1f))
             {
                 double c = (a + b) / 2;
-                double fc = SlipCharacteristics(c + dx) - SlipCharacteristics(c);
+                double fc = SlipCharacteristicsPolach(c + dx) - SlipCharacteristicsPolach(c);
                 if (fa * fc > 0)
                 {
                     a = c;
@@ -813,7 +818,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public (double, double, double, double) GetAxleMotionVariation(double axleSpeedMpS, double elapsedClockSeconds)
         {
             double slipSpeedMpS = axleSpeedMpS - TrainSpeedMpS;
-            double axleOutForceN = Math.Sign(slipSpeedMpS) * AxleWeightN * SlipCharacteristics(slipSpeedMpS);
+            double axleOutForceN = 0;
+
+            if (UsePoalchAdhesion)
+            {
+                axleOutForceN = Math.Sign(slipSpeedMpS) * AxleWeightN * SlipCharacteristicsPolach(slipSpeedMpS);
+            }
+            else
+            {
+                axleOutForceN = AxleWeightN * SlipCharacteristicsPacha((float)axleSpeedMpS - TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionLimit);
+            }
+            
             double axleInForceN = 0;
             if (DriveType == AxleDriveType.ForceDriven)
                 axleInForceN = DriveForceN * transmissionEfficiency;
@@ -851,30 +866,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (elapsedClockSeconds <= 0) return;
             double prevSpeedMpS = AxleSpeedMpS;
             
-            float upperSubStepStartingLimit = 100;
-            float tempupperSubStepLimit = upperSubStepStartingLimit;
+            float upperSubStepLimit = 100;
             float lowerSubStepLimit = 1;
-
-            float screenFrameUpperLimit = 60;
-            float screenFrameLowerLimit = 40;
-
-            var ScreenFrameRate = Simulator.SmoothedFrameRate;
-
-            // Reduces the number of substeps if screen FPS drops below a nominal rate of 60 fps
-            if ( (int)ScreenFrameRate >= screenFrameUpperLimit) // Screen FPS > 60, hold substeps @ maximum value
-            {
-                tempupperSubStepLimit = upperSubStepStartingLimit;
-            }
-            else if ((int)ScreenFrameRate < screenFrameLowerLimit) // Screen FPS < 40, hold substeps @ minimum value
-            {
-                tempupperSubStepLimit = upperSubStepStartingLimit * (screenFrameLowerLimit / screenFrameUpperLimit);
-            }
-            else
-            {
-                tempupperSubStepLimit = (int) ((ScreenFrameRate / 60) * upperSubStepStartingLimit);
-            }
-
-            var upperSubStepLimit = tempupperSubStepLimit;
 
             // use straight line graph approximation to increase substeps as slipspeed increases towards the threshold speed point
             // Points are 1 = (0, upperLimit) and 2 = (threshold, lowerLimit)           
@@ -961,17 +954,44 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="timeSpan"></param>
         public virtual void Update(float timeSpan)
         {
-            forceToAccelerationFactor = WheelRadiusM * WheelRadiusM / totalInertiaKgm2;
-
-            Polach.Update();
-            axleStaticForceN = AxleWeightN * SlipCharacteristics(0);
-            ComputeWheelSlipThresholdMpS();
-
-            if (count < 6 && count++ == 5)
+            // Test to determine whether to use Polach or Pacha adhesion
+            var ScreenFrameRate = Simulator.SmoothedFrameRate;
+            
+            // Switches between Polach (high performance) adhesion model and Pacha (low performance) adhesion model
+            if(ScreenFrameRate > 59)
             {
-                TrainSpeedMpS = 10 / 3.6f;
+                UsePoalchAdhesion = true;
+            }
+            else if(ScreenFrameRate < 55) 
+            {
+                UsePoalchAdhesion = false;
+                if (TrainSpeedMpS > 0 )
+                {
+                    Trace.TraceInformation("Advanced adhesion model switched to low performance option due to low frame rate {0} at ElapsedClockSeconds of {1}", ScreenFrameRate, timeSpan);
+                }
+
+                // Set values for Pacha adhesion
+                WheelSlipThresholdMpS = MpS.FromKpH(AdhesionK / AdhesionLimit);
+                WheelAdhesion = 0.99f;
+                MaximumPolachWheelAdhesion = 0.99f;
+
+            }
+            
+            forceToAccelerationFactor = WheelRadiusM * WheelRadiusM / totalInertiaKgm2;        
+
+            if (UsePoalchAdhesion)
+            {
+
                 Polach.Update();
-                axleStaticForceN = AxleWeightN * SlipCharacteristics(0);
+                axleStaticForceN = AxleWeightN * SlipCharacteristicsPolach(0);
+                ComputeWheelSlipThresholdMpS();
+
+                if (count < 6 && count++ == 5)
+                {
+                    TrainSpeedMpS = 10 / 3.6f;
+                    Polach.Update();
+                    axleStaticForceN = AxleWeightN * SlipCharacteristicsPolach(0);
+                }
             }
 
 #if DEBUG_ADHESION
@@ -1170,6 +1190,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
 
         /// <summary>
+        /// ***** Polach Adhesion *****
         /// Uses the Polach creep force curves calculation described in the following document
         ///	"Creep forces in simulations of traction vehicles running on adhesion limit" by O. Polach 2005 Wear - http://www.sze.hu/~szenasy/VILLVONT/polachslipvizsg.pdf
         /// 
@@ -1183,12 +1204,55 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="slipSpeedMpS">Difference between train speed and wheel speed</param>
         /// <param name="speedMpS">Current speed</param>
         /// <returns>Relative force transmitted to the rail</returns>
-        public double SlipCharacteristics(double slipSpeedMpS)
+        public double SlipCharacteristicsPolach(double slipSpeedMpS)
         {
             slipSpeedMpS = Math.Abs(slipSpeedMpS);
             double fx = Polach.SlipCharacteristics(slipSpeedMpS);
             WheelAdhesion = (float)fx;
             return fx;
         }
+
+
+        /// <summary>
+        /// ***** Pacha Adhesion *****
+        /// Slip characteristics computation
+        /// - Uses adhesion limit calculated by Curtius-Kniffler formula:
+        ///                 7.5
+        ///     umax = ---------------------  + 0.161
+        ///             speed * 3.6 + 44.0
+        /// - Computes slip speed
+        /// - Computes relative adhesion force as a result of slip characteristics:
+        ///             2*K*umax^2*dV
+        ///     u = ---------------------
+        ///           umax^2*dv^2 + K^2
+        /// 
+        /// For high slip speeds the formula is replaced with an exponentially 
+        /// decaying function (with smooth coupling) which reaches 40% of
+        /// maximum adhesion at infinity. The transition point between equations
+        /// is at dV = sqrt(3)*K/umax (inflection point)
+        /// 
+        /// </summary>
+        /// <param name="slipSpeedMpS">Difference between train speed and wheel speed</param>
+        /// <param name="speedMpS">Current speed</param>
+        /// <param name="K">Slip speed correction</param>
+        /// <param name="umax">Relative weather conditions, usually from 0.2 to 1.0</param>
+        /// <returns>Relative force transmitted to the rail</returns>
+        public float SlipCharacteristicsPacha(float slipSpeedMpS, float speedMpS, float K, float umax)
+        {
+            var slipSpeedKpH = MpS.ToKpH(slipSpeedMpS);
+            float x = slipSpeedKpH * umax / K; // Slip percentage
+            float absx = Math.Abs(x);
+            float sqrt3 = (float)Math.Sqrt(3);
+            if (absx > sqrt3)
+            {
+                // At infinity, adhesion is 40% of maximum (Polach, 2005)
+                // The value must be lower than 85% for the formula to work
+                float inftyFactor = 0.4f;
+                return Math.Sign(slipSpeedKpH) * umax * ((sqrt3 / 2 - inftyFactor) * (float)Math.Exp((sqrt3 - absx) / (2 * sqrt3 - 4 * inftyFactor)) + inftyFactor);
+            }
+            return 2.0f * umax * x / (1 + x * x);
+        }
+
+
     }
 }
