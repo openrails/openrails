@@ -197,7 +197,7 @@ namespace ORTS.TrackViewer
             {
                 if (TrackViewer.RenderProcess.Viewer?.Tiles == null)
                 {
-                    if (i > 50)
+                    if (i > 300)
                         return;
                     await Task.Delay(100);
                     i++;
@@ -283,6 +283,17 @@ namespace ORTS.TrackViewer
             }
 
             pickedObjectOut = pickedObject as StaticShape;
+
+            if (pickedObjectOut != null)
+            {
+                var ppp = pickedObjectOut;
+                var sb = new StringBuilder();
+                var aaa = TrackViewer.RenderProcess.Viewer.World.Scenery.WorldFiles.Where(w =>
+                    w.TileX == ppp.Location.TileX && w.TileZ == ppp.Location.TileZ).ToArray();
+                var bbb = aaa[0].MstsWFile;
+                bbb.Tr_Worldfile.Serialize(sb);
+                var ccc = sb.ToString();
+            }
             return pickedObjectOut != null;
         }
 

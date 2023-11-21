@@ -249,6 +249,11 @@ namespace Orts.Viewer3D
         readonly Viewer Viewer;
 
         /// <summary>
+        /// When in editor mode, store the source w file.
+        /// </summary>
+        public Orts.Formats.Msts.WorldFile MstsWFile;
+
+        /// <summary>
         /// Open the specified WFile and load all the scenery objects into the viewer.
         /// If the file doesn't exist, then return an empty WorldFile object.
         /// </summary>
@@ -286,7 +291,8 @@ namespace Orts.Viewer3D
                 WFile.InsertORSpecificData(WFilePath, null);
             }
 
-
+            if (Viewer.EditorMode)
+                MstsWFile = WFile;
 
             // to avoid loop checking for every object this pre-check is performed
             bool containsMovingTable = false;
