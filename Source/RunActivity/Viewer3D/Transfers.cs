@@ -33,8 +33,8 @@ namespace Orts.Viewer3D
         readonly TransferPrimitive Primitive;
         readonly float Radius;
 
-        public TransferShape(Viewer viewer, TransferObj transfer, WorldPosition position, BoundingBox? boundingBox, int uid)
-            : base(viewer, null, RemoveRotation(position), ShapeFlags.AutoZBias, boundingBox, uid)
+        public TransferShape(Viewer viewer, TransferObj transfer, WorldPosition position, BoundingBox[] boundingBox)
+            : base(viewer, null, RemoveRotation(position), ShapeFlags.AutoZBias, boundingBox, (int)transfer.UID)
         {
             Material = viewer.MaterialManager.Load("Transfer", Helpers.GetTransferTextureFile(viewer.Simulator, transfer.FileName));
             Primitive = new TransferPrimitive(viewer, transfer.Width, transfer.Height, position);

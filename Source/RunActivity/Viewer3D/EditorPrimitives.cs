@@ -19,8 +19,6 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Orts.Viewer3D.Common;
-using Orts.Viewer3D.Processes;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -33,8 +31,8 @@ namespace Orts.Viewer3D
         public bool MouseCrosshairEnabled { get; set; }
         public StaticShape SelectedObject { get; set; }
         StaticShape _selectedObject;
-        BoundingBoxPrimitive SelectedObjectBoundingBoxPrimitive;
-        List<EditorPrimitive> UnusedPrimitives = new List<EditorPrimitive>();
+        readonly List<BoundingBoxPrimitive> SelectedObjectBoundingBoxPrimitives = new List<BoundingBoxPrimitive>();
+        readonly List<EditorPrimitive> UnusedPrimitives = new List<EditorPrimitive>();
 
         public EditorShapes(Viewer viewer) : base(viewer, "", null, ShapeFlags.None, null, -1)
         {
@@ -46,18 +44,36 @@ namespace Orts.Viewer3D
             if (_selectedObject != SelectedObject)
             {
                 _selectedObject = SelectedObject;
-                UnusedPrimitives.Add(SelectedObjectBoundingBoxPrimitive);
-                SelectedObjectBoundingBoxPrimitive = _selectedObject?.BoundingBox == null ? null :
-                    new BoundingBoxPrimitive(Viewer, _selectedObject.BoundingBox.Value, Color.CornflowerBlue);
+                if (UnusedPrimitives.Count > 0)
+                {
+                    foreach (var primitive in UnusedPrimitives)
+                    {
+                        //primitive.Dispose();
+                    }
+                    //UnusedPrimitives.Clear();
+                }
+                UnusedPrimitives.AddRange(SelectedObjectBoundingBoxPrimitives);
+                SelectedObjectBoundingBoxPrimitives.Clear();
+                if (_selectedObject?.BoundingBox?.Length > 0)
+                {
+                    foreach (var boundingBox in _selectedObject.BoundingBox)
+                    {
+                        SelectedObjectBoundingBoxPrimitives.Add(new BoundingBoxPrimitive(Viewer, boundingBox, Color.CornflowerBlue));
+                    }
+                }
             }
-            if (SelectedObjectBoundingBoxPrimitive != null)
+            if (SelectedObjectBoundingBoxPrimitives?.Count > 0)
             {
-                var dTileX = _selectedObject.Location.TileX - Viewer.Camera.TileX;
-                var dTileZ = _selectedObject.Location.TileZ - Viewer.Camera.TileZ;
-                var xnaDTileTranslation = _selectedObject.Location.XNAMatrix;
-                xnaDTileTranslation.M41 += dTileX * 2048;
-                xnaDTileTranslation.M43 -= dTileZ * 2048;
-                frame.AddPrimitive(SelectedObjectBoundingBoxPrimitive.Material, SelectedObjectBoundingBoxPrimitive, RenderPrimitiveGroup.Labels, ref xnaDTileTranslation);
+                foreach (var boundingBox in SelectedObjectBoundingBoxPrimitives)
+                {
+                    var dTileX = _selectedObject.Location.TileX - Viewer.Camera.TileX;
+                    var dTileZ = _selectedObject.Location.TileZ - Viewer.Camera.TileZ;
+                    var xnaDTileTranslation = _selectedObject.Location.XNAMatrix;
+                    xnaDTileTranslation.M41 += dTileX * 2048;
+                    xnaDTileTranslation.M43 -= dTileZ * 2048;
+                    xnaDTileTranslation = boundingBox.ComplexTransform * xnaDTileTranslation;
+                    frame.AddPrimitive(boundingBox.Material, boundingBox, RenderPrimitiveGroup.Labels, ref xnaDTileTranslation);
+                }
             }
             if (MouseCrosshairEnabled)
             {
@@ -73,13 +89,25 @@ namespace Orts.Viewer3D
         internal override void Mark()
         {
             MouseCrosshair.Mark();
-            SelectedObjectBoundingBoxPrimitive.Mark();
+            if (SelectedObjectBoundingBoxPrimitives?.Count > 0)
+            {
+                foreach (var selectedObject in SelectedObjectBoundingBoxPrimitives)
+                {
+                    selectedObject.Mark();
+                }
+            }
         }
 
         public void Dispose()
         {
             MouseCrosshair?.Dispose();
-            SelectedObjectBoundingBoxPrimitive?.Dispose();
+            if (SelectedObjectBoundingBoxPrimitives?.Count > 0)
+            {
+                foreach (var selectedObject in SelectedObjectBoundingBoxPrimitives)
+                {
+                    selectedObject.Dispose();
+                }
+            }
         }
     }
 
@@ -106,6 +134,7 @@ namespace Orts.Viewer3D
     public class BoundingBoxPrimitive : EditorPrimitive
     {
         static IndexBuffer BoundingBoxIndexBuffer;
+        public readonly Matrix ComplexTransform;
 
         public BoundingBoxPrimitive(Viewer viewer, BoundingBox boundingBox, Color color)
         {
@@ -132,6 +161,7 @@ namespace Orts.Viewer3D
             PrimitiveCount = IndexBuffer.IndexCount / 2;
             PrimitiveType = PrimitiveType.LineList;
             Material = viewer.MaterialManager.Load("DebugNormals");
+            ComplexTransform = boundingBox.ComplexTransform;
         }
     }
 

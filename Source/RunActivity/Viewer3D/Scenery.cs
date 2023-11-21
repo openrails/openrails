@@ -249,6 +249,11 @@ namespace Orts.Viewer3D
         readonly Viewer Viewer;
 
         /// <summary>
+        /// When in editor mode, store the source w file.
+        /// </summary>
+        public Orts.Formats.Msts.WorldFile MstsWFile;
+
+        /// <summary>
         /// Open the specified WFile and load all the scenery objects into the viewer.
         /// If the file doesn't exist, then return an empty WorldFile object.
         /// </summary>
@@ -286,7 +291,8 @@ namespace Orts.Viewer3D
                 WFile.InsertORSpecificData(WFilePath, null);
             }
 
-
+            if (Viewer.EditorMode)
+                MstsWFile = WFile;
 
             // to avoid loop checking for every object this pre-check is performed
             bool containsMovingTable = false;
@@ -344,14 +350,42 @@ namespace Orts.Viewer3D
                     }
                 }
 
-                BoundingBox? boundingBox = null;
+                BoundingBox[] boundingBox = null;
                 if (shapeFilePath != null && File.Exists(shapeFilePath + "d"))
                 {
                     var shape = new ShapeDescriptorFile(shapeFilePath + "d");
+                    if (shape.shape.ESD_Complex?.Count > 0)
+                    {
+                        boundingBox = new BoundingBox[shape.shape.ESD_Complex.Count];
+                        for (var i = 0; i < shape.shape.ESD_Complex.Count; i++)
+                        {
+                            var complex = shape.shape.ESD_Complex[i];
+                            var complexTransform = Matrix.Identity
+                                * Matrix.CreateFromYawPitchRoll(complex.Rotation.Y, complex.Rotation.X, complex.Rotation.Z)
+                                * Matrix.CreateTranslation(complex.Translation.X, complex.Translation.Y, complex.Translation.Z);
+                            boundingBox[i] = new BoundingBox(complexTransform, Matrix.Invert(worldMatrix.XNAMatrix), Vector3.Zero, worldMatrix.XNAMatrix.Translation.Y, Vector3.Zero, Vector3.Zero);
+                        }
+                    }
                     if (shape.shape.ESD_Bounding_Box != null)
                     {
                         var min = shape.shape.ESD_Bounding_Box.Min;
                         var max = shape.shape.ESD_Bounding_Box.Max;
+                        var extra = shape.shape.ESD_Bounding_Box.Extra;
+                        if (Math.Max(Math.Min(min.X, max.X) - extra.X, extra.X - Math.Max(min.X, max.X)) is var dx && dx > 0)
+                        {
+                            if (min.X < max.X) { min.X -= dx; max.X += dx; }
+                            else { min.X += dx; max.X -= dx; }
+                        }
+                        if (Math.Max(Math.Min(min.Y, max.Y) - extra.Y, extra.Y - Math.Max(min.Y, max.Y)) is var dy && dy > 0)
+                        {
+                            if (min.Y < max.Y) { min.Y -= dy; max.Y += dy; }
+                            else { min.Y += dy; max.Y -= dy; }
+                        }
+                        if (Math.Max(Math.Min(min.Z, max.Z) - extra.Z, extra.Z - Math.Max(min.Z, max.Z)) is var dz && dz > 0)
+                        {
+                            if (min.Z < max.Z) { min.Z -= dz; max.Z += dz; }
+                            else { min.Z += dz; max.Z -= dz; }
+                        }
                         var transform = Matrix.Invert(worldMatrix.XNAMatrix);
                         // Not sure if this is needed, but it is to correct for center-of-gravity being not the center of the box.
                         //transform.M41 += (max.X + min.X) / 2;
@@ -359,8 +393,8 @@ namespace Orts.Viewer3D
                         //transform.M43 += (max.Z + min.Z) / 2;
                         var minVec3 = new Vector3(min.X, min.Y, -min.Z);
                         var maxVec3 = new Vector3(max.X, max.Y, -max.Z);
-                        boundingBox = new BoundingBox(transform, new Vector3((max.X - min.X) / 2, (max.Y - min.Y) / 2, (max.Z - min.Z) / 2), worldMatrix.XNAMatrix.Translation.Y, minVec3, maxVec3);
-                        BoundingBoxes.Add(boundingBox.Value);
+                        boundingBox = new BoundingBox[] { new BoundingBox(Matrix.Identity, transform, new Vector3((max.X - min.X) / 2, (max.Y - min.Y) / 2, (max.Z - min.Z) / 2), worldMatrix.XNAMatrix.Translation.Y, minVec3, maxVec3) };
+                        BoundingBoxes.Add(boundingBox[0]);
                     }
                 }
 
@@ -422,46 +456,46 @@ namespace Orts.Viewer3D
                             || viewer.EditorMode
                             )
                         {
-                            int success = Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, worldMatrix, (int)worldObject.UID);
+                            int success = Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, worldMatrix);
                             //if cannot draw wire, try to see if it is converted. modified for DynaTrax
-                            if (success == 0 && trackObj.FileName.Contains("Dyna")) Wire.DecomposeConvertedDynamicWire(viewer, dTrackList, trackObj, worldMatrix, (int)worldObject.UID);
+                            if (success == 0 && trackObj.FileName.Contains("Dyna")) Wire.DecomposeConvertedDynamicWire(viewer, dTrackList, trackObj, worldMatrix);
                         }
                     }
                     else if (worldObject.GetType() == typeof(DyntrackObj))
                     {
                         if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
-                            Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix, (int)worldObject.UID);
+                            Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
                         // Add DyntrackDrawers for individual subsections
                         if (viewer.Simulator.UseSuperElevation > 0 && SuperElevationManager.UseSuperElevationDyn(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix))
-                            SuperElevationManager.DecomposeDynamicSuperElevation(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix, (int)worldObject.UID);
-                        else DynamicTrack.Decompose(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix, (int)worldObject.UID);
+                            SuperElevationManager.DecomposeDynamicSuperElevation(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+                        else DynamicTrack.Decompose(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
 
                     } // end else if DyntrackObj
                     else if (worldObject.GetType() == typeof(ForestObj))
                     {
                         if (!(worldObject as ForestObj).IsYard)
-                            forestList.Add(new ForestViewer(viewer, (ForestObj)worldObject, worldMatrix, (int)worldObject.UID));
+                            forestList.Add(new ForestViewer(viewer, (ForestObj)worldObject, worldMatrix));
                     }
                     else if (worldObject.GetType() == typeof(SignalObj))
                     {
-                        sceneryObjects.Add(new SignalShape(viewer, (SignalObj)worldObject, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, boundingBox, (int)worldObject.UID));
+                        sceneryObjects.Add(new SignalShape(viewer, (SignalObj)worldObject, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, boundingBox));
                     }
                     else if (worldObject.GetType() == typeof(TransferObj))
                     {
-                        sceneryObjects.Add(new TransferShape(viewer, (TransferObj)worldObject, worldMatrix, boundingBox, (int)worldObject.UID));
+                        sceneryObjects.Add(new TransferShape(viewer, (TransferObj)worldObject, worldMatrix, boundingBox));
                     }
                     else if (worldObject.GetType() == typeof(LevelCrossingObj))
                     {
-                        sceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (LevelCrossingObj)worldObject, boundingBox, (int)worldObject.UID));
+                        sceneryObjects.Add(new LevelCrossingShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (LevelCrossingObj)worldObject, boundingBox));
                     }
                     else if (worldObject.GetType() == typeof(HazardObj))
                     {
-                        var h = HazzardShape.CreateHazzard(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (HazardObj)worldObject, boundingBox, (int)worldObject.UID);
+                        var h = HazzardShape.CreateHazzard(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (HazardObj)worldObject, boundingBox);
                         if (h != null) sceneryObjects.Add(h);
                     }
                     else if (worldObject.GetType() == typeof(SpeedPostObj))
                     {
-                        sceneryObjects.Add(new SpeedPostShape(viewer, shapeFilePath, worldMatrix, (SpeedPostObj)worldObject, boundingBox, (int)worldObject.UID));
+                        sceneryObjects.Add(new SpeedPostShape(viewer, shapeFilePath, worldMatrix, (SpeedPostObj)worldObject, boundingBox));
                     }
                     else if (worldObject.GetType() == typeof(CarSpawnerObj))
                     {
@@ -473,15 +507,15 @@ namespace Orts.Viewer3D
                         }
                         else
                             ((CarSpawnerObj)worldObject).CarSpawnerListIdx = 0;
-                        carSpawners.Add(new RoadCarSpawner(viewer, worldMatrix, (CarSpawnerObj)worldObject, (int)worldObject.UID));
+                        carSpawners.Add(new RoadCarSpawner(viewer, worldMatrix, (CarSpawnerObj)worldObject));
                     }
                     else if (worldObject.GetType() == typeof(SidingObj))
                     {
-                        sidings.Add(new TrItemLabel(viewer, worldMatrix, (SidingObj)worldObject, (int)worldObject.UID));
+                        sidings.Add(new TrItemLabel(viewer, worldMatrix, (SidingObj)worldObject));
                     }
                     else if (worldObject.GetType() == typeof(PlatformObj))
                     {
-                        platforms.Add(new TrItemLabel(viewer, worldMatrix, (PlatformObj)worldObject, (int)worldObject.UID));
+                        platforms.Add(new TrItemLabel(viewer, worldMatrix, (PlatformObj)worldObject));
                     }
                     else if (worldObject.GetType() == typeof(StaticObj))
                     {
@@ -510,10 +544,10 @@ namespace Orts.Viewer3D
                     {
                         if ((worldObject as PickupObj).PickupType == (uint)(MSTSWagon.PickupType.Container))
                         {
-                            sceneryObjects.Add(new ContainerHandlingItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject, boundingBox, (int)worldObject.UID));
+                            sceneryObjects.Add(new ContainerHandlingItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject, boundingBox));
                         }
                         else
-                        sceneryObjects.Add(new FuelPickupItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject, boundingBox, (int)worldObject.UID));
+                        sceneryObjects.Add(new FuelPickupItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject, boundingBox));
                         PickupList.Add((PickupObj)worldObject);
                     }
                     else // It's some other type of object - not one of the above.
@@ -737,14 +771,24 @@ namespace Orts.Viewer3D
 
     public struct BoundingBox
     {
+        /// <summary>
+        /// Inverse world transform for precipitation calculation
+        /// </summary>
         public readonly Matrix Transform;
+
+        /// <summary>
+        /// Box transform inside the complex bounding box definition
+        /// </summary>
+        public readonly Matrix ComplexTransform;
+
         public readonly Vector3 Size;
         public readonly float Height;
         public readonly Vector3 Min;
         public readonly Vector3 Max;
 
-        internal BoundingBox(Matrix transform, Vector3 size, float height, Vector3 min, Vector3 max)
+        public BoundingBox(Matrix complexTransform, Matrix transform, Vector3 size, float height, Vector3 min, Vector3 max)
         {
+            ComplexTransform = complexTransform;
             Transform = transform;
             Size = size;
             Height = height;

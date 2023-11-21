@@ -197,7 +197,7 @@ namespace ORTS.TrackViewer
             {
                 if (TrackViewer.RenderProcess.Viewer?.Tiles == null)
                 {
-                    if (i > 50)
+                    if (i > 300)
                         return;
                     await Task.Delay(100);
                     i++;
@@ -211,13 +211,13 @@ namespace ORTS.TrackViewer
             TrackViewer.RenderProcess.Viewer.ViewerCamera.SetLocation(mouseLocation);
         }
 
-        protected bool PickByMouse(out StaticShape pickedObject)
+        protected bool PickByMouse(out StaticShape pickedObjectOut)
         {
             var viewer = TrackViewer.RenderProcess.Viewer;
 
             if (viewer == null)
             {
-                pickedObject = null;
+                pickedObjectOut = null;
                 return false;
             }
 
@@ -226,47 +226,75 @@ namespace ORTS.TrackViewer
             var direction = Vector3.Normalize(viewer.FarPoint - viewer.NearPoint);
             var pickRay = new Ray(viewer.NearPoint, direction);
 
-            pickedObject = null;
+            object pickedObject = null;
             var pickedDistance = float.MaxValue;
+            var boundingBoxes = new Orts.Viewer3D.BoundingBox[1];
             foreach (var worldFile in viewer.World.Scenery.WorldFiles)
             {
-                foreach (var sceneryObject in worldFile.sceneryObjects)
+                foreach (var checkedObject in worldFile.sceneryObjects)
                 {
-                    float? distance = null;
+                    checkObject(checkedObject, checkedObject.BoundingBox, checkedObject.Location);
+                }
+                foreach (var checkedObject in worldFile.forestList)
+                {
+                    var min = new Vector3(-checkedObject.ForestArea.X / 2, -checkedObject.ForestArea.Y / 2, 0);
+                    var max = new Vector3(checkedObject.ForestArea.X / 2, checkedObject.ForestArea.Y / 2, 15);
+                    boundingBoxes[0] = new Orts.Viewer3D.BoundingBox(Matrix.Identity, Matrix.Identity, Vector3.Zero, 0, min, max);
+                    checkObject(checkedObject, boundingBoxes, checkedObject.Position);
+                }
+            }
 
-                    if (sceneryObject.BoundingBox is Orts.Viewer3D.BoundingBox boundingBox)
+            void checkObject(object checkedObject, Orts.Viewer3D.BoundingBox[] checkedBoundingBox, WorldPosition checkedLocation)
+            {
+                if (checkedBoundingBox?.Length > 0)
+                {
+                    foreach (var boundingBox in checkedBoundingBox)
                     {
                         // Locate relative to the camera
-                        var dTileX = sceneryObject.Location.TileX - camera.TileX;
-                        var dTileZ = sceneryObject.Location.TileZ - camera.TileZ;
-                        var xnaDTileTranslation = sceneryObject.Location.XNAMatrix;
+                        var dTileX = checkedLocation.TileX - camera.TileX;
+                        var dTileZ = checkedLocation.TileZ - camera.TileZ;
+                        var xnaDTileTranslation = checkedLocation.XNAMatrix;
                         xnaDTileTranslation.M41 += dTileX * 2048;
                         xnaDTileTranslation.M43 -= dTileZ * 2048;
+                        xnaDTileTranslation = boundingBox.ComplexTransform * xnaDTileTranslation;
 
                         var min = Vector3.Transform(boundingBox.Min, xnaDTileTranslation);
                         var max = Vector3.Transform(boundingBox.Max, xnaDTileTranslation);
 
                         var xnabb = new Microsoft.Xna.Framework.BoundingBox(min, max);
-                        distance = pickRay.Intersects(xnabb);
-                    }
-                    else
-                    {
-                        var radius = 10f;
-                        var boundingSphere = new BoundingSphere(camera.XnaLocation(sceneryObject.Location.WorldLocation), radius);
-                        distance = pickRay.Intersects(boundingSphere);
-                    }
-
-                    if (distance != null)
-                    {
-                        if (distance < pickedDistance)
-                        {
-                            pickedDistance = distance.Value;
-                            pickedObject = sceneryObject;
-                        }
+                        checkDistance(checkedObject, pickRay.Intersects(xnabb));
                     }
                 }
+                else
+                {
+                    var radius = 10f;
+                    var boundingSphere = new BoundingSphere(camera.XnaLocation(checkedLocation.WorldLocation), radius);
+                    checkDistance(checkedObject, pickRay.Intersects(boundingSphere));
+                }
             }
-            return pickedObject != null;
+
+            void checkDistance(object checkedObject, float? checkedDistance)
+            {
+                if (checkedDistance != null && checkedDistance < pickedDistance)
+                {
+                    pickedDistance = checkedDistance.Value;
+                    pickedObject = checkedObject;
+                }
+            }
+
+            pickedObjectOut = pickedObject as StaticShape;
+
+            if (pickedObjectOut != null)
+            {
+                var ppp = pickedObjectOut;
+                var sb = new StringBuilder();
+                var aaa = TrackViewer.RenderProcess.Viewer.World.Scenery.WorldFiles.Where(w =>
+                    w.TileX == ppp.Location.TileX && w.TileZ == ppp.Location.TileZ).ToArray();
+                var bbb = aaa[0].MstsWFile;
+                bbb.Tr_Worldfile.Serialize(sb);
+                var ccc = sb.ToString();
+            }
+            return pickedObjectOut != null;
         }
 
         void FillSelectedObjectData()
