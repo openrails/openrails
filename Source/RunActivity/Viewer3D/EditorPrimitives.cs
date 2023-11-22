@@ -29,10 +29,12 @@ namespace Orts.Viewer3D
     {
         public readonly MouseCrosshair MouseCrosshair;
         public bool MouseCrosshairEnabled { get; set; }
+        public bool CrosshairPositionUpdateEnabled { get; set; } = true;
         public StaticShape SelectedObject { get; set; }
         StaticShape _selectedObject;
         readonly List<BoundingBoxPrimitive> SelectedObjectBoundingBoxPrimitives = new List<BoundingBoxPrimitive>();
         readonly List<EditorPrimitive> UnusedPrimitives = new List<EditorPrimitive>();
+        Vector3 CrosshairPosition;
 
         public EditorShapes(Viewer viewer) : base(viewer, "", null, ShapeFlags.None, null, -1)
         {
@@ -77,10 +79,13 @@ namespace Orts.Viewer3D
             }
             if (MouseCrosshairEnabled)
             {
-                var mouseCrosshairPosition = (Viewer.Camera as ViewerCamera)?.GetCursorTerrainIntersection() ?? Viewer.NearPoint;
-                if (mouseCrosshairPosition != Viewer.NearPoint)
+                if (CrosshairPositionUpdateEnabled)
                 {
-                    var mouseCrosshairMatrix = Matrix.CreateTranslation(mouseCrosshairPosition);
+                    CrosshairPosition = Viewer.TerrainPoint;
+                }
+                if (CrosshairPosition != Viewer.NearPoint)
+                {
+                    var mouseCrosshairMatrix = Matrix.CreateTranslation(CrosshairPosition);
                     frame.AddPrimitive(MouseCrosshair.Material, MouseCrosshair, RenderPrimitiveGroup.World, ref mouseCrosshairMatrix);
                 }
             }
