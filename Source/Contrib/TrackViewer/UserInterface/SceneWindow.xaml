@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:ORTS.TrackViewer.UserInterface"
+        xmlns:local="clr-namespace:ORTS.TrackViewer"
         mc:Ignorable="d"
         Title="Scene View" SizeToContent="WidthAndHeight">
     <DockPanel LastChildFill="True">
@@ -114,47 +114,52 @@
         </StatusBar>
         <Border BorderThickness="2">
             <StackPanel Orientation="Vertical" Width="150">
-                <TextBox FontWeight="Bold" Name="Filename"/>
-                <DockPanel>
-                    <TextBlock Text="UID: " PreviewTextInput="UintValidationTextBox"/>
-                    <TextBlock Name="Uid"/>
-                </DockPanel>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="Tile X: " />
-                    <TextBox Grid.Column="1" Name="TileX" PreviewTextInput="IntValidationTextBox"></TextBox>
-                    <TextBlock Grid.Column="2" Text=" Z: " />
-                    <TextBox Grid.Column="3" Name="TileZ" PreviewTextInput="IntValidationTextBox"></TextBox>
-                </Grid>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="Position" HorizontalAlignment="Center"/>
-                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Rotation" HorizontalAlignment="Center"/>
-                    <TextBlock Grid.Row="1" Text="X: "/>
-                    <TextBlock Grid.Row="2" Text="Y: "/>
-                    <TextBlock Grid.Row="3" Text="Z: "/>
-                    <TextBox Grid.Row="1" Grid.Column="1" x:Name="PosX" PreviewTextInput="FloatValidationTextBox"/>
-                    <TextBox Grid.Row="2" Grid.Column="1" x:Name="PosY" PreviewTextInput="FloatValidationTextBox"/>
-                    <TextBox Grid.Row="3" Grid.Column="1" x:Name="PosZ" PreviewTextInput="FloatValidationTextBox"/>
-                    <TextBox Grid.Row="1" Grid.Column="2" x:Name="RotX" PreviewTextInput="FloatValidationTextBox"/>
-                    <TextBox Grid.Row="2" Grid.Column="2" x:Name="RotY" PreviewTextInput="FloatValidationTextBox"/>
-                    <TextBox Grid.Row="3" Grid.Column="2" x:Name="RotZ" PreviewTextInput="FloatValidationTextBox"/>
-                </Grid>
+                <StackPanel.DataContext>
+                    <local:SceneViewer/>
+                </StackPanel.DataContext>
+                <ItemsControl ItemsSource="{Binding SelectedWorldObject}">
+                    <TextBox FontWeight="Bold" Name="Filename" Text="{Binding SelectedWorldObject.FileName}"/>
+                    <DockPanel>
+                        <TextBlock Text="UID: " PreviewTextInput="UintValidationTextBox"/>
+                        <TextBlock Name="Uid" Text="{Binding SelectedWorldObject.UID}"/>
+                    </DockPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Tile X: " />
+                        <TextBox Grid.Column="1" Name="TileX" PreviewTextInput="IntValidationTextBox" Text="{Binding SelectedObject.Location.TileX}" />
+                        <TextBlock Grid.Column="2" Text=" Z: " />
+                        <TextBox Grid.Column="3" Name="TileZ" PreviewTextInput="IntValidationTextBox" Text="{Binding SelectedObject.Location.TileZ}" />
+                    </Grid>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="Position" HorizontalAlignment="Center"/>
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="Rotation" HorizontalAlignment="Center"/>
+                        <TextBlock Grid.Row="1" Text="X: "/>
+                        <TextBlock Grid.Row="2" Text="Y: "/>
+                        <TextBlock Grid.Row="3" Text="Z: "/>
+                        <TextBox Grid.Row="1" Grid.Column="1" x:Name="PosX" Text="{Binding SelectedObject.Location.Location.X, StringFormat=N3}" PreviewTextInput="FloatValidationTextBox"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" x:Name="PosY" Text="{Binding SelectedObject.Location.Location.Y, StringFormat=N3}" PreviewTextInput="FloatValidationTextBox"/>
+                        <TextBox Grid.Row="3" Grid.Column="1" x:Name="PosZ" Text="{Binding SelectedObject.Location.Location.Z, StringFormat=N3}" PreviewTextInput="FloatValidationTextBox"/>
+                        <TextBox Grid.Row="1" Grid.Column="2" x:Name="RotX" PreviewTextInput="FloatValidationTextBox"/>
+                        <TextBox Grid.Row="2" Grid.Column="2" x:Name="RotY" PreviewTextInput="FloatValidationTextBox"/>
+                        <TextBox Grid.Row="3" Grid.Column="2" x:Name="RotZ" PreviewTextInput="FloatValidationTextBox"/>
+                    </Grid>
+                </ItemsControl>
             </StackPanel>
         </Border>
         <Grid DockPanel.Dock="Bottom" x:Name="GraphicsHostElement" />
