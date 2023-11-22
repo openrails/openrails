@@ -330,7 +330,9 @@ namespace ORTS.TrackViewer
             {
                 lostFocus = true;
                 if (this.IsRenderWindowActive)
+                {
                     base.Update(gameTime);
+                }
                 return;
             }
 
