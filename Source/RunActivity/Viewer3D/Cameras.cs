@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
@@ -263,7 +264,7 @@ namespace Orts.Viewer3D
         }
 
         // TODO: Add a way to record this zoom operation for Replay.
-        protected virtual void ZoomByMouseWheel(float speed)
+        public virtual void ZoomByMouseWheel(float speed)
         {
             // Will not zoom-in-out when help windows is up.
             // TODO: Property input processing through WindowManager.
@@ -461,7 +462,7 @@ namespace Orts.Viewer3D
             return delta * mouseMovementPixels;
         }
 
-        protected virtual void RotateByMouse()
+        public virtual void RotateByMouse()
         {
             if (UserInput.IsMouseRightButtonDown)
             {
@@ -779,8 +780,11 @@ namespace Orts.Viewer3D
 
     public class ViewerCamera : FreeRoamCamera
     {
-        public Vector3 CursorPoint { get; private set; }
-        bool CursorPointDirtyFlag = true;
+        Vector3 RotationOrigin;
+        Vector3 RotationDirection;
+        float RotationRadius;
+        float RotationReferenceAngleX;
+        float RotationReferenceAngleY;
 
         public ViewerCamera(Viewer viewer)
             : base(viewer)
@@ -789,46 +793,62 @@ namespace Orts.Viewer3D
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            CursorPointDirtyFlag |= UserInput.MouseMoveX != 0 || UserInput.MouseMoveY != 0;
-            
-            var pan = UserInput.IsMouseMiddleButtonDown && UserInput.ModifiersMaskShiftCtrlAlt(true, false, false);
-            //var pick = UserInput.IsMouseLeftButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false);
-            var rotate = UserInput.IsMouseMiddleButtonDown && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false);
-
-            if (UserInput.IsMouseMiddleButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
-                RotationOrigin = GetCursorTerrainIntersection();
-
-            if (pan) PanByMouse();
-            else if (rotate) RotateByMouse();
-            else ZoomByMouseWheel(GetSpeed(elapsedTime));
+            // The UserInput code goes to the consuming class according to the architecture,
+            // this class is intentionally lacks calling the base(elapsedTime).
         }
 
-        protected override void ZoomByMouseWheel(float speed)
+        public override void ZoomByMouseWheel(float speed)
         {
+            // The UserInput code goes to the consuming class according to the architecture, only the functionality is implemented here
+
             ZoomIn(speed * UserInput.MouseWheelChange * ZoomFactor);
         }
 
-        Vector3 RotationOrigin;
-        protected override void RotateByMouse()
+        public override void RotateByMouse()
         {
-            //var cl = cameraLocation.Location;
-            //cl.Z *= -1;
-            //var l = cl;
-            //l = Vector3.Transform(l, Matrix.CreateTranslation(RotationOrigin - cl));
-            //l = Vector3.Transform(l, Matrix.CreateRotationX(GetMouseDelta(UserInput.MouseMoveY)));
-            //l = Vector3.Transform(l, Matrix.CreateRotationY(GetMouseDelta(UserInput.MouseMoveX)));
-            //l = Vector3.Transform(l, Matrix.CreateTranslation(cl - RotationOrigin));
-            //l.Z *= -1;
-            //cameraLocation.Location = l;
+            // The UserInput code goes to the consuming class according to the architecture, only the functionality is implemented here
 
-            // Mouse movement doesn't use 'var speed' because the MouseMove 
-            // parameters are already scaled down with increasing frame rates, 
             RotationXRadians += GetMouseDelta(UserInput.MouseMoveY);
             RotationYRadians += GetMouseDelta(UserInput.MouseMoveX);
+            RotationXRadians = MathHelper.WrapAngle(RotationXRadians);
+            RotationYRadians = MathHelper.WrapAngle(RotationYRadians);
+
+            // Method 1
+            //var deltaAngleX = MathHelper.WrapAngle(GetMouseDelta(UserInput.MouseMoveY));
+            //var deltaAngleY = MathHelper.WrapAngle(GetMouseDelta(UserInput.MouseMoveX));
+            //var direction = Vector3.Normalize(XnaLocation(CameraWorldLocation) - RotationOrigin);
+            //var transform = Matrix.CreateFromYawPitchRoll(-deltaAngleY, -deltaAngleX, 0);
+            //var newLocation = RotationOrigin + RotationRadius * Vector3.Transform(direction, transform);
+            //newLocation.Z *= -1;
+            //var newWorldLocation = CameraWorldLocation;
+            //newWorldLocation.Location = newLocation;
+
+            // Method 2
+            //var deltaAngleX = MathHelper.WrapAngle(RotationXRadians - RotationReferenceAngleX);
+            //var deltaAngleY = MathHelper.WrapAngle(RotationYRadians - RotationReferenceAngleY);
+            //var transform = Matrix.CreateFromYawPitchRoll(-deltaAngleY, -deltaAngleX, 0);
+            //var newLocation = RotationOrigin + RotationRadius * Vector3.Transform(RotationDirection, transform);
+            //newLocation.Z *= -1;
+            //var newWorldLocation = CameraWorldLocation;
+            //newWorldLocation.Location = newLocation;
+
+            //SetLocation(newWorldLocation);
         }
 
-        protected void PanByMouse()
+        public void StoreRotationOrigin(Vector3 rotationOrigin)
         {
+            RotationOrigin = rotationOrigin;
+            RotationDirection = XnaLocation(CameraWorldLocation) - RotationOrigin;
+            RotationRadius = RotationDirection.Length();
+            RotationDirection = Vector3.Normalize(RotationDirection);
+            RotationReferenceAngleX = RotationXRadians;
+            RotationReferenceAngleY = RotationYRadians;
+        }
+
+        public void PanByMouse()
+        {
+            // The UserInput code goes to the consuming class according to the architecture, only the functionality is implemented here
+
             var previousFarSource = new Vector3(UserInput.MouseX - UserInput.MouseMoveX, UserInput.MouseY - UserInput.MouseMoveY, 1);
             var previousFarPoint = Viewer.DefaultViewport.Unproject(previousFarSource, XnaProjection, XnaView, Matrix.Identity);
             var movement = Viewer.FarPoint - previousFarPoint;
@@ -845,38 +865,77 @@ namespace Orts.Viewer3D
             SetLocation(location);
         }
 
-        public Vector3 GetCursorTerrainIntersection()
+        public bool PickByMouse(out StaticShape pickedObjectOut)
         {
-            if (!CursorPointDirtyFlag)
-                return CursorPoint;
+            // The UserInput code goes to the consuming class by the accepted architecture, only the functionality is implemented here
 
-            var threshold = 0.1f;
-            var nearPoint = Viewer.NearPoint;
-            var farPoint = Viewer.FarPoint;
-            var midPoint = farPoint;
-            for (var i = 0; i < 16; i++)
+            if (Viewer == null)
             {
-                var terrainLevel = Viewer.Tiles.GetElevation(TileX, TileZ, midPoint.X, -midPoint.Z);
-                var delta = Math.Abs(midPoint.Y - terrainLevel);
-                if (delta < threshold)
+                pickedObjectOut = null;
+                return false;
+            }
+
+            var direction = Vector3.Normalize(Viewer.FarPoint - Viewer.NearPoint);
+            var pickRay = new Ray(Viewer.NearPoint, direction);
+
+            object pickedObject = null;
+            var pickedDistance = float.MaxValue;
+            var boundingBoxes = new Orts.Viewer3D.BoundingBox[1];
+            foreach (var worldFile in Viewer.World.Scenery.WorldFiles)
+            {
+                foreach (var checkedObject in worldFile.sceneryObjects)
                 {
-                    midPoint.Y = terrainLevel;
-                    break;
+                    checkObject(checkedObject, checkedObject.BoundingBox, checkedObject.Location);
                 }
-                if ((midPoint.Y > terrainLevel) ^ (nearPoint.Y < farPoint.Y))
+                foreach (var checkedObject in worldFile.forestList)
                 {
-                    nearPoint = midPoint;
-                    midPoint += (farPoint - midPoint) * 0.5f;
+                    var min = new Vector3(-checkedObject.ForestArea.X / 2, -checkedObject.ForestArea.Y / 2, 0);
+                    var max = new Vector3(checkedObject.ForestArea.X / 2, checkedObject.ForestArea.Y / 2, 15);
+                    boundingBoxes[0] = new Orts.Viewer3D.BoundingBox(Matrix.Identity, Matrix.Identity, Vector3.Zero, 0, min, max);
+                    checkObject(checkedObject, boundingBoxes, checkedObject.Position);
+                }
+            }
+
+            void checkObject(object checkedObject, Orts.Viewer3D.BoundingBox[] checkedBoundingBoxes, WorldPosition checkedPosition)
+            {
+                if (checkedBoundingBoxes?.Length > 0)
+                {
+                    foreach (var checkedBoundingBox in checkedBoundingBoxes)
+                    {
+                        // Locate relative to the camera
+                        var dTileX = checkedPosition.TileX - TileX;
+                        var dTileZ = checkedPosition.TileZ - TileZ;
+                        var xnaDTileTranslation = checkedPosition.XNAMatrix;
+                        xnaDTileTranslation.M41 += dTileX * 2048;
+                        xnaDTileTranslation.M43 -= dTileZ * 2048;
+                        xnaDTileTranslation = checkedBoundingBox.ComplexTransform * xnaDTileTranslation;
+
+                        var min = Vector3.Transform(checkedBoundingBox.Min, xnaDTileTranslation);
+                        var max = Vector3.Transform(checkedBoundingBox.Max, xnaDTileTranslation);
+
+                        var boundingBox = new Microsoft.Xna.Framework.BoundingBox(min, max);
+                        checkDistance(checkedObject, pickRay.Intersects(boundingBox));
+                    }
                 }
                 else
                 {
-                    farPoint = midPoint;
-                    midPoint += (nearPoint - midPoint) * 0.5f;
+                    var radius = 10f;
+                    var boundingSphere = new BoundingSphere(XnaLocation(checkedPosition.WorldLocation), radius);
+                    checkDistance(checkedObject, pickRay.Intersects(boundingSphere));
                 }
             }
-            CursorPoint = midPoint;
-            CursorPointDirtyFlag = false;
-            return CursorPoint;
+
+            void checkDistance(object checkedObject, float? checkedDistance)
+            {
+                if (checkedDistance != null && checkedDistance < pickedDistance)
+                {
+                    pickedDistance = checkedDistance.Value;
+                    pickedObject = checkedObject;
+                }
+            }
+
+            pickedObjectOut = pickedObject as StaticShape;
+            return pickedObjectOut != null;
         }
 
 
@@ -1822,7 +1881,7 @@ namespace Orts.Viewer3D
         /// Remembers angle of camera to apply when user returns to this type of car.
         /// </summary>
         /// <param name="speed"></param>
-        protected override void RotateByMouse()
+        public override void RotateByMouse()
         {
             base.RotateByMouse();
             if (UserInput.IsMouseRightButtonReleased)

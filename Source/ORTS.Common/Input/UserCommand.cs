@@ -239,7 +239,8 @@
         [GetString("Control Cruise Control Mode Decrease")] ControlCruiseControlModeDecrease,
         [GetString("Control Train Type Change (Passenger/Cargo)")] ControlTrainTypePaxCargo,
         [GetString("Control Selected Speed To Zero")] ControlSpeedRegulatorSelectedSpeedToZero,
-        //Distributed power
+
+        // Distributed power
         [GetString("Control DP Move To Front")] ControlDPMoveToFront,
         [GetString("Control DP Move To Back")] ControlDPMoveToBack,
         [GetString("Control DP Traction")] ControlDPTraction,
@@ -247,5 +248,8 @@
         [GetString("Control DP Brake")] ControlDPBrake,
         [GetString("Control DP More")] ControlDPMore,
         [GetString("Control DP Less")] ControlDPLess,
+
+        // Editor
+        [GetString("Editor Unselect All")] EditorUnselectAll,
     }
 }

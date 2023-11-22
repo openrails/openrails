@@ -536,6 +536,8 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.GameSwitchManualMode] = new UserCommandKeyInput(0x32, KeyModifiers.Control);
             Commands[(int)UserCommand.GameSwitchPicked] = new UserCommandKeyInput(0x22, KeyModifiers.Alt);
             Commands[(int)UserCommand.GameUncoupleWithMouse] = new UserCommandKeyInput(0x16);
+            
+            Commands[(int)UserCommand.EditorUnselectAll] = new UserCommandKeyInput(0x01);
         }
         #endregion
 

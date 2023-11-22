@@ -41,6 +41,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
 using System.Globalization;
+using ORTS.Common.Input;
 
 namespace ORTS.TrackViewer
 {
@@ -53,6 +54,9 @@ namespace ORTS.TrackViewer
         public readonly TrackViewer TrackViewer;
         SwapChainRenderTarget SwapChain;
         internal StaticShape SelectedObject;
+        internal Orts.Formats.Msts.WorldObject SelectedWorldObject;
+        Viewer Viewer;
+        ViewerCamera Camera;
 
         /// <summary>The command-line arguments</summary>
         private string[] CommandLineArgs;
@@ -88,7 +92,6 @@ namespace ORTS.TrackViewer
             RenderFrame.FinalRenderTarget = SwapChain;
 
             SceneWindow = new SceneWindow(new SceneViewerHwndHost(SwapChainWindow));
-            //SceneWindow = new SceneWindow(new SceneViewerVisualHost(GameWindow));
 
             // The primary window activation events should not affect RunActivity
             TrackViewer.Activated -= TrackViewer.ActivateRunActivity;
@@ -104,6 +107,8 @@ namespace ORTS.TrackViewer
             Initialize();
             LoadContent();
         }
+
+        public SceneViewer() { }
 
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
@@ -130,21 +135,48 @@ namespace ORTS.TrackViewer
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public void Update(GameTime gameTime)
         {
-            if (TrackViewer.RenderProcess?.Viewer == null)
+            Viewer = Viewer ?? TrackViewer.RenderProcess?.Viewer;
+            if (Viewer == null)
                 return;
+            Camera = Camera ?? Viewer.ViewerCamera;
 
-            TrackViewer.RenderProcess.Viewer.EditorShapes.MouseCrosshairEnabled = true;
+            Viewer.EditorShapes.MouseCrosshairEnabled = true;
 
-            if (UserInput.IsMouseLeftButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
+            if (UserInput.IsMouseLeftButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false)
+                && Camera.PickByMouse(out SelectedObject))
             {
-                if (PickByMouse(out SelectedObject))
-                {
-                    TrackViewer.RenderProcess.Viewer.EditorShapes.SelectedObject = SelectedObject;
-                    FillSelectedObjectData();
-                }
+                SelectedObjectChanged();
             }
-            //SetCameraLocationStatus(TrackViewer.RenderProcess?.Viewer?.Camera?.CameraWorldLocation ?? new WorldLocation());
-            FillCursorPositionStatus((TrackViewer.RenderProcess?.Viewer?.Camera as ViewerCamera)?.CursorPoint ?? new Vector3());
+            if (UserInput.IsMouseMiddleButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
+            {
+                Camera.StoreRotationOrigin(Viewer.TerrainPoint);
+                Viewer.EditorShapes.CrosshairPositionUpdateEnabled = false;
+            }
+            if (UserInput.IsMouseMiddleButtonDown && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
+            {
+                Camera.RotateByMouse();
+            }
+            else
+            {
+                Viewer.EditorShapes.CrosshairPositionUpdateEnabled = true;
+            }
+            if (UserInput.IsMouseMiddleButtonDown && UserInput.ModifiersMaskShiftCtrlAlt(true, false, false))
+            {
+                Camera.PanByMouse();
+            }
+            else
+            {
+                Camera.ZoomByMouseWheel(1);
+            }
+            
+            if (UserInput.IsPressed(UserCommand.EditorUnselectAll))
+            {
+                SelectedObject = null;
+                SelectedObjectChanged();
+            }
+
+            SetCameraLocationStatus(TrackViewer.RenderProcess?.Viewer?.Camera?.CameraWorldLocation ?? new WorldLocation());
+            //FillCursorPositionStatus(TrackViewer.RenderProcess?.Viewer?.TerrainPoint ?? new Vector3());
         }
 
         public void EndDraw()
@@ -181,8 +213,6 @@ namespace ORTS.TrackViewer
 
         private void FillCursorPositionStatus(Vector3 cursorPosition)
         {
-            //SceneWindow.tileXZ.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
-            //    "{0,-7} {1,-7}", cameraLocation.TileX, cameraLocation.TileZ);
             SceneWindow.LocationX.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", cursorPosition.X);
             SceneWindow.LocationY.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", cursorPosition.Y);
             SceneWindow.LocationZ.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", -cursorPosition.Z);
@@ -211,100 +241,22 @@ namespace ORTS.TrackViewer
             TrackViewer.RenderProcess.Viewer.ViewerCamera.SetLocation(mouseLocation);
         }
 
-        protected bool PickByMouse(out StaticShape pickedObjectOut)
+        void SelectedObjectChanged()
         {
-            var viewer = TrackViewer.RenderProcess.Viewer;
+            Viewer.EditorShapes.SelectedObject = SelectedObject;
 
-            if (viewer == null)
-            {
-                pickedObjectOut = null;
-                return false;
-            }
+            SelectedWorldObject = Viewer.World.Scenery.WorldFiles
+                .SingleOrDefault(w => w.TileX == SelectedObject?.Location.TileX && w.TileZ == SelectedObject?.Location.TileZ)
+                ?.MstsWFile?.Tr_Worldfile
+                ?.SingleOrDefault(o => o.UID == SelectedObject?.Uid);
 
-            var camera = viewer.Camera;
-
-            var direction = Vector3.Normalize(viewer.FarPoint - viewer.NearPoint);
-            var pickRay = new Ray(viewer.NearPoint, direction);
-
-            object pickedObject = null;
-            var pickedDistance = float.MaxValue;
-            var boundingBoxes = new Orts.Viewer3D.BoundingBox[1];
-            foreach (var worldFile in viewer.World.Scenery.WorldFiles)
-            {
-                foreach (var checkedObject in worldFile.sceneryObjects)
-                {
-                    checkObject(checkedObject, checkedObject.BoundingBox, checkedObject.Location);
-                }
-                foreach (var checkedObject in worldFile.forestList)
-                {
-                    var min = new Vector3(-checkedObject.ForestArea.X / 2, -checkedObject.ForestArea.Y / 2, 0);
-                    var max = new Vector3(checkedObject.ForestArea.X / 2, checkedObject.ForestArea.Y / 2, 15);
-                    boundingBoxes[0] = new Orts.Viewer3D.BoundingBox(Matrix.Identity, Matrix.Identity, Vector3.Zero, 0, min, max);
-                    checkObject(checkedObject, boundingBoxes, checkedObject.Position);
-                }
-            }
-
-            void checkObject(object checkedObject, Orts.Viewer3D.BoundingBox[] checkedBoundingBox, WorldPosition checkedLocation)
-            {
-                if (checkedBoundingBox?.Length > 0)
-                {
-                    foreach (var boundingBox in checkedBoundingBox)
-                    {
-                        // Locate relative to the camera
-                        var dTileX = checkedLocation.TileX - camera.TileX;
-                        var dTileZ = checkedLocation.TileZ - camera.TileZ;
-                        var xnaDTileTranslation = checkedLocation.XNAMatrix;
-                        xnaDTileTranslation.M41 += dTileX * 2048;
-                        xnaDTileTranslation.M43 -= dTileZ * 2048;
-                        xnaDTileTranslation = boundingBox.ComplexTransform * xnaDTileTranslation;
-
-                        var min = Vector3.Transform(boundingBox.Min, xnaDTileTranslation);
-                        var max = Vector3.Transform(boundingBox.Max, xnaDTileTranslation);
-
-                        var xnabb = new Microsoft.Xna.Framework.BoundingBox(min, max);
-                        checkDistance(checkedObject, pickRay.Intersects(xnabb));
-                    }
-                }
-                else
-                {
-                    var radius = 10f;
-                    var boundingSphere = new BoundingSphere(camera.XnaLocation(checkedLocation.WorldLocation), radius);
-                    checkDistance(checkedObject, pickRay.Intersects(boundingSphere));
-                }
-            }
-
-            void checkDistance(object checkedObject, float? checkedDistance)
-            {
-                if (checkedDistance != null && checkedDistance < pickedDistance)
-                {
-                    pickedDistance = checkedDistance.Value;
-                    pickedObject = checkedObject;
-                }
-            }
-
-            pickedObjectOut = pickedObject as StaticShape;
-
-            if (pickedObjectOut != null)
-            {
-                var ppp = pickedObjectOut;
-                var sb = new StringBuilder();
-                var aaa = TrackViewer.RenderProcess.Viewer.World.Scenery.WorldFiles.Where(w =>
-                    w.TileX == ppp.Location.TileX && w.TileZ == ppp.Location.TileZ).ToArray();
-                var bbb = aaa[0].MstsWFile;
-                bbb.Tr_Worldfile.Serialize(sb);
-                var ccc = sb.ToString();
-            }
-            return pickedObjectOut != null;
-        }
-
-        void FillSelectedObjectData()
-        {
-            SceneWindow.Filename.Text = SelectedObject != null ? System.IO.Path.GetFileName(SelectedObject.SharedShape.FilePath) : "";
-            SceneWindow.TileX.Text = SelectedObject?.Location.TileX.ToString(CultureInfo.InvariantCulture).Replace(",", "");
-            SceneWindow.TileZ.Text = SelectedObject?.Location.TileZ.ToString(CultureInfo.InvariantCulture).Replace(",", "");
-            SceneWindow.PosX.Text = SelectedObject?.Location.Location.X.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
-            SceneWindow.PosY.Text = SelectedObject?.Location.Location.Y.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
-            SceneWindow.PosZ.Text = SelectedObject?.Location.Location.Z.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            //SceneWindow.Filename.Text = SelectedObject != null ? System.IO.Path.GetFileName(SelectedObject.SharedShape.FilePath) : "";
+            //SceneWindow.TileX.Text = SelectedObject?.Location.TileX.ToString(CultureInfo.InvariantCulture).Replace(",", "");
+            //SceneWindow.TileZ.Text = SelectedObject?.Location.TileZ.ToString(CultureInfo.InvariantCulture).Replace(",", "");
+            //SceneWindow.PosX.Text = SelectedObject?.Location.Location.X.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            //SceneWindow.PosY.Text = SelectedObject?.Location.Location.Y.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            //SceneWindow.PosZ.Text = SelectedObject?.Location.Location.Z.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            //SceneWindow.Uid.Text = SelectedObject.Uid.ToString(CultureInfo.InvariantCulture).Replace(",", "");
             var q = new Quaternion();
             if (SelectedObject?.Location.XNAMatrix.Decompose(out var _, out q, out var _) ?? false)
             {
@@ -317,7 +269,16 @@ namespace ORTS.TrackViewer
             {
                 SceneWindow.RotY.Text = "";
             }
-            SceneWindow.Uid.Text = SelectedObject.Uid.ToString(CultureInfo.InvariantCulture).Replace(",", "");
+
+            if (SelectedObject is StaticShape ppp)
+            {
+                var sb = new StringBuilder();
+                var aaa = Viewer.World.Scenery.WorldFiles
+                    .SingleOrDefault(w => w.TileX == SelectedObject.Location.TileX && w.TileZ == SelectedObject.Location.TileZ)
+                    ?.MstsWFile?.Tr_Worldfile;
+                aaa.Serialize(sb);
+                var ccc = sb.ToString();
+            }
         }
 
     }

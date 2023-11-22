@@ -197,6 +197,7 @@ namespace Orts.Viewer3D
 
         public Vector3 NearPoint { get; private set; }
         public Vector3 FarPoint { get; private set; }
+        public Vector3 TerrainPoint { get; private set; }
 
         public bool DebugViewerEnabled { get; set; }
         public bool SoundDebugFormEnabled { get; set; }
@@ -912,22 +913,23 @@ namespace Orts.Viewer3D
         [CallOnThread("Updater")]
         void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsMouseLeftButtonDown || (Camera is ThreeDimCabCamera || Camera is ViewerCamera) && RenderProcess.IsMouseVisible)
+            if (UserInput.IsMouseLeftButtonDown || (Camera is ThreeDimCabCamera || EditorMode) && RenderProcess.IsMouseVisible)
             {
                 Vector3 nearsource = new Vector3((float)UserInput.MouseX, (float)UserInput.MouseY, 0f);
                 Vector3 farsource = new Vector3((float)UserInput.MouseX, (float)UserInput.MouseY, 1f);
                 Matrix world = Matrix.CreateTranslation(0, 0, 0);
                 NearPoint = DefaultViewport.Unproject(nearsource, Camera.XnaProjection, Camera.XnaView, world);
                 FarPoint = DefaultViewport.Unproject(farsource, Camera.XnaProjection, Camera.XnaView, world);
+                TerrainPoint = EditorMode ? GetTerrainPoint() : NearPoint;
             }
+
+            if (EditorMode)
+                return;
 
             if (UserInput.IsPressed(UserCommand.CameraReset))
                 Camera.Reset();
 
             Camera?.HandleUserInput(elapsedTime);
-
-            if (EditorMode)
-                return;
 
             PlayerLocomotiveViewer?.HandleUserInput(elapsedTime);
             InfoDisplay?.HandleUserInput(elapsedTime);
@@ -1643,6 +1645,35 @@ namespace Orts.Viewer3D
             RenderProcess.IsMouseVisible = ForceMouseVisible || RealTime < MouseVisibleTillRealTime;
             originalMouseState = currentMouseState;
             RenderProcess.ActualCursor = ActualCursor;
+        }
+
+        public Vector3 GetTerrainPoint()
+        {
+            var threshold = 0.1f;
+            var nearPoint = NearPoint;
+            var farPoint = FarPoint;
+            var midPoint = farPoint;
+            for (var i = 0; i < 16; i++)
+            {
+                var terrainLevel = Tiles.GetElevation(Camera.TileX, Camera.TileZ, midPoint.X, -midPoint.Z);
+                var delta = Math.Abs(midPoint.Y - terrainLevel);
+                if (delta < threshold)
+                {
+                    midPoint.Y = terrainLevel;
+                    break;
+                }
+                if ((midPoint.Y > terrainLevel) ^ (nearPoint.Y < farPoint.Y))
+                {
+                    nearPoint = midPoint;
+                    midPoint += (farPoint - midPoint) * 0.5f;
+                }
+                else
+                {
+                    farPoint = midPoint;
+                    midPoint += (nearPoint - midPoint) * 0.5f;
+                }
+            }
+            return midPoint;
         }
 
         static bool IsReverserInNeutral(TrainCar car)
