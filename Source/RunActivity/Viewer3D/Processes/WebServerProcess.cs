@@ -33,7 +33,7 @@ using System;
 namespace Orts.Viewer3D.Processes
 {
     public class WebServerProcess
-    {
+    { 
         public readonly Profiler Profiler = new Profiler("WebServer");
         private readonly ProcessState State = new ProcessState("WebServer");
         private readonly Game Game;
@@ -64,11 +64,10 @@ namespace Orts.Viewer3D.Processes
             Profiler.SetThread();
             Game.SetThreadLanguage();
 
-            string myWebContentPath = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Content\\Web");
             EndPointManager.UseIpv6 = true;
             try
             {
-                using (EmbedIO.WebServer server = WebServer.CreateWebServer($"http://*:{Game.Settings.WebServerPort}", myWebContentPath))
+                using (EmbedIO.WebServer server = WebServer.CreateWebServer($"http://*:{Game.Settings.WebServerPort}", myWebContentPath()))
                     server.RunAsync(StopServer.Token).Wait();
             }
             catch(AggregateException ex)
@@ -81,6 +80,20 @@ namespace Orts.Viewer3D.Processes
                 {
                     throw ex;
                 }
+            }
+        }
+
+        private string myWebContentPath()
+        {
+            string exePath = Path.GetDirectoryName(Application.ExecutablePath);
+            if (!System.Diagnostics.Debugger.IsAttached)
+            {
+                // no debugger attached, not developing
+                return Path.Combine(exePath, "Content", "Web");
+            }
+            else
+            {
+                return Path.Combine(Directory.GetParent(exePath).FullName, "Source", "RunActivity", "Viewer3D", "WebServices", "Web");
             }
         }
     }

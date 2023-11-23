@@ -128,6 +128,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Save(BinaryWriter outf)
         {
+            base.Save(outf);
             ControllerFactory.Save(GearBoxController, outf);
             outf.Write(ControlGearIndication);
             outf.Write(ControlGearIndex);

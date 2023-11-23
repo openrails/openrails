@@ -946,19 +946,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         public void Save(BinaryWriter outf)
         {
-            outf.Write(ScriptName ?? "");
-            if (ScriptName != "")
+            if (!string.IsNullOrEmpty(ScriptName))
                 Script.Save(outf);
         }
 
         public void Restore(BinaryReader inf)
         {
-            ScriptName = inf.ReadString();
-            if (ScriptName != "")
-            {
-                Initialize();
+            if (!string.IsNullOrEmpty(ScriptName))
                 Script.Restore(inf);
-            }
         }
     }
 

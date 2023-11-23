@@ -130,6 +130,7 @@ namespace Orts.Formats.Msts
         DAMPERS_FRONT,
         DAMPERS_BACK,
         STEAM_HEAT,
+        STEAM_BOOSTER,
         WATER_INJECTOR1,
         WATER_INJECTOR2,
         SMALL_EJECTOR,
@@ -184,6 +185,8 @@ namespace Orts.Formats.Msts
         ORTS_MIRRORS,
         ORTS_PANTOGRAPH3,
         ORTS_PANTOGRAPH4,
+        ORTS_LEFTWINDOW,
+        ORTS_RIGHTWINDOW,
         ORTS_LARGE_EJECTOR,
         ORTS_WATER_SCOOP,
         ORTS_HOURDIAL,
@@ -194,6 +197,7 @@ namespace Orts.Formats.Msts
         ORTS_BAILOFF,
         ORTS_QUICKRELEASE,
         ORTS_OVERCHARGE,
+        ORTS_AIR_FLOW_METER,
         ORTS_BATTERY_SWITCH_COMMAND_SWITCH,
         ORTS_BATTERY_SWITCH_COMMAND_BUTTON_CLOSE,
         ORTS_BATTERY_SWITCH_COMMAND_BUTTON_OPEN,
@@ -206,6 +210,8 @@ namespace Orts.Formats.Msts
         ORTS_ELECTRIC_TRAIN_SUPPLY_COMMAND_SWITCH,
         ORTS_ELECTRIC_TRAIN_SUPPLY_ON,
         ORTS_2DEXTERNALWIPERS,
+        ORTS_2DEXTERNALLEFTWINDOW,
+        ORTS_2DEXTERNALRIGHTWINDOW,
         ORTS_GENERIC_ITEM1,
         ORTS_GENERIC_ITEM2,
         ORTS_SCREEN_SELECT,
@@ -273,6 +279,10 @@ namespace Orts.Formats.Msts
         ORTS_ITEM2CONTINUOUS,
         ORTS_ITEM1TWOSTATE,
         ORTS_ITEM2TWOSTATE,
+        ORTS_EXTERNALLEFTWINDOWFRONT,
+        ORTS_EXTERNALRIGHTWINDOWFRONT,
+        ORTS_EXTERNALLEFTWINDOWREAR,
+        ORTS_EXTERNALRIGHTWINDOWREAR,
     }
 
     public enum CABViewControlStyles
@@ -320,6 +330,7 @@ namespace Orts.Formats.Msts
         KILO_LBS,
         METRES_PER_SEC,
         LITRES,
+        LITERS,
         GALLONS,
         INCHES_OF_MERCURY,
         MILI_AMPS,
@@ -330,7 +341,14 @@ namespace Orts.Formats.Msts
         METRES,
         MILES,
         FEET,
-        YARDS
+        YARDS,
+
+        CUBIC_FT_MIN,
+        LITRES_MIN,
+        LITERS_MIN,
+        LITRES_S,
+        LITERS_S,
+        CUBIC_M_S
     }
 
     public enum DiscreteStates

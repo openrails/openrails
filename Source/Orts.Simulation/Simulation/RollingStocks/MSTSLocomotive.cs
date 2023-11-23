@@ -131,6 +131,7 @@ namespace Orts.Simulation.RollingStocks
         public float MaxSpeedMpS = 1e3f;
         public float UnloadingSpeedMpS;
         public float MainResPressurePSI = 130;
+        public float BrakePipeFlowM3pS;
         public float MaximumMainReservoirPipePressurePSI;
         public bool CompressorIsOn;
         public bool CompressorIsMechanical = false;
@@ -145,6 +146,9 @@ namespace Orts.Simulation.RollingStocks
         public bool CabRadioOn;
         public bool OnLineCabRadio;
         public string OnLineCabRadioURL;
+
+        public float FilteredBrakePipeFlowM3pS;
+        public IIRFilter AFMFilter;
 
         // Water trough filling
         public bool HasWaterScoop = false; // indicates whether loco + tender have a water scoop or not
@@ -417,7 +421,7 @@ namespace Orts.Simulation.RollingStocks
         protected const float DefaultMainResVolume = 0.78f; // Value to be inserted if .eng parameters are corrected
         protected const float DefaultMaxMainResPressure = 140; // Max value to be inserted if .eng parameters are corrected
 
-public List<CabView> CabViewList = new List<CabView>();
+        public List<CabView> CabViewList = new List<CabView>();
         public CabView3D CabView3D;
 
         public MSTSNotchController SteamHeatController = new MSTSNotchController(0, 1, 0.1f);
@@ -482,6 +486,7 @@ public List<CabView> CabViewList = new List<CabView>();
             LocomotiveAxles.Add(new Axle());
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.5f), 0.001f);
             AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(1f), 0.001f);
+            AFMFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.1f), 1.0f);
 
             TrainBrakeController = new ScriptedBrakeController(this);
             EngineBrakeController = new ScriptedBrakeController(this);
@@ -974,6 +979,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 case "engine(awsmonitor":
                 case "engine(overspeedmonitor": VigilanceMonitor = true; TrainControlSystem.Parse(lowercasetoken, stf); break;
                 case "engine(enginecontrollers(combined_control": ParseCombData(lowercasetoken, stf); break;
+                case "engine(ortsairbrakemainresvolume":
                 case "engine(airbrakesmainresvolume": MainResVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
                 case "engine(airbrakesmainmaxairpressure": MainResPressurePSI = MaxMainResPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(airbrakemaxmainrespipepressure": MaximumMainReservoirPipePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
@@ -1007,10 +1013,15 @@ public List<CabView> CabViewList = new List<CabView>();
                 case "engine(ortstractioncharacteristics": TractiveForceCurves = new InterpolatorDiesel2D(stf, true); break;
                 case "engine(ortsdynamicbrakeforcecurves": DynamicBrakeForceCurves = new InterpolatorDiesel2D(stf, false); break;
                 case "engine(ortscontinuousforcetimefactor": ContinuousForceTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(ortssanderspeedeffectupto":
                 case "engine(orts(ortssanderspeedeffectupto": SanderSpeedEffectUpToMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
+                case "engine(ortsemergencycausespowerdown":
                 case "engine(orts(ortsemergencycausespowerdown": EmergencyCausesPowerDown = stf.ReadBoolBlock(false); break;
+                case "engine(ortsemergencycausesthrottledown":
                 case "engine(orts(ortsemergencycausesthrottledown": EmergencyCausesThrottleDown = stf.ReadBoolBlock(false); break;
+                case "engine(ortsemergencyengageshorn":
                 case "engine(orts(ortsemergencyengageshorn": EmergencyEngagesHorn = stf.ReadBoolBlock(false); break;
+                case "engine(ortswheelslipcausesthrottledown":
                 case "engine(orts(ortswheelslipcausesthrottledown": WheelslipCausesThrottleDown = stf.ReadBoolBlock(false); break;
                 case "engine(dynamicbrakesminusablespeed": DynamicBrakeSpeed1MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesfadingspeed": DynamicBrakeSpeed2MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
@@ -2018,6 +2029,7 @@ public List<CabView> CabViewList = new List<CabView>();
 
                     AntiSlip = true; // Always set AI trains to AntiSlip
                     SimpleAdhesion();   // Simple adhesion model used for AI trains
+                    AdvancedAdhesionModel = false;
                     if (Train.IsActualPlayerTrain) FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
                     WheelSpeedMpS = Flipped ? -AbsSpeedMpS : AbsSpeedMpS;            //make the wheels go round
                     break;
@@ -3120,7 +3132,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 Train.SlipperySpotLengthM = 10 + 40 * (float)Simulator.Random.NextDouble();
                 Train.SlipperySpotDistanceM = Train.SlipperySpotLengthM + 2000 * (float)Simulator.Random.NextDouble();
             }
-            if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
+            if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM && Simulator.Settings.AdhesionFactorChange > 0)
             {
                 if (BaseFrictionCoefficientFactor > 0.6 && BaseFrictionCoefficientFactor < 0.8)
                 {
@@ -5411,6 +5423,32 @@ public List<CabView> CabViewList = new List<CabView>();
                         data = (TrainBrakeController == null || !TrainBrakeController.OverchargeButtonPressed) ? 0 : 1;
                         break;
                     }
+                case CABViewControlTypes.ORTS_AIR_FLOW_METER:
+                    {
+                        switch (cvc.Units)
+                        {
+                            case CABViewControlUnits.CUBIC_FT_MIN:
+                                data = this.FilteredBrakePipeFlowM3pS * 35.3147f * 60.0f;
+                                break;
+
+                            case CABViewControlUnits.LITRES_S:
+                            case CABViewControlUnits.LITERS_S:
+                                data = this.FilteredBrakePipeFlowM3pS * 1000.0f;
+                                break;
+
+                            case CABViewControlUnits.LITRES_MIN:
+                            case CABViewControlUnits.LITERS_MIN:
+                                data = this.FilteredBrakePipeFlowM3pS * 1000.0f * 60.0f;
+                                break;
+
+                            case CABViewControlUnits.CUBIC_M_S:
+                            default:
+                                data = this.FilteredBrakePipeFlowM3pS;
+                                break;
+
+                        }
+                        break;
+                    }
                 case CABViewControlTypes.FRICTION_BRAKING:
                     {
                         data = (BrakeSystem == null) ? 0.0f : BrakeSystem.GetCylPressurePSI();
@@ -5534,7 +5572,6 @@ public List<CabView> CabViewList = new List<CabView>();
 
                                 }
                             }
-
                         }
                         else
                         {
@@ -5713,6 +5750,16 @@ public List<CabView> CabViewList = new List<CabView>();
                         var state = Train.DoorState(right ? DoorSide.Right : DoorSide.Left);
                         data = state >= DoorState.Opening ? 1 : 0;
                     }
+                    break;
+                case CABViewControlTypes.ORTS_LEFTWINDOW:
+                case CABViewControlTypes.ORTS_2DEXTERNALLEFTWINDOW:
+                    data = UsingRearCab ? (WindowStates[RightWindowRearIndex] == WindowState.Closing || WindowStates[RightWindowRearIndex] == WindowState.Opening ? 1 : 0) :
+                        (WindowStates[LeftWindowFrontIndex] == WindowState.Closing || WindowStates[LeftWindowFrontIndex] == WindowState.Opening ? 1 : 0);
+                    break;
+                case CABViewControlTypes.ORTS_RIGHTWINDOW:
+                case CABViewControlTypes.ORTS_2DEXTERNALRIGHTWINDOW:
+                    data = UsingRearCab ? (WindowStates[LeftWindowRearIndex] == WindowState.Closing || WindowStates[LeftWindowRearIndex] == WindowState.Opening ? 1 : 0) :
+                        (WindowStates[RightWindowFrontIndex] == WindowState.Closing || WindowStates[RightWindowFrontIndex] == WindowState.Opening ? 1 : 0);
                     break;
                 case CABViewControlTypes.ORTS_MIRRORS:
                     data = MirrorOpen ? 1 : 0;

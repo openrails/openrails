@@ -33,7 +33,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public Simulator Simulator => Locomotive.Simulator;
 
         public bool Activated = false;
-        string ScriptName = "Automatic";
+        public string ScriptName { get; protected set; } = "Automatic";
         CircuitBreaker Script;
 
         public float DelayS { get; protected set; } = 0f;
@@ -188,7 +188,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Save(BinaryWriter outf)
         {
-            outf.Write(ScriptName);
             outf.Write(DelayS);
             outf.Write(State.ToString());
             outf.Write(DriverClosingOrder);
@@ -199,7 +198,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Restore(BinaryReader inf)
         {
-            ScriptName = inf.ReadString();
             DelayS = inf.ReadSingle();
             State = (CircuitBreakerState)Enum.Parse(typeof(CircuitBreakerState), inf.ReadString());
             DriverClosingOrder = inf.ReadBoolean();

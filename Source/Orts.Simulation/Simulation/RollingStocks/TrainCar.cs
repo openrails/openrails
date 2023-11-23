@@ -1218,40 +1218,40 @@ namespace Orts.Simulation.RollingStocks
             if (CarBehind != null)
             {
 
-                if (CurrentCurveRadius != 0 || CarBehind.CurrentCurveRadius != 0)
+                if (CurrentCurveRadiusM != 0 || CarBehind.CurrentCurveRadiusM != 0)
                 {
                     //When coming into a curve or out of a curve it is possible for an infinity value to occur, this next section ensures that never happens
-                    if (CurrentCurveRadius == 0)
+                    if (CurrentCurveRadiusM == 0)
                     {
                         float AspirationalCurveRadius = 10000;
                         CouplerAlphaAngleRad = BogieDistanceThisCarM / AspirationalCurveRadius;
                         CouplerGammaAngleRad = BogieCentresAdjVehiclesM / (2.0f * AspirationalCurveRadius);
 
 
-                        finalCouplerAlphaAngleRad = BogieDistanceThisCarM / CarBehind.CurrentCurveRadius;
-                        finalCouplerGammaAngleRad = BogieCentresAdjVehiclesM / (2.0f * CarBehind.CurrentCurveRadius);
+                        finalCouplerAlphaAngleRad = BogieDistanceThisCarM / CarBehind.CurrentCurveRadiusM;
+                        finalCouplerGammaAngleRad = BogieCentresAdjVehiclesM / (2.0f * CarBehind.CurrentCurveRadiusM);
                     }
                     else
                     {
-                        CouplerAlphaAngleRad = BogieDistanceThisCarM / CurrentCurveRadius;  // current car curve
-                        CouplerGammaAngleRad = BogieCentresAdjVehiclesM / (2.0f * CurrentCurveRadius); // assume curve between cars is the same as the curve for the front car.
-                        finalCouplerAlphaAngleRad = BogieDistanceThisCarM / CurrentCurveRadius;  // current car curve
-                        finalCouplerGammaAngleRad = BogieCentresAdjVehiclesM / (2.0f * CurrentCurveRadius); // assume curve between cars is the same as the curve for the front car.
+                        CouplerAlphaAngleRad = BogieDistanceThisCarM / CurrentCurveRadiusM;  // current car curve
+                        CouplerGammaAngleRad = BogieCentresAdjVehiclesM / (2.0f * CurrentCurveRadiusM); // assume curve between cars is the same as the curve for the front car.
+                        finalCouplerAlphaAngleRad = BogieDistanceThisCarM / CurrentCurveRadiusM;  // current car curve
+                        finalCouplerGammaAngleRad = BogieCentresAdjVehiclesM / (2.0f * CurrentCurveRadiusM); // assume curve between cars is the same as the curve for the front car.
                     }
 
                     //When coming into a curve or out of a curve it is possible for an infinity value to occur, which can cause calculation issues, this next section ensures that never happens
-                    if (CarBehind.CurrentCurveRadius == 0)
+                    if (CarBehind.CurrentCurveRadiusM == 0)
                     {
                         float AspirationalCurveRadius = 10000;
                         CouplerBetaAngleRad = BogieDistanceBehindCarM / AspirationalCurveRadius;
 
-                        finalCouplerBetaAngleRad = BogieDistanceBehindCarM / CurrentCurveRadius;
+                        finalCouplerBetaAngleRad = BogieDistanceBehindCarM / CurrentCurveRadiusM;
                     }
                     else
                     {
-                        CouplerBetaAngleRad = BogieDistanceBehindCarM / CarBehind.CurrentCurveRadius; // curve of following car
+                        CouplerBetaAngleRad = BogieDistanceBehindCarM / CarBehind.CurrentCurveRadiusM; // curve of following car
 
-                        finalCouplerBetaAngleRad = BogieDistanceBehindCarM / CarBehind.CurrentCurveRadius; // curve of following car
+                        finalCouplerBetaAngleRad = BogieDistanceBehindCarM / CarBehind.CurrentCurveRadiusM; // curve of following car
                     }
 
                     float AngleBetweenCarbodies = CouplerAlphaAngleRad + CouplerBetaAngleRad + 2.0f * CouplerGammaAngleRad;
@@ -1264,7 +1264,7 @@ namespace Orts.Simulation.RollingStocks
                     var finalWagonFrontCouplerAngleRad = (BogieCentresAdjVehiclesM * (finalCouplerGammaAngleRad + finalCouplerBetaAngleRad) - OverhangThisCarM * finalAngleBetweenCarbodies) / couplerDistanceM;
 
                     // If first car is starting to turn then slowly increase coupler angle to the maximum value expected
-                    if (CurrentCurveRadius != 0 && CarBehind.CurrentCurveRadius == 0)
+                    if (CurrentCurveRadiusM != 0 && CarBehind.CurrentCurveRadiusM == 0)
                     {
                         WagonRearCouplerAngleRad += 0.0006f;
                         WagonRearCouplerAngleRad = MathHelper.Clamp(WagonRearCouplerAngleRad, 0, finalWagonRearCouplerAngleRad);
@@ -1273,7 +1273,7 @@ namespace Orts.Simulation.RollingStocks
                         CarBehind.WagonFrontCouplerAngleRad = MathHelper.Clamp(CarBehind.WagonFrontCouplerAngleRad, 0, finalWagonFrontCouplerAngleRad);
 
                     }
-                    else if (CurrentCurveRadius != 0 && CarBehind.CurrentCurveRadius != 0) // both cars on the curve
+                    else if (CurrentCurveRadiusM != 0 && CarBehind.CurrentCurveRadiusM != 0) // both cars on the curve
                     {
                         // Find coupler angle for rear coupler on the car
                         WagonRearCouplerAngleRad = (BogieCentresAdjVehiclesM * (CouplerGammaAngleRad + CouplerAlphaAngleRad) - OverhangBehindCarM * AngleBetweenCarbodies) / couplerDistanceM;
@@ -1282,7 +1282,7 @@ namespace Orts.Simulation.RollingStocks
                     }
 
                     // If first car is still on straight, and last car is still on the curve, then slowly decrease coupler angle so that it is "straight" again
-                    else if (CurrentCurveRadius == 0 && CarBehind.CurrentCurveRadius != 0)
+                    else if (CurrentCurveRadiusM == 0 && CarBehind.CurrentCurveRadiusM != 0)
                     {
                         WagonRearCouplerAngleRad -= 0.0006f;
                         WagonRearCouplerAngleRad = MathHelper.Clamp(WagonRearCouplerAngleRad, 0, finalWagonRearCouplerAngleRad);
@@ -1324,18 +1324,18 @@ namespace Orts.Simulation.RollingStocks
                         // Car ahead rear coupler angle
                         var ThiscarCouplerlengthft = Me.ToFt(CarCouplerFaceLengthM - CarBodyLengthM) + CouplerSlackM / 2;
                         var CarbehindCouplerlengthft = Me.ToFt(CarBehind.CarCouplerFaceLengthM - CarBehind.CarBodyLengthM) + CouplerSlackM / 2;
-                        var A1 = Math.Sqrt(Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBogieCentreLengthM), 2) / 4.0f);
+                        var A1 = Math.Sqrt(Math.Pow(Me.ToFt(CurrentCurveRadiusM), 2) - Math.Pow(Me.ToFt(CarBogieCentreLengthM), 2) / 4.0f);
                         var A2 = (Me.ToFt(CarCouplerFaceLengthM) / 2.0f) - ThiscarCouplerlengthft;
                         var A = (float)Math.Atan(A1 / A2);
 
                         var B = (float)Math.Asin(2.0f * Me.ToFt(CarTrackPlayM) / Me.ToFt(CarBogieCentreLengthM));
                         var C1 = Math.Pow(ThiscarCouplerlengthft + CarbehindCouplerlengthft, 2);
 
-                        var C2_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBogieCentreLengthM), 2) / 4.0f);
+                        var C2_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadiusM), 2) - Math.Pow(Me.ToFt(CarBogieCentreLengthM), 2) / 4.0f);
                         var C2_2 = (2.0f * Me.ToFt(CarTrackPlayM) * (Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft)) / Me.ToFt(CarBogieCentreLengthM);
                         var C2 = Math.Pow((C2_1 + C2_2), 2);
 
-                        var C3_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBehind.CarBogieCentreLengthM), 2) / 4.0f);
+                        var C3_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadiusM), 2) - Math.Pow(Me.ToFt(CarBehind.CarBogieCentreLengthM), 2) / 4.0f);
                         var C3_2 = (2.0f * Me.ToFt(CarBehind.CarTrackPlayM) * (Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft)) / Me.ToFt(CarBehind.CarBogieCentreLengthM);
                         var C3 = Math.Pow((C3_1 + C3_2), 2);
 
@@ -1351,18 +1351,18 @@ namespace Orts.Simulation.RollingStocks
 
 
                         // This car front coupler angle
-                        var X1 = Math.Sqrt(Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBehind.CarBogieCentreLengthM), 2) / 4.0f);
+                        var X1 = Math.Sqrt(Math.Pow(Me.ToFt(CurrentCurveRadiusM), 2) - Math.Pow(Me.ToFt(CarBehind.CarBogieCentreLengthM), 2) / 4.0f);
                         var X2 = (Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f) - CarbehindCouplerlengthft;
                         var X = (float)Math.Atan(X1 / X2);
 
                         var Y = (float)Math.Asin(2.0f * Me.ToFt(CarBehind.CarTrackPlayM) / Me.ToFt(CarBehind.CarBogieCentreLengthM));
 
                         var Z1 = Math.Pow(ThiscarCouplerlengthft + CarbehindCouplerlengthft, 2);
-                        var Z2_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBehind.CarBogieCentreLengthM), 2) / 4.0f);
+                        var Z2_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadiusM), 2) - Math.Pow(Me.ToFt(CarBehind.CarBogieCentreLengthM), 2) / 4.0f);
                         var Z2_2 = (2.0f * Me.ToFt(CarBehind.CarTrackPlayM) * (Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft)) / Me.ToFt(CarBehind.CarBogieCentreLengthM);
                         var Z2 = Math.Pow((Z2_1 + Z2_2), 2);
 
-                        var Z3_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBogieCentreLengthM), 2) / 4.0f);
+                        var Z3_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadiusM), 2) - Math.Pow(Me.ToFt(CarBogieCentreLengthM), 2) / 4.0f);
                         var Z3_2 = (2.0f * Me.ToFt(CarTrackPlayM) * (Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft)) / Me.ToFt(CarBogieCentreLengthM);
                         var Z3 = Math.Pow((Z3_1 + Z3_2), 2);
 
@@ -1381,7 +1381,7 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else if (CarAhead != null)
                 {
-                    if (CurrentCurveRadius == 0 && CarBehind.CurrentCurveRadius == 0 && CarAhead.CurrentCurveRadius == 0)
+                    if (CurrentCurveRadiusM == 0 && CarBehind.CurrentCurveRadiusM == 0 && CarAhead.CurrentCurveRadiusM == 0)
                     {
                         AdjustedWagonRearCouplerAngleRad = 0.0f;
                         CarBehind.AdjustedWagonFrontCouplerAngleRad = 0.0f;
@@ -1482,7 +1482,7 @@ namespace Orts.Simulation.RollingStocks
                 var numAxles = LocoNumDrvAxles + WagonNumAxles;
                 var numWheels = numAxles * 2;
 
-                if (CurrentCurveRadius != 0)
+                if (CurrentCurveRadiusM != 0)
                 {
                     float A = 0;
                     float B1 = 0;
@@ -1507,7 +1507,7 @@ namespace Orts.Simulation.RollingStocks
                         B1 = MassKG;
                     }
                     var B2 = GravitationalAccelerationMpS2 * (float)Math.Sin(SuperElevationAngleRad);
-                    var B3 = (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
+                    var B3 = (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadiusM;
                     var B4 = CentreOfGravityM.Y / TrackGaugeM;
 
                     TotalWagonVerticalDerailForceN = A + B1 * (B3 - B2) * B4;
@@ -1541,7 +1541,7 @@ namespace Orts.Simulation.RollingStocks
                         {
                             BB1 = MassKG;
                         }
-                        var BB2 = (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
+                        var BB2 = (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadiusM;
                         var BB3 = GravitationalAccelerationMpS2 * (float)Math.Sin(SuperElevationAngleRad);
 
                         TotalWagonLateralDerailForceN = Math.Abs(AA1 + BB1 * (BB2 - BB3));
@@ -1570,7 +1570,7 @@ namespace Orts.Simulation.RollingStocks
                     NadalDerailmentCoefficient = ((float) Math.Tan(MaximumWheelFlangeAngleRad) - wagonAdhesion) / (1f + wagonAdhesion * (float) Math.Tan(MaximumWheelFlangeAngleRad));
 
                     // Calculate Angle of Attack - AOA = sin-1(2 * bogie wheel base / curve radius)
-                    AngleOfAttackRad = (float)Math.Asin(2 * RigidWheelBaseM / CurrentCurveRadius);
+                    AngleOfAttackRad = (float)Math.Asin(2 * RigidWheelBaseM / CurrentCurveRadiusM);
                     var angleofAttackmRad = AngleOfAttackRad * 1000f; // Convert to micro radians
 
                     // Calculate the derail climb distance - uses the general form equation 2.4 from the above publication
@@ -1665,7 +1665,7 @@ namespace Orts.Simulation.RollingStocks
         {
             string curveDirection = "Straight";
 
-            if (CarBehind != null && (CurrentCurveRadius != 0 || CarBehind.CurrentCurveRadius != 0))
+            if (CarBehind != null && (CurrentCurveRadiusM != 0 || CarBehind.CurrentCurveRadiusM != 0))
             {
 
                 // Front Wagon Direction
@@ -1752,27 +1752,27 @@ namespace Orts.Simulation.RollingStocks
 
             // get curve radius
 
-            if (CurrentCurveRadius > 0)  // only check curve speed if it is a curve
+            if (CurrentCurveRadiusM > 0)  // only check curve speed if it is a curve
             {
                 float SpeedToleranceMpS = Me.FromMi(pS.FrompH(2.5f));  // Set bandwidth tolerance for resetting notifications
 
                 // If super elevation set in Route (TRK) file
                 if (Simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM != null)
                 {
-                    SuperelevationM = Simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM[CurrentCurveRadius];
+                    SuperelevationM = Simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM[CurrentCurveRadiusM];
 
                 }
                 else
                 {
                     // Set to OR default values
-                    if (CurrentCurveRadius > 2000)
+                    if (CurrentCurveRadiusM > 2000)
                     {
                         if (RouteSpeedMpS > 55.0)   // If route speed limit is greater then 200km/h, assume high speed passenger route
                         {
                             // Calculate superelevation based upon the route speed limit and the curve radius
                             // SE = ((TrackGauge x Velocity^2 ) / Gravity x curve radius)
 
-                            SuperelevationM = (TrackGaugeM * RouteSpeedMpS * RouteSpeedMpS) / (GravitationalAccelerationMpS2 * CurrentCurveRadius);
+                            SuperelevationM = (TrackGaugeM * RouteSpeedMpS * RouteSpeedMpS) / (GravitationalAccelerationMpS2 * CurrentCurveRadiusM);
 
                         }
                         else
@@ -1782,36 +1782,36 @@ namespace Orts.Simulation.RollingStocks
 
                     }
                     // Set Superelevation value - based upon standard figures
-                    else if (CurrentCurveRadius <= 2000 & CurrentCurveRadius > 1600)
+                    else if (CurrentCurveRadiusM <= 2000 & CurrentCurveRadiusM > 1600)
                     {
                         SuperelevationM = 0.0254f;  // Assume 1" (or 0.0254m)
                     }
-                    else if (CurrentCurveRadius <= 1600 & CurrentCurveRadius > 1200)
+                    else if (CurrentCurveRadiusM <= 1600 & CurrentCurveRadiusM > 1200)
                     {
                         SuperelevationM = 0.038100f;  // Assume 1.5" (or 0.038100m)
                     }
-                    else if (CurrentCurveRadius <= 1200 & CurrentCurveRadius > 1000)
+                    else if (CurrentCurveRadiusM <= 1200 & CurrentCurveRadiusM > 1000)
                     {
                         SuperelevationM = 0.050800f;  // Assume 2" (or 0.050800m)
                     }
-                    else if (CurrentCurveRadius <= 1000 & CurrentCurveRadius > 800)
+                    else if (CurrentCurveRadiusM <= 1000 & CurrentCurveRadiusM > 800)
                     {
                         SuperelevationM = 0.063500f;  // Assume 2.5" (or 0.063500m)
                     }
-                    else if (CurrentCurveRadius <= 800 & CurrentCurveRadius > 600)
+                    else if (CurrentCurveRadiusM <= 800 & CurrentCurveRadiusM > 600)
                     {
                         SuperelevationM = 0.0889f;  // Assume 3.5" (or 0.0889m)
                     }
-                    else if (CurrentCurveRadius <= 600 & CurrentCurveRadius > 500)
+                    else if (CurrentCurveRadiusM <= 600 & CurrentCurveRadiusM > 500)
                     {
                         SuperelevationM = 0.1016f;  // Assume 4" (or 0.1016m)
                     }
                     // for tighter radius curves assume on branch lines and less superelevation
-                    else if (CurrentCurveRadius <= 500 & CurrentCurveRadius > 280)
+                    else if (CurrentCurveRadiusM <= 500 & CurrentCurveRadiusM > 280)
                     {
                         SuperelevationM = 0.0889f;  // Assume 3" (or 0.0762m)
                     }
-                    else if (CurrentCurveRadius <= 280 & CurrentCurveRadius > 0)
+                    else if (CurrentCurveRadiusM <= 280 & CurrentCurveRadiusM > 0)
                     {
                         SuperelevationM = 0.063500f;  // Assume 2.5" (or 0.063500m)
                     }
@@ -1830,14 +1830,14 @@ namespace Orts.Simulation.RollingStocks
 
                 SuperElevationAngleRad = (float)Math.Sinh(SuperelevationM); // Balanced superelevation only angle
 
-                MaxCurveEqualLoadSpeedMps = (float)Math.Sqrt((SuperelevationM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM); // Used for calculating curve resistance
+                MaxCurveEqualLoadSpeedMps = (float)Math.Sqrt((SuperelevationM * GravitationalAccelerationMpS2 * CurrentCurveRadiusM) / TrackGaugeM); // Used for calculating curve resistance
 
                 // Railway companies often allow the vehicle to exceed the equal loading speed, provided that the passengers didn't feel uncomfortable, and that the car was not likely to excced the maximum critical speed
                 SuperElevationTotalM = SuperelevationM + UnbalancedSuperElevationM;
 
                 float SuperElevationTotalAngleRad = (float)Math.Sinh(SuperElevationTotalM); // Total superelevation includes both balanced and unbalanced superelevation
 
-                float MaxSafeCurveSpeedMps = (float)Math.Sqrt((SuperElevationTotalM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM);
+                float MaxSafeCurveSpeedMps = (float)Math.Sqrt((SuperElevationTotalM * GravitationalAccelerationMpS2 * CurrentCurveRadiusM) / TrackGaugeM);
 
                 // Calculate critical speed - indicates the speed above which stock will overturn - sum of the moments of centrifrugal force and the vertical weight of the vehicle around the CoG
                 // critical speed = SQRT ( (centrifrugal force x gravity x curve radius) / Vehicle weight)
@@ -1847,10 +1847,10 @@ namespace Orts.Simulation.RollingStocks
                 float CosTheta = (float)Math.Cos(SuperElevationAngleRad);
                 float HalfTrackGaugeM = TrackGaugeM / 2.0f;
 
-                float CriticalMaxSpeedMpS = (float)Math.Sqrt((CurrentCurveRadius * GravitationalAccelerationMpS2 * (CentreOfGravityM.Y * SinTheta + HalfTrackGaugeM * CosTheta)) / (CentreOfGravityM.Y * CosTheta - HalfTrackGaugeM * SinTheta));
+                float CriticalMaxSpeedMpS = (float)Math.Sqrt((CurrentCurveRadiusM * GravitationalAccelerationMpS2 * (CentreOfGravityM.Y * SinTheta + HalfTrackGaugeM * CosTheta)) / (CentreOfGravityM.Y * CosTheta - HalfTrackGaugeM * SinTheta));
 
                 float Sin2Theta = 0.5f * (1 - (float)Math.Cos(2.0 * SuperElevationAngleRad));
-                float CriticalMinSpeedMpS = (float)Math.Sqrt((GravitationalAccelerationMpS2 * CurrentCurveRadius * HalfTrackGaugeM * Sin2Theta) / (CosTheta * (CentreOfGravityM.Y * CosTheta + HalfTrackGaugeM * SinTheta)));
+                float CriticalMinSpeedMpS = (float)Math.Sqrt((GravitationalAccelerationMpS2 * CurrentCurveRadiusM * HalfTrackGaugeM * Sin2Theta) / (CosTheta * (CentreOfGravityM.Y * CosTheta + HalfTrackGaugeM * SinTheta)));
 
                 if (CurveSpeedDependent) // Function enabled by menu selection for curve speed limit
                 {
@@ -2006,10 +2006,10 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public virtual void UpdateCurveForce(float elapsedClockSeconds)
         {
-            if (CurrentCurveRadius > 0)
+            if (CurrentCurveRadiusM > 0)
             {
                 if (RigidWheelBaseM == 0)   // Calculate default values if no value in Wag File
-                {                        
+                {
                     float Axles = WheelAxles.Count;
                     float Bogies = Parts.Count - 1;
                     float BogieSize = Axles / Bogies;
@@ -2074,18 +2074,34 @@ namespace Orts.Simulation.RollingStocks
                             //    Approximation for calculating rigid wheelbase for steam locomotives
                             // Wheelbase = 1.25 x (Loco Drive Axles - 1.0) x Drive Wheel diameter
 
-                            RigidWheelBaseM = 1.25f * (LocoNumDrvAxles - 1.0f) * (DriverWheelRadiusM * 2.0f); 
+                            RigidWheelBaseM = 1.25f * (LocoNumDrvAxles - 1.0f) * (DriverWheelRadiusM * 2.0f);
                         }
                     }
                 }
 
-                // Curve Resistance = (Vehicle mass x Coeff Friction) * (Track Gauge + Vehicle Fixed Wheelbase) / (2 * curve radius)
+                // References:
+
+                // i) The modern locomotive by  Clarence Edgar Allen – 1912 – pg 82 - https://archive.org/details/modernlocomotive00allerich
+
+                //  ii)	Resistance to Traffic of Railway Rolling Stock by P.N.Astakhov – Moscow 1966 – pg 112
+                //  http://scbist.com/scb/uploaded/1_astahov_p_n_soprotivlenie_dvizheniyu_zheleznodorozhnogo_podv.pdf
+
+                // The CurveForce is a combination of these two components such that resistance will vary with stock characteristics and speed.
+                // These formulas are a mix of imperial and metric expressions so these will be retained and converted to a common UoM in Newtons once calculations are complete.
+
+                // Base Curve Resistance (from refernce i)) = (Vehicle mass x Coeff Friction) * (Track Gauge + Vehicle Fixed Wheelbase) / (2 * curve radius)
                 // Vehicle Fixed Wheel base is the distance between the wheels, ie bogie or fixed wheels
 
-                CurveForceN = MassKG * Train.WagonCoefficientFriction * (TrackGaugeM + RigidWheelBaseM) / (2.0f * CurrentCurveRadius);
-                float CurveResistanceSpeedFactor = Math.Abs((MaxCurveEqualLoadSpeedMps - AbsSpeedMpS) / MaxCurveEqualLoadSpeedMps) * StartCurveResistanceFactor;
-                CurveForceN *= CurveResistanceSpeedFactor * CurveResistanceZeroSpeedFactor;
-                CurveForceN *= GravitationalAccelerationMpS2; // to convert to Newtons
+                var rBaseWagonN = 9.81f * MassKG * Train.WagonCoefficientFriction * (TrackGaugeM + RigidWheelBaseM) / (2.0f * CurrentCurveRadiusM);
+
+                // Speed Curve Resistance (from reference ii) - second term only) = ((Speed^2 / Curve Radius) - (Superelevation / Track Gauge) * Gravitational acceleration) * Constant
+
+                var speedConstant = 1.5f;
+                var MToMM = 1000;
+                var rspeedKgpTonne = speedConstant * Math.Abs((SpeedMpS * SpeedMpS / CurrentCurveRadiusM) - ((MToMM * SuperelevationM / MToMM * TrackGaugeM) * GravitationalAccelerationMpS2));
+                var rSpeedWagonN = GravitationalAccelerationMpS2 * (Kg.ToTonne(MassKG) * rspeedKgpTonne);
+
+                CurveForceN = rBaseWagonN + rSpeedWagonN;
             }
             else
             {
@@ -2275,8 +2291,9 @@ namespace Orts.Simulation.RollingStocks
             {
                 var loco = this as MSTSLocomotive;
                 var i = (int)CabViewType.Rear;
-                if (loco == null || loco.CabView3D == null) return false;
-                return (loco.CabView3D.ViewPointList.Count > i);
+                if (loco == null || loco.CabView3D == null || loco.CabView3D.ViewPointList.Count <= i) return false;
+                var cabViewAngle = loco.CabView3D.ViewPointList[i].StartDirection.Y;
+                return ((cabViewAngle >= 90 && cabViewAngle <= 270) || (cabViewAngle <= -90 && cabViewAngle >= -270));
             }
         }
 
@@ -2718,12 +2735,11 @@ namespace Orts.Simulation.RollingStocks
             var carIndex = Train.Cars.IndexOf(this);
             //Certain locomotives are testing as articulated wagons for some reason.
             if (WagonType != WagonTypes.Engine)
-                if (WheelAxles.Count >= 2)
-                    if (articulatedFront || articulatedRear)
-                    {
-                        WheelAxlesLoaded = true;
-                        SetUpWheelsArticulation(carIndex);
-                    }
+                if (WheelAxles.Count != 1 && (articulatedFront || articulatedRear))
+                {
+                    WheelAxlesLoaded = true;
+                    SetUpWheelsArticulation(carIndex);
+                }
         } // end SetUpWheels()
 
         protected void SetUpWheelsArticulation(int carIndex)
@@ -2872,7 +2888,7 @@ namespace Orts.Simulation.RollingStocks
         }
 
         #region Traveller-based updates
-        public float CurrentCurveRadius;
+        public float CurrentCurveRadiusM;
 
         internal void UpdatedTraveler(Traveller traveler, float elapsedTimeS, float distanceM, float speedMpS)
         {
@@ -2880,7 +2896,7 @@ namespace Orts.Simulation.RollingStocks
             if (elapsedTimeS > 0.25f)
                 return;
 
-            CurrentCurveRadius = traveler.GetCurveRadius();
+            CurrentCurveRadiusM = traveler.GetCurveRadius();
             UpdateVibrationAndTilting(traveler, elapsedTimeS, distanceM, speedMpS);
             UpdateSuperElevation(traveler, elapsedTimeS);
         }

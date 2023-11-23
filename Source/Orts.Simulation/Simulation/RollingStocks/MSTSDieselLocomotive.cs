@@ -91,11 +91,6 @@ namespace Orts.Simulation.RollingStocks
 
         public float LocomotiveMaxRailOutputPowerW;
 
-        public int currentGearIndexRestore = -1;
-        public int currentnextGearRestore = -1;
-        public bool gearSaved;
-        public int dieselEngineRestoreState;
-
         public float EngineRPM;
         public SmoothedData ExhaustParticles = new SmoothedData(1);
         public SmoothedData ExhaustMagnitude = new SmoothedData(1);
@@ -474,17 +469,6 @@ namespace Orts.Simulation.RollingStocks
                 {
                     CurrentLocomotiveSteamHeatBoilerWaterCapacityL = L.FromGUK(800.0f);
                 }
-            }
-
-            // TO BE LOOKED AT - fix restoration process for gearbox and gear controller
-            // It appears that the gearbox is initialised in two different places to cater for Basic and Advanced ENG file configurations(?).
-            // Hence the restore values recovered in gearbox class are being overwritten , and resume was not working correctly
-            // Hence restore gear position values are read as part of the diesel and restored at this point.
-            if (gearSaved)
-            {
-                DieselEngines[0].GearBox.nextGearIndex = currentnextGearRestore;
-                DieselEngines[0].GearBox.currentGearIndex = currentGearIndexRestore;
-                GearBoxController.SetValue((float)DieselEngines[0].GearBox.currentGearIndex);
             }
 
             if (Simulator.Settings.VerboseConfigurationMessages)
@@ -1175,11 +1159,11 @@ namespace Orts.Simulation.RollingStocks
             status.AppendFormat((data < 0 ? "???" : " ") + "\t");
 
             // BP
-            var brakeInfoValue = brakeValue(Simulator.Catalog.GetString("BP"), Simulator.Catalog.GetString("EOT"));
+            var brakeInfoValue = brakeValue(Simulator.Catalog.GetString("BP"), Simulator.Catalog.GetString("Flow"));
             status.AppendFormat("{0:F0}\t", brakeInfoValue);
-
-            // Flow.
-            // TODO:The BP air flow that feeds the brake tube is not yet modeled in Open Rails.
+            // Air flow meter
+            brakeInfoValue = brakeValue(Simulator.Catalog.GetString("Flow"), Simulator.Catalog.GetString("EOT"));
+            status.AppendFormat("{0:F0}\t", brakeInfoValue);
 
             // Remote
             if (dataDpu)
@@ -1277,6 +1261,7 @@ namespace Orts.Simulation.RollingStocks
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Throttle"));
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Load"));
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("BP"));
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Flow"));
             if (!dpuFull)
             {
                 labels.AppendFormat("{0}", Simulator.Catalog.GetString("Remote"));

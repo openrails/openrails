@@ -30,38 +30,67 @@ namespace Orts.Viewer3D
     public class ExternalDeviceState
     {
         public Dictionary<(CabViewControlType,int), ExternalDeviceCabControl> CabControls;
-        public Dictionary<UserCommand, ExternalDeviceButton> Commands;
+        public Dictionary<UserCommand, List<ExternalDeviceButton>> Commands;
         public ExternalDeviceState()
         {
-            Commands = new Dictionary<UserCommand, ExternalDeviceButton>();
+            Commands = new Dictionary<UserCommand, List<ExternalDeviceButton>>();
             CabControls = new Dictionary<(CabViewControlType,int), ExternalDeviceCabControl>();
         }
 
         public virtual void Handled()
         {
-            foreach (var button in Commands.Values)
+            foreach (var buttonList in Commands.Values)
             {
-                button.Changed = false;
+                foreach (var button in buttonList)
+                {
+                    button.Changed = false;
+                }
             }
             foreach (var control in CabControls.Values)
             {
                 control.Changed = false;
             }
         }
+        public void RegisterCommand(UserCommand command, ExternalDeviceButton button)
+        {
+            if (!Commands.ContainsKey(command)) Commands[command] = new List<ExternalDeviceButton>();
+            Commands[command].Add(button);
+        }
 
         public bool IsPressed(UserCommand command)
 		{
-            return Commands.TryGetValue(command, out var button) && button.IsPressed;
+            if (Commands.TryGetValue(command, out var buttons))
+            {
+                foreach (var button in buttons)
+                {
+                    if (button.IsPressed) return true;
+                }
+            }
+            return false;
 		}
 
 		public bool IsReleased(UserCommand command)
 		{
-            return Commands.TryGetValue(command, out var button) && button.IsReleased;
+            if (Commands.TryGetValue(command, out var buttons))
+            {
+                foreach (var button in buttons)
+                {
+                    if (button.IsReleased) return true;
+                }
+            }
+            return false;
 		}
 
 		public bool IsDown(UserCommand command)
 		{
-            return Commands.TryGetValue(command, out var button) && button.IsDown;
+            if (Commands.TryGetValue(command, out var buttons))
+            {
+                foreach (var button in buttons)
+                {
+                    if (button.IsDown) return true;
+                }
+            }
+            return false;
 		}
     }
     public class ExternalDeviceButton

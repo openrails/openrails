@@ -49,10 +49,11 @@ namespace Orts.Viewer3D.Popups
 
         readonly Viewer Viewer;
         readonly Action<TableData>[] TextPages;
+        public readonly int TextPagesLength;
         readonly WindowTextFont TextFont;
         readonly HUDGraphMaterial HUDGraphMaterial;
 
-        int TextPage;
+        public int TextPage;
         int LocomotivePage = 2;
         int LastTextPage;
         TableData TextTable = new TableData() { Cells = new string[0, 0] };
@@ -96,6 +97,7 @@ namespace Orts.Viewer3D.Popups
             textPages.Add(TextPageWeather);
             textPages.Add(TextPageDebugInfo);
             TextPages = textPages.ToArray();
+            TextPagesLength = TextPages.Length;
 
             TextFont = owner.TextFontDefaultOutlined;
             ColumnWidth *= TextFont.Height;
@@ -867,12 +869,14 @@ namespace Orts.Viewer3D.Popups
                     else
                     {
 
-                        TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}",
+                        TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}\t\t{5}\t\t{6}",
                             Viewer.Catalog.GetString("PlayerLoco"),
                             Viewer.Catalog.GetString("Main reservoir"),
                             FormatStrings.FormatPressure((Viewer.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true),
                             Viewer.Catalog.GetString("Compressor"),
-                            (Viewer.PlayerLocomotive as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
+                            (Viewer.PlayerLocomotive as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off"),
+                            Viewer.Catalog.GetString("Flow"),
+                            FormatStrings.FormatAirFlow((Viewer.PlayerLocomotive as MSTSLocomotive).FilteredBrakePipeFlowM3pS, mstsLocomotive.IsMetric)));
                     }
 
 
@@ -895,14 +899,16 @@ namespace Orts.Viewer3D.Popups
                         }
                         else
                         {
-                            TableAddLines(table, String.Format("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}",
+                            TableAddLines(table, String.Format("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}\t\t{6}\t\t{7}",
                             Viewer.Catalog.GetString("Loco"),
                             car.CarID,
 
                             Viewer.Catalog.GetString("Main reservoir"),
                             FormatStrings.FormatPressure((car as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (car as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true),
                             Viewer.Catalog.GetString("Compressor"),
-                            (car as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));                            
+                            (car as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off"),
+                            Viewer.Catalog.GetString("Flow"),
+                            FormatStrings.FormatAirFlow((car as MSTSLocomotive).FilteredBrakePipeFlowM3pS, mstsLocomotive.IsMetric)));
                         }
                     }
                 }
@@ -1168,7 +1174,7 @@ namespace Orts.Viewer3D.Popups
                 TableSetCell(table, 11, "{0}", FormatStrings.FormatVeryShortDistanceDisplay( car.CouplerSlackM, car.IsMetric));
                 TableSetCell(table, 12, "{0}", FormatStrings.FormatLargeMass(car.MassKG, car.IsMetric, car.IsUK));
                 TableSetCell(table, 13, "{0:F2}%", -car.CurrentElevationPercent);
-                TableSetCell(table, 14, "{0}", FormatStrings.FormatDistance(car.CurrentCurveRadius, car.IsMetric));
+                TableSetCell(table, 14, "{0}", FormatStrings.FormatDistance(car.CurrentCurveRadiusM, car.IsMetric));
                 TableSetCell(table, 15, "{0:F0}%", car.HuDBrakeShoeFriction * 100.0f);
                 TableSetCell(table, 16, car.HUDBrakeSkid ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"));
                 TableSetCell(table, 17, "{0} {1}", FormatStrings.FormatTemperature(car.WheelBearingTemperatureDegC, car.IsMetric, false), car.DisplayWheelBearingTemperatureStatus);

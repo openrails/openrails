@@ -72,6 +72,23 @@ namespace Orts.Simulation.RollingStocks
         public Doors Doors;        
         public Door RightDoor => Doors.RightDoor;
         public Door LeftDoor => Doors.LeftDoor;
+
+        public enum WindowState
+            // Don't change the order of entries within this enum
+        {
+            Closed,
+            Closing,
+            Opening,
+            Open,
+        }
+
+        public static int LeftWindowFrontIndex = 0;
+        public static int RightWindowFrontIndex = 1;
+        public static int LeftWindowRearIndex = 2;
+        public static int RightWindowRearIndex = 3;
+        public WindowState[] WindowStates = new WindowState[4];
+        public float[] SoundHeardInternallyCorrection = new float[2];
+
         public bool MirrorOpen;
         public bool UnloadingPartsOpen;
         public bool WaitForAnimationReady; // delay counter to start loading/unliading is on;
@@ -1444,6 +1461,7 @@ namespace Orts.Simulation.RollingStocks
                     stf.ReadFloat(STFReader.UNITS.None, null);
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(ortscurtius_kniffler":
                 case "wagon(ortsadhesion(ortscurtius_kniffler":
                     //e.g. Wagon ( ORTSAdhesion ( ORTSCurtius_Kniffler ( 7.5 44 0.161 0.7 ) ) )
                     stf.MustMatch("(");
@@ -1453,6 +1471,7 @@ namespace Orts.Simulation.RollingStocks
                     AdhesionK = stf.ReadFloat(STFReader.UNITS.None, 0.7f); if (AdhesionK <= 0) AdhesionK = 0.7f;
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(ortsslipwarningthreshold":
                 case "wagon(ortsadhesion(ortsslipwarningthreshold":
                     stf.MustMatch("(");
                     SlipWarningThresholdPercent = stf.ReadFloat(STFReader.UNITS.None, 70.0f); if (SlipWarningThresholdPercent <= 0) SlipWarningThresholdPercent = 70.0f;
@@ -1507,6 +1526,13 @@ namespace Orts.Simulation.RollingStocks
                     if (HasInsideView)
                     {
                         ParseAlternatePassengerViewPoints(stf);
+                    }
+                    else stf.SkipRestOfBlock();
+                    break;
+                case "wagon(ortsalternate3dcabviewpoints": // accepted only if there is already a 3D cabview
+                    if (Cab3DShapeFileName != null)
+                    {
+                        ParseAlternate3DCabViewPoints(stf);
                     }
                     else stf.SkipRestOfBlock();
                     break;
@@ -1750,6 +1776,15 @@ namespace Orts.Simulation.RollingStocks
             });
         }
 
+        // parses additional 3Dcab viewpoints, if any
+        protected void ParseAlternate3DCabViewPoints(STFReader stf)
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new[] {
+                new STFReader.TokenProcessor("ortsalternate3dcabviewpoint", ()=>{ Parse3DCab(stf); }),
+            });
+        }
+
         public static float ParseFloat(string token)
         {   // is there a better way to ignore any suffix?
             while (token.Length > 0)
@@ -1817,6 +1852,10 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(DerailPossible);
             outf.Write(DerailExpected);
             outf.Write(DerailElapsedTimeS);
+            for (int index = 0; index < 4; index++)
+            {
+                outf.Write((int)WindowStates[index]);
+            }
 
             LocomotiveAxles.Save(outf);
 
@@ -1872,6 +1911,10 @@ namespace Orts.Simulation.RollingStocks
             DerailPossible = inf.ReadBoolean();
             DerailExpected = inf.ReadBoolean();
             DerailElapsedTimeS = inf.ReadSingle();
+            for (int index = 0; index < 4; index++)
+            {
+                WindowStates[index] = (WindowState)inf.ReadInt32();
+            }
 
             MoveParamsToAxle();
             LocomotiveAxles.Restore(inf);
@@ -3500,6 +3543,22 @@ namespace Orts.Simulation.RollingStocks
             if (MirrorOpen) SignalEvent(Event.MirrorOpen); // hook for sound trigger
             else SignalEvent(Event.MirrorClose);
             if (Simulator.PlayerLocomotive == this) Simulator.Confirmer.Confirm(CabControl.Mirror, MirrorOpen ? CabSetting.On : CabSetting.Off);
+        }
+
+        public void ToggleWindow(bool rear, bool left)
+        {
+            var open = false;
+            var index = (left ? 0 : 1) + 2 * (rear ? 1 : 0);
+                if (WindowStates[index] == WindowState.Closed || WindowStates[index] == WindowState.Closing)
+                    WindowStates[index] = WindowState.Opening;
+                else if (WindowStates[index] == WindowState.Open || WindowStates[index] == WindowState.Opening)
+                    WindowStates[index] = WindowState.Closing;
+                if (WindowStates[index] == WindowState.Opening) open = true;
+
+
+            if (open) SignalEvent(Event.WindowOpening); // hook for sound trigger
+            else SignalEvent(Event.WindowClosing);
+            if (Simulator.PlayerLocomotive == this) Simulator.Confirmer.Confirm(left ^ rear ? CabControl.WindowLeft : CabControl.WindowRight, open ? CabSetting.On : CabSetting.Off);
         }
 
         public void FindControlActiveLocomotive()

@@ -35,7 +35,7 @@ namespace ORTS.Common
             return type.GetField(Enum.GetName(type, value))
                 .GetCustomAttributes(false)
                 .OfType<GetStringAttribute>()
-                .SingleOrDefault()
+                .FirstOrDefault()
                 .Name;
         }
     }
@@ -48,5 +48,17 @@ namespace ORTS.Common
     {
         public string Context { get; protected set; }
         public GetParticularStringAttribute(string context, string name) : base(name) { Context = context; }
+
+        public static string GetParticularPrettyName(string context, Enum value)
+        {
+            var type = value.GetType();
+            string toBeReturned = type.GetField(Enum.GetName(type, value))
+                .GetCustomAttributes(false)
+                .OfType<GetParticularStringAttribute>()
+                .SingleOrDefault()
+                .Name;
+
+            return toBeReturned;
+        }
     }
 }

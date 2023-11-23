@@ -108,16 +108,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public override void Save(BinaryWriter outf)
         {
-            outf.Write(ScriptName);
-
             base.Save(outf);
             CircuitBreaker.Save(outf);
         }
 
         public override void Restore(BinaryReader inf)
         {
-            ScriptName = inf.ReadString();
-
             base.Restore(inf);
             CircuitBreaker.Restore(inf);
         }
