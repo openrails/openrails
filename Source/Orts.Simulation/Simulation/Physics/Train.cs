@@ -13264,6 +13264,7 @@ namespace Orts.Simulation.Physics
                         false,
                         false,
                         false,
+                        false,
                         StationStop.STOPTYPE.STATION_STOP);
 
                 thisStation.arrivalDT = arrivalDT;
@@ -16068,6 +16069,7 @@ namespace Orts.Simulation.Physics
                         null,
                         null,
                         null,
+                        false,
                         false,
                         false,
                         false,
@@ -20574,6 +20576,7 @@ namespace Orts.Simulation.Physics
             public bool RestrictPlatformToSignal = false;                                         // restrict end of platform to signal position
             public bool ExtendPlatformToSignal = false;                                           // extend end of platform to next signal position
             public bool EndStop = false;                                                          // train terminates at station
+            public bool AllowDepartEarly = false;                                                 // train may depart early if boarding is completed
             public List<int> ConnectionsWaiting = new List<int>();                                // List of trains waiting
             public Dictionary<int, int> ConnectionsAwaited = new Dictionary<int, int>();          // List of awaited trains : key = trainno., value = arr time
             public Dictionary<int, WaitInfo> ConnectionDetails = new Dictionary<int, WaitInfo>(); // Details of connection : key = trainno., value = wait info
@@ -20587,7 +20590,7 @@ namespace Orts.Simulation.Physics
                 int tcSectionIndex, int direction, int exitSignal, bool holdSignal, bool noWaitSignal, bool noClaimAllowed, float stopOffset,
                 int arrivalTime, int departTime, bool terminal, int? actualMinStopTime, float? keepClearFront, float? keepClearRear, 
                 bool forcePosition, bool closeupSignal, bool closeup,
-                bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop, STOPTYPE actualStopType)
+                bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop, bool allowdepartearly, STOPTYPE actualStopType)
             {
                 ActualStopType = actualStopType;
                 PlatformReference = platformReference;
@@ -20627,6 +20630,7 @@ namespace Orts.Simulation.Physics
                 RestrictPlatformToSignal = restrictPlatformToSignal;
                 ExtendPlatformToSignal = extendPlatformToSignal;
                 EndStop = endStop;
+                AllowDepartEarly = allowdepartearly;
 
                 CallOnAllowed = false;
             }
@@ -20741,6 +20745,7 @@ namespace Orts.Simulation.Physics
                 RestrictPlatformToSignal = inf.ReadBoolean();
                 ExtendPlatformToSignal = inf.ReadBoolean();
                 EndStop = inf.ReadBoolean();
+                AllowDepartEarly = inf.ReadBoolean();
             }
 
             //================================================================================================//
@@ -20864,6 +20869,7 @@ namespace Orts.Simulation.Physics
                 outf.Write(RestrictPlatformToSignal);
                 outf.Write(ExtendPlatformToSignal);
                 outf.Write(EndStop);
+                outf.Write(AllowDepartEarly);
             }
 
             /// <summary>
@@ -20886,6 +20892,20 @@ namespace Orts.Simulation.Physics
                 int eightHundredHours = 8 * 3600;
                 int sixteenHundredHours = 16 * 3600;
 
+                int stopTime = 0;
+
+                // allow to depart early if set (timetable mode only, so no need to check for valid schedule)
+                if (AllowDepartEarly)
+                {
+                    stoppedTrain.ComputeTrainBoardingTime(this, ref stopTime);
+                    ActualDepart = ActualArrival + stopTime;
+
+                    // correct for times around midnight
+                    if (ActualDepart > 24 * 3600) ActualDepart -= 24 * 3600;
+                    if (DepartTime == 0) DepartTime = ActualDepart;
+                    return stopTime;
+                }
+
                 // preset depart to booked time
                 ActualDepart = DepartTime;
 
@@ -20900,7 +20920,8 @@ namespace Orts.Simulation.Physics
                 }
 
                 // correct stop time for stop around midnight
-                int stopTime = DepartTime - ArrivalTime;
+                stopTime = DepartTime - ArrivalTime;
+                
                 if (DepartTime < eightHundredHours && ArrivalTime > sixteenHundredHours) // stop over midnight
                 {
                     stopTime += (24 * 3600);
