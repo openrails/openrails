@@ -149,7 +149,6 @@ namespace Orts.Simulation.RollingStocks
 
         float ZeroSpeedAdhesionBase;
 
-
         public float FilteredBrakePipeFlowM3pS;
         public IIRFilter AFMFilter;
 
