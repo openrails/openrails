@@ -806,6 +806,7 @@ namespace Orts.Viewer3D
     {
         Vector3 RotationOrigin;
         Vector3 RotationDirection;
+        WorldLocation RotationLocation;
         float RotationRadius;
         float RotationReferenceAngleX;
         float RotationReferenceAngleY;
@@ -817,25 +818,38 @@ namespace Orts.Viewer3D
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            // The UserInput code goes to the consuming class according to the architecture,
-            // this class is intentionally lacks calling the base(elapsedTime).
+            if (UserInput.IsMouseMiddleButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
+            {
+                StoreRotationOrigin(Viewer.TerrainPoint);
+                Viewer.EditorShapes.CrosshairPositionUpdateEnabled = false;
+            }
+            if (UserInput.IsMouseMiddleButtonDown && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
+            {
+                RotateByMouse();
+            }
+            else
+            {
+                Viewer.EditorShapes.CrosshairPositionUpdateEnabled = true;
+            }
+            if (UserInput.IsMouseMiddleButtonDown && UserInput.ModifiersMaskShiftCtrlAlt(true, false, false))
+            {
+                PanByMouse();
+            }
+            else
+            {
+                ZoomByMouseWheel(GetSpeed(elapsedTime));
+            }
         }
 
         public override void ZoomByMouseWheel(float speed)
         {
-            // The UserInput code goes to the consuming class according to the architecture, only the functionality is implemented here
-
             ZoomIn(speed * UserInput.MouseWheelChange * ZoomFactor);
         }
 
         public override void RotateByMouse()
         {
-            // The UserInput code goes to the consuming class according to the architecture, only the functionality is implemented here
-
-            RotationXRadians += GetMouseDelta(UserInput.MouseMoveY);
-            RotationYRadians += GetMouseDelta(UserInput.MouseMoveX);
-            RotationXRadians = MathHelper.WrapAngle(RotationXRadians);
-            RotationYRadians = MathHelper.WrapAngle(RotationYRadians);
+            RotationXRadians = MathHelper.WrapAngle(RotationXRadians + GetMouseDelta(UserInput.MouseMoveY));
+            RotationYRadians = MathHelper.WrapAngle(RotationYRadians + GetMouseDelta(UserInput.MouseMoveX));
 
             // Method 1
             //var deltaAngleX = MathHelper.WrapAngle(GetMouseDelta(UserInput.MouseMoveY));
@@ -852,8 +866,15 @@ namespace Orts.Viewer3D
             //var deltaAngleY = MathHelper.WrapAngle(RotationYRadians - RotationReferenceAngleY);
             //var transform = Matrix.CreateFromYawPitchRoll(-deltaAngleY, -deltaAngleX, 0);
             //var newLocation = RotationOrigin + RotationRadius * Vector3.Transform(RotationDirection, transform);
+
+            // Method 3
+            //var deltaAngleX = MathHelper.WrapAngle(RotationXRadians);
+            //var deltaAngleY = MathHelper.WrapAngle(RotationYRadians);
+            //var transform = Matrix.CreateFromYawPitchRoll(-deltaAngleY, -deltaAngleX, 0);
+            //var newLocation = RotationOrigin + RotationRadius * Vector3.Transform(Vector3.UnitZ, transform);
+
             //newLocation.Z *= -1;
-            //var newWorldLocation = CameraWorldLocation;
+            //var newWorldLocation = RotationLocation;
             //newWorldLocation.Location = newLocation;
 
             //SetLocation(newWorldLocation);
@@ -861,18 +882,17 @@ namespace Orts.Viewer3D
 
         public void StoreRotationOrigin(Vector3 rotationOrigin)
         {
-            RotationOrigin = rotationOrigin;
+            RotationOrigin = Viewer.TerrainPoint;
+            RotationLocation = CameraWorldLocation;
             RotationDirection = XnaLocation(CameraWorldLocation) - RotationOrigin;
             RotationRadius = RotationDirection.Length();
             RotationDirection = Vector3.Normalize(RotationDirection);
-            RotationReferenceAngleX = RotationXRadians;
-            RotationReferenceAngleY = RotationYRadians;
+            RotationReferenceAngleX = MathHelper.WrapAngle(RotationXRadians);
+            RotationReferenceAngleY = MathHelper.WrapAngle(RotationYRadians);
         }
 
         public void PanByMouse()
         {
-            // The UserInput code goes to the consuming class according to the architecture, only the functionality is implemented here
-
             var previousFarSource = new Vector3(UserInput.MouseX - UserInput.MouseMoveX, UserInput.MouseY - UserInput.MouseMoveY, 1);
             var previousFarPoint = Viewer.DefaultViewport.Unproject(previousFarSource, XnaProjection, XnaView, Matrix.Identity);
             var movement = Viewer.FarPoint - previousFarPoint;
@@ -891,8 +911,6 @@ namespace Orts.Viewer3D
 
         public bool PickByMouse(out StaticShape pickedObjectOut)
         {
-            // The UserInput code goes to the consuming class by the accepted architecture, only the functionality is implemented here
-
             if (Viewer == null)
             {
                 pickedObjectOut = null;

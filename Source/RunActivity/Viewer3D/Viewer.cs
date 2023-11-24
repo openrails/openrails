@@ -930,13 +930,13 @@ namespace Orts.Viewer3D
                 TerrainPoint = EditorMode ? GetTerrainPoint() : NearPoint;
             }
 
-            if (EditorMode)
-                return;
-
             if (UserInput.IsPressed(UserCommand.CameraReset))
                 Camera.Reset();
 
             Camera?.HandleUserInput(elapsedTime);
+
+            if (EditorMode)
+                return;
 
             PlayerLocomotiveViewer?.HandleUserInput(elapsedTime);
             InfoDisplay?.HandleUserInput(elapsedTime);

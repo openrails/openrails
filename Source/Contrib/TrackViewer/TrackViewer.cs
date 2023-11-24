@@ -324,13 +324,14 @@ namespace ORTS.TrackViewer
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            SceneViewer?.Update(gameTime);
+
             if (!this.IsTrackViewerWindowActive)
             {
                 lostFocus = true;
                 if (this.IsRenderWindowActive)
                 {
                     base.Update(gameTime);
-                    SceneViewer?.Update(gameTime);
                 }
                 return;
             }
@@ -549,8 +550,6 @@ namespace ORTS.TrackViewer
             SetTitle();
 
             RenderProcess.IsMouseVisible = true;
-
-            SceneViewer?.Update(gameTime);
         }
 
         /// <summary>

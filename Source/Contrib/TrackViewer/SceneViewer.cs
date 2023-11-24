@@ -147,36 +147,14 @@ namespace ORTS.TrackViewer
             {
                 SelectedObjectChanged();
             }
-            if (UserInput.IsMouseMiddleButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
-            {
-                Camera.StoreRotationOrigin(Viewer.TerrainPoint);
-                Viewer.EditorShapes.CrosshairPositionUpdateEnabled = false;
-            }
-            if (UserInput.IsMouseMiddleButtonDown && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
-            {
-                Camera.RotateByMouse();
-            }
-            else
-            {
-                Viewer.EditorShapes.CrosshairPositionUpdateEnabled = true;
-            }
-            if (UserInput.IsMouseMiddleButtonDown && UserInput.ModifiersMaskShiftCtrlAlt(true, false, false))
-            {
-                Camera.PanByMouse();
-            }
-            else
-            {
-                Camera.ZoomByMouseWheel(1);
-            }
-            
             if (UserInput.IsPressed(UserCommand.EditorUnselectAll))
             {
                 SelectedObject = null;
                 SelectedObjectChanged();
             }
 
-            SetCameraLocationStatus(TrackViewer.RenderProcess?.Viewer?.Camera?.CameraWorldLocation ?? new WorldLocation());
-            //FillCursorPositionStatus(TrackViewer.RenderProcess?.Viewer?.TerrainPoint ?? new Vector3());
+            SetCameraLocationStatus(Camera?.CameraWorldLocation ?? new WorldLocation());
+            //FillCursorPositionStatus(Viewer?.TerrainPoint ?? new Vector3());
         }
 
         public void EndDraw()

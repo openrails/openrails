@@ -83,11 +83,8 @@ namespace Orts.Viewer3D
                 {
                     CrosshairPosition = Viewer.TerrainPoint;
                 }
-                if (CrosshairPosition != Viewer.NearPoint)
-                {
-                    var mouseCrosshairMatrix = Matrix.CreateTranslation(CrosshairPosition);
-                    frame.AddPrimitive(MouseCrosshair.Material, MouseCrosshair, RenderPrimitiveGroup.World, ref mouseCrosshairMatrix);
-                }
+                var mouseCrosshairMatrix = Matrix.CreateTranslation(CrosshairPosition);
+                frame.AddPrimitive(MouseCrosshair.Material, MouseCrosshair, RenderPrimitiveGroup.World, ref mouseCrosshairMatrix);
             }
         }
 
