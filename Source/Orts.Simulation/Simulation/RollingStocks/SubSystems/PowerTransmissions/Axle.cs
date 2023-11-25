@@ -429,7 +429,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// switch between Polach and Pacha adhesion calculation
         /// </summary>
-        bool UsePoalchAdhesion = false;
+        bool UsePolachAdhesion = false;
 
         /// <summary>
         /// Pre-calculation of slip characteristics at 0 slip speed
@@ -820,7 +820,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             double slipSpeedMpS = axleSpeedMpS - TrainSpeedMpS;
             double axleOutForceN = 0;
 
-            if (UsePoalchAdhesion)
+            if (UsePolachAdhesion)
             {
                 axleOutForceN = Math.Sign(slipSpeedMpS) * AxleWeightN * SlipCharacteristicsPolach(slipSpeedMpS);
             }
@@ -858,7 +858,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// Integrates the wheel rotation movement using a RK4 method,
         /// calculating the required number of substeps
         /// To maintain the accuracy of the integration method, the number of substeps needs to increase when slip speed approaches the slip threshold speed.
-        /// The folloi=wing section attempts to calculate the optimal substep limit. This is a trade off between the accuracy of the slips calculations and the CPU load which impacts the screen FPS
+        /// The following section attempts to calculate the optimal substep limit. This is a trade off between the accuracy of the slips calculations and the CPU load which impacts the screen FPS
         /// Outputs: wheel speed, wheel angular position and motive force
         /// </summary>
         void Integrate(float elapsedClockSeconds)
@@ -960,11 +960,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             // Switches between Polach (high performance) adhesion model and Pacha (low performance) adhesion model
             if(ScreenFrameRate > 59)
             {
-                UsePoalchAdhesion = true;
+                UsePolachAdhesion = true;
             }
             else if(ScreenFrameRate < 55) 
             {
-                UsePoalchAdhesion = false;
+                UsePolachAdhesion = false;
                 if (TrainSpeedMpS > 0 )
                 {
                     Trace.TraceInformation("Advanced adhesion model switched to low performance option due to low frame rate {0} at ElapsedClockSeconds of {1}", ScreenFrameRate, timeSpan);
@@ -979,7 +979,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             
             forceToAccelerationFactor = WheelRadiusM * WheelRadiusM / totalInertiaKgm2;        
 
-            if (UsePoalchAdhesion)
+            if (UsePolachAdhesion)
             {
 
                 Polach.Update();
