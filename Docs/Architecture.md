@@ -29,6 +29,22 @@ The threading in Open Rails has two key threads working together (Render and Upd
 - Web Server process
   - Handle all web and API requests
 
+## Projects, assemblies, namespaces
+
+Open Rails is made up of several component projects which are organised into subdirectories with the following naming pattern:
+
+- `Orts.Component\Orts.Component.csproj` (project file)
+- `Orts.Component.dll` (assembly name)
+- `Orts.Component` (default namespace)
+
+The namespaces used within code files should match the directory structure like this:
+
+| *Filename* | *Namespace*
+|---|---|
+| `Orts.Component\File.cs` | `Orts.Component` |
+| `Orts.Component\Section\File.cs` | `Orts.Component.Section` |
+| `Orts.Component\Section\Subsection\File.cs` | `Orts.Component.Section.Subsection` |
+
 ## Simulator object relationships
 
 This tree is a summary of the important object relationships (aggregation) inside the simulation. Each entry is a class whose instances can be accessed from the parent item.
