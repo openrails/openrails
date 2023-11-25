@@ -1028,7 +1028,7 @@ namespace Orts.Viewer3D.WebServices
                 }
             }
 
-            if (trainCar is MSTSElectricLocomotive)
+            if (trainCar is MSTSDieselLocomotive)
             {
                 switch ((trainCar as MSTSDieselLocomotive).DieselEngines.State)
                 {
