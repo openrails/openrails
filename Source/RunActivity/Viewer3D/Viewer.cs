@@ -40,6 +40,7 @@ using Orts.Viewer3D.Popups;
 using Orts.Viewer3D.Processes;
 using Orts.Viewer3D.RollingStock;
 using Orts.Viewer3D.WebServices.SwitchPanel;
+using Orts.Viewer3D.WebServices;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Scripting.Api;
@@ -95,6 +96,7 @@ namespace Orts.Viewer3D
         public TrainOperationsWindow TrainOperationsWindow { get; private set; } // F9 window
         public TrainCarOperationsWindow TrainCarOperationsWindow { get; private set; } // Alt-F9 window
         public TrainCarOperationsViewerWindow TrainCarOperationsViewerWindow { get; private set; } // From TrainCarOperationWindow
+        public TrainCarOperationsWebpage TrainCarOperationsWebpage { get; set; }
         public CarOperationsWindow CarOperationsWindow { get; private set; } // F9 sub-window for car operations
         public TrainDpuWindow TrainDpuWindow { get; private set; } // Shift + F9 train distributed power window
         public NextStationWindow NextStationWindow { get; private set; } // F10 window
@@ -896,6 +898,20 @@ namespace Orts.Viewer3D
             WindowManager?.PrepareFrame(frame, elapsedTime);
 
             SwitchPanelModule.SendSwitchPanelIfChanged();
+            
+            try
+            {
+                if ((PlayerTrain != null) && (TrainCarOperationsWebpage != null))
+                {
+                    TrainCarOperationsWebpage.handleReceiveAndSend();
+                }
+            }
+            catch (Exception error)
+            {
+                // some timing error causes an exception sometimes
+                // just silently ignore but log the exception
+                Trace.TraceWarning(error.ToString());
+            }
         }
 
         private void LoadDefectCarSound(TrainCar car, string filename)

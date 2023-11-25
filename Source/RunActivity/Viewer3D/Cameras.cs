@@ -1278,18 +1278,18 @@ namespace Orts.Viewer3D
             var carPosition = !(TrainCarViewer.CarPosition < trainCars.Count()) ? TrainCarViewer.CarPosition - 1 : TrainCarViewer.CarPosition;
             var isDownCameraOutsideFront = UserInput.IsDown(UserCommand.CameraOutsideFront);
             var isDownCameraOutsideRear = UserInput.IsDown(UserCommand.CameraOutsideRear);
-            var isVisibleTrainCarViewer = Viewer.TrainCarOperationsViewerWindow.Visible;            
+            var isVisibleTrainCarViewerOrWebpage = Viewer.TrainCarOperationsViewerWindow.Visible || (Viewer.TrainCarOperationsWebpage.TrainCarSelected);            
 
             if (attachedCar == null || attachedCar.Train != Viewer.SelectedTrain || carPosition != oldCarPosition || isDownCameraOutsideFront || isDownCameraOutsideRear)
             {
                 if (Front)
                 {
-                    if (!isVisibleTrainCarViewer && isDownCameraOutsideFront)
+                    if (!isVisibleTrainCarViewerOrWebpage && isDownCameraOutsideFront)
                     {
                     SetCameraCar(GetCameraCars().First());
                         oldCarPosition = 0;
                     }
-                    else if (isVisibleTrainCarViewer && carPosition >= 0)
+                    else if (isVisibleTrainCarViewerOrWebpage && carPosition >= 0)
                     {
                         SetCameraCar(trainCars[carPosition]);
                         oldCarPosition = carPosition;
@@ -1304,12 +1304,12 @@ namespace Orts.Viewer3D
                 }
                 else
                 {
-                    if (!isVisibleTrainCarViewer && isDownCameraOutsideRear)
+                    if (!isVisibleTrainCarViewerOrWebpage && isDownCameraOutsideRear)
                     {
                         SetCameraCar(GetCameraCars().Last());
                         oldCarPosition = 0;
                     }
-                    else if (isVisibleTrainCarViewer && carPosition >= 0)
+                    else if (isVisibleTrainCarViewerOrWebpage && carPosition >= 0)
                     {
                         SetCameraCar(trainCars[carPosition]);
                         oldCarPosition = carPosition;
