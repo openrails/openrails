@@ -254,14 +254,21 @@ simplicity, only one axle model is computed (and animated). A tilting
 feature and the independent axle adhesion model will be introduced in the
 future.
 
-The advanced adhesion model uses two alternate algorithims to calculate the 
-wheel adhesion. The first model is based upon an algorithim by Pacha, whilst the second 
-uses an algorithim developed by Polach. The Polach algorithim provides 
+The advanced adhesion model uses two alternate algorithms to calculate the 
+wheel adhesion. The first model is based upon an algorithm by Pacha, whilst the second 
+uses an algorithm developed by Polach. The Polach algorithm provides 
 a more accurate outcome and facilitates the future inclusion of track conditions. 
-However it is more CPU load intensive then the Pacha one. This can produce low 
-frame rates for the screen display. Hence OR automatically sense the CPU load, 
-and switches to the Pacha algorithim at high loads and to the Polach algorithim 
-under lower CPU loads.  
+However due to the number of algorithm steps required to calculate the wheel adhesion 
+value, it is more CPU load intensive then the Pacha one. This can produce low 
+frame rates for the screen display in machines with low performance specifications. 
+
+Hence OR automatically senses the CPU load, and switches to the Pacha algorithm at 
+high loads and to the Polach algorithm under lower CPU loads. In this way OR attempts 
+to support the operation of lower specification computers. When OR is using the 
+Pacha algorithm, the "Wheel Adh (Max)" values will both read 99%, whereas when the 
+Polach algorithm is being used these values will be around the expected values of 30-55%.
+
+
 
 The heart of the adhesion algorithim is the slip characteristics (pictured below).
 
