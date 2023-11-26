@@ -254,7 +254,16 @@ simplicity, only one axle model is computed (and animated). A tilting
 feature and the independent axle adhesion model will be introduced in the
 future.
 
-The heart of the model is the slip characteristics (picture below).
+The advanced adhesion model uses two alternate algorithims to calculate the 
+wheel adhesion. The first model is based upon an algorithim by Pacha, whilst the second 
+uses an algorithim developed by Polach. The Polach algorithim provides 
+a more accurate outcome and facilitates the future inclusion of track conditions. 
+However it is more CPU load intensive then the Pacha one. This can produce low 
+frame rates for the screen display. Hence OR automatically sense the CPU load, 
+and switches to the Pacha algorithim at high loads and to the Polach algorithim 
+under lower CPU loads.  
+
+The heart of the adhesion algorithim is the slip characteristics (pictured below).
 
 .. image:: images/physics-adhesion-slip.png
    :align: center
