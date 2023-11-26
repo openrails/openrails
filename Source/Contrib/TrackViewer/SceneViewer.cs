@@ -56,7 +56,7 @@ namespace ORTS.TrackViewer
         internal StaticShape SelectedObject;
         internal Orts.Formats.Msts.WorldObject SelectedWorldObject;
         Viewer Viewer;
-        ViewerCamera Camera;
+        OrbitingCamera Camera;
 
         /// <summary>The command-line arguments</summary>
         private string[] CommandLineArgs;
@@ -138,7 +138,7 @@ namespace ORTS.TrackViewer
             Viewer = Viewer ?? TrackViewer.RenderProcess?.Viewer;
             if (Viewer == null)
                 return;
-            Camera = Camera ?? Viewer.ViewerCamera;
+            Camera = Camera ?? Viewer.OrbitingCamera;
 
             Viewer.EditorShapes.MouseCrosshairEnabled = true;
 
@@ -216,7 +216,7 @@ namespace ORTS.TrackViewer
                 break;
             }
             mouseLocation.Location.Y = elevatedLocation + 15;
-            TrackViewer.RenderProcess.Viewer.ViewerCamera.SetLocation(mouseLocation);
+            TrackViewer.RenderProcess.Viewer.OrbitingCamera.SetLocation(mouseLocation);
         }
 
         void SelectedObjectChanged()
