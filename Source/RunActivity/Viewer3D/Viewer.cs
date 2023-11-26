@@ -139,7 +139,7 @@ namespace Orts.Viewer3D
         public BrakemanCamera BrakemanCamera { get; private set; } // Camera 6
         public List<FreeRoamCamera> FreeRoamCameraList = new List<FreeRoamCamera>();
         public FreeRoamCamera FreeRoamCamera { get { return FreeRoamCameraList[0]; } } // Camera 8
-        public ViewerCamera ViewerCamera { get; private set; }
+        public OrbitingCamera OrbitingCamera { get; private set; }
 
         /// <summary>
         /// Activate the 2D or 3D cab camera depending on the current player preference.
@@ -180,7 +180,7 @@ namespace Orts.Viewer3D
                 if (PlayerLocomotive != null)
                 FrontCamera.Activate();
             else
-                    ViewerCamera.Activate();
+                    OrbitingCamera.Activate();
             }
             else
                 Camera.Activate();
@@ -329,7 +329,7 @@ namespace Orts.Viewer3D
             WellKnownCameras.Add(SpecialTracksideCamera = new SpecialTracksideCamera(this));
             FreeRoamCameraList.Add(new FreeRoamCamera(this, FrontCamera)); // Any existing camera will suffice to satisfy .Save() and .Restore()
             WellKnownCameras.Add(FreeRoamCamera);
-            WellKnownCameras.Add(ViewerCamera = new ViewerCamera(this));
+            WellKnownCameras.Add(OrbitingCamera = new OrbitingCamera(this));
             WellKnownCameras.Add(ThreeDimCabCamera = new ThreeDimCabCamera(this));
 
             string ORfilepath = System.IO.Path.Combine(Simulator.RoutePath, "OpenRails");

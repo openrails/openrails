@@ -802,16 +802,17 @@ namespace Orts.Viewer3D
         }
     }
 
-    public class ViewerCamera : FreeRoamCamera
+    public class OrbitingCamera : FreeRoamCamera
     {
-        Vector3 RotationOrigin;
-        Vector3 RotationDirection;
-        WorldLocation RotationLocation;
-        float RotationRadius;
-        float RotationReferenceAngleX;
-        float RotationReferenceAngleY;
+        Vector3 StoredOrigin;
+        Vector3 StoredDirection = Vector3.UnitZ;
+        Vector3 StoredForward = Vector3.UnitZ;
+        WorldLocation StoredLocation;
+        float StoredRadius;
+        float StoredAngleX;
+        float StoredAngleY;
 
-        public ViewerCamera(Viewer viewer)
+        public OrbitingCamera(Viewer viewer)
             : base(viewer)
         {
         }
@@ -851,44 +852,40 @@ namespace Orts.Viewer3D
             RotationXRadians = MathHelper.WrapAngle(RotationXRadians + GetMouseDelta(UserInput.MouseMoveY));
             RotationYRadians = MathHelper.WrapAngle(RotationYRadians + GetMouseDelta(UserInput.MouseMoveX));
 
-            // Method 1
-            //var deltaAngleX = MathHelper.WrapAngle(GetMouseDelta(UserInput.MouseMoveY));
-            //var deltaAngleY = MathHelper.WrapAngle(GetMouseDelta(UserInput.MouseMoveX));
-            //var direction = Vector3.Normalize(XnaLocation(CameraWorldLocation) - RotationOrigin);
-            //var transform = Matrix.CreateFromYawPitchRoll(-deltaAngleY, -deltaAngleX, 0);
-            //var newLocation = RotationOrigin + RotationRadius * Vector3.Transform(direction, transform);
-            //newLocation.Z *= -1;
-            //var newWorldLocation = CameraWorldLocation;
-            //newWorldLocation.Location = newLocation;
+            var deltaAngleX = MathHelper.WrapAngle(RotationXRadians - StoredAngleX);
+            var deltaAngleY = MathHelper.WrapAngle(RotationYRadians - StoredAngleY);
 
-            // Method 2
-            //var deltaAngleX = MathHelper.WrapAngle(RotationXRadians - RotationReferenceAngleX);
-            //var deltaAngleY = MathHelper.WrapAngle(RotationYRadians - RotationReferenceAngleY);
-            //var transform = Matrix.CreateFromYawPitchRoll(-deltaAngleY, -deltaAngleX, 0);
-            //var newLocation = RotationOrigin + RotationRadius * Vector3.Transform(RotationDirection, transform);
+            var dax = StoredForward.Z * deltaAngleX;
+            var daz = StoredForward.X * deltaAngleX;
+            var transform = Matrix.CreateRotationX(dax);
+            transform *= Matrix.CreateRotationZ(daz);
+            transform *= Matrix.CreateRotationY(-deltaAngleY);
 
-            // Method 3
-            //var deltaAngleX = MathHelper.WrapAngle(RotationXRadians);
-            //var deltaAngleY = MathHelper.WrapAngle(RotationYRadians);
-            //var transform = Matrix.CreateFromYawPitchRoll(-deltaAngleY, -deltaAngleX, 0);
-            //var newLocation = RotationOrigin + RotationRadius * Vector3.Transform(Vector3.UnitZ, transform);
+            // FIXME: The math is still wrong here somewhere...
 
-            //newLocation.Z *= -1;
-            //var newWorldLocation = RotationLocation;
-            //newWorldLocation.Location = newLocation;
+            var newWorldLocation = StoredLocation;
+            newWorldLocation.Location = StoredOrigin + StoredRadius * Vector3.Transform(StoredDirection, transform);
+            newWorldLocation.Location.Z *= -1;
 
-            //SetLocation(newWorldLocation);
+            cameraLocation = newWorldLocation;
         }
 
         public void StoreRotationOrigin(Vector3 rotationOrigin)
         {
-            RotationOrigin = Viewer.TerrainPoint;
-            RotationLocation = CameraWorldLocation;
-            RotationDirection = XnaLocation(CameraWorldLocation) - RotationOrigin;
-            RotationRadius = RotationDirection.Length();
-            RotationDirection = Vector3.Normalize(RotationDirection);
-            RotationReferenceAngleX = MathHelper.WrapAngle(RotationXRadians);
-            RotationReferenceAngleY = MathHelper.WrapAngle(RotationYRadians);
+            StoredOrigin = Viewer.TerrainPoint;
+            StoredLocation = CameraWorldLocation;
+            StoredDirection = XnaLocation(CameraWorldLocation) - StoredOrigin;
+            StoredRadius = StoredDirection.Length();
+            StoredDirection = Vector3.Normalize(StoredDirection);
+            StoredAngleX = MathHelper.WrapAngle(RotationXRadians);
+            StoredAngleY = MathHelper.WrapAngle(RotationYRadians);
+            StoredForward = xnaView.Forward;
+        }
+
+        public void SetOrientation(float rotationXRadians, float rotationYRadians)
+        {
+            RotationXRadians = rotationXRadians;
+            RotationYRadians = rotationYRadians;
         }
 
         public void PanByMouse()
