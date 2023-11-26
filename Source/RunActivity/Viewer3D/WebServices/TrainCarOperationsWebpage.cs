@@ -1020,10 +1020,10 @@ namespace Orts.Viewer3D.WebServices
                         filename = "TrainOperationsPowerChanging32.png";
                         break;
                     case CircuitBreakerState.Open:
-                        filename = "TrainOperationsPowerOn32.png";
+                        filename = "TrainOperationsPowerOff32.png";
                         break;
                     case CircuitBreakerState.Closed:
-                        filename = "TrainOperationsPowerOff32.png";
+                        filename = "TrainOperationsPowerOn32.png";
                         break;
                 }
             }
