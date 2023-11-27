@@ -255,5 +255,7 @@
 
         // Editor
         [GetString("Editor Unselect All")] EditorUnselectAll,
+        [GetString("Editor Undo")] EditorUndo,
+        [GetString("Editor Redo")] EditorRedo,
     }
 }
