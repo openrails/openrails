@@ -176,8 +176,8 @@ namespace Orts.Viewer3D
             {
                 new VertexPositionColor(new Vector3(-5, 0, 0), color),
                 new VertexPositionColor(new Vector3(5, 0, 0), color),
-                new VertexPositionColor(new Vector3(0, 0, -5), color),
-                new VertexPositionColor(new Vector3(0, 0, 5), color),
+                new VertexPositionColor(new Vector3(0, 0, -5), Color.Red),
+                new VertexPositionColor(new Vector3(0, 0, 5), Color.Cyan),
                 new VertexPositionColor(new Vector3(0, 0, 0), color),
                 new VertexPositionColor(new Vector3(0, 20, 0), color)
             };

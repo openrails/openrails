@@ -820,7 +820,11 @@ namespace Orts.Viewer3D
 
         public override void ZoomByMouseWheel(float speed)
         {
-            ZoomIn(speed * UserInput.MouseWheelChange * ZoomFactor);
+            // Zoom/move towards the mouse cursor instead of the camera forward
+            var movement = speed * -UserInput.MouseWheelChange * ZoomFactor * Vector3.Normalize(Viewer.NearPoint - Viewer.FarPoint);
+            movement.Z *= -1;
+            cameraLocation.Location += movement;
+            cameraLocation.Normalize();
         }
 
         public override void RotateByMouse()
@@ -831,8 +835,9 @@ namespace Orts.Viewer3D
             var deltaAngleX = MathHelper.WrapAngle(RotationXRadians - StoredAngleX);
             var deltaAngleY = MathHelper.WrapAngle(RotationYRadians - StoredAngleY);
 
-            var dax = StoredForward.Z * deltaAngleX;
-            var daz = StoredForward.X * deltaAngleX;
+            var dax = Vector3.Dot(StoredForward, Vector3.UnitZ) * deltaAngleX;
+            var daz = Vector3.Dot(StoredForward, Vector3.UnitX) * deltaAngleX;
+
             var transform = Matrix.CreateRotationX(dax);
             transform *= Matrix.CreateRotationZ(daz);
             transform *= Matrix.CreateRotationY(-deltaAngleY);
@@ -846,7 +851,7 @@ namespace Orts.Viewer3D
             cameraLocation = newWorldLocation;
         }
 
-        public void StoreRotationOrigin(Vector3 rotationOrigin)
+        void StoreRotationOrigin(Vector3 rotationOrigin)
         {
             StoredOrigin = Viewer.TerrainPoint;
             StoredLocation = CameraWorldLocation;
@@ -858,7 +863,9 @@ namespace Orts.Viewer3D
             StoredForward = xnaView.Forward;
         }
 
-        public void SetOrientation(float rotationXRadians, float rotationYRadians)
+        public float GetRotationX() { return RotationXRadians; }
+        public float GetRotationY() { return RotationYRadians; }
+        public void SetRotation(float rotationXRadians, float rotationYRadians)
         {
             RotationXRadians = rotationXRadians;
             RotationYRadians = rotationYRadians;
