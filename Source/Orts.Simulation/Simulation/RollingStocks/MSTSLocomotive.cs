@@ -186,7 +186,17 @@ namespace Orts.Simulation.RollingStocks
 
         public float CurrentLocomotiveSteamHeatBoilerWaterCapacityL
         {
-            get { return WaterController.CurrentValue * MaximumSteamHeatBoilerWaterTankCapacityL; }
+            get {
+                if (IsSteamHeatFitted)
+                {
+                 return WaterController.CurrentValue * MaximumSteamHeatBoilerWaterTankCapacityL;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+
             set { WaterController.CurrentValue = value / MaximumSteamHeatBoilerWaterTankCapacityL; }
         }
         public float IsTenderRequired = 1.0f;  // Flag indicates that a tender is required for operation of the locomotive. Typically tank locomotives do not require a tender. Assume by default that tender is required.
@@ -239,10 +249,11 @@ namespace Orts.Simulation.RollingStocks
 
         // parameters for Track Sander based upon compressor air and abrasive table for 1/2" sand blasting nozzle @ 50psi
         public float MaxTrackSandBoxCapacityM3 = Me3.FromFt3(40.0f);  // Capacity of sandbox - assume 40.0 cu ft
-        public float CurrentTrackSandBoxCapacityM3 = 5.0f;   // This value needs to be initialised to the value above, as it reduces as sand is used.
+        public float CurrentTrackSandBoxCapacityM3; 
         public float TrackSanderAirComsumptionM3pS = Me3.FromFt3(195.0f) / 60.0f;  // Default value - cubic feet per min (CFM) 195 ft3/m
         public float TrackSanderAirPressurePSI = 50.0f;
         public float TrackSanderSandConsumptionM3pS = Me3.FromFt3(11.6f) / 3600.0f; // Default value - 11.6 ft3/h
+        public float SandWeightKgpM3 = 1600; // One cubic metre of sand weighs about 1.54-1.78 tonnes. 
 
         // Vacuum Braking parameters
         readonly static float OneAtmospherePSI = Bar.ToPSI(1);
@@ -1112,9 +1123,16 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortswaterscoopfillelevation": WaterScoopFillElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0.0f); break;
                 case "engine(ortswaterscoopdepth": WaterScoopDepthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0.0f); break;
                 case "engine(ortswaterscoopwidth": WaterScoopWidthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0.0f); break;
-                case "engine(ortsmaxtracksanderboxcapacity": MaxTrackSandBoxCapacityM3 = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
-                case "engine(ortsmaxtracksandersandconsumption": TrackSanderSandConsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
-                case "engine(ortsmaxtracksanderairconsumption": TrackSanderAirComsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                    // Convert the following default ft^3 to Me^3 units
+                case "engine(ortsmaxtracksanderboxcapacity": MaxTrackSandBoxCapacityM3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null);
+                    MaxTrackSandBoxCapacityM3 = Me3.FromFt3(MaxTrackSandBoxCapacityM3);
+                    break;
+                case "engine(ortsmaxtracksandersandconsumption": Me3.FromFt3( TrackSanderSandConsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null) );
+                    TrackSanderSandConsumptionM3pS = Me3.FromFt3(TrackSanderSandConsumptionM3pS);
+                    break;
+                case "engine(ortsmaxtracksanderairconsumption": Me3.FromFt3( TrackSanderAirComsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null) );
+                    TrackSanderAirComsumptionM3pS = Me3.FromFt3(TrackSanderAirComsumptionM3pS);
+                    break;
                 case "engine(ortscruisecontrol": SetUpCruiseControl(stf); break;
                 case "engine(ortsmultipositioncontroller": SetUpMPC(stf); break;
                 default:

@@ -270,7 +270,7 @@ Polach algorithm is being used these values will be around the expected values o
 
 
 
-The heart of the adhesion algorithim is the slip characteristics (pictured below).
+The heart of the adhesion algorithm is the slip characteristics (pictured below).
 
 .. image:: images/physics-adhesion-slip.png
    :align: center
