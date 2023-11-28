@@ -50,13 +50,14 @@ namespace ORTS.TrackViewer
         public static GettextResourceManager Catalog;
 
         public SceneWindow SceneWindow;
-        public GameWindow SwapChainWindow;
-        public readonly TrackViewer TrackViewer;
-        SwapChainRenderTarget SwapChain;
-        internal StaticShape SelectedObject;
-        internal Orts.Formats.Msts.WorldObject SelectedWorldObject;
+        public readonly TrackViewer Game;
+        public StaticShape SelectedObject;
+        public WorldFile SelectedWorldFile;
+        public Orts.Formats.Msts.WorldObject SelectedWorldObject;
         Viewer Viewer;
         OrbitingCamera Camera;
+        Stack<UndoDataSet> UndoStack = new Stack<UndoDataSet>();
+        Stack<UndoDataSet> RedoStack = new Stack<UndoDataSet>();
 
         /// <summary>The command-line arguments</summary>
         private string[] CommandLineArgs;
@@ -68,64 +69,39 @@ namespace ORTS.TrackViewer
         {
             CommandLineArgs = args;
 
-            TrackViewer = trackViewer;
-            SwapChainWindow = GameWindow.Create(TrackViewer,
-                TrackViewer.RenderProcess.GraphicsDevice.PresentationParameters.BackBufferWidth,
-                TrackViewer.RenderProcess.GraphicsDevice.PresentationParameters.BackBufferHeight);
-            SwapChainWindow.Title = "SceneViewer";
+            Game = trackViewer;
 
-            // The RunActivity.Game class can be accessed as "TrackViewer" from here because of the inheritance
-            SwapChain = new SwapChainRenderTarget(TrackViewer.GraphicsDevice,
-                SwapChainWindow.Handle,
-                TrackViewer.RenderProcess.GraphicsDevice.PresentationParameters.BackBufferWidth,
-                TrackViewer.RenderProcess.GraphicsDevice.PresentationParameters.BackBufferHeight,
+            // Inject the secondary window into RunActivity
+            Game.SwapChainWindow = GameWindow.Create(Game,
+                Game.GraphicsDevice.PresentationParameters.BackBufferWidth,
+                Game.GraphicsDevice.PresentationParameters.BackBufferHeight);
+
+            RenderFrame.FinalRenderTarget = new SwapChainRenderTarget(Game.GraphicsDevice,
+                Game.SwapChainWindow.Handle,
+                Game.GraphicsDevice.PresentationParameters.BackBufferWidth,
+                Game.GraphicsDevice.PresentationParameters.BackBufferHeight,
                 false,
-                TrackViewer.RenderProcess.GraphicsDevice.PresentationParameters.BackBufferFormat,
-                TrackViewer.RenderProcess.GraphicsDevice.PresentationParameters.DepthStencilFormat,
+                Game.GraphicsDevice.PresentationParameters.BackBufferFormat,
+                Game.GraphicsDevice.PresentationParameters.DepthStencilFormat,
                 1,
                 RenderTargetUsage.PlatformContents,
                 PresentInterval.Two);
 
-            // Inject the secondary window into RunActivity
-            TrackViewer.SwapChainWindow = SwapChainWindow;
-
-            RenderFrame.FinalRenderTarget = SwapChain;
-
-            SceneWindow = new SceneWindow(new SceneViewerHwndHost(SwapChainWindow));
+            SceneWindow = new SceneWindow(new SceneViewerHwndHost(Game.SwapChainWindow.Handle));
 
             // The primary window activation events should not affect RunActivity
-            TrackViewer.Activated -= TrackViewer.ActivateRunActivity;
-            TrackViewer.Deactivated -= TrackViewer.DeactivateRunActivity;
+            Game.Activated -= Game.ActivateRunActivity;
+            Game.Deactivated -= Game.DeactivateRunActivity;
 
             // The secondary window activation events should affect RunActivity
-            SceneWindow.Activated += TrackViewer.ActivateRunActivity;
+            SceneWindow.Activated += Game.ActivateRunActivity;
             SceneWindow.Activated += new System.EventHandler((sender, e) => SetKeyboardInput(true));
-            SceneWindow.Deactivated += TrackViewer.DeactivateRunActivity;
+            SceneWindow.Deactivated += Game.DeactivateRunActivity;
             SceneWindow.Deactivated += new System.EventHandler((sender, e) => SetKeyboardInput(false));
 
-            // Not "running" this Game, so manual init is needed
-            Initialize();
-            LoadContent();
-        }
+            SceneWindow.DataContext = this;
 
-        public SceneViewer() { }
-
-        /// <summary>
-        /// Allows the game to perform any initialization it needs to before starting to run.
-        /// This is where it can query for any required services and load any non-graphic
-        /// relation ontent.
-        /// </summary>
-        public void Initialize()
-        {
-        }
-
-        /// <summary>
-        /// LoadContent will be called once per game and is the place to load
-        /// all of your content.
-        /// </summary>
-        public void LoadContent()
-        {
-            TrackViewer.ReplaceState(new GameStateRunActivity(new[] { "-start", "-viewer", TrackViewer.CurrentRoute.Path + "\\dummy\\.pat", "", "10:00", "1", "0" }));
+            Game.ReplaceState(new GameStateRunActivity(new[] { "-start", "-viewer", Game.CurrentRoute.Path + "\\dummy\\.pat", "", "10:00", "1", "0" }));
         }
 
         /// <summary>
@@ -135,16 +111,19 @@ namespace ORTS.TrackViewer
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public void Update(GameTime gameTime)
         {
-            Viewer = Viewer ?? TrackViewer.RenderProcess?.Viewer;
+            Viewer = Viewer ?? Game.RenderProcess?.Viewer;
             if (Viewer == null)
                 return;
             Camera = Camera ?? Viewer.OrbitingCamera;
 
             Viewer.EditorShapes.MouseCrosshairEnabled = true;
 
+            UpdateViewUndoState();
+
             if (UserInput.IsMouseLeftButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false)
-                && Camera.PickByMouse(out SelectedObject))
+                && Camera.PickByMouse(out var selectedObject))
             {
+                SelectedObject = selectedObject;
                 SelectedObjectChanged();
             }
             if (UserInput.IsPressed(UserCommand.EditorUnselectAll))
@@ -152,14 +131,17 @@ namespace ORTS.TrackViewer
                 SelectedObject = null;
                 SelectedObjectChanged();
             }
+            if (UserInput.IsPressed(UserCommand.EditorUndo))
+            {
+                UndoCommand();
+            }
+            if (UserInput.IsPressed(UserCommand.EditorRedo))
+            {
+                RedoCommand();
+            }
 
             SetCameraLocationStatus(Camera?.CameraWorldLocation ?? new WorldLocation());
             //FillCursorPositionStatus(Viewer?.TerrainPoint ?? new Vector3());
-        }
-
-        public void EndDraw()
-        {
-            SwapChain.Present();
         }
 
         /// <summary>
@@ -179,14 +161,10 @@ namespace ORTS.TrackViewer
         /// <param name="mouseLocation"></param>
         private void SetCameraLocationStatus(WorldLocation cameraLocation)
         {
-            SceneWindow.tileXZ.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                "{0,-7} {1,-7}", cameraLocation.TileX, cameraLocation.TileZ);
-            SceneWindow.LocationX.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                "{0,3:F3} ", cameraLocation.Location.X);
-            SceneWindow.LocationY.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                "{0,3:F3} ", cameraLocation.Location.Y);
-            SceneWindow.LocationZ.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
-                "{0,3:F3} ", cameraLocation.Location.Z);
+            SceneWindow.tileXZ.Text = string.Format(CultureInfo.InvariantCulture, "{0,-7} {1,-7}", cameraLocation.TileX, cameraLocation.TileZ);
+            SceneWindow.LocationX.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", cameraLocation.Location.X);
+            SceneWindow.LocationY.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", cameraLocation.Location.Y);
+            SceneWindow.LocationZ.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", cameraLocation.Location.Z);
         }
 
         private void FillCursorPositionStatus(Vector3 cursorPosition)
@@ -198,12 +176,12 @@ namespace ORTS.TrackViewer
 
         public async Task SetCameraLocation()
         {
-            var mouseLocation = TrackViewer.drawLabels.SetLocationMenuItem.CommandParameter as WorldLocation? ?? new WorldLocation();
+            var mouseLocation = Game.drawLabels.SetLocationMenuItem.CommandParameter as WorldLocation? ?? new WorldLocation();
             var elevatedLocation = 0f;
             var i = 0;
             while (true)
             {
-                if (TrackViewer.RenderProcess.Viewer?.Tiles == null)
+                if (Viewer?.Tiles == null || Viewer?.Camera == null)
                 {
                     if (i > 300)
                         return;
@@ -211,30 +189,134 @@ namespace ORTS.TrackViewer
                     i++;
                     continue;
                 }
-                elevatedLocation = TrackViewer.RenderProcess.Viewer.Tiles?.LoadAndGetElevation(
+                elevatedLocation = Viewer.Tiles?.LoadAndGetElevation(
                     mouseLocation.TileX, mouseLocation.TileZ, mouseLocation.Location.X, mouseLocation.Location.Z, true) ?? 0;
                 break;
             }
             mouseLocation.Location.Y = elevatedLocation + 15;
-            TrackViewer.RenderProcess.Viewer.OrbitingCamera.SetLocation(mouseLocation);
+            Camera.SetLocation(mouseLocation);
+
+            var lastView = UndoStack.Count > 0 ? UndoStack.Last(s => s.UndoEvent == UndoEvent.ViewChanged) :
+                new UndoDataSet()
+                {
+                    OldCameraLocation = Camera.CameraWorldLocation,
+                    OldCameraRotationXRadians = Camera.GetRotationX(),
+                    OldCameraRotationYRadians = Camera.GetRotationY(),
+                };
+
+            UndoStack.Push(new UndoDataSet()
+            {
+                UndoEvent = UndoEvent.ViewChanged,
+                NewCameraLocation = Camera.CameraWorldLocation,
+                NewCameraRotationXRadians = Camera.GetRotationX(),
+                NewCameraRotationYRadians = Camera.GetRotationY(),
+                OldCameraLocation = lastView.NewCameraLocation,
+                OldCameraRotationXRadians = lastView.NewCameraRotationXRadians,
+                OldCameraRotationYRadians = lastView.NewCameraRotationYRadians,
+            });
+        }
+
+        void UpdateViewUndoState()
+        {
+            if (UndoStack.Count == 0)
+                return;
+
+            var lastView = UndoStack.Last(s => s.UndoEvent == UndoEvent.ViewChanged);
+            if (lastView == UndoStack.Last())
+            {
+                if (lastView.NewCameraLocation == lastView.OldCameraLocation && (Camera.GetRotationX() != lastView.NewCameraRotationXRadians || Camera.GetRotationY() != lastView.NewCameraRotationYRadians)
+                    || lastView.NewCameraLocation != lastView.OldCameraLocation && Camera.CameraWorldLocation == lastView.NewCameraLocation)
+                {
+                    // Group rotations and pan-zooms by just updating the last action
+                    lastView.NewCameraRotationXRadians = Camera.GetRotationX();
+                    lastView.NewCameraRotationYRadians = Camera.GetRotationY();
+                    lastView.NewCameraLocation = Camera.CameraWorldLocation;
+                    RedoStack.Clear();
+                    return;
+                }
+            }
+            if (Camera.GetRotationX() != lastView.NewCameraRotationXRadians || Camera.GetRotationY() != lastView.NewCameraRotationYRadians || Camera.CameraWorldLocation == lastView.NewCameraLocation)
+            {
+                UndoStack.Push(new UndoDataSet()
+                {
+                    UndoEvent = UndoEvent.ViewChanged,
+                    NewCameraLocation = Camera.CameraWorldLocation,
+                    NewCameraRotationXRadians = Camera.GetRotationX(),
+                    NewCameraRotationYRadians = Camera.GetRotationY(),
+                    OldCameraLocation = lastView.NewCameraLocation,
+                    OldCameraRotationXRadians = lastView.NewCameraRotationXRadians,
+                    OldCameraRotationYRadians = lastView.NewCameraRotationYRadians,
+                });
+                RedoStack.Clear();
+            }
+        }
+
+        void UndoCommand()
+        {
+            UndoDataSet undoDataSet;
+            if (UndoStack.Count > 1)
+            {
+                undoDataSet = UndoStack.Pop();
+                RedoStack.Push(undoDataSet);
+            }
+            else
+            {
+                undoDataSet = UndoStack.Peek();
+            }
+            UndoRedo(undoDataSet, true);
+        }
+
+        void RedoCommand()
+        {
+            if (RedoStack.Count > 0)
+            {
+                var undoDataSet = RedoStack.Pop();
+                UndoStack.Push(undoDataSet);
+                UndoRedo(undoDataSet, false);
+            }
+        }
+
+        void UndoRedo(UndoDataSet undoDataSet, bool undo)
+        {
+            if (undoDataSet.UndoEvent == UndoEvent.ViewChanged)
+            {
+                Camera.SetLocation(undo ? undoDataSet.OldCameraLocation : undoDataSet.NewCameraLocation);
+                Camera.RotationXTargetRadians = undo ? undoDataSet.OldCameraRotationXRadians : undoDataSet.NewCameraRotationXRadians;
+                Camera.RotationYTargetRadians = undo ? undoDataSet.OldCameraRotationYRadians : undoDataSet.NewCameraRotationYRadians;
+            }
         }
 
         void SelectedObjectChanged()
         {
             Viewer.EditorShapes.SelectedObject = SelectedObject;
+            SelectedWorldFile = Viewer.World.Scenery.WorldFiles
+                .SingleOrDefault(w => w.TileX == SelectedObject?.Location.TileX && w.TileZ == SelectedObject?.Location.TileZ);
+            SelectedWorldObject = SelectedWorldFile?.MstsWFile?.Tr_Worldfile?.SingleOrDefault(o => o.UID == SelectedObject?.Uid);
 
-            SelectedWorldObject = Viewer.World.Scenery.WorldFiles
-                .SingleOrDefault(w => w.TileX == SelectedObject?.Location.TileX && w.TileZ == SelectedObject?.Location.TileZ)
-                ?.MstsWFile?.Tr_Worldfile
-                ?.SingleOrDefault(o => o.UID == SelectedObject?.Uid);
+            SceneWindow.Filename.Text = SelectedObject != null ? System.IO.Path.GetFileName(SelectedObject.SharedShape.FilePath) : "";
+            SceneWindow.TileX.Text = SelectedObject?.Location.TileX.ToString(CultureInfo.InvariantCulture).Replace(",", "");
+            SceneWindow.TileZ.Text = SelectedObject?.Location.TileZ.ToString(CultureInfo.InvariantCulture).Replace(",", "");
+            SceneWindow.PosX.Text = SelectedObject?.Location.Location.X.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            SceneWindow.PosY.Text = SelectedObject?.Location.Location.Y.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            SceneWindow.PosZ.Text = SelectedObject?.Location.Location.Z.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            SceneWindow.Uid.Text = SelectedObject?.Uid.ToString(CultureInfo.InvariantCulture).Replace(",", "");
 
-            //SceneWindow.Filename.Text = SelectedObject != null ? System.IO.Path.GetFileName(SelectedObject.SharedShape.FilePath) : "";
-            //SceneWindow.TileX.Text = SelectedObject?.Location.TileX.ToString(CultureInfo.InvariantCulture).Replace(",", "");
-            //SceneWindow.TileZ.Text = SelectedObject?.Location.TileZ.ToString(CultureInfo.InvariantCulture).Replace(",", "");
-            //SceneWindow.PosX.Text = SelectedObject?.Location.Location.X.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
-            //SceneWindow.PosY.Text = SelectedObject?.Location.Location.Y.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
-            //SceneWindow.PosZ.Text = SelectedObject?.Location.Location.Z.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
-            //SceneWindow.Uid.Text = SelectedObject.Uid.ToString(CultureInfo.InvariantCulture).Replace(",", "");
+            if (SelectedWorldObject?.Matrix3x3 != null)
+            {
+                var yaw = (float)Math.Atan2(SelectedWorldObject.Matrix3x3.AZ, SelectedWorldObject.Matrix3x3.CZ);
+                SceneWindow.RotX.Text = yaw.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            }
+            if (SelectedWorldObject?.QDirection != null)
+            {
+                var x = SelectedWorldObject.QDirection.A;
+                var y = SelectedWorldObject.QDirection.B;
+                var z = SelectedWorldObject.QDirection.C;
+                var w = SelectedWorldObject.QDirection.D;
+
+                var yaw = Math.Atan2(y, w) * 2 / Math.PI * 180;
+                SceneWindow.RotX.Text = yaw.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            }
+
             var q = new Quaternion();
             if (SelectedObject?.Location.XNAMatrix.Decompose(out var _, out q, out var _) ?? false)
             {
@@ -251,23 +333,53 @@ namespace ORTS.TrackViewer
             if (SelectedObject is StaticShape ppp)
             {
                 var sb = new StringBuilder();
-                var aaa = Viewer.World.Scenery.WorldFiles
-                    .SingleOrDefault(w => w.TileX == SelectedObject.Location.TileX && w.TileZ == SelectedObject.Location.TileZ)
-                    ?.MstsWFile?.Tr_Worldfile;
+                var aaa = SelectedWorldFile?.MstsWFile?.Tr_Worldfile;
                 aaa.Serialize(sb);
                 var ccc = sb.ToString();
             }
         }
 
+        public void ExtractYawPitchRoll(Matrix matrix, out float yaw, out float pitch, out float roll)
+        {
+            yaw = (float)Math.Atan2(matrix.M13, matrix.M33);
+            pitch = (float)Math.Asin(-matrix.M23);
+            roll = (float)Math.Atan2(matrix.M21, matrix.M22);
+        }
+
+    }
+
+    public class UndoDataSet
+    {
+        public UndoEvent UndoEvent;
+
+        public int TileX;
+        public int TileZ;
+        public int Uid;
+        public Orts.Formats.Msts.WorldObject OldWorldObject;
+        public Orts.Formats.Msts.WorldObject NewWorldObject;
+
+        public WorldLocation OldCameraLocation;
+        public float OldCameraRotationXRadians;
+        public float OldCameraRotationYRadians;
+
+        public WorldLocation NewCameraLocation;
+        public float NewCameraRotationXRadians;
+        public float NewCameraRotationYRadians;
+    }
+
+    public enum UndoEvent
+    {
+        ViewChanged,
+        WorldObjectChanged,
     }
 
     public class SceneViewerHwndHost : HwndHost
     {
-        public readonly GameWindow GameWindow;
+        readonly IntPtr HwndChildHandle;
 
-        public SceneViewerHwndHost(GameWindow gameWindow)
+        public SceneViewerHwndHost(IntPtr hwndChildHandle)
         {
-            GameWindow = gameWindow;
+            HwndChildHandle = hwndChildHandle;
         }
 
         protected override HandleRef BuildWindowCore(HandleRef hwndParent)
@@ -278,13 +390,13 @@ namespace ORTS.TrackViewer
                               Windows.Win32.UI.WindowsAndMessaging.WINDOW_STYLE.WS_VISIBLE |
                               Windows.Win32.UI.WindowsAndMessaging.WINDOW_STYLE.WS_MAXIMIZE);
 
-            var child = new Windows.Win32.Foundation.HWND(GameWindow.Handle);
+            var child = new Windows.Win32.Foundation.HWND(HwndChildHandle);
             var parent = new Windows.Win32.Foundation.HWND(hwndParent.Handle);
 
             PInvoke.SetWindowLong(child, Windows.Win32.UI.WindowsAndMessaging.WINDOW_LONG_PTR_INDEX.GWL_STYLE, style);
             PInvoke.SetParent(child, parent);
             
-            return new HandleRef(this, GameWindow.Handle);
+            return new HandleRef(this, HwndChildHandle);
         }
 
         protected override void DestroyWindowCore(HandleRef hwnd)

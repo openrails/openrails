@@ -1979,6 +1979,8 @@ namespace Orts.Viewer3D
                 SaveScreenshotToFile(Game.GraphicsDevice, Path.Combine(UserSettings.UserDataFolder, SaveActivityFileStem + ".png"), true);
                 MessagesWindow.AddMessage(Catalog.GetString("Game saved"), 5);
             }
+
+            (RenderFrame.FinalRenderTarget as SwapChainRenderTarget)?.Present();
         }
 
         [CallOnThread("Render")]

@@ -626,12 +626,6 @@ namespace ORTS.TrackViewer
             skipDrawAmount = maxSkipDrawAmount;
         }
 
-        protected override void EndDraw()
-        {
-            SceneViewer?.EndDraw();
-            base.EndDraw();
-        }
-
         /*protected override void BeginRun()
         {
             HostProcess.Start();
@@ -1253,18 +1247,5 @@ namespace ORTS.TrackViewer
     class GameStateStandBy : GameState
     {
         public GameStateStandBy() { }
-    }
-
-    class GameStateSceneViewer3D : GameStateViewer3D
-    {
-        public GameStateSceneViewer3D(Viewer viewer)
-            : base(viewer) { }
-
-        public override void Update(RenderFrame frame, double totalRealSeconds)
-        {
-            base.Update(frame, totalRealSeconds);
-
-            
-        }
     }
 }
