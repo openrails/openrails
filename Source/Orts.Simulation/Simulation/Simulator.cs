@@ -37,7 +37,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.Remoting.Messaging;
 using Event = Orts.Common.Event;
 
 namespace Orts.Simulation
@@ -60,19 +59,6 @@ namespace Orts.Simulation
     /// </summary>
     public class Simulator
     {
-        /// <summary>
-        ///  Sets the frame rate object so its value can be read from anywhere in the Simulator and used to tune simulation algorithms.
-        /// </summary>
-        /// <param name="frameRate"></param>
-        public static void SetFrameRate(SmoothedData frameRate)
-        {
-            FrameRate = frameRate;
-        }
-        public static float SmoothedFrameRate
-        {
-            get { return FrameRate.SmoothedValue; }
-        }
-        private static SmoothedData FrameRate;
 
         public static GettextResourceManager Catalog { get; private set; }
         public static Random Random { get; private set; }

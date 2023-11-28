@@ -363,8 +363,6 @@ namespace Orts.Viewer3D
                     SpeedpostDatFile = new SpeedpostDatFile(Simulator.RoutePath + @"\speedpost.dat", Simulator.RoutePath + @"\shapes\");
                 }
             }
-            // So the frame rate can be read from anywhere in the Simulator and used to tune simulation algorithms.
-            Simulator.SetFrameRate(this.RenderProcess.FrameRate);
 
             Initialize();
         }

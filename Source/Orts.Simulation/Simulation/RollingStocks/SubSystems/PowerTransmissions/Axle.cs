@@ -955,19 +955,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public virtual void Update(float timeSpan)
         {
             // Test to determine whether to use Polach or Pacha adhesion
-            var ScreenFrameRate = Simulator.SmoothedFrameRate;
-            
-            // Switches between Polach (high performance) adhesion model and Pacha (low performance) adhesion model
-            if(ScreenFrameRate > 59)
+                        
+            // Switches between Polach (high performance) adhesion model and Pacha (low performance) adhesion model depending upon the PC performance
+            if(timeSpan < 0.025) // timespan 0.025 = 40 fps screen rate, low timeSpan and high FPS
             {
                 UsePolachAdhesion = true;
             }
-            else if(ScreenFrameRate < 55) 
+            else if(timeSpan > 0.033) // timespan 0.033 = 30 fps screen rate, high timeSpan and low FPS
             {
                 UsePolachAdhesion = false;
                 if (TrainSpeedMpS > 0 )
                 {
+                    var ScreenFrameRate = 1 / timeSpan;
                     Trace.TraceInformation("Advanced adhesion model switched to low performance option due to low frame rate {0} at ElapsedClockSeconds of {1}", ScreenFrameRate, timeSpan);
+
                 }
 
                 // Set values for Pacha adhesion
