@@ -6846,7 +6846,6 @@ namespace Orts.Simulation.AIs
             thisInfo.speed_passenger = inf.ReadSingle();
             thisInfo.speed_freight = inf.ReadSingle();
             thisInfo.speed_flag = inf.ReadInt32();
-            thisInfo.no_speedUpdate = inf.ReadInt32();
             thisInfo.actual_speed = inf.ReadSingle();
 
             thisInfo.processed = inf.ReadBoolean();
@@ -6898,7 +6897,6 @@ namespace Orts.Simulation.AIs
             outf.Write(ActiveItem.speed_passenger);
             outf.Write(ActiveItem.speed_freight);
             outf.Write(ActiveItem.speed_flag);
-            outf.Write(ActiveItem.no_speedUpdate);
             outf.Write(ActiveItem.actual_speed);
 
             outf.Write(ActiveItem.processed);

@@ -57,7 +57,6 @@ namespace Orts.Simulation.Signalling
         public int speed_reset;
         // for signals: if = 1 no speed reduction; for speedposts: if = 0 standard; = 1 start of temp speedreduction post; = 2 end of temp speed reduction post
         public int speed_noSpeedReductionOrIsTempSpeedReduction;
-        public int no_speedUpdate;
         public bool speed_isWarning;
         public float actual_speed;                   // set active by TRAIN
 
@@ -79,7 +78,6 @@ namespace Orts.Simulation.Signalling
                 speed_passenger = -1;                      // set active by TRAIN
                 speed_freight = -1;                      // set active by TRAIN
                 speed_flag = 0;                       // set active by TRAIN
-                no_speedUpdate = 0;                     // set active by TRAIN 
                 speed_reset = 0;                      // set active by TRAIN
                 speed_noSpeedReductionOrIsTempSpeedReduction = 0;
             }
@@ -91,7 +89,6 @@ namespace Orts.Simulation.Signalling
                 speed_passenger = speed_info.speed_pass;
                 speed_freight = speed_info.speed_freight;
                 speed_flag = speed_info.speed_flag;
-                no_speedUpdate = speed_info.no_speedUpdate;
                 speed_reset = speed_info.speed_reset;
                 speed_noSpeedReductionOrIsTempSpeedReduction = speed_info.speed_noSpeedReductionOrIsTempSpeedReduction;
                 speed_isWarning = speed_info.speed_isWarning;

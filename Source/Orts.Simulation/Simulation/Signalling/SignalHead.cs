@@ -99,8 +99,7 @@ namespace Orts.Simulation.Signalling
 
             float passSpeed = speedItem.IsPassenger ? speedMpS : -1;
             float freightSpeed = speedItem.IsFreight ? speedMpS : -1;
-            ObjectSpeedInfo speedinfo = new ObjectSpeedInfo(passSpeed, freightSpeed, false, false, speedItem is TempSpeedPostItem ? (speedMpS == 999f ? 2 : 1) : 0,
-                                  speedItem.IsWarning);
+            ObjectSpeedInfo speedinfo = new ObjectSpeedInfo(passSpeed, freightSpeed, false, false, speedItem is TempSpeedPostItem ? (speedMpS == 999f ? 2 : 1) : 0, speedItem.IsWarning);
             speed_info[(int)state] = speedinfo;
         }
 
@@ -129,8 +128,7 @@ namespace Orts.Simulation.Signalling
                     foreach (SignalAspect thisAspect in signalType.Aspects)
                     {
                         int arrindex = (int)thisAspect.Aspect;
-                        speed_info[arrindex] = new ObjectSpeedInfo(thisAspect.SpeedMpS, thisAspect.SpeedMpS, thisAspect.Asap, thisAspect.Reset, 
-                            thisAspect.NoSpeedReduction ? 1 : 0, false, thisAspect.NoSpeedUpdate);
+                        speed_info[arrindex] = new ObjectSpeedInfo(thisAspect.SpeedMpS, thisAspect.SpeedMpS, thisAspect.Asap, thisAspect.Reset, thisAspect.NoSpeedReduction ? 1 : 0, false);
                     }
 
                     // set normal subtype

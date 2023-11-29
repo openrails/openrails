@@ -22,18 +22,16 @@ namespace Orts.Simulation.Signalling
         public float speed_pass;
         public float speed_freight;
         public int speed_flag;
-        public int no_speedUpdate;
         public int speed_reset;
         public int speed_noSpeedReductionOrIsTempSpeedReduction;
         public bool speed_isWarning;
 
-        public ObjectSpeedInfo(float pass, float freight, bool asap, bool reset, int nospeedreductionOristempspeedreduction, bool isWarning, bool nospeedupdate = false)
+        public ObjectSpeedInfo(float pass, float freight, bool asap, bool reset, int nospeedreductionOristempspeedreduction, bool isWarning)
         {
             speed_pass = pass;
             speed_freight = freight;
             speed_flag = asap ? 1 : 0;
             speed_reset = reset ? 1 : 0;
-            no_speedUpdate = nospeedupdate ? 1 : 0;
             speed_noSpeedReductionOrIsTempSpeedReduction = nospeedreductionOristempspeedreduction;
             speed_isWarning = isWarning;
         }
