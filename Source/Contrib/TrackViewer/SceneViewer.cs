@@ -120,11 +120,13 @@ namespace ORTS.TrackViewer
 
             UpdateViewUndoState();
 
-            if (UserInput.IsMouseLeftButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false)
-                && Camera.PickByMouse(out var selectedObject))
+            if (UserInput.IsMouseLeftButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
             {
-                SelectedObject = selectedObject;
-                SelectedObjectChanged();
+                if (Camera.PickByMouse(out var selectedObject))
+                {
+                    SelectedObject = selectedObject;
+                    SelectedObjectChanged();
+                }
             }
             if (UserInput.IsPressed(UserCommand.EditorUnselectAll))
             {
@@ -289,10 +291,11 @@ namespace ORTS.TrackViewer
         void SelectedObjectChanged()
         {
             Viewer.EditorShapes.SelectedObject = SelectedObject;
-            SelectedWorldFile = Viewer.World.Scenery.WorldFiles
-                .SingleOrDefault(w => w.TileX == SelectedObject?.Location.TileX && w.TileZ == SelectedObject?.Location.TileZ);
+
+            SelectedWorldFile = Viewer.World.Scenery.WorldFiles.SingleOrDefault(w => w.TileX == SelectedObject?.Location.TileX && w.TileZ == SelectedObject?.Location.TileZ);
             SelectedWorldObject = SelectedWorldFile?.MstsWFile?.Tr_Worldfile?.SingleOrDefault(o => o.UID == SelectedObject?.Uid);
 
+            // XAML binding doesn't work for fields (as opposed to properties), so doing it programmatically
             SceneWindow.Filename.Text = SelectedObject != null ? System.IO.Path.GetFileName(SelectedObject.SharedShape.FilePath) : "";
             SceneWindow.TileX.Text = SelectedObject?.Location.TileX.ToString(CultureInfo.InvariantCulture).Replace(",", "");
             SceneWindow.TileZ.Text = SelectedObject?.Location.TileZ.ToString(CultureInfo.InvariantCulture).Replace(",", "");
@@ -304,48 +307,42 @@ namespace ORTS.TrackViewer
             if (SelectedWorldObject?.Matrix3x3 != null)
             {
                 var yaw = (float)Math.Atan2(SelectedWorldObject.Matrix3x3.AZ, SelectedWorldObject.Matrix3x3.CZ);
-                SceneWindow.RotX.Text = yaw.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+                var pitch = (float)Math.Asin(-SelectedWorldObject.Matrix3x3.BZ);
+                var roll = (float)Math.Atan2(SelectedWorldObject.Matrix3x3.BX, SelectedWorldObject.Matrix3x3.BY);
+                SceneWindow.RotX.Text = pitch.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+                SceneWindow.RotY.Text = yaw.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+                SceneWindow.RotZ.Text = roll.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
             }
-            if (SelectedWorldObject?.QDirection != null)
+            else if (SelectedWorldObject?.QDirection != null)
             {
                 var x = SelectedWorldObject.QDirection.A;
                 var y = SelectedWorldObject.QDirection.B;
                 var z = SelectedWorldObject.QDirection.C;
                 var w = SelectedWorldObject.QDirection.D;
 
-                var yaw = Math.Atan2(y, w) * 2 / Math.PI * 180;
-                SceneWindow.RotX.Text = yaw.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
-            }
-
-            var q = new Quaternion();
-            if (SelectedObject?.Location.XNAMatrix.Decompose(out var _, out q, out var _) ?? false)
-            {
-                var mag = Math.Sqrt(q.W * q.W + q.Y * q.Y);
-                var w = q.W / mag;
-                var ang = 2.0 * Math.Acos(w) / Math.PI * 180;
-                SceneWindow.RotY.Text = ang.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+                //var yaw = Math.Atan2(y, w) * 2 / Math.PI * 180;
+                var yaw = Math.Atan2(2.0f * (y * w + x * z), 1.0f - 2.0f * (x * x + y * y)) / Math.PI * 180;
+                var pitch = Math.Asin(2.0f * (x * w - y * z)) / Math.PI * 180;
+                var roll = Math.Atan2(2.0f * (x * y + z * w), 1.0f - 2.0f * (x * x + z * z)) / Math.PI * 180;
+                SceneWindow.RotX.Text = pitch.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+                SceneWindow.RotY.Text = yaw.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+                SceneWindow.RotZ.Text = roll.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
             }
             else
             {
+                SceneWindow.RotX.Text = "";
                 SceneWindow.RotY.Text = "";
+                SceneWindow.RotZ.Text = "";
             }
 
-            if (SelectedObject is StaticShape ppp)
-            {
-                var sb = new StringBuilder();
-                var aaa = SelectedWorldFile?.MstsWFile?.Tr_Worldfile;
-                aaa.Serialize(sb);
-                var ccc = sb.ToString();
-            }
+            //if (SelectedObject is StaticShape ppp)
+            //{
+            //    var sb = new StringBuilder();
+            //    var aaa = SelectedWorldFile?.MstsWFile?.Tr_Worldfile;
+            //    aaa.Serialize(sb);
+            //    var ccc = sb.ToString();
+            //}
         }
-
-        public void ExtractYawPitchRoll(Matrix matrix, out float yaw, out float pitch, out float roll)
-        {
-            yaw = (float)Math.Atan2(matrix.M13, matrix.M33);
-            pitch = (float)Math.Asin(-matrix.M23);
-            roll = (float)Math.Atan2(matrix.M21, matrix.M22);
-        }
-
     }
 
     public class UndoDataSet
