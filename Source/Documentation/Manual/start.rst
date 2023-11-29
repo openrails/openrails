@@ -46,7 +46,7 @@ When a new release of OR is available and your computer is online, a link
 the release number of the newest release that matches your selected level 
 of update. Various level of updates called Update Channels are available. 
 You may choose the desired level in the ``Options-Update`` window, described 
-:ref:`below <options-updater>`.
+:ref:`below <options-updater-options>`.
 
 When you click on the update link OR will download and install the new 
 release. In this way your version of Open Rails is always up to date. 
@@ -126,7 +126,7 @@ If you instead select a specific activity, you won't have to perform any
 further selections.
 
 Activity Evaluation
-''''''''''''''''''
+'''''''''''''''''''
 
 During the activity session, data about performance is stored and may be viewed as the activity progresses.
 At the end of the activity a report file is generated which provides a summary of 
