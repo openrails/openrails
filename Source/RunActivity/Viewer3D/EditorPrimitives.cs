@@ -22,8 +22,6 @@ using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Orts.Viewer3D
@@ -50,10 +48,10 @@ namespace Orts.Viewer3D
 
         public EditorShapes(Viewer viewer) : base(viewer, "", null, ShapeFlags.None, null, -1)
         {
-            MouseCrosshair = new MouseCrosshair(Viewer, Color.GreenYellow);
+            MouseCrosshair = new MouseCrosshair(Viewer, Color.GreenYellow, Color.Red, Color.Cyan);
             HandleX = new HandleX(Viewer, Color.Red);
             HandleY = new HandleY(Viewer, Color.Blue);
-            HandleZ = new HandleZ(Viewer, Color.Green);
+            HandleZ = new HandleZ(Viewer, Color.LightGreen);
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -189,26 +187,54 @@ namespace Orts.Viewer3D
     }
 
     [CallOnThread("Loader")]
-    public class BoundingBoxPrimitive : EditorPrimitive
+    public class BoxPrimitive : EditorPrimitive
+    {
+        static IndexBuffer BoxIndexBuffer;
+
+        public BoxPrimitive(Viewer viewer, float size, Color color)
+            : this(viewer, new Vector3(-size / 2), new Vector3(size / 2), color)
+        {
+            Material = viewer.MaterialManager.Load("EditorPrimitive");
+            if (BoxIndexBuffer == null)
+            {
+                var indexData = new short[] { 2, 3, 6, 7, 5, 3, 1, 2, 0, 6, 4, 5, 0, 1 };
+                BoxIndexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short), indexData.Length, BufferUsage.WriteOnly);
+                BoxIndexBuffer.SetData(indexData);
+            }
+            IndexBuffer = BoxIndexBuffer;
+            PrimitiveCount = IndexBuffer.IndexCount - 2;
+            PrimitiveType = PrimitiveType.TriangleStrip;
+        }
+
+        protected BoxPrimitive(Viewer viewer, Vector3 min, Vector3 max, Color color)
+        {
+            var vertexData = new VertexPositionColor[]
+            {
+                new VertexPositionColor(min, color),
+                new VertexPositionColor(new Vector3(min.X, min.Y, max.Z), color),
+                new VertexPositionColor(new Vector3(min.X, max.Y, min.Z), color),
+                new VertexPositionColor(new Vector3(min.X, max.Y, max.Z), color),
+                new VertexPositionColor(new Vector3(max.X, min.Y, min.Z), color),
+                new VertexPositionColor(new Vector3(max.X, min.Y, max.Z), color),
+                new VertexPositionColor(new Vector3(max.X, max.Y, min.Z), color),
+                new VertexPositionColor(max, color)
+            };
+            VertexBuffer = new VertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionColor), vertexData.Length, BufferUsage.WriteOnly);
+            VertexBuffer.SetData(vertexData);
+        }
+    }
+
+    [CallOnThread("Loader")]
+    public class BoundingBoxPrimitive : BoxPrimitive
     {
         static IndexBuffer BoundingBoxIndexBuffer;
         public readonly Matrix ComplexTransform;
 
         public BoundingBoxPrimitive(Viewer viewer, BoundingBox boundingBox, Color color)
+            : base(viewer, boundingBox.Min, boundingBox.Max, color)
         {
-            var vertexData = new VertexPositionColor[]
-            {
-                new VertexPositionColor(boundingBox.Min, color),
-                new VertexPositionColor(new Vector3(boundingBox.Min.X, boundingBox.Min.Y, boundingBox.Max.Z), color),
-                new VertexPositionColor(new Vector3(boundingBox.Min.X, boundingBox.Max.Y, boundingBox.Min.Z), color),
-                new VertexPositionColor(new Vector3(boundingBox.Min.X, boundingBox.Max.Y, boundingBox.Max.Z), color),
-                new VertexPositionColor(new Vector3(boundingBox.Max.X, boundingBox.Min.Y, boundingBox.Min.Z), color),
-                new VertexPositionColor(new Vector3(boundingBox.Max.X, boundingBox.Min.Y, boundingBox.Max.Z), color),
-                new VertexPositionColor(new Vector3(boundingBox.Max.X, boundingBox.Max.Y, boundingBox.Min.Z), color),
-                new VertexPositionColor(boundingBox.Max, color)
-            };
-            VertexBuffer = new VertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionColor), vertexData.Length, BufferUsage.WriteOnly);
-            VertexBuffer.SetData(vertexData);
+            Material = viewer.MaterialManager.Load("EditorPrimitive");
+            ComplexTransform = boundingBox.ComplexTransform;
             if (BoundingBoxIndexBuffer == null)
             {
                 var indexData = new short[] { 0, 1, 0, 2, 0, 4, 1, 3, 1, 5, 2, 3, 2, 6, 3, 7, 4, 5, 4, 6, 5, 7, 6, 7 };
@@ -218,23 +244,21 @@ namespace Orts.Viewer3D
             IndexBuffer = BoundingBoxIndexBuffer;
             PrimitiveCount = IndexBuffer.IndexCount / 2;
             PrimitiveType = PrimitiveType.LineList;
-            Material = viewer.MaterialManager.Load("EditorPrimitive");
-            ComplexTransform = boundingBox.ComplexTransform;
         }
     }
 
     [CallOnThread("Loader")]
     public class MouseCrosshair : EditorPrimitive
     {
-        public MouseCrosshair(Viewer viewer, Color color)
+        public MouseCrosshair(Viewer viewer, Color color, Color northColor, Color southColor)
         {
             var vertexData = new VertexPositionColor[]
             {
                 new VertexPositionColor(new Vector3(-5, 0, 0), color),
                 new VertexPositionColor(new Vector3(5, 0, 0), color),
-                new VertexPositionColor(new Vector3(0, 0, -5), Color.Red),
-                new VertexPositionColor(new Vector3(0, 0, 5), Color.Cyan),
-                new VertexPositionColor(new Vector3(0, 0, 0), color),
+                new VertexPositionColor(new Vector3(0, 0, -5), northColor),
+                new VertexPositionColor(new Vector3(0, 0, 5), southColor),
+                new VertexPositionColor(new Vector3(0, -5, 0), color),
                 new VertexPositionColor(new Vector3(0, 20, 0), color)
             };
             VertexBuffer = new VertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionColor), vertexData.Length, BufferUsage.WriteOnly);
@@ -253,54 +277,40 @@ namespace Orts.Viewer3D
             var vertexData = GetVertexData(color);
             VertexBuffer = new VertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionColor), vertexData.Length, BufferUsage.WriteOnly);
             VertexBuffer.SetData(vertexData);
-            PrimitiveCount = VertexBuffer.VertexCount / 2;
-            PrimitiveType = PrimitiveType.TriangleList;
+            PrimitiveCount = VertexBuffer.VertexCount - 2;
+            PrimitiveType = PrimitiveType.TriangleStrip;
             Material = viewer.MaterialManager.Load("EditorPrimitive");
         }
 
         protected virtual VertexPositionColor[] GetVertexData(Color color) => GetVertexData(0, 1, 2, color);
         protected VertexPositionColor[] GetVertexData(int x, int y, int z, Color color)
         {
-            var l = 5f;
-            var d = 0.1f;
-            var a = l / 5;
-            var b = a / 4;
+            var l = 5f; // total length, meter
+            var d = 0.1f; // shaft half thickness
+            var a = l / 5; // arrow head length
+            var b = a / 4; // arrow head half thickness
             var c = l - a;
             var data = new float[][]
             {
-                new[] { 0, +d, 0 },
-                new[] { c, +d, 0 },
+                // Arrow shaft
+                new[] { 0, d, 0 },
+                new[] { c, d, 0 },
+                new[] { 0, 0, d },
+                new[] { c, 0, d },
                 new[] { 0, -d, 0 },
-                new[] { 0, -d, 0 },
-                new[] { c, +d, 0 },
                 new[] { c, -d, 0 },
-
-                new[] { 0, 0, +d },
-                new[] { c, 0, +d },
                 new[] { 0, 0, -d },
-                new[] { 0, 0, -d },
-                new[] { c, 0, +d },
                 new[] { c, 0, -d },
 
-                new[] { l,      0, 0 },
-                new[] { l - a, +b, +b },
-                new[] { l - a, -b, +b },
-                new[] { l,      0, 0 },
-                new[] { l - a, -b, +b },
-                new[] { l - a, -b, -b },
-                new[] { l,      0, 0 },
-                new[] { l - a, -b, -b },
-                new[] { l - a, +b, -b },
-                new[] { l,      0, 0 },
-                new[] { l - a, +b, -b },
-                new[] { l - a, +b, +b },
-
-                new[] { l - a, +b, +b },
-                new[] { l - a, +b, -b },
-                new[] { l - a, -b, -b },
-                new[] { l - a, -b, -b },
-                new[] { l - a, +b, -b },
-                new[] { l - a, -b, +b },
+                // Arrow head
+                new[] { l, 0, 0 },
+                new[] { c, +b, +b },
+                new[] { c, -b, +b },
+                new[] { c, -b, -b },
+                new[] { l, 0, 0 },
+                new[] { c, +b, -b },
+                new[] { c, +b, +b },
+                new[] { c, -b, -b },
             };
             var vertexData = new VertexPositionColor[data.Length];
             for (var i = 0; i < data.Length; i++)

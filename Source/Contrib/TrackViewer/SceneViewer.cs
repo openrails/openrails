@@ -58,6 +58,7 @@ namespace ORTS.TrackViewer
         OrbitingCamera Camera;
         Stack<UndoDataSet> UndoStack = new Stack<UndoDataSet>();
         Stack<UndoDataSet> RedoStack = new Stack<UndoDataSet>();
+        EditorState EditorState;
 
         /// <summary>The command-line arguments</summary>
         private string[] CommandLineArgs;
@@ -126,19 +127,27 @@ namespace ORTS.TrackViewer
                 {
                     SelectedObject = selectedObject;
                     SelectedObjectChanged();
+                    EditorState = EditorState.ObjectSelected;
                 }
             }
             if (UserInput.IsPressed(UserCommand.EditorUnselectAll))
             {
-                SelectedObject = null;
-                SelectedObjectChanged();
+                if (EditorState == EditorState.ObjectSelected || EditorState == EditorState.Default)
+                {
+                    SetDefaultMode();
+                }
             }
             if (UserInput.IsPressed(UserCommand.EditorUndo))
             {
-                UndoCommand();
+                if (EditorState == EditorState.ObjectSelected || EditorState == EditorState.Default)
+                {
+                    SetDefaultMode();
+                    UndoCommand();
+                }
             }
             if (UserInput.IsPressed(UserCommand.EditorRedo))
             {
+                SetDefaultMode();
                 RedoCommand();
             }
 
@@ -198,12 +207,12 @@ namespace ORTS.TrackViewer
             mouseLocation.Location.Y = elevatedLocation + 15;
             Camera.SetLocation(mouseLocation);
 
-            var lastView = UndoStack.Count > 0 ? UndoStack.Last(s => s.UndoEvent == UndoEvent.ViewChanged) :
+            var lastView = UndoStack.Count > 0 ? UndoStack.First(s => s.UndoEvent == UndoEvent.ViewChanged) :
                 new UndoDataSet()
                 {
-                    OldCameraLocation = Camera.CameraWorldLocation,
-                    OldCameraRotationXRadians = Camera.GetRotationX(),
-                    OldCameraRotationYRadians = Camera.GetRotationY(),
+                    NewCameraLocation = Camera.CameraWorldLocation,
+                    NewCameraRotationXRadians = Camera.GetRotationX(),
+                    NewCameraRotationYRadians = Camera.GetRotationY(),
                 };
 
             UndoStack.Push(new UndoDataSet()
@@ -222,12 +231,16 @@ namespace ORTS.TrackViewer
         {
             if (UndoStack.Count == 0)
                 return;
+            
+            var lastView = UndoStack.First(s => s.UndoEvent == UndoEvent.ViewChanged);
 
-            var lastView = UndoStack.Last(s => s.UndoEvent == UndoEvent.ViewChanged);
-            if (lastView == UndoStack.Last())
+            if (Camera.GetRotationX() == lastView.NewCameraRotationXRadians && Camera.GetRotationY() == lastView.NewCameraRotationYRadians && Camera.CameraWorldLocation == lastView.NewCameraLocation)
+                return;
+
+            if (UndoStack.First().UndoEvent == UndoEvent.ViewChanged) // then updatable
             {
-                if (lastView.NewCameraLocation == lastView.OldCameraLocation && (Camera.GetRotationX() != lastView.NewCameraRotationXRadians || Camera.GetRotationY() != lastView.NewCameraRotationYRadians)
-                    || lastView.NewCameraLocation != lastView.OldCameraLocation && Camera.CameraWorldLocation == lastView.NewCameraLocation)
+                if ((Camera.GetRotationX() == lastView.NewCameraRotationXRadians && Camera.GetRotationY() == lastView.NewCameraRotationYRadians) ^
+                    (lastView.NewCameraRotationXRadians != lastView.OldCameraRotationXRadians || lastView.NewCameraRotationYRadians != lastView.OldCameraRotationYRadians))
                 {
                     // Group rotations and pan-zooms by just updating the last action
                     lastView.NewCameraRotationXRadians = Camera.GetRotationX();
@@ -237,7 +250,7 @@ namespace ORTS.TrackViewer
                     return;
                 }
             }
-            if (Camera.GetRotationX() != lastView.NewCameraRotationXRadians || Camera.GetRotationY() != lastView.NewCameraRotationYRadians || Camera.CameraWorldLocation == lastView.NewCameraLocation)
+            if (Camera.GetRotationX() != lastView.NewCameraRotationXRadians || Camera.GetRotationY() != lastView.NewCameraRotationYRadians || Camera.CameraWorldLocation != lastView.NewCameraLocation)
             {
                 UndoStack.Push(new UndoDataSet()
                 {
@@ -253,19 +266,21 @@ namespace ORTS.TrackViewer
             }
         }
 
+        void SetDefaultMode()
+        {
+            SelectedObject = null;
+            SelectedObjectChanged();
+            EditorState = EditorState.Default;
+        }
+
         void UndoCommand()
         {
-            UndoDataSet undoDataSet;
             if (UndoStack.Count > 1)
             {
-                undoDataSet = UndoStack.Pop();
+                var undoDataSet = UndoStack.Pop();
                 RedoStack.Push(undoDataSet);
+                UndoRedo(undoDataSet, true);
             }
-            else
-            {
-                undoDataSet = UndoStack.Peek();
-            }
-            UndoRedo(undoDataSet, true);
         }
 
         void RedoCommand()
@@ -283,8 +298,9 @@ namespace ORTS.TrackViewer
             if (undoDataSet.UndoEvent == UndoEvent.ViewChanged)
             {
                 Camera.SetLocation(undo ? undoDataSet.OldCameraLocation : undoDataSet.NewCameraLocation);
-                Camera.RotationXTargetRadians = undo ? undoDataSet.OldCameraRotationXRadians : undoDataSet.NewCameraRotationXRadians;
-                Camera.RotationYTargetRadians = undo ? undoDataSet.OldCameraRotationYRadians : undoDataSet.NewCameraRotationYRadians;
+                Camera.SetRotation(
+                    undo ? undoDataSet.OldCameraRotationXRadians : undoDataSet.NewCameraRotationXRadians,
+                    undo ? undoDataSet.OldCameraRotationYRadians : undoDataSet.NewCameraRotationYRadians);
             }
         }
 
@@ -368,6 +384,15 @@ namespace ORTS.TrackViewer
     {
         ViewChanged,
         WorldObjectChanged,
+    }
+
+    public enum EditorState
+    {
+        Default = 0,
+        ObjectSelected,
+        ObjectMovingX,
+        ObjectMovingY,
+        ObjectMovingZ,
     }
 
     public class SceneViewerHwndHost : HwndHost
