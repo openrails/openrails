@@ -23,6 +23,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Diagnostics;
 
 namespace ORTS.Common
 {
@@ -50,34 +51,55 @@ namespace ORTS.Common
                 Version = runtime.Groups[2].Value,
             };
 
-            // Almost nothing will correctly identify Windows 11 at this point, so we have to use WMI.
-            var operatingSystem = new ManagementClass("Win32_OperatingSystem").GetInstances().Cast<ManagementObject>().First();
-            OperatingSystem = new Platform
+            try
             {
-                Name = (string)operatingSystem["Caption"],
-                Version = (string)operatingSystem["Version"],
-                Architecture = RuntimeInformation.OSArchitecture.ToString(),
-                Language = CultureInfo.CurrentUICulture.IetfLanguageTag,
-                Languages = (string[])operatingSystem["MUILanguages"],
-            };
+                // Almost nothing will correctly identify Windows 11 at this point, so we have to use WMI.
+                var operatingSystem = new ManagementClass("Win32_OperatingSystem").GetInstances().Cast<ManagementObject>().First();
+                OperatingSystem = new Platform
+                {
+                    Name = (string)operatingSystem["Caption"],
+                    Version = (string)operatingSystem["Version"],
+                    Architecture = RuntimeInformation.OSArchitecture.ToString(),
+                    Language = CultureInfo.CurrentUICulture.IetfLanguageTag,
+                    Languages = (string[])operatingSystem["MUILanguages"],
+                };
+            }
+            catch (ManagementException error)
+            {
+                Trace.WriteLine(error);
+            }
 
             NativeMethods.GlobalMemoryStatusEx(MemoryStatusExtended);
             InstalledMemoryMB = (int)(MemoryStatusExtended.TotalPhysical / 1024 / 1024);
 
-            CPUs = new ManagementClass("Win32_Processor").GetInstances().Cast<ManagementObject>().Select(processor => new CPU
+            try
             {
-                Name = (string)processor["Name"],
-                Manufacturer = (string)processor["Manufacturer"],
-                ThreadCount = (uint)processor["ThreadCount"],
-                MaxClockMHz = (uint)processor["MaxClockSpeed"],
-            }).ToList();
+                CPUs = new ManagementClass("Win32_Processor").GetInstances().Cast<ManagementObject>().Select(processor => new CPU
+                {
+                    Name = (string)processor["Name"],
+                    Manufacturer = (string)processor["Manufacturer"],
+                    ThreadCount = (uint)processor["ThreadCount"],
+                    MaxClockMHz = (uint)processor["MaxClockSpeed"],
+                }).ToList();
+            }
+            catch (ManagementException error)
+            {
+                Trace.WriteLine(error);
+            }
 
-            GPUs = new ManagementClass("Win32_VideoController").GetInstances().Cast<ManagementObject>().Select(adapter => new GPU
+            try
             {
-                Name = (string)adapter["Name"],
-                Manufacturer = (string)adapter["AdapterCompatibility"],
-                MemoryMB = (uint)adapter["AdapterRAM"] / 1024 / 1024,
-            }).ToList();
+                GPUs = new ManagementClass("Win32_VideoController").GetInstances().Cast<ManagementObject>().Select(adapter => new GPU
+                {
+                    Name = (string)adapter["Name"],
+                    Manufacturer = (string)adapter["AdapterCompatibility"],
+                    MemoryMB = (uint?)adapter["AdapterRAM"] / 1024 / 1024 ?? 0,
+                }).ToList();
+            }
+            catch (ManagementException error)
+            {
+                Trace.WriteLine(error);
+            }
 
             var featureLevels = new uint[] {
                 NativeMethods.D3D_FEATURE_LEVEL_12_2,
@@ -108,8 +130,8 @@ namespace ORTS.Common
         public static readonly Platform Runtime;
         public static readonly Platform OperatingSystem;
         public static readonly int InstalledMemoryMB;
-        public static readonly List<CPU> CPUs;
-        public static readonly List<GPU> GPUs;
+        public static readonly List<CPU> CPUs = new List<CPU>();
+        public static readonly List<GPU> GPUs = new List<GPU>();
         public static readonly List<string> Direct3DFeatureLevels = new List<string>();
 
         public static void WriteSystemDetails(TextWriter output)
@@ -118,7 +140,7 @@ namespace ORTS.Common
             DateTime.Now, DateTime.UtcNow);
             output.WriteLine("Application = {0} {1} ({2})", Application.Name, Application.Version, Application.Architecture);
             output.WriteLine("Runtime     = {0} {1}", Runtime.Name, Runtime.Version);
-            output.WriteLine("System      = {0} {1} ({2}; {3}; {4})", OperatingSystem.Name, OperatingSystem.Version, OperatingSystem.Architecture, OperatingSystem.Language, string.Join(",", OperatingSystem.Languages));
+            output.WriteLine("System      = {0} {1} ({2}; {3}; {4})", OperatingSystem.Name, OperatingSystem.Version, OperatingSystem.Architecture, OperatingSystem.Language, string.Join(",", OperatingSystem.Languages ?? new string[0]));
             output.WriteLine("Memory      = {0:N0} MB", InstalledMemoryMB);
             foreach (var cpu in CPUs) output.WriteLine("CPU         = {0} ({1}; {2} threads; {3:N0} MHz)", cpu.Name, cpu.Manufacturer, cpu.ThreadCount, cpu.MaxClockMHz);
             foreach (var gpu in GPUs) output.WriteLine("GPU         = {0} ({1}; {2:N0} MB)", gpu.Name, gpu.Manufacturer, gpu.MemoryMB);
