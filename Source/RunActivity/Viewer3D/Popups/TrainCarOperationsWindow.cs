@@ -96,6 +96,8 @@ namespace Orts.Viewer3D.Popups
         public bool IsFullScreen = false;
         public int RowHeight;
         public int OldPositionHeight;
+        public bool UpdateTrainCarOperation = false;
+        public List<int> LabelPositionTop = new List<int>();
 
         //Rectangle carLabelPosition;
         public string CarLabelText;
@@ -343,6 +345,16 @@ namespace Orts.Viewer3D.Popups
                     if (RearBrakes.Count == 0)
                     {   // Init brake hose
                         RearBrakes = Enumerable.Repeat(true, PlayerTrain.Cars.Count).ToList();
+                    }
+
+                    if (LabelPositionTop.Count == 0)
+                    {
+                        var n = scrollbox.Position.Y;// first row
+                        for (var i = 0; i < PlayerTrain.Cars.Count; i++)
+                        {   // Position of each row
+                            LabelPositionTop.Add(n);
+                            n += (textHeight + ControlLayout.SeparatorSize);
+                        }
                     }
 
                     // reset WarningCarPosition
@@ -603,6 +615,15 @@ namespace Orts.Viewer3D.Popups
                     carOperations.CarOperationChanged = carOperations.Visible && carOperations.CarOperationChanged;
                 }
 
+                if (CarPosition != trainCarViewer.CarPosition)
+                {
+                    // Required to scroll the main window from the web version
+                    UpdateTrainCarOperation = true;
+                    CarPosition = trainCarViewer.CarPosition;
+                    LabelTop = LabelPositionTop[SelectedCarPosition];
+                    Layout();
+                    localScrollLayout(SelectedCarPosition);
+                }
                 //Resize this window after the font has been changed externally
                 else if (MultiPlayerWindow.FontChanged)
                 {
