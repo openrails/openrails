@@ -1948,7 +1948,7 @@ namespace Orts.Simulation
                     if (playerTrain != null)
                     {
                         if (playerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL) TrainSwitcher.SuspendOldPlayer = true; // force suspend state to avoid disappearing of train;
-                        if (TrainSwitcher.SuspendOldPlayer && 
+                        if (TrainSwitcher.SuspendOldPlayer &&
                             (playerTrain.SpeedMpS < -0.025 || playerTrain.SpeedMpS > 0.025 || playerTrain.PresentPosition[0].TCOffset != playerTrain.PreviousPosition[0].TCOffset))
                         {
                             Confirmer.Message(ConfirmLevel.Warning, Catalog.GetString("Train can't be suspended with speed not equal 0"));
@@ -2167,10 +2167,10 @@ namespace Orts.Simulation
                 }
             }
             if (trainToRestart == null)
-                Trace.TraceWarning("Train {0} to restart not found", restartWaitingTrain.WaitingTrainToRestart);            
+                Trace.TraceWarning("Train {0} to restart not found", restartWaitingTrain.WaitingTrainToRestart);
         }
 
- 
+
 
         /// <summary>
         /// Derive log-file name from route path and activity name

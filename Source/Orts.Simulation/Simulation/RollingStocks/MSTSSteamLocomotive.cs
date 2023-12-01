@@ -5317,7 +5317,7 @@ namespace Orts.Simulation.RollingStocks
         private float NormalisedCrankAngle(int cylinderNumber)
         {
             float normalisedCrankAngleRad = (float)MathHelper.WrapAngle((float)LocomotiveAxles[0].AxlePositionRad + WheelCrankAngleDiffRad[cylinderNumber]);
-            
+
             if (normalisedCrankAngleRad < 0)
             {
                 normalisedCrankAngleRad += (float)(2 * Math.PI);

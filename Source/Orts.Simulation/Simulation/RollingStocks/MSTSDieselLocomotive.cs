@@ -303,7 +303,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
 
-                
+
                 if (MaximumDieselEnginePowerW == 0)
                 {
                     MaximumDieselEnginePowerW = LocomotiveMaxRailOutputPowerW;  // If no value set in ENG file, then set the Prime Mover power to same as RailOutputPower (typically the MaxPower value)
@@ -338,12 +338,12 @@ namespace Orts.Simulation.RollingStocks
             }
 
 
-            // Check force assumptions set for diesel
-                CalculatedMaxContinuousForceN = 0;
-                float ThrottleSetting = 1.0f; // Must be at full throttle for these calculations
-                if (TractiveForceCurves == null)  // Basic configuration - ie no force and Power tables, etc
-                {
-                    CalculatedMaxContinuousForceN = ThrottleSetting * LocomotiveMaxRailOutputPowerW / SpeedOfMaxContinuousForceMpS;
+            // Check force assumptions set for diesel   
+            CalculatedMaxContinuousForceN = 0;
+            float ThrottleSetting = 1.0f; // Must be at full throttle for these calculations
+            if (TractiveForceCurves == null)  // Basic configuration - ie no force and Power tables, etc
+            {
+                CalculatedMaxContinuousForceN = ThrottleSetting * LocomotiveMaxRailOutputPowerW / SpeedOfMaxContinuousForceMpS;
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
@@ -356,12 +356,12 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
 
-                }
-                else // Advanced configuration - 
-                {
-                    float StartingSpeedMpS = 0.1f; // Assumed starting speed for diesel - can't be zero otherwise error will occurr
-                    float StartingForceN = TractiveForceCurves.Get(ThrottleSetting, StartingSpeedMpS);
-                    CalculatedMaxContinuousForceN = TractiveForceCurves.Get(ThrottleSetting, SpeedOfMaxContinuousForceMpS);
+            }
+            else // Advanced configuration - 
+            {
+                float StartingSpeedMpS = 0.1f; // Assumed starting speed for diesel - can't be zero otherwise error will occurr
+                float StartingForceN = TractiveForceCurves.Get(ThrottleSetting, StartingSpeedMpS);
+                CalculatedMaxContinuousForceN = TractiveForceCurves.Get(ThrottleSetting, SpeedOfMaxContinuousForceMpS);
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
                     Trace.TraceInformation("Diesel Force Settings (ADVANCED Config): Max Starting Force {0}, Calculated Max Continuous Force {1}, @ speed of {2}", FormatStrings.FormatForce(StartingForceN, IsMetric), FormatStrings.FormatForce(CalculatedMaxContinuousForceN, IsMetric), FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
@@ -374,30 +374,30 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-                // Check that MaxPower value is realistic - Calculate power - metric - P = F x V
-                float CalculatedContinuousPowerW = MaxContinuousForceN * SpeedOfMaxContinuousForceMpS;
+            // Check that MaxPower value is realistic - Calculate power - metric - P = F x V
+            float CalculatedContinuousPowerW = MaxContinuousForceN * SpeedOfMaxContinuousForceMpS;
             if (MaxPowerW < CalculatedContinuousPowerW && Simulator.Settings.VerboseConfigurationMessages)
-                {
-                    Trace.TraceInformation("!!!! Warning: MaxPower {0} is less then continuous force calculated power {1} @ speed of {2}, please check !!!!", FormatStrings.FormatPower(MaxPowerW, IsMetric, false, false), FormatStrings.FormatPower(CalculatedContinuousPowerW, IsMetric, false, false), FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
-                }
+            {
+                Trace.TraceInformation("!!!! Warning: MaxPower {0} is less then continuous force calculated power {1} @ speed of {2}, please check !!!!", FormatStrings.FormatPower(MaxPowerW, IsMetric, false, false), FormatStrings.FormatPower(CalculatedContinuousPowerW, IsMetric, false, false), FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
+            }
 
-                if (!DieselEngines.HasGearBox)
-                {
-                    // Check Adhesion values
-                    var calculatedmaximumpowerw = CalculatedMaxContinuousForceN * SpeedOfMaxContinuousForceMpS;
-                    var maxforcekN = MaxForceN / 1000.0f;
-                    var designadhesionzerospeed = maxforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
+            if (!DieselEngines.HasGearBox)
+            {
+                // Check Adhesion values
+                var calculatedmaximumpowerw = CalculatedMaxContinuousForceN * SpeedOfMaxContinuousForceMpS;
+                var maxforcekN = MaxForceN / 1000.0f;
+                var designadhesionzerospeed = maxforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
                     Trace.TraceInformation("Zero Adhesion - zeroadhesion {0} maxForcekN {1} Driveweight {2}", designadhesionzerospeed, maxforcekN, DrvWheelWeightKg);
                 }
-                    var calculatedmaxcontinuousforcekN = CalculatedMaxContinuousForceN / 1000.0f;
-                    var designadhesionmaxcontspeed = calculatedmaxcontinuousforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
-                    var zerospeed = 0;
-                    var configuredadhesionzerospeed = (Curtius_KnifflerA / (zerospeed + Curtius_KnifflerB) + Curtius_KnifflerC);
-                    var configuredadhesionmaxcontinuousspeed = (Curtius_KnifflerA / (SpeedOfMaxContinuousForceMpS + Curtius_KnifflerB) + Curtius_KnifflerC);
-                    var dropoffspeed = calculatedmaximumpowerw / (MaxForceN);
-                    var configuredadhesiondropoffspeed = (Curtius_KnifflerA / (dropoffspeed + Curtius_KnifflerB) + Curtius_KnifflerC);
+                var calculatedmaxcontinuousforcekN = CalculatedMaxContinuousForceN / 1000.0f;
+                var designadhesionmaxcontspeed = calculatedmaxcontinuousforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
+                var zerospeed = 0;
+                var configuredadhesionzerospeed = (Curtius_KnifflerA / (zerospeed + Curtius_KnifflerB) + Curtius_KnifflerC);
+                var configuredadhesionmaxcontinuousspeed = (Curtius_KnifflerA / (SpeedOfMaxContinuousForceMpS + Curtius_KnifflerB) + Curtius_KnifflerC);
+                var dropoffspeed = calculatedmaximumpowerw / (MaxForceN);
+                var configuredadhesiondropoffspeed = (Curtius_KnifflerA / (dropoffspeed + Curtius_KnifflerB) + Curtius_KnifflerC);
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
                     Trace.TraceInformation("Slip control system: {0}, Traction motor type: {1}", SlipControlSystem.ToString(), TractionMotorType.ToString()); // Slip control
