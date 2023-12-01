@@ -250,8 +250,15 @@
         [GetString("Control DP Less")] ControlDPLess,
 
         // Editor
-        [GetString("Editor Unselect All")] EditorUnselectAll,
+        [GetString("Editor Unselect All")] EditorCancel,
         [GetString("Editor Undo")] EditorUndo,
         [GetString("Editor Redo")] EditorRedo,
+        [GetString("Editor Move")] EditorMove,
+        [GetString("Editor Move Handle")] EditorMoveHandle,
+        [GetString("Editor Rotate")] EditorRotate,
+        [GetString("Editor Rotate Handle")] EditorRotateHandle,
+        [GetString("Editor Move X")] EditorMoveX,
+        [GetString("Editor Move Y")] EditorMoveY,
+        [GetString("Editor Move Z")] EditorMoveZ,
     }
 }

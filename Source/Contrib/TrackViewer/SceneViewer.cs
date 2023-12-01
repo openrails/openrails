@@ -20,27 +20,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Windows;
-using System.Windows.Automation;
-using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using System.Globalization;
 using Windows.Win32;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using GNU.Gettext;
-using ORTS.Menu;
 using ORTS.Common;
 using Orts.Common;
 using ORTS.TrackViewer.UserInterface;
 using Orts.Viewer3D;
 using Orts.Viewer3D.Processes;
-using System.Threading;
-using System.Threading.Tasks;
-using System.IO;
-using System.Globalization;
 using ORTS.Common.Input;
 
 namespace ORTS.TrackViewer
@@ -49,23 +43,24 @@ namespace ORTS.TrackViewer
     {
         public static GettextResourceManager Catalog;
 
-        public SceneWindow SceneWindow;
-        public readonly TrackViewer Game;
-        public StaticShape SelectedObject;
-        public WorldFile SelectedWorldFile;
-        public Orts.Formats.Msts.WorldObject SelectedWorldObject;
+        readonly string[] CommandLineArgs;
+        readonly TrackViewer Game;
+        readonly SceneWindow SceneWindow;
+        readonly Stack<UndoDataSet> UndoStack = new Stack<UndoDataSet>();
+        readonly Stack<UndoDataSet> RedoStack = new Stack<UndoDataSet>();
         Viewer Viewer;
         OrbitingCamera Camera;
-        Stack<UndoDataSet> UndoStack = new Stack<UndoDataSet>();
-        Stack<UndoDataSet> RedoStack = new Stack<UndoDataSet>();
+
         EditorState EditorState;
+        StaticShape SelectedObject;
+        WorldFile SelectedWorldFile;
+        Orts.Formats.Msts.WorldObject SelectedWorldObject;
+        StaticShape MovedObject;
+        WorldPosition MovedObjectOriginalPosition;
+        WorldPosition HandlePosition;
+        int MoveAxis; // 0 - x, 1 - y, 2 - z
+        WorldLocation CursorLocation;
 
-        /// <summary>The command-line arguments</summary>
-        private string[] CommandLineArgs;
-
-        /// <summary>
-        /// Constructor. This is where it all starts.
-        /// </summary>
         public SceneViewer(TrackViewer trackViewer, string[] args)
         {
             CommandLineArgs = args;
@@ -105,6 +100,12 @@ namespace ORTS.TrackViewer
             Game.ReplaceState(new GameStateRunActivity(new[] { "-start", "-viewer", Game.CurrentRoute.Path + "\\dummy\\.pat", "", "10:00", "1", "0" }));
         }
 
+        public void Show()
+        {
+            SceneWindow.Show();
+            SceneWindow.Activate();
+        }
+
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -119,40 +120,95 @@ namespace ORTS.TrackViewer
 
             Viewer.EditorShapes.MouseCrosshairEnabled = true;
 
-            UpdateViewUndoState();
+            if (EditorState == EditorState.Default || EditorState == EditorState.ObjectSelected)
+            {
+                UpdateViewUndoState();
 
-            if (UserInput.IsMouseLeftButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
-            {
-                if (Camera.PickByMouse(out var selectedObject))
+                if (UserInput.IsMouseLeftButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
                 {
-                    SelectedObject = selectedObject;
-                    SelectedObjectChanged();
-                    EditorState = EditorState.ObjectSelected;
+                    if (Camera.PickByMouse(out var selectedObject))
+                    {
+                        SelectedObject = selectedObject;
+                        SelectedObjectChanged();
+                        EditorState = EditorState.ObjectSelected;
+                    }
                 }
-            }
-            if (UserInput.IsPressed(UserCommand.EditorUnselectAll))
-            {
-                if (EditorState == EditorState.ObjectSelected || EditorState == EditorState.Default)
+                if (UserInput.IsPressed(UserCommand.EditorCancel))
                 {
                     SetDefaultMode();
                 }
-            }
-            if (UserInput.IsPressed(UserCommand.EditorUndo))
-            {
-                if (EditorState == EditorState.ObjectSelected || EditorState == EditorState.Default)
+                if (UserInput.IsPressed(UserCommand.EditorUndo))
                 {
                     SetDefaultMode();
                     UndoCommand();
                 }
+                if (UserInput.IsPressed(UserCommand.EditorRedo))
+                {
+                    SetDefaultMode();
+                    RedoCommand();
+                }
             }
-            if (UserInput.IsPressed(UserCommand.EditorRedo))
+            if (EditorState == EditorState.ObjectSelected)
             {
-                SetDefaultMode();
-                RedoCommand();
+                if (UserInput.IsPressed(UserCommand.EditorMove))
+                {
+                    StartObjectMove();
+                }
+                if (UserInput.IsPressed(UserCommand.EditorMoveHandle))
+                {
+                    EditorState = EditorState.HandleMoving;
+                }
+            }
+            if (EditorState == EditorState.HandleMoving)
+            {
+                if (UserInput.IsPressed(UserCommand.EditorMove))
+                {
+                    CancelHandleMove();
+                    StartObjectMove();
+                }
+                if (UserInput.IsPressed(UserCommand.EditorCancel))
+                {
+                    CancelHandleMove();
+                }
+                if (UserInput.IsMouseLeftButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
+                {
+                    ApplyHandleMove();
+                }
+            }
+            if (EditorState == EditorState.ObjectMoving)
+            {
+                if (UserInput.IsPressed(UserCommand.EditorMoveHandle))
+                {
+                    CancelObjectMove();
+                    StartHandleMove();
+                }
+                if (UserInput.IsPressed(UserCommand.EditorCancel))
+                {
+                    CancelObjectMove();
+                }
+                if (UserInput.IsMouseLeftButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
+                {
+                    ApplyObjectMove();
+                }
             }
 
+            CursorLocation = Camera?.CameraWorldLocation ?? new WorldLocation();
+            CursorLocation.Location = Viewer?.TerrainPoint ?? new Vector3();
+            CursorLocation.Normalize();
+            FillCursorPositionStatus(CursorLocation);
             SetCameraLocationStatus(Camera?.CameraWorldLocation ?? new WorldLocation());
-            //FillCursorPositionStatus(Viewer?.TerrainPoint ?? new Vector3());
+
+            // A second pass after user input handled, do the effective work
+            if (EditorState == EditorState.ObjectMoving)
+            {
+                var distance = WorldLocation.GetDistance(SelectedObject.Location.WorldLocation, CursorLocation);
+                var tileLocation = MovedObject.Location.XNAMatrix.Translation;
+                tileLocation.X += distance.X;
+                MovedObject.Location.XNAMatrix.Translation = tileLocation;
+
+                Viewer.EditorShapes.MovedObject = MovedObject;
+                Viewer.EditorShapes.MovedObjectLocation = MovedObject.Location;
+            }
         }
 
         /// <summary>
@@ -170,24 +226,24 @@ namespace ORTS.TrackViewer
         /// Put the mouse location in the statusbar
         /// </summary>
         /// <param name="mouseLocation"></param>
-        private void SetCameraLocationStatus(WorldLocation cameraLocation)
+        private void SetCameraLocationStatus(WorldLocation location)
         {
-            SceneWindow.tileXZ.Text = string.Format(CultureInfo.InvariantCulture, "{0,-7} {1,-7}", cameraLocation.TileX, cameraLocation.TileZ);
-            SceneWindow.LocationX.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", cameraLocation.Location.X);
-            SceneWindow.LocationY.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", cameraLocation.Location.Y);
-            SceneWindow.LocationZ.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", cameraLocation.Location.Z);
+            SceneWindow.tileXZ.Text = string.Format(CultureInfo.InvariantCulture, "{0,-7} {1,-7}", location.TileX, location.TileZ);
+            SceneWindow.LocationX.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", location.Location.X);
+            SceneWindow.LocationY.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", location.Location.Y);
+            SceneWindow.LocationZ.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", location.Location.Z);
         }
 
-        private void FillCursorPositionStatus(Vector3 cursorPosition)
+        private void FillCursorPositionStatus(WorldLocation location)
         {
-            SceneWindow.LocationX.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", cursorPosition.X);
-            SceneWindow.LocationY.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", cursorPosition.Y);
-            SceneWindow.LocationZ.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", -cursorPosition.Z);
+            SceneWindow.tileXZcursor.Text = string.Format(CultureInfo.InvariantCulture, "{0,-7} {1,-7}", location.TileX, location.TileZ);
+            SceneWindow.LocationXcursor.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", location.Location.X);
+            SceneWindow.LocationYcursor.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", location.Location.Y);
+            SceneWindow.LocationZcursor.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", location.Location.Z);
         }
 
-        public async Task SetCameraLocation()
+        public async Task SetCameraLocation(WorldLocation worldLocation)
         {
-            var mouseLocation = Game.drawLabels.SetLocationMenuItem.CommandParameter as WorldLocation? ?? new WorldLocation();
             var elevatedLocation = 0f;
             var i = 0;
             while (true)
@@ -201,13 +257,14 @@ namespace ORTS.TrackViewer
                     continue;
                 }
                 elevatedLocation = Viewer.Tiles?.LoadAndGetElevation(
-                    mouseLocation.TileX, mouseLocation.TileZ, mouseLocation.Location.X, mouseLocation.Location.Z, true) ?? 0;
+                    worldLocation.TileX, worldLocation.TileZ, worldLocation.Location.X, worldLocation.Location.Z, true) ?? 0;
                 break;
             }
-            mouseLocation.Location.Y = elevatedLocation + 15;
-            Camera.SetLocation(mouseLocation);
+            worldLocation.Location.Y = elevatedLocation + 15;
+            Camera.SetLocation(worldLocation);
 
-            var lastView = UndoStack.Count > 0 ? UndoStack.First(s => s.UndoEvent == UndoEvent.ViewChanged) :
+            var lastView = UndoStack.Count > 0 ?
+                UndoStack.First(s => s.UndoEvent == UndoEvent.ViewChanged) :
                 new UndoDataSet()
                 {
                     NewCameraLocation = Camera.CameraWorldLocation,
@@ -304,6 +361,43 @@ namespace ORTS.TrackViewer
             }
         }
 
+        void StartObjectMove()
+        {
+            MovedObject = SelectedObject;
+            MovedObjectOriginalPosition = new WorldPosition(MovedObject.Location);
+            EditorState = EditorState.ObjectMoving;
+        }
+
+        void CancelObjectMove()
+        {
+            MovedObject.Location.CopyFrom(MovedObjectOriginalPosition);
+            MovedObject = null;
+            EditorState = EditorState.ObjectSelected;
+        }
+
+        void ApplyObjectMove()
+        {
+            MovedObject = null;
+            EditorState = EditorState.ObjectSelected;
+        }
+
+        void StartHandleMove()
+        {
+            HandlePosition = new WorldPosition(SelectedObject.Location);
+            EditorState = EditorState.HandleMoving;
+        }
+
+        void CancelHandleMove()
+        {
+            HandlePosition = null;
+            EditorState = EditorState.ObjectSelected;
+        }
+
+        void ApplyHandleMove()
+        {
+            EditorState = EditorState.ObjectSelected;
+        }
+
         void SelectedObjectChanged()
         {
             Viewer.EditorShapes.SelectedObject = SelectedObject;
@@ -320,14 +414,12 @@ namespace ORTS.TrackViewer
             SceneWindow.PosZ.Text = SelectedObject?.Location.Location.Z.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
             SceneWindow.Uid.Text = SelectedObject?.Uid.ToString(CultureInfo.InvariantCulture).Replace(",", "");
 
+            double yaw = 0, pitch = 0, roll = 0;
             if (SelectedWorldObject?.Matrix3x3 != null)
             {
-                var yaw = (float)Math.Atan2(SelectedWorldObject.Matrix3x3.AZ, SelectedWorldObject.Matrix3x3.CZ);
-                var pitch = (float)Math.Asin(-SelectedWorldObject.Matrix3x3.BZ);
-                var roll = (float)Math.Atan2(SelectedWorldObject.Matrix3x3.BX, SelectedWorldObject.Matrix3x3.BY);
-                SceneWindow.RotX.Text = pitch.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
-                SceneWindow.RotY.Text = yaw.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
-                SceneWindow.RotZ.Text = roll.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+                yaw = Math.Atan2(SelectedWorldObject.Matrix3x3.AZ, SelectedWorldObject.Matrix3x3.CZ);
+                pitch = Math.Asin(-SelectedWorldObject.Matrix3x3.BZ);
+                roll = Math.Atan2(SelectedWorldObject.Matrix3x3.BX, SelectedWorldObject.Matrix3x3.BY);
             }
             else if (SelectedWorldObject?.QDirection != null)
             {
@@ -336,20 +428,14 @@ namespace ORTS.TrackViewer
                 var z = SelectedWorldObject.QDirection.C;
                 var w = SelectedWorldObject.QDirection.D;
 
-                //var yaw = Math.Atan2(y, w) * 2 / Math.PI * 180;
-                var yaw = Math.Atan2(2.0f * (y * w + x * z), 1.0f - 2.0f * (x * x + y * y)) / Math.PI * 180;
-                var pitch = Math.Asin(2.0f * (x * w - y * z)) / Math.PI * 180;
-                var roll = Math.Atan2(2.0f * (x * y + z * w), 1.0f - 2.0f * (x * x + z * z)) / Math.PI * 180;
-                SceneWindow.RotX.Text = pitch.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
-                SceneWindow.RotY.Text = yaw.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
-                SceneWindow.RotZ.Text = roll.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+                //yaw = Math.Atan2(y, w) * 2 / Math.PI * 180;
+                yaw = Math.Atan2(2.0f * (y * w + x * z), 1.0f - 2.0f * (x * x + y * y)) / Math.PI * 180;
+                pitch = Math.Asin(2.0f * (x * w - y * z)) / Math.PI * 180;
+                roll = Math.Atan2(2.0f * (x * y + z * w), 1.0f - 2.0f * (x * x + z * z)) / Math.PI * 180;
             }
-            else
-            {
-                SceneWindow.RotX.Text = "";
-                SceneWindow.RotY.Text = "";
-                SceneWindow.RotZ.Text = "";
-            }
+            SceneWindow.RotX.Text = SelectedWorldObject == null ? "" : pitch.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            SceneWindow.RotY.Text = SelectedWorldObject == null ? "" : yaw.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            SceneWindow.RotZ.Text = SelectedWorldObject == null ? "" : roll.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
 
             //if (SelectedObject is StaticShape ppp)
             //{
@@ -390,9 +476,8 @@ namespace ORTS.TrackViewer
     {
         Default = 0,
         ObjectSelected,
-        ObjectMovingX,
-        ObjectMovingY,
-        ObjectMovingZ,
+        ObjectMoving,
+        HandleMoving,
     }
 
     public class SceneViewerHwndHost : HwndHost
