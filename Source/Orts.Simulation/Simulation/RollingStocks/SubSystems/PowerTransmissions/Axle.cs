@@ -703,6 +703,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
 
         double integratorError;
+        int waitBeforeSpeedingUp;
         int waitBeforeChangingRate;
 
         /// <summary>
@@ -865,64 +866,87 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             if (elapsedClockSeconds <= 0) return;
             double prevSpeedMpS = AxleSpeedMpS;
-            
-            float upperSubStepLimit = 100;
-            float lowerSubStepLimit = 1;
 
-            // use straight line graph approximation to increase substeps as slipspeed increases towards the threshold speed point
-            // Points are 1 = (0, upperLimit) and 2 = (threshold, lowerLimit)           
-            var AdhesGrad = ((upperSubStepLimit - lowerSubStepLimit) / (WheelSlipThresholdMpS - 0));
-            var targetNumOfSubstepsPS = Math.Abs((AdhesGrad * SlipSpeedMpS) + lowerSubStepLimit);
-            if (float.IsNaN((float)targetNumOfSubstepsPS)) targetNumOfSubstepsPS = 1;
-            
-            if (SlipSpeedMpS > WheelSlipThresholdMpS) // if in wheel slip then maximise the substeps
+            if (UsePolachAdhesion)
             {
-                targetNumOfSubstepsPS = upperSubStepLimit;
-            }
 
-            if (Math.Abs(integratorError) < 0.000277 && !IsWheelSlip && !IsWheelSlipWarning && SlipSpeedMpS < 0.25 * WheelSlipThresholdMpS && SlipSpeedMpS < previousSlipSpeedMpS)
-            {
-                if (--waitBeforeChangingRate <= 0) //wait for a while before changing the integration rate
+                float upperSubStepLimit = 100;
+                float lowerSubStepLimit = 1;
+
+                // use straight line graph approximation to increase substeps as slipspeed increases towards the threshold speed point
+                // Points are 1 = (0, upperLimit) and 2 = (threshold, lowerLimit)           
+                var AdhesGrad = ((upperSubStepLimit - lowerSubStepLimit) / (WheelSlipThresholdMpS - 0));
+                var targetNumOfSubstepsPS = Math.Abs((AdhesGrad * SlipSpeedMpS) + lowerSubStepLimit);
+                if (float.IsNaN((float)targetNumOfSubstepsPS)) targetNumOfSubstepsPS = 1;
+
+                if (SlipSpeedMpS > WheelSlipThresholdMpS) // if in wheel slip then maximise the substeps
                 {
-                    NumOfSubstepsPS -= 2; // decrease substeps when under low slip conditions
-                    waitBeforeChangingRate = 30;
+                    targetNumOfSubstepsPS = upperSubStepLimit;
                 }
-            }
-            else if (targetNumOfSubstepsPS > NumOfSubstepsPS) // increase substeps
-            {
-                if (--waitBeforeChangingRate <= 0 ) //wait for a while before changing the integration rate
-                {
 
-                    if (IsWheelSlip || IsWheelSlipWarning || SlipSpeedMpS > previousSlipSpeedMpS)
+                if (Math.Abs(integratorError) < 0.000277 && !IsWheelSlip && !IsWheelSlipWarning && SlipSpeedMpS < 0.25 * WheelSlipThresholdMpS && SlipSpeedMpS < previousSlipSpeedMpS)
+                {
+                    if (--waitBeforeChangingRate <= 0) //wait for a while before changing the integration rate
                     {
-                        // this speeds up the substep increase if the slip speed approaches the threshold or has exceeded it, ie "critical conditions".
-                        NumOfSubstepsPS += 10;
-                        waitBeforeChangingRate = 5;      
+                        NumOfSubstepsPS -= 2; // decrease substeps when under low slip conditions
+                        waitBeforeChangingRate = 30;
                     }
-                    else
-                    {
-                        // this speeds ups the substeps under "non critical" conditions
-                        NumOfSubstepsPS += 3;
-                        waitBeforeChangingRate = 30;      
-                    }
-                    
                 }
-            }
-            else if (targetNumOfSubstepsPS < NumOfSubstepsPS) // decrease sub steps
-            {
-                if (--waitBeforeChangingRate <= 0) //wait for a while before changing the integration rate
+                else if (targetNumOfSubstepsPS > NumOfSubstepsPS) // increase substeps
                 {
-                    NumOfSubstepsPS -= 3;
-                    waitBeforeChangingRate = 30;
+                    if (--waitBeforeChangingRate <= 0) //wait for a while before changing the integration rate
+                    {
+
+                        if (IsWheelSlip || IsWheelSlipWarning || SlipSpeedMpS > previousSlipSpeedMpS)
+                        {
+                            // this speeds up the substep increase if the slip speed approaches the threshold or has exceeded it, ie "critical conditions".
+                            NumOfSubstepsPS += 10;
+                            waitBeforeChangingRate = 5;
+                        }
+                        else
+                        {
+                            // this speeds ups the substeps under "non critical" conditions
+                            NumOfSubstepsPS += 3;
+                            waitBeforeChangingRate = 30;
+                        }
+
+                    }
                 }
+                else if (targetNumOfSubstepsPS < NumOfSubstepsPS) // decrease sub steps
+                {
+                    if (--waitBeforeChangingRate <= 0) //wait for a while before changing the integration rate
+                    {
+                        NumOfSubstepsPS -= 3;
+                        waitBeforeChangingRate = 30;
+                    }
+                }
+
+                // keeps the substeps to a relevant upper and lower limits
+                if (NumOfSubstepsPS < lowerSubStepLimit)
+                    NumOfSubstepsPS = (int)lowerSubStepLimit;
+
+                if (NumOfSubstepsPS > upperSubStepLimit)
+                    NumOfSubstepsPS = (int)upperSubStepLimit;
+
             }
+            else
+            {
+                if (Math.Abs(integratorError) > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 0.01f, 0.001f))
+                {
+                    ++NumOfSubstepsPS;
+                    waitBeforeSpeedingUp = 100;
+                }
+                else
+                {
+                    if (--waitBeforeSpeedingUp <= 0)    //wait for a while before speeding up the integration
+                    {
+                        --NumOfSubstepsPS;
+                        waitBeforeSpeedingUp = 10;      //not so fast ;)
+                    }
+                }
 
-            // keeps the substeps to a relevant upper and lower limits
-            if (NumOfSubstepsPS < lowerSubStepLimit)
-                NumOfSubstepsPS = (int)lowerSubStepLimit;
-
-            if (NumOfSubstepsPS > upperSubStepLimit)
-                NumOfSubstepsPS = (int)upperSubStepLimit;        
+                NumOfSubstepsPS = Math.Max(Math.Min(NumOfSubstepsPS, 50), 1);
+            }
 
             double dt = elapsedClockSeconds / NumOfSubstepsPS;
             double hdt = dt / 2;
@@ -931,6 +955,27 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             for (int i = 0; i < NumOfSubstepsPS; i++)
             {
                 var k1 = GetAxleMotionVariation(AxleSpeedMpS, dt);
+
+                if (i == 0 && !UsePolachAdhesion)
+                {
+                    if (k1.Item1 * dt > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 10, 1) / 100)
+                    {
+                        NumOfSubstepsPS = Math.Min(NumOfSubstepsPS + 5, 50);
+                        dt = elapsedClockSeconds / NumOfSubstepsPS;
+                        hdt = dt / 2;
+                    }
+
+                    if (Math.Sign(AxleSpeedMpS + k1.Item1 * dt) != Math.Sign(AxleSpeedMpS) && BrakeRetardForceN + frictionN > Math.Abs(driveForceN - k1.Item3))
+                    {
+                        AxlePositionRad += AxleSpeedMpS * hdt;
+                        AxlePositionRad = MathHelper.WrapAngle((float)AxlePositionRad);
+                        AxleSpeedMpS = 0;
+                        AxleForceN = 0;
+                        DriveForceN = (float)k1.Item4;
+                        return;
+                    }
+                }
+
                 var k2 = GetAxleMotionVariation(AxleSpeedMpS + k1.Item1 * hdt, hdt);
                 var k3 = GetAxleMotionVariation(AxleSpeedMpS + k2.Item1 * hdt, hdt);
                 var k4 = GetAxleMotionVariation(AxleSpeedMpS + k3.Item1 * dt, dt);
