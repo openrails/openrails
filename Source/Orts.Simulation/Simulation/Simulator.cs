@@ -32,6 +32,7 @@ using Orts.Simulation.Timetables;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using ORTS.Settings;
+using SharpDX.MediaFoundation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -58,6 +59,7 @@ namespace Orts.Simulation
     /// </summary>
     public class Simulator
     {
+
         public static GettextResourceManager Catalog { get; private set; }
         public static Random Random { get; private set; }
         public static double Resolution = 1000000; // resolution for calculation of random value with a pseudo-gaussian distribution
@@ -1355,8 +1357,8 @@ namespace Orts.Simulation
             train.AITrainBrakePercent = 100; //<CSComment> This seems a tricky way for the brake modules to test if it is an AI train or not
             train.EqualReservoirPressurePSIorInHg = prevEQres; // The previous command modifies EQ reservoir pressure, causing issues with EP brake systems, so restore to prev value
 
-//            if ((PlayerLocomotive as MSTSLocomotive).EOTEnabled != MSTSLocomotive.EOTenabled.no)
-//                train.EOT = new EOT((PlayerLocomotive as MSTSLocomotive).EOTEnabled, false, train);
+            //            if ((PlayerLocomotive as MSTSLocomotive).EOTEnabled != MSTSLocomotive.EOTenabled.no)
+            //                train.EOT = new EOT((PlayerLocomotive as MSTSLocomotive).EOTEnabled, false, train);
 
             return (train);
         }
@@ -1432,8 +1434,8 @@ namespace Orts.Simulation
 
             if (conFileName.Contains("tilted")) train.IsTilting = true;
 
-//            if ((PlayerLocomotive as MSTSLocomotive).EOTEnabled != MSTSLocomotive.EOTenabled.no)
-//                train.EOT = new EOT((PlayerLocomotive as MSTSLocomotive).EOTEnabled, false, train);
+            //            if ((PlayerLocomotive as MSTSLocomotive).EOTEnabled != MSTSLocomotive.EOTenabled.no)
+            //                train.EOT = new EOT((PlayerLocomotive as MSTSLocomotive).EOTEnabled, false, train);
 
             return train;
         }
@@ -1487,7 +1489,7 @@ namespace Orts.Simulation
 
                         if (!File.Exists(wagonFilePath))
                         {
-                            Trace.TraceWarning($"Ignored missing {(wagon.IsEngine? "engine" : "wagon")} {wagonFilePath} in activity definition {activityObject.Train_Config.TrainCfg.Name}");
+                            Trace.TraceWarning($"Ignored missing {(wagon.IsEngine ? "engine" : "wagon")} {wagonFilePath} in activity definition {activityObject.Train_Config.TrainCfg.Name}");
                             continue;
                         }
 
@@ -1897,7 +1899,7 @@ namespace Orts.Simulation
                     if (playerTrain != null)
                     {
                         if (playerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL) TrainSwitcher.SuspendOldPlayer = true; // force suspend state to avoid disappearing of train;
-                        if (TrainSwitcher.SuspendOldPlayer && 
+                        if (TrainSwitcher.SuspendOldPlayer &&
                             (playerTrain.SpeedMpS < -0.025 || playerTrain.SpeedMpS > 0.025 || playerTrain.PresentPosition[0].TCOffset != playerTrain.PreviousPosition[0].TCOffset))
                         {
                             Confirmer.Message(ConfirmLevel.Warning, Catalog.GetString("Train can't be suspended with speed not equal 0"));
@@ -2116,10 +2118,10 @@ namespace Orts.Simulation
                 }
             }
             if (trainToRestart == null)
-                Trace.TraceWarning("Train {0} to restart not found", restartWaitingTrain.WaitingTrainToRestart);            
+                Trace.TraceWarning("Train {0} to restart not found", restartWaitingTrain.WaitingTrainToRestart);
         }
 
- 
+
 
         /// <summary>
         /// Derive log-file name from route path and activity name

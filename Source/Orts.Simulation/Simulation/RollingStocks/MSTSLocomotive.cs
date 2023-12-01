@@ -147,6 +147,8 @@ namespace Orts.Simulation.RollingStocks
         public bool OnLineCabRadio;
         public string OnLineCabRadioURL;
 
+        float ZeroSpeedAdhesionBase;
+
         public float FilteredBrakePipeFlowM3pS;
         public IIRFilter AFMFilter;
 
@@ -184,7 +186,17 @@ namespace Orts.Simulation.RollingStocks
 
         public float CurrentLocomotiveSteamHeatBoilerWaterCapacityL
         {
-            get { return WaterController.CurrentValue * MaximumSteamHeatBoilerWaterTankCapacityL; }
+            get {
+                if (IsSteamHeatFitted)
+                {
+                 return WaterController.CurrentValue * MaximumSteamHeatBoilerWaterTankCapacityL;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+
             set { WaterController.CurrentValue = value / MaximumSteamHeatBoilerWaterTankCapacityL; }
         }
         public float IsTenderRequired = 1.0f;  // Flag indicates that a tender is required for operation of the locomotive. Typically tank locomotives do not require a tender. Assume by default that tender is required.
@@ -237,10 +249,11 @@ namespace Orts.Simulation.RollingStocks
 
         // parameters for Track Sander based upon compressor air and abrasive table for 1/2" sand blasting nozzle @ 50psi
         public float MaxTrackSandBoxCapacityM3 = Me3.FromFt3(40.0f);  // Capacity of sandbox - assume 40.0 cu ft
-        public float CurrentTrackSandBoxCapacityM3 = 5.0f;   // This value needs to be initialised to the value above, as it reduces as sand is used.
+        public float CurrentTrackSandBoxCapacityM3; 
         public float TrackSanderAirComsumptionM3pS = Me3.FromFt3(195.0f) / 60.0f;  // Default value - cubic feet per min (CFM) 195 ft3/m
         public float TrackSanderAirPressurePSI = 50.0f;
         public float TrackSanderSandConsumptionM3pS = Me3.FromFt3(11.6f) / 3600.0f; // Default value - 11.6 ft3/h
+        public float SandWeightKgpM3 = 1600; // One cubic metre of sand weighs about 1.54-1.78 tonnes. 
 
         // Vacuum Braking parameters
         readonly static float OneAtmospherePSI = Bar.ToPSI(1);
@@ -1110,9 +1123,16 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortswaterscoopfillelevation": WaterScoopFillElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0.0f); break;
                 case "engine(ortswaterscoopdepth": WaterScoopDepthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0.0f); break;
                 case "engine(ortswaterscoopwidth": WaterScoopWidthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0.0f); break;
-                case "engine(ortsmaxtracksanderboxcapacity": MaxTrackSandBoxCapacityM3 = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
-                case "engine(ortsmaxtracksandersandconsumption": TrackSanderSandConsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
-                case "engine(ortsmaxtracksanderairconsumption": TrackSanderAirComsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                    // Convert the following default ft^3 to Me^3 units
+                case "engine(ortsmaxtracksanderboxcapacity": MaxTrackSandBoxCapacityM3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null);
+                    MaxTrackSandBoxCapacityM3 = Me3.FromFt3(MaxTrackSandBoxCapacityM3);
+                    break;
+                case "engine(ortsmaxtracksandersandconsumption": Me3.FromFt3( TrackSanderSandConsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null) );
+                    TrackSanderSandConsumptionM3pS = Me3.FromFt3(TrackSanderSandConsumptionM3pS);
+                    break;
+                case "engine(ortsmaxtracksanderairconsumption": Me3.FromFt3( TrackSanderAirComsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null) );
+                    TrackSanderAirComsumptionM3pS = Me3.FromFt3(TrackSanderAirComsumptionM3pS);
+                    break;
                 case "engine(ortscruisecontrol": SetUpCruiseControl(stf); break;
                 case "engine(ortsmultipositioncontroller": SetUpMPC(stf); break;
                 default:
@@ -1469,7 +1489,7 @@ namespace Orts.Simulation.RollingStocks
             // Ensure Drive Axles is set with a default value if user doesn't supply an OR value in ENG file
             if (LocoNumDrvAxles == 0)
             {
-                if (MSTSLocoNumDrvWheels != 0 && MSTSLocoNumDrvWheels < 6)
+                if (MSTSLocoNumDrvWheels != 0 && MSTSLocoNumDrvWheels < 7)
                 {
                     LocoNumDrvAxles = (int) MSTSLocoNumDrvWheels;
                 }
@@ -2463,7 +2483,7 @@ namespace Orts.Simulation.RollingStocks
                         // Simple slip control
                         // Motive force is reduced to the maximum adhesive force
                         // In wheelslip situations, motive force is set to zero
-                        axle.DriveForceN = Math.Sign(axle.DriveForceN) * Math.Min(axle.AdhesionLimit * axle.AxleWeightN, Math.Abs(axle.DriveForceN));
+                        axle.DriveForceN = Math.Sign(axle.DriveForceN) * Math.Min(axle.MaximumPolachWheelAdhesion * axle.AxleWeightN, Math.Abs(axle.DriveForceN));
                         if (axle.IsWheelSlip) axle.DriveForceN = 0;
                     }
                 }
@@ -2797,11 +2817,17 @@ namespace Orts.Simulation.RollingStocks
 
             foreach (var axle in LocomotiveAxles)
             {
-                axle.BrakeRetardForceN = BrakeRetardForceN/LocomotiveAxles.Count;
+                axle.BrakeRetardForceN = BrakeRetardForceN / LocomotiveAxles.Count;
                 axle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
                 axle.WheelRadiusM = DriverWheelRadiusM;
+                axle.WheelDistanceGaugeM = TrackGaugeM;
+                axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
+                axle.BogieRigidWheelBaseM = RigidWheelBaseM;
+                axle.CurtiusKnifflerZeroSpeed = ZeroSpeedAdhesionBase;
             }
+
             LocomotiveAxles.Update(elapsedClockSeconds);
+
             MotiveForceN = LocomotiveAxles.CompensatedForceN;
 
             if (elapsedClockSeconds > 0)
@@ -2813,10 +2839,10 @@ namespace Orts.Simulation.RollingStocks
             // This enables steam locomotives to have different speeds for driven and non-driven wheels.
             if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
             {
-                WheelSpeedSlipMpS = LocomotiveAxles[0].AxleSpeedMpS;
+                WheelSpeedSlipMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
                 WheelSpeedMpS = SpeedMpS;
             }
-            else WheelSpeedMpS = LocomotiveAxles[0].AxleSpeedMpS; 
+            else WheelSpeedMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
 
         }
 
@@ -3183,6 +3209,9 @@ namespace Orts.Simulation.RollingStocks
             Train.LocomotiveCoefficientFriction = BaseuMax * BaseFrictionCoefficientFactor * AdhesionMultiplier;  // Find friction coefficient factor for locomotive
             Train.LocomotiveCoefficientFriction = MathHelper.Clamp(Train.LocomotiveCoefficientFriction, 0.05f, 0.8f); // Ensure friction coefficient never exceeds a "reasonable" value
 
+            float ZeroBaseuMax = (Curtius_KnifflerA / (Curtius_KnifflerB) + Curtius_KnifflerC); // Base Curtius - Kniffler equation - u = 0.33, all other values are scaled off this formula
+            ZeroSpeedAdhesionBase = ZeroBaseuMax * BaseFrictionCoefficientFactor * AdhesionMultiplier;
+
             // Set adhesion conditions for diesel, electric or steam geared locomotives
             if (elapsedClockSeconds > 0)
             {
@@ -3191,6 +3220,7 @@ namespace Orts.Simulation.RollingStocks
                 foreach (var axle in LocomotiveAxles)
                 {
                     axle.AdhesionLimit = AdhesionConditions * BaseuMax;
+                    axle.CurtiusKnifflerZeroSpeed = ZeroBaseuMax;
                 }
             }
 
@@ -3206,7 +3236,6 @@ namespace Orts.Simulation.RollingStocks
         }
 
         #endregion
-
 
         public void UpdateTrackSander(float elapsedClockSeconds)
         {
