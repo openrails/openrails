@@ -823,6 +823,19 @@ namespace Orts.Viewer3D.Processes
                 Console.WriteLine("Executable = {0}", Path.GetFileName(Application.ExecutablePath));
                 foreach (var arg in args)
                     Console.WriteLine("Argument   = {0}", arg);
+#if DEBUG
+                string debugArgline = "";
+                foreach (var arg in args)
+                {
+                    if (arg.Contains(" ")) {
+                        debugArgline += "\"" + arg + "\" ";
+                    } else
+                    {
+                        debugArgline += arg + " ";
+                    }
+                 }
+                Console.WriteLine("Arguments  = {0}", debugArgline.TrimEnd());
+#endif
                 LogSeparator();
                 settings.Log();
                 LogSeparator();
