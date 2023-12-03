@@ -166,6 +166,30 @@ namespace Orts.Viewer3D.Debugging
             MapThemeProvider.InitializeThemes();
             Theme = MapThemeProvider.GetTheme(ThemeName);
 
+            // It appears that `GNU.gettext` fails to apply translations to dropdown menus (ContextMenuStrip).
+            // Therefore, we must use `Viewer.Catalog.GetString()` to manually apply them for now.
+            messageSelectedPlayerMenuItem.Text = Viewer.Catalog.GetString("Message the selected player");
+            replyToSelectedPlayerMenuItem.Text = Viewer.Catalog.GetString("Reply to the selected player");
+
+            playerToolStripMenuItem.Text = Viewer.Catalog.GetString("Player");
+            makeThisPlayerAnAssistantToolStripMenuItem.Text = Viewer.Catalog.GetString("Make this player an assistant");
+            jumpToThisPlayerInGameToolStripMenuItem.Text = Viewer.Catalog.GetString("Jump to this player in game");
+            followToolStripMenuItem.Text = Viewer.Catalog.GetString("Follow on the map");
+            kickFromMultiplayerSessionToolStripMenuItem.Text = Viewer.Catalog.GetString("Kick from multiplayer session");
+
+            setSwitchToToolStripMenuItem.Text = Viewer.Catalog.GetString("Set switch to...");
+            mainRouteToolStripMenuItem.Text = Viewer.Catalog.GetString("Main route");
+            sideRouteToolStripMenuItem.Text = Viewer.Catalog.GetString("Side route");
+
+            setSignalAspectToToolStripMenuItem.Text = Viewer.Catalog.GetString("Set signal aspect to...");
+            systemControlledToolStripMenuItem.Text = Viewer.Catalog.GetString("System controlled");
+            stopToolStripMenuItem.Text = Viewer.Catalog.GetString("Stop");
+            approachToolStripMenuItem.Text = Viewer.Catalog.GetString("Approach");
+            proceedToolStripMenuItem.Text = Viewer.Catalog.GetString("Proceed");
+
+            jumpToThisTrainInGameToolStripMenuItem.Text = Viewer.Catalog.GetString("Jump to this train in game");
+            followThisTrainOnTheMapToolStripMenuItem.Text = Viewer.Catalog.GetString("Follow this train on the map");
+
             float[] dashPattern = { 4, 2 };
             ZoomTargetPen.DashPattern = dashPattern;
             pathPen.DashPattern = dashPattern;
