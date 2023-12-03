@@ -544,11 +544,9 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.EditorRedo] = new UserCommandKeyInput(Keys.Y, KeyModifiers.Control); // the Y and Z keys are exchanged, and we want these to match the o/s
             Commands[(int)UserCommand.EditorMove] = new UserCommandKeyInput(Keys.M);
             Commands[(int)UserCommand.EditorMoveHandle] = new UserCommandKeyInput(Keys.M, KeyModifiers.Alt);
-            Commands[(int)UserCommand.EditorRotate] = new UserCommandKeyInput(Keys.R);
-            Commands[(int)UserCommand.EditorRotateHandle] = new UserCommandKeyInput(Keys.R, KeyModifiers.Alt);
-            Commands[(int)UserCommand.EditorMoveX] = new UserCommandKeyInput(Keys.X);
-            Commands[(int)UserCommand.EditorMoveY] = new UserCommandKeyInput(Keys.Y);
-            Commands[(int)UserCommand.EditorMoveZ] = new UserCommandKeyInput(Keys.Z);
+            Commands[(int)UserCommand.EditorLockOrthogonal] = new UserCommandModifierInput(KeyModifiers.Shift);
+            Commands[(int)UserCommand.EditorLockElevation] = new UserCommandModifierInput(KeyModifiers.Control);
+            Commands[(int)UserCommand.EditorLockRotation] = new UserCommandKeyInput(Keys.R);
         }
         #endregion
 

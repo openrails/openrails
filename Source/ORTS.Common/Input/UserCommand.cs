@@ -257,10 +257,8 @@
         [GetString("Editor Redo")] EditorRedo,
         [GetString("Editor Move")] EditorMove,
         [GetString("Editor Move Handle")] EditorMoveHandle,
-        [GetString("Editor Rotate")] EditorRotate,
-        [GetString("Editor Rotate Handle")] EditorRotateHandle,
-        [GetString("Editor Move X")] EditorMoveX,
-        [GetString("Editor Move Y")] EditorMoveY,
-        [GetString("Editor Move Z")] EditorMoveZ,
+        [GetString("Editor Move Orthogonal")] EditorLockOrthogonal,
+        [GetString("Editor Move Orthogonal")] EditorLockElevation,
+        [GetString("Editor Move Orthogonal")] EditorLockRotation,
     }
 }

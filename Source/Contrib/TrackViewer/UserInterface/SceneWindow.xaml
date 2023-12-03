@@ -30,9 +30,9 @@
                             <ColumnDefinition Width="58" />
                             <ColumnDefinition Width="58" />
                             <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="60" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="63" />
+                            <ColumnDefinition Width="63" />
+                            <ColumnDefinition Width="63"/>
                         </Grid.ColumnDefinitions>
                     </Grid>
                 </ItemsPanelTemplate>
@@ -97,29 +97,47 @@
                 </TextBlock>
             </StatusBarItem>
             <Separator Grid.Column="11"/>
-            <Separator Grid.Column="13"/>
+            <StatusBarItem Grid.Column="12">
+                <Border BorderThickness="1 1 0 0" BorderBrush="Gray">
+                    <Border BorderThickness="0 0 1 1" BorderBrush="AntiqueWhite">
+                        <TextBlock Name="DeltaX" Width="55" TextAlignment="Right" Background="#FFF7DCDC"/>
+                    </Border>
+                </Border>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="13">
+                <Border BorderThickness="1 1 0 0" BorderBrush="Gray">
+                    <Border BorderThickness="0 0 1 1" BorderBrush="AntiqueWhite">
+                        <TextBlock Name="DeltaY" Width="55" TextAlignment="Right" Background="#FFC3CFFB"/>
+                    </Border>
+                </Border>
+            </StatusBarItem>
             <StatusBarItem Grid.Column="14">
-                <TextBlock Name="statusAdditional" ToolTip="Any other relevant information. Make your choice via Statusbar menu"/>
+                <Border BorderThickness="1 1 0 0" BorderBrush="Gray">
+                    <Border BorderThickness="0 0 1 1" BorderBrush="AntiqueWhite">
+                        <TextBlock Name="DeltaZ" Width="55" TextAlignment="Right" Background="#FFCDF9D8"/>
+                    </Border>
+                </Border>
             </StatusBarItem>
         </StatusBar>
         <Border BorderThickness="2">
             <StackPanel Orientation="Vertical" Width="150">
                 <TextBox FontWeight="Bold" Name="Filename" Text="{Binding SelectedWorldObject.FileName}"/>
-                <DockPanel>
-                    <TextBlock Text="UID: " PreviewTextInput="UintValidationTextBox"/>
-                    <TextBlock Name="Uid" Text="{Binding SelectedWorldObject.UID}"/>
-                </DockPanel>
                 <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="0.7*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="Tile X: " />
-                    <TextBox Grid.Column="1" Name="TileX" PreviewTextInput="IntValidationTextBox" Text="{Binding SelectedObject.Location.TileX}" />
-                    <TextBlock Grid.Column="2" Text=" Z: " />
-                    <TextBox Grid.Column="3" Name="TileZ" PreviewTextInput="IntValidationTextBox" Text="{Binding SelectedObject.Location.TileZ}" />
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Tile X" HorizontalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="Tile Z" HorizontalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="2" Text="UID" HorizontalAlignment="Center"/>
+                    <TextBox Grid.Row="1" Grid.Column="0" Name="TileX" TextAlignment="Center"/>
+                    <TextBox Grid.Row="1" Grid.Column="1" Name="TileZ" TextAlignment="Center"/>
+                    <TextBox Grid.Row="1" Grid.Column="2" Name="Uid" TextAlignment="Center"/>
                 </Grid>
                 <Grid>
                     <Grid.RowDefinitions>

@@ -22,6 +22,7 @@ using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Orts.Viewer3D
@@ -40,6 +41,7 @@ namespace Orts.Viewer3D
 
         StaticShape PreviousSelectedObject;
         public StaticShape SelectedObject { get; set; }
+        readonly List<BoundingBoxPrimitive> SelectedBoundingBoxPrimitives = new List<BoundingBoxPrimitive>();
 
         public StaticShape MovedObject { get; set; }
         public WorldPosition MovedObjectLocation { get; set; }
@@ -62,29 +64,26 @@ namespace Orts.Viewer3D
         {
             if (PreviousSelectedObject != SelectedObject)
             {
-                if (PreviousSelectedObject?.BoundingBox != null)
-                    for (var i = 0; i < PreviousSelectedObject.BoundingBox.Length; i++)
-                        if (BoundingBoxPrimitives.TryRemove((PreviousSelectedObject.Location.TileX, PreviousSelectedObject.Location.TileZ, PreviousSelectedObject.Uid, PreviousSelectedObject.Location.XNAMatrix, i), out var primitive))
-                            UnusedPrimitives.Add(primitive);
-
                 PreviousSelectedObject = SelectedObject;
 
-                if (SelectedObject?.BoundingBox?.Length > 0)
-                {
-                    for (var i = 0; i < SelectedObject.BoundingBox.Length; i++)
-                    {
-                        BoundingBoxPrimitives.TryAdd((SelectedObject.Location.TileX, SelectedObject.Location.TileZ, SelectedObject.Uid, SelectedObject.Location.XNAMatrix, i),
-                            new BoundingBoxPrimitive(Viewer, SelectedObject.BoundingBox[i], Color.CornflowerBlue));
-                    }
-                }
+                foreach (var p in SelectedBoundingBoxPrimitives)
+                    UnusedPrimitives.Add(p);
+                SelectedBoundingBoxPrimitives.Clear();
+
+                for (var i = 0; i < SelectedObject?.BoundingBox?.Length; i++)
+                    SelectedBoundingBoxPrimitives.Add(new BoundingBoxPrimitive(Viewer, SelectedObject.BoundingBox[i], Color.CornflowerBlue));
             }
+
+            if (SelectedObject?.BoundingBox != null)
+                for (var i = 0; i < SelectedBoundingBoxPrimitives.Count; i++)
+                    FrameAddPrimitive(frame, SelectedObject.BoundingBox.ElementAtOrDefault(i).ComplexTransform, SelectedObject.Location, SelectedBoundingBoxPrimitives[i]);
+
             for (var i = 0; i < BoundingBoxPrimitives.Count; i++)
             {
                 // Sweep out the not displayable bb-s
                 var bb = BoundingBoxPrimitives.Keys.ElementAtOrDefault(i);
                 if (bb != default((int, int, int, Matrix, int))
-                    && !BoundingBoxShapes.Any(s => s?.Location.TileX == bb.tileX && s?.Location.TileZ == bb.tileZ && s?.Uid == bb.uid)
-                    && bb.tileX != SelectedObject?.Location.TileX && bb.tileZ != SelectedObject?.Location.TileZ && bb.uid != SelectedObject?.Uid)
+                    && !BoundingBoxShapes.Any(s => s?.Location.TileX == bb.tileX && s?.Location.TileZ == bb.tileZ && s?.Uid == bb.uid))
                 {
                     if (BoundingBoxPrimitives.TryRemove(bb, out var primitive))
                         UnusedPrimitives.Add(primitive);
@@ -110,13 +109,7 @@ namespace Orts.Viewer3D
             {
                 foreach (var boundingBox in BoundingBoxPrimitives.Keys)
                 {
-                    var dTileX = boundingBox.tileX - Viewer.Camera.TileX;
-                    var dTileZ = boundingBox.tileZ - Viewer.Camera.TileZ;
-                    var xnaDTileTranslation = boundingBox.matrix;
-                    xnaDTileTranslation.M41 += dTileX * 2048;
-                    xnaDTileTranslation.M43 -= dTileZ * 2048;
-                    xnaDTileTranslation = BoundingBoxPrimitives[boundingBox].ComplexTransform * xnaDTileTranslation;
-                    frame.AddPrimitive(BoundingBoxPrimitives[boundingBox].Material, BoundingBoxPrimitives[boundingBox], RenderPrimitiveGroup.Labels, ref xnaDTileTranslation);
+                    FrameAddPrimitive(frame, BoundingBoxPrimitives[boundingBox].ComplexTransform, boundingBox.matrix, boundingBox.tileX, boundingBox.tileZ, BoundingBoxPrimitives[boundingBox]);
                 }
             }
             if (MovedObject == null && MovedObjectPrimitive != null)
@@ -131,12 +124,7 @@ namespace Orts.Viewer3D
             }
             if (MovedObjectPrimitive != null)
             {
-                var dTileX = MovedObjectLocation.TileX - Viewer.Camera.TileX;
-                var dTileZ = MovedObjectLocation.TileZ - Viewer.Camera.TileZ;
-                var xnaDTileTranslation = MovedObjectLocation.XNAMatrix;
-                xnaDTileTranslation.M41 += dTileX * 2048;
-                xnaDTileTranslation.M43 -= dTileZ * 2048;
-                frame.AddPrimitive(MovedObjectPrimitive.Material, MovedObjectPrimitive, RenderPrimitiveGroup.Labels, ref xnaDTileTranslation);
+                FrameAddPrimitive(frame, Matrix.Identity, MovedObjectLocation, MovedObjectPrimitive);
             }
             if (MouseCrosshairEnabled)
             {
@@ -147,21 +135,24 @@ namespace Orts.Viewer3D
                 var mouseCrosshairMatrix = Matrix.CreateTranslation(CrosshairPosition);
                 frame.AddPrimitive(MouseCrosshair.Material, MouseCrosshair, RenderPrimitiveGroup.World, ref mouseCrosshairMatrix);
             }
-            if (HandleEnabled)
+            if (HandleEnabled && (HandleLocation ?? SelectedObject?.Location) is WorldPosition handleLocation)
             {
-                var handleLocation = HandleLocation ?? SelectedObject?.Location;
-                if (handleLocation != null)
-                {
-                    var dTileX = handleLocation.TileX - Viewer.Camera.TileX;
-                    var dTileZ = handleLocation.TileZ - Viewer.Camera.TileZ;
-                    var xnaDTileTranslation = handleLocation.XNAMatrix;
-                    xnaDTileTranslation.M41 += dTileX * 2048;
-                    xnaDTileTranslation.M43 -= dTileZ * 2048;
-                    frame.AddPrimitive(HandleX.Material, HandleX, RenderPrimitiveGroup.Overlay, ref xnaDTileTranslation);
-                    frame.AddPrimitive(HandleY.Material, HandleY, RenderPrimitiveGroup.Overlay, ref xnaDTileTranslation);
-                    frame.AddPrimitive(HandleZ.Material, HandleZ, RenderPrimitiveGroup.Overlay, ref xnaDTileTranslation);
-                }
+                FrameAddPrimitive(frame, Matrix.Identity, handleLocation, HandleX);
+                FrameAddPrimitive(frame, Matrix.Identity, handleLocation, HandleY);
+                FrameAddPrimitive(frame, Matrix.Identity, handleLocation, HandleZ);
             }
+        }
+
+        void FrameAddPrimitive(RenderFrame frame, Matrix localTransform, in WorldPosition worldPosition, EditorPrimitive primitive)
+            => FrameAddPrimitive(frame, localTransform, worldPosition.XNAMatrix, worldPosition.TileX, worldPosition.TileZ, primitive);
+        void FrameAddPrimitive(RenderFrame frame, Matrix localTransform, Matrix tileTransform, int tileX, int tileZ, EditorPrimitive primitive)
+        {
+            var dTileX = tileX - Viewer.Camera.TileX;
+            var dTileZ = tileZ - Viewer.Camera.TileZ;
+            localTransform *= tileTransform;
+            localTransform.M41 += dTileX * 2048;
+            localTransform.M43 -= dTileZ * 2048;
+            frame.AddPrimitive(primitive.Material, primitive, RenderPrimitiveGroup.Labels, ref localTransform);
         }
 
         internal override void Mark()
