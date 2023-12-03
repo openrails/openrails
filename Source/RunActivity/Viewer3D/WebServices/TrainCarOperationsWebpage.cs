@@ -428,6 +428,13 @@ namespace Orts.Viewer3D.WebServices
         {
             string filename;
 
+            if (Viewer.TrainCarOperationsWindow.CarIdClicked) {
+                // on the train operations window wagon has been clicked
+                // wagon on webpage gets selected also
+                TrainCarSelected = true;
+                TrainCarSelectedPosition = Viewer.TrainCarOperationsWindow.SelectedCarPosition;
+            }
+
             if (TrainCarSelected && (carPosition == TrainCarSelectedPosition))
             {
                 filename = "TrainOperationsArrowRight32.png";

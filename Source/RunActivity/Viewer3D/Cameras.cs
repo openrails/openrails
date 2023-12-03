@@ -1295,8 +1295,12 @@ namespace Orts.Viewer3D
                     }
                     else if (isVisibleTrainCarViewerOrWebpage && carPosition >= 0)
                     {
-                        SetCameraCar(trainCars[carPosition]);
-                        oldCarPosition = carPosition;
+                        if (carPosition < trainCars.Count)
+                        {
+                            // sometimes when decoupling cars the carPosition is out-of-range
+                            SetCameraCar(trainCars[carPosition]);
+                            oldCarPosition = carPosition;
+                        }
                     }
                     else
                         SetCameraCar(GetCameraCars().First());

@@ -130,6 +130,12 @@ function handleMessage(json) {
         let id = "button:" + row + ":" + column;
         let button = document.getElementById(id);
         button.innerHTML = "<img src='" + json.Operations[i].Filename + "' />";
+        if (json.Operations[i].Filename.includes("Arrow")) {
+            if (!isInView(button)) {
+                console.log("scrollTo");
+                button.scrollIntoView({ behavior: "smooth" });
+            }
+        }
         button.disabled = !json.Operations[i].Enabled;
         button.style.cursor = json.Operations[i].Enabled ? "pointer" : "";
     }
@@ -155,6 +161,27 @@ function setEventListener(button) {
 function sleep(time) {
 
     return new Promise((resolve) => setTimeout(resolve, time));
+}
+
+function isInView(el) {
+
+    var rect = el.getBoundingClientRect(),
+        vWidth = window.innerWidth || document.documentElement.clientWidth,
+        vHeight = window.innerHeight || document.documentElement.clientHeight,
+        efp = function (x, y) { return document.elementFromPoint(x, y) };
+
+    // Return false if it's not in the viewport
+    if (rect.right < 0 || rect.bottom < 0
+        || rect.left > vWidth || rect.top > vHeight)
+        return false;
+
+    // Return true if any of its four corners are visible
+    return (
+        el.contains(efp(rect.left, rect.top))
+        || el.contains(efp(rect.right, rect.top))
+        || el.contains(efp(rect.right, rect.bottom))
+        || el.contains(efp(rect.left, rect.bottom))
+    );
 }
 
 //
