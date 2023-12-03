@@ -95,7 +95,7 @@ namespace Orts.Viewer3D.Processes
             public string acttype;
         }
 
-        static DispatchViewer DebugViewer { get { return Program.DebugViewer; } set { Program.DebugViewer = value; } }
+        static MapViewer MapForm { get { return Program.MapForm; } set { Program.MapForm = value; } }
         static SoundDebugForm SoundDebugForm { get { return Program.SoundDebugForm; } set { Program.SoundDebugForm = value; } }
 
         LoadingPrimitive Loading;

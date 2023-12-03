@@ -747,9 +747,9 @@ namespace Orts.Viewer3D.Debugging
                 var scaledItem = new PointF() { X = x, Y = y };
 
                 if (sw.Item.TrJunctionNode.SelectedRoute == sw.main)
-                    g.FillEllipse(new SolidBrush(Color.FromArgb(93, 64, 55)), DispatchViewer.GetRect(scaledItem, width));
+                    g.FillEllipse(new SolidBrush(Color.FromArgb(93, 64, 55)), GetRect(scaledItem, width));
                 else
-                    g.FillEllipse(new SolidBrush(Color.FromArgb(161, 136, 127)), DispatchViewer.GetRect(scaledItem, width));
+                    g.FillEllipse(new SolidBrush(Color.FromArgb(161, 136, 127)), GetRect(scaledItem, width));
 
                 sw.Location2D.X = scaledItem.X; sw.Location2D.Y = scaledItem.Y;
                 switchItemsDrawn.Add(sw);
@@ -789,7 +789,7 @@ namespace Orts.Viewer3D.Debugging
                         color = new SolidBrush(Color.FromArgb(244, 67, 54));
                         pen = redPen;
                     }
-                    g.FillEllipse(color, DispatchViewer.GetRect(scaledItem, width));
+                    g.FillEllipse(color, GetRect(scaledItem, width));
                     signalItemsDrawn.Add(s);
                     if (s.hasDir)
                     {
@@ -856,7 +856,7 @@ namespace Orts.Viewer3D.Debugging
                 // If track is close to horizontal, then start label search 1 row down to minimise overwriting platform line.
                 if (p.Extent1.X != p.Extent2.X
                     && Math.Abs((p.Extent1.Y - p.Extent2.Y) / (p.Extent1.X - p.Extent2.X)) < 0.1)
-                    yPixels += DispatchViewer.spacing;
+                    yPixels += spacing;
 
                 scaledItem.Y = MapDataProvider.GetUnusedYLocation(scaledItem.X, mapCanvas.Height - ((p.Location.Y - subY) * yScale), p.Name);
                 if (scaledItem.Y >= 0f) // -1 indicates no free slot to draw label
@@ -903,7 +903,7 @@ namespace Orts.Viewer3D.Debugging
 
         public Vector2[][] alignedTextY;
         public int[] alignedTextNum;
-        public const int spacing = 12;
+        public const int spacing = 12; // TODO: Rename to clarify the meaning of this variable
 
         const float SignalErrorDistance = 100;
         const float SignalWarningDistance = 500;
@@ -1222,7 +1222,7 @@ namespace Orts.Viewer3D.Debugging
 
         void UITimer_Tick(object sender, EventArgs e)
         {
-            if (Viewer.DebugViewerBetaEnabled == false) // Ctrl+9 sets this true to initialise the window and make it visible
+            if (Viewer.MapViewerEnabled == false) // Ctrl+9 sets this true to initialise the window and make it visible
             {
                 Visible = false;
                 return;
@@ -1774,7 +1774,7 @@ namespace Orts.Viewer3D.Debugging
             else { MPManager.BroadCast(new MSGMessage("All", "NoOverSpeed", "Penalty for overspeed and passing stop light").ToString()); }
         }
 
-        private void DispatchViewerBeta_Resize(object sender, EventArgs e)
+        private void MapViewer_Resize(object sender, EventArgs e)
         {
             InitializeImage();
         }
@@ -1997,11 +1997,11 @@ namespace Orts.Viewer3D.Debugging
             }
         }
 
-        private void DispatchViewerBeta_FormClosing(object sender, FormClosingEventArgs e)
+        private void MapViewer_FormClosing(object sender, FormClosingEventArgs e)
         {
             // Prevent the window from closing; instead, hide it
             e.Cancel = true;
-            Viewer.DebugViewerBetaEnabled = false;
+            Viewer.MapViewerEnabled = false;
         }
     }
 

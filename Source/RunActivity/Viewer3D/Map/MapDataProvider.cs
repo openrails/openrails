@@ -232,14 +232,14 @@ namespace Orts.Viewer3D.Map
         // Arrays are used instead of lists to avoid delays for memory management.
         public void CleanTextCells()
         {
-            if (F.alignedTextY == null || F.alignedTextY.Length != F.mapCanvas.Height / DispatchViewer.spacing) //first time to put text, or the text height has changed
+            if (F.alignedTextY == null || F.alignedTextY.Length != F.mapCanvas.Height / MapViewer.spacing) //first time to put text, or the text height has changed
             {
-                F.alignedTextY = new Vector2[F.mapCanvas.Height / DispatchViewer.spacing][];
-                F.alignedTextNum = new int[F.mapCanvas.Height / DispatchViewer.spacing];
-                for (var i = 0; i < F.mapCanvas.Height / DispatchViewer.spacing; i++)
+                F.alignedTextY = new Vector2[F.mapCanvas.Height / MapViewer.spacing][];
+                F.alignedTextNum = new int[F.mapCanvas.Height / MapViewer.spacing];
+                for (var i = 0; i < F.mapCanvas.Height / MapViewer.spacing; i++)
                     F.alignedTextY[i] = new Vector2[5]; //each line has at most 5 slots
             }
-            for (var i = 0; i < F.mapCanvas.Height / DispatchViewer.spacing; i++)
+            for (var i = 0; i < F.mapCanvas.Height / MapViewer.spacing; i++)
                 F.alignedTextNum[i] = 0;
         }
 
@@ -249,7 +249,7 @@ namespace Orts.Viewer3D.Map
         {
             const float noFreeSlotFound = -1f;
 
-            var desiredPositionY = (int)(wantY / DispatchViewer.spacing);  // The positionY of the ideal row for the text.
+            var desiredPositionY = (int)(wantY / MapViewer.spacing);  // The positionY of the ideal row for the text.
             var endX = startX + (name.Length * F.trainFont.Size);
             //out of drawing area
             if (endX < 0)
@@ -302,7 +302,7 @@ namespace Orts.Viewer3D.Map
 
             F.alignedTextNum[positionY]++;
 
-            return positionY * DispatchViewer.spacing;
+            return positionY * MapViewer.spacing;
         }
     }
 }

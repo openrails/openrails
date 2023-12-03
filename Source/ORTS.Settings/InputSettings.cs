@@ -522,7 +522,6 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.GameExternalCabController] = new UserCommandKeyInput(0x29);
             Commands[(int)UserCommand.GameFullscreen] = new UserCommandKeyInput(0x1C, KeyModifiers.Alt);
             Commands[(int)UserCommand.GameMultiPlayerDispatcher] = new UserCommandKeyInput(0x0A, KeyModifiers.Control);
-            Commands[(int)UserCommand.GameMultiPlayerDispatcherBeta] = new UserCommandKeyInput(0x0A, KeyModifiers.Control | KeyModifiers.Shift);
             Commands[(int)UserCommand.GameMultiPlayerTexting] = new UserCommandKeyInput(0x14, KeyModifiers.Alt);
             Commands[(int)UserCommand.GamePause] = new UserCommandKeyInput(Keys.Pause);
             Commands[(int)UserCommand.GamePauseMenu] = new UserCommandKeyInput(0x01);
