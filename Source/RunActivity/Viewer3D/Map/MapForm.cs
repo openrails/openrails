@@ -75,7 +75,7 @@ namespace Orts.Viewer3D.Debugging
         public double switchPickedTime;
         public bool signalPickedItemHandled;
         public double signalPickedTime;
-        public bool DrawPath = true; //draw train path
+        public bool DrawPath = true; // Whether the train path should be drawn
         readonly TrackNode[] nodes;
 
         public List<Train> selectedTrainList;
@@ -380,8 +380,8 @@ namespace Orts.Viewer3D.Debugging
                 xScale = yScale = Math.Max(xScale, yScale); // Make X and Y scales the same to maintain correct angles
 
                 // Set the default pen to represent 1 meter
-                var scale = (float)Math.Round(xScale);  // Round to nearest pixels/meter
-                var penWidth = (int)MathHelper.Clamp(scale, 1, 4);  // Keep 1 <= width <= 4 pixels
+                var scale = (float)Math.Round(xScale); // Round to nearest pixels/meter
+                var penWidth = (int)MathHelper.Clamp(scale, 1, 4); // Keep 1 <= width <= 4 pixels
 
                 PointF[] points = new PointF[3];
                 Pen p = grayPen;
@@ -395,10 +395,6 @@ namespace Orts.Viewer3D.Debugging
                 pathPen.Width = penWidth * 2;
 
                 var forwardDist = 100 / xScale; if (forwardDist < 5) forwardDist = 5;
-
-                /*PointF scaledA = new PointF(0, 0);
-                PointF scaledB = new PointF(0, 0);
-                PointF scaledC = new PointF(0, 0);*/
 
                 // Draw platforms first because track is drawn over the thicker platform line
                 DrawPlatforms(g, penWidth);
@@ -421,7 +417,7 @@ namespace Orts.Viewer3D.Debugging
                 ShowSwitches(g, widgetWidth);
 
                 // Draw labels for sidings and platforms last so they go on top for readability
-                MapDataProvider.CleanTextCells();  // Empty the listing of labels ready for adding labels again
+                MapDataProvider.CleanTextCells(); // Empty the listing of labels ready for adding labels again
                 ShowPlatformLabels(g); // Platforms take priority over sidings and signal states
                 ShowSidingLabels(g);
 
@@ -497,21 +493,8 @@ namespace Orts.Viewer3D.Debugging
 
             selectedTrainList.Clear();
 
-            /*if (simulator.TimetableMode)
-            {
-                // Add the player's train...
-                if (simulator.PlayerLocomotive.Train is AITrain)
-                    selectedTrainList.Add(simulator.PlayerLocomotive.Train as AITrain);
-
-                // ...then all the AI trains, including static consists.
-                foreach (AITrain train in simulator.AI.AITrains)
-                    selectedTrainList.Add(train);
-            }
-            else
-            {*/
             foreach (var train in simulator.Trains)
                 selectedTrainList.Add(train);
-            /*}*/
 
             foreach (var train in selectedTrainList)
             {
@@ -677,9 +660,6 @@ namespace Orts.Viewer3D.Debugging
 
         private void DrawTrainLabels(Graphics g, Train t, string trainName, PointF scaledTrain)
         {
-            /*WorldPosition worldPos = firstCar.WorldPosition;
-            scaledTrain.X = ((worldPos.TileX * 2048) - subX + worldPos.Location.X) * xScale;
-            scaledTrain.Y = -25 + mapCanvas.Height - (((worldPos.TileZ * 2048) - subY + worldPos.Location.Z) * yScale);*/
             if (showActiveTrainsRadio.Checked)
             {
                 if (t is AITrain && MapDataProvider.IsActiveTrain(t as AITrain))
@@ -945,7 +925,7 @@ namespace Orts.Viewer3D.Debugging
             return rv;
         }
 
-        //draw the train path if it is within the window
+        // Draw the train path if it is within the window
         public void DrawTrainPath(Train train, float subX, float subY, Pen pathPen, Graphics g, PointF scaledA, PointF scaledB, float stepDist, float MaximumSectionDistance)
         {
             if (DrawPath != true) return;
@@ -1314,10 +1294,6 @@ namespace Orts.Viewer3D.Debugging
             LastCursorPosition.X = e.X;
             LastCursorPosition.Y = e.Y;
             MPManager.Instance().ComposingText = false;
-            /*lblInstruction1.Visible = true;
-            lblInstruction2.Visible = true;
-            lblInstruction3.Visible = true;
-            lblInstruction4.Visible = true;*/
         }
 
         private void mapCanvas_MouseUp(object sender, MouseEventArgs e)
@@ -1383,10 +1359,6 @@ namespace Orts.Viewer3D.Debugging
                 }
 
             }
-            /*lblInstruction1.Visible = false;
-            lblInstruction2.Visible = false;
-            lblInstruction3.Visible = false;
-            lblInstruction4.Visible = false;*/
         }
 
         private void UnHandleItemPick()
@@ -1397,8 +1369,9 @@ namespace Orts.Viewer3D.Debugging
 
         private void HandlePickedSignal()
         {
-            if (MPManager.IsClient() && !MPManager.Instance().AmAider) // normal client not server or aider
+            if (MPManager.IsClient() && !MPManager.Instance().AmAider) // Normal client (not server nor aider)
                 return;
+
             setSwitchMenu.Visible = false;
             if (signalPickedItem == null) return;
 
@@ -1415,8 +1388,8 @@ namespace Orts.Viewer3D.Debugging
 
         private void HandlePickedSwitch()
         {
-            if (MPManager.IsClient() && !MPManager.Instance().AmAider)
-                return;//normal client not server
+            if (MPManager.IsClient() && !MPManager.Instance().AmAider) // Normal client (not server nor aider)
+                return;
 
             setSignalMenu.Visible = false;
             if (switchPickedItem == null) return;
@@ -1521,11 +1494,9 @@ namespace Orts.Viewer3D.Debugging
                 {
                     case "mainRoute":
                         Program.Simulator.Signals.RequestSetSwitch(sw.TN, (int)switchPickedItem.main);
-                        //sw.SelectedRoute = (int)switchPickedItem.main;
                         break;
                     case "sideRoute":
                         Program.Simulator.Signals.RequestSetSwitch(sw.TN, 1 - (int)switchPickedItem.main);
-                        //sw.SelectedRoute = 1 - (int)switchPickedItem.main;
                         break;
                 }
             }
@@ -1541,7 +1512,7 @@ namespace Orts.Viewer3D.Debugging
             {
                 foreach (var item in switchItemsDrawn)
                 {
-                    //if out of range, continue
+                    // If out of range, continue
                     if (item.Location2D.X < x - range || item.Location2D.X > x + range
                        || item.Location2D.Y < y - range || item.Location2D.Y > y + range)
                         continue;
@@ -1566,7 +1537,7 @@ namespace Orts.Viewer3D.Debugging
             {
                 foreach (var item in signalItemsDrawn)
                 {
-                    //if out of range, continue
+                    // If out of range, continue
                     if (item.Location2D.X < x - range || item.Location2D.X > x + range
                        || item.Location2D.Y < y - range || item.Location2D.Y > y + range)
                         continue;
@@ -1588,7 +1559,7 @@ namespace Orts.Viewer3D.Debugging
                 }
             }
 
-            //now check for trains (first car only)
+            // Now check for trains (first car only)
             TrainCar firstCar;
             PickedTrain = null; float tX, tY;
             closest = 100f;
@@ -1621,7 +1592,7 @@ namespace Orts.Viewer3D.Debugging
                 if (PickedTrain == null)
                     PickedTrain = t;
             }
-            //if a train is picked, will clear the avatar list selection
+            // If a train is picked, will clear the player list selection
             if (PickedTrain != null)
             {
                 //AvatarView.SelectedItems.Clear();
