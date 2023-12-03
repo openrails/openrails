@@ -22,24 +22,30 @@ using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Orts.Viewer3D
 {
     public class EditorShapes : StaticShape, IDisposable
     {
-        public readonly MouseCrosshair MouseCrosshair;
+        readonly MouseCrosshair MouseCrosshair;
         public bool MouseCrosshairEnabled { get; set; }
         public bool CrosshairPositionUpdateEnabled { get; set; } = true;
 
-        public readonly HandleX HandleX;
-        public readonly HandleY HandleY;
-        public readonly HandleZ HandleZ;
+        readonly HandleX HandleX;
+        readonly HandleY HandleY;
+        readonly HandleZ HandleZ;
         public bool HandleEnabled { get; set; } = true;
-        public WorldPosition HandleLocation;
+        public WorldPosition HandleLocation { get; set; }
 
-        StaticShape _selectedObject;
+        StaticShape PreviousSelectedObject;
         public StaticShape SelectedObject { get; set; }
+        readonly List<BoundingBoxPrimitive> SelectedBoundingBoxPrimitives = new List<BoundingBoxPrimitive>();
+
+        public StaticShape MovedObject { get; set; }
+        public WorldPosition MovedObjectLocation { get; set; }
+        BoundingBoxPrimitive MovedObjectPrimitive;
 
         public ConcurrentBag<StaticShape> BoundingBoxShapes = new ConcurrentBag<StaticShape>();
         readonly ConcurrentDictionary<(int tileX, int tileZ, int uid, Matrix matrix, int number), BoundingBoxPrimitive> BoundingBoxPrimitives = new ConcurrentDictionary<(int, int, int, Matrix, int), BoundingBoxPrimitive>();
@@ -56,43 +62,40 @@ namespace Orts.Viewer3D
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if (_selectedObject != SelectedObject)
+            if (PreviousSelectedObject != SelectedObject)
             {
-                if (_selectedObject != null)
-                    for (var i = 0; i < 5; i++)
-                        BoundingBoxPrimitives.TryRemove((_selectedObject.Location.TileX, _selectedObject.Location.TileZ, _selectedObject.Uid, _selectedObject.Location.XNAMatrix, i), out _);
+                PreviousSelectedObject = SelectedObject;
 
-                _selectedObject = SelectedObject;
+                foreach (var p in SelectedBoundingBoxPrimitives)
+                    UnusedPrimitives.Add(p);
+                SelectedBoundingBoxPrimitives.Clear();
 
-                if (_selectedObject?.BoundingBox?.Length > 0)
-                {
-                    for (var i = 0; i < _selectedObject.BoundingBox.Length; i++)
-                    {
-                        BoundingBoxPrimitives.TryAdd((_selectedObject.Location.TileX, _selectedObject.Location.TileZ, _selectedObject.Uid, _selectedObject.Location.XNAMatrix, i),
-                            new BoundingBoxPrimitive(Viewer, _selectedObject.BoundingBox[i], Color.CornflowerBlue));
-                    }
-                }
+                for (var i = 0; i < SelectedObject?.BoundingBox?.Length; i++)
+                    SelectedBoundingBoxPrimitives.Add(new BoundingBoxPrimitive(Viewer, SelectedObject.BoundingBox[i], Color.CornflowerBlue));
             }
+
+            if (SelectedObject?.BoundingBox != null)
+                for (var i = 0; i < SelectedBoundingBoxPrimitives.Count; i++)
+                    FrameAddPrimitive(frame, SelectedObject.BoundingBox.ElementAtOrDefault(i).ComplexTransform, SelectedObject.Location, SelectedBoundingBoxPrimitives[i]);
+
             for (var i = 0; i < BoundingBoxPrimitives.Count; i++)
             {
+                // Sweep out the not displayable bb-s
                 var bb = BoundingBoxPrimitives.Keys.ElementAtOrDefault(i);
                 if (bb != default((int, int, int, Matrix, int))
                     && !BoundingBoxShapes.Any(s => s?.Location.TileX == bb.tileX && s?.Location.TileZ == bb.tileZ && s?.Uid == bb.uid))
                 {
-                    if (bb.tileX != _selectedObject?.Location.TileX && bb.tileZ != _selectedObject?.Location.TileZ && bb.uid != _selectedObject?.Uid)
-                    {
-                        if (BoundingBoxPrimitives.TryRemove(bb, out var primitive))
-                            UnusedPrimitives.Add(primitive);
-                    }
+                    if (BoundingBoxPrimitives.TryRemove(bb, out var primitive))
+                        UnusedPrimitives.Add(primitive);
                 }
             }
-    
             for (var j = 0; j < BoundingBoxShapes.Count; j++)
             {
                 var s = BoundingBoxShapes.ElementAtOrDefault(j);
                 if (s?.BoundingBox == null || s.BoundingBox.Length == 0)
                     continue;
 
+                // Complement with all the displayable bb-s
                 if (!BoundingBoxPrimitives.Keys.Any(bb => s.Location.TileX == bb.tileX && s.Location.TileZ == bb.tileZ && s.Uid == bb.uid))
                 {
                     for (var i = 0; i < s.BoundingBox.Length; i++)
@@ -102,19 +105,26 @@ namespace Orts.Viewer3D
                     }
                 }
             }
-
             if (BoundingBoxPrimitives?.Count > 0)
             {
                 foreach (var boundingBox in BoundingBoxPrimitives.Keys)
                 {
-                    var dTileX = boundingBox.tileX - Viewer.Camera.TileX;
-                    var dTileZ = boundingBox.tileZ - Viewer.Camera.TileZ;
-                    var xnaDTileTranslation = boundingBox.matrix;
-                    xnaDTileTranslation.M41 += dTileX * 2048;
-                    xnaDTileTranslation.M43 -= dTileZ * 2048;
-                    xnaDTileTranslation = BoundingBoxPrimitives[boundingBox].ComplexTransform * xnaDTileTranslation;
-                    frame.AddPrimitive(BoundingBoxPrimitives[boundingBox].Material, BoundingBoxPrimitives[boundingBox], RenderPrimitiveGroup.Labels, ref xnaDTileTranslation);
+                    FrameAddPrimitive(frame, BoundingBoxPrimitives[boundingBox].ComplexTransform, boundingBox.matrix, boundingBox.tileX, boundingBox.tileZ, BoundingBoxPrimitives[boundingBox]);
                 }
+            }
+            if (MovedObject == null && MovedObjectPrimitive != null)
+            {
+                UnusedPrimitives.Add(MovedObjectPrimitive);
+                MovedObjectPrimitive = null;
+            }
+            else if (MovedObject != null && MovedObjectPrimitive == null)
+            {
+                if (MovedObject.BoundingBox?.Length > 0)
+                    MovedObjectPrimitive = new BoundingBoxPrimitive(Viewer, MovedObject.BoundingBox[0], Color.MediumVioletRed);
+            }
+            if (MovedObjectPrimitive != null)
+            {
+                FrameAddPrimitive(frame, Matrix.Identity, MovedObjectLocation, MovedObjectPrimitive);
             }
             if (MouseCrosshairEnabled)
             {
@@ -125,21 +135,24 @@ namespace Orts.Viewer3D
                 var mouseCrosshairMatrix = Matrix.CreateTranslation(CrosshairPosition);
                 frame.AddPrimitive(MouseCrosshair.Material, MouseCrosshair, RenderPrimitiveGroup.World, ref mouseCrosshairMatrix);
             }
-            if (HandleEnabled)
+            if (HandleEnabled && (HandleLocation ?? SelectedObject?.Location) is WorldPosition handleLocation)
             {
-                var handleLocation = HandleLocation ?? _selectedObject?.Location;
-                if (handleLocation != null)
-                {
-                    var dTileX = handleLocation.TileX - Viewer.Camera.TileX;
-                    var dTileZ = handleLocation.TileZ - Viewer.Camera.TileZ;
-                    var xnaDTileTranslation = handleLocation.XNAMatrix;
-                    xnaDTileTranslation.M41 += dTileX * 2048;
-                    xnaDTileTranslation.M43 -= dTileZ * 2048;
-                    frame.AddPrimitive(HandleX.Material, HandleX, RenderPrimitiveGroup.Overlay, ref xnaDTileTranslation);
-                    frame.AddPrimitive(HandleY.Material, HandleY, RenderPrimitiveGroup.Overlay, ref xnaDTileTranslation);
-                    frame.AddPrimitive(HandleZ.Material, HandleZ, RenderPrimitiveGroup.Overlay, ref xnaDTileTranslation);
-                }
+                FrameAddPrimitive(frame, Matrix.Identity, handleLocation, HandleX);
+                FrameAddPrimitive(frame, Matrix.Identity, handleLocation, HandleY);
+                FrameAddPrimitive(frame, Matrix.Identity, handleLocation, HandleZ);
             }
+        }
+
+        void FrameAddPrimitive(RenderFrame frame, Matrix localTransform, in WorldPosition worldPosition, EditorPrimitive primitive)
+            => FrameAddPrimitive(frame, localTransform, worldPosition.XNAMatrix, worldPosition.TileX, worldPosition.TileZ, primitive);
+        void FrameAddPrimitive(RenderFrame frame, Matrix localTransform, Matrix tileTransform, int tileX, int tileZ, EditorPrimitive primitive)
+        {
+            var dTileX = tileX - Viewer.Camera.TileX;
+            var dTileZ = tileZ - Viewer.Camera.TileZ;
+            localTransform *= tileTransform;
+            localTransform.M41 += dTileX * 2048;
+            localTransform.M43 -= dTileZ * 2048;
+            frame.AddPrimitive(primitive.Material, primitive, RenderPrimitiveGroup.Labels, ref localTransform);
         }
 
         internal override void Mark()
@@ -231,10 +244,16 @@ namespace Orts.Viewer3D
         public readonly Matrix ComplexTransform;
 
         public BoundingBoxPrimitive(Viewer viewer, BoundingBox boundingBox, Color color)
-            : base(viewer, boundingBox.Min, boundingBox.Max, color)
+            : this(viewer, boundingBox.Min, boundingBox.Max, color)
+        {
+            ComplexTransform = boundingBox.ComplexTransform;
+        }
+
+        public BoundingBoxPrimitive(Viewer viewer, Vector3 min, Vector3 max, Color color)
+            : base(viewer, min, max, color)
         {
             Material = viewer.MaterialManager.Load("EditorPrimitive");
-            ComplexTransform = boundingBox.ComplexTransform;
+            ComplexTransform = Matrix.Identity;
             if (BoundingBoxIndexBuffer == null)
             {
                 var indexData = new short[] { 0, 1, 0, 2, 0, 4, 1, 3, 1, 5, 2, 3, 2, 6, 3, 7, 4, 5, 4, 6, 5, 7, 6, 7 };
@@ -312,12 +331,7 @@ namespace Orts.Viewer3D
                 new[] { c, +b, +b },
                 new[] { c, -b, -b },
             };
-            var vertexData = new VertexPositionColor[data.Length];
-            for (var i = 0; i < data.Length; i++)
-            {
-                vertexData[i] = new VertexPositionColor(new Vector3(data[i][x], data[i][y], data[i][z]), color);
-            }
-            return vertexData;
+            return data.Select(v => new VertexPositionColor(new Vector3(v[x], v[y], v[z]), color)).ToArray();
         }
     }
 

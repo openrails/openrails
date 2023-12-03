@@ -253,8 +253,13 @@
         [GetString("Control DP Less")] ControlDPLess,
 
         // Editor
-        [GetString("Editor Unselect All")] EditorUnselectAll,
+        [GetString("Editor Unselect All")] EditorCancel,
         [GetString("Editor Undo")] EditorUndo,
         [GetString("Editor Redo")] EditorRedo,
+        [GetString("Editor Move")] EditorMove,
+        [GetString("Editor Move Handle")] EditorMoveHandle,
+        [GetString("Editor Move Orthogonal")] EditorLockOrthogonal,
+        [GetString("Editor Move Orthogonal")] EditorLockElevation,
+        [GetString("Editor Move Orthogonal")] EditorLockRotation,
     }
 }

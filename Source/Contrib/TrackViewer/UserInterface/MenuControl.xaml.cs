@@ -1233,8 +1233,7 @@ namespace ORTS.TrackViewer.UserInterface
             if (trackViewer.CurrentRoute == null)
                 return;
             trackViewer.InitializeSceneViewer(null);
-            trackViewer.SceneViewer.SceneWindow.Show();
-            trackViewer.SceneViewer.SceneWindow.Activate();
+            trackViewer.SceneViewer.Show();
         }
     }
 
