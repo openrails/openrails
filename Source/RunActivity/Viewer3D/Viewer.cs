@@ -203,8 +203,7 @@ namespace Orts.Viewer3D
         public Vector3 FarPoint { get; private set; }
         public Vector3 TerrainPoint { get; private set; }
 
-        public bool DebugViewerEnabled { get; set; }
-        public bool DebugViewerBetaEnabled { get; set; }
+        public bool MapViewerEnabled { get; set; }
         public bool SoundDebugFormEnabled { get; set; }
 
         public TRPFile TRP; // Track profile file
@@ -1214,23 +1213,22 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommand.GameSwitchManualMode)) PlayerTrain.RequestToggleManualMode();
             if (UserInput.IsPressed(UserCommand.GameResetOutOfControlMode)) new ResetOutOfControlModeCommand(Log);
 
-            if (UserInput.IsPressed(UserCommand.GameMultiPlayerDispatcher)) { DebugViewerEnabled = !DebugViewerEnabled; return; }
-            if (UserInput.IsPressed(UserCommand.GameMultiPlayerDispatcherBeta)) { DebugViewerBetaEnabled = !DebugViewerBetaEnabled; return; }
+            if (UserInput.IsPressed(UserCommand.GameMultiPlayerDispatcher)) { MapViewerEnabled = !MapViewerEnabled; return; }
             if (UserInput.IsPressed(UserCommand.DebugSoundForm)) { SoundDebugFormEnabled = !SoundDebugFormEnabled; return; }
 
             if (UserInput.IsPressed(UserCommand.CameraJumpSeeSwitch))
             {
-                if (Program.DebugViewer != null && Program.DebugViewer.Enabled && (Program.DebugViewer.switchPickedItem != null || Program.DebugViewer.signalPickedItem != null))
+                if (Program.MapForm != null && Program.MapForm.Enabled && (Program.MapForm.switchPickedItem != null || Program.MapForm.signalPickedItem != null))
                 {
                     WorldLocation wos;
-                    TrJunctionNode nextSwitchTrack = Program.DebugViewer.switchPickedItem?.Item?.TrJunctionNode;
+                    TrJunctionNode nextSwitchTrack = Program.MapForm.switchPickedItem?.Item?.TrJunctionNode;
                     if (nextSwitchTrack != null)
                     {
                         wos = new WorldLocation(nextSwitchTrack.TN.UiD.TileX, nextSwitchTrack.TN.UiD.TileZ, nextSwitchTrack.TN.UiD.X, nextSwitchTrack.TN.UiD.Y + 8, nextSwitchTrack.TN.UiD.Z);
                     }
                     else
                     {
-                        var s = Program.DebugViewer.signalPickedItem.Item;
+                        var s = Program.MapForm.signalPickedItem.Item;
                         wos = new WorldLocation(s.TileX, s.TileZ, s.X, s.Y + 8, s.Z);
                     }
                     if (FreeRoamCameraList.Count == 0)
@@ -1351,13 +1349,11 @@ namespace Orts.Viewer3D
             //    }
             //}
 
-            //in the dispatcher window, when one clicks a train and "See in Game", will jump to see that train
-            // TODO: Remove `DebugViewer` in the future
-            if ((Program.DebugViewer != null && Program.DebugViewer.ClickedTrain == true) || (Program.MapForm != null && Program.MapForm.ClickedTrain == true))
+            // Map window: jump to the selected train in-game
+            if (Program.MapForm != null && Program.MapForm.ClickedTrain == true)
             {
-                Program.DebugViewer.ClickedTrain = false;
                 Program.MapForm.ClickedTrain = false;
-                if (SelectedTrain != Program.DebugViewer.PickedTrain || SelectedTrain != Program.MapForm.PickedTrain)
+                if (SelectedTrain != Program.MapForm.PickedTrain)
                 {
                     SelectedTrain = Program.MapForm.PickedTrain;
                     Simulator.AI.aiListChanged = true;

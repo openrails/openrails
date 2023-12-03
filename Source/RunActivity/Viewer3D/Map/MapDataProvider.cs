@@ -132,12 +132,9 @@ namespace Orts.Viewer3D.Map
                             // Instead create a single item which replaces the 2 platform items.
                             var replacement = new PlatformWidget(item as PlatformItem)
                             {
-                                Extent1 = oldLocation
-                                ,
-                                Extent2 = newLocation
-                                // Give it the right-hand location
-                                ,
-                                Location = GetRightHandPoint(oldLocation, newLocation)
+                                Extent1 = oldLocation,
+                                Extent2 = newLocation,
+                                Location = GetRightHandPoint(oldLocation, newLocation) // Give it the right-hand location
                             };
 
                             // Replace the old platform item with the replacement
@@ -204,8 +201,8 @@ namespace Orts.Viewer3D.Map
         public bool IsActiveTrain(Simulation.AIs.AITrain t)
         {
             return t != null
-&& (t.MovementState != Simulation.AIs.AITrain.AI_MOVEMENT_STATE.AI_STATIC
-                        && !(t.TrainType == Train.TRAINTYPE.AI_INCORPORATED && !t.IncorporatingTrain.IsPathless)
+&& ((t.MovementState != Simulation.AIs.AITrain.AI_MOVEMENT_STATE.AI_STATIC
+                        && !(t.TrainType == Train.TRAINTYPE.AI_INCORPORATED && !t.IncorporatingTrain.IsPathless))
 
                     || t.TrainType == Train.TRAINTYPE.PLAYER);
         }
@@ -232,14 +229,14 @@ namespace Orts.Viewer3D.Map
         // Arrays are used instead of lists to avoid delays for memory management.
         public void CleanTextCells()
         {
-            if (F.alignedTextY == null || F.alignedTextY.Length != F.mapCanvas.Height / DispatchViewer.spacing) //first time to put text, or the text height has changed
+            if (F.alignedTextY == null || F.alignedTextY.Length != F.mapCanvas.Height / MapViewer.spacing) // First time to put text, or the text height has changed
             {
-                F.alignedTextY = new Vector2[F.mapCanvas.Height / DispatchViewer.spacing][];
-                F.alignedTextNum = new int[F.mapCanvas.Height / DispatchViewer.spacing];
-                for (var i = 0; i < F.mapCanvas.Height / DispatchViewer.spacing; i++)
+                F.alignedTextY = new Vector2[F.mapCanvas.Height / MapViewer.spacing][];
+                F.alignedTextNum = new int[F.mapCanvas.Height / MapViewer.spacing];
+                for (var i = 0; i < F.mapCanvas.Height / MapViewer.spacing; i++)
                     F.alignedTextY[i] = new Vector2[5]; //each line has at most 5 slots
             }
-            for (var i = 0; i < F.mapCanvas.Height / DispatchViewer.spacing; i++)
+            for (var i = 0; i < F.mapCanvas.Height / MapViewer.spacing; i++)
                 F.alignedTextNum[i] = 0;
         }
 
@@ -249,22 +246,22 @@ namespace Orts.Viewer3D.Map
         {
             const float noFreeSlotFound = -1f;
 
-            var desiredPositionY = (int)(wantY / DispatchViewer.spacing);  // The positionY of the ideal row for the text.
+            var desiredPositionY = (int)(wantY / MapViewer.spacing);  // The positionY of the ideal row for the text.
             var endX = startX + (name.Length * F.trainFont.Size);
-            //out of drawing area
-            if (endX < 0)
+
+            if (endX < 0) // Out of drawing area
                 return noFreeSlotFound;
 
             var positionY = desiredPositionY;
             while (positionY >= 0 && positionY < F.alignedTextY.Length)
             {
-                //if the line contains no text yet, put it there
+                // If the line contains no text yet, put it there
                 if (F.alignedTextNum[positionY] == 0)
                     return SaveLabelLocation(startX, endX, positionY);
 
                 var conflict = false;
 
-                //check if it intersects with any labels already in this row
+                // Check if it intersects with any labels already in this row
                 for (var col = 0; col < F.alignedTextNum[positionY]; col++)
                 {
                     var v = F.alignedTextY[positionY][col];
@@ -297,12 +294,12 @@ namespace Orts.Viewer3D.Map
 
         private float SaveLabelLocation(float startX, float endX, int positionY)
         {
-            // add start and end location for the new label
+            // Add start and end location for the new label
             F.alignedTextY[positionY][F.alignedTextNum[positionY]] = new Vector2 { X = startX, Y = endX };
 
             F.alignedTextNum[positionY]++;
 
-            return positionY * DispatchViewer.spacing;
+            return positionY * MapViewer.spacing;
         }
     }
 }

@@ -29,11 +29,11 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.ListViewItem listViewItem17 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
             "Player1 (you)"}, -1, System.Drawing.Color.Empty, System.Drawing.Color.Empty, new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0))));
-            System.Windows.Forms.ListViewItem listViewItem18 = new System.Windows.Forms.ListViewItem("Player2");
-            System.Windows.Forms.ListViewItem listViewItem19 = new System.Windows.Forms.ListViewItem("Player3");
-            System.Windows.Forms.ListViewItem listViewItem20 = new System.Windows.Forms.ListViewItem("...");
+            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem("Player2");
+            System.Windows.Forms.ListViewItem listViewItem3 = new System.Windows.Forms.ListViewItem("Player3");
+            System.Windows.Forms.ListViewItem listViewItem4 = new System.Windows.Forms.ListViewItem("...");
             this.playerRolePanel = new System.Windows.Forms.Panel();
             this.playerRoleLink = new System.Windows.Forms.LinkLabel();
             this.playerRoleExplanation = new System.Windows.Forms.Label();
@@ -737,7 +737,6 @@
             // 
             // drawPathCheckbox
             // 
-            this.drawPathCheckbox.AutoEllipsis = true;
             this.drawPathCheckbox.AutoSize = true;
             this.drawPathCheckbox.Checked = true;
             this.drawPathCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -784,10 +783,10 @@
             this.playersView.HideSelection = false;
             this.playersView.HoverSelection = true;
             this.playersView.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem17,
-            listViewItem18,
-            listViewItem19,
-            listViewItem20});
+            listViewItem1,
+            listViewItem2,
+            listViewItem3,
+            listViewItem4});
             this.playersView.Location = new System.Drawing.Point(7, 19);
             this.playersView.Name = "playersView";
             this.playersView.Size = new System.Drawing.Size(167, 202);
@@ -1005,8 +1004,8 @@
             this.MinimumSize = new System.Drawing.Size(600, 400);
             this.Name = "MapViewer";
             this.Text = "Map window";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DispatchViewerBeta_FormClosing);
-            this.Resize += new System.EventHandler(this.DispatchViewerBeta_Resize);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MapViewer_FormClosing);
+            this.Resize += new System.EventHandler(this.MapViewer_Resize);
             this.playerRolePanel.ResumeLayout(false);
             this.playerRolePanel.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
