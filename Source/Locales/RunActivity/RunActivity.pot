@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-10-24 12:50:28+0200\n"
-"PO-Revision-Date: 2023-10-24 12:50:30+0200\n"
+"POT-Creation-Date: 2023-12-03 15:16:57+0100\n"
+"PO-Revision-Date: 2023-12-03 15:16:58+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -75,100 +75,100 @@ msgid_plural "{0:F0} tiles"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:832
-#: ../../RunActivity/Viewer3D/Viewer.cs:1027
+#: ../../RunActivity/Viewer3D/Viewer.cs:831
+#: ../../RunActivity/Viewer3D/Viewer.cs:1026
 msgid "Cab view not available"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:924
+#: ../../RunActivity/Viewer3D/Viewer.cs:923
 msgid "In MP, use Alt-F4 to quit directly"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:956
+#: ../../RunActivity/Viewer3D/Viewer.cs:955
 msgid "Automatic platform and siding labels visible."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:959
+#: ../../RunActivity/Viewer3D/Viewer.cs:958
 msgid "Platform and siding labels visible."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:962
+#: ../../RunActivity/Viewer3D/Viewer.cs:961
 msgid "Platform labels visible."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:965
+#: ../../RunActivity/Viewer3D/Viewer.cs:964
 msgid "Siding labels visible."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:971
+#: ../../RunActivity/Viewer3D/Viewer.cs:970
 msgid "Platform and siding labels hidden."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:982
+#: ../../RunActivity/Viewer3D/Viewer.cs:981
 msgid "Train labels visible."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:985
+#: ../../RunActivity/Viewer3D/Viewer.cs:984
 msgid "Car labels visible."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:991
+#: ../../RunActivity/Viewer3D/Viewer.cs:990
 msgid "Train and car labels hidden."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1034
+#: ../../RunActivity/Viewer3D/Viewer.cs:1033
 msgid "This car doesn't have a 2D cab"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1038
+#: ../../RunActivity/Viewer3D/Viewer.cs:1037
 msgid "This car doesn't have a 3D cab"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1083
+#: ../../RunActivity/Viewer3D/Viewer.cs:1082
 msgid "messages suppressed"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1087
+#: ../../RunActivity/Viewer3D/Viewer.cs:1086
 msgid "All messages visible"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1244
+#: ../../RunActivity/Viewer3D/Viewer.cs:1242
 msgid "Switched to player control"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1251
+#: ../../RunActivity/Viewer3D/Viewer.cs:1249
 msgid "You can't switch from manual to autopilot mode"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1257
+#: ../../RunActivity/Viewer3D/Viewer.cs:1255
 msgid "Switched to autopilot"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1931
+#: ../../RunActivity/Viewer3D/Viewer.cs:1927
 msgid "Game saved"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:347
+#: ../../RunActivity/Viewer3D/Viewer.cs:346
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1060
+#: ../../RunActivity/Viewer3D/Viewer.cs:1059
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1275
+#: ../../RunActivity/Viewer3D/Viewer.cs:1273
 #, csharp-format
 msgid "Keyboard map list saved to '{0}'."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1279
+#: ../../RunActivity/Viewer3D/Viewer.cs:1277
 #, csharp-format
 msgid "Keyboard map image saved to '{0}'."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1126
+#: ../../RunActivity/Viewer3D/Viewer.cs:1125
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
@@ -197,212 +197,16 @@ msgstr ""
 msgid "Decreased daylight offset to {0} h"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:1919
-#: ../../RunActivity/Viewer3D/Map/MapForm.cs:1494
-msgid "Switching Request Sent to the Server"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:556
-msgid "MSG to Server"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:560
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:256
-msgid "MSG to All"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:121
-msgid "View Train"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:164
-msgid "m"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:185
-msgid "Remove"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:199
-msgid "Auto Switch"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:213
-msgid "Show Avatars"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:241
-msgid "MSG to Selected"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:270
-#: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:88
-msgid "Compose MSG"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:282
-msgid "Res"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:295
-msgid "Reply to Selected"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:309
-msgid "Draw Path"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:356
-msgid "Pick Signals"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:369
-msgid "Pick Switches"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:382
-msgid "Can Join"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:405
-msgid "Assist"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:417
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1247
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1296
-#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1362
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:719
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:767
-msgid "Normal"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:429
-msgid "Follow"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:443
-msgid "Penalty"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:457
-msgid "Prefer Green"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:470
-msgid "See in Game"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:482
-msgid "Simulation Time"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:493
-msgid "SimulationTime"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:505
-msgid "Show:"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:517
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:454
-msgid "Platform labels"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:530
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:444
-msgid "Siding labels"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:543
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:424
-msgid "Signals"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:556
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:414
-msgid "Signal state"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:572
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:404
-msgid "Train labels"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:583
-msgid "Key"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:597
-msgid "Active only"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:608
-msgid "All"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:643
-msgid "Daylight offset (hrs)"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:659
-msgid "Background color"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:673
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:434
-msgid "Switches"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:685
-msgid "To pan, drag with left mouse."
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:699
-msgid "Name"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:722
-msgid "Dispatch"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:733
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:117
-msgid "Timetable"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:745
-msgid "State"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:757
-msgid "To zoom, drag with left and right mouse or scroll mouse wheel."
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:768
-msgid "To zoom in to a location, press Shift and click the left mouse."
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:779
-msgid "To zoom out of a location, press Alt and click the left mouse."
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:793
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:464
-msgid "Platforms"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:852
-msgid "Map Window"
-msgstr ""
-
 #: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:46
 msgid "Clear All"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:57
 msgid "Reply Selected"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:88
+msgid "Compose MSG"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:102
@@ -487,31 +291,113 @@ msgstr ""
 msgid "Sound Debug"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Debugging/TimetableWindow.cs:88
-msgid "View Self"
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:171
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:814
+msgid "Message the selected player"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.cs:301
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:172
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:822
+msgid "Reply to the selected player"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:174
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:842
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:540
+msgid "Player"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:175
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:1737
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:849
+msgid "Make this player an assistant"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:176
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:856
+msgid "Jump to this player in game"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:177
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:863
+msgid "Follow on the map"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:178
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:870
+msgid "Kick from multiplayer session"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:180
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:888
+msgid "Set switch to..."
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:181
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:897
+msgid "Main route"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:182
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:905
+msgid "Side route"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:184
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:927
+msgid "Set signal aspect to..."
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:185
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:934
+msgid "System controlled"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:186
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:943
+msgid "Stop"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:187
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:951
+msgid "Approach"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:188
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:960
+msgid "Proceed"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:190
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:989
+msgid "Jump to this train in game"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:191
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:996
+msgid "Follow this train on the map"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:325
 msgid "You"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.cs:308
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:332
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:518
 #: ../../RunActivity/Viewer3D/Popups/MultiPlayerWindow.cs:345
 msgid "Helper"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.cs:314
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:338
 msgid "Disconnected"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.cs:1721
-msgid "Demote this player"
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:1512
+msgid "Switching Request Sent to the Server"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.cs:1721
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:848
-msgid "Make this player an assistant"
+#: ../../RunActivity/Viewer3D/Map/MapForm.cs:1737
+msgid "Demote this player"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:160
@@ -522,176 +408,139 @@ msgstr ""
 msgid "You are the dispatcher in this multiplayer session"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:261
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:262
 msgid "Message all players"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:275
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:276
 msgid ">"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:297
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:298
 msgid "Messages:"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:324
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:325
 msgid "Simulation time"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:337
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:338
 msgid "Map customization"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:372
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:373
 msgid "All trains"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:384
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:385
 msgid "Only active trains"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:394
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:395
 msgid "Train state"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:475
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:405
+msgid "Train labels"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:415
+msgid "Signal state"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:425
+msgid "Signals"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:435
+msgid "Switches"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:445
+msgid "Siding labels"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:455
+msgid "Platform labels"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:465
+msgid "Platforms"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:476
 msgid "Map features"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:484
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:485
 msgid "Rotate between themes"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:497
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:498
 msgid "Show simulation time"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:507
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:508
 msgid "Use anti-aliasing"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:572
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:573
 msgid "Multiplayer settings"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:583
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:584
 msgid "Penalty for speeding && SPAD"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:596
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:597
 msgid "Prefer green signals"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:609
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:610
 msgid "Allow new players to join"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:639
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:640
 msgid "Map settings and controls"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:648
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:649
 msgid "Follow my train on the map"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:659
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:660
 msgid "Jump to my train on the map"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:670
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:671
 msgid "Jump to my train in game"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:681
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:682
 msgid "Map resolution (m):"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:722
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:723
 msgid "Allow throwing switches"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:734
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:735
 msgid "Allow changing signals"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:746
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:747
 msgid "Draw next path section"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:773
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:774
 msgid "Players"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:813
-msgid "Message the selected player"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:821
-msgid "Reply to the selected player"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:841
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:540
-msgid "Player"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:855
-msgid "Jump to this player in game"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:862
-msgid "Follow on the map"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:869
-msgid "Kick from multiplayer session"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:887
-msgid "Set switch to..."
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:896
-msgid "Main route"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:904
-msgid "Side route"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:926
-msgid "Set signal aspect to..."
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:933
-msgid "System controlled"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:942
-msgid "Stop"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:950
-msgid "Approach"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:959
-msgid "Proceed"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:972
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:973
 msgid "Allow call on"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:988
-msgid "Jump to this train in game"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:995
-msgid "Follow this train on the map"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:1005
+#: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:1006
 msgid "Map window"
 msgstr ""
 
@@ -1000,6 +849,10 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:106
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:559
 msgid "Briefing"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:117
+msgid "Timetable"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:122
@@ -3223,6 +3076,14 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1233
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:705
 msgid "Exceeded"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1247
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1296
+#: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1362
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:719
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:767
+msgid "Normal"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:1339
