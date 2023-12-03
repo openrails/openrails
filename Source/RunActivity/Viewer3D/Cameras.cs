@@ -798,7 +798,8 @@ namespace Orts.Viewer3D
             if (UserInput.IsMouseMiddleButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
             {
                 StoreRotationOrigin(Viewer.TerrainPoint);
-                Viewer.EditorShapes.CrosshairPositionUpdateEnabled = false;
+                if (Viewer.EditorShapes != null)
+                    Viewer.EditorShapes.CrosshairPositionUpdateEnabled = false;
             }
             if (UserInput.IsMouseMiddleButtonDown && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
             {
@@ -806,7 +807,8 @@ namespace Orts.Viewer3D
             }
             else
             {
-                Viewer.EditorShapes.CrosshairPositionUpdateEnabled = true;
+                if (Viewer.EditorShapes != null)
+                    Viewer.EditorShapes.CrosshairPositionUpdateEnabled = true;
             }
             if (UserInput.IsMouseMiddleButtonDown && UserInput.ModifiersMaskShiftCtrlAlt(true, false, false))
             {
