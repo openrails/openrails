@@ -186,7 +186,7 @@ namespace ORTS.Common
         {
             TileX = copy.TileX;
             TileZ = copy.TileZ;
-            Location = copy.Location;
+            XNAMatrix = copy.XNAMatrix;
         }
     }
 

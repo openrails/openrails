@@ -53,6 +53,7 @@ namespace ORTS.TrackViewer
         OrbitingCamera Camera;
 
         EditorState EditorState;
+        EditorMoveState EditorMoveState;
         StaticShape SelectedObject;
         WorldFile SelectedWorldFile;
         Orts.Formats.Msts.WorldObject SelectedWorldObject;
@@ -109,11 +110,6 @@ namespace ORTS.TrackViewer
             SceneWindow.Activate();
         }
 
-        /// <summary>
-        /// Allows the game to run logic such as updating the world,
-        /// checking for collisions, gathering input, and playing audio.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
         public void Update(GameTime gameTime)
         {
             Viewer = Viewer ?? Game.RenderProcess?.Viewer;
@@ -155,10 +151,17 @@ namespace ORTS.TrackViewer
             {
                 if (UserInput.IsPressed(UserCommand.EditorMove))
                 {
+                    EditorMoveState = EditorMoveState.Move;
+                    StartObjectMove();
+                }
+                if (UserInput.IsPressed(UserCommand.EditorRotate))
+                {
+                    EditorMoveState = EditorMoveState.Rotate;
                     StartObjectMove();
                 }
                 if (UserInput.IsPressed(UserCommand.EditorMoveHandle))
                 {
+                    EditorMoveState = EditorMoveState.Move;
                     StartHandleMove();
                 }
             }
@@ -166,8 +169,11 @@ namespace ORTS.TrackViewer
             {
                 if (UserInput.IsPressed(UserCommand.EditorMove))
                 {
-                    CancelHandleMove();
-                    StartObjectMove();
+                    EditorMoveState = EditorMoveState.Move;
+                }
+                if (UserInput.IsPressed(UserCommand.EditorRotate))
+                {
+                    EditorMoveState = EditorMoveState.Rotate;
                 }
                 if (UserInput.IsPressed(UserCommand.EditorCancel))
                 {
@@ -180,10 +186,13 @@ namespace ORTS.TrackViewer
             }
             if (EditorState == EditorState.ObjectMoving)
             {
-                if (UserInput.IsPressed(UserCommand.EditorMoveHandle))
+                if (UserInput.IsPressed(UserCommand.EditorMove))
                 {
-                    CancelObjectMove();
-                    StartHandleMove();
+                    EditorMoveState = EditorMoveState.Move;
+                }
+                if (UserInput.IsPressed(UserCommand.EditorRotate))
+                {
+                    EditorMoveState = EditorMoveState.Rotate;
                 }
                 if (UserInput.IsPressed(UserCommand.EditorCancel))
                 {
@@ -315,7 +324,7 @@ namespace ORTS.TrackViewer
             var handle = handleOriginalPosition ?? originalPosition;
             var xnaMatrix = originalPosition.XNAMatrix;
 
-            if (UserInput.IsDown(UserCommand.EditorLockRotation))
+            if (EditorMoveState == EditorMoveState.Rotate)
             {
                 var distance = WorldLocation.GetDistance(handle.WorldLocation, CursorLocation);
                 distance.Z *= -1;
@@ -337,8 +346,12 @@ namespace ORTS.TrackViewer
                     handleMatrix.Translation += translation;
                     handlePosition.XNAMatrix = handleMatrix;
                 }
+
+                DeltaX = 0;
+                DeltaY = MathHelper.ToDegrees(angle);
+                DeltaZ = 0;
             }
-            else
+            else if (EditorMoveState == EditorMoveState.Move)
             {
                 var distance = WorldLocation.GetDistance(originalPosition.WorldLocation, CursorLocation);
                 distance.Z *= -1;
@@ -461,16 +474,9 @@ namespace ORTS.TrackViewer
             }
             else if (undoDataSet.UndoEvent == UndoEvent.WorldObjectChanged)
             {
-                if (undo)
-                {
-                    var newPosition = new WorldPosition(undoDataSet.ChangedStaticShape.Location);
-                    undoDataSet.ChangedStaticShape.Location.CopyFrom(undoDataSet.OldPosition);
-                    undoDataSet.OldPosition.CopyFrom(newPosition);
-                }
-                else
-                {
-
-                }
+                var newPosition = new WorldPosition(undoDataSet.ChangedStaticShape.Location);
+                undoDataSet.ChangedStaticShape.Location.CopyFrom(undoDataSet.OldPosition);
+                undoDataSet.OldPosition.CopyFrom(newPosition);
             }
         }
 
@@ -500,8 +506,8 @@ namespace ORTS.TrackViewer
                 TileZ = MovedObject.Location.TileZ,
                 Uid = MovedObject.Uid,
                 ChangedStaticShape = MovedObject,
-                OldPosition = MovedObjectOriginalPosition,
-                MovedWithRespectTo = HandlePosition ?? MovedObject.Location,
+                OldPosition = new WorldPosition(MovedObjectOriginalPosition),
+                MoveOrigin = HandlePosition,
             });
             RedoStack.Clear();
 
@@ -593,7 +599,7 @@ namespace ORTS.TrackViewer
         public int Uid;
         public StaticShape ChangedStaticShape;
         public WorldPosition OldPosition;
-        public WorldPosition MovedWithRespectTo;
+        public WorldPosition MoveOrigin;
         public Orts.Formats.Msts.WorldObject OldWorldObject;
         public Orts.Formats.Msts.WorldObject NewWorldObject;
 
@@ -618,6 +624,12 @@ namespace ORTS.TrackViewer
         ObjectSelected,
         ObjectMoving,
         HandleMoving,
+    }
+
+    public enum EditorMoveState
+    {
+        Move,
+        Rotate,
     }
 
     public class SceneViewerHwndHost : HwndHost
