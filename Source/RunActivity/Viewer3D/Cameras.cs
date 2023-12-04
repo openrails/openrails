@@ -1284,7 +1284,7 @@ namespace Orts.Viewer3D
             var carPosition = !(TrainCarViewer.CarPosition < trainCars.Count()) ? TrainCarViewer.CarPosition - 1 : TrainCarViewer.CarPosition;
             var isDownCameraOutsideFront = UserInput.IsDown(UserCommand.CameraOutsideFront);
             var isDownCameraOutsideRear = UserInput.IsDown(UserCommand.CameraOutsideRear);
-            var isVisibleTrainCarViewerOrWebpage = Viewer.TrainCarOperationsViewerWindow.Visible || (Viewer.TrainCarOperationsWebpage.TrainCarSelected);            
+            var isVisibleTrainCarViewerOrWebpage = Viewer.TrainCarOperationsViewerWindow.Visible || (Viewer.TrainCarOperationsWebpage.TrainCarSelected);
 
             if (attachedCar == null || attachedCar.Train != Viewer.SelectedTrain || carPosition != oldCarPosition || isDownCameraOutsideFront || isDownCameraOutsideRear)
             {
