@@ -547,7 +547,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.EditorMoveHandle] = new UserCommandKeyInput(Keys.M, KeyModifiers.Alt);
             Commands[(int)UserCommand.EditorLockOrthogonal] = new UserCommandModifierInput(KeyModifiers.Shift);
             Commands[(int)UserCommand.EditorLockElevation] = new UserCommandModifierInput(KeyModifiers.Control);
-            Commands[(int)UserCommand.EditorLockRotation] = new UserCommandKeyInput(Keys.R);
+            Commands[(int)UserCommand.EditorRotate] = new UserCommandKeyInput(Keys.R);
         }
         #endregion
 

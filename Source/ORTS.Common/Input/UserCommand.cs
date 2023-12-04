@@ -260,6 +260,6 @@
         [GetString("Editor Move Handle")] EditorMoveHandle,
         [GetString("Editor Move Orthogonal")] EditorLockOrthogonal,
         [GetString("Editor Move Orthogonal")] EditorLockElevation,
-        [GetString("Editor Move Orthogonal")] EditorLockRotation,
+        [GetString("Editor Move Orthogonal")] EditorRotate,
     }
 }
