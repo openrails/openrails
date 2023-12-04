@@ -337,7 +337,7 @@ namespace Orts.Viewer3D.Popups
                     if (RefreshRestoredData)
                     {   // Restores brake hose
                         RefreshRestoredData = false;
-                        for (int i = 0; i < PlayerTrain.Cars.Count; i++)
+                        for (var i = 0; i < PlayerTrain.Cars.Count; i++)
                         {
                             (PlayerTrain.Cars[i] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected = RearBrakes[i];
                         }
@@ -378,51 +378,41 @@ namespace Orts.Viewer3D.Popups
 
                             if (car.BrakesStuck || ((car is MSTSLocomotive) && (car as MSTSLocomotive).PowerReduction > 0)) carLabel.Color = Color.Red;
 
+                            // Left arrow
                             line.Add(new buttonArrowLeft(0, 0, SymbolSize, Owner.Viewer, carPosition));
                             AddSpace();
-                            if (car != PlayerTrain.Cars.First())
-                            {
-                                line.Add(new buttonFrontBrakeHose(0, 0, SymbolSize, Owner.Viewer, car, carPosition));
-                                line.Add(new buttonFrontAngleCock(0, 0, SymbolSize, Owner.Viewer, car, carPosition));
-                                AddSpace();
-                                line.Add(new buttonCouplerFront(0, 0, SymbolSize, Owner.Viewer, car));
-                            }
-                            else
-                            {
-                                line.Add(new buttonFrontBrakeHose(0, 0, SymbolSize, Owner.Viewer, car, carPosition));
-                                line.Add(new buttonFrontAngleCock(0, 0, SymbolSize, Owner.Viewer, car, carPosition));
-                                AddSpace();
-                                line.Add(new buttonCouplerFront(0, 0, SymbolSize, Owner.Viewer, car));
-                            }
-                            line.Add(carLabel);
-                            if (car != PlayerTrain.Cars.Last())
-                            {
-                                line.Add(new buttonCouplerRear(0, 0, SymbolSize, Owner.Viewer, car));
-                                AddSpace();
-                                line.Add(new buttonRearAngleCock(0, 0, SymbolSize, Owner.Viewer, car, carPosition));
-                                line.Add(new buttonRearBrakeHose(0, 0, SymbolSize, Owner.Viewer, car, carPosition));
-                            }
-                            else
-                            {
-                                line.Add(new buttonCouplerRear(0, 0, SymbolSize, Owner.Viewer, car));
-                                AddSpace();
-                                line.Add(new buttonRearAngleCock(0, 0, SymbolSize, Owner.Viewer, car, carPosition));
-                                line.Add(new buttonRearBrakeHose(0, 0, SymbolSize, Owner.Viewer, car, carPosition));
-                            }
 
+                            // Front brake hose
+                            line.Add(new buttonFrontBrakeHose(0, 0, SymbolSize, Owner.Viewer, car, carPosition));
+                            // Front angle cock
+                            line.Add(new buttonFrontAngleCock(0, 0, SymbolSize, Owner.Viewer, car, carPosition));
+                            AddSpace();
+
+                            // Front coupler
+                            line.Add(new buttonCouplerFront(0, 0, SymbolSize, Owner.Viewer, car));
+                            // Car label
+                            line.Add(carLabel);
+                            // Rear coupler
+                            line.Add(new buttonCouplerRear(0, 0, SymbolSize, Owner.Viewer, car));
+                            AddSpace();
+
+                            // Rear angle cock
+                            line.Add(new buttonRearAngleCock(0, 0, SymbolSize, Owner.Viewer, car, carPosition));
+                            // Rear brake hose
+                            line.Add(new buttonRearBrakeHose(0, 0, SymbolSize, Owner.Viewer, car, carPosition));
                             AddSpace();
 
                             // Handbrake
                             line.Add(new buttonHandBrake(0, 0, SymbolSize, Owner.Viewer, carPosition));
                             AddSpace();
 
-                            // Bleed Off Valve
+                            // Bleed off valve
                             line.Add(new buttonBleedOffValve(0, 0, SymbolSize, Owner.Viewer, carPosition));
                             AddSpace();
 
                             if (AllSymbolsMode)//Allows to display all symbols
                             {
-                                // Electric Train Supply Connection (ETS)
+                                // Electric train supply connection (ETS)
                                 if (PlayerTrain.Cars.Count() > 1 && wagon.PowerSupply != null)
                                 {
                                     line.Add(new buttonToggleElectricTrainSupplyCable(0, 0, SymbolSize, Owner.Viewer, carPosition));
@@ -445,7 +435,7 @@ namespace Orts.Viewer3D.Popups
                                     }
                                 }
                             }
-
+                            // Right arrow
                             line.Add(new buttonArrowRight(0, 0, textHeight, Owner.Viewer, carPosition));
                             AddSpace();
                             AddSpace();
@@ -505,7 +495,7 @@ namespace Orts.Viewer3D.Popups
 
             LocalScrollPosition = 0;
 
-            if (CarPositionVisible > 0 && selectedCarPosition >= CarPositionVisible)// && selectedCarPosition != currentCarPosition)// Not related with CarID
+            if (CarPositionVisible > 0 && selectedCarPosition >= CarPositionVisible)// Not related with CarID
             {
                 Client = ControlLayoutScrollboxVertical.NewClient;
                 var xcarPosition = CarPositionVisible;
@@ -615,7 +605,7 @@ namespace Orts.Viewer3D.Popups
                     carOperations.CarOperationChanged = carOperations.Visible && carOperations.CarOperationChanged;
                 }
 
-                if (CarPosition != trainCarViewer.CarPosition)
+                if (CarPosition != trainCarViewer.CarPosition && Owner.Viewer.TrainCarOperationsWebpage.Connections > 0)
                 {
                     // Required to scroll the main window from the web version
                     UpdateTrainCarOperation = true;
