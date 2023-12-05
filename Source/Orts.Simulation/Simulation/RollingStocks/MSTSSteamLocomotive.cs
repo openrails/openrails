@@ -104,7 +104,6 @@ namespace Orts.Simulation.RollingStocks
         public MSTSNotchController FuelController = new MSTSNotchController(0, 1, 0.01f); // Could be coal, wood, oil or even peat !
         public MSTSNotchController SmallEjectorController = new MSTSNotchController(0, 1, 0.1f);
         public MSTSNotchController LargeEjectorController = new MSTSNotchController(0, 1, 0.1f);
-        public MSTSNotchController SteamBoosterController = new MSTSNotchController(0, 1, 0.1f);
 
         float DebugTimerS;
 
@@ -128,7 +127,10 @@ namespace Orts.Simulation.RollingStocks
         bool FullBoilerHeat = false;    // Boiler heat has exceeded max possible heat in boiler (max operating steam pressure)
         bool FullMaxPressBoilerHeat = false; // Boiler heat has exceed the max total possible heat in boiler (max safety valve pressure)
         bool ShovelAnyway = false; // Predicts when the AI fireman should be increasing the fire burn rate despite the heat in the boiler
-        bool SteamBoosterControllerFitted = false;
+        public bool SteamBoosterLatchOn = false;
+        public bool SteamBoosterIdle = false;
+        public bool SteamBoosterAirOpen = false;
+
         /// <summary>
         /// Grate limit of locomotive exceedeed?
         /// </summary>
@@ -789,7 +791,8 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(boilervolume": BoilerVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null); break;
                 case "engine(maxboilerpressure": MaxBoilerPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(ortsmaxsuperheattemperature": MaxSuperheatRefTempF = stf.ReadFloatBlock(STFReader.UNITS.Temperature, null); break;
-                case "engine(ortsmaxindicatedhorsepower": MaxIndicatedHorsePowerHP = stf.ReadFloatBlock(STFReader.UNITS.Power, null);
+                case "engine(ortsmaxindicatedhorsepower":
+                    MaxIndicatedHorsePowerHP = stf.ReadFloatBlock(STFReader.UNITS.Power, null);
                     MaxIndicatedHorsePowerHP = W.ToHp(MaxIndicatedHorsePowerHP);  // Convert input to HP for use internally in this module
                     break;
                 case "engine(vacuumbrakeslargeejectorusagerate": EjectorLargeSteamConsumptionLbpS = pS.FrompH(stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null)); break;
@@ -810,7 +813,6 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(enginecontrollers(dampersfront": DamperController.Parse(stf); break;
                 case "engine(enginecontrollers(shovel": FiringRateController.Parse(stf); break;
                 case "engine(enginecontrollers(firedoor": FireboxDoorController.Parse(stf); break;
-                case "engine(enginecontrollers(ortssteambooster": SteamBoosterController.Parse(stf); SteamBoosterControllerFitted = true; break;
                 case "engine(effects(steamspecialeffects": ParseEffects(lowercasetoken, stf); break;
                 case "engine(ortsgratearea": GrateAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
                 case "engine(superheater": SuperheaterFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
@@ -924,7 +926,6 @@ namespace Orts.Simulation.RollingStocks
             FireboxDoorController = (MSTSNotchController)locoCopy.FireboxDoorController.Clone();
             SmallEjectorController = (MSTSNotchController)locoCopy.SmallEjectorController.Clone();
             LargeEjectorController = (MSTSNotchController)locoCopy.LargeEjectorController.Clone();
-            SteamBoosterController = (MSTSNotchController)locoCopy.SteamBoosterController.Clone();
             GrateAreaM2 = locoCopy.GrateAreaM2;
             SuperheaterFactor = locoCopy.SuperheaterFactor;
             EvaporationAreaM2 = locoCopy.EvaporationAreaM2;
@@ -949,7 +950,6 @@ namespace Orts.Simulation.RollingStocks
             IsFixGeared = locoCopy.IsFixGeared;
             IsSelectGeared = locoCopy.IsSelectGeared;
             LargeEjectorControllerFitted = locoCopy.LargeEjectorControllerFitted;
-            SteamBoosterControllerFitted = locoCopy.SteamBoosterControllerFitted;
             CylinderExhausttoCutoff = locoCopy.CylinderExhausttoCutoff;
             CylinderCompressiontoCutoff = locoCopy.CylinderCompressiontoCutoff;
             CylinderAdmissiontoCutoff = locoCopy.CylinderAdmissiontoCutoff;
@@ -1014,7 +1014,6 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Save(FiringRateController, outf);
             ControllerFactory.Save(SmallEjectorController, outf);
             ControllerFactory.Save(LargeEjectorController, outf);
-            ControllerFactory.Save(SteamBoosterController, outf);
             outf.Write(FuelBurnRateSmoothedKGpS);
             outf.Write(BoilerHeatSmoothedBTU);
             outf.Write(FuelRateSmoothed);
@@ -1078,7 +1077,6 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Restore(FiringRateController, inf);
             ControllerFactory.Restore(SmallEjectorController, inf);
             ControllerFactory.Restore(LargeEjectorController, inf);
-            ControllerFactory.Restore(SteamBoosterController, inf);
             FuelBurnRateSmoothedKGpS = inf.ReadSingle();
             BurnRateSmoothKGpS.ForceSmoothValue(FuelBurnRateSmoothedKGpS);
             BoilerHeatSmoothedBTU = inf.ReadSingle();
@@ -1461,7 +1459,7 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else
                 {
-                    if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster && SteamBoosterControllerFitted)
+                    if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
                     {
                         // Based upon the AAR formula described in Railway Mechanical Engineer - February 1942 -
                         //    https://archive.org/details/sim_railway-locomotives-and-cars_1942-02_116_2/page/76/mode/2up?q=booster
@@ -2177,7 +2175,7 @@ namespace Orts.Simulation.RollingStocks
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
-
+            //    Trace.TraceInformation("Booster - Air {0} Idle {1} Latch {2}", SteamBoosterAirOpen, SteamBoosterIdle, SteamBoosterLatchOn);
 
                 SteamEngines[i].IndicatedHorsePowerHP = (N.ToLbf(SteamEngines[i].TractiveForceN) * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
 
@@ -2185,9 +2183,9 @@ namespace Orts.Simulation.RollingStocks
                 {
                     UpdateCylinders(elapsedClockSeconds, throttle, cutoff, absSpeedMpS, i);
                 }
-                else // Booster Engine
+                else if (SteamBoosterAirOpen && SteamBoosterLatchOn)  // Booster Engine
                 {
-                    var boosterthrottle = SteamBoosterController.CurrentValue;
+                    var boosterthrottle = 0.0f;
                     var boostercutoff = SteamEngines[i].BoosterCutoff;
                     UpdateCylinders(elapsedClockSeconds, boosterthrottle, boostercutoff, absSpeedMpS, i);
                 }
@@ -2201,6 +2199,7 @@ namespace Orts.Simulation.RollingStocks
 
                 SteamEngines[i].TractiveForceN = 0;
 
+                if (SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster || (SteamBoosterAirOpen && SteamBoosterLatchOn))
                 UpdateTractiveForce(elapsedClockSeconds, 0, 0, 0, i);
 
                 TractiveForceN += SteamEngines[i].TractiveForceN;
@@ -2208,7 +2207,7 @@ namespace Orts.Simulation.RollingStocks
 
                 MotiveForceN += SteamEngines[i].AttachedAxle.CompensatedAxleForceN;
             }
-            
+
             // Find the maximum TE for debug i.e. @ start and full throttle
             if (absSpeedMpS < 1.0)
             {
@@ -2771,15 +2770,6 @@ namespace Orts.Simulation.RollingStocks
                     if (LargeEjectorController.UpdateValue < 0.0)
                         Simulator.Confirmer.UpdateWithPerCent(CabControl.LargeEjector, CabSetting.Decrease, LargeEjectorController.CurrentValue * 100);
                 }
-            }
-
-            SteamBoosterController.Update(elapsedClockSeconds);
-            if (IsPlayerTrain)
-            {
-                if (SteamBoosterController.UpdateValue > 0.0)
-                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamBooster, CabSetting.Increase, SteamBoosterController.CurrentValue * 100);
-                if (SteamBoosterController.UpdateValue < 0.0)
-                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamBooster, CabSetting.Decrease, SteamBoosterController.CurrentValue * 100);
             }
 
             Injector1Controller.Update(elapsedClockSeconds);
@@ -4491,7 +4481,7 @@ namespace Orts.Simulation.RollingStocks
                     SteamEngines[numberofengine].HPCylinderMEPPSI = MathHelper.Clamp(SteamEngines[numberofengine].HPCylinderMEPPSI, 0.00f, SteamEngines[numberofengine].HPCylinderMEPPSI); // Clamp MEP so that HP MEP does not go negative
                     SteamEngines[numberofengine].LPCylinderMEPPSI = MathHelper.Clamp(SteamEngines[numberofengine].LPCylinderMEPPSI, 0.00f, SteamEngines[numberofengine].LPCylinderMEPPSI); // Clamp MEP so that LP MEP does not go negative
 
-                    if (throttle < 0.01f)
+                    if (throttle < 0.01f || (SteamEngines[numberofengine].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster && !SteamBoosterAirOpen))
                     {
                         SteamEngines[numberofengine].HPCompPressure_a_AtmPSI = 0.0f;  // for sake of display zero pressure values if throttle is closed.
                         HPCompMeanPressure_gh_AtmPSI = 0.0f;
@@ -5092,7 +5082,7 @@ namespace Orts.Simulation.RollingStocks
                 float slipcutoff = 0;
                 if (SteamEngines[numberofengine].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
                 {
-                    slipcutoff = SteamBoosterController.CurrentValue;
+                    slipcutoff = 1.0f;
                 }
                 else
                 {
@@ -5189,7 +5179,7 @@ namespace Orts.Simulation.RollingStocks
                     // Combined cylinder pressure
                     crankCylinderPressure = forwardCylinderPressure - backwardCylinderPressure;
 
-                    if ((throttle < 0.01 && SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster) || (SteamBoosterController.CurrentValue < 0.01 && SteamEngines[numberofengine].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster))
+                    if ((throttle < 0.01 && SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster) || (!SteamBoosterAirOpen && SteamEngines[numberofengine].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster))
                     {
                         crankCylinderPressure = 0;
                     }
@@ -5439,7 +5429,7 @@ namespace Orts.Simulation.RollingStocks
             // Set tractive force to zero if throttle is closed
             if (SteamEngines[numberofengine].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
             {
-                var boosterthrottle = SteamBoosterController.CurrentValue;
+                var boosterthrottle = 0;
                 if (boosterthrottle < 0.01)
                 {
                     SteamEngines[numberofengine].TractiveForceN = 0;
@@ -5903,7 +5893,7 @@ namespace Orts.Simulation.RollingStocks
 
             if (FiringIsManual)
 
-#region Manual Fireman
+            #region Manual Fireman
             {
 
 
@@ -5941,11 +5931,11 @@ namespace Orts.Simulation.RollingStocks
                 }
                 DamperBurnEffect = MathHelper.Clamp(DamperBurnEffect, 0.0f, TheoreticalMaxSteamOutputLBpS * 1.5f); // set damper maximum to the max generation rate
             }
-#endregion
+            #endregion
 
             else
 
-#region AI Fireman
+            #region AI Fireman
             {
                 // Injectors
                 // Injectors normally not on when stationary?
@@ -6176,7 +6166,7 @@ namespace Orts.Simulation.RollingStocks
                     HeatRatio = MathHelper.Clamp(HeatRatio, 0.001f, (HeatRatioMaxRise + 1.0f)); // Boiler pressure ratio to adjust burn rate
                 }
             }
-#endregion
+            #endregion
         }
 
         /// <summary>
@@ -6294,8 +6284,14 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.REVERSER_PLATE:
                     data = Train.MUReverserPercent / 100f;
                     break;
-                case CABViewControlTypes.STEAM_BOOSTER:
-                    data = SteamBoosterController.CurrentValue;
+                case CABViewControlTypes.STEAM_BOOSTER_AIR:
+                    data = SteamBoosterAirOpen ? 1 : 0;
+                    break;
+                case CABViewControlTypes.STEAM_BOOSTER_IDLE:
+                    data = SteamBoosterIdle ? 1 : 0;
+                    break;
+                case CABViewControlTypes.STEAM_BOOSTER_LATCH:
+                    data = SteamBoosterLatchOn ? 1 : 0;
                     break;
                 case CABViewControlTypes.CYL_COCKS:
                     data = CylinderCocksAreOpen ? 1 : 0;
@@ -6335,7 +6331,7 @@ namespace Orts.Simulation.RollingStocks
                         data = SmallEjectorController.CurrentValue;
                         break;
                     }
-               case CABViewControlTypes.ORTS_LARGE_EJECTOR:
+                case CABViewControlTypes.ORTS_LARGE_EJECTOR:
                     {
                         data = LargeEjectorController.CurrentValue;
                         break;
@@ -7172,11 +7168,11 @@ namespace Orts.Simulation.RollingStocks
             }
 
             return status.ToString();
-        } 
+        }
 
-// Gear Box
+        // Gear Box
 
-public void SteamStartGearBoxIncrease()
+        public void SteamStartGearBoxIncrease()
         {
             if (IsSelectGeared)
             {
@@ -7375,73 +7371,9 @@ public void SteamStartGearBoxIncrease()
 
         }
 
-        #region Steam booster controller
+        //Small Ejector Controller
 
-        public void StartSteamBoosterIncrease(float? target)
-        {
-            SteamBoosterController.CommandStartTime = Simulator.ClockTime;
-            if (IsPlayerTrain)
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.SteamBooster, CabSetting.Increase, SteamBoosterController.CurrentValue * 100);
-            SteamBoosterController.StartIncrease(target);
-            SignalEvent(Event.SteamBoosterChange);
-        }
-
-        public void StopSteamBoosterIncrease()
-        {
-            SteamBoosterController.StopIncrease();
-            new ContinuousSteamBoosterCommand(Simulator.Log, 1, true, SteamBoosterController.CurrentValue, SteamBoosterController.CommandStartTime);
-        }
-
-        public void StartSteamBoosterDecrease(float? target)
-        {
-            if (IsPlayerTrain)
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.SteamBooster, CabSetting.Decrease, SteamBoosterController.CurrentValue * 100);
-            SteamBoosterController.StartDecrease(target);
-            SignalEvent(Event.SteamBoosterChange);
-        }
-
-        public void StopSteamBoosterDecrease()
-        {
-            SteamBoosterController.StopDecrease();
-            if (IsPlayerTrain)
-                new ContinuousSteamBoosterCommand(Simulator.Log, 1, false, SteamBoosterController.CurrentValue, SteamBoosterController.CommandStartTime);
-        }
-
-        public void SteamBoosterChangeTo(bool increase, float? target)
-        {
-            if (increase)
-            {
-                if (target > SteamBoosterController.CurrentValue)
-                {
-                    StartSteamBoosterIncrease(target);
-                }
-            }
-            else
-            {
-                if (target < SteamBoosterController.CurrentValue)
-                {
-                    StartSteamBoosterDecrease(target);
-                }
-            }
-        }
-
-        public void SetSteamBoosterValue(float value)
-        {
-            var controller = SteamBoosterController;
-            var oldValue = controller.IntermediateValue;
-            var change = controller.SetValue(value);
-            if (change != 0)
-            {
-                new ContinuousSteamBoosterCommand(Simulator.Log, 1, change > 0, controller.CurrentValue, Simulator.GameTime);
-            }
-            if (oldValue != controller.IntermediateValue)
-                Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamBooster, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
-        }
-#endregion
-
-//Small Ejector Controller
-
-#region Small Ejector controller
+        #region Small Ejector controller
 
         public void StartSmallEjectorIncrease(float? target)
         {
@@ -7504,11 +7436,11 @@ public void SteamStartGearBoxIncrease()
                 Simulator.Confirmer.UpdateWithPerCent(CabControl.SmallEjector, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
         }
 
-#endregion
+        #endregion
 
         //Define Large Ejector Controller
 
-#region Large Ejector controller
+        #region Large Ejector controller
 
         public void StartLargeEjectorIncrease(float? target)
         {
@@ -7568,10 +7500,10 @@ public void SteamStartGearBoxIncrease()
                 new ContinuousLargeEjectorCommand(Simulator.Log, 1, change > 0, controller.CurrentValue, Simulator.GameTime);
             }
             if (oldValue != controller.IntermediateValue)
-                Simulator.Confirmer.UpdateWithPerCent(CabControl.LargeEjector, oldValue<controller.IntermediateValue? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.LargeEjector, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
         }
 
-#endregion
+        #endregion
 
         public override void StartReverseIncrease(float? target)
         {
@@ -8082,13 +8014,66 @@ public void SteamStartGearBoxIncrease()
                 Simulator.Confirmer.Confirm(CabControl.BlowdownValve, BlowdownValveOpen ? CabSetting.On : CabSetting.Off);
         }
 
-    public void ToggleManualFiring()
+        public void ToggleManualFiring()
         {
             FiringIsManual = !FiringIsManual;
             if (FiringIsManual)
                 SignalEvent(Event.AIFiremanSoundOff);
             else
                 SignalEvent(Event.AIFiremanSoundOn);
+        }
+
+        public void ToggleSteamBoosterAir()
+        {
+            SteamBoosterAirOpen = !SteamBoosterAirOpen ;
+
+/*
+            SignalEvent(Event.BlowdownValveToggle);
+            if (BlowdownValveOpen)
+                SignalEvent(Event.BoilerBlowdownOn);
+            else
+                SignalEvent(Event.BoilerBlowdownOff);
+*/
+
+
+            if (IsPlayerTrain)
+                Simulator.Confirmer.Confirm(CabControl.SteamBoosterAir, SteamBoosterAirOpen ? CabSetting.On : CabSetting.Off);
+
+        }
+        public void ToggleSteamBoosterIdle()
+        {
+            SteamBoosterIdle = !SteamBoosterIdle;
+
+            /*
+                        SignalEvent(Event.BlowdownValveToggle);
+                        if (BlowdownValveOpen)
+                            SignalEvent(Event.BoilerBlowdownOn);
+                        else
+                            SignalEvent(Event.BoilerBlowdownOff);
+            */
+
+
+            if (IsPlayerTrain)
+                Simulator.Confirmer.Confirm(CabControl.SteamBoosterIdle, SteamBoosterIdle ? CabSetting.On : CabSetting.Off);
+
+        }
+
+        public void ToggleSteamBoosterLatch()
+        {
+            SteamBoosterLatchOn = !SteamBoosterLatchOn;
+
+            /*
+                        SignalEvent(Event.BlowdownValveToggle);
+                        if (BlowdownValveOpen)
+                            SignalEvent(Event.BoilerBlowdownOn);
+                        else
+                            SignalEvent(Event.BoilerBlowdownOff);
+            */
+
+
+            if (IsPlayerTrain)
+                Simulator.Confirmer.Confirm(CabControl.SteamBoosterLatch, SteamBoosterLatchOn ? CabSetting.On : CabSetting.Off);
+
         }
 
         public void AIFireOn()
@@ -8135,7 +8120,7 @@ public void SteamStartGearBoxIncrease()
             if (type == (uint)PickupType.FuelCoal && MaxTenderCoalMassKG != 0)
                 FuelController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / MaxTenderCoalMassKG);
             else if (type == (uint)PickupType.FuelWater && MaxLocoTenderWaterMassKG != 0)
-                WaterController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / MaxLocoTenderWaterMassKG); 
+                WaterController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / MaxLocoTenderWaterMassKG);
         }
 
         /// <summary>
