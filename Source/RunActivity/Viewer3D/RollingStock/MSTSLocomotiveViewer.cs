@@ -3256,6 +3256,7 @@ namespace Orts.Viewer3D.RollingStock
         //Dictionary<int, DigitalDisplay> DigitParts = null;
         Dictionary<(CabViewControlType, int), ThreeDimCabDigit> DigitParts3D = null;
         Dictionary<(CabViewControlType, int), ThreeDimCabDPI> DPIDisplays3D = null;
+        Dictionary<(CabViewControlType, int), ThreeDimCabScreen> ScreenDisplays3D = null;
         AnimatedPart ExternalWipers = null; // setting to zero to prevent a warning. Probably this will be used later. TODO
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
         MSTSLocomotiveViewer LocoViewer;
@@ -3279,6 +3280,7 @@ namespace Orts.Viewer3D.RollingStock
             DigitParts3D = new Dictionary<(CabViewControlType, int), ThreeDimCabDigit>();
             Gauges = new Dictionary<(CabViewControlType, int), ThreeDimCabGaugeNative>();
             DPIDisplays3D = new Dictionary<(CabViewControlType, int), ThreeDimCabDPI>();
+            ScreenDisplays3D = new Dictionary<(CabViewControlType, int), ThreeDimCabScreen>();
             OnDemandAnimateParts = new Dictionary<(CabViewControlType, int), AnimatedPart>();
 
             // Find the animated parts
@@ -3372,6 +3374,10 @@ namespace Orts.Viewer3D.RollingStock
                     else if (style != null && style is DistributedPowerInterfaceRenderer)
                     {
                         DPIDisplays3D.Add(key, new ThreeDimCabDPI(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
+                    }
+                    else if (style is CircularSpeedGaugeRenderer || style is DriverMachineInterfaceRenderer)
+                    {
+                        ScreenDisplays3D.Add(key, new ThreeDimCabScreen(viewer, iMatrix, TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
                     }
                     else
                     {
@@ -3525,6 +3531,24 @@ namespace Orts.Viewer3D.RollingStock
                 p.Value.PrepareFrame(frame, elapsedTime);
             }
 
+            foreach (var p in ScreenDisplays3D)
+            {
+                var dpdisplay = p.Value.CVFR.Control;
+                if (dpdisplay.Screens != null && dpdisplay.Screens[0] != "all")
+                {
+                    foreach (var screen in dpdisplay.Screens)
+                    {
+                        if (LocoViewer.ThreeDimentionCabRenderer.ActiveScreen[dpdisplay.Display] == screen)
+                        {
+                            p.Value.PrepareFrame(frame, elapsedTime);
+                            break;
+                        }
+                    }
+                    continue;
+                }
+                p.Value.PrepareFrame(frame, elapsedTime);
+            }
+
             foreach (var p in Gauges)
             {
                 var gauge = p.Value.CVFR.Control;
@@ -3577,6 +3601,10 @@ namespace Orts.Viewer3D.RollingStock
             foreach (ThreeDimCabDPI threeDimCabDPI in DPIDisplays3D.Values)
             {
                 threeDimCabDPI.Mark();
+            }
+            foreach (var threeDimCabControl in ScreenDisplays3D.Values)
+            {
+                threeDimCabControl.Mark();
             }
         }
     }
