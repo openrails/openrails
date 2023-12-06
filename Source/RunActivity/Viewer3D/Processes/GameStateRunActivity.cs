@@ -118,7 +118,7 @@ namespace Orts.Viewer3D.Processes
             base.Dispose();
         }
 
-        public override void Update(RenderFrame frame, double totalRealSeconds)
+        internal override void Update(RenderFrame frame, double totalRealSeconds)
         {
             UpdateLoading();
 

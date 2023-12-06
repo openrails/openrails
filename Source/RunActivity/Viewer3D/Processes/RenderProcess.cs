@@ -165,7 +165,7 @@ namespace Orts.Viewer3D.Processes
             pp.RenderTargetUsage = RenderTargetUsage.PreserveContents;
         }
 
-        public void Start()
+        internal void Start()
         {
             Game.WatchdogProcess.Register(WatchdogToken);
 
