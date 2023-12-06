@@ -424,6 +424,8 @@ namespace Orts.Viewer3D.Processes
                 if (MPManager.IsMultiPlayer() && MPManager.IsServer())
                     MPManager.OnlineTrains.Save (outf);
 
+                Viewer.TrainCarOperationsWebpage.Save(outf);
+
                 SaveEvaluation(outf);
 
                 // Write out position within file so we can check when restoring.
@@ -503,6 +505,8 @@ namespace Orts.Viewer3D.Processes
 
                     if (MPManager.IsMultiPlayer() && MPManager.IsServer())
                         MPManager.OnlineTrains.Restore(inf);
+
+                    WebServices.TrainCarOperationsWebpage.Restore(inf);
 
                     ResumeEvaluation(inf);
 

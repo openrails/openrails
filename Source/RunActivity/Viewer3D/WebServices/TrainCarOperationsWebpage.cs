@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using Orts.Common;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using ORTS.Scripting.Api;
+using System.IO;
 
 namespace Orts.Viewer3D.WebServices
 {
@@ -74,7 +75,12 @@ namespace Orts.Viewer3D.WebServices
 
         private readonly Viewer Viewer;
 
-        public bool TrainCarSelected = false;
+        // static fields because during the restore this objcet not yet created
+        public static bool TrainCarFromRestore;
+        public static bool TrainCarSelectedFromRestore;
+        public static int TrainCarSelectedPositionFromRestore;
+
+        public bool TrainCarSelected;
         public int TrainCarSelectedPosition;
 
         public int Connections = 0;
@@ -202,6 +208,20 @@ namespace Orts.Viewer3D.WebServices
                 handleReceive();
                 handleSend();
             }
+        }
+
+        public void Save(BinaryWriter outf) 
+        {
+            outf.Write(TrainCarSelected);
+            outf.Write(TrainCarSelectedPosition);
+        }
+
+        public static void Restore(BinaryReader inf)
+        {
+            TrainCarSelectedFromRestore = inf.ReadBoolean();
+            TrainCarSelectedPositionFromRestore = inf.ReadInt32();
+
+            TrainCarFromRestore = true;
         }
 
         private void handleReceive()
@@ -428,9 +448,16 @@ namespace Orts.Viewer3D.WebServices
         {
             string filename;
 
-            if (Viewer.TrainCarOperationsWindow.CarIdClicked) {
-                // on the train operations window wagon has been clicked
-                // wagon on webpage gets selected also
+            if (TrainCarFromRestore)
+            {
+                TrainCarSelected = TrainCarSelectedFromRestore;
+                TrainCarSelectedPosition = TrainCarSelectedPositionFromRestore;
+
+                TrainCarFromRestore = false;
+            }
+
+            if (Viewer.TrainCarOperationsWindow.Visible) { 
+                // take the carposition of the Traincar Operations Window
                 TrainCarSelected = true;
                 TrainCarSelectedPosition = Viewer.TrainCarOperationsWindow.SelectedCarPosition;
             }

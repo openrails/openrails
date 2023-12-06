@@ -22,7 +22,10 @@
 // socket functions
 //
 
-let initStillToBeDone = true;
+// scrolling
+const windowHeight = (window.innerHeight || document.documentElement.clientHeight);
+const possibleRows = Math.floor((windowHeight - 35) / 36);
+let rowToScrollToPrevious = 0;
 
 function createSocket() {
 
@@ -84,16 +87,17 @@ function handleMessage(json) {
     console.log("handleMessage: ", json);
 
     if (json.Type == "init") {
-        var html = document.body;
+        const html = document.body;
         while (html.firstChild) {
             html.removeChild(html.firstChild);
         }
-        var elemDiv = document.createElement('div');
+        const elemDiv = document.createElement('div');
         elemDiv.id = "overlay";
         document.body.appendChild(elemDiv);
 
         const tbl = document.createElement("table");
         const th = document.createElement("th");
+        th.setAttribute("id", "th");
         const thText = document.createTextNode("Train Car Operations");
         th.appendChild(thText);
         th.colSpan = json.Columns + 1;
@@ -125,15 +129,31 @@ function handleMessage(json) {
     }
 
     for (let i = 0; i < json.Operations.length; i++) {
-        let row = json.Operations[i].Row;
-        let column = json.Operations[i].Column;
-        let id = "button:" + row + ":" + column;
-        let button = document.getElementById(id);
+        const row = json.Operations[i].Row;
+        const column = json.Operations[i].Column;
+        const id = "button:" + row + ":" + column;
+        const button = document.getElementById(id);
         button.innerHTML = "<img src='" + json.Operations[i].Filename + "' />";
+
         if (json.Operations[i].Filename.includes("Arrow")) {
-            if (!isInView(button)) {
-                console.log("scrollTo");
-                button.scrollIntoView({ behavior: "smooth" });
+            const rowToScrollTo = Math.floor(row - (possibleRows / 2));
+            if (rowToScrollTo < 0) {
+                const thToScrollTo = document.getElementById("th");
+                thToScrollTo.scrollIntoView({ behavior: "smooth" });
+                rowToScrollToPrevious = 0;
+            } else {
+                const tst1Boven = rowToScrollTo < rowToScrollToPrevious - 8;
+                console.log("tst1Boven:" + tst1Boven);
+                const tst1Onder = rowToScrollTo > rowToScrollToPrevious + (possibleRows / 2) - 5;
+                console.log("tst1Onder:" + tst1Onder);
+                if ((rowToScrollTo < rowToScrollToPrevious - 8) ||
+                    (rowToScrollTo > rowToScrollToPrevious + (possibleRows / 2) - 5)) {
+                    console.log("ScrollTo");
+                    const idToScrollTo = "button:" + rowToScrollTo + ":" + 0;
+                    const buttonToScrollTo = document.getElementById(idToScrollTo);
+                    buttonToScrollTo.scrollIntoView({ behavior: "smooth" });
+                    rowToScrollToPrevious = rowToScrollTo;
+                }
             }
         }
         button.disabled = !json.Operations[i].Enabled;
@@ -141,12 +161,12 @@ function handleMessage(json) {
     }
 
     for (let i = 0; i < json.CarIdColor.length; i++) {
-        let id = "label:" + i;
-        let label = document.getElementById(id);
+        const id = "label:" + i;
+        const label = document.getElementById(id);
         label.style.color = json.CarIdColor[i];
     }
 
-    // turn off the dark overlay if it's still on
+    // turn off the dark overlay if it's still on after a reconnect
     document.getElementById("overlay").style.display = "none";
 }
 
@@ -163,28 +183,7 @@ function sleep(time) {
     return new Promise((resolve) => setTimeout(resolve, time));
 }
 
-function isInView(el) {
-
-    var rect = el.getBoundingClientRect(),
-        vWidth = window.innerWidth || document.documentElement.clientWidth,
-        vHeight = window.innerHeight || document.documentElement.clientHeight,
-        efp = function (x, y) { return document.elementFromPoint(x, y) };
-
-    // Return false if it's not in the viewport
-    if (rect.right < 0 || rect.bottom < 0
-        || rect.left > vWidth || rect.top > vHeight)
-        return false;
-
-    // Return true if any of its four corners are visible
-    return (
-        el.contains(efp(rect.left, rect.top))
-        || el.contains(efp(rect.right, rect.top))
-        || el.contains(efp(rect.right, rect.bottom))
-        || el.contains(efp(rect.left, rect.bottom))
-    );
-}
-
 //
 // main
 //
-let websocket = createSocket();
+const websocket = createSocket();
