@@ -133,9 +133,6 @@ namespace Orts.Viewer3D.Popups
         }
         public List<ListLabel> Labels = new List<ListLabel>();
 
-        public List<bool> RearBrakes = new List<bool>();
-        public bool RefreshRestoredData = false;
-
         Train PlayerTrain;
         int LastPlayerTrainCars;
         bool LastPlayerLocomotiveFlippedState;
@@ -157,13 +154,7 @@ namespace Orts.Viewer3D.Popups
             outf.Write(Location.Width);
             outf.Write(Location.Height);
 
-            // Saves brake hose state
-            var carsCount = PlayerTrain.Cars.Count();
-            outf.Write(carsCount);
-            foreach (var data in RearBrakes)
-            {
-                outf.Write(data);
-            }
+            outf.Write(SelectedCarPosition);
         }
         protected internal override void Restore(BinaryReader inf)
         {
@@ -174,13 +165,7 @@ namespace Orts.Viewer3D.Popups
             LocationRestore.Width = inf.ReadInt32();
             LocationRestore.Height = inf.ReadInt32();
 
-            // Restores brake hose state
-            var carsCount = inf.ReadInt32();
-            for (int i = 0; i < carsCount; i++)
-            {
-                RearBrakes.Add(inf.ReadBoolean());
-            }
-            RefreshRestoredData = true;
+            SelectedCarPosition = inf.ReadInt32();
 
             // Display window
             SizeTo(LocationRestore.Width, LocationRestore.Height);
@@ -332,19 +317,6 @@ namespace Orts.Viewer3D.Popups
                     void AddSpace()
                     {
                         line.AddSpace(textHeight / 2, line.RemainingHeight);
-                    }
-
-                    if (RefreshRestoredData)
-                    {   // Restores brake hose
-                        RefreshRestoredData = false;
-                        for (int i = 0; i < PlayerTrain.Cars.Count; i++)
-                        {
-                            (PlayerTrain.Cars[i] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected = RearBrakes[i];
-                        }
-                    }
-                    if (RearBrakes.Count == 0)
-                    {   // Init brake hose
-                        RearBrakes = Enumerable.Repeat(true, PlayerTrain.Cars.Count).ToList();
                     }
 
                     if (LabelPositionTop.Count == 0)
@@ -874,7 +846,6 @@ namespace Orts.Viewer3D.Popups
             {
                 trainCarOperations.updateWarningCarPosition(carPosition, Texture, BrakeHoseDis);
             }
-            Viewer.TrainCarOperationsWindow.RearBrakes[carPosition] = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected;
         }
     }
     class buttonFrontAngleCock : Image

@@ -144,6 +144,8 @@ namespace Orts.Viewer3D.Popups
             outf.Write(Location.Y);
             outf.Write(Location.Width);
             outf.Write(Location.Height);
+
+            outf.Write(CarPosition);
         }
         protected internal override void Restore(BinaryReader inf)
         {
@@ -153,6 +155,8 @@ namespace Orts.Viewer3D.Popups
             LocationRestore.Y = inf.ReadInt32();
             LocationRestore.Width = inf.ReadInt32();
             LocationRestore.Height = inf.ReadInt32();
+
+            CarPosition = inf.ReadInt32();
 
             // Display window
             SizeTo(LocationRestore.Width, LocationRestore.Height);
