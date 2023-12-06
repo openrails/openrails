@@ -390,7 +390,7 @@ namespace Orts.Viewer3D
         static readonly Vector3 MoonGlow = new Vector3(245f / 255f, 243f / 255f, 206f / 255f);
         const float SunIntensity = 1;
         const float MoonIntensity = SunIntensity / 380000;
-        float HeadLightIntensity = 50000; // Can be 10 in case of linear calculation method
+        float HeadLightIntensity = 25000; // See some sample values: https://docs.unity3d.com/Packages/com.unity.cloud.gltfast@5.2/manual/LightUnits.html
 
         // Local shadow map data.
         Matrix[] ShadowMapLightView;
@@ -588,6 +588,11 @@ namespace Orts.Viewer3D
                         fadeDuration = lightDrawer.LightConeFadeOut;
                     }
                     lastLightState = lightState;
+                }
+                else
+                {
+                    fadeStartTimer = 0;
+                    fadeDuration = 0;
                 }
                 if (SolarDirection.Y <= -0.05)
                 {
