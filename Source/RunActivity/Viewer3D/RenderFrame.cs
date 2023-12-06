@@ -540,9 +540,9 @@ namespace Orts.Viewer3D
             NumLights = 0;
         }
 
-        bool lastLightState;
-        double fadeStartTimer;
-        float fadeDuration = -1;
+        static bool lastLightState;
+        static double fadeStartTimer;
+        static float fadeDuration = -1;
         
         public void PrepareFrame(Viewer viewer)
         {
@@ -588,11 +588,6 @@ namespace Orts.Viewer3D
                         fadeDuration = lightDrawer.LightConeFadeOut;
                     }
                     lastLightState = lightState;
-                }
-                else
-                {
-                    fadeStartTimer = 0;
-                    fadeDuration = 0;
                 }
                 if (SolarDirection.Y <= -0.05)
                 {
