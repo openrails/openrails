@@ -51,5 +51,15 @@ namespace ORTS.TrackViewer.UserInterface
         {
             e.Handled = float.TryParse(e.Text, out var _);
         }
+
+        private void UndoCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            (DataContext as SceneViewer).UndoCommand();
+        }
+
+        private void RedoCommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            (DataContext as SceneViewer).RedoCommand();
+        }
     }
 }

@@ -64,6 +64,7 @@ namespace ORTS.TrackViewer
         float DeltaX, DeltaY, DeltaZ;
         UndoDataSet DeltaContext;
         WorldLocation CursorLocation;
+        readonly List<(int TileX, int TileZ)> FlaggedTiles = new List<(int, int)>();
 
         public SceneViewer(TrackViewer trackViewer, string[] args)
         {
@@ -87,7 +88,10 @@ namespace ORTS.TrackViewer
                 RenderTargetUsage.PlatformContents,
                 PresentInterval.Two);
 
-            SceneWindow = new SceneWindow(new SceneViewerHwndHost(Game.SwapChainWindow.Handle));
+            SceneWindow = new SceneWindow(new SceneViewerHwndHost(Game.SwapChainWindow.Handle))
+            {
+                DataContext = this,
+            };
 
             // The primary window activation events should not affect RunActivity
             Game.Activated -= Game.ActivateRunActivity;
@@ -98,8 +102,6 @@ namespace ORTS.TrackViewer
             SceneWindow.Activated += new System.EventHandler((sender, e) => SetKeyboardInput(true));
             SceneWindow.Deactivated += Game.DeactivateRunActivity;
             SceneWindow.Deactivated += new System.EventHandler((sender, e) => SetKeyboardInput(false));
-
-            SceneWindow.DataContext = this;
 
             Game.ReplaceState(new GameStateRunActivity(new[] { "-start", "-viewer", Game.CurrentRoute.Path + "\\dummy\\.pat", "", "10:00", "1", "0" }));
         }
@@ -138,12 +140,10 @@ namespace ORTS.TrackViewer
                 }
                 if (UserInput.IsPressed(UserCommand.EditorUndo))
                 {
-                    SetDefaultMode();
                     UndoCommand();
                 }
                 if (UserInput.IsPressed(UserCommand.EditorRedo))
                 {
-                    SetDefaultMode();
                     RedoCommand();
                 }
             }
@@ -436,15 +436,16 @@ namespace ORTS.TrackViewer
             }
         }
 
-        void SetDefaultMode()
+        public void SetDefaultMode()
         {
             SelectedObject = null;
             SelectedObjectChanged();
             EditorState = EditorState.Default;
         }
 
-        void UndoCommand()
+        public void UndoCommand()
         {
+            SetDefaultMode();
             if (UndoStack.Count > 1)
             {
                 var undoDataSet = UndoStack.Pop();
@@ -453,8 +454,9 @@ namespace ORTS.TrackViewer
             }
         }
 
-        void RedoCommand()
+        public void RedoCommand()
         {
+            SetDefaultMode();
             if (RedoStack.Count > 0)
             {
                 var undoDataSet = RedoStack.Pop();
@@ -477,10 +479,13 @@ namespace ORTS.TrackViewer
                 var newPosition = new WorldPosition(undoDataSet.ChangedStaticShape.Location);
                 undoDataSet.ChangedStaticShape.Location.CopyFrom(undoDataSet.OldPosition);
                 undoDataSet.OldPosition.CopyFrom(newPosition);
+                var flag = (undoDataSet.ChangedStaticShape.Location.TileX, undoDataSet.ChangedStaticShape.Location.TileZ);
+                if (!FlaggedTiles.Contains(flag))
+                    FlaggedTiles.Add(flag);
             }
         }
 
-        void StartObjectMove()
+        public void StartObjectMove()
         {
             MovedObject = SelectedObject;
             MovedObjectOriginalPosition = new WorldPosition(MovedObject.Location);
@@ -516,7 +521,7 @@ namespace ORTS.TrackViewer
             EditorState = EditorState.ObjectSelected;
         }
 
-        void StartHandleMove()
+        public void StartHandleMove()
         {
             HandlePosition = new WorldPosition(SelectedObject.Location);
             HandleOriginalPosition = new WorldPosition(HandlePosition);
