@@ -130,6 +130,9 @@ namespace Orts.Simulation.RollingStocks
         public bool SteamBoosterLatchOn = false;
         public bool SteamBoosterIdle = false;
         public bool SteamBoosterAirOpen = false;
+        public bool SteamBoosterRunMode = false;
+        public bool SteamBoosterIdleMode = false;
+        public bool SteamBoosterLatchedLocked = false;
 
         /// <summary>
         /// Grate limit of locomotive exceedeed?
@@ -1092,11 +1095,11 @@ namespace Orts.Simulation.RollingStocks
 
             if (MSTSNumCylinders < 0 && ZeroError(MSTSNumCylinders, "NumCylinders"))
                 MSTSNumCylinders = 0;
-            if (ZeroError(MSTSCylinderDiameterM, "CylinderDiammeter"))
+            if (ZeroError(MSTSCylinderDiameterM, "MSTSCylinderDiameter"))
                 MSTSCylinderDiameterM = 1;
-            if (ZeroError(MSTSCylinderStrokeM, "CylinderStroke"))
+            if (ZeroError(MSTSCylinderStrokeM, "MSTSCylinderStroke"))
                 MSTSCylinderStrokeM = 1;
-            if (ZeroError(DriverWheelRadiusM, "WheelRadius"))
+            if (ZeroError(DriverWheelRadiusM, "MSTSWheelRadius"))
                 DriverWheelRadiusM = Me.FromIn(30.0f); // Wheel radius of loco drive wheels can be anywhere from about 10" to 40"
             if (ZeroError(MaxBoilerPressurePSI, "MaxBoilerPressure"))
                 MaxBoilerPressurePSI = 1;
@@ -2175,7 +2178,6 @@ namespace Orts.Simulation.RollingStocks
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
-            //    Trace.TraceInformation("Booster - Air {0} Idle {1} Latch {2}", SteamBoosterAirOpen, SteamBoosterIdle, SteamBoosterLatchOn);
 
                 SteamEngines[i].IndicatedHorsePowerHP = (N.ToLbf(SteamEngines[i].TractiveForceN) * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
 
@@ -2183,11 +2185,47 @@ namespace Orts.Simulation.RollingStocks
                 {
                     UpdateCylinders(elapsedClockSeconds, throttle, cutoff, absSpeedMpS, i);
                 }
-                else if (SteamBoosterAirOpen && SteamBoosterLatchOn)  // Booster Engine
+                else if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)  // Booster Engine
                 {
                     var boosterthrottle = 0.0f;
                     var boostercutoff = SteamEngines[i].BoosterCutoff;
-                    UpdateCylinders(elapsedClockSeconds, boosterthrottle, boostercutoff, absSpeedMpS, i);
+
+                    // Confirm that Latch is on
+                    if (SteamBoosterLatchOn && cutoff > SteamEngines[i].BoosterThrottleCutoff)
+                    {
+                        SteamBoosterLatchedLocked = true;
+                    }
+                    else
+                    {
+                        SteamBoosterLatchedLocked = false;
+                    }
+
+                    // Identify operating mode for the Booster
+                    // Idle mode
+                    if (SteamBoosterAirOpen && !SteamBoosterIdle && SteamBoosterLatchedLocked)
+                    {
+                        SteamBoosterRunMode = false;
+                        SteamBoosterIdleMode = true;
+                        boosterthrottle = 0.2f;
+                    }
+                    // Run mode
+                    else if (SteamBoosterAirOpen && SteamBoosterIdle && SteamBoosterLatchedLocked)
+                    {
+                        SteamBoosterIdleMode = false;
+                        SteamBoosterRunMode = true;
+                        boosterthrottle = 1.0f;
+                    }
+                    else if (!SteamBoosterAirOpen || !SteamBoosterLatchedLocked)
+                    {
+                        SteamBoosterRunMode = false;
+                        SteamBoosterIdleMode = false;
+                        boosterthrottle = 0;
+                    }
+
+                    if (SteamBoosterRunMode || SteamBoosterIdleMode)
+                    {
+                        UpdateCylinders(elapsedClockSeconds, boosterthrottle, boostercutoff, absSpeedMpS, i);
+                    }
                 }
                 BoilerMassLB -= elapsedClockSeconds * SteamEngines[i].CylinderSteamUsageLBpS; //  Boiler mass will be reduced by cylinder steam usage
                 BoilerHeatBTU -= elapsedClockSeconds * SteamEngines[i].CylinderSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); //  Boiler Heat will be reduced by heat required to replace the cylinder steam usage, ie create steam from hot water. 
@@ -2199,11 +2237,14 @@ namespace Orts.Simulation.RollingStocks
 
                 SteamEngines[i].TractiveForceN = 0;
 
-                if (SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster || (SteamBoosterAirOpen && SteamBoosterLatchOn))
-                UpdateTractiveForce(elapsedClockSeconds, 0, 0, 0, i);
+                if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster && (SteamBoosterIdleMode || SteamBoosterRunMode))
+                    UpdateTractiveForce(elapsedClockSeconds, 0, 0, 0, i);
+                else
+                {
+                    UpdateTractiveForce(elapsedClockSeconds, 0, 0, 0, i);
+                }
 
                 TractiveForceN += SteamEngines[i].TractiveForceN;
-
 
                 MotiveForceN += SteamEngines[i].AttachedAxle.CompensatedAxleForceN;
             }
@@ -3856,7 +3897,6 @@ namespace Orts.Simulation.RollingStocks
             // Volume - HPCylinderVolumePoint_d - the volume in the HP cylinder at point d 
 
             // Initialise values used in this module
-
 
 #if DEBUG_STEAM_CYLINDER_EVENTS
 
@@ -6641,7 +6681,7 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
                 Simulator.Catalog.GetString("Status:"),
                 Simulator.Catalog.GetString("Safety"),
                 SafetyIsOn ? Simulator.Catalog.GetString("Open") : Simulator.Catalog.GetString("Closed"),
@@ -6650,7 +6690,11 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetString("Prime"),
                 BoilerIsPriming ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                 Simulator.Catalog.GetString("Comp"),
-                CylinderCompoundOn ? Simulator.Catalog.GetString("Off") : Simulator.Catalog.GetString("On")
+                CylinderCompoundOn ? Simulator.Catalog.GetString("Off") : Simulator.Catalog.GetString("On"),
+                Simulator.Catalog.GetString("BoostIdle"),
+                SteamBoosterIdleMode ? Simulator.Catalog.GetString("On") : Simulator.Catalog.GetString("Off"),
+                Simulator.Catalog.GetString("BoostRun"),
+                SteamBoosterRunMode ? Simulator.Catalog.GetString("On") : Simulator.Catalog.GetString("Off")
                 );
 
 #if DEBUG_LOCO_STEAM_USAGE

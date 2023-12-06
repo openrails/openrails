@@ -338,7 +338,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float BoosterCutoff;
 
         /// <summary>
-        /// Booster Throttle cutoff position
+        /// Booster Throttle cutoff position based upon the postion of the main engine reverser
         /// </summary>
         public float BoosterThrottleCutoff;
 
@@ -563,6 +563,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             LPNumberCylindersF = 0x0004,
             LPCylindersDiameterF = 0x0005,
             LPCylinderStrokeF = 0x0006,
+            AttachedAxleIdF = 0x0007,
             BoosterCutoffF = 0x0009,
             BoosterThrottleCutoffF = 0x0009,
             BoosterGearRatioF = 0x0010,       
@@ -596,11 +597,27 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                if (initLevel == (SettingsFlags.NumberCylindersF | SettingsFlags.CylindersDiameterF | SettingsFlags.CylinderStrokeF | SettingsFlags.LPNumberCylindersF | SettingsFlags.LPCylindersDiameterF | SettingsFlags.LPCylinderStrokeF | SettingsFlags.BoosterCutoffF | SettingsFlags.BoosterThrottleCutoffF | SettingsFlags.BoosterGearRatioF))
-
-                    return true;
+                var initCheck = false;
+                if (AuxiliarySteamEngineType == AuxiliarySteamEngineTypes.Booster)
+                {
+                    // Checks to see if a Booster engine has been correctly configured
+                    if (initLevel == (SettingsFlags.NumberCylindersF | SettingsFlags.CylindersDiameterF | SettingsFlags.CylinderStrokeF | SettingsFlags.AttachedAxleIdF | SettingsFlags.BoosterCutoffF | SettingsFlags.BoosterGearRatioF | SettingsFlags.BoosterThrottleCutoffF))
+                    {
+                        initCheck = true;
+                    }
+                }
+                else if (AuxiliarySteamEngineType != AuxiliarySteamEngineTypes.Booster)
+                {
+                    // Checks to see if a non-booster engine has been correctly defined
+                    if (initLevel == (SettingsFlags.NumberCylindersF | SettingsFlags.CylindersDiameterF | SettingsFlags.CylinderStrokeF | SettingsFlags.AttachedAxleIdF))
+                    {
+                        initCheck = true;
+                    }
+                }
                 else
-                    return false;
+                    initCheck = false;
+
+                return initCheck;
             }
         }
         
@@ -610,7 +627,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             Locomotive = locomotive;
         }
 
-        public bool SteamEngineConfigured = false; // flag to indicate that the user has configured a diesel engine prime mover code block in the ENG file
+        public bool SteamEngineConfigured = false; // flag to indicate that the user has configured a steam engine prime mover code block in the ENG file
 
 
         /// <summary>
@@ -634,9 +651,9 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                     case "lpcylinderstroke": LPCylindersStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); initLevel |= SettingsFlags.LPCylinderStrokeF; break;
                     case "lpcylinderdiameter": LPCylindersDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); initLevel |= SettingsFlags.LPCylindersDiameterF; break;
                     case "boostercutoff": BoosterCutoff = stf.ReadFloatBlock(STFReader.UNITS.None, null); initLevel |= SettingsFlags.BoosterCutoffF; break;
-                    case "boosterthrottlecutoff": BoosterThrottleCutoff = stf.ReadFloatBlock(STFReader.UNITS.None, null); initLevel |= SettingsFlags.BoosterCutoffF; break;
+                    case "boosterthrottlecutoff": BoosterThrottleCutoff = stf.ReadFloatBlock(STFReader.UNITS.None, null); initLevel |= SettingsFlags.BoosterThrottleCutoffF; break;
                     case "boostergearratio": BoosterGearRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); initLevel |= SettingsFlags.BoosterGearRatioF; break;
-                    case "attachedaxle": AttachedAxleId = stf.ReadIntBlock(null); break;
+                    case "attachedaxle": AttachedAxleId = stf.ReadIntBlock(null); initLevel |= SettingsFlags.AttachedAxleIdF; break;
 
                     case "auxiliarysteamenginetype":
                         stf.MustMatch("(");
