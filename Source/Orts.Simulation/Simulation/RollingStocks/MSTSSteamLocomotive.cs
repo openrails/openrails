@@ -5062,8 +5062,8 @@ namespace Orts.Simulation.RollingStocks
                     // Crank Angle - converts the above range to 0 - 180 - 0 - this is the principle reference used so that it lines up with reference
                     // tables used to buold this function
                     // Normalised Crank Angle - converts the above to a 0 - 360 range, this is used for triggering special steam effects, etc.
-                    float axlePostionRad = LocomotiveAxles[0].AxlePositionRad;
-                    float crankAngleRad = (float)(axlePostionRad + WheelCrankAngleDiffRad[i]);
+                    float LocalAxlePostionRad = (float)LocomotiveAxles[0].AxlePositionRad;
+                    float crankAngleRad = (float)(LocalAxlePostionRad + WheelCrankAngleDiffRad[i]);
 
                     crankAngleRad = (float)(MathHelper.WrapAngle(crankAngleRad)); // Ensures that crank angle is in the range 0 - 180 - 0
 
@@ -5316,8 +5316,8 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         private float NormalisedCrankAngle(int cylinderNumber)
         {
-            float normalisedCrankAngleRad = (float)MathHelper.WrapAngle(LocomotiveAxles[0].AxlePositionRad + WheelCrankAngleDiffRad[cylinderNumber]);
-            
+            float normalisedCrankAngleRad = (float)MathHelper.WrapAngle((float)LocomotiveAxles[0].AxlePositionRad + WheelCrankAngleDiffRad[cylinderNumber]);
+
             if (normalisedCrankAngleRad < 0)
             {
                 normalisedCrankAngleRad += (float)(2 * Math.PI);

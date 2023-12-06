@@ -902,7 +902,7 @@ namespace Orts.Formats.Msts
         public float PX { get; set; }
         /// <summary>Appears to be a copy of X in Sdata, but only for X and Z</summary>
         public float PZ { get; set; }
-        /// <summary>Extra data 1, related to location along section</summary>
+        /// <summary>Distance of a track item along its containing track section and measured from the origin of the section</summary>
         public float SData1 { get; set; }
         /// <summary>Extra data 2</summary>
         public string SData2 { get; set; }
