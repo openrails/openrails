@@ -287,43 +287,33 @@ namespace Orts.Viewer3D.Popups
 
                 {
                     var car = PlayerTrain.Cars[CarPosition];
-                    //Front brake hose
                     if (car != PlayerTrain.Cars.First())
-                    {
                         AddSpace(false);
-                        line.Add(new buttonFrontBrakeHose(0, 0, textHeight, Owner.Viewer, car, CarPosition));
-                        line.Add(new buttonFrontAngleCock(0, 0, textHeight, Owner.Viewer, car, CarPosition));
-                        AddSpace(false);
-                        line.Add(new buttonCouplerFront(0, 0, textHeight, Owner.Viewer, car, CarPosition));
-                    }
-                    else
-                    {
-                        line.Add(new buttonFrontBrakeHose(0, 0, textHeight, Owner.Viewer, car, CarPosition));
-                        line.Add(new buttonFrontAngleCock(0, 0, textHeight, Owner.Viewer, car, CarPosition));
-                        line.Add(new buttonCouplerFront(0, 0, textHeight, Owner.Viewer, car, CarPosition));
-                    }
 
+                    //Front brake hose
+                    line.Add(new buttonFrontBrakeHose(0, 0, textHeight, Owner.Viewer, car, CarPosition));
+                    // Front angle cock
+                    line.Add(new buttonFrontAngleCock(0, 0, textHeight, Owner.Viewer, car, CarPosition));
+
+                    if (car != PlayerTrain.Cars.First())
+                        AddSpace(false);
+
+                    // Front coupler
+                    line.Add(new buttonCouplerFront(0, 0, textHeight, Owner.Viewer, car, CarPosition));
+                    // Loco label
                     line.Add(new buttonLoco(0, 0, textHeight, Owner.Viewer, car));
-
-                    if (car != PlayerTrain.Cars.Last())
-                    {
-                        line.Add(new buttonCouplerRear(0, 0, textHeight, Owner.Viewer, car, CarPosition));
-                        AddSpace(false);
-                        line.Add(new buttonRearAngleCock(0, 0, textHeight, Owner.Viewer, car, CarPosition));
-                        line.Add(new buttonRearBrakeHose(0, 0, textHeight, Owner.Viewer, car, CarPosition));
-                        AddSpace(false);
-                        line.Add(new buttonHandBrake(0, 0, textHeight, Owner.Viewer, CarPosition));
-                    }
-                    else
-                    {
-                        line.Add(new buttonCouplerRear(0, 0, textHeight, Owner.Viewer, car, CarPosition));
-                        AddSpace(false);
-                        line.Add(new buttonRearAngleCock(0, 0, textHeight, Owner.Viewer, car, CarPosition));
-                        line.Add(new buttonRearBrakeHose(0, 0, textHeight, Owner.Viewer, car, CarPosition));
-                        AddSpace(false);
-                        line.Add(new buttonHandBrake(0, 0, textHeight, Owner.Viewer, CarPosition));
-                    }
+                    // Rear coupler
+                    line.Add(new buttonCouplerRear(0, 0, textHeight, Owner.Viewer, car, CarPosition));
                     AddSpace(false);
+                    // Rear angle cock
+                    line.Add(new buttonRearAngleCock(0, 0, textHeight, Owner.Viewer, car, CarPosition));
+                    // Rear brake hose
+                    line.Add(new buttonRearBrakeHose(0, 0, textHeight, Owner.Viewer, car, CarPosition));
+                    AddSpace(false);
+                    // Handbrake
+                    line.Add(new buttonHandBrake(0, 0, textHeight, Owner.Viewer, CarPosition));
+                    AddSpace(false);
+                    // Bleed off valve
                     line.Add(new buttonBleedOffValve(0, 0, textHeight, Owner.Viewer, CarPosition));
                     AddSpace(false);
 
