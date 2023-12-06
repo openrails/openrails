@@ -5,12 +5,24 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ORTS.TrackViewer"
         mc:Ignorable="d"
+        Name="window"
         d:DataContext="{d:DesignInstance local:SceneViewer, IsDesignTimeCreatable=False}"
         Title="Scene View" SizeToContent="WidthAndHeight">
     <DockPanel LastChildFill="True">
         <Menu DockPanel.Dock="Top" Height="22" Name="menuMain" Width="Auto">
-            <MenuItem Header="_Menu" Name="menuMenu">
+            <MenuItem Header="_File">
                 <MenuItem Header="Nothing to see here" Name="menuNothing" />
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Undo" Name="menuUndo" Command="Undo" InputGestureText="Ctrl+Z"/>
+                <MenuItem Header="_Redo" Name="menuRedo" Command="Redo" InputGestureText="Ctrl+Y"/>
+                <Separator/>
+                <MenuItem Header="_Move" Name="menuName" InputGestureText="M"/>
+                <MenuItem Header="_Rotate" Name="menuRotate" InputGestureText="R"/>
+                <MenuItem Header="Move _handle" Name="menuHandle" InputGestureText="H"/>
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem Header="Nothing to see here" Name="menuNothing3" />
             </MenuItem>
         </Menu>
         <StatusBar DockPanel.Dock="Bottom" Name="tvStatusbar" Height="22" VerticalAlignment="Bottom">
@@ -167,4 +179,8 @@
         </Border>
         <Grid DockPanel.Dock="Bottom" x:Name="GraphicsHostElement" />
     </DockPanel>
+    <Window.CommandBindings>
+        <!--CommandBinding Command="Undo" Executed="{Binding UndoCommand}"/>
+        <CommandBinding Command="Redo" Executed="{Binding RedoCommand}"/-->
+    </Window.CommandBindings>
 </Window>

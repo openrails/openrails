@@ -52,7 +52,7 @@ namespace Orts.Viewer3D.Processes
         /// <param name="frame">The new <see cref="RenderFrame"/> that needs populating.</param>
         /// <param name="totalRealSeconds">The total number of real-world seconds which have elapsed since the game was started.</param>
         [CallOnThread("Updater")]
-        public virtual void Update(RenderFrame frame, double totalRealSeconds)
+        internal virtual void Update(RenderFrame frame, double totalRealSeconds)
         {
             // By default, every update tries to trigger a load.
             if (Game.LoaderProcess.Finished)

@@ -83,7 +83,7 @@ namespace Orts.Viewer3D.Processes
         double[] AverageElapsedRealTime = new double[10];
         int AverageElapsedRealTimeIndex;
 
-        public override void Update(RenderFrame frame, double totalRealSeconds)
+        internal override void Update(RenderFrame frame, double totalRealSeconds)
         {
             // Every 250ms, check for new things to load and kick off the loader.
             if (LastLoadRealTime + 0.25 < totalRealSeconds && Game.LoaderProcess.Finished)
