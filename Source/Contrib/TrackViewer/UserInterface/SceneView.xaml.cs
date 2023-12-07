@@ -1,55 +1,33 @@
-﻿// COPYRIGHT 2023 by the Open Rails project.
-//
-// This file is part of Open Rails.
-//
-// Open Rails is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Open Rails is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
-//
-
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Interop;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
+using System.ComponentModel;
 using System.Globalization;
-using Windows.Win32;
-
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-
-using GNU.Gettext;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Interop;
 using ORTS.Common;
-using Orts.Common;
-using ORTS.TrackViewer.UserInterface;
 using Orts.Viewer3D;
-using Orts.Viewer3D.Processes;
 using ORTS.Common.Input;
-using System.Windows.Media.Imaging;
+using Windows.Win32;
+using Microsoft.Xna.Framework;
 
-namespace ORTS.TrackViewer
+namespace ORTS.TrackViewer.UserInterface
 {
-    public class SceneViewer
+    /// <summary>
+    /// Interaction logic for SceneWindow.xaml
+    /// </summary>
+    public partial class SceneView : Window
     {
-        public static GettextResourceManager Catalog;
-
-        readonly string[] CommandLineArgs;
-        readonly TrackViewer Game;
-        readonly SceneWindow SceneWindow;
         readonly Stack<UndoDataSet> UndoStack = new Stack<UndoDataSet>();
         readonly Stack<UndoDataSet> RedoStack = new Stack<UndoDataSet>();
-        Viewer Viewer;
+        public Viewer Viewer;
         OrbitingCamera Camera;
 
         EditorState EditorState;
@@ -66,62 +44,26 @@ namespace ORTS.TrackViewer
         WorldLocation CursorLocation;
         readonly List<(int TileX, int TileZ)> FlaggedTiles = new List<(int, int)>();
 
-        public SceneViewer(TrackViewer trackViewer, string[] args)
+        public SceneView(IntPtr hostWindow)
         {
-            CommandLineArgs = args;
+            InitializeComponent();
 
-            Game = trackViewer;
-
-            // Inject the secondary window into RunActivity
-            Game.SwapChainWindow = GameWindow.Create(Game,
-                Game.GraphicsDevice.PresentationParameters.BackBufferWidth,
-                Game.GraphicsDevice.PresentationParameters.BackBufferHeight);
-
-            RenderFrame.FinalRenderTarget = new SwapChainRenderTarget(Game.GraphicsDevice,
-                Game.SwapChainWindow.Handle,
-                Game.GraphicsDevice.PresentationParameters.BackBufferWidth,
-                Game.GraphicsDevice.PresentationParameters.BackBufferHeight,
-                false,
-                Game.GraphicsDevice.PresentationParameters.BackBufferFormat,
-                Game.GraphicsDevice.PresentationParameters.DepthStencilFormat,
-                1,
-                RenderTargetUsage.PlatformContents,
-                PresentInterval.Two);
-
-            SceneWindow = new SceneWindow(new SceneViewerHwndHost(Game.SwapChainWindow.Handle))
-            {
-                DataContext = this,
-            };
-
-            // The primary window activation events should not affect RunActivity
-            Game.Activated -= Game.ActivateRunActivity;
-            Game.Deactivated -= Game.DeactivateRunActivity;
-
-            // The secondary window activation events should affect RunActivity
-            SceneWindow.Activated += Game.ActivateRunActivity;
-            SceneWindow.Activated += new System.EventHandler((sender, e) => SetKeyboardInput(true));
-            SceneWindow.Deactivated += Game.DeactivateRunActivity;
-            SceneWindow.Deactivated += new System.EventHandler((sender, e) => SetKeyboardInput(false));
-
-            Game.ReplaceState(new GameStateRunActivity(new[] { "-start", "-viewer", Game.CurrentRoute.Path + "\\dummy\\.pat", "", "10:00", "1", "0" }));
-        }
-
-        public void Show()
-        {
-            SceneWindow.Show();
-            SceneWindow.Activate();
+            var hostWindowElement = new SceneViewerHwndHost(hostWindow);
+            GraphicsHostElement.Children.Add(hostWindowElement);
         }
 
         public void Update(GameTime gameTime)
         {
-            Viewer = Viewer ?? Game.RenderProcess?.Viewer;
-            if (Viewer == null)
-                return;
             Camera = Camera ?? Viewer.OrbitingCamera;
 
             Viewer.EditorShapes.MouseCrosshairEnabled = true;
 
             UpdateViewUndoState();
+
+            if (UserInput.IsPressed(UserCommand.EditorCancel))
+            {
+                ApplicationCommands.Stop.Execute(null, null);
+            }
 
             if (EditorState == EditorState.Default || EditorState == EditorState.ObjectSelected)
             {
@@ -134,51 +76,9 @@ namespace ORTS.TrackViewer
                         EditorState = EditorState.ObjectSelected;
                     }
                 }
-                if (UserInput.IsPressed(UserCommand.EditorCancel))
-                {
-                    SetDefaultMode();
-                }
-                if (UserInput.IsPressed(UserCommand.EditorUndo))
-                {
-                    UndoCommand();
-                }
-                if (UserInput.IsPressed(UserCommand.EditorRedo))
-                {
-                    RedoCommand();
-                }
-            }
-            if (EditorState == EditorState.ObjectSelected)
-            {
-                if (UserInput.IsPressed(UserCommand.EditorMove))
-                {
-                    EditorMoveState = EditorMoveState.Move;
-                    StartObjectMove();
-                }
-                if (UserInput.IsPressed(UserCommand.EditorRotate))
-                {
-                    EditorMoveState = EditorMoveState.Rotate;
-                    StartObjectMove();
-                }
-                if (UserInput.IsPressed(UserCommand.EditorMoveHandle))
-                {
-                    EditorMoveState = EditorMoveState.Move;
-                    StartHandleMove();
-                }
             }
             if (EditorState == EditorState.HandleMoving)
             {
-                if (UserInput.IsPressed(UserCommand.EditorMove))
-                {
-                    EditorMoveState = EditorMoveState.Move;
-                }
-                if (UserInput.IsPressed(UserCommand.EditorRotate))
-                {
-                    EditorMoveState = EditorMoveState.Rotate;
-                }
-                if (UserInput.IsPressed(UserCommand.EditorCancel))
-                {
-                    CancelHandleMove();
-                }
                 if (UserInput.IsMouseLeftButtonPressed)
                 {
                     ApplyHandleMove();
@@ -186,18 +86,6 @@ namespace ORTS.TrackViewer
             }
             if (EditorState == EditorState.ObjectMoving)
             {
-                if (UserInput.IsPressed(UserCommand.EditorMove))
-                {
-                    EditorMoveState = EditorMoveState.Move;
-                }
-                if (UserInput.IsPressed(UserCommand.EditorRotate))
-                {
-                    EditorMoveState = EditorMoveState.Rotate;
-                }
-                if (UserInput.IsPressed(UserCommand.EditorCancel))
-                {
-                    CancelObjectMove();
-                }
                 if (UserInput.IsMouseLeftButtonPressed)
                 {
                     ApplyObjectMove();
@@ -234,34 +122,23 @@ namespace ORTS.TrackViewer
         }
 
         /// <summary>
-        /// A workaround for a MonoGame bug where the <see cref="Microsoft.Xna.Framework.Input.Keyboard.GetState()" />
-        /// doesn't return the valid keyboard state. Needs to be enabled via reflection in a private method.
-        /// </summary>
-        public void SetKeyboardInput(bool enable)
-        {
-            var keyboardType = typeof(Microsoft.Xna.Framework.Input.Keyboard);
-            var methodInfo = keyboardType.GetMethod("SetActive", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-            methodInfo.Invoke(null, new object[] { enable });
-        }
-
-        /// <summary>
         /// Put the mouse location in the statusbar
         /// </summary>
         /// <param name="mouseLocation"></param>
         void SetCameraLocationStatus(WorldLocation location)
         {
-            SceneWindow.tileXZ.Text = string.Format(CultureInfo.InvariantCulture, "{0,-7} {1,-7}", location.TileX, location.TileZ);
-            SceneWindow.LocationX.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", location.Location.X);
-            SceneWindow.LocationY.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", location.Location.Y);
-            SceneWindow.LocationZ.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", location.Location.Z);
+            tileXZ.Text = string.Format(CultureInfo.InvariantCulture, "{0,-7} {1,-7}", location.TileX, location.TileZ);
+            LocationX.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", location.Location.X);
+            LocationY.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", location.Location.Y);
+            LocationZ.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", location.Location.Z);
         }
 
         void FillCursorPositionStatus(WorldLocation location)
         {
-            SceneWindow.tileXZcursor.Text = string.Format(CultureInfo.InvariantCulture, "{0,-7} {1,-7}", location.TileX, location.TileZ);
-            SceneWindow.LocationXcursor.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", location.Location.X);
-            SceneWindow.LocationYcursor.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", location.Location.Y);
-            SceneWindow.LocationZcursor.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", location.Location.Z);
+            tileXZcursor.Text = string.Format(CultureInfo.InvariantCulture, "{0,-7} {1,-7}", location.TileX, location.TileZ);
+            LocationXcursor.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", location.Location.X);
+            LocationYcursor.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", location.Location.Y);
+            LocationZcursor.Text = string.Format(CultureInfo.InvariantCulture, "{0,3:F3} ", location.Location.Z);
         }
 
         void FillDeltaStatus()
@@ -270,9 +147,9 @@ namespace ORTS.TrackViewer
             {
                 if (EditorState == EditorState.ObjectMoving)
                 {
-                    SceneWindow.DeltaX.Text = DeltaX.ToString("N3", CultureInfo.InvariantCulture);
-                    SceneWindow.DeltaY.Text = DeltaY.ToString("N3", CultureInfo.InvariantCulture);
-                    SceneWindow.DeltaZ.Text = DeltaZ.ToString("N3", CultureInfo.InvariantCulture);
+                    DeltaXBlock.Text = DeltaX.ToString("N3", CultureInfo.InvariantCulture);
+                    DeltaYBlock.Text = DeltaY.ToString("N3", CultureInfo.InvariantCulture);
+                    DeltaZBlock.Text = DeltaZ.ToString("N3", CultureInfo.InvariantCulture);
                 }
             }
         }
@@ -401,7 +278,7 @@ namespace ORTS.TrackViewer
         {
             if (UndoStack.Count == 0)
                 return;
-            
+
             var lastView = UndoStack.First(s => s.UndoEvent == UndoEvent.ViewChanged);
 
             if (Camera.GetRotationX() == lastView.NewCameraRotationXRadians && Camera.GetRotationY() == lastView.NewCameraRotationYRadians && Camera.CameraWorldLocation == lastView.NewCameraLocation)
@@ -443,7 +320,7 @@ namespace ORTS.TrackViewer
             EditorState = EditorState.Default;
         }
 
-        public void UndoCommand()
+        private void UndoCommand(object sender, ExecutedRoutedEventArgs e)
         {
             SetDefaultMode();
             if (UndoStack.Count > 1)
@@ -454,7 +331,7 @@ namespace ORTS.TrackViewer
             }
         }
 
-        public void RedoCommand()
+        public void RedoCommand(object sender, ExecutedRoutedEventArgs e)
         {
             SetDefaultMode();
             if (RedoStack.Count > 0)
@@ -554,13 +431,13 @@ namespace ORTS.TrackViewer
             SelectedWorldObject = SelectedWorldFile?.MstsWFile?.Tr_Worldfile?.SingleOrDefault(o => o.UID == SelectedObject?.Uid);
 
             // XAML binding doesn't work for fields (as opposed to properties), so doing it programmatically
-            SceneWindow.Filename.Text = SelectedObject != null ? System.IO.Path.GetFileName(SelectedObject.SharedShape.FilePath) : "";
-            SceneWindow.TileX.Text = SelectedObject?.Location.TileX.ToString(CultureInfo.InvariantCulture).Replace(",", "");
-            SceneWindow.TileZ.Text = SelectedObject?.Location.TileZ.ToString(CultureInfo.InvariantCulture).Replace(",", "");
-            SceneWindow.PosX.Text = SelectedObject?.Location.Location.X.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
-            SceneWindow.PosY.Text = SelectedObject?.Location.Location.Y.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
-            SceneWindow.PosZ.Text = SelectedObject?.Location.Location.Z.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
-            SceneWindow.Uid.Text = SelectedObject?.Uid.ToString(CultureInfo.InvariantCulture).Replace(",", "");
+            Filename.Text = SelectedObject != null ? System.IO.Path.GetFileName(SelectedObject.SharedShape.FilePath) : "";
+            TileX.Text = SelectedObject?.Location.TileX.ToString(CultureInfo.InvariantCulture).Replace(",", "");
+            TileZ.Text = SelectedObject?.Location.TileZ.ToString(CultureInfo.InvariantCulture).Replace(",", "");
+            PosX.Text = SelectedObject?.Location.Location.X.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            PosY.Text = SelectedObject?.Location.Location.Y.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            PosZ.Text = SelectedObject?.Location.Location.Z.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            Uid.Text = SelectedObject?.Uid.ToString(CultureInfo.InvariantCulture).Replace(",", "");
 
             double yaw = 0, pitch = 0, roll = 0;
             if (SelectedWorldObject?.Matrix3x3 != null)
@@ -581,9 +458,9 @@ namespace ORTS.TrackViewer
                 pitch = Math.Asin(2.0f * (x * w - y * z)) / Math.PI * 180;
                 roll = Math.Atan2(2.0f * (x * y + z * w), 1.0f - 2.0f * (x * x + z * z)) / Math.PI * 180;
             }
-            SceneWindow.RotX.Text = SelectedWorldObject == null ? "" : pitch.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
-            SceneWindow.RotY.Text = SelectedWorldObject == null ? "" : yaw.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
-            SceneWindow.RotZ.Text = SelectedWorldObject == null ? "" : roll.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            RotX.Text = SelectedWorldObject == null ? "" : pitch.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            RotY.Text = SelectedWorldObject == null ? "" : yaw.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
+            RotZ.Text = SelectedWorldObject == null ? "" : roll.ToString("N3", CultureInfo.InvariantCulture).Replace(",", "");
 
             //if (SelectedObject is StaticShape ppp)
             //{
@@ -592,6 +469,66 @@ namespace ORTS.TrackViewer
             //    aaa.Serialize(sb);
             //    var ccc = sb.ToString();
             //}
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            e.Cancel = true;
+            Hide();
+        }
+
+        private void IntValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = int.TryParse(e.Text, out var _);
+        }
+
+        private void UndoRedoCanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = EditorState == EditorState.Default || EditorState == EditorState.ObjectSelected;
+        }
+
+        private void CancelCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (EditorState == EditorState.Default || EditorState == EditorState.ObjectSelected)
+                SetDefaultMode();
+            else if (EditorState == EditorState.HandleMoving)
+                CancelHandleMove();
+            else if (EditorState == EditorState.ObjectMoving)
+                CancelObjectMove();
+        }
+
+        private void RotateCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            EditorMoveState = EditorMoveState.Rotate;
+
+            if (EditorState == EditorState.ObjectSelected)
+                StartObjectMove();
+        }
+
+        private void MoveCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            EditorMoveState = EditorMoveState.Move;
+
+            if (EditorState == EditorState.ObjectSelected)
+                StartObjectMove();
+        }
+
+        private void MoveHandleCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            EditorMoveState = EditorMoveState.Move;
+
+            if (EditorState == EditorState.ObjectSelected)
+                StartHandleMove();
+        }
+
+        private void UintValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = uint.TryParse(e.Text, out var _);
+        }
+
+        private void FloatValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = float.TryParse(e.Text, out var _);
         }
     }
 
@@ -637,7 +574,7 @@ namespace ORTS.TrackViewer
         Rotate,
     }
 
-    public class SceneViewerHwndHost : HwndHost
+    class SceneViewerHwndHost : HwndHost
     {
         readonly IntPtr HwndChildHandle;
 
@@ -659,7 +596,7 @@ namespace ORTS.TrackViewer
 
             PInvoke.SetWindowLong(child, Windows.Win32.UI.WindowsAndMessaging.WINDOW_LONG_PTR_INDEX.GWL_STYLE, style);
             PInvoke.SetParent(child, parent);
-            
+
             return new HandleRef(this, HwndChildHandle);
         }
 

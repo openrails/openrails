@@ -1,13 +1,25 @@
-﻿<Window x:Class="ORTS.TrackViewer.UserInterface.SceneWindow"
+﻿<Window x:Class="ORTS.TrackViewer.UserInterface.SceneView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:ORTS.TrackViewer"
+        xmlns:local="clr-namespace:ORTS.TrackViewer.UserInterface"
         mc:Ignorable="d"
-        Name="window"
-        d:DataContext="{d:DesignInstance local:SceneViewer, IsDesignTimeCreatable=False}"
         Title="Scene View" SizeToContent="WidthAndHeight">
+    <Window.CommandBindings>
+        <CommandBinding Command="Undo" Executed="UndoCommand" CanExecute="UndoRedoCanExecute"/>
+        <CommandBinding Command="Redo" Executed="RedoCommand" CanExecute="UndoRedoCanExecute"/>
+        <CommandBinding Command="Stop" Executed="CancelCommand"/>
+        <CommandBinding Command="MoveLeft" Executed="RotateCommand"/>
+        <CommandBinding Command="MoveRight" Executed="MoveCommand"/>
+        <CommandBinding Command="MoveUp" Executed="MoveHandleCommand"/>
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="Esc" Command="Stop"/><!--This doesn't work-->
+        <KeyBinding Key="M" Command="MoveRight"/>
+        <KeyBinding Key="R" Command="MoveLeft"/>
+        <KeyBinding Key="H" Command="MoveUp"/>
+    </Window.InputBindings>
     <DockPanel LastChildFill="True">
         <Menu DockPanel.Dock="Top" Height="22" Name="menuMain" Width="Auto">
             <MenuItem Header="_File">
@@ -17,9 +29,9 @@
                 <MenuItem Header="_Undo" Name="menuUndo" Command="Undo" InputGestureText="Ctrl+Z"/>
                 <MenuItem Header="_Redo" Name="menuRedo" Command="Redo" InputGestureText="Ctrl+Y"/>
                 <Separator/>
-                <MenuItem Header="_Move" Name="menuName" InputGestureText="M"/>
-                <MenuItem Header="_Rotate" Name="menuRotate" InputGestureText="R"/>
-                <MenuItem Header="Move _handle" Name="menuHandle" InputGestureText="H"/>
+                <MenuItem Header="_Move" Name="menuName" Command="MoveRight" InputGestureText="M"/>
+                <MenuItem Header="_Rotate" Name="menuRotate" Command="MoveLeft" InputGestureText="R"/>
+                <MenuItem Header="Move _handle" Name="menuHandle" Command="MoveUp" InputGestureText="H"/>
             </MenuItem>
             <MenuItem Header="_View">
                 <MenuItem Header="Nothing to see here" Name="menuNothing3" />
@@ -112,21 +124,21 @@
             <StatusBarItem Grid.Column="12">
                 <Border BorderThickness="1 1 0 0" BorderBrush="Gray">
                     <Border BorderThickness="0 0 1 1" BorderBrush="AntiqueWhite">
-                        <TextBlock Name="DeltaX" Width="55" TextAlignment="Right" Background="#FFF7DCDC"/>
+                        <TextBlock Name="DeltaXBlock" Width="55" TextAlignment="Right" Background="#FFF7DCDC"/>
                     </Border>
                 </Border>
             </StatusBarItem>
             <StatusBarItem Grid.Column="13">
                 <Border BorderThickness="1 1 0 0" BorderBrush="Gray">
                     <Border BorderThickness="0 0 1 1" BorderBrush="AntiqueWhite">
-                        <TextBlock Name="DeltaY" Width="55" TextAlignment="Right" Background="#FFC3CFFB"/>
+                        <TextBlock Name="DeltaYBlock" Width="55" TextAlignment="Right" Background="#FFC3CFFB"/>
                     </Border>
                 </Border>
             </StatusBarItem>
             <StatusBarItem Grid.Column="14">
                 <Border BorderThickness="1 1 0 0" BorderBrush="Gray">
                     <Border BorderThickness="0 0 1 1" BorderBrush="AntiqueWhite">
-                        <TextBlock Name="DeltaZ" Width="55" TextAlignment="Right" Background="#FFCDF9D8"/>
+                        <TextBlock Name="DeltaZBlock" Width="55" TextAlignment="Right" Background="#FFCDF9D8"/>
                     </Border>
                 </Border>
             </StatusBarItem>
@@ -179,8 +191,4 @@
         </Border>
         <Grid DockPanel.Dock="Bottom" x:Name="GraphicsHostElement" />
     </DockPanel>
-    <Window.CommandBindings>
-        <!--CommandBinding Command="Undo" Executed="{Binding UndoCommand}"/>
-        <CommandBinding Command="Redo" Executed="{Binding RedoCommand}"/-->
-    </Window.CommandBindings>
 </Window>
