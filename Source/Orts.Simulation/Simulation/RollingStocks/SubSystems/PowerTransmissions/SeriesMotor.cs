@@ -136,9 +136,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             NominalRevolutionsRad = nomRevolutionsRad;
         }
 
-        public override float GetDevelopedTorqueNm(float revolutionsRad)
+        public override double GetDevelopedTorqueNm(double revolutionsRad)
         {
-            BackEMFvoltageV = revolutionsRad * fieldWb;
+            BackEMFvoltageV = (float)revolutionsRad * fieldWb;
             return fieldWb * armatureCurrentA/* - (frictionTorqueNm * revolutionsRad / NominalRevolutionsRad * revolutionsRad / NominalRevolutionsRad)*/;
         }
 
