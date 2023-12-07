@@ -53,7 +53,6 @@ namespace ORTS.TrackViewer
     public class TrackViewer : Orts.Viewer3D.Processes.Game
     {
         #region Public members
-        public SceneViewer SceneViewer { get; private set; }
         private static RenderTarget2D DummyRenderTarget;
         public bool IsTrackViewerWindowActive { get; private set; }
 
@@ -132,6 +131,9 @@ namespace ORTS.TrackViewer
 
         /// <summary>The fontmanager that we use to draw strings</summary>
         public FontManager fontManager;
+
+        public SceneView SceneView;
+
         /// <summary>The command-line arguments</summary>
         private string[] commandLineArgs;
         #endregion
@@ -173,8 +175,8 @@ namespace ORTS.TrackViewer
             LanguageManager = new LanguageManager();
             LanguageManager.LoadLanguage(); // need this before all menus and stuff are initialized.
 
-            this.Activated += ActivateTrackViewer;
-            this.Deactivated += DeactivateTrackViewer;
+            Activated += ActivateTrackViewer;
+            Deactivated += DeactivateTrackViewer;
 
             PushState(new GameStateStandBy());
         }
@@ -236,9 +238,48 @@ namespace ORTS.TrackViewer
             base.Initialize();
         }
 
-        public void InitializeSceneViewer(string[] args)
+        public void InitializeSceneView(string[] args)
         {
-            SceneViewer = SceneViewer ?? new SceneViewer(this, args);
+            // Inject the secondary window into RunActivity
+            SwapChainWindow = GameWindow.Create(this,
+                GraphicsDevice.PresentationParameters.BackBufferWidth,
+                GraphicsDevice.PresentationParameters.BackBufferHeight);
+
+            RenderFrame.FinalRenderTarget = new SwapChainRenderTarget(GraphicsDevice,
+                SwapChainWindow.Handle,
+                GraphicsDevice.PresentationParameters.BackBufferWidth,
+                GraphicsDevice.PresentationParameters.BackBufferHeight,
+                false,
+                GraphicsDevice.PresentationParameters.BackBufferFormat,
+                GraphicsDevice.PresentationParameters.DepthStencilFormat,
+                1,
+                RenderTargetUsage.PlatformContents,
+                PresentInterval.Two);
+
+            SceneView = new SceneView(SwapChainWindow.Handle);
+
+            // The primary window activation events should not affect RunActivity
+            Activated -= ActivateRunActivity;
+            Deactivated -= DeactivateRunActivity;
+
+            /// A workaround for a MonoGame bug where the <see cref="Microsoft.Xna.Framework.Input.Keyboard.GetState()" />
+            /// doesn't return the valid keyboard state. Needs to be enabled via reflection in a private method.
+            var keyboardSetActive = typeof(Microsoft.Xna.Framework.Input.Keyboard)
+                .GetMethod("SetActive", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+
+            // The secondary window activation events should affect RunActivity
+            SceneView.Activated += ActivateRunActivity;
+            SceneView.Activated += new System.EventHandler((sender, e) => keyboardSetActive.Invoke(null, new object[] { true }));
+            SceneView.Deactivated += DeactivateRunActivity;
+            SceneView.Deactivated += new System.EventHandler((sender, e) => keyboardSetActive.Invoke(null, new object[] { false }));
+
+            ReplaceState(new GameStateRunActivity(new[] { "-start", "-viewer", CurrentRoute.Path + "\\dummy\\.pat", "", "10:00", "1", "0" }));
+        }
+
+        public void ShowSceneView()
+        {
+            SceneView.Show();
+            SceneView.Activate();
         }
 
         /// <summary>
@@ -324,7 +365,11 @@ namespace ORTS.TrackViewer
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            SceneViewer?.Update(gameTime);
+            if (RenderProcess?.Viewer != null && SceneView != null)
+            {
+                SceneView.Viewer = SceneView.Viewer ?? RenderProcess.Viewer;
+                SceneView.Update(gameTime);
+            }
 
             if (!this.IsTrackViewerWindowActive)
             {
