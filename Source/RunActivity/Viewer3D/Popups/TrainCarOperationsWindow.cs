@@ -504,6 +504,7 @@ namespace Orts.Viewer3D.Popups
             {
                 var trainCarViewer = Owner.Viewer.TrainCarOperationsViewerWindow;
                 var carOperations = Owner.Viewer.CarOperationsWindow;
+                var trainCarWebpage = Owner.Viewer.TrainCarOperationsWebpage;
 
                 trainCarViewer.TrainCarOperationsChanged = !trainCarViewer.Visible && trainCarViewer.TrainCarOperationsChanged ? false : trainCarViewer.TrainCarOperationsChanged;
 
@@ -577,7 +578,7 @@ namespace Orts.Viewer3D.Popups
                     carOperations.CarOperationChanged = carOperations.Visible && carOperations.CarOperationChanged;
                 }
 
-                if (CarPosition != trainCarViewer.CarPosition && Owner.Viewer.TrainCarOperationsWebpage.Connections > 0)
+                if (trainCarWebpage != null && CarPosition != trainCarViewer.CarPosition && trainCarWebpage.Connections > 0)
                 {
                     // Required to scroll the main window from the web version
                     UpdateTrainCarOperation = true;
