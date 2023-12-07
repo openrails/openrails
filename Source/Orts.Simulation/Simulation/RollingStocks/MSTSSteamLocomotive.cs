@@ -2240,7 +2240,15 @@ namespace Orts.Simulation.RollingStocks
 
                 if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
                 {
-                    tractiveforcethrottle = enginethrottle;
+                    if (SteamBoosterRunMode)
+                    {
+                        tractiveforcethrottle = enginethrottle;
+                    }
+                    else if (SteamBoosterIdleMode || !SteamBoosterAirOpen)
+                    {
+                        // Booster produces no output force
+                        tractiveforcethrottle = 0;
+                    }                    
                 }
                 else
                 {
