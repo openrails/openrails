@@ -2178,6 +2178,7 @@ namespace Orts.Simulation.RollingStocks
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
+                var enginethrottle = 0.0f;
 
                 SteamEngines[i].IndicatedHorsePowerHP = (N.ToLbf(SteamEngines[i].TractiveForceN) * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
 
@@ -2187,7 +2188,7 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)  // Booster Engine
                 {
-                    var boosterthrottle = 0.0f;
+                    
                     var boostercutoff = SteamEngines[i].BoosterCutoff;
 
                     // Confirm that Latch is on
@@ -2202,30 +2203,28 @@ namespace Orts.Simulation.RollingStocks
 
                     // Identify operating mode for the Booster
                     // Idle mode
-                    if (SteamBoosterAirOpen && !SteamBoosterIdle && SteamBoosterLatchedLocked)
+                    if (SteamBoosterAirOpen && !SteamBoosterIdle)
                     {
                         SteamBoosterRunMode = false;
                         SteamBoosterIdleMode = true;
-                        boosterthrottle = 0.2f;
+                        enginethrottle = 0.2f;
                     }
                     // Run mode
                     else if (SteamBoosterAirOpen && SteamBoosterIdle && SteamBoosterLatchedLocked)
                     {
                         SteamBoosterIdleMode = false;
                         SteamBoosterRunMode = true;
-                        boosterthrottle = 1.0f;
+                        enginethrottle = 1.0f;
                     }
                     else if (!SteamBoosterAirOpen || !SteamBoosterLatchedLocked)
                     {
                         SteamBoosterRunMode = false;
                         SteamBoosterIdleMode = false;
-                        boosterthrottle = 0;
+                        enginethrottle = 0;
                     }
 
-                    if (SteamBoosterRunMode || SteamBoosterIdleMode)
-                    {
-                        UpdateCylinders(elapsedClockSeconds, boosterthrottle, boostercutoff, absSpeedMpS, i);
-                    }
+                        UpdateCylinders(elapsedClockSeconds, enginethrottle, boostercutoff, absSpeedMpS, i);
+
                 }
                 BoilerMassLB -= elapsedClockSeconds * SteamEngines[i].CylinderSteamUsageLBpS; //  Boiler mass will be reduced by cylinder steam usage
                 BoilerHeatBTU -= elapsedClockSeconds * SteamEngines[i].CylinderSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); //  Boiler Heat will be reduced by heat required to replace the cylinder steam usage, ie create steam from hot water. 
@@ -2237,12 +2236,18 @@ namespace Orts.Simulation.RollingStocks
 
                 SteamEngines[i].TractiveForceN = 0;
 
-                if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster && (SteamBoosterIdleMode || SteamBoosterRunMode))
-                    UpdateTractiveForce(elapsedClockSeconds, 0, 0, 0, i);
+                float tractiveforcethrottle = 0;
+
+                if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                {
+                    tractiveforcethrottle = enginethrottle;
+                }
                 else
                 {
-                    UpdateTractiveForce(elapsedClockSeconds, 0, 0, 0, i);
+                    tractiveforcethrottle = throttle;
                 }
+
+                UpdateTractiveForce(elapsedClockSeconds, tractiveforcethrottle, 0, 0, i);
 
                 TractiveForceN += SteamEngines[i].TractiveForceN;
 
@@ -5023,7 +5028,7 @@ namespace Orts.Simulation.RollingStocks
             SteamReleasePressure_AtmPSI = SteamEngines[numberofengine].Pressure_c_AtmPSI; // for steam and smoke effects
 
         }
-        protected override void UpdateTractiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS, int numberofengine)
+        protected override void UpdateTractiveForce(float elapsedClockSeconds, float locomotivethrottle, float AbsSpeedMpS, float AbsWheelSpeedMpS, int numberofengine)
         {
             // Pass force and power information to MSTSLocomotive file by overriding corresponding method there
 
@@ -5122,7 +5127,7 @@ namespace Orts.Simulation.RollingStocks
                 float slipcutoff = 0;
                 if (SteamEngines[numberofengine].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
                 {
-                    slipcutoff = 1.0f;
+                    slipcutoff = SteamEngines[numberofengine].BoosterCutoff;
                 }
                 else
                 {
@@ -5219,7 +5224,7 @@ namespace Orts.Simulation.RollingStocks
                     // Combined cylinder pressure
                     crankCylinderPressure = forwardCylinderPressure - backwardCylinderPressure;
 
-                    if ((throttle < 0.01 && SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster) || (!SteamBoosterAirOpen && SteamEngines[numberofengine].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster))
+                    if (locomotivethrottle < 0.01)
                     {
                         crankCylinderPressure = 0;
                     }
@@ -5391,7 +5396,7 @@ namespace Orts.Simulation.RollingStocks
                     TractiveEffortLbsF = (SteamEngines[numberofengine].NumberCylinders / 2.0f) * (Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) / (2.0f * Me.ToIn(DriverWheelRadiusM))) * (SteamEngines[numberofengine].MeanEffectivePressurePSI * CylinderEfficiencyRate) * MotiveForceGearRatio;
 
                     // Force tractive effort to zero if throttle is closed, or if a geared steam locomotive in neutral gear. MEP calculation is not allowing it to go to zero
-                    if (throttle < 0.001 || (SteamEngineType == SteamEngineTypes.Geared && SteamGearPosition == 0))
+                    if (locomotivethrottle < 0.001 || (SteamEngineType == SteamEngineTypes.Geared && SteamGearPosition == 0))
                     {
                         TractiveEffortLbsF = 0.0f;
                     }
@@ -5412,7 +5417,7 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 // On starting allow maximum motive force to be used, unless gear is in neutral (normally only geared locomotive will be zero). Decrease force if steam pressure is not at maximum
-                if (absSpeedMpS < 1.0f && cutoff > 0.70f && throttle > 0.98f && MotiveForceGearRatio != 0)
+                if (absSpeedMpS < 1.0f && cutoff > 0.70f && locomotivethrottle > 0.98f && MotiveForceGearRatio != 0)
                 {
                     SteamEngines[numberofengine].TractiveForceN = MaxForceN * (BoilerPressurePSI / MaxBoilerPressurePSI);
                 }
@@ -5467,21 +5472,11 @@ namespace Orts.Simulation.RollingStocks
             ApplyDirectionToTractiveForce(ref SteamEngines[numberofengine].TractiveForceN);
 
             // Set tractive force to zero if throttle is closed
-            if (SteamEngines[numberofengine].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
+            if (locomotivethrottle < 0.001)
             {
-                var boosterthrottle = 0;
-                if (boosterthrottle < 0.01)
-                {
-                    SteamEngines[numberofengine].TractiveForceN = 0;
-                }
+                SteamEngines[numberofengine].TractiveForceN = 0;
             }
-            else
-            {
-                if (throttle < 0.001)
-                {
-                    SteamEngines[numberofengine].TractiveForceN = 0;
-                }
-            }
+
 
             SteamEngines[numberofengine].AttachedAxle.DriveForceN = SteamEngines[numberofengine].TractiveForceN;
         }
