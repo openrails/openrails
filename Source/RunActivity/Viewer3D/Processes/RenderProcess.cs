@@ -261,7 +261,12 @@ namespace Orts.Viewer3D.Processes
             if (IsMouseVisible != Game.IsMouseVisible)
                 Game.IsMouseVisible = IsMouseVisible;
 
-            Cursor.Current = ActualCursor;
+            // Restrict `ActualCursor` to the main window so that it won't affect other popup
+            // windows, such as the Dispatch window. This prevents cursor flickering.
+            if (GameForm.Focused == true)
+            {
+                GameForm.Cursor = ActualCursor;
+            }
 
             if (ToggleFullScreenRequested)
             {
