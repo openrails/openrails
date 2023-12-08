@@ -951,7 +951,7 @@ namespace Orts.Simulation.Timetables
                         StationStop newStop = CalculateStationStop(signalRef.PlatformDetailsList[altPlatformIndex].PlatformReference[0],
                         orgStop.ArrivalTime, orgStop.DepartTime, orgStop.arrivalDT, orgStop.departureDT, clearingDistanceM, minStopDistanceM,
                         orgStop.Terminal, orgStop.ActualMinStopTime, orgStop.KeepClearFront, orgStop.KeepClearRear, orgStop.ForcePosition,
-                        orgStop.CloseupSignal, orgStop.Closeup, orgStop.RestrictPlatformToSignal, orgStop.ExtendPlatformToSignal, orgStop.EndStop, orgStop.AllowDepartEarly);
+                        orgStop.CloseupSignal, orgStop.Closeup, orgStop.RestrictPlatformToSignal, orgStop.ExtendPlatformToSignal, orgStop.EndStop);
 
                         // Add new holding signal if required
                         if (newStop.HoldSignal && newStop.ExitSignal >= 0)
@@ -1326,7 +1326,7 @@ namespace Orts.Simulation.Timetables
         /// <\summary>
         public StationStop CalculateStationStop(int platformStartID, int arrivalTime, int departTime, DateTime arrivalDT, DateTime departureDT, float clearingDistanceM,
             float minStopDistance, bool terminal, int? actMinStopTime, float? keepClearFront, float? keepClearRear, bool forcePosition, bool closeupSignal,
-            bool closeup, bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop, bool allowdepartearly)
+            bool closeup, bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop)
         {
             int platformIndex;
             int activeSubroute = 0;
@@ -1404,7 +1404,6 @@ namespace Orts.Simulation.Timetables
                         restrictPlatformToSignal,
                         extendPlatformToSignal,
                         endStop,
-                        allowdepartearly,
                         StationStop.STOPTYPE.STATION_STOP)
                 {
                     arrivalDT = arrivalDT,
@@ -1998,11 +1997,11 @@ namespace Orts.Simulation.Timetables
         /// <returns></returns>
         public bool CreateStationStop(int platformStartID, int arrivalTime, int departTime, DateTime arrivalDT, DateTime departureDT, float clearingDistanceM,
             float minStopDistanceM, bool terminal, int? actMinStopTime, float? keepClearFront, float? keepClearRear, bool forcePosition, bool closeupSignal,
-            bool closeup, bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop, bool allowdepartearly)
+            bool closeup, bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop)
         {
             StationStop thisStation = CalculateStationStop(platformStartID, arrivalTime, departTime, arrivalDT, departureDT, clearingDistanceM,
                 minStopDistanceM, terminal, actMinStopTime, keepClearFront, keepClearRear, forcePosition, closeupSignal, closeup,
-                restrictPlatformToSignal, extendPlatformToSignal, endStop, allowdepartearly);
+                restrictPlatformToSignal, extendPlatformToSignal, endStop);
 
             if (thisStation != null)
             {
@@ -10392,14 +10391,7 @@ namespace Orts.Simulation.Timetables
                                     if (!StationStops[0].EndStop)
                                     {
                                         if (!DriverOnlyOperation) Simulator.SoundNotify = Event.PermissionToDepart;  // Sound departure if not doo
-                                        if (StationStops[0].AllowDepartEarly)
-                                        {
-                                            DisplayMessage = Simulator.Catalog.GetString("Passenger boarding completed. Early departure allowed.");
-                                        }
-                                        else
-                                        {
-                                            DisplayMessage = Simulator.Catalog.GetString("Passenger boarding completed. You may depart now.");
-                                        }
+                                        DisplayMessage = Simulator.Catalog.GetString("Passenger boarding completed. You may depart now.");
                                     }
                                 }
                             }

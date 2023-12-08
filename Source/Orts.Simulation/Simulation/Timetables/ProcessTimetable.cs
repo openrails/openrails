@@ -3160,7 +3160,6 @@ namespace Orts.Simulation.Timetables
             public DateTime departureDT;
             public DateTime passDT;
             public bool arrdeppassvalid;
-            public bool allowDepartEarly;
             public SignalHoldType holdState;
             public bool noWaitSignal;
             // TODO
@@ -3184,7 +3183,6 @@ namespace Orts.Simulation.Timetables
                 departureTime = -1;
                 passTime = -1;
                 Commands = null;
-                allowDepartEarly = false;
 
                 TimeSpan atime;
                 bool validArrTime = false;
@@ -3202,32 +3200,22 @@ namespace Orts.Simulation.Timetables
                         passDT = new DateTime(atime.Ticks);
                     }
                 }
-                if (arrTime.Contains("*"))
-                {
-                    allowDepartEarly = true;
-                    string arrivTime = arrTime.Replace('*', ':');
-                    validArrTime = TimeSpan.TryParse(arrivTime, out atime);
-                    if (validArrTime)
-                    {
-                        departureTime = arrivalTime = Convert.ToInt32(atime.TotalSeconds);
-                        departureDT = arrivalDT = new DateTime(atime.Ticks);
-                    }
-                }
                 else
                 {
+
                     validArrTime = TimeSpan.TryParse(arrTime, out atime);
                     if (validArrTime)
                     {
                         arrivalTime = Convert.ToInt32(atime.TotalSeconds);
                         arrivalDT = new DateTime(atime.Ticks);
                     }
+                }
 
-                    validDepTime = TimeSpan.TryParse(depTime, out atime);
-                    if (validDepTime)
-                    {
-                        departureTime = Convert.ToInt32(atime.TotalSeconds);
-                        departureDT = new DateTime(atime.Ticks);
-                    }
+                validDepTime = TimeSpan.TryParse(depTime, out atime);
+                if (validDepTime)
+                {
+                    departureTime = Convert.ToInt32(atime.TotalSeconds);
+                    departureDT = new DateTime(atime.Ticks);
                 }
 
                 arrdeppassvalid = validArrTime || validDepTime;
@@ -3406,7 +3394,7 @@ namespace Orts.Simulation.Timetables
 
                     // Create station stop info
                     validStop = actTrain.CreateStationStop(actPlatformID, arrivalTime, departureTime, arrivalDT, departureDT, AITrain.clearingDistanceM,
-                        AITrain.minStopDistanceM, terminal, actMinStopTime,keepClearFront, keepClearRear, forcePosition, closeupSignal, closeup, restrictPlatformToSignal, extendPlatformToSignal, endStop, allowDepartEarly);
+                        AITrain.minStopDistanceM, terminal, actMinStopTime, keepClearFront, keepClearRear, forcePosition, closeupSignal, closeup, restrictPlatformToSignal, extendPlatformToSignal, endStop);
 
                     // Override holdstate using stop info - but only if exit signal is defined
                     int exitSignal = actTrain.StationStops[actTrain.StationStops.Count - 1].ExitSignal;
