@@ -71,7 +71,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         protected readonly TrainCar Car;
 
         /// <summary>
-        /// Get total axle out force with brake force substracted
+        /// Get total axle out force with brake and friction force substracted
         /// </summary>
         public float CompensatedForceN
         {
@@ -317,7 +317,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public int NumOfSubstepsPS { get; set; }
 
         /// <summary>
-        /// Positive only brake force to the axle, in Newtons
+        /// Positive only brake force to the individual axle, in Newtons
         /// </summary>
         public float BrakeRetardForceN;
 
@@ -334,6 +334,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         protected float frictionN;
 
+        /// <summary>
+        /// Positive only friction force to the axle, in Newtons
+        /// </summary>
         public float FrictionN { set { frictionN = Math.Abs(value); } get { return frictionN; } }
 
         /// <summary>
@@ -568,7 +571,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float AxleForceN { get; private set; }
 
         /// <summary>
-        /// Compensated Axle force value, this provided the motive force equivalent excluding brake force, in Newtons
+        /// Compensated Axle force value, this provided the motive force equivalent excluding brake and friction force, in Newtons
         /// </summary>
         public float CompensatedAxleForceN { get; protected set; }
 
@@ -1091,9 +1094,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             // And thus there is a duplication of the braking effect in OR. To compensate for this, after the slip characteristics have been calculated, the output of the axle
             // module has the brake force "added" back in to give the appropriate motive force output for the locomotive. Braking force is handled separately.
             // Hence CompensatedAxleForce is the actual output force on the axle. Similarly friction is also handled separately so it is also discounted from the CompensatedForce.
-            if (Math.Abs(TrainSpeedMpS) < 0.001f && AxleForceN == 0) CompensatedAxleForceN = DriveForceN;
-            else if (TrainSpeedMpS < 0) CompensatedAxleForceN = AxleForceN - BrakeRetardForceN - FrictionN;
-            else CompensatedAxleForceN = AxleForceN + BrakeRetardForceN + FrictionN;
+
+            // Make sure that compensated value never exceeds the "output" force, otherwise resulting value will be overcompensated
+            var CompensationVariation = BrakeRetardForceN + FrictionN;
+
+            if (CompensationVariation > Math.Abs(AxleForceN))
+            {
+                CompensationVariation = Math.Abs(AxleForceN); ;
+            }
+
+            if (Math.Abs(TrainSpeedMpS) < 0.001f && AxleForceN == 0) CompensatedAxleForceN = 0;
+            else if (TrainSpeedMpS < 0) CompensatedAxleForceN = AxleForceN - CompensationVariation;
+            else CompensatedAxleForceN = AxleForceN + CompensationVariation;
 
             if (Math.Abs(SlipSpeedMpS) > WheelSlipThresholdMpS)
             {
