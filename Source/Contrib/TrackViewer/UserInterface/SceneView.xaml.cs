@@ -109,13 +109,16 @@ namespace ORTS.TrackViewer.UserInterface
             {
                 if (ObjectSnap && Camera.PickByMouse(out var snappedObject))
                 {
+                    if (snappedObject != SnappedObject)
+                        Viewer.EditorShapes.BoundingBoxShapes.RemoveAll(s => s == SnappedObject);
                     SnappedObject = snappedObject;
-                    Viewer.EditorShapes.BoundingBoxShapes.Add(SnappedObject);
+                    if (!Viewer.EditorShapes.BoundingBoxShapes.Contains(SnappedObject))
+                        Viewer.EditorShapes.BoundingBoxShapes.Add(SnappedObject);
                 }
                 else
                 {
+                    Viewer.EditorShapes.BoundingBoxShapes.RemoveAll(s => s == SnappedObject);
                     SnappedObject = null;
-                    Viewer.EditorShapes.BoundingBoxShapes.TryTake(out _);
                 }
                 MovedObject.Location.XNAMatrix = GetMovingMatrix(MovedObjectOriginalPosition, HandleOriginalPosition, HandlePosition);
                 Viewer.EditorShapes.MovedObject = MovedObject;
@@ -438,6 +441,7 @@ namespace ORTS.TrackViewer.UserInterface
                 HandlePosition.CopyFrom(HandleOriginalPosition);
             else
                 HandlePosition = null;
+            Viewer.EditorShapes.BoundingBoxShapes.Clear();
             EditorState = EditorState.ObjectSelected;
         }
 
@@ -457,6 +461,7 @@ namespace ORTS.TrackViewer.UserInterface
 
             DeltaContext = UndoStack.Peek();
             MovedObject = null;
+            Viewer.EditorShapes.BoundingBoxShapes.Clear();
             EditorState = EditorState.ObjectSelected;
         }
 
@@ -472,12 +477,14 @@ namespace ORTS.TrackViewer.UserInterface
         {
             HandlePosition = null;
             HandleOriginalPosition = null;
+            Viewer.EditorShapes.BoundingBoxShapes.Clear();
             EditorState = EditorState.ObjectSelected;
         }
 
         void ApplyHandleMove()
         {
             HandleOriginalPosition = new WorldPosition(HandlePosition);
+            Viewer.EditorShapes.BoundingBoxShapes.Clear();
             EditorState = EditorState.ObjectSelected;
         }
 
@@ -486,8 +493,7 @@ namespace ORTS.TrackViewer.UserInterface
             Viewer.EditorShapes.SelectedObject = SelectedObject;
             Viewer.EditorShapes.MovedObject = null;
             Viewer.EditorShapes.HandleLocation = null;
-            while (!Viewer.EditorShapes.BoundingBoxShapes.IsEmpty)
-                Viewer.EditorShapes.BoundingBoxShapes.TryTake(out _);
+            Viewer.EditorShapes.BoundingBoxShapes.Clear();
             HandlePosition = null;
             HandleOriginalPosition = null;
             SnappedObject = null;

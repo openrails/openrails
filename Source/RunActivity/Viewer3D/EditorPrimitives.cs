@@ -48,7 +48,7 @@ namespace Orts.Viewer3D
         public WorldPosition MovedObjectLocation { get; set; }
         BoundingBoxPrimitive MovedObjectPrimitive;
 
-        public ConcurrentBag<StaticShape> BoundingBoxShapes = new ConcurrentBag<StaticShape>();
+        public readonly List<StaticShape> BoundingBoxShapes = new List<StaticShape>();
         readonly ConcurrentDictionary<(int tileX, int tileZ, int uid, Matrix matrix, int number), BoundingBoxPrimitive> BoundingBoxPrimitives = new ConcurrentDictionary<(int, int, int, Matrix, int), BoundingBoxPrimitive>();
         readonly ConcurrentBag<EditorPrimitive> UnusedPrimitives = new ConcurrentBag<EditorPrimitive>();
 
