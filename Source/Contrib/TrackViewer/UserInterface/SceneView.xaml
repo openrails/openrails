@@ -10,15 +10,21 @@
         <CommandBinding Command="Undo" Executed="UndoCommand" CanExecute="UndoRedoCanExecute"/>
         <CommandBinding Command="Redo" Executed="RedoCommand" CanExecute="UndoRedoCanExecute"/>
         <CommandBinding Command="Stop" Executed="CancelCommand"/>
-        <CommandBinding Command="MoveLeft" Executed="RotateCommand"/>
-        <CommandBinding Command="MoveRight" Executed="MoveCommand"/>
-        <CommandBinding Command="MoveUp" Executed="MoveHandleCommand"/>
+        <CommandBinding Command="{x:Static local:SceneView.Rotate}" Executed="RotateCommand"/>
+        <CommandBinding Command="{x:Static local:SceneView.Move}" Executed="MoveCommand"/>
+        <CommandBinding Command="{x:Static local:SceneView.MoveHandle}" Executed="MoveHandleCommand"/>
+        <CommandBinding Command="{x:Static local:SceneView.ToggleOrtho}" Executed="ToggleOrthoCommand"/>
+        <CommandBinding Command="{x:Static local:SceneView.ToggleElevationLock}" Executed="ToggleElevationLockCommand"/>
+        <CommandBinding Command="{x:Static local:SceneView.ToggleObjectSnap}" Executed="ToggleObjectSnapCommand"/>
     </Window.CommandBindings>
     <Window.InputBindings>
-        <KeyBinding Key="Esc" Command="Stop"/><!--This doesn't work-->
-        <KeyBinding Key="M" Command="MoveRight"/>
-        <KeyBinding Key="R" Command="MoveLeft"/>
-        <KeyBinding Key="H" Command="MoveUp"/>
+        <KeyBinding Key="Esc" Command="Stop"/><!--This one doesn't work, Escape is eaten somewhere, need to workaround it in code-->
+        <KeyBinding Key="R" Command="{x:Static local:SceneView.Rotate}"/>
+        <KeyBinding Key="M" Command="{x:Static local:SceneView.Move}"/>
+        <KeyBinding Key="H" Command="{x:Static local:SceneView.MoveHandle}"/>
+        <KeyBinding Key="F3" Command="{x:Static local:SceneView.ToggleObjectSnap}"/>
+        <KeyBinding Key="F7" Command="{x:Static local:SceneView.ToggleElevationLock}"/>
+        <KeyBinding Key="F8" Command="{x:Static local:SceneView.ToggleOrtho}"/>
     </Window.InputBindings>
     <DockPanel LastChildFill="True">
         <Menu DockPanel.Dock="Top" Height="22" Name="menuMain" Width="Auto">
@@ -26,12 +32,16 @@
                 <MenuItem Header="Nothing to see here" Name="menuNothing" />
             </MenuItem>
             <MenuItem Header="_Edit">
-                <MenuItem Header="_Undo" Name="menuUndo" Command="Undo" InputGestureText="Ctrl+Z"/>
-                <MenuItem Header="_Redo" Name="menuRedo" Command="Redo" InputGestureText="Ctrl+Y"/>
+                <MenuItem Header="_Undo" Command="Undo" InputGestureText="Ctrl+Z"/>
+                <MenuItem Header="_Redo" Command="Redo" InputGestureText="Ctrl+Y"/>
                 <Separator/>
-                <MenuItem Header="_Move" Name="menuName" Command="MoveRight" InputGestureText="M"/>
-                <MenuItem Header="_Rotate" Name="menuRotate" Command="MoveLeft" InputGestureText="R"/>
-                <MenuItem Header="Move _handle" Name="menuHandle" Command="MoveUp" InputGestureText="H"/>
+                <MenuItem Header="_Move" Command="{x:Static local:SceneView.Move}" InputGestureText="M"/>
+                <MenuItem Header="_Rotate" Command="{x:Static local:SceneView.Rotate}" InputGestureText="R"/>
+                <MenuItem Header="Move _Handle" Command="{x:Static local:SceneView.MoveHandle}" InputGestureText="H"/>
+                <Separator/>
+                <MenuItem Header="Ortho Mode X-Z" Command="{x:Static local:SceneView.ToggleOrtho}" InputGestureText="F8"/>
+                <MenuItem Header="Elevation Lock Y" Command="{x:Static local:SceneView.ToggleElevationLock}" InputGestureText="F7"/>
+                <MenuItem Header="Object Snap" Command="{x:Static local:SceneView.ToggleObjectSnap}" InputGestureText="F3" IsCheckable="True"/>
             </MenuItem>
             <MenuItem Header="_View">
                 <MenuItem Header="Nothing to see here" Name="menuNothing3" />

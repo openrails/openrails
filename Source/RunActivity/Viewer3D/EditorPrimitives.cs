@@ -32,6 +32,7 @@ namespace Orts.Viewer3D
         readonly MouseCrosshair MouseCrosshair;
         public bool MouseCrosshairEnabled { get; set; }
         public bool CrosshairPositionUpdateEnabled { get; set; } = true;
+        Vector3 CrosshairPosition;
 
         readonly HandleX HandleX;
         readonly HandleY HandleY;
@@ -50,14 +51,38 @@ namespace Orts.Viewer3D
         public ConcurrentBag<StaticShape> BoundingBoxShapes = new ConcurrentBag<StaticShape>();
         readonly ConcurrentDictionary<(int tileX, int tileZ, int uid, Matrix matrix, int number), BoundingBoxPrimitive> BoundingBoxPrimitives = new ConcurrentDictionary<(int, int, int, Matrix, int), BoundingBoxPrimitive>();
         readonly ConcurrentBag<EditorPrimitive> UnusedPrimitives = new ConcurrentBag<EditorPrimitive>();
-        Vector3 CrosshairPosition;
+
+        public bool ConstructionLinesEnabled { get; set; }
+        public bool ConsturcionLineAngleStyle { get; set; }
+        public Vector3 ConstructionLineX { get; set; }
+        public Vector3 ConstructionLineY { get; set; }
+        public Vector3 ConstructionLineZ { get; set; }
+        public float ConstructionAngle { get; set; }
+        public Vector3 ConstructionOriginalTranslation { get; set; }
+        readonly ConstructionLine LineX;
+        readonly ConstructionLine LineY;
+        readonly ConstructionLine LineZ;
+        readonly ConstructionLine LineDiagonal;
+        readonly ConstructionArc AngleArc;
+
+        Color XColor = Color.Red;
+        Color YColor = Color.Blue;
+        Color ZColor = Color.LightGreen;
+        Color DColor = Color.GreenYellow;
+        Color NColor = Color.Red;
+        Color SColor = Color.Cyan;
 
         public EditorShapes(Viewer viewer) : base(viewer, "", null, ShapeFlags.None, null, -1)
         {
-            MouseCrosshair = new MouseCrosshair(Viewer, Color.GreenYellow, Color.Red, Color.Cyan);
-            HandleX = new HandleX(Viewer, Color.Red);
-            HandleY = new HandleY(Viewer, Color.Blue);
-            HandleZ = new HandleZ(Viewer, Color.LightGreen);
+            MouseCrosshair = new MouseCrosshair(Viewer, DColor, NColor, SColor);
+            HandleX = new HandleX(Viewer, XColor);
+            HandleY = new HandleY(Viewer, YColor);
+            HandleZ = new HandleZ(Viewer, ZColor);
+            LineX = new ConstructionLine(Viewer, XColor);
+            LineY = new ConstructionLine(Viewer, YColor);
+            LineZ = new ConstructionLine(Viewer, ZColor);
+            LineDiagonal = new ConstructionLine(Viewer, DColor);
+            AngleArc = new ConstructionArc(Viewer, DColor);
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -135,11 +160,42 @@ namespace Orts.Viewer3D
                 var mouseCrosshairMatrix = Matrix.CreateTranslation(CrosshairPosition);
                 frame.AddPrimitive(MouseCrosshair.Material, MouseCrosshair, RenderPrimitiveGroup.World, ref mouseCrosshairMatrix);
             }
-            if (HandleEnabled && (HandleLocation ?? SelectedObject?.Location) is WorldPosition handleLocation)
+
+            var handleLocation = HandleLocation ?? SelectedObject?.Location;
+            if (HandleEnabled && handleLocation != null)
             {
                 FrameAddPrimitive(frame, Matrix.Identity, handleLocation, HandleX);
                 FrameAddPrimitive(frame, Matrix.Identity, handleLocation, HandleY);
                 FrameAddPrimitive(frame, Matrix.Identity, handleLocation, HandleZ);
+            }
+            if (ConstructionLinesEnabled && handleLocation != null)
+            {
+                var transform = handleLocation.XNAMatrix;
+                transform.Translation = ConstructionOriginalTranslation;
+
+                if (ConsturcionLineAngleStyle)
+                {
+                    LineX.Update(Vector3.Zero, ConstructionLineX);
+                    LineDiagonal.Update(Vector3.Zero, ConstructionLineZ);
+                    AngleArc.Update(ConstructionAngle, ConstructionLineZ.Length());
+                    FrameAddPrimitive(frame, Matrix.Identity, transform, handleLocation.TileX, handleLocation.TileZ, LineX);
+                    FrameAddPrimitive(frame, Matrix.Identity, transform, handleLocation.TileX, handleLocation.TileZ, LineDiagonal);
+                    FrameAddPrimitive(frame, Matrix.Identity, transform, handleLocation.TileX, handleLocation.TileZ, AngleArc);
+                }
+                else
+                {
+                    var constructionLineXY = ConstructionLineX + ConstructionLineY;
+                    var constructionLineXYZ = constructionLineXY + ConstructionLineZ;
+                    LineY.Update(Vector3.Zero, ConstructionLineY);
+                    LineX.Update(ConstructionLineY, constructionLineXY);
+                    LineZ.Update(constructionLineXY, constructionLineXYZ);
+                    LineDiagonal.Update(constructionLineXYZ, Vector3.Zero);
+
+                    FrameAddPrimitive(frame, Matrix.Identity, transform, handleLocation.TileX, handleLocation.TileZ, LineX);
+                    FrameAddPrimitive(frame, Matrix.Identity, transform, handleLocation.TileX, handleLocation.TileZ, LineY);
+                    FrameAddPrimitive(frame, Matrix.Identity, transform, handleLocation.TileX, handleLocation.TileZ, LineZ);
+                    FrameAddPrimitive(frame, Matrix.Identity, transform, handleLocation.TileX, handleLocation.TileZ, LineDiagonal);
+                }
             }
         }
 
@@ -177,6 +233,9 @@ namespace Orts.Viewer3D
                     selectedObject.Value.Dispose();
                 }
             }
+            HandleX?.Dispose();
+            HandleY?.Dispose();
+            HandleZ?.Dispose();
         }
     }
 
@@ -285,6 +344,70 @@ namespace Orts.Viewer3D
             PrimitiveCount = VertexBuffer.VertexCount / 2;
             PrimitiveType = PrimitiveType.LineList;
             Material = viewer.MaterialManager.Load("DebugNormals");
+        }
+    }
+
+    [CallOnThread("Loader")]
+    public class ConstructionLine : EditorPrimitive
+    {
+        Color Color;
+
+        public ConstructionLine(Viewer viewer, Color color)
+        {
+            Color = color;
+            var vertexData = new VertexPositionColor[]
+            {
+                new VertexPositionColor(new Vector3(5, 0, 0), color),
+                new VertexPositionColor(new Vector3(0, 0, 0), color),
+            };
+            VertexBuffer = new DynamicVertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionColor), vertexData.Length, BufferUsage.WriteOnly);
+            VertexBuffer.SetData(vertexData);
+            PrimitiveCount = VertexBuffer.VertexCount / 2;
+            PrimitiveType = PrimitiveType.LineList;
+            Material = viewer.MaterialManager.Load("EditorPrimitive");
+        }
+
+        [CallOnThread("Render")]
+        public void Update(Vector3 startPosition, Vector3 endPosition)
+        {
+            var vertexData = new[]
+            {
+                new VertexPositionColor(startPosition, Color),
+                new VertexPositionColor(endPosition, Color)
+            };
+            (VertexBuffer as DynamicVertexBuffer).SetData(vertexData, 0, vertexData.Length);
+        }
+    }
+
+    [CallOnThread("Loader")]
+    public class ConstructionArc : EditorPrimitive
+    {
+        Color Color;
+
+        public ConstructionArc(Viewer viewer, Color color)
+        {
+            PrimitiveCount = 50;
+
+            Color = color;
+            VertexBuffer = new DynamicVertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionColor), PrimitiveCount + 1, BufferUsage.WriteOnly);
+            PrimitiveType = PrimitiveType.LineStrip;
+            Material = viewer.MaterialManager.Load("EditorPrimitive");
+        }
+
+        [CallOnThread("Render")]
+        public void Update(float angle, float radius)
+        {
+            var vertexData = new VertexPositionColor[PrimitiveCount + 1];
+            var stepAngle = angle / PrimitiveCount;
+            for (var i = 0; i <= PrimitiveCount; i++)
+            {
+                var iAngle = stepAngle * i;
+                var pos = Vector3.Zero;
+                pos.X = (float)(radius * Math.Cos(iAngle));
+                pos.Z = (float)(radius * Math.Sin(iAngle));
+                vertexData[i] = new VertexPositionColor(pos, Color);
+            }
+            (VertexBuffer as DynamicVertexBuffer).SetData(vertexData, 0, vertexData.Length);
         }
     }
 
