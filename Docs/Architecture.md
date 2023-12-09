@@ -4,12 +4,12 @@ This document will describe the overall structure of Open Rails and how we expec
 
 ## Player application model
 
-The player model describes the desired application components used when playing Open Rails (vs. editing) and their relationships.
+The player application model describes the desired components and their relationships which make up Open Rails. Each of these will be formed from one or more libraries, as needed, and each library may contain distinct but critically linked subfunctions.
 
 ```mermaid
 flowchart TB
-  AI["Orts.AI"]
   Formats["Orts.Formats"]
+  Game["Orts.Game"]
   Input["Orts.Input"]
   Multiplayer["Orts.Multiplayer"]
   Parsers["Orts.Parsers"]
@@ -19,9 +19,10 @@ flowchart TB
   UI["Orts.UI"]
   Viewer["Orts.Viewer"]
   Web["Orts.Web"]
-  Player --- UI --- Viewer --- Simulation
-  Player --- Input --- Viewer & Simulation --- Formats --- Parsers
-  AI & Sound --- Simulation --- Multiplayer & Web
+  Player --- Game --- UI --- Viewer --- Simulation & Formats
+  Player --- Input --- UI & Simulation
+  Sound --- Simulation --- Formats & Multiplayer & Web
+  Formats --- Parsers
 ```
 
 ## Threading model
