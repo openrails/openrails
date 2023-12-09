@@ -34,10 +34,6 @@ namespace Orts.Simulation
     /// <summary>
     /// Reads file ORTSTurntables.dat and creates the instances of the turntables
     /// </summary>
-    /// 
-
-
- 
     public class Transfertable : MovingTable
     {
         public float Span; // horizontal or vertical
@@ -106,7 +102,6 @@ namespace Orts.Simulation
             outf.Write(TargetOffset);
         }
 
-
         /// <summary>
         /// Restores the general variable parameters
         /// Called from within the Simulator class.
@@ -154,7 +149,6 @@ namespace Orts.Simulation
                             MyTrackNodesIndex[iMyTrackNodes] = iTrackNode;
                             MyTrVectorSectionsIndex[iMyTrackNodes] = iTrVectorSection;
                             MyTrackNodesOrientation[iMyTrackNodes] = trackNodes[iTrackNode].TrVectorNode.TrVectorSections[iTrVectorSection].Flag1 % 2 == 0 ? true : false;
-
                         }
                     }
                 }
@@ -253,7 +247,6 @@ namespace Orts.Simulation
                         }
                     }
                 }
-
             }
             RemotelyControlled = false;
             return;
@@ -326,7 +319,6 @@ namespace Orts.Simulation
                 }
                 Simulator.Confirmer.Information (Simulator.Catalog.GetStringFmt("Transfertable starting transferring train"));
                 // Computing position of cars relative to center of transfertable
-
              }
              Forward = isForward;
              Reverse = !isForward;
@@ -439,7 +431,6 @@ namespace Orts.Simulation
         /// CheckMovingTableAligned: checks if transfertable aligned with entering train
         /// </summary>
         /// 
-
         public override bool CheckMovingTableAligned(Train train, bool forward)
         {
             if ((Connected) && MyTrVectorSectionsIndex[ConnectedTrackEnd] != -1 && MyTrackNodesIndex[ConnectedTrackEnd] != -1 &&
@@ -468,5 +459,4 @@ namespace Orts.Simulation
             }
         }
     }
-
 }

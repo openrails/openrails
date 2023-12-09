@@ -258,7 +258,6 @@ namespace Orts.Simulation
                 {
                     throw new MissingTrackNodeException();
                 }
-
             }
         }
 
@@ -537,7 +536,6 @@ namespace Orts.Simulation
             return new TrackNodeCandidate(Math.Abs(lat), lon, true);
         }
 
-
         /// <summary>
         /// Try whether the given location is indeed on (or at least close to) the given straight tracksection.
         /// If it is, we return a TrackNodeCandidate object 
@@ -595,8 +593,6 @@ namespace Orts.Simulation
             traveller.InitFromCandidate(candidate);
             return true;
         }
-
-
 
         public void Copy(Traveller copy)
         {
@@ -1318,7 +1314,6 @@ namespace Orts.Simulation
             this.isCurved = isCurved;
         }
     }
-
 
     public class TravellerInvalidDataException : Exception
     {

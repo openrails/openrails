@@ -51,8 +51,6 @@ namespace Orts.Simulation
             var trackItems = trackIDs.Select(id => FuelPickupItems[id]).ToArray();
             return new FuelPickupItem(trackItems);
         }
-
-
     } // end Class FuelManager
 
     public class FuelPickupItem
@@ -82,5 +80,4 @@ namespace Orts.Simulation
         public FuelPickupItem() { }
 
     } // end Class FuelPickupItem
-
 } // end Class FuelManager

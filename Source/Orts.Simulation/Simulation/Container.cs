@@ -34,7 +34,6 @@ using System.Linq;
 
 namespace Orts.Simulation
 {
-
     public enum ContainerType
     {
         None,
@@ -242,7 +241,7 @@ namespace Orts.Simulation
             outf.Write(MaxMassWhenLoadedKG);
             if (fromContainerStation)
             {
-
+                // TODO: Can this branch be removed?
             }
             else
                 ORTSMath.SaveMatrix(outf, RelativeContainerMatrix);
@@ -338,13 +337,11 @@ namespace Orts.Simulation
                 containerStation.Update();
         }
 
-
     } 
 
     public class ContainerHandlingItem : FuelPickupItem
     {
         public Simulator Simulator;
-
 
         public List<Container> Containers = new List<Container>();
         public WorldPosition ShapePosition;
@@ -710,8 +707,6 @@ namespace Orts.Simulation
                                     (freightAnims.Animations.Last() as FreightAnimationDiscrete).Container = HandledContainer;
                                     freightAnims.EmptyAbove();
                                     (freightAnims.Animations.Last() as FreightAnimationDiscrete).Container = null;
-
-
                                 }
                             }
                             TargetZ = PickingSurfaceRelativeTopStartPosition.Z - relativeAnimationPosition.Translation.Z - LinkedFreightAnimation.Offset.Z * 
@@ -884,7 +879,6 @@ namespace Orts.Simulation
                                 LinkedFreightAnimation.Loaded = false;
                                 freightAnims.MergeEmptyAnims();
                             }
-
                         }
                         freightAnims.Animations.Remove(LinkedFreightAnimation);
                         HandledContainer.Wagon.UpdateLoadPhysics();
@@ -1021,7 +1015,6 @@ namespace Orts.Simulation
             MinZSpan = Math.Min(Math.Abs(z1Span), Math.Abs(z2Span));
             Grabber01Max = grabber01Max;
             Grabber02Max = grabber02Max;
-
         }
 
         private void SetGrabbers(Container container)
@@ -1107,7 +1100,6 @@ namespace Orts.Simulation
             }
             return eligibleLocationIndex;
         }
-
     } // end Class ContainerHandlingItem
 
     public class StackLocation
@@ -1140,4 +1132,3 @@ namespace Orts.Simulation
         }
     }
 }
-

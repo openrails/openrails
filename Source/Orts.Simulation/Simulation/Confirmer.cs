@@ -275,7 +275,6 @@ namespace Orts.Simulation
                 , new string [] { GetString("Wagon"), GetString("Wagon fully unloaded"), null, GetString("Wagon fully loaded"), null, GetString("Freight load") }
 
                 , new string [] { GetString("Cab Radio"), GetString("off"), null, GetString("on") }
-
             };
             Debug.Assert(ConfirmText.Length == Enum.GetNames(typeof(CabControl)).Length, "Number of entries indexer ConfirmText must match values in CabControl enum.");
         }
