@@ -369,9 +369,7 @@ namespace Orts.Simulation.AIs
                             // waitTimes = 6xSSS  with waitTime SSS seconds.
                             WaitTimeS %= 1000;
                         } */
-
         }
-
 
         // Restore game state
         public AIPathNode(BinaryReader inf)
@@ -515,8 +513,8 @@ namespace Orts.Simulation.AIs
                     bestIndex = j;
                     bestDistance2 = d;
                 }
-
             }
+
             return bestIndex;
         }
     }
