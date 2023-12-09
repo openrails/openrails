@@ -2009,9 +2009,9 @@ namespace Orts.Simulation.RollingStocks
             // Cruise Control
             CruiseControl?.Update(elapsedClockSeconds);
 
+            // TODO  this is a wild simplification for electric and diesel electric
             if (EngineType == EngineTypes.Diesel || EngineType == EngineTypes.Electric)
             {
-                // TODO  this is a wild simplification for electric and diesel electric
                 UpdateTractiveForce(elapsedClockSeconds, ThrottlePercent / 100f, AbsSpeedMpS, AbsWheelSpeedMpS, 0);
             }
 
