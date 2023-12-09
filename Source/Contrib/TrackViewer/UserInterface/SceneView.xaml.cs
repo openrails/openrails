@@ -33,6 +33,7 @@ namespace ORTS.TrackViewer.UserInterface
         EditorState EditorState;
         EditorMoveState EditorMoveState;
         StaticShape SelectedObject;
+        StaticShape SnappedObject;
         WorldFile SelectedWorldFile;
         Orts.Formats.Msts.WorldObject SelectedWorldObject;
         StaticShape MovedObject;
@@ -40,9 +41,23 @@ namespace ORTS.TrackViewer.UserInterface
         WorldPosition HandlePosition;
         WorldPosition HandleOriginalPosition;
         float DeltaX, DeltaY, DeltaZ;
+        Vector3 ConstructionX, ConstructionY, ConstructionZ;
+        float ConstructionAngle;
         UndoDataSet DeltaContext;
         WorldLocation CursorLocation;
         readonly List<(int TileX, int TileZ)> FlaggedTiles = new List<(int, int)>();
+
+        bool OrthoMode { get; set; }
+        bool ElevationLock { get; set; }
+        bool ObjectSnap { get; set; }
+
+        // Editing commands
+        public static RoutedCommand Rotate = new RoutedCommand();
+        public static RoutedCommand Move = new RoutedCommand();
+        public static RoutedCommand MoveHandle = new RoutedCommand();
+        public static RoutedCommand ToggleOrtho = new RoutedCommand();
+        public static RoutedCommand ToggleElevationLock = new RoutedCommand();
+        public static RoutedCommand ToggleObjectSnap = new RoutedCommand();
 
         public SceneView(IntPtr hostWindow)
         {
@@ -64,31 +79,21 @@ namespace ORTS.TrackViewer.UserInterface
             {
                 ApplicationCommands.Stop.Execute(null, null);
             }
-
-            if (EditorState == EditorState.Default || EditorState == EditorState.ObjectSelected)
+            if (UserInput.IsMouseLeftButtonPressed)
             {
-                if (UserInput.IsMouseLeftButtonPressed && UserInput.ModifiersMaskShiftCtrlAlt(false, false, false))
+                switch (EditorState)
                 {
-                    if (Camera.PickByMouse(out var selectedObject))
-                    {
-                        SelectedObject = selectedObject;
-                        SelectedObjectChanged();
-                        EditorState = EditorState.ObjectSelected;
-                    }
-                }
-            }
-            if (EditorState == EditorState.HandleMoving)
-            {
-                if (UserInput.IsMouseLeftButtonPressed)
-                {
-                    ApplyHandleMove();
-                }
-            }
-            if (EditorState == EditorState.ObjectMoving)
-            {
-                if (UserInput.IsMouseLeftButtonPressed)
-                {
-                    ApplyObjectMove();
+                    case EditorState.Default:
+                    case EditorState.ObjectSelected:
+                        if (UserInput.ModifiersMaskShiftCtrlAlt(false, false, false) && Camera.PickByMouse(out var selectedObject))
+                        {
+                            SelectedObject = selectedObject;
+                            SelectedObjectChanged();
+                            EditorState = EditorState.ObjectSelected;
+                        }
+                        break;
+                    case EditorState.HandleMoving: ApplyHandleMove(); break;
+                    case EditorState.ObjectMoving: ApplyObjectMove(); break;
                 }
             }
 
@@ -102,9 +107,30 @@ namespace ORTS.TrackViewer.UserInterface
             // A second pass after user input handled, do the effective work
             if (EditorState == EditorState.ObjectMoving)
             {
+                if (ObjectSnap && Camera.PickByMouse(out var snappedObject))
+                {
+                    if (snappedObject != SnappedObject)
+                        Viewer.EditorShapes.BoundingBoxShapes.RemoveAll(s => s == SnappedObject);
+                    SnappedObject = snappedObject;
+                    if (!Viewer.EditorShapes.BoundingBoxShapes.Contains(SnappedObject))
+                        Viewer.EditorShapes.BoundingBoxShapes.Add(SnappedObject);
+                }
+                else
+                {
+                    Viewer.EditorShapes.BoundingBoxShapes.RemoveAll(s => s == SnappedObject);
+                    SnappedObject = null;
+                }
                 MovedObject.Location.XNAMatrix = GetMovingMatrix(MovedObjectOriginalPosition, HandleOriginalPosition, HandlePosition);
                 Viewer.EditorShapes.MovedObject = MovedObject;
                 Viewer.EditorShapes.MovedObjectLocation = MovedObject.Location;
+                Viewer.EditorShapes.HandleLocation = HandlePosition;
+                Viewer.EditorShapes.ConstructionOriginalTranslation = (HandleOriginalPosition ?? MovedObjectOriginalPosition).XNAMatrix.Translation;
+                Viewer.EditorShapes.ConstructionLinesEnabled = true;
+                Viewer.EditorShapes.ConsturcionLineAngleStyle = EditorMoveState == EditorMoveState.Rotate;
+                Viewer.EditorShapes.ConstructionLineX = ConstructionX;
+                Viewer.EditorShapes.ConstructionLineY = ConstructionY;
+                Viewer.EditorShapes.ConstructionLineZ = ConstructionZ;
+                Viewer.EditorShapes.ConstructionAngle = ConstructionAngle;
             }
             else
             {
@@ -116,6 +142,18 @@ namespace ORTS.TrackViewer.UserInterface
             {
                 HandlePosition.XNAMatrix = GetMovingMatrix(HandleOriginalPosition);
                 Viewer.EditorShapes.HandleLocation = HandlePosition;
+                Viewer.EditorShapes.ConstructionOriginalTranslation = HandleOriginalPosition.XNAMatrix.Translation;
+                Viewer.EditorShapes.ConstructionLinesEnabled = true;
+                Viewer.EditorShapes.ConsturcionLineAngleStyle = EditorMoveState == EditorMoveState.Rotate;
+                Viewer.EditorShapes.ConstructionLineX = ConstructionX;
+                Viewer.EditorShapes.ConstructionLineY = ConstructionY;
+                Viewer.EditorShapes.ConstructionLineZ = ConstructionZ;
+                Viewer.EditorShapes.ConstructionAngle = ConstructionAngle;
+            }
+
+            if (EditorState != EditorState.ObjectMoving && EditorState != EditorState.HandleMoving)
+            {
+                Viewer.EditorShapes.ConstructionLinesEnabled = false;
             }
 
             FillDeltaStatus();
@@ -198,24 +236,47 @@ namespace ORTS.TrackViewer.UserInterface
 
         Matrix GetMovingMatrix(in WorldPosition originalPosition, in WorldPosition handleOriginalPosition = null, WorldPosition handlePosition = null)
         {
-            var handle = handleOriginalPosition ?? originalPosition;
+            var handle = handlePosition ?? originalPosition;
             var xnaMatrix = originalPosition.XNAMatrix;
 
             if (EditorMoveState == EditorMoveState.Rotate)
             {
-                var distance = WorldLocation.GetDistance(handle.WorldLocation, CursorLocation);
-                distance.Z *= -1;
+                float constructionRadius;
+                double targetAngle;
+                if (ObjectSnap && SnappedObject != null)
+                {
+                    var distance = WorldLocation.GetDistance(handle.WorldLocation, SnappedObject.Location.WorldLocation);
+                    distance.Z *= -1;
+                    distance.Y = 0;
+                    constructionRadius = distance.Length();
+                    targetAngle = Math.Atan2(SnappedObject.Location.XNAMatrix.M13, SnappedObject.Location.XNAMatrix.M33);
+                }
+                else
+                {
+                    var distance = WorldLocation.GetDistance(handle.WorldLocation, CursorLocation);
+                    distance.Z *= -1;
+                    distance.Y = 0;
+                    constructionRadius = distance.Length();
+                    targetAngle = Math.Atan2(distance.Z, distance.X);
+                }
 
-                var angle = MathHelper.WrapAngle((float)(Math.Atan2(originalPosition.XNAMatrix.M13, originalPosition.XNAMatrix.M33) - Math.Atan2(distance.Z, distance.X)));
+                var angle = MathHelper.WrapAngle((float)(Math.Atan2(originalPosition.XNAMatrix.M13, originalPosition.XNAMatrix.M33) - targetAngle));
                 var rotation = Matrix.CreateFromYawPitchRoll(angle, 0, 0);
                 var translation = handle.XNAMatrix.Translation;
                 xnaMatrix.Translation -= translation;
                 xnaMatrix *= rotation;
                 xnaMatrix.Translation += translation;
 
+                DeltaX = 0;
+                DeltaY = MathHelper.ToDegrees(angle);
+                DeltaZ = 0;
+                ConstructionAngle = angle;
+                ConstructionX = constructionRadius * Vector3.UnitX;
+                ConstructionZ = constructionRadius * Vector3.Transform(Vector3.UnitX, Matrix.CreateFromYawPitchRoll(-angle, 0, 0));
+
                 if (handlePosition != null && handleOriginalPosition != null)
                 {
-                    angle = MathHelper.WrapAngle((float)(Math.Atan2(handleOriginalPosition.XNAMatrix.M13, handleOriginalPosition.XNAMatrix.M33) - Math.Atan2(distance.Z, distance.X)));
+                    angle = MathHelper.WrapAngle((float)(Math.Atan2(handleOriginalPosition.XNAMatrix.M13, handleOriginalPosition.XNAMatrix.M33) - targetAngle));
                     rotation = Matrix.CreateFromYawPitchRoll(angle, 0, 0);
                     var handleMatrix = handleOriginalPosition.XNAMatrix;
                     handleMatrix.Translation -= translation;
@@ -223,14 +284,11 @@ namespace ORTS.TrackViewer.UserInterface
                     handleMatrix.Translation += translation;
                     handlePosition.XNAMatrix = handleMatrix;
                 }
-
-                DeltaX = 0;
-                DeltaY = MathHelper.ToDegrees(angle);
-                DeltaZ = 0;
             }
             else if (EditorMoveState == EditorMoveState.Move)
             {
-                var distance = WorldLocation.GetDistance(originalPosition.WorldLocation, CursorLocation);
+                var targetLocation = ObjectSnap && SnappedObject != null ? SnappedObject.Location.WorldLocation : CursorLocation;
+                var distance = WorldLocation.GetDistance(originalPosition.WorldLocation, targetLocation);
                 distance.Z *= -1;
 
                 var axisX = Vector3.Normalize(handle.XNAMatrix.Right);
@@ -239,7 +297,7 @@ namespace ORTS.TrackViewer.UserInterface
 
                 var tileLocation = xnaMatrix.Translation;
 
-                if (UserInput.IsDown(UserCommand.EditorLockOrthogonal))
+                if (OrthoMode)
                 {
                     var distanceX = Vector3.Dot(axisX, distance);
                     var distanceZ = Vector3.Dot(axisZ, distance);
@@ -252,7 +310,7 @@ namespace ORTS.TrackViewer.UserInterface
                     tileLocation.Z += distance.Z;
                 }
 
-                if (!UserInput.IsDown(UserCommand.EditorLockElevation))
+                if (!ElevationLock)
                 {
                     tileLocation.Y = Viewer.Tiles.GetElevation(handle.TileX, handle.TileZ, tileLocation.X, -tileLocation.Z);
                 }
@@ -270,6 +328,9 @@ namespace ORTS.TrackViewer.UserInterface
                 DeltaX = Vector3.Dot(axisX, distance);
                 DeltaY = Vector3.Dot(axisY, distance);
                 DeltaZ = Vector3.Dot(axisZ, distance);
+                ConstructionX = DeltaX * Vector3.UnitX;
+                ConstructionY = DeltaY * Vector3.UnitY;
+                ConstructionZ = DeltaZ * Vector3.UnitZ;
             }
             return xnaMatrix;
         }
@@ -376,6 +437,11 @@ namespace ORTS.TrackViewer.UserInterface
         {
             MovedObject.Location.CopyFrom(MovedObjectOriginalPosition);
             MovedObject = null;
+            if (HandleOriginalPosition != null)
+                HandlePosition.CopyFrom(HandleOriginalPosition);
+            else
+                HandlePosition = null;
+            Viewer.EditorShapes.BoundingBoxShapes.Clear();
             EditorState = EditorState.ObjectSelected;
         }
 
@@ -395,6 +461,7 @@ namespace ORTS.TrackViewer.UserInterface
 
             DeltaContext = UndoStack.Peek();
             MovedObject = null;
+            Viewer.EditorShapes.BoundingBoxShapes.Clear();
             EditorState = EditorState.ObjectSelected;
         }
 
@@ -410,12 +477,14 @@ namespace ORTS.TrackViewer.UserInterface
         {
             HandlePosition = null;
             HandleOriginalPosition = null;
+            Viewer.EditorShapes.BoundingBoxShapes.Clear();
             EditorState = EditorState.ObjectSelected;
         }
 
         void ApplyHandleMove()
         {
             HandleOriginalPosition = new WorldPosition(HandlePosition);
+            Viewer.EditorShapes.BoundingBoxShapes.Clear();
             EditorState = EditorState.ObjectSelected;
         }
 
@@ -424,8 +493,10 @@ namespace ORTS.TrackViewer.UserInterface
             Viewer.EditorShapes.SelectedObject = SelectedObject;
             Viewer.EditorShapes.MovedObject = null;
             Viewer.EditorShapes.HandleLocation = null;
+            Viewer.EditorShapes.BoundingBoxShapes.Clear();
             HandlePosition = null;
             HandleOriginalPosition = null;
+            SnappedObject = null;
 
             SelectedWorldFile = Viewer.World.Scenery.WorldFiles.SingleOrDefault(w => w.TileX == SelectedObject?.Location.TileX && w.TileZ == SelectedObject?.Location.TileZ);
             SelectedWorldObject = SelectedWorldFile?.MstsWFile?.Tr_Worldfile?.SingleOrDefault(o => o.UID == SelectedObject?.Uid);
@@ -477,11 +548,6 @@ namespace ORTS.TrackViewer.UserInterface
             Hide();
         }
 
-        private void IntValidationTextBox(object sender, TextCompositionEventArgs e)
-        {
-            e.Handled = int.TryParse(e.Text, out var _);
-        }
-
         private void UndoRedoCanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = EditorState == EditorState.Default || EditorState == EditorState.ObjectSelected;
@@ -500,25 +566,34 @@ namespace ORTS.TrackViewer.UserInterface
         private void RotateCommand(object sender, ExecutedRoutedEventArgs e)
         {
             EditorMoveState = EditorMoveState.Rotate;
-
             if (EditorState == EditorState.ObjectSelected)
                 StartObjectMove();
+            Keyboard.Focus(DeltaYBlock);
         }
 
         private void MoveCommand(object sender, ExecutedRoutedEventArgs e)
         {
             EditorMoveState = EditorMoveState.Move;
-
             if (EditorState == EditorState.ObjectSelected)
                 StartObjectMove();
+            Keyboard.Focus(DeltaXBlock);
         }
 
         private void MoveHandleCommand(object sender, ExecutedRoutedEventArgs e)
         {
             EditorMoveState = EditorMoveState.Move;
-
             if (EditorState == EditorState.ObjectSelected)
                 StartHandleMove();
+            Keyboard.Focus(DeltaXBlock);
+        }
+
+        private void ToggleOrthoCommand(object sender, ExecutedRoutedEventArgs e) => OrthoMode = !OrthoMode;
+        private void ToggleElevationLockCommand(object sender, ExecutedRoutedEventArgs e) => ElevationLock = !ElevationLock;
+        private void ToggleObjectSnapCommand(object sender, ExecutedRoutedEventArgs e) => ObjectSnap = !ObjectSnap;
+
+        private void IntValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = int.TryParse(e.Text, out var _);
         }
 
         private void UintValidationTextBox(object sender, TextCompositionEventArgs e)
