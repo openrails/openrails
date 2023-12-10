@@ -53,7 +53,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         readonly Point ReleaseSpeedPosition = new Point(26 - 6, 274 - 8);
         readonly int[] UnitCenterPosition = new int[] { 140, 204 };
         // 240 and 260 are non-standard scales by ETA, but national railways often use one of these instead of 250
-        readonly int[] StandardScalesKMpH = new int[] { 140, 180, 240, 250, 260, 280, 400 };
+        readonly int[] StandardScalesKMpH = new int[] { 140, 180, 240, 250, 260, 400 };
         readonly int[] StandardScalesMpH = new int[] { 87, 111, 155, 248 };
 
         const string UnitMetricString = "km/h";
@@ -222,38 +222,21 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                             y -= textHeight / 2f * (1f - (float)Math.Cos(angle));
                             // Cheating for better outlook:
                             if (UnitMetric && 240 <= MaxSpeed && MaxSpeed <= 260)
-                            {
                                 switch (speed)
                                 {
                                     case 100: x -= textWidth / 4f; break;
                                     case 120: x -= textWidth / 10f; y -= textHeight / 6f; break;
                                     case 140: x += textWidth / 6f; y -= textHeight / 6f; break;
                                 }
-                            }
+
                             DialSpeeds.Add(new TextPrimitive(new Point((int)x, (int)y), Color.White, speed.ToString(), FontDialSpeeds));
                         }
                     }
                     else
-                    {
                         DialLineCoords.Add(new Vector4(x, y, LineHalf, angle + MathHelper.PiOver2));
-                    }
-
-                    var longLineEach = 2;
-                    if (MaxSpeed == 280 && UnitMetric)
-                    {
-                        longLineEach = 4;
-                    }
-                    if (MaxSpeed > 300 && UnitMetric)
-                    {
-                        longLineEach = 5;
-                    }
-                    if (MaxSpeed > 200 && !UnitMetric)
-                    {
-                        longLineEach = (speed + 5 > MidSpeed) ? 4 : 2;
-                    }
 
                     longLine++;
-                    longLine %= longLineEach;
+                    longLine %= MaxSpeed != StandardScales[StandardScales.Length - 1] ? 2 : UnitMetric ? 5 : (speed + 5 > MidSpeed) ? 4 : 2;
                 }
                 else if (UnitMetric && (MaxSpeed == 240 || MaxSpeed == 260))
                 {

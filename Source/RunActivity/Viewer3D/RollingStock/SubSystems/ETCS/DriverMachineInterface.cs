@@ -754,8 +754,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
     public class CircularSpeedGaugeRenderer : CabViewDigitalRenderer
     {
-        public DriverMachineInterface DMI;
-
+        DriverMachineInterface DMI;
         [CallOnThread("Loader")]
         public CircularSpeedGaugeRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCDigital control, CabShader shader)
             : base(viewer, locomotive, control, shader)
@@ -863,81 +862,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             DMI.Draw(ControlView.SpriteBatch, new Point(DrawPosition.X, DrawPosition.Y));
             ControlView.SpriteBatch.End();
             ControlView.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, Shader);
-        }
-    }
-
-    public class ScreenMaterial : SceneryMaterial
-    {
-        CircularSpeedGaugeRenderer CircularSpeedGaugeRenderer;
-        SpriteBatch SpriteBatch;
-
-        public ScreenMaterial(Viewer viewer, string key, CircularSpeedGaugeRenderer circularSpeedGaugeRenderer)
-            : base(viewer, key, SceneryMaterialOptions.ShaderFullBright, 0)
-        {
-            CircularSpeedGaugeRenderer = circularSpeedGaugeRenderer;
-            Texture = new RenderTarget2D(viewer.GraphicsDevice,
-                CircularSpeedGaugeRenderer.DMI.Width, CircularSpeedGaugeRenderer.DMI.Height, false, SurfaceFormat.Color, DepthFormat.None);
-            SpriteBatch = new SpriteBatch(viewer.GraphicsDevice);
-        }
-
-        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
-        {
-            var originalRenderTargets = graphicsDevice.GetRenderTargets();
-            graphicsDevice.SetRenderTarget(Texture as RenderTarget2D);
-            SpriteBatch.Begin(); // Dummy Begin(), gets closed immediately
-            CircularSpeedGaugeRenderer.Draw(graphicsDevice);
-            SpriteBatch.End();
-            graphicsDevice.SetRenderTargets(originalRenderTargets);
-
-            base.Render(graphicsDevice, renderItems, ref XNAViewMatrix, ref XNAProjectionMatrix);
-        }
-    }
-
-    public class ThreeDimCabScreen
-    {
-        PoseableShape TrainCarShape;
-        Matrix XNAMatrix;
-        Viewer Viewer;
-        ShapePrimitive ShapePrimitive;
-        public CircularSpeedGaugeRenderer CVFR;
-        ScreenMaterial Material;
-        public ThreeDimCabScreen(Viewer viewer, int iMatrix, PoseableShape trainCarShape, CabViewControlRenderer c)
-        {
-            CVFR = (CircularSpeedGaugeRenderer)c;
-            Viewer = viewer;
-            TrainCarShape = trainCarShape;
-            XNAMatrix = TrainCarShape.SharedShape.Matrices[iMatrix];
-            Material = new ScreenMaterial(viewer, "ETCS_SCREEN", CVFR);
-
-            var vertices = new[]
-            {
-                new VertexPositionNormalTexture(new Vector3(0, 0, 0), new Vector3(0, 0, -1), new Vector2(0, 0)),
-                new VertexPositionNormalTexture(new Vector3(0, 0, 1), new Vector3(0, 0, -1), new Vector2(0, 1)),
-                new VertexPositionNormalTexture(new Vector3(1, 0, 0), new Vector3(0, 0, -1), new Vector2(1, 0)),
-                new VertexPositionNormalTexture(new Vector3(1, 0, 1), new Vector3(0, 0, -1), new Vector2(1, 1)),
-            };
-            var indices = new short[] { 0, 1, 2, 2, 1, 3 };
-            var indexBuffer = new IndexBuffer(viewer.GraphicsDevice, IndexElementSize.SixteenBits, indices.Length, BufferUsage.WriteOnly);
-            indexBuffer.SetData(indices);
-            ShapePrimitive = new ShapePrimitive(Material, new SharedShape.VertexBufferSet(vertices, viewer.GraphicsDevice), indexBuffer, 2, new[] { -1 }, 0);
-        }
-
-        public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
-        {
-            if (!CVFR.IsPowered && CVFR.Control.HideIfDisabled)
-                return;
-
-            Matrix mx = TrainCarShape.Location.XNAMatrix;
-            mx.M41 += (TrainCarShape.Location.TileX - Viewer.Camera.TileX) * 2048;
-            mx.M43 += (-TrainCarShape.Location.TileZ + Viewer.Camera.TileZ) * 2048;
-            Matrix m = XNAMatrix * mx;
-
-            frame.AddPrimitive(ShapePrimitive.Material, ShapePrimitive, RenderPrimitiveGroup.Interior, ref m, ShapeFlags.None);
-        }
-
-        internal void Mark()
-        {
-            ShapePrimitive.Mark();
         }
     }
 }
