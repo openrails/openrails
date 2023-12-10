@@ -1603,7 +1603,7 @@ namespace Orts.Viewer3D.RollingStock
         protected readonly MSTSLocomotive Locomotive;
         public readonly CabViewControl Control;
         protected readonly CabShader Shader;
-        protected readonly SpriteBatchMaterial ControlView;
+        public readonly SpriteBatchMaterial ControlView;
 
         protected Vector2 Position;
         protected Texture2D Texture;
@@ -3346,7 +3346,16 @@ namespace Orts.Viewer3D.RollingStock
                             break;
                     }
 
-                    if (style != null && style is CabViewDigitalRenderer)//digits?
+                    if (style is CircularSpeedGaugeRenderer || style is DriverMachineInterfaceRenderer)
+                    {
+                        // Attach the control renderer to the material
+                        var material = Viewer.MaterialManager.Load("Screen", Helpers.GetTextureFile(Viewer.Simulator, Helpers.TextureFlags.None,
+                            TrainCarShape.SharedShape.ReferencePath, matrixName)) as ScreenMaterial;
+                        material?.Set2DRenderer(locoViewer.ThreeDimentionCabRenderer.ControlMap[key]);
+
+                        ScreenDisplays3D.Add(key, new ThreeDimCabScreen(viewer, iMatrix, TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
+                    }
+                    else if (style != null && style is CabViewDigitalRenderer)//digits?
                     {
                         //DigitParts.Add(key, new DigitalDisplay(viewer, TrainCarShape, iMatrix, parameter, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
                         DigitParts3D.Add(key, new ThreeDimCabDigit(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key], Locomotive));
@@ -3374,10 +3383,6 @@ namespace Orts.Viewer3D.RollingStock
                     else if (style != null && style is DistributedPowerInterfaceRenderer)
                     {
                         DPIDisplays3D.Add(key, new ThreeDimCabDPI(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
-                    }
-                    else if (style is CircularSpeedGaugeRenderer || style is DriverMachineInterfaceRenderer)
-                    {
-                        ScreenDisplays3D.Add(key, new ThreeDimCabScreen(viewer, iMatrix, TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
                     }
                     else
                     {
@@ -3531,24 +3536,6 @@ namespace Orts.Viewer3D.RollingStock
                 p.Value.PrepareFrame(frame, elapsedTime);
             }
 
-            foreach (var p in ScreenDisplays3D)
-            {
-                var dpdisplay = p.Value.CVFR.Control;
-                if (dpdisplay.Screens != null && dpdisplay.Screens[0] != "all")
-                {
-                    foreach (var screen in dpdisplay.Screens)
-                    {
-                        if (LocoViewer.ThreeDimentionCabRenderer.ActiveScreen[dpdisplay.Display] == screen)
-                        {
-                            p.Value.PrepareFrame(frame, elapsedTime);
-                            break;
-                        }
-                    }
-                    continue;
-                }
-                p.Value.PrepareFrame(frame, elapsedTime);
-            }
-
             foreach (var p in Gauges)
             {
                 var gauge = p.Value.CVFR.Control;
@@ -3601,10 +3588,6 @@ namespace Orts.Viewer3D.RollingStock
             foreach (ThreeDimCabDPI threeDimCabDPI in DPIDisplays3D.Values)
             {
                 threeDimCabDPI.Mark();
-            }
-            foreach (var threeDimCabControl in ScreenDisplays3D.Values)
-            {
-                threeDimCabControl.Mark();
             }
         }
     }

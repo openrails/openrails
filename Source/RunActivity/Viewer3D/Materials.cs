@@ -367,6 +367,9 @@ namespace Orts.Viewer3D
                     case "Water":
                         Materials[materialKey] = new WaterMaterial(Viewer, textureName);
                         break;
+                    case "Screen":
+                        Materials[materialKey] = new ScreenMaterial(Viewer, textureName);
+                        break;
                     default:
                         Trace.TraceInformation("Skipped unknown material type {0}", materialName);
                         Materials[materialKey] = new YellowMaterial(Viewer);
@@ -1161,6 +1164,37 @@ namespace Orts.Viewer3D
         public override bool GetBlending()
         {
             return true;
+        }
+    }
+
+    public class ScreenMaterial : SceneryMaterial
+    {
+        RollingStock.CabViewControlRenderer ScreenRenderer;
+
+        public ScreenMaterial(Viewer viewer, string key)
+            : base(viewer, key, SceneryMaterialOptions.ShaderFullBright, 0)
+        {
+        }
+
+        public void Set2DRenderer(RollingStock.CabViewControlRenderer circularSpeedGaugeRenderer)
+        {
+            ScreenRenderer = circularSpeedGaugeRenderer;
+            Texture = new RenderTarget2D(Viewer.GraphicsDevice,
+                (int)ScreenRenderer.Control.Width, (int)ScreenRenderer.Control.Height, false, SurfaceFormat.Color, DepthFormat.None);
+        }
+
+        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            if (ScreenRenderer != null)
+            {
+                var originalRenderTargets = graphicsDevice.GetRenderTargets();
+                graphicsDevice.SetRenderTarget(Texture as RenderTarget2D);
+                ScreenRenderer.ControlView.SpriteBatch.Begin(); // Dummy Begin(), gets closed immediately
+                ScreenRenderer.Draw(graphicsDevice);
+                ScreenRenderer.ControlView.SpriteBatch.End();
+                graphicsDevice.SetRenderTargets(originalRenderTargets);
+            }
+            base.Render(graphicsDevice, renderItems, ref XNAViewMatrix, ref XNAProjectionMatrix);
         }
     }
 
