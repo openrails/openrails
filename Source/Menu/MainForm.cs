@@ -330,11 +330,6 @@ namespace ORTS
                     linkLabelUpdate.Image = ElevationIcon;
                 else
                     linkLabelUpdate.Image = null;
-                linkLabelUpdate.AutoSize = true;
-                linkLabelUpdate.Left = panelDetails.Right - linkLabelUpdate.Width - ElevationIcon.Width;
-                linkLabelUpdate.AutoSize = false;
-                linkLabelUpdate.Width = panelDetails.Right - linkLabelUpdate.Left;
-                linkLabelUpdate.Location = new System.Drawing.Point(700, 9);
             });
         }
 
