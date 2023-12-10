@@ -536,6 +536,11 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float CylinderSteamUsageLBpS;
 
         /// <summary>
+        /// Steam usage per steam engine steam cocks
+        /// </summary>
+        public float CylCockSteamUsageLBpS;
+
+        /// <summary>
         /// Indicated Horse Power
         /// </summary>
         public float IndicatedHorsePowerHP;

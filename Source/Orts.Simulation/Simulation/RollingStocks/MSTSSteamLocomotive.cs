@@ -1319,12 +1319,6 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
                 {
-
-
-
-
-
-
                     if (SteamEngineType == SteamEngineTypes.Compound)
                     {
                         //  Initialise Compound locomotive
@@ -2171,10 +2165,11 @@ namespace Orts.Simulation.RollingStocks
             UpdateFirebox(elapsedClockSeconds, absSpeedMpS);
             UpdateBoiler(elapsedClockSeconds);
             UpdateAuxiliaries(elapsedClockSeconds, absSpeedMpS);
-
+            UpdateSuperHeat();
 
             TractiveForceN = 0; // reset tractiveforceN in preparation to calculating a new value
             MotiveForceN = 0;
+            CylinderSteamUsageLBpS = 0;
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
@@ -2214,7 +2209,7 @@ namespace Orts.Simulation.RollingStocks
                     {
                         SteamBoosterIdleMode = false;
                         SteamBoosterRunMode = true;
-                        enginethrottle = 1.0f;
+                        enginethrottle = throttle;
                     }
                     else if (!SteamBoosterAirOpen || !SteamBoosterLatchedLocked)
                     {
@@ -2231,6 +2226,7 @@ namespace Orts.Simulation.RollingStocks
                 TotalSteamUsageLBpS += SteamEngines[i].CylinderSteamUsageLBpS;
                 BoilerHeatOutBTUpS += SteamEngines[i].CylinderSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);
                 CumulativeCylinderSteamConsumptionLbs += SteamEngines[i].CylinderSteamUsageLBpS * elapsedClockSeconds;
+                CylinderSteamUsageLBpS += SteamEngines[i].CylinderSteamUsageLBpS;
 
                 SteamEngines[i].MeanEffectivePressurePSI = MeanEffectivePressurePSI;
 
@@ -3895,7 +3891,63 @@ namespace Orts.Simulation.RollingStocks
             TotalSteamUsageLBpS = 0.0f;
         }
 
-        private void UpdateCylinders(float elapsedClockSeconds, float throttle, float cutoff, float absSpeedMpS, int numberofengine)
+        private void UpdateSuperHeat()
+        {
+            // Determine if Superheater in use
+            if (HasSuperheater)
+            {
+                CurrentSuperheatTempF = SuperheatTempLbpHtoDegF[pS.TopH(CylinderSteamUsageLBpS)] * SuperheatTempRatio; // Calculate current superheat temp
+                CurrentSuperheatTempF = MathHelper.Clamp(CurrentSuperheatTempF, 0.0f, MaxSuperheatRefTempF); // make sure that superheat temp does not exceed max superheat temp or drop below zero
+                float CylinderCondensationSpeedFactor = 1.0f - 0.00214f * pS.TopM(DrvWheelRevRpS); // This provides a speed related factor which reduces the amount of superheating required to overcome 
+                // initial condensation, ie allows for condensation reduction as more steam goes through the cylinder as speed increases and the cylinder gets hotter
+                CylinderCondensationSpeedFactor = MathHelper.Clamp(CylinderCondensationSpeedFactor, 0.25f, 1.0f); // make sure that speed factor does not go out of bounds
+                float DifferenceSuperheatTeampF = CurrentSuperheatTempF - (SuperheatTempLimitXtoDegF[cutoff] * CylinderCondensationSpeedFactor); // reduce superheat temp due to cylinder condensation
+                SuperheatVolumeRatio = 1.0f + (0.0015f * DifferenceSuperheatTeampF); // Based on formula Vsup = Vsat ( 1 + 0.0015 Tsup) - Tsup temperature at superheated level
+                // look ahead to see what impact superheat will have on cylinder usage
+                float FutureCylinderSteamUsageLBpS = CylinderSteamUsageLBpS * 1.0f / SuperheatVolumeRatio; // Calculate potential future new cylinder steam usage
+                float FutureSuperheatTempF = SuperheatTempLbpHtoDegF[pS.TopH(FutureCylinderSteamUsageLBpS)] * SuperheatTempRatio; // Calculate potential future new superheat temp
+
+                float SuperheatTempThresholdXtoDegF = SuperheatTempLimitXtoDegF[cutoff] - 25.0f; // 10 deg bandwith reduction to reset superheat flag
+
+                if (CurrentSuperheatTempF > SuperheatTempLimitXtoDegF[cutoff] * CylinderCondensationSpeedFactor)
+                {
+                    IsSuperSet = true;    // Set to use superheat factor if above superheat temp threshold      
+                }
+                else if (FutureSuperheatTempF < SuperheatTempThresholdXtoDegF * CylinderCondensationSpeedFactor)
+                {
+                    IsSuperSet = false;    // Reset if superheat temp drops 
+                }
+
+                if (IsSuperSet)
+                {
+                    SuperheaterSteamUsageFactor = 1.0f / SuperheatVolumeRatio; // set steam usage based upon the volume of superheated steam
+                }
+                else // Superheated locomotive, but superheat temp limit has not been reached.
+                {
+                    CylinderCondensationFactor = CylinderCondensationFractionX[cutoff];
+
+                    float CondensationFactorTemp = 1.0f + (CylinderCondensationFactor);  // Calculate correcting factor for steam use due to compensation
+                    float TempCondensationFactor = CondensationFactorTemp - 1.0f;
+                    float SuperHeatMultiplier = (1.0f - (CurrentSuperheatTempF / SuperheatTempLimitXtoDegF[cutoff])) * TempCondensationFactor;
+                    SuperHeatMultiplier = MathHelper.Clamp(SuperHeatMultiplier, 0.0f, SuperHeatMultiplier);
+                    float SuperHeatFactorFinal = 1.0f + SuperHeatMultiplier;
+                    SuperheaterSteamUsageFactor = SuperHeatFactorFinal;
+                    SuperheaterSteamUsageFactor = MathHelper.Clamp(SuperheaterSteamUsageFactor, 0.0f, 1.0f); // In saturated mode steam usage should not be reduced
+                }
+            }
+            else // Saturated steam locomotive
+            {
+                CylinderCondensationFactor = CylinderCondensationFractionX[cutoff];
+                float CondensationFactorTemp = 1.0f + (CylinderCondensationFactor);  // Calculate correcting factor for steam use due to compensation
+                SuperheaterSteamUsageFactor = CondensationFactorTemp;
+                //      SuperheaterSteamUsageFactor = 1.0f; // Steam input to cylinder, but loses effectiveness. In saturated mode steam usage should not be reduced
+            }
+
+            SuperheaterSteamUsageFactor = MathHelper.Clamp(SuperheaterSteamUsageFactor, 0.60f, SuperheaterSteamUsageFactor); // ensure factor does not go below 0.6, as this represents base steam consumption by the cylinders.
+
+        }
+
+            private void UpdateCylinders(float elapsedClockSeconds, float throttle, float cutoff, float absSpeedMpS, int numberofengine)
         {
             // Calculate speed of locomotive in wheel rpm - used to determine changes in performance based upon speed.
             DrvWheelRevRpS = absSpeedMpS / (2.0f * MathHelper.Pi * SteamEngines[numberofengine].AttachedAxle.WheelRadiusM);
@@ -4678,7 +4730,6 @@ namespace Orts.Simulation.RollingStocks
                     CutoffPressureDropRatio = (1.0f - ((1 / SuperheatCutoffPressureFactor) * (float)Math.Sqrt(pS.TopM(DrvWheelRevRpS * MotiveForceGearRatio))));
                 }
 
-
                 // (b) - Cutoff Pressure
                 SteamEngines[numberofengine].Pressure_b_AtmPSI = SteamEngines[numberofengine].Pressure_a_AtmPSI * CutoffPressureDropRatio;
 
@@ -4818,58 +4869,6 @@ namespace Orts.Simulation.RollingStocks
             }
 
             #endregion
-            // Determine if Superheater in use
-            if (HasSuperheater)
-            {
-                CurrentSuperheatTempF = SuperheatTempLbpHtoDegF[pS.TopH(CylinderSteamUsageLBpS)] * SuperheatTempRatio; // Calculate current superheat temp
-                CurrentSuperheatTempF = MathHelper.Clamp(CurrentSuperheatTempF, 0.0f, MaxSuperheatRefTempF); // make sure that superheat temp does not exceed max superheat temp or drop below zero
-                float CylinderCondensationSpeedFactor = 1.0f - 0.00214f * pS.TopM(DrvWheelRevRpS); // This provides a speed related factor which reduces the amount of superheating required to overcome 
-                // initial condensation, ie allows for condensation reduction as more steam goes through the cylinder as speed increases and the cylinder gets hotter
-                CylinderCondensationSpeedFactor = MathHelper.Clamp(CylinderCondensationSpeedFactor, 0.25f, 1.0f); // make sure that speed factor does not go out of bounds
-                float DifferenceSuperheatTeampF = CurrentSuperheatTempF - (SuperheatTempLimitXtoDegF[cutoff] * CylinderCondensationSpeedFactor); // reduce superheat temp due to cylinder condensation
-                SuperheatVolumeRatio = 1.0f + (0.0015f * DifferenceSuperheatTeampF); // Based on formula Vsup = Vsat ( 1 + 0.0015 Tsup) - Tsup temperature at superheated level
-                // look ahead to see what impact superheat will have on cylinder usage
-                float FutureCylinderSteamUsageLBpS = CylinderSteamUsageLBpS * 1.0f / SuperheatVolumeRatio; // Calculate potential future new cylinder steam usage
-                float FutureSuperheatTempF = SuperheatTempLbpHtoDegF[pS.TopH(FutureCylinderSteamUsageLBpS)] * SuperheatTempRatio; // Calculate potential future new superheat temp
-
-                float SuperheatTempThresholdXtoDegF = SuperheatTempLimitXtoDegF[cutoff] - 25.0f; // 10 deg bandwith reduction to reset superheat flag
-
-                if (CurrentSuperheatTempF > SuperheatTempLimitXtoDegF[cutoff] * CylinderCondensationSpeedFactor)
-                {
-                    IsSuperSet = true;    // Set to use superheat factor if above superheat temp threshold      
-                }
-                else if (FutureSuperheatTempF < SuperheatTempThresholdXtoDegF * CylinderCondensationSpeedFactor)
-                {
-                    IsSuperSet = false;    // Reset if superheat temp drops 
-                }
-
-
-                if (IsSuperSet)
-                {
-                    SuperheaterSteamUsageFactor = 1.0f / SuperheatVolumeRatio; // set steam usage based upon the volume of superheated steam
-                }
-                else // Superheated locomotive, but superheat temp limit has not been reached.
-                {
-                    CylinderCondensationFactor = CylinderCondensationFractionX[cutoff];
-
-                    float CondensationFactorTemp = 1.0f + (CylinderCondensationFactor);  // Calculate correcting factor for steam use due to compensation
-                    float TempCondensationFactor = CondensationFactorTemp - 1.0f;
-                    float SuperHeatMultiplier = (1.0f - (CurrentSuperheatTempF / SuperheatTempLimitXtoDegF[cutoff])) * TempCondensationFactor;
-                    SuperHeatMultiplier = MathHelper.Clamp(SuperHeatMultiplier, 0.0f, SuperHeatMultiplier);
-                    float SuperHeatFactorFinal = 1.0f + SuperHeatMultiplier;
-                    SuperheaterSteamUsageFactor = SuperHeatFactorFinal;
-                    SuperheaterSteamUsageFactor = MathHelper.Clamp(SuperheaterSteamUsageFactor, 0.0f, 1.0f); // In saturated mode steam usage should not be reduced
-                }
-            }
-            else // Saturated steam locomotive
-            {
-                CylinderCondensationFactor = CylinderCondensationFractionX[cutoff];
-                float CondensationFactorTemp = 1.0f + (CylinderCondensationFactor);  // Calculate correcting factor for steam use due to compensation
-                SuperheaterSteamUsageFactor = CondensationFactorTemp;
-                //      SuperheaterSteamUsageFactor = 1.0f; // Steam input to cylinder, but loses effectiveness. In saturated mode steam usage should not be reduced
-            }
-
-            SuperheaterSteamUsageFactor = MathHelper.Clamp(SuperheaterSteamUsageFactor, 0.60f, SuperheaterSteamUsageFactor); // ensure factor does not go below 0.6, as this represents base steam consumption by the cylinders.
 
             // mean pressure during stroke = ((absolute mean pressure + (clearance + cylstroke)) - (initial pressure + clearance)) / cylstroke
             // Mean effective pressure = cylinderpressure - backpressure
@@ -4881,11 +4880,11 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (HasSuperheater) // Superheated locomotive
                 {
-                    CylCockPressReduceFactor = ((CylinderSteamUsageLBpS / SuperheaterSteamUsageFactor) / ((CylinderSteamUsageLBpS / SuperheaterSteamUsageFactor) + CylCockSteamUsageLBpS)); // For superheated locomotives temp convert back to a saturated comparison for calculation of steam cock reduction factor.
+                    CylCockPressReduceFactor = ((SteamEngines[numberofengine].CylinderSteamUsageLBpS / SuperheaterSteamUsageFactor) / ((SteamEngines[numberofengine].CylinderSteamUsageLBpS / SuperheaterSteamUsageFactor) + SteamEngines[numberofengine].CylCockSteamUsageLBpS)); // For superheated locomotives temp convert back to a saturated comparison for calculation of steam cock reduction factor.
                 }
                 else // Simple locomotive
                 {
-                    CylCockPressReduceFactor = (CylinderSteamUsageLBpS / (CylinderSteamUsageLBpS + CylCockSteamUsageLBpS)); // Saturated steam locomotive
+                    CylCockPressReduceFactor = (SteamEngines[numberofengine].CylinderSteamUsageLBpS / (SteamEngines[numberofengine].CylinderSteamUsageLBpS + SteamEngines[numberofengine].CylCockSteamUsageLBpS)); // Saturated steam locomotive
                 }
 
                 if (SteamEngineType == SteamEngineTypes.Compound)
