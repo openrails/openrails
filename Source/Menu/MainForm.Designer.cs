@@ -845,13 +845,11 @@ namespace ORTS
             // 
             // linkLabelUpdate
             // 
-            this.linkLabelUpdate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.linkLabelUpdate.ImageAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.linkLabelUpdate.Location = new System.Drawing.Point(457, 9);
+            this.linkLabelUpdate.Location = new System.Drawing.Point(400, 9);
             this.linkLabelUpdate.Name = "linkLabelUpdate";
             this.linkLabelUpdate.Size = new System.Drawing.Size(200, 16);
             this.linkLabelUpdate.TabIndex = 37;
-            this.linkLabelUpdate.TextAlign = System.Drawing.ContentAlignment.TopRight;
             this.linkLabelUpdate.UseMnemonic = false;
             this.linkLabelUpdate.Visible = false;
             this.linkLabelUpdate.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelUpdate_LinkClicked);
@@ -875,7 +873,7 @@ namespace ORTS
             // 
             this.linkLabelChangeLog.Location = new System.Drawing.Point(299, 9);
             this.linkLabelChangeLog.Name = "linkLabelChangeLog";
-            this.linkLabelChangeLog.Size = new System.Drawing.Size(272, 16);
+            this.linkLabelChangeLog.Size = new System.Drawing.Size(100, 16);
             this.linkLabelChangeLog.TabIndex = 39;
             this.linkLabelChangeLog.TabStop = true;
             this.linkLabelChangeLog.Text = "What\'s new?";
