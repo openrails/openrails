@@ -62,7 +62,36 @@
                 <Separator/>
                 <MenuItem Header="Anti aliasing (needs restart)" Name="menuDoAntiAliasing" IsCheckable="True" Click="MenuDoAntiAliasing_Click"/>
                 <Separator/>
-                <MenuItem Header="Scene" Name="menuSceneWindow" IsCheckable="False" Click="MenuSceneWindow_Click"/>
+                <MenuItem Header="Scene" Name="menuSceneWindow" IsCheckable="False" Click="MenuSceneWindow_Click">
+                    <MenuItem.Icon>
+                        <Rectangle Width="16 " Height="16" Name="ThreeDSceneIcon">
+                            <Rectangle.Resources>
+                                <SolidColorBrush x:Key="canvas3D" Opacity="0" />
+                                <SolidColorBrush x:Key="light-defaultgrey-103D" Color="#212121" Opacity="0.1" />
+                                <SolidColorBrush x:Key="light-defaultgrey3D" Color="#212121" Opacity="1" />
+                            </Rectangle.Resources>
+                            <Rectangle.Fill>
+                                <DrawingBrush Stretch="None">
+                                    <DrawingBrush.Drawing>
+                                        <DrawingGroup>
+                                            <DrawingGroup x:Name="canvas3D">
+                                                <GeometryDrawing Brush="{DynamicResource canvas3D}" Geometry="F1M16,16H0V0H16Z" />
+                                            </DrawingGroup>
+                                            <DrawingGroup x:Name="level_13D">
+                                                <GeometryDrawing Brush="{DynamicResource light-defaultgrey-103D}" Geometry="F1M11.5,8.953V13L8,15.015,4.5,13V8.953L8,6.932Z" />
+                                                <GeometryDrawing Brush="{DynamicResource light-defaultgrey3D}" Geometry="F1M11.75,8.521,8.25,6.5h-.5L4.25,8.521,4,8.953v4.041l.25.433,3.5,2.021h.5l3.5-2.021.25-.433V8.953ZM7.5,14.15,5,12.705V9.86L7.5,11.3ZM8,10.438,5.465,8.974,8,7.51l2.535,1.464Zm3,2.267L8.5,14.15V11.3L11,9.86Z" />
+                                                <GeometryDrawing Brush="{DynamicResource light-defaultgrey-103D}" Geometry="F1M4,11.466C2.582,11.307,1.5,10.49,1.5,9.5l3-7L6.519,7.211,4.25,8.521,4,8.953Z" />
+                                                <GeometryDrawing Brush="{DynamicResource light-defaultgrey3D}" Geometry="F1M4,11.965C2.285,11.8,1,10.78,1,9.5l.041-.2,3-7h.918L6.932,6.972l-.849.491L4.5,3.77,2.005,9.592c.071.671.919,1.238,2,1.375Z" />
+                                                <GeometryDrawing Brush="{DynamicResource light-defaultgrey-103D}" Geometry="F1M15.5,7A3.5,3.5,0,0,1,12,10.5V8.953l-.25-.432L8.534,6.664A3.491,3.491,0,0,1,15.5,7Z" />
+                                                <GeometryDrawing Brush="{DynamicResource light-defaultgrey3D}" Geometry="F1M16,7a4,4,0,0,1-4,4V10A3,3,0,1,0,9.006,6.937L8.25,6.5h-.2A3.99,3.99,0,0,1,16,7Z" />
+                                            </DrawingGroup>
+                                        </DrawingGroup>
+                                    </DrawingBrush.Drawing>
+                                </DrawingBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                    </MenuItem.Icon>
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="Track _items" Name="menuTrackItems">
                 <MenuItem Header="Show all items" Name="menuShowAll" IsCheckable="False" Click="MenuShowAll_Click"/>

@@ -36,7 +36,7 @@ namespace Orts.Viewer3D.Processes
             Viewer = viewer;
             Viewer.Simulator.Paused = true;
             if (Viewer.QuitWindow  != null )
-            Viewer.QuitWindow.Visible = true;
+                Viewer.QuitWindow.Visible = true;
         }
 
         internal override void BeginRender(RenderFrame frame)
