@@ -155,6 +155,7 @@ namespace ORTS.TrackViewer.Drawing.Labels
             ContextMenu.Items.Add(EditLabelMenuItem);
 
             SetLocationMenuItem = new MenuItem() { Header = "View scene here" };
+            SetLocationMenuItem.Icon = TrackViewer.menuControl.ThreeDSceneIcon;
             SetLocationMenuItem.Click += new RoutedEventHandler((sender, e) => TrackViewer.menuControl.MenuSceneWindow_Click(sender, e));
             SetLocationMenuItem.Click += new RoutedEventHandler(async (sender, e) => await TrackViewer.SceneView?.SetCameraLocation(
                 SetLocationMenuItem.CommandParameter as WorldLocation? ?? new WorldLocation()));
