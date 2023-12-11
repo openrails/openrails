@@ -542,7 +542,6 @@ namespace Orts.Simulation.RollingStocks
         const int CylStrokesPerCycle = 2;  // each cylinder does 2 strokes for every wheel rotation, within each stroke
         float CylinderEfficiencyRate = 1.0f; // Factor to vary the output power of the cylinder without changing steam usage - used as a player customisation factor.
         public float CylCockSteamUsageLBpS = 0.0f; // Cylinder Cock Steam Usage if locomotive moving
-        public float CylCockSteamUsageStatLBpS = 0.0f; // Cylinder Cock Steam Usage if locomotive stationary
         public float CylCockSteamUsageDisplayLBpS = 0.0f; // Cylinder Cock Steam Usage for display and effects
         float CylCockDiaIN = 0.5f;          // Steam Cylinder Cock orifice size
         float CylCockPressReduceFactor;     // Factor to reduce cylinder pressure by if cocks open
@@ -2170,6 +2169,7 @@ namespace Orts.Simulation.RollingStocks
             TractiveForceN = 0; // reset tractiveforceN in preparation to calculating a new value
             MotiveForceN = 0;
             CylinderSteamUsageLBpS = 0;
+            CylCockSteamUsageLBpS = 0;
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
@@ -2227,6 +2227,7 @@ namespace Orts.Simulation.RollingStocks
                 BoilerHeatOutBTUpS += SteamEngines[i].CylinderSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);
                 CumulativeCylinderSteamConsumptionLbs += SteamEngines[i].CylinderSteamUsageLBpS * elapsedClockSeconds;
                 CylinderSteamUsageLBpS += SteamEngines[i].CylinderSteamUsageLBpS;
+                CylCockSteamUsageLBpS += SteamEngines[i].CylCockSteamUsageLBpS;
 
                 SteamEngines[i].MeanEffectivePressurePSI = MeanEffectivePressurePSI;
 
@@ -3947,7 +3948,7 @@ namespace Orts.Simulation.RollingStocks
 
         }
 
-            private void UpdateCylinders(float elapsedClockSeconds, float throttle, float cutoff, float absSpeedMpS, int numberofengine)
+        private void UpdateCylinders(float elapsedClockSeconds, float throttle, float cutoff, float absSpeedMpS, int numberofengine)
         {
             // Calculate speed of locomotive in wheel rpm - used to determine changes in performance based upon speed.
             DrvWheelRevRpS = absSpeedMpS / (2.0f * MathHelper.Pi * SteamEngines[numberofengine].AttachedAxle.WheelRadiusM);
@@ -4878,6 +4879,22 @@ namespace Orts.Simulation.RollingStocks
 
             if (CylinderCocksAreOpen) // Don't apply steam cocks derate until Cylinder steam usage starts to work
             {
+                // The cock steam usage will be assumed equivalent to a steam orifice - it is initially updated ,and then recalculated again
+                // Steam Flow (lb/hr) = 24.24 x Press(Cylinder + Atmosphere(psi)) x CockDia^2 (in) - this needs to be multiplied by Num Cyls
+
+                if (throttle > 0.00 && absSpeedMpS > 0.1) // if regulator open & train moving
+                {
+                    SteamEngines[numberofengine].CylCockSteamUsageLBpS = pS.FrompH(SteamEngines[numberofengine].NumberCylinders * (24.24f * (CylinderCocksPressureAtmPSI) * CylCockDiaIN * CylCockDiaIN));
+                }
+                else if (throttle > 0.00 && absSpeedMpS <= 0.1) // if regulator open and train stationary
+                {
+                    SteamEngines[numberofengine].CylCockSteamUsageLBpS = pS.FrompH(SteamEngines[numberofengine].NumberCylinders * (24.24f * (SteamEngines[numberofengine].Pressure_b_AtmPSI) * CylCockDiaIN * CylCockDiaIN));
+                }
+                else
+                {
+
+                }
+
                 if (HasSuperheater) // Superheated locomotive
                 {
                     CylCockPressReduceFactor = ((SteamEngines[numberofengine].CylinderSteamUsageLBpS / SuperheaterSteamUsageFactor) / ((SteamEngines[numberofengine].CylinderSteamUsageLBpS / SuperheaterSteamUsageFactor) + SteamEngines[numberofengine].CylCockSteamUsageLBpS)); // For superheated locomotives temp convert back to a saturated comparison for calculation of steam cock reduction factor.
@@ -5202,7 +5219,7 @@ namespace Orts.Simulation.RollingStocks
                     else if (CylinderExhaustOpenFactor > forwardCylinderPosition) // pressure will be in expansion section of cylinder
                     {
                         // In section of cylinder between cutoff and release, pressure follows a PV variation.
-                        forwardCylinderPressure = (slipCutoffPressureAtmPSI) * (cutoff + CylinderClearancePC) / (forwardCylinderPosition + CylinderClearancePC);
+                        forwardCylinderPressure = (slipCutoffPressureAtmPSI) * (slipcutoff + CylinderClearancePC) / (forwardCylinderPosition + CylinderClearancePC);
                         // Check factor to calculate volume of cylinder for new volume at exhaust
                     }
                     else // Pressure will be in the exhaust section of the cylinder
@@ -5349,6 +5366,8 @@ namespace Orts.Simulation.RollingStocks
                     {
                         totalDrvWeightN += N.FromLbf(excessBalanceForcelbf - verticalThrustForcelbf);
                     }
+
+ //                   Trace.TraceInformation("Excess {0} Vertical {1}", excessBalanceForcelbf, verticalThrustForcelbf);
                 }
 
                 SteamEngines[numberofengine].AttachedAxle.AxleWeightN = totalDrvWeightN + 9.81f * SteamEngines[numberofengine].AttachedAxle.WheelWeightKg;
@@ -5691,35 +5710,18 @@ namespace Orts.Simulation.RollingStocks
                         VacuumPumpChargingRateInHgpS = 0.0f;
                     }
                 }
-
             }
 
-            // Calculate cylinder cock steam Usage if turned on
-            // The cock steam usage will be assumed equivalent to a steam orifice
-            // Steam Flow (lb/hr) = 24.24 x Press(Cylinder + Atmosphere(psi)) x CockDia^2 (in) - this needs to be multiplied by Num Cyls
+            // Calculate cylinder cock steam Usage impact if turned on
+
             if (CylinderCocksAreOpen == true)
             {
-                if (throttle > 0.00 && absSpeedMpS > 0.1) // if regulator open & train moving
-                {
-                    CylCockSteamUsageLBpS = pS.FrompH(MSTSNumCylinders * (24.24f * (CylinderCocksPressureAtmPSI) * CylCockDiaIN * CylCockDiaIN));
-                    BoilerMassLB -= elapsedClockSeconds * CylCockSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by cylinder steam cocks  
-                    BoilerHeatBTU -= elapsedClockSeconds * CylCockSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by cylinder steam cocks
-                    BoilerHeatOutBTUpS += CylCockSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by cylinder steam cocks                
-                    CylCockBoilerHeatOutBTUpS = CylCockSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by cylinder steam cocks
-                    TotalSteamUsageLBpS += CylCockSteamUsageLBpS;
-                    CylCockSteamUsageDisplayLBpS = CylCockSteamUsageLBpS;
-                }
-                else if (throttle > 0.00 && absSpeedMpS <= 0.1) // if regulator open and train stationary
-                {
-                    CylCockSteamUsageLBpS = 0.0f; // set usage to zero if regulator closed
-                    CylCockSteamUsageLBpS = pS.FrompH(MSTSNumCylinders * (24.24f * (CylinderCocksPressureAtmPSI) * CylCockDiaIN * CylCockDiaIN));
-                    BoilerMassLB -= elapsedClockSeconds * CylCockSteamUsageStatLBpS; // Reduce boiler mass to reflect steam usage by cylinder steam cocks  
-                    BoilerHeatBTU -= elapsedClockSeconds * CylCockSteamUsageStatLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by cylinder steam cocks
-                    BoilerHeatOutBTUpS += CylCockSteamUsageStatLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by cylinder steam cocks                
-                    CylCockBoilerHeatOutBTUpS = CylCockSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by cylinder steam cocks
-                    TotalSteamUsageLBpS += CylCockSteamUsageStatLBpS;
-                    CylCockSteamUsageDisplayLBpS = CylCockSteamUsageStatLBpS;
-                }
+                BoilerMassLB -= elapsedClockSeconds * CylCockSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by cylinder steam cocks  
+                BoilerHeatBTU -= elapsedClockSeconds * CylCockSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by cylinder steam cocks
+                BoilerHeatOutBTUpS += CylCockSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by cylinder steam cocks                
+                CylCockBoilerHeatOutBTUpS = CylCockSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by cylinder steam cocks
+                TotalSteamUsageLBpS += CylCockSteamUsageLBpS;
+                CylCockSteamUsageDisplayLBpS = CylCockSteamUsageLBpS;
             }
             else
             {
