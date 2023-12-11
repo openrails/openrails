@@ -1107,24 +1107,31 @@ namespace ORTS
         void ShowDetails()
         {
             Win32.LockWindowUpdate(Handle);
-            ClearDetails();
+            ClearPanel();
+            AddDetails();
+            FlowDetails();
+            Win32.LockWindowUpdate(IntPtr.Zero);
+        }
+
+        private void AddDetails()
+        {
             if (SelectedRoute != null && SelectedRoute.Description != null)
-                ShowDetail(catalog.GetStringFmt("Route: {0}", SelectedRoute.Name), SelectedRoute.Description.Split('\n'));
+                AddDetail(catalog.GetStringFmt("Route: {0}", SelectedRoute.Name), SelectedRoute.Description.Split('\n'));
 
             if (radioButtonModeActivity.Checked)
             {
                 if (SelectedConsist != null && SelectedConsist.Locomotive != null && SelectedConsist.Locomotive.Description != null)
                 {
-                    ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedConsist.Locomotive.Name), SelectedConsist.Locomotive.Description.Split('\n'));
+                    AddDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedConsist.Locomotive.Name), SelectedConsist.Locomotive.Description.Split('\n'));
                 }
                 if (SelectedActivity != null && SelectedActivity.Description != null)
                 {
-                    ShowDetail(catalog.GetStringFmt("Activity: {0}", SelectedActivity.Name), SelectedActivity.Description.Split('\n'));
-                    ShowDetail(catalog.GetString("Activity Briefing"), SelectedActivity.Briefing.Split('\n'));
+                    AddDetail(catalog.GetStringFmt("Activity: {0}", SelectedActivity.Name), SelectedActivity.Description.Split('\n'));
+                    AddDetail(catalog.GetString("Activity Briefing"), SelectedActivity.Briefing.Split('\n'));
                 }
                 else if (SelectedPath != null)
                 {
-                    ShowDetail(catalog.GetStringFmt("Path: {0}", SelectedPath.Name), new[] {
+                    AddDetail(catalog.GetStringFmt("Path: {0}", SelectedPath.Name), new[] {
                         catalog.GetStringFmt("Starting at: {0}", SelectedPath.Start),
                         catalog.GetStringFmt("Heading to: {0}", SelectedPath.End)
                     });
@@ -1133,29 +1140,26 @@ namespace ORTS
             if (radioButtonModeTimetable.Checked)
             {
                 if (SelectedTimetableSet != null)
-                    ShowDetail(catalog.GetStringFmt("Timetable set: {0}", SelectedTimetableSet), new string[0]);
-                    // Description not shown as no description is available for a timetable set.
+                    AddDetail(catalog.GetStringFmt("Timetable set: {0}", SelectedTimetableSet), new string[0]);
+                // Description not shown as no description is available for a timetable set.
 
                 if (SelectedTimetable != null)
-                    ShowDetail(catalog.GetStringFmt("Timetable: {0}", SelectedTimetable), SelectedTimetable.Briefing.Split('\n'));
+                    AddDetail(catalog.GetStringFmt("Timetable: {0}", SelectedTimetable), SelectedTimetable.Briefing.Split('\n'));
 
                 if (SelectedTimetableTrain != null)
                 {
-                    ShowDetail(catalog.GetStringFmt("Train: {0}", SelectedTimetableTrain), HideStartParameters(SelectedTimetableTrain.ToInfo()));
+                    AddDetail(catalog.GetStringFmt("Train: {0}", SelectedTimetableTrain), HideStartParameters(SelectedTimetableTrain.ToInfo()));
 
                     if (SelectedTimetableConsist != null)
                     {
-                        ShowDetail(catalog.GetStringFmt("Consist: {0}", SelectedTimetableConsist.Name), new string[0]);
+                        AddDetail(catalog.GetStringFmt("Consist: {0}", SelectedTimetableConsist.Name), new string[0]);
                         if (SelectedTimetableConsist.Locomotive != null && SelectedTimetableConsist.Locomotive.Description != null)
-                            ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedTimetableConsist.Locomotive.Name), SelectedTimetableConsist.Locomotive.Description.Split('\n'));
+                            AddDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedTimetableConsist.Locomotive.Name), SelectedTimetableConsist.Locomotive.Description.Split('\n'));
                     }
                     if (SelectedTimetablePath != null)
-                        ShowDetail(catalog.GetStringFmt("Path: {0}", SelectedTimetablePath.Name), SelectedTimetablePath.ToInfo());
+                        AddDetail(catalog.GetStringFmt("Path: {0}", SelectedTimetablePath.Name), SelectedTimetablePath.ToInfo());
                 }
             }
-
-            FlowDetails();
-            Win32.LockWindowUpdate(IntPtr.Zero);
         }
 
         /// <summary>
@@ -1194,14 +1198,14 @@ namespace ORTS
             }
         }
 
-        void ClearDetails()
+        void ClearPanel()
         {
             Details.Clear();
             while (panelDetails.Controls.Count > 0)
                 panelDetails.Controls.RemoveAt(0);
         }
 
-        void ShowDetail(string title, string[] lines)
+        void AddDetail(string title, string[] lines)
         {
             var titleControl = new Label { Margin = new Padding(2), Text = title, UseMnemonic = false, Font = new Font(panelDetails.Font, FontStyle.Bold), TextAlign = ContentAlignment.BottomLeft };
             panelDetails.Controls.Add(titleControl);
@@ -1225,7 +1229,7 @@ namespace ORTS
             summaryControl.Width = panelDetails.ClientSize.Width - summaryControl.Margin.Horizontal;
             summaryControl.Height = TextRenderer.MeasureText("1\n2\n3\n4\n5", summaryControl.Font).Height;
 
-            // Find out where we need to cut the text to make the summary 5 lines long. Uses a binaty search to find the cut point.
+            // Find out where we need to cut the text to make the summary 5 lines long. Uses a binary search to find the cut point.
             var size = MeasureText(summaryControl.Text, summaryControl);
             if (size > summaryControl.Height)
             {
@@ -1463,68 +1467,77 @@ namespace ORTS
         }
 
         #region Notifications
+        // Will probably move this region and the Details region into separate files.
 
-        bool IsNotificationsVisible = false;
+        bool AreNotificationsVisible = false;
+        int NewNotificationCount = 1;
+        int LastNotificationViewed = 0;
 
         List<Notification> NotificationList = new List<Notification>();
         class Notification
         {
-            //readonly Control Title;
-            //readonly Control Expander;
-            //readonly Control Summary;
-            //readonly Control Description;
-            //bool Expanded;
-            //Notification(Control title, Control expander, Control summary, Control lines)
-            //{
-            //    Title = title;
-            //    Expander = expander;
-            //    Summary = summary;
-            //    Description = lines;
-            //    Expanded = false;
-            //}
         }
 
-        void ClearNotifications()
+        private void pbNotificationsNone_Click(object sender, EventArgs e)
         {
-            NotificationList.Clear();
-            while (panelDetails.Controls.Count > 0)
-                panelDetails.Controls.RemoveAt(0);
+            ToggleNotifications();
+        }
+        private void pbNotificationsSome_Click(object sender, EventArgs e)
+        {
+            ToggleNotifications();
+        }
+        private void lblNotificationCount_Click(object sender, EventArgs e)
+        {
+            ToggleNotifications();
         }
 
-        private void pbNotifications_Click(object sender, EventArgs e)
+        private void ToggleNotifications()
         {
-            // Show/hide notifications
-            IsNotificationsVisible = !IsNotificationsVisible;
-            if (IsNotificationsVisible)
+            if (AreNotificationsVisible == false)
             {
-                ClearDetails();
                 ShowNotifications();
+                FiddleNewNotificationCount();
             }
             else
             {
-                ClearNotifications();
                 ShowDetails();
+            }
+            AreNotificationsVisible = !AreNotificationsVisible;
+        }
+
+        private void FiddleNewNotificationCount()
+        {
+            LastNotificationViewed = 1;
+            if (LastNotificationViewed >= NewNotificationCount)
+            {
+                pbNotificationsSome.Visible = false;
+                lblNotificationCount.Visible = false;
             }
         }
 
         void ShowNotifications()
         {
-            if (NotificationList.Count == 0)
-            {
-                var titleControl = new Label 
-                    { Margin = new Padding(2)
-                    , Text = "No notifications are available"
-                    , UseMnemonic = false
-                    , Font = new Font(panelDetails.Font, FontStyle.Bold)
-                    , TextAlign = ContentAlignment.BottomLeft 
-                    };
-                panelDetails.Controls.Add(titleControl);
-                titleControl.Left = titleControl.Margin.Left;
-                titleControl.Width = panelDetails.ClientSize.Width - titleControl.Margin.Horizontal - titleControl.PreferredHeight;
-                titleControl.Height = titleControl.PreferredHeight;
-                titleControl.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right;
-            }
+            Win32.LockWindowUpdate(Handle);
+            ClearPanel();
+            AddNotifications();
+            FlowDetails();
+            Win32.LockWindowUpdate(IntPtr.Zero);
         }
+
+        private void AddNotifications()
+        {
+            //if (NotificationList.Count == 0)
+            if (NotificationList.Count != 0)
+            {
+                AddDetail("Notifications", new string[] { "No notifications are available." });
+            }
+            else
+            {
+                AddDetail("Notification 1", new string[] { "This is a dummy notification." });
+            }
+            AddDetail("", new string[] { "Toggle icon to hide notifications." });
+        }
+
         #endregion Notifications
     }
 }
