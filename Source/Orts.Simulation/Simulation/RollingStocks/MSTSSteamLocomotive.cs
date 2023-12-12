@@ -2198,6 +2198,7 @@ namespace Orts.Simulation.RollingStocks
             MotiveForceN = 0;
             CylinderSteamUsageLBpS = 0;
             CylCockSteamUsageLBpS = 0;
+            MeanEffectivePressurePSI = 0;
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
@@ -2273,10 +2274,12 @@ namespace Orts.Simulation.RollingStocks
                 CumulativeCylinderSteamConsumptionLbs += SteamEngines[i].CylinderSteamUsageLBpS * elapsedClockSeconds;
                 CylinderSteamUsageLBpS += SteamEngines[i].CylinderSteamUsageLBpS;
                 CylCockSteamUsageLBpS += SteamEngines[i].CylCockSteamUsageLBpS;
+
+                if (SteamEngines[i].MeanEffectivePressurePSI > MeanEffectivePressurePSI)
+                {
+                    MeanEffectivePressurePSI = SteamEngines[i].MeanEffectivePressurePSI;
+                }
                 
-
-                SteamEngines[i].MeanEffectivePressurePSI = MeanEffectivePressurePSI;
-
                 SteamEngines[i].TractiveForceN = 0;
 
                 float tractiveforcethrottle = 0;
@@ -4898,6 +4901,11 @@ namespace Orts.Simulation.RollingStocks
 
                 SteamEngines[numberofengine].MeanEffectivePressurePSI = TotalWorkInLbs / Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM); // MEP doen't need to be converted from Atm to gauge pressure as it is a differential pressure.
                 SteamEngines[numberofengine].MeanEffectivePressurePSI = MathHelper.Clamp(SteamEngines[numberofengine].MeanEffectivePressurePSI, 0, MaxBoilerPressurePSI); // Make sure that Cylinder pressure does not go negative
+
+                if (throttle < 0.01)
+                {
+                    SteamEngines[numberofengine].MeanEffectivePressurePSI = 0;
+                }
 
 #if DEBUG_LOCO_STEAM_MEP
                 if (DebugWheelRevs >= 55.0 && DebugWheelRevs < 55.1 | DebugWheelRevs >= 110.0 && DebugWheelRevs < 110.1 | DebugWheelRevs >= 165.0 && DebugWheelRevs < 165.05 | DebugWheelRevs >= 220.0 && DebugWheelRevs < 220.05)
