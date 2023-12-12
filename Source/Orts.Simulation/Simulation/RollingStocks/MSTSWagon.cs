@@ -111,6 +111,10 @@ namespace Orts.Simulation.RollingStocks
         public float Variable1;  // used to convey status to soundsource
         public float Variable2;
         public float Variable3;
+        // additional engines
+        public float Variable2_1;
+        public float Variable3_1;
+        public float Variable4_1;
 
         // wag file data
         public string MainShapeFileName;

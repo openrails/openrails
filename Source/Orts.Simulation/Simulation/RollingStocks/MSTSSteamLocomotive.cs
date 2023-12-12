@@ -133,6 +133,9 @@ namespace Orts.Simulation.RollingStocks
         public bool SteamBoosterRunMode = false;
         public bool SteamBoosterIdleMode = false;
         public bool SteamBoosterLatchedLocked = false;
+        public float HuDBoosterSteamConsumptionLbpS;
+        public float BoosterSteamConsumptionLbpS;
+        float BoosterIdleChokeSizeIn;
 
         /// <summary>
         /// Grate limit of locomotive exceedeed?
@@ -1268,6 +1271,31 @@ namespace Orts.Simulation.RollingStocks
                 FractionBoilerAreaInsulated = 0.86f; // Rough approximation - based upon empirical graphing
             }
 
+            // Define Booster choke size
+            // Based on information in "The Locomotive Booster - Instruction book No 102-A" by Franklin Railway Supply Company
+            //   http://users.fini.net/~bersano/english-anglais/locomotive_booster/locomotive_booster.pdf
+
+            if (MaxBoilerPressurePSI > 300)
+            {
+                BoosterIdleChokeSizeIn = 0.375f;
+            }
+            else if (MaxBoilerPressurePSI > 275 && MaxBoilerPressurePSI <= 300)
+            {
+                BoosterIdleChokeSizeIn = 0.4375f;
+            }
+            else if (MaxBoilerPressurePSI > 250 && MaxBoilerPressurePSI <= 275)
+            {
+                BoosterIdleChokeSizeIn = 0.5f;
+            }
+            else if (MaxBoilerPressurePSI > 200 && MaxBoilerPressurePSI <= 250)
+            {
+                BoosterIdleChokeSizeIn = 0.5625f;
+            }
+            else
+            {
+                BoosterIdleChokeSizeIn = 0.625f;
+            }
+
             // Set crank angle between different sides of the locomotive
             if (Cylinder2CrankAngleRad == 0) // if not set by user set default values based upon the cylinder
             {
@@ -2202,7 +2230,7 @@ namespace Orts.Simulation.RollingStocks
                     {
                         SteamBoosterRunMode = false;
                         SteamBoosterIdleMode = true;
-                        enginethrottle = 0.2f;
+                        enginethrottle = 0.0f;
                     }
                     // Run mode
                     else if (SteamBoosterAirOpen && SteamBoosterIdle && SteamBoosterLatchedLocked)
@@ -2220,6 +2248,23 @@ namespace Orts.Simulation.RollingStocks
 
                         UpdateCylinders(elapsedClockSeconds, enginethrottle, boostercutoff, absSpeedMpS, i);
 
+                   // Update Booster steam consumption
+                   if (SteamBoosterIdleMode)
+                    {
+                        // In Idle mode steam consumption will be calculated by steam through an orifice.
+                        // Steam Flow (lb/hr) = 24.24 x Press(BoilerPressure + Atmosphere(psi)) x ChokeDia^2 (in) - this needs to be multiplied by Num Cyls
+                        var BoosterPressurePSI = BoilerPressurePSI + OneAtmospherePSI;
+                        SteamEngines[i].CylinderSteamUsageLBpS = pS.FrompH(SteamEngines[i].NumberCylinders * (24.24f * (BoosterPressurePSI) * BoosterIdleChokeSizeIn * BoosterIdleChokeSizeIn));
+                        HuDBoosterSteamConsumptionLbpS = SteamEngines[i].CylinderSteamUsageLBpS;
+
+                    }
+                    else
+                    {
+                        // In run mode steam consumption calculated by cylinder model
+                        HuDBoosterSteamConsumptionLbpS = SteamEngines[i].CylinderSteamUsageLBpS;
+                    }
+                    
+
                 }
                 BoilerMassLB -= elapsedClockSeconds * SteamEngines[i].CylinderSteamUsageLBpS; //  Boiler mass will be reduced by cylinder steam usage
                 BoilerHeatBTU -= elapsedClockSeconds * SteamEngines[i].CylinderSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); //  Boiler Heat will be reduced by heat required to replace the cylinder steam usage, ie create steam from hot water. 
@@ -2228,6 +2273,7 @@ namespace Orts.Simulation.RollingStocks
                 CumulativeCylinderSteamConsumptionLbs += SteamEngines[i].CylinderSteamUsageLBpS * elapsedClockSeconds;
                 CylinderSteamUsageLBpS += SteamEngines[i].CylinderSteamUsageLBpS;
                 CylCockSteamUsageLBpS += SteamEngines[i].CylCockSteamUsageLBpS;
+                
 
                 SteamEngines[i].MeanEffectivePressurePSI = MeanEffectivePressurePSI;
 
@@ -2728,18 +2774,31 @@ namespace Orts.Simulation.RollingStocks
             float SmokeColorUnits = (RadiationSteamLossLBpS + CalculatedCarHeaterSteamUsageLBpS + BlowerBurnEffect + (SmokeColorDamper * SmokeColorFireMass)) / PreviousTotalSteamUsageLBpS - 0.2f;
             SmokeColor.Update(elapsedClockSeconds, MathHelper.Clamp(SmokeColorUnits, 0.25f, 1));
 
-            // Variable1 is proportional to angular speed, value of 10 means 1 rotation/second.
-            // If wheel is not slipping then use normal wheel speed, this reduces oscillations in variable1 which causes issues with sounds.
-            var variable1 = 0.0f;
-            if (WheelSlip)
+            float[] variable = new float[5];
+
+            for (int i = 0; i < SteamEngines.Count; i++)
             {
-                variable1 = Math.Abs(WheelSpeedSlipMpS / DriverWheelRadiusM / MathHelper.Pi * 5);
+
+                // Variable is proportional to angular speed, value of 10 means 1 rotation/second.
+                // If wheel is not slipping then use normal wheel speed, this reduces oscillations in variable1 which causes issues with sounds.
+
+                if (SteamEngines[i].AttachedAxle.IsWheelSlip)
+                {
+                    variable[i] = Math.Abs(SteamEngines[i].AttachedAxle.SlipSpeedMpS / SteamEngines[i].AttachedAxle.WheelRadiusM / MathHelper.Pi * 5);
+                }
+                else
+                {
+                    variable[i] = Math.Abs((float)SteamEngines[i].AttachedAxle.AxleSpeedMpS / SteamEngines[i].AttachedAxle.WheelRadiusM / MathHelper.Pi * 5);
+                }
+                Variable1 = ThrottlePercent == 0 ? 0 : variable[i];
             }
-            else
-            {
-                variable1 = Math.Abs(WheelSpeedMpS / DriverWheelRadiusM / MathHelper.Pi * 5);
-            }
-            Variable1 = ThrottlePercent == 0 ? 0 : variable1;
+
+            // Set variables for each engine
+            Variable1 = variable[0];
+            Variable2_1 = variable[1];
+            Variable3_1 = variable[2];
+            Variable4_1 = variable[3];
+
             Variable2 = MathHelper.Clamp((CylinderCocksPressureAtmPSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
             Variable3 = FuelRateSmoothed * 100;
 
@@ -5726,7 +5785,7 @@ namespace Orts.Simulation.RollingStocks
             else
             {
                 CylCockSteamUsageLBpS = 0.0f;       // set steam usage to zero if turned off
-                CylCockSteamUsageDisplayLBpS = CylCockSteamUsageLBpS;
+                CylCockSteamUsageDisplayLBpS = 0.0f;
             }
 
             // Calculate Generator steam Usage if turned on
@@ -6533,7 +6592,7 @@ namespace Orts.Simulation.RollingStocks
             if (!(BrakeSystem is Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS.VacuumSinglePipe))
             {
                 // Display air compressor information
-                status.AppendFormat("{0}\t{1}\t{2}/{21}\t{3}\t{4}/{21}\t{5}\t{6}/{21}\t{7}\t{8}/{21}\t{9}\t{10}/{21}\t{11}\t{12}/{21}\t{13}\t{14}/{21}\t{15}\t{16}/{21}\t{17}\t{18}/{21} ({19}x{20:N1}\")\n",
+                status.AppendFormat("{0}\t{1}\t{2}/{23}\t{3}\t{4}/{23}\t{5}\t{6}/{23}\t{7}\t{8}/{23}\t{9}\t{10}/{23}\t{11}\t{12}/{23}\t{13}\t{14}/{23}\t{15}\t{16}/{23}\t{17}\t{18}/{23}\t{19}\t{20}/{23}\t({21}x{22:N1}\")\n",
                     Simulator.Catalog.GetString("Usage:"),
                     Simulator.Catalog.GetString("Cyl"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylinderSteamUsageLBpS)), IsMetric),
@@ -6551,6 +6610,8 @@ namespace Orts.Simulation.RollingStocks
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(StokerSteamUsageLBpS)), IsMetric),
                     Simulator.Catalog.GetString("BlowD"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowdownSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("Booster"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(HuDBoosterSteamConsumptionLbpS)), IsMetric),
                     Simulator.Catalog.GetString("MaxSafe"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(MaxSafetyValveDischargeLbspS)), IsMetric),
                     NumSafetyValves,
@@ -6560,7 +6621,7 @@ namespace Orts.Simulation.RollingStocks
             else
             {
                 // Display steam ejector information instead of air compressor
-                status.AppendFormat("{0}\t{1}\t{2}/{21}\t{3}\t{4}/{21}\t{5}\t{6}/{21}\t{7}\t{8}/{21}\t{9}\t{10}/{21}\t{11}\t{12}/{21}\t{13}\t{14}/{21}\t{15}\t{16}/{21}\t{17}\t{18}/{21} ({19}x{20:N1}\")\n",
+                status.AppendFormat("{0}\t{1}\t{2}/{23}\t{3}\t{4}/{23}\t{5}\t{6}/{23}\t{7}\t{8}/{23}\t{9}\t{10}/{23}\t{11}\t{12}/{23}\t{13}\t{14}/{23}\t{15}\t{16}/{23}\t{17}\t{18}/{23}\t{19}\t{20}/{23}\t({21}x{22:N1}\")\n",
                     Simulator.Catalog.GetString("Usage:"),
                     Simulator.Catalog.GetString("Cyl"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylinderSteamUsageLBpS)), IsMetric),
@@ -6578,6 +6639,8 @@ namespace Orts.Simulation.RollingStocks
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(StokerSteamUsageLBpS)), IsMetric),
                     Simulator.Catalog.GetString("BlowD"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowdownSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("Booster"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(HuDBoosterSteamConsumptionLbpS)), IsMetric),
                     Simulator.Catalog.GetString("MaxSafe"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(MaxSafetyValveDischargeLbspS)), IsMetric),
                     NumSafetyValves,
