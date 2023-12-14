@@ -544,7 +544,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             outf.Write(MinimumValue);
             outf.Write(MaximumValue);
             outf.Write(StepSize);
-            outf.Write(CurrentNotch);            
+            outf.Write(CurrentNotch);           
         }
 
         public virtual void Restore(BinaryReader inf)
@@ -555,7 +555,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             StepSize = inf.ReadSingle();
             CurrentNotch = inf.ReadInt32();
 
-            UpdateValue = 0;
+            UpdateValue = 0;         
         }
 
         public MSTSNotch GetCurrentNotch()

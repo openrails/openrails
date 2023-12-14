@@ -1849,20 +1849,20 @@ namespace Orts.Simulation.RollingStocks
                 float maxCylPressurePSI = airPipeSystem.GetMaxCylPressurePSI();
                 float target = airPipeSystem.AutoCylPressurePSI * airPipeSystem.RelayValveRatio / maxCylPressurePSI;
 
-                    if (DynamicBrakeBlendingForceMatch)
-                    {
-                        float diff = target * FrictionBrakeBlendingMaxForceN - DynamicBrakeForceN;
-                        float threshold = 100;
+                if (DynamicBrakeBlendingForceMatch)
+                {
+                    float diff = target * FrictionBrakeBlendingMaxForceN - DynamicBrakeForceN;
+                    float threshold = 100;
                     if (diff > threshold && DynamicBrakePercent < 100)
                         DynamicBrakeBlendingPercent = Math.Min(DynamicBrakePercent + 100 * elapsedClockSeconds, 100);
                     else if (diff < -threshold && DynamicBrakePercent > 1)
                         DynamicBrakeBlendingPercent = Math.Max(DynamicBrakePercent - 100 * elapsedClockSeconds, 1);
-                    }
-                    else
-                    {
-                    DynamicBrakeBlendingPercent = target * 100;
-                    }
                 }
+                else
+                {
+                    DynamicBrakeBlendingPercent = target * 100;
+                }
+            }
             else
             {
                 DynamicBrakeBlendingPercent = -1;
@@ -2274,18 +2274,18 @@ namespace Orts.Simulation.RollingStocks
             if (IsLeadLocomotive() && TrainBrakeController != null && TrainBrakeController.TrainDynamicBrakeIntervention > 0)
             {
                 LocalDynamicBrakePercent = TrainBrakeController.TrainDynamicBrakeIntervention * 100;
-                    }
+            }
             if (DynamicBrakeController != null && DynamicBrakeIntervention >= 0)
-                {
+            {
                 if (DynamicBrake || !DynamicBrakeControllerSetupLock)
-                    {
-                        DynamicBrakeController.Update(elapsedClockSeconds);
+                {
+                    DynamicBrakeController.Update(elapsedClockSeconds);
                     DynamicBrakeIntervention = DynamicBrakeController.CurrentValue;
-                    }
-                    else
-                    {
+                }
+                else
+                {
                     DynamicBrakeIntervention = 0;
-                    }
+                }
                 LocalDynamicBrakePercent = Math.Max(DynamicBrakeIntervention * 100, LocalDynamicBrakePercent);
             }
             if (IsLeadLocomotive()) DynamicBrakePercent = LocalDynamicBrakePercent;

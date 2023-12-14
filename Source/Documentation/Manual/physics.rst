@@ -2986,7 +2986,7 @@ the following parameters will adjust the behaviour of air brakes:
   air brakes are released while dynamic brakes satisfy the train brake demand.
   If dynamic braking is not sufficient, air brakes will be partially applied
   so the combination air+dynamic provides the required brake demand.
-
+  
 Sometimes the train brake controller is capable to apply the dynamic
 brakes for the whole consist, usually as a first step before air brakes
 are applied. This is usually known as "train blending", as opposed to 
