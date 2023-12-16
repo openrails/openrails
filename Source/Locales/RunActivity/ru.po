@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2023-12-16 11:02:58+0300\n"
-"PO-Revision-Date: 2023-12-16 16:42+0300\n"
+"PO-Revision-Date: 2023-12-16 18:29+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -502,7 +502,7 @@ msgstr "Настройки мультиплеера"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:584
 msgid "Penalty for speeding && SPAD"
-msgstr "Штраф за превыш. скор. и проезд запр. сигнала"
+msgstr "Штраф за нарушения"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:597
 msgid "Prefer green signals"
@@ -510,7 +510,7 @@ msgstr "Открыть все сигналы"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:610
 msgid "Allow new players to join"
-msgstr "Разрешить присоединиться к МП"
+msgstr "Принимать новых игроков"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:640
 msgid "Map settings and controls"
