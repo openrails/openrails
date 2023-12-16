@@ -1,6 +1,6 @@
 # Open Rails Architecture
 
-This document will describe the overall structure of Open Rails and how we expect different areas of the program to work together.
+This document describes the overall structure of Open Rails and how we expect different areas of the program to work together.
 
 ## Player application model
 
