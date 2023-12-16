@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2023-12-16 11:02:58+0300\n"
-"PO-Revision-Date: 2023-12-16 12:36+0300\n"
+"PO-Revision-Date: 2023-12-16 16:42+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -311,7 +311,7 @@ msgstr "Сообщение выбранному игроку"
 #: ../../RunActivity/Viewer3D/Map/MapForm.cs:172
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:822
 msgid "Reply to the selected player"
-msgstr "Отв. выбранным"
+msgstr "Ответить выбранным"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.cs:174
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:842
@@ -398,7 +398,7 @@ msgstr "Вы"
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:518
 #: ../../RunActivity/Viewer3D/Popups/MultiPlayerWindow.cs:345
 msgid "Helper"
-msgstr "Ассистент"
+msgstr "Толкач"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.cs:338
 msgid "Disconnected"
@@ -414,7 +414,7 @@ msgstr "Отстранить игрока"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:160
 msgid "Learn more"
-msgstr "Подробнее"
+msgstr "Справка"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:172
 msgid "You are the dispatcher in this multiplayer session"
@@ -502,23 +502,23 @@ msgstr "Настройки мультиплеера"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:584
 msgid "Penalty for speeding && SPAD"
-msgstr "Штрафовать за превышение скорости и проезд запр. сигнала"
+msgstr "Штраф за превыш. скор. и проезд запр. сигнала"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:597
 msgid "Prefer green signals"
-msgstr "Откр. все сигналы"
+msgstr "Открыть все сигналы"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:610
 msgid "Allow new players to join"
-msgstr "Допустить игрока в мультиплеер"
+msgstr "Разрешить присоединиться к МП"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:640
 msgid "Map settings and controls"
-msgstr "Настройки и управление картой"
+msgstr "Управление картой"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:649
 msgid "Follow my train on the map"
-msgstr "Отслеживать свой поезд на карте"
+msgstr "Отслеживать свой поезд"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:660
 msgid "Jump to my train on the map"
@@ -530,19 +530,19 @@ msgstr "Показать свой поезд в игре"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:682
 msgid "Map resolution (m):"
-msgstr "Масштаб карты (метров)"
+msgstr "Зона охвата (м)"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:723
 msgid "Allow throwing switches"
-msgstr "Разрешить перевод стрелок"
+msgstr "Управление стрелками"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:735
 msgid "Allow changing signals"
-msgstr "Разрешить управление сигналами"
+msgstr "Управление сигналами"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:747
 msgid "Draw next path section"
-msgstr "Отобразить маршрут"
+msgstr "Отображать маршрут"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:774
 msgid "Players"
@@ -550,7 +550,7 @@ msgstr "Игроки"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:973
 msgid "Allow call on"
-msgstr "Разрешить занятие блок-участка"
+msgstr "Разрешить манёвр"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:1006
 msgid "Map window"
@@ -2114,7 +2114,7 @@ msgstr "РП"
 
 #: ../../RunActivity/Viewer3D/Popups/MultiPlayerWindow.cs:87
 msgid "MultiPlayer Info"
-msgstr "Роль в мультиплеере"
+msgstr "Мультиплеер"
 
 #: ../../RunActivity/Viewer3D/Popups/MultiPlayerWindow.cs:371
 msgid "Connection to the server is lost, will play as single mode"
