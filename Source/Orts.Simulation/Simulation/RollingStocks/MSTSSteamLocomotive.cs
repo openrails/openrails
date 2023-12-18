@@ -2203,8 +2203,6 @@ namespace Orts.Simulation.RollingStocks
             UpdateAuxiliaries(elapsedClockSeconds, absSpeedMpS);
             UpdateSuperHeat();
 
-            TractiveForceN = 0; // reset tractiveforceN in preparation to calculating a new value
-            MotiveForceN = 0;
             CylinderSteamUsageLBpS = 0;
             CylCockSteamUsageLBpS = 0;
             MeanEffectivePressurePSI = 0;
@@ -2310,41 +2308,11 @@ namespace Orts.Simulation.RollingStocks
                     tractiveforcethrottle = throttle;
                 }
 
-                UpdateTractiveForce(elapsedClockSeconds, tractiveforcethrottle, 0, 0, i);
+                UpdateSteamTractiveForce(elapsedClockSeconds, tractiveforcethrottle, 0, 0, i);
 
-                TractiveForceN += SteamEngines[i].TractiveForceN;
-
-                MotiveForceN += SteamEngines[i].AttachedAxle.CompensatedAxleForceN;
             }
 
-            // Find the maximum TE for debug i.e. @ start and full throttle
-            if (absSpeedMpS < 1.0)
-            {
-                if (Math.Abs(TractiveForceN) > absStartTractiveEffortN && Math.Abs(TractiveForceN) < MaxForceN)
-                {
-                    absStartTractiveEffortN = Math.Abs(TractiveForceN); // update to new maximum TE
-                }
-            }
-
-            DisplayTractiveForceN = TractiveForceN;
-
-            MotiveForceSmoothN.Update(elapsedClockSeconds, MotiveForceN);
-            MotiveForceSmoothedN = MotiveForceSmoothN.SmoothedValue;
-            if (float.IsNaN(MotiveForceN))
-                MotiveForceN = 0;
-
-            DrawBarPullLbsF = N.ToLbf(Math.Abs(MotiveForceSmoothedN) - LocoTenderFrictionForceN); // Locomotive drawbar pull is equal to motive force of locomotive (+ tender) - friction forces of locomotive (+ tender)
-            DrawBarPullLbsF = MathHelper.Clamp(DrawBarPullLbsF, 0, DrawBarPullLbsF); // clamp value so it doesn't go negative
-
-            DrawbarHorsePowerHP = (DrawBarPullLbsF * MpS.ToMpH(absSpeedMpS)) / 375.0f;  // TE in this instance is a maximum, and not at the wheel???
-            DrawbarHorsePowerHP = MathHelper.Clamp(DrawbarHorsePowerHP, 0, DrawbarHorsePowerHP); // clamp value so it doesn't go negative
-
-
-            // Calculate IHP
-            // IHP = (MEP x CylStroke(ft) x cylArea(sq in) x No Strokes (/min)) / 33000) - this is per cylinder
-
-            IndicatedHorsePowerHP = (N.ToLbf(MotiveForceSmoothedN) * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
-            IndicatedHorsePowerHP = MathHelper.Clamp(IndicatedHorsePowerHP, 0, IndicatedHorsePowerHP);
+            UpdateTractiveForce(elapsedClockSeconds, ThrottlePercent / 100f, AbsSpeedMpS, AbsWheelSpeedMpS);
 
             #endregion
 
@@ -5130,20 +5098,19 @@ namespace Orts.Simulation.RollingStocks
             SteamReleasePressure_AtmPSI = SteamEngines[numberofengine].Pressure_c_AtmPSI; // for steam and smoke effects
 
         }
-        protected override void UpdateTractiveForce(float elapsedClockSeconds, float locomotivethrottle, float AbsSpeedMpS, float AbsWheelSpeedMpS, int numberofengine)
+
+
+        /// <summary>
+        /// Calculate the tractive forces for each steam engine
+        /// </summary>
+        private void UpdateSteamTractiveForce(float elapsedClockSeconds, float locomotivethrottle, float AbsSpeedMpS, float AbsWheelSpeedMpS, int numberofengine)
         {
-            // Pass force and power information to MSTSLocomotive file by overriding corresponding method there
-
-            // Set Max Power equal to max IHP
-            MaxPowerW = W.FromHp(SteamEngines[numberofengine].MaxIndicatedHorsePowerHP);
-
-            // Set maximum force for the locomotive
-            MaxForceN = N.FromLbf(SteamEngines[numberofengine].MaxTractiveEffortLbf * CylinderEfficiencyRate);
-
-            // Set Max Velocity of locomotive
-            MaxSpeedMpS = Me.FromMi(pS.FrompH(MaxLocoSpeedMpH)); // Note this is not the true max velocity of the locomotive, but  the speed at which max HP is reached
 
             #region - Steam Adhesion Model Input for Steam Locomotives
+
+            // Caculate the current piston speed - purely for display purposes at the moment 
+            // Piston Speed (Ft p Min) = (Stroke length x 2) x (Ft in Mile x Train Speed (mph) / ( Circum of Drv Wheel x 60))
+            SteamEngines[numberofengine].PistonSpeedFtpMin = Me.ToFt(pS.TopM(SteamEngines[numberofengine].CylindersStrokeM * 2.0f * DrvWheelRevRpS)) * SteamGearRatio;
 
             // Based upon information presented on pg 276 of "Locomotive Operation - A Technical and Practical Analysis" by G. R. Henderson -
             // https://archive.org/details/locomotiveoperat00hend/page/276/mode/2up
@@ -5459,11 +5426,7 @@ namespace Orts.Simulation.RollingStocks
             else // Adjust tractive force if  "simple" friction is used, or is a geared steam locomotive
             {
                 // This section updates the force calculations and maintains them at the current values.
-
-                // Caculate the current piston speed - purely for display purposes at the moment 
-                // Piston Speed (Ft p Min) = (Stroke length x 2) x (Ft in Mile x Train Speed (mph) / ( Circum of Drv Wheel x 60))
-                PistonSpeedFtpMin = Me.ToFt(pS.TopM(SteamEngines[numberofengine].CylindersStrokeM * 2.0f * DrvWheelRevRpS)) * SteamGearRatio;
-
+                
                 if (SteamEngineType == SteamEngineTypes.Compound)
                 {
                     // Calculate tractive effort if set for compounding - tractive effort in each cylinder will need to be calculated
@@ -5482,21 +5445,20 @@ namespace Orts.Simulation.RollingStocks
                     // Calculate IHP
                     // IHP = (MEP x Speed (mph)) / 375.0) - this is per cylinder
 
-                    HPIndicatedHorsePowerHP = (HPTractiveEffortLbsF * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
-                    LPIndicatedHorsePowerHP = (LPTractiveEffortLbsF * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
+                    SteamEngines[numberofengine].HPIndicatedHorsePowerHP = (HPTractiveEffortLbsF * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
+                    SteamEngines[numberofengine].LPIndicatedHorsePowerHP = (LPTractiveEffortLbsF * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
 
                     float WheelRevs = pS.TopM(DrvWheelRevRpS);
-                    IndicatedHorsePowerHP += HPIndicatedHorsePowerHP + LPIndicatedHorsePowerHP;
-                    IndicatedHorsePowerHP = MathHelper.Clamp(IndicatedHorsePowerHP, 0, IndicatedHorsePowerHP);
+
                 }
                 else // if simple or geared locomotive calculate tractive effort
                 {
 
                     // If the steam piston is exceeding the maximum design piston rate then decrease efficiency of mep
-                    if (SteamEngineType == SteamEngineTypes.Geared && PistonSpeedFtpMin > MaxSteamGearPistonRateFtpM)
+                    if (SteamEngineType == SteamEngineTypes.Geared && SteamEngines[numberofengine].PistonSpeedFtpMin > MaxSteamGearPistonRateFtpM)
                     {
                         // use straight line curve to decay mep to zero by 2 x piston speed
-                        float pistonforcedecay = 1.0f - (1.0f / MaxSteamGearPistonRateFtpM) * (PistonSpeedFtpMin - MaxSteamGearPistonRateFtpM);
+                        float pistonforcedecay = 1.0f - (1.0f / MaxSteamGearPistonRateFtpM) * (SteamEngines[numberofengine].PistonSpeedFtpMin - MaxSteamGearPistonRateFtpM);
                         pistonforcedecay = MathHelper.Clamp(pistonforcedecay, 0.0f, 1.0f);  // Clamp decay within bounds
 
                         SteamEngines[numberofengine].MeanEffectivePressurePSI *= pistonforcedecay; // Decrease mep once piston critical speed is exceeded
@@ -5575,22 +5537,88 @@ namespace Orts.Simulation.RollingStocks
                 IsCritTELimit = false; // Reset flag if limiting TE
             }
 
-            ApplyDirectionToTractiveForce(ref SteamEngines[numberofengine].TractiveForceN);
-
-            // Set tractive force to zero if throttle is closed
-            if (locomotivethrottle < 0.001)
-            {
-                SteamEngines[numberofengine].TractiveForceN = 0;
-            }
-
-
             SteamEngines[numberofengine].AttachedAxle.DriveForceN = SteamEngines[numberofengine].TractiveForceN;
         }
 
         /// <summary>
-        /// Normalise crank angle so that it is a value between 0 and 360 starting at the real crank angle difference
+        /// Update the tractive force for the complete steam locomotive
         /// </summary>
-        private float NormalisedCrankAngle(int cylinderNumber)
+        protected override void UpdateTractiveForce(float elapsedClockSeconds, float locomotivethrottle, float AbsSpeedMpS, float AbsWheelSpeedMpS)
+        {
+            TractiveForceN = 0; // reset tractiveforceN in preparation to calculating a new value
+            MotiveForceN = 0;
+            IndicatedHorsePowerHP = 0;
+            PistonSpeedFtpMin = 0;
+
+            // Update tractive effort across all steam engines
+            for (int i = 0; i < SteamEngines.Count; i++)
+            {
+                TractiveForceN += SteamEngines[i].TractiveForceN;
+
+                MotiveForceN += SteamEngines[i].AttachedAxle.CompensatedAxleForceN;
+
+                // Set Max Power equal to max IHP
+                MaxPowerW = W.FromHp(SteamEngines[i].MaxIndicatedHorsePowerHP);
+
+                // Set maximum force for the locomotive
+                MaxForceN = N.FromLbf(SteamEngines[i].MaxTractiveEffortLbf * CylinderEfficiencyRate);
+
+                if (SteamEngineType == SteamEngineTypes.Compound)
+                {
+                    IndicatedHorsePowerHP += HPIndicatedHorsePowerHP + LPIndicatedHorsePowerHP;
+                    IndicatedHorsePowerHP = MathHelper.Clamp(IndicatedHorsePowerHP, 0, IndicatedHorsePowerHP);
+                }
+                else
+                {
+                    IndicatedHorsePowerHP += SteamEngines[i].IndicatedHorsePowerHP;
+                }
+
+                //TODO - identify the maximum value for display?? 
+                PistonSpeedFtpMin = SteamEngines[0].PistonSpeedFtpMin;
+
+            }
+
+            ApplyDirectionToTractiveForce(ref TractiveForceN);
+
+            // Find the maximum TE for debug i.e. @ start and full throttle
+            if (absSpeedMpS < 1.0)
+            {
+                if (Math.Abs(TractiveForceN) > absStartTractiveEffortN && Math.Abs(TractiveForceN) < MaxForceN)
+                {
+                    absStartTractiveEffortN = Math.Abs(TractiveForceN); // update to new maximum TE
+                }
+            }
+
+            DisplayTractiveForceN = TractiveForceN;
+
+            MotiveForceSmoothN.Update(elapsedClockSeconds, MotiveForceN);
+            MotiveForceSmoothedN = MotiveForceSmoothN.SmoothedValue;
+            if (float.IsNaN(MotiveForceN))
+                MotiveForceN = 0;
+
+            DrawBarPullLbsF = N.ToLbf(Math.Abs(MotiveForceSmoothedN) - LocoTenderFrictionForceN); // Locomotive drawbar pull is equal to motive force of locomotive (+ tender) - friction forces of locomotive (+ tender)
+            DrawBarPullLbsF = MathHelper.Clamp(DrawBarPullLbsF, 0, DrawBarPullLbsF); // clamp value so it doesn't go negative
+
+            DrawbarHorsePowerHP = (DrawBarPullLbsF * MpS.ToMpH(absSpeedMpS)) / 375.0f;  // TE in this instance is a maximum, and not at the wheel???
+            DrawbarHorsePowerHP = MathHelper.Clamp(DrawbarHorsePowerHP, 0, DrawbarHorsePowerHP); // clamp value so it doesn't go negative
+
+            // Set Max Velocity of locomotive
+            MaxSpeedMpS = Me.FromMi(pS.FrompH(MaxLocoSpeedMpH)); // Note this is not the true max velocity of the locomotive, but  the speed at which max HP is reached
+
+
+
+            // Set tractive force to zero if throttle is closed
+            if (locomotivethrottle < 0.001)
+            {
+                TractiveForceN = 0;
+            }
+
+        }
+
+            /// <summary>
+            /// Normalise crank angle so that it is a value between 0 and 360 starting at the real crank angle difference
+            /// </summary>
+            private float NormalisedCrankAngle(int cylinderNumber)
         {
             float normalisedCrankAngleRad = (float)MathHelper.WrapAngle((float)LocomotiveAxles[0].AxlePositionRad + WheelCrankAngleDiffRad[cylinderNumber]);
 

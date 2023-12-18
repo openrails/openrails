@@ -2012,7 +2012,7 @@ namespace Orts.Simulation.RollingStocks
             // TODO  this is a wild simplification for electric and diesel electric
             if (EngineType == EngineTypes.Diesel || EngineType == EngineTypes.Electric)
             {
-                UpdateTractiveForce(elapsedClockSeconds, ThrottlePercent / 100f, AbsSpeedMpS, AbsWheelSpeedMpS, 0);
+                UpdateTractiveForce(elapsedClockSeconds, ThrottlePercent / 100f, AbsSpeedMpS, AbsWheelSpeedMpS);
             }
 
             foreach (MultiPositionController mpc in MultiPositionControllers)
@@ -2375,7 +2375,7 @@ namespace Orts.Simulation.RollingStocks
         /// <summary>
         /// This function updates periodically the locomotive's motive force.
         /// </summary>
-        protected virtual void UpdateTractiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS, int numberofengine)
+        protected virtual void UpdateTractiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS)
         {
             // Method to set force and power info
             // An alternative method in the steam locomotive will override this and input force and power info for it.

@@ -543,9 +543,24 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float CylCockSteamUsageLBpS;
 
         /// <summary>
-        /// Indicated Horse Power
+        /// Indicated HP Horse Power for Compound
+        /// </summary>
+        public float HPIndicatedHorsePowerHP;
+
+        /// <summary>
+        /// Indicated LP Horse Power for Compound
+        /// </summary>
+        public float LPIndicatedHorsePowerHP;
+
+        /// <summary>
+        /// Indicated Horse Power for single expansion
         /// </summary>
         public float IndicatedHorsePowerHP;
+
+        /// <summary>
+        /// Speed of Piston
+        /// </summary>
+        public float PistonSpeedFtpMin;
 
         /// <summary>
         /// Calculated Factor of Adhesion
