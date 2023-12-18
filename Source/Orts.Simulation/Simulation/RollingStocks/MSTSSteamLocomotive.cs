@@ -1499,7 +1499,6 @@ namespace Orts.Simulation.RollingStocks
                 MaxTractiveEffortLbf += SteamEngines[i].MaxTractiveEffortLbf;
             }
 
-
             DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
 
             // ******************  Test Boiler Type ********************* 
@@ -1892,21 +1891,31 @@ namespace Orts.Simulation.RollingStocks
                 RetainedGearedMaxMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
             }
 
-            if (MaxIndicatedHorsePowerHP == 0) // if MaxIHP is not set in ENG file, then set a default
+            for (int i = 0; i < SteamEngines.Count; i++)
             {
-                // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                MaxIndicatedHorsePowerHP = MaxSpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;  // To be checked what MaxTractive Effort is for the purposes of this formula.
-
-                // Check to see if MaxIHP is in fact limited by the boiler
-                if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
+                if (SteamEngines[i].MaxIndicatedHorsePowerHP == 0 && SteamEngines.Count == 0 && MaxIndicatedHorsePowerHP != 0) // if MaxIHP is not set in ENG file, then set a default
                 {
-                    MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
-                    ISBoilerLimited = true;
+                    SteamEngines[i].MaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                 }
                 else
-                {
-                    ISBoilerLimited = false;
+                { 
+                    // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
+                    SteamEngines[i].MaxIndicatedHorsePowerHP = MaxSpeedFactor * (SteamEngines[i].MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;  // To be checked what MaxTractive Effort is for the purposes of this formula.
+
+                    MaxIndicatedHorsePowerHP += SteamEngines[i].MaxIndicatedHorsePowerHP;
                 }
+            }
+
+
+            // Check to see if MaxIHP is in fact limited by the boiler
+            if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
+            {
+                MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
+                ISBoilerLimited = true;
+            }
+            else
+            {
+                ISBoilerLimited = false;
             }
 
             DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
@@ -2793,7 +2802,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     variable[i] = Math.Abs((float)SteamEngines[i].AttachedAxle.AxleSpeedMpS / SteamEngines[i].AttachedAxle.WheelRadiusM / MathHelper.Pi * 5);
                 }
-                Variable1 = ThrottlePercent == 0 ? 0 : variable[i];
+                variable[i] = ThrottlePercent == 0 ? 0 : variable[i];
             }
 
             // Set variables for each engine
@@ -2801,6 +2810,8 @@ namespace Orts.Simulation.RollingStocks
             Variable2_1 = variable[1];
             Variable3_1 = variable[2];
             Variable4_1 = variable[3];
+
+//            Trace.TraceInformation("Variable1 {0} Variable2_1 {1} Variable3_1 {2} Variable4_1 {3}", Variable1, Variable2_1, Variable3_1, Variable4_1);
 
             Variable2 = MathHelper.Clamp((CylinderCocksPressureAtmPSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
             Variable3 = FuelRateSmoothed * 100;
@@ -5124,10 +5135,10 @@ namespace Orts.Simulation.RollingStocks
             // Pass force and power information to MSTSLocomotive file by overriding corresponding method there
 
             // Set Max Power equal to max IHP
-            MaxPowerW = W.FromHp(MaxIndicatedHorsePowerHP);
+            MaxPowerW = W.FromHp(SteamEngines[numberofengine].MaxIndicatedHorsePowerHP);
 
             // Set maximum force for the locomotive
-            MaxForceN = N.FromLbf(MaxTractiveEffortLbf * CylinderEfficiencyRate);
+            MaxForceN = N.FromLbf(SteamEngines[numberofengine].MaxTractiveEffortLbf * CylinderEfficiencyRate);
 
             // Set Max Velocity of locomotive
             MaxSpeedMpS = Me.FromMi(pS.FrompH(MaxLocoSpeedMpH)); // Note this is not the true max velocity of the locomotive, but  the speed at which max HP is reached
@@ -5378,6 +5389,11 @@ namespace Orts.Simulation.RollingStocks
 
                     SteamEngines[numberofengine].TractiveForceN += N.FromLbf(Math.Max(tangentialWheelTreadForceLbf, -1000));
 
+                    if (SteamEngines[numberofengine].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                    {
+                        SteamEngines[numberofengine].TractiveForceN *= SteamEngines[numberofengine].BoosterGearRatio;
+                    }
+
 #if DEBUG_STEAM_SLIP
                     if (SpeedMpS > 17.88 && SpeedMpS < 18.5 || SpeedMpS > 34.0 && throttle == 0)
                                         {
@@ -5525,10 +5541,10 @@ namespace Orts.Simulation.RollingStocks
 
             #endregion
 
-            if (IndicatedHorsePowerHP >= MaxIndicatedHorsePowerHP)
+            if (SteamEngines[numberofengine].IndicatedHorsePowerHP >= SteamEngines[numberofengine].MaxIndicatedHorsePowerHP)
             {
                 SteamEngines[numberofengine].TractiveForceN = N.FromLbf((MaxIndicatedHorsePowerHP * 375.0f) / pS.TopH(Me.ToMi(SpeedMpS)));
-                IndicatedHorsePowerHP = MaxIndicatedHorsePowerHP; // Set IHP to maximum value
+                SteamEngines[numberofengine].IndicatedHorsePowerHP = SteamEngines[numberofengine].MaxIndicatedHorsePowerHP; // Set IHP to maximum value
                 IsCritTELimit = true; // Flag if limiting TE
             }
             else
@@ -5546,15 +5562,12 @@ namespace Orts.Simulation.RollingStocks
                 SteamEngines[numberofengine].TractiveForceN = 0.5f;
             }
 
-
-
-
             // Based upon max IHP, limit motive force.
 
-            if (IndicatedHorsePowerHP >= MaxIndicatedHorsePowerHP)
+            if (SteamEngines[numberofengine].IndicatedHorsePowerHP >= SteamEngines[numberofengine].MaxIndicatedHorsePowerHP)
             {
-                TractiveForceN = N.FromLbf((MaxIndicatedHorsePowerHP * 375.0f) / pS.TopH(Me.ToMi(SpeedMpS)));
-                IndicatedHorsePowerHP = MaxIndicatedHorsePowerHP; // Set IHP to maximum value
+                SteamEngines[numberofengine].TractiveForceN = N.FromLbf((SteamEngines[numberofengine].MaxIndicatedHorsePowerHP * 375.0f) / pS.TopH(Me.ToMi(SpeedMpS)));
+                SteamEngines[numberofengine].IndicatedHorsePowerHP = SteamEngines[numberofengine].MaxIndicatedHorsePowerHP; // Set IHP to maximum value
                 IsCritTELimit = true; // Flag if limiting TE
             }
             else
@@ -7005,31 +7018,63 @@ namespace Orts.Simulation.RollingStocks
             else
             {
                 status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Performance"));
-                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
-                    Simulator.Catalog.GetString("Power:"),
-                    Simulator.Catalog.GetString("MaxInd"),
-                    FormatStrings.FormatPower(W.FromHp(MaxIndicatedHorsePowerHP), IsMetric, false, false),
-                    Simulator.Catalog.GetString("Ind"),
-                    FormatStrings.FormatPower(W.FromHp(IndicatedHorsePowerHP), IsMetric, false, false),
-                    Simulator.Catalog.GetString("Drawbar"),
-                    FormatStrings.FormatPower(W.FromHp(DrawbarHorsePowerHP), IsMetric, false, false),
-                    Simulator.Catalog.GetString("BlrLmt"),
-                    ISBoilerLimited ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
+
+                if (SteamEngines.Count > 1)
+                {
+                    for (int i = 0; i < SteamEngines.Count; i++)
+                    {
+                        status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n",
+                        Simulator.Catalog.GetString("Power:"),
+                        Simulator.Catalog.GetString("Eng#"),
+                        i + 1,
+                        Simulator.Catalog.GetString("MaxInd"),
+                        FormatStrings.FormatPower(W.FromHp(SteamEngines[i].MaxIndicatedHorsePowerHP), IsMetric, false, false),
+                        Simulator.Catalog.GetString("Ind"),
+                        FormatStrings.FormatPower(W.FromHp(SteamEngines[i].IndicatedHorsePowerHP), IsMetric, false, false)
+                        );
+                    }
+                }
+
+                status.AppendFormat("{0}\t\t\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
+                Simulator.Catalog.GetString("PowerTot:"),
+                Simulator.Catalog.GetString("MaxInd"),
+                FormatStrings.FormatPower(W.FromHp(MaxIndicatedHorsePowerHP), IsMetric, false, false),
+                Simulator.Catalog.GetString("Ind"),
+                FormatStrings.FormatPower(W.FromHp(IndicatedHorsePowerHP), IsMetric, false, false),
+                Simulator.Catalog.GetString("Drawbar"),
+                FormatStrings.FormatPower(W.FromHp(DrawbarHorsePowerHP), IsMetric, false, false),
+                Simulator.Catalog.GetString("BlrLmt"),
+                ISBoilerLimited ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
+
+                if (SteamEngines.Count > 1)
+                {
+                    for (int i = 0; i < SteamEngines.Count; i++)
+                    {
+                        status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n",
+                         Simulator.Catalog.GetString("Force:"),
+                         Simulator.Catalog.GetString("Eng#"),
+                        i + 1,
+                         Simulator.Catalog.GetString("TheorTE"),
+                         FormatStrings.FormatForce(N.FromLbf(SteamEngines[i].MaxTractiveEffortLbf), IsMetric),
+                         Simulator.Catalog.GetString("TE"),
+                         FormatStrings.FormatForce(SteamEngines[i].TractiveForceN, IsMetric));
+                    }
+                }
 
                 status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
-                         Simulator.Catalog.GetString("Force:"),
-                         Simulator.Catalog.GetString("TheorTE"),
-                         FormatStrings.FormatForce(N.FromLbf(MaxTractiveEffortLbf), IsMetric),
-                         Simulator.Catalog.GetString("StartTE"),
-                         FormatStrings.FormatForce(absStartTractiveEffortN, IsMetric),
-                         Simulator.Catalog.GetString("TE"),
-                         FormatStrings.FormatForce(MotiveForceN, IsMetric),
-                         Simulator.Catalog.GetString("Draw"),
-                         FormatStrings.FormatForce(N.FromLbf(DrawBarPullLbsF), IsMetric),
-                         Simulator.Catalog.GetString("CritSpeed"),
-                         FormatStrings.FormatSpeedDisplay(MpS.FromMpH(MaxLocoSpeedMpH), IsMetric),
-                         Simulator.Catalog.GetString("SpdLmt"),
-                         IsCritTELimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
+                    Simulator.Catalog.GetString("ForceTot:"),
+                    Simulator.Catalog.GetString("TheorTE"),
+                    FormatStrings.FormatForce(N.FromLbf(MaxTractiveEffortLbf), IsMetric),
+                    Simulator.Catalog.GetString("StartTE"),
+                    FormatStrings.FormatForce(absStartTractiveEffortN, IsMetric),
+                    Simulator.Catalog.GetString("TE"),
+                    FormatStrings.FormatForce(MotiveForceN, IsMetric),
+                    Simulator.Catalog.GetString("Draw"),
+                    FormatStrings.FormatForce(N.FromLbf(DrawBarPullLbsF), IsMetric),
+                    Simulator.Catalog.GetString("CritSpeed"),
+                    FormatStrings.FormatSpeedDisplay(MpS.FromMpH(MaxLocoSpeedMpH), IsMetric),
+                    Simulator.Catalog.GetString("SpdLmt"),
+                    IsCritTELimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
 
                 status.AppendFormat("{0}\t{1}\t{2:N0} {7}/{8}\t\t{3}\t{4:N0} {9}\t{5} {6:N2}\t\t{10}\t{11}\n",
                     Simulator.Catalog.GetString("Move:"),
