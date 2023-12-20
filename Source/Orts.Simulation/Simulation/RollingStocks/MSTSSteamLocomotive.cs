@@ -5609,6 +5609,11 @@ namespace Orts.Simulation.RollingStocks
 
             DisplayTractiveForceN = TractiveForceN;
 
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics)
+            {
+                UpdateAxleDriveForce();
+            }
+
             MotiveForceSmoothN.Update(elapsedClockSeconds, MotiveForceN);
             MotiveForceSmoothedN = MotiveForceSmoothN.SmoothedValue;
             if (float.IsNaN(MotiveForceN))
