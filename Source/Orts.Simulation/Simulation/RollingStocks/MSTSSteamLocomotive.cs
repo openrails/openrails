@@ -133,6 +133,9 @@ namespace Orts.Simulation.RollingStocks
         public bool SteamBoosterRunMode = false;
         public bool SteamBoosterIdleMode = false;
         public bool SteamBoosterLatchedLocked = false;
+        float BoosterGearEngageTimeS;
+        float BoosterIdleTimeS;
+        float BoosterGearEngageTimeStartS;
         public float HuDBoosterSteamConsumptionLbpS;
         public float BoosterSteamConsumptionLbpS;
         float BoosterIdleChokeSizeIn;
@@ -2237,19 +2240,26 @@ namespace Orts.Simulation.RollingStocks
                         SteamBoosterRunMode = false;
                         SteamBoosterIdleMode = true;
                         enginethrottle = 0.0f;
+                        BoosterGearEngageTimeS = 0;
                     }
                     // Run mode
                     else if (SteamBoosterAirOpen && SteamBoosterIdle && SteamBoosterLatchedLocked)
                     {
-                        SteamBoosterIdleMode = false;
-                        SteamBoosterRunMode = true;
-                        enginethrottle = throttle;
+                        if (BoosterGearEngageTimeS > 6)
+                        {
+                            SteamBoosterIdleMode = false;
+                            SteamBoosterRunMode = true;
+                            enginethrottle = throttle;
+                        }
+                        BoosterGearEngageTimeS += elapsedClockSeconds;
                     }
-                    else if (!SteamBoosterAirOpen || !SteamBoosterLatchedLocked)
+                    else if (!SteamBoosterAirOpen || !SteamBoosterLatchedLocked) // Turn Booster off completely
                     {
                         SteamBoosterRunMode = false;
                         SteamBoosterIdleMode = false;
                         enginethrottle = 0;
+                        BoosterGearEngageTimeS = 0;
+                        BoosterIdleTimeS = 0;
                     }
 
                         UpdateCylinders(elapsedClockSeconds, enginethrottle, boostercutoff, absSpeedMpS, i);
