@@ -831,9 +831,11 @@ namespace Orts.Viewer3D.Processes
                 string debugArgline = "";
                 foreach (var arg in args)
                 {
-                    if (arg.Contains(" ")) {
+                    if (arg.Contains(" ")) 
+                    {
                         debugArgline += "\"" + arg + "\" ";
-                    } else
+                    } 
+                    else
                     {
                         debugArgline += arg + " ";
                     }
