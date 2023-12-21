@@ -57,6 +57,7 @@ namespace ORTS
             this.pictureBoxLogo = new System.Windows.Forms.PictureBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.buttonDocuments = new System.Windows.Forms.Button();
+            this.buttonDownloadContent = new System.Windows.Forms.Button();
             this.label25 = new System.Windows.Forms.Label();
             this.radioButtonModeActivity = new System.Windows.Forms.RadioButton();
             this.radioButtonModeTimetable = new System.Windows.Forms.RadioButton();
@@ -146,7 +147,7 @@ namespace ORTS
             this.checkBoxWarnings.Location = new System.Drawing.Point(109, 48);
             this.checkBoxWarnings.Name = "checkBoxWarnings";
             this.checkBoxWarnings.Size = new System.Drawing.Size(64, 17);
-            this.checkBoxWarnings.TabIndex = 1;
+            this.checkBoxWarnings.TabIndex = 4;
             this.checkBoxWarnings.Text = "Logging";
             this.checkBoxWarnings.UseVisualStyleBackColor = true;
             // 
@@ -155,7 +156,7 @@ namespace ORTS
             this.buttonOptions.Location = new System.Drawing.Point(109, 19);
             this.buttonOptions.Name = "buttonOptions";
             this.buttonOptions.Size = new System.Drawing.Size(75, 23);
-            this.buttonOptions.TabIndex = 0;
+            this.buttonOptions.TabIndex = 3;
             this.buttonOptions.Text = "Options";
             this.buttonOptions.Click += new System.EventHandler(this.buttonOptions_Click);
             // 
@@ -174,7 +175,7 @@ namespace ORTS
             this.buttonTools.Location = new System.Drawing.Point(3, 19);
             this.buttonTools.Name = "buttonTools";
             this.buttonTools.Size = new System.Drawing.Size(100, 23);
-            this.buttonTools.TabIndex = 19;
+            this.buttonTools.TabIndex = 0;
             this.buttonTools.Text = "Tools ▼";
             this.buttonTools.Click += new System.EventHandler(this.buttonTools_Click);
             // 
@@ -363,6 +364,7 @@ namespace ORTS
             // 
             this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.Controls.Add(this.buttonDocuments);
+            this.panel1.Controls.Add(this.buttonDownloadContent);
             this.panel1.Controls.Add(this.buttonOptions);
             this.panel1.Controls.Add(this.checkBoxWarnings);
             this.panel1.Controls.Add(this.buttonTools);
@@ -376,10 +378,19 @@ namespace ORTS
             this.buttonDocuments.Location = new System.Drawing.Point(3, 48);
             this.buttonDocuments.Name = "buttonDocuments";
             this.buttonDocuments.Size = new System.Drawing.Size(100, 23);
-            this.buttonDocuments.TabIndex = 22;
+            this.buttonDocuments.TabIndex = 1;
             this.buttonDocuments.Text = "Documents ▼";
             this.buttonDocuments.UseVisualStyleBackColor = true;
             this.buttonDocuments.Click += new System.EventHandler(this.buttonDocuments_Click);
+            // 
+            // buttonDownloadContent
+            // 
+            this.buttonDownloadContent.Location = new System.Drawing.Point(3, 77);
+            this.buttonDownloadContent.Name = "buttonDownloadContent";
+            this.buttonDownloadContent.Size = new System.Drawing.Size(100, 23);
+            this.buttonDownloadContent.TabIndex = 2;
+            this.buttonDownloadContent.Text = "Download Content";
+            this.buttonDownloadContent.Click += new System.EventHandler(this.buttonDownloadContent_Click);
             // 
             // label25
             // 
@@ -1008,6 +1019,7 @@ namespace ORTS
         private System.Windows.Forms.LinkLabel linkLabelChangeLog;
         private System.Windows.Forms.Button buttonDocuments;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripDocuments;
+        private System.Windows.Forms.Button buttonDownloadContent;
         private System.Windows.Forms.Button buttonResumeMP;
         private System.Windows.Forms.RadioButton radioButtonMPServer;
         private System.Windows.Forms.RadioButton radioButtonMPClient;
