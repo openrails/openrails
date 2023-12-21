@@ -1216,6 +1216,8 @@ namespace Orts.Viewer3D.Popups
         
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
         {
+            // Uncomment this to test reducing the framerate during play by pressing F1
+            System.Threading.Thread.Sleep(40);
 
             base.PrepareFrame(elapsedTime, updateFull);
 
