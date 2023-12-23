@@ -881,7 +881,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     break;
                 default:
                     break;
-            },
+            }
 
             return false;
         }
