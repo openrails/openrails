@@ -431,7 +431,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// switch between Polach and Pacha adhesion calculation
         /// </summary>
-        bool UsePolachAdhesion = false;
+        public static bool UsePolachAdhesion = false; // "static" so it's shared by all axles of the Player's loco
 
         /// <summary>
         /// Pre-calculation of slip characteristics at 0 slip speed
@@ -1122,22 +1122,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             // into HelpWindow.PrepareFrame() temporarily.
             public static bool IsPrecisionHigh(float elapsedSeconds)
             {
-                // Switches between Polach (high precision) adhesion model and Pacha (low precision) adhesion model depending upon the PC performance
-                switch (PrecisionLevel)
+                if (elapsedSeconds > 0) // Ignore period with elapsedSeconds == 0 until user starts game.
                 {
-                    case AdhesionPrecisionLevel.High:
-                        if (elapsedSeconds > UpperLimitS)
-                        {
-                            var screenFrameRate = 1 / elapsedSeconds;
+                    // Switches between Polach (high precision) adhesion model and Pacha (low precision) adhesion model depending upon the PC performance
+                    switch (PrecisionLevel)
+                    {
+                        case AdhesionPrecisionLevel.High:
+                            if (elapsedSeconds > UpperLimitS)
                             {
-                                Trace.TraceInformation($"Advanced adhesion model switched to low precision permanently after low frame rate {screenFrameRate:F1} below limit {1 / UpperLimitS:F0}");
-                                PrecisionLevel = AdhesionPrecisionLevel.Low;
+                                var screenFrameRate = 1 / elapsedSeconds;
+                                {
+                                    Trace.TraceInformation($"Advanced adhesion model switched to low precision permanently after low frame rate {screenFrameRate:F1} below limit {1 / UpperLimitS:F0}");
+                                    PrecisionLevel = AdhesionPrecisionLevel.Low;
+                                }
                             }
-                        }
-                        break;
+                            break;
 
-                    case AdhesionPrecisionLevel.Low:
-                        break;
+                        case AdhesionPrecisionLevel.Low:
+                            break;
+                    }
                 }
                 return (PrecisionLevel == AdhesionPrecisionLevel.High);
             }
