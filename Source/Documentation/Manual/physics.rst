@@ -2705,6 +2705,12 @@ Brake Token:   ``TrainBrakesControllerSupressionStart``
 - Brake Systems: Air single pipe, Air twin pipe, EP
 - Description:   Cancels effect of penalty brake application by TCS and restores control of brakes to driver.  
 
+Brake Position Labels
+----------------------
+The name of a given brake controller notch can be customized by adding an ORTSLabel
+block to the notch definition::
+
+   Notch ( 0.5  0 TrainBrakesControllerEPFullServiceStart ORTSLabel ( "Regeneration III and EP" ) )
 
 .. _physics-hud-brake:
 
@@ -2967,7 +2973,7 @@ DynamicBrakeForceCurves defined in the ENG file, than one is created
 based on the MSTS parameter values.
 
 It is possible to use dynamic brakes as a replacement for air brakes
-when they are available (dynamic brake blending). During blending operation,
+when they are available ("local" dynamic brake blending). During blending operation,
 the following parameters will adjust the behaviour of air brakes:
 
 .. index::
@@ -2980,7 +2986,38 @@ the following parameters will adjust the behaviour of air brakes:
   air brakes are released while dynamic brakes satisfy the train brake demand.
   If dynamic braking is not sufficient, air brakes will be partially applied
   so the combination air+dynamic provides the required brake demand.
-
+  
+Sometimes the train brake controller is capable to apply the dynamic
+brakes for the whole consist, usually as a first step before air brakes
+are applied. This is usually known as "train blending", as opposed to 
+"local" blending which only affects dynamic braking on the locomotive itself.
+A blending table which looks similar to the DynamicBrakeForceCurves table is
+available. It specifies the amount of dynamic brake that is applied at each
+notch of the train brake controller, where 0 means no dynamic brake and 1 means full dynamic brake::
+  Engine(
+    ORTSTrainDynamicBlendingTable(
+        comment ( Notch 0 of train brake - no dynamic brake applied )
+        0 (
+            0 0 
+            300km/h 0
+        )
+        comment ( 30% of Train brake - apply full dynamic brake )
+        0.3 (
+            0 1 
+            300km/h 1
+        )
+        comment ( 90% of Train brake - still apply full dynamic brake )
+        0.9 (
+            0 1 
+            300km/h 1
+        )
+        comment ( Emergency brake notch - do not command dynamic brake )
+        1 (
+            0 0 
+            300km/h 0
+        )
+    )
+  )
 
 Native Open Rails Braking Parameters
 ------------------------------------

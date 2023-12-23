@@ -4275,7 +4275,7 @@ namespace Orts.Simulation.Physics
                     IsFreight = true;
                 if ((car.WagonType == TrainCar.WagonTypes.Passenger) || (car.IsDriveable && car.HasPassengerCapacity))
                     PassengerCarsNumber++;
-                if (car.IsDriveable && (car as MSTSLocomotive).CabViewList.Count > 0) IsPlayable = true;
+                if (car.IsDriveable && ((car as MSTSLocomotive).CabViewList.Count > 0 || car.HasFront3DCab || car.HasRear3DCab)) IsPlayable = true;
             }
             if (TrainType == TRAINTYPE.AI_INCORPORATED && IncorporatingTrainNo > -1) IsPlayable = true;
         } // CheckFreight

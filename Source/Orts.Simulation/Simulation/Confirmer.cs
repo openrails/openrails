@@ -185,7 +185,7 @@ namespace Orts.Simulation
             ConfirmText = new string[][] {
                 new string [] { GetString("<none>") } 
                 // Power
-                , new string [] { GetParticularString("NonSteam", "Reverser"), GetString("reverse"), GetString("neutral"), GetString("forward"), null, null, GetString("locked. Close throttle, stop train then re-try.") } 
+                , new string [] { GetParticularString("NonSteam", "Reverser"), GetString("reverse"), GetString("neutral"), GetString("forward"), null, null, GetString("locked. Close throttle, release dynamic brake, stop train then re-try.") } 
                 , new string [] { GetString("Throttle"), null, null, null, GetString("close"), GetString("open"), GetString("locked. Release dynamic brake then re-try.") } 
                 , new string [] { GetString("Wheel-slip"), GetString("over"), null, GetString("occurring. Tractive power greatly reduced."), null, null, GetString("warning") } 
                 // Electric power
@@ -230,7 +230,7 @@ namespace Orts.Simulation
                 , new string [] { GetString("Train Brake"), null, null, null, GetString("release"), GetString("apply") } 
                 , new string [] { GetString("Engine Brake"), null, null, null, GetString("release"), GetString("apply") }
                 , new string [] { GetString("Brakeman Brake"), null, null, null, GetString("release"), GetString("apply") }
-                , new string [] { GetString("Dynamic Brake"), GetString("off"), null, GetString("setup"), GetString("decrease"), GetString("increase") }
+                , new string [] { GetString("Dynamic Brake"), GetString("off"), null, GetString("setup"), GetString("decrease"), GetString("increase"), GetString("locked. Move reverser then retry.") }
                 , new string [] { GetString("Emergency Brake"), GetString("release"), null, GetString("apply") } 
                 , new string [] { GetString("Bail Off"), GetString("disengage"), null, GetString("engage") } 
                 , new string [] { GetString("Brakes"), GetString("initialize"), null, null, null, null, GetString("cannot initialize. Stop train then re-try.") } 

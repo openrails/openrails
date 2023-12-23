@@ -533,16 +533,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     }
                     else
                     {
-                        if (Locomotive.DynamicBrakePercent < 0) Locomotive.DynamicBrakeCommandStartTime = Locomotive.Simulator.ClockTime;
                         Locomotive.ThrottlePercent = 0;
-                        Locomotive.DynamicBrakePercent = -CCThrottleOrDynBrakePercent;
+                        Locomotive.DynamicBrakePercent = Math.Max(-CCThrottleOrDynBrakePercent, Locomotive.TrainBrakeController?.TrainDynamicBrakeIntervention ?? -1);
                     }
                     IsActive = true;
                 }
                 if (!IsActive && wasActive)
                 {
                     Locomotive.ThrottlePercent = 0;
-                    if (!DynamicBrakePriority) Locomotive.DynamicBrakePercent = -1;
                     CCIsUsingTrainBrake = false;
                     Locomotive.ThrottleController.SetPercent(0);
                 }

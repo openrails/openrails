@@ -351,10 +351,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     {
                         Locomotive.SetDynamicBrakePercent(Locomotive.DynamicBrakePercent - DynamicBrakeDecreaseStepPerSecond * elapsedClockSeconds);
                         if (Locomotive.DynamicBrakePercent < 2)
-                        {
-                            Locomotive.SetDynamicBrakePercent(0);
-                            Locomotive.DynamicBrakeChangeActiveState(false);
-                        }
+                            Locomotive.SetDynamicBrakePercent(-1);
                     }
                     else
                     {
@@ -370,10 +367,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     {
                         Locomotive.SetDynamicBrakePercent(Locomotive.DynamicBrakePercent - DynamicBrakeDecreaseStepPerSecond * 2 * elapsedClockSeconds);
                         if (Locomotive.DynamicBrakePercent < 2)
-                        {
-                            Locomotive.SetDynamicBrakePercent(0);
-                            Locomotive.DynamicBrakeChangeActiveState(false);
-                        }
+                            Locomotive.SetDynamicBrakePercent(-1);
                     }
                     else
                     {
@@ -525,8 +519,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     }
                     if (Locomotive.ThrottlePercent < 1 && Locomotive.DynamicBrakePercent < 100)
                     {
-                        if (Locomotive.DynamicBrakePercent < 0)
-                            Locomotive.DynamicBrakeChangeActiveState(true);
                         Locomotive.SetDynamicBrakePercent(Locomotive.DynamicBrakePercent + 1f);
                     }
                 }
