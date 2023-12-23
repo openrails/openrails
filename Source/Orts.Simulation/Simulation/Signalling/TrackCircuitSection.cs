@@ -40,7 +40,6 @@ namespace Orts.Simulation.Signalling
         }
 
         // Properties Index, Length and OffsetLength come from TrackCircuitSectionXref
-
         public int Index;                                         // Index of TCS                           //
         public float Length;                                      // Length of Section                      //
         public float[] OffsetLength = new float[2];               // Offset length in original tracknode    //
@@ -293,7 +292,6 @@ namespace Orts.Simulation.Signalling
             CircuitState.Restore(simulator, inf);
 
             // if physical junction, throw switch
-
             if (CircuitType == TrackCircuitType.Junction)
             {
                 signalRef.setSwitch(OriginalIndex, JunctionLastRoute, this);
@@ -429,28 +427,24 @@ namespace Orts.Simulation.Signalling
         {
 
             // if train in this section, return true; if other train in this section, return false
-
             if (CircuitState.ThisTrainOccupying(thisTrain))
             {
                 return (true);
             }
 
             // check reservation
-
             if (CircuitState.TrainReserved != null && CircuitState.TrainReserved.Train == thisTrain.Train)
             {
                 return (true);
             }
 
             // check claim if claim is valid as state
-
             if (CircuitState.TrainClaimed.Count > 0 && claim_is_valid)
             {
                 return (CircuitState.TrainClaimed.PeekTrain() == thisTrain.Train);
             }
 
             // section is not yet set for this train
-
             return (false);
         }
 
@@ -519,29 +513,26 @@ namespace Orts.Simulation.Signalling
             }
 
             // check signal reservation
-
             if (CircuitState.SignalReserved >= 0)
             {
                 return false;
             }
 
             // check claim
-
             if (CircuitState.TrainClaimed.Count > 0)
             {
                 return (CircuitState.TrainClaimed.PeekTrain() == thisTrain.Train);
             }
 
             // check deadlock trap
-
             if (DeadlockTraps.ContainsKey(thisTrain.Train.Number))
             {
                 if (!DeadlockAwaited.Contains(thisTrain.Train.Number))
                     DeadlockAwaited.Add(thisTrain.Train.Number); // train is waiting for deadlock to clear
                 return false;
             }
-            // check deadlock is in use - only if train has valid route
 
+            // check deadlock is in use - only if train has valid route
             if (thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex] != null)
             {
 
@@ -563,7 +554,6 @@ namespace Orts.Simulation.Signalling
                             }
                         }
                     }
-
                     // check on available paths through deadlock area - location based deadlock processing
                     else
                     {
@@ -605,7 +595,6 @@ namespace Orts.Simulation.Signalling
         /// <summary>
         /// Reserve : set reserve state
         /// </summary>
-
         public void Reserve(Train.TrainRouted thisTrain, Train.TCSubpathRoute thisRoute)
         {
 
@@ -634,7 +623,6 @@ namespace Orts.Simulation.Signalling
             if (!CircuitState.ThisTrainOccupying(thisTrain.Train))
             {
                 // check if not beyond trains route
-
                 bool validPosition = true;
                 int routeIndex = 0;
 
@@ -657,11 +645,9 @@ namespace Orts.Simulation.Signalling
                 }
 
                 // remove from claim or deadlock claim
-
                 CircuitState.TrainClaimed.RemoveTrain(thisTrain);
 
                 // get element in routepath to find required alignment
-
                 int thisIndex = -1;
 
                 for (int iElement = 0; iElement < thisRoute.Count && thisIndex < 0; iElement++)
@@ -675,13 +661,11 @@ namespace Orts.Simulation.Signalling
 
                 // if junction or crossover, align pins
                 // also reset manual set (path will have followed setting)
-
                 if (CircuitType == TrackCircuitType.Junction || CircuitType == TrackCircuitType.Crossover)
                 {
                     if (CircuitState.Forced == false)
                     {
                         // set active pins for leading section
-
                         JunctionSetManual = -1;  // reset manual setting (will have been honoured in route definition if applicable)
 
                         int leadSectionIndex = -1;
@@ -694,7 +678,6 @@ namespace Orts.Simulation.Signalling
                         }
 
                         // set active pins for trailing section
-
                         int trailSectionIndex = -1;
                         if (thisIndex <= thisRoute.Count - 2)
                         {
@@ -705,7 +688,6 @@ namespace Orts.Simulation.Signalling
                         }
 
                         // reset signals which routed through this junction
-
                         foreach (int thisSignalIndex in SignalsPassingRoutes)
                         {
                             SignalObject thisSignal = signalRef.SignalObjects[thisSignalIndex];
@@ -717,7 +699,6 @@ namespace Orts.Simulation.Signalling
 
                 // enable all signals along section in direction of train
                 // do not enable those signals who are part of NORMAL signal
-
                 if (thisIndex < 0) return; //Added by JTang
                 thisElement = thisRoute[thisIndex];
                 int direction = thisElement.Direction;
@@ -747,7 +728,6 @@ namespace Orts.Simulation.Signalling
                 }
 
                 // set deadlock trap if required - do not set deadlock if wait is required at this location
-
                 if (thisTrain.Train.DeadlockInfo.ContainsKey(Index))
                 {
                     bool waitRequired = thisTrain.Train.CheckWaitCondition(Index);
@@ -759,7 +739,6 @@ namespace Orts.Simulation.Signalling
 
                 // if start of alternative route, set deadlock keys for other end
                 // check using path based deadlock processing
-
                 if (!signalRef.UseLocationPassingPaths)
                 {
                     if (thisElement != null && thisElement.StartAlternativePath != null)
@@ -776,10 +755,8 @@ namespace Orts.Simulation.Signalling
                             endSection.DeadlockAwaited.Add(thisTrain.Train.Number);
                         }
                     }
-                }
-                // search for path using location based deadlock processing
-
-                else
+                }               
+                else // search for path using location based deadlock processing
                 {
                     if (thisElement != null && thisElement.FacingPoint && DeadlockReference >= 0)
                     {
@@ -816,7 +793,6 @@ namespace Orts.Simulation.Signalling
         {
             if (!CircuitState.TrainClaimed.ContainsTrain(thisTrain))
             {
-
 #if DEBUG_REPORTS
 			File.AppendAllText(@"C:\temp\printproc.txt",
 				String.Format("Claim section {0} for train {1}\n",
@@ -841,7 +817,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // set deadlock trap if required
-
             if (thisTrain.Train.DeadlockInfo.ContainsKey(Index))
             {
                 SetDeadlockTrap(thisTrain.Train, thisTrain.Train.DeadlockInfo[Index]);
@@ -905,7 +880,6 @@ namespace Orts.Simulation.Signalling
             float distanceToClear = reqDistanceTravelledM + Length + thisTrain.Train.standardOverlapM;
 
             // add to clear list of train
-
             if (CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
             {
                 if (Pins[direction, 1].Link >= 0)  // facing point
@@ -924,7 +898,6 @@ namespace Orts.Simulation.Signalling
                     distanceToClear = reqDistanceTravelledM + Length + thisTrain.Train.standardOverlapM;
                 }
             }
-
             else if (CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
             {
                 if (Overlap > 0)
@@ -981,14 +954,12 @@ namespace Orts.Simulation.Signalling
             }
 
             // set deadlock trap if required
-
             if (thisTrain.Train.DeadlockInfo.ContainsKey(Index))
             {
                 SetDeadlockTrap(thisTrain.Train, thisTrain.Train.DeadlockInfo[Index]);
             }
 
             // check for deadlock trap if taking alternative path
-
             if (thisTrain.Train.TCRoute != null && thisTrain.Train.TCRoute.activeAltpath >= 0)
             {
                 Train.TCSubpathRoute altRoute = thisTrain.Train.TCRoute.TCAlternativePaths[thisTrain.Train.TCRoute.activeAltpath];
@@ -1012,7 +983,6 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public void ClearOccupied(Train.TrainRouted thisTrain, bool resetEndSignal)
         {
-
 #if DEBUG_REPORTS
 			File.AppendAllText(@"C:\temp\printproc.txt",
 				String.Format("Clear section {0} for train {1}\n",
@@ -1038,7 +1008,6 @@ namespace Orts.Simulation.Signalling
             ClearDeadlockTrap(thisTrain.Train.Number); // clear deadlock traps
 
             // if signal at either end is still enabled for this train, reset the signal
-
             for (int iDirection = 0; iDirection <= 1; iDirection++)
             {
                 if (EndSignals[iDirection] != null)
@@ -1051,7 +1020,6 @@ namespace Orts.Simulation.Signalling
                 }
 
                 // disable all signals along section if enabled for this train
-
                 foreach (SignalFunction function in signalRef.SignalFunctions.Values)
                 {
                     TrackCircuitSignalList thisSignalList = CircuitItems.TrackCircuitSignals[iDirection][function];
@@ -1078,13 +1046,11 @@ namespace Orts.Simulation.Signalling
             }
 
             // if section is Junction or Crossover, reset active pins but only if section is not occupied by other train
-
             if ((CircuitType == TrackCircuitType.Junction || CircuitType == TrackCircuitType.Crossover) && CircuitState.TrainOccupy.Count == 0)
             {
                 deAlignSwitchPins();
 
                 // reset signals which routed through this junction
-
                 foreach (int thisSignalIndex in SignalsPassingRoutes)
                 {
                     SignalObject thisSignal = signalRef.SignalObjects[thisSignalIndex];
@@ -1094,14 +1060,12 @@ namespace Orts.Simulation.Signalling
             }
 
             // reset manual junction setting if train is in manual mode
-
             if (thisTrain.Train.ControlMode == Train.TRAIN_CONTROL.MANUAL && CircuitType == TrackCircuitType.Junction && JunctionSetManual >= 0)
             {
                 JunctionSetManual = -1;
             }
 
             // if no longer occupied and pre-reserved not empty, promote first entry of prereserved
-
             if (CircuitState.TrainOccupy.Count <= 0 && CircuitState.TrainPreReserved.Count > 0)
             {
                 Train.TrainRouted nextTrain = CircuitState.TrainPreReserved.Dequeue();
@@ -1326,7 +1290,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // if junction, align physical switch
-
             if (CircuitType == TrackCircuitType.Junction)
             {
                 int switchPos = -1;
@@ -1388,7 +1351,6 @@ namespace Orts.Simulation.Signalling
             TrackCircuitState thisState = CircuitState;
 
             // track occupied - check speed and direction - only for normal sections
-
             if (thisTrain != null && thisState.TrainOccupy.ContainsTrain(thisTrain))
             {
                 localBlockstate = SignalObject.InternalBlockstate.Reserved;  // occupied by own train counts as reserved
@@ -1412,7 +1374,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // for junctions or cross-overs, check route selection
-
             if (CircuitType == TrackCircuitType.Junction || CircuitType == TrackCircuitType.Crossover)
             {
                 if (thisState.HasTrainsOccupying())    // there is a train on the switch
@@ -1451,7 +1412,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // track reserved - check direction
-
             if (thisState.TrainReserved != null && thisTrain != null && !stateSet)
             {
                 Train.TrainRouted reservedTrain = thisState.TrainReserved;
@@ -1488,7 +1448,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // signal reserved - reserved for other
-
             if (thisState.SignalReserved >= 0 && thisState.SignalReserved != signalIndex)
             {
                 localBlockstate = SignalObject.InternalBlockstate.ReservedOther;
@@ -1496,7 +1455,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // track claimed
-
             if (!stateSet && thisTrain != null && thisState.TrainClaimed.Count > 0 && thisState.TrainClaimed.PeekTrain() != thisTrain.Train)
             {
                 localBlockstate = SignalObject.InternalBlockstate.Open;
@@ -1504,7 +1462,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // wait condition
-
             if (thisTrain != null)
             {
                 bool waitRequired = thisTrain.Train.CheckWaitCondition(Index);
@@ -1517,7 +1474,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // deadlock trap - may not set deadlock if wait is active 
-
             if (thisTrain != null && localBlockstate != SignalObject.InternalBlockstate.ForcedWait && DeadlockTraps.ContainsKey(thisTrain.Train.Number))
             {
                 bool acceptDeadlock = thisTrain.Train.VerifyDeadlock(DeadlockTraps[thisTrain.Train.Number]);
@@ -1638,7 +1594,6 @@ namespace Orts.Simulation.Signalling
                             else  // if index is greater, train has moved on
                             {
                                 // check if still ahead of us
-
                                 if (thisTrain != null && thisTrain.ValidRoute != null)
                                 {
                                     int lastSectionIndex = thisTrain.ValidRoute[0].GetRouteIndex(nextRear.TCSectionIndex, thisTrain.PresentPosition[0].RouteListIndex);
@@ -1731,7 +1686,6 @@ namespace Orts.Simulation.Signalling
                                 }
                             }
                         }
-
                     }
                 }
                 else
@@ -1784,7 +1738,6 @@ namespace Orts.Simulation.Signalling
         {
 
             // Crossover
-
             if (CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
             {
                 int inPinIndex = direction == 0 ? 1 : 0;
@@ -1804,7 +1757,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // All other sections
-
             if (ActivePins[direction, 0].Link > 0)
             {
                 return (ActivePins[direction, 0]);
@@ -1848,7 +1800,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // use found distance, correct for begin and end offset
-
             if (thisSectionIndex == endSectionIndex)
             {
                 distanceM += endOffset - startOffset;
@@ -1863,7 +1814,6 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public bool CanPlaceTrain(Train thisTrain, float offset, float trainLength)
         {
-
             if (!IsAvailable(thisTrain))
             {
                 if (CircuitState.TrainReserved != null ||
@@ -1888,12 +1838,10 @@ namespace Orts.Simulation.Signalling
                 }
 
                 // get other trains in section
-
                 Dictionary<Train, float> trainInfo;
                 float offsetFromStart = offset;
 
                 // test train ahead of rear end (for non-placed trains, always use direction 0)
-
                 if (thisTrain.PresentPosition[1].TCSectionIndex == Index)
                 {
                     trainInfo = TestTrainAhead(thisTrain,
@@ -1926,7 +1874,6 @@ namespace Orts.Simulation.Signalling
                 }
 
                 // test train behind of front end
-
                 int revDirection = thisTrain.PresentPosition[0].TCDirection == 0 ? 1 : 0;
                 if (thisTrain.PresentPosition[0].TCSectionIndex == Index)
                 {
@@ -1948,7 +1895,6 @@ namespace Orts.Simulation.Signalling
                         }
                     }
                 }
-
             }
 
             return true;
@@ -2012,7 +1958,6 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public void SetDeadlockTrap(int thisTrainNumber, int otherTrainNumber)
         {
-
 #if DEBUG_DEADLOCK
                 File.AppendAllText(@"C:\Temp\deadlock.txt",
                     "\n **** Set deadlock " + Index + " for train : " + thisTrainNumber.ToString() + " with train :  " + otherTrainNumber.ToString() + "\n");

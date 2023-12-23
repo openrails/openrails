@@ -170,7 +170,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool WasBraking = false;
         public bool WasForceReset = true;
 
-
         public bool SelectedSpeedPressed = false;
         public bool EngineBrakePriority = false;
         public int AccelerationBits = 0;
@@ -188,7 +187,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         {
             Simulator = locomotive.Simulator;
             Locomotive = locomotive;
-            
+
             RestrictedRegionOdometer = new OdoMeter(locomotive);
 
             SpeedIsMph = other.SpeedIsMph;
@@ -265,7 +264,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             StartInAutoMode = other.StartInAutoMode;
             ThrottleNeutralPosition = other.ThrottleNeutralPosition;
             ModeSwitchAllowedWithThrottleNotAtZero = other.ModeSwitchAllowedWithThrottleNotAtZero;
-
         }
 
         public void Parse(STFReader stf)
@@ -399,7 +397,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 DynamicBrakeFullRangeIncreaseTimeSeconds = 4;
             if (DynamicBrakeFullRangeDecreaseTimeSeconds == 0)
                 DynamicBrakeFullRangeDecreaseTimeSeconds = 6;
-            
+
             ComputeNumberOfAxles();
             if (StartReducingSpeedDeltaDownwards == 0) StartReducingSpeedDeltaDownwards = StartReducingSpeedDelta;
             if (StartInAutoMode) SpeedRegMode = SpeedRegulatorMode.Auto;             
@@ -608,7 +606,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 if (SelectedSpeedDecreasing) SpeedRegulatorSelectedSpeedDecrease();
             }
         }
-
 
         public void SpeedRegulatorModeIncrease()
         {

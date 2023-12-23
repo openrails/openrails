@@ -54,7 +54,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
     /// <summary>
     /// Sums individual axle values to create a total value
     /// </summary>
-
     public class Axles : ISubSystem<Axles>
     {
         /// <summary>
@@ -296,8 +295,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
     }
 
-
-
     /// <summary>
     /// Axle class by Matej Pacha (c)2011, University of Zilina, Slovakia (matej.pacha@kves.uniza.sk)
     /// The class is used to manage and simulate axle forces considering adhesion problems.
@@ -367,7 +364,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 return motor;
             }
-
         }
 
         /// <summary>
@@ -829,7 +825,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 axleOutForceN = AxleWeightN * SlipCharacteristicsPacha((float)axleSpeedMpS - TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionLimit);
             }
-            
+
             double axleInForceN = 0;
             if (DriveType == AxleDriveType.ForceDriven)
                 axleInForceN = DriveForceN * transmissionEfficiency;
@@ -869,7 +865,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
             if (UsePolachAdhesion)
             {
-
                 float upperSubStepLimit = 100;
                 float lowerSubStepLimit = 1;
 
@@ -896,7 +891,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 {
                     if (--waitBeforeChangingRate <= 0) //wait for a while before changing the integration rate
                     {
-
                         if (IsWheelSlip || IsWheelSlipWarning || SlipSpeedMpS > previousSlipSpeedMpS)
                         {
                             // this speeds up the substep increase if the slip speed approaches the threshold or has exceeded it, ie "critical conditions".
@@ -909,7 +903,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             NumOfSubstepsPS += 3;
                             waitBeforeChangingRate = 30;
                         }
-
                     }
                 }
                 else if (targetNumOfSubstepsPS < NumOfSubstepsPS) // decrease sub steps
@@ -927,7 +920,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
                 if (NumOfSubstepsPS > upperSubStepLimit)
                     NumOfSubstepsPS = (int)upperSubStepLimit;
-
             }
             else
             {
@@ -1000,7 +992,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public virtual void Update(float timeSpan)
         {
             // Test to determine whether to use Polach or Pacha adhesion
-                        
+
             // Switches between Polach (high performance) adhesion model and Pacha (low performance) adhesion model depending upon the PC performance
             if(timeSpan < 0.025) // timespan 0.025 = 40 fps screen rate, low timeSpan and high FPS
             {
@@ -1022,7 +1014,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 MaximumPolachWheelAdhesion = 0.99f;
 
             }
-            
+
             forceToAccelerationFactor = WheelRadiusM * WheelRadiusM / totalInertiaKgm2;        
 
             if (UsePolachAdhesion)
@@ -1258,7 +1250,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             return fx;
         }
 
-
         /// <summary>
         /// ***** Pacha Adhesion *****
         /// Slip characteristics computation
@@ -1298,7 +1289,5 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             }
             return 2.0f * umax * x / (1 + x * x);
         }
-
-
     }
 }

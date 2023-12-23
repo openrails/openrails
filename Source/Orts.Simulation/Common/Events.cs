@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-
 namespace Orts.Common
 {
     public interface EventHandler
@@ -273,7 +272,6 @@ namespace Orts.Common
         MPCChangePosition,
 
         SteamBoosterChange,
-
     }
 
     public static class Events
@@ -294,7 +292,6 @@ namespace Orts.Common
         // These numbers are the MSTS sound triggers and must match
         // MSTS/MSTSBin behaviour whenever possible. NEVER return values for
         // non-MSTS events when passed an MSTS Source.
-
         public static Event From(Source source, int eventID)
         {
             switch (source)

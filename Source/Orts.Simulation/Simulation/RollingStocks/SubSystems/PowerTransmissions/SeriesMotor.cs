@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 {
     public class SeriesMotor : ElectricMotor
@@ -55,7 +54,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         float fieldCurrentA;
         public float FieldCurrentA { get { return fieldCurrentA; } }
-
 
         public float TerminalVoltageV { set; get; }
 

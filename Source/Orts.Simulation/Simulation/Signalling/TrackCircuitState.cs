@@ -96,7 +96,6 @@ namespace Orts.Simulation.Signalling
                 TrainClaimed.Enqueue(thisRouted);
             }
             Forced = inf.ReadBoolean();
-
         }
 
         /// <summary>
@@ -104,9 +103,7 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public void RestoreTrains(List<Train> trains, int sectionIndex)
         {
-
             // Occupy
-
             Dictionary<int[], int> tempTrains = new Dictionary<int[], int>();
 
             foreach (KeyValuePair<Train.TrainRouted, int> thisOccupy in TrainOccupy)
@@ -135,7 +132,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // Reserved
-
             if (TrainReserved != null)
             {
                 int number = TrainReserved.Train.Number;
@@ -168,7 +164,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // PreReserved
-
             Queue<Train.TrainRouted> tempQueue = new Queue<Train.TrainRouted>();
 
             foreach (Train.TrainRouted thisTrainRouted in TrainPreReserved)
@@ -188,7 +183,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // Claimed
-
             tempQueue.Clear();
 
             foreach (Train.TrainRouted thisTrainRouted in TrainClaimed)
@@ -206,7 +200,6 @@ namespace Orts.Simulation.Signalling
                     TrainClaimed.Enqueue(foundTrainRouted);
                 }
             }
-
         }
 
         public void Save(BinaryWriter outf)
@@ -373,6 +366,5 @@ namespace Orts.Simulation.Signalling
         {
             return (TrainOccupy.ContainsTrain(thisTrain));
         }
-
     }
 }

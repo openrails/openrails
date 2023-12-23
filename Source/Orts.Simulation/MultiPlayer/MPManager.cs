@@ -183,7 +183,7 @@ namespace Orts.MultiPlayer
             try
             {
                 Train train = Simulator.PlayerLocomotive.Train;
-                
+
                 MSGControl msgctl;
                 //I am the server, I have control
                 if (IsServer())
@@ -262,7 +262,7 @@ namespace Orts.MultiPlayer
                 }
 #endif
             }
-            
+
             //server updates switch
             if (Server != null && newtime - lastSwitchTime >= MPUpdateInterval)
             {
@@ -274,7 +274,7 @@ namespace Orts.MultiPlayer
                 if (signalStatus.OKtoSend) BroadCast(signalStatus.ToString());
 
             }
-            
+
             //client updates itself
             if (Client != null && Server == null && newtime - lastMoveTime >= 1f)
             {
@@ -323,7 +323,6 @@ namespace Orts.MultiPlayer
 #endif
             }
 
-
             //need to send a keep-alive message if have not sent one to the server for the last 30 seconds
             if (Client != null && Server == null && newtime - lastSendTime >= 30f)
             {
@@ -359,7 +358,6 @@ namespace Orts.MultiPlayer
             }
              * */
         }
-
 
         void CheckPlayerTrainSpad()
         {
@@ -538,15 +536,14 @@ namespace Orts.MultiPlayer
             }
             return result;
         }
+
         /// <summary>
         /// Return a string of information of how many players online and those users who are close
         /// </summary>
-        
         SortedList<double, string> users;
 
         public string GetOnlineUsersInfo()
         {
-
             string info = "";
             if (Simulator.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.REMOTE) info = "Your locomotive is a helper\t";
             info += ("" + (OnlineTrains.Players.Count + 1)+ (OnlineTrains.Players.Count <= 0 ? " player " : "  players "));
@@ -669,7 +666,6 @@ namespace Orts.MultiPlayer
                 System.Console.WriteLine(e + e.StackTrace); return;
             }
             playersRemoved.Clear();
-
         }
 
         public bool AddOrRemoveTrain(Train t, bool add)
@@ -734,8 +730,8 @@ namespace Orts.MultiPlayer
                 {
                     AddOrRemoveLocomotive(userName, t.Number, iCar, add);
                 }
-
             }
+
             return true;
         }
 
@@ -744,7 +740,6 @@ namespace Orts.MultiPlayer
         {
             if (addedTrains.Count != 0)
             {
-
                 try //do it without lock, so may have exception
                 {
                     foreach (var t in addedTrains)
@@ -762,7 +757,6 @@ namespace Orts.MultiPlayer
             }
             if (removedTrains.Count != 0)
             {
-
                 try //do it without lock, so may have exception
                 {
                     foreach (var t in removedTrains)
@@ -802,7 +796,6 @@ namespace Orts.MultiPlayer
             }
             if (addedLocomotives.Count != 0)
             {
-
                 try //do it without lock, so may have exception
                 {
                     foreach (var l in addedLocomotives)

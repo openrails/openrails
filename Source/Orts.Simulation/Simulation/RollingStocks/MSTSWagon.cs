@@ -55,16 +55,13 @@ using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks
 {
-
     ///////////////////////////////////////////////////
     ///   SIMULATION BEHAVIOUR
     ///////////////////////////////////////////////////
 
-
     /// <summary>
     /// Represents the physical motion and behaviour of the car.
     /// </summary>
-
     public class MSTSWagon : TrainCar
     {
         public Pantographs Pantographs;
@@ -73,8 +70,7 @@ namespace Orts.Simulation.RollingStocks
         public Door RightDoor => Doors.RightDoor;
         public Door LeftDoor => Doors.LeftDoor;
 
-        public enum WindowState
-            // Don't change the order of entries within this enum
+        public enum WindowState // Don't change the order of entries within this enum
         {
             Closed,
             Closing,
@@ -100,10 +96,9 @@ namespace Orts.Simulation.RollingStocks
         public bool IsDavisFriction = true; // Default to new Davis type friction
         public bool IsBelowMergeSpeed = true; // set indicator for low speed operation as per given speed
 
-
         public bool GenericItem1;
         public bool GenericItem2;
-                
+
         const float WaterLBpUKG = 10.0f;    // lbs of water in 1 gal (uk)
         float TempMassDiffRatio;
 
@@ -312,7 +307,7 @@ namespace Orts.Simulation.RollingStocks
         {
             stf.MustMatch("(");
             string s;
-            
+
             while ((s = stf.ReadItem()) != ")")
             {
                 var data = new ParticleEmitterData(stf);
@@ -320,9 +315,7 @@ namespace Orts.Simulation.RollingStocks
                     EffectData.Add(s, new List<ParticleEmitterData>());
                 EffectData[s].Add(data);
             }
-
         }
-
 
         public List<IntakePoint> IntakePointList = new List<IntakePoint>();
 
@@ -406,7 +399,6 @@ namespace Orts.Simulation.RollingStocks
         float LoadFullMaxHandbrakeForceN;
         float LoadFullCentreOfGravityM_Y;
 
-
         /// <summary>
         /// This initializer is called when we haven't loaded this type of car before
         /// and must read it new from the wag file.
@@ -487,7 +479,6 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // Initialise car body lengths. Assume overhang is 2.0m each end, and bogie centres are the car length minus this value
-
             if (CarCouplerFaceLengthM == 0)
             {
                 CarCouplerFaceLengthM = CarLengthM;
@@ -608,7 +599,6 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // If wagon frontal area not user defined, assign a default value based upon the wagon dimensions
-
             if (WagonFrontalAreaM2 == 0)
             {
                 WagonFrontalAreaM2 = CarWidthM * CarHeightM;
@@ -688,8 +678,8 @@ namespace Orts.Simulation.RollingStocks
                 else
                 {
                     LoadEmptyMassKg = MassKG;
-                }  
-                
+                }
+
                 if (FreightAnimations.EmptyORTSDavis_A > 0)
                 {
                     LoadEmptyORTSDavis_A = FreightAnimations.EmptyORTSDavis_A;
@@ -967,9 +957,7 @@ namespace Orts.Simulation.RollingStocks
 
                         // Update CoG related parameters
                         CentreOfGravityM.Y = LoadFullCentreOfGravityM_Y;
-
                     }
-
                 }
                 if (FreightAnimations.LoadedOne != null) // If it is a Continuouos freight animation, set freight wagon parameters to FullatStart
                 {
@@ -995,7 +983,7 @@ namespace Orts.Simulation.RollingStocks
                     {
                         DavisDragConstant = ((LoadFullDavisDragConstant - LoadEmptyDavisDragConstant) * TempMassDiffRatio) + LoadEmptyDavisDragConstant;
                     }
-                    
+
                     WagonFrontalAreaM2 = ((LoadFullWagonFrontalAreaM2 - LoadEmptyWagonFrontalAreaM2) * TempMassDiffRatio) + LoadEmptyWagonFrontalAreaM2;
 
                     // Update CoG related parameters
@@ -1059,7 +1047,7 @@ namespace Orts.Simulation.RollingStocks
             LocomotiveAxles.Initialize();
 
             base.Initialize();
-                       
+
             if (UnbalancedSuperElevationM == 0 || UnbalancedSuperElevationM > 0.5) // If UnbalancedSuperElevationM > 18", or equal to zero, then set a default value
             {
                 switch (WagonType)
@@ -1342,7 +1330,6 @@ namespace Orts.Simulation.RollingStocks
                     break;
 
                 // Used for advanced coupler
-
                 case "wagon(coupling(frontcoupleranim":
                     stf.MustMatch("(");
                     FrontCoupler.Closed.ShapeFileName = stf.ReadString();
@@ -1418,40 +1405,39 @@ namespace Orts.Simulation.RollingStocks
                     Couplers[CouplerCountLocation].SetTensionSlack(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
                     stf.SkipRestOfBlock();
                     break;
+
                case "wagon(coupling(spring(ortscompressionslack":
                     stf.MustMatch("(");
                     IsAdvancedCoupler = true; // If this parameter is present in WAG file then treat coupler as advanced ones.
                     Couplers[CouplerCountLocation].SetCompressionSlack(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
                     stf.SkipRestOfBlock();
                     break;
-                // This is for the advanced coupler and is designed to be used instead of the MSTS parameter Break
 
+                // This is for the advanced coupler and is designed to be used instead of the MSTS parameter Break
                 case "wagon(coupling(spring(ortsbreak":
                     stf.MustMatch("(");
                     Couplers[CouplerCountLocation].SetAdvancedBreak(stf.ReadFloat(STFReader.UNITS.Force, null), stf.ReadFloat(STFReader.UNITS.Force, null));
                     stf.SkipRestOfBlock();
                     break;
-                    
+
                     // This is for the advanced coupler and is designed to be used instead of the MSTS parameter R0
                case "wagon(coupling(spring(ortstensionr0":
                     stf.MustMatch("(");
                     Couplers[CouplerCountLocation].SetTensionR0(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
                     stf.SkipRestOfBlock();
                     break;
+
                case "wagon(coupling(spring(ortscompressionr0":
                     stf.MustMatch("(");
                     Couplers[CouplerCountLocation].SetCompressionR0(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
                     stf.SkipRestOfBlock();
                     break;
 
-
                 // Used for both coupler types
                 case "wagon(coupling(couplinghasrigidconnection":
                     Couplers[CouplerCountLocation].Rigid = false;
                     Couplers[CouplerCountLocation].Rigid = stf.ReadBoolBlock(true);
                     break;
-               
-
 
                 case "wagon(adheasion":
                     stf.MustMatch("(");
@@ -2107,7 +2093,6 @@ namespace Orts.Simulation.RollingStocks
 
                         WagonFrontalAreaM2 = ((LoadFullWagonFrontalAreaM2 - LoadEmptyWagonFrontalAreaM2) * TempMassDiffRatio) + LoadEmptyWagonFrontalAreaM2;
 
-
                         // Update CoG related parameters
                         CentreOfGravityM.Y = ((LoadFullCentreOfGravityM_Y - LoadEmptyCentreOfGravityM_Y) * TempMassDiffRatio) + LoadEmptyCentreOfGravityM_Y;
                     }
@@ -2210,7 +2195,6 @@ namespace Orts.Simulation.RollingStocks
                         CentreOfGravityM.Y = ((LoadFullCentreOfGravityM_Y - LoadEmptyCentreOfGravityM_Y) * TempMassDiffRatio) + LoadEmptyCentreOfGravityM_Y;
                     }
                 }
-
                 else if (this is MSTSDieselLocomotive)
                 // If diesel locomotive
                 {
@@ -2223,7 +2207,6 @@ namespace Orts.Simulation.RollingStocks
                         DieselLocomotiveIdentification = Train.Cars[LocoIndex] as MSTSDieselLocomotive;
                     if (DieselLocomotiveIdentification != null)
                     {
-
                         MassKG = LoadEmptyMassKg + (DieselLocomotiveIdentification.DieselLevelL * DieselLocomotiveIdentification.DieselWeightKgpL) + DieselLocomotiveIdentification.CurrentLocomotiveSteamHeatBoilerWaterCapacityL + (DieselLocomotiveIdentification.CurrentTrackSandBoxCapacityM3 * DieselLocomotiveIdentification.SandWeightKgpM3);
                         var MassUpperLimit = LoadFullMassKg * 1.02f; // Allow full load to go slightly higher so that rounding errors do not skew results
                         MassKG = MathHelper.Clamp(MassKG, LoadEmptyMassKg, MassUpperLimit); // Clamp Mass to between the empty and full wagon values  
@@ -2254,7 +2237,6 @@ namespace Orts.Simulation.RollingStocks
 
                         // Update CoG related parameters
                         CentreOfGravityM.Y = ((LoadFullCentreOfGravityM_Y - LoadEmptyCentreOfGravityM_Y) * TempMassDiffRatio) + LoadEmptyCentreOfGravityM_Y;
-                        
                     }
                 }
             }
@@ -2476,7 +2458,6 @@ namespace Orts.Simulation.RollingStocks
         private void UpdateTrainBaseResistance_DavisLowSpeed()
         {
             // Determine the internal starting friction factor based upon the type of bearing
-
             float StartFrictionInternalFactorN = 0.0f;  // Internal starting friction
             float StartFrictionTrackN = 0.0f;
             float AxleLoadKg = 0;
@@ -2683,9 +2664,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 // Set to variable value as bearing heats and cools
                 WheelBearingTemperatureResistanceFactor = RunGrad * WheelBearingTemperatureDegC + RunIntersect;
-
             }
-
 
             Friction0N = ( Kg.ToTonne(MassKG) * StartFrictionInternalFactorN) + StartFrictionTrackN; // Static friction is journal or roller bearing friction x weight + track resistance. Mass value must be in tons uk to match reference used for starting resistance
 
@@ -2719,9 +2698,6 @@ namespace Orts.Simulation.RollingStocks
 #endif
         }
 
-
-
-
         /// <summary>
         /// Update train base resistance with the Davis function.
         /// </summary>
@@ -2754,7 +2730,6 @@ namespace Orts.Simulation.RollingStocks
             {
                 // Set to variable value as bearing heats and cools
                 WheelBearingTemperatureResistanceFactor = RunGrad * WheelBearingTemperatureDegC + RunIntersect;
-
             }
 
             // If hot box has been initiated, then increase friction on the wagon significantly
@@ -2794,7 +2769,6 @@ namespace Orts.Simulation.RollingStocks
                     {
                         PrevCarLead = false;
                     }
-
                 }
 
                 // If tender is coupled to a trailing locomotive then reduce resistance
@@ -2846,14 +2820,11 @@ namespace Orts.Simulation.RollingStocks
                                 Trace.TraceInformation("Hotbox Bearing Activated on CarID {0}. Hotbox to start from {1:F1} minutes into activity", CarID, S.ToM(HotBoxStartTimeS));
                             }
                         }
-
-                                            
                     }
                 }
 
                 HotBoxHasBeenInitialized = true; // Only allow to loop once at first pass
             }
-            
 
             float BearingSpeedMaximumTemperatureDegC = 0;
             float MaximumNormalBearingTemperatureDegC = 90.0f;
@@ -2885,10 +2856,8 @@ namespace Orts.Simulation.RollingStocks
                 HotBoxKConst = HotBoxKConstLowLoad - ((float)Math.Abs(HotBoxKConstHighLoad - HotBoxKConstLowLoad)) * HotBoxScaleFactor;
             }
 
-
             if (elapsedClockSeconds > 0) // Prevents zero values resetting temperature
             {
-                
                 // Keep track of wheel bearing temperature until activtaion time reached
                 if (ActivityElapsedDurationS<HotBoxStartTimeS) 
                 {
@@ -2955,7 +2924,7 @@ namespace Orts.Simulation.RollingStocks
 
                 WheelBearingTemperatureRiseTimeS = 0;
                 InitialWheelBearingRiseTemperatureDegC = WheelBearingTemperatureDegC;
-                
+
                 // Turn off Hotbox sounds
                 SignalEvent(Event.HotBoxBearingOff);
                 HotBoxSoundActivated = false;
@@ -3001,7 +2970,6 @@ namespace Orts.Simulation.RollingStocks
                 BearingHotBoxSmokeVelocityMpS = 0;
                 BearingHotBoxSmokeVolumeM3pS = 0;
             }
-
         }
 
         private void UpdateWindForce()
@@ -3035,7 +3003,7 @@ namespace Orts.Simulation.RollingStocks
                     WagonDirectionDeg += 360;
 
                 float TrainSpeedMpS = Math.Abs(SpeedMpS);
-                
+
                 // Find angle between wind and direction of train
                 if (Train.PhysicsWindDirectionDeg > WagonDirectionDeg)
                     WagonResultantWindComponentDeg = Train.PhysicsWindDirectionDeg - WagonDirectionDeg;
@@ -3141,10 +3109,8 @@ namespace Orts.Simulation.RollingStocks
         private void UpdateTenderLoad()
         // This section updates the weight and physics of the tender, and aux tender as load varies on it
         {
-
             if (FreightAnimations != null && FreightAnimations.ContinuousFreightAnimationsPresent) // make sure that a freight animation INCLUDE File has been defined, and it contains "continuous" animation data.
             {
-
                 if (WagonType == WagonTypes.Tender)
                 {
                     // Find the associated steam locomotive for this tender
@@ -3224,12 +3190,10 @@ namespace Orts.Simulation.RollingStocks
         private void UpdateSpecialEffects(float elapsedClockSeconds)
         // This section updates the special effects
         {
-
             var LocomotiveParameters = Simulator.PlayerLocomotive as MSTSLocomotive;
 
             if (LocomotiveParameters != null)
             {
-
                 // if this is a heating steam boiler car then adjust steam pressure
                 // Don't turn steam heat on until pressure valve has been opened, water and fuel capacity also needs to be present, steam heating shouldn't already be present on diesel or steam locomotive
                 if (IsPlayerTrain && WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler && !LocomotiveParameters.IsSteamHeatFitted && LocomotiveParameters.SteamHeatController.CurrentValue > 0.05 && CurrentCarSteamHeatBoilerWaterCapacityL > 0 && CurrentSteamHeatBoilerFuelCapacityL > 0 && !IsSteamHeatBoilerLockedOut)
@@ -3308,7 +3272,6 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 // Update Water Scoop Spray Information when scoop is down and filling from trough
-
                 bool ProcessWaterEffects = false; // Initialise test flag to see whether this wagon will have water sccop effects active
 
                 if (WagonType == WagonTypes.Tender || WagonType == WagonTypes.Engine)
@@ -3323,7 +3286,6 @@ namespace Orts.Simulation.RollingStocks
                         {
                             ProcessWaterEffects = true; // Set flag if this tender is attached to player locomotive
                         }
-
                     }
                     else if (Simulator.PlayerLocomotive == this && LocomotiveParameters.HasWaterScoop)
                     {
@@ -3401,7 +3363,6 @@ namespace Orts.Simulation.RollingStocks
                         WaterScoopParticleDurationS = 0.0f;
                         WaterScoopWaterVelocityMpS = 0.0f;
                         WaterScoopWaterVolumeM3pS = 0.0f;
-
                     }
 
                     // Update Steam Brake leaks Information
@@ -3557,7 +3518,6 @@ namespace Orts.Simulation.RollingStocks
                     WindowStates[index] = WindowState.Closing;
                 if (WindowStates[index] == WindowState.Opening) open = true;
 
-
             if (open) SignalEvent(Event.WindowOpening); // hook for sound trigger
             else SignalEvent(Event.WindowClosing);
             if (Simulator.PlayerLocomotive == this) Simulator.Confirmer.Confirm(left ^ rear ? CabControl.WindowLeft : CabControl.WindowRight, open ? CabSetting.On : CabSetting.Off);
@@ -3578,10 +3538,8 @@ namespace Orts.Simulation.RollingStocks
 
             // Check to see if this car is an active locomotive, if so then set linkage to relevant control car.
             // Note this only checks the "closest" locomotive to the control car. Hence it could be "fooled" if there is another locomotive besides the two DMU locomotives.
-
             for (var i = 0; i < Train.Cars.Count; i++)
             {
-
                 if (activeIndex == 0 && Train.Cars[i].EngineType == TrainCar.EngineTypes.Diesel)
                 {
                     activeIndex = i;
@@ -3632,12 +3590,11 @@ namespace Orts.Simulation.RollingStocks
                 TendersSteamLocomotive = null;
         }
 
-         /// <summary>
+        /// <summary>
         /// This function checks each steam locomotive to see if it has a tender attached.
         /// </summary>
         public void ConfirmSteamLocomotiveTender()
         {
-            
             // Check each steam locomotive to see if it has a tender attached.
             if (this is MSTSSteamLocomotive )
             {
@@ -3712,15 +3669,13 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // If a "normal" tender is connected then the steam locomotive will be two cars away.
-                      
             if (!AuxTenderFound)
             {
-            
                 if (tenderIndex > 0 && Train.Cars[tenderIndex - 2] is MSTSSteamLocomotive)
                 {
                     AuxTendersSteamLocomotive = Train.Cars[tenderIndex - 2] as MSTSSteamLocomotive;
                 }
-                
+
                 if (tenderIndex < Train.Cars.Count - 2 && Train.Cars[tenderIndex + 2] is MSTSSteamLocomotive)
                 {
                     AuxTendersSteamLocomotive = Train.Cars[tenderIndex + 2] as MSTSSteamLocomotive;
@@ -3851,7 +3806,6 @@ namespace Orts.Simulation.RollingStocks
         }
 
         // Advanced coupler parameters
-
         public override float GetCouplerTensionStiffness1N()
         {
             if (Coupler == null)
@@ -4033,7 +3987,6 @@ namespace Orts.Simulation.RollingStocks
             return Coupler.CompressionR0Y;
         }
 
-
         // TODO: This code appears to be being called by ReverseCars (in Trains.cs). 
         // Reverse cars moves the couplers along by one car, however this may be encountering a null coupler at end of train. 
         // Thus all coupler parameters need to be tested for null coupler and default values inserted (To be confirmed)
@@ -4072,7 +4025,6 @@ namespace Orts.Simulation.RollingStocks
             coupler.CompressionStiffness1N = other.GetCouplerCompressionStiffness1N();
             coupler.CompressionStiffness2N = other.GetCouplerCompressionStiffness2N();
 
-
             if (Couplers.Count == 0)
                 Couplers.Add(coupler);
             else
@@ -4101,7 +4053,7 @@ namespace Orts.Simulation.RollingStocks
             if (FreightAnimations.LoadedOne != null) fraction = FreightAnimations.LoadedOne.LoadPerCent / 100;
             return fraction;
         }
-        
+
         /// <summary>
         /// Starts a continuous increase in controlled value.
         /// </summary>
@@ -4138,9 +4090,7 @@ namespace Orts.Simulation.RollingStocks
                 if (FreightAnimations.UnloadingStartDelay > 0)
                     Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Preparing for unload"));
             }
-
         }
-
 
         /// <summary>
         /// Starts loading or unloading of a discrete load.
@@ -4194,12 +4144,8 @@ namespace Orts.Simulation.RollingStocks
                 // switch from freightanimation to container
                 containerStation.PrepareForUnload((FreightAnimationDiscrete)intakePoint.LinkedFreightAnim);
             }
-
         }
-
     }
-
-
 
     /// <summary>
     /// An IntakePoint object is created for any engine or wagon having a 
@@ -4287,7 +4233,6 @@ namespace Orts.Simulation.RollingStocks
             else validity = true;
             return validity;
         }
-
     }
 
     public class MSTSCoupling
@@ -4314,7 +4259,6 @@ namespace Orts.Simulation.RollingStocks
         public float CompressionStiffness2N;
         public float CouplerCompressionSlackAM;
         public float CouplerCompressionSlackBM;
-
 
         public MSTSCoupling()
         {
@@ -4434,9 +4378,7 @@ public void SetTensionStiffness(float a, float b)
             {
                 Break2N = b;
             }
-
         }
-
 
         public void SetSlack(float a, float b)
         {
@@ -4463,7 +4405,6 @@ public void SetTensionStiffness(float a, float b)
             {
                 Break2N = b;
             }
-            
         }
 
         /// <summary>

@@ -73,7 +73,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             ControllerId = other.ControllerId;
             CanControlTrainBrake = other.CanControlTrainBrake;
         }
-  
 
         public void Save(BinaryWriter outf)
         {
@@ -100,6 +99,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             previousDriveModeWasAddPower = inf.ReadBoolean();
             StateChanged = inf.ReadBoolean();
         }
+
         public void Parse(STFReader stf)
         {
             stf.MustMatch("(");
@@ -122,6 +122,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 new STFReader.TokenProcessor("cancontroltrainbrake", () => CanControlTrainBrake = stf.ReadBoolBlock(false)),
             });
         }
+
         public void Initialize()
         {
             if (Locomotive.CruiseControl != null)
@@ -135,6 +136,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 }
             }
         }
+
         public void Update(float elapsedClockSeconds)
         {
             if (!Locomotive.IsPlayerTrain) return;
@@ -172,7 +174,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 {
                     ccAutoMode = true;
                 }
-
             }
             if (!haveCruiseControl || !ccAutoMode)
             {
@@ -244,7 +245,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     {
                         Locomotive.ThrottlePercent = 100;
                     }
-
                 }
                 if (controllerPosition == ControllerPosition.DynamicBrakeIncrease)
                 {
@@ -669,7 +669,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     }
                 }
             }
-
         }
 
         protected void ReloadPositions()
@@ -820,7 +819,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         case "cruisecontrol.needincreaseafteranybrake":
                             Flag = ControllerPositionFlag.CCNeedIncreaseAfterAnyBrake;
                             break;
-
                     }
                 }
                 Name = name;

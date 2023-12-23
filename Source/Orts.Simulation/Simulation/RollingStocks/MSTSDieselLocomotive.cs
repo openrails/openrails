@@ -30,7 +30,6 @@
 
 //#define ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS
 
-
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
@@ -241,7 +240,6 @@ namespace Orts.Simulation.RollingStocks
 
                     if (Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("Speed Of Max Continuous Force: set to default value {0}", FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
-
                 }
                 else if (MaxPowerW != 0 && MaxContinuousForceN != 0)
                 {
@@ -249,7 +247,6 @@ namespace Orts.Simulation.RollingStocks
 
                     if (Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("Speed Of Max Continuous Force: set to 'calculated' value {0}", FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
-
                 }
                 else
                 {
@@ -257,7 +254,6 @@ namespace Orts.Simulation.RollingStocks
 
                     if (Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("Speed Of Max Continuous Force: set to 'arbitary' value {0}", FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
-
                 }
             }
 
@@ -269,7 +265,6 @@ namespace Orts.Simulation.RollingStocks
                 DieselEngines[0].InitFromMSTS();
                 DieselEngines[0].Initialize();
             }
-
 
             // Check initialization of power values for diesel engines
             for (int i = 0; i < DieselEngines.Count; i++)
@@ -285,7 +280,6 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (MaxPowerW != 0)
                 {
-
                     LocomotiveMaxRailOutputPowerW = MaxPowerW;  // Set to default power value
 
                     if (Simulator.Settings.VerboseConfigurationMessages)
@@ -303,21 +297,18 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
 
-
                 if (MaximumDieselEnginePowerW == 0)
                 {
                     MaximumDieselEnginePowerW = LocomotiveMaxRailOutputPowerW;  // If no value set in ENG file, then set the Prime Mover power to same as RailOutputPower (typically the MaxPower value)
 
                     if (Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("Maximum Diesel Engine Prime Mover Power set the same as MaxRailOutputPower {0} value", FormatStrings.FormatPower(MaximumDieselEnginePowerW, IsMetric, false, false));
-
                 }
             }
 
             // Check that maximum force value has been set
             if (MaxForceN == 0)
             {
-
                 if (TractiveForceCurves == null)  // Basic configuration - ie no force and Power tables, etc
                 {
                     float StartingSpeedMpS = 0.1f; // Assumed starting speed for diesel - can't be zero otherwise error will occurr
@@ -337,7 +328,6 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-
             // Check force assumptions set for diesel   
             CalculatedMaxContinuousForceN = 0;
             float ThrottleSetting = 1.0f; // Must be at full throttle for these calculations
@@ -355,7 +345,6 @@ namespace Orts.Simulation.RollingStocks
                         Trace.TraceInformation("!!!! Warning: Starting Tractive force {0} is less then Calculated Continuous force {1}, please check !!!!", FormatStrings.FormatForce(MaxForceN, IsMetric), FormatStrings.FormatForce(CalculatedMaxContinuousForceN, IsMetric), FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
                     }
                 }
-
             }
             else // Advanced configuration - 
             {
@@ -401,7 +390,6 @@ namespace Orts.Simulation.RollingStocks
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
                     Trace.TraceInformation("Slip control system: {0}, Traction motor type: {1}", SlipControlSystem.ToString(), TractionMotorType.ToString()); // Slip control
-
                     Trace.TraceInformation("Apparent (Design) Adhesion: Zero - {0:N2} @ {1}, Max Continuous Speed - {2:N2} @ {3}, Drive Wheel Weight - {4}", designadhesionzerospeed, FormatStrings.FormatSpeedDisplay(zerospeed, IsMetric), designadhesionmaxcontspeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric), FormatStrings.FormatMass(DrvWheelWeightKg, IsMetric));
                     Trace.TraceInformation("OR Calculated Adhesion Setting: Zero Speed - {0:N2} @ {1}, Dropoff Speed - {2:N2} @ {3}, Max Continuous Speed - {4:N2} @ {5}", configuredadhesionzerospeed, FormatStrings.FormatSpeedDisplay(zerospeed, IsMetric), configuredadhesiondropoffspeed, FormatStrings.FormatSpeedDisplay(dropoffspeed, IsMetric), configuredadhesionmaxcontinuousspeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
                 }
@@ -411,7 +399,6 @@ namespace Orts.Simulation.RollingStocks
             {
                 Trace.TraceInformation("===================================================================================================================\n\n");
             }
-
         }
 
         /// <summary>
@@ -492,10 +479,7 @@ namespace Orts.Simulation.RollingStocks
                     for (int i = 0; i < DieselEngines[0].GearBox.NumOfGears; i++)
                     {
                         Trace.TraceInformation("\t{0}\t\t\t {1:N2}\t\t{2:N2}\t\t{3:N2}\t\t\t{4}\t\t\t\t{5:N0}\t\t\t\t\t{6}\t\t\t{7}", i + 1, DieselEngines[0].GearBox.Gears[i].Ratio, FormatStrings.FormatSpeedDisplay(DieselEngines[0].GearBox.Gears[i].MaxSpeedMpS, IsMetric), FormatStrings.FormatForce(DieselEngines[0].GearBox.Gears[i].MaxTractiveForceN, IsMetric), DieselEngines[0].GearBox.Gears[i].ChangeUpSpeedRpM, DieselEngines[0].GearBox.Gears[i].ChangeDownSpeedRpM, FormatStrings.FormatForce(DieselEngines[0].GearBox.Gears[i].CoastingForceN, IsMetric), FormatStrings.FormatForce(DieselEngines[0].GearBox.Gears[i].BackLoadForceN, IsMetric));
-
                     }
-
-
 
                     var calculatedmaxcontinuousforcekN = DieselEngines[0].GearBox.Gears[0].MaxTractiveForceN / 1000.0f;
                     var designadhesionmaxcontspeed = calculatedmaxcontinuousforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
@@ -505,12 +489,10 @@ namespace Orts.Simulation.RollingStocks
                     Trace.TraceInformation("===================================================================================================================\n\n");
                 }
             }
-
         }
 
         /// <summary>
-        /// We are saving the game.  Save anything that we'll need to restore the 
-        /// status later.
+        /// We are saving the game.  Save anything that we'll need to restore the status later.
         /// </summary>
         public override void Save(BinaryWriter outf)
         {
@@ -524,8 +506,7 @@ namespace Orts.Simulation.RollingStocks
         }
 
         /// <summary>
-        /// We are restoring a saved game.  The TrainCar class has already
-        /// been initialized.   Restore the game state.
+        /// We are restoring a saved game.  The TrainCar class has already been initialized. Restore the game state.
         /// </summary>
         public override void Restore(BinaryReader inf)
         {
@@ -534,14 +515,13 @@ namespace Orts.Simulation.RollingStocks
             CurrentLocomotiveSteamHeatBoilerWaterCapacityL = inf.ReadSingle();
             DieselEngines.Restore(inf);
             ControllerFactory.Restore(GearBoxController, inf);
-            
         }
 
         //================================================================================================//
+
         /// <summary>
         /// Set starting conditions  when initial speed > 0 
-        /// 
-
+        /// </summary>
         public override void InitializeMoving()
         {
             base.InitializeMoving();
@@ -557,6 +537,7 @@ namespace Orts.Simulation.RollingStocks
                     Train.MUGearboxGearIndex = DieselEngines[0].GearBox.CurrentGearIndex + 1;
                     Train.AITrainGearboxGearIndex = DieselEngines[0].GearBox.CurrentGearIndex + 1;
                 }
+
                 GearBoxController.CurrentNotch = Train.MUGearboxGearIndex;
                 GearboxGearIndex = DieselEngines[0].GearBox.CurrentGearIndex + 1;
                 GearBoxController.SetValue((float)GearBoxController.CurrentNotch);
@@ -564,7 +545,6 @@ namespace Orts.Simulation.RollingStocks
 
             ThrottleController.SetValue(Train.MUThrottlePercent / 100);
         }
-
 
         /// <summary>
         /// This function updates periodically the states and physical variables of the locomotive's subsystems.
@@ -593,7 +573,6 @@ namespace Orts.Simulation.RollingStocks
                 if (WaterController.UpdateValue > 0.0)
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeatBoilerWater, CabSetting.Increase, WaterController.CurrentValue * 100);
             }
-
         }
 
         /// <summary>
@@ -659,7 +638,6 @@ namespace Orts.Simulation.RollingStocks
 
                 DieselEngineFractionPower = MathHelper.Clamp(DieselEngineFractionPower, 0.0f, 1.0f);  // Clamp decay within bounds
 
-
                 // For the advanced adhesion model, a rudimentary form of slip control is incorporated by using the wheel speed to calculate tractive effort.
                 // As wheel speed is increased tractive effort is decreased. Hence wheel slip is "controlled" to a certain extent.
                 // This doesn't cover all types of locomotives, for eaxmple if DC traction motors and no slip control, then the tractive effort shouldn't be reduced. This won't eliminate slip, but limits
@@ -711,11 +689,9 @@ namespace Orts.Simulation.RollingStocks
                         TractiveForceN = maxForceN;
                         // Motive force will be produced until power reaches zero, some locomotives had a overspeed monitor set at the maximum design speed
                     }
-
                 }
                 else
                 {
-
                     if (DieselEngines.HasGearBox && DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
                     {
                         TractiveForceN = DieselEngines.TractiveForceN;
@@ -729,7 +705,6 @@ namespace Orts.Simulation.RollingStocks
                     if (TractiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                         TractiveForceN = 0;
                 }
-
             }
             else
             {
@@ -765,7 +740,6 @@ namespace Orts.Simulation.RollingStocks
             // Calculate the total tractive force for the locomotive - ie Traction + Dynamic Braking force.
             // Note typically only one of the above will only ever be non-zero at the one time.
             // For flipped locomotives the force is "flipped" elsewhere, whereas dynamic brake force is "flipped" below by the direction of the speed.
-
             if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
             {
                 float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsTractionSpeedMpS);
@@ -865,7 +839,6 @@ namespace Orts.Simulation.RollingStocks
 
         public override void ChangeGearDown()
         {
-
             if (DieselEngines[0].GearBox != null)
             {
                 if (DieselEngines[0].GearBox.GearBoxOperation == GearBoxOperation.Semiautomatic)
@@ -1006,7 +979,6 @@ namespace Orts.Simulation.RollingStocks
                 status.AppendFormat("\t{0} {1}\t\t{2}\n",
                 Simulator.Catalog.GetString("Fuel"),
                 FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK), DieselEngines.GetStatus());
-
 
             if (IsSteamHeatFitted && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive() && Train.CarSteamHeatOn)
             {
@@ -1387,7 +1359,6 @@ namespace Orts.Simulation.RollingStocks
                 GearboxGearIndex = DieselEngines[0].GearBox.CurrentGearIndex + 1;
                 GearBoxController.SetValue((float)GearBoxController.CurrentNotch);
             }
-
         }
 
         public override void SwitchToAutopilotControl()
@@ -1408,12 +1379,10 @@ namespace Orts.Simulation.RollingStocks
         protected override void UpdateCarSteamHeat(float elapsedClockSeconds)
         {
             // Update Steam Heating System
-
-            // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
+            // TODO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
 
             if (IsSteamHeatFitted && this.IsLeadLocomotive())  // Only Update steam heating if train and locomotive fitted with steam heating
             {
-
                 CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
 
                 // Calculate steam boiler usage values
@@ -1437,8 +1406,6 @@ namespace Orts.Simulation.RollingStocks
                 {
                     Train.CarSteamHeatOn = false; // turn on steam effects on wagons
                 }
-                
-
             }
         }
 
@@ -1451,7 +1418,6 @@ namespace Orts.Simulation.RollingStocks
             ExhaustColorG.ForceSmoothValue(exhColorG);
             ExhaustColorB.ForceSmoothValue(exhColorB);
         }
-
 
         //================================================================================================//
         /// <summary>

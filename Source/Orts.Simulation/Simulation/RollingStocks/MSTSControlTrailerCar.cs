@@ -204,7 +204,7 @@ namespace Orts.Simulation.RollingStocks
                         }
                     }
                 }
-                
+
                 // Rest gear flags once all the cars have been processed
                 ControlGearUp = false;
                 ControlGearDown = false;

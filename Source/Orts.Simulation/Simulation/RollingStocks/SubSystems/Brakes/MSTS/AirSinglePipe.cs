@@ -85,7 +85,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float ServiceMaxCylPressurePSI;
         protected float AcceleratedEmergencyReleaseThresholdPSI = 20.0f;
 
-
         protected bool TrainBrakePressureChanging = false;
         protected bool BrakePipePressureChanging = false;
         protected float SoundTriggerCounter = 0;
@@ -95,7 +94,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         protected float BrakePipeChangePSIpS;
         protected SmoothedData SmoothedBrakePipeChangePSIpS;
-
 
         /// <summary>
         /// EP brake holding valve. Needs to be closed (Lap) in case of brake application or holding.
@@ -218,7 +216,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 string.Format("A{0} B{1}", AngleCockAOpenAmount >= 1 ? "+" : AngleCockAOpenAmount <= 0 ? "-" : "/", AngleCockBOpenAmount >= 1 ? "+" : AngleCockBOpenAmount <= 0 ? "-" : "/"),
                 BleedOffValveOpen ? Simulator.Catalog.GetString("Open") : string.Empty,
             };
-
         }
 
         public override float GetCylPressurePSI()
@@ -284,7 +281,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 case "wagon(emergencyreschargingrate": EmergResChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(emergencyresvolumemultiplier": EmergAuxVolumeRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(emergencyrescapacity": EmergResVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
-                
+
                 // OpenRails specific parameters
                 case "wagon(brakepipevolume": BrakePipeVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
                 case "wagon(ortsbrakeinsensitivity": BrakeInsensitivityPSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, 0.07f); break;
@@ -464,9 +461,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 AuxBrakeLineVolumeRatio = 3.1f;
                 EmergBrakeLineVolumeRatio = 4.34f;
             }
-                     
+
             if (CylVolumeM3 == 0) CylVolumeM3 = EmergResVolumeM3 / EmergAuxVolumeRatio / AuxCylVolumeRatio;
-            
+
             RelayValveFitted |= (Car is MSTSLocomotive loco && (loco.DynamicBrakeAutoBailOff || loco.DynamicBrakePartialBailOff)) || (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.DistributingValve;
         }
 
@@ -814,7 +811,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     dp = 0;
                 AutoCylPressurePSI -= dp;
             }
-            
+
             // Manage emergency res charging
             if ((Car as MSTSWagon).EmergencyReservoirPresent)
             {
@@ -863,7 +860,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     AuxResPressurePSI += dpAux;
                     BrakeLine2PressurePSI -= dpAux * AuxBrakeLineVolumeRatio;
                 }
-                
             }
             else // Charge from brake pipe
             {
@@ -889,7 +885,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
             if (AutoCylPressurePSI < 0)
                 AutoCylPressurePSI = 0;
-            
+
             float demandedPressurePSI = 0;
             var loco = Car as MSTSLocomotive;
             if (loco != null && (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.DistributingValve)
@@ -914,7 +910,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
                 // Release pipe open
                 HoldingValve = engineBrakeStatus == ControllerState.Release && trainBrakeStatus == ControllerState.Release ? ValveState.Release : ValveState.Lap;
-                
+
                 // Independent air brake equalization
                 if (AutoCylPressurePSI < loco.Train.BrakeLine3PressurePSI)
                     AutoCylPressurePSI = loco.Train.BrakeLine3PressurePSI;
@@ -994,7 +990,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         dp = demandedPressurePSI - CylPressurePSI;
                     if (MaxCylPressurePSI < CylPressurePSI + dp)
                         dp = MaxCylPressurePSI - CylPressurePSI;
-                    
+
                     // TODO: Implement a brake reservoir which keeps some air available in case of main reservoir leakage
                     // Currently we drain from the main reservoir directly
                     if (loco != null)
@@ -1049,7 +1045,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
                         Car.WheelBrakeSlideProtectionDumpValveLockout = true;
                     }
-
                 }
                 else if (!Car.WheelBrakeSlideProtectionDumpValveLockout)
                 {
@@ -1057,9 +1052,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     Car.WheelBrakeSlideProtectionActive = false;
                     Car.WheelBrakeSlideProtectionTimerS = Car.wheelBrakeSlideTimerResetValueS; // Reset WSP timer if 
                 }
-
             }
-                       
+
             // Record HUD display values for brake cylinders depending upon whether they are wagons or locomotives/tenders (which are subject to their own engine brakes)   
             if (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender)
             {
@@ -1074,7 +1068,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     Car.Train.HUDWagonBrakeCylinderPSI = CylPressurePSI;
                 }
-
             }
 
             // If wagons are not attached to the locomotive, then set wagon BC pressure to same as locomotive in the Train brake line
@@ -1082,7 +1075,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 Car.Train.HUDWagonBrakeCylinderPSI = CylPressurePSI;
             }
-            
+
             if (!Car.BrakesStuck)
             {
                 Car.BrakeShoeForceN = Car.MaxBrakeForceN * MathHelper.Clamp((CylPressurePSI - BrakeCylinderSpringPressurePSI) / (MaxCylPressurePSI - BrakeCylinderSpringPressurePSI), 0, 1);
@@ -1118,7 +1111,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             Car.SignalEvent(Event.TrainBrakePressureDecrease);
                         TrainBrakePressureChanging = !TrainBrakePressureChanging;
                     }
-
                 }
                 else if (TrainBrakePressureChanging)
                 {
@@ -1136,7 +1128,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             Car.SignalEvent(Event.BrakePipePressureDecrease);
                         BrakePipePressureChanging = !BrakePipePressureChanging;
                     }
-
                 }
                 else if (BrakePipePressureChanging)
                 {

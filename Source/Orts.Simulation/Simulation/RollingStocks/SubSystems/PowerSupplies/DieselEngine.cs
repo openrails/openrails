@@ -89,7 +89,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             DEList.Add(de);
         }
 
-
         /// <summary>
         /// Parses all the parameters within the ENG file
         /// </summary>
@@ -197,7 +196,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     DEList[i].InitFromMSTS();
                     DEList[i].Initialize();
                 }
-                
             }
             foreach (DieselEngine de in DEList)
                 de.Restore(inf);
@@ -344,7 +342,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         if (Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
                         {
                             temp += (de.GearBox.TractiveForceN);
-                            
                         }
                         else
                         {
@@ -352,6 +349,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         }
                     }
                 }
+
                 return temp;
             }
         }
@@ -1061,7 +1059,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (GearBox != null)
             {
-
                 if (Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
                 {
                     if (GearBox.GearBoxOperation == GearBoxOperation.Automatic)
@@ -1076,7 +1073,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         {
                             DemandedRPM = GearBox.ShaftRPM;
                         }
-
                     }
                     else
                     {
@@ -1209,7 +1205,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     // Simulate stalled engine if RpM decreases too far below IdleRpM
                     if (RealRPM < 0.9f * IdleRPM && State == DieselEngineState.Running && GearBox.IsClutchOn)
                     {
-
                         GearUnderspeedShutdownEnabled = true;
                         Trace.TraceInformation("Diesel Engine has stalled due to underspeed.");
                         HandleEvent(PowerSupplyEvent.StallEngine);
@@ -1228,7 +1223,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     // Simulate stalled engine if RpM increases too far and exceed the safe overrun speed, by stopping engine
                     if (RealRPM > GovernorRPM && State == DieselEngineState.Running && GearBox.IsClutchOn)
                     {
-
                         GearOverspeedShutdownEnabled = true;
                         Trace.TraceInformation("Diesel Engine has stalled due to overspeed.");
                         HandleEvent(PowerSupplyEvent.StallEngine);
@@ -1238,7 +1232,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         {
                             GearBox.clutchOn = false;
                         }
-
                     }
                     else if (Locomotive.AbsSpeedMpS < 0.05 && State == DieselEngineState.Stopped)
                     {
@@ -1250,7 +1243,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     {
                         DemandedRPM = 0;
                     }
-
                 }
                 else   // Legacy or MSTS Gearboxes
                 {
@@ -1405,10 +1397,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.DieselEngines.NumOfActiveEngines > 0)
                     {
-
                         CurrentDieselOutputPowerW += Locomotive.DieselPowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines;
                     }
-
                 }
                 else
                 {
@@ -1639,7 +1629,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("IdleRpM not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value = {0}", IdleRPM);
-
                 }
                 else if (IdleRPM == 0 && Locomotive.IdleRPM != 0) // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
                 {
@@ -1647,7 +1636,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("IdleRpM: set at default value (BASIC Config) = {0}", IdleRPM);
-
                 }
                 else if (Locomotive.IdleRPM == 0) // No default "MSTS" value present, set to arbitary value
                 {
@@ -1656,7 +1644,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("IdleRpM not found in Diesel Engine Configuration (BASIC Config): set at arbitary value = {0}", IdleRPM);
-
                 } 
             }
 
@@ -1668,7 +1655,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaxRpM not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value = {0}", MaxRPM);
-
                 }
                 else if (MaxRPM == 0 && Locomotive.MaxRPM != 0)  // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
                 {
@@ -1676,7 +1662,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaxRpM: set at default value (BASIC Config) = {0}", MaxRPM);
-
                 }
                 else if (Locomotive.MaxRPM == 0) // No default "MSTS" value present, set to arbitary value
                 {
@@ -1685,7 +1670,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaxRpM not found in Diesel Engine Configuration (BASIC Config): set at arbitary value = {0}", MaxRPM);
-
                 }
             }
 
@@ -1755,7 +1739,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("ChangeUpRPMpS: set at default value (BASIC Config) = {0}", ChangeUpRPMpS);
-
                 }
                 else if (Locomotive.MaxRPMChangeRate == 0) // No default "MSTS" value present, set to arbitary value
                 {
@@ -1764,7 +1747,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("ChangeUpRPMpS not found in Diesel Engine Configuration (BASIC Config): set at arbitary value = {0}", ChangeUpRPMpS);
-
                 }
             }
 
@@ -1776,7 +1758,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("ChangeDownRPMpS not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value = {0}", ChangeDownRPMpS);
-
                 }
                 else if (ChangeDownRPMpS == 0 && Locomotive.MaxRPMChangeRate != 0)  // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
                 {
@@ -1784,7 +1765,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("ChangeDownRPMpS: set at default value (BASIC Config) = {0}", ChangeDownRPMpS);
-
                 }
                 else if (Locomotive.MaxRPMChangeRate == 0) // No default "MSTS" value present, set to arbitary value
                 {
@@ -1792,7 +1772,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("ChangeDownRPMpS not found in Diesel Engine Configuration (BASIC Config): set at arbitary value = {0}", ChangeDownRPMpS);
-
                 }
             }
 
@@ -1818,7 +1797,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaximalPower not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value (ORTSDieselEngineMaxPower) = {0}", FormatStrings.FormatPower(MaximumDieselPowerW, Locomotive.IsMetric, false, false));
-
                 }
                 else if (Locomotive.MaxPowerW == 0)
                 {
@@ -1826,7 +1804,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaximalPower not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set at arbitary value = {0}", FormatStrings.FormatPower(MaximumDieselPowerW, Locomotive.IsMetric, false, false));
-
                 }
                 else
                 {
@@ -1834,21 +1811,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaximalPower not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value (MaxPower) = {0}", FormatStrings.FormatPower(MaximumDieselPowerW, Locomotive.IsMetric, false, false));
-
                 }
-
             }
 
             if ((initLevel & SettingsFlags.MaxOilPressure) == 0)
             {
-
                 if (DieselEngineConfigured && Locomotive.DieselMaxOilPressurePSI != 0) // Advanced conf - Prime mover Eng block defined but no IdleRPM present
                 {
                     DieselMaxOilPressurePSI = Locomotive.DieselMaxOilPressurePSI;
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaxOilPressure not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value = {0}", DieselMaxOilPressurePSI);
-
                 }
                 else if (DieselMaxOilPressurePSI == 0 && Locomotive.DieselMaxOilPressurePSI != 0)  // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
                 {
@@ -1856,7 +1829,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaxOilPressure: set at default value (BASIC Config) = {0}", DieselMaxOilPressurePSI);
-
                 }
                 else if (Locomotive.DieselMaxOilPressurePSI == 0) // No default "MSTS" value present, set to arbitary value
                 {
@@ -1865,9 +1837,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaxOilPressure not found in Diesel Engine Configuration (BASIC Config): set at arbitary value = {0}", DieselMaxOilPressurePSI);
-
                 }
-
             }
 
             if ((initLevel & SettingsFlags.MinOilPressure) == 0)
@@ -1878,7 +1848,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MinOilPressure not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value = {0}", DieselMinOilPressurePSI);
-
                 }
                 else if (DieselMinOilPressurePSI == 0 && Locomotive.DieselMinOilPressurePSI != 0)  // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
                 {
@@ -1886,7 +1855,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MinOilPressure: set at default value (BASIC Config) = {0}", DieselMinOilPressurePSI);
-
                 }
                 else if (Locomotive.DieselMinOilPressurePSI == 0) // No default "MSTS" value present, set to arbitary value
                 {
@@ -1895,7 +1863,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MinOilPressure not found in Diesel Engine Configuration (BASIC Config): set at arbitary value = {0}", DieselMinOilPressurePSI);
-
                 }
             }
 
@@ -1907,7 +1874,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaxTemperature not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value = {0}", DieselMaxTemperatureDeg);
-
                 }
                 else if (DieselMaxTemperatureDeg == 0 && Locomotive.DieselMaxTemperatureDeg != 0)  // Basic conf - No prime mover ENG block defined, use the default "MSTS" value
                 {
@@ -1915,7 +1881,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaxTemperature: set at default value (BASIC Config) = {0}", DieselMaxTemperatureDeg);
-
                 }
                 else if (Locomotive.DieselMaxTemperatureDeg == 0) // No default "MSTS" value present, set to arbitary value
                 {
@@ -1924,9 +1889,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("MaxTemperature not found in Diesel Engine Configuration (BASIC Config): set at arbitary value = {0}", DieselMaxTemperatureDeg);
-
                 }
-
             }
 
             if ((initLevel & SettingsFlags.Cooling) == 0)
@@ -1937,7 +1900,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             // Advise user what cooling method is set
             if (Locomotive.Simulator.Settings.VerboseConfigurationMessages)
                 Trace.TraceInformation("ORTSDieselCooling, set at default value = {0}", EngineCooling);
-
 
             if ((initLevel & SettingsFlags.TempTimeConstant) == 0)
             {
@@ -2164,8 +2126,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 RailPowerTab = new Interpolator(rpm, railpower);
             }
-
-
         }
     }
 }

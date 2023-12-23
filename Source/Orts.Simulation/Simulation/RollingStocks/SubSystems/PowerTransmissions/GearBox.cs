@@ -43,7 +43,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         public TypesClutch ClutchType = TypesClutch.Unknown;
 
-
         public GearBoxOperation GearBoxOperation = GearBoxOperation.Manual;
         public GearBoxEngineBraking GearBoxEngineBraking = GearBoxEngineBraking.None;
         public List<float> GearBoxMaxSpeedForGearsMpS = new List<float>();
@@ -233,7 +232,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public bool ManualGearUp = false;
         public bool ManualGearDown = false;
         public bool clutchLockOut = false;
-        
+
         public int currentGearIndex = -1;
         public int nextGearIndex = -1;
 
@@ -361,7 +360,6 @@ public Gear NextGear
                 {
                     if (GearBoxOperation == GearBoxOperation.Automatic)
                     {
-
                         if (DieselEngine.Locomotive.ThrottlePercent > 0)
                         {
                             if (ShaftRPM >= (CurrentGear.DownGearProportion * DieselEngine.MaxRPM))
@@ -373,7 +371,6 @@ public Gear NextGear
                     }
                     else  // Manual clutch operation
                     {
-
                         if (DieselEngine.Locomotive.ThrottlePercent == 0 && !clutchOn && Locomotive.SpeedMpS < 0.05f && ClutchType == TypesClutch.Friction)
                         {
                             clutchOn = false;
@@ -488,7 +485,6 @@ public Gear NextGear
             }
         }
 
-
         /// <summary>
         /// ShaftRpM is the speed of the input shaft to the gearbox due to the speed of the wheel rotation
         /// </summary>
@@ -516,9 +512,7 @@ public Gear NextGear
                             var shaftRPM = driveWheelRpm * CurrentGear.Ratio;
                             return (float)(shaftRPM);
                         }
-
                     }
-
                 }
                 else // Legacy operation
                 {
@@ -576,10 +570,8 @@ public Gear NextGear
             {
                 if (CurrentGear != null)
                 {
-
                     if (Locomotive != null && Locomotive.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
                     {
-
                         if (GearBoxOperation == GearBoxOperation.Automatic)
                         {
                             if (ClutchPercent >= -20)
@@ -703,13 +695,11 @@ public Gear NextGear
                                     var stallGradient = maxStallEngineTE / DieselEngine.GovernorRPM;
 
                                     tractiveForceN = stallGradient * dieselRpM;
-
                                 }
                                 else
                                 {
                                     tractiveForceN = CurrentGear.CoastingForceN;
                                 }
-
                             }
                             return tractiveForceN;
                         }
@@ -871,10 +861,8 @@ public Gear NextGear
             {
                 if (GearBoxOperation == GearBoxOperation.Automatic || GearBoxOperation == GearBoxOperation.Semiautomatic)
                 {
-
                     if ((clutch <= 0.05) || (clutch >= 1f))
                     {
-
                         if (currentGearIndex < nextGearIndex)
                         {
                             DieselEngine.Locomotive.SignalEvent(Event.GearUp);
@@ -892,10 +880,8 @@ public Gear NextGear
                 }
                 else if (GearBoxOperation == GearBoxOperation.Manual)
                 {
-
                     if (ManualGearUp)
                     {
-
                         if (currentGearIndex < nextGearIndex)
                         {
                             DieselEngine.Locomotive.SignalEvent(Event.GearUp);
@@ -914,7 +900,6 @@ public Gear NextGear
                         }
                     }
                 }
-
             }
             else // Legacy operation
             {
@@ -970,7 +955,6 @@ public Gear NextGear
                                     gearedDown = false;
                                     gearedUp = false;
                                 }
-
                             }
                         }
                         else

@@ -135,7 +135,6 @@ namespace Orts.Simulation.Signalling
                     ORTSNormalSubtypeIndex = signalType.ORTSSubtypeIndex;
 
                     // update overall SignalNumClearAhead
-
                     if (Function == SignalFunction.NORMAL)
                     {
                         mainSignal.SignalNumClearAhead_MSTS = Math.Max(mainSignal.SignalNumClearAhead_MSTS, signalType.NumClearAhead_MSTS);
@@ -144,7 +143,6 @@ namespace Orts.Simulation.Signalling
                     }
 
                     // set approach control limits
-
                     if (signalType.ApproachControlDetails != null)
                     {
                         ApproachControlLimitPositionM = signalType.ApproachControlDetails.ApproachControlPositionM;
@@ -324,7 +322,6 @@ namespace Orts.Simulation.Signalling
             bool foundValid = false;
 
             // get signal of type 2 (end signal)
-
             if (dumpfile.Length > 1)
             {
                 File.AppendAllText(dumpfile,
@@ -370,14 +367,12 @@ namespace Orts.Simulation.Signalling
             SignalObject thisSignal = mainSignal;
 
             // ensure next signal of type 1 is located correctly (cannot be done for normal signals searching next normal signal)
-
             if (!thisSignal.isSignalNormal() || function1 != SignalFunction.NORMAL)
             {
                 thisSignal.sigfound[function1] = thisSignal.SONextSignal(function1);
             }
 
             // loop through all available signals of type 1
-
             while (thisSignal.sigfound[function1] >= 0)
             {
                 thisSignal = thisSignal.signalRef.SignalObjects[thisSignal.sigfound[function1]];
@@ -423,7 +418,6 @@ namespace Orts.Simulation.Signalling
             bool foundValid = false;
 
             // get signal of type 2 (end signal)
-
             if (dumpfile.Length > 1)
             {
                 File.AppendAllText(dumpfile,
@@ -469,14 +463,12 @@ namespace Orts.Simulation.Signalling
             SignalObject thisSignal = mainSignal;
 
             // ensure next signal of type 1 is located correctly (cannot be done for normal signals searching next normal signal)
-
             if (!thisSignal.isSignalNormal() || function1 != SignalFunction.NORMAL)
             {
                 thisSignal.sigfound[function1] = thisSignal.SONextSignal(function1);
             }
 
             // loop through all available signals of type 1
-
             while (thisSignal.sigfound[function1] >= 0)
             {
                 thisSignal = thisSignal.signalRef.SignalObjects[thisSignal.sigfound[function1]];
@@ -625,7 +617,6 @@ namespace Orts.Simulation.Signalling
             bool juncfound = true;
 
             // call route_set routine from main signal
-
             if (TrackJunctionNode > 0)
             {
                 juncfound = mainSignal.route_set(JunctionMainNode, TrackJunctionNode);

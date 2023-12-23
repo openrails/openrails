@@ -246,7 +246,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 {
                     Animations.Add(new FreightAnimationContinuous(freightAnim as FreightAnimationContinuous, wagon));
                     if ((Animations.Last() as FreightAnimationContinuous).FullAtStart) LoadedOne = Animations.Last() as FreightAnimationContinuous;
-
                 }
                 else if (freightAnim is FreightAnimationStatic)
                 {
@@ -278,7 +277,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     LoadDataList.Add(loadData);
                 }
             }
-
 
             // additions to manage consequences of variable weight on friction and brake forces
             EmptyORTSDavis_A = copyFACollection.EmptyORTSDavis_A;
@@ -883,14 +881,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     break;
                 default:
                     break;
-            }
+            },
+
             return false;
         }
 
         /// <summary>
         /// Removes loads (e.g. containers) when AI train is deleted
         /// </summary>
-
         public void RemoveLoads()
         {
             foreach (var animation in Animations)
@@ -900,13 +898,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     Wagon.Simulator.ContainerManager.Containers.Remove(discreteAnimation.Container);
                 }
             }
-
         }
 
         /// <summary>
         /// Hides discrete freight animations and containers when remote train quits
         /// </summary>
-
         public void HideDiscreteFreightAnimations()
         {
             foreach (var animation in Animations)
@@ -916,13 +912,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     discreteAnimation.Container.Visible = false;
                 }
             }
-
         }
 
         /// <summary>
         /// Shows discrete freight animations and containers when remote train quits
         /// </summary>
-
         public void ShowDiscreteFreightAnimations()
         {
             foreach (var animation in Animations)
@@ -932,7 +926,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     discreteAnimation.Container.Visible = true;
                 }
             }
-
         }
 
         public string FADiscretesString()
@@ -953,11 +946,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     discretesDataString += "&" + fileName + "%" + relativeDirectoryName + "%" + loadPosition + "%";
                 }
             }
+
             var totalString = discretesCount.ToString() + discretesDataString;
             return discretesCount.ToString() + discretesDataString;
         }
     }
-
 
     /// <summary>
     /// The 3 types of freightanims are inherited from the abstract FreightAnimation class.
@@ -1182,7 +1175,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float AboveLoadingAreaLength = -1f;
         public LoadPosition LoadPosition = LoadPosition.Center;
 
-         // for copy
+        // for copy
         public FreightAnimationDiscrete(FreightAnimationDiscrete freightAnimDiscrete, FreightAnimations freightAnimations)
         {
             FreightAnimations = freightAnimations;
@@ -1302,4 +1295,3 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         }
     }
 }
-

@@ -1103,7 +1103,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         float VigilanceAlarmTimeoutS;
         float CurrentSpeedLimitMpS;
         float NextSpeedLimitMpS;
-       
+
         MonitoringStatus Status;
 
         public ScriptedTrainControlSystem.MonitoringDevice VigilanceMonitor;
@@ -1289,7 +1289,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         switch (VigilanceMonitorState)
                         {
                             // case VigilanceState.Disabled: do nothing
-
                             case MonitorState.StandBy:
                                 VigilanceAlarmTimer.Stop();
                                 break;
@@ -1414,12 +1413,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         void UpdateSpeedControl()
         {
             var interventionSpeedMpS = CurrentSpeedLimitMpS + MpS.FromKpH(5.0f); // Default margin : 5 km/h
-            
+
             if (OverspeedMonitor.TriggerOnTrackOverspeed)
             {
                 interventionSpeedMpS = CurrentSpeedLimitMpS + OverspeedMonitor.TriggerOnTrackOverspeedMarginMpS;
             }
-            
+
             SetInterventionSpeedLimitMpS(interventionSpeedMpS);
 
             switch (OverspeedMonitorState)

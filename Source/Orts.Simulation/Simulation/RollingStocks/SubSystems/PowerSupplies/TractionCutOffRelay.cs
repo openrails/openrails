@@ -25,7 +25,6 @@ using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
-
     public class ScriptedTractionCutOffRelay : ITractionCutOffSubsystem
     {
         public ILocomotivePowerSupply PowerSupply { get; protected set; }

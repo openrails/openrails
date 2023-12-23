@@ -38,7 +38,6 @@ using ORTS.Common;
 
 namespace Orts.Simulation.Timetables
 {
-
     //================================================================================================//
     //================================================================================================//
     /// <summary>
@@ -48,7 +47,6 @@ namespace Orts.Simulation.Timetables
     /// </summary>
     public class TimetableTurntablePool : TimetablePool
     {
-
         public struct AccessPathDetails
         {
             public Train.TCSubpathRoute AccessPath;           // actual access path
@@ -88,7 +86,6 @@ namespace Orts.Simulation.Timetables
         /// <param name="simulatorref"></param>
         public TimetableTurntablePool(TimetableReader fileContents, ref int lineindex, Simulator simulatorref)
         {
-
             bool validpool = true;
             bool newName = false;
             bool firstName = false;
@@ -365,7 +362,6 @@ namespace Orts.Simulation.Timetables
             }
 
             // calculate offsets for paths
-
             if (validpool)
             {
                 // access path : hold offset, offset for start of turntable, offset for middle of turntable
@@ -571,7 +567,6 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// Check if path starts at turntable
         /// </summary>
-
         private int CheckTurntablePath(Train.TCSubpathRoute thisPath, int turntableTrackShape)
         {
             // check if turntable track section is in path - must be in first element (path must start at turntable end)
@@ -596,7 +591,6 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// FindTurntable : find reference to turntable as defined in turntable.dat using worldfile and uid references
         /// </summary>
-
         private int FindTurntable(string worldfile, int uid)
         {
             int foundIndex = -1;
@@ -618,7 +612,6 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// Calculate offset of timetable position in access path
         /// </summary>
-
         private void CalculateAccessOffsets(int ipath, Turntable thisTurntable)
         {
             AccessPathDetails thisPath = AdditionalTurntableDetails.AccessPaths[ipath];
@@ -630,7 +623,6 @@ namespace Orts.Simulation.Timetables
             Formats.Msts.TrVectorSection[] trackVectors = Simulatorref.Signals.trackDB.TrackNodes[trackNodeIndex].TrVectorNode.TrVectorSections;
 
             // check if path is in front or behind turntable
-
             int lastVectorIndex = 0;
             float entrySectionLength = 0.0f;
             float exitSectionLength = 0.0f;
@@ -688,7 +680,6 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// Calculate length and turntable offset for storage paths
         /// </summary>
-
         private void CalculateStorageOffsets(int ipath, Turntable thisTurntable)
         {
             PoolDetails thisPath = StoragePool[ipath];
@@ -708,7 +699,6 @@ namespace Orts.Simulation.Timetables
             Formats.Msts.TrVectorSection[] trackVectors = Simulatorref.Signals.trackDB.TrackNodes[trackNodeIndex].TrVectorNode.TrVectorSections;
 
             // check if path is in front or behind turntable
-
             int lastVectorIndex = 0;
             float entrySectionLength = 0.0f;
             float exitSectionLength = 0.0f;
@@ -739,7 +729,6 @@ namespace Orts.Simulation.Timetables
             float totalLength = baseLength + entrySectionLength;
 
             // deduct clearance for turntable
-
             thisPath.TableMiddleEntry = totalLength + (thisTurntable.Length / 2.0f);
             thisPath.TableMiddleExit = exitSectionLength + (thisTurntable.Length / 2.0f);
 
@@ -768,7 +757,6 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// Calculate length of section connected to turntable
         /// </summary>
-
         private float CalculateVectorLength(int firstIndex, int LastIndex, int connectIndex, Formats.Msts.TrVectorSection[] vectors)
         {
             float returnLength = 0.0f;
@@ -785,9 +773,7 @@ namespace Orts.Simulation.Timetables
 
                     if (TS.SectionCurve != null)
                     {
-                        thisLength =
-                                MathHelper.ToRadians(Math.Abs(TS.SectionCurve.Angle)) *
-                                TS.SectionCurve.Radius;
+                        thisLength = MathHelper.ToRadians(Math.Abs(TS.SectionCurve.Angle)) * TS.SectionCurve.Radius;
                     }
                     else
                     {
@@ -806,7 +792,6 @@ namespace Orts.Simulation.Timetables
         /// Create in pool : create train in pool
         /// </summary>
         /// <param name="train"></param>
-
         override public int CreateInPool(TTTrain train, List<TTTrain> nextTrains)
         {
             int PoolStorageState = (int)TTTrain.PoolAccessState.PoolInvalid;
@@ -828,7 +813,6 @@ namespace Orts.Simulation.Timetables
                 // use stored traveller
                 train.RearTDBTraveller = new Traveller(StoragePool[PoolStorageState].StoragePathTraveller);
             }
-
             else
             {
                 // use reverse path
@@ -879,7 +863,6 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// Place in pool : place train in pool, for this type of pool train is created directly on storage path
         /// </summary>
-
         public override Train.TCSubpathRoute PlaceInPool(TTTrain train, out int poolStorageIndex, bool checkAccessPath)
         {
             Train.TCSubpathRoute newRoute = null;
@@ -914,7 +897,6 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// TestPoolExit : find access path linked to trains path
         /// </summary>
-
         public override bool TestPoolExit(TTTrain train)
         {
             int testAccess;
@@ -932,7 +914,6 @@ namespace Orts.Simulation.Timetables
             train.Closeup = true;
 
             // find relevant access path
-
             int lastValidSectionIndex = train.TCRoute.TCRouteSubpaths.Last().Count - 1;
             for (int iSection = train.TCRoute.TCRouteSubpaths.Last().Count - 1; iSection >= 0 && reqPath == -1; iSection--)
             {
@@ -986,7 +967,6 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// Extract train from pool
         /// </summary>
-
         override public TrainFromPool ExtractTrain(ref TTTrain train, int presentTime)
         {
 #if DEBUG_POOLINFO
@@ -1166,7 +1146,6 @@ namespace Orts.Simulation.Timetables
                     if (train.Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                         train.Simulator.Confirmer.Information("Player switched to train : " + train.Name);
                 }
-
                 // new train is intended as player
                 else if (train.TrainType == Train.TRAINTYPE.PLAYER || train.TrainType == Train.TRAINTYPE.INTENDED_PLAYER)
                 {
@@ -1216,7 +1195,6 @@ namespace Orts.Simulation.Timetables
                         }
                     }
                 }
-
                 // normal AI train
                 else
                 {
@@ -1317,7 +1295,6 @@ namespace Orts.Simulation.Timetables
         /// SetPoolExit : adjust train dispose details and path to required pool exit
         /// Returned poolStorageState : <0 : state (enum TTTrain.PoolAccessState); >0 : poolIndex
         /// </summary>
-
         override public Train.TCSubpathRoute SetPoolExit(TTTrain train, out int poolStorageIndex, bool checkAccessPath)
         {
             // new route
@@ -1333,7 +1310,6 @@ namespace Orts.Simulation.Timetables
             int lastSectionDirection = train.TCRoute.TCRouteSubpaths.Last().Last().Direction;
 
             // find storage path with enough space to store train
-
             int reqPool = GetPoolExitIndex(train);
             int reqPath = 0;
 
@@ -1358,7 +1334,6 @@ namespace Orts.Simulation.Timetables
                 train.FormsStatic = false;
                 train.Closeup = false;
             }
-
             // no valid pool found
             else if (reqPool == (int)TTTrain.PoolAccessState.PoolInvalid)
             {
@@ -1375,9 +1350,7 @@ namespace Orts.Simulation.Timetables
                 train.FormsStatic = false;
                 train.Closeup = false;
             }
-
             // no action if state is poolClaimed - state will resolve as train ahead is stabled in pool
-
             // valid pool
             else if (reqPool >= 0)
             {
@@ -1421,7 +1394,6 @@ namespace Orts.Simulation.Timetables
                         StoragePool[poolStorageIndex].ClaimUnits.Add(train.Number);
                     }
                 }
-
                 // create new route from access track only
                 // use first defined access track
                 // if only one unit allowed on storage, reverse path so train stands at allocated position
@@ -1440,6 +1412,7 @@ namespace Orts.Simulation.Timetables
                     train.PoolStorageIndex = poolStorageIndex = reqPool;
                 }
             }
+
             return (newRoute);
         }
 
@@ -1447,7 +1420,6 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// Get end of route distance on approach to turntable
         /// </summary>
-
         override public float GetEndOfRouteDistance(Train.TCSubpathRoute thisRoute, Train.TCPosition frontPosition, int pathIndex, Signals signalRef)
         {
             // get distance to approach point from present position of train
@@ -1471,7 +1443,6 @@ namespace Orts.Simulation.Timetables
     /// <summary>
     /// Class to hold additional info and methods for use of turntable in timetable mode
     /// </summary>
-
     public class TimetableTurntableControl
     {
         Turntable parentTurntable;                          // parent turntable
@@ -1574,7 +1545,6 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// method to save class
         /// </summary>
-
         public void Save(BinaryWriter outf)
         {
             outf.Write(parentIndex);
@@ -1607,7 +1577,6 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// Check if turntable is available for this train
         /// </summary>
-
         public bool CheckTurntableAvailable()
         {
             if (parentTurntable == null) parentTurntable = parentPool.Simulatorref.MovingTables[parentIndex] as Turntable;
@@ -1676,6 +1645,7 @@ namespace Orts.Simulation.Timetables
                     }
                 }
             }
+
             return (available);
         }
 
@@ -1685,7 +1655,6 @@ namespace Orts.Simulation.Timetables
         /// </summary>
         /// return : true if turntable actions for this train have terminated
         /// Instance of class will then be removed by train
-
         public void UpdateTurntableStateAI(float elapsedClockSeconds, int presentTime)
         {
             if (parentTurntable == null) parentTurntable = parentPool.Simulatorref.MovingTables[parentIndex] as Turntable;
@@ -1697,10 +1666,8 @@ namespace Orts.Simulation.Timetables
             Traveller.TravellerDirection reqExitDirection = Traveller.TravellerDirection.Forward;
 
             // switch on turntable action state
-
             switch (MovingTableState)
             {
-
                 // state : waiting for table (from Access)
                 case TimetableTurntableControl.MovingTableStateEnum.WaitingAccessToMovingTable:
 
@@ -1836,7 +1803,6 @@ namespace Orts.Simulation.Timetables
         /// </summary>
         /// return : true if turntable actions for this train have terminated
         /// Instance of class will then be removed by train
-
         public bool UpdateTurntableStatePlayer(float elapsedClockSeconds)
         {
             if (parentTurntable == null) parentTurntable = parentPool.Simulatorref.MovingTables[parentIndex] as Turntable;
@@ -1849,7 +1815,6 @@ namespace Orts.Simulation.Timetables
             Traveller.TravellerDirection reqExitDirection = Traveller.TravellerDirection.Forward;
 
             // switch on turntable action state
-
             switch (MovingTableState)
             {
                 // state : waiting for table to become available
@@ -2170,7 +2135,6 @@ namespace Orts.Simulation.Timetables
         /// Get access path index from present position of train
         /// </summary>
         /// <returns></returns>
-
         public int GetAccessPathIndex()
         {
             int presentSection = parentTrain.PresentPosition[0].TCSectionIndex;
@@ -2195,9 +2159,7 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// Turn turntable to required exit position
         /// </summary>
-
-        public bool AutoRequestExit(int reqExit, Traveller.TravellerDirection entryPathDirection, Traveller.TravellerDirection exitPathDirection,
-                        float elapsedClockSeconds)
+        public bool AutoRequestExit(int reqExit, Traveller.TravellerDirection entryPathDirection, Traveller.TravellerDirection exitPathDirection, float elapsedClockSeconds)
         {
             // if turntable is moving, always return false
             if (parentTurntable.AutoClockwise || parentTurntable.AutoCounterclockwise)
@@ -2487,7 +2449,6 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// Calculate distance to position in middle of turntable
         /// </summary>
-
         public float CalculateDistanceToTurntable()
         {
             float remDistance = 0.0f;
@@ -2532,7 +2493,6 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// Set next stage in process when train is stopped after moving
         /// </summary>
-
         public void SetNextStageOnStopped()
         {
             bool trainOnTable = false;
@@ -2579,7 +2539,6 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// Place train on turntable
         /// </summary>
-
         public void SetTrainOnTable()
         {
             // ensure train is not moving
@@ -2648,10 +2607,8 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// Prepare train to move off turntable
         /// </summary>
-
         public void PrepareMoveOffTable()
         {
-
             // set next active path for train
             parentTrain.TCRoute.activeSubpath++;
             parentTrain.ValidRoute[0] = new Train.TCSubpathRoute(parentTrain.TCRoute.TCRouteSubpaths[parentTrain.TCRoute.activeSubpath]);
@@ -2771,7 +2728,6 @@ namespace Orts.Simulation.Timetables
                     parentTrain.DistanceToEndNodeAuthorityM[0] = parentTrain.NextStopDistanceM = endOffset;
                 }
             }
-
             // actions for mode storage (train going out of storage)
             else
             {
@@ -2791,11 +2747,9 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// Remove train from turntable, return train to normal state
         /// </summary>
-
         public void RemoveTrainFromTurntable()
         {
             // clear table
-
             if (parentTurntable == null) parentTurntable = parentPool.Simulatorref.MovingTables[parentIndex] as Turntable;
 
             parentTurntable.TrainsOnMovingTable.Clear();
@@ -2823,7 +2777,6 @@ namespace Orts.Simulation.Timetables
         }
 
         //================================================================================================//
-
         public bool TestTrainFormation (TTTrain parentTrain)
         {
             bool reqReverse = true;

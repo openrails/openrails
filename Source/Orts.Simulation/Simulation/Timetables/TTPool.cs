@@ -974,7 +974,6 @@ namespace Orts.Simulation.Timetables
                 {
                     reqPool = iPool;
                 }
-
                 else if (thisStorage.StoredUnits.Contains(train.Number))
                 {
 #if DEBUG_POOLINFO
@@ -1059,7 +1058,6 @@ namespace Orts.Simulation.Timetables
                 thisPool.ClaimUnits.Remove(train.Number);
                 thisPool.RemLength = CalculateStorageLength(thisPool, train);
             }
-
             else
             {
                 // Add train to pool

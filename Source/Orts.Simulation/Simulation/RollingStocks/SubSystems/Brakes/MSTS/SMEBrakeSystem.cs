@@ -22,11 +22,9 @@ using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
-
     // Detailed description of the operation of a SME brake system can be found in:  "Air brakes, an up-to-date treatise on the Westinghouse air brake as designed for passenger and 
     // freight service and for electric cars" by Ludy, Llewellyn V., 1875- [from old catalog]; American Technical Society
     // https://archive.org/details/airbrakesuptodat00ludy/page/174/mode/2up?q=%22SME+brake%22
-    
     public class SMEBrakeSystem : AirTwinPipe
     {
         public SMEBrakeSystem(TrainCar car)
@@ -49,7 +47,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
 
             // process valid SME brake tokens
-
             if (BrakeLine3PressurePSI >= 1000f)
             {
                 HoldingValve = ValveState.Release;
@@ -59,9 +56,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 demandedAutoCylPressurePSI = Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * MaxTripleValveCylPressurePSI;
                 HoldingValve = AutoCylPressurePSI <= demandedAutoCylPressurePSI ? ValveState.Lap : ValveState.Release;
             }
-            
-            base.Update(elapsedClockSeconds); // Allow processing of other valid tokens
 
+            base.Update(elapsedClockSeconds); // Allow processing of other valid tokens
 
             if (AutoCylPressurePSI < demandedAutoCylPressurePSI && !Car.WheelBrakeSlideProtectionActive)
             {
@@ -73,7 +69,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio;
                 AutoCylPressurePSI += dp;
             }
-            
         }
 
         public override string[] GetDebugStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)

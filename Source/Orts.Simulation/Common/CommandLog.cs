@@ -64,7 +64,7 @@ namespace Orts.Common
             command.Time = Simulator.ClockTime; // Note time that command was issued
             CommandList.Add( command );
         }
-        
+
         /// <summary>
         /// Replays any commands that have become due.
         /// Issues commands from the replayCommandList at the same time that they were originally issued.

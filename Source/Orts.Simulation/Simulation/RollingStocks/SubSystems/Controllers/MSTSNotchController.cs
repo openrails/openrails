@@ -355,7 +355,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             ToZero = toZero;
             StartDecrease();
         }
-        
+
         public void StartDecrease()
         {
             UpdateValue = -1;
@@ -544,7 +544,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             outf.Write(StepSize);
             outf.Write(CurrentNotch);            
             outf.Write(Notches.Count);
-            
+
             foreach(MSTSNotch notch in Notches)
             {
                 notch.Save(outf);                
@@ -636,6 +636,5 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             }
             return notch;
         }
-
     }
 }

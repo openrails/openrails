@@ -65,7 +65,7 @@ namespace Orts.MultiPlayer
 			Connection = null;
 			ConnectionMode = 1;
 		}
-		
+
 		public void BroadCast(string msg)
 		{
 #if DEBUG_MULTIPLAYER

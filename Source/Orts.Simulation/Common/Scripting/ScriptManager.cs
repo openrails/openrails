@@ -68,7 +68,7 @@ namespace Orts.Common.Scripting
 
             if (path == null || path == "")
                 return null;
-            
+
             path = path.ToLowerInvariant();
 
             var type = String.Format("{0}.{1}", nameSpace, Path.GetFileNameWithoutExtension(path).Replace('-', '_'));
@@ -157,7 +157,6 @@ namespace Orts.Common.Scripting
 
         public Assembly LoadFolder(string path)
         {
-            
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("ScriptManager.Load incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
 

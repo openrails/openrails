@@ -68,7 +68,6 @@ using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks
 {
-
     ///////////////////////////////////////////////////
     ///   SIMULATION BEHAVIOUR
     ///////////////////////////////////////////////////
@@ -492,7 +491,7 @@ namespace Orts.Simulation.RollingStocks
             : base(simulator, wagPath)
         {
           //  BrakePipeChargingRatePSIpS = Simulator.Settings.BrakePipeChargingRate;
-                        
+
             MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
             BrakeCutsPowerAtBrakeCylinderPressurePSI = 4.0f;
 
@@ -560,7 +559,6 @@ namespace Orts.Simulation.RollingStocks
             DrvWheelWeightKg = InitialDrvWheelWeightKg;
 
             // If DrvWheelWeight is not in ENG file, then set drivewheel weight the same as locomotive mass
-
             if (DrvWheelWeightKg == 0) // if DrvWheelWeightKg not in ENG file.
             {
                 DrvWheelWeightKg = MassKG; // set Drive wheel weight to total wagon mass if not in ENG file
@@ -630,7 +628,7 @@ namespace Orts.Simulation.RollingStocks
                 DynamicBrakeForceCurves[1] = interp;
             }
         }
-         
+
         protected MSTSNotchController BuildDPDynamicBrakeController()
         {
             var dpDynController = new MSTSNotchController();
@@ -689,10 +687,8 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-
             return dpDynController;
         }
-
 
         protected void GetPressureUnit()
         {
@@ -1138,7 +1134,6 @@ namespace Orts.Simulation.RollingStocks
                 default:
                     base.Parse(lowercasetoken, stf);
                     break;
-
             }
         }
 
@@ -1349,7 +1344,7 @@ namespace Orts.Simulation.RollingStocks
             CurrentTrackSandBoxCapacityM3 = inf.ReadSingle();
 
             SaveAdhesionFilter = inf.ReadSingle();
-            
+
             AdhesionFilter.Reset(SaveAdhesionFilter);
 
             GenericItem1 = inf.ReadBoolean();
@@ -1485,7 +1480,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 CurrentTrackSandBoxCapacityM3 = MaxTrackSandBoxCapacityM3;
             }
-            
+
             // Ensure Drive Axles is set with a default value if user doesn't supply an OR value in ENG file
             if (LocoNumDrvAxles == 0)
             {
@@ -1527,7 +1522,6 @@ namespace Orts.Simulation.RollingStocks
             // Calculate minimum speed to pickup water
             const float Aconst = 2;
             WaterScoopMinSpeedMpS = Me.FromFt((float)Math.Sqrt(Aconst * GravitationalAccelerationFtpSpS * Me.ToFt(WaterScoopFillElevationM)));
-
 
             if (MaxMainResPressurePSI == 0)
             {
@@ -1582,7 +1576,7 @@ namespace Orts.Simulation.RollingStocks
                     BrakePipeDischargeTimeFactor = 1.5f; // Air brakes
                 }
             }
-            
+
             // Initialise the resistance of the vacuum pump
             if (VacuumPumpResistanceN == 0)
             {
@@ -1768,7 +1762,6 @@ namespace Orts.Simulation.RollingStocks
         /// Set starting conditions  when initial speed > 0 
         /// </summary>
         /// 
-
         public override void InitializeMoving()
         {
             base.InitializeMoving();
@@ -1801,7 +1794,6 @@ namespace Orts.Simulation.RollingStocks
                     {
                         CompressorRestartPressurePSI = Math.Max(CompressorRestartPressurePSI, Math.Min(TrainBrakeController.MaxPressurePSI + DefaultCompressorRestartToMaxSysPressureDiff, DefaultMaxCompressorRestartPressure));
                         MainResPressurePSI = MaxMainResPressurePSI = Math.Max(MaxMainResPressurePSI, Math.Min(CompressorRestartPressurePSI + DefaultMaxMainResToCompressorRestartPressureDiff, DefaultMaxMainResPressure));
-
                     }
                     if (MainResVolumeM3 < 0.3f && MassKG > 20000) MainResVolumeM3 = DefaultMainResVolume;
 
@@ -1816,7 +1808,6 @@ namespace Orts.Simulation.RollingStocks
             else if (MainResChargingRatePSIpS <= 0) MainResChargingRatePSIpS = 0.4f;
 
             // Corrections for dynamic braking parameters
-
             if (this is MSTSElectricLocomotive && DynamicBrakeDelayS > 4) DynamicBrakeDelayS = 2; // Electric locomotives have short engaging delays
             if (DynamicBrakeSpeed2MpS > 0 && DynamicBrakeSpeed3MpS > 0 && DynamicBrakeSpeed2MpS > DynamicBrakeSpeed3MpS)
             {
@@ -1927,15 +1918,11 @@ namespace Orts.Simulation.RollingStocks
 
             // Pass Gearbox commands
 
-
-
-
             // Note - at the moment there is only one GearBox Controller created, but a gearbox for each diesel engine is created. 
             // This code keeps all gearboxes in the locomotive aligned with the first engine and gearbox.
             if (gearloco != null && gearloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic && GearBoxController.CurrentNotch != previousChangedGearBoxNotch)
             {
                 // pass gearbox command key to other gearboxes in the same locomotive, only do the current locomotive             
-
                 int ii = 0;
                 foreach (var eng in gearloco.DieselEngines.DEList)
                 {
@@ -1944,17 +1931,14 @@ namespace Orts.Simulation.RollingStocks
                     {
                         gearloco.DieselEngines[ii].GearBox.currentGearIndex = gearloco.DieselEngines[0].GearBox.CurrentGearIndex;
                     }
-                    
+
                     ii = ii + 1;
                 }
-
             }
 
             // The lead locomotive passes gearbox commands position to other locomotives in train, don't treat the player locomotive in this fashion.
-
             if (gearloco != null && gearloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic && GearBoxController.CurrentNotch != previousChangedGearBoxNotch && IsLeadLocomotive())
             {
- 
                 foreach (TrainCar car in Train.Cars)
                 {
                     var locog = car as MSTSDieselLocomotive;
@@ -2016,10 +2000,8 @@ namespace Orts.Simulation.RollingStocks
             {
                 mpc.Update(elapsedClockSeconds);
             }
-                
 
             UpdateFrictionCoefficient(elapsedClockSeconds); // Find the current coefficient of friction depending upon the weather
-
             UpdateWaterTroughRefill(elapsedClockSeconds, AbsSpeedMpS); // Update refill from trough
 
             switch (this.Train.TrainType)
@@ -2091,13 +2073,11 @@ namespace Orts.Simulation.RollingStocks
 
                     if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)  // Antislip and throttle down should only work on diesel or electric locomotives.
                     {
-
                         // If wheel slip waring activated, and antislip is set in ENG file then reduce throttle setting to a value below warning power
                         if (WheelSlipWarning && AntiSlip)
                         {
                             ThrottleController.SetValue(PreviousThrottleSetting);
                         }
-
 
                         PreviousThrottleSetting = (ThrottlePercent / 100.0f) - 0.005f;
                         PreviousThrottleSetting = MathHelper.Clamp(PreviousThrottleSetting, 0.0f, 1.0f); // Prevents parameter going outside of bounds 
@@ -2112,11 +2092,10 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 default:
                     break;
-
             }
 
             // always set AntiSlip for AI trains
-              if (Train.TrainType == Train.TRAINTYPE.AI || Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+            if (Train.TrainType == Train.TRAINTYPE.AI || Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
                  {
                     AntiSlip = true;
                  }
@@ -2133,7 +2112,6 @@ namespace Orts.Simulation.RollingStocks
                 {
                     UpdateSteamEjector(elapsedClockSeconds);
                 }
-
             }
             else // if (EngineType != EngineTypes.Control) // TODO - Control trailers would not have compressors, but if they do then need to be linked to power supply requirements
             {
@@ -2141,7 +2119,6 @@ namespace Orts.Simulation.RollingStocks
             }
 
             UpdateHornAndBell(elapsedClockSeconds);
-
             UpdateSoundVariables(elapsedClockSeconds);
             PrevMotiveForceN = MotiveForceN;
             base.Update(elapsedClockSeconds);
@@ -2171,15 +2148,12 @@ namespace Orts.Simulation.RollingStocks
                         DebugSpeed += DebugSpeedIncrement;
                     }
                     DebugSpeedReached = false;
-
                 }
-
             }
 
             // Only prints out in speed increments of 5mph
             if (DebugSpeedReached)
             {
-                
                 Trace.TraceInformation("====================================== Debug Adhesion (MSTSLocomotive.cs) ===============================");
                 Trace.TraceInformation("AntiSlip - {0} ABSWheelSpeed {1}", AntiSlip, AbsWheelSpeedMpS);
                 Trace.TraceInformation("Advanced Adhesion Model - {0}", Simulator.UseAdvancedAdhesion);
@@ -2217,7 +2191,6 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         protected virtual void UpdateControllers(float elapsedClockSeconds)
         {
-
             SteamHeatController.Update(elapsedClockSeconds);
             if (IsPlayerTrain)
             {
@@ -2376,9 +2349,9 @@ namespace Orts.Simulation.RollingStocks
         {
             // Method to set force and power info
             // An alternative method in the steam locomotive will override this and input force and power info for it.
-
             if (t > 1)
                 t = 1;
+
             if (LocomotivePowerSupply.MainPowerSupplyOn && Direction != Direction.N)
             {
                 // For the advanced adhesion model, a rudimentary form of slip control is incorporated by using the wheel speed to calculate tractive effort.
@@ -2589,70 +2562,67 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         protected virtual void UpdateSteamEjector(float elapsedClockSeconds)
         {
-                 // Ejectors are controlled independently for the "straight_vacuum_single_pipe" brake type 
-                 // Ejectors are controlled by brake control valves in Simple Physics Control
-                if (Simulator.Settings.SimpleControlPhysics && CarBrakeSystemType != "straight_vacuum_single_pipe")
-                // Simple braking - control Ejector automatically based upon the brake control position
-                // Stop ejector operation if full vacuum pressure reached
-                {
-                if ((TrainBrakeController.TrainBrakeControllerState == ControllerState.Release || TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease || (TrainBrakeController.TrainBrakeControllerState == ControllerState.VacContServ)) && (this.BrakeSystem.BrakeLine1PressurePSI > Vac.ToPress(this.TrainBrakeController.MaxPressurePSI)))
+            // Ejectors are controlled independently for the "straight_vacuum_single_pipe" brake type 
+            // Ejectors are controlled by brake control valves in Simple Physics Control
+            if (Simulator.Settings.SimpleControlPhysics && CarBrakeSystemType != "straight_vacuum_single_pipe")
+            // Simple braking - control Ejector automatically based upon the brake control position
+            // Stop ejector operation if full vacuum pressure reached
+            {
+            if ((TrainBrakeController.TrainBrakeControllerState == ControllerState.Release || TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease || (TrainBrakeController.TrainBrakeControllerState == ControllerState.VacContServ)) && (this.BrakeSystem.BrakeLine1PressurePSI > Vac.ToPress(this.TrainBrakeController.MaxPressurePSI)))
+            {
+                LargeSteamEjectorIsOn = true;  // If brake is set to a release controller, then turn ejector on
+                LargeEjectorSoundOn = true;
+            }
+            else
+            {
+                LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, or full vacuum reached, then turn ejector off
+                LargeEjectorSoundOn = false;
+            }
+            }
+            else if (!LargeEjectorControllerFitted && CarBrakeSystemType != "straight_vacuum_single_pipe") // Use an "automatic" large ejector when using a dreadnought style brake controller - large ejector stays on until moved back to released position
+            {
+                if (TrainBrakeController.TrainBrakeControllerState == ControllerState.Release)
                 {
                     LargeSteamEjectorIsOn = true;  // If brake is set to a release controller, then turn ejector on
                     LargeEjectorSoundOn = true;
                 }
                 else
                 {
-                    LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, or full vacuum reached, then turn ejector off
-                    LargeEjectorSoundOn = false;
-                }
-                }
-                else if (!LargeEjectorControllerFitted && CarBrakeSystemType != "straight_vacuum_single_pipe") // Use an "automatic" large ejector when using a dreadnought style brake controller - large ejector stays on until moved back to released position
-                {
-                    if (TrainBrakeController.TrainBrakeControllerState == ControllerState.Release)
+                    LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, then turn ejector off
+                    if (LargeEjectorSoundOn)
                     {
-                        LargeSteamEjectorIsOn = true;  // If brake is set to a release controller, then turn ejector on
-                        LargeEjectorSoundOn = true;
-                    }
-                    else
-                    {
-                        LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, then turn ejector off
-                        if (LargeEjectorSoundOn)
-                        {
-                            SignalEvent(Event.LargeEjectorOff);
-                            LargeEjectorSoundOn = false;
-                        }
-                    }
-
-                }
-                else  if (LargeEjectorControllerFitted)// Advanced braking - control ejector based upon using a "manual" large ejector control setting
-                {
-                    if (LargeEjectorFeedFraction > 0.05)
-                    {
-                        LargeSteamEjectorIsOn = true;  // turn ejector on
-                        LargeEjectorSoundOn = true;
-                    }
-                    else
-                    {
-                        LargeSteamEjectorIsOn = false; // turn ejector off
+                        SignalEvent(Event.LargeEjectorOff);
                         LargeEjectorSoundOn = false;
                     }
                 }
-
-
-                if (SmallEjectorControllerFitted && CarBrakeSystemType != "straight_vacuum_single_pipe")
-                // Turn small ejector on if controlled from drivers controller
-                if (SmallEjectorFeedFraction > 0.05)
+            }
+            else  if (LargeEjectorControllerFitted)// Advanced braking - control ejector based upon using a "manual" large ejector control setting
+            {
+                if (LargeEjectorFeedFraction > 0.05)
                 {
-                    SmallSteamEjectorIsOn = true;  // turn ejector on
-                    SmallEjectorSoundOn = true;
+                    LargeSteamEjectorIsOn = true;  // turn ejector on
+                    LargeEjectorSoundOn = true;
                 }
-                else if (SmallEjectorControllerFitted)
+                else
                 {
-                    SmallSteamEjectorIsOn = false; // turn ejector off
-                    SmallEjectorSoundOn = false;
+                    LargeSteamEjectorIsOn = false; // turn ejector off
+                    LargeEjectorSoundOn = false;
                 }
+            }
 
-            
+            if (SmallEjectorControllerFitted && CarBrakeSystemType != "straight_vacuum_single_pipe")
+            // Turn small ejector on if controlled from drivers controller
+            if (SmallEjectorFeedFraction > 0.05)
+            {
+                SmallSteamEjectorIsOn = true;  // turn ejector on
+                SmallEjectorSoundOn = true;
+            }
+            else if (SmallEjectorControllerFitted)
+            {
+                SmallSteamEjectorIsOn = false; // turn ejector off
+                SmallEjectorSoundOn = false;
+            }
+
             // If diesel or electric locomotive, assume vacuum pump (exhauster) is continually running.
             if (!(this is MSTSSteamLocomotive))
             {
@@ -2671,7 +2641,6 @@ namespace Orts.Simulation.RollingStocks
                 SignalEvent(Event.VacuumExhausterOn);
             else if ((VacuumMainResVacuumPSIAorInHg < VacuumBrakesMainResMaxVacuumPSIAorInHg || LocomotivePowerSupply.AuxiliaryPowerSupplyState != PowerSupplyState.PowerOn) && VacuumExhausterIsOn)
                 SignalEvent(Event.VacuumExhausterOff);
-
         }
 
         /// <summary>
@@ -2679,21 +2648,19 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         protected virtual void UpdateCompressor(float elapsedClockSeconds)
         {
-
             var reservoirChargingRate = MainResChargingRatePSIpS;
 
             // For a mechanical compressor (typically fitted to a diesel locomotive) the charging rate will be related to the RpM of the diesel engine, and therefore 
             // derated by an amount equivalent to the diesel RpM.
             // All other locomotive types it will be the full charging rate for the reservoir
 
-            // TO DO - For v1.4 this code uses the "electric" compressor code to control the compressor. The only additional feature is the addition of a variable 
+            // TODO - For v1.4 this code uses the "electric" compressor code to control the compressor. The only additional feature is the addition of a variable 
             // charging rate based upon the diesel engine rpm. Note that the diesel compressor code operates regardless of whether the engine is running or not. 
             // This needs to be corrected in a future implementation.
 
             // If mechanical compressor then calculate charging rate based upon engine rpm
             if (CompressorIsMechanical && (EngineType == EngineTypes.Control || EngineType == EngineTypes.Diesel))
             {
-
                 // Control car uses the attached active locomotive to set the charging rate
                 if (EngineType == EngineTypes.Control)
                 {
@@ -2808,7 +2775,6 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public virtual void AdvancedAdhesion(float elapsedClockSeconds)
         {
-
             if (LocoNumDrvAxles <= 0)
             {
                 WheelSpeedMpS = AbsSpeedMpS;
@@ -2835,7 +2801,7 @@ namespace Orts.Simulation.RollingStocks
                 WheelSlip = LocomotiveAxles.IsWheelSlip;
                 WheelSlipWarning = LocomotiveAxles.IsWheelSlipWarning;
             }
-            
+
             // This enables steam locomotives to have different speeds for driven and non-driven wheels.
             if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
             {
@@ -2843,7 +2809,6 @@ namespace Orts.Simulation.RollingStocks
                 WheelSpeedMpS = SpeedMpS;
             }
             else WheelSpeedMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
-
         }
 
         public void SimpleAdhesion()
@@ -2855,7 +2820,7 @@ namespace Orts.Simulation.RollingStocks
                 WheelSpeedMpS = AbsSpeedMpS;
                 return;
             }
-            
+
             if (LocoNumDrvAxles <= 0)
                 return;
 
@@ -2929,8 +2894,6 @@ namespace Orts.Simulation.RollingStocks
             // Check to see whether locomotive is to be refilled over water trough
             if (Simulator.PlayerLocomotive == this && IsWaterScoopDown)
             {
-
-
                 var fraction = GetFilledFraction((uint)MSTSWagon.PickupType.FuelWater);
 
                 if (!HasWaterScoop)
@@ -3000,7 +2963,6 @@ namespace Orts.Simulation.RollingStocks
                     RefillingFromTrough = true;
                     WaterScoopOverTroughFlag = false; // Reset flag so that message will come up again
                 }
-
             }
             else if (HasWaterScoop && MSTSWagon.RefillProcess.OkToRefill == true && IsOverTrough())// water scoop has been raised, stop water filling
             {
@@ -3008,7 +2970,6 @@ namespace Orts.Simulation.RollingStocks
                 MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
                 RefillingFromTrough = false;
             }
-
 
             // update water scoop
             // Water scoop fill charateristics can be found in - 
@@ -3192,7 +3153,7 @@ namespace Orts.Simulation.RollingStocks
             float WagonCurtius_KnifflerA = 7.5f;
             float WagonCurtius_KnifflerB = 44.0f;
             float WagonCurtius_KnifflerC = 0.161f;
-            
+
             float WagonBaseuMax = (WagonCurtius_KnifflerA / (MpS.ToKpH(AbsSpeedMpS) + WagonCurtius_KnifflerB) + WagonCurtius_KnifflerC);
             Train.WagonCoefficientFriction = WagonBaseuMax * BaseFrictionCoefficientFactor;  // Find friction coefficient factor for wagons based upon environmental conditions
             WagonCoefficientFrictionHUD = Train.WagonCoefficientFriction; // Save value for HUD display
@@ -3200,7 +3161,6 @@ namespace Orts.Simulation.RollingStocks
             if (EngineType == EngineTypes.Steam && SteamDrvWheelWeightLbs < 10000 && Simulator.WeatherType == WeatherType.Clear)
             {
                 BaseFrictionCoefficientFactor *= 0.75f;  // Dry track - static friction for vehicles with wheel weights less then 10,000lbs - u = 0.25
-
             }
 
             var AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // Convert to a factor where 100% = no change to adhesion
@@ -3224,7 +3184,7 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-           // Set adhesion conditions for other steam locomotives
+            // Set adhesion conditions for other steam locomotives
             if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)  // ToDo explore adhesion factors
             {
                 LocomotiveCoefficientFrictionHUD = Train.LocomotiveCoefficientFriction; // Set display value for HUD - steam
@@ -3241,8 +3201,6 @@ namespace Orts.Simulation.RollingStocks
         {
         // updates track sander in terms of sand usage and impact on air compressor
         // The following assumptions have been made:
-        //
-
             if (Sander && AbsSpeedMpS < SanderSpeedOfMpS)  // If sander switch is on, and not blocked by speed, adjust parameters
             {
                 if (CurrentTrackSandBoxCapacityM3 > 0.0) // if sand still in sandbox then sanding is available
@@ -3257,20 +3215,19 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
 
-          // Calculate air consumption and change in main air reservoir pressure
+                // Calculate air consumption and change in main air reservoir pressure
                 float ActualAirConsumptionM3pS = pS.FrompM(TrackSanderAirComsumptionM3pS) * elapsedClockSeconds;
                 float SanderPressureDiffPSI = ActualAirConsumptionM3pS / Me3.ToFt3(MainResVolumeM3) ;
                 MainResPressurePSI -= SanderPressureDiffPSI;
                 MainResPressurePSI = MathHelper.Clamp(MainResPressurePSI, 0.001f, MaxMainResPressurePSI);
             }
-
         }
 
         public override bool GetSanderOn()
         {
             return Sander;
         }
-                                 
+
         #region Reverser
         public void SetDirection(Direction direction)
         {
@@ -3283,6 +3240,7 @@ namespace Orts.Simulation.RollingStocks
                     case Direction.N: SignalEvent(Event.ReverserToNeutral); break;
                     case Direction.Forward: SignalEvent(Event.ReverserToForwardBackward); break;
                 }
+
                 // passes event also to other locomotives
                 foreach (TrainCar car in Train.Cars)
                 {
@@ -3295,15 +3253,14 @@ namespace Orts.Simulation.RollingStocks
                             case Direction.N: loco.SignalEvent(Event.ReverserToNeutral); break;
                             case Direction.Forward: loco.SignalEvent(Event.ReverserToForwardBackward); break;
                         }
-
                 }
+
                 SignalEvent(Event.ReverserChange);
                 if (direction == Direction.Forward)
                     Train.MUReverserPercent = 100;
                 else
                     Train.MUReverserPercent = -100;
             }
-
         }
 
         public virtual void StartReverseIncrease(float? target)
@@ -3473,6 +3430,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
             }
+
             AlerterReset(TCSEvent.ThrottleChanged);
             ThrottleController.StopIncrease();
 
@@ -3610,7 +3568,6 @@ namespace Orts.Simulation.RollingStocks
         }
 
         //Steam Heat Controller
-
         #region Steam heating controller
 
         public void StartSteamHeatIncrease(float? target)
@@ -3875,12 +3832,10 @@ namespace Orts.Simulation.RollingStocks
             if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.UseThrottleAsSpeedSelector)
                 return CruiseControl.SelectedSpeedMpS / MaxSpeedMpS;
 
-
             if (CruiseControl == null || CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Manual)
                 return data;
             else
                 return ThrottleController.CurrentValue;
-
         }
 
         #endregion
@@ -3975,7 +3930,6 @@ namespace Orts.Simulation.RollingStocks
                 return CombinedControlSplitPosition * (1 - (CruiseControl.SelectedMaxAccelerationPercent / 100));
             else
                 return CombinedControlSplitPosition;
-
         }
         #endregion
 
@@ -3989,14 +3943,12 @@ namespace Orts.Simulation.RollingStocks
         {
             if (GearBoxController != null)
             {
-
                 if (this is MSTSDieselLocomotive)
                 {
                     var dieselloco = this as MSTSDieselLocomotive;
 
                     if (dieselloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
                     {
-
                         if (dieselloco.DieselEngines[0].GearBox.GearBoxType != TypesGearBox.C)
                         {
                             GearBoxController.StartIncrease();
@@ -4005,11 +3957,9 @@ namespace Orts.Simulation.RollingStocks
                             SignalGearBoxChangeEvents();
                             dieselloco.DieselEngines[0].GearBox.clutchOn = false;
                             dieselloco.DieselEngines[0].GearBox.ManualGearChange = true;
-
                         }
                         else if (dieselloco.DieselEngines[0].GearBox.GearBoxType == TypesGearBox.C)
                         {
-
                             if (ThrottlePercent == 0)
                             {
                                 GearBoxController.StartIncrease();
@@ -4047,7 +3997,7 @@ namespace Orts.Simulation.RollingStocks
 
         public virtual void ChangeGearDown()
         {
-            
+
         }
 
         public virtual void StartGearBoxDecrease()
@@ -4060,7 +4010,6 @@ namespace Orts.Simulation.RollingStocks
 
                     if (dieselloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
                     {
-
                         if (dieselloco.DieselEngines[0].GearBox.GearBoxType != TypesGearBox.C)
                         {
                             GearBoxController.StartDecrease();
@@ -4092,10 +4041,10 @@ namespace Orts.Simulation.RollingStocks
                         Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
                         AlerterReset(TCSEvent.GearBoxChanged);
                         SignalGearBoxChangeEvents();
-
                     }
                 }
             }
+
             ChangeGearDown();
         }
 
@@ -4167,7 +4116,6 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
                 if (dieselloco != null)
                     dieselloco.DieselEngines[0].GearBox.ManualGearUp = true;
-
             }
             else if (controller.CurrentValue < oldValue)
             {
@@ -4249,11 +4197,9 @@ namespace Orts.Simulation.RollingStocks
         {
             var train = Simulator.PlayerLocomotive.Train;//Debrief Eval
             string s = TrainBrakeController.GetStatus();
- 
 
             if (s == "Emergency" && train.LeadLocomotive != null && !ldbfevalfulltrainbrakeunder8kmh && train.LeadLocomotive.IsPlayerTrain && Math.Abs(train.SpeedMpS) < 2.22222)
             {
-                
                 DbfEvalFullTrainBrakeUnder8kmh++;
                 ldbfevalfulltrainbrakeunder8kmh = true;
                 train.DbfEvalValueChanged = true;//Debrief eval
@@ -4374,6 +4320,7 @@ namespace Orts.Simulation.RollingStocks
                 SignalEvent(Event.EngineBrakeChange);
                 AlerterReset(TCSEvent.EngineBrakeChanged);
             }
+
             if (oldValue != controller.IntermediateValue)
                 Simulator.Confirmer.Update(CabControl.EngineBrake, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, GetEngineBrakeStatus());
         }
@@ -4408,7 +4355,6 @@ namespace Orts.Simulation.RollingStocks
                 {
                     return string.Format("{0} BC {1} {2}", EngineBrakeController.GetStatus(), FormatStrings.FormatPressure(Train.HUDLocomotiveBrakeCylinderPSI, PressureUnit.PSI, MainPressureUnit, true), BailOff ? " BailOff" : "");
                 }
-
                 // Fraction not found so display BC                
             }
             else
@@ -5023,7 +4969,6 @@ namespace Orts.Simulation.RollingStocks
                             default:
                                 data = this.AccelerationMpSS;
                                 break;
-
                         }
                         break;
                     }
@@ -5035,7 +4980,7 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.STEAM_HEAT:
                     data = SteamHeatController.CurrentValue;
                     break;
-                
+
                 case CABViewControlTypes.AMMETER: // Current not modelled yet to ammeter shows tractive effort until then.
                 case CABViewControlTypes.AMMETER_ABS:
                     {
@@ -5144,14 +5089,14 @@ namespace Orts.Simulation.RollingStocks
                                 }
                                 data = Math.Abs(data);
                                 break;
-                    
+
                             case CABViewControlUnits.NEWTONS:
                                 break;
-                    
+
                             case CABViewControlUnits.KILO_NEWTONS:
                                 data = data / 1000.0f;
                                 break;
-                    
+
                             case CABViewControlUnits.KILO_LBS:
                                 data = N.ToLbf(data) * 0.001f;
                                 break;
@@ -5352,7 +5297,6 @@ namespace Orts.Simulation.RollingStocks
 
                             if (EngineType == EngineTypes.Control && activeloco.DieselEngines.NumOfActiveEngines > 1)
                             {
-                             
                                 if (activeloco.DieselEngines[1] != null)
                                     data = activeloco.DieselEngines[1].RealRPM;
                             }
@@ -5378,7 +5322,6 @@ namespace Orts.Simulation.RollingStocks
                                 if (activeloco.DieselEngines[0] != null)
                                     data = activeloco.DieselEngines[0].DieselTemperatureDeg;
                             }
-
                         }
                         else
                         {
@@ -5401,7 +5344,6 @@ namespace Orts.Simulation.RollingStocks
                                 if (activeloco.DieselEngines[0] != null)
                                     data = activeloco.DieselEngines[0].DieselOilPressurePSI;
                             }
-
                         }
                         else
                         {
@@ -5598,7 +5540,6 @@ namespace Orts.Simulation.RollingStocks
                                         data = activeloco.WheelSlipWarning ? 1 : 0;
                                     else
                                         data = activeloco.WheelSlip ? 1 : 0;
-
                                 }
                             }
                         }
@@ -5972,7 +5913,6 @@ namespace Orts.Simulation.RollingStocks
             base.SwitchToAutopilotControl();
             return;
         }
-
     } // End Class MSTSLocomotive
 
     public class CabView
@@ -6005,7 +5945,6 @@ namespace Orts.Simulation.RollingStocks
                 foreach (var point in cabViewpoints)
                     ViewPointList.Add(point);
         }
-
     }
 
     /// <summary>
@@ -6047,6 +5986,5 @@ namespace Orts.Simulation.RollingStocks
 
         [ORTSPhysics("Second light ARGB", "Light2ColorARGB", "The color of the second cab light", "0 0 0")]
         public Color Light2Color;
-
     } // End Class ExtendedCVF 
 }

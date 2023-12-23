@@ -22,7 +22,6 @@ using System.IO;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
-
     public class ScriptedDieselPowerSupply : ScriptedLocomotivePowerSupply
     {
         public MSTSDieselLocomotive DieselLocomotive => Locomotive as MSTSDieselLocomotive;
@@ -95,7 +94,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             TractionCutOffRelay.Initialize();
         }
-
 
         //================================================================================================//
         /// <summary>

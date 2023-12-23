@@ -18,7 +18,6 @@
 using System.Diagnostics;
 using System.IO;
 
-
 namespace Orts.Common
 {
     public static class ORTSPaths
@@ -72,6 +71,7 @@ namespace Orts.Common
                 badBranch = branch;
                 badPath = firstPath;
             }
+
             return null;
         }
     }

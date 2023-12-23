@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-
 using Microsoft.Xna.Framework;
 using System;
 using ORTS.Common;
@@ -52,7 +51,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             VacResPressurePSIA = Vac.ToPress(Car.Train.EqualReservoirPressurePSIorInHg); // Only used if car coupled to auto braked locomotive
             HandbrakePercent = 0;
         }
-
 
         // Principal Reference Materials for these two brake configurations -
         // Eames brake system - https://babel.hathitrust.org/cgi/pt?id=nnc1.cu50580116&view=1up&seq=7
@@ -98,7 +96,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             if (CylPressurePSIA - dp < BrakeLine1PressurePSI + dp * vr)
                                 dp = (CylPressurePSIA - BrakeLine1PressurePSI) / (1 + vr);
                             CylPressurePSIA -= dp;
-
                         }
                         else if (BrakeLine1PressurePSI > CylPressurePSIA && lead.BrakeFlagDecrease)  // Decrease BP pressure, hence vacuum brakes are being applied
                         {
@@ -109,7 +106,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             CylPressurePSIA += dp;
                         }
                     }
-
 
                     // Record HUD display values for brake cylidners depending upon whether they are wagons or locomotives/tenders (which are subject to their own engine brakes)   
                     if (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender)
@@ -128,10 +124,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     }
 
                     // Adjust braking force as brake cylinder pressure varies.
-
                     if (!Car.BrakesStuck)
                     {
-
                         float brakecylinderfraction = ((OneAtmospherePSI - CylPressurePSIA) / MaxForcePressurePSI);
                         brakecylinderfraction = MathHelper.Clamp(brakecylinderfraction, 0, 1);
 
@@ -182,21 +176,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                     TrainBrakePressureChanging = true;
                                 }
                                 else if (CylPressurePSIA > prevCylPressurePSIA && lead.BrakeFlagDecrease && CylPressurePSIA < DecreaseSoundTriggerBandwidth) // Brake cylinder vacuum decreases as pressure in pipe increases
-
                                 {
                                     Car.SignalEvent(Event.TrainBrakePressureDecrease);
                                     TrainBrakePressureChanging = true;
                                 }
                             }
-
                         }
                         else if (TrainBrakePressureChanging)
                         {
                             Car.SignalEvent(Event.TrainBrakePressureStoppedChanging);
                             TrainBrakePressureChanging = false;
                         }
-                            prevCylPressurePSIA = CylPressurePSIA;
-                        
+
+                        prevCylPressurePSIA = CylPressurePSIA;
 
                         if (Math.Abs(BrakeLine1PressurePSI - prevBrakePipePressurePSI) > 0.001) 
                         {
@@ -213,7 +205,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                     BrakePipePressureChanging = true;
                                 }
                             }
-
                         }
                         else if (BrakePipePressureChanging)
                         {
@@ -221,14 +212,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             BrakePipePressureChanging = false;
                         }
                         prevBrakePipePressurePSI = BrakeLine1PressurePSI;
-
                     }
+
                     SoundTriggerCounter++;
 
                     // Straight brake is opposite of automatic brake, ie vacuum pipe goes from 14.503psi (0 InHg - Release) to 2.24 (25InHg - Apply)
-
                     // Calculate train pipe pressure at lead locomotive.
-
                     // Vaccum brake effectiveness decreases with increases in altitude because the atmospheric pressure increases as altitude increases.
                     // The formula for decrease in pressure:  P = P0 * Exp (- Mgh/RT) - https://www.math24.net/barometric-formula/
 
@@ -259,7 +248,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
                         LargeEjectorChargingRateInHgpS = lead == null ? 10.0f : (lead.BrakePipeChargingRatePSIorInHgpS); // Single ejector model
                     }
-                        
+
                     float SmallEjectorChargingRateInHgpS = lead == null ? 10.0f : (lead.SmallEjectorBrakePipeChargingRatePSIorInHgpS); // Set value for small ejector to operate - fraction set in steam locomotive
                     float TrainPipeLeakLossPSI = lead == null ? 0.0f : (lead.TrainBrakePipeLeakPSIorInHgpS);
                     float AdjTrainPipeLeakLossPSI = 0.0f;
@@ -302,10 +291,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                         if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.StrBrkEmergency)
                         {
-
                             lead.BrakeFlagIncrease = true;
                             lead.BrakeFlagDecrease = false;
-                           
+
                             // Apply brakes - brakepipe has to have vacuum increased to max vacuum value (ie decrease psi), vacuum is created by large ejector control
                             lead.BrakeSystem.BrakeLine1PressurePSI -= elapsedClockSeconds * (AdjLargeEjectorChargingRateInHgpS + AdjSmallEjectorChargingRateInHgpS);
                             if (lead.BrakeSystem.BrakeLine1PressurePSI < (OneAtmospherePSI - MaxVacuumPipeLevelPSI))
@@ -322,18 +310,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                         if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.StrBrkLap)
                         {
-
                             // turn ejectors off if not required
                             lead.LargeSteamEjectorIsOn = false;
                             lead.LargeEjectorSoundOn = false;
-
                             lead.SmallSteamEjectorIsOn = false;
                             lead.SmallEjectorSoundOn = false;
-
                         }
 
-                            // Eames type brake with separate release and ejector operating handles
-                            if (lead.LargeEjectorControllerFitted && lead.LargeSteamEjectorIsOn)
+                        // Eames type brake with separate release and ejector operating handles
+                        if (lead.LargeEjectorControllerFitted && lead.LargeSteamEjectorIsOn)
                         {
                             // Apply brakes - brakepipe has to have vacuum increased to max vacuum value (ie decrease psi), vacuum is created by large ejector control
                             lead.BrakeSystem.BrakeLine1PressurePSI -= elapsedClockSeconds * AdjLargeEjectorChargingRateInHgpS;
@@ -364,7 +349,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                     }
                 }
-                                 
+
                 if (((lead.CarBrakeSystemType == "vacuum_single_pipe" || lead.CarBrakeSystemType == "vacuum_twin_pipe") && (Car as MSTSWagon).AuxiliaryReservoirPresent))
                 {
                     // update non calculated values using vacuum single pipe class
@@ -376,11 +361,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         // This overides the information for each individual wagon in the extended HUD  
         public override string[] GetDebugStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
-
             if (!(Car as MSTSWagon).NonAutoBrakePresent)
             {
                 // display as a automatic vacuum brake
-
                 return new string[] {
                 "1V",
                 FormatStrings.FormatPressure(Vac.FromPress(CylPressurePSIA), PressureUnit.InHg, PressureUnit.InHg, true),
@@ -400,7 +383,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             else
             {
                 // display as a straight vacuum brake
-
                 return new string[] {
                 "1VS",
                 FormatStrings.FormatPressure(Vac.FromPress(CylPressurePSIA), PressureUnit.InHg, PressureUnit.InHg, true),
@@ -417,6 +399,5 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 };
             }
         }
-
     }
 }

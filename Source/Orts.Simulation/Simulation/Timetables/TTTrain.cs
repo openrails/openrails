@@ -1012,7 +1012,6 @@ namespace Orts.Simulation.Timetables
         /// </summary>
         public bool PostInit(bool activateTrain)
         {
-
 #if DEBUG_CHECKTRAIN
             if (!CheckTrain)
             {
@@ -1491,7 +1490,6 @@ namespace Orts.Simulation.Timetables
                 deltaLength = newLength - Length; // Platform length - train length
                 fullLength = newLength;
             }
-
             // If required, check if there is a signal within the platform
             // Not possible if there is only one section
             else if (restrictPlatformToSignal && !platformHasEndSignal && firstRouteIndex != lastRouteIndex)
@@ -1538,7 +1536,6 @@ namespace Orts.Simulation.Timetables
                     fullLength = newLength;
                 }
             }
-
             // Extend platform to next signal
             // Only if required, platform has no signal and train does not fit into platform
             else if (ExtendPlatformToSignal && !platformHasEndSignal && deltaLength < 0)
@@ -2437,7 +2434,6 @@ namespace Orts.Simulation.Timetables
                 }
 
                 InitialTrainPlacement(false);
-
             }
             else if (FormedOfType == FormCommand.TerminationTriggered)
             {
@@ -3228,7 +3224,6 @@ namespace Orts.Simulation.Timetables
                 }
                 // If train not found, do nothing - state will change next update
             }
-
             // Other node mode: check distance ahead (path may have cleared)
             else if (ControlMode == TRAIN_CONTROL.AUTO_NODE)
             {
@@ -3247,7 +3242,6 @@ namespace Orts.Simulation.Timetables
                     DelayedStartMoving(AI_START_MOVEMENT.SIGNAL_CLEARED);
                 }
             }
-
             // Signal node: check state of signal
             else if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
             {
@@ -3617,7 +3611,6 @@ namespace Orts.Simulation.Timetables
                         return;
                     }
                 }
-
             }
 
             // Not yet time to depart - check if signal can be released
@@ -3655,6 +3648,7 @@ namespace Orts.Simulation.Timetables
                     }
                     thisStation.HoldSignal = false;
                 }
+
                 return;
             }
 
@@ -3979,7 +3973,6 @@ namespace Orts.Simulation.Timetables
         /// <\summary>
         public override void UpdateBrakingState(float elapsedClockSeconds, int presentTime)
         {
-
             // Check if action still required
             bool clearAction = false;
             float distanceToGoM = clearingDistanceM;
@@ -4275,7 +4268,7 @@ namespace Orts.Simulation.Timetables
                 {
                     AdjustControlsBrakeOff();
                 }
-				
+
                 return;
             }
 
@@ -4310,7 +4303,7 @@ namespace Orts.Simulation.Timetables
                 {
                     distanceToGoM = nextActionInfo.ActiveItem.distance_to_train;
                 }
-             
+
                 if (nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.STATION_STOP)
                 {
 					// Check if stopped at station
@@ -4508,7 +4501,6 @@ namespace Orts.Simulation.Timetables
                 {
                     lowestSpeedMpS = SpeedSettings.creepSpeedMpS.Value;
                 }
-
             }
 
             lowestSpeedMpS = Math.Min(lowestSpeedMpS, AllowedMaxSpeedMpS);
@@ -4610,7 +4602,6 @@ namespace Orts.Simulation.Timetables
 
                 Alpha10 = 5;
             }
-
             // Reached end position
             else if (SpeedMpS > requiredSpeedMpS && distanceToGoM < 0)
             {
@@ -4637,7 +4628,6 @@ namespace Orts.Simulation.Timetables
                     AdjustControlsBrakeMore(MaxDecelMpSS, elapsedClockSeconds, 50);
                 }
             }
-
             // Speed beyond top threshold
             else if (SpeedMpS > ideal3HighBandMpS)
             {
@@ -4668,7 +4658,6 @@ namespace Orts.Simulation.Timetables
                 }
                 Alpha10 = Alpha10 > 0 ? --Alpha10 : 0;
             }
-
             // Speed just above ideal
             else if (SpeedMpS > idealHighBandMpS)
             {
@@ -4724,7 +4713,6 @@ namespace Orts.Simulation.Timetables
                 }
                 Alpha10 = Alpha10 > 0 ? --Alpha10 : 0;
             }
-
             // Speed just below ideal
             else if (SpeedMpS > idealLowBandMpS)
             {
@@ -4763,7 +4751,6 @@ namespace Orts.Simulation.Timetables
                 }
                 Alpha10 = Alpha10 > 0 ? --Alpha10 : 0;
             }
-
             // Speed below ideal but above lowest threshold
             else if (SpeedMpS > ideal3LowBandMpS)
             {
@@ -4791,7 +4778,6 @@ namespace Orts.Simulation.Timetables
                 }
                 Alpha10 = Alpha10 > 0 ? --Alpha10 : 0;
             }
-
             // Speed below required speed
             else if (SpeedMpS < requiredSpeedMpS || (requiredSpeedMpS == 0 && Math.Abs(SpeedMpS) < 0.1f))
             {
@@ -4906,9 +4892,7 @@ namespace Orts.Simulation.Timetables
         /// <\summary>
         public override void UpdateAccelState(float elapsedClockSeconds)
         {
-
             // Check speed
-
             if (((SpeedMpS - LastSpeedMpS) / elapsedClockSeconds) < 0.5f * MaxAccelMpSS)
             {
                 AdjustControlsAccelMore(Efficiency * 0.5f * MaxAccelMpSS, elapsedClockSeconds, 10);
@@ -5122,7 +5106,6 @@ namespace Orts.Simulation.Timetables
                         {
                             NextStopDistanceM = distanceToTrain - keepDistanceTrainM;
                         }
-
                         // Disregard action if train is to attach
                         else if (nextActionInfo != null && !(attachToTrain || pickUpTrain || transferTrain))
                         {
@@ -5183,7 +5166,6 @@ namespace Orts.Simulation.Timetables
                                 NeedTransfer = false;
                             }
                         }
-
                         // Check distance and speed
                         else if (Math.Abs(OtherTrain.SpeedMpS) < 0.1f)
                         {
@@ -5201,7 +5183,6 @@ namespace Orts.Simulation.Timetables
                             maxspeed = Math.Min(maxspeed, AllowedMaxSpeedMpS); // But never beyond valid speed limit
 
                             // Set brake or acceleration as required
-
                             if (SpeedMpS > maxspeed)
                             {
                                 AdjustControlsBrakeMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 10);
@@ -5420,7 +5401,6 @@ namespace Orts.Simulation.Timetables
         /// <\summary>
         public override void UpdateRunningState(float elapsedClockSeconds)
         {
-
             float topBand = AllowedMaxSpeedMpS - ((1.5f - Efficiency) * hysterisMpS);
             float highBand = Math.Max(0.5f, AllowedMaxSpeedMpS - ((3.0f - (2.0f * Efficiency)) * hysterisMpS));
             float lowBand = Math.Max(0.4f, AllowedMaxSpeedMpS - ((9.0f - (3.0f * Efficiency)) * hysterisMpS));
@@ -5448,7 +5428,6 @@ namespace Orts.Simulation.Timetables
             }
 
             // Check speed
-
             if (SpeedMpS > AllowedMaxSpeedMpS)
             {
                 if (CheckTrain)
@@ -5788,7 +5767,6 @@ namespace Orts.Simulation.Timetables
             }
 
             // Get starting position and route
-
             TrackNode tn = RearTDBTraveller.TN;
             float offset = RearTDBTraveller.TrackNodeOffset;
             int direction = (int)RearTDBTraveller.Direction;
@@ -5798,7 +5776,6 @@ namespace Orts.Simulation.Timetables
             offset = PresentPosition[1].TCOffset;
 
             // Create route if train has none
-
             if (ValidRoute[0] == null)
             {
                 ValidRoute[0] = signalRef.BuildTempRoute(this, thisSection.Index, PresentPosition[1].TCOffset,
@@ -5806,7 +5783,6 @@ namespace Orts.Simulation.Timetables
             }
 
             // Find sections
-
             float remLength = trainLength;
             int routeIndex = ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
             if (routeIndex < 0)
@@ -5818,7 +5794,6 @@ namespace Orts.Simulation.Timetables
             TCRouteElement thisElement = ValidRoute[0][routeIndex];
 
             // Check sections if not placed ahead of other train
-
             if (otherTTTrain != null)
             {
                 sectionAvailable = false;
@@ -5857,7 +5832,6 @@ namespace Orts.Simulation.Timetables
                             sectionAvailable = false;
                         }
                     }
-
                 }
             }
 
@@ -5962,7 +5936,6 @@ namespace Orts.Simulation.Timetables
                             sectionAvailable = false;
                         }
                     }
-
                 }
                 else
                 {
@@ -6075,7 +6048,6 @@ namespace Orts.Simulation.Timetables
             // Train starts in same section - check rest of section
             if (startoffset <= thisSection.Length)
             {
-
                 tempRoute.Add(thisElement);
 
                 PresentPosition[0].TCDirection = thisElement.Direction;
@@ -6120,7 +6092,6 @@ namespace Orts.Simulation.Timetables
             }
 
             // Check for rest of train
-
             float offset = startoffset;
 
             // Test rest of train in rest of route
@@ -6587,7 +6558,6 @@ namespace Orts.Simulation.Timetables
                     }
                     validPool = true;
                 }
-
                 // If pool is claimed, set valid pool but take no further actions
                 else if (PoolStorageState == (int)PoolAccessState.PoolClaimed)
                 {
@@ -6599,7 +6569,6 @@ namespace Orts.Simulation.Timetables
 
                     validPool = true;
                 }
-
                 // If pool is not valid, reset pool info
                 else
                 {
@@ -6663,7 +6632,6 @@ namespace Orts.Simulation.Timetables
                 TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
 
                 // If train is to attach to train in section, allow callon if train is stopped
-
                 if (routeSection.CircuitState.HasOtherTrainsOccupying(routedForward))
                 {
                     firstTrainFound = true;
@@ -6753,7 +6721,6 @@ namespace Orts.Simulation.Timetables
                     }
 
                     // Check if route leads into platform
-
                     if (routeSection.PlatformIndex.Count > 0)
                     {
                         intoPlatform = true;
@@ -6910,7 +6877,6 @@ namespace Orts.Simulation.Timetables
                     PickUpTrains.Remove(otherTrain.Number);
                     NeedPickUp = true;
                 }
-
                 // Check platform location
                 else
                 {
@@ -6933,7 +6899,6 @@ namespace Orts.Simulation.Timetables
                 }
 
                 // Check if train is at end of path and pickup on forms is required
-
                 if (!pickUpTrain && PickUpStaticOnForms)
                 {
                     // Train is not in last subpath so pickup cannot be valid
@@ -7267,6 +7232,7 @@ namespace Orts.Simulation.Timetables
                     return !pathClear;
                 }
             }
+
             return false;
         }
 
@@ -7601,7 +7567,6 @@ namespace Orts.Simulation.Timetables
 
                         // Create a copy of this train to process route
                         // Copy is required as otherwise the original route would be lost
-
                         if (fullpath != null) // Valid path
                         {
                             TCRoutePath fullRoute = new TCRoutePath(fullpath, -2, 1, signalRef, -1, Simulator.Settings);
@@ -8322,7 +8287,6 @@ namespace Orts.Simulation.Timetables
                 : new TCSubpathRoute(otherRoute, otherRouteEndIndex, otherRouteIndex);
             Dictionary<int, int> dictRoute = partRoute.ConvertRoute();
 
-
             // Loop until common section is found or route is ended
             while (!commonSectionFound && !otherEndOfRoute)
             {
@@ -8713,7 +8677,6 @@ namespace Orts.Simulation.Timetables
             {
                 // Other train in correct subpath
                 // Check if trigger time passed
-
                 if (otherTrain.TCRoute.activeSubpath == reqWait.waitTrainSubpathIndex)
                 {
                     // Check if section on train route and if so, if end of train is beyond this section
@@ -8748,7 +8711,6 @@ namespace Orts.Simulation.Timetables
                                         }
                                     }
                                 }
-
                                 // Determine other train delay
                                 else
                                 {
@@ -8768,7 +8730,6 @@ namespace Orts.Simulation.Timetables
                         }
                     }
                 }
-
                 // If other train not in this subpath but notstarted is set, wait is valid (except when conditioned by own delay)
                 else if (otherTrain.TCRoute.activeSubpath < reqWait.waitTrainSubpathIndex && reqWait.notStarted.HasValue && owndelayexceeded)
                 {
@@ -8776,7 +8737,6 @@ namespace Orts.Simulation.Timetables
                     reqWait.WaitActive = true;
                 }
             }
-
             // Check if waiting is also required if train not yet started
             else if (reqWait.notStarted.HasValue && owndelayexceeded)
             {
@@ -9000,7 +8960,6 @@ namespace Orts.Simulation.Timetables
                 }
 
                 // Reset to node control, also reset required actions
-
                 SwitchToNodeControl(-1);
                 ResetActions(true);
             }
@@ -9063,7 +9022,6 @@ namespace Orts.Simulation.Timetables
                     returnValue[1] = false;
                 }
             }
-
             // Check if train is to remain as static
             else if (FormsStatic)
             {
@@ -9404,6 +9362,7 @@ namespace Orts.Simulation.Timetables
                             File.AppendAllText(@"C:\temp\checktrain.txt", "TURNTABLE : Pool : " + thisTurntablePool.PoolName + " : Table state set to " + ActiveTurntable.MovingTableState.ToString() + "\n");
                             File.AppendAllText(@"C:\temp\checktrain.txt", "Moving table access ; Movement State : " + MovementState + "\n");
                         }
+
                         return endOfRoute;
                     }
                 }
@@ -9650,7 +9609,7 @@ namespace Orts.Simulation.Timetables
                             distanceToNextSignal = distanceToNextSignal < 0 ? length - thisSection.Length : distanceToNextSignal; // Signal is at start of section
                         }
                     }
-					
+
                     // Check if intermediate junction or signal is valid : only so if there is enough distance (from the front of the train) left for train to pass that junction
                     // However, do accept signal or junction if train is still in first section
                     float frontlength = length;
@@ -10025,7 +9984,7 @@ namespace Orts.Simulation.Timetables
         public void SetupStationStopHandling()
         {
             CheckStations = true; // Set station stops to be handled by train
-			
+
             // Check if initial at station
             if (StationStops.Count > 0)
             {
@@ -10300,7 +10259,6 @@ namespace Orts.Simulation.Timetables
                             attachPositionInfo = Simulator.Catalog.GetString(", backward");
 
                             // Get new route list indices from new route
-
                             DistanceTravelledM = 0;
                             ValidRoute[0] = tempRoute;
 
@@ -10505,7 +10463,6 @@ namespace Orts.Simulation.Timetables
                             StationStops.RemoveAt(0);
 
                             Simulator.Confirmer?.Information("Missed station stop : " + PreviousStop.PlatformItem.Name);
-
                         }
                     }
                 }
@@ -10779,7 +10736,6 @@ namespace Orts.Simulation.Timetables
                 FormTrainFromAI(presentTime);
                 stillExist = false;
             }
-
             // If player train, only form new train if allowed - may be blocked by detach if detach is performed through player detach window
             else if (allowForm)
             {
@@ -11172,7 +11128,6 @@ namespace Orts.Simulation.Timetables
                     break;
 
                 case DetachInfo.DetachUnitsInfo.nonPower:
-
                     int frontunits = 0;
                     // Power is at front
                     if (Cars[0].WagonType == TrainCar.WagonTypes.Engine || Cars[0].WagonType == TrainCar.WagonTypes.Tender)
@@ -11498,7 +11453,6 @@ namespace Orts.Simulation.Timetables
 
             // Check for needattach in attached train
             // If stopped at station use platform reference
-
             bool needAttachFound = false;
             if (AtStation)
             {
@@ -12084,7 +12038,6 @@ namespace Orts.Simulation.Timetables
                             {
                                 otherTrainRouteIndex = tempRoute.GetRouteIndex(thisSection.Index, 0);
                                 {
-
                                     if (otherTrainRouteIndex >= 0)
                                     {
                                         newElement = new TCRouteElement(tempRoute[otherTrainRouteIndex]);
@@ -12141,7 +12094,6 @@ namespace Orts.Simulation.Timetables
                             {
                                 otherTrainRouteIndex = tempRoute.GetRouteIndex(thisSection.Index, 0);
                                 {
-
                                     if (otherTrainRouteIndex >= 0)
                                     {
                                         newElement = new TCRouteElement(tempRoute[otherTrainRouteIndex]);
@@ -12182,7 +12134,6 @@ namespace Orts.Simulation.Timetables
                     }
                 }
             }
-
             // If end position not on route, add sections to route to cover
             else if (trainFrontPositionIndex < 0)
             {
@@ -12378,7 +12329,7 @@ namespace Orts.Simulation.Timetables
         public bool CheckTTTrainNotStartedByNumber(int reqNumber)
         {
             bool notStarted = false;
-			
+
             // Check if on startlist
             if (Simulator.Trains.CheckTrainNotStartedByNumber(reqNumber))
             {
@@ -12408,7 +12359,6 @@ namespace Orts.Simulation.Timetables
         /// </summary>
         public void TTAnalysisUpdateStationState1(int presentTime, StationStop thisStation)
         {
-
             DateTime baseDTA = new DateTime();
             DateTime presentDTA = baseDTA.AddSeconds(AI.clockTime);
             DateTime arrTimeA = baseDTA.AddSeconds(presentTime);
@@ -12474,7 +12424,6 @@ namespace Orts.Simulation.Timetables
             DateTime stopTime = baseDT.AddSeconds(AI.clockTime);
 
             // Output string only if different from last output
-
             if (waitforstring.ToString() != ttanalysisreport)
             {
                 ttanalysisreport = waitforstring.ToString();
@@ -12638,7 +12587,6 @@ namespace Orts.Simulation.Timetables
     /// <summary>
     /// Class for waiting instructions
     /// <\summary>
-
     public class WaitInfo : IComparable<WaitInfo>
     {
         public enum WaitInfoType
@@ -13269,7 +13217,6 @@ namespace Orts.Simulation.Timetables
         public bool PerformDetach(TTTrain train, bool allowPlayerSelect)
         {
             // Determine no. of units to detach
-
             int iunits = 0;
             bool frontpos = true;
 
@@ -13431,7 +13378,6 @@ namespace Orts.Simulation.Timetables
 
                             // Display messages
                             train.Simulator.Confirmer?.Information("Player switched to train : " + newTrain.Name);
-
                         }
                     }
                     else
@@ -13457,7 +13403,6 @@ namespace Orts.Simulation.Timetables
                     }
                 }
 
-
                 // If train is player or intended player, determine new loco lead index
                 if (train.TrainType == Train.TRAINTYPE.PLAYER || train.TrainType == Train.TRAINTYPE.INTENDED_PLAYER)
                 {
@@ -13481,7 +13426,6 @@ namespace Orts.Simulation.Timetables
                         }
                     }
                 }
-
                 else if (newTrain.TrainType == Train.TRAINTYPE.PLAYER || newTrain.TrainType == Train.TRAINTYPE.INTENDED_PLAYER)
                 {
                     newTrain.TrainType = Train.TRAINTYPE.PLAYER;
@@ -13564,7 +13508,6 @@ namespace Orts.Simulation.Timetables
             {
                 train.LeadLocomotiveIndex = newLocoIndex;
             }
-
             // Player engine is in detached portion, so switch trains
             else
             {
@@ -14014,7 +13957,6 @@ namespace Orts.Simulation.Timetables
                 Trace.TraceWarning("Train :  {0} : attach details : train {1} to attach to is not found",
                     dettrain.Name, AttachTrainName);
             }
-
             // Search for station stop if set
             else if (StationPlatformReference >= 0)
             {

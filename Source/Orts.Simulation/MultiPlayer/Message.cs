@@ -149,7 +149,6 @@ namespace Orts.MultiPlayer
                 MissingTimes.Add(TNumber, 1);
                 return false;
             }
-
         }
 
         public MSGMove()
@@ -356,7 +355,6 @@ namespace Orts.MultiPlayer
             }
         }
 
-
         private void ParseTrainCars(string m)
         {
             string[] areas = m.Split('\t');
@@ -380,8 +378,8 @@ namespace Orts.MultiPlayer
                 lengths[i] = int.Parse(carinfo[2]);
                 fadiscretes[i] = carinfo[3];
             }
-
         }
+
         public MSGPlayer(string n, string cd, string c, string p, Train t, int tn, string avatar)
         {
             url = avatar;
@@ -440,6 +438,7 @@ namespace Orts.MultiPlayer
             if (MPManager.Instance().MD5Check == "") MPManager.Instance().GetMD5HashFromTDBFile();
             MD5 = MPManager.Instance().MD5Check;
         }
+
         public override string ToString()
         {
             string tmp = "PLAYER " + user + " " + code + " " + num + " " + TileX + " " + TileZ + " " + X.ToString(CultureInfo.InvariantCulture) + " " + Z.ToString(CultureInfo.InvariantCulture)
@@ -526,7 +525,6 @@ namespace Orts.MultiPlayer
                     }
 
                     //if distance is higher than 1 Km from starting point of path
-
                     if (WorldLocation.GetDistanceSquared(new WorldLocation(this.TileX, this.TileZ, this.X, 0, this.Z),
                             new WorldLocation(p1Train.RearTDBTraveller.TileX, p1Train.RearTDBTraveller.TileZ, p1Train.RearTDBTraveller.X, 0, p1Train.RearTDBTraveller.Z)) > 1000000)
                     {
@@ -732,7 +730,6 @@ namespace Orts.MultiPlayer
             }
 
             //System.Console.WriteLine(host.ToString() + MPManager.Simulator.OnlineTrains.AddAllPlayerTrain());
-
         }
 
         private void InsertTrainReference(Train train)
@@ -752,7 +749,6 @@ namespace Orts.MultiPlayer
 #endif
             p.Send(msg);
         }
-
     }
 
 #endregion MSGPlayer
@@ -788,7 +784,6 @@ namespace Orts.MultiPlayer
                 throw e;
             }
         }
-
 
         public MSGPlayerTrainSw(string n, Train t, int tn, bool oldRevForm, bool newRevForm)
         {
@@ -1015,7 +1010,6 @@ namespace Orts.MultiPlayer
                     gZipStream.Read(switchStatesArray, 0, switchStatesArray.Length);
                 }
             }
-
         }
 
         public override void HandleMsg() //only client will get message, thus will set states
@@ -1047,7 +1041,6 @@ namespace Orts.MultiPlayer
                 }
                 i++;
             }
-
         }
 
         public static void SetSwitch(TrackNode switchNode, int desiredState)
@@ -1155,14 +1148,12 @@ namespace Orts.MultiPlayer
                 {
                     gZipStream.Read(switchStatesArray, 0, switchStatesArray.Length);
                 }
-
             }
         }
 
         public override void HandleMsg() //only client will get message, thus will set states
         {
             if (MPManager.IsServer()) return; //server will ignore it
-
 
             int i = 0, state = 0;
             foreach (System.Collections.Generic.KeyValuePair<uint, TrJunctionNode> t in SwitchState)
@@ -1178,7 +1169,6 @@ namespace Orts.MultiPlayer
                 }
                 i++;
             }
-
         }
 
         public static void SetSwitch(TrackNode switchNode, int desiredState)
@@ -1213,6 +1203,7 @@ namespace Orts.MultiPlayer
                 if (traveller.TN.TrJunctionNode == junctionNode)
                     return true;
             }
+
             return false;
         }
 
@@ -1306,7 +1297,6 @@ namespace Orts.MultiPlayer
             name = areas[areas.Length - 2].Substring(index + 1, last - index - 1);
 
             //System.Console.WriteLine(this.ToString());
-
         }
 
         public MSGTrain(Train t, int n)
@@ -1523,8 +1513,8 @@ namespace Orts.MultiPlayer
             }
 
             //System.Console.WriteLine(this.ToString());
-
         }
+
         public MSGUpdateTrain(string u, Train t, int n)
         {
             user = u;
@@ -1774,7 +1764,6 @@ namespace Orts.MultiPlayer
                 }
             }
         }
-
     }
 
 #endregion MSGRemoveTrain
@@ -1787,7 +1776,6 @@ namespace Orts.MultiPlayer
         {
             user = m.Trim();
         }
-
 
         public override string ToString()
         {
@@ -1843,7 +1831,6 @@ namespace Orts.MultiPlayer
             user = m;
         }
 
-
         public override string ToString()
         {
             string tmp = "ALIVE " + user;
@@ -1890,7 +1877,6 @@ namespace Orts.MultiPlayer
             X = t1.RearTDBTraveller.X;
             Z = t1.RearTDBTraveller.Z;
             Travelled = t1.travelled;
-
         }
 
         public override void HandleMsg()
@@ -1919,7 +1905,6 @@ namespace Orts.MultiPlayer
             user = t[0].Trim();
             level = t[1].Trim();
             msgx = t[2];
-
         }
 
         public MSGMessage(string u, string l, string m)
@@ -1982,7 +1967,6 @@ namespace Orts.MultiPlayer
                 }
                 if (MPManager.Simulator.Confirmer != null)
                     MPManager.Simulator.Confirmer.Message(level == "Warning" ? ConfirmLevel.Warning : level == "Info" ? ConfirmLevel.Information : ConfirmLevel.None, msgx);
-
             }
         }
 
@@ -2246,7 +2230,6 @@ namespace Orts.MultiPlayer
             }
             else return;
         }
-
     }
 
 #endregion MSGEvent
@@ -2305,7 +2288,6 @@ namespace Orts.MultiPlayer
                     p.status = OnlinePlayer.Status.Quit;
                 }
                 MPManager.BroadCast(this.ToString()); //broadcast twice
-
             }
             else //client will remove train
             {
@@ -2321,11 +2303,9 @@ namespace Orts.MultiPlayer
                 }
             }
         }
-
     }
 
 #endregion MSGQuit
-
 
 #region MSGLost
     public class MSGLost : Message
@@ -2375,9 +2355,7 @@ namespace Orts.MultiPlayer
                 p.status = OnlinePlayer.Status.Quit;
             }
             MPManager.BroadCast((new MSGQuit(user)).ToString()); //broadcast twice
-
         }
-
     }
 
 #endregion MSGLost
@@ -2420,7 +2398,6 @@ namespace Orts.MultiPlayer
                 }
             }
         }
-
     }
 #endregion MSGGetTrain
 
@@ -2553,7 +2530,6 @@ namespace Orts.MultiPlayer
                 }
             }
 
-
             if (t.Cars.Contains(MPManager.Simulator.PlayerLocomotive) || newT.Cars.Contains(MPManager.Simulator.PlayerLocomotive))
             {
                 if (MPManager.Simulator.Confirmer != null)
@@ -2663,7 +2639,6 @@ namespace Orts.MultiPlayer
                         }
                     }
                 }
-
             }
             else
             {
@@ -2858,7 +2833,6 @@ namespace Orts.MultiPlayer
     }
 #endregion MSGUncouple
 
- 
 #region MSGCouple
     public class MSGCouple : Message
     {
@@ -2925,7 +2899,6 @@ namespace Orts.MultiPlayer
             }
 
             //System.Console.WriteLine(this.ToString());
-
         }
 
         public MSGCouple(Train t, Train oldT, bool remove)
@@ -2988,9 +2961,6 @@ namespace Orts.MultiPlayer
                     MPManager.Instance().AddOrRemoveLocomotives(player, t, true);
                 }
                 MPManager.Instance().AddOrRemoveTrain(oldT, false); //remove the old train
-
-
-
             }
         }
 
@@ -3098,7 +3068,6 @@ namespace Orts.MultiPlayer
 
             if (MPManager.IsServer()) MPManager.Instance().AddOrRemoveLocomotives("", train2, false);
             MPManager.Instance().AddOrRemoveTrain(train2, false);
-
 
             if (train.Cars.Contains(MPManager.Simulator.PlayerLocomotive))
             {
@@ -3253,8 +3222,8 @@ namespace Orts.MultiPlayer
                 t.Value.TextSignalAspect = signalTextStates[i];
                 i++;
             }
-            //System.Console.Write("\n");
 
+            //System.Console.Write("\n");
         }
 
         public override string ToString()
@@ -3458,7 +3427,6 @@ namespace Orts.MultiPlayer
 
 #endregion MSGAvatar
 
-
 #region MSGText
     //message to add new train from either a string (received message), or a Train (building a message)
     public class MSGText : MSGRequired
@@ -3472,7 +3440,6 @@ namespace Orts.MultiPlayer
             sender = t[0].Trim();
             user = t[1].Trim();
             msgx = t[2];
-
         }
 
         public MSGText(string s, string u, string m)
@@ -3616,7 +3583,6 @@ namespace Orts.MultiPlayer
                     MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetString("You are no longer an assistant."));
             }
         }
-
     }
 
 #endregion MSGAider
@@ -3678,7 +3644,6 @@ namespace Orts.MultiPlayer
 
         public override string ToString()
         {
-
             string tmp = "SIGNALCHANGE " + sender + " " + index + " " + pick; // fill in the message body here
             return " " + tmp.Length + ": " + tmp;
         }
@@ -3859,7 +3824,6 @@ namespace Orts.MultiPlayer
             }
 
             //System.Console.WriteLine(this.ToString());
-
         }
 
         public MSGFlip(Train t, bool setMUParameters, int n)
@@ -3979,7 +3943,6 @@ namespace Orts.MultiPlayer
             subMessageCode = (MovingTable.SubMessageCode)int.Parse(areas[2].Trim());
             clockwise = int.Parse(areas[3].Trim()) == 0 ? false : true;
             yangle = float.Parse(areas[4].Trim());
-
         }
 
         public MSGMovingTbl(int mti, string u, MovingTable.SubMessageCode smc, bool cw, float y)

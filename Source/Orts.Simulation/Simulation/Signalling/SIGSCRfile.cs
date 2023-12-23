@@ -46,13 +46,11 @@ using System.Text;
 
 namespace Orts.Simulation.Signalling
 {
-
     //================================================================================================//
     //
     // class scrfile
     //
     //================================================================================================//
-
     public class SIGSCRfile
     {
 
@@ -73,7 +71,6 @@ namespace Orts.Simulation.Signalling
         // Constructor
         //
         //================================================================================================//
-
         public SIGSCRfile(SignalScripts scripts)
         {
             SignalScripts = scripts;
@@ -88,7 +85,6 @@ namespace Orts.Simulation.Signalling
         // main update routine
         //
         //================================================================================================//
-
         public static void SH_update(SignalHead thisHead, SIGSCRfile sigscr)
         {
             if (thisHead.signalType == null)
@@ -108,7 +104,6 @@ namespace Orts.Simulation.Signalling
         // update_basic : update signal without script
         //
         //================================================================================================//
-
         public void SH_update_basic(SignalHead thisHead)
         {
             if (thisHead.mainSignal.block_state() == MstsBlockState.CLEAR)
@@ -126,7 +121,6 @@ namespace Orts.Simulation.Signalling
         // process script
         //
         //================================================================================================//
-
         public void SH_process_script(SignalHead thisHead, SignalScripts.SCRScripts signalScript, SIGSCRfile sigscr)
         {
             if (thisHead.LocalFloats == null)
@@ -170,7 +164,6 @@ namespace Orts.Simulation.Signalling
             if (!SH_process_StatementBlock(thisHead, signalScript.Statements, localFloats, sigscr))
                 return;
 
-
 #if DEBUG_PRINT_ENABLED
             if (thisHead.mainSignal.enabledTrain != null)
             {
@@ -193,19 +186,14 @@ namespace Orts.Simulation.Signalling
         // if returns false : abort further processing
         //
         //================================================================================================//
-
-        public bool SH_process_StatementBlock(SignalHead thisHead, ArrayList Statements,
-                    int[] localFloats, SIGSCRfile sigscr)
+        public bool SH_process_StatementBlock(SignalHead thisHead, ArrayList Statements, int[] localFloats, SIGSCRfile sigscr)
         {
-
             // loop through all lines
-
             for (int i = 0; i < Statements.Count; i++)
             {
                 object scriptstat = Statements[i];
 
                 // process statement lines
-
                 if (scriptstat is SignalScripts.SCRScripts.SCRStatement)
                 {
                     SignalScripts.SCRScripts.SCRStatement ThisStat = (SignalScripts.SCRScripts.SCRStatement)scriptstat;
@@ -277,29 +265,21 @@ namespace Orts.Simulation.Signalling
         // process assign statement
         //
         //================================================================================================//
-
-        public void SH_processAssignStatement(SignalHead thisHead, SignalScripts.SCRScripts.SCRStatement thisStat,
-                    int[] localFloats, SIGSCRfile sigscr)
+        public void SH_processAssignStatement(SignalHead thisHead, SignalScripts.SCRScripts.SCRStatement thisStat, int[] localFloats, SIGSCRfile sigscr)
         {
-
             // get term value
-
             int tempvalue = 0;
-
             tempvalue = SH_processSubTerm(thisHead, thisStat.StatementTerms, 0, localFloats, sigscr);
 
             // assign value
-
             switch (thisStat.AssignType)
             {
-
                 // assign value to external float
                 // Possible floats :
                 //                        STATE
                 //                        DRAW_STATE
                 //                        ENABLED     (not allowed for write)
                 //                        BLOCK_STATE (not allowed for write)
-
                 case (SignalScripts.SCRTermType.ExternalFloat):
                     SignalScripts.SCRExternalFloats FloatType = (SignalScripts.SCRExternalFloats)thisStat.AssignParameter;
 
@@ -319,7 +299,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // Local float
-
                 case (SignalScripts.SCRTermType.LocalFloat):
                     localFloats[thisStat.AssignParameter] = tempvalue;
                     break;
@@ -334,12 +313,8 @@ namespace Orts.Simulation.Signalling
         // get value of single term
         //
         //================================================================================================//
-
-        public int SH_processAssignTerm(SignalHead thisHead, List<SignalScripts.SCRScripts.SCRStatTerm> StatementTerms,
-                           SignalScripts.SCRScripts.SCRStatTerm thisTerm, int sublevel,
-                           int[] localFloats, SIGSCRfile sigscr)
+        public int SH_processAssignTerm(SignalHead thisHead, List<SignalScripts.SCRScripts.SCRStatTerm> StatementTerms, SignalScripts.SCRScripts.SCRStatTerm thisTerm, int sublevel, int[] localFloats, SIGSCRfile sigscr)
         {
-
             int termvalue = 0;
 
             if (thisTerm.Function != SignalScripts.SCRExternalFunctions.NONE)
@@ -348,9 +323,7 @@ namespace Orts.Simulation.Signalling
             }
             else if (thisTerm.PartParameter != null)
             {
-
                 // for non-function terms only first entry is valid
-
                 SignalScripts.SCRScripts.SCRParameterType thisParameter = thisTerm.PartParameter[0];
                 termvalue = SH_termvalue(thisHead, thisParameter, localFloats, sigscr);
             }
@@ -368,9 +341,7 @@ namespace Orts.Simulation.Signalling
         // process subterm
         //
         //================================================================================================//
-
-        public int SH_processSubTerm(SignalHead thisHead, List<SignalScripts.SCRScripts.SCRStatTerm> StatementTerms,
-                           int sublevel, int[] localFloats, SIGSCRfile sigscr)
+        public int SH_processSubTerm(SignalHead thisHead, List<SignalScripts.SCRScripts.SCRStatTerm> StatementTerms, int sublevel, int[] localFloats, SIGSCRfile sigscr)
         {
             int tempvalue = 0;
             int termvalue = 0;
@@ -436,25 +407,19 @@ namespace Orts.Simulation.Signalling
         // get parameter term value
         //
         //================================================================================================//
-
-        public static int SH_termvalue(SignalHead thisHead, SignalScripts.SCRScripts.SCRParameterType thisParameter,
-                    int[] localFloats, SIGSCRfile sigscr)
+        public static int SH_termvalue(SignalHead thisHead, SignalScripts.SCRScripts.SCRParameterType thisParameter, int[] localFloats, SIGSCRfile sigscr)
         {
-
             int return_value = 0;
 
             // for non-function terms only first entry is valid
-
             switch (thisParameter.PartType)
             {
-
                 // assign value to external float
                 // Possible floats :
                 //                        STATE
                 //                        DRAW_STATE
                 //                        ENABLED     
                 //                        BLOCK_STATE
-
                 case (SignalScripts.SCRTermType.ExternalFloat):
                     SignalScripts.SCRExternalFloats FloatType = (SignalScripts.SCRExternalFloats)thisParameter.PartParameter;
 
@@ -490,13 +455,11 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // Local float
-
                 case (SignalScripts.SCRTermType.LocalFloat):
                     return_value = localFloats[thisParameter.PartParameter];
                     break;
 
                 // all others : constants
-
                 default:
                     return_value = thisParameter.PartParameter;
                     break;
@@ -512,11 +475,8 @@ namespace Orts.Simulation.Signalling
         // Possible functions : see enum SCRExternalFunctions
         //
         //================================================================================================//
-
-        public int SH_function_value(SignalHead thisHead, SignalScripts.SCRScripts.SCRStatTerm thisTerm,
-                    int[] localFloats, SIGSCRfile sigscr)
+        public int SH_function_value(SignalHead thisHead, SignalScripts.SCRScripts.SCRStatTerm thisTerm, int[] localFloats, SIGSCRfile sigscr)
         {
-
             int return_value = 0;
             int parameter1_value = 0;
             int parameter2_value = 0;
@@ -524,7 +484,6 @@ namespace Orts.Simulation.Signalling
             SignalFunction function2 = SignalFunction.NORMAL;
 
             // extract parameters (max. 2)
-
             if (thisTerm.PartParameter != null)
             {
                 if (thisTerm.PartParameter.Length >= 1)
@@ -553,27 +512,22 @@ namespace Orts.Simulation.Signalling
             }
 
             // switch on function
-
             SignalScripts.SCRExternalFunctions thisFunction = thisTerm.Function;
             string dumpfile = string.Empty;
 
             switch (thisFunction)
             {
-
                 // BlockState
-
                 case SignalScripts.SCRExternalFunctions.BLOCK_STATE:
                     return_value = (int)thisHead.mainSignal.block_state();
                     break;
 
                 // Route set
-
                 case SignalScripts.SCRExternalFunctions.ROUTE_SET:
                     return_value = (int)thisHead.route_set();
                     break;
 
                 // next_sig_lr
-
                 case SignalScripts.SCRExternalFunctions.NEXT_SIG_LR:
                     return_value = (int)thisHead.next_sig_lr(function1);
 
@@ -612,7 +566,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // next_sig_mr
-
                 case SignalScripts.SCRExternalFunctions.NEXT_SIG_MR:
                     return_value = (int)thisHead.next_sig_mr(function1);
 #if DEBUG_PRINT_ENABLED
@@ -634,7 +587,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // this_sig_lr
-
                 case SignalScripts.SCRExternalFunctions.THIS_SIG_LR:
                     bool sigfound_lr = false;
                     MstsSignalAspect returnState_lr = thisHead.this_sig_lr(function1, ref sigfound_lr);
@@ -642,7 +594,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // this_sig_mr
-
                 case SignalScripts.SCRExternalFunctions.THIS_SIG_MR:
                     bool sigfound_mr = false;
                     MstsSignalAspect returnState_mr = thisHead.this_sig_mr(function1, ref sigfound_mr);
@@ -650,7 +601,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // opp_sig_lr
-
                 case SignalScripts.SCRExternalFunctions.OPP_SIG_LR:
                     return_value = (int)thisHead.opp_sig_lr(function1);
 #if DEBUG_PRINT_ENABLED
@@ -676,13 +626,11 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // opp_sig_mr
-
                 case SignalScripts.SCRExternalFunctions.OPP_SIG_MR:
                     return_value = (int)thisHead.opp_sig_mr(function1);
                     break;
 
                 // next_nsig_lr
-
                 case SignalScripts.SCRExternalFunctions.NEXT_NSIG_LR:
                     dumpfile = string.Empty;
 
@@ -703,7 +651,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // dist_multi_sig_mr
-
                 case SignalScripts.SCRExternalFunctions.DIST_MULTI_SIG_MR:
 
                     dumpfile = string.Empty;
@@ -727,7 +674,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // dist_multi_sig_mr_of_lr
-
                 case SignalScripts.SCRExternalFunctions.DIST_MULTI_SIG_MR_OF_LR:
 
                     dumpfile = string.Empty;
@@ -751,7 +697,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // next_sig_id
-
                 case SignalScripts.SCRExternalFunctions.NEXT_SIG_ID:
                     return_value = (int)thisHead.next_sig_id(function1);
 #if DEBUG_PRINT_ENABLED
@@ -788,7 +733,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // next_nsig_id
-
                 case SignalScripts.SCRExternalFunctions.NEXT_NSIG_ID:
                     return_value = (int)thisHead.next_nsig_id(function1, parameter2_value);
 #if DEBUG_PRINT_ENABLED
@@ -825,7 +769,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // opp_sig_id
-
                 case SignalScripts.SCRExternalFunctions.OPP_SIG_ID:
                     return_value = (int)thisHead.opp_sig_id(function1);
 #if DEBUG_PRINT_ENABLED
@@ -862,20 +805,16 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // id_sig_enabled
-
                 case SignalScripts.SCRExternalFunctions.ID_SIG_ENABLED:
                     return_value = (int)thisHead.id_sig_enabled(parameter1_value);
                     break;
 
                 // id_sig_lr
-
                 case SignalScripts.SCRExternalFunctions.ID_SIG_LR:
                     return_value = (int)thisHead.id_sig_lr(parameter1_value, function2);
                     break;
 
-
                 // sig_feature
-
                 case SignalScripts.SCRExternalFunctions.SIG_FEATURE:
                     bool temp_value;
                     temp_value = thisHead.sig_feature(parameter1_value);
@@ -883,13 +822,11 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // allow to clear to partial route
-
                 case SignalScripts.SCRExternalFunctions.ALLOW_CLEAR_TO_PARTIAL_ROUTE:
                     thisHead.mainSignal.AllowClearPartialRoute(parameter1_value);
                     break;
 
                 // approach control position
-
                 case SignalScripts.SCRExternalFunctions.APPROACH_CONTROL_POSITION:
                     dumpfile = string.Empty;
 
@@ -911,7 +848,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // approach control position forced
-
                 case SignalScripts.SCRExternalFunctions.APPROACH_CONTROL_POSITION_FORCED:
                     dumpfile = string.Empty;
 
@@ -933,7 +869,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // approach control speed
-
                 case SignalScripts.SCRExternalFunctions.APPROACH_CONTROL_SPEED:
                     dumpfile = string.Empty;
 
@@ -976,13 +911,11 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // Lock claim for approach control
-
                 case SignalScripts.SCRExternalFunctions.APPROACH_CONTROL_LOCK_CLAIM:
                     thisHead.mainSignal.LockClaim();
                     break;
 
                 // Activate timing trigger
-
                 case SignalScripts.SCRExternalFunctions.ACTIVATE_TIMING_TRIGGER:
                     thisHead.mainSignal.ActivateTimingTrigger();
 #if DEBUG_PRINT_ENABLED
@@ -1024,7 +957,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // Check for CallOn
-
                 case SignalScripts.SCRExternalFunctions.TRAINHASCALLON:
                     dumpfile = string.Empty;
 
@@ -1047,7 +979,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // Check for CallOn Restricted
-
                 case SignalScripts.SCRExternalFunctions.TRAINHASCALLON_RESTRICTED:
                     dumpfile = string.Empty;
 
@@ -1070,7 +1001,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // Check for CallOn
-
                 case SignalScripts.SCRExternalFunctions.TRAINHASCALLON_ADVANCED:
                     dumpfile = string.Empty;
 
@@ -1093,7 +1023,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // Check for CallOn Restricted
-
                 case SignalScripts.SCRExternalFunctions.TRAINHASCALLON_RESTRICTED_ADVANCED:
                     dumpfile = string.Empty;
 
@@ -1116,7 +1045,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // check if train needs next signal
-
                 case SignalScripts.SCRExternalFunctions.TRAIN_REQUIRES_NEXT_SIGNAL:
                     dumpfile = string.Empty;
 
@@ -1157,7 +1085,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // check if route upto required signal is fully cleared
-
                 case SignalScripts.SCRExternalFunctions.ROUTE_CLEARED_TO_SIGNAL:
                     dumpfile = string.Empty;
 
@@ -1178,7 +1105,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // check if route upto required signal is fully cleared, but allow callon
-
                 case SignalScripts.SCRExternalFunctions.ROUTE_CLEARED_TO_SIGNAL_CALLON:
                     dumpfile = string.Empty;
 
@@ -1199,7 +1125,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // check if specified head enabled
-
                 case SignalScripts.SCRExternalFunctions.HASHEAD:
                     return_value = thisHead.mainSignal.HasHead(parameter1_value);
 #if DEBUG_PRINT_ENABLED
@@ -1219,7 +1144,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // increase active value of SignalNumClearAhead
-
                 case SignalScripts.SCRExternalFunctions.INCREASE_SIGNALNUMCLEARAHEAD:
                     thisHead.mainSignal.IncreaseSignalNumClearAhead(parameter1_value);
 #if DEBUG_PRINT_ENABLED
@@ -1239,7 +1163,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // decrease active value of SignalNumClearAhead
-
                 case SignalScripts.SCRExternalFunctions.DECREASE_SIGNALNUMCLEARAHEAD:
                     thisHead.mainSignal.DecreaseSignalNumClearAhead(parameter1_value);
 #if DEBUG_PRINT_ENABLED
@@ -1259,7 +1182,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // set active value of SignalNumClearAhead
-
                 case SignalScripts.SCRExternalFunctions.SET_SIGNALNUMCLEARAHEAD:
                     thisHead.mainSignal.SetSignalNumClearAhead(parameter1_value);
 #if DEBUG_PRINT_ENABLED
@@ -1279,7 +1201,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // reset active value of SignalNumClearAhead to default
-
                 case SignalScripts.SCRExternalFunctions.RESET_SIGNALNUMCLEARAHEAD:
                     thisHead.mainSignal.ResetSignalNumClearAhead();
 #if DEBUG_PRINT_ENABLED
@@ -1299,13 +1220,11 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // store_lvar
-
                 case SignalScripts.SCRExternalFunctions.STORE_LVAR:
                     thisHead.store_lvar(parameter1_value, parameter2_value);
                     break;
 
                 // this_sig_lvar
-
                 case SignalScripts.SCRExternalFunctions.THIS_SIG_LVAR:
                     return_value = (int)thisHead.this_sig_lvar(parameter1_value);
 #if DEBUG_PRINT_ENABLED
@@ -1324,7 +1243,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // next_sig_lvar
-
                 case SignalScripts.SCRExternalFunctions.NEXT_SIG_LVAR:
                     return_value = (int)thisHead.next_sig_lvar(function1, parameter2_value);
 #if DEBUG_PRINT_ENABLED
@@ -1364,7 +1282,6 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // id_sig_lvar
-
                 case SignalScripts.SCRExternalFunctions.ID_SIG_LVAR:
                     return_value = (int)thisHead.id_sig_lvar(parameter1_value, parameter2_value);
 #if DEBUG_PRINT_ENABLED
@@ -1383,31 +1300,26 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // this_sig_noupdate
-
                 case SignalScripts.SCRExternalFunctions.THIS_SIG_NOUPDATE:
                     thisHead.mainSignal.noupdate = true;
                     break;
 
                 // this_sig_hasnormalsubtype
-
                 case SignalScripts.SCRExternalFunctions.THIS_SIG_HASNORMALSUBTYPE:
                     return_value = thisHead.this_sig_hasnormalsubtype(parameter1_value);
                     break;
 
                 // next_sig_hasnormalsubtype
-
                 case SignalScripts.SCRExternalFunctions.NEXT_SIG_HASNORMALSUBTYPE:
                     return_value = thisHead.next_sig_hasnormalsubtype(parameter1_value);
                     break;
 
                 // next_sig_hasnormalsubtype
-
                 case SignalScripts.SCRExternalFunctions.ID_SIG_HASNORMALSUBTYPE:
                     return_value = thisHead.id_sig_hasnormalsubtype(parameter1_value, parameter2_value);
                     break;
 
                 // switchstand
-
                 case SignalScripts.SCRExternalFunctions.SWITCHSTAND:
 #if DEBUG_PRINT_PROCESS
                     if (TDB_debug_ref.Contains(thisHead.TDBIndex) || OBJ_debug_ref.Contains(thisHead.mainSignal.thisRef))
@@ -1419,13 +1331,11 @@ namespace Orts.Simulation.Signalling
                     break;
 
                 // def_draw_state
-
                 case SignalScripts.SCRExternalFunctions.DEF_DRAW_STATE:
                     return_value = thisHead.def_draw_state((MstsSignalAspect)parameter1_value);
                     break;
 
                 // DEBUG routine : to be implemented later
-
                 default:
                     break;
             }
@@ -1448,7 +1358,6 @@ namespace Orts.Simulation.Signalling
 #endif
 
             // check sign
-
             if (thisTerm.TermOperator == SignalScripts.SCRTermOperator.MINUS)
             {
                 return_value = -return_value;
@@ -1462,11 +1371,8 @@ namespace Orts.Simulation.Signalling
         // check IF conditions
         //
         //================================================================================================//
-
-        public bool SH_processIfCondition(SignalHead thisHead, SignalScripts.SCRScripts.SCRConditionBlock thisCond,
-                    int[] localFloats, SIGSCRfile sigscr)
+        public bool SH_processIfCondition(SignalHead thisHead, SignalScripts.SCRScripts.SCRConditionBlock thisCond, int[] localFloats, SIGSCRfile sigscr)
         {
-
             //                                SCRScripts.SCRConditionBlock thisCond = (SCRScripts.SCRConditionBlock) scriptstat;
             //                                SH_processIfCondition(thisHead, thisCond, localFloats, sigscr);
             //                                public ArrayList       Conditions;
@@ -1478,11 +1384,9 @@ namespace Orts.Simulation.Signalling
             bool performed = false;
 
             // check condition
-
             condition = SH_processConditionStatement(thisHead, thisCond.Conditions, localFloats, sigscr);
 
             // if set : execute IF block
-
             if (condition)
             {
                 if (!SH_process_StatementBlock(thisHead, thisCond.IfBlock.Statements, localFloats, sigscr))
@@ -1491,7 +1395,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // not set : check through ELSEIF
-
             if (!performed)
             {
                 int totalElseIf;
@@ -1506,9 +1409,7 @@ namespace Orts.Simulation.Signalling
 
                 for (int ielseif = 0; ielseif < totalElseIf && !performed; ielseif++)
                 {
-
                     // first (and only ) entry in ELSEIF block must be IF condition - extract condition
-
                     object elseifStat = thisCond.ElseIfBlock[ielseif].Statements[0];
                     if (elseifStat is SignalScripts.SCRScripts.SCRConditionBlock)
                     {
@@ -1530,7 +1431,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // ELSE block
-
             if (!performed && thisCond.ElseBlock != null)
             {
                 if (!SH_process_StatementBlock(thisHead, thisCond.ElseBlock.Statements, localFloats, sigscr))
@@ -1545,13 +1445,9 @@ namespace Orts.Simulation.Signalling
         // process condition statement
         //
         //================================================================================================//
-
-        public bool SH_processConditionStatement(SignalHead thisHead, ArrayList thisCStatList,
-                    int[] localFloats, SIGSCRfile sigscr)
+        public bool SH_processConditionStatement(SignalHead thisHead, ArrayList thisCStatList, int[] localFloats, SIGSCRfile sigscr)
         {
-
             // loop through all conditions
-
             bool condition = true;
             bool newcondition = true;
             bool termnegate = false;
@@ -1562,12 +1458,10 @@ namespace Orts.Simulation.Signalling
                 object thisCond = thisCStatList[i];
 
                 // single condition : process
-
                 if (thisCond is SignalScripts.SCRNegate)
                 {
                     termnegate = true;
                 }
-
                 else if (thisCond is SignalScripts.SCRScripts.SCRConditions)
                 {
                     SignalScripts.SCRScripts.SCRConditions thisSingleCond = (SignalScripts.SCRScripts.SCRConditions)thisCond;
@@ -1594,16 +1488,12 @@ namespace Orts.Simulation.Signalling
                             break;
                     }
                 }
-
-  // AND or OR indication (to link previous and next part)
-
+                // AND or OR indication (to link previous and next part)
                 else if (thisCond is SignalScripts.SCRAndOr)
                 {
                     condstring = (SignalScripts.SCRAndOr)thisCond;
                 }
-
-  // subcondition
-
+                // subcondition
                 else
                 {
                     ArrayList subCond = (ArrayList)thisCond;
@@ -1641,17 +1531,14 @@ namespace Orts.Simulation.Signalling
         // process single condition
         //
         //================================================================================================//
-
         public bool SH_processSingleCondition(SignalHead thisHead, SignalScripts.SCRScripts.SCRConditions thisCond,
                     int[] localFloats, SIGSCRfile sigscr)
         {
-
             int term1value = 0;
             int term2value = 0;
             bool condition = true;
 
             // get value of first term
-
 
 #if DEBUG_PRINT_ENABLED
             if (thisHead.mainSignal.enabledTrain != null)
@@ -1699,7 +1586,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // get value of second term
-
             if (thisCond.Term2 == null)
 
             // if only one value : check for NOT
@@ -1728,9 +1614,7 @@ namespace Orts.Simulation.Signalling
                 }
 #endif
             }
-
-  // process second term
-
+            // process second term
             else
             {
 
@@ -1782,42 +1666,34 @@ namespace Orts.Simulation.Signalling
                 }
 
                 // check on required condition
-
                 switch (thisCond.Condition)
                 {
-
                     // GT
-
                     case (SignalScripts.SCRTermCondition.GT):
                         condition = (term1value > term2value);
                         break;
 
                     // GE
-
                     case (SignalScripts.SCRTermCondition.GE):
                         condition = (term1value >= term2value);
                         break;
 
                     // LT
-
                     case (SignalScripts.SCRTermCondition.LT):
                         condition = (term1value < term2value);
                         break;
 
                     // LE
-
                     case (SignalScripts.SCRTermCondition.LE):
                         condition = (term1value <= term2value);
                         break;
 
                     // EQ
-
                     case (SignalScripts.SCRTermCondition.EQ):
                         condition = (term1value == term2value);
                         break;
 
                     // NE
-
                     case (SignalScripts.SCRTermCondition.NE):
                         condition = (term1value != term2value);
                         break;
@@ -1839,12 +1715,8 @@ namespace Orts.Simulation.Signalling
 #endif
             }
 
-
             return condition;
         }
-
         //================================================================================================//
-
     }
 }
-
