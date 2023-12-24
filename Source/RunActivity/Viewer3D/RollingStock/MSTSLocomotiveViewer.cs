@@ -3079,6 +3079,7 @@ namespace Orts.Viewer3D.RollingStock
             //          <CSComment> Now speedometer is handled like the other digitals
 
             base.PrepareFrame(frame, elapsedTime);
+            digital.OldValue = Num;
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
@@ -3152,6 +3153,8 @@ namespace Orts.Viewer3D.RollingStock
                     displayedText = String.Format(Format, Num);
                     DrawColor = Color.White;
                 }
+                digital.OldValue = Num;
+
                 // <CSComment> Speedometer is now managed like the other digitals
 
                 return displayedText;
@@ -3228,6 +3231,8 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     displayedText = String.Format(Format, Num);
                 }
+                digital.OldValue = Num;
+
                 // <CSComment> Speedometer is now managed like the other digitals
 
                 return displayedText;
