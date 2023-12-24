@@ -431,7 +431,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// switch between Polach and Pacha adhesion calculation
         /// </summary>
-        bool UsePolachAdhesion = false;
+        public static bool UsePolachAdhesion = false; // "static" so it's shared by all axles of the Player's loco
+
+        public double GameTime; // Set by MSTSLocomotive and used by AdhesionPrecision.IsPrecisionHigh
 
         /// <summary>
         /// Pre-calculation of slip characteristics at 0 slip speed
@@ -717,8 +719,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         public List<string> AnimatedParts = new List<string>();
 
-        public double ClockTime;
-
         /// <summary>
         /// Nonparametric constructor of Axle class instance
         /// - sets motor parameter to null
@@ -1003,7 +1003,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="elapsedSeconds"></param>
         public virtual void Update(float elapsedSeconds)
         {
-            UsePolachAdhesion = AdhesionPrecision.IsPrecisionHigh(elapsedSeconds, ClockTime);
+            UsePolachAdhesion = AdhesionPrecision.IsPrecisionHigh(elapsedSeconds, GameTime);
             if (UsePolachAdhesion)
             {
                 forceToAccelerationFactor = WheelRadiusM * WheelRadiusM / totalInertiaKgm2;
@@ -1117,18 +1117,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 LowLocked = 2
             }
 
-            static AdhesionPrecisionLevel PrecisionLevel = AdhesionPrecisionLevel.High;
-            static double TimeOfLatestDowngrade = 0;
-
             // Adjustable limits
             const float LowerLimitS = 0.025f;   // timespan 0.025 = 40 fps screen rate, low timeSpan and high FPS
             const float UpperLimitS = 0.033f;   // timespan 0.033 = 30 fps screen rate, high timeSpan and low FPS
-            const double IntervalBetweenDowngradesLimitS = 60 * 5; // Locks in low precision if < 5 mins between downgrades
+            const double IntervalBetweenDowngradesLimitS = 5 * 60; // Locks in low precision if < 5 mins between downgrades
+
+            static AdhesionPrecisionLevel PrecisionLevel = AdhesionPrecisionLevel.High;
+            static double TimeOfLatestDowngrade = 0 - IntervalBetweenDowngradesLimitS; // Starts at -5 mins
 
             // Tested by varying the framerate interactively. Did this by opening and closing the HelpWindow after inserting
             //   Threading.Thread.Sleep(40);
             // into HelpWindow.PrepareFrame() temporarily.
-            public static bool IsPrecisionHigh(float elapsedSeconds, double clockTime)
+            public static bool IsPrecisionHigh(float elapsedSeconds, double gameTime)
             {
                 // Switches between Polach (high precision) adhesion model and Pacha (low precision) adhesion model depending upon the PC performance
                 switch (PrecisionLevel)
@@ -1137,16 +1137,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         if (elapsedSeconds > UpperLimitS)
                         {
                             var screenFrameRate = 1 / elapsedSeconds;
-                            var timeSincePreviousDowngradeS = clockTime - TimeOfLatestDowngrade;
+                            var timeSincePreviousDowngradeS = gameTime - TimeOfLatestDowngrade;
                             if (timeSincePreviousDowngradeS < IntervalBetweenDowngradesLimitS)
                             {
-                                Trace.TraceInformation($"At {clockTime:F0} secs, advanced adhesion model switched to low precision permanently after {timeSincePreviousDowngradeS:F0} secs since previous switch (less than limit of {IntervalBetweenDowngradesLimitS})");
+                                Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to low precision permanently after {timeSincePreviousDowngradeS:F0} secs since previous switch (less than limit of {IntervalBetweenDowngradesLimitS})");
                                 PrecisionLevel = AdhesionPrecisionLevel.LowLocked;
                             }
                             else
                             {
-                                TimeOfLatestDowngrade = clockTime;
-                                Trace.TraceInformation($"At {clockTime:F0} secs, advanced adhesion model switched to low precision after low frame rate {screenFrameRate:F1} below limit {1 / UpperLimitS:F0}");
+                                TimeOfLatestDowngrade = gameTime;
+                                Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to low precision after low frame rate {screenFrameRate:F1} below limit {1 / UpperLimitS:F0}");
                                 PrecisionLevel = AdhesionPrecisionLevel.Low;
                             }
                         }
@@ -1158,7 +1158,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         {
                             PrecisionLevel = AdhesionPrecisionLevel.High;
                             var ScreenFrameRate = 1 / elapsedSeconds;
-                            Trace.TraceInformation($"At {clockTime:F0} secs, advanced adhesion model switched to high precision after high frame rate {ScreenFrameRate:F1} above limit {1 / LowerLimitS:F0}");
+                            Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to high precision after high frame rate {ScreenFrameRate:F1} above limit {1 / LowerLimitS:F0}");
                         }
                         break;
 

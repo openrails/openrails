@@ -2784,7 +2784,7 @@ namespace Orts.Simulation.RollingStocks
                 axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
                 axle.BogieRigidWheelBaseM = RigidWheelBaseM;
                 axle.CurtiusKnifflerZeroSpeed = ZeroSpeedAdhesionBase;
-                axle.ClockTime = Simulator.ClockTime;   // Used by Axle.Update() log messages
+                axle.GameTime = Simulator.GameTime;   // Used by Axle.Update() log messages
             }
 
             LocomotiveAxles.Update(elapsedClockSeconds);
