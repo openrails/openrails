@@ -27,6 +27,7 @@ using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using Orts.Viewer3D.Processes;
 using ORTS.Common;
 using ORTS.Scripting.Api;
@@ -1078,7 +1079,9 @@ namespace Orts.Viewer3D.Popups
                 {
                     if (mstsLocomotive.AdvancedAdhesionModel)
                     {
-                        TableAddLine(table, Viewer.Catalog.GetString("(Advanced adhesion model)"));
+                        var text = Viewer.Catalog.GetString("(Advanced adhesion model)");
+                        if (Axle.UsePolachAdhesion == false) text += "???";
+                        TableAddLine(table, text);
                         int row0 = table.CurrentRow;
                         TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Wheel slip (Thres)"));
                         TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Conditions"));
