@@ -906,9 +906,9 @@ namespace Orts.Formats.Msts
                         }
                         else
                         {
-                        stf.ParseBlock(new STFReader.TokenProcessor[] {
-                            new STFReader.TokenProcessor("controlcolour", ()=>{ DecreaseColor = ParseControlColor(stf); }) });
-                    }
+                            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                                new STFReader.TokenProcessor("controlcolour", ()=>{ DecreaseColor = ParseControlColor(stf); }) });
+                        }
                     }
                 }),
                 new STFReader.TokenProcessor("ortsfont", ()=>{ParseFont(stf); }),
