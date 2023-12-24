@@ -23,9 +23,9 @@ using System.Windows.Forms;
 using GNU.Gettext;
 using LibGit2Sharp;
 using ORTS.Settings;
-using Newtonsoft.Json;
 using System.Linq;
-using System.Security.Policy;
+using System.Diagnostics;
+using System.Threading;
 
 namespace ORTS
 {
@@ -79,7 +79,7 @@ namespace ORTS
 
         private void InstallPathButton_Click(object sender, EventArgs e)
         {
-            using (var folderBrowser = new FolderBrowserDialog())
+            using (FolderBrowserDialog folderBrowser = new FolderBrowserDialog())
             {
                 folderBrowser.SelectedPath = InstallPathTextBox.Text;
                 folderBrowser.Description = "Main Path where route is to be installed";
@@ -154,19 +154,13 @@ namespace ORTS
             Cursor.Current = Cursors.WaitCursor;
 
             dataGridViewDownloadContent.CurrentRow.Cells[1].Value = Catalog.GetString("Installing...");
-            this.Refresh();
+            Refresh();
 
-            try
+            // actual download
+
+            if (!downloadRoute(installPathRoute))
             {
-                Repository.Clone(Routes[RouteName].Url, installPathRoute);
-            }
-            catch (LibGit2SharpException libGit2SharpException)
-            {
-                {
-                    message = Catalog.GetStringFmt("Error during download: {0}", libGit2SharpException.Message);
-                    MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+                return;
             }
 
             // insert row in Options, tab Content
@@ -228,5 +222,67 @@ namespace ORTS
 
             Close();
         }
+
+        private bool downloadRoute(string installPathRoute)
+        {
+            bool returnValue = false;
+
+            Thread cloneThread = new Thread(() =>
+            {
+                returnValue = doTheClone(installPathRoute);
+            });
+            cloneThread.Start();
+
+            while (cloneThread.IsAlive)
+            {
+                Stopwatch sw = Stopwatch.StartNew();
+
+                TotalBytes = 0;
+                sumMB(installPathRoute);
+                dataGridViewDownloadContent.CurrentRow.Cells[1].Value =
+                    string.Format("downloaded: {0} kB", Math.Round((double)(TotalBytes / 1024)));
+                Refresh();
+
+                while ((cloneThread.IsAlive) && (sw.ElapsedMilliseconds <= 3000)) { }
+            }
+
+            dataGridViewDownloadContent.CurrentRow.Cells[1].Value = "";
+
+            return returnValue;
+        }
+
+        private bool doTheClone(string installPathRoute)
+        {
+            try
+            {
+                Repository.Clone(Routes[RouteName].Url, installPathRoute);
+            }
+            catch (LibGit2SharpException libGit2SharpException)
+            {
+                {
+                    string message = Catalog.GetStringFmt("Error during download: {0}", libGit2SharpException.Message);
+                    MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        long TotalBytes = 0;
+
+        private void sumMB(string path)
+        {
+            foreach (string fileName in Directory.GetFiles(path))
+            {
+                TotalBytes += new System.IO.FileInfo(fileName).Length;
+            }
+
+            foreach (string directoryName in Directory.GetDirectories(path))
+            {
+                sumMB(directoryName);
+            }
+        }
     }
+
 }
