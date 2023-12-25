@@ -73,7 +73,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         protected readonly TrainCar Car;
 
         /// <summary>
-        /// Get total axle out force with brake force substracted
+        /// Get total axle out force with brake and friction force substracted
         /// </summary>
         public float CompensatedForceN
         {
@@ -233,12 +233,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 if (Car is MSTSLocomotive locomotive)
                 {
                     if (axle.InertiaKgm2 <= 0) axle.InertiaKgm2 = locomotive.AxleInertiaKgm2 / AxleList.Count;
-                    if (axle.AxleWeightN <= 0) axle.AxleWeightN = 9.81f * locomotive.DrvWheelWeightKg / AxleList.Count;  //remains fixed for diesel/electric locomotives, but varies for steam locomotives
+                    if (axle.WheelWeightKg <= 0) axle.WheelWeightKg = locomotive.DrvWheelWeightKg / AxleList.Count;
+                    if (axle.AxleWeightN <= 0) axle.AxleWeightN = 9.81f * axle.WheelWeightKg;  //remains fixed for diesel/electric locomotives, but varies for steam locomotives
                     if (axle.NumAxles <= 0) axle.NumAxles = locomotive.LocoNumDrvAxles;
                     if (axle.WheelRadiusM <= 0) axle.WheelRadiusM = locomotive.DriverWheelRadiusM;
                     if (axle.WheelFlangeAngleRad <= 0) axle.WheelFlangeAngleRad = locomotive.MaximumWheelFlangeAngleRad;
                     if (axle.DampingNs <= 0) axle.DampingNs = locomotive.MassKG / 1000.0f / AxleList.Count;
                     if (axle.FrictionN <= 0) axle.FrictionN = locomotive.MassKG / 1000.0f / AxleList.Count;
+                    if (axle.NumberWheelAxles <= 0) axle.NumberWheelAxles = 1;
                 }
                 axle.Initialize();
             }
@@ -317,7 +319,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public int NumOfSubstepsPS { get; set; }
 
         /// <summary>
-        /// Positive only brake force to the axle, in Newtons
+        /// Positive only brake force to the individual axle, in Newtons
         /// </summary>
         public float BrakeRetardForceN;
 
@@ -334,6 +336,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         protected float frictionN;
 
+        /// <summary>
+        /// Positive only friction force to the axle, in Newtons
+        /// </summary>
         public float FrictionN { set { frictionN = Math.Abs(value); } get { return frictionN; } }
 
         /// <summary>
@@ -492,6 +497,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float WheelRadiusM;
 
         /// <summary>
+        /// Wheel number
+        /// </summary>
+        public int NumberWheelAxles;
+
+        /// <summary>
+        /// Wheel mass parameter in kilograms
+        /// </summary>
+        public float WheelWeightKg;
+
+        /// <summary>
         /// Flange angle wheels connected to axle
         /// </summary>
         public float WheelFlangeAngleRad;
@@ -558,7 +573,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float AxleForceN { get; private set; }
 
         /// <summary>
-        /// Compensated Axle force value, this provided the motive force equivalent excluding brake force, in Newtons
+        /// Compensated Axle force value, this provided the motive force equivalent excluding brake and friction force, in Newtons
         /// </summary>
         public float CompensatedAxleForceN { get; protected set; }
 
@@ -762,7 +777,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         InertiaKgm2 = stf.ReadFloatBlock(STFReader.UNITS.RotationalInertia, null);
                         break;
                     case "weight":
-                        AxleWeightN = 9.81f * stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
+                        WheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
+                        AxleWeightN = 9.81f * WheelWeightKg;
+                        break;
+                    case "numberwheelaxles":
+                        NumberWheelAxles = stf.ReadIntBlock(null);
                         break;
                     case "animatedparts":
                         foreach (var part in stf.ReadStringBlock("").ToUpper().Replace(" ", "").Split(','))
@@ -782,9 +801,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             WheelFlangeAngleRad = other.WheelFlangeAngleRad;
             NumAxles = other.NumAxles;
             InertiaKgm2 = other.InertiaKgm2;
+            WheelWeightKg = other.WheelWeightKg;
             AxleWeightN = other.AxleWeightN;
             AnimatedParts.Clear();
             AnimatedParts.AddRange(other.AnimatedParts);
+            NumberWheelAxles = other.NumberWheelAxles;
         }
 
         /// <summary>
@@ -1060,9 +1081,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             // And thus there is a duplication of the braking effect in OR. To compensate for this, after the slip characteristics have been calculated, the output of the axle
             // module has the brake force "added" back in to give the appropriate motive force output for the locomotive. Braking force is handled separately.
             // Hence CompensatedAxleForce is the actual output force on the axle. Similarly friction is also handled separately so it is also discounted from the CompensatedForce.
-            if (Math.Abs(TrainSpeedMpS) < 0.001f && AxleForceN == 0) CompensatedAxleForceN = DriveForceN;
-            else if (TrainSpeedMpS < 0) CompensatedAxleForceN = AxleForceN - BrakeRetardForceN - FrictionN;
-            else CompensatedAxleForceN = AxleForceN + BrakeRetardForceN + FrictionN;
+
+            // Make sure that compensated value never exceeds the "output" force, otherwise resulting value will be overcompensated
+            var CompensationVariation = BrakeRetardForceN + FrictionN;
+
+            if (CompensationVariation > Math.Abs(AxleForceN))
+            {
+                CompensationVariation = Math.Abs(AxleForceN); ;
+            }
+
+            if (Math.Abs(TrainSpeedMpS) < 0.001f && AxleForceN == 0) CompensatedAxleForceN = 0;
+            else if (TrainSpeedMpS < 0) CompensatedAxleForceN = AxleForceN - CompensationVariation;
+            else CompensatedAxleForceN = AxleForceN + CompensationVariation;
 
             if (Math.Abs(SlipSpeedMpS) > WheelSlipThresholdMpS)
             {

@@ -2011,7 +2011,10 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // TODO  this is a wild simplification for electric and diesel electric
+            if (EngineType == EngineTypes.Diesel || EngineType == EngineTypes.Electric)
+            {
             UpdateTractiveForce(elapsedClockSeconds, ThrottlePercent / 100f, AbsSpeedMpS, AbsWheelSpeedMpS);
+            }
 
             foreach (MultiPositionController mpc in MultiPositionControllers)
             {
@@ -2398,7 +2401,7 @@ namespace Orts.Simulation.RollingStocks
                 AverageForceN = w * AverageForceN + (1 - w) * TractiveForceN;
             }
 
-            ApplyDirectionToTractiveForce();
+            ApplyDirectionToTractiveForce(ref TractiveForceN);
 
             // Calculate the total tractive force for the locomotive - ie Traction + Dynamic Braking force.
             // Note typically only one of the above will only ever be non-zero at the one time.
@@ -2453,21 +2456,21 @@ namespace Orts.Simulation.RollingStocks
         /// <summary>
         /// This function applies a sign to the motive force as a function of the direction of the train.
         /// </summary>
-        protected virtual void ApplyDirectionToTractiveForce()
+        protected virtual void ApplyDirectionToTractiveForce(ref float tractiveForceN)
         {
             if (Train.IsPlayerDriven)
             {
                 switch (Direction)
                 {
                     case Direction.Forward:
-                        //MotiveForceN *= 1;     //Not necessary
+                        //tractiveForceN *= 1;     //Not necessary
                         break;
                     case Direction.Reverse:
-                        TractiveForceN *= -1;
+                        tractiveForceN *= -1;
                         break;
                     case Direction.N:
                     default:
-                        TractiveForceN *= 0;
+                        tractiveForceN *= 0;
                         break;
                 }
             }
@@ -2476,7 +2479,7 @@ namespace Orts.Simulation.RollingStocks
                 switch (Direction)
                 {
                     case Direction.Reverse:
-                        TractiveForceN *= -1;
+                        tractiveForceN *= -1;
                         break;
                     default:
                         break;
