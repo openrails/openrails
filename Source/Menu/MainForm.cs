@@ -572,11 +572,8 @@ namespace ORTS
 
         void buttonDownloadContent_Click(object sender, EventArgs e)
         {
-            SaveOptions();
-
             using (var form = new DownloadContentForm(Settings))
             {
-                Cursor.Current = Cursors.WaitCursor;
                 form.ShowDialog(this);
             }
         }

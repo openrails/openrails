@@ -18,9 +18,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using LibGit2Sharp;
+using static ORTS.Settings.RouteSettings;
+using System.Windows.Forms;
 
 namespace ORTS.Settings
 {
@@ -30,35 +35,120 @@ namespace ORTS.Settings
         {
             public string DateInstalled { get; set; }
             public string Url { get; set; }
-            public string SubDirectory { get; set; }
 
-            public Route(string dateInstalled, string url, string subDirectory)
+            public Route(string dateInstalled, string url)
             { 
                 DateInstalled = dateInstalled;
                 Url = url;
-                SubDirectory = subDirectory;
             }
         }
 
-        private ContentSettings Content;
+        private readonly ContentSettings Content;
 
-        public IDictionary<string, Route> Routes = new Dictionary<string, Route>();
+        public IDictionary<string, Route> Routes { get; private set; }
 
         public RouteSettings(ContentSettings content)
         {
             Content = content;
+            Routes = new Dictionary<string, Route>();
+
             Load();
         }
 
         public void Load() 
         {
+            // left empty
+        }
+
+        public void LoadContentAndInstalled()
+        {
             if (!string.IsNullOrWhiteSpace(Content.RouteJsonName))
             {
                 if (File.Exists(Content.RouteJsonName))
                 {
-                    string json = File.ReadAllText(Content.RouteJsonName);
-                    Routes = JsonConvert.DeserializeObject<IDictionary<string, Route>>(json);
+                    try
+                    {
+                        string json = File.ReadAllText(Content.RouteJsonName);
+                        Routes = JsonConvert.DeserializeObject<IDictionary<string, Route>>(json);
+                    }
+                    catch (Exception error)
+                    {
+                        throw new Exception("Error during reading " + Content.RouteJsonName + ": " + error.Message, error);
+                    }
                 }
+            }
+
+            string definedContentJsonName = @"d:\content\routes.json";
+            string definedContentJsonDirectoryName = Path.Combine(UserSettings.UserDataFolder, "ContentJson");
+            string githubUrl = "https://github.com/openrails/content.git";
+
+            if (Environment.GetEnvironmentVariable("TstLoadContentAndInstalled") == null)
+            {
+                try
+                {
+                    // normal non test behaviour, retrieve json file from github
+
+                    directoryDelete(definedContentJsonDirectoryName);
+
+                    Repository.Clone(githubUrl, definedContentJsonDirectoryName);
+
+                    definedContentJsonName = Path.Combine(definedContentJsonDirectoryName, "routes.json");
+                }
+                catch (Exception error) 
+                { 
+                    throw new Exception("Error during retrieving routes.json from \"" + githubUrl + "\":" + error.Message, error); 
+                }  
+            }
+
+            if (File.Exists(definedContentJsonName))
+            {
+                try
+                {
+                    var json = File.ReadAllText(definedContentJsonName);
+
+                    IList<JToken> results = JsonConvert.DeserializeObject<JToken>(json) as IList<JToken>;
+                    foreach (JToken result in results)
+                    {
+                        if (result["url"].ToString().EndsWith(".git"))
+                        {
+                            string routeName = result["name"].ToString();
+                            if (!Routes.ContainsKey(routeName))
+                            {
+                                Routes.Add(routeName, new RouteSettings.Route("", result["url"].ToString()));
+                            }
+                        }
+                    }
+
+                    directoryDelete(definedContentJsonDirectoryName);
+                }
+                catch (Exception error)
+                {
+                    throw new Exception("Error during reading \"" +  definedContentJsonName + "\": " + error.Message, error);
+                }
+            }
+
+            return;
+        }
+
+        private void directoryDelete(string directoryName)
+        {
+            if (Directory.Exists(directoryName))
+            {
+                directoryRemoveReadOnlyFlags(directoryName);
+                Directory.Delete(directoryName, true);
+            }
+        }
+
+        private void directoryRemoveReadOnlyFlags(string directoryName)
+        {
+            foreach (string filename in Directory.GetFiles(directoryName))
+            {
+                FileInfo file = new FileInfo(filename);
+                file.IsReadOnly = false;
+            }
+            foreach (string subDirectoryName in Directory.GetDirectories(directoryName))
+            {
+                directoryRemoveReadOnlyFlags(subDirectoryName);
             }
         }
 
