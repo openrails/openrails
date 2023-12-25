@@ -204,9 +204,8 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommand.ControlSmallEjectorDecrease, new Action[] { () => SteamLocomotive.StopSmallEjectorDecrease(), () => SteamLocomotive.StartSmallEjectorDecrease(null) });
             UserInputCommands.Add(UserCommand.ControlLargeEjectorIncrease, new Action[] { () => SteamLocomotive.StopLargeEjectorIncrease(), () => SteamLocomotive.StartLargeEjectorIncrease(null) });
             UserInputCommands.Add(UserCommand.ControlLargeEjectorDecrease, new Action[] { () => SteamLocomotive.StopLargeEjectorDecrease(), () => SteamLocomotive.StartLargeEjectorDecrease(null) });
-            UserInputCommands.Add(UserCommand.ControlSteamBoosterAirValve, new Action[] { Noop, () => new ToggleSteamBoosterAirCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommand.ControlSteamBoosterIdleValve, new Action[] { Noop, () => new ToggleSteamBoosterIdleCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommand.ControlSteamBoosterLatch, new Action[] { Noop, () => new ToggleSteamBoosterLatchCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlSteamBoosterIncrease, new Action[] { () => SteamLocomotive.StopSteamBoosterIncrease(), () => SteamLocomotive.StartSteamBoosterIncrease(null) });
+            UserInputCommands.Add(UserCommand.ControlSteamBoosterDecrease, new Action[] { () => SteamLocomotive.StopSteamBoosterDecrease(), () => SteamLocomotive.StartSteamBoosterDecrease(null) });
             base.InitializeUserInputCommands();
         }
 
