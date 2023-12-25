@@ -896,11 +896,19 @@ namespace Orts.Formats.Msts
                     }),
                 new STFReader.TokenProcessor("decreasecolour", ()=>{
                     stf.MustMatch("(");
-                    stf.ReadInt(0);
+                    int NumColor = stf.ReadInt(0);
                     if(stf.EndOfBlock() == false)
                     {
-                        stf.ParseBlock(new STFReader.TokenProcessor[] {
-                            new STFReader.TokenProcessor("controlcolour", ()=>{ DecreaseColor = ParseControlColor(stf); }) });
+                        if (NumColor == 0)
+                        {
+                            // no. of colors is set as 0 and therefor no color is defined, but if set anyway, it must be skipped
+                            stf.SkipRestOfBlock();
+                        }
+                        else
+                        {
+                            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                                new STFReader.TokenProcessor("controlcolour", ()=>{ DecreaseColor = ParseControlColor(stf); }) });
+                        }
                     }
                 }),
                 new STFReader.TokenProcessor("ortsfont", ()=>{ParseFont(stf); }),

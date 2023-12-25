@@ -51,10 +51,9 @@ namespace Orts.Viewer3D.Processes
                 Game.InactiveSleepTime = TimeSpan.Zero;
 
                 // We must create these forms on the main thread (Render) or they won't pump events correctly.
-
-                Program.DebugViewer = new DispatchViewer(Viewer.Simulator, Viewer);
-                Program.DebugViewer.Hide();
-                Viewer.DebugViewerEnabled = false;
+                Program.MapForm = new MapViewer(Viewer.Simulator, Viewer);
+                Program.MapForm.Hide();
+                Viewer.MapViewerEnabled = false;
 
                 Program.SoundDebugForm = new SoundDebugForm(Viewer);
                 Program.SoundDebugForm.Hide();
@@ -133,8 +132,8 @@ namespace Orts.Viewer3D.Processes
                 MPManager.Client.Stop();
             if (Program.Simulator != null)
                 Program.Simulator.Stop();
-            if (Program.DebugViewer != null)
-                Program.DebugViewer.Dispose();
+            if (Program.MapForm != null)
+                Program.MapForm.Dispose();
             if (Program.SoundDebugForm != null)
                 Program.SoundDebugForm.Dispose();
             base.Dispose();
