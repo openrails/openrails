@@ -1470,9 +1470,6 @@ namespace Orts.Simulation.RollingStocks
                         SteamGearRatio = 1.0f;     // set gear ratio to default, as not a geared locomotive
 
                         SteamEngines[i].MaxTractiveEffortLbf = (SteamEngines[i].NumberCylinders / 2.0f) * (Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersStrokeM) / (2 * Me.ToIn(SteamEngines[i].AttachedAxle.WheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
-
-                        Trace.TraceInformation("MaxTE - {0} Wheel Radius {1}", MaxTractiveEffortLbf, SteamEngines[i].AttachedAxle.WheelRadiusM);
-
                     }
                     else // Default to Simple Locomotive (Assumed Simple) shows up as "Unknown"
                     {
@@ -8189,32 +8186,32 @@ namespace Orts.Simulation.RollingStocks
 
         public void ToggleCylinderCompound()
         {
-
-            if (SteamEngineType == SteamEngineTypes.Compound)  // only use this control if a compound locomotive
+            for (int i = 0; i < SteamEngines.Count; i++)
             {
-                CylinderCompoundOn = !CylinderCompoundOn;
-                SignalEvent(Event.CylinderCompoundToggle);
-                if (IsPlayerTrain)
+                if (SteamEngineType == SteamEngineTypes.Compound)  // only use this control if a compound locomotive
                 {
-                    Simulator.Confirmer.Confirm(CabControl.CylinderCompound, CylinderCompoundOn ? CabSetting.On : CabSetting.Off);
-                }
-                if (!CylinderCompoundOn) // Compound bypass valve closed - operating in compound mode
-                {
-                    // Calculate maximum tractive effort if set for compounding
-                    for (int i = 0; i < SteamEngines.Count; i++)
+                    CylinderCompoundOn = !CylinderCompoundOn;
+                    SignalEvent(Event.CylinderCompoundToggle);
+                    if (IsPlayerTrain)
                     {
+                        Simulator.Confirmer.Confirm(CabControl.CylinderCompound, CylinderCompoundOn ? CabSetting.On : CabSetting.Off);
+                    }
+                    if (!CylinderCompoundOn) // Compound bypass valve closed - operating in compound mode
+                    {
+                        // Calculate maximum tractive effort if set for compounding
+
                         MaxTractiveEffortLbf = CylinderEfficiencyRate * (1.6f * MaxBoilerPressurePSI * Me.ToIn(SteamEngines[i].LPCylindersDiameterM) * Me.ToIn(SteamEngines[i].LPCylindersDiameterM) * Me.ToIn(SteamEngines[i].LPCylindersStrokeM)) / ((CompoundCylinderRatio + 1.0f) * (Me.ToIn(SteamEngines[i].AttachedAxle.WheelRadiusM * 2.0f)));
+
+                        DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
                     }
-                    DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
-                }
-                else // Compound bypass valve opened - operating in simple mode
-                {
-                    // Calculate maximum tractive effort if set to simple operation
-                    for (int i = 0; i < SteamEngines.Count; i++)
+                    else // Compound bypass valve opened - operating in simple mode
                     {
-                        MaxTractiveEffortLbf += CylinderEfficiencyRate * (1.6f * MaxBoilerPressurePSI * Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersStrokeM)) / (Me.ToIn(SteamEngines[i].AttachedAxle.WheelRadiusM * 2.0f));
+                        // Calculate maximum tractive effort if set to simple operation
+
+                        MaxTractiveEffortLbf = CylinderEfficiencyRate * (1.6f * MaxBoilerPressurePSI * Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersStrokeM)) / (Me.ToIn(SteamEngines[i].AttachedAxle.WheelRadiusM * 2.0f));
+
+                        DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
                     }
-                    DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
                 }
             }
         }
