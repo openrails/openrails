@@ -26,12 +26,13 @@ using ORTS.Settings;
 using System.Linq;
 using System.Diagnostics;
 using System.Threading;
+using System.ComponentModel;
 
 namespace ORTS
 {
     public partial class DownloadContentForm : Form
     {
-        private readonly GettextResourceManager Catalog = new GettextResourceManager("Menu");
+        private readonly GettextResourceManager Catalog;
         private readonly UserSettings Settings;
         private readonly IDictionary<string, RouteSettings.Route> Routes;
 
@@ -41,9 +42,11 @@ namespace ORTS
         {
             InitializeComponent();
 
+            Catalog = new GettextResourceManager("Menu");
             Settings = settings;
-            Routes = settings.Routes.Routes;
 
+            Settings.Routes.LoadContentAndInstalled();
+            Routes = settings.Routes.Routes;
             for (int index = 0; index < Routes.Count; index++)
             {
                 string routeName = Routes.ElementAt(index).Key;
@@ -51,23 +54,9 @@ namespace ORTS
                 dataGridViewDownloadContent.Rows.Add(new string[] { routeName, route.DateInstalled, route.Url });
             }
 
-            Add("OR CPV", "https://github.com/cpvirtual/OR_CPV.git", "");
-            Add("NewForest Route V3", "https://github.com/rickloader/NewForestRouteV3.git", "");
-            Add("MidEast Coast", "https://github.com/MECoast/MECoast.git", "");
-            Add("Demo Model 1", "https://github.com/cjakeman/Demo-Model-1.git", "Demo Model 1");
-            Add("Chiltern Route V2", "https://github.com/DocMartin7644/Chiltern-Route-v2.git", "");
+            dataGridViewDownloadContent.Sort(dataGridViewDownloadContent.Columns[0], ListSortDirection.Ascending);
 
             InstallPathTextBox.Text = settings.Content.InstallPath;
-        }
-
-        public void Add(string routeName, string url, string subDirectory)
-        {
-            RouteSettings.Route route = Routes.ContainsKey(routeName) ? Routes[routeName] : null;
-            if (route == null)
-            {
-                dataGridViewDownloadContent.Rows.Add(new string[] { routeName, "", url });
-                Routes.Add(routeName, new RouteSettings.Route("", url, subDirectory));
-            }
         }
 
         void dataGridViewDownloadContent_SelectionChanged(object sender, EventArgs e)
@@ -82,7 +71,7 @@ namespace ORTS
             using (FolderBrowserDialog folderBrowser = new FolderBrowserDialog())
             {
                 folderBrowser.SelectedPath = InstallPathTextBox.Text;
-                folderBrowser.Description = "Main Path where route is to be installed";
+                folderBrowser.Description = Catalog.GetString("Main Path where route is to be installed");
                 folderBrowser.ShowNewFolderButton = true;
                 if (folderBrowser.ShowDialog(this) == DialogResult.OK)
                 {
@@ -141,10 +130,6 @@ namespace ORTS
 
             Settings.Content.InstallPath = installPath;
 
-            // check if filesystem is case sensitive
-            // ok, this check will be wrong if both upper- and lowercase named route directories exist
-            bool directoryCaseInsensitive = Directory.Exists(installPathRoute.ToUpper()) && Directory.Exists(installPathRoute.ToLower());
-
             // set json route filename
 
             Settings.Content.RouteJsonName = Path.Combine(installPath, "ORRoute.json");
@@ -156,8 +141,6 @@ namespace ORTS
             dataGridViewDownloadContent.CurrentRow.Cells[1].Value = Catalog.GetString("Installing...");
             Refresh();
 
-            // actual download
-
             if (!downloadRoute(installPathRoute))
             {
                 return;
@@ -165,49 +148,9 @@ namespace ORTS
 
             // insert row in Options, tab Content
 
-            if (!string.IsNullOrWhiteSpace(Routes[RouteName].SubDirectory))
+            if (!insertRowInOptions(installPathRoute))
             {
-                installPathRoute = Path.Combine(installPathRoute, Routes[RouteName].SubDirectory);
-            }
-
-            bool updated = false;
-            int index = 0;
-            while (!updated)
-            {
-                string routeName = "";
-                bool routeNameFound = false;
-                foreach (KeyValuePair<string, string> folderSetting in Settings.Folders.Folders)
-                {
-                    if (index == 0) {
-                        routeName = RouteName;
-                    } else
-                    {
-                        routeName = string.Format("{0} ({1})", RouteName, index);
-                    }
-                    if (folderSetting.Key == routeName) {
-                        if (folderSetting.Value.Equals(installPathRoute, 
-                            directoryCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
-                        {
-                           updated = true;
-                        }
-                        else
-                        {
-                           routeNameFound = true;
-                        }
-                    }
-                }
-                if (!updated)
-                {
-                    if (routeNameFound)
-                    {
-                        index++;
-                    }
-                    else
-                    {
-                        Settings.Folders.Folders[routeName] = installPathRoute;
-                        updated = true;
-                    }
-                }
+                return;
             }
 
             string dateTimeNowStr = DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat);
@@ -275,13 +218,91 @@ namespace ORTS
         {
             foreach (string fileName in Directory.GetFiles(path))
             {
-                TotalBytes += new System.IO.FileInfo(fileName).Length;
+                TotalBytes += new FileInfo(fileName).Length;
             }
 
             foreach (string directoryName in Directory.GetDirectories(path))
             {
                 sumMB(directoryName);
             }
+        }
+
+        private bool insertRowInOptions(string installPathRoute)
+        {
+            // check if filesystem is case sensitive
+            // ok, this check will be wrong if both upper- and lowercase named route directories exist
+            bool directoryCaseInsensitive = Directory.Exists(installPathRoute.ToUpper()) && Directory.Exists(installPathRoute.ToLower());
+
+            // sometimes the route is located one directory level deeper, determine real installPathRoute
+            string installPathRouteReal;
+
+            if (Directory.Exists(Path.Combine(installPathRoute, "routes"))) {
+                installPathRouteReal = installPathRoute;
+            } 
+            else
+            {
+                string[] directories = Directory.GetDirectories(installPathRoute);
+                int indexDirectories = 0;
+                while ((indexDirectories < directories.Length) &&
+                    !Directory.Exists(Path.Combine(directories[indexDirectories], "routes")))
+                {
+                    indexDirectories++;
+                }
+                if (indexDirectories < directories.Length)
+                {
+                    installPathRouteReal = Path.Combine(installPathRoute, directories[indexDirectories]);
+                }
+                else
+                { 
+                    string message = Catalog.GetString("Incorrect route, directory \"routes\" not found");
+                    MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+            }
+
+            bool updated = false;
+            int index = 0;
+            while (!updated)
+            {
+                string routeName = "";
+                bool routeNameFound = false;
+                foreach (KeyValuePair<string, string> folderSetting in Settings.Folders.Folders)
+                {
+                    if (index == 0)
+                    {
+                        routeName = RouteName;
+                    }
+                    else
+                    {
+                        routeName = string.Format("{0} ({1})", RouteName, index);
+                    }
+                    if (folderSetting.Key == routeName)
+                    {
+                        if (folderSetting.Value.Equals(installPathRouteReal,
+                            directoryCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+                        {
+                            updated = true;
+                        }
+                        else
+                        {
+                            routeNameFound = true;
+                        }
+                    }
+                }
+                if (!updated)
+                {
+                    if (routeNameFound)
+                    {
+                        index++;
+                    }
+                    else
+                    {
+                        Settings.Folders.Folders[routeName] = installPathRouteReal;
+                        updated = true;
+                    }
+                }
+            }
+            return true;
         }
     }
 
