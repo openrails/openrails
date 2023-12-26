@@ -432,6 +432,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// switch between Polach and Pacha adhesion calculation
         /// </summary>
         public static bool UsePolachAdhesion = false; // "static" so it's shared by all axles of the Player's loco
+        public double GameTime; // Set by MSTSLocomotive and used by AdhesionPrecision.IsPrecisionHigh
 
         /// <summary>
         /// Pre-calculation of slip characteristics at 0 slip speed
@@ -1001,7 +1002,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="elapsedSeconds"></param>
         public virtual void Update(float elapsedSeconds)
         {
-            UsePolachAdhesion = AdhesionPrecision.IsPrecisionHigh(elapsedSeconds);
+            UsePolachAdhesion = AdhesionPrecision.IsPrecisionHigh(elapsedSeconds, GameTime);
             if (UsePolachAdhesion)
             {
                 forceToAccelerationFactor = WheelRadiusM * WheelRadiusM / totalInertiaKgm2;
@@ -1104,43 +1105,67 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 /// <summary>
                 /// Initial level uses Polach algorithm
                 /// </summary>
-                High,
+                High = 0,
                 /// <summary>
                 /// Low-performance PCs use Pacha's algorithm
                 /// </summary>
-                Low
+                Low = 1,
+                /// <summary>
+                /// After frequent transitions, low-performance PCs are locked to Pacha's algorithm
+                /// </summary>
+                LowLocked = 2
             }
 
-            static AdhesionPrecisionLevel PrecisionLevel = AdhesionPrecisionLevel.High;
-            static double TimeOfLatestDowngrade = 0;
-
             // Adjustable limits
+            const float LowerLimitS = 0.025f;   // timespan 0.025 = 40 fps screen rate, low timeSpan and high FPS
             const float UpperLimitS = 0.033f;   // timespan 0.033 = 30 fps screen rate, high timeSpan and low FPS
+            const double IntervalBetweenDowngradesLimitS = 5 * 60; // Locks in low precision if < 5 mins between downgrades
+
+            static AdhesionPrecisionLevel PrecisionLevel = AdhesionPrecisionLevel.High;
+            static double TimeOfLatestDowngrade = 0 - IntervalBetweenDowngradesLimitS; // Starts at -5 mins
 
             // Tested by varying the framerate interactively. Did this by opening and closing the HelpWindow after inserting
             //   Threading.Thread.Sleep(40);
             // into HelpWindow.PrepareFrame() temporarily.
-            public static bool IsPrecisionHigh(float elapsedSeconds)
+            public static bool IsPrecisionHigh(float elapsedSeconds, double gameTime)
             {
-                if (elapsedSeconds > 0) // Ignore period with elapsedSeconds == 0 until user starts game.
+                // Switches between Polach (high precision) adhesion model and Pacha (low precision) adhesion model depending upon the PC performance
+                switch (PrecisionLevel)
                 {
-                    // Switches between Polach (high precision) adhesion model and Pacha (low precision) adhesion model depending upon the PC performance
-                    switch (PrecisionLevel)
-                    {
-                        case AdhesionPrecisionLevel.High:
-                            if (elapsedSeconds > UpperLimitS)
+                    case AdhesionPrecisionLevel.High:
+                        if (elapsedSeconds > UpperLimitS)
+                        {
+                            var screenFrameRate = 1 / elapsedSeconds;
+                            var timeSincePreviousDowngradeS = gameTime - TimeOfLatestDowngrade;
+                            if (timeSincePreviousDowngradeS < IntervalBetweenDowngradesLimitS)
                             {
-                                var screenFrameRate = 1 / elapsedSeconds;
-                                {
-                                    Trace.TraceInformation($"Advanced adhesion model switched to low precision permanently after low frame rate {screenFrameRate:F1} below limit {1 / UpperLimitS:F0}");
-                                    PrecisionLevel = AdhesionPrecisionLevel.Low;
-                                }
+                                Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to low precision permanently after {timeSincePreviousDowngradeS:F0} secs since previous switch (less than limit of {IntervalBetweenDowngradesLimitS})");
+                                PrecisionLevel = AdhesionPrecisionLevel.LowLocked;
                             }
-                            break;
+                            else
+                            {
+                                TimeOfLatestDowngrade = gameTime;
 
-                        case AdhesionPrecisionLevel.Low:
-                            break;
-                    }
+                                Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to low precision after low frame rate {screenFrameRate:F1} below limit {1 / UpperLimitS:F0}");
+                                PrecisionLevel = AdhesionPrecisionLevel.Low;
+
+                            }
+                        }
+                        break;
+
+                    case AdhesionPrecisionLevel.Low:
+                        if (elapsedSeconds > 0 // When debugging step by step, elapsedSeconds == 0, so test for that
+                            && elapsedSeconds < LowerLimitS)
+                        {
+                            PrecisionLevel = AdhesionPrecisionLevel.High;
+                            var ScreenFrameRate = 1 / elapsedSeconds;
+                            Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to high precision after high frame rate {ScreenFrameRate:F1} above limit {1 / LowerLimitS:F0}");
+                        }
+                        break;
+
+                    case AdhesionPrecisionLevel.LowLocked:
+                        break;
+
                 }
                 return (PrecisionLevel == AdhesionPrecisionLevel.High);
             }
