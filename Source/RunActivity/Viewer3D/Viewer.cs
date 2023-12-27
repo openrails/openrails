@@ -140,7 +140,7 @@ namespace Orts.Viewer3D
         /// </summary>
         public void ActivateCabCamera()
         {
-            if (ThreeDimCabCamera.IsAvailable)
+            if ((Settings.Use3DCab || !CabCamera.IsAvailable) && ThreeDimCabCamera.IsAvailable)
                 ThreeDimCabCamera.Activate();
             else
                 CabCamera.Activate();
