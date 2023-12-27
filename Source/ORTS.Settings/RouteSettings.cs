@@ -33,10 +33,15 @@ namespace ORTS.Settings
             public string DateInstalled { get; set; }
             public string Url { get; set; }
 
-            public Route(string dateInstalled, string url)
+            public long DownloadSize;
+            public long InstallSize;
+
+            public Route(string dateInstalled, string url, long downloadSize, long installSize)
             { 
                 DateInstalled = dateInstalled;
                 Url = url;
+                DownloadSize = downloadSize;
+                InstallSize = installSize;
             }
         }
 
@@ -109,12 +114,14 @@ namespace ORTS.Settings
                     {
                         string routeName = result["name"].ToString();
                         string url = result["url"].ToString();
+                        long downloadSize = convertResultToLong(result, "downloadSize");
+                        long installSize = convertResultToLong(result, "installSize");
 
                         if (url.EndsWith(".git") || url.EndsWith(".zip"))
                         {
                             if (!Routes.ContainsKey(routeName))
                             {
-                                Routes.Add(routeName, new RouteSettings.Route("", url));
+                                Routes.Add(routeName, new RouteSettings.Route("", url, downloadSize, installSize));
                             }
                         }
                     }
@@ -128,6 +135,18 @@ namespace ORTS.Settings
             }
 
             return;
+        }
+
+        long convertResultToLong(JToken result, string fieldName)
+        {
+            if (result[fieldName] != null)
+            {
+                return (long)Convert.ToDouble(result[fieldName].ToString());
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         private void directoryDelete(string directoryName)
