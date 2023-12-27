@@ -18,14 +18,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using LibGit2Sharp;
-using static ORTS.Settings.RouteSettings;
-using System.Windows.Forms;
 
 namespace ORTS.Settings
 {
@@ -79,16 +76,17 @@ namespace ORTS.Settings
             }
 
             string definedContentJsonName = @"d:\content\routes.json";
-            string definedContentJsonDirectoryName = Path.Combine(UserSettings.UserDataFolder, "ContentJson");
-            string githubUrl = "https://github.com/openrails/content.git";
+
+            string definedContentJsonDirectoryName = Path.GetTempFileName();
+            File.Delete(definedContentJsonDirectoryName);
+
+            string githubUrl = "https://github.com/openrails/content.git";;
 
             if (Environment.GetEnvironmentVariable("TstLoadContentAndInstalled") == null)
             {
                 try
                 {
                     // normal non test behaviour, retrieve json file from github
-
-                    directoryDelete(definedContentJsonDirectoryName);
 
                     Repository.Clone(githubUrl, definedContentJsonDirectoryName);
 
@@ -109,12 +107,14 @@ namespace ORTS.Settings
                     IList<JToken> results = JsonConvert.DeserializeObject<JToken>(json) as IList<JToken>;
                     foreach (JToken result in results)
                     {
-                        if (result["url"].ToString().EndsWith(".git"))
+                        string routeName = result["name"].ToString();
+                        string url = result["url"].ToString();
+
+                        if (url.EndsWith(".git") || url.EndsWith(".zip"))
                         {
-                            string routeName = result["name"].ToString();
                             if (!Routes.ContainsKey(routeName))
                             {
-                                Routes.Add(routeName, new RouteSettings.Route("", result["url"].ToString()));
+                                Routes.Add(routeName, new RouteSettings.Route("", url));
                             }
                         }
                     }
@@ -134,6 +134,7 @@ namespace ORTS.Settings
         {
             if (Directory.Exists(directoryName))
             {
+                // remove the read only flags, otherwise the Directory.delete does not work
                 directoryRemoveReadOnlyFlags(directoryName);
                 Directory.Delete(directoryName, true);
             }
@@ -158,6 +159,7 @@ namespace ORTS.Settings
 
             for (int index = 0; index < Routes.Count; index++)
             {
+                // only save the installed routes
                 if (!string.IsNullOrWhiteSpace(Routes.ElementAt(index).Value.DateInstalled))
                 {
                     routes.Add(Routes.ElementAt(index));
