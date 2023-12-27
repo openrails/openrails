@@ -27,6 +27,8 @@ using System.Linq;
 using System.Diagnostics;
 using System.Threading;
 using System.ComponentModel;
+using System.Net;
+using System.IO.Compression;
 
 namespace ORTS
 {
@@ -86,9 +88,9 @@ namespace ORTS
             string installPathRoute = Path.Combine(installPath, RouteName);
             string message;
 
-            message = Catalog.GetStringFmt("Route to be installed in \"{0}\", are you sure?", installPathRoute);
-
             // various checks for the directory where the route is installed
+
+            message = Catalog.GetStringFmt("Route to be installed in \"{0}\", are you sure?", installPathRoute);
 
             if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
             {
@@ -170,23 +172,57 @@ namespace ORTS
         {
             bool returnValue = false;
 
-            Thread cloneThread = new Thread(() =>
+            Thread downloadThread = new Thread(() =>
             {
-                returnValue = doTheClone(installPathRoute);
+                if (Routes[RouteName].Url.EndsWith(".git"))
+                {
+                    returnValue = doTheClone(installPathRoute);
+                }
+                if (Routes[RouteName].Url.EndsWith(".zip"))
+                {
+                    returnValue = doTheZipDownload(Routes[RouteName].Url, Path.Combine(installPathRoute, RouteName + ".zip"));
+                }
             });
-            cloneThread.Start();
+            downloadThread.Start();
 
-            while (cloneThread.IsAlive)
+            while (downloadThread.IsAlive)
             {
                 Stopwatch sw = Stopwatch.StartNew();
 
                 TotalBytes = 0;
                 sumMB(installPathRoute);
                 dataGridViewDownloadContent.CurrentRow.Cells[1].Value =
-                    string.Format("downloaded: {0} kB", Math.Round((double)(TotalBytes / 1024)));
+                    string.Format("downloaded: {0} kB", (TotalBytes / 1024).ToString("N0"));
                 Refresh();
 
-                while ((cloneThread.IsAlive) && (sw.ElapsedMilliseconds <= 3000)) { }
+                while ((downloadThread.IsAlive) && (sw.ElapsedMilliseconds <= 3000)) { }
+            }
+
+            if (returnValue)
+            {
+                if (Routes[RouteName].Url.EndsWith(".zip"))
+                {
+                    Thread installThread = new Thread(() =>
+                    {
+                        returnValue = doTheUnzipInstall(Path.Combine(installPathRoute, RouteName + ".zip"), installPathRoute);
+                    });
+                    installThread.Start();
+
+                    long bytesZipfile = TotalBytes;
+
+                    while (installThread.IsAlive)
+                    {
+                        Stopwatch sw = Stopwatch.StartNew();
+
+                        TotalBytes = -bytesZipfile;
+                        sumMB(installPathRoute);
+                        dataGridViewDownloadContent.CurrentRow.Cells[1].Value =
+                            string.Format("Installed: {0} kB", (TotalBytes / 1024).ToString("N0"));
+                        Refresh();
+
+                        while ((installThread.IsAlive) && (sw.ElapsedMilliseconds <= 3000)) { }
+                    }
+                }
             }
 
             dataGridViewDownloadContent.CurrentRow.Cells[1].Value = "";
@@ -203,7 +239,45 @@ namespace ORTS
             catch (LibGit2SharpException libGit2SharpException)
             {
                 {
-                    string message = Catalog.GetStringFmt("Error during download: {0}", libGit2SharpException.Message);
+                    string message = Catalog.GetStringFmt("Error during github download: {0}", libGit2SharpException.Message);
+                    MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool doTheZipDownload(string url, string installPathRouteZipfileName)
+        {
+            try
+            {
+                WebClient myWebClient = new WebClient();
+                myWebClient.DownloadFile(url, installPathRouteZipfileName);
+            }
+            catch (Exception error)
+            {
+                {
+                    string message = Catalog.GetStringFmt("Error during download zipfile {0}: {1}", url, error.Message);
+                    MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool doTheUnzipInstall(string installPathRouteZipfileName, string installPathRoute)
+        {
+            try
+            {
+                ZipFile.ExtractToDirectory(installPathRouteZipfileName, installPathRoute);
+                File.Delete(installPathRouteZipfileName);
+            }
+            catch (Exception error)
+            {
+                {
+                    string message = Catalog.GetStringFmt("Error during unzip zipfile {0}: {1}", installPathRouteZipfileName, error.Message);
                     MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return false;
                 }
