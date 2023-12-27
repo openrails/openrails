@@ -110,16 +110,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public override void Save(BinaryWriter outf)
         {
-            outf.Write(ScriptName);
-
             base.Save(outf);
             TractionCutOffRelay.Save(outf);
         }
 
         public override void Restore(BinaryReader inf)
         {
-            ScriptName = inf.ReadString();
-
             base.Restore(inf);
             TractionCutOffRelay.Restore(inf);
         }
@@ -320,7 +316,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 case PowerSupplyEvent.QuickPowerOn:
                     QuickPowerOn = true;
-                    SignalEventToBatterySwitch(PowerSupplyEvent.CloseBatterySwitch);
+                    SignalEventToBatterySwitch(PowerSupplyEvent.QuickPowerOn);
                     SignalEventToMasterKey(PowerSupplyEvent.TurnOnMasterKey);
                     SignalEventToDieselEngines(PowerSupplyEvent.StartEngine);
                     SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.SwitchOnElectricTrainSupply);
@@ -332,7 +328,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     SignalEventToTractionCutOffRelay(PowerSupplyEvent.OpenTractionCutOffRelay);
                     SignalEventToDieselEngines(PowerSupplyEvent.StopEngine);
                     SignalEventToMasterKey(PowerSupplyEvent.TurnOffMasterKey);
-                    SignalEventToBatterySwitch(PowerSupplyEvent.OpenBatterySwitch);
+                    SignalEventToBatterySwitch(PowerSupplyEvent.QuickPowerOff);
                     break;
 
                 case PowerSupplyEvent.TogglePlayerEngine:

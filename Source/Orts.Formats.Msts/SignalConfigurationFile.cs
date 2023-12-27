@@ -43,6 +43,8 @@ namespace Orts.Formats.Msts
     {
         /// <summary>Name-indexed list of available signal functions</summary>
         public IDictionary<string, SignalFunction> SignalFunctions;
+        /// <summary>Allocation-free MstsName-indexed list of available signal functions</summary>
+        public static Dictionary<MstsSignalFunction, SignalFunction> MstsSignalFunctions;
         /// <summary>List of OR defined subtypes for Norman signals</summary>
         public IList<string> ORTSNormalSubtypes;
         /// <summary>Name-indexed list of available light textures</summary>
@@ -78,6 +80,19 @@ namespace Orts.Formats.Msts
                 { SignalFunction.SPEED.Name, SignalFunction.SPEED },
                 { SignalFunction.ALERT.Name, SignalFunction.ALERT },
                 { SignalFunction.UNKNOWN.Name, SignalFunction.UNKNOWN }
+            };
+
+            // and the allocation-free version of the above 
+            MstsSignalFunctions = new Dictionary<MstsSignalFunction, SignalFunction>
+            {
+                { MstsSignalFunction.NORMAL, SignalFunction.NORMAL },
+                { MstsSignalFunction.DISTANCE, SignalFunction.DISTANCE },
+                { MstsSignalFunction.REPEATER, SignalFunction.REPEATER },
+                { MstsSignalFunction.SHUNTING, SignalFunction.SHUNTING },
+                { MstsSignalFunction.INFO, SignalFunction.INFO },
+                { MstsSignalFunction.SPEED, SignalFunction.SPEED },
+                { MstsSignalFunction.ALERT, SignalFunction.ALERT },
+                { MstsSignalFunction.UNKNOWN, SignalFunction.UNKNOWN }
             };
 
             // preset empty OR normal subtypes
@@ -444,17 +459,22 @@ namespace Orts.Formats.Msts
 
         public readonly string Name;
         public readonly MstsSignalFunction MstsFunction;
+        readonly int HashCode;
 
         public SignalFunction(MstsSignalFunction mstsFunction)
         {
             Name = mstsFunction.ToString();
             MstsFunction = mstsFunction;
+
+            HashCode = Name.GetHashCode() ^ MstsFunction.GetHashCode();
         }
 
         public SignalFunction(string name, MstsSignalFunction mstsFunction)
         {
             Name = name;
             MstsFunction = mstsFunction;
+
+            HashCode = Name.GetHashCode() ^ MstsFunction.GetHashCode();
         }
 
         public override string ToString()
@@ -505,7 +525,7 @@ namespace Orts.Formats.Msts
 
         public override int GetHashCode()
         {
-            return Name.GetHashCode() ^ MstsFunction.GetHashCode();
+            return HashCode;
         }
     }
     #endregion
@@ -1114,7 +1134,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("positionyd", ()=>{ ApproachControlPositionM = Me.FromYd(stf.ReadFloatBlock(STFReader.UNITS.None, 0)); }),
                 new STFReader.TokenProcessor("speedmph", ()=>{ ApproachControlSpeedMpS = MpS.FromMpH(stf.ReadFloatBlock(STFReader.UNITS.None, 0)); }),
                 new STFReader.TokenProcessor("speedkph", ()=>{ ApproachControlSpeedMpS = MpS.FromKpH(stf.ReadFloatBlock(STFReader.UNITS.None, 0)); }),
-                });
+                new STFReader.TokenProcessor("speedmps", ()=>{ ApproachControlSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.None, 0); }),
+              });
         }
     }
 

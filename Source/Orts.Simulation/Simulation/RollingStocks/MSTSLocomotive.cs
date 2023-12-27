@@ -131,6 +131,7 @@ namespace Orts.Simulation.RollingStocks
         public float MaxSpeedMpS = 1e3f;
         public float UnloadingSpeedMpS;
         public float MainResPressurePSI = 130;
+        public float BrakePipeFlowM3pS;
         public float MaximumMainReservoirPipePressurePSI;
         public bool CompressorIsOn;
         public bool CompressorIsMechanical = false;
@@ -145,6 +146,11 @@ namespace Orts.Simulation.RollingStocks
         public bool CabRadioOn;
         public bool OnLineCabRadio;
         public string OnLineCabRadioURL;
+
+        float ZeroSpeedAdhesionBase;
+
+        public float FilteredBrakePipeFlowM3pS;
+        public IIRFilter AFMFilter;
 
         // Water trough filling
         public bool HasWaterScoop = false; // indicates whether loco + tender have a water scoop or not
@@ -180,7 +186,17 @@ namespace Orts.Simulation.RollingStocks
 
         public float CurrentLocomotiveSteamHeatBoilerWaterCapacityL
         {
-            get { return WaterController.CurrentValue * MaximumSteamHeatBoilerWaterTankCapacityL; }
+            get {
+                if (IsSteamHeatFitted)
+                {
+                 return WaterController.CurrentValue * MaximumSteamHeatBoilerWaterTankCapacityL;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+
             set { WaterController.CurrentValue = value / MaximumSteamHeatBoilerWaterTankCapacityL; }
         }
         public float IsTenderRequired = 1.0f;  // Flag indicates that a tender is required for operation of the locomotive. Typically tank locomotives do not require a tender. Assume by default that tender is required.
@@ -233,10 +249,11 @@ namespace Orts.Simulation.RollingStocks
 
         // parameters for Track Sander based upon compressor air and abrasive table for 1/2" sand blasting nozzle @ 50psi
         public float MaxTrackSandBoxCapacityM3 = Me3.FromFt3(40.0f);  // Capacity of sandbox - assume 40.0 cu ft
-        public float CurrentTrackSandBoxCapacityM3 = 5.0f;   // This value needs to be initialised to the value above, as it reduces as sand is used.
+        public float CurrentTrackSandBoxCapacityM3; 
         public float TrackSanderAirComsumptionM3pS = Me3.FromFt3(195.0f) / 60.0f;  // Default value - cubic feet per min (CFM) 195 ft3/m
         public float TrackSanderAirPressurePSI = 50.0f;
         public float TrackSanderSandConsumptionM3pS = Me3.FromFt3(11.6f) / 3600.0f; // Default value - 11.6 ft3/h
+        public float SandWeightKgpM3 = 1600; // One cubic metre of sand weighs about 1.54-1.78 tonnes. 
 
         // Vacuum Braking parameters
         readonly static float OneAtmospherePSI = Bar.ToPSI(1);
@@ -349,6 +366,7 @@ namespace Orts.Simulation.RollingStocks
         public float TrainBrakePipeLeakPSIorInHgpS = 0.0f;    // Air leakage from train brake pipe - should normally be no more then 5psi/min - default off
         public float CompressorRestartPressurePSI = 110;
         public float CompressorChargingRateM3pS = 0.075f;
+        public bool CompressorIsMUControlled = false;
         public float MainResChargingRatePSIpS = 0.4f;
         public float EngineBrakeReleaseRatePSIpS = 12.5f;
         public float EngineBrakeApplyRatePSIpS = 12.5f;
@@ -369,16 +387,18 @@ namespace Orts.Simulation.RollingStocks
         public float DynamicBrakeMaxCurrentA;
         public float DynamicBrakeDelayS;
         public bool DynamicBrakeAutoBailOff;
+        public bool DynamicBrakePartialBailOff;
         public bool UsingRearCab;
         public bool BrakeOverchargeSoundOn = false;
-
-        protected bool DynamicBrakeBlended; // dynamic brake blending is currently active
         protected bool DynamicBrakeBlendingEnabled; // dynamic brake blending is configured
         public bool DynamicBrakeAvailable; // dynamic brake is available
         AirSinglePipe airPipeSystem;
-        public double DynamicBrakeCommandStartTime;
+        public double? DynamicBrakeCommandStartTime;
         protected bool DynamicBrakeBlendingOverride; // true when DB lever >0% should always override the blending. When false, the bigger command is applied.
         protected bool DynamicBrakeBlendingForceMatch = true; // if true, dynamic brake blending tries to achieve the same braking force as the airbrake would have.
+        protected bool DynamicBrakeControllerSetupLock; // if true if dynamic brake lever will lock until dynamic brake is available
+
+        public float DynamicBrakeBlendingPercent { get; protected set; } = -1;
 
         public CombinedControl CombinedControlType;
         public float CombinedControlSplitPosition;
@@ -415,7 +435,7 @@ namespace Orts.Simulation.RollingStocks
         protected const float DefaultMainResVolume = 0.78f; // Value to be inserted if .eng parameters are corrected
         protected const float DefaultMaxMainResPressure = 140; // Max value to be inserted if .eng parameters are corrected
 
-public List<CabView> CabViewList = new List<CabView>();
+        public List<CabView> CabViewList = new List<CabView>();
         public CabView3D CabView3D;
 
         public MSTSNotchController SteamHeatController = new MSTSNotchController(0, 1, 0.1f);
@@ -437,8 +457,6 @@ public List<CabView> CabViewList = new List<CabView>();
         public float TrainBrakeIntervention = -1;
         public float ThrottleIntervention = -1;
         public float DynamicBrakeIntervention = -1;
-        protected float PreviousDynamicBrakeIntervention = -1;
-        protected bool PreviousFullDynamicBrakingOrder;
 
         public enum TractionMotorTypes
         {
@@ -446,11 +464,11 @@ public List<CabView> CabViewList = new List<CabView>();
             AC,
         }
         public TractionMotorTypes TractionMotorType = TractionMotorTypes.DC;
+        public List<ElectricMotor> TractionMotors = new List<ElectricMotor>();
 
         public ILocomotivePowerSupply LocomotivePowerSupply => PowerSupply as ILocomotivePowerSupply;
         public ScriptedTrainControlSystem TrainControlSystem;
 
-        public Axle LocomotiveAxle;
         public IIRFilter CurrentFilter;
         public IIRFilter AdhesionFilter;
         public float SaveAdhesionFilter;
@@ -477,10 +495,10 @@ public List<CabView> CabViewList = new List<CabView>();
             MilepostUnitsMetric = Simulator.TRK.Tr_RouteFile.MilepostUnitsMetric;
             BrakeCutsPowerAtBrakeCylinderPressurePSI = 4.0f;
 
-            LocomotiveAxle = new Axle();
-            LocomotiveAxle.DriveType = AxleDriveType.ForceDriven;
+            LocomotiveAxles.Add(new Axle());
             CurrentFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.5f), 0.001f);
             AdhesionFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(1f), 0.001f);
+            AFMFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.1f), 1.0f);
 
             TrainBrakeController = new ScriptedBrakeController(this);
             EngineBrakeController = new ScriptedBrakeController(this);
@@ -944,6 +962,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 case "engine(ortstrainbrakescontrollerslowapplicationrate":
                 case "engine(ortstrainbrakecontroller":
                 case "engine(enginecontrollers(brake_train":
+                case "engine(ortstraindynamicblendingtable":
                     TrainBrakeController.Parse(lowercasetoken, stf);
                     TrainBrakeFitted = true;
                     break;
@@ -973,6 +992,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 case "engine(awsmonitor":
                 case "engine(overspeedmonitor": VigilanceMonitor = true; TrainControlSystem.Parse(lowercasetoken, stf); break;
                 case "engine(enginecontrollers(combined_control": ParseCombData(lowercasetoken, stf); break;
+                case "engine(ortsairbrakemainresvolume":
                 case "engine(airbrakesmainresvolume": MainResVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
                 case "engine(airbrakesmainmaxairpressure": MainResPressurePSI = MaxMainResPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(airbrakemaxmainrespipepressure": MaximumMainReservoirPipePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
@@ -984,6 +1004,7 @@ public List<CabView> CabViewList = new List<CabView>();
                         CompressorIsMechanical = true;
                     }
                     break;
+                case "engine(ortscompressorismucontrolled": CompressorIsMUControlled = stf.ReadBoolBlock(false); break;
                 case "engine(trainpipeleakrate": TrainBrakePipeLeakPSIorInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(vacuumbrakesvacuumpumpresistance": VacuumPumpResistanceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
 
@@ -1005,10 +1026,15 @@ public List<CabView> CabViewList = new List<CabView>();
                 case "engine(ortstractioncharacteristics": TractiveForceCurves = new InterpolatorDiesel2D(stf, true); break;
                 case "engine(ortsdynamicbrakeforcecurves": DynamicBrakeForceCurves = new InterpolatorDiesel2D(stf, false); break;
                 case "engine(ortscontinuousforcetimefactor": ContinuousForceTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(ortssanderspeedeffectupto":
                 case "engine(orts(ortssanderspeedeffectupto": SanderSpeedEffectUpToMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
+                case "engine(ortsemergencycausespowerdown":
                 case "engine(orts(ortsemergencycausespowerdown": EmergencyCausesPowerDown = stf.ReadBoolBlock(false); break;
+                case "engine(ortsemergencycausesthrottledown":
                 case "engine(orts(ortsemergencycausesthrottledown": EmergencyCausesThrottleDown = stf.ReadBoolBlock(false); break;
+                case "engine(ortsemergencyengageshorn":
                 case "engine(orts(ortsemergencyengageshorn": EmergencyEngagesHorn = stf.ReadBoolBlock(false); break;
+                case "engine(ortswheelslipcausesthrottledown":
                 case "engine(orts(ortswheelslipcausesthrottledown": WheelslipCausesThrottleDown = stf.ReadBoolBlock(false); break;
                 case "engine(dynamicbrakesminusablespeed": DynamicBrakeSpeed1MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesfadingspeed": DynamicBrakeSpeed2MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
@@ -1018,6 +1044,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 case "engine(dynamicbrakesmaximumforce": MaxDynamicBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(dynamicbrakehasautobailoff":
                 case "engine(ortsdynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
+                case "engine(ortsdynamicbrakeshaspartialbailoff": DynamicBrakePartialBailOff = stf.ReadBoolBlock(false); break;
                 case "engine(dynamicbrakesdelaytimebeforeengaging": DynamicBrakeDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(dynamicbrakesresistorcurrentlimit": DynamicBrakeMaxCurrentA = stf.ReadFloatBlock(STFReader.UNITS.Current, null); break;
                 case "engine(numwheels": MSTSLocoNumDrvWheels = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (MSTSLocoNumDrvWheels < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
@@ -1096,9 +1123,16 @@ public List<CabView> CabViewList = new List<CabView>();
                 case "engine(ortswaterscoopfillelevation": WaterScoopFillElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0.0f); break;
                 case "engine(ortswaterscoopdepth": WaterScoopDepthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0.0f); break;
                 case "engine(ortswaterscoopwidth": WaterScoopWidthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0.0f); break;
-                case "engine(ortsmaxtracksanderboxcapacity": MaxTrackSandBoxCapacityM3 = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
-                case "engine(ortsmaxtracksandersandconsumption": TrackSanderSandConsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
-                case "engine(ortsmaxtracksanderairconsumption": TrackSanderAirComsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                    // Convert the following default ft^3 to Me^3 units
+                case "engine(ortsmaxtracksanderboxcapacity": MaxTrackSandBoxCapacityM3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null);
+                    MaxTrackSandBoxCapacityM3 = Me3.FromFt3(MaxTrackSandBoxCapacityM3);
+                    break;
+                case "engine(ortsmaxtracksandersandconsumption": Me3.FromFt3( TrackSanderSandConsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null) );
+                    TrackSanderSandConsumptionM3pS = Me3.FromFt3(TrackSanderSandConsumptionM3pS);
+                    break;
+                case "engine(ortsmaxtracksanderairconsumption": Me3.FromFt3( TrackSanderAirComsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null) );
+                    TrackSanderAirComsumptionM3pS = Me3.FromFt3(TrackSanderAirComsumptionM3pS);
+                    break;
                 case "engine(ortscruisecontrol": SetUpCruiseControl(stf); break;
                 case "engine(ortsmultipositioncontroller": SetUpMPC(stf); break;
                 default:
@@ -1137,6 +1171,7 @@ public List<CabView> CabViewList = new List<CabView>();
             ContinuousForceTimeFactor = locoCopy.ContinuousForceTimeFactor;
             DynamicBrakeForceCurves = locoCopy.DynamicBrakeForceCurves;
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
+            DynamicBrakePartialBailOff = locoCopy.DynamicBrakePartialBailOff;
             DynamicBrakeMaxCurrentA = locoCopy.DynamicBrakeMaxCurrentA;
             CombinedControlType = locoCopy.CombinedControlType;
             CombinedControlSplitPosition = locoCopy.CombinedControlSplitPosition;
@@ -1172,6 +1207,7 @@ public List<CabView> CabViewList = new List<CabView>();
 
             CompressorIsMechanical = locoCopy.CompressorIsMechanical;
             CompressorRestartPressurePSI = locoCopy.CompressorRestartPressurePSI;
+            CompressorIsMUControlled = locoCopy.CompressorIsMUControlled;
             TrainBrakePipeLeakPSIorInHgpS = locoCopy.TrainBrakePipeLeakPSIorInHgpS;
             MaxMainResPressurePSI = locoCopy.MaxMainResPressurePSI;
             MainResPressurePSI = locoCopy.MaxMainResPressurePSI;
@@ -1180,13 +1216,13 @@ public List<CabView> CabViewList = new List<CabView>();
             MainResChargingRatePSIpS = locoCopy.MainResChargingRatePSIpS;
             BrakePipeDischargeTimeFactor = locoCopy.BrakePipeDischargeTimeFactor;
             DriveWheelOnlyBrakes = locoCopy.DriveWheelOnlyBrakes;
-            DynamicBrakeBlended = locoCopy.DynamicBrakeBlended;
             DynamicBrakeBlendingEnabled = locoCopy.DynamicBrakeBlendingEnabled;
             DynamicBrakeAvailable = locoCopy.DynamicBrakeAvailable;
             airPipeSystem = locoCopy.airPipeSystem;
             DynamicBrakeCommandStartTime = locoCopy.DynamicBrakeCommandStartTime;
             DynamicBrakeBlendingOverride = locoCopy.DynamicBrakeBlendingOverride;
             DynamicBrakeBlendingForceMatch = locoCopy.DynamicBrakeBlendingForceMatch;
+            DynamicBrakeControllerSetupLock = locoCopy.DynamicBrakeControllerSetupLock;
 
             MainPressureUnit = locoCopy.MainPressureUnit;
             BrakeSystemPressureUnits = locoCopy.BrakeSystemPressureUnits;
@@ -1222,21 +1258,8 @@ public List<CabView> CabViewList = new List<CabView>();
             WaterScoopFillElevationM = locoCopy.WaterScoopFillElevationM;
             WaterScoopDepthM = locoCopy.WaterScoopDepthM;
             WaterScoopWidthM = locoCopy.WaterScoopWidthM;
-            MoveParamsToAxle();
             CruiseControl = locoCopy.CruiseControl?.Clone(this);
             MultiPositionControllers = locoCopy.CloneMPC(this);
-        }
-
-        /// <summary>
-        /// We are moving parameters from locomotive to axle. 
-        /// </summary>
-        public void MoveParamsToAxle()
-        {
-            if (LocomotiveAxle != null)
-            {
-                LocomotiveAxle.SlipWarningTresholdPercent = SlipWarningThresholdPercent;
-                LocomotiveAxle.AdhesionK = AdhesionK;
-            }
         }
 
         /// <summary>
@@ -1260,7 +1283,6 @@ public List<CabView> CabViewList = new List<CabView>();
             outf.Write(VacuumExhausterIsOn);
             outf.Write(TrainBrakePipeLeakPSIorInHgpS);
             outf.Write(AverageForceN);
-            outf.Write(LocomotiveAxle.AxleSpeedMpS);
             outf.Write(CabLightOn);
             outf.Write(UsingRearCab);
             outf.Write(CalculatedCarHeaterSteamUsageLBpS);
@@ -1282,13 +1304,14 @@ public List<CabView> CabViewList = new List<CabView>();
             outf.Write(DPUnitID);
             outf.Write(PreviousGearBoxNotch);
             outf.Write(previousChangedGearBoxNotch);
+            outf.Write(DynamicBrake);
+            outf.Write(DynamicBrakeIntervention);
 
             base.Save(outf);
 
             LocomotivePowerSupply?.Save(outf);
             TrainControlSystem.Save(outf);
 
-            LocomotiveAxle.Save(outf);
             CruiseControl?.Save(outf);
         }
 
@@ -1312,7 +1335,6 @@ public List<CabView> CabViewList = new List<CabView>();
             VacuumExhausterIsOn = inf.ReadBoolean();
             TrainBrakePipeLeakPSIorInHgpS = inf.ReadSingle();
             AverageForceN = inf.ReadSingle();
-            float axleSpeedMpS = inf.ReadSingle();
             CabLightOn = inf.ReadBoolean();
             UsingRearCab = inf.ReadBoolean();
             CalculatedCarHeaterSteamUsageLBpS = inf.ReadSingle();
@@ -1339,14 +1361,14 @@ public List<CabView> CabViewList = new List<CabView>();
             PreviousGearBoxNotch = inf.ReadInt32();
             previousChangedGearBoxNotch = inf.ReadInt32();
 
+            DynamicBrake = inf.ReadBoolean();
+            DynamicBrakeIntervention = inf.ReadSingle();
+
             base.Restore(inf);
 
             LocomotivePowerSupply?.Restore(inf);
             TrainControlSystem.Restore(inf);
 
-            LocomotiveAxle = new Axle(inf);
-            MoveParamsToAxle();
-            LocomotiveAxle.Reset(Simulator.GameTime, axleSpeedMpS);
             CruiseControl?.Restore(inf);
         }
 
@@ -1392,8 +1414,6 @@ public List<CabView> CabViewList = new List<CabView>();
                 TrainBrakeController = new ScriptedBrakeController(this);
             if (dynamic && !DynamicBrakeController.IsValid())
                 DynamicBrakeController = new MSTSNotchController(0, 1, .05f);
-            if (dynamic)
-                DynamicBrake = true;
         }
 
         /// <summary>
@@ -1472,7 +1492,7 @@ public List<CabView> CabViewList = new List<CabView>();
             // Ensure Drive Axles is set with a default value if user doesn't supply an OR value in ENG file
             if (LocoNumDrvAxles == 0)
             {
-                if (MSTSLocoNumDrvWheels != 0 && MSTSLocoNumDrvWheels < 6)
+                if (MSTSLocoNumDrvWheels != 0 && MSTSLocoNumDrvWheels < 7)
                 {
                     LocoNumDrvAxles = (int) MSTSLocoNumDrvWheels;
                 }
@@ -1486,11 +1506,26 @@ public List<CabView> CabViewList = new List<CabView>();
                     Trace.TraceInformation("Number of Locomotive Drive Axles set to default value of {0}", LocoNumDrvAxles);
                 }
             }
+            //Compute axle inertia from parameters if possible
+            if (AxleInertiaKgm2 <= 0) // if no axleinertia value supplied in ENG file, calculate axleinertia value.
+            {
+                if (LocoNumDrvAxles > 0 && DriverWheelRadiusM > 0)
+                {
+                    float radiusSquared = DriverWheelRadiusM * DriverWheelRadiusM;
+                    float wheelMass = 500 * radiusSquared / (0.5f * 0.5f);
+                    AxleInertiaKgm2 = Math.Min(LocoNumDrvAxles * wheelMass * radiusSquared + 500, 40000);
+                }
+                else
+                    AxleInertiaKgm2 = 2000.0f;
+            }
             if (TractionMotorType == TractionMotorTypes.AC)
             {
-                InductionMotor motor = new InductionMotor(LocomotiveAxle, this);
+                foreach (var axle in LocomotiveAxles)
+                {
+                    InductionMotor motor = new InductionMotor(axle, this);
+                    TractionMotors.Add(motor);
+                }
             }
-
 
             // Calculate minimum speed to pickup water
             const float Aconst = 2;
@@ -1740,7 +1775,6 @@ public List<CabView> CabViewList = new List<CabView>();
         public override void InitializeMoving()
         {
             base.InitializeMoving();
-            LocomotiveAxle.Reset(Simulator.GameTime, SpeedMpS);
             AdhesionFilter.Reset(0.5f);
             AverageForceN = MaxForceN * Train.MUThrottlePercent / 100;
             float maxPowerW = MaxPowerW * Train.MUThrottlePercent * Train.MUThrottlePercent / 10000;
@@ -1808,39 +1842,30 @@ public List<CabView> CabViewList = new List<CabView>();
         /// </summary>
         public void DynamicBrakeBlending(float elapsedClockSeconds)
         {
-            if (Math.Abs(SpeedMpS) > DynamicBrakeSpeed1MpS && airPipeSystem != null && ((airPipeSystem is EPBrakeSystem && Train.BrakeLine4 > 0f) || airPipeSystem.BrakeLine1PressurePSI < TrainBrakeController.MaxPressurePSI - 1f)
-                && ThrottleController.CurrentValue == 0f && !(DynamicBrakeController != null && DynamicBrakeBlendingOverride && DynamicBrakeController.CurrentValue > 0f)
-                /* && (!DynamicBrakeBlendingLeverOverride && DynamicBrakeController != null && DynamicBrakeIntervention < DynamicBrakeController.CurrentValue)*/)
+            // Local blending
+            if (Math.Abs(SpeedMpS) > DynamicBrakeSpeed1MpS && airPipeSystem != null && airPipeSystem.AutoCylPressurePSI > 0.1f
+                && ThrottlePercent == 0 && !(DynamicBrakeController != null && DynamicBrakeBlendingOverride && DynamicBrakeController.CurrentValue > 0))
             {
-                float threshold = DynamicBrakeBlendingForceMatch ? 100f : 0.01f;
                 float maxCylPressurePSI = airPipeSystem.GetMaxCylPressurePSI();
-                float targetDynamicBrakePercent = airPipeSystem is EPBrakeSystem ? Train.BrakeLine4 : Math.Min(((TrainBrakeController.MaxPressurePSI - airPipeSystem.BrakeLine1PressurePSI) * airPipeSystem.GetAuxCylVolumeRatio()) / maxCylPressurePSI, 1f);
-                //DynamicBrakeIntervention = Math.Min(((TrainBrakeController.CurrentValue - DynamicBrakeBlendingStart) / (DynamicBrakeBlendingStop - DynamicBrakeBlendingStart)), 1f);
+                float target = airPipeSystem.AutoCylPressurePSI * airPipeSystem.RelayValveRatio / maxCylPressurePSI;
 
-                if (!DynamicBrakeBlended)
+                if (DynamicBrakeBlendingForceMatch)
                 {
-                    DynamicBrakeBlended = true;
-                    if (DynamicBrakeController != null)
-                        DynamicBrakeIntervention = DynamicBrakeController.CurrentValue;
-                    else
-                        DynamicBrakeIntervention = 0;
-                    DynamicBrakeCommandStartTime = Simulator.ClockTime;
+                    float diff = target * FrictionBrakeBlendingMaxForceN - DynamicBrakeForceN;
+                    float threshold = 100;
+                    if (diff > threshold && DynamicBrakePercent < 100)
+                        DynamicBrakeBlendingPercent = Math.Min(DynamicBrakePercent + 100 * elapsedClockSeconds, 100);
+                    else if (diff < -threshold && DynamicBrakePercent > 1)
+                        DynamicBrakeBlendingPercent = Math.Max(DynamicBrakePercent - 100 * elapsedClockSeconds, 1);
                 }
-                if (DynamicBrake)
+                else
                 {
-                    float diff = DynamicBrakeBlendingForceMatch ? targetDynamicBrakePercent * MaxBrakeForceN - DynamicBrakeForceN : targetDynamicBrakePercent - DynamicBrakeIntervention;
-                    if (diff > threshold && DynamicBrakeIntervention <= 1)
-                        DynamicBrakeIntervention = Math.Min( DynamicBrakeIntervention + elapsedClockSeconds * (airPipeSystem.GetMaxApplicationRatePSIpS() / maxCylPressurePSI), 1.0f);
-                    else if (diff < -threshold)
-                        DynamicBrakeIntervention -= elapsedClockSeconds * (airPipeSystem.GetMaxReleaseRatePSIpS() / maxCylPressurePSI);
+                    DynamicBrakeBlendingPercent = target * 100;
                 }
-                if (DynamicBrakeController != null)
-                    DynamicBrakeIntervention = Math.Max(DynamicBrakeIntervention, DynamicBrakeController.CurrentValue);
             }
-            else if (DynamicBrakeBlended)
+            else
             {
-                DynamicBrakeIntervention = -1;
-                DynamicBrakeBlended = false;
+                DynamicBrakeBlendingPercent = -1;
             }
         }
 
@@ -1961,6 +1986,30 @@ public List<CabView> CabViewList = new List<CabView>();
             // Cruise Control
             CruiseControl?.Update(elapsedClockSeconds);
  
+            if (DynamicBrakePercent >= 0 && ThrottlePercent <= 0)
+            {
+                if (DynamicBrakeCommandStartTime == null)
+                {
+                    DynamicBrakeCommandStartTime = Simulator.ClockTime;
+                }
+                if (!DynamicBrake)
+                {
+                    if (DynamicBrakeCommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
+                    {
+                        DynamicBrake = true; // Engage
+                        if (IsLeadLocomotive() && DynamicBrakeIntervention >= 0)
+                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
+                    }
+                    else if (IsLeadLocomotive() && DynamicBrakeIntervention >= 0)
+                        Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
+                }
+            }
+            else
+            {
+                DynamicBrake = false;
+                DynamicBrakeCommandStartTime = null;
+            }
+
             // TODO  this is a wild simplification for electric and diesel electric
             UpdateTractiveForce(elapsedClockSeconds, ThrottlePercent / 100f, AbsSpeedMpS, AbsWheelSpeedMpS);
 
@@ -1968,29 +2017,6 @@ public List<CabView> CabViewList = new List<CabView>();
             {
                 mpc.Update(elapsedClockSeconds);
             }
-
-            ApplyDirectionToTractiveForce();
-
-            // Calculate the total motive force for the locomotive - ie TractiveForce (driving force) + Dynamic Braking force.
-            // Note typically only one of the above will only ever be non-zero at the one time.
-            // For flipped locomotives the force is "flipped" elsewhere, whereas dynamic brake force is "flipped" below by the direction of the speed.
-            MotiveForceN = TractiveForceN;
-
-            if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
-            {
-                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsTractionSpeedMpS);
-                if (f > 0 && LocomotivePowerSupply.DynamicBrakeAvailable)
-                {
-                    DynamicBrakeForceN = f * (1 - PowerReduction);
-                    MotiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * DynamicBrakeForceN;                 
-                }
-                else
-                {
-                    DynamicBrakeForceN = 0f;
-                }
-            }
-            else
-                DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0 position
                 
 
             UpdateFrictionCoefficient(elapsedClockSeconds); // Find the current coefficient of friction depending upon the weather
@@ -2004,23 +2030,19 @@ public List<CabView> CabViewList = new List<CabView>();
                     if (RemoteControlGroup != -1)
                     {
                         if (!LocomotivePowerSupply.MainPowerSupplyOn)
-                        {
                             Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
 
-                            if (this is MSTSDieselLocomotive)
+                        if (this is MSTSDieselLocomotive dieselLocomotive)
+                        {
+                            for (var i = 0; i < dieselLocomotive.DieselEngines.Count; i++)
                             {
-                                foreach (DieselEngine de in (this as MSTSDieselLocomotive).DieselEngines)
+                                var de = dieselLocomotive.DieselEngines[i];
+                                if (!LocomotivePowerSupply.MainPowerSupplyOn)
                                 {
                                     if (de.State != DieselEngineState.Running)
                                         de.Initialize();
                                 }
-                            }
-                        }
-                        if (this is MSTSDieselLocomotive)
-                        {
-                            foreach (DieselEngine de in (this as MSTSDieselLocomotive).DieselEngines)
-                            {
-                                 if (de.GearBox != null)
+                                if (de.GearBox != null)
                                     de.GearBox.GearBoxOperation = GearBoxOperation.Automatic;
                             }
                         }
@@ -2028,6 +2050,7 @@ public List<CabView> CabViewList = new List<CabView>();
 
                     AntiSlip = true; // Always set AI trains to AntiSlip
                     SimpleAdhesion();   // Simple adhesion model used for AI trains
+                    AdvancedAdhesionModel = false;
                     if (Train.IsActualPlayerTrain) FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
                     WheelSpeedMpS = Flipped ? -AbsSpeedMpS : AbsSpeedMpS;            //make the wheels go round
                     break;
@@ -2045,7 +2068,7 @@ public List<CabView> CabViewList = new List<CabView>();
                             ThrottleController.UpdateValue > 0 ? CabSetting.Increase : CabSetting.Decrease,
                             ThrottleController.CurrentValue * 100);
                     }
-                    if (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0 && DynamicBrake)
+                    if (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0 && (DynamicBrake || !DynamicBrakeControllerSetupLock))
                     {
                         Simulator.Confirmer.UpdateWithPerCent(
                             CabControl.DynamicBrake,
@@ -2243,66 +2266,26 @@ public List<CabView> CabViewList = new List<CabView>();
             }
 
             DynamicBrakeBlending(elapsedClockSeconds);
-            if (DynamicBrakeController != null && DynamicBrakeController.CommandStartTime > DynamicBrakeCommandStartTime) // use the latest command time
-                DynamicBrakeCommandStartTime = DynamicBrakeController.CommandStartTime;
 
-            if ((DynamicBrakeController != null || DynamicBrakeBlendingEnabled || DynamicBrakeAvailable) && (DynamicBrakePercent >= 0 || IsLeadLocomotive() && DynamicBrakeIntervention >= 0))
+            LocalDynamicBrakePercent = -1;
+            if (IsLeadLocomotive() && TrainBrakeController != null && TrainBrakeController.TrainDynamicBrakeIntervention > 0)
             {
-                if (!DynamicBrake)
+                LocalDynamicBrakePercent = TrainBrakeController.TrainDynamicBrakeIntervention * 100;
+            }
+            if (DynamicBrakeController != null && DynamicBrakeIntervention >= 0)
+            {
+                if (DynamicBrake || !DynamicBrakeControllerSetupLock)
                 {
-                    if (DynamicBrakeCommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime /*|| (DynamicBrakeController != null && DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)*/)
-                    {
-                        DynamicBrake = true; // Engage
-                        if (IsLeadLocomotive() && DynamicBrakeController != null)
-                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
-                    }
-                    else if (IsLeadLocomotive())
-                        Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
-                }
-                else if (this.IsLeadLocomotive())
-                {
-                    if (DynamicBrakeController != null)
-                    {
-                        DynamicBrakeController.Update(elapsedClockSeconds);
-                        DynamicBrakePercent = (DynamicBrakeIntervention < 0 ? DynamicBrakeController.CurrentValue : DynamicBrakeIntervention) * 100f;
-                        LocalDynamicBrakePercent = (DynamicBrakeIntervention < 0 ? DynamicBrakeController.CurrentValue : DynamicBrakeIntervention) * 100f;
-                    }
-                    else
-                    {
-                        DynamicBrakePercent = Math.Max(DynamicBrakeIntervention * 100f, 0f);
-                        LocalDynamicBrakePercent = Math.Max(DynamicBrakeIntervention * 100f, 0f);
-                    }
-
-                    if (DynamicBrakeIntervention < 0 && PreviousDynamicBrakeIntervention >= 0 && DynamicBrakePercent == 0)
-                    {
-                        DynamicBrakePercent = -1;
-                        LocalDynamicBrakePercent = -1;
-                    }
-                    PreviousDynamicBrakeIntervention = DynamicBrakeIntervention;
-                    if (PreviousFullDynamicBrakingOrder && !TrainControlSystem.FullDynamicBrakingOrder && DynamicBrakeController.CurrentValue == 0 && DynamicBrakeIntervention < 0)
-                    {
-                        DynamicBrakePercent = -1;
-                        LocalDynamicBrakePercent = -1;
-                        DynamicBrake = false;
-                    }
-                    PreviousFullDynamicBrakingOrder = TrainControlSystem.FullDynamicBrakingOrder;
-                }
-                else if (DynamicBrakeController != null)
                     DynamicBrakeController.Update(elapsedClockSeconds);
+                    DynamicBrakeIntervention = DynamicBrakeController.CurrentValue;
+                }
+                else
+                {
+                    DynamicBrakeIntervention = 0;
+                }
+                LocalDynamicBrakePercent = Math.Max(DynamicBrakeIntervention * 100, LocalDynamicBrakePercent);
             }
-            else if ((DynamicBrakeController != null || DynamicBrakeBlendingEnabled || DynamicBrakeAvailable) && DynamicBrakePercent < 0 && (DynamicBrakeIntervention < 0 || !IsLeadLocomotive()) && DynamicBrake)
-            {
-                // <CScomment> accordingly to shown documentation dynamic brake delay is required only when engaging
-                //           if (DynamicBrakeController.CommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
-                //           {
-                DynamicBrake = false; // Disengage
-                DynamicBrakeForceN = 0f; // Reset dynamic brake force
-                if (IsLeadLocomotive())
-                    Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.Off);
-                //           }
-                //            else if (IsLeadLocomotive())
-                //               Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
-            }
+            if (IsLeadLocomotive()) DynamicBrakePercent = LocalDynamicBrakePercent;
 
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
@@ -2414,6 +2397,57 @@ public List<CabView> CabViewList = new List<CabView>();
                     w = 0;
                 AverageForceN = w * AverageForceN + (1 - w) * TractiveForceN;
             }
+
+            ApplyDirectionToTractiveForce();
+
+            // Calculate the total tractive force for the locomotive - ie Traction + Dynamic Braking force.
+            // Note typically only one of the above will only ever be non-zero at the one time.
+            // For flipped locomotives the force is "flipped" elsewhere, whereas dynamic brake force is "flipped" below by the direction of the speed.
+
+            if (DynamicBrakePercent > 0 && DynamicBrake && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
+            {
+                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsTractionSpeedMpS);
+                if (f > 0 && LocomotivePowerSupply.DynamicBrakeAvailable)
+                {
+                    DynamicBrakeForceN = f * (1 - PowerReduction);
+                    TractiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * DynamicBrakeForceN;                 
+                }
+                else
+                {
+                    DynamicBrakeForceN = 0f;
+                }
+            }
+            else
+                DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0 position
+
+            foreach (var motor in TractionMotors)
+            {
+                motor.UpdateTractiveForce(elapsedClockSeconds, t);
+            }
+
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics)
+            {
+                UpdateAxleDriveForce();
+            }
+        }
+
+        protected virtual void UpdateAxleDriveForce()
+        {
+            foreach (var axle in LocomotiveAxles)
+            {
+                if (axle.DriveType == AxleDriveType.ForceDriven)
+                {
+                    axle.DriveForceN = TractiveForceN / LocomotiveAxles.Count;
+                    if (SlipControlSystem == SlipControlType.Full)
+                    {
+                        // Simple slip control
+                        // Motive force is reduced to the maximum adhesive force
+                        // In wheelslip situations, motive force is set to zero
+                        axle.DriveForceN = Math.Sign(axle.DriveForceN) * Math.Min(axle.MaximumPolachWheelAdhesion * axle.AxleWeightN, Math.Abs(axle.DriveForceN));
+                        if (axle.IsWheelSlip) axle.DriveForceN = 0;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -2461,7 +2495,7 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public void ConfirmWheelslip(float elapsedClockSeconds)
         {
-            if (elapsedClockSeconds > 0 && Simulator.GameTime - LocomotiveAxle.ResetTime > 5)
+            if (elapsedClockSeconds > 0 && Simulator.GameTime - LocomotiveAxles.ResetTime > 5)
             {
                 if (AdvancedAdhesionModel)
                 {
@@ -2645,9 +2679,20 @@ public List<CabView> CabViewList = new List<CabView>();
 
             // Turn compressor on and off
             if (MainResPressurePSI < CompressorRestartPressurePSI && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn && !CompressorIsOn)
+            {
                 SignalEvent(Event.CompressorOn);
+                foreach (var car in Train.Cars)
+                {
+                    if (car is MSTSLocomotive loco && loco.RemoteControlGroup == 0 && loco.LocomotivePowerSupply.AuxiliaryPowerSupplyOn && !loco.CompressorIsOn && loco.CompressorIsMUControlled)
+                    {
+                        loco.SignalEvent(Event.CompressorOn);
+                    }
+                }
+            }
             else if ((MainResPressurePSI >= MaxMainResPressurePSI || LocomotivePowerSupply.AuxiliaryPowerSupplyState != PowerSupplyState.PowerOn) && CompressorIsOn)
+            {
                 SignalEvent(Event.CompressorOff);
+            }
 
             if (CompressorIsOn)
                 MainResPressurePSI += elapsedClockSeconds * reservoirChargingRate;
@@ -2730,89 +2775,40 @@ public List<CabView> CabViewList = new List<CabView>();
                 return;
             }
 
-            if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
+            foreach (var axle in LocomotiveAxles)
             {
-                // Managed in MSTSSteamLocomotive implementation of AdvancedAdhesion
-            }
-            else
-            {
-
-                //Compute axle inertia from parameters if possible
-                if (AxleInertiaKgm2 <= 0) // if no axleinertia value supplied in ENG file, calculate axleinertia value.
-                {
-                    if (LocoNumDrvAxles > 0 && DriverWheelRadiusM > 0)
-                    {
-                        float radiusSquared = DriverWheelRadiusM * DriverWheelRadiusM;
-                        float wheelMass = 500 * radiusSquared / (0.5f * 0.5f);
-                        AxleInertiaKgm2 = LocoNumDrvAxles * wheelMass * radiusSquared + 500;
-                    }
-                    else
-                        AxleInertiaKgm2 = 2000.0f;
-                }
-                //Limit the inertia to 40000 kgm2
-                LocomotiveAxle.InertiaKgm2 = Math.Min(AxleInertiaKgm2, 40000);
-                LocomotiveAxle.DampingNs = MassKG / 1000.0f;
-                LocomotiveAxle.FrictionN = MassKG / 1000.0f;
-
-                if (LocomotiveAxle.Motor is InductionMotor motor)
-                {
-                    motor.SlipControl = SlipControlSystem == SlipControlType.Full;
-                    motor.TargetForceN = MotiveForceN;
-                    motor.EngineMaxSpeedMpS = MaxSpeedMpS;
-                }
-                else
-                {
-                    if (SlipControlSystem == SlipControlType.Full)
-                    {
-                        // Simple slip control
-                        // Motive force is reduced to the maximum adhesive force
-                        // In wheelslip situations, motive force is set to zero
-                        MotiveForceN = Math.Sign(MotiveForceN) * Math.Min(LocomotiveAxle.AdhesionLimit * LocomotiveAxle.AxleWeightN, Math.Abs(MotiveForceN));
-                        if (LocomotiveAxle.IsWheelSlip) MotiveForceN = 0;
-                    }
-                }
-
-                LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;  //remains fixed for diesel/electric locomotives, but varies for steam locomotives
+                axle.BrakeRetardForceN = BrakeRetardForceN / LocomotiveAxles.Count;
+                axle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
+                axle.WheelRadiusM = DriverWheelRadiusM;
+                axle.WheelDistanceGaugeM = TrackGaugeM;
+                axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
+                axle.BogieRigidWheelBaseM = RigidWheelBaseM;
+                axle.CurtiusKnifflerZeroSpeed = ZeroSpeedAdhesionBase;
             }
 
-            //Set axle model parameters
+            LocomotiveAxles.Update(elapsedClockSeconds);
 
-            // Inputs
-            LocomotiveAxle.BrakeRetardForceN = BrakeRetardForceN;
-            LocomotiveAxle.DriveForceN = MotiveForceN;              //Total force applied to wheels
-            LocomotiveAxle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
-            LocomotiveAxle.WheelRadiusM = DriverWheelRadiusM;
+            MotiveForceN = LocomotiveAxles.CompensatedForceN;
 
-            LocomotiveAxle.Update(elapsedClockSeconds); //Main updater of the axle model
-
-            MotiveForceN = LocomotiveAxle.CompensatedAxleForceN;
             if (elapsedClockSeconds > 0)
             {
-                WheelSlip = LocomotiveAxle.IsWheelSlip;             //Get the wheelslip indicator
-                WheelSlipWarning = LocomotiveAxle.IsWheelSlipWarning && SlipControlSystem != SlipControlType.Full;
+                WheelSlip = LocomotiveAxles.IsWheelSlip;
+                WheelSlipWarning = LocomotiveAxles.IsWheelSlipWarning;
             }
             
             // This enables steam locomotives to have different speeds for driven and non-driven wheels.
             if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
             {
-                if (AbsSpeedMpS <= 0.15 && !WheelSlip)
-                {
-                    WheelSpeedSlipMpS = SpeedMpS;
-                    WheelSpeedMpS = SpeedMpS;
-                }
-                else
-                {
-                    WheelSpeedSlipMpS = LocomotiveAxle.AxleSpeedMpS;
-                    WheelSpeedMpS = SpeedMpS;
-                }
+                WheelSpeedSlipMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
+                WheelSpeedMpS = SpeedMpS;
             }
-            else WheelSpeedMpS = LocomotiveAxle.AxleSpeedMpS; 
+            else WheelSpeedMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
 
         }
 
         public void SimpleAdhesion()
         {
-
+            MotiveForceN = TractiveForceN;
             // Check if the following few lines are required???
             if (LocoNumDrvAxles <= 0)
             {
@@ -2829,6 +2825,7 @@ public List<CabView> CabViewList = new List<CabView>();
  
             float max0 = DrvWheelWeightKg * 9.81f * uMax;  //Ahesion limit in [N]
             float max1;
+            float SandingFrictionFactor = 1;
 
             if (Simulator.WeatherType == WeatherType.Rain || Simulator.WeatherType == WeatherType.Snow)
             {
@@ -2847,30 +2844,19 @@ public List<CabView> CabViewList = new List<CabView>();
             //float max1 = (Sander ? .95f : Adhesion2) * max0;  //Not used this way
             max1 = MaxForceN;
             //add sander
-            if (AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
+            if (Sander && AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
             {
-                if (SanderSpeedEffectUpToMpS > 0.0f)
+                switch (Simulator.WeatherType)
                 {
-                    if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
-                    {
-                        switch (Simulator.WeatherType)
-                        {
-                            case WeatherType.Clear: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.2f; break;
-                            case WeatherType.Rain: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.8f; break;
-                            case WeatherType.Snow: max0 *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 2.5f; break;
-                        }
-                    }
+                    case WeatherType.Clear: SandingFrictionFactor = 1.2f; break;
+                    case WeatherType.Rain: SandingFrictionFactor = 1.8f; break;
+                    case WeatherType.Snow: SandingFrictionFactor = 2.5f; break;
                 }
-                else
-                    if (Sander)
+                if (SanderSpeedEffectUpToMpS > 0.0f) // Reduce sander effectiveness if max effective speed is defined
                 {
-                    switch (Simulator.WeatherType)
-                    {
-                        case WeatherType.Clear: max0 *= 1.2f; break;
-                        case WeatherType.Rain: max0 *= 1.8f; break;
-                        case WeatherType.Snow: max0 *= 2.5f; break;
-                    }
+                    SandingFrictionFactor *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS);
                 }
+                max0 *= Math.Max(SandingFrictionFactor, 1.0f); // Prevent sand from harming adhesion above max effective speed
             }
 
             max1 = max0;
@@ -3132,7 +3118,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 Train.SlipperySpotLengthM = 10 + 40 * (float)Simulator.Random.NextDouble();
                 Train.SlipperySpotDistanceM = Train.SlipperySpotLengthM + 2000 * (float)Simulator.Random.NextDouble();
             }
-            if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
+            if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM && Simulator.Settings.AdhesionFactorChange > 0)
             {
                 if (BaseFrictionCoefficientFactor > 0.6 && BaseFrictionCoefficientFactor < 0.8)
                 {
@@ -3144,92 +3130,22 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
             }
 
-            BaseFrictionCoefficientFactor = MathHelper.Clamp(BaseFrictionCoefficientFactor, 0.5f, 1.0f); 
+            BaseFrictionCoefficientFactor = MathHelper.Clamp(BaseFrictionCoefficientFactor, 0.5f, 1.0f);
 
-            // Snow covered track
-            if (Simulator.WeatherType == WeatherType.Snow)
+            // Increase friction coefficient when sanding
+            if (Sander && AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
             {
-                if (AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0 && (AbsSpeedMpS > 0))
+                switch (Simulator.WeatherType)
                 {
-                    if (SanderSpeedEffectUpToMpS > 0.0f)
-                    {
-                        if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
-                        {
-                            SandingFrictionCoefficientFactor = (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.50f;
-                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor;
-
-                        }
-                    }
-                    else
-                    {
-                        if (Sander)  // If sander is on, and train speed is greater then zero, then put sand on the track
-                        {
-                            SandingFrictionCoefficientFactor = 1.50f;
-                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 150% adhesion (best case)
-                        }
-                    }
+                    case WeatherType.Clear: SandingFrictionCoefficientFactor = 1.40f; break;
+                    case WeatherType.Rain: SandingFrictionCoefficientFactor = 1.25f; break;
+                    case WeatherType.Snow: SandingFrictionCoefficientFactor = 1.50f; break;
                 }
-                else if (Sander && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
+                if (SanderSpeedEffectUpToMpS > 0.0f) // Reduce sander effectiveness if max effective speed is defined
                 {
-                    SandingFrictionCoefficientFactor = 1.50f;
-                    BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 150% adhesion (best case)
+                    SandingFrictionCoefficientFactor *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS);
                 }
-            }
-            else if (Simulator.WeatherType == WeatherType.Rain)
-            {
-                if (AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0 && (AbsSpeedMpS > 0))
-                {
-                    if (SanderSpeedEffectUpToMpS > 0.0f)
-                    {
-                        if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
-                        {
-                            SandingFrictionCoefficientFactor = (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.25f;
-                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor;
-
-                        }
-                    }
-                    else
-                    {
-                        if (Sander)  // If sander is on, and train speed is greater then zero, then put sand on the track
-                        {
-                            SandingFrictionCoefficientFactor = 1.25f;
-                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 125% adhesion (best case)
-                        }
-                    }
-                }
-                else if (Sander && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
-                {
-                    SandingFrictionCoefficientFactor = 1.25f;
-                    BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 125% adhesion (best case)
-                }
-            }
-            else // dry weather
-            {
-                if (AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0 && (AbsSpeedMpS > 0))
-                {
-                    if (SanderSpeedEffectUpToMpS > 0.0f)
-                    {
-                        if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
-                        {
-                            SandingFrictionCoefficientFactor = (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.40f;
-                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor;
-                        }
-                    }
-                    else
-                    {
-                        if (Sander)  // If sander is on, and train speed is greater then zero, then put sand on the track
-                        {
-                            SandingFrictionCoefficientFactor = 1.40f;
-                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 140% adhesion (best case)
-                        }
-                    }
-                }
-                else if (Sander && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
-                {
-                    SandingFrictionCoefficientFactor = 1.40f;
-                    BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 140% adhesion (best case)
-                }
-
+                BaseFrictionCoefficientFactor *= Math.Max(SandingFrictionCoefficientFactor, 1.0f); // Prevent sand from harming adhesion above max effective speed
             }
 
             // For wagons use base Curtius-Kniffler adhesion factor - u = 0.33
@@ -3253,12 +3169,19 @@ public List<CabView> CabViewList = new List<CabView>();
             Train.LocomotiveCoefficientFriction = BaseuMax * BaseFrictionCoefficientFactor * AdhesionMultiplier;  // Find friction coefficient factor for locomotive
             Train.LocomotiveCoefficientFriction = MathHelper.Clamp(Train.LocomotiveCoefficientFriction, 0.05f, 0.8f); // Ensure friction coefficient never exceeds a "reasonable" value
 
+            float ZeroBaseuMax = (Curtius_KnifflerA / (Curtius_KnifflerB) + Curtius_KnifflerC); // Base Curtius - Kniffler equation - u = 0.33, all other values are scaled off this formula
+            ZeroSpeedAdhesionBase = ZeroBaseuMax * BaseFrictionCoefficientFactor * AdhesionMultiplier;
+
             // Set adhesion conditions for diesel, electric or steam geared locomotives
             if (elapsedClockSeconds > 0)
             {
                 SaveAdhesionFilter = AdhesionFilter.Filter(BaseFrictionCoefficientFactor + AdhesionRandom, elapsedClockSeconds);
                 AdhesionConditions = MathHelper.Clamp(AdhesionMultiplier * SaveAdhesionFilter, 0.05f, 2.5f);
-                LocomotiveAxle.AdhesionLimit = AdhesionConditions * BaseuMax;
+                foreach (var axle in LocomotiveAxles)
+                {
+                    axle.AdhesionLimit = AdhesionConditions * BaseuMax;
+                    axle.CurtiusKnifflerZeroSpeed = ZeroBaseuMax;
+                }
             }
 
            // Set adhesion conditions for other steam locomotives
@@ -3268,12 +3191,11 @@ public List<CabView> CabViewList = new List<CabView>();
             }
             else
             {
-                LocomotiveCoefficientFrictionHUD = LocomotiveAxle.AdhesionLimit; // Set display value for HUD - diesel
+                LocomotiveCoefficientFrictionHUD = LocomotiveAxles[0].AdhesionLimit; // Set display value for HUD - diesel
             }
         }
 
         #endregion
-
 
         public void UpdateTrackSander(float elapsedClockSeconds)
         {
@@ -3281,7 +3203,7 @@ public List<CabView> CabViewList = new List<CabView>();
         // The following assumptions have been made:
         //
 
-            if (Sander)  // If sander is on adjust parameters
+            if (Sander && AbsSpeedMpS < SanderSpeedOfMpS)  // If sander switch is on, and not blocked by speed, adjust parameters
             {
                 if (CurrentTrackSandBoxCapacityM3 > 0.0) // if sand still in sandbox then sanding is available
                 {
@@ -3464,7 +3386,7 @@ public List<CabView> CabViewList = new List<CabView>();
                     checkBraking = false;
                 }
             }
-            if (DynamicBrakeController != null && DynamicBrakeController.CurrentValue >= 0 && (DynamicBrakePercent >= 0 || !(DynamicBrakePercent == -1 && !DynamicBrake || DynamicBrakePercent >= 0 && DynamicBrake)) && checkBraking)
+            if (DynamicBrakeController != null && DynamicBrakeIntervention >= 0 && checkBraking)
             {
                 if (!(CombinedControlType == CombinedControl.ThrottleDynamic
                     || CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0))
@@ -3474,7 +3396,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
             }
 
-            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrake)
+            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrakeIntervention >= 0)
                 StartDynamicBrakeDecrease(null);
             else if (CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0)
                 StartTrainBrakeDecrease(null);
@@ -3825,6 +3747,8 @@ public List<CabView> CabViewList = new List<CabView>();
                     if (!CruiseControl.UseThrottleInCombinedControl) ThrottleController.SetPercent(percent);
                     return;
                 }
+                else if (CruiseControl.UseThrottleAsSpeedSelector && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
+                    CruiseControl.SetSpeed(MpS.FromMpS(percent * MaxSpeedMpS / 100, !CruiseControl.SpeedIsMph));
                 else
                     ThrottleController.SetPercent(percent);
             }
@@ -3929,12 +3853,12 @@ public List<CabView> CabViewList = new List<CabView>();
         public void SetCombinedHandleValue(float value)
         {
             bool ccUseCombinedControl = CruiseControl != null && (CruiseControl.UseThrottleAsForceSelector || CruiseControl.UseThrottleAsSpeedSelector ) && CruiseControl.UseThrottleInCombinedControl; 
-            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrake && !TrainControlSystem.FullDynamicBrakingOrder &&
+            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrakeIntervention >= 0 &&
                 !(ccUseCombinedControl && !CruiseControl.DynamicBrakePriority && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto))
             {
                 if (DynamicBrakeController.CurrentValue == 0 && value < CombinedControlSplitPosition)
                     DynamicBrakeChangeActiveState(false);
-                else if (DynamicBrakePercent > -1)
+                else if (DynamicBrakeIntervention > -1)
                     SetDynamicBrakeValue((MathHelper.Clamp(value, CombinedControlSplitPosition, 1) - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
             }
             else if (CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0)
@@ -3952,7 +3876,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
                 else if (CombinedControlType == CombinedControl.ThrottleAir && canBrake && value > CombinedControlSplitPosition)
                     SetTrainBrakeValue((MathHelper.Clamp(value, CombinedControlSplitPosition, 1) - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
-                else if (DynamicBrakePercent < 0 || TrainControlSystem.FullDynamicBrakingOrder ||
+                else if (DynamicBrakeIntervention < 0 ||
                     (CruiseControl != null && !CruiseControl.DynamicBrakePriority && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto))
                     SetThrottleValue(1 - MathHelper.Clamp(value, 0, CombinedControlSplitPosition) / CombinedControlSplitPosition);
             }
@@ -3981,7 +3905,7 @@ public List<CabView> CabViewList = new List<CabView>();
                 }
             }
 
-            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrake && !TrainControlSystem.FullDynamicBrakingOrder)
+            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrakeIntervention >= 0)
             {
                 if (CruiseControl != null)
                 {
@@ -4564,6 +4488,11 @@ public List<CabView> CabViewList = new List<CabView>();
     #region DynamicBrakeController
     public void StartDynamicBrakeIncrease(float? target)
         {
+            if (Direction == Direction.N)
+            {
+                Simulator.Confirmer.Warning(CabControl.DynamicBrake, CabSetting.Warn1);
+                return;
+            }
             AlerterReset(TCSEvent.DynamicBrakeChanged);
             if (CruiseControl != null && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && (CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl ||
                 (CruiseControl.DisableCruiseControlOnThrottleAndZeroForce && CruiseControl.SelectedMaxAccelerationPercent == 0)))
@@ -4574,11 +4503,11 @@ public List<CabView> CabViewList = new List<CabView>();
             if (!CanUseDynamicBrake())
                 return;
 
-            if (DynamicBrakePercent < 0)
+            if (DynamicBrakeIntervention < 0)
             {
                 DynamicBrakeChangeActiveState(true);
             }
-            else if (DynamicBrake)
+            else if (DynamicBrake || !DynamicBrakeControllerSetupLock)
             {
                 SignalEvent(Event.DynamicBrakeChange);
                 DynamicBrakeController.StartIncrease(target);
@@ -4602,15 +4531,20 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public void StartDynamicBrakeDecrease(float? target)
         {
+            if (Direction == Direction.N)
+            {
+                Simulator.Confirmer.Warning(CabControl.DynamicBrake, CabSetting.Warn1);
+                return;
+            }
             AlerterReset(TCSEvent.DynamicBrakeChanged);
             if (!CanUseDynamicBrake())
                 return;
 
-            if (DynamicBrakePercent <= 0)
+            if (DynamicBrakeIntervention <= 0)
             {
                 DynamicBrakeChangeActiveState(false);
             }
-            else if (DynamicBrake)
+            else if (DynamicBrake || !DynamicBrakeControllerSetupLock)
             {
                 SignalEvent(Event.DynamicBrakeChange);
                 DynamicBrakeController.StartDecrease(target);
@@ -4652,7 +4586,7 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public void SetDynamicBrakeValue(float value)
         {
-            if (!DynamicBrake && ThrottleController.CurrentValue == 0 && value > 0.05f)
+            if (DynamicBrakeIntervention < 0 && ThrottleController.CurrentValue == 0 && value > 0.05f)
             {
                 DynamicBrakeChangeActiveState(true);
                 if (CruiseControl != null && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl)
@@ -4660,12 +4594,12 @@ public List<CabView> CabViewList = new List<CabView>();
                     CruiseControl.DynamicBrakePriority = true;
                 }
             }
-            if (DynamicBrake && DynamicBrakeController.CurrentValue == 0 && value < -0.05f)
+            if (DynamicBrakeIntervention >= 0 && DynamicBrakeController.CurrentValue == 0 && value < -0.05f)
             {
                 DynamicBrakeChangeActiveState(false);
                 return;
             }
-            if (!DynamicBrake || CruiseControl != null && CruiseControl.UseThrottleAsForceSelector && !CruiseControl.DynamicBrakePriority && !CruiseControl.UseThrottleInCombinedControl)
+            if ((!DynamicBrake && DynamicBrakeControllerSetupLock) || CruiseControl != null && CruiseControl.UseThrottleAsForceSelector && !CruiseControl.DynamicBrakePriority && !CruiseControl.UseThrottleInCombinedControl)
                 return;
 
             var controller = DynamicBrakeController;
@@ -4683,6 +4617,11 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public void SetDynamicBrakePercent(float percent)
         {
+            if (Direction == Direction.N)
+            {
+                Simulator.Confirmer.Warning(CabControl.DynamicBrake, CabSetting.Warn1);
+                return;
+            }
             if (!CanUseDynamicBrake())
                 return;
             DynamicBrakeController.SetPercent(percent);
@@ -4691,6 +4630,11 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public void SetDynamicBrakePercentWithSound(float percent)
         {
+            if (Direction == Direction.N)
+            {
+                Simulator.Confirmer.Warning(CabControl.DynamicBrake, CabSetting.Warn1);
+                return;
+            }
             if (!CanUseDynamicBrake())
                 return;
             var oldDynamicBrakePercent = DynamicBrakeController.CurrentValue * 100;
@@ -4701,18 +4645,19 @@ public List<CabView> CabViewList = new List<CabView>();
 
         public void DynamicBrakeChangeActiveState(bool toState)
         {
-            if (toState && !DynamicBrake && DynamicBrakePercent < 0)
+            if (toState && DynamicBrakeIntervention < 0)
             {
-                DynamicBrakePercent = 0;
+                DynamicBrakeIntervention = 0;
                 DynamicBrakeController.CommandStartTime = Simulator.ClockTime;
                 StopDynamicBrakeIncrease();
             }
-            else if (!toState && DynamicBrake && DynamicBrakePercent > -1 && DynamicBrakeIntervention < 0)
+            else if (!toState && DynamicBrakeIntervention > -1)
             {
-                SignalEvent(Event.DynamicBrakeOff);
-                DynamicBrakePercent = -1;
+                DynamicBrakeIntervention = -1;
                 DynamicBrakeController.CommandStartTime = Simulator.ClockTime;
                 StopDynamicBrakeIncrease();
+                Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.Off);
+                SignalEvent(Event.DynamicBrakeOff);
             }
         }
 
@@ -4971,7 +4916,12 @@ public List<CabView> CabViewList = new List<CabView>();
                 case Event.VacuumExhausterOn: { if(FastVacuumExhausterFitted) VacuumExhausterPressed = true; if (this.IsLeadLocomotive() && this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.VacuumExhauster, CabSetting.On); break; }
                 case Event.VacuumExhausterOff: { if (FastVacuumExhausterFitted) VacuumExhausterPressed = false; if (this.IsLeadLocomotive() && this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.VacuumExhauster, CabSetting.Off); break; }
 
-                case Event._ResetWheelSlip: { LocomotiveAxle.Reset(Simulator.GameTime, SpeedMpS); ThrottleController.SetValue(0.0f); break; }
+                case Event._ResetWheelSlip:
+                    {
+                        LocomotiveAxles.InitializeMoving();
+                        ThrottleController.SetValue(0.0f);
+                        break;
+                    }
                 case Event.TrainBrakePressureDecrease:
                 case Event.TrainBrakePressureIncrease:
                     {
@@ -5075,7 +5025,7 @@ public List<CabView> CabViewList = new List<CabView>();
                             direction = ((CVCGauge)cvc).Direction;
                         if (MaxCurrentA == 0)
                             MaxCurrentA = (float)cvc.MaxValue;
-                        if (LocomotiveAxle != null)
+                        if (LocomotiveAxles.Count > 0)
                         {
                             data = 0.0f;
                             if (ThrottlePercent > 0)
@@ -5085,7 +5035,7 @@ public List<CabView> CabViewList = new List<CabView>();
                                 if (FilteredMotiveForceN != 0)
                                     data = this.FilteredMotiveForceN / MaxForceN * rangeFactor;
                                 else
-                                    data = this.LocomotiveAxle.DriveForceN / MaxForceN * rangeFactor;
+                                    data = this.LocomotiveAxles[cvc.ControlId].DriveForceN / MaxForceN * rangeFactor;
                                 data = Math.Abs(data);
                             }
                             if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
@@ -5131,10 +5081,10 @@ public List<CabView> CabViewList = new List<CabView>();
                             if (FilteredMotiveForceN != 0)
                                 data = this.FilteredMotiveForceN / MaxForceN * MaxCurrentA;
                             else
-                                data = this.LocomotiveAxle.DriveForceN / MaxForceN * MaxCurrentA;
+                                data = this.LocomotiveAxles[cvc.ControlId].DriveForceN / MaxForceN * MaxCurrentA;
                             data = Math.Abs(data);
                         }
-                        if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
+                        if (DynamicBrake && DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
                         {
                             data = DynamicBrakeForceN / MaxDynamicBrakeForceN * DynamicBrakeMaxCurrentA;
                             data = -Math.Abs(data); // Ensure that dynamic force is seen as a "-ve force", changes colour on the load meter
@@ -5152,8 +5102,8 @@ public List<CabView> CabViewList = new List<CabView>();
                         if (FilteredMotiveForceN != 0)
                             data = this.FilteredMotiveForceN;
                         else
-                            data = this.LocomotiveAxle.DriveForceN;
-                        if (DynamicBrakePercent > 0)
+                            data = this.LocomotiveAxles[cvc.ControlId].DriveForceN;
+                        if (DynamicBrake && DynamicBrakePercent > 0)
                         {
                             data = DynamicBrakeForceN;
                         }
@@ -5200,8 +5150,8 @@ public List<CabView> CabViewList = new List<CabView>();
                         if (FilteredMotiveForceN != 0)
                             data = Math.Abs(this.FilteredMotiveForceN);
                         else
-                            data = Math.Abs(this.LocomotiveAxle.DriveForceN);
-                        if (DynamicBrakePercent > 0)
+                            data = Math.Abs(this.LocomotiveAxles[cvc.ControlId].DriveForceN);
+                        if (DynamicBrake && DynamicBrakePercent > 0)
                         {
                             data = -Math.Abs(DynamicBrakeForceN);
                         }
@@ -5483,6 +5433,32 @@ public List<CabView> CabViewList = new List<CabView>();
                         data = (TrainBrakeController == null || !TrainBrakeController.OverchargeButtonPressed) ? 0 : 1;
                         break;
                     }
+                case CABViewControlTypes.ORTS_AIR_FLOW_METER:
+                    {
+                        switch (cvc.Units)
+                        {
+                            case CABViewControlUnits.CUBIC_FT_MIN:
+                                data = this.FilteredBrakePipeFlowM3pS * 35.3147f * 60.0f;
+                                break;
+
+                            case CABViewControlUnits.LITRES_S:
+                            case CABViewControlUnits.LITERS_S:
+                                data = this.FilteredBrakePipeFlowM3pS * 1000.0f;
+                                break;
+
+                            case CABViewControlUnits.LITRES_MIN:
+                            case CABViewControlUnits.LITERS_MIN:
+                                data = this.FilteredBrakePipeFlowM3pS * 1000.0f * 60.0f;
+                                break;
+
+                            case CABViewControlUnits.CUBIC_M_S:
+                            default:
+                                data = this.FilteredBrakePipeFlowM3pS;
+                                break;
+
+                        }
+                        break;
+                    }
                 case CABViewControlTypes.FRICTION_BRAKING:
                     {
                         data = (BrakeSystem == null) ? 0.0f : BrakeSystem.GetCylPressurePSI();
@@ -5606,7 +5582,6 @@ public List<CabView> CabViewList = new List<CabView>();
 
                                 }
                             }
-
                         }
                         else
                         {
@@ -5785,6 +5760,16 @@ public List<CabView> CabViewList = new List<CabView>();
                         var state = Train.DoorState(right ? DoorSide.Right : DoorSide.Left);
                         data = state >= DoorState.Opening ? 1 : 0;
                     }
+                    break;
+                case CABViewControlTypes.ORTS_LEFTWINDOW:
+                case CABViewControlTypes.ORTS_2DEXTERNALLEFTWINDOW:
+                    data = UsingRearCab ? (WindowStates[RightWindowRearIndex] == WindowState.Closing || WindowStates[RightWindowRearIndex] == WindowState.Opening ? 1 : 0) :
+                        (WindowStates[LeftWindowFrontIndex] == WindowState.Closing || WindowStates[LeftWindowFrontIndex] == WindowState.Opening ? 1 : 0);
+                    break;
+                case CABViewControlTypes.ORTS_RIGHTWINDOW:
+                case CABViewControlTypes.ORTS_2DEXTERNALRIGHTWINDOW:
+                    data = UsingRearCab ? (WindowStates[LeftWindowRearIndex] == WindowState.Closing || WindowStates[LeftWindowRearIndex] == WindowState.Opening ? 1 : 0) :
+                        (WindowStates[RightWindowFrontIndex] == WindowState.Closing || WindowStates[RightWindowFrontIndex] == WindowState.Opening ? 1 : 0);
                     break;
                 case CABViewControlTypes.ORTS_MIRRORS:
                     data = MirrorOpen ? 1 : 0;

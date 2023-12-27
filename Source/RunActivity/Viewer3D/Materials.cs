@@ -205,8 +205,14 @@ namespace Orts.Viewer3D
 
         public void Mark(Texture2D texture)
         {
-            if (Textures.ContainsValue(texture))
-                TextureMarks[Textures.First(kvp => kvp.Value == texture).Key] = true;
+            foreach (var key in Textures.Keys)
+            {
+                if (Textures[key] == texture)
+                {
+                    TextureMarks[key] = true;
+                    break;
+                }
+            }
         }
 
         public void Sweep()
@@ -425,12 +431,13 @@ namespace Orts.Viewer3D
 
         public void Mark(Material material)
         {
-            foreach (var path in from kvp in Materials
-                                 where kvp.Value == material
-                                 select kvp.Key)
+            foreach (var key in Materials.Keys)
             {
-                MaterialMarks[path] = true;
-                break;
+                if (Materials[key] == material)
+                {
+                    MaterialMarks[key] = true;
+                    break;
+                }
             }
         }
 
@@ -904,14 +911,13 @@ namespace Orts.Viewer3D
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            var viewProj = XNAViewMatrix * XNAProjectionMatrix;
 
             ShaderPasses.Reset();
             while (ShaderPasses.MoveNext())
             {
                 foreach (var item in renderItems)
                 {
-                    shader.SetMatrix(item.XNAMatrix, ref viewProj);
+                    shader.SetMatrix(item.XNAMatrix, ref XNAViewMatrix, ref XNAProjectionMatrix);
                     shader.ZBias = item.RenderPrimitive.ZBias;
                     ShaderPasses.Current.Apply();
 

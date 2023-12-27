@@ -208,6 +208,18 @@ TrackShape block within the tsection.dat file. You only have to insert the diame
 the turntable and the degree step. Of course you have to take only the lines up to the 
 one preceding the one with degrees = 180.
 
+Also turntables which may rotate less than 360 degrees can be implemented, like the one in 
+the picture here below:
+
+.. image:: images/features-partial-turntable.png
+
+In this case following line has to be added at the end of the ``Turntable()`` block 
+in file ``turntables.dat`` for a turntable that can rotate only between 0 and 40 degrees::
+
+  MaxAngle ( 40 )
+
+Angles increase clockwise.
+
 Already many existing turntables have been successfully animated and many new other
 have been created. More can be read 
 `in this forum thread <http://www.elvastower.com/forums/index.php?/topic/28591-operational-turntable/>`_ .

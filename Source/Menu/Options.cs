@@ -178,18 +178,19 @@ namespace ORTS
 
             checkSimpleControlsPhysics.Checked = Settings.SimpleControlPhysics;
             checkUseAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
-            labelAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
-            numericAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked; 
-            numericAdhesionMovingAverageFilterSize.Value = Settings.AdhesionMovingAverageFilterSize;
             checkBreakCouplers.Checked = Settings.BreakCouplers;
             checkCurveSpeedDependent.Checked = Settings.CurveSpeedDependent;
             checkBoilerPreheated.Checked = Settings.HotStart;
             checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
             checkDoorsAITrains.Checked = Settings.OpenDoorsInAITrains;
             checkDieselEnginesStarted.Checked = !Settings.NoDieselEngineStart; // Inverted as "EngineStart" is better UI than "NoEngineStart"
+            checkElectricPowerConnected.Checked = Settings.ElectricHotStart;
 
             // Keyboard tab
             InitializeKeyboardSettings();
+
+            // Raildriver Tab
+            InitializeRailDriverSettings();
 
             // DataLogger tab
             var dictionaryDataLoggerSeparator = new Dictionary<string, string>();
@@ -303,7 +304,20 @@ namespace ORTS
             checkWindowed.Checked = !Settings.FullScreen;
             comboWindowSize.Text = Settings.WindowSize;
             checkWindowGlass.Checked = Settings.WindowGlass;
-            checkControlConfirmations.Checked = !Settings.SuppressConfirmations;
+
+            // keep values in line with enum Orts.Simulation.ConfirmLevel
+            // see also function Message(CabControl control, ConfirmLevel level, string message)
+            // in Source\Orts.Simulation\Simulation\Confirmer.cs
+            comboControlConfirmations.DataSource = new[] {
+                new ComboBoxMember { Code = "None", Name = catalog.GetString("None") },
+                new ComboBoxMember { Code = "Information", Name = catalog.GetString("Information") },
+                new ComboBoxMember { Code = "Warning", Name = catalog.GetString("Warning") },
+                new ComboBoxMember { Code = "Error", Name = catalog.GetString("Error") },
+            }.ToList();
+            comboControlConfirmations.DisplayMember = "Name";
+            comboControlConfirmations.ValueMember = "Code";
+            comboControlConfirmations.SelectedIndex = Settings.SuppressConfirmations;
+
             numericWebServerPort.Value = Settings.WebServerPort;
             checkPerformanceTuner.Checked = Settings.PerformanceTuner;
             labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
@@ -452,16 +466,19 @@ namespace ORTS
             // Simulation tab
             Settings.SimpleControlPhysics = checkSimpleControlsPhysics.Checked;
             Settings.UseAdvancedAdhesion = checkUseAdvancedAdhesion.Checked;
-            Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
             Settings.BreakCouplers = checkBreakCouplers.Checked;
             Settings.CurveSpeedDependent = checkCurveSpeedDependent.Checked;
             Settings.HotStart = checkBoilerPreheated.Checked;
             Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
             Settings.OpenDoorsInAITrains = checkDoorsAITrains.Checked;
             Settings.NoDieselEngineStart = !checkDieselEnginesStarted.Checked; // Inverted as "EngineStart" is better UI than "NoEngineStart"
+            Settings.ElectricHotStart = checkElectricPowerConnected.Checked;
 
             // Keyboard tab
             // These are edited live.
+
+            // Raildriver Tab
+            SaveRailDriverSettings();
 
             // DataLogger tab
             Settings.DataLoggerSeparator = comboDataLoggerSeparator.SelectedValue.ToString();
@@ -493,7 +510,7 @@ namespace ORTS
             Settings.FullScreen = !checkWindowed.Checked;
             Settings.WindowSize = GetValidWindowSize(comboWindowSize.Text);
             Settings.WindowGlass = checkWindowGlass.Checked;
-            Settings.SuppressConfirmations = !checkControlConfirmations.Checked;
+            Settings.SuppressConfirmations = comboControlConfirmations.SelectedIndex;
             Settings.WebServerPort = (int)numericWebServerPort.Value;
             Settings.PerformanceTuner = checkPerformanceTuner.Checked;
             Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
@@ -574,8 +591,6 @@ namespace ORTS
         private void SetAdhesionLevelValue()
         {
             int level = trackAdhesionFactor.Value - trackAdhesionFactorChange.Value;
-            // Adjust level to be proportional to weather 
-            level -= 40;
 
             if (level > 159)
                 AdhesionLevelValue.Text = catalog.GetString("Very easy");
@@ -764,12 +779,6 @@ namespace ORTS
            numericDistantMountainsViewingDistance.Enabled = checkDistantMountains.Checked;
         }
 
-        private void checkUseAdvancedAdhesion_Click(object sender, EventArgs e)
-        {
-            labelAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
-            numericAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
-        }
-
         private void checkDataLogTrainSpeed_Click(object sender, EventArgs e)
         {
             checkListDataLogTSContents.Enabled = checkDataLogTrainSpeed.Checked;
@@ -876,7 +885,7 @@ namespace ORTS
                 (pbUpdateMode, new Control[] { labelUpdateMode }),
                 (pbWindowed, new Control[] { checkWindowed, labelWindowSize, comboWindowSize }),
                 (pbWindowGlass, new[] { checkWindowGlass }),
-                (pbControlConfirmations, new[] { checkControlConfirmations }),
+                (pbControlConfirmations, new Control[] { labelControlConfirmations, comboControlConfirmations }),
                 (pbWebServerPort, new Control[] { labelWebServerPort }),
                 (pbPerformanceTuner, new Control[] { checkPerformanceTuner, labelPerformanceTunerTarget }),
             };

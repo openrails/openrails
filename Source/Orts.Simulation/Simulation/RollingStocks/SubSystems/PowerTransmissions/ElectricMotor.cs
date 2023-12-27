@@ -15,12 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using ORTS.Common;
 using System;
+using System.IO;
+using ORTS.Common;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 {
-    public class ElectricMotor
+    public class ElectricMotor : ISubSystem<ElectricMotor>
     {
         protected float temperatureK;
         public float TemperatureK { get { return temperatureK; } }
@@ -40,8 +41,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         public readonly float InertiaKgm2;
 
-        public ElectricMotor(Axle axle)
+        public readonly MSTSLocomotive Locomotive;
+
+        public ElectricMotor(Axle axle, MSTSLocomotive locomotive)
         {
+            Locomotive = locomotive;
             InertiaKgm2 = 1.0f;
             temperatureK = 273.0f;
             ThermalCoeffJ_m2sC = 50.0f;
@@ -52,8 +56,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             AxleConnected.Motor = this;
             AxleConnected.TransmissionRatio = 1;
         }
+        public virtual void UpdateTractiveForce(float elapsedClockSeconds, float t)
+        {
 
-        public virtual float GetDevelopedTorqueNm(float motorSpeedRadpS)
+        }
+
+        public virtual double GetDevelopedTorqueNm(double motorSpeedRadpS)
         {
             return 0;
         }
@@ -62,9 +70,24 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             temperatureK = tempIntegrator.Integrate(timeSpan, (temperatureK) => 1.0f/(SpecificHeatCapacityJ_kg_C * WeightKg)*((powerLossesW - CoolingPowerW) / (ThermalCoeffJ_m2sC * SurfaceM) - temperatureK));
         }
-
-        public virtual void Reset()
+        public virtual void Initialize()
         {
+        }
+
+        public virtual void InitializeMoving()
+        {
+        }
+        public virtual void Copy(ElectricMotor other)
+        {
+
+        }
+        public virtual void Save(BinaryWriter outf)
+        {
+
+        }
+        public virtual void Restore(BinaryReader inf)
+        {
+
         }
     }
 }

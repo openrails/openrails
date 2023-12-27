@@ -201,6 +201,10 @@ namespace ORTS.Common
 			{
 				SettingStore.SetUserValue(name, (int)value);
 			}
+            else if (type == typeof(byte))
+            {
+                SettingStore.SetUserValue(name, (byte)value);
+            }
             else if (type == typeof(bool))
             {
                 SettingStore.SetUserValue(name, (bool)value);

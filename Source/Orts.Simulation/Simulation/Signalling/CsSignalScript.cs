@@ -230,8 +230,9 @@ namespace Orts.Simulation.Signalling
                 var heads = SignalObjectById(id)?.SignalHeads;
                 if (heads != null)
                 {
-                    foreach (SignalHead head in heads.Where(head => head.Function == function))
+                    foreach (SignalHead head in heads)
                     {
+                        if (head.Function != function) continue;
                         if (headindex <= 0) return head.TextSignalAspect;
                         headindex--;
                     }

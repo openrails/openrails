@@ -56,6 +56,8 @@ namespace Orts.Simulation.Signalling
 
         public string SignalTypeName => signalType?.Name ?? string.Empty;
 
+        public int[] LocalFloats;
+
         /// <summary>
         /// Constructor for signals
         /// </summary>
@@ -307,9 +309,9 @@ namespace Orts.Simulation.Signalling
             return 0;
         }
 
-        public int switchstand(int aspect1, int aspect2)
+        public int switchstand(int aspect1, int aspect2, string dumpfile)
         {
-            return mainSignal.switchstand(aspect1, aspect2);
+            return mainSignal.switchstand(aspect1, aspect2, dumpfile);
         }
 
         /// <summary>
