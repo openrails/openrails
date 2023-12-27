@@ -90,6 +90,25 @@ namespace ORTS
 
             // various checks for the directory where the route is installed
 
+            DriveInfo dInfo = new DriveInfo(installPathRoute);
+
+            long size = Routes[RouteName].InstallSize + Routes[RouteName].DownloadSize;
+
+            if (size > (dInfo.AvailableFreeSpace * 1.1))
+            {
+                message = Catalog.GetStringFmt("Not enough diskspace on drive {0} ({1}), available {2} kB, needed {3} kB, still continue?", 
+                    dInfo.Name, 
+                    dInfo.VolumeLabel,
+                    (dInfo.AvailableFreeSpace / 1024).ToString("N0"), 
+                    (size / 1024).ToString("N0"));
+
+                if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
+                {
+                    // cancelled
+                    return;
+                }
+            }
+
             message = Catalog.GetStringFmt("Route to be installed in \"{0}\", are you sure?", installPathRoute);
 
             if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
