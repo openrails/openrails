@@ -1131,6 +1131,5 @@ namespace ORTS
                 hover.Leave();
         }
         #endregion
-
     }
 }
