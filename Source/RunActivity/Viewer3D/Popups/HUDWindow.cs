@@ -27,6 +27,7 @@ using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using Orts.Viewer3D.Processes;
 using ORTS.Common;
 using ORTS.Scripting.Api;
@@ -112,7 +113,7 @@ namespace Orts.Viewer3D.Popups
             ForceGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
             ForceGraphMotiveForce = ForceGraphs.Add(Viewer.Catalog.GetString("Motive force"), "0%", "100%", Color.Green, 75);
             ForceGraphDynamicForce = ForceGraphs.AddOverlapped(Color.Red, 75);
-            ForceGraphNumOfSubsteps = ForceGraphs.Add(Viewer.Catalog.GetString("Num of substeps"), "0", "50", Color.Blue, 25);
+            ForceGraphNumOfSubsteps = ForceGraphs.Add(Viewer.Catalog.GetString("Num of substeps"), "0", "100", Color.Blue, 25);
 
             DebugGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
             DebugGraphMemory = DebugGraphs.Add(Viewer.Catalog.GetString("Memory"), "0GB", String.Format("{0:F0}GB", (float)Host.CPUMemoryVirtualLimit / 1024 / 1024 / 1024), Color.Orange, 50);
@@ -201,7 +202,7 @@ namespace Orts.Viewer3D.Popups
                     ForceGraphDynamicForce.AddSample(-loco.MotiveForceN / loco.MaxForceN);
                 }
 
-                ForceGraphNumOfSubsteps.AddSample(loco.LocomotiveAxles.NumOfSubstepsPS / 50.0f);
+                ForceGraphNumOfSubsteps.AddSample(loco.LocomotiveAxles.NumOfSubstepsPS / 100.0f);
 
                 ForceGraphs.PrepareFrame(frame);
             }
@@ -1078,33 +1079,35 @@ namespace Orts.Viewer3D.Popups
                 {
                     if (mstsLocomotive.AdvancedAdhesionModel)
                     {
-                        TableAddLine(table, Viewer.Catalog.GetString("(Advanced adhesion model)"));
+                        var text = Viewer.Catalog.GetString("(Advanced adhesion model)");
+                        if (Axle.UsePolachAdhesion == false) text += "???";
+                        TableAddLine(table, text);
                         int row0 = table.CurrentRow;
-                        TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Wheel slip"));
+                        TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Wheel slip (Thres)"));
                         TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Conditions"));
                         TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Axle drive force"));
                         TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Axle brake force"));
                         TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Number of substeps"));
+                        TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Wheel Adh. (Max)"));
                         TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Axle out force"));
                         TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Comp Axle out force"));
-                        TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Wheel speed"));
-                        for (int i=0; i<mstsLocomotive.LocomotiveAxles.Count; i++)
+                        TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Wheel speed (Slip)"));
+                        for (int i = 0; i < mstsLocomotive.LocomotiveAxles.Count; i++)
                         {
                             table.CurrentRow = row0;
                             var axle = mstsLocomotive.LocomotiveAxles[i];
-                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2*i, "{0:F0}% ({1:F0}%/{2})", axle.SlipSpeedPercent, axle.SlipDerivationPercentpS, FormatStrings.s);
-                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2*i, "{0:F0}%", mstsLocomotive.AdhesionConditions * 100.0f);
-                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2*i, "{0} ({1})", FormatStrings.FormatForce(axle.DriveForceN, mstsLocomotive.IsMetric),
-                            FormatStrings.FormatPower(axle.DriveForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
-                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2*i, "{0}", FormatStrings.FormatForce(axle.BrakeRetardForceN, mstsLocomotive.IsMetric));
-                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2*i, "{0:F0}", axle.NumOfSubstepsPS);
-                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2*i, "{0} ({1})",
-                            FormatStrings.FormatForce(axle.AxleForceN, mstsLocomotive.IsMetric),
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0:F0}% ({1})", axle.SlipSpeedPercent, FormatStrings.FormatVeryLowSpeedDisplay((float)axle.WheelSlipThresholdMpS, mstsLocomotive.IsMetric));
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0:F0}%", mstsLocomotive.AdhesionConditions * 100.0f);
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0} ({1})", FormatStrings.FormatForce(axle.DriveForceN, mstsLocomotive.IsMetric), FormatStrings.FormatPower(axle.DriveForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0}", FormatStrings.FormatForce(axle.BrakeRetardForceN, mstsLocomotive.IsMetric));
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0:F0}", axle.NumOfSubstepsPS);
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0:F0}%  ({1:F0}%)", axle.WheelAdhesion * 100, axle.MaximumPolachWheelAdhesion * 100);
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0} ({1})", FormatStrings.FormatForce(axle.AxleForceN, mstsLocomotive.IsMetric),
                             FormatStrings.FormatPower(axle.AxleForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
-                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2*i, "{0} ({1})",
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0} ({1})",
                             FormatStrings.FormatForce(axle.CompensatedAxleForceN, mstsLocomotive.IsMetric),
                             FormatStrings.FormatPower(axle.CompensatedAxleForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
-                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2*i, "{0} ({1})", FormatStrings.FormatSpeedDisplay(axle.AxleSpeedMpS, mstsLocomotive.IsMetric), FormatStrings.FormatSpeedDisplay(axle.SlipSpeedMpS, mstsLocomotive.IsMetric));
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0} ({1})", FormatStrings.FormatSpeedDisplay((float)axle.AxleSpeedMpS, mstsLocomotive.IsMetric), FormatStrings.FormatVeryLowSpeedDisplay(axle.SlipSpeedMpS, mstsLocomotive.IsMetric));
                         }
                         if (HUDEngineType == TrainCar.EngineTypes.Steam && (HUDSteamEngineType == TrainCar.SteamEngineTypes.Compound || HUDSteamEngineType == TrainCar.SteamEngineTypes.Simple || HUDSteamEngineType == TrainCar.SteamEngineTypes.Unknown)) TableAddLabelValue(table, Viewer.Catalog.GetString("Wheel ang. pos."), "{0}º", (int)(mstsLocomotive.LocomotiveAxles[0].AxlePositionRad * 180 / Math.PI + 180));
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Loco Adhesion"), "{0:F0}%", mstsLocomotive.LocomotiveCoefficientFrictionHUD * 100.0f);

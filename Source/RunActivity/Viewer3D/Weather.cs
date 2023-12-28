@@ -484,10 +484,23 @@ namespace Orts.Viewer3D
                     weatherChangeOn = false;
                 }
 
+                // Daylight offset is useful for debugging night running timetables; it ranges from -12h to +12h
+                string FormatDaylightOffsetHour(int h) => h <= 0 ? h.ToString() : $"+{h}";
+                if (UserInput.IsPressed(UserCommand.DebugDaylightOffsetIncrease) && Weather.DaylightOffset < 12)
+                {
+                    Weather.DaylightOffset += 1;
+                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Increased daylight offset to {0} h", FormatDaylightOffsetHour(Weather.DaylightOffset)));
+                }
+                if (UserInput.IsPressed(UserCommand.DebugDaylightOffsetDecrease) && Weather.DaylightOffset > -12)
+                {
+                    Weather.DaylightOffset -= 1;
+                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Decreased daylight offset to {0} h", FormatDaylightOffsetHour(Weather.DaylightOffset)));
+                }
+
                 UpdateWind(elapsedTime);
             }
 
-            if (!Orts.MultiPlayer.MPManager.IsMultiPlayer())
+            if (!MPManager.IsMultiPlayer())
             {
                 // Shift the clock forwards or backwards at 1h-per-second.
                 if (UserInput.IsDown(UserCommand.DebugClockForwards)) Viewer.Simulator.ClockTime += elapsedTime.RealSeconds * 3600;

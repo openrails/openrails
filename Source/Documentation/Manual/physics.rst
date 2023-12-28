@@ -254,7 +254,23 @@ simplicity, only one axle model is computed (and animated). A tilting
 feature and the independent axle adhesion model will be introduced in the
 future.
 
-The heart of the model is the slip characteristics (picture below).
+The advanced adhesion model uses two alternate algorithms to calculate the 
+wheel adhesion. The first model is based upon an algorithm by Pacha, whilst the second 
+uses an algorithm developed by Polach. The Polach algorithm provides 
+a more accurate outcome and facilitates the future inclusion of track conditions. 
+However due to the number of algorithm steps required to calculate the wheel adhesion 
+value, it is more CPU load intensive then the Pacha one. This can produce low 
+frame rates for the screen display in machines with low performance specifications. 
+
+Hence OR automatically senses the CPU load, and switches to the Pacha algorithm at 
+high loads and to the Polach algorithm under lower CPU loads. In this way OR attempts 
+to support the operation of lower specification computers. When OR is using the 
+Pacha algorithm, the "Wheel Adh (Max)" values will both read 99%, whereas when the 
+Polach algorithm is being used these values will be around the expected values of 30-55%.
+
+
+
+The heart of the adhesion algorithm is the slip characteristics (pictured below).
 
 .. image:: images/physics-adhesion-slip.png
    :align: center
@@ -2689,6 +2705,12 @@ Brake Token:   ``TrainBrakesControllerSupressionStart``
 - Brake Systems: Air single pipe, Air twin pipe, EP
 - Description:   Cancels effect of penalty brake application by TCS and restores control of brakes to driver.  
 
+Brake Position Labels
+----------------------
+The name of a given brake controller notch can be customized by adding an ORTSLabel
+block to the notch definition::
+
+   Notch ( 0.5  0 TrainBrakesControllerEPFullServiceStart ORTSLabel ( "Regeneration III and EP" ) )
 
 .. _physics-hud-brake:
 
@@ -2951,7 +2973,7 @@ DynamicBrakeForceCurves defined in the ENG file, than one is created
 based on the MSTS parameter values.
 
 It is possible to use dynamic brakes as a replacement for air brakes
-when they are available (dynamic brake blending). During blending operation,
+when they are available ("local" dynamic brake blending). During blending operation,
 the following parameters will adjust the behaviour of air brakes:
 
 .. index::
@@ -2964,7 +2986,38 @@ the following parameters will adjust the behaviour of air brakes:
   air brakes are released while dynamic brakes satisfy the train brake demand.
   If dynamic braking is not sufficient, air brakes will be partially applied
   so the combination air+dynamic provides the required brake demand.
-
+  
+Sometimes the train brake controller is capable to apply the dynamic
+brakes for the whole consist, usually as a first step before air brakes
+are applied. This is usually known as "train blending", as opposed to 
+"local" blending which only affects dynamic braking on the locomotive itself.
+A blending table which looks similar to the DynamicBrakeForceCurves table is
+available. It specifies the amount of dynamic brake that is applied at each
+notch of the train brake controller, where 0 means no dynamic brake and 1 means full dynamic brake::
+  Engine(
+    ORTSTrainDynamicBlendingTable(
+        comment ( Notch 0 of train brake - no dynamic brake applied )
+        0 (
+            0 0 
+            300km/h 0
+        )
+        comment ( 30% of Train brake - apply full dynamic brake )
+        0.3 (
+            0 1 
+            300km/h 1
+        )
+        comment ( 90% of Train brake - still apply full dynamic brake )
+        0.9 (
+            0 1 
+            300km/h 1
+        )
+        comment ( Emergency brake notch - do not command dynamic brake )
+        1 (
+            0 0 
+            300km/h 0
+        )
+    )
+  )
 
 Native Open Rails Braking Parameters
 ------------------------------------

@@ -95,7 +95,7 @@ namespace Orts.Viewer3D.Processes
             public string acttype;
         }
 
-        static DispatchViewer DebugViewer { get { return Program.DebugViewer; } set { Program.DebugViewer = value; } }
+        static MapViewer MapForm { get { return Program.MapForm; } set { Program.MapForm = value; } }
         static SoundDebugForm SoundDebugForm { get { return Program.SoundDebugForm; } set { Program.SoundDebugForm = value; } }
 
         LoadingPrimitive Loading;
@@ -231,7 +231,7 @@ namespace Orts.Viewer3D.Processes
                     default:
                         MessageBox.Show("To start " + Application.ProductName + ", please run 'OpenRails.exe'.\n\n"
                                 + "If you are attempting to debug this component, please run 'OpenRails.exe' and execute the scenario you are interested in. "
-                                + "In the log file, the command-line arguments used will be listed at the top. "
+                                + "In the log file, a line with the command-line arguments used will be listed at the top. "
                                 + "You should then configure your debug environment to execute this component with those command-line arguments.",
                                 Application.ProductName + " " + VersionInfo.VersionOrBuild);
                         Game.Exit();
@@ -819,6 +819,21 @@ namespace Orts.Viewer3D.Processes
                 Console.WriteLine("Executable = {0}", Path.GetFileName(Application.ExecutablePath));
                 foreach (var arg in args)
                     Console.WriteLine("Argument   = {0}", arg);
+
+                string debugArgline = "";
+                foreach (var arg in args)
+                {
+                    if (arg.Contains(" ")) 
+                    {
+                        debugArgline += "\"" + arg + "\" ";
+                    } 
+                    else
+                    {
+                        debugArgline += arg + " ";
+                    }
+                 }
+                Console.WriteLine("Arguments  = {0}", debugArgline.TrimEnd());
+
                 LogSeparator();
                 settings.Log();
                 LogSeparator();

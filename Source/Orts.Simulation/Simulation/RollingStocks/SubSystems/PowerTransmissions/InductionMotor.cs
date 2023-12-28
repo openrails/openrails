@@ -48,9 +48,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             TargetForceN = Locomotive.TractiveForceN / Locomotive.LocomotiveAxles.Count;
         }
-        public override float GetDevelopedTorqueNm(float motorSpeedRadpS)
+        public override double GetDevelopedTorqueNm(double motorSpeedRadpS)
         {
-            return requiredTorqueNm * MathHelper.Clamp((DriveSpeedRadpS - motorSpeedRadpS) / OptimalAsyncSpeedRadpS, -1, 1);
+            return requiredTorqueNm * MathHelper.Clamp((float)(DriveSpeedRadpS - motorSpeedRadpS) / OptimalAsyncSpeedRadpS, -1, 1);
         }
         public override void Update(float timeSpan)
         {

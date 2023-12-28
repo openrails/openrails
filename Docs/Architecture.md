@@ -1,6 +1,29 @@
 # Open Rails Architecture
 
-This document will describe the overall structure of Open Rails and how we expect different areas of the program to work together.
+This document describes the overall structure of Open Rails and how we expect different areas of the program to work together.
+
+## Player application model
+
+The player application model describes the desired components and their relationships which make up Open Rails. Each of these will be formed from one or more libraries, as needed, and each library may contain distinct but critically linked subfunctions.
+
+```mermaid
+flowchart TB
+  Formats["Orts.Formats"]
+  Game["Orts.Game"]
+  Input["Orts.Input"]
+  Multiplayer["Orts.Multiplayer"]
+  Parsers["Orts.Parsers"]
+  Player["Player"]
+  Simulation["Orts.Simulation"]
+  Sound["Orts.Sound"]
+  UI["Orts.UI"]
+  Viewer["Orts.Viewer"]
+  Web["Orts.Web"]
+  Player --- Game --- UI --- Viewer --- Simulation & Formats
+  Player --- Input --- UI & Simulation
+  Sound --- Simulation --- Formats & Multiplayer & Web
+  Formats --- Parsers
+```
 
 ## Threading model
 
@@ -28,6 +51,22 @@ The threading in Open Rails has two key threads working together (Render and Upd
   - If a process stops responding for more than 10s (60s for Loader), the whole application is terminated with an error containing the hung process' stack trace
 - Web Server process
   - Handle all web and API requests
+
+## Projects, assemblies, namespaces
+
+Open Rails is made up of several component projects which are organised into subdirectories with the following naming pattern:
+
+- `Orts.Component\Orts.Component.csproj` (project file)
+- `Orts.Component.dll` (assembly name)
+- `Orts.Component` (default namespace)
+
+The namespaces used within code files should match the directory structure like this:
+
+| *Filename* | *Namespace*
+|---|---|
+| `Orts.Component\File.cs` | `Orts.Component` |
+| `Orts.Component\Section\File.cs` | `Orts.Component.Section` |
+| `Orts.Component\Section\Subsection\File.cs` | `Orts.Component.Section.Subsection` |
 
 ## Simulator object relationships
 
