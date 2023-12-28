@@ -43,6 +43,7 @@ namespace ORTS
 
         private readonly string ImageTempFilename;
         private Thread ImageThread;
+        private readonly string InfoTempFilename;
 
         public DownloadContentForm(UserSettings settings)
         {
@@ -65,6 +66,9 @@ namespace ORTS
             InstallPathTextBox.Text = settings.Content.InstallPath;
 
             ImageTempFilename = Path.GetTempFileName();
+            InfoTempFilename = Path.GetTempFileName();
+            File.Delete(InfoTempFilename);
+            InfoTempFilename = Path.ChangeExtension(ImageTempFilename, "html");
         }
 
         void dataGridViewDownloadContent_SelectionChanged(object sender, EventArgs e)
@@ -234,6 +238,7 @@ namespace ORTS
             dataGridViewDownloadContent.CurrentRow.Cells[1].Value = dateTimeNowStr;
 
             Routes[RouteName].DateInstalled = dateTimeNowStr;
+            Routes[RouteName].DirectoryInstalledIn = installPathRoute;
 
             Settings.Folders.Save();
             Settings.Routes.Save();
@@ -454,6 +459,73 @@ namespace ORTS
             return true;
         }
 
+        private void InfoButton_Click(object sender, EventArgs e)
+        {
+
+            using (StreamWriter outputFile = new StreamWriter(InfoTempFilename))
+            {
+                RouteSettings.Route route = Routes[RouteName];
+
+                outputFile.WriteLine(string.Format("<h3>{0}:</h3>\n", RouteName));
+
+                string description = route.Description.Replace("\n", "<br />");
+                outputFile.WriteLine(string.Format("<p>{0}</p>\n", description));
+
+                outputFile.WriteLine(string.Format("<img height='350' width='600' src = '{0}'/>\n", route.Image));
+
+                if (string.IsNullOrWhiteSpace(route.AuthorUrl))
+                {
+                    outputFile.WriteLine(string.Format("<p>created by : {0}</p>\n",
+                        route.AuthorName));
+                }
+                else
+                {
+                    outputFile.WriteLine(string.Format("<p>created by : <a href='{0}'>{1}</a></p>\n",
+                        route.AuthorUrl, route.AuthorName));
+                }
+
+                if (!string.IsNullOrWhiteSpace(route.Screenshot))
+                {
+                    outputFile.WriteLine(string.Format("<p>screenshots: <a href='{0}'>{1}</a></p>\n",
+                        route.Screenshot, route.Screenshot));
+                }
+
+                if (route.Url.EndsWith("git"))
+                {
+                    outputFile.WriteLine(String.Format("<p>Downloadable: GitHub format<br>\n"));
+                    outputFile.WriteLine(String.Format("- From: {0}<br>\n", route.Url));
+                    if (route.InstallSize > 0)
+                    {
+                        outputFile.WriteLine(String.Format("- Install size: {0} GB<br></p>\n", (route.InstallSize / (1024.0 * 1024 * 1024)).ToString("N")));
+                    }
+                }
+                if (route.Url.EndsWith("zip"))
+                {
+                    outputFile.WriteLine(String.Format("<p>Downloadable: zip format<br>\n"));
+                    outputFile.WriteLine(String.Format("- From: {0}<br>\n", route.Url));
+                    if (route.InstallSize > 0)
+                    {
+                        outputFile.WriteLine(String.Format("- Install size: {0} GB<br>\n", (route.InstallSize / (1024.0 * 1024 * 1024)).ToString("N")));
+                    }
+                    if (route.DownloadSize > 0)
+                    {
+                        outputFile.WriteLine(String.Format("- Download size: {0} GB<br></p>\n", (route.DownloadSize / (1024.0 * 1024 * 1024)).ToString("N")));
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(route.DateInstalled))
+                {
+                    outputFile.WriteLine(String.Format("<p>Installed:<br>\n"));
+                    outputFile.WriteLine(String.Format("- at: {0}<br>\n", route.DateInstalled));
+                    outputFile.WriteLine(String.Format("- in: \"{0}\"<br></p>\n", route.DirectoryInstalledIn));
+                }
+            }
+
+            // show html file in default browser
+            System.Diagnostics.Process.Start(InfoTempFilename);
+        }
+
+
         private void DownloadContentForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             try 
@@ -464,10 +536,11 @@ namespace ORTS
                     pictureBoxRoute.Image = null;
                 }
                 File.Delete(ImageTempFilename);
+                File.Delete(InfoTempFilename);
             }
             catch 
             { 
-                // just ignore, it's a file in the user temp directory anyway
+                // just ignore, the files are the user temp directory anyway
             }
         }
     }
