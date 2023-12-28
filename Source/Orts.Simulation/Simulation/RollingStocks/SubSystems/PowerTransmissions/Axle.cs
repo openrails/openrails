@@ -281,23 +281,105 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 AxleList[i].Restore(inf);
             }
         }
+
+        /// <summary>
+        /// switch between Polach and Pacha adhesion calculation
+        /// </summary>
+        public static bool UsePolachAdhesion = false; // "static" so there's only one value in the program.
+        public bool PreviousUsePolachAdhesion = false; // Keep a note for each Axles so that we can tell if it changed.
+
         /// <summary>
         /// Updates each axle on the list
         /// </summary>
-        /// <param name="elapsedClockSeconds">Time span within the simulation cycle</param>
-        public void Update(float elapsedClockSeconds)
+        /// <param name="elapsedSeconds">Time span within the simulation cycle</param>
+        public void Update(float elapsedSeconds)
         {
+            UsePolachAdhesion = AdhesionPrecision.IsPrecisionHigh(this, elapsedSeconds, Car.Simulator.GameTime);
             foreach (var axle in AxleList)
             {
-                axle.Update(elapsedClockSeconds);
+                if (UsePolachAdhesion != PreviousUsePolachAdhesion) // There's been a transition
+                {
+                    axle.AxleSpeedMpS = axle.TrainSpeedMpS; // So the transition doesn't cause a wheelslip
+                }
+                axle.Update(elapsedSeconds);
             }
+            PreviousUsePolachAdhesion = UsePolachAdhesion;
         }
         public List<Axle>.Enumerator GetEnumerator()
         {
             return AxleList.GetEnumerator();
         }
-    }
 
+        static class AdhesionPrecision  // "static" so all "Axles" share the same level of precision
+        {
+            enum AdhesionPrecisionLevel
+            {
+                /// <summary>
+                /// Initial level uses Polach algorithm
+                /// </summary>
+                High = 0,
+                /// <summary>
+                /// Low-performance PCs use Pacha's algorithm
+                /// </summary>
+                Low = 1,
+                /// <summary>
+                /// After frequent transitions, low-performance PCs are locked to Pacha's algorithm
+                /// </summary>
+                LowLocked = 2
+            }
+
+            // Adjustable limits
+            const float LowerLimitS = 0.025f;   // timespan 0.025 = 40 fps screen rate, low timeSpan and high FPS
+            const float UpperLimitS = 0.033f;   // timespan 0.033 = 30 fps screen rate, high timeSpan and low FPS
+            const double IntervalBetweenDowngradesLimitS = 5 * 60; // Locks in low precision if < 5 mins between downgrades
+
+            static AdhesionPrecisionLevel PrecisionLevel = AdhesionPrecisionLevel.High;
+            static double TimeOfLatestDowngrade = 0 - IntervalBetweenDowngradesLimitS; // Starts at -5 mins
+
+            // Tested by dropping the framerate below 30 fps interactively. Did this by opening and closing the HelpWindow after inserting
+            //   Threading.Thread.Sleep(40);
+            // into HelpWindow.PrepareFrame() temporarily.
+            public static bool IsPrecisionHigh(Axles axles, float elapsedSeconds, double gameTime)
+            {
+                // Switches between Polach (high precision) adhesion model and Pacha (low precision) adhesion model depending upon the PC performance
+                switch (PrecisionLevel)
+                {
+                    case AdhesionPrecisionLevel.High:
+                        if (elapsedSeconds > UpperLimitS)
+                        {
+                            var screenFrameRate = 1 / elapsedSeconds;
+                            var timeSincePreviousDowngradeS = gameTime - TimeOfLatestDowngrade;
+                            if (timeSincePreviousDowngradeS < IntervalBetweenDowngradesLimitS)
+                            {
+                                Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to low precision permanently after {timeSincePreviousDowngradeS:F0} secs since previous switch (less than limit of {IntervalBetweenDowngradesLimitS})");
+                                PrecisionLevel = AdhesionPrecisionLevel.LowLocked;
+                            }
+                            else
+                            {
+                                TimeOfLatestDowngrade = gameTime;
+                                Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to low precision after low frame rate {screenFrameRate:F1} below limit {1 / UpperLimitS:F0}");
+                                PrecisionLevel = AdhesionPrecisionLevel.Low;
+                            }
+                        }
+                        break;
+
+                    case AdhesionPrecisionLevel.Low:
+                        if (elapsedSeconds > 0 // When debugging step by step, elapsedSeconds == 0, so test for that
+                            && elapsedSeconds < LowerLimitS)
+                        {
+                            PrecisionLevel = AdhesionPrecisionLevel.High;
+                            var ScreenFrameRate = 1 / elapsedSeconds;
+                            Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to high precision after high frame rate {ScreenFrameRate:F1} above limit {1 / LowerLimitS:F0}");
+                        }
+                        break;
+
+                    case AdhesionPrecisionLevel.LowLocked:
+                        break;
+                }
+                return (PrecisionLevel == AdhesionPrecisionLevel.High);
+            }
+        }
+    }
 
 
     /// <summary>
@@ -429,12 +511,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         float forceToAccelerationFactor;
 
         /// <summary>
-        /// switch between Polach and Pacha adhesion calculation
-        /// </summary>
-        public static bool UsePolachAdhesion = false; // "static" so it's shared by all axles of the Player's loco
-        public double GameTime; // Set by MSTSLocomotive and used by AdhesionPrecision.IsPrecisionHigh
-
-        /// <summary>
         /// Pre-calculation of slip characteristics at 0 slip speed
         /// </summary>
         double axleStaticForceN;
@@ -546,7 +622,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Axle speed value, in metric meters per second
         /// </summary>
-        public double AxleSpeedMpS { get; private set; }
+        public double AxleSpeedMpS { get; set; }
 
         /// <summary>
         /// Axle angular position in radians
@@ -824,7 +900,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             double slipSpeedMpS = axleSpeedMpS - TrainSpeedMpS;
             double axleOutForceN = 0;
 
-            if (UsePolachAdhesion)
+            if (Axles.UsePolachAdhesion)
             {
                 axleOutForceN = Math.Sign(slipSpeedMpS) * AxleWeightN * SlipCharacteristicsPolach(slipSpeedMpS);
             }
@@ -870,7 +946,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (elapsedClockSeconds <= 0) return;
             double prevSpeedMpS = AxleSpeedMpS;
 
-            if (UsePolachAdhesion)
+            if (Axles.UsePolachAdhesion)
             {
 
                 float upperSubStepLimit = 100;
@@ -959,7 +1035,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 var k1 = GetAxleMotionVariation(AxleSpeedMpS, dt);
 
-                if (i == 0 && !UsePolachAdhesion)
+                if (i == 0 && !Axles.UsePolachAdhesion)
                 {
                     if (k1.Item1 * dt > Math.Max((Math.Abs(SlipSpeedMpS) - 1) * 10, 1) / 100)
                     {
@@ -1002,8 +1078,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="elapsedSeconds"></param>
         public virtual void Update(float elapsedSeconds)
         {
-            UsePolachAdhesion = AdhesionPrecision.IsPrecisionHigh(elapsedSeconds, GameTime);
-            if (UsePolachAdhesion)
+            if (Axles.UsePolachAdhesion)
             {
                 forceToAccelerationFactor = WheelRadiusM * WheelRadiusM / totalInertiaKgm2;
 
@@ -1095,79 +1170,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
                 slipDerivationPercentpS = (SlipSpeedPercent - previousSlipPercent) / elapsedSeconds;
                 previousSlipPercent = SlipSpeedPercent;
-            }
-        }
-
-        static class AdhesionPrecision  // "static" so all "Axle"s share the same level of precision
-        {
-            enum AdhesionPrecisionLevel
-            {
-                /// <summary>
-                /// Initial level uses Polach algorithm
-                /// </summary>
-                High = 0,
-                /// <summary>
-                /// Low-performance PCs use Pacha's algorithm
-                /// </summary>
-                Low = 1,
-                /// <summary>
-                /// After frequent transitions, low-performance PCs are locked to Pacha's algorithm
-                /// </summary>
-                LowLocked = 2
-            }
-
-            // Adjustable limits
-            const float LowerLimitS = 0.025f;   // timespan 0.025 = 40 fps screen rate, low timeSpan and high FPS
-            const float UpperLimitS = 0.033f;   // timespan 0.033 = 30 fps screen rate, high timeSpan and low FPS
-            const double IntervalBetweenDowngradesLimitS = 5 * 60; // Locks in low precision if < 5 mins between downgrades
-
-            static AdhesionPrecisionLevel PrecisionLevel = AdhesionPrecisionLevel.High;
-            static double TimeOfLatestDowngrade = 0 - IntervalBetweenDowngradesLimitS; // Starts at -5 mins
-
-            // Tested by varying the framerate interactively. Did this by opening and closing the HelpWindow after inserting
-            //   Threading.Thread.Sleep(40);
-            // into HelpWindow.PrepareFrame() temporarily.
-            public static bool IsPrecisionHigh(float elapsedSeconds, double gameTime)
-            {
-                // Switches between Polach (high precision) adhesion model and Pacha (low precision) adhesion model depending upon the PC performance
-                switch (PrecisionLevel)
-                {
-                    case AdhesionPrecisionLevel.High:
-                        if (elapsedSeconds > UpperLimitS)
-                        {
-                            var screenFrameRate = 1 / elapsedSeconds;
-                            var timeSincePreviousDowngradeS = gameTime - TimeOfLatestDowngrade;
-                            if (timeSincePreviousDowngradeS < IntervalBetweenDowngradesLimitS)
-                            {
-                                Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to low precision permanently after {timeSincePreviousDowngradeS:F0} secs since previous switch (less than limit of {IntervalBetweenDowngradesLimitS})");
-                                PrecisionLevel = AdhesionPrecisionLevel.LowLocked;
-                            }
-                            else
-                            {
-                                TimeOfLatestDowngrade = gameTime;
-
-                                Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to low precision after low frame rate {screenFrameRate:F1} below limit {1 / UpperLimitS:F0}");
-                                PrecisionLevel = AdhesionPrecisionLevel.Low;
-
-                            }
-                        }
-                        break;
-
-                    case AdhesionPrecisionLevel.Low:
-                        if (elapsedSeconds > 0 // When debugging step by step, elapsedSeconds == 0, so test for that
-                            && elapsedSeconds < LowerLimitS)
-                        {
-                            PrecisionLevel = AdhesionPrecisionLevel.High;
-                            var ScreenFrameRate = 1 / elapsedSeconds;
-                            Trace.TraceInformation($"At {gameTime:F0} secs, advanced adhesion model switched to high precision after high frame rate {ScreenFrameRate:F1} above limit {1 / LowerLimitS:F0}");
-                        }
-                        break;
-
-                    case AdhesionPrecisionLevel.LowLocked:
-                        break;
-
-                }
-                return (PrecisionLevel == AdhesionPrecisionLevel.High);
             }
         }
 
