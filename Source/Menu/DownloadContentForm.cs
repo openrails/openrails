@@ -29,6 +29,7 @@ using System.Threading;
 using System.ComponentModel;
 using System.Net;
 using System.IO.Compression;
+using System.Drawing;
 
 namespace ORTS
 {
@@ -39,6 +40,9 @@ namespace ORTS
         private readonly IDictionary<string, RouteSettings.Route> Routes;
 
         private string RouteName;
+
+        private readonly string ImageTempFilename;
+        private Thread ImageThread;
 
         public DownloadContentForm(UserSettings settings)
         {
@@ -59,6 +63,8 @@ namespace ORTS
             dataGridViewDownloadContent.Sort(dataGridViewDownloadContent.Columns[0], ListSortDirection.Ascending);
 
             InstallPathTextBox.Text = settings.Content.InstallPath;
+
+            ImageTempFilename = Path.GetTempFileName();
         }
 
         void dataGridViewDownloadContent_SelectionChanged(object sender, EventArgs e)
@@ -66,6 +72,56 @@ namespace ORTS
             RouteName = dataGridViewDownloadContent.CurrentRow.Cells[0].Value.ToString();
 
             DownloadContentButton.Enabled = string.IsNullOrWhiteSpace(Routes[RouteName].DateInstalled);
+
+            // picture box handling
+
+            if (pictureBoxRoute.Image != null)
+            {
+                pictureBoxRoute.Image.Dispose();
+                pictureBoxRoute.Image = null;
+            }
+
+            if (!string.IsNullOrEmpty(Routes[RouteName].Image))
+            {
+                if (ImageThread != null)
+                {
+                    if (ImageThread.IsAlive)
+                    {
+                        ImageThread.Abort();
+                    }
+                }
+
+                // use a thread as grabbing the picture from the web might take a few seconds
+                ImageThread = new Thread(() =>
+                {
+                    // wait one second as the user might scroll through the list
+                    Stopwatch sw = Stopwatch.StartNew();
+                    while (sw.ElapsedMilliseconds <= 1000) { }
+
+                    try
+                    {
+                        using (WebClient myWebClient = new WebClient())
+                        {
+                            myWebClient.DownloadFile(Routes[RouteName].Image, ImageTempFilename);
+                        }
+                    }
+                    catch
+                    {
+                        // route lives whithout a picture, not such a problem
+                    }
+
+                    if (File.Exists(ImageTempFilename))
+                    {
+                        pictureBoxRoute.Image = new Bitmap(ImageTempFilename);
+                    }
+                });
+                ImageThread.Start();
+            }
+
+
+            // text box with description
+
+            textBoxRoute.Text = Routes[RouteName].Description;
         }
 
         private void InstallPathButton_Click(object sender, EventArgs e)
@@ -396,6 +452,23 @@ namespace ORTS
                 }
             }
             return true;
+        }
+
+        private void DownloadContentForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            try 
+            {
+                if (pictureBoxRoute.Image != null)
+                {
+                    pictureBoxRoute.Image.Dispose();
+                    pictureBoxRoute.Image = null;
+                }
+                File.Delete(ImageTempFilename);
+            }
+            catch 
+            { 
+                // just ignore, it's a file in the user temp directory anyway
+            }
         }
     }
 

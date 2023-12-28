@@ -36,12 +36,18 @@ namespace ORTS.Settings
             public long DownloadSize;
             public long InstallSize;
 
-            public Route(string dateInstalled, string url, long downloadSize, long installSize)
+            public string Image;
+
+            public string Description;
+
+            public Route(string dateInstalled, string url, long downloadSize, long installSize, string image, string description)
             { 
                 DateInstalled = dateInstalled;
                 Url = url;
                 DownloadSize = downloadSize;
                 InstallSize = installSize;
+                Image = image;
+                Description = description;
             }
         }
 
@@ -116,12 +122,14 @@ namespace ORTS.Settings
                         string url = result["url"].ToString();
                         long downloadSize = convertResultToLong(result, "downloadSize");
                         long installSize = convertResultToLong(result, "installSize");
+                        string image = convertResultToString(result, "image");
+                        string description = convertResultToString(result, "description");
 
                         if (url.EndsWith(".git") || url.EndsWith(".zip"))
                         {
                             if (!Routes.ContainsKey(routeName))
                             {
-                                Routes.Add(routeName, new RouteSettings.Route("", url, downloadSize, installSize));
+                                Routes.Add(routeName, new RouteSettings.Route("", url, downloadSize, installSize, image, description));
                             }
                         }
                     }
@@ -137,7 +145,7 @@ namespace ORTS.Settings
             return;
         }
 
-        long convertResultToLong(JToken result, string fieldName)
+        private long convertResultToLong(JToken result, string fieldName)
         {
             if (result[fieldName] != null)
             {
@@ -146,6 +154,18 @@ namespace ORTS.Settings
             else
             {
                 return 0;
+            }
+        }
+
+        private string convertResultToString(JToken result, string fieldName)
+        {
+            if (result[fieldName] != null)
+            {
+                return result[fieldName].ToString();
+            }
+            else
+            {
+                return "";
             }
         }
 
