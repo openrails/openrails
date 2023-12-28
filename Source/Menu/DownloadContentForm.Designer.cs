@@ -58,6 +58,7 @@ namespace ORTS
             this.DownloadContentButton = new System.Windows.Forms.Button();
             this.pictureBoxRoute = new System.Windows.Forms.PictureBox();
             this.textBoxRoute = new System.Windows.Forms.RichTextBox();
+            this.buttonInfo = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewDownloadContent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxRoute)).BeginInit();
             this.SuspendLayout();
@@ -133,11 +134,11 @@ namespace ORTS
             // 
             // DownloadContentButton
             // 
-            this.DownloadContentButton.Location = new System.Drawing.Point(8, 507);
+            this.DownloadContentButton.Location = new System.Drawing.Point(3, 507);
             this.DownloadContentButton.Name = "DownloadContentButton";
             this.DownloadContentButton.Size = new System.Drawing.Size(75, 23);
             this.DownloadContentButton.TabIndex = 4;
-            this.DownloadContentButton.Text = "Download";
+            this.DownloadContentButton.Text = "Install";
             this.DownloadContentButton.UseVisualStyleBackColor = true;
             this.DownloadContentButton.Click += new System.EventHandler(this.DownloadContentButton_Click);
             // 
@@ -159,11 +160,22 @@ namespace ORTS
             this.textBoxRoute.TabIndex = 6;
             this.textBoxRoute.Text = "";
             // 
+            // buttonInfo
+            // 
+            this.buttonInfo.Location = new System.Drawing.Point(745, 472);
+            this.buttonInfo.Name = "buttonInfo";
+            this.buttonInfo.Size = new System.Drawing.Size(75, 23);
+            this.buttonInfo.TabIndex = 7;
+            this.buttonInfo.Text = "Info";
+            this.buttonInfo.UseVisualStyleBackColor = true;
+            this.buttonInfo.Click += new System.EventHandler(this.InfoButton_Click);
+            // 
             // DownloadContentForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(824, 542);
+            this.Controls.Add(this.buttonInfo);
             this.Controls.Add(this.textBoxRoute);
             this.Controls.Add(this.pictureBoxRoute);
             this.Controls.Add(this.DownloadContentButton);
@@ -198,5 +210,6 @@ namespace ORTS
         private DataGridViewTextBoxColumn Url;
         private PictureBox pictureBoxRoute;
         private RichTextBox textBoxRoute;
+        private Button buttonInfo;
     }
 }

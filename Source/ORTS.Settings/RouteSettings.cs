@@ -30,8 +30,10 @@ namespace ORTS.Settings
     {
         public class Route
         {
-            public string DateInstalled { get; set; }
-            public string Url { get; set; }
+            public string DateInstalled;
+
+            public string DirectoryInstalledIn;
+            public string Url;
 
             public long DownloadSize;
             public long InstallSize;
@@ -40,14 +42,27 @@ namespace ORTS.Settings
 
             public string Description;
 
-            public Route(string dateInstalled, string url, long downloadSize, long installSize, string image, string description)
+            public string AuthorName;
+            public string AuthorUrl;
+
+            public string Screenshot;
+
+            public Route(string dateInstalled, string directoryInstalledIn, string url, 
+                long downloadSize, long installSize, 
+                string image, string description,
+                string author, string authorUrl,
+                string screenshot)
             { 
                 DateInstalled = dateInstalled;
+                DirectoryInstalledIn = directoryInstalledIn;
                 Url = url;
                 DownloadSize = downloadSize;
                 InstallSize = installSize;
                 Image = image;
                 Description = description;
+                AuthorName = author;
+                AuthorUrl = authorUrl;
+                Screenshot = screenshot;
             }
         }
 
@@ -86,6 +101,7 @@ namespace ORTS.Settings
                 }
             }
 
+            // only for debug purposes
             string definedContentJsonName = @"d:\content\routes.json";
 
             string definedContentJsonDirectoryName = Path.GetTempFileName();
@@ -93,7 +109,8 @@ namespace ORTS.Settings
 
             string githubUrl = "https://github.com/openrails/content.git";;
 
-            if (Environment.GetEnvironmentVariable("TstLoadContentAndInstalled") == null)
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TstLoadContentAndInstalled")) ||
+                (Environment.GetEnvironmentVariable("TstLoadContentAndInstalled") != "1"))
             {
                 try
                 {
@@ -124,12 +141,22 @@ namespace ORTS.Settings
                         long installSize = convertResultToLong(result, "installSize");
                         string image = convertResultToString(result, "image");
                         string description = convertResultToString(result, "description");
+                        JToken author = result["author"];
+                        string authorName = convertResultToString(author, "name");
+                        string authorUrl = convertResultToString(author, "url");
+                        string screenshot = convertResultToString(result, "screenshot");
 
                         if (url.EndsWith(".git") || url.EndsWith(".zip"))
                         {
                             if (!Routes.ContainsKey(routeName))
                             {
-                                Routes.Add(routeName, new RouteSettings.Route("", url, downloadSize, installSize, image, description));
+                                Routes.Add(routeName, new RouteSettings.Route(
+                                    "", "", url, downloadSize, installSize, image, description, authorName, authorUrl, screenshot));
+                            }
+                            else
+                            {
+                                update(Routes[routeName],
+                                    url, downloadSize, installSize, image, description, authorName, authorUrl, screenshot);
                             }
                         }
                     }
@@ -144,6 +171,23 @@ namespace ORTS.Settings
 
             return;
         }
+
+        private void update(Route route,
+            string url, 
+            long downloadSize, long installSize, 
+            string img, string description, 
+            string authorName, string authorUrl, 
+            string screenshot)
+        {
+            route.Url = url;
+            route.DownloadSize = downloadSize;
+            route.InstallSize = installSize;
+            route.Image = img;
+            route.Description = description;
+            route.AuthorName = authorName;
+            route.AuthorUrl = authorUrl;
+            route.Screenshot = screenshot;
+        } 
 
         private long convertResultToLong(JToken result, string fieldName)
         {
@@ -183,8 +227,10 @@ namespace ORTS.Settings
         {
             foreach (string filename in Directory.GetFiles(directoryName))
             {
-                FileInfo file = new FileInfo(filename);
-                file.IsReadOnly = false;
+                _ = new FileInfo(filename)
+                {
+                    IsReadOnly = false
+                };
             }
             foreach (string subDirectoryName in Directory.GetDirectories(directoryName))
             {
