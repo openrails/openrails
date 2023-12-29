@@ -33,6 +33,7 @@ using System.Resources;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
+using static ORTS.Notification;
 using Path = ORTS.Menu.Path;
 
 namespace ORTS
@@ -1179,7 +1180,7 @@ namespace ORTS
         /// </summary>
         /// <param name="info"></param>
         /// <returns></returns>
-        private string[] HideStartParameters(string [] info)
+        private string[] HideStartParameters(string[] info)
         {
             var fullStartTime = info[0].TrimStart();
             var startTimeArray = fullStartTime.Split('$');
@@ -1360,7 +1361,7 @@ namespace ORTS
             var index = (int)UserSettings.Menu_SelectionIndex.Activity;
             for (var i = 0; i < comboBox.Items.Count; i++)
             {
-                if (comboBox.Items[i] is T && predicate((T)comboBox.Items[i]) || (Settings.Menu_Selection.Length > i && comboBox.Items[i].ToString() == Settings.Menu_Selection[index] ))
+                if (comboBox.Items[i] is T && predicate((T)comboBox.Items[i]) || (Settings.Menu_Selection.Length > i && comboBox.Items[i].ToString() == Settings.Menu_Selection[index]))
                 {
                     comboBox.SelectedIndex = i;
                     return;
@@ -1482,9 +1483,6 @@ namespace ORTS
         int LastNotificationViewed = 0;
 
         List<Notification> NotificationList = new List<Notification>();
-        class Notification
-        {
-        }
 
         private void pbNotificationsNone_Click(object sender, EventArgs e)
         {
@@ -1527,23 +1525,48 @@ namespace ORTS
         {
             Win32.LockWindowUpdate(Handle);
             ClearPanel();
-            AddNotifications();
-            FlowDetails();
+            PopulateNotificationList();
+            var notification = GetCurrentNotification();
+            notification.FlowNDetails();
             Win32.LockWindowUpdate(IntPtr.Zero);
         }
 
-        private void AddNotifications()
+        /// <summary>
+        /// Populate the Notifications list
+        /// </summary>
+        private void PopulateNotificationList()
         {
-            //if (NotificationList.Count == 0)
-            if (NotificationList.Count != 0)
+            NotificationList.Clear();
+            if (NotificationList.Count == 0)
             {
-                AddDetail("Notifications", new string[] { "No notifications are available." });
+                var newNotification = new Notification();
+                NotificationList.Add(newNotification);
+                new NHeadingControl(panelDetails, "This is a dummy notification", Color.OrangeRed).Add(newNotification);
+                new NTitleControl(panelDetails, DateTime.Now, "Update is available").Add(newNotification);
+                new NRecordControl(panelDetails, "Update mode", 140, "Stable").Add(newNotification);
+                new NRecordControl(panelDetails, "Installed version", 140, "1.3.1").Add(newNotification);
+                new NRecordControl(panelDetails, "New version available", 140, "1.4").Add(newNotification);
+                new NButtonControl(panelDetails, "What's new", 90, "Find out on-line what's new in this version.").Add(newNotification);
+                new NButtonControl(panelDetails, "Install", 90, "Install the new version.").Add(newNotification);
+                new NHeadingControl(panelDetails, "Warning", Color.OrangeRed).Add(newNotification);
+                new NTextControl(panelDetails, "The update from your current version may affect the behaviour of some of your content.").Add(newNotification);
+                new NButtonControl(panelDetails, "Issue details", 90, "More details about this issue are available on-line.").Add(newNotification);
             }
             else
             {
-                AddDetail("Notification 1", new string[] { "This is a dummy notification." });
             }
-            AddDetail("", new string[] { "Toggle icon to hide notifications." });
+            var notification = NotificationList.LastOrDefault();
+            new NTextControl(panelDetails, "").Add(notification);
+            new NTextControl(panelDetails, "(Toggle icon to hide notifications.)").Add(notification);
+        }
+
+        /// <summary>
+        ///  INCOMPLETE
+        /// </summary>
+        /// <returns></returns>
+        Notification GetCurrentNotification()
+        {
+            return NotificationList[0];
         }
 
         #endregion Notifications
