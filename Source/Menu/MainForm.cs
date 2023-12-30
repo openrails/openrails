@@ -32,6 +32,7 @@ using System.Linq;
 using System.Resources;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using static ORTS.Notification;
 using Path = ORTS.Menu.Path;
@@ -320,18 +321,24 @@ namespace ORTS
             {
                 if (UpdateManager.LastCheckError != null)
                     linkLabelUpdate.Text = catalog.GetString("Update check failed");
-                else if (UpdateManager.LastUpdate != null && UpdateManager.LastUpdate.Version != VersionInfo.Version)
-                    linkLabelUpdate.Text = catalog.GetStringFmt("Update to {0}", UpdateManager.LastUpdate.Version);
-                else
-                    linkLabelUpdate.Text = "";
-                linkLabelUpdate.Enabled = true;
-                linkLabelUpdate.Visible = linkLabelUpdate.Text.Length > 0;
-                // Update link's elevation icon and size/position.
-                if (UpdateManager.LastCheckError == null && UpdateManager.LastUpdate != null && UpdateManager.LastUpdate.Version != VersionInfo.Version && UpdateManager.UpdaterNeedsElevation)
-                    linkLabelUpdate.Image = ElevationIcon;
-                else
-                    linkLabelUpdate.Image = null;
+                //else if (UpdateManager.LastUpdate != null && UpdateManager.LastUpdate.Version != VersionInfo.Version)
+                //    linkLabelUpdate.Text = catalog.GetStringFmt("Update to {0}", UpdateManager.LastUpdate.Version);
+                //else
+                //    linkLabelUpdate.Text = "";
+                //linkLabelUpdate.Enabled = true;
+                //linkLabelUpdate.Visible = linkLabelUpdate.Text.Length > 0;
+                //// Update link's elevation icon and size/position.
+                //if (UpdateManager.LastCheckError == null && UpdateManager.LastUpdate != null && UpdateManager.LastUpdate.Version != VersionInfo.Version && UpdateManager.UpdaterNeedsElevation)
+                //    linkLabelUpdate.Image = ElevationIcon;
+                //else
+                //    linkLabelUpdate.Image = null;
+
+                if (UpdateManager.LastUpdate != null)
+                {
+                    SetUpdateNotification();
+                }
             });
+
         }
 
         void LoadLanguage()
@@ -1471,6 +1478,9 @@ namespace ORTS
         // Will probably move this region and the Details region into separate files.
 
         bool AreNotificationsVisible = false;
+        // New notifications are those with a date after the NotificationsReadDate.
+        // Notifications are listed in reverse date order, with the newest one at the front.
+        // We don't track the reading of each notification but set the NewNotificationCount = 0 after the last of the new ones has been read.
         int NewNotificationCount = 1;
         int LastNotificationViewed = 0;
 
@@ -1506,6 +1516,11 @@ namespace ORTS
         private void FiddleNewNotificationCount()
         {
             LastNotificationViewed = 1;
+            UpdateNotificationAlert();
+        }
+
+        private void UpdateNotificationAlert()
+        {
             if (LastNotificationViewed >= NewNotificationCount)
             {
                 pbNotificationsSome.Visible = false;
@@ -1528,28 +1543,47 @@ namespace ORTS
         /// </summary>
         private void PopulateNotificationList()
         {
-            NotificationList.Clear();
-            if (NotificationList.Count == 0)
-            {
-                var newNotification = new Notification();
-                NotificationList.Add(newNotification);
-                new NHeadingControl(panelDetails, "This is a dummy notification", Color.OrangeRed).Add(newNotification);
-                new NTitleControl(panelDetails, DateTime.Now, "Update is available").Add(newNotification);
-                new NRecordControl(panelDetails, "Update mode", 140, "Stable").Add(newNotification);
-                new NRecordControl(panelDetails, "Installed version", 140, "1.3.1").Add(newNotification);
-                new NRecordControl(panelDetails, "New version available", 140, "1.4").Add(newNotification);
-                new NButtonControl(panelDetails, "What's new", 90, "Find out on-line what's new in this version.").Add(newNotification);
-                new NButtonControl(panelDetails, "Install", 90, "Install the new version.").Add(newNotification);
-                new NHeadingControl(panelDetails, "Warning", Color.OrangeRed).Add(newNotification);
-                new NTextControl(panelDetails, "The update from your current version may affect the behaviour of some of your content.").Add(newNotification);
-                new NButtonControl(panelDetails, "Issue details", 90, "More details about this issue are available on-line.").Add(newNotification);
-            }
-            else
-            {
-            }
+            //NotificationList.Clear();
+            //if (NotificationList.Count == 0)
+            //{
+            //    var newNotification = new Notification();
+            //    NotificationList.Add(newNotification);
+            //new NHeadingControl(panelDetails, "This is a dummy notification", Color.OrangeRed).Add(newNotification);
+            //new NTitleControl(panelDetails, DateTime.Now, "Update is available").Add(newNotification);
+            //new NRecordControl(panelDetails, "Update mode", 140, "Stable").Add(newNotification);
+            //new NRecordControl(panelDetails, "Installed version", 140, "1.3.1").Add(newNotification);
+            //new NRecordControl(panelDetails, "New version available", 140, "1.4").Add(newNotification);
+            //new NButtonControl(panelDetails, "What's new", 90, "Find out on-line what's new in this version.").Add(newNotification);
+            //new NButtonControl(panelDetails, "Install", 90, "Install the new version.").Add(newNotification);
+            //new NHeadingControl(panelDetails, "Warning", Color.OrangeRed).Add(newNotification);
+            //new NTextControl(panelDetails, "The update from your current version may affect the behaviour of some of your content.").Add(newNotification);
+            //new NButtonControl(panelDetails, "Issue details", 90, "More details about this issue are available on-line.").Add(newNotification);
+
+            //new NTitleControl(panelDetails, new DateTime(2024, 8, 31, 0, 0, 0), "Update is available").Add(newNotification);
+            //new NRecordControl(panelDetails, "Update mode", 140, "Stable").Add(newNotification);
+            //new NRecordControl(panelDetails, "Installed version", 140, "1.6").Add(newNotification);
+            //new NRecordControl(panelDetails, "New version available", 140, "1.7").Add(newNotification);
+            //new NButtonControl(panelDetails, "What's new", 90, "Find out on-line what's new in this version.").Add(newNotification);
+            //new NHeadingControl(panelDetails, "Install Not Available", Color.OrangeRed).Add(newNotification);
+            //new NTextControl(panelDetails, "V1.7 cannot be installed on your system until the graphics card is upgraded.").Add(newNotification);
+            //new NButtonControl(panelDetails, "Graphics card", 90, "Find out on-line about graphics hardware needed.").Add(newNotification);
+            //new NHeadingControl(panelDetails, "More Realism", Color.Blue).Add(newNotification);
+            //new NTextControl(panelDetails, "This update supports graphics which are significantly more realistic.").Add(newNotification);
+            //new NButtonControl(panelDetails, "Enhancement", 90, "More details about this enhancement are available on-line.").Add(newNotification);
+
+            //}
+            //else
+            //{
+            //}
+            //var notification = NotificationList.LastOrDefault();
+            //new NTextControl(panelDetails, "").Add(notification);
+            //new NTextControl(panelDetails, "(Toggle icon to hide notifications.)").Add(notification);
+
+            SetUpdateNotification();
+
             var notification = NotificationList.LastOrDefault();
-            new NTextControl(panelDetails, "").Add(notification);
-            new NTextControl(panelDetails, "(Toggle icon to hide notifications.)").Add(notification);
+            new NTextControl(notification, "").Add();
+            new NTextControl(notification, "(Toggle icon to hide notifications.)").Add();
         }
 
         /// <summary>
@@ -1561,6 +1595,59 @@ namespace ORTS
             return NotificationList[0];
         }
 
+        /// <summary>
+        /// Ultimately there will be a list of notifications downloaded for openrails/content.
+        /// Until then, there is a single notification announcing either that a new update is available or the installation is up to date.
+        /// </summary>
+        void SetUpdateNotification()
+        {
+            NewNotificationCount = (IsUpdateAvailable()) ? 1 : 0;
+            UpdateNotificationAlert();
+            NotificationList.Clear();
+            var newNotification = new Notification(panelDetails);
+            if (IsUpdateAvailable())
+            {
+                NewNotificationCount = 1;
+                new NTitleControl(newNotification, UpdateManager.LastUpdate.Date, "Update is available").Add();
+                new NRecordControl(newNotification, "Update mode", 140, UpdateManager.ChannelName).Add();
+                new NRecordControl(newNotification, "Installed version", 140, VersionInfo.VersionOrBuild).Add();
+                new NRecordControl(newNotification, "New version available", 140, UpdateManager.LastUpdate.Version).Add();
+                new NLinkControl(newNotification, "What's new", 90, "Find out on-line what's new in this version.", this, UpdateManager.ChangeLogLink).Add();
+                new NUpdateControl(newNotification, "Install", 90, "Install the new version.", this).Add();
+
+            }
+            else
+            {
+                NewNotificationCount = 0;
+                var channelName = UpdateManager.ChannelName == "" ? "None" : UpdateManager.ChannelName;
+                new NTitleControl(newNotification, DateTime.Now, "Installation is up to date").Add();
+                new NRecordControl(newNotification, "Update mode", 140, channelName).Add();
+                new NRecordControl(newNotification, "Installed version", 140, VersionInfo.VersionOrBuild).Add();
+                new NRecordControl(newNotification, "New version available", 140, "none").Add();
+            }
+            NotificationList.Add(newNotification);
+        }
+
+        bool IsUpdateAvailable()
+        {
+            return UpdateManager.LastUpdate != null
+                && UpdateManager.LastUpdate.Version != VersionInfo.Version
+                && DateTime.Now >= UpdateManager.State.NextCheck;
+        }
+
+        // 3 should be enough, but is there a way to get unlimited buttons?
+        public void Button0_Click(object sender, EventArgs e)
+        {
+            GetCurrentNotification().DoButton(UpdateManager, 0);
+        }
+        public void Button1_Click(object sender, EventArgs e)
+        {
+            GetCurrentNotification().DoButton(UpdateManager, 1);
+        }
+        public void Button2_Click(object sender, EventArgs e)
+        {
+            GetCurrentNotification().DoButton(UpdateManager, 2);
+        }
         #endregion Notifications
     }
 }
