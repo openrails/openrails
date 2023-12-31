@@ -308,19 +308,19 @@ namespace ORTS
                 File.Delete(file);
         }
 
-        void CheckForUpdate()
-        {
-            // This is known directly from the chosen channel so doesn't need to wait for the update check itself.
-            linkLabelChangeLog.Visible = !string.IsNullOrEmpty(UpdateManager.ChangeLogLink);
+        //void CheckForUpdate()
+        //{
+        //    // This is known directly from the chosen channel so doesn't need to wait for the update check itself.
+        //    linkLabelChangeLog.Visible = !string.IsNullOrEmpty(UpdateManager.ChangeLogLink);
 
-            new Task<UpdateManager>(this, () =>
-            {
-                UpdateManager.Check();
-                return null;
-            }, _ =>
-            {
-                if (UpdateManager.LastCheckError != null)
-                    linkLabelUpdate.Text = catalog.GetString("Update check failed");
+        //    new Task<UpdateManager>(this, () =>
+        //    {
+        //        UpdateManager.Check();
+        //        return null;
+        //    }, _ =>
+        //    {
+        //        if (UpdateManager.LastCheckError != null)
+        //            linkLabelUpdate.Text = catalog.GetString("Update check failed");
                 //else if (UpdateManager.LastUpdate != null && UpdateManager.LastUpdate.Version != VersionInfo.Version)
                 //    linkLabelUpdate.Text = catalog.GetStringFmt("Update to {0}", UpdateManager.LastUpdate.Version);
                 //else
@@ -332,13 +332,26 @@ namespace ORTS
                 //    linkLabelUpdate.Image = ElevationIcon;
                 //else
                 //    linkLabelUpdate.Image = null;
-
+        //    });
+        //}
+        void CheckForUpdate()
+        {
+            new Task<UpdateManager>(this, () =>
+            {
+                UpdateManager.Check();
+                return null;
+            }, _ =>
+            {
+                if (UpdateManager.LastCheckError != null)
+                {
+                    linkLabelUpdate.Text = catalog.GetString("Update check failed");
+                    linkLabelChangeLog.Visible = true;
+                }
                 if (UpdateManager.LastUpdate != null)
                 {
                     SetUpdateNotification();
                 }
             });
-
         }
 
         void LoadLanguage()
@@ -1503,14 +1516,15 @@ namespace ORTS
         {
             if (AreNotificationsVisible == false)
             {
+                AreNotificationsVisible = true; // Set before calling ShowNotifcations()
                 ShowNotifications();
                 FiddleNewNotificationCount();
             }
             else
             {
+                AreNotificationsVisible = false;
                 ShowDetails();
             }
-            AreNotificationsVisible = !AreNotificationsVisible;
         }
 
         private void FiddleNewNotificationCount()
@@ -1541,8 +1555,8 @@ namespace ORTS
         /// <summary>
         /// Populate the Notifications list
         /// </summary>
-        private void PopulateNotificationList()
-        {
+        //private void PopulateNotificationList()
+        //{
             //NotificationList.Clear();
             //if (NotificationList.Count == 0)
             //{
@@ -1578,7 +1592,10 @@ namespace ORTS
             //var notification = NotificationList.LastOrDefault();
             //new NTextControl(panelDetails, "").Add(notification);
             //new NTextControl(panelDetails, "(Toggle icon to hide notifications.)").Add(notification);
+        //}
 
+        private void PopulateNotificationList()
+        {
             SetUpdateNotification();
 
             var notification = NotificationList.LastOrDefault();
@@ -1608,22 +1625,27 @@ namespace ORTS
             if (IsUpdateAvailable())
             {
                 NewNotificationCount = 1;
-                new NTitleControl(newNotification, UpdateManager.LastUpdate.Date, "Update is available").Add();
-                new NRecordControl(newNotification, "Update mode", 140, UpdateManager.ChannelName).Add();
-                new NRecordControl(newNotification, "Installed version", 140, VersionInfo.VersionOrBuild).Add();
-                new NRecordControl(newNotification, "New version available", 140, UpdateManager.LastUpdate.Version).Add();
-                new NLinkControl(newNotification, "What's new", 90, "Find out on-line what's new in this version.", this, UpdateManager.ChangeLogLink).Add();
-                new NUpdateControl(newNotification, "Install", 90, "Install the new version.", this).Add();
-
+                if (AreNotificationsVisible)
+                {
+                    new NTitleControl(newNotification, UpdateManager.LastUpdate.Date, "Update is available").Add();
+                    new NRecordControl(newNotification, "Update mode", 140, UpdateManager.ChannelName).Add();
+                    new NRecordControl(newNotification, "Installed version", 140, VersionInfo.VersionOrBuild).Add();
+                    new NRecordControl(newNotification, "New version available", 140, UpdateManager.LastUpdate.Version).Add();
+                    new NLinkControl(newNotification, "What's new", 90, "Find out on-line what's new in this version.", this, UpdateManager.ChangeLogLink).Add();
+                    new NUpdateControl(newNotification, "Install", 90, "Install the new version.", this).Add();
+                }
             }
             else
             {
                 NewNotificationCount = 0;
-                var channelName = UpdateManager.ChannelName == "" ? "None" : UpdateManager.ChannelName;
-                new NTitleControl(newNotification, DateTime.Now, "Installation is up to date").Add();
-                new NRecordControl(newNotification, "Update mode", 140, channelName).Add();
-                new NRecordControl(newNotification, "Installed version", 140, VersionInfo.VersionOrBuild).Add();
-                new NRecordControl(newNotification, "New version available", 140, "none").Add();
+                if (AreNotificationsVisible)
+                {
+                    var channelName = UpdateManager.ChannelName == "" ? "None" : UpdateManager.ChannelName;
+                    new NTitleControl(newNotification, DateTime.Now, "Installation is up to date").Add();
+                    new NRecordControl(newNotification, "Update mode", 140, channelName).Add();
+                    new NRecordControl(newNotification, "Installed version", 140, VersionInfo.VersionOrBuild).Add();
+                    new NRecordControl(newNotification, "New version available", 140, "none").Add();
+                }
             }
             NotificationList.Add(newNotification);
         }
@@ -1631,8 +1653,7 @@ namespace ORTS
         bool IsUpdateAvailable()
         {
             return UpdateManager.LastUpdate != null
-                && UpdateManager.LastUpdate.Version != VersionInfo.Version
-                && DateTime.Now >= UpdateManager.State.NextCheck;
+                && UpdateManager.LastUpdate.Version != VersionInfo.Version;
         }
 
         // 3 should be enough, but is there a way to get unlimited buttons?
