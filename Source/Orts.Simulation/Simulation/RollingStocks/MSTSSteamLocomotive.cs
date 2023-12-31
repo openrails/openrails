@@ -2972,7 +2972,7 @@ namespace Orts.Simulation.RollingStocks
 
             Variable2 = MathHelper.Clamp((CylinderCocksPressureAtmPSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
 
-            Trace.TraceInformation("Variable2 - {0}", Variable2);
+//            Trace.TraceInformation("Variable2 - {0}", Variable2);
 
             Variable3 = FuelRateSmoothed * 100;
 
