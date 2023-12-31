@@ -674,10 +674,30 @@ namespace Orts.Simulation.RollingStocks
         public float BoosterCylinderSteamExhaust02SteamVelocityMpS;
         public float BoosterCylinderSteamExhaust02SteamVolumeM3pS;
 
+        float BoosterCylinderSteamExhaustTimerS = 0.0f;
+        bool BoosterCylinderSteamExhaust01On = false;
+        bool BoosterCylinderSteamExhaust02On = false;
+
         float BoosterCylinderCockTimerS = 0.0f;
-        float BoosterCylinderCockOpenTimePeriodS = 0.0f;
-        bool BoosterCylinderCock01On = false;
-        bool BoosterCylinderCock02On = false;
+
+        bool BoosterCylinderCock11On = true;
+        bool BoosterCylinderCock12On = false;
+        bool BoosterCylinderCock21On = true;
+        bool BoosterCylinderCock22On = false;
+
+        public float BoosterCylinderCock11SteamVelocityMpS;
+        public float BoosterCylinderCock12SteamVelocityMpS;
+        public float BoosterCylinderCock21SteamVelocityMpS;
+        public float BoosterCylinderCock22SteamVelocityMpS;
+        public float BoosterCylinderCockSteam11VolumeMpS;
+        public float BoosterCylinderCockSteam12VolumeMpS;
+        public float BoosterCylinderCockSteam21VolumeMpS;
+        public float BoosterCylinderCockSteam22VolumeMpS;
+
+        public float BoosterCylinderCockParticleDurationS;
+
+
+        bool BoosterCylinderCocksOn = false;
 
         public float BlowdownSteamVolumeM3pS;
         public float BlowdownSteamVelocityMpS;
@@ -779,7 +799,10 @@ namespace Orts.Simulation.RollingStocks
         {
             if (v > 0)
                 return false;
-            Trace.TraceWarning("Steam engine value {1} must be defined and greater than zero in {0}", WagFilePath, name);
+            if (Simulator.Settings.VerboseConfigurationMessages)
+            {
+                Trace.TraceWarning("Steam engine value {1} must be defined and greater than zero in {0}", WagFilePath, name);
+            }
             return true;
         }
 
@@ -1113,11 +1136,11 @@ namespace Orts.Simulation.RollingStocks
         {
             base.Initialize();
 
-            if (MSTSNumCylinders < 0 && ZeroError(MSTSNumCylinders, "NumCylinders"))
+            if (MSTSNumCylinders < 0 && SteamEngines[0].NumberCylinders < 0 && ZeroError(MSTSNumCylinders, "NumCylinders"))
                 MSTSNumCylinders = 0;
-            if (ZeroError(MSTSCylinderDiameterM, "MSTSCylinderDiameter"))
+            if (ZeroError(MSTSCylinderDiameterM, "MSTSCylinderDiameter") && SteamEngines[0].CylindersDiameterM == 0)
                 MSTSCylinderDiameterM = 1;
-            if (ZeroError(MSTSCylinderStrokeM, "MSTSCylinderStroke"))
+            if (ZeroError(MSTSCylinderStrokeM, "MSTSCylinderStroke") && SteamEngines[0].CylindersStrokeM == 0)
                 MSTSCylinderStrokeM = 1;
             if (ZeroError(DriverWheelRadiusM, "MSTSWheelRadius"))
                 DriverWheelRadiusM = Me.FromIn(30.0f); // Wheel radius of loco drive wheels can be anywhere from about 10" to 40"
@@ -2221,6 +2244,7 @@ namespace Orts.Simulation.RollingStocks
             CylinderSteamUsageLBpS = 0;
             CylCockSteamUsageLBpS = 0;
             MeanEffectivePressurePSI = 0;
+            CylinderCocksPressureAtmPSI = 0;
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
@@ -2263,7 +2287,8 @@ namespace Orts.Simulation.RollingStocks
                         SteamBoosterRunMode = false;
                         SteamBoosterIdleMode = true;
                         BoosterGearsEngaged = false;
-                        BoosterCylinderSteamExhaustOn = true;
+                        BoosterCylinderSteamExhaustOn = false;
+                        BoosterCylinderCocksOn = true;
                         enginethrottle = 0.0f;
                         BoosterGearEngageTimeS = 0;
 
@@ -2293,7 +2318,8 @@ namespace Orts.Simulation.RollingStocks
                         if (BoosterGearEngageTimeS > BoosterGearEngageTimePeriodS)
                         {
                             enginethrottle = throttle;
-                            BoosterCylinderSteamExhaustOn = false;
+                            BoosterCylinderSteamExhaustOn = true;
+                            BoosterCylinderCocksOn = true;
                             BoosterGearsEngaged = true;
                             BoosterIdleHeatingTimerReset = false;
                             BoosterIdleHeatingTimerS = 0;
@@ -2306,6 +2332,7 @@ namespace Orts.Simulation.RollingStocks
                         SteamBoosterRunMode = false;
                         SteamBoosterIdleMode = false;
                         BoosterCylinderSteamExhaustOn = false;
+                        BoosterCylinderCocksOn = false;
                         enginethrottle = 0;
                         BoosterGearEngageTimeS = 0;
                         BoosterIdleHeatingTimerReset = false;
@@ -2341,6 +2368,15 @@ namespace Orts.Simulation.RollingStocks
                 CumulativeCylinderSteamConsumptionLbs += SteamEngines[i].CylinderSteamUsageLBpS * elapsedClockSeconds;
                 CylinderSteamUsageLBpS += SteamEngines[i].CylinderSteamUsageLBpS;
                 CylCockSteamUsageLBpS += SteamEngines[i].CylCockSteamUsageLBpS;
+
+                if (SteamEngines[i].CylinderCocksPressureAtmPSI > CylinderCocksPressureAtmPSI)
+                {
+                    CylinderCocksPressureAtmPSI = SteamEngines[i].CylinderCocksPressureAtmPSI;
+                }
+
+//                Trace.TraceInformation("CylCocksPressure - Engines {0} Pressure {1}", SteamEngines[i].CylinderCocksPressureAtmPSI, CylinderCocksPressureAtmPSI, i);
+
+
 
                 if (SteamEngines[i].MeanEffectivePressurePSI > MeanEffectivePressurePSI)
                 {
@@ -2655,25 +2691,61 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-
+            // Booster steam exhaust
             if (BoosterCylinderSteamExhaustOn) // For Booster engine
             {
-                BoosterCylinderCockOpenTimePeriodS = 0.5f * 1.0f / DrvWheelRevRpS;  // Calculate how long cylinder cocks open  @ speed = Time (sec) / (Drv Wheel RpS ) - assume two cylinder strokes per rev, ie each cock will only be open for 1/2 rev
-                CylinderCockTimerS += elapsedClockSeconds;
+                var BoosterCylinderSteamExhaustTimePeriodS = 0.5f * 1.0f / DrvWheelRevRpS;  // Calculate how long cylinder cocks open  @ speed = Time (sec) / (Drv Wheel RpS ) - assume two cylinder strokes per rev, ie each cock will only be open for 1/2 rev
+                BoosterCylinderSteamExhaustTimerS += elapsedClockSeconds;
+                if (BoosterCylinderSteamExhaustTimerS > BoosterCylinderSteamExhaustTimePeriodS)
+                {
+                    if (BoosterCylinderSteamExhaust01On)
+                    {
+                        BoosterCylinderSteamExhaust01On = false;
+                        BoosterCylinderSteamExhaust02On = true;
+                        BoosterCylinderSteamExhaustTimerS = 0.0f;  // Reset timer
+                    }
+                    else if (BoosterCylinderSteamExhaust02On)
+                    {
+                        BoosterCylinderSteamExhaust01On = true;
+                        BoosterCylinderSteamExhaust02On = false;
+                        BoosterCylinderSteamExhaustTimerS = 0.0f;  // Reset timer
+
+                    }
+                }
+            }
+
+            // Booster steam cylinder cock exhaust
+            if (BoosterCylinderCocksOn) // For Booster engine
+            {
+                var BoosterCylinderCockOpenTimePeriodS = 0.5f * 1.0f / DrvWheelRevRpS;  // Calculate how long cylinder cocks open  @ speed = Time (sec) / (Drv Wheel RpS ) - assume two cylinder strokes per rev, ie each cock will only be open for 1/2 rev
+                BoosterCylinderCockTimerS += elapsedClockSeconds;
                 if (BoosterCylinderCockTimerS > BoosterCylinderCockOpenTimePeriodS)
                 {
-                    if (BoosterCylinderCock01On)
+                    if (BoosterCylinderCock11On)
                     {
-                        BoosterCylinderCock01On = false;
-                        BoosterCylinderCock02On = true;
+                        BoosterCylinderCock11On = false;
+                        BoosterCylinderCock12On = true;
                         BoosterCylinderCockTimerS = 0.0f;  // Reset timer
                     }
-                    else if (BoosterCylinderCock02On)
+                    else if (BoosterCylinderCock12On)
                     {
-                        BoosterCylinderCock01On = true;
-                        BoosterCylinderCock02On = false;
+                        BoosterCylinderCock11On = true;
+                        BoosterCylinderCock12On = false;
                         BoosterCylinderCockTimerS = 0.0f;  // Reset timer
 
+                    }
+
+                    if (BoosterCylinderCock21On)
+                    {
+                        BoosterCylinderCock21On = false;
+                        BoosterCylinderCock22On = true;
+                  //      BoosterCylinderCockTimerS = 0.0f;  // Reset timer
+                    }
+                    else if (BoosterCylinderCock22On)
+                    {
+                        BoosterCylinderCock21On = true;
+                        BoosterCylinderCock22On = false;
+                   //     BoosterCylinderCockTimerS = 0.0f;  // Reset timer
                     }
                 }
             }
@@ -2706,12 +2778,39 @@ namespace Orts.Simulation.RollingStocks
             CylinderSteamExhaustSteamVelocityMpS = 100.0f;
             CylinderSteamExhaustParticleDurationS = 1.0f;
 
-            // Booster Cylinder Cocks (automatic)
-            BoosterCylinderSteamExhaust01SteamVolumeM3pS = throttle > 0.0 && BoosterCylinderCock01On ? (cutoff * 10.0f * SteamEffectsFactor) : 0.0f;
+            // Booster Engine steam pressure
+            float BoosterSteamFraction = 0;
+
+            if (SteamBoosterIdleMode)
+            {
+                BoosterSteamFraction = 0.2f;
+            }
+            else
+            {
+                BoosterSteamFraction = throttle;
+            }
+
+            // Booster Cylinder Steam Exhausts (automatic)
+            BoosterCylinderSteamExhaust01SteamVolumeM3pS = throttle > 0.0 && BoosterCylinderSteamExhaustOn && BoosterCylinderSteamExhaust01On ? (10.0f * BoosterSteamFraction) : 0.0f;
             BoosterCylinderSteamExhaust01SteamVelocityMpS = 100.0f;
 
-            BoosterCylinderSteamExhaust02SteamVolumeM3pS = throttle > 0.0 && BoosterCylinderCock02On ? (cutoff * 10.0f * SteamEffectsFactor) : 0.0f;
+            BoosterCylinderSteamExhaust02SteamVolumeM3pS = throttle > 0.0 && BoosterCylinderSteamExhaustOn && BoosterCylinderSteamExhaust02On ? (10.0f * BoosterSteamFraction) : 0.0f;
             BoosterCylinderSteamExhaust02SteamVelocityMpS = 100.0f;
+
+            // Booster Cylinder Steam Cylinder Cocks (automatic)
+            BoosterCylinderCockSteam11VolumeMpS = BoosterCylinderCocksOn && BoosterCylinderCock11On ? (10.0f * BoosterSteamFraction) : 0.0f;
+            BoosterCylinderCock11SteamVelocityMpS = 100.0f;
+
+            BoosterCylinderCockSteam12VolumeMpS = BoosterCylinderCocksOn && BoosterCylinderCock12On ? (10.0f * BoosterSteamFraction) : 0.0f;
+            BoosterCylinderCock11SteamVelocityMpS = 100.0f;
+
+            BoosterCylinderCockSteam21VolumeMpS = BoosterCylinderCocksOn && BoosterCylinderCock21On ? (10.0f * BoosterSteamFraction) : 0.0f;
+            BoosterCylinderCock11SteamVelocityMpS = 100.0f;
+
+            BoosterCylinderCockSteam22VolumeMpS = BoosterCylinderCocksOn && BoosterCylinderCock22On ? (10.0f * BoosterSteamFraction) : 0.0f;
+            BoosterCylinderCock11SteamVelocityMpS = 100.0f;
+
+            BoosterCylinderCockParticleDurationS = 1.0f;
 
             // Blowdown Steam Effects
             BlowdownSteamVolumeM3pS = (BlowdownValveOpen && BlowdownSteamUsageLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f);
@@ -2872,6 +2971,9 @@ namespace Orts.Simulation.RollingStocks
 //            Trace.TraceInformation("Variable1 {0} Variable2_1 {1} Variable3_1 {2} Variable4_1 {3}", Variable1, Variable2_1, Variable3_1, Variable4_1);
 
             Variable2 = MathHelper.Clamp((CylinderCocksPressureAtmPSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
+
+//            Trace.TraceInformation("Variable2 - {0}", Variable2);
+
             Variable3 = FuelRateSmoothed * 100;
 
             const int rotations = 2;
@@ -5013,22 +5115,23 @@ namespace Orts.Simulation.RollingStocks
             // Cylinder pressure also reduced by steam vented through cylinder cocks.
             CylCockPressReduceFactor = 1.0f;
 
-            if (CylinderCocksAreOpen) // Don't apply steam cocks derate until Cylinder steam usage starts to work
+            if (CylinderCocksAreOpen && SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster) 
+                // Don't apply steam cocks derate until Cylinder steam usage starts to work
             {
                 // The cock steam usage will be assumed equivalent to a steam orifice - it is initially updated ,and then recalculated again
                 // Steam Flow (lb/hr) = 24.24 x Press(Cylinder + Atmosphere(psi)) x CockDia^2 (in) - this needs to be multiplied by Num Cyls
 
-                if (throttle > 0.00 && absSpeedMpS > 0.1) // if regulator open & train moving
+                if (throttle > 0.01 && absSpeedMpS > 0.1) // if regulator open & train moving
                 {
-                    SteamEngines[numberofengine].CylCockSteamUsageLBpS = pS.FrompH(SteamEngines[numberofengine].NumberCylinders * (24.24f * (CylinderCocksPressureAtmPSI) * CylCockDiaIN * CylCockDiaIN));
+                    SteamEngines[numberofengine].CylCockSteamUsageLBpS = pS.FrompH(SteamEngines[numberofengine].NumberCylinders * (24.24f * (SteamEngines[numberofengine].CylinderCocksPressureAtmPSI) * CylCockDiaIN * CylCockDiaIN));
                 }
-                else if (throttle > 0.00 && absSpeedMpS <= 0.1) // if regulator open and train stationary
+                else if (throttle > 0.01 && absSpeedMpS <= 0.1) // if regulator open and train stationary
                 {
                     SteamEngines[numberofengine].CylCockSteamUsageLBpS = pS.FrompH(SteamEngines[numberofengine].NumberCylinders * (24.24f * (SteamEngines[numberofengine].Pressure_b_AtmPSI) * CylCockDiaIN * CylCockDiaIN));
                 }
                 else
                 {
-
+                    SteamEngines[numberofengine].CylCockSteamUsageLBpS = 0;
                 }
 
                 if (HasSuperheater) // Superheated locomotive
@@ -5044,40 +5147,41 @@ namespace Orts.Simulation.RollingStocks
                 {
                     if (CylinderCompoundOn)  // Compound bypass valve open - simple mode for compound locomotive 
                     {
-                        CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].LPPressure_b_AtmPSI - (SteamEngines[numberofengine].LPPressure_b_AtmPSI * (1.0f - CylCockPressReduceFactor)); // Allow for pressure reduction due to Cylinder cocks being open.
+                        SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].LPPressure_b_AtmPSI - (SteamEngines[numberofengine].LPPressure_b_AtmPSI * (1.0f - CylCockPressReduceFactor)); // Allow for pressure reduction due to Cylinder cocks being open.
                     }
                     else // Compound mode for compound locomotive
                     {
-                        CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].HPCompPressure_b_AtmPSI - (SteamEngines[numberofengine].HPCompPressure_b_AtmPSI * (1.0f - CylCockPressReduceFactor)); // Allow for pressure reduction due to Cylinder cocks being open.
+                        SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].HPCompPressure_b_AtmPSI - (SteamEngines[numberofengine].HPCompPressure_b_AtmPSI * (1.0f - CylCockPressReduceFactor)); // Allow for pressure reduction due to Cylinder cocks being open.
                     }
                 }
                 else // Simple locomotive
                 {
-                    CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].Pressure_b_AtmPSI - (SteamEngines[numberofengine].Pressure_b_AtmPSI * (1.0f - CylCockPressReduceFactor)); // Allow for pressure reduction due to Cylinder cocks being open.
+                    SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].Pressure_b_AtmPSI - (SteamEngines[numberofengine].Pressure_b_AtmPSI * (1.0f - CylCockPressReduceFactor)); // Allow for pressure reduction due to Cylinder cocks being open.
                 }
             }
-            else // Cylinder cocks closed, put back to normal
+            else if (SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
+            // Cylinder cocks closed, put back to normal
             {
                 if (SteamEngineType == SteamEngineTypes.Compound)
                 {
                     if (CylinderCompoundOn)  // simple mode for compound locomotive 
                     {
-                        CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].LPPressure_b_AtmPSI;
+                        SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].LPPressure_b_AtmPSI;
                     }
                     else // Compound mode for compound locomotive
                     {
-                        CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].HPCompPressure_b_AtmPSI;
+                        SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].HPCompPressure_b_AtmPSI;
                     }
                 }
                 else // Simple locomotive
                 {
-                    CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].Pressure_b_AtmPSI;
+                    SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].Pressure_b_AtmPSI;
                 }
             }
 
-            CylinderCocksPressureAtmPSI = MathHelper.Clamp(CylinderCocksPressureAtmPSI, 0, MaxBoilerPressurePSI + OneAtmospherePSI); // Make sure that Cylinder pressure does not go negative
+            SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = MathHelper.Clamp(CylinderCocksPressureAtmPSI, 0, MaxBoilerPressurePSI + OneAtmospherePSI); // Make sure that Cylinder pressure does not go negative
 
-            CylinderCocksPressurePSI = SteamEngines[numberofengine].Pressure_b_AtmPSI - OneAtmospherePSI;
+            CylinderCocksPressurePSI = SteamEngines[numberofengine].Pressure_b_AtmPSI - OneAtmospherePSI; // no longer used????
 
             #region Calculation of Cylinder steam usage using an Indicator Diagram type approach
             // Reference - Indicator Practice and Steam-Engine Economy by Frank Hemenway - pg 65
@@ -5666,6 +5770,8 @@ namespace Orts.Simulation.RollingStocks
             MotiveForceN = 0;
             IndicatedHorsePowerHP = 0;
             PistonSpeedFtpMin = 0;
+            MaxPowerW = 0;
+            MaxForceN = 0;
 
             // Update tractive effort across all steam engines
             for (int i = 0; i < SteamEngines.Count; i++)
@@ -5675,10 +5781,10 @@ namespace Orts.Simulation.RollingStocks
                 MotiveForceN += SteamEngines[i].AttachedAxle.CompensatedAxleForceN;
 
                 // Set Max Power equal to max IHP
-                MaxPowerW = W.FromHp(SteamEngines[i].MaxIndicatedHorsePowerHP);
+                MaxPowerW += W.FromHp(SteamEngines[i].MaxIndicatedHorsePowerHP);
 
                 // Set maximum force for the locomotive
-                MaxForceN = N.FromLbf(SteamEngines[i].MaxTractiveEffortLbf * CylinderEfficiencyRate);
+                MaxForceN += N.FromLbf(SteamEngines[i].MaxTractiveEffortLbf * CylinderEfficiencyRate);
 
                 IndicatedHorsePowerHP += SteamEngines[i].IndicatedHorsePowerHP;
                 IndicatedHorsePowerHP = MathHelper.Clamp(IndicatedHorsePowerHP, 0, IndicatedHorsePowerHP);
