@@ -543,6 +543,11 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float CylCockSteamUsageLBpS;
 
         /// <summary>
+        /// Cylinder steam cocks atmospheric pressure usage per steam engine steam cocks
+        /// </summary>
+        public float CylinderCocksPressureAtmPSI;
+
+        /// <summary>
         /// Indicated HP Horse Power for Compound
         /// </summary>
         public float HPIndicatedHorsePowerHP;

@@ -50,6 +50,10 @@ namespace Orts.Viewer3D.RollingStock
         List<ParticleEmitterViewer> CylinderSteamExhaust4 = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> BoosterCylinderSteamExhaust01 = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> BoosterCylinderSteamExhaust02 = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> BoosterCylinders11 = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> BoosterCylinders12 = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> BoosterCylinders21 = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> BoosterCylinders22 = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Blowdown = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Drainpipe = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Injectors1 = new List<ParticleEmitterViewer>();
@@ -112,6 +116,14 @@ namespace Orts.Viewer3D.RollingStock
                     BoosterCylinderSteamExhaust01.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "boostercylindersteamexhaust02fx")
                     BoosterCylinderSteamExhaust02.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "boostercylinders11fx")
+                    BoosterCylinders11.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "boostercylinders12fx")
+                    BoosterCylinders12.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "boostercylinders21fx")
+                    BoosterCylinders21.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "boostercylinders22fx")
+                    BoosterCylinders22.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "blowdownfx")
                     Blowdown.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "drainpipefx")        // Drainpipe was not used in MSTS, and has no control set up for it
@@ -318,6 +330,18 @@ namespace Orts.Viewer3D.RollingStock
 
             foreach (var drawer in BoosterCylinderSteamExhaust02)
                 drawer.SetOutput(car.BoosterCylinderSteamExhaust02SteamVelocityMpS, car.BoosterCylinderSteamExhaust02SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
+
+            foreach (var drawer in BoosterCylinders11)
+                drawer.SetOutput(car.BoosterCylinderCock11SteamVelocityMpS, car.BoosterCylinderCockSteam11VolumeMpS, car.BoosterCylinderCockParticleDurationS);
+
+            foreach (var drawer in BoosterCylinders12)
+                drawer.SetOutput(car.BoosterCylinderCock12SteamVelocityMpS, car.BoosterCylinderCockSteam12VolumeMpS, car.BoosterCylinderCockParticleDurationS);
+
+            foreach (var drawer in BoosterCylinders21)
+                drawer.SetOutput(car.BoosterCylinderCock21SteamVelocityMpS, car.BoosterCylinderCockSteam21VolumeMpS, car.BoosterCylinderCockParticleDurationS);
+
+            foreach (var drawer in BoosterCylinders22)
+                drawer.SetOutput(car.BoosterCylinderCock22SteamVelocityMpS, car.BoosterCylinderCockSteam22VolumeMpS, car.BoosterCylinderCockParticleDurationS);
 
             foreach (var drawer in Blowdown)
                 drawer.SetOutput(car.BlowdownSteamVelocityMpS, car.BlowdownSteamVolumeM3pS, car.BlowdownParticleDurationS);
