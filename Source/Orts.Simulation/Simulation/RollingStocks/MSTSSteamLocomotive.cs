@@ -134,6 +134,7 @@ namespace Orts.Simulation.RollingStocks
         public bool SteamBoosterIdleMode = false;
         public bool BoosterGearsEngaged = false;
         public bool SteamBoosterLatchedLocked = false;
+        public float SteamBoosterPressurePSI;
         float BoosterGearEngageTimeS;
         float BoosterIdleHeatingTimerS;
         float BoosterIdleHeatingTimePeriodS = 120; // This is the time period that the Booster needs to be idled to heat it up
@@ -143,6 +144,8 @@ namespace Orts.Simulation.RollingStocks
         public float HuDBoosterSteamConsumptionLbpS;
         public float BoosterSteamConsumptionLbpS;
         float BoosterIdleChokeSizeIn;
+        float BoosterPressureFactor = 0;
+        float BoosterMaxIdleChokeSizeIn = 0.625f;
 
         /// <summary>
         /// Grate limit of locomotive exceedeed?
@@ -1317,22 +1320,27 @@ namespace Orts.Simulation.RollingStocks
             if (MaxBoilerPressurePSI > 300)
             {
                 BoosterIdleChokeSizeIn = 0.375f;
+                BoosterPressureFactor = BoosterIdleChokeSizeIn / BoosterMaxIdleChokeSizeIn;
             }
             else if (MaxBoilerPressurePSI > 275 && MaxBoilerPressurePSI <= 300)
             {
                 BoosterIdleChokeSizeIn = 0.4375f;
+                BoosterPressureFactor = BoosterIdleChokeSizeIn / BoosterMaxIdleChokeSizeIn;
             }
             else if (MaxBoilerPressurePSI > 250 && MaxBoilerPressurePSI <= 275)
             {
                 BoosterIdleChokeSizeIn = 0.5f;
+                BoosterPressureFactor = BoosterIdleChokeSizeIn / BoosterMaxIdleChokeSizeIn;
             }
             else if (MaxBoilerPressurePSI > 200 && MaxBoilerPressurePSI <= 250)
             {
                 BoosterIdleChokeSizeIn = 0.5625f;
+                BoosterPressureFactor = BoosterIdleChokeSizeIn / BoosterMaxIdleChokeSizeIn;
             }
             else
             {
                 BoosterIdleChokeSizeIn = 0.625f;
+                BoosterPressureFactor = BoosterIdleChokeSizeIn / BoosterMaxIdleChokeSizeIn;
             }
 
             // Set crank angle between different sides of the locomotive
@@ -2343,8 +2351,8 @@ namespace Orts.Simulation.RollingStocks
                     {
                         // In Idle mode steam consumption will be calculated by steam through an orifice.
                         // Steam Flow (lb/hr) = 24.24 x Press(BoilerPressure + Atmosphere(psi)) x ChokeDia^2 (in) - this needs to be multiplied by Num Cyls
-                        var BoosterPressurePSI = BoilerPressurePSI + OneAtmospherePSI;
-                        SteamEngines[i].CylinderSteamUsageLBpS = pS.FrompH(SteamEngines[i].NumberCylinders * (24.24f * (BoosterPressurePSI) * BoosterIdleChokeSizeIn * BoosterIdleChokeSizeIn));
+                        SteamBoosterPressurePSI = (BoilerPressurePSI + OneAtmospherePSI) * BoosterPressureFactor;
+                        SteamEngines[i].CylinderSteamUsageLBpS = pS.FrompH(SteamEngines[i].NumberCylinders * (24.24f * (SteamBoosterPressurePSI) * BoosterIdleChokeSizeIn * BoosterIdleChokeSizeIn));
                         HuDBoosterSteamConsumptionLbpS = SteamEngines[i].CylinderSteamUsageLBpS;
 
                     }
@@ -2352,6 +2360,7 @@ namespace Orts.Simulation.RollingStocks
                     {
                         // In run mode steam consumption calculated by cylinder model
                         HuDBoosterSteamConsumptionLbpS = SteamEngines[i].CylinderSteamUsageLBpS;
+                        SteamBoosterPressurePSI = (throttle * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)] * BoilerPressurePSI); // equivalent to steam chest pressure
                     }
 
 
@@ -6670,6 +6679,9 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case CABViewControlTypes.STEAMHEAT_PRESSURE:
                     data = ConvertFromPSI(cvc, CurrentSteamHeatPressurePSI);
+                    break;
+                case CABViewControlTypes.STEAM_BOOSTER_PRESSURE:
+                    data = ConvertFromPSI(cvc, SteamChestPressurePSI);
                     break;
                 case CABViewControlTypes.CUTOFF:
                 case CABViewControlTypes.REVERSER_PLATE:
