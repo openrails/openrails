@@ -237,6 +237,16 @@ advanced adhesion model dynamics. The value considers the inertia of all
 the axles and traction drives. If not set, the value is estimated from the
 locomotive mass and maximal power.
 
+By inserting multiple "Axle" sections in the above configuration, multiple 
+indpependent wheelsets can be defined which will operate independently of 
+each other. The following parameters can be inserted to characterise the 
+performance of the wheelset.
+
+``AnimatedParts`` - animated parts associated with the axles wheelset.
+``Weight`` - weight on the axles in the wheelset.
+``ORTSRadius`` - radius of the wheels in the wheelset.
+``NumberWheelAxles`` - number of axles in the wheelset.
+
 The first model -- simple adhesion model -- is a simple tractive force
 condition-based computation. If the tractive force reaches its actual
 maximum, the wheel slip is indicated in HUD view and the tractive force
@@ -1252,6 +1262,42 @@ boiler. In addition the ability to inject and exhaust steam from the
 cylinder also tended to reach finite limits as well. These factors
 typically combined to place limits on the power of a locomotive depending
 upon the design factors used.
+
+Steam Locomotives with Multiple Engines
+.......................................
+
+Some steam locomotives can have multiple steam engines (ie separate steam 
+cylinders connected to different wheels), such as the 4-4-4-4 locomotive or 
+an articulated Garrat locomotive.
+
+To configure these types of locomotives configurations for multiple steam 
+engines need to be added to the engine section of the ENG file, would have the 
+following format::
+
+    ORTSSteamEngines ( x
+        Wheelset (
+           
+        )
+    )
+
+where x = number of steam engines fitted to locomotive.
+
+The following parameters can be used to configure the steam engine::
+
+``NumCylinders`` - number of steam cylinders in engine.
+``CylinderStroke`` - stroke of steam cylinder.
+``CylinderDiameter`` - diameter of steam cylinder.
+``MaxIndicatedHorsepower`` - maximum indicated horsepower of steam engine.
+``AttachedAxle`` - the axle wheelset that the steam engine is attached to.
+
+To specify the engine as a Booster engine the following additional parameters 
+can be used::
+
+``BoosterCutoff`` - the cutoff point for the Booster steam cylinder.
+``BoosterThrottleCutoff`` - the locomotive cutoff point where the Booster unlatches.
+``BoosterGearRatio`` - the gear ratio of the Booster engine.
+``AuxiliarySteamEngineType`` - by inserting "Booster" into this parameter the 
+engine is defined as a Booster engine.
 
 Locomotive Types
 ................
