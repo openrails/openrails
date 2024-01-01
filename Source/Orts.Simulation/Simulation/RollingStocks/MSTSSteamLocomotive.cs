@@ -1687,12 +1687,14 @@ namespace Orts.Simulation.RollingStocks
                 if (HasSuperheater)
                 {
                     BackPressureIHPtoPSI = SteamTable.BackpressureSuperIHPtoPSI();
-                    Trace.TraceInformation("BackPressureIHPtoAtmPSI (Superheated) - default information read from SteamTables");
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("BackPressureIHPtoAtmPSI (Superheated) - default information read from SteamTables");
                 }
                 else
                 {
                     BackPressureIHPtoPSI = SteamTable.BackpressureSatIHPtoPSI();
-                    Trace.TraceInformation("BackPressureIHPtoAtmPSI (Saturated) - default information read from SteamTables");
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("BackPressureIHPtoAtmPSI (Saturated) - default information read from SteamTables");
                 }
             }
 
