@@ -5110,71 +5110,75 @@ namespace Orts.Simulation.RollingStocks
             // Cylinder pressure also reduced by steam vented through cylinder cocks.
             CylCockPressReduceFactor = 1.0f;
 
-            if (CylinderCocksAreOpen && SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster) 
-                // Don't apply steam cocks derate until Cylinder steam usage starts to work
+            if (SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
             {
-                // The cock steam usage will be assumed equivalent to a steam orifice - it is initially updated ,and then recalculated again
-                // Steam Flow (lb/hr) = 24.24 x Press(Cylinder + Atmosphere(psi)) x CockDia^2 (in) - this needs to be multiplied by Num Cyls
 
-                if (throttle > 0.01 && absSpeedMpS > 0.1) // if regulator open & train moving
+                if (CylinderCocksAreOpen)
+                // Don't apply steam cocks derate until Cylinder steam usage starts to work
                 {
-                    SteamEngines[numberofengine].CylCockSteamUsageLBpS = pS.FrompH(SteamEngines[numberofengine].NumberCylinders * (24.24f * (SteamEngines[numberofengine].CylinderCocksPressureAtmPSI) * CylCockDiaIN * CylCockDiaIN));
-                }
-                else if (throttle > 0.01 && absSpeedMpS <= 0.1) // if regulator open and train stationary
-                {
-                    SteamEngines[numberofengine].CylCockSteamUsageLBpS = pS.FrompH(SteamEngines[numberofengine].NumberCylinders * (24.24f * (SteamEngines[numberofengine].Pressure_b_AtmPSI) * CylCockDiaIN * CylCockDiaIN));
+                    // The cock steam usage will be assumed equivalent to a steam orifice - it is initially updated ,and then recalculated again
+                    // Steam Flow (lb/hr) = 24.24 x Press(Cylinder + Atmosphere(psi)) x CockDia^2 (in) - this needs to be multiplied by Num Cyls
+
+                    if (throttle > 0.01 && absSpeedMpS > 0.1) // if regulator open & train moving
+                    {
+                        SteamEngines[numberofengine].CylCockSteamUsageLBpS = pS.FrompH(SteamEngines[numberofengine].NumberCylinders * (24.24f * (SteamEngines[numberofengine].CylinderCocksPressureAtmPSI) * CylCockDiaIN * CylCockDiaIN));
+                    }
+                    else if (throttle > 0.01 && absSpeedMpS <= 0.1) // if regulator open and train stationary
+                    {
+                        SteamEngines[numberofengine].CylCockSteamUsageLBpS = pS.FrompH(SteamEngines[numberofengine].NumberCylinders * (24.24f * (SteamEngines[numberofengine].Pressure_b_AtmPSI) * CylCockDiaIN * CylCockDiaIN));
+                    }
+                    else
+                    {
+                        SteamEngines[numberofengine].CylCockSteamUsageLBpS = 0;
+                    }
+
+                    if (HasSuperheater) // Superheated locomotive
+                    {
+                        CylCockPressReduceFactor = ((SteamEngines[numberofengine].CylinderSteamUsageLBpS / SuperheaterSteamUsageFactor) / ((SteamEngines[numberofengine].CylinderSteamUsageLBpS / SuperheaterSteamUsageFactor) + SteamEngines[numberofengine].CylCockSteamUsageLBpS)); // For superheated locomotives temp convert back to a saturated comparison for calculation of steam cock reduction factor.
+                    }
+                    else // Simple locomotive
+                    {
+                        CylCockPressReduceFactor = (SteamEngines[numberofengine].CylinderSteamUsageLBpS / (SteamEngines[numberofengine].CylinderSteamUsageLBpS + SteamEngines[numberofengine].CylCockSteamUsageLBpS)); // Saturated steam locomotive
+                    }
+
+                    if (SteamEngineType == SteamEngineTypes.Compound)
+                    {
+                        if (CylinderCompoundOn)  // Compound bypass valve open - simple mode for compound locomotive 
+                        {
+                            SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].LPPressure_b_AtmPSI - (SteamEngines[numberofengine].LPPressure_b_AtmPSI * (1.0f - CylCockPressReduceFactor)); // Allow for pressure reduction due to Cylinder cocks being open.
+                        }
+                        else // Compound mode for compound locomotive
+                        {
+                            SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].HPCompPressure_b_AtmPSI - (SteamEngines[numberofengine].HPCompPressure_b_AtmPSI * (1.0f - CylCockPressReduceFactor)); // Allow for pressure reduction due to Cylinder cocks being open.
+                        }
+                    }
+                    else // Simple locomotive
+                    {
+                        SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].Pressure_b_AtmPSI - (SteamEngines[numberofengine].Pressure_b_AtmPSI * (1.0f - CylCockPressReduceFactor)); // Allow for pressure reduction due to Cylinder cocks being open.
+                    }
                 }
                 else
+                // Cylinder cocks closed, put back to normal
                 {
-                    SteamEngines[numberofengine].CylCockSteamUsageLBpS = 0;
-                }
-
-                if (HasSuperheater) // Superheated locomotive
-                {
-                    CylCockPressReduceFactor = ((SteamEngines[numberofengine].CylinderSteamUsageLBpS / SuperheaterSteamUsageFactor) / ((SteamEngines[numberofengine].CylinderSteamUsageLBpS / SuperheaterSteamUsageFactor) + SteamEngines[numberofengine].CylCockSteamUsageLBpS)); // For superheated locomotives temp convert back to a saturated comparison for calculation of steam cock reduction factor.
-                }
-                else // Simple locomotive
-                {
-                    CylCockPressReduceFactor = (SteamEngines[numberofengine].CylinderSteamUsageLBpS / (SteamEngines[numberofengine].CylinderSteamUsageLBpS + SteamEngines[numberofengine].CylCockSteamUsageLBpS)); // Saturated steam locomotive
-                }
-
-                if (SteamEngineType == SteamEngineTypes.Compound)
-                {
-                    if (CylinderCompoundOn)  // Compound bypass valve open - simple mode for compound locomotive 
+                    if (SteamEngineType == SteamEngineTypes.Compound)
                     {
-                        SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].LPPressure_b_AtmPSI - (SteamEngines[numberofengine].LPPressure_b_AtmPSI * (1.0f - CylCockPressReduceFactor)); // Allow for pressure reduction due to Cylinder cocks being open.
+                        if (CylinderCompoundOn)  // simple mode for compound locomotive 
+                        {
+                            SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].LPPressure_b_AtmPSI;
+                        }
+                        else // Compound mode for compound locomotive
+                        {
+                            SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].HPCompPressure_b_AtmPSI;
+                        }
                     }
-                    else // Compound mode for compound locomotive
+                    else // Simple locomotive
                     {
-                        SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].HPCompPressure_b_AtmPSI - (SteamEngines[numberofengine].HPCompPressure_b_AtmPSI * (1.0f - CylCockPressReduceFactor)); // Allow for pressure reduction due to Cylinder cocks being open.
+                        SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].Pressure_b_AtmPSI;
                     }
-                }
-                else // Simple locomotive
-                {
-                    SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].Pressure_b_AtmPSI - (SteamEngines[numberofengine].Pressure_b_AtmPSI * (1.0f - CylCockPressReduceFactor)); // Allow for pressure reduction due to Cylinder cocks being open.
-                }
-            }
-            else if (SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
-            // Cylinder cocks closed, put back to normal
-            {
-                if (SteamEngineType == SteamEngineTypes.Compound)
-                {
-                    if (CylinderCompoundOn)  // simple mode for compound locomotive 
-                    {
-                        SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].LPPressure_b_AtmPSI;
-                    }
-                    else // Compound mode for compound locomotive
-                    {
-                        SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].HPCompPressure_b_AtmPSI;
-                    }
-                }
-                else // Simple locomotive
-                {
-                    SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = SteamEngines[numberofengine].Pressure_b_AtmPSI;
                 }
             }
 
-            SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = MathHelper.Clamp(CylinderCocksPressureAtmPSI, 0, MaxBoilerPressurePSI + OneAtmospherePSI); // Make sure that Cylinder pressure does not go negative
+            SteamEngines[numberofengine].CylinderCocksPressureAtmPSI = MathHelper.Clamp(SteamEngines[numberofengine].CylinderCocksPressureAtmPSI, 0, MaxBoilerPressurePSI + OneAtmospherePSI); // Make sure that Cylinder pressure does not go negative
 
             CylinderCocksPressurePSI = SteamEngines[numberofengine].Pressure_b_AtmPSI - OneAtmospherePSI; // no longer used????
 
