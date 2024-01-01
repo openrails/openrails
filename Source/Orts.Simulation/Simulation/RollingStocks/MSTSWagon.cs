@@ -523,6 +523,11 @@ namespace Orts.Simulation.RollingStocks
             if (MSTSWagonNumWheels == 0 && InitWagonNumAxles == 0 )
             {
                 DerailmentCoefficientEnabled = false;
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Derailment Coefficient set to false for Wagon {0}", WagFilePath);
+                }
             }
 
             // Ensure Drive Axles is set to a default if no OR value added to WAG file
@@ -539,7 +544,7 @@ namespace Orts.Simulation.RollingStocks
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("Number of Wagon Axles set to default value of {0}", WagonNumAxles);
+                    Trace.TraceInformation("Number of Wagon Axles set to default value of {0} on Wagon {1}", WagonNumAxles, WagFilePath);
                 }
             }
             else

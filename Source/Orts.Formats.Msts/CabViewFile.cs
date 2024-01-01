@@ -133,6 +133,7 @@ namespace Orts.Formats.Msts
         STEAM_BOOSTER_AIR,
         STEAM_BOOSTER_IDLE,
         STEAM_BOOSTER_LATCH,
+        STEAM_BOOSTER_PRESSURE,
         WATER_INJECTOR1,
         WATER_INJECTOR2,
         SMALL_EJECTOR,
