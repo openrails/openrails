@@ -17,17 +17,24 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using ORTS.Updater;
 
 namespace ORTS
 {
     public class Notification
     {
         public List<NDetail> NDetailList = new List<NDetail>();
+        public Dictionary<int, NButtonControl> ButtonDictionary = new Dictionary<int, NButtonControl>();
+        public Panel Panel;
+
+        public Notification(Panel panel)
+        {
+            Panel = panel;
+            NButtonControl.ButtonCount = 0;
+        }
 
         public class NDetail
         {
@@ -42,11 +49,16 @@ namespace ORTS
             public static readonly int RecordHeight = 15;
             public const int ScrollBarWidth = 20;
 
+            public Notification Notification { get; private set; }
             public Label Control;
 
-            public void Add(Notification notification)
+            public NDetail(Notification notification)
             {
-                notification.NDetailList.Add(this);
+                Notification = notification;
+            }
+            public void Add()
+            {                
+                Notification.NDetailList.Add(this);
             }
         }
 
@@ -55,7 +67,7 @@ namespace ORTS
         /// </summary>
         public class NTitleControl : NDetail
         {
-            public NTitleControl(Panel panelDetails, DateTime date, string text)
+            public NTitleControl(Notification notification, DateTime date, string text) : base(notification)
             {
                 var title = $"Notification 1/1: {date:dd-MMM-yyyy} - {text}";
                 var left = LeftPadding;
@@ -63,18 +75,18 @@ namespace ORTS
                 {
                     Text = title,
                     UseMnemonic = false,
-                    Font = new Font(panelDetails.Font, FontStyle.Bold),
+                    Font = new Font(Notification.Panel.Font, FontStyle.Bold),
                     TextAlign = ContentAlignment.BottomLeft,
                     Height = TitleHeight,
-                    Width = panelDetails.Width - ScrollBarWidth - left,
+                    Width = Notification.Panel.Width - ScrollBarWidth - left,
                     Left = LeftPadding
                 };
-                panelDetails.Controls.Add(Control);
+                Notification.Panel.Controls.Add(Control);
             }
         }
         public class NHeadingControl : NDetail
         {
-            public NHeadingControl(Panel panelDetails, string text, Color color = default)
+            public NHeadingControl(Notification notification, string text, Color color = default) : base(notification)
             {
                 var left = LeftPadding;
                 Control = new Label
@@ -82,46 +94,47 @@ namespace ORTS
                     ForeColor = color,
                     Text = text,
                     UseMnemonic = false,
-                    Font = new Font(panelDetails.Font, FontStyle.Bold),
+                    Font = new Font(Notification.Panel.Font, FontStyle.Bold),
                     TextAlign = ContentAlignment.BottomLeft,
                     Height = HeadingHeight,
-                    Width = panelDetails.Width - ScrollBarWidth - left,
+                    Width = Notification.Panel.Width - ScrollBarWidth - left,
                     Left = left,
                     Top = TopPadding,
                 };
-                panelDetails.Controls.Add(Control);
+                Notification.Panel.Controls.Add(Control);
             }
         }
         public class NTextControl : NDetail
         {
-            public NTextControl(Panel panelDetails, string text)
+            public NTextControl(Notification notification, string text) : base(notification)
             {
                 var left = LeftPaddingIndented;
                 Control = new Label
                 {
                     Text = text,
                     UseMnemonic = false,
-                    Font = new Font(panelDetails.Font, FontStyle.Regular),
+                    Font = new Font(Notification.Panel.Font, FontStyle.Regular),
                     TextAlign = ContentAlignment.BottomLeft,
                     Height = TextHeight,
-                    Width = panelDetails.Width - ScrollBarWidth - left,
+                    Width = Notification.Panel.Width - ScrollBarWidth - left,
                     Left = left,
                 };
-                panelDetails.Controls.Add(Control);
+                Notification.Panel.Controls.Add(Control);
             }
         }
         public class NButtonControl : NDetail
         {
+            public static int ButtonCount = 0;
             public Button Button;
-            public NButtonControl(Panel panelDetails, string legend, int width, string description)
-            {
+            public NButtonControl(Notification notification, string legend, int width, string description, MainForm mainForm) : base(notification)
+    {
                 var buttonLeft = LeftPaddingIndented;
                 Button = new Button
                 {
                     Margin = new Padding(20),
                     Text = legend,
                     UseMnemonic = false,
-                    Font = new Font(panelDetails.Font, FontStyle.Regular),
+                    Font = new Font(Notification.Panel.Font, FontStyle.Regular),
                     TextAlign = ContentAlignment.MiddleCenter,
                     Height = ButtonHeight,
                     Width = width,
@@ -129,7 +142,24 @@ namespace ORTS
                     Top = TopPadding,
                     BackColor = SystemColors.ButtonFace
                 };
-                panelDetails.Controls.Add(Button);
+                Notification.Panel.Controls.Add(Button);
+
+                // 3 should be enough, but is there a way to get unlimited buttons?
+                switch (ButtonCount)
+                {
+                    case 0:
+                        Button.Click += new EventHandler(mainForm.Button0_Click);
+                        break;
+                    case 1:
+                        Button.Click += new EventHandler(mainForm.Button1_Click);
+                        break;
+                    case 2:
+                        Button.Click += new EventHandler(mainForm.Button2_Click);
+                        break;
+                    default:
+                        MessageBox.Show("Cannot add 4th button; only 3 buttons are supported.", "Add Notification Button");
+                        break;
+                }
 
                 var labelLeft = Button.Left + Button.Width + LeftPaddingIndented;
                 Control = new Label
@@ -137,47 +167,76 @@ namespace ORTS
                     Margin = new Padding(20),
                     Text = description,
                     UseMnemonic = false,
-                    Font = new Font(panelDetails.Font, FontStyle.Regular),
+                    Font = new Font(Notification.Panel.Font, FontStyle.Regular),
                     TextAlign = ContentAlignment.MiddleLeft,
                     Height = ButtonHeight,
-                    Width = panelDetails.Width - ScrollBarWidth - labelLeft,
+                    Width = Notification.Panel.Width - ScrollBarWidth - labelLeft,
                     Top = TopPadding,
                     Left = labelLeft
                 };
-                panelDetails.Controls.Add(Control);
+                Notification.Panel.Controls.Add(Control);
             }
         }
+        public class NLinkControl : NButtonControl
+        {
+            public string Url;
+            public NLinkControl(Notification notification, string legend, int width, string description, MainForm mainForm, string url) 
+            : base(notification, legend, width, description, mainForm)
+            { 
+                Url = url;
+                Notification.ButtonDictionary.Add(ButtonCount, this);
+                ButtonCount++;
+            }
+        }
+        public class NUpdateControl : NButtonControl
+        {
+            public NUpdateControl(Notification notification, string legend, int width, string description, MainForm mainForm)
+            : base(notification, legend, width, description, mainForm)
+            {
+                Notification.ButtonDictionary.Add(ButtonCount, this);
+                ButtonCount++;
+            }
+        }
+        public void DoButton(UpdateManager updateManager, int key)
+        {
+            var button = ButtonDictionary[key];
+            if (button is NLinkControl)
+                Process.Start(((NLinkControl)button).Url);
+            else if (button is NUpdateControl)
+                updateManager.Update();
+        }
+
         public class NRecordControl : NDetail
         {
             public Label Field;
-            public NRecordControl(Panel panelDetails, string label, int width, string field)
-            {
+            public NRecordControl(Notification notification, string label, int width, string field) : base(notification)
+        {
                 Control = new Label
                 {
                     Text = label + ":",
                     UseMnemonic = false,
-                    Font = new Font(panelDetails.Font, FontStyle.Bold),
+                    Font = new Font(Notification.Panel.Font, FontStyle.Bold),
                     TextAlign = ContentAlignment.BottomRight,
                     Width = width,
                     Height = RecordHeight,
                     Left = LeftPadding,
                     Top = TopPadding
                 };
-                panelDetails.Controls.Add(Control);
+                Notification.Panel.Controls.Add(Control);
 
                 var left = width + LeftPadding;
                 Field = new Label
                 {
                     Text = field,
                     UseMnemonic = false,
-                    Font = new Font(panelDetails.Font, FontStyle.Regular),
+                    Font = new Font(Notification.Panel.Font, FontStyle.Regular),
                     TextAlign = ContentAlignment.BottomLeft,
-                    Width = panelDetails.Width - ScrollBarWidth - left,
+                    Width = Notification.Panel.Width - ScrollBarWidth - left,
                     Height = RecordHeight,
                     Left = left,
                     Top = TopPadding
                 };
-                panelDetails.Controls.Add(Field);
+                Notification.Panel.Controls.Add(Field);
             }
         }
 
@@ -202,5 +261,4 @@ namespace ORTS
             }
         }
     }
-
 }
