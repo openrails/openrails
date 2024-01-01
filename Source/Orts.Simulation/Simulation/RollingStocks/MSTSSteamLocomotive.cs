@@ -625,8 +625,6 @@ namespace Orts.Simulation.RollingStocks
 
         // Rotative Force and adhesion
 
-        float CalculatedFactorofAdhesion; // Calculated factor of adhesion
-
         float ReciprocatingWeightLb = 580.0f;  // Weight of reciprocating parts of the rod driving gears
         float ConnectingRodWeightLb = 600.0f;  // Weignt of connecting rod
         float ConnectingRodBalanceWeightLb = 300.0f; // Balance weight for connecting rods
@@ -1471,7 +1469,7 @@ namespace Orts.Simulation.RollingStocks
                             // Adjust resistance for neutral gearing
                             GearedRetainedDavisAN = DavisAN; // remember davis a value for later
                             NeutralGearedDavisAN = DavisAN; // Initialise neutral gear value
-                            float TempDavisAAmount = N.FromLbf((DavisMechanicalResistanceFactor * Kg.ToTUS(DrvWheelWeightKg))); // Based upon the Davis formula for steam locomotive resistance
+                            float TempDavisAAmount = N.FromLbf((DavisMechanicalResistanceFactor * Kg.ToTUS(SteamEngines[0].AttachedAxle.WheelWeightKg))); // Based upon the Davis formula for steam locomotive resistance
                             if (TempDavisAAmount > 0.5 * DavisAN)
                             {
                                 TempDavisAAmount = DavisAN * 0.5f; // If calculated mechanical resistance is greater then then 50% of the DavisA amount then set to an arbitary value of 50%.
@@ -1716,10 +1714,10 @@ namespace Orts.Simulation.RollingStocks
                 DisplaySpeedFactor = MaxSpeedFactor;
             }
 
-            // Calculate max velocity of the locomotive based upon above piston speed
+            // Calculate max velocity of the locomotive based upon above piston speed (use first steam engine as the reference)
             if (SteamEngineType != SteamEngineTypes.Geared)
             {
-                MaxLocoSpeedMpH = MpS.ToMpH(Me.FromFt(pS.FrompM(MaxPistonSpeedFtpM / SteamGearRatio))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * MSTSCylinderStrokeM);
+                MaxLocoSpeedMpH = MpS.ToMpH(Me.FromFt(pS.FrompM(MaxPistonSpeedFtpM / SteamGearRatio))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * SteamEngines[0].CylindersStrokeM);
                 DisplayMaxLocoSpeedMpH = MaxLocoSpeedMpH;
             }
 
@@ -1931,17 +1929,18 @@ namespace Orts.Simulation.RollingStocks
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
-                if (SteamEngines[i].MaxIndicatedHorsePowerHP == 0 && SteamEngines.Count == 0 && MaxIndicatedHorsePowerHP != 0) // if MaxIHP is not set in ENG file, then set a default
+                if (SteamEngines[i].MaxIndicatedHorsePowerHP == 0 && SteamEngines.Count == 0 && MaxIndicatedHorsePowerHP != 0) 
+                    // if MaxIHP is not set in ENG file, then set a default
                 {
                     SteamEngines[i].MaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                 }
-                else
+                else if (SteamEngines[i].MaxIndicatedHorsePowerHP == 0)
                 { 
                     // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
                     SteamEngines[i].MaxIndicatedHorsePowerHP = MaxSpeedFactor * (SteamEngines[i].MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;  // To be checked what MaxTractive Effort is for the purposes of this formula.
-
-                    MaxIndicatedHorsePowerHP += SteamEngines[i].MaxIndicatedHorsePowerHP;
                 }
+
+                MaxIndicatedHorsePowerHP += SteamEngines[i].MaxIndicatedHorsePowerHP;
             }
 
 
@@ -1986,10 +1985,6 @@ namespace Orts.Simulation.RollingStocks
             {
                 SteamEngines[i].CalculatedFactorOfAdhesion = Kg.ToLb(SteamEngines[i].AttachedAxle.WheelWeightKg) / SteamEngines[i].MaxTractiveEffortLbf;
             }
-
-            // Total FoA
-
-            CalculatedFactorofAdhesion = Kg.ToLb(DrvWheelWeightKg) / MaxTractiveEffortLbf;
 
             // Calculate "critical" power of locomotive to determine limit of max IHP
             MaxCriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * MaxSpeedFactor;
@@ -5318,7 +5313,7 @@ namespace Orts.Simulation.RollingStocks
             // only set advanced wheel slip when advanced adhesion, and simplecontrols/physics is not set and is in the the player train, AI locomotive will not work to this model. 
             // Don't use slip model when train is in auto pilot
             {
-                if (SteamEngineType != SteamEngineTypes.Geared && SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                if (SteamEngineType != SteamEngineTypes.Geared || SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
                 {
 
                     float slipCutoffPressureAtmPSI;
@@ -5527,7 +5522,7 @@ namespace Orts.Simulation.RollingStocks
 
                         // For more then two cylinder eingines reciprocating inertia is not required as it only applies to the gearing on each side and not the number of cylinders.
                         // Hence "zero" it out, however reciprocating rods will still apply
-                        if ((SteamEngines[numberofengine].NumberCylinders == 3 && i > 1) || (SteamEngines[numberofengine].NumberCylinders == 4 && (i == 1 || i == 3)))
+                        if ((SteamEngines[numberofengine].NumberCylinders == 3 && i > 1) || (SteamEngines[numberofengine].NumberCylinders == 4 && (i == 1 || i == 3)) )
                         {
                             reciprocatingInertiaForcelbf = 0;
                         }
@@ -5652,7 +5647,7 @@ namespace Orts.Simulation.RollingStocks
                     SteamEngines[numberofengine].IndicatedHorsePowerHP = (N.ToLbf(SteamEngines[numberofengine].TractiveForceN) * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
                 }
             }            
-            else // Adjust tractive force if  "simple" friction is used, or is a geared steam locomotive
+            else // Adjust tractive force if  "simple" friction is used
             {
                 // This section updates the force calculations and maintains them at the current values.
                 
@@ -5758,7 +5753,7 @@ namespace Orts.Simulation.RollingStocks
                 IsCritTELimit = false; // Reset flag if limiting TE
             }
 
-            SteamEngines[numberofengine].AttachedAxle.DriveForceN = SteamEngines[numberofengine].TractiveForceN;
+            SteamEngines[numberofengine].AttachedAxle.DriveForceN = SteamEngines[numberofengine].TractiveForceN / SteamEngines[numberofengine].AttachedAxle.NumberWheelAxles;
         }
 
         /// <summary>
@@ -5777,6 +5772,11 @@ namespace Orts.Simulation.RollingStocks
             for (int i = 0; i < SteamEngines.Count; i++)
             {
                 TractiveForceN += SteamEngines[i].TractiveForceN;
+
+                if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics)
+                {
+                    UpdateAxleDriveForce();
+                }
 
                 MotiveForceN += SteamEngines[i].AttachedAxle.CompensatedAxleForceN;
 
@@ -5807,11 +5807,6 @@ namespace Orts.Simulation.RollingStocks
             }
 
             DisplayTractiveForceN = TractiveForceN;
-
-            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics)
-            {
-                UpdateAxleDriveForce();
-            }
 
             MotiveForceSmoothN.Update(elapsedClockSeconds, MotiveForceN);
             MotiveForceSmoothedN = MotiveForceSmoothN.SmoothedValue;
@@ -5850,8 +5845,15 @@ namespace Orts.Simulation.RollingStocks
         }
 
 
+        protected override void UpdateAxleDriveForce()
+        {
+            // No updates are done to Axle Drive Force in steam locomotives, unless a future slip control device is added.
+        }
+
+
         public override void AdvancedAdhesion(float elapsedClockSeconds)
         {
+
             foreach (var axle in LocomotiveAxles)
             {
                 SteamEngine linkedEngine = null;
@@ -5865,18 +5867,33 @@ namespace Orts.Simulation.RollingStocks
                 }
                 if (linkedEngine == null) continue;
 
-                if (SteamEngineType != SteamEngineTypes.Geared || linkedEngine.AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                if (SteamEngineType == SteamEngineTypes.Geared || linkedEngine.AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                // geared locomotive or booster locomotive
                 {
+                    // Moment of Inertia (Wheel and axle) = (Mass x Radius^2) / 2.0
+                    float AxleRadiusM = Me.FromIn(8.0f / 2.0f);
+                    float WheelMomentInertia = (linkedEngine.AttachedAxle.WheelWeightKg * linkedEngine.AttachedAxle.WheelRadiusM * linkedEngine.AttachedAxle.WheelRadiusM) / 2.0f;
+                    float AxleMomentInertia = (linkedEngine.AttachedAxle.WheelWeightKg * AxleRadiusM * AxleRadiusM) / 2.0f;
+                    float TotalWheelMomentofInertia = WheelMomentInertia + AxleMomentInertia; // Total MoI for generic wheelset
+                    float TotalMomentInertia = TotalWheelMomentofInertia;
+                    axle.InertiaKgm2 = TotalMomentInertia;
+                    axle.DampingNs = axle.AxleWeightN / 200;
+                    // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches) - This should reduce wheel force
+                    axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersStrokeM) / (Me.ToIn(axle.WheelRadiusM * 2.0f)));
+                }
+
+                else // normal locomotive
+                {
+
                     // This next section calculates wheel inertia, which is used in adhesion module
                     // A Generic wheel profile is used, so results may not be applicable to all locomotive, but should provide a "reasonable" guestimation
                     // Generic wheel assumptions are - 80 inch drive wheels ( 2.032 metre), a pair of drive wheels weighs approx 6,000lbs, axle weighs 1,000 lbs, and has a diameter of 8 inches.
                     // Moment of Inertia (Wheel and axle) = (Mass x Radius^2) / 2.0
-                    float WheelRadiusAssumptM = Me.FromIn(80.0f / 2.0f);
-                    float WheelWeightKG = Kg.FromLb(6000.0f);
+
                     float AxleWeighKG = Kg.FromLb(1000.0f);
                     float AxleRadiusM = Me.FromIn(8.0f / 2.0f);
-                    float WheelMomentInertia = (WheelWeightKG * WheelRadiusAssumptM * WheelRadiusAssumptM) / 2.0f;
-                    float AxleMomentInertia = (WheelWeightKG * AxleRadiusM * AxleRadiusM) / 2.0f;
+                    float WheelMomentInertia = (linkedEngine.AttachedAxle.WheelWeightKg * linkedEngine.AttachedAxle.WheelRadiusM * linkedEngine.AttachedAxle.WheelRadiusM) / 2.0f;
+                    float AxleMomentInertia = (linkedEngine.AttachedAxle.WheelWeightKg * AxleRadiusM * AxleRadiusM) / 2.0f;
                     float TotalWheelMomentofInertia = WheelMomentInertia + AxleMomentInertia; // Total MoI for generic wheelset
 
                     SteamDrvWheelWeightLbs = Kg.ToLb(DrvWheelWeightKg / axle.NumberWheelAxles); // Calculate the weight per axle (used in MSTSLocomotive for friction calculatons)
@@ -5892,7 +5909,6 @@ namespace Orts.Simulation.RollingStocks
                     float RodStrokeM = linkedEngine.CylindersStrokeM / 2.0f;
                     float RodMomentInertia = 0;
 
-
                     RodMomentInertia = RodWeightKG * RodStrokeM * RodStrokeM;
 
                     float TotalMomentInertia = TotalWheelMomentofInertia + RodMomentInertia;
@@ -5900,25 +5916,10 @@ namespace Orts.Simulation.RollingStocks
                     axle.DampingNs = axle.AxleWeightN / 200;
                     // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches) - This should reduce wheel force
                     axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersStrokeM) / (Me.ToIn(axle.WheelRadiusM * 2.0f)));
-                }
-
-                else // geared locomotive or booster locomotive
-                {
-                    // Moment of Inertia (Wheel and axle) = (Mass x Radius^2) / 2.0
-                    float WheelRadiusAssumptM = Me.FromIn(80.0f / 2.0f);
-                    float WheelWeightKG = Kg.FromLb(6000.0f);
-                    float AxleRadiusM = Me.FromIn(8.0f / 2.0f);
-                    float WheelMomentInertia = (WheelWeightKG * WheelRadiusAssumptM * WheelRadiusAssumptM) / 2.0f;
-                    float AxleMomentInertia = (WheelWeightKG * AxleRadiusM * AxleRadiusM) / 2.0f;
-                    float TotalWheelMomentofInertia = WheelMomentInertia + AxleMomentInertia; // Total MoI for generic wheelset
-                    float TotalMomentInertia = TotalWheelMomentofInertia;
-                    axle.InertiaKgm2 = TotalMomentInertia;
-                    axle.DampingNs = axle.AxleWeightN / 200;
-                    // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches) - This should reduce wheel force
-                    axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersStrokeM) / (Me.ToIn(axle.WheelRadiusM * 2.0f)));
 
                 }
             }
+
             base.AdvancedAdhesion(elapsedClockSeconds);
         }
 
