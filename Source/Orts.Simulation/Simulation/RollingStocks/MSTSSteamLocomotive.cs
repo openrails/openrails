@@ -146,6 +146,7 @@ namespace Orts.Simulation.RollingStocks
         float BoosterIdleChokeSizeIn;
         float BoosterPressureFactor = 0;
         float BoosterMaxIdleChokeSizeIn = 0.625f;
+        float SteamBoosterChestPressurePSI;
 
         /// <summary>
         /// Grate limit of locomotive exceedeed?
@@ -796,9 +797,9 @@ namespace Orts.Simulation.RollingStocks
             WaterController.CurrentValue = CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG;
         }
 
-        private bool ZeroError(float v, string name)
+        private bool ZeroError(float val1, float val2, string name)
         {
-            if (v > 0)
+            if (val1 > 0 || val2 > 0)
                 return false;
             if (Simulator.Settings.VerboseConfigurationMessages)
             {
@@ -1137,19 +1138,6 @@ namespace Orts.Simulation.RollingStocks
         {
             base.Initialize();
 
-            if (MSTSNumCylinders < 0 && SteamEngines[0].NumberCylinders < 0 && ZeroError(MSTSNumCylinders, "NumCylinders"))
-                MSTSNumCylinders = 0;
-            if (ZeroError(MSTSCylinderDiameterM, "MSTSCylinderDiameter") && SteamEngines[0].CylindersDiameterM == 0)
-                MSTSCylinderDiameterM = 1;
-            if (ZeroError(MSTSCylinderStrokeM, "MSTSCylinderStroke") && SteamEngines[0].CylindersStrokeM == 0)
-                MSTSCylinderStrokeM = 1;
-            if (ZeroError(DriverWheelRadiusM, "MSTSWheelRadius"))
-                DriverWheelRadiusM = Me.FromIn(30.0f); // Wheel radius of loco drive wheels can be anywhere from about 10" to 40"
-            if (ZeroError(MaxBoilerPressurePSI, "MaxBoilerPressure"))
-                MaxBoilerPressurePSI = 1;
-            if (ZeroError(BoilerVolumeFT3, "BoilerVolume"))
-                BoilerVolumeFT3 = 1;
-
             // Create a steam engine block if none exits, typically for a MSTS or BASIC configuration
             if (SteamEngines.Count == 0)
             {
@@ -1158,6 +1146,19 @@ namespace Orts.Simulation.RollingStocks
                 SteamEngines[0].InitFromMSTS();
                 SteamEngines[0].Initialize();
             }
+
+            if (MSTSNumCylinders < 0 && ZeroError(MSTSNumCylinders, SteamEngines[0].NumberCylinders, "NumCylinders"))
+                MSTSNumCylinders = 0;
+            if (ZeroError(MSTSCylinderDiameterM, SteamEngines[0].CylindersDiameterM, "MSTSCylinderDiameter"))
+                MSTSCylinderDiameterM = 1;
+            if (ZeroError(MSTSCylinderStrokeM, SteamEngines[0].CylindersStrokeM, "MSTSCylinderStroke"))
+                MSTSCylinderStrokeM = 1;
+            if (ZeroError(DriverWheelRadiusM, SteamEngines[0].AttachedAxle.WheelRadiusM, "MSTSWheelRadius"))
+                DriverWheelRadiusM = Me.FromIn(30.0f); // Wheel radius of loco drive wheels can be anywhere from about 10" to 40"
+            if (ZeroError(MaxBoilerPressurePSI, 1, "MaxBoilerPressure"))
+                MaxBoilerPressurePSI = 1;
+            if (ZeroError(BoilerVolumeFT3, 1, "BoilerVolume"))
+                BoilerVolumeFT3 = 1;
 
             // For light locomotives reduce the weight of the various connecting rods, as the default values are for larger locomotives. This will reduce slip on small locomotives
             // It is not believed that the weight reduction on the connecting rods is linear with the weight of the locmotive. However this requires futher research, and this section is a 
@@ -2250,6 +2251,7 @@ namespace Orts.Simulation.RollingStocks
             CylCockSteamUsageLBpS = 0;
             MeanEffectivePressurePSI = 0;
             CylinderCocksPressureAtmPSI = 0;
+            SteamChestPressurePSI = 0;
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
@@ -2380,8 +2382,15 @@ namespace Orts.Simulation.RollingStocks
                     CylinderCocksPressureAtmPSI = SteamEngines[i].CylinderCocksPressureAtmPSI;
                 }
 
-//                Trace.TraceInformation("CylCocksPressure - Engines {0} Pressure {1}", SteamEngines[i].CylinderCocksPressureAtmPSI, CylinderCocksPressureAtmPSI, i);
+                if (SteamEngines[i].LogSteamChestPressurePSI > SteamChestPressurePSI && SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                {
+                    SteamChestPressurePSI = SteamEngines[i].LogSteamChestPressurePSI;
+                }
 
+                if (SteamEngines[i].LogSteamChestPressurePSI > SteamChestPressurePSI && SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                {
+                    SteamBoosterChestPressurePSI = SteamEngines[i].LogSteamChestPressurePSI;
+                }
 
 
                 if (SteamEngines[i].MeanEffectivePressurePSI > MeanEffectivePressurePSI)
@@ -5662,7 +5671,7 @@ namespace Orts.Simulation.RollingStocks
                     SteamEngines[numberofengine].IndicatedHorsePowerHP = (N.ToLbf(SteamEngines[numberofengine].TractiveForceN) * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
                 }
             }            
-            else // Adjust tractive force if  "simple" friction is used
+            else // Adjust tractive force if  "simple" adhesion is used
             {
                 // This section updates the force calculations and maintains them at the current values.
                 
@@ -5791,9 +5800,12 @@ namespace Orts.Simulation.RollingStocks
                 if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics)
                 {
                     UpdateAxleDriveForce();
+                    MotiveForceN += SteamEngines[i].AttachedAxle.CompensatedAxleForceN;
                 }
-
-                MotiveForceN += SteamEngines[i].AttachedAxle.CompensatedAxleForceN;
+                else // Simple adhesion
+                {
+                    MotiveForceN += SteamEngines[i].TractiveForceN;
+                }
 
                 // Set Max Power equal to max IHP
                 MaxPowerW += W.FromHp(SteamEngines[i].MaxIndicatedHorsePowerHP);
@@ -6683,7 +6695,7 @@ namespace Orts.Simulation.RollingStocks
                     data = ConvertFromPSI(cvc, CurrentSteamHeatPressurePSI);
                     break;
                 case CABViewControlTypes.STEAM_BOOSTER_PRESSURE:
-                    data = ConvertFromPSI(cvc, SteamChestPressurePSI);
+                    data = ConvertFromPSI(cvc, SteamBoosterChestPressurePSI);
                     break;
                 case CABViewControlTypes.CUTOFF:
                 case CABViewControlTypes.REVERSER_PLATE:
