@@ -574,6 +574,11 @@ namespace Orts.Simulation.RollingStocks
            0.0f, MathHelper.Pi/2, 0.0f, 0.0f  // default 2 cylinder locomotive
         };
 
+        static float[] BoosterWheelCrankAngleDiffRad = new float[]
+{
+           0.0f, MathHelper.Pi/2, 0.0f, 0.0f  // default 2 cylinder locomotive
+};
+
         public float IndicatedHorsePowerHP;   // Indicated Horse Power (IHP), theoretical power of the locomotive, it doesn't take into account the losses due to friction, etc. Typically output HP will be 70 - 90% of the IHP
         public float DrawbarHorsePowerHP;  // Drawbar Horse Power  (DHP), maximum power available at the wheels.
         public float DrawBarPullLbsF;      // Drawbar pull in lbf
@@ -2136,7 +2141,6 @@ namespace Orts.Simulation.RollingStocks
         public override void Update(float elapsedClockSeconds)
         {
             base.Update(elapsedClockSeconds);
-            UpdateFX(elapsedClockSeconds);
 
 #if INDIVIDUAL_CONTROL
             //this train is remote controlled, with mine as a helper, so I need to send the controlling information, but not the force.
@@ -2454,8 +2458,8 @@ namespace Orts.Simulation.RollingStocks
                 // Find 
                 for (int i = 0; i < MSTSNumCylinders; i++)
                 {
-
-                    float normalisedCrankAngleRad = NormalisedCrankAngle(i);
+                    var crankAngleDiffRad = WheelCrankAngleDiffRad[i];
+                    float normalisedCrankAngleRad = NormalisedCrankAngle(i, crankAngleDiffRad);
 
                     // Exhaust crank angle
                     float exhaustCrankAngleRad = 0;
@@ -2517,7 +2521,6 @@ namespace Orts.Simulation.RollingStocks
                             CylinderSteamExhaust4On = false;
                         }
                     }
-
 
                     if (MSTSNumCylinders == 4)
                     {
@@ -2586,8 +2589,6 @@ namespace Orts.Simulation.RollingStocks
                                 CylinderCock42On = true;
                             }
                         }
-
-
                     }
                     else if (MSTSNumCylinders == 3)
                     {
@@ -2639,7 +2640,6 @@ namespace Orts.Simulation.RollingStocks
                                 CylinderCock32On = true;
                             }
                         }
-
                     }
                     else // 2 Cylinders
                     {
@@ -2675,12 +2675,8 @@ namespace Orts.Simulation.RollingStocks
                                 CylinderCock22On = true;
                             }
                         }
-
-
                     }
                 }
-
-
             }
             else if (Cylinder2SteamEffects) // For MSTS locomotives with one cylinder cock ignore calculation of cock opening times.
                                             // Currently retained as a legacy issue, and eventually both this and the MSTS version should be removed
@@ -2709,22 +2705,42 @@ namespace Orts.Simulation.RollingStocks
             // Booster steam exhaust
             if (BoosterCylinderSteamExhaustOn) // For Booster engine
             {
-                var BoosterCylinderSteamExhaustTimePeriodS = 0.5f * 1.0f / DrvWheelRevRpS;  // Calculate how long cylinder cocks open  @ speed = Time (sec) / (Drv Wheel RpS ) - assume two cylinder strokes per rev, ie each cock will only be open for 1/2 rev
-                BoosterCylinderSteamExhaustTimerS += elapsedClockSeconds;
-                if (BoosterCylinderSteamExhaustTimerS > BoosterCylinderSteamExhaustTimePeriodS)
-                {
-                    if (BoosterCylinderSteamExhaust01On)
-                    {
-                        BoosterCylinderSteamExhaust01On = false;
-                        BoosterCylinderSteamExhaust02On = true;
-                        BoosterCylinderSteamExhaustTimerS = 0.0f;  // Reset timer
-                    }
-                    else if (BoosterCylinderSteamExhaust02On)
-                    {
-                        BoosterCylinderSteamExhaust01On = true;
-                        BoosterCylinderSteamExhaust02On = false;
-                        BoosterCylinderSteamExhaustTimerS = 0.0f;  // Reset timer
 
+                for (int i = 0; i < 1; i++)
+                {
+                    var crankAngleDiffRad = BoosterWheelCrankAngleDiffRad[i];
+                    float normalisedCrankAngleRad = NormalisedCrankAngle(i, crankAngleDiffRad);
+                    
+                    // Exhaust crank angle
+                    float exhaustCrankAngleRad = 0;
+                    if (normalisedCrankAngleRad <= MathHelper.Pi)
+                    {
+                        exhaustCrankAngleRad = CylinderExhaustOpenFactor * (float)Math.PI;
+                    }
+                    else
+                    {
+                        exhaustCrankAngleRad = CylinderExhaustOpenFactor * (float)Math.PI + (float)Math.PI;
+                    }
+
+                    if (absSpeedMpS > 0.001)
+                    {
+                        if (i == 0 && ((normalisedCrankAngleRad <= MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad) || (normalisedCrankAngleRad < 2 * MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad)))
+                        {
+                            BoosterCylinderSteamExhaust01On = true;
+                        }
+                        else if (i == 0)
+                        {
+                            BoosterCylinderSteamExhaust01On = false;
+                        }
+
+                        else if (i == 1 && ((normalisedCrankAngleRad <= MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad) || (normalisedCrankAngleRad < 2 * MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad)))
+                        {
+                            BoosterCylinderSteamExhaust02On = true;
+                        }
+                        else if (i == 1)
+                        {
+                            BoosterCylinderSteamExhaust02On = false;
+                        }
                     }
                 }
             }
@@ -2732,35 +2748,44 @@ namespace Orts.Simulation.RollingStocks
             // Booster steam cylinder cock exhaust
             if (BoosterCylinderCocksOn) // For Booster engine
             {
-                var BoosterCylinderCockOpenTimePeriodS = 0.5f * 1.0f / DrvWheelRevRpS;  // Calculate how long cylinder cocks open  @ speed = Time (sec) / (Drv Wheel RpS ) - assume two cylinder strokes per rev, ie each cock will only be open for 1/2 rev
-                BoosterCylinderCockTimerS += elapsedClockSeconds;
-                if (BoosterCylinderCockTimerS > BoosterCylinderCockOpenTimePeriodS)
+
+                for (int i = 0; i < 1; i++)
                 {
-                    if (BoosterCylinderCock11On)
-                    {
-                        BoosterCylinderCock11On = false;
-                        BoosterCylinderCock12On = true;
-                        BoosterCylinderCockTimerS = 0.0f;  // Reset timer
-                    }
-                    else if (BoosterCylinderCock12On)
-                    {
-                        BoosterCylinderCock11On = true;
-                        BoosterCylinderCock12On = false;
-                        BoosterCylinderCockTimerS = 0.0f;  // Reset timer
 
-                    }
+                    var crankAngleDiffRad = BoosterWheelCrankAngleDiffRad[i];
+                    float normalisedCrankAngleRad = NormalisedCrankAngle(i, crankAngleDiffRad);
 
-                    if (BoosterCylinderCock21On)
+                    if (i == 0)
                     {
-                        BoosterCylinderCock21On = false;
-                        BoosterCylinderCock22On = true;
-                  //      BoosterCylinderCockTimerS = 0.0f;  // Reset timer
+                        if (normalisedCrankAngleRad <= MathHelper.Pi)
+                        {
+                            BoosterCylinderCock11On = true;
+                            BoosterCylinderCock12On = false;
+                        }
                     }
-                    else if (BoosterCylinderCock22On)
+                    else
                     {
-                        BoosterCylinderCock21On = true;
-                        BoosterCylinderCock22On = false;
-                   //     BoosterCylinderCockTimerS = 0.0f;  // Reset timer
+                        if (normalisedCrankAngleRad > MathHelper.Pi)
+                        {
+                            BoosterCylinderCock11On = false;
+                            BoosterCylinderCock12On = true;
+                        }
+                    }
+                    if (i == 1)
+                    {
+                        if (normalisedCrankAngleRad <= MathHelper.Pi)
+                        {
+                            BoosterCylinderCock21On = true;
+                            BoosterCylinderCock22On = false;
+                        }
+                    }
+                    else
+                    {
+                        if (normalisedCrankAngleRad > MathHelper.Pi)
+                        {
+                            BoosterCylinderCock21On = false;
+                            BoosterCylinderCock22On = true;
+                        }
                     }
                 }
             }
@@ -5455,8 +5480,9 @@ namespace Orts.Simulation.RollingStocks
                             backwardCylinderPosition = crankCylinderPosition;
                         }
 
-                        float normalisedCrankAngleRad = NormalisedCrankAngle(i);
-
+                        var crankAngleDiffRad = WheelCrankAngleDiffRad[i];
+                        float normalisedCrankAngleRad = NormalisedCrankAngle(i, crankAngleDiffRad);
+                        
                         // Crank angles
                         float sin = (float)Math.Sin(crankAngleRad);
                         float cos = (float)Math.Cos(crankAngleRad);
@@ -5776,8 +5802,6 @@ namespace Orts.Simulation.RollingStocks
             {
                 IsCritTELimit = false; // Reset flag if limiting TE
             }
-
-            SteamEngines[numberofengine].AttachedAxle.DriveForceN = SteamEngines[numberofengine].TractiveForceN / SteamEngines[numberofengine].AttachedAxle.NumberWheelAxles;
         }
 
         /// <summary>
@@ -5795,10 +5819,13 @@ namespace Orts.Simulation.RollingStocks
             // Update tractive effort across all steam engines
             for (int i = 0; i < SteamEngines.Count; i++)
             {
+                ApplyDirectionToTractiveForce(ref SteamEngines[i].TractiveForceN);
+
                 TractiveForceN += SteamEngines[i].TractiveForceN;
 
                 if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics)
                 {
+                    SteamEngines[i].AttachedAxle.DriveForceN = SteamEngines[i].TractiveForceN / SteamEngines[i].AttachedAxle.NumberWheelAxles;
                     UpdateAxleDriveForce();
                     MotiveForceN += SteamEngines[i].AttachedAxle.CompensatedAxleForceN;
                 }
@@ -5816,13 +5843,10 @@ namespace Orts.Simulation.RollingStocks
                 IndicatedHorsePowerHP += SteamEngines[i].IndicatedHorsePowerHP;
                 IndicatedHorsePowerHP = MathHelper.Clamp(IndicatedHorsePowerHP, 0, IndicatedHorsePowerHP);
 
-
                 //TODO - identify the maximum value for display?? 
                 PistonSpeedFtpMin = SteamEngines[0].PistonSpeedFtpMin;
 
             }
-
-            ApplyDirectionToTractiveForce(ref TractiveForceN);
 
             // Find the maximum TE for debug i.e. @ start and full throttle
             if (absSpeedMpS < 1.0)
@@ -5860,9 +5884,9 @@ namespace Orts.Simulation.RollingStocks
             /// <summary>
             /// Normalise crank angle so that it is a value between 0 and 360 starting at the real crank angle difference
             /// </summary>
-            private float NormalisedCrankAngle(int cylinderNumber)
+            private float NormalisedCrankAngle(int cylinderNumber, float crankAngleRad)
         {
-            float normalisedCrankAngleRad = (float)MathHelper.WrapAngle((float)LocomotiveAxles[0].AxlePositionRad + WheelCrankAngleDiffRad[cylinderNumber]);
+            float normalisedCrankAngleRad = (float)MathHelper.WrapAngle((float)LocomotiveAxles[0].AxlePositionRad + crankAngleRad);
 
             if (normalisedCrankAngleRad < 0)
             {
