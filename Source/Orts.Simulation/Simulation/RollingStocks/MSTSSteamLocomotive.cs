@@ -5838,6 +5838,15 @@ namespace Orts.Simulation.RollingStocks
             MaxPowerW = 0;
             MaxForceN = 0;
 
+            if (WheelSlip && AdvancedAdhesionModel)
+            {
+                AbsTractionSpeedMpS = AbsWheelSpeedMpS;
+            }
+            else
+            {
+                AbsTractionSpeedMpS = AbsSpeedMpS;
+            }
+
             // Update tractive effort across all steam engines
             for (int i = 0; i < SteamEngines.Count; i++)
             {
