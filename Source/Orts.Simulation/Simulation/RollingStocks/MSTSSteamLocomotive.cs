@@ -2326,15 +2326,20 @@ namespace Orts.Simulation.RollingStocks
 
 //                        Trace.TraceInformation("Run Mode - Timer {0} GearPeriod {1}", BoosterGearEngageTimeS, BoosterGearEngageTimePeriodS);
 
-                        if (BoosterGearEngageTimeS > BoosterGearEngageTimePeriodS)
+                        if (BoosterGearEngageTimeS > BoosterGearEngageTimePeriodS) // Booster gears engaged
                         {
                             enginethrottle = throttle;
                             BoosterCylinderSteamExhaustOn = true;
-                            BoosterCylinderCocksOn = true;
+                            BoosterCylinderCocksOn = false;
                             BoosterGearsEngaged = true;
                             BoosterIdleHeatingTimerReset = false;
                             BoosterIdleHeatingTimerS = 0;
                           //  Trace.TraceInformation("Run Mode - " );
+                        }
+                        else
+                        {
+                            BoosterCylinderSteamExhaustOn = false;
+                            BoosterCylinderCocksOn = true;
                         }
                         BoosterGearEngageTimeS += elapsedClockSeconds;                        
                     }
@@ -5797,6 +5802,7 @@ namespace Orts.Simulation.RollingStocks
                 SteamEngines[numberofengine].TractiveForceN = N.FromLbf((SteamEngines[numberofengine].MaxIndicatedHorsePowerHP * 375.0f) / pS.TopH(Me.ToMi(SpeedMpS)));
                 SteamEngines[numberofengine].IndicatedHorsePowerHP = SteamEngines[numberofengine].MaxIndicatedHorsePowerHP; // Set IHP to maximum value
                 IsCritTELimit = true; // Flag if limiting TE
+
             }
             else
             {
@@ -5810,7 +5816,11 @@ namespace Orts.Simulation.RollingStocks
         protected override void UpdateTractiveForce(float elapsedClockSeconds, float locomotivethrottle, float AbsSpeedMpS, float AbsWheelSpeedMpS)
         {
             TractiveForceN = 0; // reset tractiveforceN in preparation to calculating a new value
-            MotiveForceN = 0;
+            if (!Simulator.UseAdvancedAdhesion && Simulator.Settings.SimpleControlPhysics)
+            {
+                // Simple adhesion
+                MotiveForceN = 0;
+            }
             IndicatedHorsePowerHP = 0;
             PistonSpeedFtpMin = 0;
             MaxPowerW = 0;
@@ -5825,9 +5835,9 @@ namespace Orts.Simulation.RollingStocks
 
                 if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics)
                 {
-                    SteamEngines[i].AttachedAxle.DriveForceN = SteamEngines[i].TractiveForceN / SteamEngines[i].AttachedAxle.NumberWheelAxles;
+                    SteamEngines[i].AttachedAxle.DriveForceN = SteamEngines[i].TractiveForceN;
                     UpdateAxleDriveForce();
-                    MotiveForceN += SteamEngines[i].AttachedAxle.CompensatedAxleForceN;
+           //         MotiveForceN += SteamEngines[i].AttachedAxle.CompensatedAxleForceN;
                 }
                 else // Simple adhesion
                 {
@@ -5903,7 +5913,7 @@ namespace Orts.Simulation.RollingStocks
 
 
         public override void AdvancedAdhesion(float elapsedClockSeconds)
-        {
+        { 
 
             foreach (var axle in LocomotiveAxles)
             {
@@ -5969,9 +5979,41 @@ namespace Orts.Simulation.RollingStocks
                     axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersStrokeM) / (Me.ToIn(axle.WheelRadiusM * 2.0f)));
 
                 }
+
+                axle.BrakeRetardForceN = BrakeRetardForceN / LocomotiveAxles.Count;
+                axle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
+                axle.WheelRadiusM = linkedEngine.AttachedAxle.WheelRadiusM;
+                axle.WheelDistanceGaugeM = TrackGaugeM;
+                axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
+                axle.BogieRigidWheelBaseM = RigidWheelBaseM;
+                axle.CurtiusKnifflerZeroSpeed = ZeroSpeedAdhesionBase;
+                
+            }
+            
+            LocomotiveAxles.Update(elapsedClockSeconds);
+
+            MotiveForceN = LocomotiveAxles.CompensatedForceN;
+
+            if (LocoNumDrvAxles <= 0)
+            {
+                WheelSpeedMpS = AbsSpeedMpS;
+                return;
             }
 
-            base.AdvancedAdhesion(elapsedClockSeconds);
+            if (elapsedClockSeconds > 0)
+            {
+                WheelSlip = LocomotiveAxles.IsWheelSlip;
+                WheelSlipWarning = LocomotiveAxles.IsWheelSlipWarning;
+            }
+
+            // This enables steam locomotives to have different speeds for driven and non-driven wheels.
+            if (SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
+            {
+                WheelSpeedSlipMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
+                WheelSpeedMpS = SpeedMpS;
+            }
+            else WheelSpeedMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
+
         }
 
         private void UpdateAuxiliaries(float elapsedClockSeconds, float absSpeedMpS)

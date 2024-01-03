@@ -147,7 +147,7 @@ namespace Orts.Simulation.RollingStocks
         public bool OnLineCabRadio;
         public string OnLineCabRadioURL;
 
-        float ZeroSpeedAdhesionBase;
+        public float ZeroSpeedAdhesionBase;
 
         public float FilteredBrakePipeFlowM3pS;
         public IIRFilter AFMFilter;
@@ -2798,15 +2798,6 @@ namespace Orts.Simulation.RollingStocks
                 WheelSlip = LocomotiveAxles.IsWheelSlip;
                 WheelSlipWarning = LocomotiveAxles.IsWheelSlipWarning;
             }
-            
-            // This enables steam locomotives to have different speeds for driven and non-driven wheels.
-            if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
-            {
-                WheelSpeedSlipMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
-                WheelSpeedMpS = SpeedMpS;
-            }
-            else WheelSpeedMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
-
         }
 
         public void SimpleAdhesion()
