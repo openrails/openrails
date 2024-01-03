@@ -218,7 +218,7 @@ namespace Orts.Formats.Msts
                 case "variable3_1controlled": Control = Controls.Variable3_1Controlled; break;
                 case "variable4_1controlled": Control = Controls.Variable4_1Controlled; break;
                 case "variable2controlled": Control = Controls.Variable2Controlled; break;
-                case "variable2BoosterControlled": Control = Controls.Variable2BoosterControlled; break;
+                case "variable2boostercontrolled": Control = Controls.Variable2BoosterControlled; break;
                 case "variable3controlled": Control = Controls.Variable3Controlled; break;
                 case "brakecylcontrolled": Control = Controls.BrakeCylControlled; break;
                 case "curveforcecontrolled": Control = Controls.CurveForceControlled; break;
