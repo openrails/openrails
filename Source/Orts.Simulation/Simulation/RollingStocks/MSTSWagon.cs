@@ -115,6 +115,7 @@ namespace Orts.Simulation.RollingStocks
         public float Variable2_1;
         public float Variable3_1;
         public float Variable4_1;
+        public float Variable2_Booster;
 
         // wag file data
         public string MainShapeFileName;
@@ -1820,7 +1821,11 @@ namespace Orts.Simulation.RollingStocks
         {
             outf.Write(Variable1);
             outf.Write(Variable2);
+            outf.Write(Variable2_Booster);
             outf.Write(Variable3);
+            outf.Write(Variable2_1);
+            outf.Write(Variable3_1);
+            outf.Write(Variable4_1);
             outf.Write(IsDavisFriction);
             outf.Write(IsRollerBearing);
             outf.Write(IsLowTorqueRollerBearing);
@@ -1881,7 +1886,11 @@ namespace Orts.Simulation.RollingStocks
         {
             Variable1 = inf.ReadSingle();
             Variable2 = inf.ReadSingle();
+            Variable2_Booster = inf.ReadSingle();
             Variable3 = inf.ReadSingle();
+            Variable2_1 = inf.ReadSingle();
+            Variable3_1 = inf.ReadSingle();
+            Variable4_1 = inf.ReadSingle();
             IsDavisFriction = inf.ReadBoolean();
             IsRollerBearing = inf.ReadBoolean();
             IsLowTorqueRollerBearing = inf.ReadBoolean();

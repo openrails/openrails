@@ -198,7 +198,7 @@ namespace Orts.Formats.Msts
 
     public class VolumeCurve
     {
-        public enum Controls { None, DistanceControlled, SpeedControlled, Variable1Controlled, Variable2_1Controlled, Variable3_1Controlled, Variable4_1Controlled, Variable2Controlled, Variable3Controlled, BrakeCylControlled, CurveForceControlled };
+        public enum Controls { None, DistanceControlled, SpeedControlled, Variable1Controlled, Variable2_1Controlled, Variable3_1Controlled, Variable4_1Controlled, Variable2Controlled, Variable2BoosterControlled, Variable3Controlled, BrakeCylControlled, CurveForceControlled };
 
         public Controls Control = Controls.None;
         public float Granularity = 1.0f;
@@ -218,6 +218,7 @@ namespace Orts.Formats.Msts
                 case "variable3_1controlled": Control = Controls.Variable3_1Controlled; break;
                 case "variable4_1controlled": Control = Controls.Variable4_1Controlled; break;
                 case "variable2controlled": Control = Controls.Variable2Controlled; break;
+                case "variable2BoosterControlled": Control = Controls.Variable2BoosterControlled; break;
                 case "variable3controlled": Control = Controls.Variable3Controlled; break;
                 case "brakecylcontrolled": Control = Controls.BrakeCylControlled; break;
                 case "curveforcecontrolled": Control = Controls.CurveForceControlled; break;

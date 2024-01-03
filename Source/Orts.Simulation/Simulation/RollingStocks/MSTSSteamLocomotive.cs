@@ -3022,7 +3022,14 @@ namespace Orts.Simulation.RollingStocks
 
             Variable2 = MathHelper.Clamp((CylinderCocksPressureAtmPSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
 
-//            Trace.TraceInformation("Variable2 - {0}", Variable2);
+            if (SteamBoosterAirOpen && SteamBoosterRunMode && BoosterCylinderSteamExhaustOn && throttle > 0.0)
+            {
+                Variable2_Booster = SteamChestPressurePSI / MaxBoilerPressurePSI;
+            }
+            else
+            {
+                Variable2_Booster = 0;
+            }
 
             Variable3 = FuelRateSmoothed * 100;
 
