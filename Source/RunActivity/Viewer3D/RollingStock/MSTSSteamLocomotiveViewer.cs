@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Simulation;
@@ -326,11 +327,12 @@ namespace Orts.Viewer3D.RollingStock
                 drawer.SetOutput(car.CylinderSteamExhaustSteamVelocityMpS, car.CylinderSteamExhaust3SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
 
             foreach (var drawer in BoosterCylinderSteamExhaust01)
-                drawer.SetOutput(car.BoosterCylinderSteamExhaust01SteamVelocityMpS, car.BoosterCylinderSteamExhaust01SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
+                drawer.SetOutput(car.BoosterCylinderSteamExhaust01SteamVelocityMpS, car.BoosterCylinderSteamExhaust01SteamVolumeM3pS, car.BoosterCylinderCockParticleDurationS);
+
 
             foreach (var drawer in BoosterCylinderSteamExhaust02)
-                drawer.SetOutput(car.BoosterCylinderSteamExhaust02SteamVelocityMpS, car.BoosterCylinderSteamExhaust02SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
-
+                drawer.SetOutput(car.BoosterCylinderSteamExhaust02SteamVelocityMpS, car.BoosterCylinderSteamExhaust02SteamVolumeM3pS, car.BoosterCylinderCockParticleDurationS);
+                
             foreach (var drawer in BoosterCylinders11)
                 drawer.SetOutput(car.BoosterCylinderCock11SteamVelocityMpS, car.BoosterCylinderCockSteam11VolumeMpS, car.BoosterCylinderCockParticleDurationS);
 

@@ -135,7 +135,7 @@ namespace Orts.Simulation.RollingStocks
         public bool BoosterGearsEngaged = false;
         public bool SteamBoosterLatchedLocked = false;
         public float SteamBoosterPressurePSI;
-        float BoosterGearEngageTimeS;
+        float BoosterGearEngageTimerS;
         float BoosterIdleHeatingTimerS;
         float BoosterIdleHeatingTimePeriodS = 120; // This is the time period that the Booster needs to be idled to heat it up
         bool BoosterIdleHeatingTimerReset = false;
@@ -2301,7 +2301,7 @@ namespace Orts.Simulation.RollingStocks
                         BoosterCylinderSteamExhaustOn = false;
                         BoosterCylinderCocksOn = true;
                         enginethrottle = 0.0f;
-                        BoosterGearEngageTimeS = 0;
+                        BoosterGearEngageTimerS = 0;
 
                         // Allow time for cylinders to heat up
                         if (!BoosterIdleHeatingTimerReset)
@@ -2326,7 +2326,7 @@ namespace Orts.Simulation.RollingStocks
 
 //                        Trace.TraceInformation("Run Mode - Timer {0} GearPeriod {1}", BoosterGearEngageTimeS, BoosterGearEngageTimePeriodS);
 
-                        if (BoosterGearEngageTimeS > BoosterGearEngageTimePeriodS) // Booster gears engaged
+                        if (BoosterGearEngageTimerS > BoosterGearEngageTimePeriodS) // Booster gears engaged
                         {
                             enginethrottle = throttle;
                             BoosterCylinderSteamExhaustOn = true;
@@ -2336,12 +2336,17 @@ namespace Orts.Simulation.RollingStocks
                             BoosterIdleHeatingTimerS = 0;
                           //  Trace.TraceInformation("Run Mode - " );
                         }
-                        else
+                        else // Booster gears have not engaged yet
                         {
                             BoosterCylinderSteamExhaustOn = false;
                             BoosterCylinderCocksOn = true;
-                        }
-                        BoosterGearEngageTimeS += elapsedClockSeconds;                        
+                            BoosterGearEngageTimerS += elapsedClockSeconds;
+                        }                     
+                    }
+                    else if (SteamBoosterAirOpen && SteamBoosterIdle) // Move booster to run mode, but not latched
+                    {
+                        BoosterCylinderSteamExhaustOn = false;
+                        BoosterCylinderCocksOn = true;
                     }
                     else if (!SteamBoosterAirOpen || !SteamBoosterLatchedLocked) // Turn Booster off completely
                     {
@@ -2350,7 +2355,7 @@ namespace Orts.Simulation.RollingStocks
                         BoosterCylinderSteamExhaustOn = false;
                         BoosterCylinderCocksOn = false;
                         enginethrottle = 0;
-                        BoosterGearEngageTimeS = 0;
+                        BoosterGearEngageTimerS = 0;
                         BoosterIdleHeatingTimerReset = false;
                         BoosterCylinderSteamExhaustOn = false;
                         BoosterGearsEngaged = false;
@@ -7144,6 +7149,19 @@ namespace Orts.Simulation.RollingStocks
                 SteamBoosterRunMode ? Simulator.Catalog.GetString("On") : Simulator.Catalog.GetString("Off"),
                 Simulator.Catalog.GetString("BoostGear"),
                 BoosterGearsEngaged ? Simulator.Catalog.GetString("On") : Simulator.Catalog.GetString("Off")
+                );
+
+            // Temporary debug script.
+            status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8}\n",
+                Simulator.Catalog.GetString("Boost:"),
+                Simulator.Catalog.GetString("GearT"),
+                BoosterGearEngageTimerS,
+                Simulator.Catalog.GetString("GearP"),
+                BoosterGearEngageTimePeriodS,
+                Simulator.Catalog.GetString("IdleT"),
+                BoosterIdleHeatingTimerS,
+                Simulator.Catalog.GetString("IdleP"),
+                BoosterIdleHeatingTimePeriodS
                 );
 
 #if DEBUG_LOCO_STEAM_USAGE
