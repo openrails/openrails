@@ -2343,14 +2343,14 @@ namespace Orts.Simulation.RollingStocks
 //                        Trace.TraceInformation("Idle Mode - Timer {0} GearPeriod {1} Reset {2} BoosterHeating {3} Sync {4}", BoosterIdleHeatingTimerS, BoosterGearEngageTimePeriodS, BoosterIdleHeatingTimerReset, BoosterIdleHeatingTimePeriodS, BoosterGearSyncTimePeriodS);
                     }
                     // Run mode
-                    else if (SteamBoosterAirOpen && SteamBoosterIdle && SteamBoosterLatchedLocked && !BoosterAirisLow && throttle > 0.01)
+                    else if (SteamBoosterAirOpen && SteamBoosterIdle && !BoosterAirisLow)
                     {
                         SteamBoosterIdleMode = false;
                         SteamBoosterRunMode = true;
 
 //                        Trace.TraceInformation("Run Mode - Timer {0} GearPeriod {1}", BoosterGearEngageTimeS, BoosterGearEngageTimePeriodS);
 
-                        if (BoosterGearEngageTimerS > BoosterGearEngageTimePeriodS) // Booster gears engaged
+                        if (BoosterGearEngageTimerS > BoosterGearEngageTimePeriodS && SteamBoosterLatchedLocked && throttle > 0.01) // Booster gears engaged
                         {
                             enginethrottle = throttle;
                             BoosterCylinderSteamExhaustOn = true;
@@ -2427,11 +2427,22 @@ namespace Orts.Simulation.RollingStocks
 
                 // Calculate steam pressure for booster steam gauge
                 if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
-                {
-                    if (SteamEngines[i].LogSteamChestPressurePSI > CabSteamChestPressurePSI && SteamBoosterRunMode && SteamBoosterAirOpen)
+                {      
+                    if (SteamBoosterRunMode && SteamEngines[i].LogSteamChestPressurePSI > PrevCabSteamBoosterPressurePSI)
                     {
                         CabSteamBoosterPressurePSI = SteamEngines[i].LogSteamChestPressurePSI;
                         PrevCabSteamBoosterPressurePSI = CabSteamBoosterPressurePSI;
+                    }
+                    else if (SteamBoosterRunMode && SteamEngines[i].LogSteamChestPressurePSI < PrevCabSteamBoosterPressurePSI)
+                    {
+                        var DesiredBoosterPressure = SteamEngines[i].LogSteamChestPressurePSI;
+
+                        if (DesiredBoosterPressure < PrevCabSteamBoosterPressurePSI)
+                        {
+                            CabSteamBoosterPressurePSI = PrevCabSteamBoosterPressurePSI - 1;
+                            CabSteamBoosterPressurePSI = MathHelper.Clamp(CabSteamBoosterPressurePSI, 0, MaxBoilerPressurePSI);
+                            PrevCabSteamBoosterPressurePSI = CabSteamBoosterPressurePSI;
+                        }
                     }
                     else if (SteamBoosterIdleMode)
                     {
@@ -2443,8 +2454,12 @@ namespace Orts.Simulation.RollingStocks
                             CabSteamBoosterPressurePSI = MathHelper.Clamp(CabSteamBoosterPressurePSI, 0, MaxBoilerPressurePSI);
                             PrevCabSteamBoosterPressurePSI = CabSteamBoosterPressurePSI;
                         }
+                        else
+                        {
+                            CabSteamBoosterPressurePSI = PrevCabSteamBoosterPressurePSI;
+                        }
                     }
-                    else
+                    else // Booster disabled
                     {
                         var DesiredBoosterPressure = 0;
 
@@ -2453,15 +2468,9 @@ namespace Orts.Simulation.RollingStocks
                             CabSteamBoosterPressurePSI = PrevCabSteamBoosterPressurePSI - 1;
                             CabSteamBoosterPressurePSI = MathHelper.Clamp(CabSteamBoosterPressurePSI, 0, MaxBoilerPressurePSI);
                             PrevCabSteamBoosterPressurePSI = CabSteamBoosterPressurePSI;
-                        }                        
+                        }
                     }
                 }
-
-                if (SteamEngines[i].LogSteamChestPressurePSI > CabSteamChestPressurePSI && SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
-                {
-                    CabSteamBoosterPressurePSI = SteamEngines[i].LogSteamChestPressurePSI;
-                }
-
 
                 if (SteamEngines[i].MeanEffectivePressurePSI > MeanEffectivePressurePSI)
                 {
