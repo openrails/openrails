@@ -23,11 +23,24 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using LibGit2Sharp;
+using System.Windows.Forms;
 
 namespace ORTS.Settings
 {
     public class RouteSettings
     {
+        public class Start
+        {
+            public string Route;
+            public string Locomotive;
+            public string Consist;
+            public string StartingAt;
+            public string HeadingTo;
+            public string Time;
+            public string Season;
+            public string Weather;
+        }
+
         public class Route
         {
             public string DateInstalled;
@@ -47,11 +60,14 @@ namespace ORTS.Settings
 
             public string Screenshot;
 
+            public Start Start;
+
             public Route(string dateInstalled, string directoryInstalledIn, string url, 
                 long downloadSize, long installSize, 
                 string image, string description,
                 string author, string authorUrl,
-                string screenshot)
+                string screenshot,
+                Start start)
             { 
                 DateInstalled = dateInstalled;
                 DirectoryInstalledIn = directoryInstalledIn;
@@ -63,6 +79,7 @@ namespace ORTS.Settings
                 AuthorName = author;
                 AuthorUrl = authorUrl;
                 Screenshot = screenshot;
+                Start = start;
             }
         }
 
@@ -133,30 +150,43 @@ namespace ORTS.Settings
                     var json = File.ReadAllText(definedContentJsonName);
 
                     IList<JToken> results = JsonConvert.DeserializeObject<JToken>(json) as IList<JToken>;
-                    foreach (JToken result in results)
+                    foreach (JToken resultToken in results)
                     {
-                        string routeName = result["name"].ToString();
-                        string url = result["url"].ToString();
-                        long downloadSize = convertResultToLong(result, "downloadSize");
-                        long installSize = convertResultToLong(result, "installSize");
-                        string image = convertResultToString(result, "image");
-                        string description = convertResultToString(result, "description");
-                        JToken author = result["author"];
-                        string authorName = convertResultToString(author, "name");
-                        string authorUrl = convertResultToString(author, "url");
-                        string screenshot = convertResultToString(result, "screenshot");
+                        string routeName = resultToken["name"].ToString();
+                        string url = resultToken["url"].ToString();
+                        long downloadSize = convertResultToLong(resultToken, "downloadSize");
+                        long installSize = convertResultToLong(resultToken, "installSize");
+                        string image = convertResultToString(resultToken, "image");
+                        string description = convertResultToString(resultToken, "description");
+                        JToken authorToken = resultToken["author"];
+                        string authorName = convertResultToString(authorToken, "name");
+                        string authorUrl = convertResultToString(authorToken, "url");
+                        string screenshot = convertResultToString(resultToken, "screenshot");
+
+                        JToken startToken = resultToken["start"];
+                        Start start = new Start
+                        {
+                            Route = convertResultToString(startToken, "route"),
+                            Locomotive = convertResultToString(startToken, "locomotive"),
+                            Consist = convertResultToString(startToken, "consist"),
+                            StartingAt = convertResultToString(startToken, "startingat"),
+                            HeadingTo = convertResultToString(startToken, "headingto"),
+                            Time = convertResultToString(startToken, "time"),
+                            Season = convertResultToString(startToken, "season"),
+                            Weather = convertResultToString(startToken, "weather")
+                        };
 
                         if (url.EndsWith(".git") || url.EndsWith(".zip"))
                         {
                             if (!Routes.ContainsKey(routeName))
                             {
                                 Routes.Add(routeName, new RouteSettings.Route(
-                                    "", "", url, downloadSize, installSize, image, description, authorName, authorUrl, screenshot));
+                                    "", "", url, downloadSize, installSize, image, description, authorName, authorUrl, screenshot, start));
                             }
                             else
                             {
                                 update(Routes[routeName],
-                                    url, downloadSize, installSize, image, description, authorName, authorUrl, screenshot);
+                                    url, downloadSize, installSize, image, description, authorName, authorUrl, screenshot, start);
                             }
                         }
                     }
@@ -177,7 +207,8 @@ namespace ORTS.Settings
             long downloadSize, long installSize, 
             string img, string description, 
             string authorName, string authorUrl, 
-            string screenshot)
+            string screenshot,
+            Start start)
         {
             route.Url = url;
             route.DownloadSize = downloadSize;
@@ -187,6 +218,7 @@ namespace ORTS.Settings
             route.AuthorName = authorName;
             route.AuthorUrl = authorUrl;
             route.Screenshot = screenshot;
+            route.Start = start;
         } 
 
         private long convertResultToLong(JToken result, string fieldName)
@@ -203,7 +235,7 @@ namespace ORTS.Settings
 
         private string convertResultToString(JToken result, string fieldName)
         {
-            if (result[fieldName] != null)
+            if ((result != null) &&(result[fieldName] != null))
             {
                 return result[fieldName].ToString();
             }

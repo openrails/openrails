@@ -58,7 +58,8 @@ namespace ORTS
             this.DownloadContentButton = new System.Windows.Forms.Button();
             this.pictureBoxRoute = new System.Windows.Forms.PictureBox();
             this.textBoxRoute = new System.Windows.Forms.RichTextBox();
-            this.buttonInfo = new System.Windows.Forms.Button();
+            this.infoButton = new System.Windows.Forms.Button();
+            this.startButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewDownloadContent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxRoute)).BeginInit();
             this.SuspendLayout();
@@ -160,22 +161,33 @@ namespace ORTS
             this.textBoxRoute.TabIndex = 6;
             this.textBoxRoute.Text = "";
             // 
-            // buttonInfo
+            // infoButton
             // 
-            this.buttonInfo.Location = new System.Drawing.Point(745, 472);
-            this.buttonInfo.Name = "buttonInfo";
-            this.buttonInfo.Size = new System.Drawing.Size(75, 23);
-            this.buttonInfo.TabIndex = 7;
-            this.buttonInfo.Text = "Info";
-            this.buttonInfo.UseVisualStyleBackColor = true;
-            this.buttonInfo.Click += new System.EventHandler(this.InfoButton_Click);
+            this.infoButton.Location = new System.Drawing.Point(745, 472);
+            this.infoButton.Name = "infoButton";
+            this.infoButton.Size = new System.Drawing.Size(75, 23);
+            this.infoButton.TabIndex = 7;
+            this.infoButton.Text = "Info";
+            this.infoButton.UseVisualStyleBackColor = true;
+            this.infoButton.Click += new System.EventHandler(this.InfoButton_Click);
+            // 
+            // startButton
+            // 
+            this.startButton.Location = new System.Drawing.Point(89, 507);
+            this.startButton.Name = "startButton";
+            this.startButton.Size = new System.Drawing.Size(75, 23);
+            this.startButton.TabIndex = 8;
+            this.startButton.Text = "Start";
+            this.startButton.UseVisualStyleBackColor = true;
+            this.startButton.Click += new System.EventHandler(this.StartButton_Click);
             // 
             // DownloadContentForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(824, 542);
-            this.Controls.Add(this.buttonInfo);
+            this.Controls.Add(this.startButton);
+            this.Controls.Add(this.infoButton);
             this.Controls.Add(this.textBoxRoute);
             this.Controls.Add(this.pictureBoxRoute);
             this.Controls.Add(this.DownloadContentButton);
@@ -197,9 +209,6 @@ namespace ORTS
         #endregion
 
         private DataGridView dataGridViewDownloadContent;
-        private DataGridViewTextBoxColumn DataGridRouteName;
-        private DataGridViewTextBoxColumn DataGridDateInstalled;
-        private DataGridViewTextBoxColumn DataGridUrl;
         private Label InstallPathLabel;
         private TextBox InstallPathTextBox;
         private Button InstallPathButton;
@@ -210,6 +219,7 @@ namespace ORTS
         private DataGridViewTextBoxColumn Url;
         private PictureBox pictureBoxRoute;
         private RichTextBox textBoxRoute;
-        private Button buttonInfo;
+        private Button infoButton;
+        private Button startButton;
     }
 }

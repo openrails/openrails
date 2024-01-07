@@ -71,9 +71,11 @@ namespace ORTS
             InfoTempFilename = Path.ChangeExtension(ImageTempFilename, "html");
         }
 
-        void dataGridViewDownloadContent_SelectionChanged(object sender, EventArgs e)
+        private void dataGridViewDownloadContent_SelectionChanged(object sender, EventArgs e)
         {
             RouteName = dataGridViewDownloadContent.CurrentRow.Cells[0].Value.ToString();
+
+            // install button
 
             DownloadContentButton.Enabled = string.IsNullOrWhiteSpace(Routes[RouteName].DateInstalled);
 
@@ -108,15 +110,14 @@ namespace ORTS
                         {
                             myWebClient.DownloadFile(Routes[RouteName].Image, ImageTempFilename);
                         }
+                        if (File.Exists(ImageTempFilename))
+                        {
+                            pictureBoxRoute.Image = new Bitmap(ImageTempFilename);
+                        }
                     }
                     catch
                     {
                         // route lives whithout a picture, not such a problem
-                    }
-
-                    if (File.Exists(ImageTempFilename))
-                    {
-                        pictureBoxRoute.Image = new Bitmap(ImageTempFilename);
                     }
                 });
                 ImageThread.Start();
@@ -126,6 +127,20 @@ namespace ORTS
             // text box with description
 
             textBoxRoute.Text = Routes[RouteName].Description;
+
+            // start button
+
+            startButton.Enabled = false;
+
+            if (!string.IsNullOrWhiteSpace(Routes[RouteName].DateInstalled))
+            {
+                // route installed               
+                if (!string.IsNullOrWhiteSpace(Routes[RouteName].Start.Route))
+                {
+                    // start information available
+                    startButton.Enabled = true;
+                }
+            }
         }
 
         private void InstallPathButton_Click(object sender, EventArgs e)
@@ -243,9 +258,28 @@ namespace ORTS
             Settings.Folders.Save();
             Settings.Routes.Save();
 
-            MessageBox.Show(Catalog.GetString("Route installed"), Catalog.GetString("Done"), MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+            if (!string.IsNullOrWhiteSpace(Routes[RouteName].Start.Route))
+            {
+                // start information available
+                startButton.Enabled = true;
+                MessageBox.Show(Catalog.GetString("Route installed, press 'Start' button to start Open Rails for this route."),
+                    Catalog.GetString("Done"), MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+            } 
+            else
+            {
+                // no start information available
+                MainForm mainForm = ((MainForm)Owner);
+                mainForm.DoWithTask = false;
+                mainForm.LoadFolderList();
+                mainForm.comboBoxFolder.SelectedIndex = determineSelectedIndex(mainForm.comboBoxFolder, RouteName);
+                mainForm.DoWithTask = true;
 
-            Close();
+                MessageBox.Show(Catalog.GetString("Route installed."),
+                    Catalog.GetString("Done"), MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+
+                // close this dialog
+                DialogResult = DialogResult.OK;
+            }
         }
 
         private bool downloadRoute(string installPathRoute)
@@ -263,6 +297,7 @@ namespace ORTS
                     returnValue = doTheZipDownload(Routes[RouteName].Url, Path.Combine(installPathRoute, RouteName + ".zip"));
                 }
             });
+            // start download in thread to be able to show the progress in the main thread
             downloadThread.Start();
 
             while (downloadThread.IsAlive)
@@ -475,28 +510,29 @@ namespace ORTS
 
                 if (string.IsNullOrWhiteSpace(route.AuthorUrl))
                 {
-                    outputFile.WriteLine(string.Format("<p>created by : {0}</p>\n",
+                    outputFile.WriteLine(string.Format("<p>" + Catalog.GetString("created by") + ": {0}</p>\n",
                         route.AuthorName));
                 }
                 else
                 {
-                    outputFile.WriteLine(string.Format("<p>created by : <a href='{0}'>{1}</a></p>\n",
+                    outputFile.WriteLine(string.Format("<p>" + Catalog.GetString("created by") + ": <a href='{0}'>{1}</a></p>\n",
                         route.AuthorUrl, route.AuthorName));
                 }
 
                 if (!string.IsNullOrWhiteSpace(route.Screenshot))
                 {
-                    outputFile.WriteLine(string.Format("<p>screenshots: <a href='{0}'>{1}</a></p>\n",
+                    outputFile.WriteLine(string.Format("<p>" + Catalog.GetString("screenshots") + ": <a href='{0}'>{1}</a></p>\n",
                         route.Screenshot, route.Screenshot));
                 }
 
                 if (route.Url.EndsWith("git"))
                 {
-                    outputFile.WriteLine(String.Format("<p>Downloadable: GitHub format<br>\n"));
-                    outputFile.WriteLine(String.Format("- From: {0}<br>\n", route.Url));
+                    outputFile.WriteLine("<p>" + Catalog.GetString("Downloadable: GitHub format") + "<br>\n");
+                    outputFile.WriteLine(String.Format("- " + Catalog.GetString("From:") + "{0}<br>\n", route.Url));
                     if (route.InstallSize > 0)
                     {
-                        outputFile.WriteLine(String.Format("- Install size: {0} GB<br></p>\n", (route.InstallSize / (1024.0 * 1024 * 1024)).ToString("N")));
+                        outputFile.WriteLine("- " + Catalog.GetStringFmt("Install size: {0} GB",
+                            (route.InstallSize / (1024.0 * 1024 * 1024)).ToString("N")) + "<br></p>\n");
                     }
                 }
                 if (route.Url.EndsWith("zip"))
@@ -505,19 +541,40 @@ namespace ORTS
                     outputFile.WriteLine(String.Format("- From: {0}<br>\n", route.Url));
                     if (route.InstallSize > 0)
                     {
-                        outputFile.WriteLine(String.Format("- Install size: {0} GB<br>\n", (route.InstallSize / (1024.0 * 1024 * 1024)).ToString("N")));
+                        outputFile.WriteLine("- " + Catalog.GetStringFmt("Install size: {0} GB",
+                            (route.InstallSize / (1024.0 * 1024 * 1024)).ToString("N")) + "<br>\n");
                     }
                     if (route.DownloadSize > 0)
                     {
-                        outputFile.WriteLine(String.Format("- Download size: {0} GB<br></p>\n", (route.DownloadSize / (1024.0 * 1024 * 1024)).ToString("N")));
+                        outputFile.WriteLine("- " + Catalog.GetStringFmt("Download size: {0} GB",
+                            (route.DownloadSize / (1024.0 * 1024 * 1024)).ToString("N")) + "<br></p>\n");
                     }
                 }
 
                 if (!string.IsNullOrWhiteSpace(route.DateInstalled))
                 {
-                    outputFile.WriteLine(String.Format("<p>Installed:<br>\n"));
-                    outputFile.WriteLine(String.Format("- at: {0}<br>\n", route.DateInstalled));
-                    outputFile.WriteLine(String.Format("- in: \"{0}\"<br></p>\n", route.DirectoryInstalledIn));
+                    outputFile.WriteLine("<p>" + Catalog.GetString("Installed") + ":<br>\n");
+                    outputFile.WriteLine(String.Format("- " + Catalog.GetString("at") + ": {0}<br>\n", route.DateInstalled));
+                    outputFile.WriteLine(String.Format("- " + Catalog.GetString("in:") + "\"{0}\"<br></p>\n", route.DirectoryInstalledIn));
+                }
+
+                outputFile.WriteLine("<p>" + Catalog.GetString("Start options") + ":<br>\n");
+                if (string.IsNullOrWhiteSpace(route.Start.Route))
+                {
+                    // no start information
+                    outputFile.WriteLine("- " + Catalog.GetString("None") + "<br></p>\n");
+                }
+                else
+                {
+                    outputFile.WriteLine("- " + Catalog.GetString("Installation profile") + ": " + RouteName + "<br>\n");
+                    outputFile.WriteLine("- " + Catalog.GetString("Route") + ": " + route.Start.Route + "<br>\n");
+                    outputFile.WriteLine("- " + Catalog.GetString("Locomotive") + ": " + route.Start.Locomotive + "<br>\n");
+                    outputFile.WriteLine("- " + Catalog.GetString("Consist") + ": " + route.Start.Consist + "<br>\n");
+                    outputFile.WriteLine("- " + Catalog.GetString("Starting at") + ": " + route.Start.StartingAt + "<br>\n");
+                    outputFile.WriteLine("- " + Catalog.GetString("Heading to") + ": " + route.Start.HeadingTo + "<br>\n");
+                    outputFile.WriteLine("- " + Catalog.GetString("Time") + ": " + route.Start.Time + "<br>\n");
+                    outputFile.WriteLine("- " + Catalog.GetString("Season") + ": " + route.Start.Season + "<br>\n");
+                    outputFile.WriteLine("- " + Catalog.GetString("Weather") + ": " + route.Start.Weather + "<br></p>\n");
                 }
             }
 
@@ -525,6 +582,131 @@ namespace ORTS
             System.Diagnostics.Process.Start(InfoTempFilename);
         }
 
+        void StartButton_Click(object sender, EventArgs e)
+        {
+            Cursor.Current = Cursors.WaitCursor;
+
+            RouteSettings.Route route = Routes[RouteName];
+            MainForm mainForm = ((MainForm)Owner);
+
+            mainForm.DoWithTask = false;
+
+            try
+            {
+                mainForm.LoadFolderList();
+                mainForm.comboBoxFolder.SelectedIndex = determineSelectedIndex(mainForm.comboBoxFolder, RouteName);
+
+                mainForm.LoadRouteList();
+                mainForm.comboBoxRoute.SelectedIndex = determineSelectedIndex(mainForm.comboBoxRoute, route.Start.Route);
+
+                mainForm.radioButtonModeActivity.Checked = true;
+                // hardcoded: + Explore in Activity Mode +
+                mainForm.comboBoxActivity.SelectedIndex = 1;
+
+                mainForm.LoadLocomotiveList();
+                mainForm.comboBoxLocomotive.SelectedIndex = determineSelectedIndex(mainForm.comboBoxLocomotive, route.Start.Locomotive);
+                mainForm.comboBoxConsist.SelectedIndex = determineSelectedIndex(mainForm.comboBoxConsist, route.Start.Consist) ;
+
+                mainForm.LoadStartAtList();
+                mainForm.comboBoxStartAt.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartAt, route.Start.StartingAt) ;
+                mainForm.comboBoxHeadTo.SelectedIndex = determineSelectedIndex(mainForm.comboBoxHeadTo, route.Start.HeadingTo);
+
+                mainForm.comboBoxStartTime.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartTime, route.Start.Time);
+                mainForm.comboBoxStartSeason.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartSeason, route.Start.Season);
+                mainForm.comboBoxStartWeather.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartWeather, route.Start.Weather);
+            }
+            catch (StartNotFound error) {
+
+                string message = Catalog.GetStringFmt("Starting not possible, start from main form instead. Searching for '{0}'.", error.Message);
+                MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                mainForm.DoWithTask = true;
+
+                // close this dialog
+                DialogResult = DialogResult.OK;
+
+                return;
+            }
+
+            mainForm.DoWithTask = true;
+
+            // close this dialog
+            DialogResult = DialogResult.OK;
+
+            // close the MainForm dialog, starts OR
+            Owner.DialogResult = DialogResult.OK;
+        }
+
+        private int determineSelectedIndex(ComboBox comboBox, string compareWith)
+        {
+            bool found = false;
+            int index = 0;
+
+            string classOfItem;
+            if (comboBox.Items.Count > 0)
+            {
+                classOfItem = comboBox.Items[0].GetType().Name;
+            }
+            else
+            {
+                throw new StartNotFound(Catalog.GetStringFmt(compareWith));
+            }
+
+            while (!found && (index < comboBox.Items.Count))
+            {
+                string comboboxName = "";
+                switch (classOfItem)
+                {
+                    case "Folder":
+                        comboboxName = ((Menu.Folder)comboBox.Items[index]).Name;
+                        break;
+                    case "Route":
+                        comboboxName = ((Menu.Route)comboBox.Items[index]).Name;
+                        break;
+                    case "Locomotive":
+                        comboboxName = ((Menu.Locomotive)comboBox.Items[index]).Name;
+                        break;
+                    case "Consist":
+                        comboboxName = ((Menu.Consist)comboBox.Items[index]).Name;
+                        break;
+                    case "String":
+                        comboboxName = (String)comboBox.Items[index];
+                        break;
+                    case "Path":
+                        comboboxName = ((Menu.Path)comboBox.Items[index]).End;
+                        break;
+                    case "KeyedComboBoxItem":
+                        comboboxName = ((MainForm.KeyedComboBoxItem)comboBox.Items[index]).Value;
+                        break;
+                }
+
+                if (comboboxName == compareWith)
+                {
+                    found = true;
+                }
+                else
+                {
+                    index++;
+                }
+            }
+            if (found)
+            {
+                comboBox.SelectedIndex = index;
+            }
+            else
+            {
+                throw new StartNotFound(Catalog.GetStringFmt(compareWith));
+            }
+
+            return index;
+        }
+
+        private class StartNotFound : Exception
+        { 
+            public StartNotFound(string message)
+                : base(message)
+            { }
+        }
 
         private void DownloadContentForm_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -540,7 +722,7 @@ namespace ORTS
             }
             catch 
             { 
-                // just ignore, the files are the user temp directory anyway
+                // just ignore, the files are in the user temp directory anyway
             }
         }
     }

@@ -107,7 +107,9 @@ namespace ORTS
         public string SelectedSaveFile { get; set; }
         public UserAction SelectedAction { get; set; }
 
-        GettextResourceManager catalog = new GettextResourceManager("Menu");
+        GettextResourceManager Catalog = new GettextResourceManager("Menu");
+
+        public bool DoWithTask = true;
 
         #region Main Form
         public MainForm()
@@ -142,30 +144,30 @@ namespace ORTS
             if (!Initialized)
             {
                 var Seasons = new[] {
-                    new KeyedComboBoxItem(0, catalog.GetString("Spring")),
-                    new KeyedComboBoxItem(1, catalog.GetString("Summer")),
-                    new KeyedComboBoxItem(2, catalog.GetString("Autumn")),
-                    new KeyedComboBoxItem(3, catalog.GetString("Winter")),
+                    new KeyedComboBoxItem(0, Catalog.GetString("Spring")),
+                    new KeyedComboBoxItem(1, Catalog.GetString("Summer")),
+                    new KeyedComboBoxItem(2, Catalog.GetString("Autumn")),
+                    new KeyedComboBoxItem(3, Catalog.GetString("Winter")),
                 };
                 var Weathers = new[] {
-                    new KeyedComboBoxItem(0, catalog.GetString("Clear")),
-                    new KeyedComboBoxItem(1, catalog.GetString("Snow")),
-                    new KeyedComboBoxItem(2, catalog.GetString("Rain")),
+                    new KeyedComboBoxItem(0, Catalog.GetString("Clear")),
+                    new KeyedComboBoxItem(1, Catalog.GetString("Snow")),
+                    new KeyedComboBoxItem(2, Catalog.GetString("Rain")),
                 };
                 var Difficulties = new[] {
-                    catalog.GetString("Easy"),
-                    catalog.GetString("Medium"),
-                    catalog.GetString("Hard"),
+                    Catalog.GetString("Easy"),
+                    Catalog.GetString("Medium"),
+                    Catalog.GetString("Hard"),
                     "",
                 };
                 var Days = new[] {
-                    new KeyedComboBoxItem(0, catalog.GetString("Monday")),
-                    new KeyedComboBoxItem(1, catalog.GetString("Tuesday")),
-                    new KeyedComboBoxItem(2, catalog.GetString("Wednesday")),
-                    new KeyedComboBoxItem(3, catalog.GetString("Thursday")),
-                    new KeyedComboBoxItem(4, catalog.GetString("Friday")),
-                    new KeyedComboBoxItem(5, catalog.GetString("Saturday")),
-                    new KeyedComboBoxItem(6, catalog.GetString("Sunday")),
+                    new KeyedComboBoxItem(0, Catalog.GetString("Monday")),
+                    new KeyedComboBoxItem(1, Catalog.GetString("Tuesday")),
+                    new KeyedComboBoxItem(2, Catalog.GetString("Wednesday")),
+                    new KeyedComboBoxItem(3, Catalog.GetString("Thursday")),
+                    new KeyedComboBoxItem(4, Catalog.GetString("Friday")),
+                    new KeyedComboBoxItem(5, Catalog.GetString("Saturday")),
+                    new KeyedComboBoxItem(6, Catalog.GetString("Sunday")),
                 };
 
                 comboBoxStartSeason.Items.AddRange(Seasons);
@@ -196,7 +198,7 @@ namespace ORTS
                         continue;
 
                     // Remove the product name from the tool's name and localise.
-                    var toolName = catalog.GetString(toolInfo.FileDescription.Replace(Application.ProductName, "").Trim());
+                    var toolName = Catalog.GetString(toolInfo.FileDescription.Replace(Application.ProductName, "").Trim());
 
                     // Create menu item to execute tool.
                     tools.Add(new ToolStripMenuItem(toolName, null, (Object sender2, EventArgs e2) =>
@@ -318,9 +320,9 @@ namespace ORTS
             }, _ =>
             {
                 if (UpdateManager.LastCheckError != null)
-                    linkLabelUpdate.Text = catalog.GetString("Update check failed");
+                    linkLabelUpdate.Text = Catalog.GetString("Update check failed");
                 else if (UpdateManager.LastUpdate != null && UpdateManager.LastUpdate.Version != VersionInfo.Version)
-                    linkLabelUpdate.Text = catalog.GetStringFmt("Update to {0}", UpdateManager.LastUpdate.Version);
+                    linkLabelUpdate.Text = Catalog.GetStringFmt("Update to {0}", UpdateManager.LastUpdate.Version);
                 else
                     linkLabelUpdate.Text = "";
                 linkLabelUpdate.Enabled = true;
@@ -348,7 +350,7 @@ namespace ORTS
                 catch { }
             }
 
-            Localizer.Localize(this, catalog);
+            Localizer.Localize(this, Catalog);
         }
 
         void RestartMenu()
@@ -506,7 +508,7 @@ namespace ORTS
             string tmp = text;
             if (tmp.Length < 4 || tmp.Length > 10 || tmp.Contains("\"") || tmp.Contains("\'") || tmp.Contains(" ") || tmp.Contains("-") || Char.IsDigit(tmp, 0))
             {
-                MessageBox.Show(catalog.GetString("User name must be 4-10 characters long, cannot contain space, ', \" or - and must not start with a digit."), Application.ProductName);
+                MessageBox.Show(Catalog.GetString("User name must be 4-10 characters long, cannot contain space, ', \" or - and must not start with a digit."), Application.ProductName);
                 return false;
             }
             return true;
@@ -519,7 +521,7 @@ namespace ORTS
         {
             if (UpdateManager.LastCheckError != null)
             {
-                MessageBox.Show(catalog.GetStringFmt("The update check failed due to an error:\n\n{0}", UpdateManager.LastCheckError), Application.ProductName);
+                MessageBox.Show(Catalog.GetStringFmt("The update check failed due to an error:\n\n{0}", UpdateManager.LastCheckError), Application.ProductName);
                 return;
             }
 
@@ -527,7 +529,7 @@ namespace ORTS
 
             if (UpdateManager.LastUpdateError != null)
             {
-                MessageBox.Show(catalog.GetStringFmt("The update failed due to an error:\n\n{0}", UpdateManager.LastUpdateError), Application.ProductName);
+                MessageBox.Show(Catalog.GetStringFmt("The update failed due to an error:\n\n{0}", UpdateManager.LastUpdateError), Application.ProductName);
                 return;
             }
         }
@@ -740,35 +742,43 @@ namespace ORTS
         #endregion
 
         #region Folder list
-        void LoadFolderList()
+        public void LoadFolderList()
         {
             var initialized = Initialized;
             Folders.Clear();
             ShowFolderList();
 
-            FolderLoader = new Task<List<Folder>>(this, () => Folder.GetFolders(Settings).OrderBy(f => f.Name).ToList(), (folders) =>
+            if (DoWithTask)
             {
-                Folders = folders;
-                ShowFolderList();
-                if (Folders.Count > 0)
-                    comboBoxFolder.Focus();
-
-                if (!initialized && Folders.Count == 0)
+                FolderLoader = new Task<List<Folder>>(this, () => Folder.GetFolders(Settings).OrderBy(f => f.Name).ToList(), (folders) =>
                 {
-                    using (var form = new OptionsForm(Settings, UpdateManager, true))
+                    Folders = folders;
+                    ShowFolderList();
+                    if (Folders.Count > 0)
+                        comboBoxFolder.Focus();
+
+                    if (!initialized && Folders.Count == 0)
                     {
-                        switch (form.ShowDialog(this))
+                        using (var form = new OptionsForm(Settings, UpdateManager, true))
                         {
-                            case DialogResult.OK:
-                                LoadFolderList();
-                                break;
-                            case DialogResult.Retry:
-                                RestartMenu();
-                                break;
+                            switch (form.ShowDialog(this))
+                            {
+                                case DialogResult.OK:
+                                    LoadFolderList();
+                                    break;
+                                case DialogResult.Retry:
+                                    RestartMenu();
+                                    break;
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
+            else
+            {
+                Folders = Folder.GetFolders(Settings).OrderBy(f => f.Name).ToList();
+                ShowFolderList();
+            }
         }
 
         void ShowFolderList()
@@ -782,7 +792,7 @@ namespace ORTS
         #endregion
 
         #region Route list
-        void LoadRouteList()
+        public void LoadRouteList()
         {
             if (RouteLoader != null)
                 RouteLoader.Cancel();
@@ -795,12 +805,20 @@ namespace ORTS
             ShowStartAtList();
             ShowHeadToList();
 
-            var selectedFolder = SelectedFolder;
-            RouteLoader = new Task<List<Route>>(this, () => Route.GetRoutes(selectedFolder).OrderBy(r => r.ToString()).ToList(), (routes) =>
+            if (DoWithTask)
             {
-                Routes = routes;
+                var selectedFolder = SelectedFolder;
+                RouteLoader = new Task<List<Route>>(this, () => Route.GetRoutes(selectedFolder).OrderBy(r => r.ToString()).ToList(), (routes) =>
+                {
+                    Routes = routes;
+                    ShowRouteList();
+                });
+            }
+            else
+            {
+                Routes = Route.GetRoutes(SelectedFolder).OrderBy(r => r.ToString()).ToList();
                 ShowRouteList();
-            });
+            }
         }
 
         void ShowRouteList()
@@ -823,7 +841,7 @@ namespace ORTS
         #endregion
 
         #region Activity list
-        void LoadActivityList()
+        public void LoadActivityList()
         {
             if (ActivityLoader != null)
                 ActivityLoader.Cancel();
@@ -831,13 +849,21 @@ namespace ORTS
             Activities.Clear();
             ShowActivityList();
 
-            var selectedFolder = SelectedFolder;
-            var selectedRoute = SelectedRoute;
-            ActivityLoader = new Task<List<Activity>>(this, () => Activity.GetActivities(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (activities) =>
+            if (DoWithTask)
             {
-                Activities = activities;
+                var selectedFolder = SelectedFolder;
+                var selectedRoute = SelectedRoute;
+                ActivityLoader = new Task<List<Activity>>(this, () => Activity.GetActivities(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (activities) =>
+                {
+                    Activities = activities;
+                    ShowActivityList();
+                });
+            }
+            else
+            {
+                Activities = Activity.GetActivities(SelectedFolder, SelectedRoute).OrderBy(a => a.ToString()).ToList();
                 ShowActivityList();
-            });
+            }
         }
 
         void ShowActivityList()
@@ -864,7 +890,7 @@ namespace ORTS
         #endregion
 
         #region Consist lists
-        void LoadLocomotiveList()
+        public void LoadLocomotiveList()
         {
             if (ConsistLoader != null)
                 ConsistLoader.Cancel();
@@ -873,13 +899,22 @@ namespace ORTS
             ShowLocomotiveList();
             ShowConsistList();
 
-            var selectedFolder = SelectedFolder;
-            ConsistLoader = new Task<List<Consist>>(this, () => Consist.GetConsists(selectedFolder).OrderBy(a => a.ToString()).ToList(), (consists) =>
+            if (DoWithTask)
             {
-                Consists = consists;
+                var selectedFolder = SelectedFolder;
+                ConsistLoader = new Task<List<Consist>>(this, () => Consist.GetConsists(selectedFolder).OrderBy(a => a.ToString()).ToList(), (consists) =>
+                {
+                    Consists = consists;
+                    if (SelectedActivity == null || SelectedActivity is ExploreActivity)
+                        ShowLocomotiveList();
+                });
+            }
+            else
+            {
+                Consists = Consist.GetConsists(SelectedFolder).OrderBy(a => a.ToString()).ToList();
                 if (SelectedActivity == null || SelectedActivity is ExploreActivity)
                     ShowLocomotiveList();
-            });
+            }
         }
 
         void ShowLocomotiveList()
@@ -921,7 +956,7 @@ namespace ORTS
         #endregion
 
         #region Path lists
-        void LoadStartAtList()
+        public void LoadStartAtList()
         {
             if (PathLoader != null)
                 PathLoader.Cancel();
@@ -930,13 +965,22 @@ namespace ORTS
             ShowStartAtList();
             ShowHeadToList();
 
-            var selectedRoute = SelectedRoute;
-            PathLoader = new Task<List<Path>>(this, () => Path.GetPaths(selectedRoute, false).OrderBy(a => a.ToString()).ToList(), (paths) =>
+            if (DoWithTask)
             {
-                Paths = paths;
+                var selectedRoute = SelectedRoute;
+                PathLoader = new Task<List<Path>>(this, () => Path.GetPaths(selectedRoute, false).OrderBy(a => a.ToString()).ToList(), (paths) =>
+                {
+                    Paths = paths;
+                    if (SelectedActivity == null || SelectedActivity is ExploreActivity)
+                        ShowStartAtList();
+                });
+            }
+            else
+            {
+                Paths = Path.GetPaths(SelectedRoute, false).OrderBy(a => a.ToString()).ToList();
                 if (SelectedActivity == null || SelectedActivity is ExploreActivity)
                     ShowStartAtList();
-            });
+            }
         }
 
         void ShowStartAtList()
@@ -1016,7 +1060,7 @@ namespace ORTS
         #endregion
 
         #region Timetable Set list
-        void LoadTimetableSetList()
+        public void LoadTimetableSetList()
         {
             if (TimetableSetLoader != null)
                 TimetableSetLoader.Cancel();
@@ -1025,19 +1069,29 @@ namespace ORTS
 
             TimetableSets.Clear();
             ShowTimetableSetList();
-            var selectedFolder = SelectedFolder;
-            var selectedRoute = SelectedRoute;
-            TimetableSetLoader = new Task<List<TimetableInfo>>(this, () => TimetableInfo.GetTimetableInfo(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableSets) =>
-            {
-                TimetableSets = timetableSets;
-                ShowTimetableSetList();
-            });
 
-            TimetableWeatherFileLoader = new Task<List<WeatherFileInfo>>(this, () => WeatherFileInfo.GetTimetableWeatherFiles(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableWeatherFileSet) =>
+            if (DoWithTask) {
+                var selectedFolder = SelectedFolder;
+                var selectedRoute = SelectedRoute;
+                TimetableSetLoader = new Task<List<TimetableInfo>>(this, () => TimetableInfo.GetTimetableInfo(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableSets) =>
+                {
+                    TimetableSets = timetableSets;
+                    ShowTimetableSetList();
+                });
+
+                TimetableWeatherFileLoader = new Task<List<WeatherFileInfo>>(this, () => WeatherFileInfo.GetTimetableWeatherFiles(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableWeatherFileSet) =>
+                {
+                    TimetableWeatherFileSet = timetableWeatherFileSet;
+                    ShowTimetableWeatherSet();
+                });
+            }
+            else
             {
-                TimetableWeatherFileSet = timetableWeatherFileSet;
+                TimetableSets = TimetableInfo.GetTimetableInfo(SelectedFolder, SelectedRoute).OrderBy(a => a.ToString()).ToList();
+                ShowTimetableSetList();
+                TimetableWeatherFileSet = WeatherFileInfo.GetTimetableWeatherFiles(SelectedFolder, SelectedRoute).OrderBy(a => a.ToString()).ToList();
                 ShowTimetableWeatherSet();
-            });
+            }
         }
 
         void ShowTimetableSetList()
@@ -1077,7 +1131,7 @@ namespace ORTS
         #endregion
 
         #region Timetable list
-        void ShowTimetableList()
+        public void ShowTimetableList()
         {
             comboBoxTimetable.Items.Clear();
             if (SelectedTimetableSet != null)
@@ -1091,7 +1145,7 @@ namespace ORTS
         #endregion
 
         #region Timetable Train list
-        void ShowTimetableTrainList()
+        public void ShowTimetableTrainList()
         {
             comboBoxTimetableTrain.Items.Clear();
             if (SelectedTimetable != null)
@@ -1121,48 +1175,48 @@ namespace ORTS
             Win32.LockWindowUpdate(Handle);
             ClearDetails();
             if (SelectedRoute != null && SelectedRoute.Description != null)
-                ShowDetail(catalog.GetStringFmt("Route: {0}", SelectedRoute.Name), SelectedRoute.Description.Split('\n'));
+                ShowDetail(Catalog.GetStringFmt("Route: {0}", SelectedRoute.Name), SelectedRoute.Description.Split('\n'));
 
             if (radioButtonModeActivity.Checked)
             {
                 if (SelectedConsist != null && SelectedConsist.Locomotive != null && SelectedConsist.Locomotive.Description != null)
                 {
-                    ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedConsist.Locomotive.Name), SelectedConsist.Locomotive.Description.Split('\n'));
+                    ShowDetail(Catalog.GetStringFmt("Locomotive: {0}", SelectedConsist.Locomotive.Name), SelectedConsist.Locomotive.Description.Split('\n'));
                 }
                 if (SelectedActivity != null && SelectedActivity.Description != null)
                 {
-                    ShowDetail(catalog.GetStringFmt("Activity: {0}", SelectedActivity.Name), SelectedActivity.Description.Split('\n'));
-                    ShowDetail(catalog.GetString("Activity Briefing"), SelectedActivity.Briefing.Split('\n'));
+                    ShowDetail(Catalog.GetStringFmt("Activity: {0}", SelectedActivity.Name), SelectedActivity.Description.Split('\n'));
+                    ShowDetail(Catalog.GetString("Activity Briefing"), SelectedActivity.Briefing.Split('\n'));
                 }
                 else if (SelectedPath != null)
                 {
-                    ShowDetail(catalog.GetStringFmt("Path: {0}", SelectedPath.Name), new[] {
-                        catalog.GetStringFmt("Starting at: {0}", SelectedPath.Start),
-                        catalog.GetStringFmt("Heading to: {0}", SelectedPath.End)
+                    ShowDetail(Catalog.GetStringFmt("Path: {0}", SelectedPath.Name), new[] {
+                        Catalog.GetStringFmt("Starting at: {0}", SelectedPath.Start),
+                        Catalog.GetStringFmt("Heading to: {0}", SelectedPath.End)
                     });
                 }
             }
             if (radioButtonModeTimetable.Checked)
             {
                 if (SelectedTimetableSet != null)
-                    ShowDetail(catalog.GetStringFmt("Timetable set: {0}", SelectedTimetableSet), new string[0]);
+                    ShowDetail(Catalog.GetStringFmt("Timetable set: {0}", SelectedTimetableSet), new string[0]);
                     // Description not shown as no description is available for a timetable set.
 
                 if (SelectedTimetable != null)
-                    ShowDetail(catalog.GetStringFmt("Timetable: {0}", SelectedTimetable), SelectedTimetable.Briefing.Split('\n'));
+                    ShowDetail(Catalog.GetStringFmt("Timetable: {0}", SelectedTimetable), SelectedTimetable.Briefing.Split('\n'));
 
                 if (SelectedTimetableTrain != null)
                 {
-                    ShowDetail(catalog.GetStringFmt("Train: {0}", SelectedTimetableTrain), HideStartParameters(SelectedTimetableTrain.ToInfo()));
+                    ShowDetail(Catalog.GetStringFmt("Train: {0}", SelectedTimetableTrain), HideStartParameters(SelectedTimetableTrain.ToInfo()));
 
                     if (SelectedTimetableConsist != null)
                     {
-                        ShowDetail(catalog.GetStringFmt("Consist: {0}", SelectedTimetableConsist.Name), new string[0]);
+                        ShowDetail(Catalog.GetStringFmt("Consist: {0}", SelectedTimetableConsist.Name), new string[0]);
                         if (SelectedTimetableConsist.Locomotive != null && SelectedTimetableConsist.Locomotive.Description != null)
-                            ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedTimetableConsist.Locomotive.Name), SelectedTimetableConsist.Locomotive.Description.Split('\n'));
+                            ShowDetail(Catalog.GetStringFmt("Locomotive: {0}", SelectedTimetableConsist.Locomotive.Name), SelectedTimetableConsist.Locomotive.Description.Split('\n'));
                     }
                     if (SelectedTimetablePath != null)
-                        ShowDetail(catalog.GetStringFmt("Path: {0}", SelectedTimetablePath.Name), SelectedTimetablePath.ToInfo());
+                        ShowDetail(Catalog.GetStringFmt("Path: {0}", SelectedTimetablePath.Name), SelectedTimetablePath.ToInfo());
                 }
             }
 
@@ -1369,7 +1423,7 @@ namespace ORTS
             comboBox.SelectedIndex = 0;
         }
 
-        private class KeyedComboBoxItem
+        public class KeyedComboBoxItem
         {
             public readonly int Key;
             public readonly string Value;
