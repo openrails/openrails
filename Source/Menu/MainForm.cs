@@ -591,14 +591,6 @@ namespace ORTS
             }
         }
 
-        void buttonDownloadContent_Click(object sender, EventArgs e)
-        {
-            using (var form = new DownloadContentForm(Settings))
-            {
-                form.ShowDialog(this);
-            }
-        }
-        
         void buttonStart_Click(object sender, EventArgs e)
         {
             SaveOptions();
