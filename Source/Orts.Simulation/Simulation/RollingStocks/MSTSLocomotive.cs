@@ -2401,7 +2401,7 @@ namespace Orts.Simulation.RollingStocks
                 AverageForceN = w * AverageForceN + (1 - w) * TractiveForceN;
             }
 
-            ApplyDirectionToTractiveForce(ref TractiveForceN);
+            ApplyDirectionToTractiveForce(ref TractiveForceN, 0);
 
             // Calculate the total tractive force for the locomotive - ie Traction + Dynamic Braking force.
             // Note typically only one of the above will only ever be non-zero at the one time.
@@ -2456,7 +2456,7 @@ namespace Orts.Simulation.RollingStocks
         /// <summary>
         /// This function applies a sign to the motive force as a function of the direction of the train.
         /// </summary>
-        protected virtual void ApplyDirectionToTractiveForce(ref float tractiveForceN)
+        protected virtual void ApplyDirectionToTractiveForce(ref float tractiveForceN, int numberofengine )
         {
             if (Train.IsPlayerDriven)
             {
