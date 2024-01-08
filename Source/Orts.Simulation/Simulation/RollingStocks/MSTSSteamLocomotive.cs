@@ -5588,7 +5588,7 @@ namespace Orts.Simulation.RollingStocks
             // only set advanced wheel slip when advanced adhesion, and simplecontrols/physics is not set and is in the the player train, AI locomotive will not work to this model. 
             // Don't use slip model when train is in auto pilot
             {
-                if (SteamEngineType != SteamEngineTypes.Geared || SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                if ((SteamEngineType == SteamEngineTypes.Compound || SteamEngineType == SteamEngineTypes.Simple) && SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
                 {
 
                     float slipCutoffPressureAtmPSI;
@@ -5901,7 +5901,7 @@ namespace Orts.Simulation.RollingStocks
 
                     if (SteamEngines[numberofengine].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
                     {
-                        GearRatioAdjusted = SteamEngines[numberofengine].BoosterCutoff;
+                        GearRatioAdjusted = SteamEngines[numberofengine].BoosterGearRatio;
                     }
                     else
                     {
