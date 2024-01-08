@@ -6059,7 +6059,7 @@ namespace Orts.Simulation.RollingStocks
             // Update tractive effort across all steam engines
             for (int i = 0; i < SteamEngines.Count; i++)
             {
-                ApplyDirectionToTractiveForce(ref SteamEngines[i].TractiveForceN);
+                ApplyDirectionToTractiveForce(ref SteamEngines[i].TractiveForceN, i);
 
                 TractiveForceN += SteamEngines[i].TractiveForceN;
 
@@ -6119,6 +6119,45 @@ namespace Orts.Simulation.RollingStocks
                 TractiveForceN = 0;
             }
 
+        }
+
+
+        /// <summary>
+        /// This function applies a sign to the motive force as a function of the direction of the train.
+        /// </summary>
+        protected override void ApplyDirectionToTractiveForce(ref float tractiveForceN, int numberofengine)
+        {
+            if (Train.IsPlayerDriven)
+            {
+                // If booster engine tractive force will only ever be in the forward (+ve) direction
+                if (SteamEngines[numberofengine].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                    return;
+
+                switch (Direction)
+                {
+                    case Direction.Forward:
+                        //tractiveForceN *= 1;     //Not necessary
+                        break;
+                    case Direction.Reverse:
+                        tractiveForceN *= -1;
+                        break;
+                    case Direction.N:
+                    default:
+                        tractiveForceN *= 0;
+                        break;
+                }
+            }
+            else // for AI locomotives
+            {
+                switch (Direction)
+                {
+                    case Direction.Reverse:
+                        tractiveForceN *= -1;
+                        break;
+                    default:
+                        break;
+                }
+            }// end AI locomotive            
         }
 
 
