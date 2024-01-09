@@ -1564,12 +1564,12 @@ namespace Orts.Simulation.RollingStocks
                     {
                         // Based upon the AAR formula described in Railway Mechanical Engineer - February 1942 -
                         //    https://archive.org/details/sim_railway-locomotives-and-cars_1942-02_116_2/page/76/mode/2up?q=booster
-                        // TE = C x P x d^2 x S x R / D - where P = boiler pressure, d = cylinder diam, S = cyl stroke, D = drive wheel diam, r = gear ratio
+                        // TE = C x P x d^2 x S x r / D - where P = boiler pressure, d = cylinder diam, S = cyl stroke, D = drive wheel diam, r = gear ratio
                         // C = 0.8 for 75% cutoff, 0.774 for 70% cutoff, 0.73 for 50% cutoff. This can be modelled as TR = 0.2629 * cutoff + 0.5971
 
                         float Tractiveratio = 0.2629f * SteamEngines[i].BoosterCutoff + 0.5971f;
 
-                        SteamEngines[i].MaxTractiveEffortLbf = SteamEngines[i].NumberCylinders / 2.0f * Tractiveratio * MaxBoilerPressurePSI * Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersStrokeM) * SteamEngines[i].BoosterGearRatio / (Me.ToIn(SteamEngines[i].AttachedAxle.WheelRadiusM) * 2.0f);
+                        SteamEngines[i].MaxTractiveEffortLbf = Tractiveratio * MaxBoilerPressurePSI * Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersStrokeM) * SteamEngines[i].BoosterGearRatio / (Me.ToIn(SteamEngines[i].AttachedAxle.WheelRadiusM) * 2.0f);
                     }
                 }
 
@@ -5908,7 +5908,7 @@ namespace Orts.Simulation.RollingStocks
                         GearRatioAdjusted = MotiveForceGearRatio;
                     }
 
-                    SteamEngines[numberofengine].TractiveForceN = N.FromLbf((SteamEngines[numberofengine].NumberCylinders / 2.0f) * (Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) / (2.0f * Me.ToIn(DriverWheelRadiusM))) * (SteamEngines[numberofengine].MeanEffectivePressurePSI * CylinderEfficiencyRate) * GearRatioAdjusted);
+                    SteamEngines[numberofengine].TractiveForceN = N.FromLbf( (SteamEngines[numberofengine].NumberCylinders / 2.0f) * (SteamEngines[numberofengine].MeanEffectivePressurePSI * CylinderEfficiencyRate) * GearRatioAdjusted) *(Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) / (2.0f * Me.ToIn(SteamEngines[numberofengine].AttachedAxle.WheelRadiusM)));
 
                     // Force tractive effort to zero if throttle is closed, or if a geared steam locomotive in neutral gear. MEP calculation is not allowing it to go to zero
                     if (locomotivethrottle < 0.001 || (SteamEngineType == SteamEngineTypes.Geared && SteamGearPosition == 0))
@@ -5966,7 +5966,7 @@ namespace Orts.Simulation.RollingStocks
                         SteamEngines[numberofengine].MeanEffectivePressurePSI *= pistonforcedecay; // Decrease mep once piston critical speed is exceeded
                     }
 
-                    SteamEngines[numberofengine].TractiveForceN = N.FromLbf((SteamEngines[numberofengine].NumberCylinders / 2.0f) * (Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) / (2.0f * Me.ToIn(DriverWheelRadiusM))) * (SteamEngines[numberofengine].MeanEffectivePressurePSI * CylinderEfficiencyRate) * MotiveForceGearRatio);
+                    SteamEngines[numberofengine].TractiveForceN = N.FromLbf((SteamEngines[numberofengine].NumberCylinders / 2.0f) * (Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) / (2.0f * Me.ToIn(SteamEngines[numberofengine].AttachedAxle.WheelRadiusM))) * (SteamEngines[numberofengine].MeanEffectivePressurePSI * CylinderEfficiencyRate) * MotiveForceGearRatio);
 
                     // Force tractive effort to zero if throttle is closed, or if a geared steam locomotive in neutral gear. MEP calculation is not allowing it to go to zero
                     if (locomotivethrottle < 0.001 || (SteamEngineType == SteamEngineTypes.Geared && SteamGearPosition == 0))
