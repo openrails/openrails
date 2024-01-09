@@ -2564,7 +2564,16 @@ namespace Orts.Simulation.RollingStocks
             if (CylinderAdvancedSteamEffects) // For advanced steam effects process each cylinder individually -
                                               // - all ENG files will need to be changed.
             {
-                var TotalNumberCyindersEng1 = SteamEngines[0].NumberCylinders + SteamEngines[0].LPNumberCylinders;
+                var TotalNumberCyindersEng1 = 0;
+
+                if (SteamEngineType == SteamEngineTypes.Compound)
+                {
+                    TotalNumberCyindersEng1 = SteamEngines[0].NumberCylinders + SteamEngines[0].LPNumberCylinders;
+                }
+                else
+                {
+                    TotalNumberCyindersEng1 = SteamEngines[0].NumberCylinders;
+                }
 
                 // Engine #1
                 // Find 
@@ -5545,6 +5554,9 @@ namespace Orts.Simulation.RollingStocks
                 // Geared locomotives will have to take into account gearing ratio. 
                 RawCalculatedCylinderSteamUsageLBpS = SteamEngines[numberofengine].NumberCylinders * DrvWheelRevRpS * MotiveForceGearRatio * CylStrokesPerCycle * RawCylinderSteamWeightLbs;
                 CalculatedCylinderSteamUsageLBpS = RawCalculatedCylinderSteamUsageLBpS * SuperheaterSteamUsageFactor;
+
+
+         //       Trace.TraceInformation("Steam Consumption - Eng# {0} Calc {1} Raw {2} Factor {3}", numberofengine, pS.TopH(CalculatedCylinderSteamUsageLBpS), pS.TopH(RawCalculatedCylinderSteamUsageLBpS), SuperheaterSteamUsageFactor);
             }
 
             #endregion
