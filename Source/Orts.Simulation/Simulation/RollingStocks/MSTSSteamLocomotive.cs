@@ -291,6 +291,10 @@ namespace Orts.Simulation.RollingStocks
         SmoothedData BurnRateSmoothKGpS = new SmoothedData(150); // Changes in BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat.
         float FuelRateSmoothed = 0.0f;     // Smoothed Fuel Rate
 
+        int NumberofMotiveForceValues = 36;
+        float[] MotiveForceAverageN = new float[36];
+        float DisplayAverageMotiveForceN;
+
         public Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies.SteamEngines SteamEngines;
 
         // steam performance reporting
@@ -2548,6 +2552,11 @@ namespace Orts.Simulation.RollingStocks
 
         }
 
+
+
+
+
+
         /// <summary>
         /// Update variables related to audiovisual effects (sound, steam)
         /// </summary>
@@ -3060,6 +3069,8 @@ namespace Orts.Simulation.RollingStocks
             BoosterCylinderSteamExhaust02SteamVolumeM3pS = BoosterCylinderSteamExhaustOn && BoosterCylinderSteamExhaust02On ? (10.0f * BoosterSteamFraction) : 0.0f;
             BoosterCylinderSteamExhaust02SteamVelocityMpS = 100.0f;
 
+            Trace.TraceInformation("Booster Exhaust - ExhaustOn {0} Exhaust01On {1} Exhaust02On {2} ExhaustVolume01 {3} ExhaustVolume02 {4} SteamFraction {5} Speed {6}", BoosterCylinderSteamExhaustOn, BoosterCylinderSteamExhaust01On, BoosterCylinderSteamExhaust02On, BoosterCylinderSteamExhaust01SteamVolumeM3pS, BoosterCylinderSteamExhaust02SteamVolumeM3pS, BoosterSteamFraction, BoosterEngineSpeedRpM);
+
             // Booster Cylinder Steam Cylinder Cocks (automatic)
             BoosterCylinderCockSteam11VolumeMpS = BoosterCylinderCocksOn && BoosterCylinderCock11On ? (10.0f * BoosterSteamFraction) : 0.0f;
             BoosterCylinderCock11SteamVelocityMpS = 100.0f;
@@ -3219,13 +3230,14 @@ namespace Orts.Simulation.RollingStocks
                     variable[i] = Math.Abs((float)SteamEngines[i].AttachedAxle.AxleSpeedMpS / SteamEngines[i].AttachedAxle.WheelRadiusM / MathHelper.Pi * 5);
                 }
 
+                variable[i] = ThrottlePercent == 0 ? 0 : variable[i];
+
                 // overwrite Booster variable if in Idle or Run mode - gears not engaged
                 if (SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster && (SteamBoosterRunMode && !BoosterGearsEngaged) || SteamBoosterIdleMode)
                 {
                     variable[i] = BoosterEngineSpeedRpM;
                 }
 
-                    variable[i] = ThrottlePercent == 0 ? 0 : variable[i];
             }
 
             // Set variables for each engine
@@ -6111,6 +6123,9 @@ namespace Orts.Simulation.RollingStocks
 
             DisplayTractiveForceN = TractiveForceN;
 
+            DisplayAverageMotiveForceN = AverageMotiveForce(elapsedClockSeconds);
+
+
             MotiveForceSmoothN.Update(elapsedClockSeconds, MotiveForceN);
             MotiveForceSmoothedN = MotiveForceSmoothN.SmoothedValue;
             if (float.IsNaN(MotiveForceN))
@@ -6172,6 +6187,29 @@ namespace Orts.Simulation.RollingStocks
             }// end AI locomotive            
         }
 
+
+        /// <summary>
+        /// Normalise booster engine crank angle so that it is a value between 0 and 360 starting at the real crank angle difference
+        /// </summary>
+        private float AverageMotiveForce(float elapsedClockSeconds)
+        {
+            float AverageTotal = 0;
+            float AverageForceN = 0;
+
+            for (int i = 0; i < NumberofMotiveForceValues - 2; i++)
+            {
+                
+                MotiveForceAverageN[i] = MotiveForceAverageN[i + 1];
+                AverageTotal += MotiveForceAverageN[i+1];
+
+            }
+            MotiveForceAverageN[NumberofMotiveForceValues-1] = TractiveForceN;
+            AverageTotal += MotiveForceAverageN[NumberofMotiveForceValues-1];
+
+            AverageForceN = AverageTotal / NumberofMotiveForceValues;
+
+            return AverageForceN;
+        }
 
         /// <summary>
         /// Normalise booster engine crank angle so that it is a value between 0 and 360 starting at the real crank angle difference
@@ -7829,7 +7867,7 @@ namespace Orts.Simulation.RollingStocks
                     Simulator.Catalog.GetString("M/Press"),
                     MainResPressurePSI);
 
-                status.AppendFormat("\n{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
+                status.AppendFormat("\n{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\n",
                 Simulator.Catalog.GetString("CylE:"),
                 Simulator.Catalog.GetString("#1"),
                 CylinderSteamExhaust1On ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
@@ -7838,7 +7876,12 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetString("#3"),
                 CylinderSteamExhaust3On ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                 Simulator.Catalog.GetString("#4"),
-                CylinderSteamExhaust4On ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
+                CylinderSteamExhaust4On ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("AvMF"),
+                FormatStrings.FormatForce(MotiveForceN, IsMetric)
+
+
+                );
 
             }
 
