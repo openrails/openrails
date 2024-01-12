@@ -60,6 +60,7 @@ namespace ORTS
             this.textBoxRoute = new System.Windows.Forms.RichTextBox();
             this.infoButton = new System.Windows.Forms.Button();
             this.startButton = new System.Windows.Forms.Button();
+            this.deleteButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewDownloadContent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxRoute)).BeginInit();
             this.SuspendLayout();
@@ -135,6 +136,7 @@ namespace ORTS
             // 
             // DownloadContentButton
             // 
+            this.DownloadContentButton.Enabled = false;
             this.DownloadContentButton.Location = new System.Drawing.Point(3, 507);
             this.DownloadContentButton.Name = "DownloadContentButton";
             this.DownloadContentButton.Size = new System.Drawing.Size(75, 23);
@@ -173,6 +175,7 @@ namespace ORTS
             // 
             // startButton
             // 
+            this.startButton.Enabled = false;
             this.startButton.Location = new System.Drawing.Point(89, 507);
             this.startButton.Name = "startButton";
             this.startButton.Size = new System.Drawing.Size(75, 23);
@@ -181,11 +184,23 @@ namespace ORTS
             this.startButton.UseVisualStyleBackColor = true;
             this.startButton.Click += new System.EventHandler(this.StartButton_Click);
             // 
+            // deleteButton
+            // 
+            this.deleteButton.Enabled = false;
+            this.deleteButton.Location = new System.Drawing.Point(175, 507);
+            this.deleteButton.Name = "deleteButton";
+            this.deleteButton.Size = new System.Drawing.Size(75, 23);
+            this.deleteButton.TabIndex = 9;
+            this.deleteButton.Text = "Delete";
+            this.deleteButton.UseVisualStyleBackColor = true;
+            this.deleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
+            // 
             // DownloadContentForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(824, 542);
+            this.Controls.Add(this.deleteButton);
             this.Controls.Add(this.startButton);
             this.Controls.Add(this.infoButton);
             this.Controls.Add(this.textBoxRoute);
@@ -221,5 +236,6 @@ namespace ORTS
         private RichTextBox textBoxRoute;
         private Button infoButton;
         private Button startButton;
+        private Button deleteButton;
     }
 }

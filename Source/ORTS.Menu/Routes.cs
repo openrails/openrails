@@ -30,7 +30,7 @@ namespace ORTS.Menu
         public readonly string Description;
         public readonly string Path;
 
-        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+        GettextResourceManager Catalog = new GettextResourceManager("ORTS.Menu");
 
         Route(string path)
         {
@@ -46,14 +46,14 @@ namespace ORTS.Menu
                 }
                 catch
                 {
-                    Name = "<" + catalog.GetString("load error:") + " " + System.IO.Path.GetFileName(path) + ">";
+                    Name = "<" + Catalog.GetString("load error:") + " " + System.IO.Path.GetFileName(path) + ">";
                 }
-                if (string.IsNullOrEmpty(Name)) Name = "<" + catalog.GetString("unnamed:") + " " + System.IO.Path.GetFileNameWithoutExtension(path) + ">";
+                if (string.IsNullOrEmpty(Name)) Name = "<" + Catalog.GetString("unnamed:") + " " + System.IO.Path.GetFileNameWithoutExtension(path) + ">";
                 if (string.IsNullOrEmpty(Description)) Description = null;
             }
             else
             {
-                Name = "<" + catalog.GetString("missing:") + " " + System.IO.Path.GetFileName(path) + ">";
+                Name = "<" + Catalog.GetString("missing:") + " " + System.IO.Path.GetFileName(path) + ">";
             }
             Path = path;
         }

@@ -71,13 +71,12 @@ namespace ORTS
             InfoTempFilename = Path.ChangeExtension(ImageTempFilename, "html");
         }
 
+        #region SelectionChanged
         private void dataGridViewDownloadContent_SelectionChanged(object sender, EventArgs e)
         {
+            DisableButtons();
+
             RouteName = dataGridViewDownloadContent.CurrentRow.Cells[0].Value.ToString();
-
-            // install button
-
-            DownloadContentButton.Enabled = string.IsNullOrWhiteSpace(Routes[RouteName].DateInstalled);
 
             // picture box handling
 
@@ -123,26 +122,16 @@ namespace ORTS
                 ImageThread.Start();
             }
 
-
             // text box with description
 
             textBoxRoute.Text = Routes[RouteName].Description;
 
-            // start button
-
-            startButton.Enabled = false;
-
-            if (!string.IsNullOrWhiteSpace(Routes[RouteName].DateInstalled))
-            {
-                // route installed               
-                if (!string.IsNullOrWhiteSpace(Routes[RouteName].Start.Route))
-                {
-                    // start information available
-                    startButton.Enabled = true;
-                }
-            }
+            // buttons
+            EnableButtons();
         }
+        #endregion
 
+        #region InstallPathButton
         private void InstallPathButton_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog folderBrowser = new FolderBrowserDialog())
@@ -156,12 +145,16 @@ namespace ORTS
                 }
             }
         }
+        #endregion
 
+        #region DownloadContentButton
         private void DownloadContentButton_Click(object sender, EventArgs e)
         {
             string installPath = InstallPathTextBox.Text;
             string installPathRoute = Path.Combine(installPath, RouteName);
             string message;
+
+            DisableButtons();
 
             // various checks for the directory where the route is installed
 
@@ -171,15 +164,16 @@ namespace ORTS
 
             if (size > (dInfo.AvailableFreeSpace * 1.1))
             {
-                message = Catalog.GetStringFmt("Not enough diskspace on drive {0} ({1}), available {2} kB, needed {3} kB, still continue?", 
-                    dInfo.Name, 
+                message = Catalog.GetStringFmt("Not enough diskspace on drive {0} ({1}), available {2} kB, needed {3} kB, still continue?",
+                    dInfo.Name,
                     dInfo.VolumeLabel,
-                    (dInfo.AvailableFreeSpace / 1024).ToString("N0"), 
+                    (dInfo.AvailableFreeSpace / 1024).ToString("N0"),
                     (size / 1024).ToString("N0"));
 
                 if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
                 {
                     // cancelled
+                    EnableButtons();
                     return;
                 }
             }
@@ -189,6 +183,7 @@ namespace ORTS
             if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
             {
                 // cancelled
+                EnableButtons();
                 return;
             }
 
@@ -196,6 +191,7 @@ namespace ORTS
             {
                 message = Catalog.GetStringFmt("Directory \"{0}\" does not exist", installPath);
                 MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                EnableButtons();
                 return;
             }
 
@@ -210,16 +206,18 @@ namespace ORTS
                     message = Catalog.GetStringFmt("Directory \"{0}\" cannot be created: {1}",
                         installPathRoute, createDirectoryException.Message);
                     MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    EnableButtons();
                     return;
                 }
             }
-            else 
+            else
             {
                 if ((Directory.GetFiles(installPathRoute).Length != 0) ||
                     (Directory.GetDirectories(installPathRoute).Length != 0))
                 {
                     message = Catalog.GetStringFmt("Directory \"{0}\" exists and is not empty", installPathRoute);
                     MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    EnableButtons();
                     return;
                 }
             }
@@ -239,6 +237,7 @@ namespace ORTS
 
             if (!downloadRoute(installPathRoute))
             {
+                EnableButtons();
                 return;
             }
 
@@ -246,6 +245,7 @@ namespace ORTS
 
             if (!insertRowInOptions(installPathRoute))
             {
+                EnableButtons();
                 return;
             }
 
@@ -261,10 +261,9 @@ namespace ORTS
             if (!string.IsNullOrWhiteSpace(Routes[RouteName].Start.Route))
             {
                 // start information available
-                startButton.Enabled = true;
                 MessageBox.Show(Catalog.GetString("Route installed, press 'Start' button to start Open Rails for this route."),
                     Catalog.GetString("Done"), MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-            } 
+            }
             else
             {
                 // no start information available
@@ -280,6 +279,8 @@ namespace ORTS
                 // close this dialog
                 DialogResult = DialogResult.OK;
             }
+
+            EnableButtons();
         }
 
         private bool downloadRoute(string installPathRoute)
@@ -425,9 +426,10 @@ namespace ORTS
             // sometimes the route is located one directory level deeper, determine real installPathRoute
             string installPathRouteReal;
 
-            if (Directory.Exists(Path.Combine(installPathRoute, "routes"))) {
+            if (Directory.Exists(Path.Combine(installPathRoute, "routes")))
+            {
                 installPathRouteReal = installPathRoute;
-            } 
+            }
             else
             {
                 string[] directories = Directory.GetDirectories(installPathRoute);
@@ -442,7 +444,7 @@ namespace ORTS
                     installPathRouteReal = Path.Combine(installPathRoute, directories[indexDirectories]);
                 }
                 else
-                { 
+                {
                     string message = Catalog.GetString("Incorrect route, directory \"routes\" not found");
                     MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return false;
@@ -487,6 +489,8 @@ namespace ORTS
                     else
                     {
                         Settings.Folders.Folders[routeName] = installPathRouteReal;
+                        Routes[RouteName].ContentName = routeName;
+                        Routes[RouteName].ContentDirectory = installPathRouteReal;
                         updated = true;
                     }
                 }
@@ -494,6 +498,9 @@ namespace ORTS
             return true;
         }
 
+        #endregion
+
+        #region InfoButton
         private void InfoButton_Click(object sender, EventArgs e)
         {
 
@@ -528,7 +535,7 @@ namespace ORTS
                 if (route.Url.EndsWith("git"))
                 {
                     outputFile.WriteLine("<p>" + Catalog.GetString("Downloadable: GitHub format") + "<br>\n");
-                    outputFile.WriteLine(String.Format("- " + Catalog.GetString("From:") + "{0}<br>\n", route.Url));
+                    outputFile.WriteLine(string.Format("- " + Catalog.GetString("From:") + "{0}<br>\n", route.Url));
                     if (route.InstallSize > 0)
                     {
                         outputFile.WriteLine("- " + Catalog.GetStringFmt("Install size: {0} GB",
@@ -537,8 +544,8 @@ namespace ORTS
                 }
                 if (route.Url.EndsWith("zip"))
                 {
-                    outputFile.WriteLine(String.Format("<p>Downloadable: zip format<br>\n"));
-                    outputFile.WriteLine(String.Format("- From: {0}<br>\n", route.Url));
+                    outputFile.WriteLine(string.Format("<p>Downloadable: zip format<br>\n"));
+                    outputFile.WriteLine(string.Format("- From: {0}<br>\n", route.Url));
                     if (route.InstallSize > 0)
                     {
                         outputFile.WriteLine("- " + Catalog.GetStringFmt("Install size: {0} GB",
@@ -554,8 +561,10 @@ namespace ORTS
                 if (!string.IsNullOrWhiteSpace(route.DateInstalled))
                 {
                     outputFile.WriteLine("<p>" + Catalog.GetString("Installed") + ":<br>\n");
-                    outputFile.WriteLine(String.Format("- " + Catalog.GetString("at") + ": {0}<br>\n", route.DateInstalled));
-                    outputFile.WriteLine(String.Format("- " + Catalog.GetString("in:") + "\"{0}\"<br></p>\n", route.DirectoryInstalledIn));
+                    outputFile.WriteLine(string.Format("- " + Catalog.GetString("At") + ": {0}<br>\n", route.DateInstalled));
+                    outputFile.WriteLine(string.Format("- " + Catalog.GetString("In") + ": \"{0}\"<br>\n", route.DirectoryInstalledIn));
+                    outputFile.WriteLine(string.Format("- " + Catalog.GetString("Content name") + ": \"{0}\"<br>\n", route.ContentName));
+                    outputFile.WriteLine(string.Format("- " + Catalog.GetString("Content Directory") + ": \"{0}\"<br></p>\n", route.ContentDirectory));
                 }
 
                 outputFile.WriteLine("<p>" + Catalog.GetString("Start options") + ":<br>\n");
@@ -581,9 +590,13 @@ namespace ORTS
             // show html file in default browser
             System.Diagnostics.Process.Start(InfoTempFilename);
         }
+        #endregion
 
+        #region StartButton
         void StartButton_Click(object sender, EventArgs e)
         {
+            DisableButtons();
+
             Cursor.Current = Cursors.WaitCursor;
 
             RouteSettings.Route route = Routes[RouteName];
@@ -605,17 +618,18 @@ namespace ORTS
 
                 mainForm.LoadLocomotiveList();
                 mainForm.comboBoxLocomotive.SelectedIndex = determineSelectedIndex(mainForm.comboBoxLocomotive, route.Start.Locomotive);
-                mainForm.comboBoxConsist.SelectedIndex = determineSelectedIndex(mainForm.comboBoxConsist, route.Start.Consist) ;
+                mainForm.comboBoxConsist.SelectedIndex = determineSelectedIndex(mainForm.comboBoxConsist, route.Start.Consist);
 
                 mainForm.LoadStartAtList();
-                mainForm.comboBoxStartAt.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartAt, route.Start.StartingAt) ;
+                mainForm.comboBoxStartAt.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartAt, route.Start.StartingAt);
                 mainForm.comboBoxHeadTo.SelectedIndex = determineSelectedIndex(mainForm.comboBoxHeadTo, route.Start.HeadingTo);
 
                 mainForm.comboBoxStartTime.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartTime, route.Start.Time);
                 mainForm.comboBoxStartSeason.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartSeason, route.Start.Season);
                 mainForm.comboBoxStartWeather.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartWeather, route.Start.Weather);
             }
-            catch (StartNotFound error) {
+            catch (StartNotFound error)
+            {
 
                 string message = Catalog.GetStringFmt("Starting not possible, start from main form instead. Searching for '{0}'.", error.Message);
                 MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -635,6 +649,8 @@ namespace ORTS
 
             // close the MainForm dialog, starts OR
             Owner.DialogResult = DialogResult.OK;
+
+            EnableButtons();
         }
 
         private int determineSelectedIndex(ComboBox comboBox, string compareWith)
@@ -702,15 +718,90 @@ namespace ORTS
         }
 
         private class StartNotFound : Exception
-        { 
+        {
             public StartNotFound(string message)
                 : base(message)
             { }
         }
+        #endregion
+
+        #region DeleteButton
+        void DeleteButton_Click(object sender, EventArgs e)
+        {
+            DisableButtons();
+
+            string message = Catalog.GetStringFmt("Directory \"{0}\" is to be deleted, are you really sure?", Routes[RouteName].DirectoryInstalledIn);
+            if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
+            {
+                // cancelled
+                EnableButtons();
+                return;
+            }
+            Cursor.Current = Cursors.WaitCursor;
+
+            directoryDelete(Routes[RouteName].DirectoryInstalledIn);
+
+            if (Settings.Folders.Folders[Routes[RouteName].ContentName] == Routes[RouteName].ContentDirectory)
+            {
+                Settings.Folders.Folders.Remove(Routes[RouteName].ContentName);
+            }
+            Settings.Folders.Save();
+
+            Routes[RouteName].DirectoryInstalledIn = "";
+            Routes[RouteName].DateInstalled = "";
+            Settings.Routes.Save();
+
+            dataGridViewDownloadContent.CurrentRow.Cells[1].Value = "";
+
+            Refresh();
+
+            EnableButtons();
+        }
+
+        private void directoryDelete(string directoryName)
+        {
+            if (Directory.Exists(directoryName))
+            {
+                directoryRemoveReadOnlyFlags(directoryName);
+                Directory.Delete(directoryName, true);
+            }
+        }
+
+        private void directoryRemoveReadOnlyFlags(string directoryName)
+        {
+            foreach (string filename in Directory.GetFiles(directoryName))
+            {
+                FileInfo file = new FileInfo(filename);
+                file.IsReadOnly = false;
+            }
+            foreach (string subDirectoryName in Directory.GetDirectories(directoryName))
+            {
+                directoryRemoveReadOnlyFlags(subDirectoryName);
+            }
+        }
+        #endregion
+
+        private void DisableButtons()
+        {
+            DownloadContentButton.Enabled = false;
+            startButton.Enabled = false;
+            deleteButton.Enabled = false;
+        }
+
+        private void EnableButtons()
+        {
+            DownloadContentButton.Enabled = string.IsNullOrWhiteSpace(Routes[RouteName].DateInstalled);
+
+            startButton.Enabled = 
+                (!string.IsNullOrWhiteSpace(Routes[RouteName].DateInstalled)) &&
+                (!string.IsNullOrWhiteSpace(Routes[RouteName].Start.Route));
+
+            deleteButton.Enabled = !string.IsNullOrWhiteSpace(Routes[RouteName].DateInstalled);
+        }
 
         private void DownloadContentForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            try 
+            try
             {
                 if (pictureBoxRoute.Image != null)
                 {
@@ -720,11 +811,11 @@ namespace ORTS
                 File.Delete(ImageTempFilename);
                 File.Delete(InfoTempFilename);
             }
-            catch 
-            { 
+            catch
+            {
                 // just ignore, the files are in the user temp directory anyway
             }
         }
     }
-
 }
+

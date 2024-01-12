@@ -23,7 +23,6 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using LibGit2Sharp;
-using System.Windows.Forms;
 
 namespace ORTS.Settings
 {
@@ -44,25 +43,24 @@ namespace ORTS.Settings
         public class Route
         {
             public string DateInstalled;
-
             public string DirectoryInstalledIn;
-            public string Url;
+            public string ContentName;
+            public string ContentDirectory;
 
+            public string Url;
             public long DownloadSize;
             public long InstallSize;
-
             public string Image;
-
             public string Description;
-
             public string AuthorName;
             public string AuthorUrl;
-
             public string Screenshot;
 
             public Start Start;
 
-            public Route(string dateInstalled, string directoryInstalledIn, string url, 
+            public Route(string dateInstalled, string directoryInstalledIn,
+                string contentName, string contentDirectory,
+                string url, 
                 long downloadSize, long installSize, 
                 string image, string description,
                 string author, string authorUrl,
@@ -71,6 +69,8 @@ namespace ORTS.Settings
             { 
                 DateInstalled = dateInstalled;
                 DirectoryInstalledIn = directoryInstalledIn;
+                ContentName = contentName;
+                ContentDirectory = contentDirectory;
                 Url = url;
                 DownloadSize = downloadSize;
                 InstallSize = installSize;
@@ -181,7 +181,7 @@ namespace ORTS.Settings
                             if (!Routes.ContainsKey(routeName))
                             {
                                 Routes.Add(routeName, new RouteSettings.Route(
-                                    "", "", url, downloadSize, installSize, image, description, authorName, authorUrl, screenshot, start));
+                                    "", "", "", "", url, downloadSize, installSize, image, description, authorName, authorUrl, screenshot, start));
                             }
                             else
                             {
