@@ -291,9 +291,9 @@ namespace Orts.Simulation.RollingStocks
         SmoothedData BurnRateSmoothKGpS = new SmoothedData(150); // Changes in BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat.
         float FuelRateSmoothed = 0.0f;     // Smoothed Fuel Rate
 
-        int NumberofMotiveForceValues = 36;
-        float[] MotiveForceAverageN = new float[36];
-        float DisplayAverageMotiveForceN;
+        int NumberofTractiveForceValues = 36;
+        float[,] TractiveForceAverageN = new float[5, 37];
+        float AverageTractiveForceN;
 
         public Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies.SteamEngines SteamEngines;
 
@@ -3069,7 +3069,7 @@ namespace Orts.Simulation.RollingStocks
             BoosterCylinderSteamExhaust02SteamVolumeM3pS = BoosterCylinderSteamExhaustOn && BoosterCylinderSteamExhaust02On ? (10.0f * BoosterSteamFraction) : 0.0f;
             BoosterCylinderSteamExhaust02SteamVelocityMpS = 100.0f;
 
-            Trace.TraceInformation("Booster Exhaust - ExhaustOn {0} Exhaust01On {1} Exhaust02On {2} ExhaustVolume01 {3} ExhaustVolume02 {4} SteamFraction {5} Speed {6}", BoosterCylinderSteamExhaustOn, BoosterCylinderSteamExhaust01On, BoosterCylinderSteamExhaust02On, BoosterCylinderSteamExhaust01SteamVolumeM3pS, BoosterCylinderSteamExhaust02SteamVolumeM3pS, BoosterSteamFraction, BoosterEngineSpeedRpM);
+       //     Trace.TraceInformation("Booster Exhaust - ExhaustOn {0} Exhaust01On {1} Exhaust02On {2} ExhaustVolume01 {3} ExhaustVolume02 {4} SteamFraction {5} Speed {6}", BoosterCylinderSteamExhaustOn, BoosterCylinderSteamExhaust01On, BoosterCylinderSteamExhaust02On, BoosterCylinderSteamExhaust01SteamVolumeM3pS, BoosterCylinderSteamExhaust02SteamVolumeM3pS, BoosterSteamFraction, BoosterEngineSpeedRpM);
 
             // Booster Cylinder Steam Cylinder Cocks (automatic)
             BoosterCylinderCockSteam11VolumeMpS = BoosterCylinderCocksOn && BoosterCylinderCock11On ? (10.0f * BoosterSteamFraction) : 0.0f;
@@ -3235,9 +3235,8 @@ namespace Orts.Simulation.RollingStocks
                 // overwrite Booster variable if in Idle or Run mode - gears not engaged
                 if (SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster && (SteamBoosterRunMode && !BoosterGearsEngaged) || SteamBoosterIdleMode)
                 {
-                    variable[i] = BoosterEngineSpeedRpM;
+                    variable[i] = BoosterEngineSpeedRpM / MathHelper.Pi * 5;
                 }
-
             }
 
             // Set variables for each engine
@@ -5880,7 +5879,7 @@ namespace Orts.Simulation.RollingStocks
                             excessBalanceForcelbf *= -1;
                         }
 
-                        // For more then two cylinder eingines inertia is not required as it only applies to the geraing on each side and not the number of cylinders
+                        // For more then two cylinder eingines inertia is not required as it only applies to the gearing on each side and not the number of cylinders
                         if ((SteamEngines[numberofengine].NumberCylinders == 3 && i > 1) || (SteamEngines[numberofengine].NumberCylinders == 4 && (i == 1 || i == 3)))
                         {
                             excessBalanceForcelbf = 0;
@@ -5898,14 +5897,15 @@ namespace Orts.Simulation.RollingStocks
                         {
                             totalDrvWeightN += N.FromLbf(excessBalanceForcelbf - verticalThrustForcelbf);
                         }
-
-                        //                   Trace.TraceInformation("Excess {0} Vertical {1}", excessBalanceForcelbf, verticalThrustForcelbf);
                     }
 
                     SteamEngines[numberofengine].AttachedAxle.AxleWeightN = totalDrvWeightN + 9.81f * SteamEngines[numberofengine].AttachedAxle.WheelWeightKg;
                     SteamEngines[numberofengine].SteamStaticWheelForce = N.ToLbf(9.81f * SteamEngines[numberofengine].AttachedAxle.WheelWeightKg) * LocomotiveCoefficientFrictionHUD;
 
-                    SteamEngines[numberofengine].IndicatedHorsePowerHP = (N.ToLbf(SteamEngines[numberofengine].TractiveForceN) * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
+                    // Average tarctive force is calculated for display purposes as tractive force varies dramatically as the wheel rotates, and this is difficult to follow on HuD
+                    SteamEngines[numberofengine].AverageTractiveForceN = AverageTractiveForce(elapsedClockSeconds, numberofengine, NumberofTractiveForceValues);
+
+                    SteamEngines[numberofengine].IndicatedHorsePowerHP = (N.ToLbf(SteamEngines[numberofengine].AverageTractiveForceN) * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
 
                 }
                 else // typically this will be a booster or geared engine
@@ -6056,7 +6056,7 @@ namespace Orts.Simulation.RollingStocks
         }
 
         /// <summary>
-        /// Update the tractive force for the complete steam locomotive
+        /// Averages the tractive force for the steam locomotive as tractive force varies throught the full wheel revolution
         /// </summary>
         protected override void UpdateTractiveForce(float elapsedClockSeconds, float locomotivethrottle, float AbsSpeedMpS, float AbsWheelSpeedMpS)
         {
@@ -6123,9 +6123,6 @@ namespace Orts.Simulation.RollingStocks
 
             DisplayTractiveForceN = TractiveForceN;
 
-            DisplayAverageMotiveForceN = AverageMotiveForce(elapsedClockSeconds);
-
-
             MotiveForceSmoothN.Update(elapsedClockSeconds, MotiveForceN);
             MotiveForceSmoothedN = MotiveForceSmoothN.SmoothedValue;
             if (float.IsNaN(MotiveForceN))
@@ -6191,24 +6188,24 @@ namespace Orts.Simulation.RollingStocks
         /// <summary>
         /// Normalise booster engine crank angle so that it is a value between 0 and 360 starting at the real crank angle difference
         /// </summary>
-        private float AverageMotiveForce(float elapsedClockSeconds)
+        private float AverageTractiveForce(float elapsedClockSeconds, int enginenumber, int tractiveforcevalues)
         {
-            float AverageTotal = 0;
-            float AverageForceN = 0;
+            float AverageTractiveForceTotal = 0;
+            float AverageTractiveForceN = 0;
 
-            for (int i = 0; i < NumberofMotiveForceValues - 2; i++)
+            for (int i = 0; i < tractiveforcevalues - 1; i++)
             {
                 
-                MotiveForceAverageN[i] = MotiveForceAverageN[i + 1];
-                AverageTotal += MotiveForceAverageN[i+1];
-
+                TractiveForceAverageN[enginenumber, i] = TractiveForceAverageN[enginenumber, i + 1];
+                AverageTractiveForceTotal += TractiveForceAverageN[enginenumber, i+1];
             }
-            MotiveForceAverageN[NumberofMotiveForceValues-1] = TractiveForceN;
-            AverageTotal += MotiveForceAverageN[NumberofMotiveForceValues-1];
+            TractiveForceAverageN[enginenumber, tractiveforcevalues - 1] = SteamEngines[enginenumber].TractiveForceN;
 
-            AverageForceN = AverageTotal / NumberofMotiveForceValues;
+            AverageTractiveForceTotal += TractiveForceAverageN[enginenumber, tractiveforcevalues - 1];
 
-            return AverageForceN;
+            AverageTractiveForceN = AverageTractiveForceTotal / tractiveforcevalues;
+
+            return AverageTractiveForceN;
         }
 
         /// <summary>
@@ -7845,7 +7842,7 @@ namespace Orts.Simulation.RollingStocks
                         Simulator.Catalog.GetString("AForceN"),
                         FormatStrings.FormatForce(SteamEngines[i].AttachedAxle.CompensatedAxleForceN, IsMetric),
                         Simulator.Catalog.GetString("Tang(t)"),
-                        FormatStrings.FormatForce(SteamEngines[i].TractiveForceN, IsMetric),
+                        FormatStrings.FormatForce(SteamEngines[i].AverageTractiveForceN, IsMetric),
                         Simulator.Catalog.GetString("Static"),
                         FormatStrings.FormatForce(N.FromLbf(SteamEngines[i].SteamStaticWheelForce), IsMetric),
                         Simulator.Catalog.GetString("Coeff"),
@@ -7877,8 +7874,8 @@ namespace Orts.Simulation.RollingStocks
                 CylinderSteamExhaust3On ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                 Simulator.Catalog.GetString("#4"),
                 CylinderSteamExhaust4On ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
-                Simulator.Catalog.GetString("AvMF"),
-                FormatStrings.FormatForce(MotiveForceN, IsMetric)
+                Simulator.Catalog.GetString("AvTF"),
+                FormatStrings.FormatForce(AverageTractiveForceN, IsMetric)
 
 
                 );
