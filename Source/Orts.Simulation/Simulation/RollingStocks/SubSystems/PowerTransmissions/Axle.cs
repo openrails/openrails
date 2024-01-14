@@ -527,7 +527,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float BogieRigidWheelBaseM;
 
         /// <summary>
-        /// Axles in group of wheels
+        /// Number of drive axles in group of wheels
         /// </summary>
         public float NumAxles;
 

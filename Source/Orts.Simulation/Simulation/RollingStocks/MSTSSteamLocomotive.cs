@@ -1976,7 +1976,7 @@ namespace Orts.Simulation.RollingStocks
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
-                if (SteamEngines[i].MaxIndicatedHorsePowerHP == 0 && SteamEngines.Count == 0 && MaxIndicatedHorsePowerHP != 0) 
+                if (SteamEngines[i].MaxIndicatedHorsePowerHP == 0 && SteamEngines.Count == 1 && MaxIndicatedHorsePowerHP != 0) 
                     // if MaxIHP is not set in ENG file, then set a default
                 {
                     SteamEngines[i].MaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
@@ -1985,16 +1985,14 @@ namespace Orts.Simulation.RollingStocks
                 { 
                     // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
                     SteamEngines[i].MaxIndicatedHorsePowerHP = MaxSpeedFactor * (SteamEngines[i].MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;  // To be checked what MaxTractive Effort is for the purposes of this formula.
+                    MaxIndicatedHorsePowerHP += SteamEngines[i].MaxIndicatedHorsePowerHP;
                 }
-
-                MaxIndicatedHorsePowerHP += SteamEngines[i].MaxIndicatedHorsePowerHP;
             }
-
 
             // Check to see if MaxIHP is in fact limited by the boiler
             if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
             {
-                MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
+             //   MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler - No need to limit IHP, naturally limited by steam production?????
                 ISBoilerLimited = true;
             }
             else
@@ -6098,6 +6096,14 @@ namespace Orts.Simulation.RollingStocks
                     MotiveForceN += SteamEngines[i].TractiveForceN;
                 }
 
+                // Temporary code to compare TE and IHP
+
+                SteamEngines[i].CompareTractiveForceN = N.FromLbf((SteamEngines[i].NumberCylinders / 2.0f) * (Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersStrokeM) / (2.0f * Me.ToIn(SteamEngines[i].AttachedAxle.WheelRadiusM))) * (SteamEngines[i].MeanEffectivePressurePSI * CylinderEfficiencyRate) * MotiveForceGearRatio);
+
+                SteamEngines[i].CompareIndicatedHorsePower = (N.ToLbf(SteamEngines[i].TractiveForceN) * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
+
+
+
                 // Set Max Power equal to max IHP
                 MaxPowerW += W.FromHp(SteamEngines[i].MaxIndicatedHorsePowerHP);
 
@@ -6293,9 +6299,9 @@ namespace Orts.Simulation.RollingStocks
                     float TotalWheelMomentofInertia = WheelMomentInertia + AxleMomentInertia; // Total MoI for generic wheelset
                     float TotalMomentInertia = TotalWheelMomentofInertia;
                     axle.InertiaKgm2 = TotalMomentInertia;
-                    axle.DampingNs = axle.AxleWeightN / 200;
+                    axle.DampingNs = linkedEngine.AttachedAxle.AxleWeightN / 200;
                     // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches) - This should reduce wheel force
-                    axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersStrokeM) / (Me.ToIn(axle.WheelRadiusM * 2.0f)));
+                    axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersStrokeM) / (Me.ToIn(linkedEngine.AttachedAxle.WheelRadiusM * 2.0f)));
                 }
 
                 else // normal locomotive
@@ -6312,10 +6318,10 @@ namespace Orts.Simulation.RollingStocks
                     float AxleMomentInertia = (linkedEngine.AttachedAxle.WheelWeightKg * AxleRadiusM * AxleRadiusM) / 2.0f;
                     float TotalWheelMomentofInertia = WheelMomentInertia + AxleMomentInertia; // Total MoI for generic wheelset
 
-                    SteamDrvWheelWeightLbs = Kg.ToLb(DrvWheelWeightKg / axle.NumberWheelAxles); // Calculate the weight per axle (used in MSTSLocomotive for friction calculatons)
+                    SteamDrvWheelWeightLbs = Kg.ToLb(linkedEngine.AttachedAxle.WheelWeightKg / linkedEngine.AttachedAxle.NumAxles); // Calculate the weight per axle (used in MSTSLocomotive for friction calculatons)
 
                     // The moment of inertia needs to be increased by the number of wheel sets
-                    TotalWheelMomentofInertia *= axle.NumberWheelAxles;
+                    TotalWheelMomentofInertia *= linkedEngine.AttachedAxle.NumAxles;
 
                     // the inertia of the coupling rods can also be added
                     // Assume rods weigh approx 1500 lbs
@@ -6331,7 +6337,7 @@ namespace Orts.Simulation.RollingStocks
                     axle.InertiaKgm2 = TotalMomentInertia;
                     axle.DampingNs = axle.AxleWeightN / 200;
                     // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches) - This should reduce wheel force
-                    axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersStrokeM) / (Me.ToIn(axle.WheelRadiusM * 2.0f)));
+                    axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersStrokeM) / (Me.ToIn(linkedEngine.AttachedAxle.WheelRadiusM * 2.0f)));
 
                 }
 
@@ -7775,7 +7781,9 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetString("Drawbar"),
                 FormatStrings.FormatPower(W.FromHp(DrawbarHorsePowerHP), IsMetric, false, false),
                 Simulator.Catalog.GetString("BlrLmt"),
-                ISBoilerLimited ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
+                ISBoilerLimited ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
+
+                );
 
                 if (SteamEngines.Count > 1)
                 {
@@ -7788,9 +7796,26 @@ namespace Orts.Simulation.RollingStocks
                          Simulator.Catalog.GetString("TheorTE"),
                          FormatStrings.FormatForce(N.FromLbf(SteamEngines[i].MaxTractiveEffortLbf), IsMetric),
                          Simulator.Catalog.GetString("TE"),
-                         FormatStrings.FormatForce(SteamEngines[i].TractiveForceN, IsMetric));
+                         FormatStrings.FormatForce(SteamEngines[i].TractiveForceN, IsMetric)           
+
+                         );
+
                     }
                 }
+
+                for (int i = 0; i < SteamEngines.Count; i++)
+                {
+                    status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n",
+                    Simulator.Catalog.GetString("ForceCom:"),
+                    Simulator.Catalog.GetString("Eng#:"),
+                    i + 1,
+                    Simulator.Catalog.GetString("CompTE"),
+                         FormatStrings.FormatForce(SteamEngines[i].CompareTractiveForceN, IsMetric),
+                         Simulator.Catalog.GetString("CompIHP"),
+                         FormatStrings.FormatPower(W.FromHp(SteamEngines[i].CompareIndicatedHorsePower), IsMetric, false, false)
+                         );
+                }
+
 
                 status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
                     Simulator.Catalog.GetString("ForceTot:"),
@@ -7850,7 +7875,7 @@ namespace Orts.Simulation.RollingStocks
                         Simulator.Catalog.GetString("Slip"),
                         SteamEngines[i].AttachedAxle.IsWheelSlip ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                         Simulator.Catalog.GetString("WheelM"),
-                        FormatStrings.FormatMass(SteamEngines[i].AttachedAxle.WheelWeightKg, IsMetric),
+                        FormatStrings.FormatMass(Kg.FromLb(SteamDrvWheelWeightLbs), IsMetric),
                         Simulator.Catalog.GetString("FoA"),
                         SteamEngines[i].CalculatedFactorOfAdhesion);
                 }
@@ -8127,7 +8152,7 @@ namespace Orts.Simulation.RollingStocks
                             // Check to see if MaxIHP is in fact limited by the boiler
                             if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
                             {
-                                MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
+                              //  MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
                                 ISBoilerLimited = true;
                             }
                             else
@@ -8168,7 +8193,7 @@ namespace Orts.Simulation.RollingStocks
                             // Check to see if MaxIHP is in fact limited by the boiler
                             if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
                             {
-                                MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
+                              //  MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
                                 ISBoilerLimited = true;
                             }
                             else
@@ -8231,7 +8256,7 @@ namespace Orts.Simulation.RollingStocks
                             // Check to see if MaxIHP is in fact limited by the boiler
                             if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
                             {
-                                MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
+                               // MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
                                 ISBoilerLimited = true;
                             }
                             else
