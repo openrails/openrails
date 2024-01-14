@@ -23,6 +23,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using LibGit2Sharp;
+using ORTS.Common;
 
 namespace ORTS.Settings
 {
@@ -191,7 +192,7 @@ namespace ORTS.Settings
                         }
                     }
 
-                    directoryDelete(definedContentJsonDirectoryName);
+                    DirectoryAndFiles.directoryDelete(definedContentJsonDirectoryName);
                 }
                 catch (Exception error)
                 {
@@ -242,31 +243,6 @@ namespace ORTS.Settings
             else
             {
                 return "";
-            }
-        }
-
-        private void directoryDelete(string directoryName)
-        {
-            if (Directory.Exists(directoryName))
-            {
-                // remove the read only flags, otherwise the Directory.delete does not work
-                directoryRemoveReadOnlyFlags(directoryName);
-                Directory.Delete(directoryName, true);
-            }
-        }
-
-        private void directoryRemoveReadOnlyFlags(string directoryName)
-        {
-            foreach (string filename in Directory.GetFiles(directoryName))
-            {
-                _ = new FileInfo(filename)
-                {
-                    IsReadOnly = false
-                };
-            }
-            foreach (string subDirectoryName in Directory.GetDirectories(directoryName))
-            {
-                directoryRemoveReadOnlyFlags(subDirectoryName);
             }
         }
 

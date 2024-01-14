@@ -53,7 +53,7 @@ namespace ORTS
             this.Url = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.InstallPathLabel = new System.Windows.Forms.Label();
             this.InstallPathTextBox = new System.Windows.Forms.TextBox();
-            this.InstallPathButton = new System.Windows.Forms.Button();
+            this.InstallPathBrowseButton = new System.Windows.Forms.Button();
             this.InstallPathDirectoryEntry = new System.DirectoryServices.DirectoryEntry();
             this.DownloadContentButton = new System.Windows.Forms.Button();
             this.pictureBoxRoute = new System.Windows.Forms.PictureBox();
@@ -124,15 +124,15 @@ namespace ORTS
             this.InstallPathTextBox.Size = new System.Drawing.Size(445, 20);
             this.InstallPathTextBox.TabIndex = 2;
             // 
-            // InstallPathButton
+            // InstallPathBrowseButton
             // 
-            this.InstallPathButton.Location = new System.Drawing.Point(551, 473);
-            this.InstallPathButton.Name = "InstallPathButton";
-            this.InstallPathButton.Size = new System.Drawing.Size(75, 23);
-            this.InstallPathButton.TabIndex = 3;
-            this.InstallPathButton.Text = "Browse...";
-            this.InstallPathButton.UseVisualStyleBackColor = true;
-            this.InstallPathButton.Click += new System.EventHandler(this.InstallPathButton_Click);
+            this.InstallPathBrowseButton.Location = new System.Drawing.Point(551, 473);
+            this.InstallPathBrowseButton.Name = "InstallPathBrowseButton";
+            this.InstallPathBrowseButton.Size = new System.Drawing.Size(75, 23);
+            this.InstallPathBrowseButton.TabIndex = 3;
+            this.InstallPathBrowseButton.Text = "Browse...";
+            this.InstallPathBrowseButton.UseVisualStyleBackColor = true;
+            this.InstallPathBrowseButton.Click += new System.EventHandler(this.InstallPathBrowseButton_Click);
             // 
             // DownloadContentButton
             // 
@@ -206,7 +206,7 @@ namespace ORTS
             this.Controls.Add(this.textBoxRoute);
             this.Controls.Add(this.pictureBoxRoute);
             this.Controls.Add(this.DownloadContentButton);
-            this.Controls.Add(this.InstallPathButton);
+            this.Controls.Add(this.InstallPathBrowseButton);
             this.Controls.Add(this.InstallPathTextBox);
             this.Controls.Add(this.InstallPathLabel);
             this.Controls.Add(this.dataGridViewDownloadContent);
@@ -226,7 +226,7 @@ namespace ORTS
         private DataGridView dataGridViewDownloadContent;
         private Label InstallPathLabel;
         private TextBox InstallPathTextBox;
-        private Button InstallPathButton;
+        private Button InstallPathBrowseButton;
         private System.DirectoryServices.DirectoryEntry InstallPathDirectoryEntry;
         private Button DownloadContentButton;
         private DataGridViewTextBoxColumn Route;

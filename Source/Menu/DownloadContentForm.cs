@@ -30,6 +30,7 @@ using System.ComponentModel;
 using System.Net;
 using System.IO.Compression;
 using System.Drawing;
+using ORTS.Common;
 
 namespace ORTS
 {
@@ -131,8 +132,8 @@ namespace ORTS
         }
         #endregion
 
-        #region InstallPathButton
-        private void InstallPathButton_Click(object sender, EventArgs e)
+        #region InstallPathBrowseButton
+        private void InstallPathBrowseButton_Click(object sender, EventArgs e)
         {
             using (FolderBrowserDialog folderBrowser = new FolderBrowserDialog())
             {
@@ -151,12 +152,32 @@ namespace ORTS
         private void DownloadContentButton_Click(object sender, EventArgs e)
         {
             string installPath = InstallPathTextBox.Text;
+            if (installPath.EndsWith(@"\"))
+            {
+                installPath = installPath.Remove(installPath.Length - 1, 1);
+            }
+            installPath = Path.GetFullPath(installPath);
+
             string installPathRoute = Path.Combine(installPath, RouteName);
             string message;
 
             DisableButtons();
 
             // various checks for the directory where the route is installed
+
+            string pathDirectoryExe = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
+
+            string topPathDirectoryExe = DirectoryAndFiles.determineTopDirectory(pathDirectoryExe.Substring(6));
+            string topInstallPath = DirectoryAndFiles.determineTopDirectory(installPath);
+
+            if (topPathDirectoryExe.Equals(topInstallPath, StringComparison.OrdinalIgnoreCase))
+            {
+                message = Catalog.GetStringFmt("Top directory {0} is the same for exe and route, installing in this directory not allowed", topInstallPath);
+                MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // cancelled
+                EnableButtons();
+                return;
+            }
 
             DriveInfo dInfo = new DriveInfo(installPathRoute);
 
@@ -600,6 +621,7 @@ namespace ORTS
             Cursor.Current = Cursors.WaitCursor;
 
             RouteSettings.Route route = Routes[RouteName];
+            string contentName = route.ContentName;
             MainForm mainForm = ((MainForm)Owner);
 
             mainForm.DoWithTask = false;
@@ -607,7 +629,7 @@ namespace ORTS
             try
             {
                 mainForm.LoadFolderList();
-                mainForm.comboBoxFolder.SelectedIndex = determineSelectedIndex(mainForm.comboBoxFolder, RouteName);
+                mainForm.comboBoxFolder.SelectedIndex = determineSelectedIndex(mainForm.comboBoxFolder, contentName);
 
                 mainForm.LoadRouteList();
                 mainForm.comboBoxRoute.SelectedIndex = determineSelectedIndex(mainForm.comboBoxRoute, route.Start.Route);
@@ -739,7 +761,7 @@ namespace ORTS
             }
             Cursor.Current = Cursors.WaitCursor;
 
-            directoryDelete(Routes[RouteName].DirectoryInstalledIn);
+            DirectoryAndFiles.directoryDelete(Routes[RouteName].DirectoryInstalledIn);
 
             if (Settings.Folders.Folders[Routes[RouteName].ContentName] == Routes[RouteName].ContentDirectory)
             {
@@ -756,28 +778,6 @@ namespace ORTS
             Refresh();
 
             EnableButtons();
-        }
-
-        private void directoryDelete(string directoryName)
-        {
-            if (Directory.Exists(directoryName))
-            {
-                directoryRemoveReadOnlyFlags(directoryName);
-                Directory.Delete(directoryName, true);
-            }
-        }
-
-        private void directoryRemoveReadOnlyFlags(string directoryName)
-        {
-            foreach (string filename in Directory.GetFiles(directoryName))
-            {
-                FileInfo file = new FileInfo(filename);
-                file.IsReadOnly = false;
-            }
-            foreach (string subDirectoryName in Directory.GetDirectories(directoryName))
-            {
-                directoryRemoveReadOnlyFlags(subDirectoryName);
-            }
         }
         #endregion
 
