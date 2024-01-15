@@ -759,7 +759,7 @@ namespace ORTS
 
                     if (!initialized && Folders.Count == 0)
                     {
-                        using (var form = new OptionsForm(Settings, UpdateManager, true))
+                        using (var form = new DownloadContentForm(Settings))
                         {
                             switch (form.ShowDialog(this))
                             {

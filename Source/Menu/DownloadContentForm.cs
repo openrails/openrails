@@ -476,49 +476,24 @@ namespace ORTS
                 }
             }
 
-            bool updated = false;
+            string routeName = RouteName;
             int index = 0;
-            while (!updated)
+            var sortedFolders = Settings.Folders.Folders.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
+            foreach (KeyValuePair<string, string> folderSetting in sortedFolders)
             {
-                string routeName = "";
-                bool routeNameFound = false;
-                foreach (KeyValuePair<string, string> folderSetting in Settings.Folders.Folders)
+                if (folderSetting.Key == routeName)
                 {
-                    if (index == 0)
-                    {
-                        routeName = RouteName;
-                    }
-                    else
-                    {
-                        routeName = string.Format("{0} ({1})", RouteName, index);
-                    }
-                    if (folderSetting.Key == routeName)
-                    {
-                        if (folderSetting.Value.Equals(installPathRouteReal, StringComparison.OrdinalIgnoreCase))
-                        {
-                            updated = true;
-                        }
-                        else
-                        {
-                            routeNameFound = true;
-                        }
-                    }
-                }
-                if (!updated)
-                {
-                    if (routeNameFound)
+                    if (!folderSetting.Value.Equals(installPathRouteReal, StringComparison.OrdinalIgnoreCase))
                     {
                         index++;
-                    }
-                    else
-                    {
-                        Settings.Folders.Folders[routeName] = installPathRouteReal;
-                        Routes[RouteName].ContentName = routeName;
-                        Routes[RouteName].ContentDirectory = installPathRouteReal;
-                        updated = true;
+                        routeName = string.Format("{0} ({1})", RouteName, index);
                     }
                 }
             }
+            Settings.Folders.Folders[routeName] = installPathRouteReal;
+            Routes[RouteName].ContentName = routeName;
+            Routes[RouteName].ContentDirectory = installPathRouteReal;
+
             return true;
         }
 

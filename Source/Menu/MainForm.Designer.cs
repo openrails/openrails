@@ -126,7 +126,7 @@ namespace ORTS
             this.labelLogo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.labelLogo.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelLogo.ForeColor = System.Drawing.Color.Gray;
-            this.labelLogo.Location = new System.Drawing.Point(82, 472);
+            this.labelLogo.Location = new System.Drawing.Point(96, 472);
             this.labelLogo.Name = "labelLogo";
             this.labelLogo.Size = new System.Drawing.Size(224, 64);
             this.labelLogo.TabIndex = 11;
@@ -172,10 +172,10 @@ namespace ORTS
             // 
             // buttonTools
             // 
-            this.buttonTools.Location = new System.Drawing.Point(3, 19);
+            this.buttonTools.Location = new System.Drawing.Point(3, 48);
             this.buttonTools.Name = "buttonTools";
             this.buttonTools.Size = new System.Drawing.Size(100, 23);
-            this.buttonTools.TabIndex = 0;
+            this.buttonTools.TabIndex = 1;
             this.buttonTools.Text = "Tools ▼";
             this.buttonTools.Click += new System.EventHandler(this.buttonTools_Click);
             // 
@@ -375,21 +375,21 @@ namespace ORTS
             // 
             // buttonDocuments
             // 
-            this.buttonDocuments.Location = new System.Drawing.Point(3, 48);
+            this.buttonDocuments.Location = new System.Drawing.Point(3, 79);
             this.buttonDocuments.Name = "buttonDocuments";
             this.buttonDocuments.Size = new System.Drawing.Size(100, 23);
-            this.buttonDocuments.TabIndex = 1;
+            this.buttonDocuments.TabIndex = 2;
             this.buttonDocuments.Text = "Documents ▼";
             this.buttonDocuments.UseVisualStyleBackColor = true;
             this.buttonDocuments.Click += new System.EventHandler(this.buttonDocuments_Click);
             // 
             // buttonDownloadContent
             // 
-            this.buttonDownloadContent.Location = new System.Drawing.Point(3, 77);
+            this.buttonDownloadContent.Location = new System.Drawing.Point(3, 19);
             this.buttonDownloadContent.Name = "buttonDownloadContent";
             this.buttonDownloadContent.Size = new System.Drawing.Size(100, 23);
-            this.buttonDownloadContent.TabIndex = 2;
-            this.buttonDownloadContent.Text = "Download Content";
+            this.buttonDownloadContent.TabIndex = 0;
+            this.buttonDownloadContent.Text = "Content";
             this.buttonDownloadContent.Click += new System.EventHandler(this.buttonDownloadContent_Click);
             // 
             // label25
