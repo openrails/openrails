@@ -198,7 +198,7 @@ namespace Orts.Formats.Msts
 
     public class VolumeCurve
     {
-        public enum Controls { None, DistanceControlled, SpeedControlled, Variable1Controlled, Variable2_1Controlled, Variable3_1Controlled, Variable4_1Controlled, Variable2Controlled, Variable2BoosterControlled, Variable3Controlled, BrakeCylControlled, CurveForceControlled };
+        public enum Controls { None, DistanceControlled, SpeedControlled, Variable1Controlled, Variable1_2Controlled, Variable1_3Controlled, Variable1_4Controlled, Variable2Controlled, Variable2BoosterControlled, Variable3Controlled, BrakeCylControlled, CurveForceControlled };
 
         public Controls Control = Controls.None;
         public float Granularity = 1.0f;
@@ -214,9 +214,9 @@ namespace Orts.Formats.Msts
                 case "distancecontrolled": Control = Controls.DistanceControlled; break;
                 case "speedcontrolled": Control = Controls.SpeedControlled; break;
                 case "variable1controlled": Control = Controls.Variable1Controlled; break;
-                case "variable2_1controlled": Control = Controls.Variable2_1Controlled; break;
-                case "variable3_1controlled": Control = Controls.Variable3_1Controlled; break;
-                case "variable4_1controlled": Control = Controls.Variable4_1Controlled; break;
+                case "variable1_2controlled": Control = Controls.Variable1_2Controlled; break;
+                case "variable1_3controlled": Control = Controls.Variable1_3Controlled; break;
+                case "variable1_4controlled": Control = Controls.Variable1_4Controlled; break;
                 case "variable2controlled": Control = Controls.Variable2Controlled; break;
                 case "variable2boostercontrolled": Control = Controls.Variable2BoosterControlled; break;
                 case "variable3controlled": Control = Controls.Variable3Controlled; break;
@@ -343,7 +343,7 @@ namespace Orts.Formats.Msts
     public class Variable_Trigger : Trigger
     {
         public enum Events { Speed_Inc_Past, Speed_Dec_Past, Distance_Inc_Past, Distance_Dec_Past,
-        Variable1_Inc_Past, Variable2_1_Inc_Past, Variable3_1_Inc_Past, Variable4_1_Inc_Past, Variable1_Dec_Past, Variable2_1_Dec_Past, Variable3_1_Dec_Past, Variable4_1_Dec_Past, Variable2_Inc_Past, Variable2_Dec_Past, Variable3_Inc_Past, Variable3_Dec_Past, BrakeCyl_Inc_Past, BrakeCyl_Dec_Past, CurveForce_Inc_Past, CurveForce_Dec_Past
+        Variable1_Inc_Past, Variable1_2_Inc_Past, Variable1_3_Inc_Past, Variable1_4_Inc_Past, Variable1_Dec_Past, Variable1_2_Dec_Past, Variable1_3_Dec_Past, Variable1_4_Dec_Past, Variable2_Inc_Past, Variable2_Dec_Past, Variable3_Inc_Past, Variable3_Dec_Past, BrakeCyl_Inc_Past, BrakeCyl_Dec_Past, CurveForce_Inc_Past, CurveForce_Dec_Past
         };
 
         public Events Event;
@@ -374,13 +374,13 @@ namespace Orts.Formats.Msts
                         break;
                     }
                 case "variable1_inc_past": Event = Events.Variable1_Inc_Past; break;
-                case "variable2_1_inc_past": Event = Events.Variable2_1_Inc_Past; break;
-                case "variable3_1_inc_past": Event = Events.Variable3_1_Inc_Past; break;
-                case "variable4_1_inc_past": Event = Events.Variable4_1_Inc_Past; break;
+                case "variable2_1_inc_past": Event = Events.Variable1_2_Inc_Past; break;
+                case "variable3_1_inc_past": Event = Events.Variable1_3_Inc_Past; break;
+                case "variable4_1_inc_past": Event = Events.Variable1_4_Inc_Past; break;
                 case "variable1_dec_past": Event = Events.Variable1_Dec_Past; break;
-                case "variable2_1_dec_past": Event = Events.Variable2_1_Dec_Past; break;
-                case "variable3_1_dec_past": Event = Events.Variable3_1_Dec_Past; break;
-                case "variable4_1_dec_past": Event = Events.Variable4_1_Dec_Past; break;
+                case "variable2_1_dec_past": Event = Events.Variable1_2_Dec_Past; break;
+                case "variable3_1_dec_past": Event = Events.Variable1_3_Dec_Past; break;
+                case "variable4_1_dec_past": Event = Events.Variable1_4_Dec_Past; break;
                 case "variable2_inc_past": Event = Events.Variable2_Inc_Past; break;
                 case "variable2_dec_past": Event = Events.Variable2_Dec_Past; break;
                 case "variable3_inc_past": Event = Events.Variable3_Inc_Past; break;
