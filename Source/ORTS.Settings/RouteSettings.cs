@@ -29,6 +29,13 @@ namespace ORTS.Settings
 {
     public class RouteSettings
     {
+        public enum DownloadType
+        {
+            github,
+            zip,
+            none
+        }
+
         public class Start
         {
             public string Route;
@@ -43,7 +50,8 @@ namespace ORTS.Settings
 
         public class Route
         {
-            public string DateInstalled;
+            public bool Installed;
+            public DateTime DateInstalled;
             public string DirectoryInstalledIn;
             public string ContentName;
             public string ContentDirectory;
@@ -59,19 +67,19 @@ namespace ORTS.Settings
 
             public Start Start;
 
-            public Route(string dateInstalled, string directoryInstalledIn,
-                string contentName, string contentDirectory,
+            public Route(
                 string url, 
                 long downloadSize, long installSize, 
                 string image, string description,
                 string author, string authorUrl,
                 string screenshot,
                 Start start)
-            { 
-                DateInstalled = dateInstalled;
-                DirectoryInstalledIn = directoryInstalledIn;
-                ContentName = contentName;
-                ContentDirectory = contentDirectory;
+            {
+                Installed = false;
+                DateInstalled = DateTime.MinValue;
+                DirectoryInstalledIn = "";
+                ContentName = "";
+                ContentDirectory = "";
                 Url = url;
                 DownloadSize = downloadSize;
                 InstallSize = installSize;
@@ -81,6 +89,20 @@ namespace ORTS.Settings
                 AuthorUrl = authorUrl;
                 Screenshot = screenshot;
                 Start = start;
+            }
+
+            public DownloadType getDownloadType ()
+            {
+                if (Url.EndsWith(".git", StringComparison.OrdinalIgnoreCase))
+                {
+                    return DownloadType.github;
+                }
+                if (Url.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                {
+                    return DownloadType.zip;
+                }
+
+                return DownloadType.none;
             }
         }
 
@@ -182,7 +204,7 @@ namespace ORTS.Settings
                             if (!Routes.ContainsKey(routeName))
                             {
                                 Routes.Add(routeName, new RouteSettings.Route(
-                                    "", "", "", "", url, downloadSize, installSize, image, description, authorName, authorUrl, screenshot, start));
+                                    url, downloadSize, installSize, image, description, authorName, authorUrl, screenshot, start));
                             }
                             else
                             {
@@ -253,7 +275,7 @@ namespace ORTS.Settings
             for (int index = 0; index < Routes.Count; index++)
             {
                 // only save the installed routes
-                if (!string.IsNullOrWhiteSpace(Routes.ElementAt(index).Value.DateInstalled))
+                if (Routes.ElementAt(index).Value.Installed)
                 {
                     routes.Add(Routes.ElementAt(index));
                 }

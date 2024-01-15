@@ -17,14 +17,13 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.IO;
-using Microsoft.SqlServer.Server;
 
 namespace ORTS.Common
 {
     public class DirectoryAndFiles
     {
-
         public static void directoryDelete(string directoryName)
         {
             if (Directory.Exists(directoryName))
@@ -68,6 +67,46 @@ namespace ORTS.Common
             }
 
             return topDirectoryName;
+        }
+
+        public static List<FileInfo> getChangedAndAddedFiles(string directoryName, DateTime dateInstalled, bool checkForChanged)
+        {
+            List<FileInfo> changedFiles = new List<FileInfo>();
+
+            if (Directory.Exists(directoryName))
+            {
+                getChangedAndAddedFilesDeeper(directoryName, dateInstalled, changedFiles, checkForChanged);
+            }
+
+            return changedFiles;
+        }
+
+        public static void getChangedAndAddedFilesDeeper(string directoryName, DateTime dateInstalled, List<FileInfo> changedFiles, bool checkForChanged)
+        {
+            foreach (string filename in Directory.GetFiles(directoryName))
+            {
+                FileInfo fi = new FileInfo(filename);
+                if (checkForChanged) 
+                {
+                    if (fi.LastWriteTime > dateInstalled)
+                    {
+                        changedFiles.Add(fi);
+                    }
+                }
+                else
+                {
+                    // check for new files, creation date after date installed
+                    if (fi.CreationTime > dateInstalled)
+                    {
+                        changedFiles.Add(fi);
+                    }
+                }
+
+            }
+            foreach (string subDirectoryName in Directory.GetDirectories(directoryName))
+            {
+                getChangedAndAddedFilesDeeper(subDirectoryName, dateInstalled, changedFiles, checkForChanged);
+            }
         }
     }
 }

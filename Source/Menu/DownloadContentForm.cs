@@ -59,7 +59,10 @@ namespace ORTS
             {
                 string routeName = Routes.ElementAt(index).Key;
                 RouteSettings.Route route = Routes.ElementAt(index).Value;
-                dataGridViewDownloadContent.Rows.Add(new string[] { routeName, route.DateInstalled, route.Url });
+                dataGridViewDownloadContent.Rows.Add(new string[] { 
+                    routeName, 
+                    route.Installed ? route.DateInstalled.ToString(CultureInfo.CurrentCulture.DateTimeFormat) : "", 
+                    route.Url });
             }
 
             dataGridViewDownloadContent.Sort(dataGridViewDownloadContent.Columns[0], ListSortDirection.Ascending);
@@ -151,6 +154,8 @@ namespace ORTS
         #region DownloadContentButton
         private void DownloadContentButton_Click(object sender, EventArgs e)
         {
+            RouteSettings.Route route = Routes[RouteName];
+
             string installPath = InstallPathTextBox.Text;
             if (installPath.EndsWith(@"\"))
             {
@@ -181,7 +186,7 @@ namespace ORTS
 
             DriveInfo dInfo = new DriveInfo(installPathRoute);
 
-            long size = Routes[RouteName].InstallSize + Routes[RouteName].DownloadSize;
+            long size = route.InstallSize + route.DownloadSize;
 
             if (size > (dInfo.AvailableFreeSpace * 1.1))
             {
@@ -270,16 +275,18 @@ namespace ORTS
                 return;
             }
 
-            string dateTimeNowStr = DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat);
-            dataGridViewDownloadContent.CurrentRow.Cells[1].Value = dateTimeNowStr;
+            route.Installed = true;
 
-            Routes[RouteName].DateInstalled = dateTimeNowStr;
-            Routes[RouteName].DirectoryInstalledIn = installPathRoute;
+            DateTime dateTimeNow = DateTime.Now;
+            dataGridViewDownloadContent.CurrentRow.Cells[1].Value = dateTimeNow.ToString(CultureInfo.CurrentCulture.DateTimeFormat);
+            route.DateInstalled = dateTimeNow;
+
+            route.DirectoryInstalledIn = installPathRoute;
 
             Settings.Folders.Save();
             Settings.Routes.Save();
 
-            if (!string.IsNullOrWhiteSpace(Routes[RouteName].Start.Route))
+            if (!string.IsNullOrWhiteSpace(route.Start.Route))
             {
                 // start information available
                 MessageBox.Show(Catalog.GetString("Route installed, press 'Start' button to start Open Rails for this route."),
@@ -306,17 +313,18 @@ namespace ORTS
 
         private bool downloadRoute(string installPathRoute)
         {
+            RouteSettings.Route route = Routes[RouteName];
             bool returnValue = false;
 
             Thread downloadThread = new Thread(() =>
             {
-                if (Routes[RouteName].Url.EndsWith(".git"))
+                if (route.getDownloadType() == RouteSettings.DownloadType.github)
                 {
                     returnValue = doTheClone(installPathRoute);
                 }
-                if (Routes[RouteName].Url.EndsWith(".zip"))
+                if (route.getDownloadType() == RouteSettings.DownloadType.zip)
                 {
-                    returnValue = doTheZipDownload(Routes[RouteName].Url, Path.Combine(installPathRoute, RouteName + ".zip"));
+                    returnValue = doTheZipDownload(route.Url, Path.Combine(installPathRoute, RouteName + ".zip"));
                 }
             });
             // start download in thread to be able to show the progress in the main thread
@@ -337,7 +345,7 @@ namespace ORTS
 
             if (returnValue)
             {
-                if (Routes[RouteName].Url.EndsWith(".zip"))
+                if (route.Url.EndsWith(".zip"))
                 {
                     Thread installThread = new Thread(() =>
                     {
@@ -440,10 +448,6 @@ namespace ORTS
 
         private bool insertRowInOptions(string installPathRoute)
         {
-            // check if filesystem is case sensitive
-            // ok, this check will be wrong if both upper- and lowercase named route directories exist
-            bool directoryCaseInsensitive = Directory.Exists(installPathRoute.ToUpper()) && Directory.Exists(installPathRoute.ToLower());
-
             // sometimes the route is located one directory level deeper, determine real installPathRoute
             string installPathRouteReal;
 
@@ -490,8 +494,7 @@ namespace ORTS
                     }
                     if (folderSetting.Key == routeName)
                     {
-                        if (folderSetting.Value.Equals(installPathRouteReal,
-                            directoryCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+                        if (folderSetting.Value.Equals(installPathRouteReal, StringComparison.OrdinalIgnoreCase))
                         {
                             updated = true;
                         }
@@ -553,7 +556,7 @@ namespace ORTS
                         route.Screenshot, route.Screenshot));
                 }
 
-                if (route.Url.EndsWith("git"))
+                if (route.getDownloadType() == RouteSettings.DownloadType.github)
                 {
                     outputFile.WriteLine("<p>" + Catalog.GetString("Downloadable: GitHub format") + "<br>\n");
                     outputFile.WriteLine(string.Format("- " + Catalog.GetString("From:") + "{0}<br>\n", route.Url));
@@ -563,7 +566,7 @@ namespace ORTS
                             (route.InstallSize / (1024.0 * 1024 * 1024)).ToString("N")) + "<br></p>\n");
                     }
                 }
-                if (route.Url.EndsWith("zip"))
+                if (route.getDownloadType() == RouteSettings.DownloadType.zip)
                 {
                     outputFile.WriteLine(string.Format("<p>Downloadable: zip format<br>\n"));
                     outputFile.WriteLine(string.Format("- From: {0}<br>\n", route.Url));
@@ -579,10 +582,10 @@ namespace ORTS
                     }
                 }
 
-                if (!string.IsNullOrWhiteSpace(route.DateInstalled))
+                if (route.Installed)
                 {
                     outputFile.WriteLine("<p>" + Catalog.GetString("Installed") + ":<br>\n");
-                    outputFile.WriteLine(string.Format("- " + Catalog.GetString("At") + ": {0}<br>\n", route.DateInstalled));
+                    outputFile.WriteLine(string.Format("- " + Catalog.GetString("At") + ": {0}<br>\n", route.DateInstalled.ToString(CultureInfo.CurrentCulture.DateTimeFormat)));
                     outputFile.WriteLine(string.Format("- " + Catalog.GetString("In") + ": \"{0}\"<br>\n", route.DirectoryInstalledIn));
                     outputFile.WriteLine(string.Format("- " + Catalog.GetString("Content name") + ": \"{0}\"<br>\n", route.ContentName));
                     outputFile.WriteLine(string.Format("- " + Catalog.GetString("Content Directory") + ": \"{0}\"<br></p>\n", route.ContentDirectory));
@@ -605,6 +608,38 @@ namespace ORTS
                     outputFile.WriteLine("- " + Catalog.GetString("Time") + ": " + route.Start.Time + "<br>\n");
                     outputFile.WriteLine("- " + Catalog.GetString("Season") + ": " + route.Start.Season + "<br>\n");
                     outputFile.WriteLine("- " + Catalog.GetString("Weather") + ": " + route.Start.Weather + "<br></p>\n");
+                }
+
+                if (route.getDownloadType() == RouteSettings.DownloadType.zip)
+                {
+                    List<FileInfo> changedAndAddedFiles = DirectoryAndFiles.getChangedAndAddedFiles(route.DirectoryInstalledIn, route.DateInstalled, true);
+                    outputFile.WriteLine("<p>" + Catalog.GetString("Changed file(s) after the download (timestamp check)") + ":<br>\n");
+                    if (changedAndAddedFiles.Count == 0)
+                    {
+                        outputFile.WriteLine("- " + Catalog.GetString("No changed files found") + "<br></p>\n");
+                    }
+                    else
+                    {
+                        foreach (FileInfo changedFile in changedAndAddedFiles)
+                        {
+                            outputFile.WriteLine(changedFile + "<br>\n");
+                        }
+                        outputFile.WriteLine("</p>");
+                    }
+                    changedAndAddedFiles = DirectoryAndFiles.getChangedAndAddedFiles(route.DirectoryInstalledIn, route.DateInstalled, false);
+                    outputFile.WriteLine("<p>" + Catalog.GetString("Added file(s) after the download (timestamp check)") + ":<br>\n");
+                    if (changedAndAddedFiles.Count == 0)
+                    {
+                        outputFile.WriteLine("- " + Catalog.GetString("No added files found") + "<br></p>\n");
+                    }
+                    else
+                    {
+                        foreach (FileInfo changedFile in changedAndAddedFiles)
+                        {
+                            outputFile.WriteLine(changedFile + "<br>\n");
+                        }
+                        outputFile.WriteLine("</p>");
+                    }
                 }
             }
 
@@ -750,27 +785,46 @@ namespace ORTS
         #region DeleteButton
         void DeleteButton_Click(object sender, EventArgs e)
         {
+            RouteSettings.Route route = Routes[RouteName];
+            string message = "";
+
             DisableButtons();
 
-            string message = Catalog.GetStringFmt("Directory \"{0}\" is to be deleted, are you really sure?", Routes[RouteName].DirectoryInstalledIn);
+            message = Catalog.GetStringFmt("Directory \"{0}\" is to be deleted, are you really sure?", route.DirectoryInstalledIn);
             if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
             {
                 // cancelled
                 EnableButtons();
                 return;
             }
+
+            if ((DirectoryAndFiles.getChangedAndAddedFiles(route.DirectoryInstalledIn, route.DateInstalled, true).Count > 0) ||
+                (DirectoryAndFiles.getChangedAndAddedFiles(route.DirectoryInstalledIn, route.DateInstalled, false).Count > 0))
+            {
+
+                message = Catalog.GetStringFmt("Changed or added files found in Directory \"{0}\", see Info for more infomation. Do you want to continue?", route.DirectoryInstalledIn);
+                if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
+                {
+                    // cancelled
+                    EnableButtons();
+                    return;
+                }
+            }
+
             Cursor.Current = Cursors.WaitCursor;
 
-            DirectoryAndFiles.directoryDelete(Routes[RouteName].DirectoryInstalledIn);
+            DirectoryAndFiles.directoryDelete(route.DirectoryInstalledIn);
 
-            if (Settings.Folders.Folders[Routes[RouteName].ContentName] == Routes[RouteName].ContentDirectory)
+            if (Settings.Folders.Folders[route.ContentName] == route.ContentDirectory)
             {
-                Settings.Folders.Folders.Remove(Routes[RouteName].ContentName);
+                Settings.Folders.Folders.Remove(route.ContentName);
             }
             Settings.Folders.Save();
 
-            Routes[RouteName].DirectoryInstalledIn = "";
-            Routes[RouteName].DateInstalled = "";
+            route.Installed = false;
+            route.DateInstalled = DateTime.MinValue;
+            route.DirectoryInstalledIn = "";
+
             Settings.Routes.Save();
 
             dataGridViewDownloadContent.CurrentRow.Cells[1].Value = "";
@@ -790,13 +844,15 @@ namespace ORTS
 
         private void EnableButtons()
         {
-            DownloadContentButton.Enabled = string.IsNullOrWhiteSpace(Routes[RouteName].DateInstalled);
+            RouteSettings.Route route = Routes[RouteName];
+
+            DownloadContentButton.Enabled = !route.Installed;
 
             startButton.Enabled = 
-                (!string.IsNullOrWhiteSpace(Routes[RouteName].DateInstalled)) &&
-                (!string.IsNullOrWhiteSpace(Routes[RouteName].Start.Route));
+                route.Installed &&
+                !string.IsNullOrWhiteSpace(route.Start.Route);
 
-            deleteButton.Enabled = !string.IsNullOrWhiteSpace(Routes[RouteName].DateInstalled);
+            deleteButton.Enabled = route.Installed;
         }
 
         private void DownloadContentForm_FormClosing(object sender, FormClosingEventArgs e)
