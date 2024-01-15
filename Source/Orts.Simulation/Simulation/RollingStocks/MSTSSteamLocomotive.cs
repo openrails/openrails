@@ -3067,7 +3067,7 @@ namespace Orts.Simulation.RollingStocks
             BoosterCylinderSteamExhaust02SteamVolumeM3pS = BoosterCylinderSteamExhaustOn && BoosterCylinderSteamExhaust02On ? (10.0f * BoosterSteamFraction) : 0.0f;
             BoosterCylinderSteamExhaust02SteamVelocityMpS = 100.0f;
 
-       //     Trace.TraceInformation("Booster Exhaust - ExhaustOn {0} Exhaust01On {1} Exhaust02On {2} ExhaustVolume01 {3} ExhaustVolume02 {4} SteamFraction {5} Speed {6}", BoosterCylinderSteamExhaustOn, BoosterCylinderSteamExhaust01On, BoosterCylinderSteamExhaust02On, BoosterCylinderSteamExhaust01SteamVolumeM3pS, BoosterCylinderSteamExhaust02SteamVolumeM3pS, BoosterSteamFraction, BoosterEngineSpeedRpM);
+            //     Trace.TraceInformation("Booster Exhaust - ExhaustOn {0} Exhaust01On {1} Exhaust02On {2} ExhaustVolume01 {3} ExhaustVolume02 {4} SteamFraction {5} Speed {6}", BoosterCylinderSteamExhaustOn, BoosterCylinderSteamExhaust01On, BoosterCylinderSteamExhaust02On, BoosterCylinderSteamExhaust01SteamVolumeM3pS, BoosterCylinderSteamExhaust02SteamVolumeM3pS, BoosterSteamFraction, BoosterEngineSpeedRpM);
 
             // Booster Cylinder Steam Cylinder Cocks (automatic)
             BoosterCylinderCockSteam11VolumeMpS = BoosterCylinderCocksOn && BoosterCylinderCock11On ? (10.0f * BoosterSteamFraction) : 0.0f;
@@ -3216,6 +3216,8 @@ namespace Orts.Simulation.RollingStocks
             for (int i = 0; i < SteamEngines.Count; i++)
             {
 
+                variable[i] = 0;
+
                 // Variable is proportional to angular speed, value of 10 means 1 rotation/second.
                 // If wheel is not slipping then use normal wheel speed, this reduces oscillations in variable1 which causes issues with sounds.
 
@@ -3231,17 +3233,28 @@ namespace Orts.Simulation.RollingStocks
                 variable[i] = ThrottlePercent == 0 ? 0 : variable[i];
 
                 // overwrite Booster variable if in Idle or Run mode - gears not engaged
-                if (SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster && (SteamBoosterRunMode && !BoosterGearsEngaged) || SteamBoosterIdleMode)
+                if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
                 {
-                    variable[i] = BoosterEngineSpeedRpM / MathHelper.Pi * 5;
+                    if (!SteamBoosterAirOpen || BoosterAirisLow) // Booster is off
+                    {
+                        variable[i] = 0;
+                    }
+                    else if ((SteamBoosterRunMode && !BoosterGearsEngaged) || SteamBoosterIdleMode) // Run mode - gears not engaged, and Idle mode                        
+                    {
+                        variable[i] = pS.FrompM(BoosterEngineSpeedRpM) * 5;
+                    }
+                    else if (SteamBoosterRunMode && BoosterGearsEngaged) // Run mode - gears engaged, runs in similar fashion to main engine.
+                    {
+                        variable[i] = variable[i];
+                    }
                 }
             }
 
             // Set variables for each engine
             Variable1 = variable[0];
-            Variable2_1 = variable[1];
-            Variable3_1 = variable[2];
-            Variable4_1 = variable[3];
+            Variable1_2 = variable[1];
+            Variable1_3 = variable[2];
+            Variable1_4 = variable[3];
 
             Variable2 = MathHelper.Clamp((CylinderCocksPressureAtmPSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
 
@@ -3251,11 +3264,12 @@ namespace Orts.Simulation.RollingStocks
             }
             else if ((SteamBoosterRunMode && !BoosterGearsEngaged) || SteamBoosterIdleMode) // Run mode - gears not engaged, and Idle mode
             {
-                Variable2_Booster = CabSteamBoosterPressurePSI / MaxBoilerPressurePSI;
+                Variable2_Booster = (CabSteamBoosterPressurePSI / MaxBoilerPressurePSI) * 100f;
             }
-            else if (SteamBoosterRunMode && BoosterGearsEngaged) // Run mode - gears engaged
+            else if (SteamBoosterRunMode && BoosterGearsEngaged) // Run mode - gears engaged, runs in similar fashion to main engine.
             {
-                Variable2_Booster = CabSteamChestPressurePSI / MaxBoilerPressurePSI;
+                // Variable2_Booster = CabSteamChestPressurePSI / MaxBoilerPressurePSI;
+                Variable2_Booster = Variable2;
             }
 
             Variable3 = FuelRateSmoothed * 100;
@@ -6045,7 +6059,6 @@ namespace Orts.Simulation.RollingStocks
                 SteamEngines[numberofengine].TractiveForceN = N.FromLbf((SteamEngines[numberofengine].MaxIndicatedHorsePowerHP * 375.0f) / pS.TopH(Me.ToMi(SpeedMpS)));
                 SteamEngines[numberofengine].IndicatedHorsePowerHP = SteamEngines[numberofengine].MaxIndicatedHorsePowerHP; // Set IHP to maximum value
                 IsCritTELimit = true; // Flag if limiting TE
-
             }
             else
             {
@@ -6102,8 +6115,6 @@ namespace Orts.Simulation.RollingStocks
 
                 SteamEngines[i].CompareIndicatedHorsePower = (N.ToLbf(SteamEngines[i].TractiveForceN) * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
 
-
-
                 // Set Max Power equal to max IHP
                 MaxPowerW += W.FromHp(SteamEngines[i].MaxIndicatedHorsePowerHP);
 
@@ -6148,7 +6159,6 @@ namespace Orts.Simulation.RollingStocks
             {
                 TractiveForceN = 0;
             }
-
         }
 
 
@@ -7508,7 +7518,7 @@ namespace Orts.Simulation.RollingStocks
                 );
 
             // Temporary debug script.
-            status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8}\t{9}\t{10}\n",
+            status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8}\t{9}\t{10:N2}\n",
                 Simulator.Catalog.GetString("Boost:"),
                 Simulator.Catalog.GetString("GearT"),
                 BoosterGearEngageTimerS,
@@ -7572,6 +7582,33 @@ namespace Orts.Simulation.RollingStocks
                    Simulator.Catalog.GetString("NetHt"),
                    Train.LastCar.CarNetHeatFlowRateW);
             }
+
+#if DEBUG_STEAM_SOUND_VARIABLES
+
+            status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Sound Variables"));
+            status.AppendFormat("{0}\t{1:N2}\t{2}\t{3:N2}\t{4}\t{5:N2}\t{6}\t{7:N2}\t{8}\t{9:N2}\t{10}\t{11:N2}\t{12}\t{13:N2}\n",
+              Simulator.Catalog.GetString("V1:"),
+              Variable1,
+              Simulator.Catalog.GetString("V2:"),
+              Variable2,
+              Simulator.Catalog.GetString("V3:"),
+              Variable3,
+
+
+              Simulator.Catalog.GetString("V1_2:"),
+              Variable1_2,
+              Simulator.Catalog.GetString("V1_3:"),
+              Variable1_3,
+              Simulator.Catalog.GetString("V1_4:"),
+              Variable1_4,
+
+              Simulator.Catalog.GetString("V2_B:"),
+              Variable2_Booster
+
+
+              );
+
+#endif
 
             status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Fireman"));
             status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}\t{6:N0}/{13}\t\t{7}\t{8:N0}/{13}\t\t{9}\t{10:N0}/{13}\t\t{11}\t{12}/{14}{13}\t{15}\t{16}/{18}{17}\t\t{19}\t{20:N0}\n",
@@ -7987,21 +8024,6 @@ namespace Orts.Simulation.RollingStocks
                 FrictionWheelSpeedMpS
                 );
 
-
-#endif
-
-
-#if DEBUG_STEAM_SOUND_VARIABLES
-
-            status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Sound Variables"));
-            status.AppendFormat("{0}\t{1:N2}\t{2}\t{3:N2}\t{4}\t{5:N2}\n",
-              Simulator.Catalog.GetString("V1:"),
-              Variable1,
-              Simulator.Catalog.GetString("V2:"),
-              Variable2,
-              Simulator.Catalog.GetString("V3:"),
-              Variable3
-              );
 
 #endif
 
