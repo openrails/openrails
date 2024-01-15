@@ -374,13 +374,13 @@ namespace Orts.Formats.Msts
                         break;
                     }
                 case "variable1_inc_past": Event = Events.Variable1_Inc_Past; break;
-                case "variable2_1_inc_past": Event = Events.Variable1_2_Inc_Past; break;
-                case "variable3_1_inc_past": Event = Events.Variable1_3_Inc_Past; break;
-                case "variable4_1_inc_past": Event = Events.Variable1_4_Inc_Past; break;
+                case "variable1_2_inc_past": Event = Events.Variable1_2_Inc_Past; break;
+                case "variable1_3_inc_past": Event = Events.Variable1_3_Inc_Past; break;
+                case "variable1_4_inc_past": Event = Events.Variable1_4_Inc_Past; break;
                 case "variable1_dec_past": Event = Events.Variable1_Dec_Past; break;
-                case "variable2_1_dec_past": Event = Events.Variable1_2_Dec_Past; break;
-                case "variable3_1_dec_past": Event = Events.Variable1_3_Dec_Past; break;
-                case "variable4_1_dec_past": Event = Events.Variable1_4_Dec_Past; break;
+                case "variable1_2_dec_past": Event = Events.Variable1_2_Dec_Past; break;
+                case "variable1_3_dec_past": Event = Events.Variable1_3_Dec_Past; break;
+                case "variable1_4_dec_past": Event = Events.Variable1_4_Dec_Past; break;
                 case "variable2_inc_past": Event = Events.Variable2_Inc_Past; break;
                 case "variable2_dec_past": Event = Events.Variable2_Dec_Past; break;
                 case "variable3_inc_past": Event = Events.Variable3_Inc_Past; break;
