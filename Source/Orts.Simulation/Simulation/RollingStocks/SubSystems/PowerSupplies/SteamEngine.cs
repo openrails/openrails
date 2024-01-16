@@ -347,14 +347,19 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float BoosterGearRatio;
 
         /// <summary>
-        /// Steam Engine tractive force
+        /// Steam Engine real tractive force - this value may go above the average "calculated" TF value as the wheel rotates.
         /// </summary>
-        public float TractiveForceN;
+        public float RealTractiveForceN;
 
         /// <summary>
         /// Steam Engine average tractive force
         /// </summary>
         public float AverageTractiveForceN;
+
+        /// <summary>
+        /// Steam Engine display tractive force
+        /// </summary>
+        public float DisplayTractiveForceN;
 
         /// <summary>
         /// Steam Engine average tractive force
