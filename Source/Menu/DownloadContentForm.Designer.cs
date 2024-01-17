@@ -55,12 +55,13 @@ namespace ORTS
             this.InstallPathTextBox = new System.Windows.Forms.TextBox();
             this.InstallPathBrowseButton = new System.Windows.Forms.Button();
             this.InstallPathDirectoryEntry = new System.DirectoryServices.DirectoryEntry();
-            this.DownloadContentButton = new System.Windows.Forms.Button();
+            this.downloadContentButton = new System.Windows.Forms.Button();
             this.pictureBoxRoute = new System.Windows.Forms.PictureBox();
             this.textBoxRoute = new System.Windows.Forms.RichTextBox();
             this.infoButton = new System.Windows.Forms.Button();
             this.startButton = new System.Windows.Forms.Button();
             this.deleteButton = new System.Windows.Forms.Button();
+            this.updateButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewDownloadContent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxRoute)).BeginInit();
             this.SuspendLayout();
@@ -136,14 +137,14 @@ namespace ORTS
             // 
             // DownloadContentButton
             // 
-            this.DownloadContentButton.Enabled = false;
-            this.DownloadContentButton.Location = new System.Drawing.Point(3, 507);
-            this.DownloadContentButton.Name = "DownloadContentButton";
-            this.DownloadContentButton.Size = new System.Drawing.Size(75, 23);
-            this.DownloadContentButton.TabIndex = 4;
-            this.DownloadContentButton.Text = "Install";
-            this.DownloadContentButton.UseVisualStyleBackColor = true;
-            this.DownloadContentButton.Click += new System.EventHandler(this.DownloadContentButton_Click);
+            this.downloadContentButton.Enabled = false;
+            this.downloadContentButton.Location = new System.Drawing.Point(3, 507);
+            this.downloadContentButton.Name = "DownloadContentButton";
+            this.downloadContentButton.Size = new System.Drawing.Size(75, 23);
+            this.downloadContentButton.TabIndex = 4;
+            this.downloadContentButton.Text = "Install";
+            this.downloadContentButton.UseVisualStyleBackColor = true;
+            this.downloadContentButton.Click += new System.EventHandler(this.DownloadContentButton_Click);
             // 
             // pictureBoxRoute
             // 
@@ -176,7 +177,7 @@ namespace ORTS
             // startButton
             // 
             this.startButton.Enabled = false;
-            this.startButton.Location = new System.Drawing.Point(89, 507);
+            this.startButton.Location = new System.Drawing.Point(84, 507);
             this.startButton.Name = "startButton";
             this.startButton.Size = new System.Drawing.Size(75, 23);
             this.startButton.TabIndex = 8;
@@ -187,7 +188,7 @@ namespace ORTS
             // deleteButton
             // 
             this.deleteButton.Enabled = false;
-            this.deleteButton.Location = new System.Drawing.Point(175, 507);
+            this.deleteButton.Location = new System.Drawing.Point(165, 507);
             this.deleteButton.Name = "deleteButton";
             this.deleteButton.Size = new System.Drawing.Size(75, 23);
             this.deleteButton.TabIndex = 9;
@@ -195,17 +196,28 @@ namespace ORTS
             this.deleteButton.UseVisualStyleBackColor = true;
             this.deleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
             // 
+            // updateButton
+            // 
+            this.updateButton.Location = new System.Drawing.Point(246, 507);
+            this.updateButton.Name = "updateButton";
+            this.updateButton.Size = new System.Drawing.Size(75, 23);
+            this.updateButton.TabIndex = 10;
+            this.updateButton.Text = "Update";
+            this.updateButton.UseVisualStyleBackColor = true;
+            this.updateButton.Click += new System.EventHandler(this.updateButton_Click);
+            // 
             // DownloadContentForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(824, 542);
+            this.Controls.Add(this.updateButton);
             this.Controls.Add(this.deleteButton);
             this.Controls.Add(this.startButton);
             this.Controls.Add(this.infoButton);
             this.Controls.Add(this.textBoxRoute);
             this.Controls.Add(this.pictureBoxRoute);
-            this.Controls.Add(this.DownloadContentButton);
+            this.Controls.Add(this.downloadContentButton);
             this.Controls.Add(this.InstallPathBrowseButton);
             this.Controls.Add(this.InstallPathTextBox);
             this.Controls.Add(this.InstallPathLabel);
@@ -228,7 +240,7 @@ namespace ORTS
         private TextBox InstallPathTextBox;
         private Button InstallPathBrowseButton;
         private System.DirectoryServices.DirectoryEntry InstallPathDirectoryEntry;
-        private Button DownloadContentButton;
+        private Button downloadContentButton;
         private DataGridViewTextBoxColumn Route;
         private DataGridViewTextBoxColumn Installed;
         private DataGridViewTextBoxColumn Url;
@@ -237,5 +249,6 @@ namespace ORTS
         private Button infoButton;
         private Button startButton;
         private Button deleteButton;
+        private Button updateButton;
     }
 }

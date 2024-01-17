@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using LibGit2Sharp;
 
 namespace ORTS.Common
 {
@@ -69,9 +70,19 @@ namespace ORTS.Common
             return topDirectoryName;
         }
 
-        public static List<FileInfo> getChangedAndAddedFiles(string directoryName, DateTime dateInstalled, bool checkForChanged)
+        public static List<string> getChangedFiles(string directoryName, DateTime dateInstalled)
         {
-            List<FileInfo> changedFiles = new List<FileInfo>();
+            return getChangedAndAddedFiles(directoryName, dateInstalled, true);
+        }
+
+        public static List<string> getAddedFiles(string directoryName, DateTime dateInstalled)
+        {
+            return getChangedAndAddedFiles(directoryName, dateInstalled, false);
+        }
+
+        private static List<string> getChangedAndAddedFiles(string directoryName, DateTime dateInstalled, bool checkForChanged)
+        {
+            List<string> changedFiles = new List<string>();
 
             if (Directory.Exists(directoryName))
             {
@@ -81,16 +92,16 @@ namespace ORTS.Common
             return changedFiles;
         }
 
-        public static void getChangedAndAddedFilesDeeper(string directoryName, DateTime dateInstalled, List<FileInfo> changedFiles, bool checkForChanged)
+        private static void getChangedAndAddedFilesDeeper(string directoryName, DateTime dateInstalled, List<string> changedFiles, bool checkForChanged)
         {
             foreach (string filename in Directory.GetFiles(directoryName))
             {
                 FileInfo fi = new FileInfo(filename);
                 if (checkForChanged) 
                 {
-                    if (fi.LastWriteTime > dateInstalled)
+                    if ((fi.LastWriteTime > dateInstalled) && (fi.CreationTime < dateInstalled))
                     {
-                        changedFiles.Add(fi);
+                        changedFiles.Add(fi.FullName);
                     }
                 }
                 else
@@ -98,15 +109,53 @@ namespace ORTS.Common
                     // check for new files, creation date after date installed
                     if (fi.CreationTime > dateInstalled)
                     {
-                        changedFiles.Add(fi);
+                        changedFiles.Add(fi.FullName);
                     }
                 }
-
             }
             foreach (string subDirectoryName in Directory.GetDirectories(directoryName))
             {
                 getChangedAndAddedFilesDeeper(subDirectoryName, dateInstalled, changedFiles, checkForChanged);
             }
         }
+
+        public static List<string> getChangedGitFiles(string directoryName)
+        {
+            return getChangedAndAddedGitFiles(directoryName, true);
+        }
+
+        public static List<string> getAddedGitFiles(string directoryName)
+        {
+            return getChangedAndAddedGitFiles(directoryName, false);
+        }
+
+        private static List<string> getChangedAndAddedGitFiles(string directoryName, bool checkForChanged)
+        {
+            List<string> changedFiles = new List<string>();
+
+            using (var repo = new Repository(directoryName))
+            {
+                foreach (var item in repo.RetrieveStatus(new LibGit2Sharp.StatusOptions()))
+                {
+                    if (checkForChanged)
+                    {
+                        if (item.State == FileStatus.NewInWorkdir)
+                        {
+                            changedFiles.Add(item.FilePath);
+                        }
+                    }
+                    else
+                    {
+                        if (item.State == FileStatus.ModifiedInWorkdir)
+                        {
+                            changedFiles.Add(item.FilePath);
+                        }
+                    }
+                }
+            }
+
+            return changedFiles;
+        }
+
     }
 }
