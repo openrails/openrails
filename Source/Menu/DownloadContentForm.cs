@@ -1,0 +1,1064 @@
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
+// 
+// This file is part of Open Rails.
+// 
+// Open Rails is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// Open Rails is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Windows.Forms;
+using GNU.Gettext;
+using LibGit2Sharp;
+using ORTS.Settings;
+using System.Linq;
+using System.Diagnostics;
+using System.Threading;
+using System.ComponentModel;
+using System.Net;
+using System.IO.Compression;
+using System.Drawing;
+using ORTS.Common;
+
+namespace ORTS
+{
+    public partial class DownloadContentForm : Form
+    {
+        private readonly GettextResourceManager Catalog;
+        private readonly UserSettings Settings;
+        private readonly IDictionary<string, RouteSettings.Route> Routes;
+
+        private string RouteName;
+
+        private readonly string ImageTempFilename;
+        private Thread ImageThread;
+        private readonly string InfoTempFilename;
+
+        public DownloadContentForm(UserSettings settings)
+        {
+            InitializeComponent();
+
+            Catalog = new GettextResourceManager("Menu");
+            Settings = settings;
+
+            Settings.Routes.LoadContentAndInstalled();
+            Routes = settings.Routes.Routes;
+            for (int index = 0; index < Routes.Count; index++)
+            {
+                string routeName = Routes.ElementAt(index).Key;
+                RouteSettings.Route route = Routes.ElementAt(index).Value;
+                dataGridViewDownloadContent.Rows.Add(new string[] { 
+                    routeName, 
+                    route.Installed ? route.DateInstalled.ToString(CultureInfo.CurrentCulture.DateTimeFormat) : "", 
+                    route.Url });
+            }
+
+            dataGridViewDownloadContent.Sort(dataGridViewDownloadContent.Columns[0], ListSortDirection.Ascending);
+
+            InstallPathTextBox.Text = settings.Content.InstallPath;
+
+            ImageTempFilename = Path.GetTempFileName();
+            InfoTempFilename = Path.GetTempFileName();
+            File.Delete(InfoTempFilename);
+            InfoTempFilename = Path.ChangeExtension(ImageTempFilename, "html");
+        }
+
+        #region SelectionChanged
+        private void dataGridViewDownloadContent_SelectionChanged(object sender, EventArgs e)
+        {
+            DisableButtons();
+
+            RouteName = dataGridViewDownloadContent.CurrentRow.Cells[0].Value.ToString();
+
+            // picture box handling
+
+            if (pictureBoxRoute.Image != null)
+            {
+                pictureBoxRoute.Image.Dispose();
+                pictureBoxRoute.Image = null;
+            }
+
+            if (!string.IsNullOrEmpty(Routes[RouteName].Image))
+            {
+                if (ImageThread != null)
+                {
+                    if (ImageThread.IsAlive)
+                    {
+                        ImageThread.Abort();
+                    }
+                }
+
+                // use a thread as grabbing the picture from the web might take a few seconds
+                ImageThread = new Thread(() =>
+                {
+                    // wait one second as the user might scroll through the list
+                    Stopwatch sw = Stopwatch.StartNew();
+                    while (sw.ElapsedMilliseconds <= 1000) { }
+
+                    try
+                    {
+                        using (WebClient myWebClient = new WebClient())
+                        {
+                            myWebClient.DownloadFile(Routes[RouteName].Image, ImageTempFilename);
+                        }
+                        if (File.Exists(ImageTempFilename))
+                        {
+                            pictureBoxRoute.Image = new Bitmap(ImageTempFilename);
+                        }
+                    }
+                    catch
+                    {
+                        // route lives whithout a picture, not such a problem
+                    }
+                });
+                ImageThread.Start();
+            }
+
+            // text box with description
+
+            textBoxRoute.Text = Routes[RouteName].Description;
+
+            // buttons
+            EnableButtons();
+        }
+        #endregion
+
+        #region InstallPathBrowseButton
+        private void InstallPathBrowseButton_Click(object sender, EventArgs e)
+        {
+            using (FolderBrowserDialog folderBrowser = new FolderBrowserDialog())
+            {
+                folderBrowser.SelectedPath = InstallPathTextBox.Text;
+                folderBrowser.Description = Catalog.GetString("Main Path where route is to be installed");
+                folderBrowser.ShowNewFolderButton = true;
+                if (folderBrowser.ShowDialog(this) == DialogResult.OK)
+                {
+                    InstallPathTextBox.Text = folderBrowser.SelectedPath;
+                }
+            }
+        }
+        #endregion
+
+        #region DownloadContentButton
+        private void DownloadContentButton_Click(object sender, EventArgs e)
+        {
+            RouteSettings.Route route = Routes[RouteName];
+
+            string installPath = InstallPathTextBox.Text;
+            if (installPath.EndsWith(@"\"))
+            {
+                installPath = installPath.Remove(installPath.Length - 1, 1);
+            }
+            installPath = Path.GetFullPath(installPath);
+
+            string installPathRoute = Path.Combine(installPath, RouteName);
+            string message;
+
+            DisableButtons();
+
+            // various checks for the directory where the route is installed
+
+            string pathDirectoryExe = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
+
+            string topPathDirectoryExe = DirectoryAndFiles.determineTopDirectory(pathDirectoryExe.Substring(6));
+            string topInstallPath = DirectoryAndFiles.determineTopDirectory(installPath);
+
+            if (topPathDirectoryExe.Equals(topInstallPath, StringComparison.OrdinalIgnoreCase))
+            {
+                message = Catalog.GetStringFmt("Top directory {0} is the same for exe and route, installing in this directory not allowed", topInstallPath);
+                MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // cancelled
+                EnableButtons();
+                return;
+            }
+
+            DriveInfo dInfo = new DriveInfo(installPathRoute);
+
+            long size = route.InstallSize + route.DownloadSize;
+
+            if (size > (dInfo.AvailableFreeSpace * 1.1))
+            {
+                message = Catalog.GetStringFmt("Not enough diskspace on drive {0} ({1}), available {2} kB, needed {3} kB, still continue?",
+                    dInfo.Name,
+                    dInfo.VolumeLabel,
+                    (dInfo.AvailableFreeSpace / 1024).ToString("N0"),
+                    (size / 1024).ToString("N0"));
+
+                if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
+                {
+                    // cancelled
+                    EnableButtons();
+                    return;
+                }
+            }
+
+            message = Catalog.GetStringFmt("Route to be installed in \"{0}\", are you sure?", installPathRoute);
+
+            if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
+            {
+                // cancelled
+                EnableButtons();
+                return;
+            }
+
+            if (!Directory.Exists(installPath))
+            {
+                message = Catalog.GetStringFmt("Directory \"{0}\" does not exist", installPath);
+                MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                EnableButtons();
+                return;
+            }
+
+            if (!Directory.Exists(installPathRoute))
+            {
+                try
+                {
+                    Directory.CreateDirectory(installPathRoute);
+                }
+                catch (Exception createDirectoryException)
+                {
+                    message = Catalog.GetStringFmt("Directory \"{0}\" cannot be created: {1}",
+                        installPathRoute, createDirectoryException.Message);
+                    MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    EnableButtons();
+                    return;
+                }
+            }
+            else
+            {
+                if ((Directory.GetFiles(installPathRoute).Length != 0) ||
+                    (Directory.GetDirectories(installPathRoute).Length != 0))
+                {
+                    message = Catalog.GetStringFmt("Directory \"{0}\" exists and is not empty", installPathRoute);
+                    MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    EnableButtons();
+                    return;
+                }
+            }
+
+            Settings.Content.InstallPath = installPath;
+
+            // set json route filename
+
+            Settings.Content.RouteJsonName = Path.Combine(installPath, "ORRoute.json");
+
+            // the download
+
+            Cursor.Current = Cursors.WaitCursor;
+
+            dataGridViewDownloadContent.CurrentRow.Cells[1].Value = Catalog.GetString("Installing...");
+            Refresh();
+
+            if (!downloadRoute(installPathRoute))
+            {
+                EnableButtons();
+                return;
+            }
+
+            // insert row in Options, tab Content
+
+            if (!insertRowInOptions(installPathRoute))
+            {
+                EnableButtons();
+                return;
+            }
+
+            route.Installed = true;
+
+            DateTime dateTimeNow = DateTime.Now;
+            dataGridViewDownloadContent.CurrentRow.Cells[1].Value = dateTimeNow.ToString(CultureInfo.CurrentCulture.DateTimeFormat);
+            route.DateInstalled = dateTimeNow;
+
+            route.DirectoryInstalledIn = installPathRoute;
+
+            Settings.Folders.Save();
+            Settings.Routes.Save();
+
+            if (!string.IsNullOrWhiteSpace(route.Start.Route))
+            {
+                // start information available
+                MessageBox.Show(Catalog.GetString("Route installed, press 'Start' button to start Open Rails for this route."),
+                    Catalog.GetString("Done"), MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+            }
+            else
+            {
+                // no start information available
+                MainForm mainForm = ((MainForm)Owner);
+                mainForm.DoWithTask = false;
+                mainForm.LoadFolderList();
+                mainForm.comboBoxFolder.SelectedIndex = determineSelectedIndex(mainForm.comboBoxFolder, RouteName);
+                mainForm.DoWithTask = true;
+
+                MessageBox.Show(Catalog.GetString("Route installed."),
+                    Catalog.GetString("Done"), MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+
+                // close this dialog
+                DialogResult = DialogResult.OK;
+            }
+
+            EnableButtons();
+        }
+
+        private bool downloadRoute(string installPathRoute)
+        {
+            RouteSettings.Route route = Routes[RouteName];
+            bool returnValue = false;
+
+            Thread downloadThread = new Thread(() =>
+            {
+                if (route.getDownloadType() == RouteSettings.DownloadType.github)
+                {
+                    returnValue = doTheClone(installPathRoute);
+                }
+                if (route.getDownloadType() == RouteSettings.DownloadType.zip)
+                {
+                    returnValue = doTheZipDownload(route.Url, Path.Combine(installPathRoute, RouteName + ".zip"));
+                }
+            });
+            // start download in thread to be able to show the progress in the main thread
+            downloadThread.Start();
+
+            while (downloadThread.IsAlive)
+            {
+                Stopwatch sw = Stopwatch.StartNew();
+
+                TotalBytes = 0;
+                sumMB(installPathRoute);
+                dataGridViewDownloadContent.CurrentRow.Cells[1].Value =
+                    string.Format("downloaded: {0} kB", (TotalBytes / 1024).ToString("N0"));
+                Refresh();
+
+                while ((downloadThread.IsAlive) && (sw.ElapsedMilliseconds <= 3000)) { }
+            }
+
+            if (returnValue)
+            {
+                if (route.Url.EndsWith(".zip"))
+                {
+                    Thread installThread = new Thread(() =>
+                    {
+                        returnValue = doTheUnzipInstall(Path.Combine(installPathRoute, RouteName + ".zip"), installPathRoute);
+                    });
+                    installThread.Start();
+
+                    long bytesZipfile = TotalBytes;
+
+                    while (installThread.IsAlive)
+                    {
+                        Stopwatch sw = Stopwatch.StartNew();
+
+                        TotalBytes = -bytesZipfile;
+                        sumMB(installPathRoute);
+                        dataGridViewDownloadContent.CurrentRow.Cells[1].Value =
+                            string.Format("Installed: {0} kB", (TotalBytes / 1024).ToString("N0"));
+                        Refresh();
+
+                        while ((installThread.IsAlive) && (sw.ElapsedMilliseconds <= 3000)) { }
+                    }
+                }
+            }
+
+            dataGridViewDownloadContent.CurrentRow.Cells[1].Value = "";
+
+            return returnValue;
+        }
+
+        private bool doTheClone(string installPathRoute)
+        {
+            try
+            {
+                Repository.Clone(Routes[RouteName].Url, installPathRoute);
+            }
+            catch (LibGit2SharpException libGit2SharpException)
+            {
+                {
+                    string message = Catalog.GetStringFmt("Error during github download: {0}", libGit2SharpException.Message);
+                    MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool doTheZipDownload(string url, string installPathRouteZipfileName)
+        {
+            try
+            {
+                WebClient myWebClient = new WebClient();
+                myWebClient.DownloadFile(url, installPathRouteZipfileName);
+            }
+            catch (Exception error)
+            {
+                {
+                    string message = Catalog.GetStringFmt("Error during download zipfile {0}: {1}", url, error.Message);
+                    MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool doTheUnzipInstall(string installPathRouteZipfileName, string installPathRoute)
+        {
+            try
+            {
+                ZipFile.ExtractToDirectory(installPathRouteZipfileName, installPathRoute);
+                File.Delete(installPathRouteZipfileName);
+            }
+            catch (Exception error)
+            {
+                {
+                    string message = Catalog.GetStringFmt("Error during unzip zipfile {0}: {1}", installPathRouteZipfileName, error.Message);
+                    MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        long TotalBytes = 0;
+
+        private void sumMB(string path)
+        {
+            foreach (string fileName in Directory.GetFiles(path))
+            {
+                TotalBytes += new FileInfo(fileName).Length;
+            }
+
+            foreach (string directoryName in Directory.GetDirectories(path))
+            {
+                sumMB(directoryName);
+            }
+        }
+
+        private bool insertRowInOptions(string installPathRoute)
+        {
+            // sometimes the route is located one directory level deeper, determine real installPathRoute
+            string installPathRouteReal;
+
+            if (Directory.Exists(Path.Combine(installPathRoute, "routes")))
+            {
+                installPathRouteReal = installPathRoute;
+            }
+            else
+            {
+                string[] directories = Directory.GetDirectories(installPathRoute);
+                int indexDirectories = 0;
+                while ((indexDirectories < directories.Length) &&
+                    !Directory.Exists(Path.Combine(directories[indexDirectories], "routes")))
+                {
+                    indexDirectories++;
+                }
+                if (indexDirectories < directories.Length)
+                {
+                    installPathRouteReal = Path.Combine(installPathRoute, directories[indexDirectories]);
+                }
+                else
+                {
+                    string message = Catalog.GetString("Incorrect route, directory \"routes\" not found");
+                    MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+            }
+
+            string routeName = RouteName;
+            int index = 0;
+            var sortedFolders = Settings.Folders.Folders.OrderBy(pair => pair.Key).ToDictionary(pair => pair.Key, pair => pair.Value);
+            foreach (KeyValuePair<string, string> folderSetting in sortedFolders)
+            {
+                if (folderSetting.Key == routeName)
+                {
+                    if (!folderSetting.Value.Equals(installPathRouteReal, StringComparison.OrdinalIgnoreCase))
+                    {
+                        index++;
+                        routeName = string.Format("{0} ({1})", RouteName, index);
+                    }
+                }
+            }
+            Settings.Folders.Folders[routeName] = installPathRouteReal;
+            Routes[RouteName].ContentName = routeName;
+            Routes[RouteName].ContentDirectory = installPathRouteReal;
+
+            return true;
+        }
+
+        #endregion
+
+        #region InfoButton
+        private void InfoButton_Click(object sender, EventArgs e)
+        {
+            writeAndStartInfoFile();
+        }
+
+        private void writeAndStartInfoFile()
+        {
+            using (StreamWriter outputFile = new StreamWriter(InfoTempFilename))
+            {
+                RouteSettings.Route route = Routes[RouteName];
+
+                outputFile.WriteLine(string.Format("<title>OR: {0}</title>", RouteName));
+                outputFile.WriteLine(string.Format("<h3>{0}:</h3>", RouteName));
+
+                string description = route.Description.Replace("\n", "<br />");
+                outputFile.WriteLine(string.Format("<p>{0}</p>", description));
+
+                outputFile.WriteLine(string.Format("<img height='350' width='600' src = '{0}'/>", route.Image));
+
+                if (string.IsNullOrWhiteSpace(route.AuthorUrl))
+                {
+                    outputFile.WriteLine(string.Format("<p>" + Catalog.GetString("created by") + ": {0}</p>",
+                        route.AuthorName));
+                }
+                else
+                {
+                    outputFile.WriteLine(string.Format("<p>" + Catalog.GetString("created by") + ": <a href='{0}'>{1}</a></p>",
+                        route.AuthorUrl, route.AuthorName));
+                }
+
+                if (!string.IsNullOrWhiteSpace(route.Screenshot))
+                {
+                    outputFile.WriteLine(string.Format("<p>" + Catalog.GetString("screenshots") + ": <a href='{0}'>{1}</a></p>",
+                        route.Screenshot, route.Screenshot));
+                }
+
+                if (route.getDownloadType() == RouteSettings.DownloadType.github)
+                {
+                    outputFile.WriteLine("<p>" + Catalog.GetString("Downloadable: GitHub format") + "<br>");
+                    outputFile.WriteLine(string.Format("- " + Catalog.GetString("From:") + "{0}<br>", route.Url));
+                    if (route.InstallSize > 0)
+                    {
+                        outputFile.WriteLine("- " + Catalog.GetStringFmt("Install size: {0} GB",
+                            (route.InstallSize / (1024.0 * 1024 * 1024)).ToString("N")) + "<br></p>");
+                    }
+                }
+                if (route.getDownloadType() == RouteSettings.DownloadType.zip)
+                {
+                    outputFile.WriteLine(string.Format("<p>Downloadable: zip format<br>"));
+                    outputFile.WriteLine(string.Format("- From: {0}<br>", route.Url));
+                    if (route.InstallSize > 0)
+                    {
+                        outputFile.WriteLine("- " + Catalog.GetStringFmt("Install size: {0} GB",
+                            (route.InstallSize / (1024.0 * 1024 * 1024)).ToString("N")) + "<br>");
+                    }
+                    if (route.DownloadSize > 0)
+                    {
+                        outputFile.WriteLine("- " + Catalog.GetStringFmt("Download size: {0} GB",
+                            (route.DownloadSize / (1024.0 * 1024 * 1024)).ToString("N")) + "<br></p>");
+                    }
+                }
+
+                if (route.Installed)
+                {
+                    outputFile.WriteLine("<p>" + Catalog.GetString("Installed") + ":<br>");
+                    outputFile.WriteLine(string.Format("- " + Catalog.GetString("At") + ": {0}<br>", route.DateInstalled.ToString(CultureInfo.CurrentCulture.DateTimeFormat)));
+                    outputFile.WriteLine(string.Format("- " + Catalog.GetString("In") + ": \"{0}\"<br>", route.DirectoryInstalledIn));
+                    outputFile.WriteLine(string.Format("- " + Catalog.GetString("Content name") + ": \"{0}\"<br>", route.ContentName));
+                    outputFile.WriteLine(string.Format("- " + Catalog.GetString("Content Directory") + ": \"{0}\"<br></p>", route.ContentDirectory));
+                }
+
+                outputFile.WriteLine("<p>" + Catalog.GetString("Start options") + ":<br>");
+                if (string.IsNullOrWhiteSpace(route.Start.Route))
+                {
+                    // no start information
+                    outputFile.WriteLine("- " + Catalog.GetString("None") + "<br></p>");
+                }
+                else
+                {
+                    outputFile.WriteLine("- " + Catalog.GetString("Installation profile") + ": " + RouteName + "<br>");
+                    outputFile.WriteLine("- " + Catalog.GetString("Route") + ": " + route.Start.Route + "<br>");
+                    outputFile.WriteLine("- " + Catalog.GetString("Locomotive") + ": " + route.Start.Locomotive + "<br>");
+                    outputFile.WriteLine("- " + Catalog.GetString("Consist") + ": " + route.Start.Consist + "<br>");
+                    outputFile.WriteLine("- " + Catalog.GetString("Starting at") + ": " + route.Start.StartingAt + "<br>");
+                    outputFile.WriteLine("- " + Catalog.GetString("Heading to") + ": " + route.Start.HeadingTo + "<br>");
+                    outputFile.WriteLine("- " + Catalog.GetString("Time") + ": " + route.Start.Time + "<br>");
+                    outputFile.WriteLine("- " + Catalog.GetString("Season") + ": " + route.Start.Season + "<br>");
+                    outputFile.WriteLine("- " + Catalog.GetString("Weather") + ": " + route.Start.Weather + "<br></p>");
+                }
+
+                if (route.Installed && route.getDownloadType() == RouteSettings.DownloadType.zip)
+                {
+                    infoChangedAndAddedFileForZipDownloadType(route, outputFile);
+                }
+                if (route.Installed && route.getDownloadType() == RouteSettings.DownloadType.github)
+                {
+                    bool bothLocalAsRemoteUpdatesFound = infoChangedAndAddedFileForGitHubDownloadType(route, outputFile);
+                    if (bothLocalAsRemoteUpdatesFound)
+                    {
+                        outputFile.WriteLine("<p><b>" + Catalog.GetString("ATTENTION: both local and remote updates found.") + "</b><br>");
+                        outputFile.WriteLine("<b>" + Catalog.GetString("Update might fail if the update tries to overwrite a changed local file.") + "</b><br>");
+                        outputFile.WriteLine("<b>" + Catalog.GetString("If that's the case you are on your own!") + "</b><br>");
+                        outputFile.WriteLine("<b>" + Catalog.GetString("Get a git expert at your desk or just Delete and Install the route again.") + "</b><br></p>");
+                    }
+                }
+            }
+            try
+            {
+                // show html file in default browser
+                Process.Start(InfoTempFilename);
+            }
+            catch (Exception e) 
+            {
+                string message = Catalog.GetStringFmt("Error opening html page {0} in browser. Error: {1}", InfoTempFilename, e.ToString());
+                MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+            }
+        }
+
+        private void infoChangedAndAddedFileForZipDownloadType(RouteSettings.Route route, StreamWriter outputFile)
+        {
+            List<string> changedAndAddedFiles = DirectoryAndFiles.getChangedFiles(route.DirectoryInstalledIn, route.DateInstalled);
+            outputFile.WriteLine("<p id='changed'>" + Catalog.GetString("Changed local file(s) after the install (timestamp check)") + ":<br>");
+            if (changedAndAddedFiles.Count == 0)
+            {
+                outputFile.WriteLine("- " + Catalog.GetString("No changed files found") + "<br></p>");
+            }
+            else
+            {
+                foreach (string changedFile in changedAndAddedFiles)
+                {
+                    outputFile.WriteLine(changedFile + "<br>");
+                }
+                outputFile.WriteLine("</p>");
+            }
+            changedAndAddedFiles = DirectoryAndFiles.getAddedFiles(route.DirectoryInstalledIn, route.DateInstalled);
+            outputFile.WriteLine("<p>" + Catalog.GetString("Added local file(s) after the install (timestamp check)") + ":<br>");
+            if (changedAndAddedFiles.Count == 0)
+            {
+                outputFile.WriteLine("- " + Catalog.GetString("No added files found") + "<br></p>");
+            }
+            else
+            {
+                foreach (string changedFile in changedAndAddedFiles)
+                {
+                    outputFile.WriteLine(changedFile + "<br>");
+                }
+                outputFile.WriteLine("</p>");
+            }
+        }
+
+        private bool infoChangedAndAddedFileForGitHubDownloadType(RouteSettings.Route route, StreamWriter outputFile)
+        {
+            bool changedFound = false;
+            bool remoteUpdateFound = false;
+
+            List<string> changedAndAddedFiles = DirectoryAndFiles.getChangedGitFiles(route.DirectoryInstalledIn);
+            outputFile.WriteLine("<p>" + Catalog.GetString("Changed local file(s) after the install (git status)") + ":<br>");
+            if (changedAndAddedFiles.Count == 0)
+            {
+                outputFile.WriteLine("- " + Catalog.GetString("No changed files found") + "<br></p>");
+            }
+            else
+            {
+                changedFound = true;
+                foreach (string changedFile in changedAndAddedFiles)
+                {
+                    outputFile.WriteLine(changedFile + "<br>");
+                }
+                outputFile.WriteLine("</p>");
+            }
+            changedAndAddedFiles = DirectoryAndFiles.getAddedGitFiles(route.DirectoryInstalledIn);
+            outputFile.WriteLine("<p>" + Catalog.GetString("Added local file(s) after the install (git status)") + ":<br>");
+            if (changedAndAddedFiles.Count == 0)
+            {
+                outputFile.WriteLine("- " + Catalog.GetString("No added files found") + "<br></p>");
+            }
+            else
+            {
+                changedFound = true;
+                foreach (string changedFile in changedAndAddedFiles)
+                {
+                    outputFile.WriteLine(changedFile + "<br>");
+                }
+                outputFile.WriteLine("</p>");
+            }
+
+            outputFile.WriteLine("<p>" + Catalog.GetString("Remote GitHub Updates available:") + "<br>");
+
+            List<string> commitStrings = getCommits(route.DirectoryInstalledIn);
+            if (commitStrings.Count > 0)
+            {
+                remoteUpdateFound = true;
+                for (int index = 0; index < commitStrings.Count; index += 4)
+                {
+                    outputFile.WriteLine(string.Format("- commit {0}<br>", commitStrings[index]));
+                    outputFile.WriteLine(Catalog.GetStringFmt("On {0} by {1}",
+                        commitStrings[index + 1], commitStrings[index + 2]) + ":<br>");
+                    outputFile.WriteLine(commitStrings[index + 3] + "<br><br>");
+                }
+                outputFile.WriteLine("</p>");
+            }
+            else
+            {
+                outputFile.WriteLine(Catalog.GetString("- No updates found") + "<br></p>");
+            }
+
+            return changedFound && remoteUpdateFound;
+        }
+        #endregion
+
+        #region StartButton
+        void StartButton_Click(object sender, EventArgs e)
+        {
+            DisableButtons();
+
+            Cursor.Current = Cursors.WaitCursor;
+
+            RouteSettings.Route route = Routes[RouteName];
+            string contentName = route.ContentName;
+            MainForm mainForm = ((MainForm)Owner);
+
+            mainForm.DoWithTask = false;
+
+            try
+            {
+                mainForm.LoadFolderList();
+                mainForm.comboBoxFolder.SelectedIndex = determineSelectedIndex(mainForm.comboBoxFolder, contentName);
+
+                mainForm.LoadRouteList();
+                mainForm.comboBoxRoute.SelectedIndex = determineSelectedIndex(mainForm.comboBoxRoute, route.Start.Route);
+
+                mainForm.radioButtonModeActivity.Checked = true;
+                // hardcoded: + Explore in Activity Mode +
+                mainForm.comboBoxActivity.SelectedIndex = 1;
+
+                mainForm.LoadLocomotiveList();
+                mainForm.comboBoxLocomotive.SelectedIndex = determineSelectedIndex(mainForm.comboBoxLocomotive, route.Start.Locomotive);
+                mainForm.comboBoxConsist.SelectedIndex = determineSelectedIndex(mainForm.comboBoxConsist, route.Start.Consist);
+
+                mainForm.LoadStartAtList();
+                mainForm.comboBoxStartAt.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartAt, route.Start.StartingAt);
+                mainForm.comboBoxHeadTo.SelectedIndex = determineSelectedIndex(mainForm.comboBoxHeadTo, route.Start.HeadingTo);
+
+                mainForm.comboBoxStartTime.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartTime, route.Start.Time);
+                mainForm.comboBoxStartSeason.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartSeason, route.Start.Season);
+                mainForm.comboBoxStartWeather.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartWeather, route.Start.Weather);
+            }
+            catch (StartNotFound error)
+            {
+
+                string message = Catalog.GetStringFmt("Starting not possible, start from main form instead. Searching for '{0}'.", error.Message);
+                MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                mainForm.DoWithTask = true;
+
+                // close this dialog
+                DialogResult = DialogResult.OK;
+
+                return;
+            }
+
+            mainForm.DoWithTask = true;
+
+            // close this dialog
+            DialogResult = DialogResult.OK;
+
+            // close the MainForm dialog, starts OR
+            Owner.DialogResult = DialogResult.OK;
+
+            EnableButtons();
+        }
+
+        private int determineSelectedIndex(ComboBox comboBox, string compareWith)
+        {
+            bool found = false;
+            int index = 0;
+
+            string classOfItem;
+            if (comboBox.Items.Count > 0)
+            {
+                classOfItem = comboBox.Items[0].GetType().Name;
+            }
+            else
+            {
+                throw new StartNotFound(Catalog.GetStringFmt(compareWith));
+            }
+
+            while (!found && (index < comboBox.Items.Count))
+            {
+                string comboboxName = "";
+                switch (classOfItem)
+                {
+                    case "Folder":
+                        comboboxName = ((Menu.Folder)comboBox.Items[index]).Name;
+                        break;
+                    case "Route":
+                        comboboxName = ((Menu.Route)comboBox.Items[index]).Name;
+                        break;
+                    case "Locomotive":
+                        comboboxName = ((Menu.Locomotive)comboBox.Items[index]).Name;
+                        break;
+                    case "Consist":
+                        comboboxName = ((Menu.Consist)comboBox.Items[index]).Name;
+                        break;
+                    case "String":
+                        comboboxName = (String)comboBox.Items[index];
+                        break;
+                    case "Path":
+                        comboboxName = ((Menu.Path)comboBox.Items[index]).End;
+                        break;
+                    case "KeyedComboBoxItem":
+                        comboboxName = ((MainForm.KeyedComboBoxItem)comboBox.Items[index]).Value;
+                        break;
+                }
+
+                if (comboboxName == compareWith)
+                {
+                    found = true;
+                }
+                else
+                {
+                    index++;
+                }
+            }
+            if (found)
+            {
+                comboBox.SelectedIndex = index;
+            }
+            else
+            {
+                throw new StartNotFound(Catalog.GetStringFmt(compareWith));
+            }
+
+            return index;
+        }
+
+        private class StartNotFound : Exception
+        {
+            public StartNotFound(string message)
+                : base(message)
+            { }
+        }
+        #endregion
+
+        #region DeleteButton
+        void DeleteButton_Click(object sender, EventArgs e)
+        {
+            RouteSettings.Route route = Routes[RouteName];
+            string message;
+
+            DisableButtons();
+
+            message = Catalog.GetStringFmt("Directory \"{0}\" is to be deleted, are you really sure?", route.DirectoryInstalledIn);
+            if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.OK)
+            {
+                // cancelled
+                EnableButtons();
+                return;
+            }
+
+            Cursor.Current = Cursors.WaitCursor;
+
+            if (areThereChangedAddedFiles(route))
+            {
+                writeAndStartInfoFile();
+                message = Catalog.GetStringFmt("Changed or added local files found in Directory \"{0}\", see Info at the bottom for more information. Do you want to continue?", route.DirectoryInstalledIn);
+                if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.OK)
+                {
+                    // cancelled
+                    EnableButtons();
+                    return;
+                }
+            }
+
+            Cursor.Current = Cursors.WaitCursor;
+
+            DirectoryAndFiles.directoryDelete(route.DirectoryInstalledIn);
+
+            if (Settings.Folders.Folders[route.ContentName] == route.ContentDirectory)
+            {
+                Settings.Folders.Folders.Remove(route.ContentName);
+            }
+            Settings.Folders.Save();
+
+            route.Installed = false;
+            route.DateInstalled = DateTime.MinValue;
+            route.DirectoryInstalledIn = "";
+
+            Settings.Routes.Save();
+
+            dataGridViewDownloadContent.CurrentRow.Cells[1].Value = "";
+
+            Refresh();
+
+            EnableButtons();
+        }
+        #endregion
+
+        #region UpdateButton
+        private void updateButton_Click(object sender, EventArgs e)
+        {
+            RouteSettings.Route route = Routes[RouteName];
+            string message;
+
+            List<string> commitStrings = getCommits(route.DirectoryInstalledIn);
+            if (commitStrings.Count > 0)
+            {
+                writeAndStartInfoFile();
+                message = Catalog.GetString("Remote updates found, see Info at the bottom for more information. Do you want to continue?");
+                if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.OK)
+                {
+                    // cancelled
+                    EnableButtons();
+                    return;
+                }
+                if (areThereChangedAddedFiles(route))
+                {
+                    message = Catalog.GetString("Changed or added local files found, Update might fail, see Info at the bottom for more information. Do you want to continue?");
+                    if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.OK)
+                    {
+                        // cancelled
+                        EnableButtons();
+                        return;
+                    }
+                }
+
+            }
+
+            doThePull(route);
+        }
+
+        private bool doThePull(RouteSettings.Route route) {
+
+            try
+            {
+                using (var repo = new Repository(route.DirectoryInstalledIn))
+                {
+                    LibGit2Sharp.PullOptions options = new LibGit2Sharp.PullOptions();
+                    options.FetchOptions = new FetchOptions();
+
+                    // User information to create a merge commit
+                    var signature = new LibGit2Sharp.Signature(
+                        new Identity(route.AuthorName, route.AuthorUrl), DateTimeOffset.Now);
+
+                    // Pull
+                    Commands.Pull(repo, signature, options);
+                }
+            }
+            catch (LibGit2SharpException libGit2SharpException)
+            {
+                {
+                    string message = Catalog.GetStringFmt("Error during github pull: {0}", libGit2SharpException.Message);
+                    MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+            }
+            return true;
+        }
+        #endregion
+
+        private void DisableButtons()
+        {
+            downloadContentButton.Enabled = false;
+            startButton.Enabled = false;
+            deleteButton.Enabled = false;
+            updateButton.Enabled = false;
+        }
+
+        private void EnableButtons()
+        {
+            RouteSettings.Route route = Routes[RouteName];
+
+            downloadContentButton.Enabled = !route.Installed;
+            startButton.Enabled = route.Installed && !string.IsNullOrWhiteSpace(route.Start.Route);
+            deleteButton.Enabled = route.Installed;
+            updateButton.Enabled = route.Installed && (route.getDownloadType() == RouteSettings.DownloadType.github);
+        }
+
+        private bool areThereChangedAddedFiles(RouteSettings.Route route)
+        {
+            if (route.getDownloadType() == RouteSettings.DownloadType.zip)
+            {
+                return 
+                    (DirectoryAndFiles.getChangedFiles(route.DirectoryInstalledIn, route.DateInstalled).Count > 0) ||
+                    (DirectoryAndFiles.getAddedFiles(route.DirectoryInstalledIn, route.DateInstalled).Count > 0);
+            }
+            if (route.getDownloadType() == RouteSettings.DownloadType.github)
+            {
+                return
+                    (DirectoryAndFiles.getChangedGitFiles(route.DirectoryInstalledIn).Count > 0) ||
+                    (DirectoryAndFiles.getAddedGitFiles(route.DirectoryInstalledIn).Count > 0);
+            }
+
+            return false;
+        }
+
+        private List<string> getCommits(string installPathRoute)
+        {
+            List<string> commits = new List<string>();
+
+            try
+            {
+                using (var repo = new Repository(installPathRoute))
+                {
+                    var options = new FetchOptions
+                    {
+                        Prune = true,
+                        TagFetchMode = TagFetchMode.Auto
+                    };
+                    var remote = repo.Network.Remotes["origin"];
+                    var msg = "Fetching remote";
+                    var refSpecs = remote.FetchRefSpecs.Select(x => x.Specification);
+                    Commands.Fetch(repo, remote.Name, refSpecs, options, msg);
+
+                    var filter = new CommitFilter
+                    {
+                        ExcludeReachableFrom = repo.Branches["main"],
+                        IncludeReachableFrom = repo.Branches["origin/Head"],
+                    };
+                    // at first I tried to create a List<Commit>, but that resulted
+                    // in some strange access violation when reading the list
+                    // --> hence this workaround
+                    foreach (Commit commit in repo.Commits.QueryBy(filter))
+                    {
+                        commits.Add(commit.Id.ToString());
+                        commits.Add(commit.Author.When.ToString(CultureInfo.CurrentCulture.DateTimeFormat));
+                        commits.Add(commit.Author.Name);
+                        commits.Add(commit.Message);
+                    }
+                }
+            }
+            catch (LibGit2SharpException libGit2SharpException)
+            {
+                {
+                    string message = Catalog.GetStringFmt("Error during GitHub pull, updates might not be installed, error: {0}", libGit2SharpException.Message);
+                    MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+
+            return commits;
+        }
+
+        private void DownloadContentForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            try
+            {
+                if (pictureBoxRoute.Image != null)
+                {
+                    pictureBoxRoute.Image.Dispose();
+                    pictureBoxRoute.Image = null;
+                }
+                File.Delete(ImageTempFilename);
+                File.Delete(InfoTempFilename);
+            }
+            catch
+            {
+                // just ignore, the files are in the user temp directory anyway
+            }
+        }
+    }
+}
+

@@ -56,6 +56,7 @@ namespace ORTS
             this.panelDetails = new System.Windows.Forms.Panel();
             this.panel1 = new System.Windows.Forms.Panel();
             this.buttonDocuments = new System.Windows.Forms.Button();
+            this.buttonDownloadContent = new System.Windows.Forms.Button();
             this.label25 = new System.Windows.Forms.Label();
             this.radioButtonModeActivity = new System.Windows.Forms.RadioButton();
             this.radioButtonModeTimetable = new System.Windows.Forms.RadioButton();
@@ -130,7 +131,7 @@ namespace ORTS
             this.labelLogo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.labelLogo.Font = new System.Drawing.Font("Arial", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelLogo.ForeColor = System.Drawing.Color.Gray;
-            this.labelLogo.Location = new System.Drawing.Point(82, 472);
+            this.labelLogo.Location = new System.Drawing.Point(96, 472);
             this.labelLogo.Name = "labelLogo";
             this.labelLogo.Size = new System.Drawing.Size(224, 64);
             this.labelLogo.TabIndex = 11;
@@ -151,7 +152,7 @@ namespace ORTS
             this.checkBoxWarnings.Location = new System.Drawing.Point(109, 48);
             this.checkBoxWarnings.Name = "checkBoxWarnings";
             this.checkBoxWarnings.Size = new System.Drawing.Size(64, 17);
-            this.checkBoxWarnings.TabIndex = 1;
+            this.checkBoxWarnings.TabIndex = 4;
             this.checkBoxWarnings.Text = "Logging";
             this.checkBoxWarnings.UseVisualStyleBackColor = true;
             // 
@@ -160,7 +161,7 @@ namespace ORTS
             this.buttonOptions.Location = new System.Drawing.Point(109, 19);
             this.buttonOptions.Name = "buttonOptions";
             this.buttonOptions.Size = new System.Drawing.Size(75, 23);
-            this.buttonOptions.TabIndex = 0;
+            this.buttonOptions.TabIndex = 3;
             this.buttonOptions.Text = "Options";
             this.buttonOptions.Click += new System.EventHandler(this.buttonOptions_Click);
             // 
@@ -176,10 +177,10 @@ namespace ORTS
             // 
             // buttonTools
             // 
-            this.buttonTools.Location = new System.Drawing.Point(3, 19);
+            this.buttonTools.Location = new System.Drawing.Point(3, 48);
             this.buttonTools.Name = "buttonTools";
             this.buttonTools.Size = new System.Drawing.Size(100, 23);
-            this.buttonTools.TabIndex = 19;
+            this.buttonTools.TabIndex = 1;
             this.buttonTools.Text = "Tools ▼";
             this.buttonTools.Click += new System.EventHandler(this.buttonTools_Click);
             // 
@@ -357,6 +358,7 @@ namespace ORTS
             // 
             this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.Controls.Add(this.buttonDocuments);
+            this.panel1.Controls.Add(this.buttonDownloadContent);
             this.panel1.Controls.Add(this.buttonOptions);
             this.panel1.Controls.Add(this.checkBoxWarnings);
             this.panel1.Controls.Add(this.buttonTools);
@@ -367,13 +369,22 @@ namespace ORTS
             // 
             // buttonDocuments
             // 
-            this.buttonDocuments.Location = new System.Drawing.Point(3, 48);
+            this.buttonDocuments.Location = new System.Drawing.Point(3, 79);
             this.buttonDocuments.Name = "buttonDocuments";
             this.buttonDocuments.Size = new System.Drawing.Size(100, 23);
-            this.buttonDocuments.TabIndex = 22;
+            this.buttonDocuments.TabIndex = 2;
             this.buttonDocuments.Text = "Documents ▼";
             this.buttonDocuments.UseVisualStyleBackColor = true;
             this.buttonDocuments.Click += new System.EventHandler(this.buttonDocuments_Click);
+            // 
+            // buttonDownloadContent
+            // 
+            this.buttonDownloadContent.Location = new System.Drawing.Point(3, 19);
+            this.buttonDownloadContent.Name = "buttonDownloadContent";
+            this.buttonDownloadContent.Size = new System.Drawing.Size(100, 23);
+            this.buttonDownloadContent.TabIndex = 0;
+            this.buttonDownloadContent.Text = "Content";
+            this.buttonDownloadContent.Click += new System.EventHandler(this.buttonDownloadContent_Click);
             // 
             // label25
             // 
@@ -996,8 +1007,8 @@ namespace ORTS
         private System.Windows.Forms.Button buttonOptions;
         private System.Windows.Forms.Button buttonResume;
         private System.Windows.Forms.Button buttonTools;
-        private System.Windows.Forms.ComboBox comboBoxFolder;
-        private System.Windows.Forms.ComboBox comboBoxRoute;
+        public System.Windows.Forms.ComboBox comboBoxFolder;
+        public System.Windows.Forms.ComboBox comboBoxRoute;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label label13;
@@ -1009,26 +1020,26 @@ namespace ORTS
         private System.Windows.Forms.Panel panelDetails;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label label25;
-        private System.Windows.Forms.RadioButton radioButtonModeActivity;
+        public System.Windows.Forms.RadioButton radioButtonModeActivity;
         private System.Windows.Forms.RadioButton radioButtonModeTimetable;
         private System.Windows.Forms.Panel panelModeActivity;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.ComboBox comboBoxActivity;
+        public System.Windows.Forms.ComboBox comboBoxActivity;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.ComboBox comboBoxLocomotive;
-        private System.Windows.Forms.ComboBox comboBoxConsist;
+        public System.Windows.Forms.ComboBox comboBoxLocomotive;
+        public System.Windows.Forms.ComboBox comboBoxConsist;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.ComboBox comboBoxStartAt;
+        public System.Windows.Forms.ComboBox comboBoxStartAt;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.ComboBox comboBoxHeadTo;
+        public System.Windows.Forms.ComboBox comboBoxHeadTo;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.ComboBox comboBoxStartTime;
+        public System.Windows.Forms.ComboBox comboBoxStartTime;
         private System.Windows.Forms.ComboBox comboBoxDuration;
-        private System.Windows.Forms.ComboBox comboBoxStartWeather;
+        public System.Windows.Forms.ComboBox comboBoxStartWeather;
         private System.Windows.Forms.Label label12;
-        private System.Windows.Forms.ComboBox comboBoxStartSeason;
+        public System.Windows.Forms.ComboBox comboBoxStartSeason;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.ComboBox comboBoxDifficulty;
         private System.Windows.Forms.Label label8;
@@ -1051,6 +1062,7 @@ namespace ORTS
         private System.Windows.Forms.LinkLabel linkLabelChangeLog;
         private System.Windows.Forms.Button buttonDocuments;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripDocuments;
+        private System.Windows.Forms.Button buttonDownloadContent;
         private System.Windows.Forms.Button buttonResumeMP;
         private System.Windows.Forms.RadioButton radioButtonMPServer;
         private System.Windows.Forms.RadioButton radioButtonMPClient;
