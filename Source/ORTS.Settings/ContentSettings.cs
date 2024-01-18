@@ -30,9 +30,6 @@ namespace ORTS.Settings
         [Default("C:\\OpenRails")]
         public string InstallPath { get; set; }
 
-        [Default("")]
-        public string RouteJsonName { get; set; }
-
         #endregion
 
         public ContentSettings(IEnumerable<string> options)
