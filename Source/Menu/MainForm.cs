@@ -107,7 +107,7 @@ namespace ORTS
         public string SelectedSaveFile { get; set; }
         public UserAction SelectedAction { get; set; }
 
-        GettextResourceManager Catalog = new GettextResourceManager("Menu");
+        GettextResourceManager catalog = new GettextResourceManager("Menu");
 
         public bool DoWithTask = true;
 
@@ -144,30 +144,30 @@ namespace ORTS
             if (!Initialized)
             {
                 var Seasons = new[] {
-                    new KeyedComboBoxItem(0, Catalog.GetString("Spring")),
-                    new KeyedComboBoxItem(1, Catalog.GetString("Summer")),
-                    new KeyedComboBoxItem(2, Catalog.GetString("Autumn")),
-                    new KeyedComboBoxItem(3, Catalog.GetString("Winter")),
+                    new KeyedComboBoxItem(0, catalog.GetString("Spring")),
+                    new KeyedComboBoxItem(1, catalog.GetString("Summer")),
+                    new KeyedComboBoxItem(2, catalog.GetString("Autumn")),
+                    new KeyedComboBoxItem(3, catalog.GetString("Winter")),
                 };
                 var Weathers = new[] {
-                    new KeyedComboBoxItem(0, Catalog.GetString("Clear")),
-                    new KeyedComboBoxItem(1, Catalog.GetString("Snow")),
-                    new KeyedComboBoxItem(2, Catalog.GetString("Rain")),
+                    new KeyedComboBoxItem(0, catalog.GetString("Clear")),
+                    new KeyedComboBoxItem(1, catalog.GetString("Snow")),
+                    new KeyedComboBoxItem(2, catalog.GetString("Rain")),
                 };
                 var Difficulties = new[] {
-                    Catalog.GetString("Easy"),
-                    Catalog.GetString("Medium"),
-                    Catalog.GetString("Hard"),
+                    catalog.GetString("Easy"),
+                    catalog.GetString("Medium"),
+                    catalog.GetString("Hard"),
                     "",
                 };
                 var Days = new[] {
-                    new KeyedComboBoxItem(0, Catalog.GetString("Monday")),
-                    new KeyedComboBoxItem(1, Catalog.GetString("Tuesday")),
-                    new KeyedComboBoxItem(2, Catalog.GetString("Wednesday")),
-                    new KeyedComboBoxItem(3, Catalog.GetString("Thursday")),
-                    new KeyedComboBoxItem(4, Catalog.GetString("Friday")),
-                    new KeyedComboBoxItem(5, Catalog.GetString("Saturday")),
-                    new KeyedComboBoxItem(6, Catalog.GetString("Sunday")),
+                    new KeyedComboBoxItem(0, catalog.GetString("Monday")),
+                    new KeyedComboBoxItem(1, catalog.GetString("Tuesday")),
+                    new KeyedComboBoxItem(2, catalog.GetString("Wednesday")),
+                    new KeyedComboBoxItem(3, catalog.GetString("Thursday")),
+                    new KeyedComboBoxItem(4, catalog.GetString("Friday")),
+                    new KeyedComboBoxItem(5, catalog.GetString("Saturday")),
+                    new KeyedComboBoxItem(6, catalog.GetString("Sunday")),
                 };
 
                 comboBoxStartSeason.Items.AddRange(Seasons);
@@ -198,7 +198,7 @@ namespace ORTS
                         continue;
 
                     // Remove the product name from the tool's name and localise.
-                    var toolName = Catalog.GetString(toolInfo.FileDescription.Replace(Application.ProductName, "").Trim());
+                    var toolName = catalog.GetString(toolInfo.FileDescription.Replace(Application.ProductName, "").Trim());
 
                     // Create menu item to execute tool.
                     tools.Add(new ToolStripMenuItem(toolName, null, (Object sender2, EventArgs e2) =>
@@ -320,9 +320,9 @@ namespace ORTS
             }, _ =>
             {
                 if (UpdateManager.LastCheckError != null)
-                    linkLabelUpdate.Text = Catalog.GetString("Update check failed");
+                    linkLabelUpdate.Text = catalog.GetString("Update check failed");
                 else if (UpdateManager.LastUpdate != null && UpdateManager.LastUpdate.Version != VersionInfo.Version)
-                    linkLabelUpdate.Text = Catalog.GetStringFmt("Update to {0}", UpdateManager.LastUpdate.Version);
+                    linkLabelUpdate.Text = catalog.GetStringFmt("Update to {0}", UpdateManager.LastUpdate.Version);
                 else
                     linkLabelUpdate.Text = "";
                 linkLabelUpdate.Enabled = true;
@@ -350,7 +350,7 @@ namespace ORTS
                 catch { }
             }
 
-            Localizer.Localize(this, Catalog);
+            Localizer.Localize(this, catalog);
         }
 
         void RestartMenu()
@@ -508,7 +508,7 @@ namespace ORTS
             string tmp = text;
             if (tmp.Length < 4 || tmp.Length > 10 || tmp.Contains("\"") || tmp.Contains("\'") || tmp.Contains(" ") || tmp.Contains("-") || Char.IsDigit(tmp, 0))
             {
-                MessageBox.Show(Catalog.GetString("User name must be 4-10 characters long, cannot contain space, ', \" or - and must not start with a digit."), Application.ProductName);
+                MessageBox.Show(catalog.GetString("User name must be 4-10 characters long, cannot contain space, ', \" or - and must not start with a digit."), Application.ProductName);
                 return false;
             }
             return true;
@@ -521,7 +521,7 @@ namespace ORTS
         {
             if (UpdateManager.LastCheckError != null)
             {
-                MessageBox.Show(Catalog.GetStringFmt("The update check failed due to an error:\n\n{0}", UpdateManager.LastCheckError), Application.ProductName);
+                MessageBox.Show(catalog.GetStringFmt("The update check failed due to an error:\n\n{0}", UpdateManager.LastCheckError), Application.ProductName);
                 return;
             }
 
@@ -529,7 +529,7 @@ namespace ORTS
 
             if (UpdateManager.LastUpdateError != null)
             {
-                MessageBox.Show(Catalog.GetStringFmt("The update failed due to an error:\n\n{0}", UpdateManager.LastUpdateError), Application.ProductName);
+                MessageBox.Show(catalog.GetStringFmt("The update failed due to an error:\n\n{0}", UpdateManager.LastUpdateError), Application.ProductName);
                 return;
             }
         }
@@ -1175,48 +1175,48 @@ namespace ORTS
             Win32.LockWindowUpdate(Handle);
             ClearDetails();
             if (SelectedRoute != null && SelectedRoute.Description != null)
-                ShowDetail(Catalog.GetStringFmt("Route: {0}", SelectedRoute.Name), SelectedRoute.Description.Split('\n'));
+                ShowDetail(catalog.GetStringFmt("Route: {0}", SelectedRoute.Name), SelectedRoute.Description.Split('\n'));
 
             if (radioButtonModeActivity.Checked)
             {
                 if (SelectedConsist != null && SelectedConsist.Locomotive != null && SelectedConsist.Locomotive.Description != null)
                 {
-                    ShowDetail(Catalog.GetStringFmt("Locomotive: {0}", SelectedConsist.Locomotive.Name), SelectedConsist.Locomotive.Description.Split('\n'));
+                    ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedConsist.Locomotive.Name), SelectedConsist.Locomotive.Description.Split('\n'));
                 }
                 if (SelectedActivity != null && SelectedActivity.Description != null)
                 {
-                    ShowDetail(Catalog.GetStringFmt("Activity: {0}", SelectedActivity.Name), SelectedActivity.Description.Split('\n'));
-                    ShowDetail(Catalog.GetString("Activity Briefing"), SelectedActivity.Briefing.Split('\n'));
+                    ShowDetail(catalog.GetStringFmt("Activity: {0}", SelectedActivity.Name), SelectedActivity.Description.Split('\n'));
+                    ShowDetail(catalog.GetString("Activity Briefing"), SelectedActivity.Briefing.Split('\n'));
                 }
                 else if (SelectedPath != null)
                 {
-                    ShowDetail(Catalog.GetStringFmt("Path: {0}", SelectedPath.Name), new[] {
-                        Catalog.GetStringFmt("Starting at: {0}", SelectedPath.Start),
-                        Catalog.GetStringFmt("Heading to: {0}", SelectedPath.End)
+                    ShowDetail(catalog.GetStringFmt("Path: {0}", SelectedPath.Name), new[] {
+                        catalog.GetStringFmt("Starting at: {0}", SelectedPath.Start),
+                        catalog.GetStringFmt("Heading to: {0}", SelectedPath.End)
                     });
                 }
             }
             if (radioButtonModeTimetable.Checked)
             {
                 if (SelectedTimetableSet != null)
-                    ShowDetail(Catalog.GetStringFmt("Timetable set: {0}", SelectedTimetableSet), new string[0]);
+                    ShowDetail(catalog.GetStringFmt("Timetable set: {0}", SelectedTimetableSet), new string[0]);
                     // Description not shown as no description is available for a timetable set.
 
                 if (SelectedTimetable != null)
-                    ShowDetail(Catalog.GetStringFmt("Timetable: {0}", SelectedTimetable), SelectedTimetable.Briefing.Split('\n'));
+                    ShowDetail(catalog.GetStringFmt("Timetable: {0}", SelectedTimetable), SelectedTimetable.Briefing.Split('\n'));
 
                 if (SelectedTimetableTrain != null)
                 {
-                    ShowDetail(Catalog.GetStringFmt("Train: {0}", SelectedTimetableTrain), HideStartParameters(SelectedTimetableTrain.ToInfo()));
+                    ShowDetail(catalog.GetStringFmt("Train: {0}", SelectedTimetableTrain), HideStartParameters(SelectedTimetableTrain.ToInfo()));
 
                     if (SelectedTimetableConsist != null)
                     {
-                        ShowDetail(Catalog.GetStringFmt("Consist: {0}", SelectedTimetableConsist.Name), new string[0]);
+                        ShowDetail(catalog.GetStringFmt("Consist: {0}", SelectedTimetableConsist.Name), new string[0]);
                         if (SelectedTimetableConsist.Locomotive != null && SelectedTimetableConsist.Locomotive.Description != null)
-                            ShowDetail(Catalog.GetStringFmt("Locomotive: {0}", SelectedTimetableConsist.Locomotive.Name), SelectedTimetableConsist.Locomotive.Description.Split('\n'));
+                            ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedTimetableConsist.Locomotive.Name), SelectedTimetableConsist.Locomotive.Description.Split('\n'));
                     }
                     if (SelectedTimetablePath != null)
-                        ShowDetail(Catalog.GetStringFmt("Path: {0}", SelectedTimetablePath.Name), SelectedTimetablePath.ToInfo());
+                        ShowDetail(catalog.GetStringFmt("Path: {0}", SelectedTimetablePath.Name), SelectedTimetablePath.ToInfo());
                 }
             }
 
