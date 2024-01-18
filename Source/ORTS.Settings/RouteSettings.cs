@@ -24,11 +24,14 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using LibGit2Sharp;
 using ORTS.Common;
+using System.Windows.Forms;
 
 namespace ORTS.Settings
 {
     public class RouteSettings
     {
+
+
         public enum DownloadType
         {
             github,
@@ -123,20 +126,32 @@ namespace ORTS.Settings
             // left empty
         }
 
+        private string RouteJsonName;
+
         public void LoadContentAndInstalled()
         {
-            if (!string.IsNullOrWhiteSpace(Content.RouteJsonName))
+            // set json route filename
+
+            string userDataSettingsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName, "Settings");
+            if (!Directory.Exists(userDataSettingsFolder))
             {
-                if (File.Exists(Content.RouteJsonName))
+                Directory.CreateDirectory(userDataSettingsFolder);
+            }
+
+            RouteJsonName = Path.Combine(userDataSettingsFolder, "ORRoute.json");
+
+            if (!string.IsNullOrWhiteSpace(RouteJsonName))
+            {
+                if (File.Exists(RouteJsonName))
                 {
                     try
                     {
-                        string json = File.ReadAllText(Content.RouteJsonName);
+                        string json = File.ReadAllText(RouteJsonName);
                         Routes = JsonConvert.DeserializeObject<IDictionary<string, Route>>(json);
                     }
                     catch (Exception error)
                     {
-                        throw new Exception("Error during reading " + Content.RouteJsonName + ": " + error.Message, error);
+                        throw new Exception("Error during reading " + RouteJsonName + ": " + error.Message, error);
                     }
                 }
             }
@@ -162,7 +177,7 @@ namespace ORTS.Settings
                 }
                 catch (Exception error) 
                 { 
-                    throw new Exception("Error during retrieving routes.json from \"" + githubUrl + "\":" + error.Message, error); 
+                    throw new Exception("Error during retrieving routes.json from \"" + githubUrl + "\": " + error.Message, error); 
                 }  
             }
 
@@ -281,7 +296,7 @@ namespace ORTS.Settings
                 }
             }
             string json = JsonConvert.SerializeObject(routes, Formatting.Indented);
-            File.WriteAllText(Content.RouteJsonName, json);
+            File.WriteAllText(RouteJsonName, json);
         }
     }
 }

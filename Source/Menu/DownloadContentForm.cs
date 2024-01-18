@@ -250,10 +250,6 @@ namespace ORTS
 
             Settings.Content.InstallPath = installPath;
 
-            // set json route filename
-
-            Settings.Content.RouteJsonName = Path.Combine(installPath, "ORRoute.json");
-
             // the download
 
             Cursor.Current = Cursors.WaitCursor;
