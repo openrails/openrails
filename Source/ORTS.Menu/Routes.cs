@@ -30,7 +30,7 @@ namespace ORTS.Menu
         public readonly string Description;
         public readonly string Path;
 
-        readonly GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
+        GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
 
         Route(string path)
         {
