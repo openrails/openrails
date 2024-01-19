@@ -135,13 +135,13 @@ namespace ORTS
             this.InstallPathBrowseButton.UseVisualStyleBackColor = true;
             this.InstallPathBrowseButton.Click += new System.EventHandler(this.InstallPathBrowseButton_Click);
             // 
-            // DownloadContentButton
+            // downloadContentButton
             // 
             this.downloadContentButton.Enabled = false;
             this.downloadContentButton.Location = new System.Drawing.Point(3, 507);
-            this.downloadContentButton.Name = "DownloadContentButton";
+            this.downloadContentButton.Name = "downloadContentButton";
             this.downloadContentButton.Size = new System.Drawing.Size(75, 23);
-            this.downloadContentButton.TabIndex = 4;
+            this.downloadContentButton.TabIndex = 5;
             this.downloadContentButton.Text = "Install";
             this.downloadContentButton.UseVisualStyleBackColor = true;
             this.downloadContentButton.Click += new System.EventHandler(this.DownloadContentButton_Click);
@@ -161,7 +161,7 @@ namespace ORTS
             this.textBoxRoute.Location = new System.Drawing.Point(3, 359);
             this.textBoxRoute.Name = "textBoxRoute";
             this.textBoxRoute.Size = new System.Drawing.Size(817, 99);
-            this.textBoxRoute.TabIndex = 6;
+            this.textBoxRoute.TabIndex = 9;
             this.textBoxRoute.Text = "";
             // 
             // infoButton
@@ -169,7 +169,7 @@ namespace ORTS
             this.infoButton.Location = new System.Drawing.Point(745, 472);
             this.infoButton.Name = "infoButton";
             this.infoButton.Size = new System.Drawing.Size(75, 23);
-            this.infoButton.TabIndex = 7;
+            this.infoButton.TabIndex = 4;
             this.infoButton.Text = "Info";
             this.infoButton.UseVisualStyleBackColor = true;
             this.infoButton.Click += new System.EventHandler(this.InfoButton_Click);
@@ -180,7 +180,7 @@ namespace ORTS
             this.startButton.Location = new System.Drawing.Point(84, 507);
             this.startButton.Name = "startButton";
             this.startButton.Size = new System.Drawing.Size(75, 23);
-            this.startButton.TabIndex = 8;
+            this.startButton.TabIndex = 6;
             this.startButton.Text = "Start";
             this.startButton.UseVisualStyleBackColor = true;
             this.startButton.Click += new System.EventHandler(this.StartButton_Click);
@@ -191,7 +191,7 @@ namespace ORTS
             this.deleteButton.Location = new System.Drawing.Point(165, 507);
             this.deleteButton.Name = "deleteButton";
             this.deleteButton.Size = new System.Drawing.Size(75, 23);
-            this.deleteButton.TabIndex = 9;
+            this.deleteButton.TabIndex = 7;
             this.deleteButton.Text = "Delete";
             this.deleteButton.UseVisualStyleBackColor = true;
             this.deleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
@@ -201,7 +201,7 @@ namespace ORTS
             this.updateButton.Location = new System.Drawing.Point(246, 507);
             this.updateButton.Name = "updateButton";
             this.updateButton.Size = new System.Drawing.Size(75, 23);
-            this.updateButton.TabIndex = 10;
+            this.updateButton.TabIndex = 8;
             this.updateButton.Text = "Update";
             this.updateButton.UseVisualStyleBackColor = true;
             this.updateButton.Click += new System.EventHandler(this.updateButton_Click);

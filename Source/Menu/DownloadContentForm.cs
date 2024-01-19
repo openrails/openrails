@@ -30,7 +30,6 @@ using System.ComponentModel;
 using System.Net;
 using System.IO.Compression;
 using System.Drawing;
-using ORTS.Common;
 
 namespace ORTS
 {
@@ -38,7 +37,7 @@ namespace ORTS
     {
         private readonly GettextResourceManager Catalog;
         private readonly UserSettings Settings;
-        private readonly IDictionary<string, RouteSettings.Route> Routes;
+        private readonly IDictionary<string, ContentRouteSettings.Route> Routes;
 
         private string RouteName;
 
@@ -58,7 +57,7 @@ namespace ORTS
             for (int index = 0; index < Routes.Count; index++)
             {
                 string routeName = Routes.ElementAt(index).Key;
-                RouteSettings.Route route = Routes.ElementAt(index).Value;
+                ContentRouteSettings.Route route = Routes.ElementAt(index).Value;
                 dataGridViewDownloadContent.Rows.Add(new string[] { 
                     routeName, 
                     route.Installed ? route.DateInstalled.ToString(CultureInfo.CurrentCulture.DateTimeFormat) : "", 
@@ -154,7 +153,7 @@ namespace ORTS
         #region DownloadContentButton
         private void DownloadContentButton_Click(object sender, EventArgs e)
         {
-            RouteSettings.Route route = Routes[RouteName];
+            ContentRouteSettings.Route route = Routes[RouteName];
 
             string installPath = InstallPathTextBox.Text;
             if (installPath.EndsWith(@"\"))
@@ -172,8 +171,8 @@ namespace ORTS
 
             string pathDirectoryExe = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
 
-            string topPathDirectoryExe = DirectoryAndFiles.determineTopDirectory(pathDirectoryExe.Substring(6));
-            string topInstallPath = DirectoryAndFiles.determineTopDirectory(installPath);
+            string topPathDirectoryExe = determineTopDirectory(pathDirectoryExe.Substring(6));
+            string topInstallPath = determineTopDirectory(installPath);
 
             if (topPathDirectoryExe.Equals(topInstallPath, StringComparison.OrdinalIgnoreCase))
             {
@@ -309,16 +308,16 @@ namespace ORTS
 
         private bool downloadRoute(string installPathRoute)
         {
-            RouteSettings.Route route = Routes[RouteName];
+            ContentRouteSettings.Route route = Routes[RouteName];
             bool returnValue = false;
 
             Thread downloadThread = new Thread(() =>
             {
-                if (route.getDownloadType() == RouteSettings.DownloadType.github)
+                if (route.getDownloadType() == ContentRouteSettings.DownloadType.github)
                 {
                     returnValue = doTheClone(installPathRoute);
                 }
-                if (route.getDownloadType() == RouteSettings.DownloadType.zip)
+                if (route.getDownloadType() == ContentRouteSettings.DownloadType.zip)
                 {
                     returnValue = doTheZipDownload(route.Url, Path.Combine(installPathRoute, RouteName + ".zip"));
                 }
@@ -505,7 +504,7 @@ namespace ORTS
         {
             using (StreamWriter outputFile = new StreamWriter(InfoTempFilename))
             {
-                RouteSettings.Route route = Routes[RouteName];
+                ContentRouteSettings.Route route = Routes[RouteName];
 
                 outputFile.WriteLine(string.Format("<title>OR: {0}</title>", RouteName));
                 outputFile.WriteLine(string.Format("<h3>{0}:</h3>", RouteName));
@@ -532,7 +531,7 @@ namespace ORTS
                         route.Screenshot, route.Screenshot));
                 }
 
-                if (route.getDownloadType() == RouteSettings.DownloadType.github)
+                if (route.getDownloadType() == ContentRouteSettings.DownloadType.github)
                 {
                     outputFile.WriteLine("<p>" + Catalog.GetString("Downloadable: GitHub format") + "<br>");
                     outputFile.WriteLine(string.Format("- " + Catalog.GetString("From:") + "{0}<br>", route.Url));
@@ -542,7 +541,7 @@ namespace ORTS
                             (route.InstallSize / (1024.0 * 1024 * 1024)).ToString("N")) + "<br></p>");
                     }
                 }
-                if (route.getDownloadType() == RouteSettings.DownloadType.zip)
+                if (route.getDownloadType() == ContentRouteSettings.DownloadType.zip)
                 {
                     outputFile.WriteLine(string.Format("<p>Downloadable: zip format<br>"));
                     outputFile.WriteLine(string.Format("- From: {0}<br>", route.Url));
@@ -586,11 +585,11 @@ namespace ORTS
                     outputFile.WriteLine("- " + Catalog.GetString("Weather") + ": " + route.Start.Weather + "<br></p>");
                 }
 
-                if (route.Installed && route.getDownloadType() == RouteSettings.DownloadType.zip)
+                if (route.Installed && route.getDownloadType() == ContentRouteSettings.DownloadType.zip)
                 {
                     infoChangedAndAddedFileForZipDownloadType(route, outputFile);
                 }
-                if (route.Installed && route.getDownloadType() == RouteSettings.DownloadType.github)
+                if (route.Installed && route.getDownloadType() == ContentRouteSettings.DownloadType.github)
                 {
                     bool bothLocalAsRemoteUpdatesFound = infoChangedAndAddedFileForGitHubDownloadType(route, outputFile);
                     if (bothLocalAsRemoteUpdatesFound)
@@ -614,9 +613,9 @@ namespace ORTS
             }
         }
 
-        private void infoChangedAndAddedFileForZipDownloadType(RouteSettings.Route route, StreamWriter outputFile)
+        private void infoChangedAndAddedFileForZipDownloadType(ContentRouteSettings.Route route, StreamWriter outputFile)
         {
-            List<string> changedAndAddedFiles = DirectoryAndFiles.getChangedFiles(route.DirectoryInstalledIn, route.DateInstalled);
+            List<string> changedAndAddedFiles = getChangedFiles(route.DirectoryInstalledIn, route.DateInstalled);
             outputFile.WriteLine("<p id='changed'>" + Catalog.GetString("Changed local file(s) after the install (timestamp check)") + ":<br>");
             if (changedAndAddedFiles.Count == 0)
             {
@@ -630,7 +629,7 @@ namespace ORTS
                 }
                 outputFile.WriteLine("</p>");
             }
-            changedAndAddedFiles = DirectoryAndFiles.getAddedFiles(route.DirectoryInstalledIn, route.DateInstalled);
+            changedAndAddedFiles = getAddedFiles(route.DirectoryInstalledIn, route.DateInstalled);
             outputFile.WriteLine("<p>" + Catalog.GetString("Added local file(s) after the install (timestamp check)") + ":<br>");
             if (changedAndAddedFiles.Count == 0)
             {
@@ -646,12 +645,12 @@ namespace ORTS
             }
         }
 
-        private bool infoChangedAndAddedFileForGitHubDownloadType(RouteSettings.Route route, StreamWriter outputFile)
+        private bool infoChangedAndAddedFileForGitHubDownloadType(ContentRouteSettings.Route route, StreamWriter outputFile)
         {
             bool changedFound = false;
             bool remoteUpdateFound = false;
 
-            List<string> changedAndAddedFiles = DirectoryAndFiles.getChangedGitFiles(route.DirectoryInstalledIn);
+            List<string> changedAndAddedFiles = getChangedGitFiles(route.DirectoryInstalledIn);
             outputFile.WriteLine("<p>" + Catalog.GetString("Changed local file(s) after the install (git status)") + ":<br>");
             if (changedAndAddedFiles.Count == 0)
             {
@@ -666,7 +665,7 @@ namespace ORTS
                 }
                 outputFile.WriteLine("</p>");
             }
-            changedAndAddedFiles = DirectoryAndFiles.getAddedGitFiles(route.DirectoryInstalledIn);
+            changedAndAddedFiles = getAddedGitFiles(route.DirectoryInstalledIn);
             outputFile.WriteLine("<p>" + Catalog.GetString("Added local file(s) after the install (git status)") + ":<br>");
             if (changedAndAddedFiles.Count == 0)
             {
@@ -713,7 +712,7 @@ namespace ORTS
 
             Cursor.Current = Cursors.WaitCursor;
 
-            RouteSettings.Route route = Routes[RouteName];
+            ContentRouteSettings.Route route = Routes[RouteName];
             string contentName = route.ContentName;
             MainForm mainForm = ((MainForm)Owner);
 
@@ -843,7 +842,7 @@ namespace ORTS
         #region DeleteButton
         void DeleteButton_Click(object sender, EventArgs e)
         {
-            RouteSettings.Route route = Routes[RouteName];
+            ContentRouteSettings.Route route = Routes[RouteName];
             string message;
 
             DisableButtons();
@@ -872,7 +871,7 @@ namespace ORTS
 
             Cursor.Current = Cursors.WaitCursor;
 
-            DirectoryAndFiles.directoryDelete(route.DirectoryInstalledIn);
+            ContentRouteSettings.directoryDelete(route.DirectoryInstalledIn);
 
             if (Settings.Folders.Folders[route.ContentName] == route.ContentDirectory)
             {
@@ -897,7 +896,7 @@ namespace ORTS
         #region UpdateButton
         private void updateButton_Click(object sender, EventArgs e)
         {
-            RouteSettings.Route route = Routes[RouteName];
+            ContentRouteSettings.Route route = Routes[RouteName];
             string message;
 
             List<string> commitStrings = getCommits(route.DirectoryInstalledIn);
@@ -927,7 +926,7 @@ namespace ORTS
             doThePull(route);
         }
 
-        private bool doThePull(RouteSettings.Route route) {
+        private bool doThePull(ContentRouteSettings.Route route) {
 
             try
             {
@@ -966,30 +965,136 @@ namespace ORTS
 
         private void EnableButtons()
         {
-            RouteSettings.Route route = Routes[RouteName];
+            ContentRouteSettings.Route route = Routes[RouteName];
 
             downloadContentButton.Enabled = !route.Installed;
             startButton.Enabled = route.Installed && !string.IsNullOrWhiteSpace(route.Start.Route);
             deleteButton.Enabled = route.Installed;
-            updateButton.Enabled = route.Installed && (route.getDownloadType() == RouteSettings.DownloadType.github);
+            updateButton.Enabled = route.Installed && (route.getDownloadType() == ContentRouteSettings.DownloadType.github);
         }
 
-        private bool areThereChangedAddedFiles(RouteSettings.Route route)
+        private bool areThereChangedAddedFiles(ContentRouteSettings.Route route)
         {
-            if (route.getDownloadType() == RouteSettings.DownloadType.zip)
+            if (route.getDownloadType() == ContentRouteSettings.DownloadType.zip)
             {
                 return 
-                    (DirectoryAndFiles.getChangedFiles(route.DirectoryInstalledIn, route.DateInstalled).Count > 0) ||
-                    (DirectoryAndFiles.getAddedFiles(route.DirectoryInstalledIn, route.DateInstalled).Count > 0);
+                    (getChangedFiles(route.DirectoryInstalledIn, route.DateInstalled).Count > 0) ||
+                    (getAddedFiles(route.DirectoryInstalledIn, route.DateInstalled).Count > 0);
             }
-            if (route.getDownloadType() == RouteSettings.DownloadType.github)
+            if (route.getDownloadType() == ContentRouteSettings.DownloadType.github)
             {
                 return
-                    (DirectoryAndFiles.getChangedGitFiles(route.DirectoryInstalledIn).Count > 0) ||
-                    (DirectoryAndFiles.getAddedGitFiles(route.DirectoryInstalledIn).Count > 0);
+                    (getChangedGitFiles(route.DirectoryInstalledIn).Count > 0) ||
+                    (getAddedGitFiles(route.DirectoryInstalledIn).Count > 0);
             }
 
             return false;
+        }
+
+        //
+        // example:
+        //  input:  D:\OpenRailsMaster\Program
+        //  output: D:\OpenRailsMaster
+        //
+        private static string determineTopDirectory(string directoryName)
+        {
+            string tmpDirectoryName = directoryName;
+            string topDirectoryName = directoryName;
+
+            while (Directory.GetParent(tmpDirectoryName) != null)
+            {
+                topDirectoryName = tmpDirectoryName;
+                tmpDirectoryName = Directory.GetParent(tmpDirectoryName).ToString();
+            }
+
+            return topDirectoryName;
+        }
+
+        private static List<string> getChangedFiles(string directoryName, DateTime dateInstalled)
+        {
+            return getChangedAndAddedFiles(directoryName, dateInstalled, true);
+        }
+
+        private static List<string> getAddedFiles(string directoryName, DateTime dateInstalled)
+        {
+            return getChangedAndAddedFiles(directoryName, dateInstalled, false);
+        }
+
+        private static List<string> getChangedAndAddedFiles(string directoryName, DateTime dateInstalled, bool checkForChanged)
+        {
+            List<string> changedFiles = new List<string>();
+
+            if (Directory.Exists(directoryName))
+            {
+                getChangedAndAddedFilesDeeper(directoryName, dateInstalled, changedFiles, checkForChanged);
+            }
+
+            return changedFiles;
+        }
+
+        private static void getChangedAndAddedFilesDeeper(string directoryName, DateTime dateInstalled, List<string> changedFiles, bool checkForChanged)
+        {
+            foreach (string filename in Directory.GetFiles(directoryName))
+            {
+                FileInfo fi = new FileInfo(filename);
+                if (checkForChanged)
+                {
+                    if ((fi.LastWriteTime > dateInstalled) && (fi.CreationTime < dateInstalled))
+                    {
+                        changedFiles.Add(fi.FullName);
+                    }
+                }
+                else
+                {
+                    // check for new files, creation date after date installed
+                    if (fi.CreationTime > dateInstalled)
+                    {
+                        changedFiles.Add(fi.FullName);
+                    }
+                }
+            }
+            foreach (string subDirectoryName in Directory.GetDirectories(directoryName))
+            {
+                getChangedAndAddedFilesDeeper(subDirectoryName, dateInstalled, changedFiles, checkForChanged);
+            }
+        }
+
+        private static List<string> getChangedGitFiles(string directoryName)
+        {
+            return getChangedAndAddedGitFiles(directoryName, true);
+        }
+
+        private static List<string> getAddedGitFiles(string directoryName)
+        {
+            return getChangedAndAddedGitFiles(directoryName, false);
+        }
+
+        private static List<string> getChangedAndAddedGitFiles(string directoryName, bool checkForChanged)
+        {
+            List<string> changedFiles = new List<string>();
+
+            using (var repo = new Repository(directoryName))
+            {
+                foreach (var item in repo.RetrieveStatus(new LibGit2Sharp.StatusOptions()))
+                {
+                    if (checkForChanged)
+                    {
+                        if (item.State == FileStatus.NewInWorkdir)
+                        {
+                            changedFiles.Add(item.FilePath);
+                        }
+                    }
+                    else
+                    {
+                        if (item.State == FileStatus.ModifiedInWorkdir)
+                        {
+                            changedFiles.Add(item.FilePath);
+                        }
+                    }
+                }
+            }
+
+            return changedFiles;
         }
 
         private List<string> getCommits(string installPathRoute)
