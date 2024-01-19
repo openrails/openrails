@@ -23,15 +23,12 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using LibGit2Sharp;
-using ORTS.Common;
 using System.Windows.Forms;
 
 namespace ORTS.Settings
 {
-    public class RouteSettings
+    public class ContentRouteSettings
     {
-
-
         public enum DownloadType
         {
             github,
@@ -109,21 +106,24 @@ namespace ORTS.Settings
             }
         }
 
-        private readonly ContentSettings Content;
-
         public IDictionary<string, Route> Routes { get; private set; }
 
-        public RouteSettings(ContentSettings content)
+        // RouteSettings are presented to the user in the menu DownloadContent form 
+        // 
+        // lines are a mix from:
+        // - routes already downloaded, stored in {ApplicationData}\{ProductName\Settings\ORRoute.json", 
+        //       eg: "C:\\Users\\Siebren\\AppData\\Roaming\\Open Rails\\Settings\ORRoute.json"
+        // - routes which can be downloaded, stored in GitHub "https://github.com/openrails/content.git" file routes.json
+        //
+        // this .cs file is not like all the other *Settings.cs files, which are derived from class SettingsBase
+        // and store their settings in the registry
+        // but since this class stores settings also, be it in a file, it looks like a good place
+        //
+        // where above the word route is mentioned, "Installation profile" is ment as can be found in OR's Main menu
+
+        public ContentRouteSettings()
         {
-            Content = content;
             Routes = new Dictionary<string, Route>();
-
-            Load();
-        }
-
-        public void Load() 
-        {
-            // left empty
         }
 
         private string RouteJsonName;
@@ -218,7 +218,7 @@ namespace ORTS.Settings
                         {
                             if (!Routes.ContainsKey(routeName))
                             {
-                                Routes.Add(routeName, new RouteSettings.Route(
+                                Routes.Add(routeName, new ContentRouteSettings.Route(
                                     url, downloadSize, installSize, image, description, authorName, authorUrl, screenshot, start));
                             }
                             else
@@ -229,7 +229,7 @@ namespace ORTS.Settings
                         }
                     }
 
-                    DirectoryAndFiles.directoryDelete(definedContentJsonDirectoryName);
+                    directoryDelete(definedContentJsonDirectoryName);
                 }
                 catch (Exception error)
                 {
@@ -280,6 +280,32 @@ namespace ORTS.Settings
             else
             {
                 return "";
+            }
+        }
+
+        public static void directoryDelete(string directoryName)
+        {
+            if (Directory.Exists(directoryName))
+            {
+                // remove the read only flags,
+                // otherwise the Directory.delete does not work in case read only files exists
+                directoryRemoveReadOnlyFlags(directoryName);
+                Directory.Delete(directoryName, true);
+            }
+        }
+
+        private static void directoryRemoveReadOnlyFlags(string directoryName)
+        {
+            foreach (string filename in Directory.GetFiles(directoryName))
+            {
+                _ = new FileInfo(filename)
+                {
+                    IsReadOnly = false
+                };
+            }
+            foreach (string subDirectoryName in Directory.GetDirectories(directoryName))
+            {
+                directoryRemoveReadOnlyFlags(subDirectoryName);
             }
         }
 
