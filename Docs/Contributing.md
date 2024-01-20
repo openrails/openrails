@@ -18,7 +18,7 @@ If you've got a feature suggestion for Open Rails, please report it in [our road
 
 You are free to make any modifications to the Open Rails code that you like; that's how open source works. However, if you'd like your feature to be included in the official version, there is a process to ensure that the community agrees and to review the code for potential issues prior to inclusion.
 
-In most cases, you can get started immediately with making the changes and creating a pull request. We do ask for some additional steps to be taken for some bugs and all new features, but they can come before or after the pull request. Please feel free to share ideas and proposals as pull requests!
+In most cases, you can get started immediately with making the changes and creating a pull request. We have _additional requirements_ for some bugs and all new features, but they can come before or after the pull request is created. Please feel free to share ideas and proposals as pull requests!
 
 **Note:** You must fork the Open Rails repository before you start working on it. We do not allow you to push branches to the official repository.
 
@@ -28,19 +28,19 @@ In most cases, you can get started immediately with making the changes and creat
 
 If you'd like to improve the [documentation](./), [manual](../Source/Documentation/Manual), or [translations](../Source/Locales) you can get started immediately.
 
-There are no requirements for the pull request.
+There are no additional requirements for the pull request.
 
 ### Contributed projects
 
 If you'd like to improve the [contributed projects](../Source/Contrib) you can get started immediately.
 
-There are no requirements for the pull request.
+There are no additional requirements for the pull request.
 
 ### Bug process
 
 If you'd like to fix a bug, you can get started immediately. If the fix turns out to be very small, you do not even need a bug report. Otherwise, you will need to make sure it has been reported on [our bug tracker on Launchpad](https://bugs.launchpad.net/or). If it has not, you can report the bug *and* fix it!
 
-There are no requirements for creating the pull request.
+There are no additional requirements for _creating_ the pull request.
 
 These things must be done in the required order:
 
