@@ -36,6 +36,12 @@ If you'd like to improve the [contributed projects](../Source/Contrib) you can g
 
 There are no additional requirements for the pull request.
 
+### Refactoring process
+
+If you'd like to refactor the existing code you can get started immediately, but please have a look at our [architecture requirements](#architecture-requirements). We welcome architectural discussions on our [forum](http://www.elvastower.com/forums/index.php?/forum/256-developing-features/).
+
+There are no additional requirements for the pull request.
+
 ### Bug process
 
 If you'd like to fix a bug, you can get started immediately. If the fix turns out to be very small, you do not even need a bug report. Otherwise, you will need to make sure it has been reported on [our bug tracker on Launchpad](https://bugs.launchpad.net/or). If it has not, you can report the bug *and* fix it!
