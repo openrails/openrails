@@ -356,8 +356,8 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.ControlBlowerIncrease] = new UserCommandKeyInput(0x31);
             Commands[(int)UserCommand.ControlSteamHeatDecrease] = new UserCommandKeyInput(0x20, KeyModifiers.Alt);
             Commands[(int)UserCommand.ControlSteamHeatIncrease] = new UserCommandKeyInput(0x16, KeyModifiers.Alt);
-            Commands[(int)UserCommand.ControlSteamBoosterAirValve] = new UserCommandKeyInput(0x11, KeyModifiers.Alt);
-            Commands[(int)UserCommand.ControlSteamBoosterIdleValve] = new UserCommandKeyInput(0x25, KeyModifiers.Alt);
+            Commands[(int)UserCommand.ControlSteamBoosterAirValve] = new UserCommandKeyInput(0x20, KeyModifiers.Control);
+            Commands[(int)UserCommand.ControlSteamBoosterIdleValve] = new UserCommandKeyInput(0x30, KeyModifiers.Control);
             Commands[(int)UserCommand.ControlSteamBoosterLatch] = new UserCommandKeyInput(0x25, KeyModifiers.Control);
             Commands[(int)UserCommand.ControlBrakeHoseConnect] = new UserCommandKeyInput(0x2B);
             Commands[(int)UserCommand.ControlBrakeHoseDisconnect] = new UserCommandKeyInput(0x2B, KeyModifiers.Shift);
