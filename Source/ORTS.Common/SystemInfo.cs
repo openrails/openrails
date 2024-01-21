@@ -24,6 +24,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Diagnostics;
+using SharpDX.DXGI;
 
 namespace ORTS.Common
 {
@@ -87,13 +88,16 @@ namespace ORTS.Common
                 Trace.WriteLine(error);
             }
 
+            // The WMI data for AdapterRAM is unreliable, so we have to use DXGI to get the real numbers.
+            // Alas, DXGI doesn't give us the manufacturer name for the adapter, so we combine it with WMI.
+            var descriptions = new Factory1().Adapters.Select(adapter => adapter.Description).ToArray();
             try
             {
                 GPUs = new ManagementClass("Win32_VideoController").GetInstances().Cast<ManagementObject>().Select(adapter => new GPU
                 {
                     Name = (string)adapter["Name"],
                     Manufacturer = (string)adapter["AdapterCompatibility"],
-                    MemoryMB = (uint?)adapter["AdapterRAM"] / 1024 / 1024 ?? 0,
+                    MemoryMB = (uint)((long)descriptions.FirstOrDefault(desc => desc.Description == (string)adapter["Name"]).DedicatedVideoMemory / 1024 / 1024),
                 }).ToList();
             }
             catch (ManagementException error)
