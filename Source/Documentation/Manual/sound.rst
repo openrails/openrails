@@ -417,6 +417,15 @@ Trigger       Function
 261           WindowOpening
 =========     =====================================
 
+The following triggers are related to the steam booster engine:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+321           BoosterCylinderCocksOpen
+322           BoosterCylinderCocksClose
+=========     =====================================
+
 Variable Triggers
 -----------------
 

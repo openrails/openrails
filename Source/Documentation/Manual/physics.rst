@@ -1268,10 +1268,10 @@ Steam Locomotives with Multiple Engines
 
 Some steam locomotives can have multiple steam engines (ie separate steam 
 cylinders connected to different wheels), such as the 4-4-4-4 locomotive or 
-an articulated Garrat locomotive.
+an articulated Garratt locomotive.
 
-To configure these types of locomotives configurations for multiple steam 
-engines need to be added to the engine section of the ENG file, would have the 
+To configure these types of locomotives configurations, multiple steam 
+engines need to be added to the engine section of the ENG file. These should have the 
 following format::
 
     ORTSSteamEngines ( x
@@ -1290,7 +1290,7 @@ The following parameters can be used to configure the steam engine::
 ``MaxIndicatedHorsepower`` - maximum indicated horsepower of steam engine.
 ``AttachedAxle`` - the axle wheelset that the steam engine is attached to.
 
-To specify the engine as a Booster engine the following additional parameters 
+To specify the engine as a Booster engine, the following additional parameters 
 can be used::
 
 ``BoosterCutoff`` - the cutoff point for the Booster steam cylinder.
@@ -1298,6 +1298,30 @@ can be used::
 ``BoosterGearRatio`` - the gear ratio of the Booster engine.
 ``AuxiliarySteamEngineType`` - by inserting "Booster" into this parameter the 
 engine is defined as a Booster engine.
+
+The following steam effects are defined for the 2nd multuple engine:
+
+i) Steam Exhausts - these are the exhausts from the two steam cylinders, and would be 
+located wherever the steam exhausted out of the cylinders, 
+``CylinderSteamExhaust2_1FX``, ``CylinderSteamExhaust2_2FX``, where "x_yFX", 
+x = engine number and y = cylinder number.
+
+ii) Cylinder Cocks Exhaust - the exhaust out of the cylinder drainage cocks, 
+``Cylinders2_11FX``, ``Cylinders2_12FX``, ``Cylinders2_21FX``, ``Cylinders2_22FX``, 
+where "x_yzFX", x = engine number, y = cylinder number and z = cylinder position.
+
+The following steam effects are defined for the Booster Engine:
+
+i) Steam Exhausts - these are the exhausts from the two steam cylinders, and would be 
+located wherever the steam exhausted out of the cylinders, 
+``BoosterCylinderSteamExhaust01FX``, ``BoosterCylinderSteamExhaust02FX``
+
+ii) Cylinder Cocks Exhaust - the exhaust out of the cylinder drainage cocks, 
+``BoosterCylinders11FX``, ``BoosterCylinders12FX``, ``BoosterCylinders21FX``, 
+``BoosterCylinders22FX``, where "xyFX", x = cylinder number, and y = cylinder position.
+
+The following CAB controls have been defined, ``STEAM_BOOSTER_AIR``, ``STEAM_BOOSTER_IDLE``,
+ ``STEAM_BOOSTER_LATCH``, ``STEAM_BOOSTER_PRESSURE``.
 
 Locomotive Types
 ................
