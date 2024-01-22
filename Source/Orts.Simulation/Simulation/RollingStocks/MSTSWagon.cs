@@ -44,6 +44,7 @@ using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
+using Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;
@@ -2192,6 +2193,11 @@ namespace Orts.Simulation.RollingStocks
                             MassKG = MathHelper.Clamp(MassKG, LoadEmptyMassKg, LoadFullMassKg); // Clamp Mass to between the empty and full wagon values   
                             // Adjust drive wheel weight
                             SteamLocomotiveIdentification.DrvWheelWeightKg = (MassKG / InitialMassKG) * SteamLocomotiveIdentification.InitialDrvWheelWeightKg;
+
+                            // update drive wheel weight for each multiple steam engine
+                            UpdateDriveWheelWeight(LocoIndex, MassKG, SteamLocomotiveIdentification.SteamEngines.Count);
+
+
                         }
                         else // locomotive must be a tender type locomotive
                         // This is a tender locomotive. A tender locomotive does not have any fuel onboard.
@@ -2202,6 +2208,10 @@ namespace Orts.Simulation.RollingStocks
                             MassKG = MathHelper.Clamp(MassKG, LoadEmptyMassKg, MassUpperLimit); // Clamp Mass to between the empty and full wagon values        
                         // Adjust drive wheel weight
                             SteamLocomotiveIdentification.DrvWheelWeightKg = (MassKG / InitialMassKG) * SteamLocomotiveIdentification.InitialDrvWheelWeightKg;
+
+                            // update drive wheel weight for each multiple steam engine
+                            UpdateDriveWheelWeight(LocoIndex, MassKG, SteamLocomotiveIdentification.SteamEngines.Count);
+
                         }
 
                         // Update wagon physics parameters sensitive to wagon mass change
@@ -2276,6 +2286,19 @@ namespace Orts.Simulation.RollingStocks
                         CentreOfGravityM.Y = ((LoadFullCentreOfGravityM_Y - LoadEmptyCentreOfGravityM_Y) * TempMassDiffRatio) + LoadEmptyCentreOfGravityM_Y;
                         
                     }
+                }
+            }
+        }
+
+        private void UpdateDriveWheelWeight(int index,  float masskg, int numberofengines)
+        {
+           var  LocoIdentification = Train.Cars[index] as MSTSSteamLocomotive;
+            if (LocoIdentification != null)
+            {
+
+                for (int i = 0; i < LocoIdentification.SteamEngines.Count; i++)
+                {
+                    LocoIdentification.SteamEngines[i].AttachedAxle.WheelWeightKg = (MassKG / InitialMassKG) * LocoIdentification.SteamEngines[i].AttachedAxle.InitialDrvWheelWeightKg;
                 }
             }
         }

@@ -7936,7 +7936,7 @@ namespace Orts.Simulation.RollingStocks
                         Simulator.Catalog.GetString("Slip"),
                         SteamEngines[i].AttachedAxle.IsWheelSlip ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                         Simulator.Catalog.GetString("WheelM"),
-                        FormatStrings.FormatMass(Kg.FromLb(SteamDrvWheelWeightLbs), IsMetric),
+                        FormatStrings.FormatMass(SteamEngines[i].AttachedAxle.WheelWeightKg, IsMetric),
                         Simulator.Catalog.GetString("FoA"),
                         SteamEngines[i].CalculatedFactorOfAdhesion);
                 }
