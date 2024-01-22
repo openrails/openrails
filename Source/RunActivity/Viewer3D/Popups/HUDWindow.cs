@@ -585,7 +585,7 @@ namespace Orts.Viewer3D.Popups
         }
 
         /// <summary>
-        /// Calculates Whyte noatation for the vehicle
+        /// Calculates Whyte notation for the vehicle
         /// For duplex steam locomotives wheel axles can be grouped under the main object shape, and hence the multiple engines will be counted as a single grouping.
         /// For multiple engines, the number of wheels defined in the attached axles will be used to determine the axles in the "non-bogie" groupings.
         /// </summary>

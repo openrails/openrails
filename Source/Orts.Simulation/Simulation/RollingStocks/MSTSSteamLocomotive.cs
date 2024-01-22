@@ -844,6 +844,17 @@ namespace Orts.Simulation.RollingStocks
             return true;
         }
 
+        private bool ZeroError(float val1, string name)
+        {
+            if (val1 > 0)
+                return false;
+            if (Simulator.Settings.VerboseConfigurationMessages)
+            {
+                Trace.TraceWarning("Steam engine value {1} must be defined and greater than zero in {0}", WagFilePath, name);
+            }
+            return true;
+        }
+
         /// <summary>
         /// Parse the wag file parameters required for the simulator and viewer classes
         /// </summary>
@@ -1191,9 +1202,9 @@ namespace Orts.Simulation.RollingStocks
                 MSTSCylinderStrokeM = 1;
             if (ZeroError(DriverWheelRadiusM, SteamEngines[0].AttachedAxle.WheelRadiusM, "MSTSWheelRadius"))
                 DriverWheelRadiusM = Me.FromIn(30.0f); // Wheel radius of loco drive wheels can be anywhere from about 10" to 40"
-            if (ZeroError(MaxBoilerPressurePSI, 1, "MaxBoilerPressure"))
+            if (ZeroError(MaxBoilerPressurePSI, "MaxBoilerPressure"))
                 MaxBoilerPressurePSI = 1;
-            if (ZeroError(BoilerVolumeFT3, 1, "BoilerVolume"))
+            if (ZeroError(BoilerVolumeFT3, "BoilerVolume"))
                 BoilerVolumeFT3 = 1;
 
             // For light locomotives reduce the weight of the various connecting rods, as the default values are for larger locomotives. This will reduce slip on small locomotives
