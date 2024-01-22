@@ -507,6 +507,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float WheelWeightKg;
 
         /// <summary>
+        /// Initial Wheel mass parameter in kilograms, is the reference against which the dynamic wheel weight is calculated.
+        /// </summary>
+        public float InitialDrvWheelWeightKg;
+        
+        /// <summary>
         /// Flange angle wheels connected to axle
         /// </summary>
         public float WheelFlangeAngleRad;
