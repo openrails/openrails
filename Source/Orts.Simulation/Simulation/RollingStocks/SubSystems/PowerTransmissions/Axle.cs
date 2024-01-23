@@ -241,6 +241,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     if (axle.DampingNs <= 0) axle.DampingNs = locomotive.MassKG / 1000.0f / AxleList.Count;
                     if (axle.FrictionN <= 0) axle.FrictionN = locomotive.MassKG / 1000.0f / AxleList.Count;
                     if (axle.NumberWheelAxles <= 0) axle.NumberWheelAxles = 1;
+
+                    // set the wheel slip threshold times for different types of locomotives
+                    // Because of the irregular force around the wheel for a steam engine during a revolution, "response" time for warnings needs to be lower
+                    if (locomotive.EngineType == TrainCar.EngineTypes.Steam)
+                    {
+                        axle.WheelSlipThresholdTimeS = 0.01f;
+                        axle.WheelSlipWarningThresholdTimeS = 0.005f;
+                    }
+                    else
+                    {
+                        axle.WheelSlipThresholdTimeS = 1;
+                        axle.WheelSlipWarningThresholdTimeS = 1;
+                    }
                 }
                 axle.Initialize();
             }
@@ -675,6 +688,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// </summary>
         public bool IsWheelSlip { get; private set; }
         float WheelSlipTimeS;
+        public float WheelSlipThresholdTimeS = 1;
 
         /// <summary>
         /// Wheelslip threshold value used to indicate maximal effective slip
@@ -736,6 +750,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// </summary>
         public bool IsWheelSlipWarning { get; private set; }
         float WheelSlipWarningTimeS;
+        public float WheelSlipWarningThresholdTimeS = 1;
 
         /// <summary>
         /// Read only slip speed value in metric meters per second
@@ -1178,7 +1193,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (Math.Abs(SlipSpeedMpS) > WheelSlipThresholdMpS)
             {
                 // Wait some time before indicating wheelslip to avoid false triggers
-                if (WheelSlipTimeS > 1)
+                if (WheelSlipTimeS > WheelSlipThresholdTimeS)
                 {
                     IsWheelSlip = IsWheelSlipWarning = true;
                 }
@@ -1187,7 +1202,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             else if (Math.Abs(SlipSpeedPercent) > SlipWarningTresholdPercent)
             {
                 // Wait some time before indicating wheelslip to avoid false triggers
-                if (WheelSlipWarningTimeS > 1) IsWheelSlipWarning = true;
+                if (WheelSlipWarningTimeS > WheelSlipWarningThresholdTimeS) IsWheelSlipWarning = true;
                 IsWheelSlip = false;
                 WheelSlipWarningTimeS += elapsedSeconds;
             }

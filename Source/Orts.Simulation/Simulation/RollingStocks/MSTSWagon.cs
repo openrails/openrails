@@ -2295,7 +2295,6 @@ namespace Orts.Simulation.RollingStocks
            var  LocoIdentification = Train.Cars[index] as MSTSSteamLocomotive;
             if (LocoIdentification != null)
             {
-
                 for (int i = 0; i < LocoIdentification.SteamEngines.Count; i++)
                 {
                     LocoIdentification.SteamEngines[i].AttachedAxle.WheelWeightKg = (MassKG / InitialMassKG) * LocoIdentification.SteamEngines[i].AttachedAxle.InitialDrvWheelWeightKg;
