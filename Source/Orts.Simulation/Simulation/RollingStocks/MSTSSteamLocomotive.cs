@@ -2299,6 +2299,7 @@ namespace Orts.Simulation.RollingStocks
             CylinderCocksPressureAtmPSI = 0;
             CabSteamChestPressurePSI = 0;
             CabSteamBoosterPressurePSI = 0;
+            SteamDrvWheelWeightLbs = 0;
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
@@ -2548,6 +2549,8 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 UpdateSteamTractiveForce(elapsedClockSeconds, tractiveforcethrottle, 0, 0, i);
+
+                SteamDrvWheelWeightLbs += Kg.ToLb(SteamEngines[i].AttachedAxle.WheelWeightKg / SteamEngines[i].AttachedAxle.NumAxles); // Calculate the weight per axle (used in MSTSLocomotive for friction calculatons)
 
             }
 
@@ -6358,10 +6361,8 @@ namespace Orts.Simulation.RollingStocks
                     float WheelMomentInertia = (linkedEngine.AttachedAxle.WheelWeightKg * linkedEngine.AttachedAxle.WheelRadiusM * linkedEngine.AttachedAxle.WheelRadiusM) / 2.0f;
                     float AxleMomentInertia = (linkedEngine.AttachedAxle.WheelWeightKg * AxleRadiusM * AxleRadiusM) / 2.0f;
                     float TotalWheelMomentofInertia = WheelMomentInertia + AxleMomentInertia; // Total MoI for generic wheelset
-
-                    SteamDrvWheelWeightLbs = Kg.ToLb(linkedEngine.AttachedAxle.WheelWeightKg / linkedEngine.AttachedAxle.NumAxles); // Calculate the weight per axle (used in MSTSLocomotive for friction calculatons)
-
-                    // The moment of inertia needs to be increased by the number of wheel sets
+                    
+                    // The moment of inertia needs to be increased by the number of wheels in each set
                     TotalWheelMomentofInertia *= linkedEngine.AttachedAxle.NumAxles;
 
                     // the inertia of the coupling rods can also be added
@@ -6379,7 +6380,6 @@ namespace Orts.Simulation.RollingStocks
                     axle.DampingNs = axle.AxleWeightN / 200;
                     // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches) - This should reduce wheel force
                     axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersStrokeM) / (Me.ToIn(linkedEngine.AttachedAxle.WheelRadiusM * 2.0f)));
-
                 }
 
                 axle.BrakeRetardForceN = BrakeRetardForceN / LocomotiveAxles.Count;
