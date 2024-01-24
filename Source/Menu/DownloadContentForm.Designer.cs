@@ -160,6 +160,7 @@ namespace ORTS
             this.textBoxRoute.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBoxRoute.Location = new System.Drawing.Point(3, 359);
             this.textBoxRoute.Name = "textBoxRoute";
+            this.textBoxRoute.ReadOnly = true;
             this.textBoxRoute.Size = new System.Drawing.Size(817, 99);
             this.textBoxRoute.TabIndex = 9;
             this.textBoxRoute.Text = "";

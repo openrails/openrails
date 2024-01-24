@@ -30,6 +30,7 @@ using System.ComponentModel;
 using System.Net;
 using System.IO.Compression;
 using System.Drawing;
+using System.Threading.Tasks;
 
 namespace ORTS
 {
@@ -44,6 +45,9 @@ namespace ORTS
         private readonly string ImageTempFilename;
         private Thread ImageThread;
         private readonly string InfoTempFilename;
+
+        //attribute used to refresh UI
+        private readonly SynchronizationContext SynchronizationContext;
 
         public DownloadContentForm(UserSettings settings)
         {
@@ -72,6 +76,8 @@ namespace ORTS
             InfoTempFilename = Path.GetTempFileName();
             File.Delete(InfoTempFilename);
             InfoTempFilename = Path.ChangeExtension(ImageTempFilename, "html");
+
+            SynchronizationContext = SynchronizationContext.Current;
         }
 
         #region SelectionChanged
@@ -151,7 +157,7 @@ namespace ORTS
         #endregion
 
         #region DownloadContentButton
-        private void DownloadContentButton_Click(object sender, EventArgs e)
+        private async void DownloadContentButton_Click(object sender, EventArgs e)
         {
             ContentRouteSettings.Route route = Routes[RouteName];
 
@@ -251,12 +257,10 @@ namespace ORTS
 
             // the download
 
-            Cursor.Current = Cursors.WaitCursor;
-
             dataGridViewDownloadContent.CurrentRow.Cells[1].Value = Catalog.GetString("Installing...");
             Refresh();
 
-            if (!downloadRoute(installPathRoute))
+            if (!await Task.Run(() => downloadRoute(installPathRoute)))
             {
                 EnableButtons();
                 return;
@@ -298,9 +302,6 @@ namespace ORTS
 
                 MessageBox.Show(Catalog.GetString("Route installed."),
                     Catalog.GetString("Done"), MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-
-                // close this dialog
-                DialogResult = DialogResult.OK;
             }
 
             EnableButtons();
@@ -331,11 +332,13 @@ namespace ORTS
 
                 TotalBytes = 0;
                 sumMB(installPathRoute);
-                dataGridViewDownloadContent.CurrentRow.Cells[1].Value =
-                    string.Format("downloaded: {0} kB", (TotalBytes / 1024).ToString("N0"));
-                Refresh();
+                SynchronizationContext.Post(new SendOrPostCallback(o =>
+                {
+                    dataGridViewDownloadContent.CurrentRow.Cells[1].Value = 
+                        string.Format("Downloaded: {0} kB", (string)o);
+                }), (TotalBytes / 1024).ToString("N0"));
 
-                while ((downloadThread.IsAlive) && (sw.ElapsedMilliseconds <= 3000)) { }
+                while ((downloadThread.IsAlive) && (sw.ElapsedMilliseconds <= 1000)) { }
             }
 
             if (returnValue)
@@ -356,16 +359,22 @@ namespace ORTS
 
                         TotalBytes = -bytesZipfile;
                         sumMB(installPathRoute);
-                        dataGridViewDownloadContent.CurrentRow.Cells[1].Value =
-                            string.Format("Installed: {0} kB", (TotalBytes / 1024).ToString("N0"));
-                        Refresh();
+                        SynchronizationContext.Post(new SendOrPostCallback(o =>
+                        {
+                            dataGridViewDownloadContent.CurrentRow.Cells[1].Value = 
+                                string.Format("Installed: {0} kB", (string)o);
+                        }), (TotalBytes / 1024).ToString("N0"));
 
-                        while ((installThread.IsAlive) && (sw.ElapsedMilliseconds <= 3000)) { }
+                        while ((installThread.IsAlive) && (sw.ElapsedMilliseconds <= 1000)) { }
                     }
                 }
             }
 
-            dataGridViewDownloadContent.CurrentRow.Cells[1].Value = "";
+            SynchronizationContext.Post(new SendOrPostCallback(o =>
+            {
+                dataGridViewDownloadContent.CurrentRow.Cells[1].Value = "";
+            }), "");
+
 
             return returnValue;
         }
@@ -428,17 +437,35 @@ namespace ORTS
 
         long TotalBytes = 0;
 
-        private void sumMB(string path)
+        private bool sumMB(string path)
         {
-            foreach (string fileName in Directory.GetFiles(path))
+            try 
             {
-                TotalBytes += new FileInfo(fileName).Length;
+                foreach (string fileName in Directory.GetFiles(path))
+                {
+                    try
+                    {
+                        TotalBytes += new FileInfo(fileName).Length;
+                    }
+                    catch (Exception)
+                    {
+                        // this summing is also used during the delete,
+                        // so sometimes the file is already gone
+                    }
+                }
+
+                foreach (string directoryName in Directory.GetDirectories(path))
+                {
+                    sumMB(directoryName);
+                }
+            }
+            catch (Exception)
+            {
+                // catch all errors during the delete
+                return false;
             }
 
-            foreach (string directoryName in Directory.GetDirectories(path))
-            {
-                sumMB(directoryName);
-            }
+            return true;
         }
 
         private bool insertRowInOptions(string installPathRoute)
@@ -585,20 +612,27 @@ namespace ORTS
                     outputFile.WriteLine("- " + Catalog.GetString("Weather") + ": " + route.Start.Weather + "<br></p>");
                 }
 
-                if (route.Installed && route.getDownloadType() == ContentRouteSettings.DownloadType.zip)
+                if (Directory.Exists(route.DirectoryInstalledIn))
                 {
-                    infoChangedAndAddedFileForZipDownloadType(route, outputFile);
-                }
-                if (route.Installed && route.getDownloadType() == ContentRouteSettings.DownloadType.github)
-                {
-                    bool bothLocalAsRemoteUpdatesFound = infoChangedAndAddedFileForGitHubDownloadType(route, outputFile);
-                    if (bothLocalAsRemoteUpdatesFound)
+                    if (route.Installed && route.getDownloadType() == ContentRouteSettings.DownloadType.zip)
                     {
-                        outputFile.WriteLine("<p><b>" + Catalog.GetString("ATTENTION: both local and remote updates found.") + "</b><br>");
-                        outputFile.WriteLine("<b>" + Catalog.GetString("Update might fail if the update tries to overwrite a changed local file.") + "</b><br>");
-                        outputFile.WriteLine("<b>" + Catalog.GetString("If that's the case you are on your own!") + "</b><br>");
-                        outputFile.WriteLine("<b>" + Catalog.GetString("Get a git expert at your desk or just Delete and Install the route again.") + "</b><br></p>");
+                        infoChangedAndAddedFileForZipDownloadType(route, outputFile);
                     }
+                    if (route.Installed && route.getDownloadType() == ContentRouteSettings.DownloadType.github)
+                    {
+                        bool bothLocalAsRemoteUpdatesFound = infoChangedAndAddedFileForGitHubDownloadType(route, outputFile);
+                        if (bothLocalAsRemoteUpdatesFound)
+                        {
+                            outputFile.WriteLine("<p><b>" + Catalog.GetString("ATTENTION: both local and remote updates found.") + "</b><br>");
+                            outputFile.WriteLine("<b>" + Catalog.GetString("Update might fail if the update tries to overwrite a changed local file.") + "</b><br>");
+                            outputFile.WriteLine("<b>" + Catalog.GetString("If that's the case you are on your own!") + "</b><br>");
+                            outputFile.WriteLine("<b>" + Catalog.GetString("Get a git expert at your desk or just Delete and Install the route again.") + "</b><br></p>");
+                        }
+                    }
+                }
+                else
+                {
+                    outputFile.WriteLine("<p>" + Catalog.GetStringFmt("Directory {0} does not exist", route.DirectoryInstalledIn) + "</b><br></p>");
                 }
             }
             try
@@ -709,8 +743,6 @@ namespace ORTS
         void StartButton_Click(object sender, EventArgs e)
         {
             DisableButtons();
-
-            Cursor.Current = Cursors.WaitCursor;
 
             ContentRouteSettings.Route route = Routes[RouteName];
             string contentName = route.ContentName;
@@ -840,7 +872,7 @@ namespace ORTS
         #endregion
 
         #region DeleteButton
-        void DeleteButton_Click(object sender, EventArgs e)
+        private async void DeleteButton_Click(object sender, EventArgs e)
         {
             ContentRouteSettings.Route route = Routes[RouteName];
             string message;
@@ -855,23 +887,22 @@ namespace ORTS
                 return;
             }
 
-            Cursor.Current = Cursors.WaitCursor;
+            if (Directory.Exists(route.DirectoryInstalledIn)) {
 
-            if (areThereChangedAddedFiles(route))
-            {
-                writeAndStartInfoFile();
-                message = Catalog.GetStringFmt("Changed or added local files found in Directory \"{0}\", see Info at the bottom for more information. Do you want to continue?", route.DirectoryInstalledIn);
-                if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.OK)
+                if (areThereChangedAddedFiles(route))
                 {
-                    // cancelled
-                    EnableButtons();
-                    return;
+                    writeAndStartInfoFile();
+                    message = Catalog.GetStringFmt("Changed or added local files found in Directory \"{0}\", see Info at the bottom for more information. Do you want to continue?", route.DirectoryInstalledIn);
+                    if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.OK)
+                    {
+                        // cancelled
+                        EnableButtons();
+                        return;
+                    }
                 }
+
+                await Task.Run(() => deleteRoute(route.DirectoryInstalledIn));
             }
-
-            Cursor.Current = Cursors.WaitCursor;
-
-            ContentRouteSettings.directoryDelete(route.DirectoryInstalledIn);
 
             if (Settings.Folders.Folders[route.ContentName] == route.ContentDirectory)
             {
@@ -890,6 +921,33 @@ namespace ORTS
             Refresh();
 
             EnableButtons();
+        }
+
+        private void deleteRoute(string directoryInstalledIn)
+        {
+            Thread deleteThread = new Thread(() =>
+            {
+                ContentRouteSettings.directoryDelete(directoryInstalledIn);
+            });
+            // start download in thread to be able to show the progress in the main thread
+            deleteThread.Start();
+
+            while (deleteThread.IsAlive)
+            {
+                Stopwatch sw = Stopwatch.StartNew();
+
+                TotalBytes = 0;
+                if (sumMB(directoryInstalledIn))
+                {
+                    SynchronizationContext.Post(new SendOrPostCallback(o =>
+                    {
+                        dataGridViewDownloadContent.CurrentRow.Cells[1].Value =
+                            string.Format("Left: {0} kB", (string)o);
+                    }), (TotalBytes / 1024).ToString("N0"));
+                }
+
+                while ((deleteThread.IsAlive) && (sw.ElapsedMilliseconds <= 1000)) { }
+            }
         }
         #endregion
 
@@ -957,6 +1015,13 @@ namespace ORTS
 
         private void DisableButtons()
         {
+            UseWaitCursor = true;
+
+            dataGridViewDownloadContent.Enabled = false;
+            InstallPathTextBox.Enabled = false;
+            InstallPathBrowseButton.Enabled = false;
+            infoButton.Enabled = false;
+
             downloadContentButton.Enabled = false;
             startButton.Enabled = false;
             deleteButton.Enabled = false;
@@ -967,6 +1032,12 @@ namespace ORTS
         {
             ContentRouteSettings.Route route = Routes[RouteName];
 
+            UseWaitCursor = false;
+
+            dataGridViewDownloadContent.Enabled = true;
+            InstallPathTextBox.Enabled = true;
+            InstallPathBrowseButton.Enabled = true;
+            infoButton.Enabled = true;
             downloadContentButton.Enabled = !route.Installed;
             startButton.Enabled = route.Installed && !string.IsNullOrWhiteSpace(route.Start.Route);
             deleteButton.Enabled = route.Installed;
@@ -1143,8 +1214,15 @@ namespace ORTS
             return commits;
         }
 
-        private void DownloadContentForm_FormClosing(object sender, FormClosingEventArgs e)
+        private void DownloadContentForm_FormClosing(object sender, FormClosingEventArgs formClosingEventArgs)
         {
+            if (UseWaitCursor)
+            {
+                // cancelled event, so continue
+                formClosingEventArgs.Cancel = true;
+                return;
+            }
+
             try
             {
                 if (pictureBoxRoute.Image != null)
