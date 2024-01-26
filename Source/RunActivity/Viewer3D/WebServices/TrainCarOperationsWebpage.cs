@@ -82,6 +82,7 @@ namespace Orts.Viewer3D.WebServices
 
         public bool TrainCarSelected;
         public int TrainCarSelectedPosition;
+        public string CurrentCarID { get; set; }
 
         public int Connections = 0;
 
@@ -352,6 +353,8 @@ namespace Orts.Viewer3D.WebServices
             var isElectric = trainCar is MSTSElectricLocomotive;
             var isSteam = trainCar is MSTSSteamLocomotive;
             var isEngine = isDiesel || isElectric || isSteam;
+            // Required by OSDCar.cs
+            CurrentCarID = Viewer.PlayerTrain.Cars[TrainCarSelectedPosition].CarID;
             var wagonType = isEngine ?
                 $"  {Viewer.Catalog.GetString(locomotive.WagonType.ToString())}" + $":{Viewer.Catalog.GetString(locomotive.EngineType.ToString())}" :
                 $"  {Viewer.Catalog.GetString(trainCar.WagonType.ToString())}";
