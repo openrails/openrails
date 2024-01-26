@@ -152,6 +152,7 @@ namespace Orts.Simulation.RollingStocks
         float BoosterCylinderExhaustOpenFactor;
         float BoosterEngineSpeedRpM;
         bool BoosterAirisLow = false;
+        int BoosterEngineNumber;
 
         /// <summary>
         /// Grate limit of locomotive exceedeed?
@@ -1585,6 +1586,8 @@ namespace Orts.Simulation.RollingStocks
                         float Tractiveratio = 0.2629f * SteamEngines[i].BoosterCutoff + 0.5971f;
 
                         SteamEngines[i].MaxTractiveEffortLbf = Tractiveratio * MaxBoilerPressurePSI * Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersStrokeM) * SteamEngines[i].BoosterGearRatio / (Me.ToIn(SteamEngines[i].AttachedAxle.WheelRadiusM) * 2.0f);
+
+                        BoosterEngineNumber = i;
                     }
                 }
 
@@ -2593,12 +2596,11 @@ namespace Orts.Simulation.RollingStocks
                     TotalNumberCyindersEng1 = SteamEngines[0].NumberCylinders;
                 }
 
-                // Engine #1
-                // Find 
+          // Engine #1
                 for (int i = 0; i < TotalNumberCyindersEng1; i++)
                 {
                     var crankAngleDiffRad = WheelCrankAngleDiffRad[i];
-                    float normalisedCrankAngleRad = NormalisedCrankAngle(i, crankAngleDiffRad);
+                    float normalisedCrankAngleRad = NormalisedCrankAngle(0, i, crankAngleDiffRad);
 
                     // Exhaust crank angle
                     float exhaustCrankAngleRad = 0;
@@ -2820,14 +2822,13 @@ namespace Orts.Simulation.RollingStocks
 
                 if (SteamEngines.Count > 1)
                 {
-                    var TotalNumberCyindersEng2 = SteamEngines[1].NumberCylinders + SteamEngines[1].LPNumberCylinders;
+                    var TotalNumberCyindersEng2 = SteamEngines[1].NumberCylinders; // currently assume 2nd engine is non-compound
 
-                    // Engine #2
-                    // Find 
+         // Engine #2
                     for (int i = 0; i < TotalNumberCyindersEng2; i++)
                     {
                         var crankAngleDiffRad = WheelCrankAngleDiffEng2Rad[i];
-                        float normalisedCrankAngleRad = NormalisedCrankAngle(i, crankAngleDiffRad);
+                        float normalisedCrankAngleRad = NormalisedCrankAngle(1,i, crankAngleDiffRad);
 
                         // Exhaust crank angle
                         float exhaustCrankAngleRad = 0;
@@ -2943,7 +2944,7 @@ namespace Orts.Simulation.RollingStocks
 
                     if (BoosterGearsEngaged)
                     {
-                        normalisedCrankAngleRad = NormalisedCrankAngle(i, crankAngleDiffRad);
+                        normalisedCrankAngleRad = NormalisedCrankAngle(BoosterEngineNumber,i, crankAngleDiffRad);
                     }
                     else
                     {
@@ -2993,7 +2994,7 @@ namespace Orts.Simulation.RollingStocks
 
                     if (BoosterGearsEngaged)
                     {
-                        normalisedCrankAngleRad = NormalisedCrankAngle(i, crankAngleDiffRad);
+                        normalisedCrankAngleRad = NormalisedCrankAngle(BoosterEngineNumber, i, crankAngleDiffRad);
                     }
                     else
                     {
@@ -5763,7 +5764,7 @@ namespace Orts.Simulation.RollingStocks
                         }
 
                         var crankAngleDiffRad = WheelCrankAngleDiffRad[i];
-                        float normalisedCrankAngleRad = NormalisedCrankAngle(i, crankAngleDiffRad);
+                        float normalisedCrankAngleRad = NormalisedCrankAngle(numberofengine, i, crankAngleDiffRad);
                         
                         // Crank angles
                         float sin = (float)Math.Sin(crankAngleRad);
@@ -6299,9 +6300,9 @@ namespace Orts.Simulation.RollingStocks
         /// <summary>
         /// Normalise crank angle so that it is a value between 0 and 360 starting at the real crank angle difference
         /// </summary>
-        private float NormalisedCrankAngle(int cylinderNumber, float crankAngleRad)
+        private float NormalisedCrankAngle(int enginenumber, int cylinderNumber, float crankAngleRad)
         {
-            float normalisedCrankAngleRad = (float)MathHelper.WrapAngle((float)LocomotiveAxles[0].AxlePositionRad + crankAngleRad);
+            float normalisedCrankAngleRad = (float)MathHelper.WrapAngle((float)LocomotiveAxles[enginenumber].AxlePositionRad + crankAngleRad);
 
             if (normalisedCrankAngleRad < 0)
             {
