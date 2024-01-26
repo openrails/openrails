@@ -27,7 +27,7 @@ namespace ORTS.Settings
     {
         #region User Settings
 
-        [Default("C:\\OpenRails")]
+        [Default("C:\\OpenRailsRoutes")]
         public string InstallPath { get; set; }
 
         #endregion

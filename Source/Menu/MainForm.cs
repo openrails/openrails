@@ -764,7 +764,6 @@ namespace ORTS
                             switch (form.ShowDialog(this))
                             {
                                 case DialogResult.OK:
-                                    LoadFolderList();
                                     break;
                                 case DialogResult.Retry:
                                     RestartMenu();
