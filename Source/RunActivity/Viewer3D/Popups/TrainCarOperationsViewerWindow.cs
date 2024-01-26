@@ -91,7 +91,12 @@ namespace Orts.Viewer3D.Popups
             set;
             get;
         }
-        public int NewCarPosition
+        public string CurrentCarID
+        {
+            set;
+            get;
+        }
+    public int NewCarPosition
         {
             set;
             get;
@@ -270,6 +275,7 @@ namespace Orts.Viewer3D.Popups
                         : $"  {Viewer.Catalog.GetString(wagon.WagonType.ToString())}";
 
                     Vbox.Add(buttonClose = new Label(Vbox.RemainingWidth, Owner.TextFontDefault.Height, $"{Viewer.Catalog.GetString("Car ID")} {(CarPosition >= PlayerTrain.Cars.Count ? " " : PlayerTrain.Cars[CarPosition].CarID + wagonType)}", LabelAlignment.Center));
+                    CurrentCarID = CarPosition >= PlayerTrain.Cars.Count ? " " : PlayerTrain.Cars[CarPosition].CarID;
                     buttonClose.Click += new Action<Control, Point>(buttonClose_Click);
                     buttonClose.Color = Owner.Viewer.TrainCarOperationsWindow.WarningCarPosition.Find(x => x == true) ? Color.Cyan : Color.White;
                     Vbox.AddHorizontalSeparator();
