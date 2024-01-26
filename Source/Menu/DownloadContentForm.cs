@@ -759,6 +759,8 @@ namespace ORTS
                 mainForm.comboBoxRoute.SelectedIndex = determineSelectedIndex(mainForm.comboBoxRoute, route.Start.Route);
 
                 mainForm.radioButtonModeActivity.Checked = true;
+
+                mainForm.LoadActivityList();
                 // hardcoded: + Explore in Activity Mode +
                 mainForm.comboBoxActivity.SelectedIndex = 1;
 
