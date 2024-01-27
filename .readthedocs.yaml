@@ -8,6 +8,10 @@ build:
   tools:
     python: "3.12"
 
+python:
+  install:
+    - requirements: Source/Documentation/Manual/requirements.txt
+
 sphinx:
   configuration: Source/Documentation/Manual/conf.py
 
