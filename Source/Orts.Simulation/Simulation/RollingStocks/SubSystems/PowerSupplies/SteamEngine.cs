@@ -362,16 +362,6 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float DisplayTractiveForceN;
 
         /// <summary>
-        /// Steam Engine average tractive force
-        /// </summary>
-        public float CompareTractiveForceN;
-
-        /// <summary>
-        /// Steam Engine average tractive force
-        /// </summary>
-        public float CompareIndicatedHorsePower;
-
-        /// <summary>
         /// Steam Engine maximum indicated horsepower
         /// </summary>
         public float MaxIndicatedHorsePowerHP;
