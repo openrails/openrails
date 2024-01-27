@@ -2197,7 +2197,6 @@ namespace Orts.Simulation.RollingStocks
                             // update drive wheel weight for each multiple steam engine
                             UpdateDriveWheelWeight(LocoIndex, MassKG, SteamLocomotiveIdentification.SteamEngines.Count);
 
-
                         }
                         else // locomotive must be a tender type locomotive
                         // This is a tender locomotive. A tender locomotive does not have any fuel onboard.
@@ -2298,7 +2297,7 @@ namespace Orts.Simulation.RollingStocks
                 for (int i = 0; i < LocoIdentification.SteamEngines.Count; i++)
                 {
                     LocoIdentification.SteamEngines[i].AttachedAxle.WheelWeightKg = (MassKG / InitialMassKG) * LocoIdentification.SteamEngines[i].AttachedAxle.InitialDrvWheelWeightKg;
-                }
+                 }
             }
         }
 

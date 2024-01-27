@@ -2039,10 +2039,11 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // Calculate factor of adhesion for display purposes
-            // Per Engine
+            // Per Engine, and set Initial drivewheelweight
             for (int i = 0; i < SteamEngines.Count; i++)
             {
                 SteamEngines[i].CalculatedFactorOfAdhesion = Kg.ToLb(SteamEngines[i].AttachedAxle.WheelWeightKg) / SteamEngines[i].MaxTractiveEffortLbf;
+                SteamEngines[i].AttachedAxle.InitialDrvWheelWeightKg = SteamEngines[i].AttachedAxle.WheelWeightKg;
             }
 
             // Calculate "critical" power of locomotive to determine limit of max IHP
@@ -6338,13 +6339,15 @@ namespace Orts.Simulation.RollingStocks
                 // geared locomotive or booster locomotive
                 {
                     // Moment of Inertia (Wheel and axle) = (Mass x Radius^2) / 2.0
+                    float wheelMassKG = Kg.FromLb(6000.0f);
+                    float AxleMassKG = Kg.FromLb(1000.0f);
                     float AxleRadiusM = Me.FromIn(8.0f / 2.0f);
-                    float WheelMomentInertia = (linkedEngine.AttachedAxle.WheelWeightKg * linkedEngine.AttachedAxle.WheelRadiusM * linkedEngine.AttachedAxle.WheelRadiusM) / 2.0f;
-                    float AxleMomentInertia = (linkedEngine.AttachedAxle.WheelWeightKg * AxleRadiusM * AxleRadiusM) / 2.0f;
+                    float WheelMomentInertia = (wheelMassKG * linkedEngine.AttachedAxle.WheelRadiusM * linkedEngine.AttachedAxle.WheelRadiusM) / 2.0f;
+                    float AxleMomentInertia = (AxleMassKG * AxleRadiusM * AxleRadiusM) / 2.0f;
                     float TotalWheelMomentofInertia = WheelMomentInertia + AxleMomentInertia; // Total MoI for generic wheelset
                     float TotalMomentInertia = TotalWheelMomentofInertia;
                     axle.InertiaKgm2 = TotalMomentInertia;
-                    axle.DampingNs = linkedEngine.AttachedAxle.AxleWeightN / 200;
+ 
                     // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches) - This should reduce wheel force
                     axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersStrokeM) / (Me.ToIn(linkedEngine.AttachedAxle.WheelRadiusM * 2.0f)));
                 }
@@ -6357,10 +6360,11 @@ namespace Orts.Simulation.RollingStocks
                     // Generic wheel assumptions are - 80 inch drive wheels ( 2.032 metre), a pair of drive wheels weighs approx 6,000lbs, axle weighs 1,000 lbs, and has a diameter of 8 inches.
                     // Moment of Inertia (Wheel and axle) = (Mass x Radius^2) / 2.0
 
-                    float AxleWeighKG = Kg.FromLb(1000.0f);
+                    float wheelMassKG = Kg.FromLb(6000.0f);
+                    float AxleMassKG = Kg.FromLb(1000.0f);
                     float AxleRadiusM = Me.FromIn(8.0f / 2.0f);
-                    float WheelMomentInertia = (linkedEngine.AttachedAxle.WheelWeightKg * linkedEngine.AttachedAxle.WheelRadiusM * linkedEngine.AttachedAxle.WheelRadiusM) / 2.0f;
-                    float AxleMomentInertia = (linkedEngine.AttachedAxle.WheelWeightKg * AxleRadiusM * AxleRadiusM) / 2.0f;
+                    float WheelMomentInertia = (wheelMassKG * linkedEngine.AttachedAxle.WheelRadiusM * linkedEngine.AttachedAxle.WheelRadiusM) / 2.0f;
+                    float AxleMomentInertia = (AxleMassKG * AxleRadiusM * AxleRadiusM) / 2.0f;
                     float TotalWheelMomentofInertia = WheelMomentInertia + AxleMomentInertia; // Total MoI for generic wheelset
                     
                     // The moment of inertia needs to be increased by the number of wheels in each set
@@ -6378,6 +6382,7 @@ namespace Orts.Simulation.RollingStocks
 
                     float TotalMomentInertia = TotalWheelMomentofInertia + RodMomentInertia;
                     axle.InertiaKgm2 = TotalMomentInertia;
+
                     axle.DampingNs = axle.AxleWeightN / 200;
                     // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches) - This should reduce wheel force
                     axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersStrokeM) / (Me.ToIn(linkedEngine.AttachedAxle.WheelRadiusM * 2.0f)));

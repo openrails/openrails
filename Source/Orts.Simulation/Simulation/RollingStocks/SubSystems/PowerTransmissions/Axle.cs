@@ -246,8 +246,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     // Because of the irregular force around the wheel for a steam engine during a revolution, "response" time for warnings needs to be lower
                     if (locomotive.EngineType == TrainCar.EngineTypes.Steam)
                     {
-                        axle.WheelSlipThresholdTimeS = 0.01f;
-                        axle.WheelSlipWarningThresholdTimeS = 0.005f;
+                        axle.WheelSlipThresholdTimeS = 0.1f;
+                        axle.WheelSlipWarningThresholdTimeS = 0.05f;
                     }
                     else
                     {
@@ -501,6 +501,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 if (value <= 0.0)
                     throw new NotSupportedException("Inertia must be greater than zero");
+                
                 inertiaKgm2 = value;
                 switch (DriveType)
                 {
