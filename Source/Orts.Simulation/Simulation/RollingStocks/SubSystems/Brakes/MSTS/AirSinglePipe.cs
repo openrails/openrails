@@ -518,7 +518,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 (TwoStageSpeedUpMpS, TwoStageSpeedDownMpS) = (TwoStageSpeedDownMpS, TwoStageSpeedUpMpS);
             if (TwoStageLowPressurePSI == 0)
                 TwoStageLowPressurePSI = MaxCylPressurePSI;
-
         }
 
         /// <summary>
@@ -1163,21 +1162,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     if (loco != null)
                     {
                         float volumeRatio = CylVolumeM3 / loco.MainResVolumeM3;
-                        if (loco.MainResPressurePSI - dp * volumeRatio < CylPressurePSI + dp)
+                        if (loco.MainResPressurePSI - (dp * volumeRatio) < CylPressurePSI + dp)
                             dp = (loco.MainResPressurePSI - CylPressurePSI) / (1 + volumeRatio);
                         loco.MainResPressurePSI -= dp * volumeRatio;
                     }
                     else if (TwoPipes)
                     {
-                        if (BrakeLine2PressurePSI - dp * CylVolumeM3 / BrakePipeVolumeM3 < CylPressurePSI + dp)
-                            dp = (BrakeLine2PressurePSI - CylPressurePSI) / (1 + CylVolumeM3 / BrakePipeVolumeM3);
-                        BrakeLine2PressurePSI -= dp * CylVolumeM3 / BrakePipeVolumeM3;
+                        if (BrakeLine2PressurePSI - dp * (CylVolumeM3 / BrakePipeVolumeM3) < CylPressurePSI + dp)
+                            dp = (BrakeLine2PressurePSI - CylPressurePSI) / (1 + (CylVolumeM3 / BrakePipeVolumeM3));
+                        BrakeLine2PressurePSI -= dp * (CylVolumeM3 / BrakePipeVolumeM3);
                     }
                     CylPressurePSI += dp;
                 }
                 else if (demandedPressurePSI < CylPressurePSI)
                 {
-                    CylPressurePSI = Math.Max(Math.Max(demandedPressurePSI, CylPressurePSI - elapsedClockSeconds * RelayValveReleaseRatePSIpS), 0);
+                    CylPressurePSI = Math.Max(Math.Max(demandedPressurePSI, CylPressurePSI - (elapsedClockSeconds * RelayValveReleaseRatePSIpS)), 0);
                 }
             }
             else
