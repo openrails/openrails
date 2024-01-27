@@ -247,9 +247,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     if (locomotive.EngineType == TrainCar.EngineTypes.Steam)
                     {
                         axle.WheelSlipThresholdTimeS = 0.1f;
-                        axle.WheelSlipWarningThresholdTimeS = 0.05f;
+                        axle.WheelSlipWarningThresholdTimeS = axle.WheelSlipThresholdTimeS * 0.75f;
                     }
-                    else
+                    else // diesel and electric locomotives
                     {
                         axle.WheelSlipThresholdTimeS = 1;
                         axle.WheelSlipWarningThresholdTimeS = 1;

@@ -1262,14 +1262,12 @@ namespace Orts.Simulation.RollingStocks
             if (CylinderExhausttoCutoff == null)
             {
                 CylinderExhausttoCutoff = SteamTable.CylinderEventExhausttoCutoff();
-                // Trace.TraceInformation("Default values used for CylinderExhausttoCutoff");
             }
 
 
             if (CylinderCompressiontoCutoff == null)
             {
                 CylinderCompressiontoCutoff = SteamTable.CylinderEventCompressiontoCutoff();
-                // Trace.TraceInformation("Default values used for CylinderCompressiontoCutoff");
             }
 
             if (CylinderAdmissiontoCutoff == null)
@@ -2614,39 +2612,28 @@ namespace Orts.Simulation.RollingStocks
                         exhaustCrankAngleRad = CylinderExhaustOpenFactor * (float)Math.PI + (float)Math.PI;
                     }
 
-                    //                    Trace.TraceInformation("Cylinder {0} ExhaustCrank {1} RealCrank {2} NormalCrank {3}", i + 1, MathHelper.ToDegrees(exhaustCrankAngleRad), MathHelper.ToDegrees(realCrankAngleRad), MathHelper.ToDegrees(normalisedCrankAngleRad));
-
                     if (absSpeedMpS > 0.001)
                     {
                         if (i == 0 && ((normalisedCrankAngleRad <= MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad) || (normalisedCrankAngleRad < 2 * MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad)))
                         {
                             CylinderSteamExhaust1On = true;
-
-                            //                            Trace.TraceInformation("Exhaust - Factor {0} ExhaustCrank {1} RealCrank {2} NormalCrank {3} Exhaust1On {4} Cylinder {5} i {6}", CylinderExhaustOpenFactor, MathHelper.ToDegrees(exhaustCrankAngleRad), MathHelper.ToDegrees(realCrankAngleRad), MathHelper.ToDegrees(normalisedCrankAngleRad), CylinderSteamExhaust1On, i + 1, i);
                         }
                         else if (i == 0)
                         {
                             CylinderSteamExhaust1On = false;
-                            //                            Trace.TraceInformation("Test #1 {0}", CylinderSteamExhaust1On);
                         }
 
                         else if (i == 1 && ((normalisedCrankAngleRad <= MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad) || (normalisedCrankAngleRad < 2 * MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad)))
                         {
                             CylinderSteamExhaust2On = true;
-                            //                            Trace.TraceInformation("Exhaust - Factor {0} ExhaustCrank {1} RealCrank {2} NormalCrank {3} Exhaust2On {4} Cylinder {5} i {6}", CylinderExhaustOpenFactor, MathHelper.ToDegrees(exhaustCrankAngleRad), MathHelper.ToDegrees(realCrankAngleRad), MathHelper.ToDegrees(normalisedCrankAngleRad), CylinderSteamExhaust2On, i + 1, i);
                         }
                         else if (i == 1)
                         {
                             CylinderSteamExhaust2On = false;
                         }
-
-                        //                    Trace.TraceInformation("Exhaust - Factor {0} ExhaustCrank {1} RealCrank {2} NormalCrank {3} ExhaustOn {4} Cylinder {5}", CylinderExhaustOpenFactor, MathHelper.ToDegrees(exhaustCrankAngleRad), MathHelper.ToDegrees(realCrankAngleRad), MathHelper.ToDegrees(normalisedCrankAngleRad), SteamExhaust1On, i+1);
-
-
                         else if (i == 2 && ((normalisedCrankAngleRad <= MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad) || (normalisedCrankAngleRad < 2 * MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad)))
                         {
                             CylinderSteamExhaust3On = true;
-                            //                            Trace.TraceInformation("Exhaust - Factor {0} ExhaustCrank {1} RealCrank {2} NormalCrank {3} Exhaust3On {4} Cylinder {5} i {6}", CylinderExhaustOpenFactor, MathHelper.ToDegrees(exhaustCrankAngleRad), MathHelper.ToDegrees(realCrankAngleRad), MathHelper.ToDegrees(normalisedCrankAngleRad), CylinderSteamExhaust3On, i + 1, i);
                         }
                         else if (i == 2)
                         {
@@ -2656,7 +2643,6 @@ namespace Orts.Simulation.RollingStocks
                         else if (i == 3 && ((normalisedCrankAngleRad <= MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad) || (normalisedCrankAngleRad < 2 * MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad)))
                         {
                             CylinderSteamExhaust4On = true;
-                            //                            Trace.TraceInformation("Exhaust - Factor {0} ExhaustCrank {1} RealCrank {2} NormalCrank {3} Exhaust4On {4} Cylinder {5} i {6}", CylinderExhaustOpenFactor, MathHelper.ToDegrees(exhaustCrankAngleRad), MathHelper.ToDegrees(realCrankAngleRad), MathHelper.ToDegrees(normalisedCrankAngleRad), CylinderSteamExhaust4On, i + 1, i);
                         }
                         else if (i == 3)
                         {
@@ -2841,35 +2827,24 @@ namespace Orts.Simulation.RollingStocks
                         {
                             exhaustCrankAngleRad = CylinderExhaustOpenFactor * (float)Math.PI + (float)Math.PI;
                         }
-
-                        //                    Trace.TraceInformation("Cylinder {0} ExhaustCrank {1} RealCrank {2} NormalCrank {3}", i + 1, MathHelper.ToDegrees(exhaustCrankAngleRad), MathHelper.ToDegrees(realCrankAngleRad), MathHelper.ToDegrees(normalisedCrankAngleRad));
-
                         if (absSpeedMpS > 0.001)
                         {
                             if (i == 0 && ((normalisedCrankAngleRad <= MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad) || (normalisedCrankAngleRad < 2 * MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad)))
                             {
                                 CylinderSteamExhaust2_1On = true;
-
-                                //                            Trace.TraceInformation("Exhaust - Factor {0} ExhaustCrank {1} RealCrank {2} NormalCrank {3} Exhaust1On {4} Cylinder {5} i {6}", CylinderExhaustOpenFactor, MathHelper.ToDegrees(exhaustCrankAngleRad), MathHelper.ToDegrees(realCrankAngleRad), MathHelper.ToDegrees(normalisedCrankAngleRad), CylinderSteamExhaust1On, i + 1, i);
                             }
                             else if (i == 0)
                             {
                                 CylinderSteamExhaust2_1On = false;
-                                //                            Trace.TraceInformation("Test #1 {0}", CylinderSteamExhaust1On);
                             }
-
                             else if (i == 1 && ((normalisedCrankAngleRad <= MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad) || (normalisedCrankAngleRad < 2 * MathHelper.Pi && normalisedCrankAngleRad >= exhaustCrankAngleRad)))
                             {
                                 CylinderSteamExhaust2_2On = true;
-                                //                            Trace.TraceInformation("Exhaust - Factor {0} ExhaustCrank {1} RealCrank {2} NormalCrank {3} Exhaust2On {4} Cylinder {5} i {6}", CylinderExhaustOpenFactor, MathHelper.ToDegrees(exhaustCrankAngleRad), MathHelper.ToDegrees(realCrankAngleRad), MathHelper.ToDegrees(normalisedCrankAngleRad), CylinderSteamExhaust2On, i + 1, i);
                             }
                             else if (i == 1)
                             {
                                 CylinderSteamExhaust2_2On = false;
                             }
-
-                            //                    Trace.TraceInformation("Exhaust - Factor {0} ExhaustCrank {1} RealCrank {2} NormalCrank {3} ExhaustOn {4} Cylinder {5}", CylinderExhaustOpenFactor, MathHelper.ToDegrees(exhaustCrankAngleRad), MathHelper.ToDegrees(realCrankAngleRad), MathHelper.ToDegrees(normalisedCrankAngleRad), SteamExhaust1On, i+1);
-
                         }
 
                         if (TotalNumberCyindersEng2 == 2)
@@ -3089,8 +3064,6 @@ namespace Orts.Simulation.RollingStocks
 
             BoosterCylinderSteamExhaust02SteamVolumeM3pS = BoosterCylinderSteamExhaustOn && BoosterCylinderSteamExhaust02On ? (10.0f * BoosterSteamFraction) : 0.0f;
             BoosterCylinderSteamExhaust02SteamVelocityMpS = 100.0f;
-
-            //     Trace.TraceInformation("Booster Exhaust - ExhaustOn {0} Exhaust01On {1} Exhaust02On {2} ExhaustVolume01 {3} ExhaustVolume02 {4} SteamFraction {5} Speed {6}", BoosterCylinderSteamExhaustOn, BoosterCylinderSteamExhaust01On, BoosterCylinderSteamExhaust02On, BoosterCylinderSteamExhaust01SteamVolumeM3pS, BoosterCylinderSteamExhaust02SteamVolumeM3pS, BoosterSteamFraction, BoosterEngineSpeedRpM);
 
             // Booster Cylinder Steam Cylinder Cocks (automatic)
             BoosterCylinderCockSteam11VolumeMpS = BoosterCylinderCocksOn && BoosterCylinderCock11On ? (10.0f * BoosterSteamFraction) : 0.0f;
@@ -5600,9 +5573,6 @@ namespace Orts.Simulation.RollingStocks
                 // Geared locomotives will have to take into account gearing ratio. 
                 RawCalculatedCylinderSteamUsageLBpS = SteamEngines[numberofengine].NumberCylinders * DrvWheelRevRpS * MotiveForceGearRatio * CylStrokesPerCycle * RawCylinderSteamWeightLbs;
                 CalculatedCylinderSteamUsageLBpS = RawCalculatedCylinderSteamUsageLBpS * SuperheaterSteamUsageFactor;
-
-
-         //       Trace.TraceInformation("Steam Consumption - Eng# {0} Calc {1} Raw {2} Factor {3}", numberofengine, pS.TopH(CalculatedCylinderSteamUsageLBpS), pS.TopH(RawCalculatedCylinderSteamUsageLBpS), SuperheaterSteamUsageFactor);
             }
 
             #endregion
@@ -6146,12 +6116,6 @@ namespace Orts.Simulation.RollingStocks
                     DisplayTractiveForceN += SteamEngines[i].RealTractiveForceN;
 
                 }
-
-                // Temporary code to compare TE and IHP
-
-                SteamEngines[i].CompareTractiveForceN = N.FromLbf((SteamEngines[i].NumberCylinders / 2.0f) * (Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersStrokeM) / (2.0f * Me.ToIn(SteamEngines[i].AttachedAxle.WheelRadiusM))) * (SteamEngines[i].MeanEffectivePressurePSI * CylinderEfficiencyRate) * MotiveForceGearRatio);
-
-                SteamEngines[i].CompareIndicatedHorsePower = (N.ToLbf(SteamEngines[i].RealTractiveForceN) * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
 
                 // Set Max Power equal to max IHP
                 MaxPowerW += W.FromHp(SteamEngines[i].MaxIndicatedHorsePowerHP);
@@ -7868,21 +7832,6 @@ namespace Orts.Simulation.RollingStocks
 
                     }
                 }
-
-                // Comparison of TE and IHP - to be deleted
-                for (int i = 0; i < SteamEngines.Count; i++)
-                {
-                    status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n",
-                    Simulator.Catalog.GetString("ForceCom:"),
-                    Simulator.Catalog.GetString("Eng#:"),
-                    i + 1,
-                    Simulator.Catalog.GetString("CompTE"),
-                         FormatStrings.FormatForce(SteamEngines[i].CompareTractiveForceN, IsMetric),
-                         Simulator.Catalog.GetString("CompIHP"),
-                         FormatStrings.FormatPower(W.FromHp(SteamEngines[i].CompareIndicatedHorsePower), IsMetric, false, false)
-                         );
-                }
-
 
                 status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
                     Simulator.Catalog.GetString("ForceTot:"),
