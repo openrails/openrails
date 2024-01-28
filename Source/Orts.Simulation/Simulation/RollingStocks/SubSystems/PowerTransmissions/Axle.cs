@@ -235,13 +235,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     if (axle.InertiaKgm2 <= 0) axle.InertiaKgm2 = locomotive.AxleInertiaKgm2 / AxleList.Count;
                     if (axle.WheelWeightKg <= 0) axle.WheelWeightKg = locomotive.DrvWheelWeightKg / AxleList.Count;
                     if (axle.AxleWeightN <= 0) axle.AxleWeightN = 9.81f * axle.WheelWeightKg;  //remains fixed for diesel/electric locomotives, but varies for steam locomotives
-                    if (axle.NumAxles <= 0) axle.NumAxles = locomotive.LocoNumDrvAxles;
+                    if (axle.NumDriveAxles <= 0) axle.NumDriveAxles = locomotive.LocoNumDrvAxles;
                     if (axle.WheelRadiusM <= 0) axle.WheelRadiusM = locomotive.DriverWheelRadiusM;
                     if (axle.WheelFlangeAngleRad <= 0) axle.WheelFlangeAngleRad = locomotive.MaximumWheelFlangeAngleRad;
                     if (axle.DampingNs <= 0) axle.DampingNs = locomotive.MassKG / 1000.0f / AxleList.Count;
                     if (axle.FrictionN <= 0) axle.FrictionN = locomotive.MassKG / 1000.0f / AxleList.Count;
-                    if (axle.NumberWheelAxles <= 0) axle.NumberWheelAxles = 1;
-
+                    
                     // set the wheel slip threshold times for different types of locomotives
                     // Because of the irregular force around the wheel for a steam engine during a revolution, "response" time for warnings needs to be lower
                     if (locomotive.EngineType == TrainCar.EngineTypes.Steam)
@@ -513,7 +512,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Wheel number
         /// </summary>
-        public int NumberWheelAxles;
+  //      public int NumberWheelAxles;
 
         /// <summary>
         /// Wheel mass parameter in kilograms
@@ -548,7 +547,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Number of drive axles in group of wheels
         /// </summary>
-        public float NumAxles;
+        public float NumDriveAxles;
 
         /// <summary>
         /// Static adhesion coefficient, as given by Curtius-Kniffler formula
@@ -791,8 +790,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     case "ortsflangeangle":
                         WheelFlangeAngleRad = stf.ReadFloatBlock(STFReader.UNITS.Angle, null);
                         break;
-                    case "ortsnumberwheelaxles":
-                        NumAxles = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
+                    case "ortsnumberdriveaxles":
+                        NumDriveAxles = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
                         break;
                     case "ortsinertia":
                         InertiaKgm2 = stf.ReadFloatBlock(STFReader.UNITS.RotationalInertia, null);
@@ -800,9 +799,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     case "weight":
                         WheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
                         AxleWeightN = 9.81f * WheelWeightKg;
-                        break;
-                    case "numberwheelaxles":
-                        NumberWheelAxles = stf.ReadIntBlock(null);
                         break;
                     case "animatedparts":
                         foreach (var part in stf.ReadStringBlock("").ToUpper().Replace(" ", "").Split(','))
@@ -820,13 +816,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             WheelRadiusM = other.WheelRadiusM;
             WheelFlangeAngleRad = other.WheelFlangeAngleRad;
-            NumAxles = other.NumAxles;
+            NumDriveAxles = other.NumDriveAxles;
             InertiaKgm2 = other.InertiaKgm2;
             WheelWeightKg = other.WheelWeightKg;
             AxleWeightN = other.AxleWeightN;
             AnimatedParts.Clear();
             AnimatedParts.AddRange(other.AnimatedParts);
-            NumberWheelAxles = other.NumberWheelAxles;
         }
 
         /// <summary>
@@ -1232,8 +1227,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 var wheelRadiusMM = Axle.WheelRadiusM * 1000;
                 var wheelDistanceGaugeMM = Axle.WheelDistanceGaugeM * 1000;
                 var GNm2 = 8.40E+10;
-                wheelLoadN = Axle.AxleWeightN / (Axle.NumAxles * 2); // Assume two wheels per axle, and thus wheel weight will be have the value - multiple axles????
-                var wheelLoadkN = Axle.AxleWeightN / (Axle.NumAxles * 2 * 1000); // Assume two wheels per axle, and thus wheel weight will be have the value - multiple axles????
+                wheelLoadN = Axle.AxleWeightN / (Axle.NumDriveAxles * 2); // Assume two wheels per axle, and thus wheel weight will be have the value - multiple axles????
+                var wheelLoadkN = Axle.AxleWeightN / (Axle.NumDriveAxles * 2 * 1000); // Assume two wheels per axle, and thus wheel weight will be have the value - multiple axles????
                 var Young_ModulusMPa = 207000;
 
                 // Calculate Hertzian values - assume 2b = 12mm.
