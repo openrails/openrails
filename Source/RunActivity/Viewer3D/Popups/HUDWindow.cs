@@ -622,7 +622,7 @@ namespace Orts.Viewer3D.Popups
                             currentCount += 2;
                             axlesCount += 1;
 
-                            if (axlesCount >= steamloco.SteamEngines[i].AttachedAxle.NumDriveAxles && currentCount != 0)
+                            if (axlesCount >= steamloco.SteamEngines[i].AttachedAxle.NumWheelsetAxles && currentCount != 0)
                             {
                                 whyte.Add(currentCount.ToString());
                                 currentBogie = axle.BogieIndex;
