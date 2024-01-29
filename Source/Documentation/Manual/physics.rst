@@ -245,7 +245,9 @@ performance of the wheelset.
 ``AnimatedParts`` - animated parts associated with the axles wheelset.
 ``Weight`` - weight on the axles in the wheelset.
 ``ORTSRadius`` - radius of the wheels in the wheelset.
-``NumberWheelAxles`` - number of axles in the wheelset.
+``NumberWheelsetAxles`` - number of axles in the wheelset.
+``ORTSFlangeAngle`` - flange angle of the wheels in the wheelset.
+``ORTSInertia`` - inertia of the wheels in the wheelset.
 
 The first model -- simple adhesion model -- is a simple tractive force
 condition-based computation. If the tractive force reaches its actual
