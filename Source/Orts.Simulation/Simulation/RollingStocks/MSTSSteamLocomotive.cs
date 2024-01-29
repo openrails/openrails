@@ -2552,7 +2552,7 @@ namespace Orts.Simulation.RollingStocks
 
                 UpdateSteamTractiveForce(elapsedClockSeconds, tractiveforcethrottle, 0, 0, i);
 
-                SteamDrvWheelWeightLbs += Kg.ToLb(SteamEngines[i].AttachedAxle.WheelWeightKg / SteamEngines[i].AttachedAxle.NumDriveAxles); // Calculate the weight per axle (used in MSTSLocomotive for friction calculatons)
+                SteamDrvWheelWeightLbs += Kg.ToLb(SteamEngines[i].AttachedAxle.WheelWeightKg / SteamEngines[i].AttachedAxle.NumWheelsetAxles); // Calculate the weight per axle (used in MSTSLocomotive for friction calculatons)
 
             }
 
@@ -6332,7 +6332,7 @@ namespace Orts.Simulation.RollingStocks
                     float TotalWheelMomentofInertia = WheelMomentInertia + AxleMomentInertia; // Total MoI for generic wheelset
                     
                     // The moment of inertia needs to be increased by the number of wheels in each set
-                    TotalWheelMomentofInertia *= linkedEngine.AttachedAxle.NumDriveAxles;
+                    TotalWheelMomentofInertia *= linkedEngine.AttachedAxle.NumWheelsetAxles;
 
                     // the inertia of the coupling rods can also be added
                     // Assume rods weigh approx 1500 lbs
