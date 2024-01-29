@@ -52,6 +52,7 @@ namespace Orts.Viewer3D.Popups
         internal static Texture2D Coupler;
         internal static Texture2D CouplerFront;
         internal static Texture2D CouplerRear;
+        internal static Texture2D CouplerNotAvailable;
         internal static Texture2D Empty;
         internal static Texture2D ETSconnected32;
         internal static Texture2D ETSdisconnected32;
@@ -70,6 +71,8 @@ namespace Orts.Viewer3D.Popups
         internal static Texture2D PowerChanging;
         internal static Texture2D RearAngleCockOpened;
         internal static Texture2D RearAngleCockClosed;
+        internal static Texture2D ResetBrakesOff;
+        internal static Texture2D ResetBrakesOn;
 
         public int WindowHeightMin;
         public int WindowHeightMax;
@@ -132,7 +135,7 @@ namespace Orts.Viewer3D.Popups
         int LastPlayerTrainCars;
         bool LastPlayerLocomotiveFlippedState;
         int OldCarPosition;
-        
+        bool ResetAllSymbols = false;
         public TrainCarOperationsViewerWindow(WindowManager owner)
             : base(owner, Window.DecorationSize.X + CarListPadding + ((owner.TextFontDefault.Height + 12) * 20), Window.DecorationSize.Y + ((owner.TextFontDefault.Height + 12) * 2), Viewer.Catalog.GetString("Train Operations Viewer"))
         {
@@ -151,6 +154,7 @@ namespace Orts.Viewer3D.Popups
             outf.Write(Location.Height);
 
             outf.Write(CarPosition);
+            outf.Write(ResetAllSymbols);
         }
         protected internal override void Restore(BinaryReader inf)
         {
@@ -162,6 +166,7 @@ namespace Orts.Viewer3D.Popups
             LocationRestore.Height = inf.ReadInt32();
 
             CarPosition = inf.ReadInt32();
+            ResetAllSymbols = inf.ReadBoolean();
 
             // Display window
             SizeTo(LocationRestore.Width, LocationRestore.Height);
@@ -192,6 +197,7 @@ namespace Orts.Viewer3D.Popups
                 Coupler = SharedTextureManager.Get(Owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Owner.Viewer.ContentPath, "TrainOperationsCoupler32.png"));
                 CouplerFront = SharedTextureManager.Get(Owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Owner.Viewer.ContentPath, "TrainOperationsCouplerFront32.png"));
                 CouplerRear = SharedTextureManager.Get(Owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Owner.Viewer.ContentPath, "TrainOperationsCouplerRear32.png"));
+                CouplerNotAvailable = SharedTextureManager.Get(Owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Owner.Viewer.ContentPath, "TrainOperationsCouplerNotAvailable32.png"));
 
                 Empty = SharedTextureManager.Get(Owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Owner.Viewer.ContentPath, "TrainOperationsEmpty32.png"));
 
@@ -218,6 +224,9 @@ namespace Orts.Viewer3D.Popups
 
                 RearAngleCockClosed = SharedTextureManager.Get(Owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Owner.Viewer.ContentPath, "TrainOperationsRearAngleCockClosed32.png"));
                 RearAngleCockOpened = SharedTextureManager.Get(Owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Owner.Viewer.ContentPath, "TrainOperationsRearAngleCockOpened32.png"));
+
+                ResetBrakesOff = SharedTextureManager.Get(Owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Owner.Viewer.ContentPath, "TrainOperationsResetBrakesOff32.png"));
+                ResetBrakesOn = SharedTextureManager.Get(Owner.Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Owner.Viewer.ContentPath, "TrainOperationsResetBrakesOn32.png"));
             }
 
             UpdateWindowSize();
@@ -271,8 +280,8 @@ namespace Orts.Viewer3D.Popups
                     var isElectric = trainCar is MSTSElectricLocomotive;
                     var isSteam = trainCar is MSTSSteamLocomotive;
                     var isEngine = isDiesel || isElectric || isSteam;
-                    var wagonType = isEngine ? $"  {Viewer.Catalog.GetString(locomotive.WagonType.ToString())}" + $":{Viewer.Catalog.GetString(locomotive.EngineType.ToString())}"
-                        : $"  {Viewer.Catalog.GetString(wagon.WagonType.ToString())}";
+                    var wagonType = isEngine ? $"  {Viewer.Catalog.GetString(locomotive.WagonType.ToString())}" + $": {Viewer.Catalog.GetString(locomotive.EngineType.ToString())}"
+                        : $"  {Viewer.Catalog.GetString(wagon.WagonType.ToString())}: {wagon.MainShapeFileName.Replace(".s", "").ToLower()}";
 
                     Vbox.Add(buttonClose = new Label(Vbox.RemainingWidth, Owner.TextFontDefault.Height, $"{Viewer.Catalog.GetString("Car ID")} {(CarPosition >= PlayerTrain.Cars.Count ? " " : PlayerTrain.Cars[CarPosition].CarID + wagonType)}", LabelAlignment.Center));
                     CurrentCarID = CarPosition >= PlayerTrain.Cars.Count ? " " : PlayerTrain.Cars[CarPosition].CarID;
@@ -293,6 +302,10 @@ namespace Orts.Viewer3D.Popups
 
                 {
                     var car = PlayerTrain.Cars[CarPosition];
+                    //Reset brakes
+                    var warningCarPos = Owner.Viewer.TrainCarOperationsWindow.WarningCarPosition.Where(x => x == true).Count();
+                    line.Add(new buttonInitializeBrakes(0, 0, textHeight, Owner.Viewer, CarPosition, warningCarPos));
+
                     if (car != PlayerTrain.Cars.First())
                         AddSpace(false);
 
@@ -425,7 +438,7 @@ namespace Orts.Viewer3D.Popups
                : base(x, y, size * 2, size)
             {
                 Viewer = viewer;
-                Texture = (car == Viewer.PlayerTrain.LeadLocomotive || car is MSTSLocomotive) ? LocoSymbolGreen
+                Texture = (car == Viewer.PlayerTrain.LeadLocomotive || car is MSTSLocomotive || car.WagonType == TrainCar.WagonTypes.Tender) ? LocoSymbolGreen
                     : car.BrakesStuck || ((car is MSTSLocomotive) && (car as MSTSLocomotive).PowerReduction > 0) ? LocoSymbolRed
                     : LocoSymbol;
                 Source = new Rectangle(0, 0, size * 2, size);
@@ -437,22 +450,23 @@ namespace Orts.Viewer3D.Popups
             readonly TrainCarOperationsViewerWindow TrainCarViewer;
             readonly int CarPosition;
             readonly bool First;
-
+            readonly TrainCar Car;
             public buttonCouplerFront(int x, int y, int size, Viewer viewer, TrainCar car, int carPosition)
                 : base(x, y, size, size)
             {
                 Viewer = viewer;
                 TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
                 CarPosition = carPosition;
+                Car = car;
                 First = car == Viewer.PlayerTrain.Cars.First();
-                Texture = First ? CouplerFront : Coupler;
+                Texture = First ? CouplerFront : Car.WagonType == MSTSWagon.WagonTypes.Tender ? CouplerNotAvailable : Coupler;
                 Source = new Rectangle(0, 0, size, size);
                 Click += new Action<Control, Point>(TrainCarOperationsCouplerFront_Click);
             }
 
             void TrainCarOperationsCouplerFront_Click(Control arg1, Point arg2)
             {
-                if (First) return;
+                if (First || Car.WagonType == MSTSWagon.WagonTypes.Tender) return;
 
                 if (Viewer.Simulator.TimetableMode)
                 {
@@ -517,6 +531,48 @@ namespace Orts.Viewer3D.Popups
             void TrainCarOperationsLabel_Click(Control arg1, Point arg2)
             {
                 TrainCarViewer.Visible = false;
+            }
+        }
+
+        class buttonInitializeBrakes : Image
+        {
+            readonly Viewer Viewer;
+            readonly TrainCarOperationsViewerWindow TrainCarViewer;
+            readonly int WarningCars;
+            public buttonInitializeBrakes(int x, int y, int size, Viewer viewer, int carPosition, int warningCars)
+                : base(x, y, size, size)
+            {
+                Viewer = viewer;
+                TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
+                WarningCars = warningCars;
+                Texture = WarningCars > 2 ? ResetBrakesOn : ResetBrakesOff;
+                Source = new Rectangle(0, 0, size, size);
+                Click += new Action<Control, Point>(buttonInitializeBrakes_Click);
+            }
+
+            void buttonInitializeBrakes_Click(Control arg1, Point arg2)
+            {
+
+                if (WarningCars <= 2) return;
+
+                if (Texture == ResetBrakesOn)
+                {
+                    TrainCarViewer.PlayerTrain.ConnectBrakeHoses();
+
+                    // Reset Handbrakes
+                    foreach (var car in Viewer.PlayerTrain.Cars)
+                    {
+                        if ((car as MSTSWagon).HandBrakePresent && (car as MSTSWagon).GetTrainHandbrakeStatus())
+                        {
+                            new WagonHandbrakeCommand(Viewer.Log, (car as MSTSWagon), !(car as MSTSWagon).GetTrainHandbrakeStatus());
+                            Texture = HandBrakeNotSet;
+                        }
+                    }
+                    //Refresh all symbols
+                    TrainCarViewer.TrainCarOperationsChanged = true;
+                }
+                TrainCarViewer.ResetAllSymbols = !TrainCarViewer.ResetAllSymbols;
+                Texture = TrainCarViewer.ResetAllSymbols ? ResetBrakesOn : ResetBrakesOff;
             }
         }
         class buttonHandBrake : Image
