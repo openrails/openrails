@@ -1985,7 +1985,7 @@ namespace Orts.Simulation.RollingStocks
 
             // Cruise Control
             CruiseControl?.Update(elapsedClockSeconds);
- 
+
             if (DynamicBrakePercent >= 0 && ThrottlePercent <= 0)
             {
                 if (DynamicBrakeCommandStartTime == null)
@@ -2013,7 +2013,7 @@ namespace Orts.Simulation.RollingStocks
             // TODO  this is a wild simplification for electric and diesel electric
             if (EngineType == EngineTypes.Diesel || EngineType == EngineTypes.Electric)
             {
-            UpdateTractiveForce(elapsedClockSeconds, ThrottlePercent / 100f, AbsSpeedMpS, AbsWheelSpeedMpS);
+                UpdateTractiveForce(elapsedClockSeconds, ThrottlePercent / 100f, AbsSpeedMpS, AbsWheelSpeedMpS);
             }
 
             foreach (MultiPositionController mpc in MultiPositionControllers)
@@ -2798,7 +2798,7 @@ namespace Orts.Simulation.RollingStocks
                 WheelSlip = LocomotiveAxles.IsWheelSlip;
                 WheelSlipWarning = LocomotiveAxles.IsWheelSlipWarning;
             }
-            
+
             WheelSpeedMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
         }
 
