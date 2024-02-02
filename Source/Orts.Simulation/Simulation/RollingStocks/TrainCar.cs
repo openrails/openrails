@@ -338,6 +338,8 @@ namespace Orts.Simulation.RollingStocks
         public float ActivityElapsedDurationS;
         public float HotBoxStartTimeS;
 
+        bool RigidWheelBaseInitialised = false;
+
         // Setup for ambient temperature dependency
         Interpolator OutsideWinterTempbyLatitudeC;  // Interploator to calculate ambient Winter temperature based upon the latitude of the route
         Interpolator OutsideAutumnTempbyLatitudeC;  // Interploator to calculate ambient Autumn temperature based upon the latitude of the route
@@ -720,7 +722,7 @@ namespace Orts.Simulation.RollingStocks
         {
             BrakeSystem.Initialize();
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
-            
+
             //CurveForceFilter.Initialize();
 
             // Initialize tunnel resistance values
@@ -818,6 +820,81 @@ namespace Orts.Simulation.RollingStocks
         // called when it's time to update the MotiveForce and FrictionForce
         public virtual void Update(float elapsedClockSeconds)
         {
+
+            // Initialize RigidWheelBaseM in first loop if not defined in ENG file, then ignore
+            if (RigidWheelBaseM == 0 && !RigidWheelBaseInitialised)   // Calculate default values if no value in Wag File
+            {
+                float Axles = WheelAxles.Count;
+                float Bogies = Parts.Count - 1;
+                float BogieSize = Axles / Bogies;
+
+                RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
+
+                // Calculate the number of axles in a car
+
+                if (WagonType != WagonTypes.Engine)   // if car is not a locomotive then determine wheelbase
+                {
+                    if (Bogies < 2)  // if less then two bogies assume that it is a fixed wheelbase wagon
+                    {
+                        if (Axles == 2)
+                        {
+                            RigidWheelBaseM = 3.5052f;       // Assume a standard 4 wheel (2 axle) wagon - wheel base - 11' 6" (3.5052m)
+                        }
+                        else if (Axles == 3)
+                        {
+                            RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel (3 axle) wagon - wheel base - 12' 2" (3.6576m)
+                        }
+                    }
+                    else if (Bogies == 2)
+                    {
+                        if (BogieSize == 2)
+                        {
+                            if (WagonType == WagonTypes.Passenger)
+                            {
+                                RigidWheelBaseM = 2.4384f;       // Assume a standard 4 wheel passenger bogie (2 axle) wagon - wheel base - 8' (2.4384m)
+                            }
+                            else
+                            {
+                                RigidWheelBaseM = 1.6764f;       // Assume a standard 4 wheel freight bogie (2 axle) wagon - wheel base - 5' 6" (1.6764m)
+                            }
+                        }
+                        else if (BogieSize == 3)
+                        {
+                            RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel bogie (3 axle) wagon - wheel base - 12' 2" (3.6576m)
+                        }
+                    }
+                }
+                if (WagonType == WagonTypes.Engine)   // if car is a locomotive and either a diesel or electric then determine wheelbase
+                {
+                    if (EngineType != EngineTypes.Steam)  // Assume that it is a diesel or electric locomotive
+                    {
+                        if (BogieSize == 2)
+                        {
+                            RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
+                        }
+                        else if (BogieSize == 3)
+                        {
+                            RigidWheelBaseM = 3.5052f;       // Assume a standard 6 wheel bogie (3 axle) locomotive - wheel base - 11' 6" (3.5052m)
+                        }
+                    }
+                    else // assume steam locomotive
+                    {
+
+                        if (LocoNumDrvAxles >= Axles) // Test to see if ENG file value is too big (typically doubled)
+                        {
+                            LocoNumDrvAxles = LocoNumDrvAxles / 2;  // Appears this might be the number of wheels rather then the axles.
+                        }
+
+                        //    Approximation for calculating rigid wheelbase for steam locomotives
+                        // Wheelbase = 1.25 x (Loco Drive Axles - 1.0) x Drive Wheel diameter
+
+                        RigidWheelBaseM = 1.25f * (LocoNumDrvAxles - 1.0f) * (DriverWheelRadiusM * 2.0f);
+                    }
+                }
+
+                RigidWheelBaseInitialised = true; // Don't process again
+            }
+
 
             // Initialise ambient temperatures on first initial loop, then ignore
             if (!AmbientTemperatureInitialised)
@@ -2011,76 +2088,6 @@ namespace Orts.Simulation.RollingStocks
         {
             if (CurrentCurveRadiusM > 0)
             {
-                if (RigidWheelBaseM == 0)   // Calculate default values if no value in Wag File
-                {
-                    float Axles = WheelAxles.Count;
-                    float Bogies = Parts.Count - 1;
-                    float BogieSize = Axles / Bogies;
-
-                    RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
-
-                    // Calculate the number of axles in a car
-
-                    if (WagonType != WagonTypes.Engine)   // if car is not a locomotive then determine wheelbase
-                    {
-                        if (Bogies < 2)  // if less then two bogies assume that it is a fixed wheelbase wagon
-                        {
-                            if (Axles == 2)
-                            {
-                                RigidWheelBaseM = 3.5052f;       // Assume a standard 4 wheel (2 axle) wagon - wheel base - 11' 6" (3.5052m)
-                            }
-                            else if (Axles == 3)
-                            {
-                                RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel (3 axle) wagon - wheel base - 12' 2" (3.6576m)
-                            }
-                        }
-                        else if (Bogies == 2)
-                        {
-                            if (Axles == 2)
-                            {
-                                if (WagonType == WagonTypes.Passenger)
-                                {
-                                    RigidWheelBaseM = 2.4384f;       // Assume a standard 4 wheel passenger bogie (2 axle) wagon - wheel base - 8' (2.4384m)
-                                }
-                                else
-                                {
-                                    RigidWheelBaseM = 1.6764f;       // Assume a standard 4 wheel freight bogie (2 axle) wagon - wheel base - 5' 6" (1.6764m)
-                                }
-                            }
-                            else if (Axles == 3)
-                            {
-                                RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel bogie (3 axle) wagon - wheel base - 12' 2" (3.6576m)
-                            }
-                        }
-                    }
-                    if (WagonType == WagonTypes.Engine)   // if car is a locomotive and either a diesel or electric then determine wheelbase
-                    {
-                        if (EngineType != EngineTypes.Steam)  // Assume that it is a diesel or electric locomotive
-                        {
-                            if (Axles == 2)
-                            {
-                                RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
-                            }
-                            else if (Axles == 3)
-                            {
-                                RigidWheelBaseM = 3.5052f;       // Assume a standard 6 wheel bogie (3 axle) locomotive - wheel base - 11' 6" (3.5052m)
-                            }
-                        }
-                        else // assume steam locomotive
-                        {
-
-                            if (LocoNumDrvAxles >= Axles) // Test to see if ENG file value is too big (typically doubled)
-                            {
-                                LocoNumDrvAxles = LocoNumDrvAxles / 2;  // Appears this might be the number of wheels rather then the axles.
-                            }
-
-                            //    Approximation for calculating rigid wheelbase for steam locomotives
-                            // Wheelbase = 1.25 x (Loco Drive Axles - 1.0) x Drive Wheel diameter
-
-                            RigidWheelBaseM = 1.25f * (LocoNumDrvAxles - 1.0f) * (DriverWheelRadiusM * 2.0f);
-                        }
-                    }
-                }
 
                 // References:
 
