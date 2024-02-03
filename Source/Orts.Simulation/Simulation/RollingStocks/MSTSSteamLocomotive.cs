@@ -6455,6 +6455,8 @@ namespace Orts.Simulation.RollingStocks
             {
                 WheelSlip = LocomotiveAxles.IsWheelSlip;
                 WheelSlipWarning = LocomotiveAxles.IsWheelSlipWarning;
+                HuDIsWheelSlip = LocomotiveAxles.HuDIsWheelSlip;
+                HuDIsWheelSlipWarninq = LocomotiveAxles.HuDIsWheelSlipWarning;
             }
 
             // This enables steam locomotives to have different speeds for driven and non-driven wheels.
@@ -7968,7 +7970,7 @@ namespace Orts.Simulation.RollingStocks
                         Simulator.Catalog.GetString("Coeff"),
                         Train.LocomotiveCoefficientFriction,
                         Simulator.Catalog.GetString("Slip"),
-                        SteamEngines[i].AttachedAxle.IsWheelSlip ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                        SteamEngines[i].AttachedAxle.HuDIsWheelSlip ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                         Simulator.Catalog.GetString("WheelM"),
                         FormatStrings.FormatMass(SteamEngines[i].AttachedAxle.WheelWeightKg, IsMetric),
                         Simulator.Catalog.GetString("FoA"),
