@@ -259,12 +259,17 @@ wheel adhesion. The first model is based upon an algorithm by Pacha, whilst the 
 uses an algorithm developed by Polach. The Polach algorithm provides 
 a more accurate outcome and facilitates the future inclusion of track conditions. 
 However due to the number of algorithm steps required to calculate the wheel adhesion 
-value, it is more CPU load intensive then the Pacha one. This can produce low 
-frame rates for the screen display in machines with low performance specifications. 
+value, it is more CPU load-intensive then the Pacha one. On low performance PCs, this would lower the 
+frame rate for the screen display to an unacceptable degree. 
 
-Hence OR automatically senses the CPU load, and switches to the Pacha algorithm at 
-high loads and to the Polach algorithm under lower CPU loads. In this way OR attempts 
-to support the operation of lower specification computers. When OR is using the 
+To avoid this, OR senses the frame rate and switches from the Polach algorithm 
+to the Pacha one as follows.
+If the frame rate falls below 30 fps, then a switch is made to Pacha until the frame rate
+recovers to more than 40 fps. If a switch to Pacha happens more than once in a 5 minute interval
+then it will persist for the rest of the session.
+
+In this way OR provides a more accurate algorithm whilst retaining 
+the original one for lower specification computers. When OR is using the 
 Pacha algorithm, the "Wheel Adh (Max)" values will both read 99%, whereas when the 
 Polach algorithm is being used these values will be around the expected values of 30-55%.
 
@@ -275,6 +280,7 @@ The heart of the adhesion algorithm is the slip characteristics (pictured below)
 .. image:: images/physics-adhesion-slip.png
    :align: center
    :scale: 70%
+
 
 The *wheel creep* describes the stable area of the characteristics and is
 used in the most of the operation time. When the tractive force reaches
