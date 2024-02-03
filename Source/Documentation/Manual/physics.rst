@@ -2272,6 +2272,52 @@ The actual set value of traction or dynamic brake of *async* group is shown in
 lines *Throttle* and *Dynamic Brake*, respectively, in brackets, e.g.: 
 Throttle: 0% (50%).
 
+In addition to applying power and dynamic brake, remote units can also manage the
+train brake, independent brake, and emergency brake in sync with the lead locomotive.
+This can dramatically speed up brake application and release on long trains, which has
+allowed trains to increase in length substantially without major decreases in brake
+performance. Only one locomotive in each group, the 'lead' DP unit, will have brakes
+cut-in. Usually this is the same locomotive recieving throttle data from the lead
+locomotive. In Open Rails, these locomotives are designated automatically. To determine
+which units are the 'lead' in each group, check the ID row on the DPU Info window.
+
+As described earlier, operation in *sync* mode or *async* mode has no effect on air
+brake behavior. In reality, additional remote modes such as *set-out*, *bv out*,
+and *isolate* would disable air brakes on remote units, but these modes are not
+present for simplicity.
+
+.. index::
+   single: ORTSDPBrakeSynchronization
+
+By default, Open Rails will treat remote groups as manned helpers who typically
+would not assist in train brake operations, so only independent brakes will synchronize.
+To enable train brake synchronization, the token ``engine(ORTSDPBrakeSynchronization(``
+should be used. The valid settings for ``ORTSDPBrakeSynchronization`` are as follows:
+
+- ``"Apply"``: DP units will reduce the brake pipe pressure locally to match the
+  equalizing reservoir pressure of the controlling locomotive. (The controlling
+  locomotive must also have the ``"Apply"`` setting.)
+- ``"Release"``: DP units will increase the brake pipe pressure locally to match
+  the equalizing reservoir pressure of the controlling locomotive. (The controlling
+  locomotive must also have the ``"Release"`` setting.)
+- ``"Emergency"``: DP units will vent the brake pipe to 0 if an emergency application
+  is triggered by the controlling locomotive. (The controlling locomotive must also
+  have the ``"Emergency"`` setting.)
+- ``"Independent"``: DP units will match the brake cylinder pressure of the
+  controlling locomotive, and will automatically bail-off automatic brake
+  applications if needed. (The controlling locomotive must also have the
+  ``"Independent"`` setting.)
+                - NOTE: Although ``"Independent"`` is enabled by default,
+                  if ``ORTSDPBrakeSynchronization`` is present in the .eng
+                  file but ``"Independent"`` is not specified as an option,
+                  independent brakes will NOT be synchronized.
+
+All settings can be combined as needed, simply place a comma between each setting
+in the string: ``ORTSDPBrakeSynchronization("Apply, Release, Emergency, Independent")``
+will simulate the configuration of most modern locomotives. Unlike other distributed power
+features, brake synchronization can be applied to any locomotive type to simulate a wide
+variety of braking systems.
+
 Distributed power info and commands can also be displayed and operated through 
 cabview controls, as explained :ref:`here <cabs-distributed-power>`
 
