@@ -315,6 +315,8 @@ namespace Orts.Simulation.RollingStocks
 
         public bool WheelSlip;  // true if locomotive wheels slipping
         public bool WheelSlipWarning;
+        public bool HuDIsWheelSlipWarninq;
+        public bool HuDIsWheelSlip;
         public bool WheelSkid;  // True if wagon wheels lock up.
         public float _AccelerationMpSS;
         protected IIRFilter AccelerationFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, 1.0f, 0.1f);
