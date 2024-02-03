@@ -1065,7 +1065,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                  // BailOff
                 if (engineBrakeStatus == ControllerState.BailOff)
                 {
-                    AutoCylPressurePSI -= Math.Max(MaxReleaseRatePSIpS, loco.EngineBrakeReleaseRatePSIpS) * elapsedClockSeconds;
+                    AutoCylPressurePSI -= MaxReleaseRatePSIpS * elapsedClockSeconds;
                     if (AutoCylPressurePSI < 0) AutoCylPressurePSI = 0;
                 }
                 // Emergency application
@@ -1107,7 +1107,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 }
                                 else
                                 {
-                                    AutoCylPressurePSI -= Math.Max(MaxReleaseRatePSIpS, loco.EngineBrakeReleaseRatePSIpS) * elapsedClockSeconds;
+                                    AutoCylPressurePSI -= MaxReleaseRatePSIpS * elapsedClockSeconds;
                                     if (AutoCylPressurePSI < 0)
                                         AutoCylPressurePSI = 0;
                                 }
