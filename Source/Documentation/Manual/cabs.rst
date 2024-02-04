@@ -684,6 +684,7 @@ Air Flow Meter
 
 .. index::
    single:  ORTS_AIR_FLOW_METER
+   single:  ORTS_TRAIN_AIR_FLOW_METER
 
 This cabview control is used on some locomotives, particularly in North America, to show the
 volumetric flow rate of air moving from the main res to the brake pipe during release/recharge.
@@ -691,7 +692,8 @@ Such an indication can be used to determine when brake pipe charging is complete
 measure the amount of brake pipe leakage, and so on.
 The control will only function on locomotives with air brakes.
 
-Here is an example implementation of ORTS_AIR_FLOW_METER as an analog dial::
+Here is an example implementation of ORTS_AIR_FLOW_METER as an analog dial (display types other
+than analog dials can be used)::
 
 
 		Dial (
@@ -706,8 +708,10 @@ Here is an example implementation of ORTS_AIR_FLOW_METER as an analog dial::
 			DirIncrease ( 0 )
 		)
 
-Applicable user-defined units are CUBIC_FT_MIN, LITERS_S, LITERS_MIN, and CUBIC_M_S. Cubic meters per
-second will be used if no units are specified.
+Alternately, a control type of ORTS_TRAIN_AIR_FLOW_METER can be used to display the total
+air flow rate of all locomotives, useful for distributed power where multiple locomotives can
+charge the brake pipe simultaneously. Applicable user-defined units are CUBIC_FT_MIN, LITERS_S,
+LITERS_MIN, and CUBIC_M_S. Cubic meters per second will be used if no units are specified.
 
 
 Animated 2D Wipers
