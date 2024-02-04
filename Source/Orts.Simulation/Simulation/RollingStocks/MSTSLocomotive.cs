@@ -931,6 +931,19 @@ namespace Orts.Simulation.RollingStocks
                         STFException.TraceWarning(stf, "Skipped unknown engine type " + engineType);
                     }
                     break;
+                case "engine(sandingsystemtype":
+                    stf.MustMatch("(");
+                    var sandingType = stf.ReadString();
+                    try
+                    {
+                        SandingSystemType = (SandingSystemTypes)Enum.Parse(typeof(SandingSystemTypes), sandingType.First().ToString().ToUpper() + sandingType.Substring(1));
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Skipped unknown engine type " + sandingType);
+                    }
+                    break;
+
                 case "engine(ortstractionmotortype":
                     stf.MustMatch("(");
                     string tractionMotorType = stf.ReadString().ToUpper();
@@ -1180,6 +1193,7 @@ namespace Orts.Simulation.RollingStocks
             UnloadingSpeedMpS = locoCopy.UnloadingSpeedMpS;
             SlipControlSystem = locoCopy.SlipControlSystem;
             EngineType = locoCopy.EngineType;
+            SandingSystemType = locoCopy.SandingSystemType;
             TractionMotorType = locoCopy.TractionMotorType;
             TractiveForceCurves = locoCopy.TractiveForceCurves;
             MaxContinuousForceN = locoCopy.MaxContinuousForceN;
@@ -3243,11 +3257,19 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
 
+                if (SandingSystemType == SandingSystemTypes.Steam)
+                {
+
+
+                }
+                else
+                {
           // Calculate air consumption and change in main air reservoir pressure
                 float ActualAirConsumptionM3pS = pS.FrompM(TrackSanderAirComsumptionM3pS) * elapsedClockSeconds;
-                float SanderPressureDiffPSI = ActualAirConsumptionM3pS / Me3.ToFt3(MainResVolumeM3) ;
+                    float SanderPressureDiffPSI = ActualAirConsumptionM3pS / Me3.ToFt3(MainResVolumeM3);
                 MainResPressurePSI -= SanderPressureDiffPSI;
                 MainResPressurePSI = MathHelper.Clamp(MainResPressurePSI, 0.001f, MaxMainResPressurePSI);
+            }
             }
 
         }
