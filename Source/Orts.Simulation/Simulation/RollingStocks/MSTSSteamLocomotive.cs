@@ -411,6 +411,7 @@ namespace Orts.Simulation.RollingStocks
         float BoilerHeatTransferCoeffWpM2K = 45.0f; // Heat Transfer of locomotive boiler 45 Wm2K
         float TotalSteamUsageLBpS;                  // Running total for complete current steam usage
         float GeneratorSteamUsageLBpS = 1.0f;       // Generator Steam Usage
+        float SandingSteamUsageLBpS;       // Sanding Steam Usage
         float RadiationSteamLossLBpS = 2.5f;        // Steam loss due to radiation losses
         float BlowerBurnEffect;                     // Effect of Blower on burning rate
         float FlueTempDiffK;                        // Current difference in flue temp at current firing and steam usage rates.
@@ -684,6 +685,13 @@ namespace Orts.Simulation.RollingStocks
         public float Cylinders32SteamVolumeM3pS;
         public float Cylinders41SteamVolumeM3pS;
         public float Cylinders42SteamVolumeM3pS;
+
+        public float SanderSteamExhaustForwardVolumeM3pS;
+        public float SanderSteamExhaustReverseVolumeM3pS;
+        public float SanderSteamExhaustVelocityMpS;
+        public float SanderSteamExhaustParticleDurationS;
+
+        float SanderSteamConsumptionLbpS = 17; // Assume 1000lbs/hr steam consumption for the sander
 
         public float Cylinders2_11SteamVolumeM3pS;
         public float Cylinders2_12SteamVolumeM3pS;
@@ -3072,6 +3080,11 @@ namespace Orts.Simulation.RollingStocks
             }
 
             float SteamEffectsFactor = MathHelper.Clamp(BoilerPressurePSI / MaxBoilerPressurePSI, 0.1f, 1.0f);  // Factor to allow for drops in boiler pressure reducing steam effects
+
+            SanderSteamExhaustForwardVolumeM3pS = Sander && SandingSystemType == SandingSystemTypes.Steam && (Direction == Direction.Forward || Direction == Direction.N) ? (10.0f * SteamEffectsFactor) : 0.0f;
+            SanderSteamExhaustReverseVolumeM3pS = Sander && SandingSystemType == SandingSystemTypes.Steam && Direction == Direction.Reverse ? (10.0f * SteamEffectsFactor) : 0.0f;
+            SanderSteamExhaustParticleDurationS = 1.0f;
+            SanderSteamExhaustVelocityMpS = 100.0f;
 
             // Bernoulli formula for future reference - steam velocity = SQRT ( 2 * dynamic pressure (pascals) / fluid density)
             Cylinders1SteamVelocityMpS = 100.0f;
@@ -6618,6 +6631,21 @@ namespace Orts.Simulation.RollingStocks
                 CylCockSteamUsageDisplayLBpS = 0.0f;
             }
 
+            // Calculate sanding steam Usage if turned on
+            // Assume steam sanding usage is 1000lbs/hr
+            if (Sander && SandingSystemType == SandingSystemTypes.Steam) 
+            {
+                SandingSteamUsageLBpS = SanderSteamConsumptionLbpS; 
+                BoilerMassLB -= elapsedClockSeconds * SandingSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by generator  
+                BoilerHeatBTU -= elapsedClockSeconds * SandingSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by generator
+                BoilerHeatOutBTUpS += SandingSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by generator
+                TotalSteamUsageLBpS += SandingSteamUsageLBpS;
+            }
+            else
+            {
+                SandingSteamUsageLBpS = 0.0f; // No generator fitted to locomotive
+            }
+
             // Calculate Generator steam Usage if turned on
             // Assume generator kW = 350W for D50 Class locomotive
             if (GeneratorSteamEffects) // If Generator steam effects not present then assume no generator is fitted to locomotive
@@ -6633,6 +6661,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 GeneratorSteamUsageLBpS = 0.0f; // No generator fitted to locomotive
             }
+
             if (StokerIsMechanical)
             {
                 StokerSteamUsageLBpS = pS.FrompH(MaxBoilerOutputLBpH) * (StokerMinUsage + (StokerMaxUsage - StokerMinUsage) * FuelFeedRateKGpS / MaxFiringRateKGpS);  // Caluculate current steam usage based on fuel feed rates

@@ -55,6 +55,8 @@ namespace Orts.Viewer3D.RollingStock
         List<ParticleEmitterViewer> CylinderSteamExhaust4 = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> CylinderSteamExhaust2_1 = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> CylinderSteamExhaust2_2 = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> SanderSteamExhaustForward = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> SanderSteamExhaustReverse = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> BoosterCylinderSteamExhaust01 = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> BoosterCylinderSteamExhaust02 = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> BoosterCylinders11 = new List<ParticleEmitterViewer>();
@@ -127,6 +129,10 @@ namespace Orts.Viewer3D.RollingStock
                     CylinderSteamExhaust2_1.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "cylindersteamexhaust2_2fx")
                     CylinderSteamExhaust2_2.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "sandersteamexhaustforwardfx")
+                    SanderSteamExhaustForward.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "sandersteamexhaustreversefx")
+                    SanderSteamExhaustReverse.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "boostercylinders11fx")
                     BoosterCylinders11.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "boostercylinders12fx")
@@ -345,9 +351,14 @@ namespace Orts.Viewer3D.RollingStock
             foreach (var drawer in CylinderSteamExhaust3)
                 drawer.SetOutput(car.CylinderSteamExhaustSteamVelocityMpS, car.CylinderSteamExhaust3SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
 
+            foreach (var drawer in SanderSteamExhaustForward)
+                drawer.SetOutput(car.SanderSteamExhaustVelocityMpS, car.SanderSteamExhaustForwardVolumeM3pS, car.SanderSteamExhaustParticleDurationS);
+
+            foreach (var drawer in SanderSteamExhaustReverse)
+                drawer.SetOutput(car.SanderSteamExhaustVelocityMpS, car.SanderSteamExhaustReverseVolumeM3pS, car.SanderSteamExhaustParticleDurationS);
+
             foreach (var drawer in BoosterCylinderSteamExhaust01)
                 drawer.SetOutput(car.BoosterCylinderSteamExhaust01SteamVelocityMpS, car.BoosterCylinderSteamExhaust01SteamVolumeM3pS, car.BoosterCylinderCockParticleDurationS);
-
 
             foreach (var drawer in BoosterCylinderSteamExhaust02)
                 drawer.SetOutput(car.BoosterCylinderSteamExhaust02SteamVelocityMpS, car.BoosterCylinderSteamExhaust02SteamVolumeM3pS, car.BoosterCylinderCockParticleDurationS);

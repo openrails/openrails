@@ -657,6 +657,15 @@ namespace Orts.Simulation.RollingStocks
 
         public SteamEngineTypes SteamEngineType;
 
+        public enum SandingSystemTypes
+        {
+            Unknown,
+            Air,
+            Steam,
+        }
+
+        public SandingSystemTypes SandingSystemType;
+
         public enum WagonTypes
         {
             Unknown,
