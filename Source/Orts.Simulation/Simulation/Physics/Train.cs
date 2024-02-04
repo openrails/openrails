@@ -511,6 +511,9 @@ namespace Orts.Simulation.Physics
                         //if (lead.EngineBrakeController != null)
                         //    lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
                     }
+
+                // If lead locomotive changes, distributed power needs to be updated
+                SetDPUnitIDs(true);
             }
         }
 
@@ -1535,27 +1538,43 @@ namespace Orts.Simulation.Physics
         {
             // List to keep track of new 'lead' DP units
             // 'Lead' DP units follow the air brake commands of the master loco, 'trail' DP units do not
-            List<TrainCar> tempDPLead = new List<TrainCar>();
+            List<TrainCar> tempDPLeads = new List<TrainCar>();
+            TrainCar tempDPLead = null;
+            // Value judging how compatible this locomotive is to the lead locomotive for DP purposes
+            float dpRating = 0;
 
             // List of each DP group's locomotives
             List<List<TrainCar>> tempLocoGroups = new List<List<TrainCar>>();
 
             var prevId = -1;
-
             var id = 0;
+
             foreach (var car in Cars)
             {
-                //Console.WriteLine("___{0} {1}", car.CarID, id);
                 if (car is MSTSLocomotive loco)
                 {
+                    float thisDPRating = DetermineDPCompatibility(LeadLocomotive, car);
+
                     loco.DPUnitID = id;
 
-                    if (id != prevId && !tempDPLead.Contains(car)) // If this is a new ID, that means we found a 'lead' unit
+                    if (id != prevId) // New locomotive group
                     {
-                        tempDPLead.Add(car);
+                        // Add the most suitable unit from the previous group as a DP lead unit
+                        if (tempDPLead != null && !tempDPLeads.Contains(tempDPLead))
+                            tempDPLeads.Add(tempDPLead);
+
+                        dpRating = thisDPRating;
+                        tempDPLead = car;
 
                         prevId = id;
                     }
+                    else // Same locomotive group
+                        // Check to see if this locomotive is more compatible than previous ones
+                        if (thisDPRating > dpRating)
+                        {
+                            dpRating = thisDPRating;
+                            tempDPLead = car;
+                        }
 
                     if (car.RemoteControlGroup == 1 && !keepRemoteGroups)
                         car.RemoteControlGroup = 0;
@@ -1564,20 +1583,24 @@ namespace Orts.Simulation.Physics
                     id++;
             }
 
-            foreach (TrainCar locoCar in tempDPLead)
+            // Add final DP lead unit
+            if (tempDPLead != null && !tempDPLeads.Contains(tempDPLead))
+                tempDPLeads.Add(tempDPLead);
+
+            foreach (TrainCar locoCar in tempDPLeads)
             {
                 // The train's lead unit should always be a DP lead unit, even if not at the front
                 // If a different locomotive in the lead loco's group has been declared DP lead, replace that loco with the lead loco
                 if (LeadLocomotive is MSTSLocomotive lead && locoCar is MSTSLocomotive loco)
                     if (loco.DPUnitID == lead.DPUnitID && locoCar != LeadLocomotive)
                     {
-                        tempDPLead.Insert(tempDPLead.IndexOf(locoCar), LeadLocomotive);
-                        tempDPLead.Remove(locoCar);
+                        tempDPLeads.Insert(tempDPLeads.IndexOf(locoCar), LeadLocomotive);
+                        tempDPLeads.Remove(locoCar);
                         break; // foreach doesn't like it when the collection is modified during the loop, break to mitigate error
                     }
             }
 
-            DPLeadUnits = tempDPLead;
+            DPLeadUnits = tempDPLeads;
 
             foreach (TrainCar loco in DPLeadUnits)
             {
@@ -4333,6 +4356,58 @@ namespace Orts.Simulation.Physics
                             return dpLead;
 
             return null;
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Find compatibility of DP connection between two locomotives
+        /// <\summary>
+
+        // Returns a score judging the compatibility of a lead locomotive (first input as a TrainCar)
+        // and remote locomotive (second input as a TrainCar). The more capabilities the two locomotives
+        // share, the higher the number returned. There is an additional slight bias for remote
+        // locomotives having higher capabilities than the lead locomotive.
+        // Returns -1 if one of the input TrainCars isn't a locomotive
+
+        public float DetermineDPCompatibility(TrainCar leadCar, TrainCar remoteCar)
+        {
+            float score = 0;
+
+            if (leadCar is MSTSLocomotive lead && remoteCar is MSTSLocomotive remote)
+            {
+                if (remote.DPSyncTrainApplication)
+                {
+                    if (lead.DPSyncTrainApplication)
+                        score++;
+                    else
+                        score += 0.1f;
+                }
+                if (remote.DPSyncTrainRelease)
+                {
+                    if (lead.DPSyncTrainRelease)
+                        score++;
+                    else
+                        score += 0.1f;
+                }
+                if (remote.DPSyncEmergency)
+                {
+                    if (lead.DPSyncEmergency)
+                        score++;
+                    else
+                        score += 0.1f;
+                }
+                if (remote.DPSyncIndependent)
+                {
+                    if (lead.DPSyncIndependent)
+                        score++;
+                    else
+                        score += 0.1f;
+                }
+
+                return score;
+            }
+            else
+                return -1;
         }
 
         //================================================================================================//
