@@ -140,10 +140,10 @@ namespace Orts.Simulation.RollingStocks
         public bool SteamBoosterLatchedLocked = false;
         public float SteamBoosterPressurePSI;
         float BoosterGearEngageTimerS;
-        float BoosterIdleHeatingTimerS;
+        public float BoosterIdleHeatingTimerS;
         float BoosterIdleHeatingTimePeriodS = 120; // This is the time period that the Booster needs to be idled to heat it up
         bool BoosterIdleHeatingTimerReset = false;
-        float BoosterGearEngageTimePeriodS;
+        public float BoosterGearEngageTimePeriodS;
         float BoosterGearSyncTimePeriodS = 6; // This is the time period that the gears take to mesh, once the throttle is opened.
         public float HuDBoosterSteamConsumptionLbpS;
         public float BoosterSteamConsumptionLbpS;
