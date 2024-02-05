@@ -366,6 +366,10 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </summary>
         public float MaxIndicatedHorsePowerHP;
 
+        /// <summary>
+        /// Steam Engine drive wheel rev per second
+        /// </summary>
+        public float DriveWheelRevRpS;
 
         /// <summary>
         /// HuD
