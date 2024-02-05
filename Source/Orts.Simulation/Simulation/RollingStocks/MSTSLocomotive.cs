@@ -204,6 +204,8 @@ namespace Orts.Simulation.RollingStocks
         public float BoilerPressurePSI;     // Steam Gauge pressure - what the engineer sees.
         public float MaxBoilerPressurePSI = 180f;  // maximum boiler pressure, safety valve setting
 
+        public float SandingSteamUsageLBpS;       // Sanding Steam Usage
+
         // Vacuum Reservoir and Exhauster Settings
 
         // Steam heating Flags
@@ -248,12 +250,14 @@ namespace Orts.Simulation.RollingStocks
         float DebugSpeed = 1; // Used for debugging adhesion coefficient
 
         // parameters for Track Sander based upon compressor air and abrasive table for 1/2" sand blasting nozzle @ 50psi
-        public float MaxTrackSandBoxCapacityM3 = Me3.FromFt3(40.0f);  // Capacity of sandbox - assume 40.0 cu ft
+        public float MaxTrackSandBoxCapacityM3; // Capacity of sandbox
         public float CurrentTrackSandBoxCapacityM3; 
-        public float TrackSanderAirComsumptionM3pS = Me3.FromFt3(195.0f) / 60.0f;  // Default value - cubic feet per min (CFM) 195 ft3/m
-        public float TrackSanderAirPressurePSI = 50.0f;
-        public float TrackSanderSandConsumptionM3pS = Me3.FromFt3(11.6f) / 3600.0f; // Default value - 11.6 ft3/h
+        public float TrackSanderAirComsumptionM3pS;
+        public float TrackSanderSandConsumptionM3pS;
         public float SandWeightKgpM3 = 1600; // One cubic metre of sand weighs about 1.54-1.78 tonnes. 
+        public float TrackSanderSteamConsumptionForwardLbpS;
+        public float TrackSanderSteamConsumptionReverseLbpS;
+
 
         // Vacuum Braking parameters
         readonly static float OneAtmospherePSI = Bar.ToPSI(1);
@@ -1746,6 +1750,33 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
+            // Initialise track sanding parameters
+            if (MaxTrackSandBoxCapacityM3 == 0)
+            {
+                MaxTrackSandBoxCapacityM3 = Me3.FromFt3(40.0f);  // Capacity of sandbox - assume 40.0 cu ft
+            }
+
+            if (TrackSanderAirComsumptionM3pS == 0)
+            {
+                TrackSanderAirComsumptionM3pS = Me3.FromFt3(195.0f) / 60.0f;  // Default value - cubic feet per min (CFM) 195 ft3/m
+            }
+
+            if (TrackSanderSandConsumptionM3pS == 0)
+            {
+                TrackSanderSandConsumptionM3pS = Me3.FromFt3(11.6f) / 3600.0f; // Default value - 11.6 ft3/h
+            }
+
+            if (TrackSanderSteamConsumptionForwardLbpS == 0 && SandingSystemType == SandingSystemTypes.Steam)
+            {
+                TrackSanderSteamConsumptionForwardLbpS = 300f / 3600f; // Default value - 300lbs/hr
+            }
+
+            if (TrackSanderSteamConsumptionReverseLbpS == 0 && SandingSystemType == SandingSystemTypes.Steam)
+            {
+                TrackSanderSteamConsumptionReverseLbpS = 300f / 3600f; // Default value - 300lbs/hr
+            }
+
+
             base.Initialize();
             if (DynamicBrakeBlendingEnabled) airPipeSystem = BrakeSystem as AirSinglePipe;
 
@@ -3219,6 +3250,7 @@ namespace Orts.Simulation.RollingStocks
 
             if (Sander && AbsSpeedMpS < SanderSpeedOfMpS)  // If sander switch is on, and not blocked by speed, adjust parameters
             {
+                // Calculate sand consumption for sander
                 if (CurrentTrackSandBoxCapacityM3 > 0.0) // if sand still in sandbox then sanding is available
                 {
                     // Calculate consumption of sand, and drop in sand box level
@@ -3231,9 +3263,17 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
 
+                // Calculate steam, air or gravity consumption for different sander modes
                 if (SandingSystemType == SandingSystemTypes.Steam)
                 {
-
+                    if (Direction == Direction.Reverse)
+                    {
+                        SandingSteamUsageLBpS = TrackSanderSteamConsumptionReverseLbpS;
+                    }
+                    else
+                    {
+                        SandingSteamUsageLBpS = TrackSanderSteamConsumptionForwardLbpS;
+                    }
 
                 }
                 else

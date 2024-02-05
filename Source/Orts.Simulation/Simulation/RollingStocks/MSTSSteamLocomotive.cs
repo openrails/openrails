@@ -411,7 +411,6 @@ namespace Orts.Simulation.RollingStocks
         float BoilerHeatTransferCoeffWpM2K = 45.0f; // Heat Transfer of locomotive boiler 45 Wm2K
         float TotalSteamUsageLBpS;                  // Running total for complete current steam usage
         float GeneratorSteamUsageLBpS = 1.0f;       // Generator Steam Usage
-        float SandingSteamUsageLBpS;       // Sanding Steam Usage
         float RadiationSteamLossLBpS = 2.5f;        // Steam loss due to radiation losses
         float BlowerBurnEffect;                     // Effect of Blower on burning rate
         float FlueTempDiffK;                        // Current difference in flue temp at current firing and steam usage rates.
@@ -690,8 +689,6 @@ namespace Orts.Simulation.RollingStocks
         public float SanderSteamExhaustReverseVolumeM3pS;
         public float SanderSteamExhaustVelocityMpS;
         public float SanderSteamExhaustParticleDurationS;
-
-        float SanderSteamConsumptionLbpS = 17; // Assume 1000lbs/hr steam consumption for the sander
 
         public float Cylinders2_11SteamVolumeM3pS;
         public float Cylinders2_12SteamVolumeM3pS;
@@ -6631,11 +6628,10 @@ namespace Orts.Simulation.RollingStocks
                 CylCockSteamUsageDisplayLBpS = 0.0f;
             }
 
-            // Calculate sanding steam Usage if turned on
+            // Calculate sanding steam Usage if a steam based system and turned on
             // Assume steam sanding usage is 1000lbs/hr
-            if (Sander && SandingSystemType == SandingSystemTypes.Steam) 
+            if (Sander && SandingSystemType == SandingSystemTypes.Steam)
             {
-                SandingSteamUsageLBpS = SanderSteamConsumptionLbpS; 
                 BoilerMassLB -= elapsedClockSeconds * SandingSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by generator  
                 BoilerHeatBTU -= elapsedClockSeconds * SandingSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by generator
                 BoilerHeatOutBTUpS += SandingSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by generator
