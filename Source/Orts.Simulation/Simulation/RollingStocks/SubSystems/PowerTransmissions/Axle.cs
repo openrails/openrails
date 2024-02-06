@@ -341,7 +341,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 if (UsePolachAdhesion != PreviousUsePolachAdhesion) // There's been a transition
                 {
                     axle.AxleSpeedMpS = axle.TrainSpeedMpS; // So the transition doesn't cause a wheelslip
-            }
+                }
                 axle.Update(elapsedSeconds);
             }
             PreviousUsePolachAdhesion = UsePolachAdhesion;
@@ -367,7 +367,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 /// After frequent transitions, low-performance PCs are locked to Pacha's algorithm
                 /// </summary>
                 LowLocked = 2
-    }
+            }
 
             // Adjustable limits
             const float LowerLimitS = 0.025f;   // timespan 0.025 = 40 fps screen rate, low timeSpan and high FPS
