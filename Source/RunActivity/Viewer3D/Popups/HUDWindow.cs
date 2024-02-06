@@ -1153,7 +1153,7 @@ namespace Orts.Viewer3D.Popups
                     if (mstsLocomotive.AdvancedAdhesionModel)
                     {
                         var text = Viewer.Catalog.GetString("(Advanced adhesion model)");
-                        if (Axle.UsePolachAdhesion == false) text += "???";
+                        if (Axles.UsePolachAdhesion == false) text += "???";
                         TableAddLine(table, text);
                         int row0 = table.CurrentRow;
                         TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Wheel slip (Thres)"));
