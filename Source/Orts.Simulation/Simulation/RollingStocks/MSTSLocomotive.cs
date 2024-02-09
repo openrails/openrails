@@ -2950,7 +2950,7 @@ namespace Orts.Simulation.RollingStocks
                 else if (ScoopIsBroken)
                 {
                     Simulator.Confirmer.Message(ConfirmLevel.Error, Simulator.Catalog.GetString("Scoop is broken, can't refill"));
-                    RefillingFromTrough = false;       
+                    RefillingFromTrough = false;
                 }
                 else if (IsOverJunction())
                 {
@@ -2960,7 +2960,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     ScoopIsBroken = true;
                     RefillingFromTrough = false;
-                    SignalEvent(Event.WaterScoopBroken);       
+                    SignalEvent(Event.WaterScoopBroken);
                 }
                 else if (!IsOverTrough())
                 {

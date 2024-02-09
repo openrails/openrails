@@ -629,7 +629,7 @@ namespace Orts.Viewer3D.Popups
                                 currentCount = 0;
                                 axlesCount = 0;
                                 i = i + 1;
-                            }                    
+                            }
                         }
                     }
                     else if (axle.Part.bogie) // this is a bogie
