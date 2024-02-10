@@ -8003,14 +8003,17 @@ namespace Orts.Simulation.RollingStocks
                         SteamEngines[i].CalculatedFactorOfAdhesion);
                 }
 
-                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\n",
+                status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N8}/{9}\t\t{5}\t{6:N3}/{9}\t{7}\t{8:N1}\n",
                     Simulator.Catalog.GetString("Sand:"),
-                    Simulator.Catalog.GetString("S/Use"),
-                    FormatStrings.FormatVolume(TrackSanderSandConsumptionM3pS, IsMetric),
                     Simulator.Catalog.GetString("S/Box"),
                     FormatStrings.FormatVolume(CurrentTrackSandBoxCapacityM3, IsMetric),
+                    Simulator.Catalog.GetString("S/Use"),
+                    FormatStrings.FormatVolume(pS.TopM(CurrentTrackSanderSandConsumptionM3pS), IsMetric),
+                    Simulator.Catalog.GetString("A/Use"),
+                    FormatStrings.FormatVolume(pS.TopM(CurrentTrackSanderAirConsumptionM3pS), IsMetric),
                     Simulator.Catalog.GetString("M/Press"),
-                    MainResPressurePSI);
+                    MainResPressurePSI,
+                    FormatStrings.min);
 
                 status.AppendFormat("\n{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
                 Simulator.Catalog.GetString("CylE:"),
@@ -8023,7 +8026,6 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetString("#4"),
                 CylinderSteamExhaust4On ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
                 );
-
             }
 
 #if DEBUG_STEAM_EFFECTS
