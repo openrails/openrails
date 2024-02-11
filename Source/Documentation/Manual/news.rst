@@ -5,42 +5,42 @@ New since previous version of Open Rails
 ****************************************
 
 A summary of the new and improved features can be found below. 
-In addition, over 170 bugs have been fixed in this release. 
+In addition, a number of minor bugs have been fixed in this release. 
 
 Please keep `reporting bugs and suggesting new features <http://openrails.org/contribute/reporting-bugs/>`_ 
 so Open Rails can continue to improve.
 
 
-Headlines
----------
-
-- Container Loading and Unloading
-
-
 What's been added
 -----------------
 
-- End Of Train (EOT) devices
-- Distributed Power display, in-cab and on webpage
-- Progress bar for timetable "pre-run"
-- HUD extended for diesel-mechanical loco
-
+- detailed map which tracks player train
+- partial turntables
+- cab controls operated remotely from a tablet or control desk
+- animations for cab windows
+- options to configure RailDriver
+- more accurate wheelslip using Polach adhesion
+- duplex and booster steam engines (e.g. T1 class) 
+- cloud-free skies
+- more air and dynamic brake options for locos
+- mouse control for scripted brake controllers
 
 
 What's been improved
 --------------------
 
-- 64-bit compatibility lifting the 3GB RAM limit
-- Better use of VRAM
+- sky, sunrise and sunset appearance
+- wheelslip, exhaust and steam
+- layout of map window
+- F9 menu for controlling cars and brakes
+- controls for electric locos
+- air brake features for both European and American brake systems 
+- accurate friction simulation for 4 types of brake shoes
 
 
 
 Other changes
 --------------------
 
-- F5 key now opens Driver Info window. For HUD, use Alt+F5
-- Some trial options are now always active including:
-
-  - map window (Ctrl+9)
-  - de-brief evaluation (F1)
-  - web server
+- distracting “z-fighting” has been minimised
+- inactive windows are indicated when several windows are open
