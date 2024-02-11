@@ -268,7 +268,7 @@ namespace Orts.Simulation.RollingStocks
         public float TrackSanderSandConsumptionReverseM3pS = 0;
         public float SandWeightKgpM3 = 1600; // One cubic metre of sand weighs about 1.54-1.78 tonnes. 
         public float TrackSanderSteamConsumptionForwardLbpS;
-        public float TrackSanderSteamConsumptionReverseLbpS;
+        public float TrackSanderSteamConsumptionReverseLbpS = 0;
 
 
         // Vacuum Braking parameters
@@ -1814,14 +1814,8 @@ namespace Orts.Simulation.RollingStocks
 
             if (TrackSanderSteamConsumptionForwardLbpS == 0 && SandingSystemType == SandingSystemTypes.Steam)
             {
-                TrackSanderSteamConsumptionForwardLbpS = 300f / 3600f; // Default value - 300lbs/hr
+                TrackSanderSteamConsumptionForwardLbpS = 300f / 3600f; // Default value - 300lbs/hr - this value is un confirmed at this stage.
             }
-
-            if (TrackSanderSteamConsumptionReverseLbpS == 0 && SandingSystemType == SandingSystemTypes.Steam)
-            {
-                TrackSanderSteamConsumptionReverseLbpS = 300f / 3600f; // Default value - 300lbs/hr
-            }
-
 
             base.Initialize();
             if (DynamicBrakeBlendingEnabled) airPipeSystem = BrakeSystem as AirSinglePipe;
@@ -3326,15 +3320,35 @@ namespace Orts.Simulation.RollingStocks
                 // Calculate steam, air or gravity consumption for different sander modes
                 if (SandingSystemType == SandingSystemTypes.Steam)
                 {
+                    float sandingSteamConsumptionLbpS = 0.0f;
+                    float sandingSandConsumptionM3pS = 0.0f;
+
                     if (Direction == Direction.Reverse)
                     {
-                        SandingSteamUsageLBpS = TrackSanderSteamConsumptionReverseLbpS;
+                        sandingSteamConsumptionLbpS = TrackSanderSteamConsumptionReverseLbpS;
+                        sandingSandConsumptionM3pS = TrackSanderSandConsumptionReverseM3pS;
                     }
                     else
                     {
-                        SandingSteamUsageLBpS = TrackSanderSteamConsumptionForwardLbpS;
+                        sandingSteamConsumptionLbpS = TrackSanderSteamConsumptionForwardLbpS;
+                        sandingSandConsumptionM3pS = TrackSanderSandConsumptionForwardM3pS;
                     }
 
+                    // Calculate steam consumption
+                    SandingSteamUsageLBpS = (BoilerPressurePSI / MaxBoilerPressurePSI) * sandingSteamConsumptionLbpS * elapsedClockSeconds;
+
+                    // Calculate sand consumption for sander
+                if (CurrentTrackSandBoxCapacityM3 > 0.0) // if sand still in sandbox then sanding is available
+                {
+                    // Calculate consumption of sand, and drop in sand box level
+                        CurrentTrackSanderSandConsumptionM3pS = (BoilerPressurePSI / MaxBoilerPressurePSI) * sandingSandConsumptionM3pS * elapsedClockSeconds;
+                        CurrentTrackSandBoxCapacityM3 -= CurrentTrackSanderSandConsumptionM3pS;
+                    CurrentTrackSandBoxCapacityM3 = MathHelper.Clamp(CurrentTrackSandBoxCapacityM3, 0.0f, MaxTrackSandBoxCapacityM3);
+                        if (CurrentTrackSandBoxCapacityM3 <= 0.0)
+                    {
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Sand supply has been exhausted"));
+                    }
+                }
                 }
                 else // air consumption
                 {
@@ -3352,24 +3366,24 @@ namespace Orts.Simulation.RollingStocks
                         sandingSandConsumptionM3pS = TrackSanderSandConsumptionForwardM3pS;
                     }
 
-                    // Calculate air consumption and change in main air reservoir pressure
-                    CurrentTrackSanderAirConsumptionM3pS = (MainResPressurePSI * MaxMainResPressurePSI) * pS.FrompM(sandingAirConsumptionM3pS) * elapsedClockSeconds;
+          // Calculate air consumption and change in main air reservoir pressure
+                    CurrentTrackSanderAirConsumptionM3pS = (MainResPressurePSI / MaxMainResPressurePSI) * sandingAirConsumptionM3pS * elapsedClockSeconds;
                     float SanderPressureDiffPSI = CurrentTrackSanderAirConsumptionM3pS / Me3.ToFt3(MainResVolumeM3);
-                    MainResPressurePSI -= SanderPressureDiffPSI;
-                    MainResPressurePSI = MathHelper.Clamp(MainResPressurePSI, 0.001f, MaxMainResPressurePSI);
+                MainResPressurePSI -= SanderPressureDiffPSI;
+                MainResPressurePSI = MathHelper.Clamp(MainResPressurePSI, 0.001f, MaxMainResPressurePSI);
 
                     // Calculate sand consumption for sander
-                if (CurrentTrackSandBoxCapacityM3 > 0.0) // if sand still in sandbox then sanding is available
-                {
-                    // Calculate consumption of sand, and drop in sand box level
-                        CurrentTrackSanderSandConsumptionM3pS = (MainResPressurePSI * MaxMainResPressurePSI) * pS.FrompH(sandingSandConsumptionM3pS) * elapsedClockSeconds;
-                        CurrentTrackSandBoxCapacityM3 -= CurrentTrackSanderSandConsumptionM3pS;
-                    CurrentTrackSandBoxCapacityM3 = MathHelper.Clamp(CurrentTrackSandBoxCapacityM3, 0.0f, MaxTrackSandBoxCapacityM3);
-                        if (CurrentTrackSandBoxCapacityM3 <= 0.0)
+                    if (CurrentTrackSandBoxCapacityM3 > 0.0) // if sand still in sandbox then sanding is available
                     {
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Sand supply has been exhausted"));
+                        // Calculate consumption of sand, and drop in sand box level
+                        CurrentTrackSanderSandConsumptionM3pS = (MainResPressurePSI / MaxMainResPressurePSI) * sandingSandConsumptionM3pS * elapsedClockSeconds;
+                        CurrentTrackSandBoxCapacityM3 -= CurrentTrackSanderSandConsumptionM3pS;
+                        CurrentTrackSandBoxCapacityM3 = MathHelper.Clamp(CurrentTrackSandBoxCapacityM3, 0.0f, MaxTrackSandBoxCapacityM3);
+                        if (CurrentTrackSandBoxCapacityM3 <= 0.0)
+                        {
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Sand supply has been exhausted"));
+                        }
                     }
-                }
                 }
             }
 
