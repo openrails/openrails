@@ -4715,7 +4715,8 @@ Example::
       )
     )
 
-The state of the battery switch can be used in the :ref:`power supply scripts <features-scripting-powersupply>` and the :ref:`cabview controls <cabs-battery-switch>`.
+The state of the battery switch can be used in the :ref:`power supply scripts <features-scripting-powersupply>`,
+:ref:`cabview controls <cabs-battery-switch>`, and :ref:`train car lighting <features-light-conditions>`.
 
 .. _physics-master-key:
 

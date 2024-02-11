@@ -110,10 +110,18 @@ namespace Orts.Simulation.RollingStocks
         public bool Horn = false;
         protected bool PreviousHorn = false;
 
+        protected float HornTimerS = 30.0f;
+        protected float? HornStartTime;
+        public bool HornRecent { get; private set; }
+
         public bool ManualBell = false;
         public SoundState BellState = SoundState.Stopped;
         public bool Bell = false;
         protected bool PreviousBell = false;
+
+        protected float BellTimerS;
+        protected float? BellStartTime;
+        public bool BellRecent { get; private set; }
 
         public bool VacuumExhausterPressed = false;
         public bool FastVacuumExhausterFitted = false;
@@ -1088,6 +1096,8 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsbrakecutspoweratbrakepipepressure": BrakeCutsPowerAtBrakePipePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(ortsbrakerestorespoweratbrakepipepressure": BrakeRestoresPowerAtBrakePipePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(doeshorntriggerbell": DoesHornTriggerBell = stf.ReadBoolBlock(false); break;
+                case "engine(ortshornlightstimer": HornTimerS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
+                case "engine(ortsbelllightstimer": BellTimerS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(brakesenginecontrollers":
                     foreach (var brakesenginecontrollers in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
                     {
@@ -1254,6 +1264,8 @@ namespace Orts.Simulation.RollingStocks
             EmergencyCausesPowerDown = locoCopy.EmergencyCausesPowerDown;
             EmergencyCausesThrottleDown = locoCopy.EmergencyCausesThrottleDown;
             EmergencyEngagesHorn = locoCopy.EmergencyEngagesHorn;
+            HornTimerS = locoCopy.HornTimerS;
+            BellTimerS = locoCopy.BellTimerS;
 
             WheelslipCausesThrottleDown = locoCopy.WheelslipCausesThrottleDown;
 
@@ -2799,13 +2811,22 @@ namespace Orts.Simulation.RollingStocks
             Horn = ManualHorn || TCSHorn;
             if (Horn && !PreviousHorn)
             {
+                HornRecent = true;
                 SignalEvent(Event.HornOn);
                 if (MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HORN", 1)).ToString());
             }
             else if (!Horn && PreviousHorn)
             {
+                // Research indicates ditch light horn timer starts when horn button is released
+                HornStartTime = (float)Simulator.GameTime;
                 SignalEvent(Event.HornOff);
                 if (MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HORN", 0)).ToString());
+            }
+
+            if (HornStartTime != null && !Horn && Simulator.GameTime - HornStartTime > HornTimerS)
+            {
+                HornRecent = false;
+                HornStartTime = null;
             }
 
             if (ManualBell)
@@ -2824,6 +2845,8 @@ namespace Orts.Simulation.RollingStocks
             Bell = BellState != SoundState.Stopped;
             if (Bell && !PreviousBell)
             {
+                BellRecent = true;
+                BellStartTime = (float)Simulator.GameTime;
                 SignalEvent(Event.BellOn);
                 if (Train.TrainType != Train.TRAINTYPE.REMOTE && MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 1)).ToString());
             }
@@ -2831,6 +2854,12 @@ namespace Orts.Simulation.RollingStocks
             {
                 SignalEvent(Event.BellOff);
                 if (Train.TrainType != Train.TRAINTYPE.REMOTE && MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 0)).ToString());
+            }
+
+            if (BellStartTime != null && !Bell && Simulator.GameTime - BellStartTime > BellTimerS)
+            {
+                BellRecent = false;
+                BellStartTime = null;
             }
 
             PreviousHorn = Horn;
