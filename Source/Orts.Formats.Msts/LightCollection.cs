@@ -65,6 +65,7 @@ namespace Orts.Formats.Msts
             Transition = state.Transition;
             Angle = state.Angle;
 
+            // Automatic creation of reversed light cone
             if (reverse)
             {
                 Azimuth.X += 180;
@@ -188,16 +189,81 @@ namespace Orts.Formats.Msts
         On,
         Off,
     }
+
+    /// <summary>
+    /// Specifies in which friction brake states (released, applied) the wagon light is illuminated.
+    /// </summary>
+    public enum LightBrakeCondition
+    {
+        Ignore,
+        Released,
+        Applied,
+    }
+
+    /// <summary>
+    /// Specifies in which reverser states (forward, reverse, neutral, or other combinations) the wagon light is illuminated.
+    /// </summary>
+    public enum LightReverserCondition
+    {
+        Ignore,
+        Forward,
+        Reverse,
+        Neutral,
+        ForwardReverse,
+        ForwardNeutral,
+        ReverseNeutral,
+    }
+
+    /// <summary>
+    /// Specifies in which passenger door states (left, right, or both doors open) the wagon light is illuminated.
+    /// </summary>
+    public enum LightDoorsCondition
+    {
+        Ignore,
+        Closed,
+        Left,
+        Right,
+        Both,
+        LeftRight, // Either left or right
+    }
+
+    /// <summary>
+    /// Specifies in which horn states (off, on*) *horn has been sounded recently, the wagon light is illuminated.
+    /// </summary>
+    public enum LightHornCondition
+    {
+        Ignore,
+        Off,
+        Sounding,
+    }
+
+    /// <summary>
+    /// Specifies in which bell states (off, on) the wagon light is illuminated.
+    /// </summary>
+    public enum LightBellCondition
+    {
+        Ignore,
+        Off,
+        Ringing,
+    }
+
+    /// <summary>
+    /// Specifies in which multiple unit states (connected or disconnected from lead loco) the wagon light is illuminated.
+    /// </summary>
+    public enum LightMUCondition
+    {
+        Ignore,
+        Lead, // Special case for when this vehicle is the lead locomotive itself
+        Local,
+        Remote,
+    }
     #endregion
 
     /// <summary>
-    /// The Light class encapsulates the data for each Light object 
-    /// in the Lights block of an ENG/WAG file. 
+    /// A LightConditions object encapsulates the data for each Condition in the Conditions subblock.
     /// </summary>
-    public class Light
+    public class LightCondition
     {
-        public int Index;
-        public LightType Type;
         public LightHeadlightCondition Headlight;
         public LightUnitCondition Unit;
         public LightPenaltyCondition Penalty;
@@ -207,10 +273,77 @@ namespace Orts.Formats.Msts
         public LightWeatherCondition Weather;
         public LightCouplingCondition Coupling;
         public LightBatteryCondition Battery;
+        public LightBrakeCondition Brake;
+        public LightReverserCondition Reverser;
+        public LightDoorsCondition Doors;
+        public LightHornCondition Horn;
+        public LightBellCondition Bell;
+        public LightMUCondition MU;
+
+        public LightCondition(STFReader stf)
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new[] {
+                new STFReader.TokenProcessor("headlight", ()=>{ Headlight = (LightHeadlightCondition)stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("unit", ()=>{ Unit = (LightUnitCondition)stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("penalty", ()=>{ Penalty = (LightPenaltyCondition)stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("control", ()=>{ Control = (LightControlCondition)stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("service", ()=>{ Service = (LightServiceCondition)stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("timeofday", ()=>{ TimeOfDay = (LightTimeOfDayCondition)stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("weather", ()=>{ Weather = (LightWeatherCondition)stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("coupling", ()=>{ Coupling = (LightCouplingCondition)stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("ortsbattery", ()=>{ Battery = (LightBatteryCondition)stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("brake", ()=>{ Brake = (LightBrakeCondition)stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("reverser", ()=>{ Reverser = (LightReverserCondition)stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("doors", ()=>{ Doors = (LightDoorsCondition)stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("horn", ()=>{ Horn = (LightHornCondition)stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("bell", ()=>{ Bell = (LightBellCondition)stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("mu", ()=>{ MU = (LightMUCondition)stf.ReadIntBlock(null); }),
+            });
+        }
+
+        public LightCondition(LightCondition condition, bool reverse)
+        {
+            Headlight = condition.Headlight;
+            Unit = condition.Unit;
+            Penalty = condition.Penalty;
+            Control = condition.Control;
+            Service = condition.Service;
+            TimeOfDay = condition.TimeOfDay;
+            Weather = condition.Weather;
+            Coupling = condition.Coupling;
+            Battery = condition.Battery;
+            Brake = condition.Brake;
+            Reverser = condition.Reverser;
+            Doors = condition.Doors;
+            Horn = condition.Horn;
+            Bell = condition.Bell;
+            MU = condition.MU;
+
+            // Automatic creation of reversed light cone
+            if (reverse)
+            {
+                if (Unit == LightUnitCondition.First)
+                    Unit = LightUnitCondition.FirstRev;
+                else if (Unit == LightUnitCondition.Last)
+                    Unit = LightUnitCondition.LastRev;
+            }
+        }
+    }
+
+    /// <summary>
+    /// The Light class encapsulates the data for each Light object 
+    /// in the Lights block of an ENG/WAG file. 
+    /// </summary>
+    public class Light
+    {
+        public int Index;
+        public LightType Type;
         public bool Cycle;
         public float FadeIn;
         public float FadeOut;
         public List<LightState> States = new List<LightState>();
+        public List<LightCondition> Conditions = new List<LightCondition>();
 
         public Light(int index, STFReader stf)
         {
@@ -218,17 +351,7 @@ namespace Orts.Formats.Msts
             stf.MustMatch("(");
             stf.ParseBlock(new[] {
                 new STFReader.TokenProcessor("type", ()=>{ Type = (LightType)stf.ReadIntBlock(null); }),
-                new STFReader.TokenProcessor("conditions", ()=>{ stf.MustMatch("("); stf.ParseBlock(new[] {
-                    new STFReader.TokenProcessor("headlight", ()=>{ Headlight = (LightHeadlightCondition)stf.ReadIntBlock(null); }),
-                    new STFReader.TokenProcessor("unit", ()=>{ Unit = (LightUnitCondition)stf.ReadIntBlock(null); }),
-                    new STFReader.TokenProcessor("penalty", ()=>{ Penalty = (LightPenaltyCondition)stf.ReadIntBlock(null); }),
-                    new STFReader.TokenProcessor("control", ()=>{ Control = (LightControlCondition)stf.ReadIntBlock(null); }),
-                    new STFReader.TokenProcessor("service", ()=>{ Service = (LightServiceCondition)stf.ReadIntBlock(null); }),
-                    new STFReader.TokenProcessor("timeofday", ()=>{ TimeOfDay = (LightTimeOfDayCondition)stf.ReadIntBlock(null); }),
-                    new STFReader.TokenProcessor("weather", ()=>{ Weather = (LightWeatherCondition)stf.ReadIntBlock(null); }),
-                    new STFReader.TokenProcessor("coupling", ()=>{ Coupling = (LightCouplingCondition)stf.ReadIntBlock(null); }),
-                    new STFReader.TokenProcessor("ortsbattery", ()=>{ Battery = (LightBatteryCondition)stf.ReadIntBlock(null); }),
-                });}),
+                new STFReader.TokenProcessor("conditions", ()=>{ Conditions.Add(new LightCondition(stf)); }),
                 new STFReader.TokenProcessor("cycle", ()=>{ Cycle = 0 != stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("fadein", ()=>{ FadeIn = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("fadeout", ()=>{ FadeOut = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
@@ -253,28 +376,13 @@ namespace Orts.Formats.Msts
         {
             Index = light.Index;
             Type = light.Type;
-            Headlight = light.Headlight;
-            Unit = light.Unit;
-            Penalty = light.Penalty;
-            Control = light.Control;
-            Service = light.Service;
-            TimeOfDay = light.TimeOfDay;
-            Weather = light.Weather;
-            Coupling = light.Coupling;
-            Battery = light.Battery;
             Cycle = light.Cycle;
             FadeIn = light.FadeIn;
             FadeOut = light.FadeOut;
             foreach (var state in light.States)
                 States.Add(new LightState(state, reverse));
-
-            if (reverse)
-            {
-                if (Unit == LightUnitCondition.First)
-                    Unit = LightUnitCondition.FirstRev;
-                else if (Unit == LightUnitCondition.Last)
-                    Unit = LightUnitCondition.LastRev;
-            }
+            foreach (var condition in light.Conditions)
+                Conditions.Add(new LightCondition(condition, reverse));
         }
     }
 

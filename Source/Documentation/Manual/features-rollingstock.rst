@@ -9,7 +9,272 @@ For a full list of parameters, see :ref:`Developing OR Content - Parameters and 
 Train Engine Lights
 ===================
 
-OR supports the whole set of lights accepted by MSTS.
+OR supports the whole set of lights accepted by MSTS, MSTS-bin, and adds many new
+options to enhance the variety and complexity of lighting systems that can be recreated.
+
+Lights with multiple conditions
+-------------------------------
+
+In the original MSTS light implementation, each light could only have one set of
+activation conditions. If the same light were to be activated in multiple situations,
+(for example, a light which should turn on for both the front and rear units)
+the entire light would need to be included twice, just with different conditions.
+
+.. index::
+   single: Conditions
+
+Open Rails now allows for a single light to have multiple ``Conditions ()`` blocks.
+If *any* one set of conditions is fulfilled, the light will be enabled. If no conditions
+are specified, the light will be assumed to be on always. An example of how this can
+be used to simplify ``Lights`` implementation is included below::
+
+		Light	(
+			comment( Nose light bright )
+			Conditions	(
+				Headlight ( 3 )
+				Unit ( 2 )
+			)
+			FadeIn	( 0.5 )
+			FadeOut	( 0.5 )
+			States	(	1
+				State	(
+					LightColour ( FFffffe6 )
+					Radius ( 0.6 )
+					Position ( 0.0 4.12 6.55 )
+				)
+			)
+		)
+		Light	(
+			comment( Nose light bright DPU )
+			Conditions	(
+				Headlight ( 3 )
+				Unit ( 4 )
+			)
+			FadeIn	( 0.5 )
+			FadeOut	( 0.5 )
+			States	(	1
+				State	(
+					LightColour ( FFffffe6 )
+					Radius ( 0.6 )
+					Position ( 0.0 4.12 6.55 )
+				)
+			)
+		)
+
+This set of two lights can be simplified to one light like this::
+        
+		Light	(
+			comment( Nose light bright )
+			Conditions	(
+				Headlight ( 3 )
+				Unit ( 2 )
+			)
+			Conditions	(
+				Headlight ( 3 )
+				Unit ( 4 )
+			)
+			FadeIn	( 0.5 )
+			FadeOut	( 0.5 )
+			States	(	1
+				State	(
+					LightColour ( FFffffe6 )
+					Radius ( 0.6 )
+					Position ( 0.0 4.12 6.55 )
+				)
+			)
+		)
+
+Both of these snippets produce the same result: a light that turns on when the 
+headlights are bright and the unit is first, or the last unit reversed (ie:
+distributed power). However, by specifying multiple conditions, the second
+implementation takes up much less space and guarentees that both modes of the
+light have the exact same ``States``. There is no hard limit on the number
+of conditions a light can have.
+
+.. _features-light-conditions:
+
+Open Rails specific lighting conditions
+---------------------------------------
+
+Open Rails also adds a set of new lighting conditions which offer additional
+flexibility in creating detailed light behaviors. Note that each of these
+must be inside the ``Conditions ()`` block of a ``Light ()`` in the .eng/.wag
+file to function. All conditions are optional and can be mixed and matched
+as needed, though only one of each condition can be included per conditions
+block!
+
+.. index::
+   single: Conditions(ORTSBattery
+
+Battery Switch
+''''''''''''''
+
+The light condition ``ORTSBattery`` allows a light to respond to the state of
+the :ref:`battery switch subsystem <physics-battery-switch>`. The valid settings
+and associated conditions for the light to turn *on* are as follows:
+
+- ``ORTSBattery ( 0 )`` Battery state is ignored (default)
+- ``ORTSBattery ( 1 )`` Battery switch must be on
+- ``ORTSBattery ( 2 )`` Battery switch must be off
+
+.. index::
+   single: Conditions(Brake
+
+Friction Brakes
+'''''''''''''''
+
+The ``Brake`` condition can be used to create brake indicator lights
+which turn on or off when the friction brakes are applied. Dynamic brakes
+have no effect.
+
+- ``Brake ( 0 )`` Brake application/release is ignored (default)
+- ``Brake ( 1 )`` Brakes must be released
+- ``Brake ( 2 )`` Brakes must be applied
+
+.. index::
+   single: Conditions(Reverser
+
+Reverser
+''''''''
+
+``Reverser`` is a very powerful condition that gives lights the ability
+to be enabled by the selected direction of travel. Note that a flipped
+locomotive or wagon will automatically flip the sensed reverser setting
+to ensure lights shine in the correct direction. Also, steam locomotive
+cutoff values between -10% and 10% will be detected as 'neutral'.
+
+- ``Reverser ( 0 )`` Reverser direction is ignored (default)
+- ``Reverser ( 1 )`` Reverser direction must be forward
+- ``Reverser ( 2 )`` Reverser direction must be reverse
+- ``Reverser ( 3 )`` Reverser direction must be neutral
+- ``Reverser ( 4 )`` Reverser direction must be forward or reverse
+- ``Reverser ( 5 )`` Reverser direction must be forward or neutral
+- ``Reverser ( 6 )`` Reverser direction must be reverse or neutral
+
+.. index::
+   single: Conditions(Doors
+
+Passenger Doors
+'''''''''''''''
+
+Many pieces of passenger rolling stock have indicator lights to inform
+the crew :ref:`passenger doors <features-passenger-doors>` are open. The
+``Doors`` condition is suited to this type of lighting.
+
+- ``Doors ( 0 )`` Passenger doors are ignored (default)
+- ``Doors ( 1 )`` Passenger doors must all be closed
+- ``Doors ( 2 )`` Passenger doors on the left must be open
+- ``Doors ( 3 )`` Passenger doors on the right must be open
+- ``Doors ( 4 )`` Passenger doors on both sides must be open
+- ``Doors ( 5 )`` Passenger doors on either the left or right must be open
+
+.. index::
+   single: Conditions(Horn
+   single: ORTSHornLightsTimer
+
+Horn (Automatic Flashing Ditch Lights)
+''''''''''''''''''''''''''''''''''''''
+
+Open Rails now supports the ability to configure flashing ditch lights
+(or any other type of horn activated auxiliary lighting)
+with the ``Horn`` light condition. When the horn is sounded, lights
+with the horn condition will (de)activate, and remain (de)activated
+for a time after the horn stops sounding. The standard timer is 30
+seconds, but can be changed by placing a ``ORTSHornLightsTimer``
+token in the ``engine()`` section of the locomotive with flashing lights.
+If ``ORTSHornLightsTimer( 0s )`` is set, the lights will only activate
+while the horn is sounding and immediately stop afterward.
+
+- ``Horn ( 0 )`` Horn state is ignored (default)
+- ``Horn ( 1 )`` Horn must not have been sounded recently
+- ``Horn ( 2 )`` Horn must have been sounded recently
+
+Note that the solid ditch lights state should use ``Horn(1)`` to
+prevent these lights overlapping the flashing state. An example
+implementation of a flashing ditch light's conditions (many other
+details removed for clarity) is provided below::
+
+		Light	(
+			comment( Right ditch light )
+			Conditions	(
+				Headlight ( 3 )
+				Unit ( 2 )
+				Horn ( 1 )
+			)
+			States	(	1
+				State	(
+					LightColour ( FFFFFFFF )
+					Radius ( r )
+					Position ( x y z )
+				)
+			)
+		)
+		Light	(
+			comment( Right ditch light Flashing )
+			Conditions	(
+				Headlight ( 3 )
+				Unit ( 2 )
+				Horn ( 2 )
+			)
+			States	(	2
+				State	(
+					LightColour ( FFFFFFFF )
+					Radius ( r )
+					Transition ( 1 )
+					Duration ( 0.5 )
+					Position ( x y z )
+				)
+				State	(
+					LightColour ( FFFFFFFF )
+					Radius ( r )
+					Transition ( 1 )
+					Duration ( 0.5 )
+					Position ( x y z )
+				)
+			)
+		)
+
+.. index::
+   single: Conditions(Bell
+   single: ORTSBellLightsTimer
+
+Bell (Automatic Flashing Ditch Lights)
+''''''''''''''''''''''''''''''''''''''
+
+Similar to ``Horn``, the ``Bell`` condition is useful for replicating
+systems with flashing lights activated by the bell, though this is
+less common than using the horn. Like with the horn, a timer can be
+set to keep the lights activated for a time after the bell starts ringing.
+Unlike with the horn, this timer is set to 0 seconds by default, meaning
+the lights will only remain (de)activated while the bell is currently ringing.
+If a timer is desired, ``engine(ORTSBellLightsTimer`` can be used in
+the locomotive's .eng file.
+
+- ``Bell ( 0 )`` Bell state is ignored (default)
+- ``Bell ( 1 )`` Bell must not have been ringing recently
+- ``Bell ( 2 )`` Bell must have been ringing recently or is ringing now
+
+.. index::
+   single: Conditions(Brake
+
+Multiple Unit Configuration (Locomotives Only)
+''''''''''''''''''''''''''''''''''''''''''''''
+
+Some MU systems send headlight signals through the wires connecting locomotives,
+but do not or cannot send these signals through wagons/coaches to remote
+locomotives (eg: distributed power, banking locomotives, etc.). The ``MU``
+light condition allows for some flexibility in adjusting light behavior depending
+on a locomotive's physical connection to the lead locomotive (or lack thereof).
+While meant for locomotives only, wagons are always treated as remote locomotives
+for the purposes of calculation.
+
+- ``MU ( 0 )`` Locomotives's connection to the lead locomotive is ignored (default)
+- ``MU ( 1 )`` Locomotive must be the lead locomotive itself
+- ``MU ( 2 )`` Locomotive must be in the same group of locomotives as the lead locomotive
+    - This condition will also be fulfilled for the lead locomotive itself.
+- ``MU ( 3 )`` Locomotive must be in a different group to the lead locomotive
+
+
 
 Tilting trains
 ==============
@@ -588,7 +853,7 @@ the ``.load-or`` files in a consistent way:  ``40HCtriton.load-or`` is suggested
 container type and ``triton`` the brand painted on the container.
 
 Format of the .load-or file
-'''''''''''''''''''''''
+'''''''''''''''''''''''''''
 
 Here below a sample of a ``.load-or`` file::
 
@@ -1216,6 +1481,8 @@ Open rails uses some defaults to calculate the required movement and angles for 
 shape movement, however for greater accuracy the modeler can add specific values such as 
 ``ORTSLengthAirHose``. In addition the length values suggested in the Derailment Coefficient should 
 also be added.
+
+.. _features-passenger-doors:
 
 Passenger doors
 ===============
