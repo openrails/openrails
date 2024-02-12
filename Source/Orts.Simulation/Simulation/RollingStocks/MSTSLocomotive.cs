@@ -251,16 +251,16 @@ namespace Orts.Simulation.RollingStocks
 
         // parameters for Track Sander based upon compressor air and abrasive table for 1/2" sand blasting nozzle @ 50psi
         public float MaxTrackSandBoxCapacityM3; // Capacity of sandbox
-        public float TrackSanderAirComsumptionForwardM3pS;
-        public float TrackSanderAirComsumptionReverseM3pS = 0;
-        public float TrackSanderSandConsumptionForwardM3pS;
+        public float MaxTrackSanderAirComsumptionForwardM3pS;
+        public float MaxTrackSanderAirComsumptionReverseM3pS = 0;
+        public float MaxTrackSanderSandConsumptionForwardM3pS;
         public float CurrentTrackSanderAirConsumptionM3pS;
         public float CurrentTrackSanderSandConsumptionM3pS;
         public float CurrentTrackSandBoxCapacityM3;
-        public float TrackSanderSandConsumptionReverseM3pS = 0;
+        public float MaxTrackSanderSandConsumptionReverseM3pS = 0;
         public float SandWeightKgpM3 = 1600; // One cubic metre of sand weighs about 1.54-1.78 tonnes. 
-        public float TrackSanderSteamConsumptionForwardLbpS;
-        public float TrackSanderSteamConsumptionReverseLbpS = 0;
+        public float MaxTrackSanderSteamConsumptionForwardLbpS;
+        public float MaxTrackSanderSteamConsumptionReverseLbpS = 0;
 
 
         // Vacuum Braking parameters
@@ -1150,20 +1150,20 @@ namespace Orts.Simulation.RollingStocks
                     MaxTrackSandBoxCapacityM3 = Me3.FromFt3(MaxTrackSandBoxCapacityM3);
                     break;
                 case "engine(ortsmaxtracksandersandconsumptionforward": 
-                    Me3.FromFt3( TrackSanderSandConsumptionForwardM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null) );
-                    TrackSanderSandConsumptionForwardM3pS = Me3.FromFt3(TrackSanderSandConsumptionForwardM3pS);
+                    Me3.FromFt3( MaxTrackSanderSandConsumptionForwardM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null) );
+                    MaxTrackSanderSandConsumptionForwardM3pS = Me3.FromFt3(MaxTrackSanderSandConsumptionForwardM3pS);
                     break;
                 case "engine(ortsmaxtracksandersandconsumptionreverse":
-                    Me3.FromFt3(TrackSanderSandConsumptionReverseM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
-                    TrackSanderSandConsumptionReverseM3pS = Me3.FromFt3(TrackSanderSandConsumptionReverseM3pS);
+                    Me3.FromFt3(MaxTrackSanderSandConsumptionReverseM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
+                    MaxTrackSanderSandConsumptionReverseM3pS = Me3.FromFt3(MaxTrackSanderSandConsumptionReverseM3pS);
                     break;
                 case "engine(ortsmaxtracksanderairconsumptionforward": 
-                    Me3.FromFt3( TrackSanderAirComsumptionForwardM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null) );
-                    TrackSanderAirComsumptionForwardM3pS = Me3.FromFt3(TrackSanderAirComsumptionForwardM3pS);
+                    Me3.FromFt3( MaxTrackSanderAirComsumptionForwardM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null) );
+                    MaxTrackSanderAirComsumptionForwardM3pS = Me3.FromFt3(MaxTrackSanderAirComsumptionForwardM3pS);
                     break;
                 case "engine(ortsmaxtracksanderairconsumptionreverse":
-                    Me3.FromFt3(TrackSanderAirComsumptionReverseM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
-                    TrackSanderAirComsumptionReverseM3pS = Me3.FromFt3(TrackSanderAirComsumptionReverseM3pS);
+                    Me3.FromFt3(MaxTrackSanderAirComsumptionReverseM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
+                    MaxTrackSanderAirComsumptionReverseM3pS = Me3.FromFt3(MaxTrackSanderAirComsumptionReverseM3pS);
                     break;
                 case "engine(ortscruisecontrol": SetUpCruiseControl(stf); break;
                 case "engine(ortsmultipositioncontroller": SetUpMPC(stf); break;
@@ -1221,10 +1221,10 @@ namespace Orts.Simulation.RollingStocks
             SanderSpeedEffectUpToMpS = locoCopy.SanderSpeedEffectUpToMpS;
             SanderSpeedOfMpS = locoCopy.SanderSpeedOfMpS;
             MaxTrackSandBoxCapacityM3 = locoCopy.MaxTrackSandBoxCapacityM3;
-            TrackSanderSandConsumptionForwardM3pS = locoCopy.TrackSanderSandConsumptionForwardM3pS;
-            TrackSanderSandConsumptionReverseM3pS = locoCopy.TrackSanderSandConsumptionReverseM3pS;
-            TrackSanderAirComsumptionForwardM3pS = locoCopy.TrackSanderAirComsumptionForwardM3pS;
-            TrackSanderAirComsumptionReverseM3pS = locoCopy.TrackSanderAirComsumptionReverseM3pS;
+            MaxTrackSanderSandConsumptionForwardM3pS = locoCopy.MaxTrackSanderSandConsumptionForwardM3pS;
+            MaxTrackSanderSandConsumptionReverseM3pS = locoCopy.MaxTrackSanderSandConsumptionReverseM3pS;
+            MaxTrackSanderAirComsumptionForwardM3pS = locoCopy.MaxTrackSanderAirComsumptionForwardM3pS;
+            MaxTrackSanderAirComsumptionReverseM3pS = locoCopy.MaxTrackSanderAirComsumptionReverseM3pS;
             PowerOnDelayS = locoCopy.PowerOnDelayS;
             DoesHornTriggerBell = locoCopy.DoesHornTriggerBell;
             MaxSteamHeatPressurePSI = locoCopy.MaxSteamHeatPressurePSI;
@@ -1331,7 +1331,6 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(PowerReduction);
             outf.Write(ScoopIsBroken);
             outf.Write(IsWaterScoopDown);
-            outf.Write(CurrentTrackSandBoxCapacityM3);
             outf.Write(SaveAdhesionFilter);
             outf.Write(GenericItem1);
             outf.Write(GenericItem2);
@@ -1341,6 +1340,10 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(previousChangedGearBoxNotch);
             outf.Write(DynamicBrake);
             outf.Write(DynamicBrakeIntervention);
+            outf.Write(CurrentTrackSandBoxCapacityM3);
+            outf.Write(CurrentTrackSanderSandConsumptionM3pS);
+            outf.Write(CurrentTrackSanderAirConsumptionM3pS);
+
 
             base.Save(outf);
 
@@ -1383,7 +1386,6 @@ namespace Orts.Simulation.RollingStocks
             PowerReduction = inf.ReadSingle();
             ScoopIsBroken = inf.ReadBoolean();
             IsWaterScoopDown = inf.ReadBoolean();
-            CurrentTrackSandBoxCapacityM3 = inf.ReadSingle();
 
             SaveAdhesionFilter = inf.ReadSingle();
             
@@ -1398,6 +1400,9 @@ namespace Orts.Simulation.RollingStocks
 
             DynamicBrake = inf.ReadBoolean();
             DynamicBrakeIntervention = inf.ReadSingle();
+            CurrentTrackSandBoxCapacityM3 = inf.ReadSingle();
+            CurrentTrackSanderSandConsumptionM3pS = inf.ReadSingle();
+            CurrentTrackSanderAirConsumptionM3pS = inf.ReadSingle();
 
             base.Restore(inf);
 
@@ -1773,19 +1778,19 @@ namespace Orts.Simulation.RollingStocks
                 MaxTrackSandBoxCapacityM3 = Me3.FromFt3(40.0f);  // Capacity of sandbox - assume 40.0 cu ft
             }
 
-            if (TrackSanderAirComsumptionForwardM3pS == 0)
+            if (MaxTrackSanderAirComsumptionForwardM3pS == 0 && SandingSystemType == SandingSystemTypes.Air)
             {
-                TrackSanderAirComsumptionForwardM3pS = Me3.FromFt3(56.0f) / 60.0f;  // Default value - cubic feet per min (CFM) 28 ft3/m x 2 sanders @ 140 psi - convert to /sec values
+                MaxTrackSanderAirComsumptionForwardM3pS = Me3.FromFt3(56.0f) / 60.0f;  // Default value - cubic feet per min (CFM) 28 ft3/m x 2 sanders @ 140 psi - convert to /sec values
             }
 
-            if (TrackSanderSandConsumptionForwardM3pS == 0)
+            if (MaxTrackSanderSandConsumptionForwardM3pS == 0)
             {
-                TrackSanderSandConsumptionForwardM3pS = Me3.FromFt3(3.4f) / 3600.0f; // Default value - 1.7 ft3/h x 2 sanders @ 140 psi - convert to /sec values
+                MaxTrackSanderSandConsumptionForwardM3pS = Me3.FromFt3(3.4f) / 3600.0f; // Default value - 1.7 ft3/h x 2 sanders @ 140 psi - convert to /sec values
             }
 
-            if (TrackSanderSteamConsumptionForwardLbpS == 0 && SandingSystemType == SandingSystemTypes.Steam)
+            if (MaxTrackSanderSteamConsumptionForwardLbpS == 0 && SandingSystemType == SandingSystemTypes.Steam)
             {
-                TrackSanderSteamConsumptionForwardLbpS = 300f / 3600f; // Default value - 300lbs/hr - this value is un confirmed at this stage.
+                MaxTrackSanderSteamConsumptionForwardLbpS = 300f / 3600f; // Default value - 300lbs/hr - this value is un confirmed at this stage.
             }
 
             base.Initialize();
@@ -3270,13 +3275,13 @@ namespace Orts.Simulation.RollingStocks
 
                     if (Direction == Direction.Reverse)
                     {
-                        sandingSteamConsumptionLbpS = TrackSanderSteamConsumptionReverseLbpS;
-                        sandingSandConsumptionM3pS = TrackSanderSandConsumptionReverseM3pS;
+                        sandingSteamConsumptionLbpS = MaxTrackSanderSteamConsumptionReverseLbpS;
+                        sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionReverseM3pS;
                     }
                     else
                     {
-                        sandingSteamConsumptionLbpS = TrackSanderSteamConsumptionForwardLbpS;
-                        sandingSandConsumptionM3pS = TrackSanderSandConsumptionForwardM3pS;
+                        sandingSteamConsumptionLbpS = MaxTrackSanderSteamConsumptionForwardLbpS;
+                        sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionForwardM3pS;
                     }
 
                     // Calculate steam consumption
@@ -3302,13 +3307,13 @@ namespace Orts.Simulation.RollingStocks
 
                     if (Direction == Direction.Reverse)
                     {
-                        sandingAirConsumptionM3pS = TrackSanderAirComsumptionReverseM3pS;
-                        sandingSandConsumptionM3pS = TrackSanderSandConsumptionReverseM3pS;
+                        sandingAirConsumptionM3pS = MaxTrackSanderAirComsumptionReverseM3pS;
+                        sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionReverseM3pS;
                     }
                     else
                     {
-                        sandingAirConsumptionM3pS = TrackSanderAirComsumptionForwardM3pS;
-                        sandingSandConsumptionM3pS = TrackSanderSandConsumptionForwardM3pS;
+                        sandingAirConsumptionM3pS = MaxTrackSanderAirComsumptionForwardM3pS;
+                        sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionForwardM3pS;
                     }
 
                     // Calculate air consumption and change in main air reservoir pressure
@@ -3331,7 +3336,12 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
             }
-
+            else // reset to zero if sander is off
+            {
+                CurrentTrackSanderSandConsumptionM3pS = 0;
+                CurrentTrackSanderAirConsumptionM3pS = 0;
+                SandingSteamUsageLBpS = 0;
+            }
         }
 
         public override bool GetSanderOn()

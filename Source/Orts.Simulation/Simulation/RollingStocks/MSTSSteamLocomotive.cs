@@ -889,6 +889,12 @@ namespace Orts.Simulation.RollingStocks
                     MSTSNumCylinders = stf.ReadIntBlock(null); break; // retained for legacy purposes
                 case "engine(numberofcylinders":
                     MSTSNumCylinders = stf.ReadIntBlock(null); break;
+                case "engine(ortsmaxtracksandersteamconsumptionforward":
+                    Me3.FromFt3(MaxTrackSanderSteamConsumptionForwardLbpS = stf.ReadFloatBlock(STFReader.UNITS.Mass, null));
+                    break;
+                case "engine(ortsmaxtracksandersteamconsumptionreverse":
+                    Me3.FromFt3(MaxTrackSanderSteamConsumptionReverseLbpS = stf.ReadFloatBlock(STFReader.UNITS.Mass, null));
+                    break;
                 case "engine(cylinderstroke": MSTSCylinderStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(cylinderdiameter": MSTSCylinderDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(lpnumcylinders": MSTSLPNumCylinders = stf.ReadIntBlock(null); break;
@@ -1014,6 +1020,8 @@ namespace Orts.Simulation.RollingStocks
             MaxSuperheatRefTempF = locoCopy.MaxSuperheatRefTempF;
             MaxIndicatedHorsePowerHP = locoCopy.MaxIndicatedHorsePowerHP;
             SuperheatCutoffPressureFactor = locoCopy.SuperheatCutoffPressureFactor;
+            MaxTrackSanderSteamConsumptionForwardLbpS = locoCopy.MaxTrackSanderSteamConsumptionForwardLbpS;
+            MaxTrackSanderSteamConsumptionReverseLbpS = locoCopy.MaxTrackSanderSteamConsumptionReverseLbpS;
             EjectorSmallSteamConsumptionLbpS = locoCopy.EjectorSmallSteamConsumptionLbpS;
             EjectorLargeSteamConsumptionLbpS = locoCopy.EjectorLargeSteamConsumptionLbpS;
             ShovelMassKG = locoCopy.ShovelMassKG;
@@ -1111,6 +1119,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(EvaporationLBpS);
             outf.Write(FireMassKG);
             outf.Write(FlueTempK);
+            outf.Write(SandingSteamUsageLBpS);
             outf.Write(SteamGearPosition);
             ControllerFactory.Save(CutoffController, outf);
             ControllerFactory.Save(Injector1Controller, outf);
@@ -1174,6 +1183,7 @@ namespace Orts.Simulation.RollingStocks
             EvaporationLBpS = inf.ReadSingle();
             FireMassKG = inf.ReadSingle();
             FlueTempK = inf.ReadSingle();
+            SandingSteamUsageLBpS = inf.ReadSingle();
             SteamGearPosition = inf.ReadSingle();
             ControllerFactory.Restore(CutoffController, inf);
             ControllerFactory.Restore(Injector1Controller, inf);
@@ -8003,17 +8013,35 @@ namespace Orts.Simulation.RollingStocks
                         SteamEngines[i].CalculatedFactorOfAdhesion);
                 }
 
-                status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N8}/{9}\t\t{5}\t{6:N3}/{9}\t{7}\t{8:N1}\n",
+                if (SandingSystemType == SandingSystemTypes.Steam)
+                {
+                    status.AppendFormat("{0}\t{1}\t{22}\t{3}\t{4}/{7}\t\t{5}\t{6}/{7}\n",
+                        Simulator.Catalog.GetString("Sand:"),
+                        Simulator.Catalog.GetString("S/Box"),
+                        FormatStrings.FormatVolume(CurrentTrackSandBoxCapacityM3, IsMetric),
+                        Simulator.Catalog.GetString("S/Use"),
+                        FormatStrings.FormatSmallVolume(pS.TopH(CurrentTrackSanderSandConsumptionM3pS), IsMetric),
+                        Simulator.Catalog.GetString("St/Use"),
+                        FormatStrings.FormatMass(pS.TopH(SandingSteamUsageLBpS), IsMetric),
+                        FormatStrings.h);
+
+                }
+                else
+                {
+
+                    status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}/{9}\t\t{5}\t{6}/{9}\t\t{7}\t{8:N1}\n",
                     Simulator.Catalog.GetString("Sand:"),
                     Simulator.Catalog.GetString("S/Box"),
                     FormatStrings.FormatVolume(CurrentTrackSandBoxCapacityM3, IsMetric),
                     Simulator.Catalog.GetString("S/Use"),
-                    FormatStrings.FormatVolume(pS.TopM(CurrentTrackSanderSandConsumptionM3pS), IsMetric),
+                    FormatStrings.FormatSmallVolume(pS.TopH(CurrentTrackSanderSandConsumptionM3pS), IsMetric),
                     Simulator.Catalog.GetString("A/Use"),
-                    FormatStrings.FormatVolume(pS.TopM(CurrentTrackSanderAirConsumptionM3pS), IsMetric),
+                    FormatStrings.FormatSmallVolume(pS.TopH(CurrentTrackSanderAirConsumptionM3pS), IsMetric),
                     Simulator.Catalog.GetString("M/Press"),
                     MainResPressurePSI,
-                    FormatStrings.min);
+                    FormatStrings.h);
+
+                }
 
                 status.AppendFormat("\n{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
                 Simulator.Catalog.GetString("CylE:"),
