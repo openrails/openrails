@@ -546,7 +546,8 @@ namespace Orts.Simulation.RollingStocks
         // TrainCar.Update() must set these variables
         public float MotiveForceN;   // ie motor power in Newtons  - signed relative to direction of car -
         public float TractiveForceN = 0f; // Raw tractive force for electric sound variable2
-        public SmoothedData MotiveForceSmoothedN = new SmoothedData(0.5f);
+        public SmoothedData MotiveForceSmoothN = new SmoothedData(0.5f);
+        public float MotiveForceSmoothedN;
         public float PrevMotiveForceN;
         // Gravity forces have negative values on rising grade. 
         // This means they have the same sense as the motive forces and will push the train downhill.

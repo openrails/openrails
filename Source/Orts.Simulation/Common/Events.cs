@@ -215,6 +215,8 @@ namespace Orts.Common
         BrakePipePressureStoppedChanging,
         CylinderCocksOpen,
         CylinderCocksClose,
+        BoosterCylinderCocksOpen,
+        BoosterCylinderCocksClose,
         SecondEnginePowerOff,
         SecondEnginePowerOn,
 
@@ -269,9 +271,7 @@ namespace Orts.Common
         CruiseControlAlert,
         CruiseControlAlert1,
 
-        MPCChangePosition,
-
-        SteamBoosterChange,
+        MPCChangePosition
     }
 
     public static class Events
@@ -545,7 +545,8 @@ namespace Orts.Common
 
                         case 310: return Event.MPCChangePosition;
 
-                        case 320: return Event.SteamBoosterChange;
+                        case 321: return Event.BoosterCylinderCocksOpen;
+                        case 322: return Event.BoosterCylinderCocksClose;
 
                         default: return 0;
                     }

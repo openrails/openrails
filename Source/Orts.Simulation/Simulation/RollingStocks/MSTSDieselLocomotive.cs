@@ -735,7 +735,7 @@ namespace Orts.Simulation.RollingStocks
                 DieselEngines.HandleEvent(PowerSupplyEvent.StopEngine);
             }
 
-            ApplyDirectionToTractiveForce();
+            ApplyDirectionToTractiveForce(ref TractiveForceN, 0);
 
             // Calculate the total tractive force for the locomotive - ie Traction + Dynamic Braking force.
             // Note typically only one of the above will only ever be non-zero at the one time.
