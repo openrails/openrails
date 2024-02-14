@@ -8015,7 +8015,7 @@ namespace Orts.Simulation.RollingStocks
 
                 if (SandingSystemType == SandingSystemTypes.Steam)
                 {
-                    status.AppendFormat("{0}\t{1}\t{22}\t{3}\t{4}/{7}\t\t{5}\t{6}/{7}\n",
+                    status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}/{7}\t\t{5}\t{6}/{7}\n",
                         Simulator.Catalog.GetString("Sand:"),
                         Simulator.Catalog.GetString("S/Box"),
                         FormatStrings.FormatVolume(CurrentTrackSandBoxCapacityM3, IsMetric),
