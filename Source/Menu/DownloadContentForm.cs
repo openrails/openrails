@@ -732,7 +732,7 @@ namespace ORTS
             }
             else
             {
-                outputFile.WriteLine(Catalog.GetString("- No updates found") + "<br></p>");
+                outputFile.WriteLine("- " + Catalog.GetString("No updates found") + "<br></p>");
             }
 
             return changedFound && remoteUpdateFound;
@@ -980,10 +980,17 @@ namespace ORTS
                         return;
                     }
                 }
-
+                if (doThePull(route)) 
+                {
+                    message = Catalog.GetString("Updates installed");
+                    MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
             }
-
-            doThePull(route);
+            else
+            {
+                message = Catalog.GetString("No updates found");
+                MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         private bool doThePull(ContentRouteSettings.Route route) {
@@ -997,7 +1004,7 @@ namespace ORTS
 
                     // User information to create a merge commit
                     var signature = new LibGit2Sharp.Signature(
-                        new Identity(route.AuthorName, route.AuthorUrl), DateTimeOffset.Now);
+                        new Identity("Open Rails", "www.openrails.org"), DateTimeOffset.Now);
 
                     // Pull
                     Commands.Pull(repo, signature, options);
