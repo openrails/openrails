@@ -3783,33 +3783,60 @@ namespace Orts.Simulation.Signalling
         {
             int foundSignal = -1;
 
-            // signal not enabled - no route available
-            if (enabledTrain == null)
+            Train.TrainRouted acttrain = enabledTrain;
+            int reqTC = isSignalNormal() ? TCNextTC : TCReference; // for normal signals, use section beyond signal; for not-normal, use signal section as TCNextTC is not set
+
+            // not normal signals may not have enabled train - check for train at next normal signal (use section ahead of signal in this case)
+            // note - next normal signal may not have the correct normal subtype, so proper search is still required
+            if (enabledTrain == null && !isSignalNormal())
+            {
+                int nextSignalIdent = SONextSignal(SignalFunction.NORMAL);
+
+                if (!String.IsNullOrEmpty(dumpfile))
+                {
+                    var sob = new StringBuilder();
+                    sob.AppendFormat("FIND_REQ_NORMAL_SIGNAL : using next normal signal for not enabled none-normal signal, found {0} \n", nextSignalIdent);
+                    File.AppendAllText(dumpfile, sob.ToString());
+                }
+
+                if (nextSignalIdent >= 0)
+                {
+                    SignalObject nextSignal = signalObjects[nextSignalIdent];
+                    acttrain = nextSignal.enabledTrain;
+                    reqTC = TCReference;
+                }
+            }
+
+            // no train found - no route available
+            if (acttrain == null || acttrain.Train.ValidRoute[acttrain.TrainRouteDirectionIndex] == null)
             {
                 if (!String.IsNullOrEmpty(dumpfile))
                 {
                     var sob = new StringBuilder();
-                    sob.Append("FIND_REQ_NORMAL_SIGNAL : not found : signal is not enabled");
+                    sob.Append("FIND_REQ_NORMAL_SIGNAL : not found : signal is not enabled or train has no valid route\n");
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
             }
             else
             {
-                int startIndex = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex].GetRouteIndex(TCNextTC, enabledTrain.Train.PresentPosition[0].RouteListIndex);
+                int startIndex = acttrain.Train.ValidRoute[acttrain.TrainRouteDirectionIndex].GetRouteIndex(reqTC, acttrain.Train.PresentPosition[0].RouteListIndex);
+
+                // this signal is not on trains route
                 if (startIndex < 0)
                 {
                     if (!String.IsNullOrEmpty(dumpfile))
                     {
                         var sob = new StringBuilder();
-                        sob.AppendFormat("FIND_REQ_NORMAL_SIGNAL : not found : cannot find signal {0} at section {1} in path of train {2}\n", thisRef, TCNextTC, enabledTrain.Train.Name);
+                        sob.AppendFormat("FIND_REQ_NORMAL_SIGNAL : not found : cannot find signal {0} at section {1} in path of train {2}\n", thisRef, TCNextTC, acttrain.Train.Name);
                         File.AppendAllText(dumpfile, sob.ToString());
                     }
                 }
                 else
                 {
-                    for (int iRouteIndex = startIndex; iRouteIndex < enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex].Count; iRouteIndex++)
+                    // search through train route until required signal type is found, or until end of route
+                    for (int iRouteIndex = startIndex; iRouteIndex < acttrain.Train.ValidRoute[acttrain.TrainRouteDirectionIndex].Count; iRouteIndex++)
                     {
-                        Train.TCRouteElement thisElement = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex][iRouteIndex];
+                        Train.TCRouteElement thisElement = acttrain.Train.ValidRoute[acttrain.TrainRouteDirectionIndex][iRouteIndex];
                         TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
                         if (thisSection.EndSignals[thisElement.Direction] != null)
                         {
