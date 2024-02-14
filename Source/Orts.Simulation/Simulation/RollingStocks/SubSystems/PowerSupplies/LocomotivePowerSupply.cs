@@ -419,5 +419,4 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             };
         }
     }
-
 }

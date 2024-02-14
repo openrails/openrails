@@ -85,7 +85,6 @@ namespace Orts.Simulation.AIs
 
             // Prerun trains
             PrerunAI(cancellation);
-
             clockTime = Simulator.ClockTime;
             localTime = false;
         }
@@ -440,7 +439,6 @@ namespace Orts.Simulation.AIs
                             break;
                     }
                 }
-
                 // Player train is formed out of other train
                 else if (playerTrainOriginalTrain > 0 && (playerTrainFormedOfType == TTTrain.FormCommand.TerminationFormed || playerTrainFormedOfType == TTTrain.FormCommand.TerminationTriggered))
                 {
@@ -461,7 +459,6 @@ namespace Orts.Simulation.AIs
                         delayedrun = true;
                     }
                 }
-
                 // If player train is detached from other train
                 else if (playerTrainOriginalTrain > 0 && playerTrainFormedOfType == TTTrain.FormCommand.Detached)
                 {
@@ -489,7 +486,6 @@ namespace Orts.Simulation.AIs
                         }
                     }
                 }
-
                 // If player train exists but cannot be placed or has no power 
                 else if (playerTrain != null)
                 {
@@ -873,7 +869,6 @@ namespace Orts.Simulation.AIs
             train.Length = 0.0f;
             foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
             {
-
                 string wagonFolder = Simulator.BasePath + @"\trains\trainset\" + wagon.Folder;
                 string wagonFilePath = wagonFolder + @"\" + wagon.Name + ".wag";
                 ;
@@ -942,7 +937,6 @@ namespace Orts.Simulation.AIs
                 {
                     Trace.WriteLine(new FileLoadException(wagonFilePath, error));
                 }
-
             } // For each rail car
 
             if (train.Cars.Count <= 0)
@@ -1123,10 +1117,8 @@ namespace Orts.Simulation.AIs
 
                 if (actionCompleted) return endPreRun;
             }
-
             // Create in pool
             // Note: train is placed in pool in outbound direction
-
             else if (!String.IsNullOrEmpty(thisTrain.CreateInPool))
             {
                 // Find place in pool
@@ -1156,7 +1148,6 @@ namespace Orts.Simulation.AIs
                     validPosition = thisTrain.PostInit(false); // Post init train but do not activate
                 }
             }
-
 
             if (validPosition)
             {
@@ -1519,6 +1510,5 @@ namespace Orts.Simulation.AIs
             }
             return null;
         }
-
     }
 }

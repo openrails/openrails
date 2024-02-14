@@ -32,7 +32,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             AlwaysOn,
             Manual
         }
-        
+
         // Parameters
         public ModeType Mode { get; protected set; } = ModeType.AlwaysOn;
         public float DelayS { get; protected set; } = 0f;

@@ -35,8 +35,6 @@ namespace Orts.Simulation
     /// Reads file ORTSTurntables.dat and creates the instances of turntables and transfertables
     /// </summary>
     /// 
-
-
     public class TurntableFile
     {
         public TurntableFile(string filePath, string shapePath, List<MovingTable> movingTables, Simulator simulator)
@@ -140,7 +138,6 @@ namespace Orts.Simulation
             foreach (int iQ in Q) outf.Write(iQ);
         }
 
-
         private void SaveVector(BinaryWriter outf, Vector3 vector)
         {
             outf.Write(vector.X);
@@ -148,7 +145,7 @@ namespace Orts.Simulation
             outf.Write(vector.Z);
         }
 
-                /// <summary>
+        /// <summary>
         /// Restores the general variable parameters
         /// Called from within the Simulator class.
         /// </summary>
@@ -306,7 +303,6 @@ namespace Orts.Simulation
             return false;
         }
 
-
         public virtual void StartContinuous (bool isClockwise)
         {
 
@@ -334,7 +330,6 @@ namespace Orts.Simulation
                         relativeCarPosition = Matrix.Multiply(trainCar.WorldPosition.XNAMatrix, invAnimationXNAMatrix);
                         RelativeCarPositions.Add(relativeCarPosition);
                     }
-
                 }
             }
         }
@@ -418,7 +413,6 @@ namespace Orts.Simulation
             outf.Write(TargetY);
         }
 
-
         /// <summary>
         /// Restores the general variable parameters
         /// Called from within the Simulator class.
@@ -471,7 +465,6 @@ namespace Orts.Simulation
                             MyTrackNodesIndex[iMyTrackNodes] = iTrackNode;
                             MyTrVectorSectionsIndex[iMyTrackNodes] = iTrVectorSection;
                             MyTrackNodesOrientation[iMyTrackNodes] = trackNodes[iTrackNode].TrVectorNode.TrVectorSections[iTrVectorSection].Flag1 % 2 == 0 ? true : false;
-
                         }
                     }
                 }
@@ -603,7 +596,6 @@ namespace Orts.Simulation
                         RearConnectedTarget = -1;
                     }
                 }
-
             }
             RemotelyControlled = false;
             return;
@@ -668,14 +660,11 @@ namespace Orts.Simulation
                     train.ControlMode = Train.TRAIN_CONTROL.TURNTABLE;
                 }
                 if (SendNotifications) Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Turntable starting rotation with train"));
-
             }
             Clockwise = isClockwise;
             Counterclockwise = !isClockwise;
             Continuous = true;
         }
-
-
 
         // Computing position of cars relative to center of platform
         public void ComputeTrainPosition(Train train)
@@ -857,7 +846,6 @@ namespace Orts.Simulation
         /// CheckMovingTableAligned: checks if turntable aligned with entering train
         /// </summary>
         /// 
-
         public override bool CheckMovingTableAligned(Train train, bool forward)
         {
             Traveller.TravellerDirection direction;
@@ -874,7 +862,6 @@ namespace Orts.Simulation
         /// <summary>
         /// Check if train position is on turntable track section
         /// </summary>
-
         public bool CheckOnSection(Traveller trainPosition)
         {
             bool onTable = false;
@@ -952,6 +939,5 @@ namespace Orts.Simulation
         {
             BackOnBoard = backOnBoard;
         }
-
     }
 }

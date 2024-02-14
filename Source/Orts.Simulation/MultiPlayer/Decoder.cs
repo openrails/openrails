@@ -90,7 +90,6 @@ namespace Orts.MultiPlayer
 				//msg = ""; //clear the messages
 				return null;
 			}
-			
 		}
 	}
 

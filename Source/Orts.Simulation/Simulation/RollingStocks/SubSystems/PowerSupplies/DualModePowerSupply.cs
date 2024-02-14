@@ -22,7 +22,6 @@ using System.IO;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
-
     public class ScriptedDualModePowerSupply : ScriptedLocomotivePowerSupply
     {
         public MSTSElectricLocomotive DualModeLocomotive => Locomotive as MSTSElectricLocomotive;
@@ -97,7 +96,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             TractionCutOffRelay.Initialize();
         }
 
-
         //================================================================================================//
         /// <summary>
         /// Initialization when simulation starts with moving train
@@ -161,7 +159,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             PantographFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.7f), 0.001f);
             VoltageFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.7f), 0.001f);
-            
+
             PowerOnTimer = new Timer(this);
             PowerOnTimer.Setup(PowerOnDelayS());
 

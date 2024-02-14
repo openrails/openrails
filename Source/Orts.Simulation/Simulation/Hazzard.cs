@@ -165,6 +165,6 @@ namespace Orts.Simulation
             {
                 state = State.Scared;
             }
-       }
+        }
 	}
 }

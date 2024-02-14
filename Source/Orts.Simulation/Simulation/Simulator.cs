@@ -59,7 +59,6 @@ namespace Orts.Simulation
     /// </summary>
     public class Simulator
     {
-
         public static GettextResourceManager Catalog { get; private set; }
         public static Random Random { get; private set; }
         public static double Resolution = 1000000; // resolution for calculation of random value with a pseudo-gaussian distribution
@@ -285,7 +284,6 @@ namespace Orts.Simulation
             DayAmbientLight = (int)Settings.DayAmbientLight;
             EOTPath = BasePath + @"\TRAINS\ORTS_EOT\";
 
-
             string ORfilepath = System.IO.Path.Combine(RoutePath, "OpenRails");
 
             Trace.Write("Loading ");
@@ -383,7 +381,6 @@ namespace Orts.Simulation
             Activity = new ActivityFile(activityPath);
 
             // check for existence of activity file in OpenRails subfolder
-
             activityPath = RoutePath + @"\Activities\Openrails\" + ActivityFileName + ".act";
             if (File.Exists(activityPath))
             {
@@ -619,7 +616,6 @@ namespace Orts.Simulation
             return (playerTrain);
         }
 
-
         /// <summary>
         /// Which locomotive does the activity specified for the player.
         /// </summary>
@@ -772,7 +768,6 @@ namespace Orts.Simulation
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
         }
 
-
         /// <summary>
         /// Convert and elapsed real time into clock time based on simulator
         /// running speed and paused state.
@@ -795,7 +790,6 @@ namespace Orts.Simulation
             ClockTime += elapsedClockSeconds;
 
             // Check if there is a request to switch to another played train
-
             if (TrainSwitcher.ClickedSelectedAsPlayer && !playerSwitchOngoing)
                 StartSwitchPlayerTrain();
             if (playerSwitchOngoing)
@@ -1572,17 +1566,14 @@ namespace Orts.Simulation
                 }
             }
             outf.Write(-1);
-
         }
 
         //================================================================================================//
         //
         // Restore trains
         //
-
         private void RestoreTrains(BinaryReader inf)
         {
-
             Trains = new TrainList(this);
 
             int trainType = inf.ReadInt32();
@@ -1627,7 +1618,6 @@ namespace Orts.Simulation
         /// </summary>
         /// <param name="reqNumber"></param>
         /// <returns></returns>
-
         public TTTrain GetAutoGenTTTrainByNumber(int reqNumber)
         {
             TTTrain returnTrain = null;
@@ -1670,7 +1660,6 @@ namespace Orts.Simulation
             {                   // If length is zero all elements of its calculation are zero. Since dy is a sine and is zero,
                 run = 1f;       // run is therefore 1 since it is cosine of the same angle?  See comments above.
             }
-
 
             // setup matrix values
 
@@ -1744,7 +1733,6 @@ namespace Orts.Simulation
             else
             {
                 // move rest of cars to the new train
-
                 for (int k = i; k < train.Cars.Count; ++k)
                 {
                     TrainCar newcar = train.Cars[k];
@@ -1759,7 +1747,6 @@ namespace Orts.Simulation
                 }
 
                 train.LastCar.CouplerSlackM = 0;
-
             }
 
             // update EOT state
@@ -1784,7 +1771,6 @@ namespace Orts.Simulation
 
             train.activityClearingDistanceM = train.Cars.Count < Train.standardTrainMinCarNo ? Train.shortClearingDistanceM : Train.standardClearingDistanceM;
             train2.activityClearingDistanceM = train2.Cars.Count < Train.standardTrainMinCarNo ? Train.shortClearingDistanceM : Train.standardClearingDistanceM;
-
 
             train.UncoupledFrom = train2;
             train2.UncoupledFrom = train;
@@ -1860,7 +1846,6 @@ namespace Orts.Simulation
                 if (PlayerLocomotive != null && PlayerLocomotive.Train == train) MPManager.Instance().AddUncoupledTrains(train2);
             }
 
-
             train.CheckFreight();
             train.SetDPUnitIDs();
             train2.CheckFreight();
@@ -1927,7 +1912,6 @@ namespace Orts.Simulation
                                    playerTrain.routedForward);
                             TrainSwitcher.SuspendOldPlayer = false;
                         }
-
                     }
                 }
                 else if (selectedAsPlayer.TrainType == Train.TRAINTYPE.AI_INCORPORATED && selectedAsPlayer.IncorporatingTrain.IsPathless)
@@ -1936,7 +1920,6 @@ namespace Orts.Simulation
                     var dyingTrain = PlayerLocomotive.Train;
 
                     // move all cars to former incorporated train
-
                     for (int k = 0; k < dyingTrain.Cars.Count; ++k)
                     {
                         TrainCar newcar = dyingTrain.Cars[k];
@@ -1972,7 +1955,6 @@ namespace Orts.Simulation
                         wagon.MSTSBrakeSystem.Update(5);
 
                     // and now let the former static train die
-
                     dyingTrain.RemoveFromTrack();
                     dyingTrain.ClearDeadlocks();
                     Trains.Remove(dyingTrain);
@@ -2009,15 +1991,12 @@ namespace Orts.Simulation
                         if (PlayerLocomotive != null) MPManager.Instance().AddUncoupledTrains(selectedAsPlayer);
                     }
 
-
                     selectedAsPlayer.CheckFreight();
                     selectedAsPlayer.SetDPUnitIDs(true);
 
                     selectedAsPlayer.Update(0);  // stop the wheels from moving etc
                     TrainSwitcher.PickedTrainFromList = selectedAsPlayer;
                     TrainSwitcher.ClickedTrainFromList = true;
-
-
                 }
                 else
                 {
@@ -2056,7 +2035,6 @@ namespace Orts.Simulation
                         PlayerLocomotive = SetPlayerLocomotive(playerTrain);
                         if (oldPlayerTrain != null) oldPlayerTrain.LeadLocomotiveIndex = -1;
                     }
-
                 }
                 else
                 {
@@ -2070,7 +2048,6 @@ namespace Orts.Simulation
                 {
                     MPManager.Notify((new MSGPlayerTrainSw(MPManager.GetUserName(), PlayerLocomotive.Train, PlayerLocomotive.Train.Number, oldTrainReverseFormation, newTrainReverseFormation)).ToString());
                 }
-
             }
             else
             {
@@ -2124,12 +2101,9 @@ namespace Orts.Simulation
                 Trace.TraceWarning("Train {0} to restart not found", restartWaitingTrain.WaitingTrainToRestart);
         }
 
-
-
         /// <summary>
         /// Derive log-file name from route path and activity name
         /// </summary>
-
         public string DeriveLogFile(string appendix)
         {
             string logfilebase = String.Empty;
@@ -2167,7 +2141,6 @@ namespace Orts.Simulation
         /// <summary>
         /// Class TrainList extends class List<Train> with extra search methods
         /// </summary>
-
         public class TrainList : List<Train>
         {
             private Simulator simulator;
@@ -2175,7 +2148,6 @@ namespace Orts.Simulation
             /// <summary>
             /// basis constructor
             /// </summary>
-
             public TrainList(Simulator in_simulator)
                 : base()
             {
@@ -2185,7 +2157,6 @@ namespace Orts.Simulation
             /// <summary>
             /// Search and return TRAIN by number - any type
             /// </summary>
-
             public Train GetTrainByNumber(int reqNumber)
             {
                 Train returnTrain = null;
@@ -2223,7 +2194,6 @@ namespace Orts.Simulation
             /// <summary>
             /// Search and return Train by name - any type
             /// </summary>
-
             public Train GetTrainByName(string reqName)
             {
                 Train returnTrain = null;
@@ -2240,7 +2210,6 @@ namespace Orts.Simulation
             /// </summary>
             /// <param name="reqNumber"></param>
             /// <returns></returns>
-
             public Boolean CheckTrainNotStartedByNumber(int reqNumber)
             {
                 return simulator.StartReference.Contains(reqNumber);
@@ -2249,7 +2218,6 @@ namespace Orts.Simulation
             /// <summary>
             /// Search and return AITrain by number
             /// </summary>
-
             public AITrain GetAITrainByNumber(int reqNumber)
             {
                 AITrain returnTrain = null;
@@ -2264,7 +2232,6 @@ namespace Orts.Simulation
             /// <summary>
             /// Search and return AITrain by name
             /// </summary>
-
             public AITrain GetAITrainByName(string reqName)
             {
                 AITrain returnTrain = null;
@@ -2275,7 +2242,6 @@ namespace Orts.Simulation
 
                 return (returnTrain);
             }
-
         } // TrainList
 
         internal void OnAllowedSpeedRaised(Train train)

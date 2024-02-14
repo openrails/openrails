@@ -462,5 +462,4 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             SignalEventToPantograph(evt, id);
         }
     }
-
 }

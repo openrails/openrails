@@ -357,7 +357,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             ToZero = toZero;
             StartDecrease();
         }
-        
+
         public void StartDecrease()
         {
             UpdateValue = -1;
@@ -544,7 +544,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             outf.Write(MinimumValue);
             outf.Write(MaximumValue);
             outf.Write(StepSize);
-            outf.Write(CurrentNotch);           
+            outf.Write(CurrentNotch);
         }
 
         public virtual void Restore(BinaryReader inf)
@@ -623,6 +623,5 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             }
             return notch;
         }
-
     }
 }

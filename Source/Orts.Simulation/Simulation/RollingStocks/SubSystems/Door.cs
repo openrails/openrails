@@ -118,9 +118,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
         }
     }
+
     public class Door : ISubSystem<Door>
     {
-        
         // Parameters
         public float OpeningDelayS { get; set; } = 0f;
         public float ClosingDelayS { get; set; } = 0f;
@@ -131,7 +131,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public readonly DoorSide Side;
         protected Timer OpeningTimer;
         protected Timer ClosingTimer;
-        
+
         public DoorState State { get; protected set; } = DoorState.Closed;
         public bool Locked {get; protected set; }
 

@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
@@ -281,6 +280,5 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 EOTEmergencyBrakingOn = toState;
             }
         }
-
     }
 }

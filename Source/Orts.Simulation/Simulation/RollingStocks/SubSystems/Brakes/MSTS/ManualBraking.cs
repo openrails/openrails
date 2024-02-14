@@ -36,7 +36,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public ManualBraking(TrainCar car)
         {
             Car = car;
-
         }
 
         float ManualMaxBrakeValue = 100.0f;
@@ -71,7 +70,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             ManualBraking thiscopy = (ManualBraking)copy;
             ManualMaxApplicationRateValuepS = thiscopy.ManualMaxApplicationRateValuepS;
             ManualReleaseRateValuepS = thiscopy.ManualReleaseRateValuepS;
-
         }
 
         public override void Save(BinaryWriter outf)
@@ -142,7 +140,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     ManualBrakingCurrentFraction = ManualBrakingDesiredFraction;
                 }
-
             }
             else if (ManualBrakingCurrentFraction > ManualBrakingDesiredFraction)
             {
@@ -151,11 +148,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     ManualBrakingCurrentFraction = 0;
                 }
-
             }
 
             BrakeForceFraction = ManualBrakingCurrentFraction / ManualMaxBrakeValue;
-          
+
             // If car is a locomotive or tender, then process engine brake
             if (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender) // Engine brake
             {
@@ -171,7 +167,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
                         EngineBrakeDesiredFraction = EngineBrakeSettingValue * ManualMaxBrakeValue;
                     }
-              
 
                     if (EngineBrakingCurrentFraction < EngineBrakeDesiredFraction)
                     {
@@ -181,7 +176,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         {
                             EngineBrakingCurrentFraction = EngineBrakeDesiredFraction;
                         }
-
                     }
                     else if (EngineBrakingCurrentFraction > EngineBrakeDesiredFraction)
                     {
@@ -231,9 +225,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 Car.BrakeForceN = Car.BrakeShoeForceN * brakeShoeFriction; // In advanced adhesion model brake shoe coefficient varies with speed, in simple model constant force applied as per value in WAG file, will vary with wheel skid.
             }
-
         }
-
 
         // Get the brake BC & BP for EOT conditions
         public override string GetStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
@@ -249,12 +241,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             return s;
         }
 
-
         // This overides the information for each individual wagon in the extended HUD  
         public override string[] GetDebugStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
             // display differently depending upon whether manual brake is present or not
-
             if ((Car as MSTSWagon).ManualBrakePresent && LocomotiveSteamBrakeFitted)
             {
                 return new string[] {
@@ -310,8 +300,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 string.Empty,
                 };
             }
-
-
         }
 
         // Required to override BrakeSystem
@@ -361,7 +349,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             return 0;
         }
 
-
         public override float GetVacResPressurePSI()
         {
             return 0;
@@ -379,6 +366,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override void SetRetainer(RetainerSetting setting)
         {
+
         }
 
         public override float InternalPressure(float realPressure)
@@ -400,7 +388,5 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
 
         }
-
-
     }
 }

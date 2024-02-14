@@ -23,7 +23,6 @@ using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
-
     public class EPBrakeSystem : AirTwinPipe
     {
         bool EPBrakeControlsBrakePipe;
@@ -33,7 +32,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             DebugType = "EP";
         }
-
 
         public override void Update(float elapsedClockSeconds)
         {
@@ -100,7 +98,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     demandedAutoCylPressurePSI = Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * MaxTripleValveCylPressurePSI;
                     HoldingValve = AutoCylPressurePSI <= demandedAutoCylPressurePSI ? ValveState.Lap : ValveState.Release;
                 }
-                
+
                 base.Update(elapsedClockSeconds); // Allow processing of other valid tokens
 
                 if (AutoCylPressurePSI < demandedAutoCylPressurePSI && !Car.WheelBrakeSlideProtectionActive)
@@ -114,7 +112,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     AutoCylPressurePSI += dp;
                 }
             }
-            
         }
 
         public override void Parse(string lowercasetoken, STFReader stf)

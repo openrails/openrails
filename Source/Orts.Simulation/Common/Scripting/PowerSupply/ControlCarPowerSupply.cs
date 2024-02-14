@@ -25,11 +25,5 @@ namespace ORTS.Scripting.Api
     public abstract class ControlCarPowerSupply : LocomotivePowerSupply
     {
 
-
-
-
-
-
     }
-
 }

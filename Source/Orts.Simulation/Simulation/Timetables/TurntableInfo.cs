@@ -107,7 +107,6 @@ namespace Orts.Simulation.Timetables
             return turntables;
         }
 
-
         //================================================================================================//
         /// <summary>
         /// Get filenames of pools to process
@@ -134,4 +133,3 @@ namespace Orts.Simulation.Timetables
         }
     }
 }
-

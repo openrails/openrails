@@ -106,7 +106,6 @@ namespace Orts.MultiPlayer
 
 			while (true)
 			{
-
 				bytesRead = 0;
 
 				try
@@ -198,8 +197,6 @@ namespace Orts.MultiPlayer
             outf.Write(quitTime);
             outf.Write((int)status);
             outf.Write(protect);
-
-
 
 /*
         public TcpClient Client;

@@ -40,7 +40,6 @@ namespace Orts.Simulation.Signalling
             HeadReference = new Dictionary<uint, uint>();
 
             // set flags with length to number of possible SubObjects type
-
             FlagsSet = new bool[SignalShape.SignalSubObj.SignalSubTypes.Count];
             FlagsSetBackfacing = new bool[SignalShape.SignalSubObj.SignalSubTypes.Count];
             for (uint iFlag = 0; iFlag < FlagsSet.Length; iFlag++)
@@ -50,18 +49,14 @@ namespace Orts.Simulation.Signalling
             }
 
             // get filename in Uppercase
-
             SFileName = Path.GetFileName(SignalWorldItem.FileName).ToUpperInvariant();
 
             // search defined shapes in SIGCFG to find signal definition
-
             if (sigcfg.SignalShapes.TryGetValue(SFileName, out thisCFGShape))
             {
-
                 HeadsSet = new bool[thisCFGShape.SignalSubObjs.Count];
 
                 // loop through all heads and check SubObj flag per bit to check if head is set
-
                 uint iMask = 1;
 
                 for (int iHead = 0; iHead < thisCFGShape.SignalSubObjs.Count; iHead++)
@@ -71,9 +66,7 @@ namespace Orts.Simulation.Signalling
                     SignalShape.SignalSubObj thisSubObjs = thisCFGShape.SignalSubObjs[iHead];
                     if (headSet != 0)
                     {
-
                         // set head, and if head is flag, also set flag
-
                         HeadsSet[iHead] = true;
 
                         if (thisSubObjs.BackFacing)
@@ -93,7 +86,6 @@ namespace Orts.Simulation.Signalling
                 }
 
                 // get TDB and head reference from World file
-
                 foreach (SignalUnit signalUnitInfo in SignalWorldItem.SignalUnits.Units)
                 {
                     uint TrItemRef = signalUnitInfo.TrItem;

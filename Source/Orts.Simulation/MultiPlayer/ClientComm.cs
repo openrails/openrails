@@ -73,12 +73,10 @@ namespace Orts.MultiPlayer
 			listenThread = new Thread(new ParameterizedThreadStart(this.Receive));
 			listenThread.Name = "Multiplayer Client-Server";
 			listenThread.Start(client);
-
 		}
 
 		public void Receive(object client)
 		{
-
 			TcpClient tcpClient = (TcpClient)client;
 			NetworkStream clientStream = tcpClient.GetStream();
 
@@ -147,7 +145,7 @@ namespace Orts.MultiPlayer
 				}
 			}
 			catch (Exception) { }
-			
+
 			//no matter what, let player gain back the control of the player train
 			if (MPManager.Simulator.PlayerLocomotive != null && MPManager.Simulator.PlayerLocomotive.Train != null)
 			{
@@ -165,7 +163,6 @@ namespace Orts.MultiPlayer
 		private object lockObj = new object();
 		public void Send(string msg)
 		{
-
 			try
 			{
 				NetworkStream clientStream = client.GetStream();
@@ -183,6 +180,5 @@ namespace Orts.MultiPlayer
 			{
 			}
 		}
-
 	}
 }

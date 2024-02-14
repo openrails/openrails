@@ -382,7 +382,6 @@ namespace Orts.Simulation.Timetables
                     ColInfo[iColumn] = columnType.comment;
                     if (firstCommentColumn < 0) firstCommentColumn = iColumn;
                 }
-
                 else if (columnDef.Substring(0, 1).Equals("#"))
                 {
                     // Check for invalid command definition
@@ -404,7 +403,6 @@ namespace Orts.Simulation.Timetables
 
             for (int iRow = 1; iRow <= fileContents.Strings.Count - 1; iRow++)
             {
-
                 string rowDef = fileContents.Strings[iRow][0].ToLower();
 
                 string[] rowCommands = null;
@@ -1120,7 +1118,6 @@ namespace Orts.Simulation.Timetables
         /// </summary>
         public bool PreProcessRoutes(CancellationToken cancellation)
         {
-
             // Extract names
             List<string> routeNames = new List<string>();
 
@@ -3202,7 +3199,6 @@ namespace Orts.Simulation.Timetables
                 }
                 else
                 {
-
                     validArrTime = TimeSpan.TryParse(arrTime, out atime);
                     if (validArrTime)
                     {
@@ -3492,7 +3488,6 @@ namespace Orts.Simulation.Timetables
 
                 return validStop;
             } // End buildStopInfo
-
         } // End class stopInfo
 
         //================================================================================================//
@@ -3939,9 +3934,7 @@ namespace Orts.Simulation.Timetables
                         break;
                 }
             }
-
         } // End class DisposeInfo
-
     } // End class TimetableInfo
 
     //================================================================================================//
@@ -4050,7 +4043,6 @@ namespace Orts.Simulation.Timetables
                     }
                 }
             }
-
         } // End class TTTrainComQualifiers
     } // End class TTTrainCommands
 }

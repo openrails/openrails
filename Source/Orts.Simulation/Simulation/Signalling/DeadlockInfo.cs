@@ -284,7 +284,6 @@ namespace Orts.Simulation.Signalling
             DeadlockInfo newDeadlockInfo = null;
 
             // if either end is within a deadlock, try if end of deadlock matches train path
-
             if (startSection.DeadlockBoundaries != null && startSection.DeadlockBoundaries.Count > 0)
             {
                 int newStartSectionRouteIndex = -1;
@@ -307,7 +306,6 @@ namespace Orts.Simulation.Signalling
                 }
 
                 // no match found - train path is not on existing deadlock - do not accept
-
                 if (newStartSectionRouteIndex < 0)
                 {
                     return (null);
@@ -345,7 +343,6 @@ namespace Orts.Simulation.Signalling
                 }
 
                 // no match found - train path is not on existing deadlock - do not accept
-
                 if (newEndSectionRouteIndex < 0)
                 {
                     return (null);
@@ -362,7 +359,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // if no deadlock yet found
-
             if (newDeadlockInfo == null)
             {
                 // if both references are equal, use existing information
@@ -370,7 +366,6 @@ namespace Orts.Simulation.Signalling
                 {
                     newDeadlockInfo = signalRef.DeadlockInfoList[startSectionDLReference];
                 }
-
                 // if both references are null, check for existing references along route
                 else if (startSectionDLReference < 0 && endSectionDLReference < 0)
                 {
@@ -398,7 +393,6 @@ namespace Orts.Simulation.Signalling
         public int[] AddPath(Train.TCSubpathRoute thisPath, int startSectionIndex)
         {
             // check if equal to existing path
-
             for (int iIndex = 0; iIndex <= AvailablePathList.Count - 1; iIndex++)
             {
                 DeadlockPathInfo existPathInfo = AvailablePathList[iIndex];
@@ -425,7 +419,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // new path
-
             int newPathIndex = AvailablePathList.Count;
             DeadlockPathInfo newPathInfo = new DeadlockPathInfo(thisPath, newPathIndex);
             AvailablePathList.Add(newPathInfo);
@@ -458,7 +451,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // check for reverse path (through existing paths only)
-
             for (int iPath = 0; iPath <= AvailablePathList.Count - 2; iPath++)
             {
                 if (thisPath.EqualsReversePath(AvailablePathList[iPath].Path))
@@ -479,7 +471,6 @@ namespace Orts.Simulation.Signalling
         public int[] AddPath(Train.TCSubpathRoute thisPath, int startSectionIndex, string thisName, string thisGroupName)
         {
             // check if equal to existing path and has same name
-
             for (int iIndex = 0; iIndex <= AvailablePathList.Count - 1; iIndex++)
             {
                 DeadlockPathInfo existPathInfo = AvailablePathList[iIndex];
@@ -521,7 +512,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // new path
-
             int newPathIndex = AvailablePathList.Count;
             DeadlockPathInfo newPathInfo = new DeadlockPathInfo(thisPath, newPathIndex);
             newPathInfo.Name = String.Copy(thisName);
@@ -548,7 +538,6 @@ namespace Orts.Simulation.Signalling
             SetIntermediateReferences(thisPath, newPathIndex);
 
             // check for reverse path (through existing paths only)
-
             for (int iPath = 0; iPath <= AvailablePathList.Count - 2; iPath++)
             {
                 if (thisPath.EqualsReversePath(AvailablePathList[iPath].Path))
@@ -740,7 +729,6 @@ namespace Orts.Simulation.Signalling
             }
 #endif
             // get inverse path indices to compare with this train's paths
-
             List<int> inverseUsedRoutes = new List<int>();
             List<int> inverseCommonRoutes = new List<int>();
             List<int> inverseSingleRoutes = new List<int>();
@@ -799,7 +787,6 @@ namespace Orts.Simulation.Signalling
                 }
 
                 // check if any path remains if all required single paths are excluded
-
                 if (inverseSingleRoutes.Count >= 1) // there are single paths
                 {
                     foreach (int iPath in freePaths)
@@ -821,7 +808,6 @@ namespace Orts.Simulation.Signalling
                 }
 
                 // no path available without conflict - but if deadlock also awaited on this end, proceed anyway (otherwise everything gets stuck)
-
                 if (startSection.DeadlockAwaited.Count >= 1)
                 {
 #if DEBUG_DEADLOCK
@@ -845,7 +831,6 @@ namespace Orts.Simulation.Signalling
 #endif
                 return (useablePaths);
             }
-
             // no deadlock awaited at other end : check if there is any single path set, if so exclude those to avoid conflict
             else
             {
@@ -853,7 +838,6 @@ namespace Orts.Simulation.Signalling
                 File.AppendAllText(@"C:\Temp\deadlock.txt", "\n ++ No Deadlock Awaited\n");
 #endif
                 // check if any path remains if all required single paths are excluded
-
                 if (inverseSingleRoutes.Count >= 1) // there are single paths
                 {
                     foreach (int iPath in freePaths)
@@ -875,7 +859,6 @@ namespace Orts.Simulation.Signalling
                 }
 
                 // no single path conflicts - so all free paths are available
-
 #if DEBUG_DEADLOCK
                 File.AppendAllText(@"C:\Temp\deadlock.txt", "\n\n ----- No single paths conflicts - all paths available : \n");
                 foreach (int iRoute in freePaths)
@@ -923,7 +906,6 @@ namespace Orts.Simulation.Signalling
                 Train.TCSubpathRoute altPath = altPathInfo.Path;
 
                 // check all sections upto and including last used index, but do not check first junction section
-
                 bool pathAvail = true;
                 for (int iElement = 1; iElement <= altPathInfo.LastUsefullSectionIndex; iElement++)
                 {
@@ -973,7 +955,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // check if own path is also main path - if so, do not check it separately
-
             int indexTrainAndSubroute = GetTrainAndSubpathIndex(thisTrain.Number, thisTrain.TCRoute.activeSubpath);
             int ownPathIndex = TrainOwnPath[indexTrainAndSubroute];
             defaultPath = ownPathIndex;
@@ -987,7 +968,6 @@ namespace Orts.Simulation.Signalling
             Dictionary<int, bool> trainFitInfo = TrainLengthFit[indexTrainAndSubroute];
 
             // loop through all available paths
-
             for (int iPath = 0; iPath <= availableRoutes.Count - 1; iPath++)
             {
                 int pathIndex = availableRoutes[iPath];
@@ -1025,7 +1005,6 @@ namespace Orts.Simulation.Signalling
                         }
                     }
                 }
-
                 // check for others
                 else
                 {
@@ -1177,7 +1156,6 @@ namespace Orts.Simulation.Signalling
             Train.TCSubpathRoute partPath = null;  // retreived route of train through deadlock area
 
             // search if trains path has valid equivalent
-
             if (elementRouteIndex <= 0 || elementRouteIndex >= subpath.Count)
             {
                 Trace.TraceWarning("Invalid route element in SetTrainDetails : value =  {0}, max. is {1}", elementRouteIndex, subpath.Count);
@@ -1201,7 +1179,6 @@ namespace Orts.Simulation.Signalling
 
             // matchingPath[0] == 2 : path runs through area but has no match - insert path for this train only (no inverse inserted)
             // matchingPath[1] = end section index in route
-
             if (matchingPath[0] == 2)
             {
                 partPath = new Train.TCSubpathRoute(subpath, elementRouteIndex, matchingPath[1]);
@@ -1218,16 +1195,13 @@ namespace Orts.Simulation.Signalling
                 thisPathInfo.AllowedTrains.Add(trainSubpathIndex);
                 TrainOwnPath.Add(trainSubpathIndex, pathReference[0]);
             }
-
             // matchingPath[0] == 3 : path runs through area but no valid path available or possible - remove train index as train has no alternative paths at this location
             else if (matchingPath[0] == 3)
             {
                 RemoveTrainAndSubpathIndex(trainNumber, subpathRef);
                 return (matchingPath[1]);
             }
-
             // otherwise matchingPath [1] is matching path - add track details if not yet set
-
             else
             {
                 DeadlockPathInfo thisPathInfo = AvailablePathList[matchingPath[1]];
@@ -1239,7 +1213,6 @@ namespace Orts.Simulation.Signalling
             }
 
             // set cross-references to allowed track entries for easy reference
-
             List<int> availPathList;
 
             if (TrainReferences.ContainsKey(trainSubpathIndex))
@@ -1280,12 +1253,10 @@ namespace Orts.Simulation.Signalling
             }
 
             // get end section from first valid path
-
             partPath = new Train.TCSubpathRoute(AvailablePathList[availPathList[0]].Path);
             int lastSection = partPath[partPath.Count - 1].TCSectionIndex;
             int returnIndex = subpath.GetRouteIndex(lastSection, elementRouteIndex);
             return (returnIndex);
-
         }
 
         /// <summary>
@@ -1308,7 +1279,6 @@ namespace Orts.Simulation.Signalling
                 List<int> availablePaths = PathReferences[startSectionIndex];
 
                 // search through paths from this section
-
                 for (int iPath = 0; iPath <= availablePaths.Count - 1; iPath++)
                 {
                     // extract path, get indices in train path
@@ -1334,7 +1304,6 @@ namespace Orts.Simulation.Signalling
                             foundMatchingEndRouteIndex = endSectionRouteIndex;
                         }
                     }
-
                     // no matching end index - check train direction
                     else
                     {
@@ -1362,7 +1331,6 @@ namespace Orts.Simulation.Signalling
                     }
                 }
             }
-
             // no paths available from start section, check if end section of paths matches start section
             else
             {

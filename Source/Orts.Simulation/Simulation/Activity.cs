@@ -375,7 +375,6 @@ namespace Orts.Simulation
             outf.Write(IsActivityResumed);
 
             // write log details
-
             outf.Write(StationStopLogActive);
             if (StationStopLogActive)
             {
@@ -634,7 +633,6 @@ namespace Orts.Simulation
             restrSpeedPost.WorldPosition.XNAMatrix.M43 *= -1;
         }
 
-
         /// <summary>
         /// Insert a reference to a new TrItem to the already existing TrItemRefs basing on its offset within the track node.
         /// </summary>
@@ -843,7 +841,6 @@ namespace Orts.Simulation
 
         public override void NotifyEvent(ActivityEventType EventType)
         {
-
             MyPlayerTrain = Simulator.OriginalPlayerTrain;
             // The train is stopped.
             if (EventType == ActivityEventType.TrainStop)
@@ -919,12 +916,10 @@ namespace Orts.Simulation
                                 BoardingEndS -= sinceActArriveS;
                                 double SchDepartS = SchDepart.Subtract(new DateTime()).TotalSeconds;
                                 BoardingEndS = CompareTimes.LatestTime((int)SchDepartS, (int)BoardingEndS);
-
                             }
                         }
                     if  (MyPlayerTrain.NextSignalObject[0] != null)
                            distanceToNextSignal =  MyPlayerTrain.NextSignalObject[0].DistanceTo(MyPlayerTrain.FrontTDBTraveller);
-
                 }
             }
             else if (EventType == ActivityEventType.TrainStart)
@@ -1014,7 +1009,6 @@ namespace Orts.Simulation
 
                         // if last task, show closure window
                         // also set times in logfile
-
                         if (NextTask == null)
                         {
                             if (LogStationStops)
@@ -1228,7 +1222,6 @@ namespace Orts.Simulation
             }
 
             // Activity sound management
-
             if (this.ParsedObject.ORTSActSoundFile != null || (this.ParsedObject.Outcomes != null && this.ParsedObject.Outcomes.ActivitySound != null))
             {
                 if (activity.triggeredEventWrapper == null) activity.triggeredEventWrapper = this;
@@ -1551,7 +1544,6 @@ namespace Orts.Simulation
 
     public class EventCategoryTimeWrapper : EventWrapper
     {
-
         public EventCategoryTimeWrapper(Orts.Formats.Msts.Event @event, Simulator simulator)
             : base(@event, simulator)
         {

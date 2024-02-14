@@ -94,7 +94,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             CircuitBreaker.Initialize();
         }
 
-
         //================================================================================================//
         /// <summary>
         /// Initialization when simulation starts with moving train
@@ -161,7 +160,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             PantographFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.7f), 0.001f);
             VoltageFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.7f), 0.001f);
-            
+
             PowerOnTimer = new Timer(this);
             PowerOnTimer.Setup(PowerOnDelayS());
 

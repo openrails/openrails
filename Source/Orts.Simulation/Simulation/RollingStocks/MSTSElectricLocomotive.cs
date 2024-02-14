@@ -46,7 +46,6 @@ namespace Orts.Simulation.RollingStocks
     ///   SIMULATION BEHAVIOUR
     ///////////////////////////////////////////////////
 
-
     /// <summary>
     /// Adds pantograph control to the basic LocomotiveSimulator functionality
     /// </summary>
@@ -113,7 +112,6 @@ namespace Orts.Simulation.RollingStocks
             base.Initialize();
 
             // If DrvWheelWeight is not in ENG file, then calculate drivewheel weight freom FoA
-
             if (DrvWheelWeightKg == 0) // if DrvWheelWeightKg not in ENG file.
             {
                 DrvWheelWeightKg = MassKG; // set Drive wheel weight to total wagon mass if not in ENG file
@@ -156,18 +154,13 @@ namespace Orts.Simulation.RollingStocks
         protected override void UpdateCarSteamHeat(float elapsedClockSeconds)
         {
             // Update Steam Heating System
-
-            // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
-
-
+            // TODO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
             if (IsSteamHeatFitted && this.IsLeadLocomotive())  // Only Update steam heating if train and locomotive fitted with steam heating
             {
-
                 // Update water controller for steam boiler heating tank
                     WaterController.Update(elapsedClockSeconds);
                     if (WaterController.UpdateValue > 0.0)
                         Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeatBoilerWater, CabSetting.Increase, WaterController.CurrentValue * 100);
-
 
                 CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
 
@@ -192,11 +185,8 @@ namespace Orts.Simulation.RollingStocks
                 {
                     Train.CarSteamHeatOn = false; // turn on steam effects on wagons
                 }
-
-
             }
         }
-
 
         /// <summary>
         /// This function updates periodically the locomotive's sound variables.
@@ -429,7 +419,6 @@ namespace Orts.Simulation.RollingStocks
         /// Sets step size for the fuel controller basing on pickup feed rate and engine fuel capacity
         /// </summary>
         /// <param name="type">Pickup</param>
-
         public override void SetStepSize(PickupObj matchPickup)
         {
             if (MaximumSteamHeatBoilerWaterTankCapacityL != 0)
@@ -458,6 +447,5 @@ namespace Orts.Simulation.RollingStocks
             }
             return 0f;
         }
-
     } // class ElectricLocomotive
 }

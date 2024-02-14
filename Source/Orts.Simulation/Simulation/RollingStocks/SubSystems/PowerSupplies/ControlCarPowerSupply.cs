@@ -41,19 +41,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
   //          TractionCutOffRelay = new ScriptedTractionCutOffRelay(this);
         }
 
-
         public void Copy(ScriptedControlCarPowerSupply other)
         {
             base.Copy(other);
-
-
         }
 
         public override void Initialize()
         {
             base.Initialize();
-
-
         }
 
         //================================================================================================//
@@ -63,8 +58,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public override void InitializeMoving()
         {
             base.InitializeMoving();
-
-
         }
 
         public override void Update(float elapsedClockSeconds)
@@ -73,6 +66,5 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             // Script?.Update(elapsedClockSeconds);
         }
-
     }
 }

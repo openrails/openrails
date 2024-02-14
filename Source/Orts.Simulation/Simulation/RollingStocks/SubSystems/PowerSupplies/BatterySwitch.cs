@@ -335,7 +335,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             QuickPowerOn = true;
                             QuickPowerOff = false;
                             break;
-
                     }
                     break;
                 case PowerSupplyEvent.QuickPowerOff:

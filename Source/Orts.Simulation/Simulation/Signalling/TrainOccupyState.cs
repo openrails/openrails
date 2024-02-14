@@ -22,7 +22,6 @@ namespace Orts.Simulation.Signalling
 {
     public class TrainOccupyState : Dictionary<Train.TrainRouted, int>
     {
-
         /// <summary>
         /// Check if it contains specified train
         /// Routed
@@ -71,7 +70,6 @@ namespace Orts.Simulation.Signalling
             {
                 returnValue.Add(false, 0);
             }
-
             else
             {
                 int trainDirection = 0;

@@ -138,7 +138,6 @@ namespace Orts.Simulation.AIs
             if (!(ThisTrain == ThisTrain.Simulator.OriginalPlayerTrain && (ThisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN ||
                 ThisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || ThisTrain.TrainType == Train.TRAINTYPE.PLAYER || ThisTrain.TrainType == Train.TRAINTYPE.AI)))
             {
-
                 if (ThisTrain is AITrain && ((aiTrain.MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION && aiTrain.nextActionInfo != null &&
                 aiTrain.nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.AUX_ACTION && aiTrain.nextActionInfo is AuxActionWPItem)
                 || (aiTrain.AuxActionsContain.SpecAuxActions.Count > 0 &&
@@ -409,7 +408,6 @@ namespace Orts.Simulation.AIs
             }
             set
             {
-
             }
         }
 
@@ -969,13 +967,11 @@ namespace Orts.Simulation.AIs
             int actionRouteIndex = thisTrain.ValidRoute[0].GetRouteIndex(TCSectionIndex, actionIndex0);
             float activateDistanceTravelledM = thisTrain.PresentPosition[0].DistanceTravelledM + thisTrain.ValidRoute[0].GetDistanceAlongRoute(actionIndex0, leftInSectionM, actionRouteIndex, this.RequiredDistance, thisTrain.AITrainDirectionForward, thisTrain.signalRef);
 
-
             // If reschedule, use actual speed
             float triggerDistanceM = TriggerDistance;
 
             if (thisTrain.TrainType != Train.TRAINTYPE.AI_PLAYERDRIVEN)
             {
-
                 if (thisTrain is AITrain)
                 {
                     AITrain aiTrain = thisTrain as AITrain;
@@ -1037,7 +1033,6 @@ namespace Orts.Simulation.AIs
             }
         }
 
-
         public override List<KeyValuePair<System.Type, AuxActionRef>> GetCallFunction()
         {
             List<KeyValuePair<System.Type, AuxActionRef>> listInfo = new List<KeyValuePair<System.Type, AuxActionRef>>();
@@ -1047,8 +1042,8 @@ namespace Orts.Simulation.AIs
             listInfo.Add(info);
             return listInfo;
         }
-
     }
+
     //================================================================================================//
     /// <summary>
     /// AIActionHornRef
@@ -1189,7 +1184,6 @@ namespace Orts.Simulation.AIs
             distancesM[1] = this.RequiredDistance + thisTrain.Length;
             return distancesM;
         }
-
     }
 
     //================================================================================================//
@@ -1324,9 +1318,7 @@ namespace Orts.Simulation.AIs
             distancesM[1] = 0f;
             return distancesM;
         }
-
     }
-
 
     //================================================================================================//
     /// <summary>
@@ -1846,7 +1838,6 @@ namespace Orts.Simulation.AIs
                 currentMvmtState = movementState;
             return movementState;
         }
-
     }
 
     //================================================================================================//
@@ -1864,7 +1855,6 @@ namespace Orts.Simulation.AIs
         private int NextStepTimeS { get; set; }
         [JsonIgnore]
         private IEnumerator<int> Execution { get; set; }
-
 
         //================================================================================================//
         /// <summary>
@@ -1893,7 +1883,6 @@ namespace Orts.Simulation.AIs
             if (ActionRef == null)
                 return false;
             float[] distancesM = ((AIAuxActionsRef)ActionRef).CalculateDistancesToNextAction(thisTrain, SpeedMpS, reschedule);
-
 
             if (RequiredDistance < thisTrain.DistanceTravelledM) // trigger point
             {
@@ -2008,7 +1997,6 @@ namespace Orts.Simulation.AIs
 
             return movementState;
         }
-
     }
 
     //================================================================================================//
@@ -2482,7 +2470,6 @@ namespace Orts.Simulation.AIs
             }
             return movementState;
         }
-
     }
 
     //================================================================================================//
@@ -2606,7 +2593,6 @@ namespace Orts.Simulation.AIs
 #endif
             if (ActualDepart >= presentTime)
             {
-
                 return movementState;
             }
             if (locked && SignalReferenced != null)

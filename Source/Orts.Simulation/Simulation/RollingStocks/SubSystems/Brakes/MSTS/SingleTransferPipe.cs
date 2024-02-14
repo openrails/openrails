@@ -25,7 +25,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
     public class SingleTransferPipe : AirSinglePipe
     {
-
         readonly static float OneAtmospherePSI = Bar.ToPSI(1);
 
         public SingleTransferPipe(TrainCar car)
@@ -101,48 +100,44 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     s += $" {Simulator.Catalog.GetString("Handbrake")} {HandbrakePercent:F0}%";
                 return s;
             }
-            
         }
 
         // This overides the information for each individual wagon in the extended HUD  
-       public override string[] GetDebugStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
+        public override string[] GetDebugStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
             // display differently depending upon whether vacuum or air braked system
             if (Car.CarBrakeSystemType == "vacuum_piped")
-            {       
-
+            {
                 return new string[] {
-                DebugType,
-                string.Empty,
-                FormatStrings.FormatPressure(Vac.FromPress(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, true),
-                string.Empty,
-                string.Empty, // Spacer because the state above needs 2 columns.
-                HandbrakePercent > 0 ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
-                FrontBrakeHoseConnected ? "I" : "T",
-                string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
+                    DebugType,
+                    string.Empty,
+                    FormatStrings.FormatPressure(Vac.FromPress(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, true),
+                    string.Empty,
+                    string.Empty, // Spacer because the state above needs 2 columns.
+                    HandbrakePercent > 0 ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
+                    FrontBrakeHoseConnected ? "I" : "T",
+                    string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
                 };
             }
             else  // air braked by default
             {
-
-            return new string[] {
-                DebugType,
-                string.Empty,
-                FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true),
-                string.Empty,
-                string.Empty,
-                string.Empty,
-                string.Empty,
-                string.Empty,
-                string.Empty,
-                string.Empty, // Spacer because the state above needs 2 columns.
-                (Car as MSTSWagon).HandBrakePresent ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
-                FrontBrakeHoseConnected ? "I" : "T",
-                string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
-                BleedOffValveOpen ? Simulator.Catalog.GetString("Open") : string.Empty,
+                return new string[] {
+                    DebugType,
+                    string.Empty,
+                    FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true),
+                    string.Empty,
+                    string.Empty,
+                    string.Empty,
+                    string.Empty,
+                    string.Empty,
+                    string.Empty,
+                    string.Empty, // Spacer because the state above needs 2 columns.
+                    (Car as MSTSWagon).HandBrakePresent ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
+                    FrontBrakeHoseConnected ? "I" : "T",
+                    string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
+                    BleedOffValveOpen ? Simulator.Catalog.GetString("Open") : string.Empty,
                 };
-
-           }
+            }
         }
 
         public override float GetCylPressurePSI()
@@ -176,7 +171,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 Car.BrakeForceN = (Car.MaxHandbrakeForceN * HandbrakePercent / 100) * brakeShoeFriction; // In advanced adhesion model brake shoe coefficient varies with speed, in simple model constant force applied as per value in WAG file, will vary with wheel skid.
             }
-        
         }
     }
 }

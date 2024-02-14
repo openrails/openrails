@@ -171,9 +171,6 @@ namespace Orts.Simulation.RollingStocks
                     });
                 }
             } // class WAGFile.Engine
-
         }// class WAGFile
-
-
     }
 }
