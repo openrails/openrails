@@ -2485,9 +2485,6 @@ be about 1 minute for every 12 cars. If the *Brake Pipe Charging Rate*
 will be disabled and will also disable some but not all of the other new
 brake features.
 
-Brake system charging time depends on the train length as it should, but
-at the moment there is no modeling of main reservoirs and compressors.
-
 For EP brakes, two variants are available:
 
 - If ``Wagon(ORTSEPBrakeControlsBrakePipe`` is set to 0 (default situation),
@@ -3195,6 +3192,9 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
    single: ORTSBrakePipeTimeFactor
    single: ORTSEPBrakeControlsBrakePipe
    single: ORTSCompressorIsMuControlled
+   single: Supply_Reservoir
+   single: ORTSSupplyResCapacity
+   single: ORTSSupplyResChargingRate
 
 - ``Wagon(BrakePipeVolume`` -- Volume of car's brake pipe in cubic feet
   (default .5).
@@ -3229,7 +3229,9 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   during release. Remains active until aux res has recharged.
 - ``Wagon(ORTSMainResPipeAuxResCharging`` -- Boolean value that indicates,
   for twin pipe systems, if the main reservoir pipe is used for charging the auxiliary
-  reservoirs. If set to false, the main reservoir pipe will not be used
+  reservoirs. Alternately, if equipped with a supply reservoir, the supply reservoir
+  will charge from the main reservoir pipe instead. If set to false, the main reservoir
+  pipe will not be used (default: true).
   by the brake system.
 - ``Wagon(ORTSEPBrakeControlsBrakePipe`` -- Set to 1 for UIC EP brake: brake pipe
   pressure is electrically controlled at every fitted car.
@@ -3301,6 +3303,16 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 - ``Wagon(ORTSCylinderSpringPressure`` -- Below the specified pressure, no
   brake force will be developed, simulating the pressure required to
   overcome the brake cylinder return spring (default 0).
+- ``BrakeEquipmentType(Supply_Reservoir`` -- Adds a supply reservoir to the
+  loco or wagon, which will constantly charge to the brake pipe pressure
+  or MR pipe (if equipped) pressure. If a supply reservoir is equipped,
+  supply res air will be used to pressurize the brake cylinders thru the relay
+  valve. This allows for a small, fast charging auxiliary reservoir to
+  be used with large brake cylinders.
+- ``Wagon(ORTSSupplyResCapacity`` -- Volume of the supply reservoir. Larger
+  volumes relative to the brake cylinder volume allow for more brake applications.
+- ``Wagon(ORTSSupplyResChargingRate`` -- The rate at which the pressure of the
+  supply reservoir will increase when charging from the brake pipe or MR pipe.
 - ``Engine(ORTSMainResChargingRate`` -- Rate of main reservoir pressure change
   in psi per second when the compressor is on (default .4).
 - ``Engine(ORTSEngineBrakeReleaseRate`` -- Rate of engine brake pressure

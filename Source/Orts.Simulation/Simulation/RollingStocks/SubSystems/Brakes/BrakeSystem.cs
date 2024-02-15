@@ -29,7 +29,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         EmergencyReservoir,
         MainPipe,
         BrakePipe,
-        BrakeCylinder
+        BrakeCylinder,
+        SupplyReservoir
     }
 
     public abstract class BrakeSystem

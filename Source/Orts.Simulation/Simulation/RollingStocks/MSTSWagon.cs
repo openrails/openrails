@@ -283,6 +283,11 @@ namespace Orts.Simulation.RollingStocks
         public bool AuxiliaryReservoirPresent;
 
         /// <summary>
+        /// Indicates whether an additional supply reservoir is present on the wagon or not.
+        /// </summary>
+        public bool SupplyReservoirPresent;
+
+        /// <summary>
         /// Active locomotive for a control trailer
         /// </summary>
         public MSTSLocomotive ControlActiveLocomotive { get; private set; }
@@ -1305,6 +1310,9 @@ namespace Orts.Simulation.RollingStocks
                             case "manual_brake": ManualBrakePresent = true; break;
                             case "retainer_3_position": RetainerPositions = 3; break;
                             case "retainer_4_position": RetainerPositions = 4; break;
+                            case "supply_reservoir":
+                                SupplyReservoirPresent = true;
+                                break;
                         }
                     }
                     break;
@@ -1654,6 +1662,7 @@ namespace Orts.Simulation.RollingStocks
             HandBrakePresent = copy.HandBrakePresent;
             ManualBrakePresent = copy.ManualBrakePresent;
             AuxiliaryReservoirPresent = copy.AuxiliaryReservoirPresent;
+            SupplyReservoirPresent = copy.SupplyReservoirPresent;
             RetainerPositions = copy.RetainerPositions;
             InteriorShapeFileName = copy.InteriorShapeFileName;
             InteriorSoundFileName = copy.InteriorSoundFileName;
