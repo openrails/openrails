@@ -338,7 +338,8 @@ namespace Orts.Simulation.RollingStocks
             { BrakeSystemComponent.EmergencyReservoir, PressureUnit.None },
             { BrakeSystemComponent.MainPipe, PressureUnit.None },
             { BrakeSystemComponent.BrakePipe, PressureUnit.None },
-            { BrakeSystemComponent.BrakeCylinder, PressureUnit.None }
+            { BrakeSystemComponent.BrakeCylinder, PressureUnit.None },
+            { BrakeSystemComponent.SupplyReservoir, PressureUnit.None }
         };
 
         protected float OdometerResetPositionM = 0;
@@ -732,6 +733,7 @@ namespace Orts.Simulation.RollingStocks
                     BrakeSystemPressureUnits[BrakeSystemComponent.MainPipe] = BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir]; // Main Pipe is supplied by Main Reservoir
                     BrakeSystemPressureUnits[BrakeSystemComponent.AuxiliaryReservoir] = BrakeSystemPressureUnits[BrakeSystemComponent.BrakePipe]; // Auxiliary Reservoir is supplied by Brake Pipe (in single pipe brakes)
                     BrakeSystemPressureUnits[BrakeSystemComponent.EmergencyReservoir] = BrakeSystemPressureUnits[BrakeSystemComponent.BrakePipe]; // Emergency Reservoir is supplied by Brake Pipe
+                    BrakeSystemPressureUnits[BrakeSystemComponent.SupplyReservoir] = BrakeSystemPressureUnits[BrakeSystemComponent.BrakePipe]; // Supply Reservoir is supplied by Brake Pipe and MR Pipe
 
                     foreach (BrakeSystemComponent component in BrakeSystemPressureUnits.Keys.ToList())
                     {
