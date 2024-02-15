@@ -2606,11 +2606,6 @@ namespace Orts.Simulation.RollingStocks
             // The duration time is reduced with speed to reduce the steam trail behind the locomotive when running at speed.
             // Any of the steam effects can be disabled by not defining them in the ENG file, and thus they will not be displayed in the viewer.
 
-
-            float[] ExhaustnormalisedCrankAngleRad = new float[3];
-            float[] ExhaustexhaustCrankAngleRad = new float[3];
-
-
             // Cylinder steam cock effects
             if (CylinderAdvancedSteamEffects) // For advanced steam effects process each cylinder individually -
                                               // - all ENG files will need to be changed.
@@ -2626,7 +2621,10 @@ namespace Orts.Simulation.RollingStocks
                     TotalNumberCyindersEng1 = SteamEngines[0].NumberCylinders;
                 }
 
-          // Engine #1
+                float[] ExhaustnormalisedCrankAngleRad = new float[TotalNumberCyindersEng1];
+                float[] ExhaustexhaustCrankAngleRad = new float[TotalNumberCyindersEng1];
+
+                // Engine #1
                 for (int i = 0; i < TotalNumberCyindersEng1; i++)
                 {
                     var crankAngleDiffRad = WheelCrankAngleDiffRad[i];
