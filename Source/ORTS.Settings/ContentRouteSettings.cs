@@ -157,7 +157,7 @@ namespace ORTS.Settings
             }
 
             // only for debug purposes
-            string definedContentJsonName = @"d:\content\routes.json";
+            string definedContentJsonName = @"c:\content\routes.json";
 
             string definedContentJsonDirectoryName = Path.GetTempFileName();
             File.Delete(definedContentJsonDirectoryName);
