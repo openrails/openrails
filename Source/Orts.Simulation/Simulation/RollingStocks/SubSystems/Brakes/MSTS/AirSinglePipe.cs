@@ -68,7 +68,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float EmergAuxVolumeRatio = 1.4f;
         protected bool RelayValveFitted = false;
         public float RelayValveRatio { get; protected set; } = 1;
+        protected float RelayValveInshot;
         protected float EngineRelayValveRatio = 0;
+        protected float EngineRelayValveInshot;
         protected float RelayValveApplicationRatePSIpS = 50;
         protected float RelayValveReleaseRatePSIpS = 50;
         protected string DebugType = string.Empty;
@@ -95,6 +97,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float ServiceMaxCylPressurePSI;
         protected float ServiceApplicationRatePSIpS;
         protected float TwoStageLowPressurePSI;
+        protected float TwoStageRelayValveRatio;
         protected float TwoStageSpeedUpMpS;
         protected float TwoStageSpeedDownMpS;
         protected bool TwoStageLowPressureActive;
@@ -180,7 +183,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             HoldingValve = thiscopy.HoldingValve;
             RelayValveFitted = thiscopy.RelayValveFitted;
             RelayValveRatio = thiscopy.RelayValveRatio;
+            RelayValveInshot = thiscopy.RelayValveInshot;
             EngineRelayValveRatio = thiscopy.EngineRelayValveRatio;
+            EngineRelayValveInshot = thiscopy.EngineRelayValveInshot;
             RelayValveApplicationRatePSIpS = thiscopy.RelayValveApplicationRatePSIpS;
             RelayValveReleaseRatePSIpS = thiscopy.RelayValveReleaseRatePSIpS;
             MaxTripleValveCylPressurePSI = thiscopy.MaxTripleValveCylPressurePSI;
@@ -200,6 +205,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             ServiceMaxCylPressurePSI = thiscopy.ServiceMaxCylPressurePSI;
             ServiceApplicationRatePSIpS = thiscopy.ServiceApplicationRatePSIpS;
             TwoStageLowPressurePSI = thiscopy.TwoStageLowPressurePSI;
+            TwoStageRelayValveRatio = thiscopy.TwoStageRelayValveRatio;
             TwoStageSpeedUpMpS = thiscopy.TwoStageSpeedUpMpS;
             TwoStageSpeedDownMpS = thiscopy.TwoStageSpeedDownMpS;
             HighSpeedReducingPressurePSI = thiscopy.HighSpeedReducingPressurePSI;
@@ -334,7 +340,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         RelayValveFitted = false;
                     }
                     break;
+                case "wagon(ortsbrakerelayvalveinshot": RelayValveInshot = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "wagon(ortsenginebrakerelayvalveratio": EngineRelayValveRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(ortsenginebrakerelayvalveinshot": EngineRelayValveInshot = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "wagon(ortsbrakerelayvalveapplicationrate": RelayValveApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(ortsbrakerelayvalvereleaserate": RelayValveReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(ortsmaxtriplevalvecylinderpressure": MaxTripleValveCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
@@ -354,6 +362,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 case "wagon(ortsmaxservicecylinderpressure": ServiceMaxCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "wagon(ortsmaxserviceapplicationrate": ServiceApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(ortstwostagelowpressure": TwoStageLowPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "wagon(ortstwostagerelayvalveratio": TwoStageRelayValveRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(ortstwostageincreasingspeed": TwoStageSpeedUpMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "wagon(ortstwostagedecreasingspeed": TwoStageSpeedDownMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "wagon(ortshighspeedreducingpressure": HighSpeedReducingPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
@@ -479,8 +488,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (Car.Simulator.Settings.SimpleControlPhysics && EmergResVolumeM3 > 2.0)
                 EmergResVolumeM3 = 0.7f;
 
-            if (MaxTripleValveCylPressurePSI == 0) MaxTripleValveCylPressurePSI = MaxCylPressurePSI / RelayValveRatio;
-            if (EngineRelayValveRatio == 0) EngineRelayValveRatio = RelayValveRatio;
+            if (ServiceMaxCylPressurePSI == 0)
+                ServiceMaxCylPressurePSI = MaxTripleValveCylPressurePSI;
+            if (MaxTripleValveCylPressurePSI == 0)
+                MaxTripleValveCylPressurePSI = MaxCylPressurePSI / RelayValveRatio;
+            if (EngineRelayValveRatio == 0)
+                EngineRelayValveRatio = RelayValveRatio;
 
             if (ServiceApplicationRatePSIpS == 0)
                 ServiceApplicationRatePSIpS = MaxApplicationRatePSIpS;
@@ -530,7 +543,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (CylVolumeM3 == 0) CylVolumeM3 = EmergResVolumeM3 / EmergAuxVolumeRatio / AuxCylVolumeRatio;
             
             RelayValveFitted |= (Car is MSTSLocomotive loco && (loco.DynamicBrakeAutoBailOff || loco.DynamicBrakePartialBailOff)) ||
-                (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.DistributingValve || (Car as MSTSWagon).SupplyReservoirPresent;
+                (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.DistributingValve || (Car as MSTSWagon).SupplyReservoirPresent ||
+                TwoStageRelayValveRatio != 0;
 
             // If user specified only one two stage speed, set the other to be equal
             if (TwoStageSpeedDownMpS == 0 && TwoStageSpeedUpMpS > 0)
@@ -542,6 +556,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 (TwoStageSpeedUpMpS, TwoStageSpeedDownMpS) = (TwoStageSpeedDownMpS, TwoStageSpeedUpMpS);
             if (TwoStageLowPressurePSI == 0)
                 TwoStageLowPressurePSI = MaxCylPressurePSI;
+            // If relay valve ratio isn't used, assume it doesn't change
+            if (TwoStageRelayValveRatio == 0)
+                TwoStageRelayValveRatio = RelayValveRatio;
         }
 
         /// <summary>
@@ -687,7 +704,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 else if (currentTime - AngleCockOpenTime > AngleCockOpeningTime)
                 {
                     // Finish opening anglecock at a faster rate once time has elapsed
-                    AngleCockOpenAmount = (currentTime - ((float)AngleCockOpenTime + AngleCockOpeningTime)) / 5 + 0.3f;
+                    AngleCockOpenAmount = MathHelper.Lerp(0.3f, 1.0f, (currentTime - ((float)AngleCockOpenTime + AngleCockOpeningTime)) / 5);
 
                     if (AngleCockOpenAmount >= 1.0f)
                     {
@@ -698,7 +715,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 else
                 {
                     // Gradually open anglecock toward 30% over 30 seconds
-                    AngleCockOpenAmount = 0.3f * (currentTime - (float)AngleCockOpenTime) / AngleCockOpeningTime;
+                    AngleCockOpenAmount = MathHelper.Lerp(0.0f, 0.3f, (currentTime - (float)AngleCockOpenTime) / AngleCockOpeningTime);
                 }
             }
             else if (!AngleCockOpen && AngleCockOpenAmount > 0.0f)
@@ -744,7 +761,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
                 if (TwoStageLowPressureActive && threshold > TwoStageLowPressurePSI)
                     threshold = TwoStageLowPressurePSI;
-                else if (ServiceMaxCylPressurePSI > 0 && threshold > ServiceMaxCylPressurePSI)
+                else if (threshold > ServiceMaxCylPressurePSI)
                     threshold = ServiceMaxCylPressurePSI;
                 else if (threshold > MaxTripleValveCylPressurePSI)
                     threshold = MaxTripleValveCylPressurePSI;
@@ -1233,7 +1250,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             if (RelayValveFitted)
             {
-                demandedPressurePSI = Math.Max(RelayValveRatio * demandedPressurePSI, EngineRelayValveRatio * BrakeLine3PressurePSI);
+                float automaticDemandedPressurePSI;
+                float engineDemandedPressurePSI;
+
+                // Add in-shot pressure (if equipped) to pressure demanded from relay valve
+                // In-shot: A small amount of additional pressure at a 1:1 ratio is added to ensure positive brake application
+                automaticDemandedPressurePSI = Math.Min(demandedPressurePSI, RelayValveInshot) + demandedPressurePSI * (TwoStageLowPressureActive ? TwoStageRelayValveRatio : RelayValveRatio);
+                engineDemandedPressurePSI = Math.Min(BrakeLine3PressurePSI, EngineRelayValveInshot) + BrakeLine3PressurePSI * EngineRelayValveRatio;
+
+                demandedPressurePSI = Math.Max(automaticDemandedPressurePSI, engineDemandedPressurePSI);
                 if (demandedPressurePSI > CylPressurePSI)
                 {
                     float dp = elapsedClockSeconds * RelayValveApplicationRatePSIpS;

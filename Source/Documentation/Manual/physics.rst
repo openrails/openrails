@@ -3037,13 +3037,16 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
    single: ORTSEmergencyResQuickRelease
    single: ORTSMainResPipeAuxResCharging
    single: ORTSBrakeRelayValveRatio
+   single: ORTSBrakeRelayValveInshot
    single: ORTSEngineBrakeRelayValveRatio
+   single: ORTSEngineBrakeRelayValveInshot
    single: ORTSBrakeRelayValveApplicationRate
    single: ORTSBrakeRelayValveReleaseRate
    single: ORTSMaxTripleValveCylinderPressure
    single: ORTSMaxServiceCylinderPressure
    single: ORTSMaxServiceApplicationRate
    single: ORTSTwoStageLowPressure
+   single: ORTSTwoStageRelayValveRatio
    single: ORTSTwoStageIncreasingSpeed
    single: ORTSTwoStageDecreasingSpeed
    single: ORTSHighSpeedReducingPressure
@@ -3116,7 +3119,15 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   This is achieved via a relay valve which sets BC pressure proportionally.
   Relay valves may be installed to achieve higher brake cylinder pressures,
   dynamic brake blending or variable load compensation.
-- ``Wagon(ORTSBrakeRelayValveRatio`` -- Same as above, but for the engine brake
+- ``Wagon(ORTSBrakeRelayValveInshot`` -- Sets the "in-shot" pressure for the relay
+  valve. Relay valves with a ratio less than 1 may not produce sufficient pressure
+  to extend the brake cylinders. In-shot solves this problem by applying additional
+  pressure at a 1:1 ratio, regardless of the actual relay valve ratio. The pressure
+  defined here is the maximum amount of additional pressure to apply.
+- ``Wagon(ORTSEngineBrakeRelayValveRatio`` -- Same as ``ORTSBrakeRelayValveRatio``,
+  but for the engine brake.
+- ``Wagon(ORTSEngineBrakeRelayValveInshot`` -- Same as ``ORTSBrakeRelayValveInshot``,
+  but for the engine brake.
 - ``Wagon(ORTSBrakeRelayValveApplicationRate`` -- Brake cylinder pressure application
   rate achieved by the relay valve, if fitted.
 - ``Wagon(ORTSBrakeRelayValveReleaseRate`` -- Brake cylinder pressure release
@@ -3135,6 +3146,9 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   is reduced at lower speeds and increased at higher speeds, sets the maximum cylinder
   pressure demanded when at slower speeds (defaults to 0, disabling two stage braking).
   For high speed, use ``ORTSMaxTripleValveCylinderPressure`` to set the pressure limit.
+- ``Wagon(ORTSTwoStageRelayValveRatio`` -- Alternatey, sets a relay valve ratio to
+  be used by the two stage system at low speeds. At high speed, the relay valve
+  uses the ratio set by ``ORTSBrakeRelayValveRatio``.
 - ``Wagon(ORTSTwoStageIncreasingSpeed`` -- The speed at which the two stage braking
   system changes from low pressure to high pressure during acceleration.
 - ``Wagon(ORTSTwoStageDecreasingSpeed`` -- The speed at which the two stage braking
