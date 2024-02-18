@@ -68,7 +68,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float EmergAuxVolumeRatio = 1.4f;
         protected bool RelayValveFitted = false;
         public float RelayValveRatio { get; protected set; } = 1;
-        public float EngineRelayValveRatio { get; protected set; } = 0;
+        protected float RelayValveInshot;
+        protected float EngineRelayValveRatio = 0;
+        protected float EngineRelayValveInshot;
         protected float RelayValveApplicationRatePSIpS = 50;
         protected float RelayValveReleaseRatePSIpS = 50;
         protected string DebugType = string.Empty;
@@ -95,6 +97,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float ServiceMaxCylPressurePSI;
         protected float ServiceApplicationRatePSIpS;
         protected float TwoStageLowPressurePSI;
+        protected float TwoStageRelayValveRatio;
         protected float TwoStageSpeedUpMpS;
         protected float TwoStageSpeedDownMpS;
         protected bool TwoStageLowPressureActive;
@@ -180,7 +183,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             HoldingValve = thiscopy.HoldingValve;
             RelayValveFitted = thiscopy.RelayValveFitted;
             RelayValveRatio = thiscopy.RelayValveRatio;
+            RelayValveInshot = thiscopy.RelayValveInshot;
             EngineRelayValveRatio = thiscopy.EngineRelayValveRatio;
+            EngineRelayValveInshot = thiscopy.EngineRelayValveInshot;
             RelayValveApplicationRatePSIpS = thiscopy.RelayValveApplicationRatePSIpS;
             RelayValveReleaseRatePSIpS = thiscopy.RelayValveReleaseRatePSIpS;
             MaxTripleValveCylPressurePSI = thiscopy.MaxTripleValveCylPressurePSI;
@@ -200,6 +205,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             ServiceMaxCylPressurePSI = thiscopy.ServiceMaxCylPressurePSI;
             ServiceApplicationRatePSIpS = thiscopy.ServiceApplicationRatePSIpS;
             TwoStageLowPressurePSI = thiscopy.TwoStageLowPressurePSI;
+            TwoStageRelayValveRatio = thiscopy.TwoStageRelayValveRatio;
             TwoStageSpeedUpMpS = thiscopy.TwoStageSpeedUpMpS;
             TwoStageSpeedDownMpS = thiscopy.TwoStageSpeedDownMpS;
             HighSpeedReducingPressurePSI = thiscopy.HighSpeedReducingPressurePSI;
@@ -220,7 +226,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             var s = $" {Simulator.Catalog.GetString("EQ")} {FormatStrings.FormatPressure(Car.Train.EqualReservoirPressurePSIorInHg, PressureUnit.PSI, units[BrakeSystemComponent.EqualizingReservoir], true)}"
                 + $" {Simulator.Catalog.GetString("BC")} {FormatStrings.FormatPressure(Car.Train.HUDWagonBrakeCylinderPSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true)}"
                 + $" {Simulator.Catalog.GetString("BP")} {FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true)}"
-                + $" {Simulator.Catalog.GetString("Flow")} {FormatStrings.FormatAirFlow(Car.Train.TotalBrakePipeFlowM3pS, loco.IsMetric)}";
+                + $" {Simulator.Catalog.GetString("Flow")} {FormatStrings.FormatAirFlow(loco.FilteredBrakePipeFlowM3pS, loco.IsMetric)}";
             if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
                 s += $" {Simulator.Catalog.GetString("EOT")} {lastCarBrakeSystem.GetStatus(units)}";
             if (HandbrakePercent > 0)
@@ -334,7 +340,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         RelayValveFitted = false;
                     }
                     break;
+                case "wagon(ortsbrakerelayvalveinshot": RelayValveInshot = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "wagon(ortsenginebrakerelayvalveratio": EngineRelayValveRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(ortsenginebrakerelayvalveinshot": EngineRelayValveInshot = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "wagon(ortsbrakerelayvalveapplicationrate": RelayValveApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(ortsbrakerelayvalvereleaserate": RelayValveReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(ortsmaxtriplevalvecylinderpressure": MaxTripleValveCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
@@ -354,6 +362,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 case "wagon(ortsmaxservicecylinderpressure": ServiceMaxCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "wagon(ortsmaxserviceapplicationrate": ServiceApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(ortstwostagelowpressure": TwoStageLowPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "wagon(ortstwostagerelayvalveratio": TwoStageRelayValveRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(ortstwostageincreasingspeed": TwoStageSpeedUpMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "wagon(ortstwostagedecreasingspeed": TwoStageSpeedDownMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "wagon(ortshighspeedreducingpressure": HighSpeedReducingPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
@@ -481,8 +490,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (Car.Simulator.Settings.SimpleControlPhysics && EmergResVolumeM3 > 2.0)
                 EmergResVolumeM3 = 0.7f;
 
-            if (MaxTripleValveCylPressurePSI == 0) MaxTripleValveCylPressurePSI = MaxCylPressurePSI / RelayValveRatio;
-            if (EngineRelayValveRatio == 0) EngineRelayValveRatio = RelayValveRatio;
+            if (ServiceMaxCylPressurePSI == 0)
+                ServiceMaxCylPressurePSI = MaxTripleValveCylPressurePSI;
+            if (MaxTripleValveCylPressurePSI == 0)
+                MaxTripleValveCylPressurePSI = MaxCylPressurePSI / RelayValveRatio;
+            if (EngineRelayValveRatio == 0)
+                EngineRelayValveRatio = RelayValveRatio;
 
             if (ServiceApplicationRatePSIpS == 0)
                 ServiceApplicationRatePSIpS = MaxApplicationRatePSIpS;
@@ -532,7 +545,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (CylVolumeM3 == 0) CylVolumeM3 = EmergResVolumeM3 / EmergAuxVolumeRatio / AuxCylVolumeRatio;
             
             RelayValveFitted |= (Car is MSTSLocomotive loco && (loco.DynamicBrakeAutoBailOff || loco.DynamicBrakePartialBailOff)) ||
-                (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.DistributingValve || (Car as MSTSWagon).SupplyReservoirPresent;
+                (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.DistributingValve || (Car as MSTSWagon).SupplyReservoirPresent ||
+                TwoStageRelayValveRatio != 0;
 
             // If user specified only one two stage speed, set the other to be equal
             if (TwoStageSpeedDownMpS == 0 && TwoStageSpeedUpMpS > 0)
@@ -544,6 +558,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 (TwoStageSpeedUpMpS, TwoStageSpeedDownMpS) = (TwoStageSpeedDownMpS, TwoStageSpeedUpMpS);
             if (TwoStageLowPressurePSI == 0)
                 TwoStageLowPressurePSI = MaxCylPressurePSI;
+            // If relay valve ratio isn't used, assume it doesn't change
+            if (TwoStageRelayValveRatio == 0)
+                TwoStageRelayValveRatio = RelayValveRatio;
         }
 
         /// <summary>
@@ -689,7 +706,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 else if (currentTime - AngleCockOpenTime > AngleCockOpeningTime)
                 {
                     // Finish opening anglecock at a faster rate once time has elapsed
-                    AngleCockOpenAmount = (currentTime - ((float)AngleCockOpenTime + AngleCockOpeningTime)) / 5 + 0.3f;
+                    AngleCockOpenAmount = MathHelper.Lerp(0.3f, 1.0f, (currentTime - ((float)AngleCockOpenTime + AngleCockOpeningTime)) / 5);
 
                     if (AngleCockOpenAmount >= 1.0f)
                     {
@@ -700,7 +717,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 else
                 {
                     // Gradually open anglecock toward 30% over 30 seconds
-                    AngleCockOpenAmount = 0.3f * (currentTime - (float)AngleCockOpenTime) / AngleCockOpeningTime;
+                    AngleCockOpenAmount = MathHelper.Lerp(0.0f, 0.3f, (currentTime - (float)AngleCockOpenTime) / AngleCockOpeningTime);
                 }
             }
             else if (!AngleCockOpen && AngleCockOpenAmount > 0.0f)
@@ -746,7 +763,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
                 if (TwoStageLowPressureActive && threshold > TwoStageLowPressurePSI)
                     threshold = TwoStageLowPressurePSI;
-                else if (ServiceMaxCylPressurePSI > 0 && threshold > ServiceMaxCylPressurePSI)
+                else if (threshold > ServiceMaxCylPressurePSI)
                     threshold = ServiceMaxCylPressurePSI;
                 else if (threshold > MaxTripleValveCylPressurePSI)
                     threshold = MaxTripleValveCylPressurePSI;
@@ -1150,7 +1167,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                  // BailOff
                 if (engineBrakeStatus == ControllerState.BailOff)
                 {
-                    AutoCylPressurePSI -= Math.Max(MaxReleaseRatePSIpS, loco.EngineBrakeReleaseRatePSIpS) * elapsedClockSeconds;
+                    AutoCylPressurePSI -= MaxReleaseRatePSIpS * elapsedClockSeconds;
                     if (AutoCylPressurePSI < 0) AutoCylPressurePSI = 0;
                 }
                 // Emergency application
@@ -1182,7 +1199,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
                         if (loco.Train.LeadLocomotiveIndex >= 0)
                         { 
-                            var lead = loco.Train.DetermineDPLeadLocomotive(loco) as MSTSLocomotive;
+                            var lead = loco.Train.Cars[loco.Train.LeadLocomotiveIndex] as MSTSLocomotive;
                             if (lead != null && (lead.BailOff || 
                                 (lead.EngineBrakeController != null && lead.EngineBrakeController.CurrentNotch >= 0 && lead.EngineBrakeController.Notches[lead.EngineBrakeController.CurrentNotch].Type == ControllerState.BailOff)))
                             {
@@ -1192,7 +1209,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 }
                                 else
                                 {
-                                    AutoCylPressurePSI -= Math.Max(MaxReleaseRatePSIpS, loco.EngineBrakeReleaseRatePSIpS) * elapsedClockSeconds;
+                                    AutoCylPressurePSI -= MaxReleaseRatePSIpS * elapsedClockSeconds;
                                     if (AutoCylPressurePSI < 0)
                                         AutoCylPressurePSI = 0;
                                 }
@@ -1235,7 +1252,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             if (RelayValveFitted)
             {
-                demandedPressurePSI = Math.Max(RelayValveRatio * demandedPressurePSI, EngineRelayValveRatio * BrakeLine3PressurePSI);
+                float automaticDemandedPressurePSI;
+                float engineDemandedPressurePSI;
+
+                // Add in-shot pressure (if equipped) to pressure demanded from relay valve
+                // In-shot: A small amount of additional pressure at a 1:1 ratio is added to ensure positive brake application
+                automaticDemandedPressurePSI = Math.Min(demandedPressurePSI, RelayValveInshot) + demandedPressurePSI * (TwoStageLowPressureActive ? TwoStageRelayValveRatio : RelayValveRatio);
+                engineDemandedPressurePSI = Math.Min(BrakeLine3PressurePSI, EngineRelayValveInshot) + BrakeLine3PressurePSI * EngineRelayValveRatio;
+
+                demandedPressurePSI = Math.Max(automaticDemandedPressurePSI, engineDemandedPressurePSI);
                 if (demandedPressurePSI > CylPressurePSI)
                 {
                     float dp = elapsedClockSeconds * RelayValveApplicationRatePSIpS;
@@ -1429,7 +1454,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             var train = trainCar.Train;
             var lead = trainCar as MSTSLocomotive;
-            var leadLocos = train.DPLeadUnits;
+            train.FindLeadLocomotives(out int first, out int last);
 
             float tempBrakePipeFlow = 0.0f; // Flow calculation will assume 0 flow unless calculated otherwise
 
@@ -1464,59 +1489,49 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 float emergencyTimeFactor = lead != null && lead.TrainBrakeController != null ? lead.BrakeEmergencyTimeFactorPSIpS : 0.001f;
                 for (int i = 0; i < nSteps; i++)
                 {
-                    // Apply and release brakes from every DP lead unit
-                    foreach (TrainCar locoCar in leadLocos)
+                    if (lead != null)
                     {
-                        if (locoCar is MSTSLocomotive loco && lead != null)
-                        {
-                            // Only sync application/release on DP units if both the lead unit AND the DP lead unit are set to synchronize
-                            // Lead locomotive will always be allowed to apply/release
-                            bool syncApplication = loco == lead || loco.DPSyncTrainApplication && lead.DPSyncTrainApplication;
-                            bool syncRelease = loco == lead || loco.DPSyncTrainRelease && lead.DPSyncTrainRelease;
-                            bool syncEmergency = loco == lead || loco.DPSyncEmergency && lead.DPSyncEmergency;
-
                         tempBrakePipeFlow = 0.0f;
 
                         // Allow for leaking train air brakepipe
-                            // TODO: Make leak apply to the whole train, not just the locomotives
-                            if (loco.BrakeSystem.BrakeLine1PressurePSI - trainPipeLeakLossPSI > 0 && loco.TrainBrakePipeLeakPSIorInHgpS != 0) // if train brake pipe has pressure in it, ensure result will not be negative if loss is subtracted
+                        if (lead.BrakeSystem.BrakeLine1PressurePSI - trainPipeLeakLossPSI > 0 && lead.TrainBrakePipeLeakPSIorInHgpS != 0) // if train brake pipe has pressure in it, ensure result will not be negative if loss is subtracted
                         {
-                                loco.BrakeSystem.BrakeLine1PressurePSI -= trainPipeLeakLossPSI;
+                            lead.BrakeSystem.BrakeLine1PressurePSI -= trainPipeLeakLossPSI;
                         }
 
                         // Emergency brake - vent brake pipe to 0 psi regardless of equalizing res pressure
-                            if (syncEmergency && lead.TrainBrakeController.EmergencyBraking)
+                        if (lead.TrainBrakeController.EmergencyBraking)
                         {
                             float emergencyVariationFactor = Math.Min(trainPipeTimeVariationS / emergencyTimeFactor, 0.95f);
-                                float pressureDiffPSI = emergencyVariationFactor * loco.BrakeSystem.BrakeLine1PressurePSI;
+                            float pressureDiffPSI = emergencyVariationFactor * lead.BrakeSystem.BrakeLine1PressurePSI;
 
-                                if (loco.BrakeSystem.BrakeLine1PressurePSI - pressureDiffPSI < 0)
-                                    pressureDiffPSI = loco.BrakeSystem.BrakeLine1PressurePSI;
-                                loco.BrakeSystem.BrakeLine1PressurePSI -= pressureDiffPSI;
+                            if (lead.BrakeSystem.BrakeLine1PressurePSI - pressureDiffPSI < 0)
+                                pressureDiffPSI = lead.BrakeSystem.BrakeLine1PressurePSI;
+                            lead.BrakeSystem.BrakeLine1PressurePSI -= pressureDiffPSI;
                         }
                         else if (lead.TrainBrakeController.TrainBrakeControllerState != ControllerState.Neutral)
                         {
-                                // Charge train brake pipe - adjust main reservoir pressure, and loco brake pressure line to maintain brake pipe equal to equalising resevoir pressure - release brakes
-                                if (syncRelease && loco.BrakeSystem.BrakeLine1PressurePSI < train.EqualReservoirPressurePSIorInHg)
+                            // Charge train brake pipe - adjust main reservoir pressure, and lead brake pressure line to maintain brake pipe equal to equalising resevoir pressure - release brakes
+                            if (lead.BrakeSystem.BrakeLine1PressurePSI < train.EqualReservoirPressurePSIorInHg)
                             {
-                                    // Calculate change in brake pipe pressure between equalising reservoir and loco brake pipe
-                                    float chargingRatePSIpS = loco.BrakePipeChargingRatePSIorInHgpS;
+                                // Calculate change in brake pipe pressure between equalising reservoir and lead brake pipe
+                                float chargingRatePSIpS = lead.BrakePipeChargingRatePSIorInHgpS;
                                 if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Overcharge)
                                 {
-                                        chargingRatePSIpS = loco.BrakePipeQuickChargingRatePSIpS;
+                                    chargingRatePSIpS = lead.BrakePipeQuickChargingRatePSIpS;
                                 }
                                 float PressureDiffEqualToPipePSI = trainPipeTimeVariationS * chargingRatePSIpS; // default condition - if EQ Res is higher then Brake Pipe Pressure
 
-                                    if (train.EqualReservoirPressurePSIorInHg - loco.BrakeSystem.BrakeLine1PressurePSI < 5.0f) // Reduce recharge rate if near EQ to simulate feed valve behavior
-                                        PressureDiffEqualToPipePSI *= Math.Min((float)Math.Sqrt((train.EqualReservoirPressurePSIorInHg - loco.BrakeSystem.BrakeLine1PressurePSI) / 5.0f), 1.0f);
-                                    if (loco.MainResPressurePSI - train.EqualReservoirPressurePSIorInHg < 15.0f) // Reduce recharge rate if near MR pressure as per reality
-                                        PressureDiffEqualToPipePSI *= Math.Min((loco.MainResPressurePSI - train.EqualReservoirPressurePSIorInHg) / 15.0f, 1.0f);
+                                if (train.EqualReservoirPressurePSIorInHg - lead.BrakeSystem.BrakeLine1PressurePSI < 5.0f) // Reduce recharge rate if near EQ to simulate feed valve behavior
+                                    PressureDiffEqualToPipePSI *= Math.Min((float)Math.Sqrt((train.EqualReservoirPressurePSIorInHg - lead.BrakeSystem.BrakeLine1PressurePSI) / 5.0f), 1.0f);
+                                if (lead.MainResPressurePSI - train.EqualReservoirPressurePSIorInHg < 15.0f) // Reduce recharge rate if near MR pressure as per reality
+                                    PressureDiffEqualToPipePSI *= Math.Min((lead.MainResPressurePSI - train.EqualReservoirPressurePSIorInHg) / 15.0f, 1.0f);
 
-                                    if (loco.BrakeSystem.BrakeLine1PressurePSI + PressureDiffEqualToPipePSI > train.EqualReservoirPressurePSIorInHg)
-                                        PressureDiffEqualToPipePSI = train.EqualReservoirPressurePSIorInHg - loco.BrakeSystem.BrakeLine1PressurePSI;
+                                if (lead.BrakeSystem.BrakeLine1PressurePSI + PressureDiffEqualToPipePSI > train.EqualReservoirPressurePSIorInHg)
+                                    PressureDiffEqualToPipePSI = train.EqualReservoirPressurePSIorInHg - lead.BrakeSystem.BrakeLine1PressurePSI;
 
-                                    if (loco.BrakeSystem.BrakeLine1PressurePSI + PressureDiffEqualToPipePSI > loco.MainResPressurePSI)
-                                        PressureDiffEqualToPipePSI = loco.MainResPressurePSI - loco.BrakeSystem.BrakeLine1PressurePSI;
+                                if (lead.BrakeSystem.BrakeLine1PressurePSI + PressureDiffEqualToPipePSI > lead.MainResPressurePSI)
+                                    PressureDiffEqualToPipePSI = lead.MainResPressurePSI - lead.BrakeSystem.BrakeLine1PressurePSI;
 
                                 if (PressureDiffEqualToPipePSI < 0)
                                     PressureDiffEqualToPipePSI = 0;
@@ -1524,32 +1539,30 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 // Adjust brake pipe pressure based upon pressure differential
                                 if (lead.TrainBrakeController.TrainBrakeControllerState != ControllerState.Lap) // in LAP psoition brake pipe is isolated, and thus brake pipe pressure decreases, but reservoir remains at same pressure
                                 {
-                                        loco.BrakeSystem.BrakeLine1PressurePSI += PressureDiffEqualToPipePSI;
-                                        loco.MainResPressurePSI -= PressureDiffEqualToPipePSI * loco.BrakeSystem.BrakePipeVolumeM3 / loco.MainResVolumeM3;
+                                    lead.BrakeSystem.BrakeLine1PressurePSI += PressureDiffEqualToPipePSI;
+                                    lead.MainResPressurePSI -= PressureDiffEqualToPipePSI * lead.BrakeSystem.BrakePipeVolumeM3 / lead.MainResVolumeM3;
 
-                                        tempBrakePipeFlow = (PressureDiffEqualToPipePSI * loco.BrakeSystem.BrakePipeVolumeM3) / (OneAtmospherePSI * trainPipeTimeVariationS); // Instantaneous flow rate from MR to BP
+                                    tempBrakePipeFlow = (PressureDiffEqualToPipePSI * lead.BrakeSystem.BrakePipeVolumeM3) / (OneAtmospherePSI * trainPipeTimeVariationS); // Instantaneous flow rate from MR to BP
                                 }
                             }
-                                // reduce pressure in loco brake line if brake pipe pressure is above equalising pressure - apply brakes
-                                else if (syncApplication && loco.BrakeSystem.BrakeLine1PressurePSI > train.EqualReservoirPressurePSIorInHg)
+                            // reduce pressure in lead brake line if brake pipe pressure is above equalising pressure - apply brakes
+                            else if (lead.BrakeSystem.BrakeLine1PressurePSI > train.EqualReservoirPressurePSIorInHg)
                             {
                                 float serviceVariationFactor = Math.Min(trainPipeTimeVariationS / serviceTimeFactor, 0.95f);
-                                    float pressureDiffPSI = serviceVariationFactor * loco.BrakeSystem.BrakeLine1PressurePSI;
+                                float pressureDiffPSI = serviceVariationFactor * lead.BrakeSystem.BrakeLine1PressurePSI;
 
-                                    if (train.EqualReservoirPressurePSIorInHg > loco.BrakeSystem.BrakeLine1PressurePSI - 5.0f) // Reduce exhausting rate if near EQ pressure to simulate feed valve
-                                        pressureDiffPSI *= Math.Min((float)Math.Sqrt((loco.BrakeSystem.BrakeLine1PressurePSI - train.EqualReservoirPressurePSIorInHg) / 5.0f), 1.0f);
-                                    if (loco.BrakeSystem.BrakeLine1PressurePSI - pressureDiffPSI < train.EqualReservoirPressurePSIorInHg)
-                                        pressureDiffPSI = loco.BrakeSystem.BrakeLine1PressurePSI - train.EqualReservoirPressurePSIorInHg;
-                                    loco.BrakeSystem.BrakeLine1PressurePSI -= pressureDiffPSI;
+                                if (train.EqualReservoirPressurePSIorInHg > lead.BrakeSystem.BrakeLine1PressurePSI - 5.0f) // Reduce exhausting rate if near EQ pressure to simulate feed valve
+                                    pressureDiffPSI *= Math.Min((float)Math.Sqrt((lead.BrakeSystem.BrakeLine1PressurePSI - train.EqualReservoirPressurePSIorInHg) / 5.0f), 1.0f);
+                                if (lead.BrakeSystem.BrakeLine1PressurePSI - pressureDiffPSI < train.EqualReservoirPressurePSIorInHg)
+                                    pressureDiffPSI = lead.BrakeSystem.BrakeLine1PressurePSI - train.EqualReservoirPressurePSIorInHg;
+                                lead.BrakeSystem.BrakeLine1PressurePSI -= pressureDiffPSI;
                             }
                         }
 
                         // Finish updating air flow meter
-                            loco.BrakePipeFlowM3pS = tempBrakePipeFlow;
-                            loco.FilteredBrakePipeFlowM3pS = loco.AFMFilter.Filter(loco.BrakePipeFlowM3pS, trainPipeTimeVariationS); // Actual flow rate displayed by air flow meter
-                        }
+                        lead.BrakePipeFlowM3pS = tempBrakePipeFlow;
+                        lead.FilteredBrakePipeFlowM3pS = lead.AFMFilter.Filter(lead.BrakePipeFlowM3pS, trainPipeTimeVariationS); // Actual flow rate displayed by air flow meter
 
-                        if (lead != null)
                         train.LeadPipePressurePSI = lead.BrakeSystem.BrakeLine1PressurePSI;  // Keep a record of current train pipe pressure in lead locomotive
                     }
 
@@ -1631,169 +1644,118 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 #endif
                 }
             }
+
             // Join main reservoirs of adjacent locomotives
-            foreach (List<TrainCar> locoGroup in train.LocoGroups)
+            if (first != -1 && last != -1)
             {
                 float sumv = 0;
                 float sumpv = 0;
-                float totalReservoirPressurePSI = 0;
-
-                foreach (TrainCar locoCar in locoGroup)
+                for (int i = first; i <= last; i++)
                 {
-                    if (locoCar is MSTSLocomotive loco)
-                    {
-                        // Workaround to emulate MR pipe for single pipe locomotives
-                        if (!loco.BrakeSystem.TwoPipes)
+                    if (train.Cars[i] is MSTSLocomotive loco)
                     {
                         sumv += loco.MainResVolumeM3;
                         sumpv += loco.MainResVolumeM3 * loco.MainResPressurePSI;
                     }
-                        else
-                {
-                            // Equalize air in MR and MR pipe
-                            float volumeRatio = loco.BrakeSystem.BrakePipeVolumeM3 / loco.MainResVolumeM3;
-                            float dp = Math.Min((loco.MainResPressurePSI - loco.BrakeSystem.BrakeLine2PressurePSI) / (1 + volumeRatio), loco.MaximumMainReservoirPipePressurePSI - loco.BrakeSystem.BrakeLine2PressurePSI);
-                            loco.MainResPressurePSI -= dp * volumeRatio;
-                            loco.BrakeSystem.BrakeLine2PressurePSI += dp;
-                            if (loco.MainResPressurePSI < 0)
-                                loco.MainResPressurePSI = 0;
-                            if (loco.BrakeSystem.BrakeLine2PressurePSI < 0)
-                                loco.BrakeSystem.BrakeLine2PressurePSI = 0;
-                        }
-
-                        // Continue updating flowmeter on non-lead locomotives so it zeroes out eventually
-                        if (!leadLocos.Contains(locoCar))
-                        {
-                            loco.BrakePipeFlowM3pS = 0;
-                            loco.FilteredBrakePipeFlowM3pS = loco.AFMFilter.Filter(0, elapsedClockSeconds);
-                        }
-                    }
                 }
-
-                if (sumv > 0)
-                    totalReservoirPressurePSI = sumpv / sumv;
-
-                foreach (TrainCar locoCar in locoGroup)
+                float totalReservoirPressurePSI = sumpv / sumv;
+                for (int i = first; i <= last; i++)
                 {
-                    if (locoCar is MSTSLocomotive loco && !loco.BrakeSystem.TwoPipes)
+                    if (train.Cars[i] is MSTSLocomotive loco)
                     {
                         loco.MainResPressurePSI = totalReservoirPressurePSI;
                     }
                 }
             }
-            // Update train total flowmeter
-            float tempTrainFlow = 0;
-
-            foreach (TrainCar locoCar in leadLocos)
+            foreach (TrainCar car in train.Cars)
             {
-                if (locoCar is MSTSLocomotive loco)
-                    tempTrainFlow += loco.FilteredBrakePipeFlowM3pS;
+                if (car is MSTSLocomotive loco)
+                {
+                    // Continue updating flowmeter on non-lead locomotives so it zeroes out eventually
+                    if (car != lead)
+                    {
+                        (car as MSTSLocomotive).BrakePipeFlowM3pS = 0;
+                        (car as MSTSLocomotive).FilteredBrakePipeFlowM3pS = (car as MSTSLocomotive).AFMFilter.Filter(0, elapsedClockSeconds);
                     }    
 
-            train.TotalBrakePipeFlowM3pS = tempTrainFlow;
+                    // Equalize main reservoir with MR pipe for every locomotive
+                    if (car.BrakeSystem.TwoPipes)
+                    {
+                        float volumeRatio = loco.BrakeSystem.BrakePipeVolumeM3 / loco.MainResVolumeM3;
+                        float dp = Math.Min((loco.MainResPressurePSI - loco.BrakeSystem.BrakeLine2PressurePSI) / (1 + volumeRatio), loco.MaximumMainReservoirPipePressurePSI - loco.BrakeSystem.BrakeLine2PressurePSI);
+                        loco.MainResPressurePSI -= dp * volumeRatio;
+                        loco.BrakeSystem.BrakeLine2PressurePSI += dp;
+                        if (loco.MainResPressurePSI < 0) loco.MainResPressurePSI = 0;
+                        if (loco.BrakeSystem.BrakeLine2PressurePSI < 0) loco.BrakeSystem.BrakeLine2PressurePSI = 0;
+                    }
+                }
+            }
 
             // Propagate engine brake pipe (3) data
-            // Locomotive will try to match BC pressure with pressure in engine brake pipe
-            for (int i = 0; i < train.LocoGroups.Count; i++)
+            for (int i = 0; i < train.Cars.Count; i++)
             {
-                MSTSLocomotive leadLoco = train.DPLeadUnits[i] as MSTSLocomotive;
-                BrakeSystem locoBrakeSystem = train.DPLeadUnits[i].BrakeSystem;
-
-                bool syncIndependent = lead != null && (leadLoco == lead || (leadLoco.DPSyncIndependent && lead.DPSyncIndependent));
-
-                // Set loco brake pressure on all units with brakes cut in
-                // Only set loco brake pressure on DP units if lead loco AND DP loco are equipped to synchronize braking
-                if (leadLoco != null && syncIndependent)
+                BrakeSystem brakeSystem = train.Cars[i].BrakeSystem;
+                // Collect and propagate engine brake pipe (3) data
+                // This appears to be calculating the engine brake cylinder pressure???
+                if (i < first || i > last)
                 {
-                    float locoBrakePressure = locoBrakeSystem.BrakeLine3PressurePSI;
-                    float demandedBrakePressure;
-                    float dp = 0.0f;
-                    var prevState = leadLoco.EngineBrakeState;
-                    // Volume ratio between MR and engine brake pipe, assuming the pipe is equal size as the train pipe
-                    float volumeRatio = locoBrakeSystem.BrakePipeVolumeM3 / leadLoco.MainResVolumeM3;
-
-                    // Lead locomotive sets pressure depending on pressure demanded by loco brake handle
-                    if (leadLoco == lead)
-                    {
-                        demandedBrakePressure = train.BrakeLine3PressurePSI;
-
+                    brakeSystem.BrakeLine3PressurePSI = 0;
                 }
-                    else // Distributed power lead unit
+                else
                 {
-                        // DP units work by trying to match the BC pressure of the master locomotive
-                        if (locoBrakeSystem is AirSinglePipe airSystem)
+                    if (lead != null)
                     {
-                            demandedBrakePressure = lead.BrakeSystem.GetCylPressurePSI() / airSystem.EngineRelayValveRatio;
-
-                            // Auto brake application will be bailed off if it's too great
-                            if (lead.BrakeSystem.GetCylPressurePSI() < airSystem.AutoCylPressurePSI * airSystem.RelayValveRatio)
-                                leadLoco.BailOff = true;
-                            if (airSystem.AutoCylPressurePSI == 0.0f)
-                                leadLoco.BailOff = false;
-                                }
-                        else // Backup if brake system fails to cast to AirSinglePipe
-                            demandedBrakePressure = train.BrakeLine3PressurePSI;
-                            }
-
-                    // Current pressure is less than demanded pressure, apply brakes
-                    if (locoBrakePressure < demandedBrakePressure && locoBrakePressure < leadLoco.MainResPressurePSI)
-                            {
-                        dp = elapsedClockSeconds * leadLoco.EngineBrakeApplyRatePSIpS;
-
-                        if (locoBrakePressure + dp > demandedBrakePressure)
-                            dp = demandedBrakePressure - locoBrakePressure;
-                        if (locoBrakePressure + dp > leadLoco.MainResPressurePSI - dp * volumeRatio)
-                            dp = (leadLoco.MainResPressurePSI - demandedBrakePressure) / (1 + volumeRatio);
-                        if (dp < 0)
-                            dp = 0;
-                        leadLoco.MainResPressurePSI -= dp * volumeRatio;
-                        locoBrakeSystem.BrakeLine3PressurePSI += dp;
-
-                        leadLoco.EngineBrakeState = ValveState.Apply;
-                    }
-                    else if (locoBrakePressure > demandedBrakePressure) // Release brakes
-                                {
-                        dp = elapsedClockSeconds * leadLoco.EngineBrakeReleaseRatePSIpS;
-
-                        if (locoBrakePressure - dp < demandedBrakePressure)
-                            dp = locoBrakePressure - demandedBrakePressure;
-                        if (dp < 0)
-                            dp = 0;
-                        locoBrakeSystem.BrakeLine3PressurePSI -= dp;
-
-                        leadLoco.EngineBrakeState = ValveState.Release;
-                                }
-                    else // No change needed
-                        leadLoco.EngineBrakeState = ValveState.Lap;
-
-                    // Prevent small changes in pressure from triggering audio
-                    if (dp / elapsedClockSeconds < 1.0f)
-                        leadLoco.EngineBrakeState = ValveState.Lap;
-
-                    // Send messages for loco brake audio to lead locomotive only
-                    if (leadLoco == lead)
-                        if (leadLoco.EngineBrakeState != prevState)
-                            switch (leadLoco.EngineBrakeState)
+                        float p = brakeSystem.BrakeLine3PressurePSI;
+                        if (p > 1000)
+                            p -= 1000;
+                        var prevState = lead.EngineBrakeState;
+                        if (p < train.BrakeLine3PressurePSI && p < lead.MainResPressurePSI )  // Apply the engine brake as the pressure decreases
                         {
-                                case ValveState.Release: leadLoco.SignalEvent(Event.EngineBrakePressureIncrease); break;
-                                case ValveState.Apply: leadLoco.SignalEvent(Event.EngineBrakePressureDecrease); break;
-                                case ValveState.Lap: leadLoco.SignalEvent(Event.EngineBrakePressureStoppedChanging); break;
+                            float dp = elapsedClockSeconds * lead.EngineBrakeApplyRatePSIpS / (last - first + 1);
+                            if (p + dp > train.BrakeLine3PressurePSI)
+                                dp = train.BrakeLine3PressurePSI - p;
+                            if (train.Cars[i] is MSTSLocomotive loco) // If this is a locomotive, drain air from main reservoir
+                            {
+                                float volumeRatio = brakeSystem.GetCylVolumeM3() / loco.MainResVolumeM3;
+                                if (loco.MainResPressurePSI - dp * volumeRatio < p + dp)
+                                {
+                                    dp = (loco.MainResPressurePSI - p) / (1 + volumeRatio);
+                                }
+                                if (dp < 0) dp = 0;
+                                loco.MainResPressurePSI -= dp * volumeRatio;
+                            }
+                            else // Otherwise, drain from locomotive engine brake pipe
+                            {
+                                if (lead.BrakeSystem.BrakeLine3PressurePSI - dp < p + dp)
+                                {
+                                    dp = (lead.BrakeSystem.BrakeLine3PressurePSI - p) / 2;
+                                }
+                                if (dp < 0) dp = 0;
+                                lead.BrakeSystem.BrakeLine3PressurePSI -= dp;
+                            }
+                            p += dp;
+                            lead.EngineBrakeState = ValveState.Apply;
+                        }
+                        else if (p > train.BrakeLine3PressurePSI)  // Release the engine brake as the pressure increases in the brake cylinder
+                        {
+                            float dp = elapsedClockSeconds * lead.EngineBrakeReleaseRatePSIpS / (last - first + 1);
+                            if (p - dp < train.BrakeLine3PressurePSI)
+                                dp = p - train.BrakeLine3PressurePSI;
+                            p -= dp;
+                            lead.EngineBrakeState = ValveState.Release;
+                        }
+                        else  // Engine brake does not change
+                            lead.EngineBrakeState = ValveState.Lap;
+                        if (lead.EngineBrakeState != prevState)
+                            switch (lead.EngineBrakeState)
+                            {
+                                case ValveState.Release: lead.SignalEvent(Event.EngineBrakePressureIncrease); break;
+                                case ValveState.Apply: lead.SignalEvent(Event.EngineBrakePressureDecrease); break;
+                                case ValveState.Lap: lead.SignalEvent(Event.EngineBrakePressureStoppedChanging); break;
+                            }
+                        brakeSystem.BrakeLine3PressurePSI = p;
                     }
                 }
-
-                // Propagate engine brake pipe pressure to MU'd vehicles in a simplified manner
-                // Instantly equalizes pressure between adjacent vehicles, may do something more realistic later
-                float totalVolume = 0.0f;
-                float totalAir = 0.0f;
-
-                for (int j = 0; j < train.LocoGroups[i].Count; j++)
-                {
-                    totalVolume += train.LocoGroups[i][j].BrakeSystem.BrakePipeVolumeM3;
-                    totalAir += train.LocoGroups[i][j].BrakeSystem.BrakePipeVolumeM3 * train.LocoGroups[i][j].BrakeSystem.BrakeLine3PressurePSI;
-
-                }
-                foreach (TrainCar loco in train.LocoGroups[i])
-                    loco.BrakeSystem.BrakeLine3PressurePSI = totalAir / totalVolume;
             }
         }
 

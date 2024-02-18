@@ -1171,7 +1171,8 @@ namespace Orts.Simulation.RollingStocks
             var brakeInfoValue = brakeValue(Simulator.Catalog.GetString("BP"), Simulator.Catalog.GetString("Flow"));
             status.AppendFormat("{0:F0}\t", brakeInfoValue);
             // Air flow meter
-            status.AppendFormat("{0:F0}\t", FormatStrings.FormatAirFlow(FilteredBrakePipeFlowM3pS, IsMetric));
+            brakeInfoValue = brakeValue(Simulator.Catalog.GetString("Flow"), Simulator.Catalog.GetString("EOT"));
+            status.AppendFormat("{0:F0}\t", brakeInfoValue);
 
             // Remote
             if (dataDpu)

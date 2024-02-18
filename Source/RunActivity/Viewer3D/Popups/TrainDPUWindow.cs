@@ -653,18 +653,22 @@ namespace Orts.Viewer3D.Popups
                     var k = 0;
                     var dpUnitId = 0;
                     var dpUId = -1;
-                    foreach (TrainCar locoCar in train.DPLeadUnits)
+                    for (var i = 0; i < train.Cars.Count; i++)
                     {
-                        if (locoCar is MSTSDieselLocomotive loco)
+                        if (train.Cars[i] is MSTSDieselLocomotive)
                         {
-                            var status = loco.GetDpuStatus(normalVerticalMode).Split('\t');
-                            var fence = ((dpUnitId != (dpUnitId = locoCar.RemoteControlGroup)) ? "|" : " ");
-                            for (var j = 0; j < status.Length; j++)
+                            if (dpUId != (train.Cars[i] as MSTSLocomotive).DPUnitID)
                             {
-                                // fence
-                                tempStatus[k, j] = fence + status[j];
+                                var status = (train.Cars[i] as MSTSDieselLocomotive).GetDpuStatus(normalVerticalMode).Split('\t');
+                                var fence = ((dpUnitId != (dpUnitId = train.Cars[i].RemoteControlGroup)) ? "|" : " ");
+                                for (var j = 0; j < status.Length; j++)
+                                {
+                                    // fence
+                                    tempStatus[k, j] = fence + status[j];
+                                }
+                                dpUId = (train.Cars[i] as MSTSLocomotive).DPUnitID;
+                                k++;
                             }
-                            k++;
                         }
                     }
 

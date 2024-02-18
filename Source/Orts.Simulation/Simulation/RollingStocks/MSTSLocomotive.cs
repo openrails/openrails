@@ -445,10 +445,6 @@ namespace Orts.Simulation.RollingStocks
         public bool DoesBrakeCutPower { get; private set; }
         public float BrakeCutsPowerAtBrakeCylinderPressurePSI { get; private set; }
         public bool DoesHornTriggerBell { get; private set; }
-        public bool DPSyncTrainApplication { get; private set; }
-        public bool DPSyncTrainRelease { get; private set; }
-        public bool DPSyncEmergency { get; private set; }
-        public bool DPSyncIndependent { get; private set; } = true;
 
         protected const float DefaultCompressorRestartToMaxSysPressureDiff = 35;    // Used to check if difference between these two .eng parameters is correct, and to correct it
         protected const float DefaultMaxMainResToCompressorRestartPressureDiff = 10; // Used to check if difference between these two .eng parameters is correct, and to correct it
@@ -1146,19 +1142,6 @@ namespace Orts.Simulation.RollingStocks
                                 break;
                         }
                     }
-                    break;
-                case "engine(ortsdpbrakesynchronization":
-                    var dpSyncModes = stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(',');
-                    if (dpSyncModes.Contains("apply"))
-                        DPSyncTrainApplication = true;
-                    if (dpSyncModes.Contains("release"))
-                        DPSyncTrainRelease = true;
-                    if (dpSyncModes.Contains("emergency"))
-                        DPSyncEmergency = true;
-                    if (dpSyncModes.Contains("independent"))
-                        DPSyncIndependent = true;
-                    else // Independent synchronization is assumed to be enabled unless explicitly not enabled
-                        DPSyncIndependent = false;
                     break;
                 case "engine(ortsdynamicblendingoverride": DynamicBrakeBlendingOverride = stf.ReadBoolBlock(false); break;
                 case "engine(ortsdynamicblendingforcematch": DynamicBrakeBlendingForceMatch = stf.ReadBoolBlock(false); break;
@@ -2778,20 +2761,11 @@ namespace Orts.Simulation.RollingStocks
             if (MainResPressurePSI < CompressorRestartPressurePSI && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn && !CompressorIsOn)
             {
                 SignalEvent(Event.CompressorOn);
-                foreach (List<TrainCar> locoGroup in Train.LocoGroups)
+                foreach (var car in Train.Cars)
                 {
-                    // Synchronize compressor between coupled locomotives
-                    if (locoGroup.Contains(this as TrainCar))
+                    if (car is MSTSLocomotive loco && loco.RemoteControlGroup == 0 && loco.LocomotivePowerSupply.AuxiliaryPowerSupplyOn && !loco.CompressorIsOn && loco.CompressorIsMUControlled)
                     {
-                        foreach (TrainCar locoCar in locoGroup)
-                            if (locoCar is MSTSLocomotive loco && loco.LocomotivePowerSupply.AuxiliaryPowerSupplyOn && !loco.CompressorIsOn)
                         loco.SignalEvent(Event.CompressorOn);
-                    }
-                    else if (CompressorIsMUControlled) // Synchronize compressor between remote groups if configured to do so
-                    {
-                        foreach (TrainCar remoteLocoCar in locoGroup)
-                            if (remoteLocoCar is MSTSLocomotive remoteLoco && remoteLoco.LocomotivePowerSupply.AuxiliaryPowerSupplyOn && !remoteLoco.CompressorIsOn && remoteLoco.CompressorIsMUControlled)
-                                remoteLoco.SignalEvent(Event.CompressorOn);
                     }
                 }
             }
@@ -5637,32 +5611,6 @@ namespace Orts.Simulation.RollingStocks
                             case CABViewControlUnits.CUBIC_M_S:
                             default:
                                 data = this.FilteredBrakePipeFlowM3pS;
-                                break;
-
-                        }
-                        break;
-                    }
-                case CABViewControlTypes.ORTS_TRAIN_AIR_FLOW_METER:
-                    {
-                        switch (cvc.Units)
-                        {
-                            case CABViewControlUnits.CUBIC_FT_MIN:
-                                data = this.Train.TotalBrakePipeFlowM3pS * 35.3147f * 60.0f;
-                                break;
-
-                            case CABViewControlUnits.LITRES_S:
-                            case CABViewControlUnits.LITERS_S:
-                                data = this.Train.TotalBrakePipeFlowM3pS * 1000.0f;
-                                break;
-
-                            case CABViewControlUnits.LITRES_MIN:
-                            case CABViewControlUnits.LITERS_MIN:
-                                data = this.Train.TotalBrakePipeFlowM3pS * 1000.0f * 60.0f;
-                                break;
-
-                            case CABViewControlUnits.CUBIC_M_S:
-                            default:
-                                data = this.Train.TotalBrakePipeFlowM3pS;
                                 break;
 
                         }
