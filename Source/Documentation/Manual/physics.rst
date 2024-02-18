@@ -3120,10 +3120,10 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   Relay valves may be installed to achieve higher brake cylinder pressures,
   dynamic brake blending or variable load compensation.
 - ``Wagon(ORTSBrakeRelayValveInshot`` -- Sets the "in-shot" pressure for the relay
-  valve. Relay valves with a ratio less than 1 may not produce sufficient pressure
-  to extend the brake cylinders. In-shot solves this problem by applying additional
-  pressure at a 1:1 ratio, regardless of the actual relay valve ratio. The pressure
-  defined here is the maximum amount of additional pressure to apply.
+  valve. This pressure will be added to the regular output of the relay valve for any
+  application, effectively setting a minimum brake cylinder pressure. Many step down
+  relay valves (ratio less than 1) utilize in-shot to ensure brake cylinders extend
+  fully for light train brake applications.
 - ``Wagon(ORTSEngineBrakeRelayValveRatio`` -- Same as ``ORTSBrakeRelayValveRatio``,
   but for the engine brake.
 - ``Wagon(ORTSEngineBrakeRelayValveInshot`` -- Same as ``ORTSBrakeRelayValveInshot``,
