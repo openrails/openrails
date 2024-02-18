@@ -490,13 +490,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (Car.Simulator.Settings.SimpleControlPhysics && EmergResVolumeM3 > 2.0)
                 EmergResVolumeM3 = 0.7f;
 
-            if (ServiceMaxCylPressurePSI == 0)
-                ServiceMaxCylPressurePSI = MaxTripleValveCylPressurePSI;
+            // Set default values for any optional tokens that are unset
             if (MaxTripleValveCylPressurePSI == 0)
                 MaxTripleValveCylPressurePSI = MaxCylPressurePSI / RelayValveRatio;
+            if (ServiceMaxCylPressurePSI == 0)
+                ServiceMaxCylPressurePSI = MaxTripleValveCylPressurePSI;
             if (EngineRelayValveRatio == 0)
                 EngineRelayValveRatio = RelayValveRatio;
-
             if (ServiceApplicationRatePSIpS == 0)
                 ServiceApplicationRatePSIpS = MaxApplicationRatePSIpS;
 
@@ -546,7 +546,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             
             RelayValveFitted |= (Car is MSTSLocomotive loco && (loco.DynamicBrakeAutoBailOff || loco.DynamicBrakePartialBailOff)) ||
                 (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.DistributingValve || (Car as MSTSWagon).SupplyReservoirPresent ||
-                TwoStageRelayValveRatio != 0;
+                TwoStageRelayValveRatio != 0 || RelayValveInshot != 0 || EngineRelayValveInshot != 0;
 
             // If user specified only one two stage speed, set the other to be equal
             if (TwoStageSpeedDownMpS == 0 && TwoStageSpeedUpMpS > 0)
