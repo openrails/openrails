@@ -367,6 +367,26 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float MaxIndicatedHorsePowerHP;
 
         /// <summary>
+        /// Steam Engine unbalanced mass on wheels - per side. 
+        /// </summary>
+        public float ExcessWheelBalanceLbs;
+
+        /// <summary>
+        /// Steam Engine unbalanced wheel warning. 
+        /// </summary>
+        public bool IsWheelHammerForceWarning;
+
+        /// <summary>
+        /// Steam Engine unbalanced large overload. 
+        /// </summary>
+        public bool IsWheelHammerForce;
+
+        /// <summary>
+        /// Steam Engine hammer force per wheel - excessive values of this could cause track deformities. 
+        /// </summary>
+        public float HammerForceLbs;
+
+        /// <summary>
         /// Steam Engine drive wheel rev per second
         /// </summary>
         public float DriveWheelRevRpS;
@@ -699,6 +719,10 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                         MaxIndicatedHorsePowerHP = stf.ReadFloatBlock(STFReader.UNITS.Power, null);
                         MaxIndicatedHorsePowerHP = W.ToHp(MaxIndicatedHorsePowerHP);  // Convert input to HP for use internally in this module
                         break;
+                    case "excesswheelbalance":
+                        var excess = stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
+                        ExcessWheelBalanceLbs = Kg.ToLb(excess);  // Convert input to lbs for use internally in this module
+                        break;
 
                     case "auxiliarysteamenginetype":
                         stf.MustMatch("(");
@@ -731,6 +755,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
             LPCylindersDiameterM = other.LPCylindersDiameterM;
             BoosterCutoff = other.BoosterCutoff;
             MaxIndicatedHorsePowerHP = other.MaxIndicatedHorsePowerHP;
+            ExcessWheelBalanceLbs = other.ExcessWheelBalanceLbs;
             BoosterThrottleCutoff = other.BoosterThrottleCutoff;
             BoosterGearRatio = other.BoosterGearRatio;
             AttachedAxleId = other.AttachedAxleId;

@@ -656,8 +656,6 @@ namespace Orts.Simulation.RollingStocks
 
         float ReciprocatingWeightLb = 580.0f;  // Weight of reciprocating parts of the rod driving gears
         float ConnectingRodWeightLb = 600.0f;  // Weignt of connecting rod
-        float ConnectingRodBalanceWeightLb = 300.0f; // Balance weight for connecting rods
-        float ExcessBalanceFactor = 400.0f;  // Factor to be included in excess balance formula
         float CrankRadiusFt = 1.08f;        // Assume crank and rod lengths to give a 1:10 ratio - a reasonable av for steam locomotives?
         float ConnectRodLengthFt = 10.8f;
         float RodCoGFt = 4.32f;  // 0.4 from crank end of rod
@@ -1228,25 +1226,6 @@ namespace Orts.Simulation.RollingStocks
                 MaxBoilerPressurePSI = 1;
             if (ZeroError(BoilerVolumeFT3, "BoilerVolume"))
                 BoilerVolumeFT3 = 1;
-
-            // For light locomotives reduce the weight of the various connecting rods, as the default values are for larger locomotives. This will reduce slip on small locomotives
-            // It is not believed that the weight reduction on the connecting rods is linear with the weight of the locmotive. However this requires futher research, and this section is a 
-            // work around until any further research is undertaken
-            // "The following code provides a simple 2-step adjustment, as not enough information is currently available for a more flexible one."
-            if (MassKG < Kg.FromTUS(10))
-            {
-                const float reductionfactor = 0.2f;
-                ReciprocatingWeightLb = 580.0f * reductionfactor;  // Weight of reciprocating parts of the rod driving gears
-                ConnectingRodWeightLb = 600.0f * reductionfactor;  // Weignt of connecting rod
-                ConnectingRodBalanceWeightLb = 300.0f * reductionfactor; // Balance weight for connecting rods
-            }
-            else if (MassKG < Kg.FromTUS(20))
-            {
-                const float reductionfactor = 0.3f;
-                ReciprocatingWeightLb = 580.0f * reductionfactor;  // Weight of reciprocating parts of the rod driving gears
-                ConnectingRodWeightLb = 600.0f * reductionfactor;  // Weignt of connecting rod
-                ConnectingRodBalanceWeightLb = 300.0f * reductionfactor; // Balance weight for connecting rods
-            }
 
             #region Initialise additional steam properties
 
@@ -2019,6 +1998,26 @@ namespace Orts.Simulation.RollingStocks
                     // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
                     SteamEngines[i].MaxIndicatedHorsePowerHP = MaxSpeedFactor * (SteamEngines[i].MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;  // To be checked what MaxTractive Effort is for the purposes of this formula.
                     MaxIndicatedHorsePowerHP += SteamEngines[i].MaxIndicatedHorsePowerHP;
+                }
+
+                if (SteamEngines[i].ExcessWheelBalanceLbs == 0)
+                {
+                    SteamEngines[i].ExcessWheelBalanceLbs = 440f; // set to a default value.
+                }
+
+                // For light locomotives reduce the weight of the various connecting rods, as the default values are for larger locomotives. This will reduce slip on small locomotives
+                // It is not believed that the weight reduction on the connecting rods is linear with the weight of the locmotive. However this requires futher research, and this section is a 
+                // work around until any further research is undertaken
+                // "The following code provides a simple 2-step adjustment, as not enough information is currently available for a more flexible one."
+                if (MassKG < Kg.FromTUS(10))
+                {
+                    const float reductionfactor = 0.2f;
+                    SteamEngines[i].ExcessWheelBalanceLbs *= reductionfactor;
+                }
+                else if (MassKG < Kg.FromTUS(20))
+                {
+                    const float reductionfactor = 0.3f;
+                    SteamEngines[i].ExcessWheelBalanceLbs *= reductionfactor;
                 }
             }
 
@@ -5981,8 +5980,39 @@ namespace Orts.Simulation.RollingStocks
                         float verticalThrustForcelbf = effectiveRotationalForcelbf * verticalThrustFactor;
 
                         // Calculate Excess Balance
-                        float excessBalanceWeightLb = (ConnectingRodWeightLb + ReciprocatingWeightLb) - ConnectingRodBalanceWeightLb - (Kg.ToLb(MassKG) / ExcessBalanceFactor);
-                        float excessBalanceForcelbf = inertiaSpeedCorrectionFactor * excessBalanceWeightLb * sin;
+                        float excessBalanceForcelbf = inertiaSpeedCorrectionFactor * SteamEngines[numberofengine].ExcessWheelBalanceLbs * sin;
+
+                        // Hammer (dynamic) force due to the rotation of the wheels is calculated  
+                        // From The Steam Locomotive by Ralph Johnson (pg 276 ) - 
+                        // Hammer force = 1.6047 x stroke (ins) x excessbalancemass (lbf)  x speed^2 (mph) / ( Dia of drive wheel^2 (ins))  - This is per wheel
+                        // The excess balance weight is on one side of the locomotive, is spread evenly over the number of wheels (this is not always the
+                        // case for prototypical locomotives)
+
+                        if (SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                        {
+                            SteamEngines[numberofengine].HammerForceLbs = (1.6047f * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) * SteamEngines[numberofengine].ExcessWheelBalanceLbs * (float)Math.Pow(MpS.ToMpH(absSpeedMpS), 2)) / ((float)Math.Pow(Me.ToIn(2.0f * SteamEngines[numberofengine].AttachedAxle.WheelRadiusM), 2) * SteamEngines[numberofengine].AttachedAxle.NumWheelsetAxles);
+
+                            // weight on each individual wheel, rather then each axle
+                            var wheelWeight = SteamEngines[numberofengine].AttachedAxle.WheelWeightKg / (SteamEngines[numberofengine].AttachedAxle.NumWheelsetAxles * 2f);
+
+                            if (SteamEngines[numberofengine].HammerForceLbs > wheelWeight)
+                            {
+                                SteamEngines[numberofengine].IsWheelHammerForce = true;
+                            }
+                            else
+                            {
+                                SteamEngines[numberofengine].IsWheelHammerForce = false;
+                            }
+
+                            if (SteamEngines[numberofengine].HammerForceLbs > 0.9 * wheelWeight)
+                            {
+                                SteamEngines[numberofengine].IsWheelHammerForceWarning = true;
+                            }
+                            else
+                            {
+                                SteamEngines[numberofengine].IsWheelHammerForceWarning = false;
+                            }
+                        }
 
                         // Account for the position of the crosshead position. In other words it depends upon whether the ExcessBalance is above or below the axle.
                         // The crosshead will be -ve for normalised angles between 0 - 180, and +ve for normalised angles between 180 - 360
@@ -7935,7 +7965,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     for (int i = 0; i < SteamEngines.Count; i++)
                     {
-                        status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7} \t{8:N0} {9}\n",
+                        status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7} \t{8:N0} {9}\t{10} \t{11:N0}{12}\n",
                          Simulator.Catalog.GetString("Force:"),
                          Simulator.Catalog.GetString("Eng#"),
                         i + 1,
@@ -7945,7 +7975,10 @@ namespace Orts.Simulation.RollingStocks
                          FormatStrings.FormatForce(SteamEngines[i].DisplayTractiveForceN, IsMetric),
                          Simulator.Catalog.GetString("DrvWhl"),
                          pS.TopM(SteamEngines[i].DriveWheelRevRpS),
-                         FormatStrings.rpm
+                         FormatStrings.rpm,
+                         Simulator.Catalog.GetString("Hammer"),
+                         FormatStrings.FormatForce(N.FromLbf(SteamEngines[i].HammerForceLbs), IsMetric),
+                         SteamEngines[i].IsWheelHammerForce ? "!!!" : SteamEngines[i].IsWheelHammerForceWarning ? "???" : ""
                          );
 
                     }
