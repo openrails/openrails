@@ -30,6 +30,7 @@ using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Viewer3D.Processes;
+using Orts.Viewer3D.RollingStock;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;
@@ -43,6 +44,7 @@ namespace Orts.Viewer3D
     {
         readonly Viewer Viewer;
         readonly TrainCar Car;
+        readonly TrainCarViewer CarViewer;
         readonly Material LightGlowMaterial;
         readonly Material LightConeMaterial;
 
@@ -66,10 +68,8 @@ namespace Orts.Viewer3D
         public bool BellOn;
         public int MU;
 
-        // Array of bools, one per type of condition in the same order as presented in the 'LightCondition' class
-        // A 'true' indicates all lights in this set ignore the corresponding condition, so we don't need to waste time thinking about it
-        // Remember to expand this if more conditions are added!
-        public bool[] IgnoredConditions = new bool[15];
+        // Caching for shape object world coordinate matricies
+        public Dictionary<int, Matrix> ShapeXNATranslations = new Dictionary<int, Matrix>();
 
         public bool IsLightConeActive { get { return ActiveLightCone != null; } }
         List<LightPrimitive> LightPrimitives = new List<LightPrimitive>();
@@ -84,10 +84,12 @@ namespace Orts.Viewer3D
         public float LightConeMinDotProduct;
         public Vector4 LightConeColor;
 
-        public LightViewer(Viewer viewer, TrainCar car)
+        public LightViewer(Viewer viewer, TrainCar car, TrainCarViewer carViewer)
         {
             Viewer = viewer;
             Car = car;
+            CarViewer = carViewer;
+
             LightGlowMaterial = viewer.MaterialManager.Load("LightGlow");
             LightConeMaterial = viewer.MaterialManager.Load("LightCone");
 
@@ -105,39 +107,42 @@ namespace Orts.Viewer3D
                             LightPrimitives.Add(new LightConePrimitive(this, Viewer.RenderProcess, light));
                             break;
                     }
+
+                    // Initialization step for light shape attachment, can't do this step in LightCollection
+                    if (light.ShapeIndex != -1)
+                    {
+                        if (light.ShapeIndex < 0 || light.ShapeIndex >= (CarViewer as MSTSWagonViewer).TrainCarShape.XNAMatrices.Count())
+                            Trace.TraceWarning("Light in car {0} has invalid shape index defined, shape index {1} does not exist",
+                                (Car as MSTSWagon).WagFilePath, light.ShapeIndex);
+                        light.ShapeIndex = 0;
+                    }
+                    else
+                    {
+                        if (light.ShapeHierarchy != null)
+                        {
+                            if ((CarViewer as MSTSWagonViewer).TrainCarShape.SharedShape.MatrixNames.Contains(light.ShapeHierarchy))
+                            {
+                                light.ShapeIndex = (CarViewer as MSTSWagonViewer).TrainCarShape.SharedShape.MatrixNames.IndexOf(light.ShapeHierarchy);
+                            }
+                            else
+                            {
+                                Trace.TraceWarning("Light in car {0} has invalid shape index defined, shape name {1} does not exist",
+                                    (Car as MSTSWagon).WagFilePath, light.ShapeHierarchy);
+                                light.ShapeIndex = 0;
+                            }
+                        }
+                        else
+                            light.ShapeIndex = 0;
+                    }
+
+                    if (!ShapeXNATranslations.ContainsKey(light.ShapeIndex))
+                        ShapeXNATranslations.Add(light.ShapeIndex, Matrix.Identity);
                 }
             }
             HasLightCone = LightPrimitives.Any(lm => lm is LightConePrimitive);
 #if DEBUG_LIGHT_STATES
             Console.WriteLine();
 #endif
-            // Determine which, if any, conditions are ignored by all lights
-            // Assume everything is ignored at the start
-            for (int i = 0; i < IgnoredConditions.Length; i++)
-            {
-                IgnoredConditions[i] = true;
-            }
-            foreach (LightPrimitive lightPrim in LightPrimitives)
-            {
-                foreach (LightCondition condition in lightPrim.Light.Conditions)
-                {
-                    IgnoredConditions[0] &= condition.Headlight == LightHeadlightCondition.Ignore;
-                    IgnoredConditions[1] &= condition.Unit == LightUnitCondition.Ignore;
-                    IgnoredConditions[2] &= condition.Penalty == LightPenaltyCondition.Ignore;
-                    IgnoredConditions[3] &= condition.Control == LightControlCondition.Ignore;
-                    IgnoredConditions[4] &= condition.Service == LightServiceCondition.Ignore;
-                    IgnoredConditions[5] &= condition.TimeOfDay == LightTimeOfDayCondition.Ignore;
-                    IgnoredConditions[6] &= condition.Weather == LightWeatherCondition.Ignore;
-                    IgnoredConditions[7] &= condition.Coupling == LightCouplingCondition.Ignore;
-                    IgnoredConditions[8] &= condition.Battery == LightBatteryCondition.Ignore;
-                    IgnoredConditions[9] &= condition.Brake == LightBrakeCondition.Ignore;
-                    IgnoredConditions[10] &= condition.Reverser == LightReverserCondition.Ignore;
-                    IgnoredConditions[11] &= condition.Doors == LightDoorsCondition.Ignore;
-                    IgnoredConditions[12] &= condition.Horn == LightHornCondition.Ignore;
-                    IgnoredConditions[13] &= condition.Bell == LightBellCondition.Ignore;
-                    IgnoredConditions[14] &= condition.MU == LightMUCondition.Ignore;
-                }
-            }
 
             UpdateActiveLightCone();
         }
@@ -192,20 +197,31 @@ namespace Orts.Viewer3D
             foreach (var lightPrimitive in LightPrimitives)
                 lightPrimitive.PrepareFrame(frame, elapsedTime);
 
-            int dTileX = Car.WorldPosition.TileX - Viewer.Camera.TileX;
-            int dTileZ = Car.WorldPosition.TileZ - Viewer.Camera.TileZ;
+            var trainCarShape = (CarViewer as MSTSWagonViewer).TrainCarShape;
+
+            int dTileX = trainCarShape.Location.TileX - Viewer.Camera.TileX;
+            int dTileZ = trainCarShape.Location.TileZ - Viewer.Camera.TileZ;
             Matrix xnaDTileTranslation = Matrix.CreateTranslation(dTileX * 2048, 0, -dTileZ * 2048);  // object is offset from camera this many tiles
-            xnaDTileTranslation = Car.WorldPosition.XNAMatrix * xnaDTileTranslation;
+            xnaDTileTranslation = trainCarShape.Location.XNAMatrix * xnaDTileTranslation;
 
             Vector3 mstsLocation = new Vector3(xnaDTileTranslation.Translation.X, xnaDTileTranslation.Translation.Y, -xnaDTileTranslation.Translation.Z);
+
+            // Calculate XNA matrix for shape file objects by offsetting from car's location
+            // The new List<int> is intentional, this allows the dictionary to be changed while iterating
+            foreach (int index in new List<int>(ShapeXNATranslations.Keys))
+                ShapeXNATranslations[index] = trainCarShape.XNAMatrices[index] * xnaDTileTranslation;
 
             float objectRadius = 20; // Even more arbitrary.
             float objectViewingDistance = Viewer.Settings.ViewingDistance; // Arbitrary.
             if (Viewer.Camera.CanSee(mstsLocation, objectRadius, objectViewingDistance))
                 foreach (var lightPrimitive in LightPrimitives)
-                    if (lightPrimitive.Enabled || lightPrimitive.FadeOut)
-                        if (lightPrimitive is LightGlowPrimitive)
+                    if ((lightPrimitive.Enabled || lightPrimitive.FadeOut) && lightPrimitive is LightGlowPrimitive)
+                    {
+                        if (ShapeXNATranslations.TryGetValue(lightPrimitive.Light.ShapeIndex, out Matrix lightMatrix))
+                            frame.AddPrimitive(LightGlowMaterial, lightPrimitive, RenderPrimitiveGroup.Lights, ref lightMatrix);
+                        else
                             frame.AddPrimitive(LightGlowMaterial, lightPrimitive, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
+                    }
 
 #if DEBUG_LIGHT_CONE
             foreach (var lightPrimitive in LightPrimitives)
@@ -217,9 +233,11 @@ namespace Orts.Viewer3D
             // Set the active light cone info for the material code.
             if (HasLightCone && ActiveLightCone != null)
             {
-                LightConePosition = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Position1, ActiveLightCone.Position2, ActiveLightCone.Fade.Y), xnaDTileTranslation);
-                LightConeDirection = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Direction1, ActiveLightCone.Direction2, ActiveLightCone.Fade.Y), Car.WorldPosition.XNAMatrix);
-                LightConeDirection -= Car.WorldPosition.XNAMatrix.Translation;
+                int coneIndex = ActiveLightCone.Light.ShapeIndex;
+
+                LightConePosition = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Position1, ActiveLightCone.Position2, ActiveLightCone.Fade.Y), ShapeXNATranslations[coneIndex]);
+                LightConeDirection = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Direction1, ActiveLightCone.Direction2, ActiveLightCone.Fade.Y), ShapeXNATranslations[coneIndex]);
+                LightConeDirection -= ShapeXNATranslations[coneIndex].Translation;
                 LightConeDirection.Normalize();
                 LightConeDistance = MathHelper.Lerp(ActiveLightCone.Distance1, ActiveLightCone.Distance2, ActiveLightCone.Fade.Y);
                 LightConeMinDotProduct = (float)Math.Cos(MathHelper.Lerp(ActiveLightCone.Angle1, ActiveLightCone.Angle2, ActiveLightCone.Fade.Y));
@@ -238,7 +256,6 @@ namespace Orts.Viewer3D
         {
             position = lightState.Position;
             position.Z *= -1;
-            direction = -Vector3.UnitZ;
             direction = Vector3.Transform(Vector3.Transform(-Vector3.UnitZ, Matrix.CreateRotationX(MathHelper.ToRadians(-lightState.Elevation.Y))), Matrix.CreateRotationY(MathHelper.ToRadians(-lightState.Azimuth.Y)));
             angle = MathHelper.ToRadians(lightState.Angle) / 2;
             radius = lightState.Radius / 2;
@@ -262,24 +279,24 @@ namespace Orts.Viewer3D
 
             // There are a lot of conditions now! IgnoredConditions[] stores which conditions are ignored, allowing shortcutting of many of these calculations
             // Should prevent some unneeded computation, but is a little messy. May revise in the future
-
+            
             // Headlight
-			int newTrainHeadlight = !IgnoredConditions[0] ? (Car.Train != null ? Car.Train.TrainType != Train.TRAINTYPE.STATIC ? leadLocomotiveCar.Headlight : 0 : 0) : 0;
+			int newTrainHeadlight = !Car.Lights.IgnoredConditions[0] ? (Car.Train != null ? Car.Train.TrainType != Train.TRAINTYPE.STATIC ? leadLocomotiveCar.Headlight : 0 : 0) : 0;
             // Unit
             bool locomotiveFlipped = leadLocomotiveCar != null && leadLocomotiveCar.Flipped;
             bool locomotiveReverseCab = leadLocomotive != null && leadLocomotive.UsingRearCab;
             bool newCarIsReversed = Car.Flipped ^ locomotiveFlipped ^ locomotiveReverseCab;
-            bool newCarIsFirst = !IgnoredConditions[1] && Car.Train == null || (locomotiveFlipped ^ locomotiveReverseCab ? Car.Train.LastCar : Car.Train.FirstCar) == Car;
-            bool newCarIsLast = !IgnoredConditions[1] && Car.Train == null || (locomotiveFlipped ^ locomotiveReverseCab ? Car.Train.FirstCar : Car.Train.LastCar) == Car;
+            bool newCarIsFirst = !Car.Lights.IgnoredConditions[1] && Car.Train == null || (locomotiveFlipped ^ locomotiveReverseCab ? Car.Train.LastCar : Car.Train.FirstCar) == Car;
+            bool newCarIsLast = !Car.Lights.IgnoredConditions[1] && Car.Train == null || (locomotiveFlipped ^ locomotiveReverseCab ? Car.Train.FirstCar : Car.Train.LastCar) == Car;
             // Penalty
-			var newPenalty = !IgnoredConditions[2] && leadLocomotive != null && leadLocomotive.TrainBrakeController.EmergencyBraking;
+			bool newPenalty = !Car.Lights.IgnoredConditions[2] && leadLocomotive != null && leadLocomotive.TrainBrakeController.EmergencyBraking;
             // Control
-            bool newCarIsPlayer = !IgnoredConditions[3] && Car.Train != null && (Car.Train == Viewer.PlayerTrain || Car.Train.TrainType == Train.TRAINTYPE.REMOTE);
+            bool newCarIsPlayer = !Car.Lights.IgnoredConditions[3] && Car.Train != null && (Car.Train == Viewer.PlayerTrain || Car.Train.TrainType == Train.TRAINTYPE.REMOTE);
             // Service - if a player or AI train, then will considered to be in servie, loose consists will not be considered to be in service.
-            bool newCarInService = !IgnoredConditions[4] && Car.Train != null && (Car.Train == Viewer.PlayerTrain || Car.Train.TrainType == Train.TRAINTYPE.REMOTE || Car.Train.TrainType == Train.TRAINTYPE.AI);
+            bool newCarInService = !Car.Lights.IgnoredConditions[4] && Car.Train != null && (Car.Train == Viewer.PlayerTrain || Car.Train.TrainType == Train.TRAINTYPE.REMOTE || Car.Train.TrainType == Train.TRAINTYPE.AI);
             // Time of day
             bool newIsDay = false;
-            if (!IgnoredConditions[5])
+            if (!Car.Lights.IgnoredConditions[5])
             {
                 if (Viewer.Settings.UseMSTSEnv == false)
                     newIsDay = Viewer.World.Sky.SolarDirection.Y > 0;
@@ -288,25 +305,25 @@ namespace Orts.Viewer3D
 
             }
             // Weather
-            WeatherType newWeather = !IgnoredConditions[6] ? Viewer.Simulator.WeatherType : WeatherType.Clear;
+            WeatherType newWeather = !Car.Lights.IgnoredConditions[6] ? Viewer.Simulator.WeatherType : WeatherType.Clear;
             // Coupling
-            bool newCarCoupledFront = !IgnoredConditions[7] && Car.Train != null && (Car.Train.Cars.Count > 1) && ((Car.Flipped ? Car.Train.LastCar : Car.Train.FirstCar) != Car);
-            bool newCarCoupledRear = !IgnoredConditions[7] && Car.Train != null && (Car.Train.Cars.Count > 1) && ((Car.Flipped ? Car.Train.FirstCar : Car.Train.LastCar) != Car);
+            bool newCarCoupledFront = !Car.Lights.IgnoredConditions[7] && Car.Train != null && (Car.Train.Cars.Count > 1) && ((Car.Flipped ? Car.Train.LastCar : Car.Train.FirstCar) != Car);
+            bool newCarCoupledRear = !Car.Lights.IgnoredConditions[7] && Car.Train != null && (Car.Train.Cars.Count > 1) && ((Car.Flipped ? Car.Train.FirstCar : Car.Train.LastCar) != Car);
             // Battery
-            bool newCarBatteryOn = !IgnoredConditions[8] && Car is MSTSWagon wagon ? wagon.PowerSupply?.BatteryState == PowerSupplyState.PowerOn : true;
+            bool newCarBatteryOn = !Car.Lights.IgnoredConditions[8] && Car is MSTSWagon wagon ? wagon.PowerSupply?.BatteryState == PowerSupplyState.PowerOn : true;
             // Friction brakes, activation force is arbitrary
-            bool newBrakeOn = !IgnoredConditions[9] && Car.BrakeForceN > 250.0f;
+            bool newBrakeOn = !Car.Lights.IgnoredConditions[9] && Car.BrakeForceN > 250.0f;
             // Reverser: -1: reverse, 0: within 10% of neutral, 1: forwards. Automatically swaps if this car is reversed
-            int newReverserState = !IgnoredConditions[10] ? ((Car.Train.MUDirection == Direction.N || Math.Abs(Car.Train.MUReverserPercent) < 10.0f) ? 0 : 
+            int newReverserState = !Car.Lights.IgnoredConditions[10] ? ((Car.Train.MUDirection == Direction.N || Math.Abs(Car.Train.MUReverserPercent) < 10.0f) ? 0 : 
                 Car.Train.MUDirection == Direction.Forward ? 1 : -1) * (Car.Flipped ? -1 : 1) : 0;
             // Passenger doors
-            bool newLeftDoorOpen = !IgnoredConditions[11] && Car.Train.DoorState(DoorSide.Left) != DoorState.Closed;
-            bool newRightDoorOpen = !IgnoredConditions[11] && Car.Train.DoorState(DoorSide.Right) != DoorState.Closed;
+            bool newLeftDoorOpen = !Car.Lights.IgnoredConditions[11] && Car.Train.DoorState(DoorSide.Left) != DoorState.Closed;
+            bool newRightDoorOpen = !Car.Lights.IgnoredConditions[11] && Car.Train.DoorState(DoorSide.Right) != DoorState.Closed;
             // Horn and bell (for flashing ditch lights)
-            bool newHornOn = !IgnoredConditions[12] && leadLocomotive != null && leadLocomotive.HornRecent;
-            bool newBellOn = !IgnoredConditions[13] && leadLocomotive != null && leadLocomotive.BellRecent;
+            bool newHornOn = !Car.Lights.IgnoredConditions[12] && leadLocomotive != null && leadLocomotive.HornRecent;
+            bool newBellOn = !Car.Lights.IgnoredConditions[13] && leadLocomotive != null && leadLocomotive.BellRecent;
             // Multiple unit configuration, -1: this loco is the lead loco, 0: this loco is not directly connected to the lead loco (distributed power), 1: this loco is directly connected to the lead loco
-            int newMU = !IgnoredConditions[14] ? (Car is MSTSLocomotive loco && leadLocomotive != null && loco.DPUnitID == leadLocomotive.DPUnitID ? loco == leadLocomotive ? -1 : 1 : 0) : 0;
+            int newMU = !Car.Lights.IgnoredConditions[14] ? (Car is MSTSLocomotive loco && leadLocomotive != null && loco.DPUnitID == leadLocomotive.DPUnitID ? loco == leadLocomotive ? -1 : 1 : 0) : 0;
 
             if (
                 (TrainHeadlight != newTrainHeadlight) ||

@@ -158,7 +158,7 @@ namespace Orts.Viewer3D
                 car is MSTSLocomotive ? new MSTSLocomotiveViewer(Viewer, car as MSTSLocomotive) :
                 car is MSTSWagon ? new MSTSWagonViewer(Viewer, car as MSTSWagon) :
                 null;
-            carViewer.lightDrawer = new LightViewer(Viewer, car);
+            carViewer.lightDrawer = new LightViewer(Viewer, car, carViewer);
             return carViewer;
         }
     }
