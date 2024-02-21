@@ -4448,6 +4448,27 @@ direction, ie behind wheel. Note, = 0 when not used.
 
 All sand consumption parameters are in cuft/sec.
 
+.. _physics-hammer-blow:
+
+Hammer Blow
+===========
+
+Hammer blow is as a result of the weights added to the wheels (eg connecting and reciprocating rods) of a steam 
+engine. The Excess (or Over) Balance weight was the weight that contributed to the hammer blow of the wheel, and it 
+increased typically with the square of the wheel speed.
+
+When the hammer force exceeded the weight on the wheel it was possible for the wheel to lift off the rails, this 
+created a "hammering effect" on the rails, which could damage track and other infrastructure such as bridges.
+
+The Hammer force is recorded in the HuD for the steam locomotive, and it will be in white text when "normal", 
+yellow text when within 10% of the point where the wheel will start to lift off the track, and red when the wheel 
+is lifting off the track.
+
+As a result of high hammer forces, some locomotives were speed restricted to prevent excessive damage to track 
+infrastructure.
+
+OR will use default values to set this feature up. If the Excess (or Over) Balance weight is known for a locomotive 
+it can be entered using ``ExcessRodBalance``, as a mass value.
 
 .. _physics-trailing-locomotive-resistance:
 
