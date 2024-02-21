@@ -719,7 +719,7 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
                         MaxIndicatedHorsePowerHP = stf.ReadFloatBlock(STFReader.UNITS.Power, null);
                         MaxIndicatedHorsePowerHP = W.ToHp(MaxIndicatedHorsePowerHP);  // Convert input to HP for use internally in this module
                         break;
-                    case "excesswheelbalance":
+                    case "excessrodbalance":
                         var excess = stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
                         ExcessRodBalanceLbs = Kg.ToLb(excess);  // Convert input to lbs for use internally in this module
                         break;
