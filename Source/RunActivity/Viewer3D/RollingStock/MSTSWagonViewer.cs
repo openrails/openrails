@@ -38,7 +38,7 @@ namespace Orts.Viewer3D.RollingStock
 {
     public class MSTSWagonViewer : TrainCarViewer
     {
-        protected PoseableShape TrainCarShape;
+        public PoseableShape TrainCarShape { get; protected set; }
         protected AnimatedShape FreightShape;
         protected AnimatedShape InteriorShape;
         AnimatedShape FrontCouplerShape;

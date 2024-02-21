@@ -91,6 +91,49 @@ implementation takes up much less space and guarentees that both modes of the
 light have the exact same ``States``. There is no hard limit on the number
 of conditions a light can have.
 
+Lights attached to shape sub-objects
+------------------------------------
+
+The standard lighting configuration attaches all lights to the main body of the
+locomotive or wagon. While this allows lights to move and rotate as the vehicle
+itself moves, the approach has proven insufficient for more complicated rail
+vehicles such as articulated steam locomotives.
+
+.. index::
+   single: ShapeHierarchy
+
+To facilitate lighting on such locomotives and wagons, Open Rails now allows
+for attachment of lights to any sub-object of the shape file. With the
+``ShapeHierarchy`` token placed in a ``Light ()`` block, the object the light
+will rotate and translate with can be defined using the hierarchy name of said
+object. Tools such as Shape Viewer can be used to determine the hierarchy name
+of a particular object in the shape file. For example, *"BOGIE1"* is the standard
+name for the frontmost bogie. A light attached to this bogie could be created
+like so::
+
+	Light	(
+		comment( CNDR Side Front Truck Light )
+		ShapeHierarchy ( "BOGIE1" )
+		States	(	1
+			State	(
+				LightColour ( 91fedf91 )
+				Position ( -1.427 0.583 -0.330 )
+				Azimuth ( -90 -90 -90 )
+				Radius ( 0.2 )
+			)
+		)
+	)
+
+Be aware that the ``Position`` of a light is measured relative to the center of
+the object to which the light is attached, not to the center of the locomotive
+itself. Furthermore, the naming of shape parts is not consistent between all
+shape files. If the shape name entered in ``ShapeHierarchy`` is invalid, a
+warning will be produced in the log file and the light will attach to the
+main body of the locomotive or wagon.
+
+If ``ShapeHierarchy`` is not specified in a light, the light will attach
+to the main body of the locomotive or wagon by default.
+
 .. _features-light-conditions:
 
 Open Rails specific lighting conditions
