@@ -2000,9 +2000,9 @@ namespace Orts.Simulation.RollingStocks
                     MaxIndicatedHorsePowerHP += SteamEngines[i].MaxIndicatedHorsePowerHP;
                 }
 
-                if (SteamEngines[i].ExcessWheelBalanceLbs == 0)
+                if (SteamEngines[i].ExcessRodBalanceLbs == 0)
                 {
-                    SteamEngines[i].ExcessWheelBalanceLbs = 440f; // set to a default value.
+                    SteamEngines[i].ExcessRodBalanceLbs = 440f; // set to a default value.
                 }
 
                 // For light locomotives reduce the weight of the various connecting rods, as the default values are for larger locomotives. This will reduce slip on small locomotives
@@ -2012,12 +2012,12 @@ namespace Orts.Simulation.RollingStocks
                 if (MassKG < Kg.FromTUS(10))
                 {
                     const float reductionfactor = 0.2f;
-                    SteamEngines[i].ExcessWheelBalanceLbs *= reductionfactor;
+                    SteamEngines[i].ExcessRodBalanceLbs *= reductionfactor;
                 }
                 else if (MassKG < Kg.FromTUS(20))
                 {
                     const float reductionfactor = 0.3f;
-                    SteamEngines[i].ExcessWheelBalanceLbs *= reductionfactor;
+                    SteamEngines[i].ExcessRodBalanceLbs *= reductionfactor;
                 }
             }
 
@@ -5980,7 +5980,7 @@ namespace Orts.Simulation.RollingStocks
                         float verticalThrustForcelbf = effectiveRotationalForcelbf * verticalThrustFactor;
 
                         // Calculate Excess Balance
-                        float excessBalanceForcelbf = inertiaSpeedCorrectionFactor * SteamEngines[numberofengine].ExcessWheelBalanceLbs * sin;
+                        float excessBalanceForcelbf = inertiaSpeedCorrectionFactor * SteamEngines[numberofengine].ExcessRodBalanceLbs * sin;
 
                         // Hammer (dynamic) force due to the rotation of the wheels is calculated  
                         // From The Steam Locomotive by Ralph Johnson (pg 276 ) - 
@@ -5990,10 +5990,13 @@ namespace Orts.Simulation.RollingStocks
 
                         if (SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
                         {
-                            SteamEngines[numberofengine].HammerForceLbs = (1.6047f * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) * SteamEngines[numberofengine].ExcessWheelBalanceLbs * (float)Math.Pow(MpS.ToMpH(absSpeedMpS), 2)) / ((float)Math.Pow(Me.ToIn(2.0f * SteamEngines[numberofengine].AttachedAxle.WheelRadiusM), 2) * SteamEngines[numberofengine].AttachedAxle.NumWheelsetAxles);
+                            // calculate the balance force per wheel
+                            var excessBalanceForceWheelLbs = SteamEngines[numberofengine].ExcessRodBalanceLbs / SteamEngines[numberofengine].AttachedAxle.NumWheelsetAxles;
 
                             // weight on each individual wheel, rather then each axle
                             var wheelWeight = SteamEngines[numberofengine].AttachedAxle.WheelWeightKg / (SteamEngines[numberofengine].AttachedAxle.NumWheelsetAxles * 2f);
+
+                            SteamEngines[numberofengine].HammerForceLbs = (1.6047f * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) * excessBalanceForceWheelLbs * (float)Math.Pow(MpS.ToMpH(absSpeedMpS), 2)) / ((float)Math.Pow(Me.ToIn(2.0f * SteamEngines[numberofengine].AttachedAxle.WheelRadiusM), 2) * SteamEngines[numberofengine].AttachedAxle.NumWheelsetAxles);
 
                             if (SteamEngines[numberofengine].HammerForceLbs > wheelWeight)
                             {
