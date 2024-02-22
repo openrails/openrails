@@ -7987,7 +7987,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
 
-                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
+                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13} \t{14:N0}{15}\n",
                     Simulator.Catalog.GetString("ForceTot:"),
                     Simulator.Catalog.GetString("TheorTE"),
                     FormatStrings.FormatForce(N.FromLbf(MaxTractiveEffortLbf), IsMetric),
@@ -8000,7 +8000,12 @@ namespace Orts.Simulation.RollingStocks
                     Simulator.Catalog.GetString("CritSpeed"),
                     FormatStrings.FormatSpeedDisplay(MpS.FromMpH(MaxLocoSpeedMpH), IsMetric),
                     Simulator.Catalog.GetString("SpdLmt"),
-                    IsCritTELimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
+                    IsCritTELimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                    Simulator.Catalog.GetString("Hammer"),
+                    FormatStrings.FormatForce(N.FromLbf(SteamEngines[0].HammerForceLbs), IsMetric),
+                    SteamEngines[0].IsWheelHammerForce ? "!!!" : SteamEngines[0].IsWheelHammerForceWarning ? "???" : ""
+
+                    );
 
                 status.AppendFormat("{0}\t{1}\t{2:N0} {5}/{6}\t\t{3}\t{4:N0} \t{7} {8:N2}\n",
                     Simulator.Catalog.GetString("Move:"),
