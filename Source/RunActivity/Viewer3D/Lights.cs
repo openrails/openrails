@@ -270,6 +270,10 @@ namespace Orts.Viewer3D
 
         bool UpdateState()
         {
+            // No need to update lights if there are none
+            if (Car.Lights == null)
+                return false;
+
 			Debug.Assert(Viewer.PlayerTrain.LeadLocomotive == Viewer.PlayerLocomotive ||Viewer.PlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING ||
                 Viewer.PlayerTrain.TrainType == Train.TRAINTYPE.REMOTE || Viewer.PlayerTrain.TrainType == Train.TRAINTYPE.STATIC, "PlayerTrain.LeadLocomotive must be PlayerLocomotive.");
 			var leadLocomotiveCar = Car.Train?.LeadLocomotive;
