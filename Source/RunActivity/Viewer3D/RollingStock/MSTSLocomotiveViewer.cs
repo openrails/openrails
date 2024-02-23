@@ -1700,6 +1700,8 @@ namespace Orts.Viewer3D.RollingStock
         void HandleUserInput();
         string GetControlName();
         string ControlLabel { get; }
+        Rectangle DestinationRectangleGet();
+        bool isMouseControl();
     }
 
     /// <summary>
@@ -2034,11 +2036,32 @@ namespace Orts.Viewer3D.RollingStock
                     ChangedValue = (value) =>
                     {
                         IntermediateValue %= 0.5f;
-                        IntermediateValue += NormalizedMouseMovement();
+                        if (UserInput.IsMouseLeftButtonDown)
+                        {
+                            IntermediateValue += NormalizedMouseMovement();
+                        } 
+                        else
+                        {
+                            // mousewheel
+                            IntermediateValue += (float)UserInput.MouseWheelChange / 700;
+                        }
                         return IntermediateValue > 0.5f ? 1 : IntermediateValue < -0.5f ? -1 : 0;
                     };
                     break;
-                default: ChangedValue = (value) => value + NormalizedMouseMovement(); break;
+                default:
+                    ChangedValue = (value) =>
+                    {
+                        if (UserInput.IsMouseLeftButtonDown)
+                        {
+                            return value + NormalizedMouseMovement();
+                        }
+                        else
+                        {
+                            // mousewheel
+                            return value + (float)UserInput.MouseWheelChange / 1500;
+                        }
+                    };
+                    break;
             }
         }
 
@@ -2340,10 +2363,21 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         float NormalizedMouseMovement()
         {
-            return (ControlDiscrete.Orientation > 0
-                ? (float)UserInput.MouseMoveY / (float)Control.Height
-                : (float)UserInput.MouseMoveX / (float)Control.Width)
-                * (ControlDiscrete.Direction > 0 ? -1 : 1);
+            if (UserInput.IsMouseLeftButtonDown)
+            {
+                return (ControlDiscrete.Orientation > 0
+                    ? (float)UserInput.MouseMoveY / (float)Control.Height
+                    : (float)UserInput.MouseMoveX / (float)Control.Width)
+                    * (ControlDiscrete.Direction > 0 ? -1 : 1);
+            } 
+            else
+            {
+                // mousewheel
+                return (ControlDiscrete.Orientation > 0
+                    ? (float)UserInput.MouseWheelChange / (float)Control.Height
+                    : (float)UserInput.MouseWheelChange / (float)Control.Width)
+                    * (ControlDiscrete.Direction > 0 ? -1 : 1);
+            }
         }
 
         public bool IsMouseWithin()
@@ -2848,6 +2882,16 @@ namespace Orts.Viewer3D.RollingStock
             }
 
             return index;
+        }
+
+        public Rectangle DestinationRectangleGet()
+        {
+            return DestinationRectangle;
+        }
+
+        public bool isMouseControl()
+        {
+            return ControlDiscrete.MouseControl;
         }
     }
 
