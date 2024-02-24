@@ -505,6 +505,7 @@ By clicking on *Export* a printable text file ``Open Rails
 Keyboard.txt`` is generated on the desktop, showing all links between
 commands and keys.
 
+
 RailDriver Options
 ==================
 
@@ -516,15 +517,15 @@ If your RailDriver is connected, you should see a RailDriver tab in the options 
 .. image:: images/options-raildriver.png
 
 
-Use this tab to and to calibrate the 6 analog controls and assign operations to the
+Use this tab to calibrate the 6 analog controls and assign operations to the
 44 switches on your RailDriver device.
 
 
 Calibrating RailDriver Levers
 -----------------------------
 RailDriver uses analog inputs that appear to vary from unit to unit.  
-In theory the value range of each lever is 0-255 but, in practice, the actual range can be much narrower. 
-Fpr this reason Open Rails uses a calibration routine to adjust to the actual range of each lever.
+In theory the range of each lever is 0-255 but, in practice, the actual range can be much narrower. 
+For this reason Open Rails uses a calibration routine to adjust to the actual range of each lever.
 
 You will need to calibrate the RailDriver, even if you’ve previously calibrated your RailDriver in other software.
 However, you will only need to perform a full calibration once as Open Rails will use that calibration from then on.
@@ -533,7 +534,7 @@ Click the Callibration button and follow the prompts:
 
 .. image:: images/options-raildriver-calibration-message.png
 
-(Note the image on screen will also visually guide you to the control being calibrated as in this example:
+Note the image on screen will also visually guide you to the control being calibrated as in this example:
 
 .. image:: images/options-raildriver-calibration.png
 
@@ -557,6 +558,7 @@ Three symbols will appear at the right of the field: use them to validate the ch
 cancel it or restore the default value.
 
 .. image:: images/options-raildriver-assignment.png
+
 
 Other controls on this tab
 --------------------------
