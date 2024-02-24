@@ -2050,15 +2050,7 @@ namespace Orts.Viewer3D.RollingStock
                 default:
                     ChangedValue = (value) =>
                     {
-                        if (UserInput.IsMouseLeftButtonDown)
-                        {
-                            return value + NormalizedMouseMovement();
-                        }
-                        else
-                        {
-                            // mousewheel
-                            return value + (float)UserInput.MouseWheelChange / 1500;
-                        }
+                        return value + NormalizedMouseMovement();
                     };
                     break;
             }
@@ -2375,8 +2367,8 @@ namespace Orts.Viewer3D.RollingStock
             {
                 // mousewheel
                 return (ControlDiscrete.Orientation > 0
-                    ? (float)UserInput.MouseWheelChange / (float)Control.Height
-                    : (float)UserInput.MouseWheelChange / (float)Control.Width)
+                    ? (float)UserInput.MouseWheelChange / (float)1500
+                    : (float)UserInput.MouseWheelChange / (float)1500)
                     * (ControlDiscrete.Direction > 0 ? -1 : 1);
             }
         }
