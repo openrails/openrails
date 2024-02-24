@@ -34,7 +34,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using static ORTS.Notification;
+using static ORTS.NotificationPage;
 using Path = ORTS.Menu.Path;
 
 namespace ORTS
@@ -64,6 +64,7 @@ namespace ORTS
         List<Path> Paths = new List<Path>();
         List<TimetableInfo> TimetableSets = new List<TimetableInfo>();
         List<WeatherFileInfo> TimetableWeatherFileSet = new List<WeatherFileInfo>();
+        Notifications Notifications = new Notifications();
         Task<List<Folder>> FolderLoader;
         Task<List<Route>> RouteLoader;
         Task<List<Activity>> ActivityLoader;
@@ -251,6 +252,7 @@ namespace ORTS
             ShowTimetableEnvironment();
 
             CheckForUpdate();
+            Notifications.CheckNotifications();
 
             if (!Initialized)
             {
@@ -336,6 +338,7 @@ namespace ORTS
         //}
         void CheckForUpdate()
         {
+            // Uses a custom Task class which pre-dates the System.Threading.Task but provides much same features.
             new Task<UpdateManager>(this, () =>
             {
                 UpdateManager.Check();
@@ -349,7 +352,7 @@ namespace ORTS
                 }
                 if (UpdateManager.LastUpdate != null)
                 {
-                    SetUpdateNotification();
+                    SetUpdateNotificationPage();
                 }
             });
         }
@@ -583,6 +586,7 @@ namespace ORTS
                     case DialogResult.OK:
                         LoadFolderList();
                         CheckForUpdate();
+                        Notifications.CheckNotifications();
                         break;
                     case DialogResult.Retry:
                         RestartMenu();
@@ -1487,167 +1491,197 @@ namespace ORTS
             //TO DO: Debrief Eval TTActivity
         }
 
-        #region Notifications
+        #region NotificationPages
         // Will probably move this region and the Details region into separate files.
 
-        bool AreNotificationsVisible = false;
+        bool AreNotificationPagesVisible = false;
         // New notifications are those with a date after the NotificationsReadDate.
         // Notifications are listed in reverse date order, with the newest one at the front.
         // We don't track the reading of each notification but set the NewNotificationCount = 0 after the last of the new ones has been read.
-        int NewNotificationCount = 1;
-        int LastNotificationViewed = 0;
+        int NewNotificationPageCount = 1;
+        int LastNotificationPageViewed = 0;
+        int NotificationIndex = 0;
 
-        List<Notification> NotificationList = new List<Notification>();
+        List<NotificationPage> NotificationPageList = new List<NotificationPage>();
 
         private void pbNotificationsNone_Click(object sender, EventArgs e)
         {
-            ToggleNotifications();
+            ToggleNotificationPages();
         }
         private void pbNotificationsSome_Click(object sender, EventArgs e)
         {
-            ToggleNotifications();
+            ToggleNotificationPages();
         }
         private void lblNotificationCount_Click(object sender, EventArgs e)
         {
-            ToggleNotifications();
+            ToggleNotificationPages();
         }
 
-        private void ToggleNotifications()
+        private void ToggleNotificationPages()
         {
-            if (AreNotificationsVisible == false)
+            if (AreNotificationPagesVisible == false)
             {
-                AreNotificationsVisible = true; // Set before calling ShowNotifcations()
-                ShowNotifications();
-                FiddleNewNotificationCount();
+                AreNotificationPagesVisible = true; // Set before calling ShowNotifcations()
+                ShowNotificationPages();
+                FiddleNewNotificationPageCount();
             }
             else
             {
-                AreNotificationsVisible = false;
+                AreNotificationPagesVisible = false;
                 ShowDetails();
             }
         }
 
-        private void FiddleNewNotificationCount()
+        private void FiddleNewNotificationPageCount()
         {
-            LastNotificationViewed = 1;
-            UpdateNotificationAlert();
+            LastNotificationPageViewed = 1;
+            UpdateNotificationPageAlert();
         }
 
-        private void UpdateNotificationAlert()
+        private void UpdateNotificationPageAlert()
         {
-            if (LastNotificationViewed >= NewNotificationCount)
+            if (LastNotificationPageViewed >= NewNotificationPageCount)
             {
                 pbNotificationsSome.Visible = false;
                 lblNotificationCount.Visible = false;
             }
         }
 
-        void ShowNotifications()
+        void ShowNotificationPages()
         {
             Win32.LockWindowUpdate(Handle);
             ClearPanel();
-            PopulateNotificationList();
-            var notification = GetCurrentNotification();
-            notification.FlowNDetails();
+            PopulateNotificationPageList();
+            var NotificationPage = GetCurrentNotificationPage();
+            NotificationPage.FlowNDetails();
             Win32.LockWindowUpdate(IntPtr.Zero);
         }
 
         /// <summary>
-        /// Populate the Notifications list
+        /// Populate the NotificationPages list
         /// </summary>
-        //private void PopulateNotificationList()
+        //private void PopulateNotificationPageList()
         //{
-            //NotificationList.Clear();
-            //if (NotificationList.Count == 0)
+            //NotificationPageList.Clear();
+            //if (NotificationPageList.Count == 0)
             //{
-            //    var newNotification = new Notification();
-            //    NotificationList.Add(newNotification);
-            //new NHeadingControl(panelDetails, "This is a dummy notification", Color.OrangeRed).Add(newNotification);
-            //new NTitleControl(panelDetails, DateTime.Now, "Update is available").Add(newNotification);
-            //new NRecordControl(panelDetails, "Update mode", 140, "Stable").Add(newNotification);
-            //new NRecordControl(panelDetails, "Installed version", 140, "1.3.1").Add(newNotification);
-            //new NRecordControl(panelDetails, "New version available", 140, "1.4").Add(newNotification);
-            //new NButtonControl(panelDetails, "What's new", 90, "Find out on-line what's new in this version.").Add(newNotification);
-            //new NButtonControl(panelDetails, "Install", 90, "Install the new version.").Add(newNotification);
-            //new NHeadingControl(panelDetails, "Warning", Color.OrangeRed).Add(newNotification);
-            //new NTextControl(panelDetails, "The update from your current version may affect the behaviour of some of your content.").Add(newNotification);
-            //new NButtonControl(panelDetails, "Issue details", 90, "More details about this issue are available on-line.").Add(newNotification);
+            //    var newNotificationPage = new NotificationPage();
+            //    NotificationPageList.Add(newNotificationPage);
+            //new NHeadingControl(panelDetails, "This is a dummy NotificationPage", Color.OrangeRed).Add(newNotificationPage);
+            //new NTitleControl(panelDetails, DateTime.Now, "Update is available").Add(newNotificationPage);
+            //new NRecordControl(panelDetails, "Update mode", 140, "Stable").Add(newNotificationPage);
+            //new NRecordControl(panelDetails, "Installed version", 140, "1.3.1").Add(newNotificationPage);
+            //new NRecordControl(panelDetails, "New version available", 140, "1.4").Add(newNotificationPage);
+            //new NButtonControl(panelDetails, "What's new", 90, "Find out on-line what's new in this version.").Add(newNotificationPage);
+            //new NButtonControl(panelDetails, "Install", 90, "Install the new version.").Add(newNotificationPage);
+            //new NHeadingControl(panelDetails, "Warning", Color.OrangeRed).Add(newNotificationPage);
+            //new NTextControl(panelDetails, "The update from your current version may affect the behaviour of some of your content.").Add(newNotificationPage);
+            //new NButtonControl(panelDetails, "Issue details", 90, "More details about this issue are available on-line.").Add(newNotificationPage);
 
-            //new NTitleControl(panelDetails, new DateTime(2024, 8, 31, 0, 0, 0), "Update is available").Add(newNotification);
-            //new NRecordControl(panelDetails, "Update mode", 140, "Stable").Add(newNotification);
-            //new NRecordControl(panelDetails, "Installed version", 140, "1.6").Add(newNotification);
-            //new NRecordControl(panelDetails, "New version available", 140, "1.7").Add(newNotification);
-            //new NButtonControl(panelDetails, "What's new", 90, "Find out on-line what's new in this version.").Add(newNotification);
-            //new NHeadingControl(panelDetails, "Install Not Available", Color.OrangeRed).Add(newNotification);
-            //new NTextControl(panelDetails, "V1.7 cannot be installed on your system until the graphics card is upgraded.").Add(newNotification);
-            //new NButtonControl(panelDetails, "Graphics card", 90, "Find out on-line about graphics hardware needed.").Add(newNotification);
-            //new NHeadingControl(panelDetails, "More Realism", Color.Blue).Add(newNotification);
-            //new NTextControl(panelDetails, "This update supports graphics which are significantly more realistic.").Add(newNotification);
-            //new NButtonControl(panelDetails, "Enhancement", 90, "More details about this enhancement are available on-line.").Add(newNotification);
+            //new NTitleControl(panelDetails, new DateTime(2024, 8, 31, 0, 0, 0), "Update is available").Add(newNotificationPage);
+            //new NRecordControl(panelDetails, "Update mode", 140, "Stable").Add(newNotificationPage);
+            //new NRecordControl(panelDetails, "Installed version", 140, "1.6").Add(newNotificationPage);
+            //new NRecordControl(panelDetails, "New version available", 140, "1.7").Add(newNotificationPage);
+            //new NButtonControl(panelDetails, "What's new", 90, "Find out on-line what's new in this version.").Add(newNotificationPage);
+            //new NHeadingControl(panelDetails, "Install Not Available", Color.OrangeRed).Add(newNotificationPage);
+            //new NTextControl(panelDetails, "V1.7 cannot be installed on your system until the graphics card is upgraded.").Add(newNotificationPage);
+            //new NButtonControl(panelDetails, "Graphics card", 90, "Find out on-line about graphics hardware needed.").Add(newNotificationPage);
+            //new NHeadingControl(panelDetails, "More Realism", Color.Blue).Add(newNotificationPage);
+            //new NTextControl(panelDetails, "This update supports graphics which are significantly more realistic.").Add(newNotificationPage);
+            //new NButtonControl(panelDetails, "Enhancement", 90, "More details about this enhancement are available on-line.").Add(newNotificationPage);
 
             //}
             //else
             //{
             //}
-            //var notification = NotificationList.LastOrDefault();
-            //new NTextControl(panelDetails, "").Add(notification);
-            //new NTextControl(panelDetails, "(Toggle icon to hide notifications.)").Add(notification);
+            //var NotificationPage = NotificationPageList.LastOrDefault();
+            //new NTextControl(panelDetails, "").Add(NotificationPage);
+            //new NTextControl(panelDetails, "(Toggle icon to hide NotificationPages.)").Add(NotificationPage);
         //}
 
-        private void PopulateNotificationList()
+        private void PopulateNotificationPageList()
         {
-            SetUpdateNotification();
+            SetUpdateNotificationPage();
 
-            var notification = NotificationList.LastOrDefault();
-            new NTextControl(notification, "").Add();
-            new NTextControl(notification, "(Toggle icon to hide notifications.)").Add();
+            var NotificationPage = NotificationPageList.LastOrDefault();
+            new NTextControl(NotificationPage, "").Add();
+            new NTextControl(NotificationPage, "(Toggle icon to hide NotificationPages.)").Add();
         }
 
         /// <summary>
         ///  INCOMPLETE
         /// </summary>
         /// <returns></returns>
-        Notification GetCurrentNotification()
+        NotificationPage GetCurrentNotificationPage()
         {
-            return NotificationList[0];
+            return NotificationPageList[0];
         }
 
         /// <summary>
-        /// Ultimately there will be a list of notifications downloaded for openrails/content.
+        /// Ultimately there will be a list of notifications downloaded from openrails/content.
         /// Until then, there is a single notification announcing either that a new update is available or the installation is up to date.
         /// </summary>
-        void SetUpdateNotification()
+        void SetUpdateNotificationPage()
         {
-            NewNotificationCount = (IsUpdateAvailable()) ? 1 : 0;
-            UpdateNotificationAlert();
-            NotificationList.Clear();
-            var newNotification = new Notification(panelDetails);
+            NewNotificationPageCount = (IsUpdateAvailable()) ? 1 : 0;
+            UpdateNotificationPageAlert();
+            NotificationPageList.Clear();
+            var page = new NotificationPage(panelDetails);
+
             if (IsUpdateAvailable())
+            //if (true)
             {
-                NewNotificationCount = 1;
-                if (AreNotificationsVisible)
+                NewNotificationPageCount = 1;
+                if (AreNotificationPagesVisible)
                 {
-                    new NTitleControl(newNotification, UpdateManager.LastUpdate.Date, "Update is available").Add();
-                    new NRecordControl(newNotification, "Update mode", 140, UpdateManager.ChannelName).Add();
-                    new NRecordControl(newNotification, "Installed version", 140, VersionInfo.VersionOrBuild).Add();
-                    new NRecordControl(newNotification, "New version available", 140, UpdateManager.LastUpdate.Version).Add();
-                    new NLinkControl(newNotification, "What's new", 90, "Find out on-line what's new in this version.", this, UpdateManager.ChangeLogLink).Add();
-                    new NUpdateControl(newNotification, "Install", 90, "Install the new version.", this).Add();
+                    var list = Notifications.NotificationList;
+                    var n = list[NotificationIndex];
+
+                    new NTitleControl(page, NotificationIndex + 1, list.Count, n.Date, n.Title).Add();
+                    foreach(var item in n.PrefixItemList)
+                    {
+                        AddItemToPage(page, item);
+                    }
+                    foreach (var item in n.MetLists.ItemList)
+                    {
+                        AddItemToPage(page, item);
+                    }
+                    foreach (var item in n.SuffixItemList)
+                    {
+                        AddItemToPage(page, item);
+                    }
                 }
             }
             else
             {
-                NewNotificationCount = 0;
-                if (AreNotificationsVisible)
+                NewNotificationPageCount = 0;
+                if (AreNotificationPagesVisible)
                 {
                     var channelName = UpdateManager.ChannelName == "" ? "None" : UpdateManager.ChannelName;
-                    new NTitleControl(newNotification, DateTime.Now, "Installation is up to date").Add();
-                    new NRecordControl(newNotification, "Update mode", 140, channelName).Add();
-                    new NRecordControl(newNotification, "Installed version", 140, VersionInfo.VersionOrBuild).Add();
-                    new NRecordControl(newNotification, "New version available", 140, "none").Add();
+                    var today = DateTime.Now.Date;
+                    new NTitleControl(page, 1, 1, $"{today:dd-MMM-yy}", "Installation is up to date").Add();
+                    new NRecordControl(page, "Update mode", 140, channelName).Add();
+                    new NRecordControl(page, "Installed version", 140, VersionInfo.VersionOrBuild).Add();
+                    new NRecordControl(page, "New version available", 140, "none").Add();
                 }
             }
-            NotificationList.Add(newNotification);
+            NotificationPageList.Add(page);
+        }
+
+        private void AddItemToPage(NotificationPage page, Item item)
+        {
+            if (item is Record record)
+            {
+                new NRecordControl(page, item.Label, item.Indent, record.Value).Add();
+            }
+            else if (item is Link link)
+            {
+                new NLinkControl(page, item.Label, item.Indent, link.Value, this, link.Url).Add();
+            }
+            else if (item is Update update)
+            {
+                new NUpdateControl(page, item.Label, item.Indent, update.Value, this).Add();
+            }
         }
 
         bool IsUpdateAvailable()
@@ -1659,16 +1693,16 @@ namespace ORTS
         // 3 should be enough, but is there a way to get unlimited buttons?
         public void Button0_Click(object sender, EventArgs e)
         {
-            GetCurrentNotification().DoButton(UpdateManager, 0);
+            GetCurrentNotificationPage().DoButton(UpdateManager, 0);
         }
         public void Button1_Click(object sender, EventArgs e)
         {
-            GetCurrentNotification().DoButton(UpdateManager, 1);
+            GetCurrentNotificationPage().DoButton(UpdateManager, 1);
         }
         public void Button2_Click(object sender, EventArgs e)
         {
-            GetCurrentNotification().DoButton(UpdateManager, 2);
+            GetCurrentNotificationPage().DoButton(UpdateManager, 2);
         }
-        #endregion Notifications
+        #endregion NotificationPages
     }
 }

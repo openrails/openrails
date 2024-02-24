@@ -24,13 +24,13 @@ using ORTS.Updater;
 
 namespace ORTS
 {
-    public class Notification
+    public class NotificationPage
     {
         public List<NDetail> NDetailList = new List<NDetail>();
         public Dictionary<int, NButtonControl> ButtonDictionary = new Dictionary<int, NButtonControl>();
         public Panel Panel;
 
-        public Notification(Panel panel)
+        public NotificationPage(Panel panel)
         {
             Panel = panel;
             NButtonControl.ButtonCount = 0;
@@ -49,16 +49,16 @@ namespace ORTS
             public static readonly int RecordHeight = 15;
             public const int ScrollBarWidth = 20;
 
-            public Notification Notification { get; private set; }
+            public NotificationPage Page { get; private set; }
             public Label Control;
 
-            public NDetail(Notification notification)
+            public NDetail(NotificationPage page)
             {
-                Notification = notification;
+                Page = page;
             }
             public void Add()
             {                
-                Notification.NDetailList.Add(this);
+                Page.NDetailList.Add(this);
             }
         }
 
@@ -67,26 +67,26 @@ namespace ORTS
         /// </summary>
         public class NTitleControl : NDetail
         {
-            public NTitleControl(Notification notification, DateTime date, string text) : base(notification)
+            public NTitleControl(NotificationPage notification, int current, int total, string date, string text) : base(notification)
             {
-                var title = $"Notification 1/1: {date:dd-MMM-yyyy} - {text}";
+                var title = $"Notification {current}/{total}: {date} - {text}";
                 var left = LeftPadding;
                 Control = new Label
                 {
                     Text = title,
                     UseMnemonic = false,
-                    Font = new Font(Notification.Panel.Font, FontStyle.Bold),
+                    Font = new Font(Page.Panel.Font, FontStyle.Bold),
                     TextAlign = ContentAlignment.BottomLeft,
                     Height = TitleHeight,
-                    Width = Notification.Panel.Width - ScrollBarWidth - left,
+                    Width = Page.Panel.Width - ScrollBarWidth - left,
                     Left = LeftPadding
                 };
-                Notification.Panel.Controls.Add(Control);
+                Page.Panel.Controls.Add(Control);
             }
         }
         public class NHeadingControl : NDetail
         {
-            public NHeadingControl(Notification notification, string text, Color color = default) : base(notification)
+            public NHeadingControl(NotificationPage notification, string text, Color color = default) : base(notification)
             {
                 var left = LeftPadding;
                 Control = new Label
@@ -94,39 +94,39 @@ namespace ORTS
                     ForeColor = color,
                     Text = text,
                     UseMnemonic = false,
-                    Font = new Font(Notification.Panel.Font, FontStyle.Bold),
+                    Font = new Font(Page.Panel.Font, FontStyle.Bold),
                     TextAlign = ContentAlignment.BottomLeft,
                     Height = HeadingHeight,
-                    Width = Notification.Panel.Width - ScrollBarWidth - left,
+                    Width = Page.Panel.Width - ScrollBarWidth - left,
                     Left = left,
                     Top = TopPadding,
                 };
-                Notification.Panel.Controls.Add(Control);
+                Page.Panel.Controls.Add(Control);
             }
         }
         public class NTextControl : NDetail
         {
-            public NTextControl(Notification notification, string text) : base(notification)
+            public NTextControl(NotificationPage notification, string text) : base(notification)
             {
                 var left = LeftPaddingIndented;
                 Control = new Label
                 {
                     Text = text,
                     UseMnemonic = false,
-                    Font = new Font(Notification.Panel.Font, FontStyle.Regular),
+                    Font = new Font(Page.Panel.Font, FontStyle.Regular),
                     TextAlign = ContentAlignment.BottomLeft,
                     Height = TextHeight,
-                    Width = Notification.Panel.Width - ScrollBarWidth - left,
+                    Width = Page.Panel.Width - ScrollBarWidth - left,
                     Left = left,
                 };
-                Notification.Panel.Controls.Add(Control);
+                Page.Panel.Controls.Add(Control);
             }
         }
         public class NButtonControl : NDetail
         {
             public static int ButtonCount = 0;
             public Button Button;
-            public NButtonControl(Notification notification, string legend, int width, string description, MainForm mainForm) : base(notification)
+            public NButtonControl(NotificationPage notification, string legend, int width, string description, MainForm mainForm) : base(notification)
     {
                 var buttonLeft = LeftPaddingIndented;
                 Button = new Button
@@ -134,7 +134,7 @@ namespace ORTS
                     Margin = new Padding(20),
                     Text = legend,
                     UseMnemonic = false,
-                    Font = new Font(Notification.Panel.Font, FontStyle.Regular),
+                    Font = new Font(Page.Panel.Font, FontStyle.Regular),
                     TextAlign = ContentAlignment.MiddleCenter,
                     Height = ButtonHeight,
                     Width = width,
@@ -142,7 +142,7 @@ namespace ORTS
                     Top = TopPadding,
                     BackColor = SystemColors.ButtonFace
                 };
-                Notification.Panel.Controls.Add(Button);
+                Page.Panel.Controls.Add(Button);
 
                 // 3 should be enough, but is there a way to get unlimited buttons?
                 switch (ButtonCount)
@@ -167,33 +167,33 @@ namespace ORTS
                     Margin = new Padding(20),
                     Text = description,
                     UseMnemonic = false,
-                    Font = new Font(Notification.Panel.Font, FontStyle.Regular),
+                    Font = new Font(Page.Panel.Font, FontStyle.Regular),
                     TextAlign = ContentAlignment.MiddleLeft,
                     Height = ButtonHeight,
-                    Width = Notification.Panel.Width - ScrollBarWidth - labelLeft,
+                    Width = Page.Panel.Width - ScrollBarWidth - labelLeft,
                     Top = TopPadding,
                     Left = labelLeft
                 };
-                Notification.Panel.Controls.Add(Control);
+                Page.Panel.Controls.Add(Control);
             }
         }
         public class NLinkControl : NButtonControl
         {
             public string Url;
-            public NLinkControl(Notification notification, string legend, int width, string description, MainForm mainForm, string url) 
+            public NLinkControl(NotificationPage notification, string legend, int width, string description, MainForm mainForm, string url) 
             : base(notification, legend, width, description, mainForm)
             { 
                 Url = url;
-                Notification.ButtonDictionary.Add(ButtonCount, this);
+                Page.ButtonDictionary.Add(ButtonCount, this);
                 ButtonCount++;
             }
         }
         public class NUpdateControl : NButtonControl
         {
-            public NUpdateControl(Notification notification, string legend, int width, string description, MainForm mainForm)
+            public NUpdateControl(NotificationPage notification, string legend, int width, string description, MainForm mainForm)
             : base(notification, legend, width, description, mainForm)
             {
-                Notification.ButtonDictionary.Add(ButtonCount, this);
+                Page.ButtonDictionary.Add(ButtonCount, this);
                 ButtonCount++;
             }
         }
@@ -209,34 +209,35 @@ namespace ORTS
         public class NRecordControl : NDetail
         {
             public Label Field;
-            public NRecordControl(Notification notification, string label, int width, string field) : base(notification)
-        {
+
+            public NRecordControl(NotificationPage notification, string label, int width, string field) : base(notification)
+            {
                 Control = new Label
                 {
                     Text = label + ":",
                     UseMnemonic = false,
-                    Font = new Font(Notification.Panel.Font, FontStyle.Bold),
+                    Font = new Font(Page.Panel.Font, FontStyle.Bold),
                     TextAlign = ContentAlignment.BottomRight,
                     Width = width,
                     Height = RecordHeight,
                     Left = LeftPadding,
                     Top = TopPadding
                 };
-                Notification.Panel.Controls.Add(Control);
+                Page.Panel.Controls.Add(Control);
 
                 var left = width + LeftPadding;
                 Field = new Label
                 {
                     Text = field,
                     UseMnemonic = false,
-                    Font = new Font(Notification.Panel.Font, FontStyle.Regular),
+                    Font = new Font(Page.Panel.Font, FontStyle.Regular),
                     TextAlign = ContentAlignment.BottomLeft,
-                    Width = Notification.Panel.Width - ScrollBarWidth - left,
+                    Width = Page.Panel.Width - ScrollBarWidth - left,
                     Height = RecordHeight,
                     Left = left,
                     Top = TopPadding
                 };
-                Notification.Panel.Controls.Add(Field);
+                Page.Panel.Controls.Add(Field);
             }
         }
 
