@@ -210,7 +210,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
         {
             MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
 
-            var autopilot = (locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING);
+            var autopilot = (locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || locomotive.Train.Autopilot);
             if (autopilot)
             {
                 switchOnPanelStatus.Status = Viewer.Catalog.GetString("On");

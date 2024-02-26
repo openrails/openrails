@@ -644,7 +644,7 @@ namespace Orts.Viewer3D.WebServices
 
             // Messages
             // Autopilot
-            var autopilot = locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING;
+            var autopilot = locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || locomotive.Train.Autopilot;
             AddLabel(new ListLabel
             {
                 FirstCol = Viewer.Catalog.GetString("Autopilot"),

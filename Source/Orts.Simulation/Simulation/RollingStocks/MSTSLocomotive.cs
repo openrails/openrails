@@ -5392,14 +5392,14 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.THROTTLE:
                     {
                         if (CruiseControl != null && CruiseControl.SkipThrottleDisplay) break;
-                        data = GetThrottleHandleValue(Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING ? ThrottlePercent / 100f : LocalThrottlePercent / 100f);
+                        data = GetThrottleHandleValue((Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || Train.Autopilot) ? ThrottlePercent / 100f : LocalThrottlePercent / 100f);
                         break;
                     }
                 case CABViewControlTypes.THROTTLE_DISPLAY:
                 case CABViewControlTypes.CPH_DISPLAY:
                     {
                         if (CruiseControl != null && CruiseControl.SkipThrottleDisplay) break;
-                        data = Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING? ThrottlePercent / 100f : LocalThrottlePercent / 100f;
+                        data = (Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || Train.Autopilot) ? ThrottlePercent / 100f : LocalThrottlePercent / 100f;
                         break;
                     }
                 case CABViewControlTypes.ENGINE_BRAKE:
@@ -5571,7 +5571,7 @@ namespace Orts.Simulation.RollingStocks
                                 var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
                                 if (activeloco.DieselEngines[0] != null)
                                 {
-                                    if (activeloco.AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
+                                    if (activeloco.AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot)
                                         data = activeloco.WheelSlipWarning ? 1 : 0;
                                     else
                                         data = activeloco.WheelSlip ? 1 : 0;
@@ -5581,7 +5581,7 @@ namespace Orts.Simulation.RollingStocks
                         }
                         else
                         {
-                            if (AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
+                            if (AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot)
                                 data = WheelSlipWarning ? 1 : 0;
                             else
                                 data = WheelSlip ? 1 : 0;
