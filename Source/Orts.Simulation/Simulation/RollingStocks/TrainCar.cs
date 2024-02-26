@@ -733,7 +733,7 @@ namespace Orts.Simulation.RollingStocks
         {
             BrakeSystem.Initialize();
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
-            
+
             //CurveForceFilter.Initialize();
 
             // Initialize tunnel resistance values
