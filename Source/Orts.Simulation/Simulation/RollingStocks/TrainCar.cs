@@ -831,7 +831,6 @@ namespace Orts.Simulation.RollingStocks
         // called when it's time to update the MotiveForce and FrictionForce
         public virtual void Update(float elapsedClockSeconds)
         {
-
             // Initialize RigidWheelBaseM in first loop if not defined in ENG file, then ignore
             if (RigidWheelBaseM == 0 && !RigidWheelBaseInitialised)   // Calculate default values if no value in Wag File
             {
@@ -855,6 +854,12 @@ namespace Orts.Simulation.RollingStocks
                         {
                             RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel (3 axle) wagon - wheel base - 12' 2" (3.6576m)
                         }
+
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            Trace.TraceInformation("Rigid Wheelbase of CarID {0} set to {1} for number of axles {2}", CarID, FormatStrings.FormatVeryShortDistanceDisplay(RigidWheelBaseM, IsMetric), Axles);
+                        }
+
                     }
                     else if (Bogies == 2)
                     {
@@ -873,9 +878,15 @@ namespace Orts.Simulation.RollingStocks
                         {
                             RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel bogie (3 axle) wagon - wheel base - 12' 2" (3.6576m)
                         }
+
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            Trace.TraceInformation("Rigid Wheelbase of CarID {0} set to {1} for number of axles {2}", CarID, FormatStrings.FormatVeryShortDistanceDisplay(RigidWheelBaseM, IsMetric), BogieSize);
+                        }
+
                     }
                 }
-                if (WagonType == WagonTypes.Engine)   // if car is a locomotive and either a diesel or electric then determine wheelbase
+                else if (WagonType == WagonTypes.Engine)   // if car is a locomotive and either a diesel or electric then determine wheelbase
                 {
                     if (EngineType != EngineTypes.Steam)  // Assume that it is a diesel or electric locomotive
                     {
@@ -886,6 +897,11 @@ namespace Orts.Simulation.RollingStocks
                         else if (BogieSize == 3)
                         {
                             RigidWheelBaseM = 3.5052f;       // Assume a standard 6 wheel bogie (3 axle) locomotive - wheel base - 11' 6" (3.5052m)
+                        }
+
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            Trace.TraceInformation("Rigid Wheelbase of CarID {0} set to {1} for number of axles {2}", CarID, FormatStrings.FormatVeryShortDistanceDisplay(RigidWheelBaseM, IsMetric), BogieSize);
                         }
                     }
                     else // assume steam locomotive
@@ -900,6 +916,11 @@ namespace Orts.Simulation.RollingStocks
                         // Wheelbase = 1.25 x (Loco Drive Axles - 1.0) x Drive Wheel diameter
 
                         RigidWheelBaseM = 1.25f * (LocoNumDrvAxles - 1.0f) * (DriverWheelRadiusM * 2.0f);
+
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            Trace.TraceInformation("Rigid Wheelbase of CarID {0} set to {1} for number of axles {2}", CarID, FormatStrings.FormatVeryShortDistanceDisplay(RigidWheelBaseM, IsMetric), LocoNumDrvAxles);
+                        }
                     }
                 }
 
