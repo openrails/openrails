@@ -629,7 +629,7 @@ namespace Orts.Viewer3D.Popups
                                 currentCount = 0;
                                 axlesCount = 0;
                                 i = i + 1;
-                            }                    
+                            }
                         }
                     }
                     else if (axle.Part.bogie) // this is a bogie
@@ -1192,7 +1192,7 @@ namespace Orts.Viewer3D.Popups
                             if (HUDEngineType == TrainCar.EngineTypes.Steam && (HUDSteamEngineType == TrainCar.SteamEngineTypes.Compound || HUDSteamEngineType == TrainCar.SteamEngineTypes.Simple || HUDSteamEngineType == TrainCar.SteamEngineTypes.Unknown))
                             {
                                 TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0:N0}º", axle.AxlePositionRad * 180 / Math.PI + 180);
-                        }
+                            }
                         }
 
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Loco Adhesion"), "{0:F0}%", mstsLocomotive.LocomotiveCoefficientFrictionHUD * 100.0f);

@@ -264,7 +264,7 @@ namespace Orts.Simulation.RollingStocks
         public float MaxTrackSanderSandConsumptionForwardM3pS;
         public float CurrentTrackSanderAirConsumptionM3pS;
         public float CurrentTrackSanderSandConsumptionM3pS;
-        public float CurrentTrackSandBoxCapacityM3; 
+        public float CurrentTrackSandBoxCapacityM3;
         public float MaxTrackSanderSandConsumptionReverseM3pS = 0;
         public float SandWeightKgpM3 = 1600; // One cubic metre of sand weighs about 1.54-1.78 tonnes. 
         public float MaxTrackSanderSteamConsumptionForwardLbpS;
@@ -1542,7 +1542,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 CurrentTrackSandBoxCapacityM3 = MaxTrackSandBoxCapacityM3;
             }
-            
+
             // Ensure Drive Axles is set with a default value if user doesn't supply an OR value in ENG file
             if (LocoNumDrvAxles == 0)
             {
@@ -2997,7 +2997,7 @@ namespace Orts.Simulation.RollingStocks
                 else if (ScoopIsBroken)
                 {
                     Simulator.Confirmer.Message(ConfirmLevel.Error, Simulator.Catalog.GetString("Scoop is broken, can't refill"));
-                    RefillingFromTrough = false;       
+                    RefillingFromTrough = false;
                 }
                 else if (IsOverJunction())
                 {
@@ -3007,7 +3007,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     ScoopIsBroken = true;
                     RefillingFromTrough = false;
-                    SignalEvent(Event.WaterScoopBroken);       
+                    SignalEvent(Event.WaterScoopBroken);
                 }
                 else if (!IsOverTrough())
                 {
@@ -3291,9 +3291,9 @@ namespace Orts.Simulation.RollingStocks
 
         public void UpdateTrackSander(float elapsedClockSeconds)
         {
-        // updates track sander in terms of sand usage and impact on air compressor
-        // The following assumptions have been made:
-        //
+            // updates track sander in terms of sand usage and impact on air compressor
+            // The following assumptions have been made:
+            //
 
             if (Sander && AbsSpeedMpS < SanderSpeedOfMpS)  // If sander switch is on, and not blocked by speed, adjust parameters
             {
@@ -3319,17 +3319,17 @@ namespace Orts.Simulation.RollingStocks
                     SandingSteamUsageLBpS = (BoilerPressurePSI / MaxBoilerPressurePSI) * sandingSteamConsumptionLbpS * elapsedClockSeconds;
 
                     // Calculate sand consumption for sander
-                if (CurrentTrackSandBoxCapacityM3 > 0.0) // if sand still in sandbox then sanding is available
-                {
-                    // Calculate consumption of sand, and drop in sand box level
+                    if (CurrentTrackSandBoxCapacityM3 > 0.0) // if sand still in sandbox then sanding is available
+                    {
+                        // Calculate consumption of sand, and drop in sand box level
                         CurrentTrackSanderSandConsumptionM3pS = (BoilerPressurePSI / MaxBoilerPressurePSI) * sandingSandConsumptionM3pS * elapsedClockSeconds;
                         CurrentTrackSandBoxCapacityM3 -= CurrentTrackSanderSandConsumptionM3pS;
-                    CurrentTrackSandBoxCapacityM3 = MathHelper.Clamp(CurrentTrackSandBoxCapacityM3, 0.0f, MaxTrackSandBoxCapacityM3);
+                        CurrentTrackSandBoxCapacityM3 = MathHelper.Clamp(CurrentTrackSandBoxCapacityM3, 0.0f, MaxTrackSandBoxCapacityM3);
                         if (CurrentTrackSandBoxCapacityM3 <= 0.0)
-                    {
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Sand supply has been exhausted"));
+                        {
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Sand supply has been exhausted"));
+                        }
                     }
-                }
                 }
                 else // air consumption
                 {
@@ -3345,7 +3345,7 @@ namespace Orts.Simulation.RollingStocks
                     {
                         sandingAirConsumptionM3pS = MaxTrackSanderAirComsumptionForwardM3pS;
                         sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionForwardM3pS;
-            }
+                    }
 
                     // Calculate air consumption and change in main air reservoir pressure
                     CurrentTrackSanderAirConsumptionM3pS = (MainResPressurePSI / MaxMainResPressurePSI) * sandingAirConsumptionM3pS * elapsedClockSeconds;
