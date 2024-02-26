@@ -4401,6 +4401,81 @@ drag constants are used in calculating the still air resistance, then it might b
 inputting these values.
 
 
+.. _physics-track-sanding:
+
+Track Sanding
+=============
+
+Sanding of the track is required at times to increase the wheel adhesion.
+
+Open Rails supports air and steam operated track sanders which consume air or steam and sand. Typically 
+OR has standard defaults which it uses to allow track sanding to operate, however if the user knows the 
+actual values for the locomotive that they are modelling then they can override these values by entering 
+the following parameters in the engine section of the ENG file. Note - if values are not known then it is 
+highly recommended that the default values be used.
+
+When using any of the following parameters, the sanding system type needs to be set by allocating either "Steam" or 
+"Air" to the ``SandingSystemType`` ( x ) parameter in engine section of file.
+
+**Steam Consumption**
+
+``ORTSMaxTrackSanderSteamConsumptionForward`` - total steam consumption for all sanders when traveling in 
+forward direction, ie in front of wheel.
+
+``ORTSMaxTrackSanderSteamConsumptionForward`` - total steam consumption for all sanders when traveling in 
+reverse direction, ie behind wheel. Note, = 0 when not used.
+
+All steam consumption parameters are in lbs/sec.
+
+For steam sanding there will be a visible presence of steam when the sander is operated, this steam effect 
+can be added by using one or both of the following aparmeters.
+
+``SanderSteamExhaustForwardFX`` - steam effect when travelling forward, ie in front of wheel.
+
+``SanderSteamExhaustReverseFX`` - steam effect when travelling in reverse, ie in behind the wheel.
+
+**Air Consumption**
+
+``ORTSMaxTrackSanderAirConsumptionForward`` - total air consumption for all sanders when traveling in reverse 
+direction, ie behind wheel. Note, = 0 when not used.
+
+``ORTSMaxTrackSanderAirConsumptionForward`` - total air consumption for all sanders when traveling in forward 
+direction, ie in front of wheel.
+
+All air consumption parameters are in cuft/sec.
+
+**Sand Consumption**
+
+``ORTSMaxTrackSanderSandConsumptionForward`` - total sand consumption for all sanders when traveling in forward 
+direction, ie in front of wheel.
+
+``ORTSMaxTrackSanderSandConsumptionReverse`` - total sand consumption for all sanders when traveling in reverse 
+direction, ie behind wheel. Note, = 0 when not used.
+
+All sand consumption parameters are in cuft/sec.
+
+.. _physics-hammer-blow:
+
+Hammer Blow
+===========
+
+Hammer blow is as a result of the weights added to the wheels (eg connecting and reciprocating rods) of a steam 
+engine. The Excess (or Over) Balance weight was the weight that contributed to the hammer blow of the wheel, and it 
+increased typically with the square of the wheel speed.
+
+When the hammer force exceeded the weight on the wheel it was possible for the wheel to lift off the rails, this 
+created a "hammering effect" on the rails, which could damage track and other infrastructure such as bridges.
+
+The Hammer force is recorded in the HuD for the steam locomotive, and it will be in white text when "normal", 
+yellow text when within 10% of the point where the wheel will start to lift off the track, and red when the wheel 
+is lifting off the track.
+
+As a result of high hammer forces, some locomotives were speed restricted to prevent excessive damage to track 
+infrastructure.
+
+OR will use default values to set this feature up. If the Excess (or Over) Balance weight is known for a locomotive 
+it can be entered using ``ExcessRodBalance``, as a mass value.
+
 .. _physics-trailing-locomotive-resistance:
 
 Trailing Locomotive Resistance

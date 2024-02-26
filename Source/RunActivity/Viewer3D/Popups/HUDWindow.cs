@@ -479,9 +479,9 @@ namespace Orts.Viewer3D.Popups
             if (Viewer.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
                 TableAddLine(table, Viewer.Catalog.GetString("Autopilot") + "???");
 
-            if (Viewer.PlayerTrain.IsWheelSlip)
+            if (Viewer.PlayerTrain.HuDIsWheelSlip)
                 TableAddLine(table, Viewer.Catalog.GetString("Wheel slip") + "!!!");
-            else if (Viewer.PlayerTrain.IsWheelSlipWarninq)
+            else if (Viewer.PlayerTrain.HuDIsWheelSlipWarninq)
                 TableAddLine(table, Viewer.Catalog.GetString("Wheel slip warning") + "???");
 
             if (Viewer.PlayerTrain.IsBrakeSkid )
@@ -629,7 +629,7 @@ namespace Orts.Viewer3D.Popups
                                 currentCount = 0;
                                 axlesCount = 0;
                                 i = i + 1;
-                            }                    
+                            }
                         }
                     }
                     else if (axle.Part.bogie) // this is a bogie
@@ -1165,6 +1165,11 @@ namespace Orts.Viewer3D.Popups
                         TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Axle out force"));
                         TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Comp Axle out force"));
                         TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Wheel speed (Slip)"));
+                        if (HUDEngineType == TrainCar.EngineTypes.Steam && (HUDSteamEngineType == TrainCar.SteamEngineTypes.Compound || HUDSteamEngineType == TrainCar.SteamEngineTypes.Simple || HUDSteamEngineType == TrainCar.SteamEngineTypes.Unknown))
+                        {
+                            TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Wheel ang. pos."));
+                        }
+
                         for (int i = 0; i < mstsLocomotive.LocomotiveAxles.Count; i++)
                         {
                             table.CurrentRow = row0;
@@ -1181,8 +1186,13 @@ namespace Orts.Viewer3D.Popups
                             FormatStrings.FormatForce(axle.CompensatedAxleForceN, mstsLocomotive.IsMetric),
                             FormatStrings.FormatPower(axle.CompensatedAxleForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
                             TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0} ({1})", FormatStrings.FormatSpeedDisplay((float)axle.AxleSpeedMpS, mstsLocomotive.IsMetric), FormatStrings.FormatVeryLowSpeedDisplay(axle.SlipSpeedMpS, mstsLocomotive.IsMetric));
+
+                            if (HUDEngineType == TrainCar.EngineTypes.Steam && (HUDSteamEngineType == TrainCar.SteamEngineTypes.Compound || HUDSteamEngineType == TrainCar.SteamEngineTypes.Simple || HUDSteamEngineType == TrainCar.SteamEngineTypes.Unknown))
+                            {
+                                TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0:N0}º", axle.AxlePositionRad * 180 / Math.PI + 180);
+                            }
                         }
-                        if (HUDEngineType == TrainCar.EngineTypes.Steam && (HUDSteamEngineType == TrainCar.SteamEngineTypes.Compound || HUDSteamEngineType == TrainCar.SteamEngineTypes.Simple || HUDSteamEngineType == TrainCar.SteamEngineTypes.Unknown)) TableAddLabelValue(table, Viewer.Catalog.GetString("Wheel ang. pos."), "{0}º", (int)(mstsLocomotive.LocomotiveAxles[0].AxlePositionRad * 180 / Math.PI + 180));
+
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Loco Adhesion"), "{0:F0}%", mstsLocomotive.LocomotiveCoefficientFrictionHUD * 100.0f);
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Wagon Adhesion"), "{0:F0}%", mstsLocomotive.WagonCoefficientFrictionHUD * 100.0f);
 
