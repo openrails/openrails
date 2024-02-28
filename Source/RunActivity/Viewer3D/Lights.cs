@@ -112,9 +112,11 @@ namespace Orts.Viewer3D
                     if (light.ShapeIndex != -1)
                     {
                         if (light.ShapeIndex < 0 || light.ShapeIndex >= (CarViewer as MSTSWagonViewer).TrainCarShape.XNAMatrices.Count())
+                        {
                             Trace.TraceWarning("Light in car {0} has invalid shape index defined, shape index {1} does not exist",
                                 (Car as MSTSWagon).WagFilePath, light.ShapeIndex);
-                        light.ShapeIndex = 0;
+                            light.ShapeIndex = 0;
+                        }
                     }
                     else
                     {
