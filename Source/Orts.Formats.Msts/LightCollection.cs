@@ -423,21 +423,30 @@ namespace Orts.Formats.Msts
                     Lights.Add(new Light(light, true));
 
             // Determine which, if any, conditions are ignored by all conditions of all lights
-            IgnoredConditions[0]  = Lights.All(light => light.Conditions.All(cond => cond.Headlight == LightHeadlightCondition.Ignore));
-            IgnoredConditions[1]  = Lights.All(light => light.Conditions.All(cond => cond.Unit == LightUnitCondition.Ignore));
-            IgnoredConditions[2]  = Lights.All(light => light.Conditions.All(cond => cond.Penalty == LightPenaltyCondition.Ignore));
-            IgnoredConditions[3]  = Lights.All(light => light.Conditions.All(cond => cond.Control == LightControlCondition.Ignore));
-            IgnoredConditions[4]  = Lights.All(light => light.Conditions.All(cond => cond.Service == LightServiceCondition.Ignore));
-            IgnoredConditions[5]  = Lights.All(light => light.Conditions.All(cond => cond.TimeOfDay == LightTimeOfDayCondition.Ignore));
-            IgnoredConditions[6]  = Lights.All(light => light.Conditions.All(cond => cond.Weather == LightWeatherCondition.Ignore));
-            IgnoredConditions[7]  = Lights.All(light => light.Conditions.All(cond => cond.Coupling == LightCouplingCondition.Ignore));
-            IgnoredConditions[8]  = Lights.All(light => light.Conditions.All(cond => cond.Battery == LightBatteryCondition.Ignore));
-            IgnoredConditions[9]  = Lights.All(light => light.Conditions.All(cond => cond.Brake == LightBrakeCondition.Ignore));
-            IgnoredConditions[10] = Lights.All(light => light.Conditions.All(cond => cond.Reverser == LightReverserCondition.Ignore));
-            IgnoredConditions[11] = Lights.All(light => light.Conditions.All(cond => cond.Doors == LightDoorsCondition.Ignore));
-            IgnoredConditions[12] = Lights.All(light => light.Conditions.All(cond => cond.Horn == LightHornCondition.Ignore));
-            IgnoredConditions[13] = Lights.All(light => light.Conditions.All(cond => cond.Bell == LightBellCondition.Ignore));
-            IgnoredConditions[14] = Lights.All(light => light.Conditions.All(cond => cond.MU == LightMUCondition.Ignore));
+            // Assume all conditions are ignored unless determined otherwise
+            for (int i = 0; i < IgnoredConditions.Length; i++)
+                IgnoredConditions[i] = true;
+            foreach (Light light in Lights)
+            {
+                foreach (LightCondition condition in light.Conditions)
+                {
+                    IgnoredConditions[0] &= condition.Headlight == LightHeadlightCondition.Ignore;
+                    IgnoredConditions[1] &= condition.Unit == LightUnitCondition.Ignore;
+                    IgnoredConditions[2] &= condition.Penalty == LightPenaltyCondition.Ignore;
+                    IgnoredConditions[3] &= condition.Control == LightControlCondition.Ignore;
+                    IgnoredConditions[4] &= condition.Service == LightServiceCondition.Ignore;
+                    IgnoredConditions[5] &= condition.TimeOfDay == LightTimeOfDayCondition.Ignore;
+                    IgnoredConditions[6] &= condition.Weather == LightWeatherCondition.Ignore;
+                    IgnoredConditions[7] &= condition.Coupling == LightCouplingCondition.Ignore;
+                    IgnoredConditions[8] &= condition.Battery == LightBatteryCondition.Ignore;
+                    IgnoredConditions[9] &= condition.Brake == LightBrakeCondition.Ignore;
+                    IgnoredConditions[10] &= condition.Reverser == LightReverserCondition.Ignore;
+                    IgnoredConditions[11] &= condition.Doors == LightDoorsCondition.Ignore;
+                    IgnoredConditions[12] &= condition.Horn == LightHornCondition.Ignore;
+                    IgnoredConditions[13] &= condition.Bell == LightBellCondition.Ignore;
+                    IgnoredConditions[14] &= condition.MU == LightMUCondition.Ignore;
+                }
+            }
         }
     }
 }
