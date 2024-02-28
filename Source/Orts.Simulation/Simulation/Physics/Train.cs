@@ -4312,10 +4312,10 @@ namespace Orts.Simulation.Physics
                 // If locomotive is a steam locomotive, check for tenders only
                 if (first >= 0 && loco is MSTSSteamLocomotive)
                 {
-                    if (first > 0 && Cars[first - 1].WagonType == TrainCar.WagonTypes.Tender)
-                        first--;
-                    if (last < Cars.Count - 1 && Cars[last + 1].WagonType == TrainCar.WagonTypes.Tender)
+                    if (last < Cars.Count - 1 && !loco.Flipped && Cars[last + 1].WagonType == TrainCar.WagonTypes.Tender)
                         last++;
+                    else if (first > 0 && loco.Flipped && Cars[first - 1].WagonType == TrainCar.WagonTypes.Tender)
+                        first--;
                 }
                 else // Other locomotive types
                 {
@@ -4351,9 +4351,8 @@ namespace Orts.Simulation.Physics
         {
             if (Cars.Contains(locoCar) && locoCar is MSTSLocomotive loco)
                 foreach (TrainCar dpLead in DPLeadUnits)
-                    if (dpLead is MSTSLocomotive dpLeadLoco)
-                        if (dpLeadLoco.DPUnitID == loco.DPUnitID)
-                            return dpLead;
+                    if (dpLead is MSTSLocomotive dpLeadLoco && dpLeadLoco.DPUnitID == loco.DPUnitID)
+                        return dpLead;
 
             return null;
         }

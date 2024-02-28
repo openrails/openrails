@@ -1644,7 +1644,8 @@ namespace Orts.Simulation.RollingStocks
                 // for airtwinpipe system, make sure that a value is set for it
                 if (MaximumMainReservoirPipePressurePSI == 0)
                 {
-                    MaximumMainReservoirPipePressurePSI = MaxMainResPressurePSI;
+                    // Add 5 psi to account for main res overcharging that might happen
+                    MaximumMainReservoirPipePressurePSI = MaxMainResPressurePSI + 5.0f;
                     if (Simulator.Settings.VerboseConfigurationMessages)
                     {
                         Trace.TraceInformation("AirBrakeMaxMainResPipePressure not set in ENG file, set to default pressure of {0}.", FormatStrings.FormatPressure(MaximumMainReservoirPipePressurePSI, PressureUnit.PSI, MainPressureUnit, true));
@@ -2694,31 +2695,37 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-            // Turn compressor on and off
-            if (MainResPressurePSI < CompressorRestartPressurePSI && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn && !CompressorIsOn)
+            // Determine compressor synchronization
+            bool syncCompressor = false;
+
+            // Compressor synchronization is ignored if 5 psi above the high setpoint
+            if (MainResPressurePSI < MaxMainResPressurePSI + 5.0f && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn)
             {
-                SignalEvent(Event.CompressorOn);
                 foreach (List<TrainCar> locoGroup in Train.LocoGroups)
                 {
-                    // Synchronize compressor between coupled locomotives
-                    if (locoGroup.Contains(this as TrainCar))
+                    // Only synchronize in a group of locomotives directly connected
+                    // or synchronize between any two locomotives with MU controlled mode
+                    foreach (TrainCar locoCar in locoGroup)
                     {
-                        foreach (TrainCar locoCar in locoGroup)
-                            if (locoCar is MSTSLocomotive loco && loco.LocomotivePowerSupply.AuxiliaryPowerSupplyOn && !loco.CompressorIsOn)
-                                loco.SignalEvent(Event.CompressorOn);
+                        if (locoCar is MSTSLocomotive loco)
+                            syncCompressor |= (locoGroup.Contains(this as TrainCar) || CompressorIsMUControlled && loco.CompressorIsMUControlled)
+                                && loco.CompressorIsOn && loco.MainResPressurePSI < loco.MaxMainResPressurePSI;
+
+                        // No need to check repeatedly if we already know to sync compressors
+                        if (syncCompressor)
+                            break;
                     }
-                    else if (CompressorIsMUControlled) // Synchronize compressor between remote groups if configured to do so
-                    {
-                        foreach (TrainCar remoteLocoCar in locoGroup)
-                            if (remoteLocoCar is MSTSLocomotive remoteLoco && remoteLoco.LocomotivePowerSupply.AuxiliaryPowerSupplyOn && !remoteLoco.CompressorIsOn && remoteLoco.CompressorIsMUControlled)
-                                remoteLoco.SignalEvent(Event.CompressorOn);
-                    }
+                    if (syncCompressor)
+                        break;
                 }
             }
-            else if ((MainResPressurePSI >= MaxMainResPressurePSI || LocomotivePowerSupply.AuxiliaryPowerSupplyState != PowerSupplyState.PowerOn) && CompressorIsOn)
-            {
+
+            if ((MainResPressurePSI < CompressorRestartPressurePSI || (syncCompressor && MainResPressurePSI < MaxMainResPressurePSI))
+                && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn && !CompressorIsOn)
+                SignalEvent(Event.CompressorOn);
+            else if (((MainResPressurePSI >= MaxMainResPressurePSI && !syncCompressor)
+                || LocomotivePowerSupply.AuxiliaryPowerSupplyState != PowerSupplyState.PowerOn) && CompressorIsOn)
                 SignalEvent(Event.CompressorOff);
-            }
 
             if (CompressorIsOn)
                 MainResPressurePSI += elapsedClockSeconds * reservoirChargingRate;
