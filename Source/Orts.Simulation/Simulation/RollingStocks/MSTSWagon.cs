@@ -283,11 +283,6 @@ namespace Orts.Simulation.RollingStocks
         public bool AuxiliaryReservoirPresent;
 
         /// <summary>
-        /// Indicates whether an additional supply reservoir is present on the wagon or not.
-        /// </summary>
-        public bool SupplyReservoirPresent;
-
-        /// <summary>
         /// Active locomotive for a control trailer
         /// </summary>
         public MSTSLocomotive ControlActiveLocomotive { get; private set; }
@@ -301,6 +296,11 @@ namespace Orts.Simulation.RollingStocks
         /// Attached steam locomotive in case this wagon is an auxiliary tender
         /// </summary>
         public MSTSSteamLocomotive AuxTendersSteamLocomotive { get; private set; }
+
+        /// <summary>
+        /// Tender attached to this steam locomotive
+        /// </summary>
+        public TrainCar AttachedTender { get; private set; }
 
         /// <summary>
         /// Steam locomotive has a tender coupled to it
@@ -1310,9 +1310,6 @@ namespace Orts.Simulation.RollingStocks
                             case "manual_brake": ManualBrakePresent = true; break;
                             case "retainer_3_position": RetainerPositions = 3; break;
                             case "retainer_4_position": RetainerPositions = 4; break;
-                            case "supply_reservoir":
-                                SupplyReservoirPresent = true;
-                                break;
                         }
                     }
                     break;
@@ -1662,7 +1659,6 @@ namespace Orts.Simulation.RollingStocks
             HandBrakePresent = copy.HandBrakePresent;
             ManualBrakePresent = copy.ManualBrakePresent;
             AuxiliaryReservoirPresent = copy.AuxiliaryReservoirPresent;
-            SupplyReservoirPresent = copy.SupplyReservoirPresent;
             RetainerPositions = copy.RetainerPositions;
             InteriorShapeFileName = copy.InteriorShapeFileName;
             InteriorSoundFileName = copy.InteriorSoundFileName;
@@ -3701,6 +3697,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     SteamLocomotiveTender = Train.Cars[0] as MSTSSteamLocomotive;
                     SteamLocomotiveTender.HasTenderCoupled = false;
+                    SteamLocomotiveTender.AttachedTender = null;
                 }
 
                 var tenderIndex = 0;
@@ -3714,6 +3711,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     SteamLocomotiveTender = Train.Cars[tenderIndex] as MSTSSteamLocomotive;
                     SteamLocomotiveTender.HasTenderCoupled = true;
+                    SteamLocomotiveTender.AttachedTender = Train.Cars[tenderIndex + 1];
                 }
 
                 else if (tenderIndex > 0 && Train.Cars[tenderIndex - 1].WagonType == WagonTypes.Tender) // Assuming the tender is "in front" of the locomotive, ie it is running in reverse
@@ -3721,11 +3719,13 @@ namespace Orts.Simulation.RollingStocks
                     // TO BE CHECKED - What happens if multiple locomotives are coupled together in reverse?
                     SteamLocomotiveTender = Train.Cars[tenderIndex] as MSTSSteamLocomotive;
                     SteamLocomotiveTender.HasTenderCoupled = true;
+                    SteamLocomotiveTender.AttachedTender = Train.Cars[tenderIndex - 1];
                 }
                 else // Assuming that locomotive is a tank locomotive, and no tender is coupled
                 {
                     SteamLocomotiveTender = Train.Cars[tenderIndex] as MSTSSteamLocomotive;
                     SteamLocomotiveTender.HasTenderCoupled = false;
+                    SteamLocomotiveTender.AttachedTender = null;
                 }
             }
         }

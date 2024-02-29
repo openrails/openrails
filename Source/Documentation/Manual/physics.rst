@@ -2350,6 +2350,52 @@ The actual set value of traction or dynamic brake of *async* group is shown in
 lines *Throttle* and *Dynamic Brake*, respectively, in brackets, e.g.: 
 Throttle: 0% (50%).
 
+In addition to applying power and dynamic brake, remote units can also manage the
+train brake, independent brake, and emergency brake in sync with the lead locomotive.
+This can dramatically speed up brake application and release on long trains, which has
+allowed trains to increase in length substantially without major decreases in brake
+performance. Only one locomotive in each group, the 'lead' DP unit, will have brakes
+cut-in. Usually this is the same locomotive recieving throttle data from the lead
+locomotive. In Open Rails, these locomotives are designated automatically. To determine
+which units are the 'lead' in each group, check the ID row on the DPU Info window.
+
+As described earlier, operation in *sync* mode or *async* mode has no effect on air
+brake behavior. In reality, additional remote modes such as *set-out*, *bv out*,
+and *isolate* would disable air brakes on remote units, but these modes are not
+present for simplicity.
+
+.. index::
+   single: ORTSDPBrakeSynchronization
+
+By default, Open Rails will treat remote groups as manned helpers who typically
+would not assist in train brake operations, so only independent brakes will synchronize.
+To enable train brake synchronization, the token ``engine(ORTSDPBrakeSynchronization(``
+should be used. The valid settings for ``ORTSDPBrakeSynchronization`` are as follows:
+
+- ``"Apply"``: DP units will reduce the brake pipe pressure locally to match the
+  equalizing reservoir pressure of the controlling locomotive. (The controlling
+  locomotive must also have the ``"Apply"`` setting.)
+- ``"Release"``: DP units will increase the brake pipe pressure locally to match
+  the equalizing reservoir pressure of the controlling locomotive. (The controlling
+  locomotive must also have the ``"Release"`` setting.)
+- ``"Emergency"``: DP units will vent the brake pipe to 0 if an emergency application
+  is triggered by the controlling locomotive. (The controlling locomotive must also
+  have the ``"Emergency"`` setting.)
+- ``"Independent"``: DP units will match the brake cylinder pressure of the
+  controlling locomotive, and will automatically bail-off automatic brake
+  applications if needed. (The controlling locomotive must also have the
+  ``"Independent"`` setting.)
+                - NOTE: Although ``"Independent"`` is enabled by default,
+                  if ``ORTSDPBrakeSynchronization`` is present in the .eng
+                  file but ``"Independent"`` is not specified as an option,
+                  independent brakes will NOT be synchronized.
+
+All settings can be combined as needed, simply place a comma between each setting
+in the string: ``ORTSDPBrakeSynchronization("Apply, Release, Emergency, Independent")``
+will simulate the configuration of most modern locomotives. Unlike other distributed power
+features, brake synchronization can be applied to any locomotive type to simulate a wide
+variety of braking systems.
+
 Distributed power info and commands can also be displayed and operated through 
 cabview controls, as explained :ref:`here <cabs-distributed-power>`
 
@@ -2438,6 +2484,9 @@ be about 1 minute for every 12 cars. If the *Brake Pipe Charging Rate*
 (psi/s) value is set to 1000, the pipe pressure gradient features
 will be disabled and will also disable some but not all of the other new
 brake features.
+
+Brake system charging time depends on the train length as it should, but
+at the moment there is no modeling of main reservoirs and compressors.
 
 For EP brakes, two variants are available:
 
@@ -3111,27 +3160,16 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
    single: ORTSEmergencyValveActuationRate
    single: ORTSEmergencyDumpValveRate
    single: ORTSEmergencyDumpValveTimer
-   single: ORTSEmergencyQuickAction
    single: ORTSEmergencyResQuickRelease
    single: ORTSMainResPipeAuxResCharging
    single: ORTSBrakeRelayValveRatio
-   single: ORTSBrakeRelayValveInshot
    single: ORTSEngineBrakeRelayValveRatio
-   single: ORTSEngineBrakeRelayValveInshot
    single: ORTSBrakeRelayValveApplicationRate
    single: ORTSBrakeRelayValveReleaseRate
    single: ORTSMaxTripleValveCylinderPressure
    single: ORTSMaxServiceCylinderPressure
-   single: ORTSMaxServiceApplicationRate
-   single: ORTSTwoStageLowPressure
-   single: ORTSTwoStageRelayValveRatio
-   single: ORTSTwoStageIncreasingSpeed
-   single: ORTSTwoStageDecreasingSpeed
-   single: ORTSHighSpeedReducingPressure
    single: ORTSUniformChargingThreshold
    single: ORTSUniformChargingRatio
-   single: ORTSUniformReleaseThreshold
-   single: ORTSUniformReleaseRatio
    single: ORTSQuickServiceLimit
    single: ORTSQuickServiceApplicationRate
    single: ORTSQuickServiceVentRate
@@ -3149,9 +3187,6 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
    single: ORTSBrakePipeTimeFactor
    single: ORTSEPBrakeControlsBrakePipe
    single: ORTSCompressorIsMuControlled
-   single: Supply_Reservoir
-   single: ORTSSupplyResCapacity
-   single: ORTSSupplyResChargingRate
 
 - ``Wagon(BrakePipeVolume`` -- Volume of car's brake pipe in cubic feet
   (default .5).
@@ -3178,17 +3213,12 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 - ``Wagon(ORTSEmergencyDumpValveTimer`` -- Timer for emergency dump valve to close
   after it is activated. If set to 0, it will close as soon as BP is discharged.
   Default value will prevent BP from being charged for 2 minutes.
-- ``Wagon(ORTSEmergencyQuickAction`` -- If set to 1, air from the brake pipe will
-  be sent to the brake cylinder at MaxApplicationRate during emergency applications.
-  Speeds up emergency application along the entire train. (default 0)
 - ``Wagon(ORTSEmergencyResQuickRelease`` -- Set to 1 (default 0) to enable quick release,
   in which emergency reservoir air is used to increase the brake pipe pressure
-  during release. Remains active until aux res has recharged.
+  during release. Remains active until brake cylinder pressure drops below 5 psi.
 - ``Wagon(ORTSMainResPipeAuxResCharging`` -- Boolean value that indicates,
   for twin pipe systems, if the main reservoir pipe is used for charging the auxiliary
-  reservoirs. Alternately, if equipped with a supply reservoir, the supply reservoir
-  will charge from the main reservoir pipe instead. If set to false, the main reservoir
-  pipe will not be used (default: true).
+  reservoirs. If set to false, the main reservoir pipe will not be used
   by the brake system.
 - ``Wagon(ORTSEPBrakeControlsBrakePipe`` -- Set to 1 for UIC EP brake: brake pipe
   pressure is electrically controlled at every fitted car.
@@ -3197,15 +3227,7 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   This is achieved via a relay valve which sets BC pressure proportionally.
   Relay valves may be installed to achieve higher brake cylinder pressures,
   dynamic brake blending or variable load compensation.
-- ``Wagon(ORTSBrakeRelayValveInshot`` -- Sets the "in-shot" pressure for the relay
-  valve. This pressure will be added to the regular output of the relay valve for any
-  application, effectively setting a minimum brake cylinder pressure. Many step down
-  relay valves (ratio less than 1) utilize in-shot to ensure brake cylinders extend
-  fully for light train brake applications.
-- ``Wagon(ORTSEngineBrakeRelayValveRatio`` -- Same as ``ORTSBrakeRelayValveRatio``,
-  but for the engine brake.
-- ``Wagon(ORTSEngineBrakeRelayValveInshot`` -- Same as ``ORTSBrakeRelayValveInshot``,
-  but for the engine brake.
+- ``Wagon(ORTSBrakeRelayValveRatio`` -- Same as above, but for the engine brake
 - ``Wagon(ORTSBrakeRelayValveApplicationRate`` -- Brake cylinder pressure application
   rate achieved by the relay valve, if fitted.
 - ``Wagon(ORTSBrakeRelayValveReleaseRate`` -- Brake cylinder pressure release
@@ -3217,35 +3239,12 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 - ``Wagon(ORTSMaxServiceCylinderPressure`` -- Sets the maximum cylinder pressure
   demanded during service applications. During emergency applications,
   brake cylinder pressure is instead limited by ``ORTSMaxTripleValveCylinderPressure``.
-- ``Wagon(ORTSMaxServiceApplicationRate`` -- Sets the maximum application rate
-  allowed during service applications. For emergency applications, the application
-  rate will be limited by ``MaxApplicationRate``.
-- ``Wagon(ORTSTwoStageLowPressure`` -- For two stage braking systems where brake force
-  is reduced at lower speeds and increased at higher speeds, sets the maximum cylinder
-  pressure demanded when at slower speeds (defaults to 0, disabling two stage braking).
-  For high speed, use ``ORTSMaxTripleValveCylinderPressure`` to set the pressure limit.
-- ``Wagon(ORTSTwoStageRelayValveRatio`` -- Alternatey, sets a relay valve ratio to
-  be used by the two stage system at low speeds. At high speed, the relay valve
-  uses the ratio set by ``ORTSBrakeRelayValveRatio``.
-- ``Wagon(ORTSTwoStageIncreasingSpeed`` -- The speed at which the two stage braking
-  system changes from low pressure to high pressure during acceleration.
-- ``Wagon(ORTSTwoStageDecreasingSpeed`` -- The speed at which the two stage braking
-  system changes from high pressure to low pressure during deceleration.
-- ``Wagon(ORTSHighSpeedReducingPressure`` -- If the demanded brake cylinder pressure
-  exceeds this value, the brakes will gradually release to this pressure. Simulates
-  the high speed reducing valve (HSRV). (default 0 for wagons with no HSRV)
 - ``Wagon(ORTSUniformChargingThreshold`` -- The pressure difference between the brake
   pipe and auxiliary reservoir at which uniform charging activates during release
   (default 3 psi), usually used to reduce the rate of auxiliary reservoir charging.
 - ``Wagon(ORTSUniformChargingRatio`` -- Factor used to divide auxiliary reservoir
   charging rate by when uniform charging is active. Eg: setting of 2 will halve
   charging rate while uniform charging is active (defaults to 0, disabling the feature).
-- ``Wagon(ORTSUniformReleaseThreshold`` -- The pressure difference between the brake
-  pipe and auxiliary reservoir at which uniform release activates during release
-  (default 3 psi), usually used to reduce the rate of brake cylinder release.
-- ``Wagon(ORTSUniformReleaseRatio`` -- Factor used to divide brake cylinder
-  release rate by when uniform release is active. Eg: setting of 2 will halve
-  release rate while uniform release is active (defaults to 0, disabling the feature).
 - ``Wagon(ORTSQuickServiceLimit`` -- Quick service activates when triple valve
   initially changes from release to apply, and will remain active until brake
   cylinder pressure reaches the pressure specified here (default 0,
@@ -3271,16 +3270,6 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 - ``Wagon(ORTSCylinderSpringPressure`` -- Below the specified pressure, no
   brake force will be developed, simulating the pressure required to
   overcome the brake cylinder return spring (default 0).
-- ``BrakeEquipmentType(Supply_Reservoir`` -- Adds a supply reservoir to the
-  loco or wagon, which will constantly charge to the brake pipe pressure
-  or MR pipe (if equipped) pressure. If a supply reservoir is equipped,
-  supply res air will be used to pressurize the brake cylinders thru the relay
-  valve. This allows for a small, fast charging auxiliary reservoir to
-  be used with large brake cylinders.
-- ``Wagon(ORTSSupplyResCapacity`` -- Volume of the supply reservoir. Larger
-  volumes relative to the brake cylinder volume allow for more brake applications.
-- ``Wagon(ORTSSupplyResChargingRate`` -- The rate at which the pressure of the
-  supply reservoir will increase when charging from the brake pipe or MR pipe.
 - ``Engine(ORTSMainResChargingRate`` -- Rate of main reservoir pressure change
   in psi per second when the compressor is on (default .4).
 - ``Engine(ORTSEngineBrakeReleaseRate`` -- Rate of engine brake pressure
