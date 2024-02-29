@@ -1263,9 +1263,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         {
                             // Only sync application/release on DP units if both the lead unit AND the DP lead unit are set to synchronize
                             // Lead locomotive will always be allowed to apply/release
-                            bool syncApplication = loco == lead || loco.DPSyncTrainApplication && lead.DPSyncTrainApplication;
-                            bool syncRelease = loco == lead || loco.DPSyncTrainRelease && lead.DPSyncTrainRelease;
-                            bool syncEmergency = loco == lead || loco.DPSyncEmergency && lead.DPSyncEmergency;
+                            bool syncApplication = loco == lead || (loco.DPSyncTrainApplication && lead.DPSyncTrainApplication);
+                            bool syncRelease = loco == lead || (loco.DPSyncTrainRelease && lead.DPSyncTrainRelease);
+                            bool syncEmergency = loco == lead || (loco.DPSyncEmergency && lead.DPSyncEmergency);
 
                         tempBrakePipeFlow = 0.0f;
 

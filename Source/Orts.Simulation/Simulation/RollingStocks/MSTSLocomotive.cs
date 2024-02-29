@@ -2786,7 +2786,7 @@ namespace Orts.Simulation.RollingStocks
                     foreach (TrainCar locoCar in locoGroup)
                     {
                         if (locoCar is MSTSLocomotive loco)
-                            syncCompressor |= (locoGroup.Contains(this as TrainCar) || CompressorIsMUControlled && loco.CompressorIsMUControlled)
+                            syncCompressor |= (locoGroup.Contains(this as TrainCar) || (CompressorIsMUControlled && loco.CompressorIsMUControlled))
                                 && loco.CompressorIsOn && loco.MainResPressurePSI < loco.MaxMainResPressurePSI;
 
                         // No need to check repeatedly if we already know to sync compressors
