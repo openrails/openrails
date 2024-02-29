@@ -133,7 +133,7 @@ namespace Orts.Viewer3D
             var visibleCars = new List<TrainCar>();
             var removeDistance = Viewer.Settings.ViewingDistance * 1.5f;
             if (Viewer.PlayerLocomotive != null)
-                visibleCars.Add(Viewer.PlayerLocomotive);
+            visibleCars.Add(Viewer.PlayerLocomotive);
             foreach (var train in Viewer.Simulator.Trains)
                 foreach (var car in train.Cars)
                     if (WorldLocation.ApproximateDistance(Viewer.Camera.CameraWorldLocation, car.WorldPosition.WorldLocation) < removeDistance && car != Viewer.PlayerLocomotive)
