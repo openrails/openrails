@@ -1125,6 +1125,7 @@ namespace Orts.Viewer3D.Processes
                         // for resume and replay : set timetable file and selected train info
                         Simulator.TimetableFileName = System.IO.Path.GetFileNameWithoutExtension(args[0]);
                         Simulator.PathName = String.Copy(args[1]);
+                        Simulator.IsAutopilotMode = true;
                     }
                     break;
             }
