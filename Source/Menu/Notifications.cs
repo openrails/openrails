@@ -45,16 +45,19 @@ namespace ORTS
         }
 
         public List<Notification> NotificationList = new List<Notification>();
+        public List<Check> CheckList = new List<Check>();
 
         public Notifications() { }
 
 
         public void CheckNotifications()
         {
-            NotificationList = GetNotifications(); // Make this a background task
+            var notifications = GetNotifications(); // Make this a background task
+            NotificationList = notifications.NotificationList;
+            CheckList = notifications.CheckList;
         }
 
-        public List<Notification> GetNotifications()
+        public Notifications GetNotifications()
         {
             //// Fetch the update URL (adding ?force=true if forced) and cache the update/error.
             //var client = new WebClient()
@@ -159,9 +162,63 @@ namespace ORTS
             var notificationsSerial = File.ReadAllText(filename);
 
             JsonSerializerSettings settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
-            var jsonInput = JsonConvert.DeserializeObject<JsonInput>(notificationsSerial, settings);
+            var jsonInput = JsonConvert.DeserializeObject<Notifications>(notificationsSerial, settings);
 
-            return jsonInput.NotificationList;
+            return jsonInput;
+        }
+
+        public void ReplaceParameters()
+        {
+            foreach(var n in NotificationList)
+            {
+                n.Title = ReplaceParameter(n.Title);
+                n.Date = ReplaceParameter(n.Date);
+                foreach (var item in n.PrefixItemList)
+                {
+                    ReplaceItemParameter(item);
+                }
+                foreach (var item in n.MetLists.ItemList)
+                {
+                    ReplaceItemParameter(item);
+                }
+                foreach (var item in n.SuffixItemList)
+                {
+                    ReplaceItemParameter(item);
+                }
+            }
+        }
+
+        private void ReplaceItemParameter(Item item)
+        {
+            if (item is Record record)
+                record.Value = ReplaceParameter(record.Value);
+            if (item is Link link)
+                link.Value = ReplaceParameter(link.Value);
+            if (item is Update update)
+                update.Value = ReplaceParameter(update.Value);
+        }
+
+        private string ReplaceParameter(string field)
+        {
+            if (field.Contains("{{") == false)
+                return field;
+
+            field = field.TrimStart(' ', '{');
+            field = field.TrimEnd('}', ' ');
+
+            switch (field)
+            {
+                case "installed_version":
+                    field = "installed_version";
+                    break;
+                case "new_version":
+                    field = "new_version";
+                    break;
+                default:
+                    break;
+            }
+
+            return field;
         }
     }
 
@@ -212,6 +269,9 @@ namespace ORTS
         public string Id { get; set; }
         public List<Criteria> IncludesAnyOf { get; set; }
         public List<Criteria> ExcludesAllOf { get; set; }
+        public List<Item> UnmetItemList { get; set; }
+        public bool IsChecked { get; set; } = false;
+        public bool IsMet { get; set; } = false;
     }
     class Contains : Criteria { }
     class NoLessThan : Criteria { }
@@ -228,8 +288,8 @@ namespace ORTS
         public string GPU { get; set; } // "Intel(R) Iris(R) Xe Graphics (Intel Corporation; 1,024 MB)"
         public string Direct3D { get; set; }    // "12_1,12_0,11_1,11_0,10_1,10_0,9_3,9_2,9_1"
     }
-    class Unmet
-    {
-        public List<Item> ItemList { get; set; }
-    }
+    //class UnmetItemList
+    //{
+    //    public List<Item> ItemList { get; set; }
+    //}
 }

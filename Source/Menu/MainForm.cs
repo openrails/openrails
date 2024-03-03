@@ -254,6 +254,10 @@ namespace ORTS
             CheckForUpdate();
             Notifications.CheckNotifications();
 
+            // Drop any notifications for the channel not selected
+
+            Notifications.ReplaceParameters();
+
             if (!Initialized)
             {
                 LoadFolderList();
@@ -1628,8 +1632,8 @@ namespace ORTS
             NotificationPageList.Clear();
             var page = new NotificationPage(panelDetails);
 
-            if (IsUpdateAvailable())
-            //if (true)
+            //if (IsUpdateAvailable())
+            if (true)
             {
                 NewNotificationPageCount = 1;
                 if (AreNotificationPagesVisible)
@@ -1638,14 +1642,44 @@ namespace ORTS
                     var n = list[NotificationIndex];
 
                     new NTitleControl(page, NotificationIndex + 1, list.Count, n.Date, n.Title).Add();
+
                     foreach(var item in n.PrefixItemList)
                     {
                         AddItemToPage(page, item);
                     }
-                    foreach (var item in n.MetLists.ItemList)
+
+                    var checksMet = true;
+                    foreach (var nc in n.MetLists.CheckIdList)
                     {
-                        AddItemToPage(page, item);
+                        foreach (var c in Notifications.CheckList)
+                        {
+                            if (c.Id == nc.Id)
+                            {
+                                if (c.IsChecked == false)
+                                {
+                                    // Check constraints
+                                    //foreach(var constraint in c.IncludesAnyOf)
+                                }
+                                if (c.IsMet == false)
+                                {
+                                    foreach (var item in c.UnmetItemList)
+                                    {
+                                        AddItemToPage(page, item);
+                                    }
+                                    checksMet = false;
+                                    break;
+                                }
+                            }
+                        }
                     }
+                    if (checksMet)
+                    {
+                        foreach (var item in n.MetLists.ItemList)
+                        {
+                            AddItemToPage(page, item);
+                        }
+                    }
+
                     foreach (var item in n.SuffixItemList)
                     {
                         AddItemToPage(page, item);
