@@ -2777,7 +2777,9 @@ namespace Orts.Simulation.RollingStocks
             bool syncCompressor = false;
 
             // Compressor synchronization is ignored if 5 psi above the high setpoint
-            if (MainResPressurePSI < MaxMainResPressurePSI + 5.0f && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn)
+            // Only accept synchronization if MU cable is connected and locomotive power supply is on
+            if (RemoteControlGroup != -1 && MainResPressurePSI < MaxMainResPressurePSI + 5.0f 
+                && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn)
             {
                 foreach (List<TrainCar> locoGroup in Train.LocoGroups)
                 {
@@ -2786,7 +2788,7 @@ namespace Orts.Simulation.RollingStocks
                     foreach (TrainCar locoCar in locoGroup)
                     {
                         if (locoCar is MSTSLocomotive loco)
-                            syncCompressor |= (locoGroup.Contains(this as TrainCar) || (CompressorIsMUControlled && loco.CompressorIsMUControlled))
+                            syncCompressor |= loco.RemoteControlGroup != -1 && (locoGroup.Contains(this as TrainCar) || (CompressorIsMUControlled && loco.CompressorIsMUControlled))
                                 && loco.CompressorIsOn && loco.MainResPressurePSI < loco.MaxMainResPressurePSI;
 
                         // No need to check repeatedly if we already know to sync compressors
