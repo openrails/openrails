@@ -68,9 +68,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float EmergAuxVolumeRatio = 1.4f;
         protected bool RelayValveFitted = false;
         public float RelayValveRatio { get; protected set; } = 1;
-        protected float RelayValveInshot;
-        protected float EngineRelayValveRatio = 0;
-        protected float EngineRelayValveInshot;
+        protected float RelayValveInshotPSI;
+        public float EngineRelayValveRatio { get; protected set; } = 0;
+        protected float EngineRelayValveInshotPSI;
         protected float RelayValveApplicationRatePSIpS = 50;
         protected float RelayValveReleaseRatePSIpS = 50;
         protected string DebugType = string.Empty;
@@ -183,9 +183,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             HoldingValve = thiscopy.HoldingValve;
             RelayValveFitted = thiscopy.RelayValveFitted;
             RelayValveRatio = thiscopy.RelayValveRatio;
-            RelayValveInshot = thiscopy.RelayValveInshot;
+            RelayValveInshotPSI = thiscopy.RelayValveInshotPSI;
             EngineRelayValveRatio = thiscopy.EngineRelayValveRatio;
-            EngineRelayValveInshot = thiscopy.EngineRelayValveInshot;
+            EngineRelayValveInshotPSI = thiscopy.EngineRelayValveInshotPSI;
             RelayValveApplicationRatePSIpS = thiscopy.RelayValveApplicationRatePSIpS;
             RelayValveReleaseRatePSIpS = thiscopy.RelayValveReleaseRatePSIpS;
             MaxTripleValveCylPressurePSI = thiscopy.MaxTripleValveCylPressurePSI;
@@ -340,9 +340,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         RelayValveFitted = false;
                     }
                     break;
-                case "wagon(ortsbrakerelayvalveinshot": RelayValveInshot = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "wagon(ortsbrakerelayvalveinshot": RelayValveInshotPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "wagon(ortsenginebrakerelayvalveratio": EngineRelayValveRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "wagon(ortsenginebrakerelayvalveinshot": EngineRelayValveInshot = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "wagon(ortsenginebrakerelayvalveinshot": EngineRelayValveInshotPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "wagon(ortsbrakerelayvalveapplicationrate": RelayValveApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(ortsbrakerelayvalvereleaserate": RelayValveReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(ortsmaxtriplevalvecylinderpressure": MaxTripleValveCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
@@ -544,7 +544,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             
             RelayValveFitted |= (Car is MSTSLocomotive loco && (loco.DynamicBrakeAutoBailOff || loco.DynamicBrakePartialBailOff)) ||
                 (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.DistributingValve || (Car as MSTSWagon).SupplyReservoirPresent ||
-                TwoStageRelayValveRatio != 0 || RelayValveInshot != 0 || EngineRelayValveInshot != 0;
+                TwoStageRelayValveRatio != 0 || RelayValveInshotPSI != 0 || EngineRelayValveInshotPSI != 0;
 
             // If user specified only one two stage speed, set the other to be equal
             if (TwoStageSpeedDownMpS == 0 && TwoStageSpeedUpMpS > 0)
@@ -662,7 +662,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         TripleValveState = ValveState.Apply;
                     }
                 }
-                else if (BrakeLine1PressurePSI > AuxResPressurePSI + (TripleValveState == ValveState.Release ? 0.0f : TripleValveSensitivityPSI * 2))
+                else if (BrakeLine1PressurePSI > AuxResPressurePSI + (TripleValveState == ValveState.Release ? 0.0f : TripleValveSensitivityPSI * 1.75f))
                 {
                     if (prevState != ValveState.Release) // If valve transitions to release, quick release activates, quick service deactivates
                     {
@@ -1250,13 +1250,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             if (RelayValveFitted)
             {
-                float automaticDemandedPressurePSI;
-                float engineDemandedPressurePSI;
+                float automaticDemandedPressurePSI = demandedPressurePSI * (TwoStageLowPressureActive ? TwoStageRelayValveRatio : RelayValveRatio);
+                float engineDemandedPressurePSI = BrakeLine3PressurePSI * EngineRelayValveRatio;
 
-                // Add in-shot pressure (if equipped) to pressure demanded from relay valve
-                // In-shot: A small amount of additional pressure at a 1:1 ratio is added to ensure positive brake application
-                automaticDemandedPressurePSI = Math.Min(demandedPressurePSI, RelayValveInshot) + demandedPressurePSI * (TwoStageLowPressureActive ? TwoStageRelayValveRatio : RelayValveRatio);
-                engineDemandedPressurePSI = Math.Min(BrakeLine3PressurePSI, EngineRelayValveInshot) + BrakeLine3PressurePSI * EngineRelayValveRatio;
+                // Determine how in-shot will affect the demanded pressure.
+                // In-shot introduces a small additional application pressure at a 1:1 ratio
+                // In-shot can add on to the demanded pressure, or override the demanded pressure
+                // For ORTS: in-shot setting > 0 adds, setting < 0 overrides. 'Negative inshot' is not a real thing, only a simulation compromise
+                automaticDemandedPressurePSI = Math.Min(demandedPressurePSI, Math.Max(RelayValveInshotPSI, 0))
+                    + Math.Max(Math.Min(demandedPressurePSI, -RelayValveInshotPSI), automaticDemandedPressurePSI);
+                engineDemandedPressurePSI = Math.Min(BrakeLine3PressurePSI, Math.Max(EngineRelayValveInshotPSI, 0))
+                    + Math.Max(Math.Min(BrakeLine3PressurePSI, -EngineRelayValveInshotPSI), engineDemandedPressurePSI);
 
                 demandedPressurePSI = Math.Max(automaticDemandedPressurePSI, engineDemandedPressurePSI);
                 if (demandedPressurePSI > CylPressurePSI)
