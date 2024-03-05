@@ -204,7 +204,7 @@ namespace Orts.Simulation.RollingStocks
         public bool DerailmentCoefficientEnabled = true;
         public float MaximumWheelFlangeAngleRad;
         public float WheelFlangeLengthM;
-        public float AngleOfAttackRad;
+        public float AngleOfAttackmRad;
         public float DerailClimbDistanceM;
         public bool DerailPossible = false;
         public bool DerailExpected = false;
@@ -968,6 +968,8 @@ namespace Orts.Simulation.RollingStocks
                 CurrentElevationPercent = -CurrentElevationPercent;
             }
 
+            AngleOfAttackmRad = GetAngleofAttackmRad();
+
             UpdateCurveSpeedLimit(); // call this first as it will provide inputs for the curve force.
             UpdateCurveForce(elapsedClockSeconds);
             UpdateTunnelForce();
@@ -1681,10 +1683,6 @@ namespace Orts.Simulation.RollingStocks
                     // Calculate Nadal derailment coefficient limit
                     NadalDerailmentCoefficient = ((float) Math.Tan(MaximumWheelFlangeAngleRad) - wagonAdhesion) / (1f + wagonAdhesion * (float) Math.Tan(MaximumWheelFlangeAngleRad));
 
-                    // Calculate Angle of Attack - AOA = sin-1(2 * bogie wheel base / curve radius)
-                    AngleOfAttackRad = (float)Math.Asin(2 * RigidWheelBaseM / CurrentCurveRadiusM);
-                    var angleofAttackmRad = AngleOfAttackRad * 1000f; // Convert to micro radians
-
                     // Calculate the derail climb distance - uses the general form equation 2.4 from the above publication
                     var parameterA_1 = ((100 / (-1.9128f * MathHelper.ToDegrees(MaximumWheelFlangeAngleRad) + 146.56f)) + 3.1f) * Me.ToIn(WheelFlangeLengthM);
 
@@ -1698,7 +1696,7 @@ namespace Orts.Simulation.RollingStocks
 
                     var parameterB = parameterB_1 + parameterB_2;
 
-                    DerailClimbDistanceM = Me.FromFt( (float)((parameterA * parameterB * Me.ToIn(WheelFlangeLengthM)) / ((angleofAttackmRad + (parameterB * Me.ToIn(WheelFlangeLengthM))))) );
+                    DerailClimbDistanceM = Me.FromFt( (float)((parameterA * parameterB * Me.ToIn(WheelFlangeLengthM)) / ((AngleOfAttackmRad + (parameterB * Me.ToIn(WheelFlangeLengthM))))) );
 
                     // calculate the time taken to travel the derail climb distance
                     var derailTimeS = DerailClimbDistanceM / AbsSpeedMpS;
@@ -1768,6 +1766,26 @@ namespace Orts.Simulation.RollingStocks
         }
 
         #endregion
+
+        /// <summary>
+        /// Get the Angle of attack for a car as it goes through a curve
+        /// </summary>
+        /// <returns>angle in micro radians</returns>
+        /// 
+        public float GetAngleofAttackmRad ()
+        {
+            if (CurrentCurveRadiusM > 0)
+            {
+                // Calculate Angle of Attack - AOA = sin-1(2 * bogie wheel base / curve radius)
+                var angleofAttackmRad = (float)Math.Asin(2 * RigidWheelBaseM / CurrentCurveRadiusM) * 1000f; // Convert to micro radians
+                return angleofAttackmRad;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
 
         /// <summary>
         /// Get the current direction that curve is heading relative to the train.
