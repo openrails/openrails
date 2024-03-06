@@ -1420,7 +1420,13 @@ namespace Orts.Viewer3D
                         if ((Camera as CabCamera).SideLocation == controlRenderer.Control.CabViewpoint && controlRenderer is ICabViewMouseControlRenderer mouseRenderer)
                         {
                             if (mouseRenderer.IsMouseWithin())
-                        {
+                            {
+                                var UserCommandControlTypes = (PlayerLocomotiveViewer as MSTSLocomotiveViewer).UserCommandControlTypes;
+                                if (UserCommandControlTypes.ContainsKey(controlRenderer.Control.ControlType.Type))
+                                {
+                                    continue;
+                                }
+
                             if ((controlRenderer.Control.Screens == null || controlRenderer.Control.Screens[0] == "all"))
                             {
                                 MouseChangingControl = mouseRenderer;
