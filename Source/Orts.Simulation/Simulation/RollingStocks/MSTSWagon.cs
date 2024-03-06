@@ -1610,6 +1610,7 @@ namespace Orts.Simulation.RollingStocks
             MaxBrakeShoeForceN = copy.MaxBrakeShoeForceN;
             NumberCarBrakeShoes = copy.NumberCarBrakeShoes;
             MaxHandbrakeForceN = copy.MaxHandbrakeForceN;
+            FrictionBrakeBlendingMaxForceN = copy.FrictionBrakeBlendingMaxForceN;
             WindowDeratingFactor = copy.WindowDeratingFactor;
             DesiredCompartmentTempSetpointC = copy.DesiredCompartmentTempSetpointC;
             CompartmentHeatingPipeAreaFactor = copy.CompartmentHeatingPipeAreaFactor;
