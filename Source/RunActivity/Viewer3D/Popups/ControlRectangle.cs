@@ -15,9 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.RollingStock;
 
 namespace Orts.Viewer3D.Popups
@@ -41,7 +42,13 @@ namespace Orts.Viewer3D.Popups
             if (Viewer.Camera is CabCamera && (Viewer.PlayerLocomotiveViewer as MSTSLocomotiveViewer)._hasCabRenderer)
             {
                 var cabRenderer = (Viewer.PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer;
-                foreach (var controlRenderer in cabRenderer.ControlMap.Values)
+
+                var loco = Viewer.PlayerLocomotive as MSTSLocomotive;
+                var cabViewFrontRear = loco.UsingRearCab ? 1 : 0;
+                var itemsFrontCount = loco.CabViewList[(int)CabViewType.Front].CVFFile.CabViewControls.Count() - 1;
+                var itemsRearCount = loco.CabViewList.Count > 1 ? loco.CabViewList[(int)CabViewType.Rear].CVFFile.CabViewControls.Count() - 1 : 0;
+                
+                foreach (var controlRenderer in cabRenderer.ControlMap.Values.Skip(cabViewFrontRear == 0 ? 0 : itemsFrontCount).Take(cabViewFrontRear == 0 ? itemsFrontCount : itemsRearCount))
                 {
                     if ((Viewer.Camera as CabCamera).SideLocation == controlRenderer.Control.CabViewpoint && controlRenderer is ICabViewMouseControlRenderer mouseRenderer)
                     {                        
