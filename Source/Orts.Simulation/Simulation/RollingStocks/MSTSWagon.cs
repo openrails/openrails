@@ -44,6 +44,7 @@ using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
+using Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;
@@ -111,6 +112,11 @@ namespace Orts.Simulation.RollingStocks
         public float Variable1;  // used to convey status to soundsource
         public float Variable2;
         public float Variable3;
+        // additional engines
+        public float Variable1_2;
+        public float Variable1_3;
+        public float Variable1_4;
+        public float Variable2_Booster;
 
         // wag file data
         public string MainShapeFileName;
@@ -519,6 +525,11 @@ namespace Orts.Simulation.RollingStocks
             if (MSTSWagonNumWheels == 0 && InitWagonNumAxles == 0 )
             {
                 DerailmentCoefficientEnabled = false;
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Derailment Coefficient set to false for Wagon {0}", WagFilePath);
+                }
             }
 
             // Ensure Drive Axles is set to a default if no OR value added to WAG file
@@ -535,7 +546,7 @@ namespace Orts.Simulation.RollingStocks
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("Number of Wagon Axles set to default value of {0}", WagonNumAxles);
+                    Trace.TraceInformation("Number of Wagon Axles set to default value of {0} on Wagon {1}", WagonNumAxles, WagFilePath);
                 }
             }
             else
@@ -1809,7 +1820,11 @@ namespace Orts.Simulation.RollingStocks
         {
             outf.Write(Variable1);
             outf.Write(Variable2);
+            outf.Write(Variable2_Booster);
             outf.Write(Variable3);
+            outf.Write(Variable1_2);
+            outf.Write(Variable1_3);
+            outf.Write(Variable1_4);
             outf.Write(IsDavisFriction);
             outf.Write(IsRollerBearing);
             outf.Write(IsLowTorqueRollerBearing);
@@ -1870,7 +1885,11 @@ namespace Orts.Simulation.RollingStocks
         {
             Variable1 = inf.ReadSingle();
             Variable2 = inf.ReadSingle();
+            Variable2_Booster = inf.ReadSingle();
             Variable3 = inf.ReadSingle();
+            Variable1_2 = inf.ReadSingle();
+            Variable1_3 = inf.ReadSingle();
+            Variable1_4 = inf.ReadSingle();
             IsDavisFriction = inf.ReadBoolean();
             IsRollerBearing = inf.ReadBoolean();
             IsLowTorqueRollerBearing = inf.ReadBoolean();
@@ -2172,6 +2191,10 @@ namespace Orts.Simulation.RollingStocks
                             MassKG = MathHelper.Clamp(MassKG, LoadEmptyMassKg, LoadFullMassKg); // Clamp Mass to between the empty and full wagon values   
                             // Adjust drive wheel weight
                             SteamLocomotiveIdentification.DrvWheelWeightKg = (MassKG / InitialMassKG) * SteamLocomotiveIdentification.InitialDrvWheelWeightKg;
+
+                            // update drive wheel weight for each multiple steam engine
+                            UpdateDriveWheelWeight(LocoIndex, MassKG, SteamLocomotiveIdentification.SteamEngines.Count);
+
                         }
                         else // locomotive must be a tender type locomotive
                         // This is a tender locomotive. A tender locomotive does not have any fuel onboard.
@@ -2180,9 +2203,13 @@ namespace Orts.Simulation.RollingStocks
                             MassKG = LoadEmptyMassKg + Kg.FromLb(SteamLocomotiveIdentification.BoilerMassLB) + SteamLocomotiveIdentification.FireMassKG + +(SteamLocomotiveIdentification.CurrentTrackSandBoxCapacityM3 * SteamLocomotiveIdentification.SandWeightKgpM3);
                             var MassUpperLimit = LoadFullMassKg * 1.02f; // Allow full load to go slightly higher so that rounding errors do not skew results
                             MassKG = MathHelper.Clamp(MassKG, LoadEmptyMassKg, MassUpperLimit); // Clamp Mass to between the empty and full wagon values        
-                        // Adjust drive wheel weight
+                                                                                                // Adjust drive wheel weight
                             SteamLocomotiveIdentification.DrvWheelWeightKg = (MassKG / InitialMassKG) * SteamLocomotiveIdentification.InitialDrvWheelWeightKg;
-                        }
+
+                            // update drive wheel weight for each multiple steam engine
+                            UpdateDriveWheelWeight(LocoIndex, MassKG, SteamLocomotiveIdentification.SteamEngines.Count);
+
+                        }          
 
                         // Update wagon physics parameters sensitive to wagon mass change
                         // Calculate the difference ratio, ie how full the wagon is. This value allows the relevant value to be scaled from the empty mass to the full mass of the wagon
@@ -2260,7 +2287,19 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        private void UpdateTrainBaseResistance()
+        private void UpdateDriveWheelWeight(int index,  float masskg, int numberofengines)
+        {
+           var  LocoIdentification = Train.Cars[index] as MSTSSteamLocomotive;
+            if (LocoIdentification != null)
+            {
+                for (int i = 0; i < LocoIdentification.SteamEngines.Count; i++)
+                {
+                    LocoIdentification.SteamEngines[i].AttachedAxle.WheelWeightKg = (MassKG / InitialMassKG) * LocoIdentification.SteamEngines[i].AttachedAxle.InitialDrvWheelWeightKg;
+                 }
+            }
+        }
+
+            private void UpdateTrainBaseResistance()
         {
             IsBelowMergeSpeed = AbsSpeedMpS < MergeSpeedMpS;
             IsStandStill = AbsSpeedMpS < 0.1f;

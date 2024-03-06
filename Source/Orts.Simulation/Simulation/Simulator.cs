@@ -657,6 +657,9 @@ namespace Orts.Simulation
                 ContinuousLargeEjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ToggleInjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ToggleBlowdownValveCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleSteamBoosterAirCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleSteamBoosterIdleCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleSteamBoosterLatchCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ContinuousBlowerCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ContinuousDamperCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ContinuousFiringRateCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;

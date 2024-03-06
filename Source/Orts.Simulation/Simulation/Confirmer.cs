@@ -66,7 +66,9 @@ namespace Orts.Simulation
       , FiringIsManual
       , FireShovelfull
       , CylinderCocks
-      , SteamBooster
+      , SteamBoosterAir
+      , SteamBoosterIdle
+      , SteamBoosterLatch
       , CylinderCompound
       , LargeEjector
       , SmallEjector
@@ -217,7 +219,9 @@ namespace Orts.Simulation
                 , new string [] { GetString("Manual Firing"), GetString("off"), null, GetString("on") } 
                 , new string [] { GetString("Fire"), null, null, GetString("add shovel-full") }
                 , new string [] { GetString("Cylinder Cocks"), GetString("close"), null, GetString("open") }
-                , new string [] { GetString("SteamBooster"), null, null, null, GetString("decrease"), GetString("increase") }
+                , new string [] { GetString("Steam Booster Air Valve"), GetString("close"), null, GetString("open") }
+                , new string [] { GetString("Steam Booster Idle Valve"), GetString("idle"), null, GetString("run") }
+                , new string [] { GetString("Steam Booster Latch"), GetString("opened"), null, GetString("locked") }
                 , new string [] { GetString("Cylinder Compound"), GetString("close"), null, GetString("open") }
                 , new string [] { GetString("LargeEjector"), null, null, null, GetString("decrease"), GetString("increase") }
                 , new string [] { GetString("SmallEjector"), null, null, null, GetString("decrease"), GetString("increase") }

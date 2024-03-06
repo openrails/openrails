@@ -110,10 +110,18 @@ namespace Orts.Simulation.RollingStocks
         public bool Horn = false;
         protected bool PreviousHorn = false;
 
+        protected float HornTimerS = 30.0f;
+        protected float? HornStartTime;
+        public bool HornRecent { get; private set; }
+
         public bool ManualBell = false;
         public SoundState BellState = SoundState.Stopped;
         public bool Bell = false;
         protected bool PreviousBell = false;
+
+        protected float BellTimerS;
+        protected float? BellStartTime;
+        public bool BellRecent { get; private set; }
 
         public bool VacuumExhausterPressed = false;
         public bool FastVacuumExhausterFitted = false;
@@ -147,7 +155,7 @@ namespace Orts.Simulation.RollingStocks
         public bool OnLineCabRadio;
         public string OnLineCabRadioURL;
 
-        float ZeroSpeedAdhesionBase;
+        public float ZeroSpeedAdhesionBase;
 
         public float FilteredBrakePipeFlowM3pS;
         public IIRFilter AFMFilter;
@@ -204,6 +212,8 @@ namespace Orts.Simulation.RollingStocks
         public float BoilerPressurePSI;     // Steam Gauge pressure - what the engineer sees.
         public float MaxBoilerPressurePSI = 180f;  // maximum boiler pressure, safety valve setting
 
+        public float SandingSteamUsageLBpS;       // Sanding Steam Usage
+
         // Vacuum Reservoir and Exhauster Settings
 
         // Steam heating Flags
@@ -248,12 +258,18 @@ namespace Orts.Simulation.RollingStocks
         float DebugSpeed = 1; // Used for debugging adhesion coefficient
 
         // parameters for Track Sander based upon compressor air and abrasive table for 1/2" sand blasting nozzle @ 50psi
-        public float MaxTrackSandBoxCapacityM3 = Me3.FromFt3(40.0f);  // Capacity of sandbox - assume 40.0 cu ft
-        public float CurrentTrackSandBoxCapacityM3; 
-        public float TrackSanderAirComsumptionM3pS = Me3.FromFt3(195.0f) / 60.0f;  // Default value - cubic feet per min (CFM) 195 ft3/m
-        public float TrackSanderAirPressurePSI = 50.0f;
-        public float TrackSanderSandConsumptionM3pS = Me3.FromFt3(11.6f) / 3600.0f; // Default value - 11.6 ft3/h
+        public float MaxTrackSandBoxCapacityM3; // Capacity of sandbox
+        public float MaxTrackSanderAirComsumptionForwardM3pS;
+        public float MaxTrackSanderAirComsumptionReverseM3pS = 0;
+        public float MaxTrackSanderSandConsumptionForwardM3pS;
+        public float CurrentTrackSanderAirConsumptionM3pS;
+        public float CurrentTrackSanderSandConsumptionM3pS;
+        public float CurrentTrackSandBoxCapacityM3;
+        public float MaxTrackSanderSandConsumptionReverseM3pS = 0;
         public float SandWeightKgpM3 = 1600; // One cubic metre of sand weighs about 1.54-1.78 tonnes. 
+        public float MaxTrackSanderSteamConsumptionForwardLbpS;
+        public float MaxTrackSanderSteamConsumptionReverseLbpS = 0;
+
 
         // Vacuum Braking parameters
         readonly static float OneAtmospherePSI = Bar.ToPSI(1);
@@ -927,6 +943,19 @@ namespace Orts.Simulation.RollingStocks
                         STFException.TraceWarning(stf, "Skipped unknown engine type " + engineType);
                     }
                     break;
+                case "engine(sandingsystemtype":
+                    stf.MustMatch("(");
+                    var sandingType = stf.ReadString();
+                    try
+                    {
+                        SandingSystemType = (SandingSystemTypes)Enum.Parse(typeof(SandingSystemTypes), sandingType.First().ToString().ToUpper() + sandingType.Substring(1));
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Skipped unknown engine type " + sandingType);
+                    }
+                    break;
+
                 case "engine(ortstractionmotortype":
                     stf.MustMatch("(");
                     string tractionMotorType = stf.ReadString().ToUpper();
@@ -1063,6 +1092,8 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsbrakecutspoweratbrakepipepressure": BrakeCutsPowerAtBrakePipePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(ortsbrakerestorespoweratbrakepipepressure": BrakeRestoresPowerAtBrakePipePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(doeshorntriggerbell": DoesHornTriggerBell = stf.ReadBoolBlock(false); break;
+                case "engine(ortshornlightstimer": HornTimerS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
+                case "engine(ortsbelllightstimer": BellTimerS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(brakesenginecontrollers":
                     foreach (var brakesenginecontrollers in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
                     {
@@ -1124,14 +1155,25 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortswaterscoopdepth": WaterScoopDepthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0.0f); break;
                 case "engine(ortswaterscoopwidth": WaterScoopWidthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0.0f); break;
                     // Convert the following default ft^3 to Me^3 units
-                case "engine(ortsmaxtracksanderboxcapacity": MaxTrackSandBoxCapacityM3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null);
+                case "engine(ortsmaxtracksanderboxcapacity": 
+                    MaxTrackSandBoxCapacityM3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null);
                     MaxTrackSandBoxCapacityM3 = Me3.FromFt3(MaxTrackSandBoxCapacityM3);
                     break;
-                case "engine(ortsmaxtracksandersandconsumption": Me3.FromFt3( TrackSanderSandConsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null) );
-                    TrackSanderSandConsumptionM3pS = Me3.FromFt3(TrackSanderSandConsumptionM3pS);
+                case "engine(ortsmaxtracksandersandconsumptionforward": 
+                    Me3.FromFt3( MaxTrackSanderSandConsumptionForwardM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null) );
+                    MaxTrackSanderSandConsumptionForwardM3pS = Me3.FromFt3(MaxTrackSanderSandConsumptionForwardM3pS);
                     break;
-                case "engine(ortsmaxtracksanderairconsumption": Me3.FromFt3( TrackSanderAirComsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null) );
-                    TrackSanderAirComsumptionM3pS = Me3.FromFt3(TrackSanderAirComsumptionM3pS);
+                case "engine(ortsmaxtracksandersandconsumptionreverse":
+                    Me3.FromFt3(MaxTrackSanderSandConsumptionReverseM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
+                    MaxTrackSanderSandConsumptionReverseM3pS = Me3.FromFt3(MaxTrackSanderSandConsumptionReverseM3pS);
+                    break;
+                case "engine(ortsmaxtracksanderairconsumptionforward": 
+                    Me3.FromFt3( MaxTrackSanderAirComsumptionForwardM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null) );
+                    MaxTrackSanderAirComsumptionForwardM3pS = Me3.FromFt3(MaxTrackSanderAirComsumptionForwardM3pS);
+                    break;
+                case "engine(ortsmaxtracksanderairconsumptionreverse":
+                    Me3.FromFt3(MaxTrackSanderAirComsumptionReverseM3pS = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null));
+                    MaxTrackSanderAirComsumptionReverseM3pS = Me3.FromFt3(MaxTrackSanderAirComsumptionReverseM3pS);
                     break;
                 case "engine(ortscruisecontrol": SetUpCruiseControl(stf); break;
                 case "engine(ortsmultipositioncontroller": SetUpMPC(stf); break;
@@ -1163,6 +1205,7 @@ namespace Orts.Simulation.RollingStocks
             UnloadingSpeedMpS = locoCopy.UnloadingSpeedMpS;
             SlipControlSystem = locoCopy.SlipControlSystem;
             EngineType = locoCopy.EngineType;
+            SandingSystemType = locoCopy.SandingSystemType;
             TractionMotorType = locoCopy.TractionMotorType;
             TractiveForceCurves = locoCopy.TractiveForceCurves;
             MaxContinuousForceN = locoCopy.MaxContinuousForceN;
@@ -1188,8 +1231,10 @@ namespace Orts.Simulation.RollingStocks
             SanderSpeedEffectUpToMpS = locoCopy.SanderSpeedEffectUpToMpS;
             SanderSpeedOfMpS = locoCopy.SanderSpeedOfMpS;
             MaxTrackSandBoxCapacityM3 = locoCopy.MaxTrackSandBoxCapacityM3;
-            TrackSanderSandConsumptionM3pS = locoCopy.TrackSanderSandConsumptionM3pS;
-            TrackSanderAirComsumptionM3pS = locoCopy.TrackSanderAirComsumptionM3pS;
+            MaxTrackSanderSandConsumptionForwardM3pS = locoCopy.MaxTrackSanderSandConsumptionForwardM3pS;
+            MaxTrackSanderSandConsumptionReverseM3pS = locoCopy.MaxTrackSanderSandConsumptionReverseM3pS;
+            MaxTrackSanderAirComsumptionForwardM3pS = locoCopy.MaxTrackSanderAirComsumptionForwardM3pS;
+            MaxTrackSanderAirComsumptionReverseM3pS = locoCopy.MaxTrackSanderAirComsumptionReverseM3pS;
             PowerOnDelayS = locoCopy.PowerOnDelayS;
             DoesHornTriggerBell = locoCopy.DoesHornTriggerBell;
             MaxSteamHeatPressurePSI = locoCopy.MaxSteamHeatPressurePSI;
@@ -1202,6 +1247,8 @@ namespace Orts.Simulation.RollingStocks
             EmergencyCausesPowerDown = locoCopy.EmergencyCausesPowerDown;
             EmergencyCausesThrottleDown = locoCopy.EmergencyCausesThrottleDown;
             EmergencyEngagesHorn = locoCopy.EmergencyEngagesHorn;
+            HornTimerS = locoCopy.HornTimerS;
+            BellTimerS = locoCopy.BellTimerS;
 
             WheelslipCausesThrottleDown = locoCopy.WheelslipCausesThrottleDown;
 
@@ -1296,7 +1343,6 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(PowerReduction);
             outf.Write(ScoopIsBroken);
             outf.Write(IsWaterScoopDown);
-            outf.Write(CurrentTrackSandBoxCapacityM3);
             outf.Write(SaveAdhesionFilter);
             outf.Write(GenericItem1);
             outf.Write(GenericItem2);
@@ -1306,6 +1352,10 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(previousChangedGearBoxNotch);
             outf.Write(DynamicBrake);
             outf.Write(DynamicBrakeIntervention);
+            outf.Write(CurrentTrackSandBoxCapacityM3);
+            outf.Write(CurrentTrackSanderSandConsumptionM3pS);
+            outf.Write(CurrentTrackSanderAirConsumptionM3pS);
+
 
             base.Save(outf);
 
@@ -1348,7 +1398,6 @@ namespace Orts.Simulation.RollingStocks
             PowerReduction = inf.ReadSingle();
             ScoopIsBroken = inf.ReadBoolean();
             IsWaterScoopDown = inf.ReadBoolean();
-            CurrentTrackSandBoxCapacityM3 = inf.ReadSingle();
 
             SaveAdhesionFilter = inf.ReadSingle();
             
@@ -1363,6 +1412,9 @@ namespace Orts.Simulation.RollingStocks
 
             DynamicBrake = inf.ReadBoolean();
             DynamicBrakeIntervention = inf.ReadSingle();
+            CurrentTrackSandBoxCapacityM3 = inf.ReadSingle();
+            CurrentTrackSanderSandConsumptionM3pS = inf.ReadSingle();
+            CurrentTrackSanderAirConsumptionM3pS = inf.ReadSingle();
 
             base.Restore(inf);
 
@@ -1488,7 +1540,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 CurrentTrackSandBoxCapacityM3 = MaxTrackSandBoxCapacityM3;
             }
-            
+
             // Ensure Drive Axles is set with a default value if user doesn't supply an OR value in ENG file
             if (LocoNumDrvAxles == 0)
             {
@@ -1730,6 +1782,27 @@ namespace Orts.Simulation.RollingStocks
                 {
                     TrainBrakePipeLeakPSIorInHgpS = 0.0f; // Air brakes
                 }
+            }
+
+            // Initialise track sanding parameters
+            if (MaxTrackSandBoxCapacityM3 == 0)
+            {
+                MaxTrackSandBoxCapacityM3 = Me3.FromFt3(40.0f);  // Capacity of sandbox - assume 40.0 cu ft
+            }
+
+            if (MaxTrackSanderAirComsumptionForwardM3pS == 0 && SandingSystemType == SandingSystemTypes.Air)
+            {
+                MaxTrackSanderAirComsumptionForwardM3pS = Me3.FromFt3(56.0f) / 60.0f;  // Default value - cubic feet per min (CFM) 28 ft3/m x 2 sanders @ 140 psi - convert to /sec values
+            }
+
+            if (MaxTrackSanderSandConsumptionForwardM3pS == 0)
+            {
+                MaxTrackSanderSandConsumptionForwardM3pS = Me3.FromFt3(3.4f) / 3600.0f; // Default value - 1.7 ft3/h x 2 sanders @ 140 psi - convert to /sec values
+            }
+
+            if (MaxTrackSanderSteamConsumptionForwardLbpS == 0 && SandingSystemType == SandingSystemTypes.Steam)
+            {
+                MaxTrackSanderSteamConsumptionForwardLbpS = 300f / 3600f; // Default value - 300lbs/hr - this value is un confirmed at this stage.
             }
 
             base.Initialize();
@@ -1985,7 +2058,7 @@ namespace Orts.Simulation.RollingStocks
 
             // Cruise Control
             CruiseControl?.Update(elapsedClockSeconds);
- 
+
             if (DynamicBrakePercent >= 0 && ThrottlePercent <= 0)
             {
                 if (DynamicBrakeCommandStartTime == null)
@@ -2011,7 +2084,10 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // TODO  this is a wild simplification for electric and diesel electric
-            UpdateTractiveForce(elapsedClockSeconds, ThrottlePercent / 100f, AbsSpeedMpS, AbsWheelSpeedMpS);
+            if (EngineType == EngineTypes.Diesel || EngineType == EngineTypes.Electric)
+            {
+                UpdateTractiveForce(elapsedClockSeconds, ThrottlePercent / 100f, AbsSpeedMpS, AbsWheelSpeedMpS);
+            }
 
             foreach (MultiPositionController mpc in MultiPositionControllers)
             {
@@ -2398,7 +2474,7 @@ namespace Orts.Simulation.RollingStocks
                 AverageForceN = w * AverageForceN + (1 - w) * TractiveForceN;
             }
 
-            ApplyDirectionToTractiveForce();
+            ApplyDirectionToTractiveForce(ref TractiveForceN, 0);
 
             // Calculate the total tractive force for the locomotive - ie Traction + Dynamic Braking force.
             // Note typically only one of the above will only ever be non-zero at the one time.
@@ -2453,21 +2529,21 @@ namespace Orts.Simulation.RollingStocks
         /// <summary>
         /// This function applies a sign to the motive force as a function of the direction of the train.
         /// </summary>
-        protected virtual void ApplyDirectionToTractiveForce()
+        protected virtual void ApplyDirectionToTractiveForce(ref float tractiveForceN, int numberofengine = 0 )
         {
             if (Train.IsPlayerDriven)
             {
                 switch (Direction)
                 {
                     case Direction.Forward:
-                        //MotiveForceN *= 1;     //Not necessary
+                        //tractiveForceN *= 1;     //Not necessary
                         break;
                     case Direction.Reverse:
-                        TractiveForceN *= -1;
+                        tractiveForceN *= -1;
                         break;
                     case Direction.N:
                     default:
-                        TractiveForceN *= 0;
+                        tractiveForceN *= 0;
                         break;
                 }
             }
@@ -2476,7 +2552,7 @@ namespace Orts.Simulation.RollingStocks
                 switch (Direction)
                 {
                     case Direction.Reverse:
-                        TractiveForceN *= -1;
+                        tractiveForceN *= -1;
                         break;
                     default:
                         break;
@@ -2500,17 +2576,18 @@ namespace Orts.Simulation.RollingStocks
                 if (AdvancedAdhesionModel)
                 {
                     // Wheelslip
-                    if (WheelSlip)
+                    if (HuDIsWheelSlip)
                     {
                         if (WheelslipState != Wheelslip.Occurring)
                         {
                             WheelslipState = Wheelslip.Occurring;
                             Simulator.Confirmer.Warning(CabControl.Wheelslip, CabSetting.On);
+                            Trace.TraceInformation("Display Wheelslip#1 - CarID {0} WheelSlip {1}", CarID, HuDIsWheelSlip);
                         }
                     }
                     else
                     {
-                        if (WheelSlipWarning)
+                        if (HuDIsWheelSlipWarninq)
                         {
                             if (WheelslipState != Wheelslip.Warning)
                             {
@@ -2534,6 +2611,7 @@ namespace Orts.Simulation.RollingStocks
                     {
                         WheelslipState = Wheelslip.Occurring;
                         Simulator.Confirmer.Warning(CabControl.Wheelslip, CabSetting.On);
+                        Trace.TraceInformation("Display Wheelslip#2");
                     }
                     if ((!WheelSlip) && (WheelslipState != Wheelslip.None))
                     {
@@ -2706,13 +2784,22 @@ namespace Orts.Simulation.RollingStocks
             Horn = ManualHorn || TCSHorn;
             if (Horn && !PreviousHorn)
             {
+                HornRecent = true;
                 SignalEvent(Event.HornOn);
                 if (MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HORN", 1)).ToString());
             }
             else if (!Horn && PreviousHorn)
             {
+                // Research indicates ditch light horn timer starts when horn button is released
+                HornStartTime = (float)Simulator.GameTime;
                 SignalEvent(Event.HornOff);
                 if (MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HORN", 0)).ToString());
+            }
+
+            if (HornStartTime != null && !Horn && Simulator.GameTime - HornStartTime > HornTimerS)
+            {
+                HornRecent = false;
+                HornStartTime = null;
             }
 
             if (ManualBell)
@@ -2731,6 +2818,8 @@ namespace Orts.Simulation.RollingStocks
             Bell = BellState != SoundState.Stopped;
             if (Bell && !PreviousBell)
             {
+                BellRecent = true;
+                BellStartTime = (float)Simulator.GameTime;
                 SignalEvent(Event.BellOn);
                 if (Train.TrainType != Train.TRAINTYPE.REMOTE && MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 1)).ToString());
             }
@@ -2738,6 +2827,12 @@ namespace Orts.Simulation.RollingStocks
             {
                 SignalEvent(Event.BellOff);
                 if (Train.TrainType != Train.TRAINTYPE.REMOTE && MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 0)).ToString());
+            }
+
+            if (BellStartTime != null && !Bell && Simulator.GameTime - BellStartTime > BellTimerS)
+            {
+                BellRecent = false;
+                BellStartTime = null;
             }
 
             PreviousHorn = Horn;
@@ -2794,16 +2889,11 @@ namespace Orts.Simulation.RollingStocks
             {
                 WheelSlip = LocomotiveAxles.IsWheelSlip;
                 WheelSlipWarning = LocomotiveAxles.IsWheelSlipWarning;
+                HuDIsWheelSlip = LocomotiveAxles.HuDIsWheelSlip;
+                HuDIsWheelSlipWarninq = LocomotiveAxles.HuDIsWheelSlipWarning;
             }
-            
-            // This enables steam locomotives to have different speeds for driven and non-driven wheels.
-            if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
-            {
-                WheelSpeedSlipMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
-                WheelSpeedMpS = SpeedMpS;
-            }
-            else WheelSpeedMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
 
+            WheelSpeedMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
         }
 
         public void SimpleAdhesion()
@@ -2905,7 +2995,7 @@ namespace Orts.Simulation.RollingStocks
                 else if (ScoopIsBroken)
                 {
                     Simulator.Confirmer.Message(ConfirmLevel.Error, Simulator.Catalog.GetString("Scoop is broken, can't refill"));
-                    RefillingFromTrough = false;       
+                    RefillingFromTrough = false;
                 }
                 else if (IsOverJunction())
                 {
@@ -2915,7 +3005,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     ScoopIsBroken = true;
                     RefillingFromTrough = false;
-                    SignalEvent(Event.WaterScoopBroken);       
+                    SignalEvent(Event.WaterScoopBroken);
                 }
                 else if (!IsOverTrough())
                 {
@@ -3199,31 +3289,88 @@ namespace Orts.Simulation.RollingStocks
 
         public void UpdateTrackSander(float elapsedClockSeconds)
         {
-        // updates track sander in terms of sand usage and impact on air compressor
-        // The following assumptions have been made:
-        //
+            // updates track sander in terms of sand usage and impact on air compressor
+            // The following assumptions have been made:
+            //
 
             if (Sander && AbsSpeedMpS < SanderSpeedOfMpS)  // If sander switch is on, and not blocked by speed, adjust parameters
             {
-                if (CurrentTrackSandBoxCapacityM3 > 0.0) // if sand still in sandbox then sanding is available
+
+                // Calculate steam, air or gravity consumption for different sander modes
+                if (SandingSystemType == SandingSystemTypes.Steam)
                 {
-                    // Calculate consumption of sand, and drop in sand box level
-                    float ActualSandConsumptionM3pS = pS.FrompH(TrackSanderSandConsumptionM3pS) * elapsedClockSeconds;
-                    CurrentTrackSandBoxCapacityM3 -= ActualSandConsumptionM3pS;
-                    CurrentTrackSandBoxCapacityM3 = MathHelper.Clamp(CurrentTrackSandBoxCapacityM3, 0.0f, MaxTrackSandBoxCapacityM3);
-                    if (CurrentTrackSandBoxCapacityM3 == 0.0)
+                    float sandingSteamConsumptionLbpS = 0.0f;
+                    float sandingSandConsumptionM3pS = 0.0f;
+
+                    if (Direction == Direction.Reverse)
                     {
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Sand supply has been exhausted"));
+                        sandingSteamConsumptionLbpS = MaxTrackSanderSteamConsumptionReverseLbpS;
+                        sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionReverseM3pS;
+                    }
+                    else
+                    {
+                        sandingSteamConsumptionLbpS = MaxTrackSanderSteamConsumptionForwardLbpS;
+                        sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionForwardM3pS;
+                    }
+
+                    // Calculate steam consumption
+                    SandingSteamUsageLBpS = (BoilerPressurePSI / MaxBoilerPressurePSI) * sandingSteamConsumptionLbpS * elapsedClockSeconds;
+
+                    // Calculate sand consumption for sander
+                    if (CurrentTrackSandBoxCapacityM3 > 0.0) // if sand still in sandbox then sanding is available
+                    {
+                        // Calculate consumption of sand, and drop in sand box level
+                        CurrentTrackSanderSandConsumptionM3pS = (BoilerPressurePSI / MaxBoilerPressurePSI) * sandingSandConsumptionM3pS * elapsedClockSeconds;
+                        CurrentTrackSandBoxCapacityM3 -= CurrentTrackSanderSandConsumptionM3pS;
+                        CurrentTrackSandBoxCapacityM3 = MathHelper.Clamp(CurrentTrackSandBoxCapacityM3, 0.0f, MaxTrackSandBoxCapacityM3);
+                        if (CurrentTrackSandBoxCapacityM3 <= 0.0)
+                        {
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Sand supply has been exhausted"));
+                        }
                     }
                 }
+                else // air consumption
+                {
+                    float sandingAirConsumptionM3pS = 0.0f;
+                    float sandingSandConsumptionM3pS = 0.0f;
 
-          // Calculate air consumption and change in main air reservoir pressure
-                float ActualAirConsumptionM3pS = pS.FrompM(TrackSanderAirComsumptionM3pS) * elapsedClockSeconds;
-                float SanderPressureDiffPSI = ActualAirConsumptionM3pS / Me3.ToFt3(MainResVolumeM3) ;
-                MainResPressurePSI -= SanderPressureDiffPSI;
-                MainResPressurePSI = MathHelper.Clamp(MainResPressurePSI, 0.001f, MaxMainResPressurePSI);
+                    if (Direction == Direction.Reverse)
+                    {
+                        sandingAirConsumptionM3pS = MaxTrackSanderAirComsumptionReverseM3pS;
+                        sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionReverseM3pS;
+                    }
+                    else
+                    {
+                        sandingAirConsumptionM3pS = MaxTrackSanderAirComsumptionForwardM3pS;
+                        sandingSandConsumptionM3pS = MaxTrackSanderSandConsumptionForwardM3pS;
+                    }
+
+                    // Calculate air consumption and change in main air reservoir pressure
+                    CurrentTrackSanderAirConsumptionM3pS = (MainResPressurePSI / MaxMainResPressurePSI) * sandingAirConsumptionM3pS * elapsedClockSeconds;
+                    float SanderPressureDiffPSI = CurrentTrackSanderAirConsumptionM3pS / Me3.ToFt3(MainResVolumeM3);
+                    MainResPressurePSI -= SanderPressureDiffPSI;
+                    MainResPressurePSI = MathHelper.Clamp(MainResPressurePSI, 0.001f, MaxMainResPressurePSI);
+
+                    // Calculate sand consumption for sander
+                    if (CurrentTrackSandBoxCapacityM3 > 0.0) // if sand still in sandbox then sanding is available
+                    {
+                        // Calculate consumption of sand, and drop in sand box level
+                        CurrentTrackSanderSandConsumptionM3pS = (MainResPressurePSI / MaxMainResPressurePSI) * sandingSandConsumptionM3pS * elapsedClockSeconds;
+                        CurrentTrackSandBoxCapacityM3 -= CurrentTrackSanderSandConsumptionM3pS;
+                        CurrentTrackSandBoxCapacityM3 = MathHelper.Clamp(CurrentTrackSandBoxCapacityM3, 0.0f, MaxTrackSandBoxCapacityM3);
+                        if (CurrentTrackSandBoxCapacityM3 <= 0.0)
+                        {
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Sand supply has been exhausted"));
+                        }
+                    }
+                }
             }
-
+            else // reset to zero if sander is off
+            {
+                CurrentTrackSanderSandConsumptionM3pS = 0;
+                CurrentTrackSanderAirConsumptionM3pS = 0;
+                SandingSteamUsageLBpS = 0;
+            }
         }
 
         public override bool GetSanderOn()
@@ -5576,9 +5723,9 @@ namespace Orts.Simulation.RollingStocks
                                 if (activeloco.DieselEngines[0] != null)
                                 {
                                     if (activeloco.AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
-                                        data = activeloco.WheelSlipWarning ? 1 : 0;
+                                        data = activeloco.HuDIsWheelSlipWarninq ? 1 : 0;
                                     else
-                                        data = activeloco.WheelSlip ? 1 : 0;
+                                        data = activeloco.HuDIsWheelSlip ? 1 : 0;
 
                                 }
                             }
@@ -5586,9 +5733,9 @@ namespace Orts.Simulation.RollingStocks
                         else
                         {
                             if (AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
-                                data = WheelSlipWarning ? 1 : 0;
+                                data = HuDIsWheelSlipWarninq ? 1 : 0;
                             else
-                                data = WheelSlip ? 1 : 0;
+                                data = HuDIsWheelSlip ? 1 : 0;
                         }
                         break;
                     }
