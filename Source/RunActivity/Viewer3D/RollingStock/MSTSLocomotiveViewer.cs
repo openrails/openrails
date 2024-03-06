@@ -60,6 +60,13 @@ namespace Orts.Viewer3D.RollingStock
         public bool lemergencybuttonpressed = false;
         CruiseControlViewer CruiseControlViewer;
 
+        public Dictionary<CABViewControlTypes, UserCommand[]> UserCommandControlTypes = new Dictionary<CABViewControlTypes, UserCommand[]>();
+
+        private bool IsMouseWheelChanged;
+        private DateTime MouseWheelChangedTime;
+        private int MouseWheelClicks;
+        private UserCommand MouseWheelCommand;
+        
         public MSTSLocomotiveViewer(Viewer viewer, MSTSLocomotive car)
             : base(viewer, car)
         {
@@ -143,19 +150,33 @@ namespace Orts.Viewer3D.RollingStock
             // Steam locomotives handle these differently, and might have set them already
             if (!UserInputCommands.ContainsKey(UserCommand.ControlForwards))
                 UserInputCommands.Add(UserCommand.ControlForwards, new Action[] { Noop, () => ReverserControlForwards() });
+
             if (!UserInputCommands.ContainsKey(UserCommand.ControlBackwards))
+            {
                 UserInputCommands.Add(UserCommand.ControlBackwards, new Action[] { Noop, () => ReverserControlBackwards() });
+                UserCommandControlTypes.Add(CABViewControlTypes.DIRECTION, new UserCommand[] { UserCommand.ControlForwards, UserCommand.ControlBackwards });
+            }
 
             UserInputCommands.Add(UserCommand.ControlThrottleIncrease, new Action[] { () => Locomotive.StopThrottleIncrease(), () => Locomotive.StartThrottleIncrease() });
             UserInputCommands.Add(UserCommand.ControlThrottleDecrease, new Action[] { () => Locomotive.StopThrottleDecrease(), () => Locomotive.StartThrottleDecrease() });
+            UserCommandControlTypes.Add(CABViewControlTypes.THROTTLE, new UserCommand[] { UserCommand.ControlThrottleIncrease, UserCommand.ControlThrottleDecrease});
+            UserCommandControlTypes.Add(CABViewControlTypes.CP_HANDLE, new UserCommand[] { UserCommand.ControlThrottleIncrease, UserCommand.ControlThrottleDecrease });
+
             UserInputCommands.Add(UserCommand.ControlThrottleZero, new Action[] { Noop, () => Locomotive.ThrottleToZero() });
+
             UserInputCommands.Add(UserCommand.ControlGearUp, new Action[] { () => StopGearBoxIncrease(), () => StartGearBoxIncrease() });
             UserInputCommands.Add(UserCommand.ControlGearDown, new Action[] { () => StopGearBoxDecrease(), () => StartGearBoxDecrease() });
+
             UserInputCommands.Add(UserCommand.ControlTrainBrakeIncrease, new Action[] { () => Locomotive.StopTrainBrakeIncrease(), () => Locomotive.StartTrainBrakeIncrease(null) });
             UserInputCommands.Add(UserCommand.ControlTrainBrakeDecrease, new Action[] { () => Locomotive.StopTrainBrakeDecrease(), () => Locomotive.StartTrainBrakeDecrease(null) });
+            UserCommandControlTypes.Add(CABViewControlTypes.TRAIN_BRAKE, new UserCommand[] { UserCommand.ControlTrainBrakeIncrease, UserCommand.ControlTrainBrakeDecrease});
+
             UserInputCommands.Add(UserCommand.ControlTrainBrakeZero, new Action[] { Noop, () => Locomotive.StartTrainBrakeDecrease(0, true) });
+
             UserInputCommands.Add(UserCommand.ControlEngineBrakeIncrease, new Action[] { () => Locomotive.StopEngineBrakeIncrease(), () => Locomotive.StartEngineBrakeIncrease(null) });
             UserInputCommands.Add(UserCommand.ControlEngineBrakeDecrease, new Action[] { () => Locomotive.StopEngineBrakeDecrease(), () => Locomotive.StartEngineBrakeDecrease(null) });
+            UserCommandControlTypes.Add(CABViewControlTypes.ENGINE_BRAKE, new UserCommand[] { UserCommand.ControlEngineBrakeIncrease, UserCommand.ControlEngineBrakeDecrease });
+
             UserInputCommands.Add(UserCommand.ControlBrakemanBrakeIncrease, new Action[] { () => Locomotive.StopBrakemanBrakeIncrease(), () => Locomotive.StartBrakemanBrakeIncrease(null) });
             UserInputCommands.Add(UserCommand.ControlBrakemanBrakeDecrease, new Action[] { () => Locomotive.StopBrakemanBrakeDecrease(), () => Locomotive.StartBrakemanBrakeDecrease(null) });
             UserInputCommands.Add(UserCommand.ControlDynamicBrakeIncrease, new Action[] { () => Locomotive.StopDynamicBrakeIncrease(), () => Locomotive.StartDynamicBrakeIncrease(null) });
@@ -314,7 +335,7 @@ namespace Orts.Viewer3D.RollingStock
 
             foreach (var command in UserInputCommands.Keys)
             {
-                if (UserInput.IsPressed(command))
+                if (UserInput.IsPressed(command) || IsMouseWheelRotated(command))
                 {
                     UserInputCommands[command][1]();
                     //Debrief eval
@@ -333,7 +354,59 @@ namespace Orts.Viewer3D.RollingStock
                     //Debrief eval
                     if (lemergencybuttonpressed && !Locomotive.EmergencyButtonPressed) lemergencybuttonpressed = false;
                 }
+                else if (IsMouseWheelChanged && (DateTime.Now.Subtract(MouseWheelChangedTime).TotalMilliseconds > (500 * MouseWheelClicks)) && (command == MouseWheelCommand))
+                {
+                    UserInputCommands[command][0]();
+                    //Debrief eval
+                    if (lemergencybuttonpressed && !Locomotive.EmergencyButtonPressed) lemergencybuttonpressed = false;
+                    IsMouseWheelChanged = false;
+                }
             }
+        }
+
+        bool IsMouseWheelRotated(UserCommand command)
+        {
+            if (UserInput.IsMouseWheelChanged)
+            {
+                if (Viewer.Camera is CabCamera && (this as MSTSLocomotiveViewer)._hasCabRenderer)
+                {
+                    var cabRenderer = (this as MSTSLocomotiveViewer)._CabRenderer;
+                    foreach (var controlRenderer in cabRenderer.ControlMap.Values)
+                    {
+                        if ((Viewer.Camera as CabCamera).SideLocation == controlRenderer.Control.CabViewpoint && controlRenderer is ICabViewMouseControlRenderer mouseRenderer)
+                        {
+                            if (mouseRenderer.IsMouseWithin())
+                            {
+                                UserCommand [] userCommands;
+                                UserCommandControlTypes.TryGetValue(controlRenderer.Control.ControlType.Type, out userCommands);
+                                if (userCommands != null)
+                                {
+                                    // check if user command (e.g. ControlThrottleIncrease) equals control type (e.g. THROTTLE)
+                                    if (((command == userCommands[0]) && (UserInput.MouseWheelChange > 0)) ||
+                                        ((command == userCommands[1]) && (UserInput.MouseWheelChange < 0)))
+                                    {
+                                        if (!IsMouseWheelChanged)
+                                        {
+                                            IsMouseWheelChanged = true;
+                                            MouseWheelChangedTime = DateTime.Now;
+                                            MouseWheelClicks = 1;
+                                            MouseWheelCommand = command;
+                                        }
+                                        else
+                                        {
+                                            MouseWheelClicks += 1;
+                                        }
+                                        return true;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
