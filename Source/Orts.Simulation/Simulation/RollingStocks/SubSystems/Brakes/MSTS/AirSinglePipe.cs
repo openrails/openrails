@@ -1109,6 +1109,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     AuxResPressurePSI += dpAux;
                     BrakeLine1PressurePSI -= dpAux * AuxBrakeLineVolumeRatio;
                 }
+                // Charge via weeping port; incredibly slow pressure transfer to improve stability during applications
+                else if (BrakeInsensitivityPSIpS > 0 && valveType == MSTSWagon.BrakeValveType.TripleValve && !BleedOffValveOpen)
+                {
+                    // Estimate for weeping rate, based on data suggesting a weeping rate of ~0.5 psi/min on brake equipment with an insensitivity of 3 psi/min
+                    dpAux = elapsedClockSeconds * (BrakeInsensitivityPSIpS / 6.0f) * Math.Sign(BrakeLine1PressurePSI - AuxResPressurePSI);
+
+                    if (Math.Abs(AuxResPressurePSI - BrakeLine1PressurePSI) < 0.1f)
+                        dpAux *= Math.Abs(AuxResPressurePSI - BrakeLine1PressurePSI) / 0.1f;
+                    AuxResPressurePSI += dpAux;
+                    BrakeLine1PressurePSI -= dpAux * AuxBrakeLineVolumeRatio;
+                }
             }
 
             // Manage supply res charging
