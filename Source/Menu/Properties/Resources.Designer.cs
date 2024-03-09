@@ -19,7 +19,7 @@ namespace ORTS.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -63,26 +63,6 @@ namespace ORTS.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap chat_icon_new_message_transparent {
-            get {
-                object obj = ResourceManager.GetObject("chat_icon_new_message_transparent", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap chat_icon_no_message_transparent {
-            get {
-                object obj = ResourceManager.GetObject("chat_icon_no_message_transparent", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap ExpanderClosed {
             get {
                 object obj = ResourceManager.GetObject("ExpanderClosed", resourceCulture);
@@ -113,6 +93,16 @@ namespace ORTS.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap RailDriverLegend {
+            get {
+                object obj = ResourceManager.GetObject("RailDriverLegend", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap info_18 {
             get {
                 object obj = ResourceManager.GetObject("info_18", resourceCulture);
@@ -126,16 +116,6 @@ namespace ORTS.Properties {
         internal static System.Drawing.Bitmap info_18_hover {
             get {
                 object obj = ResourceManager.GetObject("info_18_hover", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap RailDriverLegend {
-            get {
-                object obj = ResourceManager.GetObject("RailDriverLegend", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
