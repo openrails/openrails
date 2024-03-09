@@ -417,6 +417,15 @@ Trigger       Function
 261           WindowOpening
 =========     =====================================
 
+The following triggers are related to the steam booster engine:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+321           BoosterCylinderCocksOpen
+322           BoosterCylinderCocksClose
+=========     =====================================
+
 Variable Triggers
 -----------------
 
@@ -424,7 +433,7 @@ ORTS
 ^^^^
 
 The sound objects attached to a vehicle (wagon or loco) can respond in volume and frequency to changes in the vehicle's properties.
-There are 7 properties:
+There are a number of triggers as follows:
 
 - distance squared from a sound source (m\ :sup:`2`)
 
@@ -436,9 +445,11 @@ There are 7 properties:
 
 - 3 variables in range 0 - 1:
 
-  - Variable1 reflects the throttle
+  - Variable1 reflects the throttle. For steam locomotives it is possible to have multiple steam engines, thus this variable can be applied
+   to each engine, by using a sound trigger of the form ``Variable1_x_inc_past`` or ``Variable1_x_dec_past``, where x = steam engine number.
 
-  - Variable2 reflects the engine's RPM (diesel) or Tractive Force (electric) or cylinder pressure (steam)
+  - Variable2 reflects the engine's RPM (diesel) or Tractive Force (electric) or cylinder pressure (steam). Where a Booster Engine is fitted, 
+  then ``Variable2BoosterControlled`` can be used to control cylinder pressure for booster engines on steam locomotives.
 
   - Variable3 reflects the dynamic brake (diesel | electric) or fuel rate (steam)
 		
