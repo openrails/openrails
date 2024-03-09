@@ -2485,9 +2485,6 @@ be about 1 minute for every 12 cars. If the *Brake Pipe Charging Rate*
 will be disabled and will also disable some but not all of the other new
 brake features.
 
-Brake system charging time depends on the train length as it should, but
-at the moment there is no modeling of main reservoirs and compressors.
-
 For EP brakes, two variants are available:
 
 - If ``Wagon(ORTSEPBrakeControlsBrakePipe`` is set to 0 (default situation),
@@ -3156,20 +3153,36 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 
 .. index::
    single: BrakePipeVolume
+   single: ORTSAuxiliaryResCapacity
    single: ORTSBrakeCylinderVolume
+   single: ORTSBrakeCylinderPipingVolume
+   single: ORTSBrakeCylinderSize
+   single: ORTSBrakeCylinderTravel
+   single: ORTSNumberBrakeCylinders
    single: ORTSEmergencyValveActuationRate
    single: ORTSEmergencyDumpValveRate
    single: ORTSEmergencyDumpValveTimer
+   single: ORTSEmergencyQuickAction
    single: ORTSEmergencyResQuickRelease
    single: ORTSMainResPipeAuxResCharging
    single: ORTSBrakeRelayValveRatio
+   single: ORTSBrakeRelayValveInshot
    single: ORTSEngineBrakeRelayValveRatio
+   single: ORTSEngineBrakeRelayValveInshot
    single: ORTSBrakeRelayValveApplicationRate
    single: ORTSBrakeRelayValveReleaseRate
    single: ORTSMaxTripleValveCylinderPressure
    single: ORTSMaxServiceCylinderPressure
+   single: ORTSMaxServiceApplicationRate
+   single: ORTSTwoStageLowPressure
+   single: ORTSTwoStageRelayValveRatio
+   single: ORTSTwoStageIncreasingSpeed
+   single: ORTSTwoStageDecreasingSpeed
+   single: ORTSHighSpeedReducingPressure
    single: ORTSUniformChargingThreshold
    single: ORTSUniformChargingRatio
+   single: ORTSUniformReleaseThreshold
+   single: ORTSUniformReleaseRatio
    single: ORTSQuickServiceLimit
    single: ORTSQuickServiceApplicationRate
    single: ORTSQuickServiceVentRate
@@ -3187,6 +3200,9 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
    single: ORTSBrakePipeTimeFactor
    single: ORTSEPBrakeControlsBrakePipe
    single: ORTSCompressorIsMuControlled
+   single: Supply_Reservoir
+   single: ORTSSupplyResCapacity
+   single: ORTSSupplyResChargingRate
 
 - ``Wagon(BrakePipeVolume`` -- Volume of car's brake pipe in cubic feet
   (default .5).
@@ -3200,10 +3216,27 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   brake servicetimefactor instead, but the Open Rails Development team
   doesn't believe this is worth the effort by the user for the added
   realism.
-- ``Wagon(ORTSBrakeCylinderVolume`` - Volume of car's brake cylinder. This allows
-  specifying the brake cylinder volume independently of triple valve ratio.
-  This is useful when the cylinder is not directly attached to a triple valve,
-  e. g. when a relay valve exists.
+- ``Wagon(ORTSAuxiliaryResCapacity`` -- Volume of the car's auxiliary
+  reservoir. Normally determined automatically given the emergency res
+  volume, but can be entered manually if the car has no emergency res.
+- ``Wagon(ORTSBrakeCylinderVolume`` -- Volume of each brake cylinder on
+  the car. This allows specifying the brake cylinder volume independently
+  of triple valve ratio. This is useful when the cylinder is not directly
+  attached to a triple valve, e. g. when a relay valve exists.
+- ``Wagon(ORTSBrakeCylinderSize`` -- If brake cylinder dimensions are
+  available, this can be used in place of ``ORTSBrakeCylinderVolume`` to
+  set the size of the brake cylinder(s).
+- ``Wagon(ORTSBrakeCylinderTravel`` -- The length of brake cylinder extension
+  when the brakes are applied. Larger travel leads to larger brake cylinder
+  volume, and volume will increase as the brake cylinder pressurizes.
+  (Default 8 inches.)
+- ``Wagon(ORTSBrakeCylinderPipingVolume`` -- The volume of the piping between
+  the brake valve and each brake cylinder, including the volume of air in the
+  brake cylinder when released. This volume does not change as the brake
+  cylinder extends, and can be manipulated to change the effective triple
+  valve ratio. (Default is 20% of the applied brake cylinder volume.)
+- ``Wagon(ORTSNumberBrakeCylinders`` -- Sets the number of brake cylinders
+  on the car, multiplies the brake cylinder volume. (Default 1 brake cylinder.)
 - ``Wagon(ORTSEmergencyValveActuationRate`` -- Threshold rate for emergency
   brake actuation of the triple valve. If the pressure in the brake pipe
   decreases at a higher rate than specified, the triple valve will switch to
@@ -3213,12 +3246,17 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 - ``Wagon(ORTSEmergencyDumpValveTimer`` -- Timer for emergency dump valve to close
   after it is activated. If set to 0, it will close as soon as BP is discharged.
   Default value will prevent BP from being charged for 2 minutes.
+- ``Wagon(ORTSEmergencyQuickAction`` -- If set to 1, air from the brake pipe will
+  be sent to the brake cylinder at MaxApplicationRate during emergency applications.
+  Speeds up emergency application along the entire train. (default 0)
 - ``Wagon(ORTSEmergencyResQuickRelease`` -- Set to 1 (default 0) to enable quick release,
   in which emergency reservoir air is used to increase the brake pipe pressure
-  during release. Remains active until brake cylinder pressure drops below 5 psi.
+  during release. Remains active until aux res has recharged.
 - ``Wagon(ORTSMainResPipeAuxResCharging`` -- Boolean value that indicates,
   for twin pipe systems, if the main reservoir pipe is used for charging the auxiliary
-  reservoirs. If set to false, the main reservoir pipe will not be used
+  reservoirs. Alternately, if equipped with a supply reservoir, the supply reservoir
+  will charge from the main reservoir pipe instead. If set to false, the main reservoir
+  pipe will not be used (default: true).
   by the brake system.
 - ``Wagon(ORTSEPBrakeControlsBrakePipe`` -- Set to 1 for UIC EP brake: brake pipe
   pressure is electrically controlled at every fitted car.
@@ -3227,7 +3265,17 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   This is achieved via a relay valve which sets BC pressure proportionally.
   Relay valves may be installed to achieve higher brake cylinder pressures,
   dynamic brake blending or variable load compensation.
-- ``Wagon(ORTSBrakeRelayValveRatio`` -- Same as above, but for the engine brake
+- ``Wagon(ORTSBrakeRelayValveInshot`` -- Sets the "in-shot" pressure for the relay
+  valve. If set to a positive value, this pressure will be added to the brake
+  cylinder across the entire range of relay valve application. If set to a negative
+  value, this pressure will override the brake cylinder pressure only if the relay
+  valve application is lower than this pressure. In either case, this sets a minimum brake
+  cylinder pressure. Many step down relay valves (ratio less than 1) utilize
+  in-shot to ensure brake cylinders extend fully for light train brake applications.
+- ``Wagon(ORTSEngineBrakeRelayValveRatio`` -- Same as ``ORTSBrakeRelayValveRatio``,
+  but for the engine brake.
+- ``Wagon(ORTSEngineBrakeRelayValveInshot`` -- Same as ``ORTSBrakeRelayValveInshot``,
+  but for the engine brake.
 - ``Wagon(ORTSBrakeRelayValveApplicationRate`` -- Brake cylinder pressure application
   rate achieved by the relay valve, if fitted.
 - ``Wagon(ORTSBrakeRelayValveReleaseRate`` -- Brake cylinder pressure release
@@ -3239,12 +3287,35 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 - ``Wagon(ORTSMaxServiceCylinderPressure`` -- Sets the maximum cylinder pressure
   demanded during service applications. During emergency applications,
   brake cylinder pressure is instead limited by ``ORTSMaxTripleValveCylinderPressure``.
+- ``Wagon(ORTSMaxServiceApplicationRate`` -- Sets the maximum application rate
+  allowed during service applications. For emergency applications, the application
+  rate will be limited by ``MaxApplicationRate``.
+- ``Wagon(ORTSTwoStageLowPressure`` -- For two stage braking systems where brake force
+  is reduced at lower speeds and increased at higher speeds, sets the maximum cylinder
+  pressure demanded when at slower speeds (defaults to 0, disabling two stage braking).
+  For high speed, use ``ORTSMaxTripleValveCylinderPressure`` to set the pressure limit.
+- ``Wagon(ORTSTwoStageRelayValveRatio`` -- Alternatey, sets a relay valve ratio to
+  be used by the two stage system at low speeds. At high speed, the relay valve
+  uses the ratio set by ``ORTSBrakeRelayValveRatio``.
+- ``Wagon(ORTSTwoStageIncreasingSpeed`` -- The speed at which the two stage braking
+  system changes from low pressure to high pressure during acceleration.
+- ``Wagon(ORTSTwoStageDecreasingSpeed`` -- The speed at which the two stage braking
+  system changes from high pressure to low pressure during deceleration.
+- ``Wagon(ORTSHighSpeedReducingPressure`` -- If the demanded brake cylinder pressure
+  exceeds this value, the brakes will gradually release to this pressure. Simulates
+  the high speed reducing valve (HSRV). (default 0 for wagons with no HSRV)
 - ``Wagon(ORTSUniformChargingThreshold`` -- The pressure difference between the brake
   pipe and auxiliary reservoir at which uniform charging activates during release
   (default 3 psi), usually used to reduce the rate of auxiliary reservoir charging.
 - ``Wagon(ORTSUniformChargingRatio`` -- Factor used to divide auxiliary reservoir
   charging rate by when uniform charging is active. Eg: setting of 2 will halve
   charging rate while uniform charging is active (defaults to 0, disabling the feature).
+- ``Wagon(ORTSUniformReleaseThreshold`` -- The pressure difference between the brake
+  pipe and auxiliary reservoir at which uniform release activates during release
+  (default 3 psi), usually used to reduce the rate of brake cylinder release.
+- ``Wagon(ORTSUniformReleaseRatio`` -- Factor used to divide brake cylinder
+  release rate by when uniform release is active. Eg: setting of 2 will halve
+  release rate while uniform release is active (defaults to 0, disabling the feature).
 - ``Wagon(ORTSQuickServiceLimit`` -- Quick service activates when triple valve
   initially changes from release to apply, and will remain active until brake
   cylinder pressure reaches the pressure specified here (default 0,
@@ -3270,6 +3341,16 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 - ``Wagon(ORTSCylinderSpringPressure`` -- Below the specified pressure, no
   brake force will be developed, simulating the pressure required to
   overcome the brake cylinder return spring (default 0).
+- ``BrakeEquipmentType(Supply_Reservoir`` -- Adds a supply reservoir to the
+  loco or wagon, which will constantly charge to the brake pipe pressure
+  or MR pipe (if equipped) pressure. If a supply reservoir is equipped,
+  supply res air will be used to pressurize the brake cylinders thru the relay
+  valve. This allows for a small, fast charging auxiliary reservoir to
+  be used with large brake cylinders.
+- ``Wagon(ORTSSupplyResCapacity`` -- Volume of the supply reservoir. Larger
+  volumes relative to the brake cylinder volume allow for more brake applications.
+- ``Wagon(ORTSSupplyResChargingRate`` -- The rate at which the pressure of the
+  supply reservoir will increase when charging from the brake pipe or MR pipe.
 - ``Engine(ORTSMainResChargingRate`` -- Rate of main reservoir pressure change
   in psi per second when the compressor is on (default .4).
 - ``Engine(ORTSEngineBrakeReleaseRate`` -- Rate of engine brake pressure

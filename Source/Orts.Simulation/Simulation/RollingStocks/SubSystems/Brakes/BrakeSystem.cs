@@ -29,7 +29,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         EmergencyReservoir,
         MainPipe,
         BrakePipe,
-        BrakeCylinder
+        BrakeCylinder,
+        SupplyReservoir
     }
 
     public abstract class BrakeSystem
@@ -80,6 +81,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         public abstract string[] GetDebugStatus(Dictionary<BrakeSystemComponent, PressureUnit> units);
         public abstract float GetCylPressurePSI();
         public abstract float GetCylVolumeM3();
+        public abstract float GetTotalCylVolumeM3();
         public abstract float GetVacResPressurePSI();
         public abstract float GetVacResVolume();
         public abstract float GetVacBrakeCylNumber();

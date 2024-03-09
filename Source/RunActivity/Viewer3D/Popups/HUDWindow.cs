@@ -1084,6 +1084,7 @@ namespace Orts.Viewer3D.Popups
                 Viewer.Catalog.GetString("ErgRes"),
                 Viewer.Catalog.GetString("StrPipe"),
                 Viewer.Catalog.GetString("CtrlRes"),
+                Viewer.Catalog.GetString("SuppRes"),
                 Viewer.Catalog.GetString("RetValve"),
                 Viewer.Catalog.GetString("TripleValve"),
                 Viewer.Catalog.GetString(""),
@@ -1114,6 +1115,7 @@ namespace Orts.Viewer3D.Popups
                                 Viewer.Catalog.GetString("ErgRes"),
                                 Viewer.Catalog.GetString("MRPipe"),
                                 Viewer.Catalog.GetString("CtrlRes"),
+                                Viewer.Catalog.GetString("SuppRes"),
                                 Viewer.Catalog.GetString("RetValve"),
                                 Viewer.Catalog.GetString("TripleValve"),
                                 Viewer.Catalog.GetString(""),
@@ -1238,7 +1240,7 @@ namespace Orts.Viewer3D.Popups
                 Viewer.Catalog.GetString(" "),
                 Viewer.Catalog.GetString("DrailCof"),
                 Viewer.Catalog.GetString("AoA")
-
+                
                 );
             TableAddLine(table);
 
