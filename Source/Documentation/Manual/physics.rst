@@ -3029,7 +3029,12 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 
 .. index::
    single: BrakePipeVolume
+   single: ORTSAuxiliaryResCapacity
    single: ORTSBrakeCylinderVolume
+   single: ORTSBrakeCylinderPipingVolume
+   single: ORTSBrakeCylinderSize
+   single: ORTSBrakeCylinderTravel
+   single: ORTSNumberBrakeCylinders
    single: ORTSEmergencyValveActuationRate
    single: ORTSEmergencyDumpValveRate
    single: ORTSEmergencyDumpValveTimer
@@ -3087,10 +3092,27 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   brake servicetimefactor instead, but the Open Rails Development team
   doesn't believe this is worth the effort by the user for the added
   realism.
-- ``Wagon(ORTSBrakeCylinderVolume`` - Volume of car's brake cylinder. This allows
-  specifying the brake cylinder volume independently of triple valve ratio.
-  This is useful when the cylinder is not directly attached to a triple valve,
-  e. g. when a relay valve exists.
+- ``Wagon(ORTSAuxiliaryResCapacity`` -- Volume of the car's auxiliary
+  reservoir. Normally determined automatically given the emergency res
+  volume, but can be entered manually if the car has no emergency res.
+- ``Wagon(ORTSBrakeCylinderVolume`` -- Volume of each brake cylinder on
+  the car. This allows specifying the brake cylinder volume independently
+  of triple valve ratio. This is useful when the cylinder is not directly
+  attached to a triple valve, e. g. when a relay valve exists.
+- ``Wagon(ORTSBrakeCylinderSize`` -- If brake cylinder dimensions are
+  available, this can be used in place of ``ORTSBrakeCylinderVolume`` to
+  set the size of the brake cylinder(s).
+- ``Wagon(ORTSBrakeCylinderTravel`` -- The length of brake cylinder extension
+  when the brakes are applied. Larger travel leads to larger brake cylinder
+  volume, and volume will increase as the brake cylinder pressurizes.
+  (Default 8 inches.)
+- ``Wagon(ORTSBrakeCylinderPipingVolume`` -- The volume of the piping between
+  the brake valve and each brake cylinder, including the volume of air in the
+  brake cylinder when released. This volume does not change as the brake
+  cylinder extends, and can be manipulated to change the effective triple
+  valve ratio. (Default is 20% of the applied brake cylinder volume.)
+- ``Wagon(ORTSNumberBrakeCylinders`` -- Sets the number of brake cylinders
+  on the car, multiplies the brake cylinder volume. (Default 1 brake cylinder.)
 - ``Wagon(ORTSEmergencyValveActuationRate`` -- Threshold rate for emergency
   brake actuation of the triple valve. If the pressure in the brake pipe
   decreases at a higher rate than specified, the triple valve will switch to
