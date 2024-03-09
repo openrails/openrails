@@ -611,6 +611,14 @@ namespace Orts.Viewer3D
             }
             if (SharedSMSFileManager.CurveSMSNumber != -1) SharedSMSFileManager.AutoTrackSound = true;
 
+            SharedSMSFileManager.CurveSquealSMSNumber = Simulator.TRK.Tr_RouteFile.CurveSquealSMSNumber;
+            if (SharedSMSFileManager.CurveSquealSMSNumber < -1 || SharedSMSFileManager.CurveSquealSMSNumber >= TrackTypes.Count)
+            {
+                SharedSMSFileManager.CurveSquealSMSNumber = -1;
+                Trace.TraceInformation("Curve Squeal SMS Number out of range");
+            }
+            if (SharedSMSFileManager.CurveSMSNumber != -1) SharedSMSFileManager.AutoTrackSound = true;
+
             SharedSMSFileManager.CurveSwitchSMSNumber = Simulator.TRK.Tr_RouteFile.CurveSwitchSMSNumber;
             if (SharedSMSFileManager.CurveSwitchSMSNumber < -1 || SharedSMSFileManager.CurveSwitchSMSNumber >= TrackTypes.Count)
             {

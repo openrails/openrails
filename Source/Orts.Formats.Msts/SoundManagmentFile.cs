@@ -36,6 +36,7 @@ namespace Orts.Formats.Msts
         public static int SwitchSMSNumber;
         public static int CurveSMSNumber;
         public static int CurveSwitchSMSNumber;
+        public static int CurveSquealSMSNumber;
         public static bool AutoTrackSound = false;
 
         public static SoundManagmentFile Get(string path)
@@ -198,7 +199,7 @@ namespace Orts.Formats.Msts
 
     public class VolumeCurve
     {
-        public enum Controls { None, DistanceControlled, SpeedControlled, Variable1Controlled, Variable1_2Controlled, Variable1_3Controlled, Variable1_4Controlled, Variable2Controlled, Variable2BoosterControlled, Variable3Controlled, BrakeCylControlled, CurveForceControlled };
+        public enum Controls { None, DistanceControlled, SpeedControlled, Variable1Controlled, Variable1_2Controlled, Variable1_3Controlled, Variable1_4Controlled, Variable2Controlled, Variable2BoosterControlled, Variable3Controlled, BrakeCylControlled, CurveForceControlled, AngleofAttackControlled, CarFrictionControlled };
 
         public Controls Control = Controls.None;
         public float Granularity = 1.0f;
@@ -222,6 +223,8 @@ namespace Orts.Formats.Msts
                 case "variable3controlled": Control = Controls.Variable3Controlled; break;
                 case "brakecylcontrolled": Control = Controls.BrakeCylControlled; break;
                 case "curveforcecontrolled": Control = Controls.CurveForceControlled; break;
+                case "angleofattackcontrolled": Control = Controls.AngleofAttackControlled; break;
+                case "carfrictioncontrolled": Control = Controls.CarFrictionControlled; break;
                 default: STFException.TraceWarning(stf, "Crash expected: Skipped unknown VolumeCurve/Frequencycurve type " + type); stf.SkipRestOfBlock(); return;
             }
             stf.ParseBlock(new STFReader.TokenProcessor[] {

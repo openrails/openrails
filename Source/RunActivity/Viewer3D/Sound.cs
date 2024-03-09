@@ -424,7 +424,14 @@ namespace Orts.Viewer3D
                     // here check for curve
                     var carPreviouslyOnCurve = CarOnCurve;
                     CarOnCurve = false;
-                    if ((Car.CurrentCurveRadiusM > 0 && (Car.CurrentCurveRadiusM < 301
+
+                    // Uses newer AoA approach
+                    if (SharedSMSFileManager.CurveSquealSMSNumber != -1 && Car.CurrentCurveRadiusM > 0)
+                    {
+                        CarOnCurve = true;
+                    }
+                    // Uses original curve sound system
+                    else if (SharedSMSFileManager.CurveSwitchSMSNumber != -1 && (Car.CurrentCurveRadiusM > 0 && (Car.CurrentCurveRadiusM < 301
                          || (Car.CurrentCurveRadiusM < 350 && Car.WagonType == TrainCar.WagonTypes.Freight))) ||
                         (CarBehind.CurrentCurveRadiusM > 0 && (CarBehind.CurrentCurveRadiusM < 301
                          || (CarBehind.CurrentCurveRadiusM < 350 && Car.WagonType == TrainCar.WagonTypes.Freight))))
@@ -444,6 +451,12 @@ namespace Orts.Viewer3D
                         {
                             _curTType = SharedSMSFileManager.CurveSwitchSMSNumber;
                         }
+                        // newer curve squeal sounds
+                        else if (CarOnCurve && SharedSMSFileManager.CurveSquealSMSNumber != -1)
+                        {
+                            _curTType = SharedSMSFileManager.CurveSquealSMSNumber;
+                        }
+                        // original curve squeal
                         else if (CarOnCurve && SharedSMSFileManager.CurveSMSNumber != -1)
                         {
                             _curTType = SharedSMSFileManager.CurveSMSNumber;
@@ -1502,6 +1515,8 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.VolumeCurve.Controls.Variable3Controlled: return car.Variable3;
                 case Orts.Formats.Msts.VolumeCurve.Controls.BrakeCylControlled: return car.BrakeSystem.GetCylPressurePSI();
                 case Orts.Formats.Msts.VolumeCurve.Controls.CurveForceControlled: return car.CurveForceNFiltered;
+                case Orts.Formats.Msts.VolumeCurve.Controls.AngleofAttackControlled: return car.AngleOfAttackmRad;
+                case Orts.Formats.Msts.VolumeCurve.Controls.CarFrictionControlled: return car.Train.WagonCoefficientFriction;
                 default: return 0;
             }
         }
