@@ -45,8 +45,8 @@ namespace Orts.Viewer3D.Popups
 
                 var loco = Viewer.PlayerLocomotive as MSTSLocomotive;
                 var cabViewFrontRear = loco.UsingRearCab ? 1 : 0;
-                var itemsFrontCount = loco.CabViewList[(int)CabViewType.Front].CVFFile.CabViewControls.Count() - 1;
-                var itemsRearCount = loco.CabViewList.Count > 1 ? loco.CabViewList[(int)CabViewType.Rear].CVFFile.CabViewControls.Count() - 1 : 0;
+                var itemsFrontCount = loco.CabViewList[(int)CabViewType.Front].CVFFile.CabViewControls.Count();
+                var itemsRearCount = loco.CabViewList.Count > 1 ? loco.CabViewList[(int)CabViewType.Rear].CVFFile.CabViewControls.Count() : 0;
                 
                 foreach (var controlRenderer in cabRenderer.ControlMap.Values.Skip(cabViewFrontRear == 0 ? 0 : itemsFrontCount).Take(cabViewFrontRear == 0 ? itemsFrontCount : itemsRearCount))
                 {
