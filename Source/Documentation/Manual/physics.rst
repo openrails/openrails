@@ -3157,7 +3157,7 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
    single: ORTSBrakeCylinderVolume
    single: ORTSBrakeCylinderPipingVolume
    single: ORTSBrakeCylinderSize
-   single: ORTSBrakeCylinderTravel
+   single: ORTSBrakeCylinderPistonTravel
    single: ORTSNumberBrakeCylinders
    single: ORTSEmergencyValveActuationRate
    single: ORTSEmergencyDumpValveRate
@@ -3226,7 +3226,7 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 - ``Wagon(ORTSBrakeCylinderSize`` -- If brake cylinder dimensions are
   available, this can be used in place of ``ORTSBrakeCylinderVolume`` to
   set the size of the brake cylinder(s).
-- ``Wagon(ORTSBrakeCylinderTravel`` -- The length of brake cylinder extension
+- ``Wagon(ORTSBrakeCylinderPistonTravel`` -- The length of brake cylinder extension
   when the brakes are applied. Larger travel leads to larger brake cylinder
   volume, and volume will increase as the brake cylinder pressurizes.
   (Default 8 inches.)
