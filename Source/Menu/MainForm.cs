@@ -24,6 +24,7 @@ using ORTS.Settings;
 using ORTS.Updater;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -252,11 +253,6 @@ namespace ORTS
             ShowTimetableEnvironment();
 
             CheckForUpdate();
-            Notifications.CheckNotifications();
-
-            // Drop any notifications for the channel not selected
-
-            Notifications.ReplaceParameters();
 
             if (!Initialized)
             {
@@ -354,8 +350,13 @@ namespace ORTS
                     linkLabelUpdate.Text = catalog.GetString("Update check failed");
                     linkLabelChangeLog.Visible = true;
                 }
-                if (UpdateManager.LastUpdate != null)
+                //if (UpdateManager.LastUpdate != null)
                 {
+                    Notifications.CheckNotifications(UpdateManager);
+
+                    // Drop any notifications for the channel not selected
+
+                    Notifications.ReplaceParameters();
                     SetUpdateNotificationPage();
                 }
             });
@@ -590,7 +591,7 @@ namespace ORTS
                     case DialogResult.OK:
                         LoadFolderList();
                         CheckForUpdate();
-                        Notifications.CheckNotifications();
+                        Notifications.CheckNotifications(UpdateManager);
                         break;
                     case DialogResult.Retry:
                         RestartMenu();
@@ -1648,31 +1649,38 @@ namespace ORTS
                         AddItemToPage(page, item);
                     }
 
-                    var checksMet = true;
+                    // Check constraints
+                    var excludesMet = true;
+                    var includesMet = true;
                     foreach (var nc in n.MetLists.CheckIdList)
                     {
-                        foreach (var c in Notifications.CheckList)
+                        foreach (var c in Notifications.CheckList.Where(c => c.Id == nc.Id))
                         {
-                            if (c.Id == nc.Id)
+                            var checkFailed = CheckExcludes(c);
+                            excludesMet = (checkFailed == null);
+                            if (excludesMet == false)
                             {
-                                if (c.IsChecked == false)
+                                foreach (var item in checkFailed.UnmetItemList)
                                 {
-                                    // Check constraints
-                                    //foreach(var constraint in c.IncludesAnyOf)
+                                    AddItemToPage(page, item);
                                 }
-                                if (c.IsMet == false)
-                                {
-                                    foreach (var item in c.UnmetItemList)
-                                    {
-                                        AddItemToPage(page, item);
-                                    }
-                                    checksMet = false;
-                                    break;
-                                }
+                                break;
                             }
+                            //checkFailed = CheckIncludes(c);
+                            //includesMet = (checkFailed == null);
+                            //if (includesMet == false)
+                            //{
+                            //    foreach (var item in checkFailed.UnmetItemList)
+                            //    {
+                            //        AddItemToPage(page, item);
+                            //    }
+                            //    break;
+                            //}
                         }
+                        if (excludesMet == false || includesMet == false)
+                            break;
                     }
-                    if (checksMet)
+                    if (excludesMet && includesMet)
                     {
                         foreach (var item in n.MetLists.ItemList)
                         {
@@ -1691,6 +1699,7 @@ namespace ORTS
                 NewNotificationPageCount = 0;
                 if (AreNotificationPagesVisible)
                 {
+                    // BETTER TO REPORT NO CONNECTION
                     var channelName = UpdateManager.ChannelName == "" ? "None" : UpdateManager.ChannelName;
                     var today = DateTime.Now.Date;
                     new NTitleControl(page, 1, 1, $"{today:dd-MMM-yy}", "Installation is up to date").Add();
@@ -1702,6 +1711,29 @@ namespace ORTS
             NotificationPageList.Add(page);
         }
 
+        private Check CheckExcludes(Check check)
+        {
+            foreach (var c in check.ExcludesAllOf)
+            {
+                var lowerName = c.Name.ToLower();
+                var lowerValue = c.Value.ToLower();
+                if (c is Contains)
+                {
+                    switch (lowerName)
+                    {
+                        case "installed_version":
+                            if (SystemInfo.Application.Version.Contains(lowerValue))
+                                return check;
+                            break;
+                        default: // generic exclusion
+                            if (lowerName == lowerValue)
+                                return check;
+                            break;
+                    }
+                }
+            }
+            return null;
+        }
         private void AddItemToPage(NotificationPage page, Item item)
         {
             if (item is Record record)
@@ -1715,6 +1747,10 @@ namespace ORTS
             else if (item is Update update)
             {
                 new NUpdateControl(page, item.Label, item.Indent, update.Value, this).Add();
+            }
+            else if (item is Item item2)
+            {
+                new NTextControl(page, item.Label).Add();
             }
         }
 

@@ -31,6 +31,7 @@ using ORTS.Updater;
 using SharpDX.Direct3D9;
 using static System.Net.WebRequestMethods;
 using static Orts.Formats.Msts.TileName;
+using static ORTS.Common.SystemInfo;
 using static ORTS.NotificationPage;
 using File = System.IO.File;
 using Font = System.Drawing.Font;
@@ -39,22 +40,19 @@ namespace ORTS
 {
     class Notifications
     {
-        string GetUserAgent()
-        {
-            return String.Format($"{Application.ProductName}/{VersionInfo.VersionOrBuild}");
-        }
-
         public List<Notification> NotificationList = new List<Notification>();
         public List<Check> CheckList = new List<Check>();
+        public UpdateManager UpdateManager;
 
         public Notifications() { }
 
 
-        public void CheckNotifications()
+        public void CheckNotifications(UpdateManager updateManager)
         {
             var notifications = GetNotifications(); // Make this a background task
             NotificationList = notifications.NotificationList;
             CheckList = notifications.CheckList;
+            UpdateManager = updateManager;
         }
 
         public Notifications GetNotifications()
@@ -186,6 +184,17 @@ namespace ORTS
                     ReplaceItemParameter(item);
                 }
             }
+            foreach (var c in CheckList)
+            {
+                foreach (var criteria in c.ExcludesAllOf)
+                {
+                    ReplaceCriteriaParameter(criteria);
+                }
+                foreach (var criteria in c.IncludesAnyOf)
+                {
+                    ReplaceCriteriaParameter(criteria);
+                }
+            }
         }
 
         private void ReplaceItemParameter(Item item)
@@ -198,6 +207,11 @@ namespace ORTS
                 update.Value = ReplaceParameter(update.Value);
         }
 
+        private void ReplaceCriteriaParameter(Criteria criteria)
+        {
+            criteria.Value = ReplaceParameter(criteria.Value);
+        }
+
         private string ReplaceParameter(string field)
         {
             if (field.Contains("{{") == false)
@@ -206,13 +220,51 @@ namespace ORTS
             field = field.TrimStart(' ', '{');
             field = field.TrimEnd('}', ' ');
 
-            switch (field)
+            switch (field.ToLower())
             {
-                case "installed_version":
-                    field = "installed_version";
+                case "channel":
+                    field = (UpdateManager.ChannelName == "")
+                        ? "none"
+                        : UpdateManager.ChannelName;
                     break;
                 case "new_version":
-                    field = "new_version";
+                    field = (UpdateManager.LastUpdate == null || UpdateManager.ChannelName == "")
+                        ? "none"
+                        : UpdateManager.LastUpdate.Version;
+                    break;
+                case "release_date":
+                    field = (UpdateManager.LastUpdate == null) 
+                        ? "none" 
+                        : $"{UpdateManager.LastUpdate.Date:dd-MMM-yy}";
+                    break;
+                case "installed_version":
+                    field = SystemInfo.Application.Version;
+                    break;
+                case "runtime":
+                    field = SystemInfo.Runtime.ToString();
+                    break;
+                case "system":
+                    field = SystemInfo.OperatingSystem.ToString();
+                    break;
+                case "memory":
+                    field = SystemInfo.Direct3DFeatureLevels.ToString();
+                    break;
+                case "cpu":
+                    field = "";
+                    foreach (var cpu in SystemInfo.CPUs)
+                    {
+                        field += $", {cpu.Name}";
+                    }
+                    break;
+                case "gpu":
+                    field = "";
+                    foreach (var gpu in SystemInfo.GPUs)
+                    {
+                        field += $", {gpu.Name}";
+                    }
+                    break;
+                case "direct3d":
+                    field = string.Join(",", SystemInfo.Direct3DFeatureLevels);
                     break;
                 default:
                     break;
@@ -279,17 +331,7 @@ namespace ORTS
     class Criteria
     {
         // System Information "examples"
-        public string DateTime { get; set; }    // "23/11/2023 12:40:45 (2023-11-23 12:40:45Z)"
-        public string Application { get; set; } // "Open Rails U2023.11.23-0122 (X64)"
-        public string Runtime { get; set; } // ".NET Framework 4.8.9181.0"
-        public string System { get; set; }  // "Microsoft Windows 11 Home 10.0.22621 (X64; en-GB; en-GB,en-US,ja-JP)"
-        public string Memory { get; set; }  // "32,592 MB"
-        public string CPU { get; set; } // "12th Gen Intel(R) Core(TM) i7-1255U (GenuineIntel; 12 threads; 2,600 MHz)"
-        public string GPU { get; set; } // "Intel(R) Iris(R) Xe Graphics (Intel Corporation; 1,024 MB)"
-        public string Direct3D { get; set; }    // "12_1,12_0,11_1,11_0,10_1,10_0,9_3,9_2,9_1"
+        public string Name { get; set; }    // installed_version, runtime, system, memory, cpu, gpu, direct3d
+        public string Value { get; set; }   // {{new_version}}, {{10_0}}
     }
-    //class UnmetItemList
-    //{
-    //    public List<Item> ItemList { get; set; }
-    //}
 }
