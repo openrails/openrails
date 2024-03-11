@@ -43,6 +43,7 @@ namespace ORTS
         public List<Notification> NotificationList = new List<Notification>();
         public List<Check> CheckList = new List<Check>();
         public UpdateManager UpdateManager;
+        public bool Available { get; set; } = true;
 
         public Notifications() { }
 
@@ -50,6 +51,7 @@ namespace ORTS
         public void CheckNotifications(UpdateManager updateManager)
         {
             var notifications = GetNotifications(); // Make this a background task
+            Available = (updateManager.LastCheckError is System.Net.WebException) == false;
             NotificationList = notifications.NotificationList;
             CheckList = notifications.CheckList;
             UpdateManager = updateManager;
@@ -171,29 +173,14 @@ namespace ORTS
             {
                 n.Title = ReplaceParameter(n.Title);
                 n.Date = ReplaceParameter(n.Date);
-                foreach (var item in n.PrefixItemList)
-                {
-                    ReplaceItemParameter(item);
-                }
-                foreach (var item in n.MetLists.ItemList)
-                {
-                    ReplaceItemParameter(item);
-                }
-                foreach (var item in n.SuffixItemList)
-                {
-                    ReplaceItemParameter(item);
-                }
+                n.PrefixItemList?.ForEach(item => ReplaceItemParameter(item));
+                n.MetLists?.ItemList?.ForEach(item => ReplaceItemParameter(item));
+                n.SuffixItemList?.ForEach(item => ReplaceItemParameter(item));
             }
             foreach (var c in CheckList)
             {
-                foreach (var criteria in c.ExcludesAllOf)
-                {
-                    ReplaceCriteriaParameter(criteria);
-                }
-                foreach (var criteria in c.IncludesAnyOf)
-                {
-                    ReplaceCriteriaParameter(criteria);
-                }
+                c.ExcludesAllOf?.ForEach(criteria =>  ReplaceCriteriaParameter(criteria));
+                c.IncludesAnyOf?.ForEach(criteria => ReplaceCriteriaParameter(criteria));
             }
         }
 
@@ -222,7 +209,7 @@ namespace ORTS
 
             switch (field.ToLower())
             {
-                case "channel":
+                case "update_mode":
                     field = (UpdateManager.ChannelName == "")
                         ? "none"
                         : UpdateManager.ChannelName;
@@ -272,6 +259,30 @@ namespace ORTS
 
             return field;
         }
+
+        /// <summary>
+        /// Drop any notifications for the channel not selected
+        /// </summary>
+        /// <param name="updateManager"></param>
+        public void DropUnusedUpdateNotifications(UpdateManager updateManager)
+        {
+            var updateModeSetting = updateManager.ChannelName.ToLower();
+            foreach(var n in NotificationList)
+            {
+                if (n.UpdateMode == null)   // Skip notifications which are not updates
+                    continue;
+
+                var lowerUpdateMode = n.UpdateMode.ToLower();
+
+                // If setting == "none", then keep just one update notification
+                if (updateModeSetting == "" && lowerUpdateMode == "stable")
+                    continue;
+
+                // Mark unused updates for deletion
+                n.ToDelete = lowerUpdateMode != updateModeSetting;
+            }
+            NotificationList.RemoveAll(n => n.ToDelete);
+        }
     }
 
     class JsonInput
@@ -284,13 +295,23 @@ namespace ORTS
     {
         public string Date { get; set; }
         public string Title { get; set; }
+        public string UpdateMode { get; set; }
         public List<Item> PrefixItemList { get; set; }
         public Met MetLists { get; set; }
         public List<Item> SuffixItemList { get; set; }
+        public bool ToDelete { get; set; } = false; // So we can mark items for deletion and then delete in single statement.
     }
     class Record : Item
     {
         public string Value { get; set; }
+    }
+    class Text : Item
+    {
+        public string Color { get; set; } = "black";
+    }
+    class Heading : Item
+    {
+        public string Color { get; set; } = "red";
     }
     class Link : Item
     {
@@ -300,7 +321,7 @@ namespace ORTS
     class Update : Item
     {
         public string Value { get; set; }
-        public string Channel { get; set; }
+        public string UpdateMode { get; set; }
     }
     class Item
     {

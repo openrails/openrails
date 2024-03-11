@@ -310,32 +310,6 @@ namespace ORTS
                 File.Delete(file);
         }
 
-        //void CheckForUpdate()
-        //{
-        //    // This is known directly from the chosen channel so doesn't need to wait for the update check itself.
-        //    linkLabelChangeLog.Visible = !string.IsNullOrEmpty(UpdateManager.ChangeLogLink);
-
-        //    new Task<UpdateManager>(this, () =>
-        //    {
-        //        UpdateManager.Check();
-        //        return null;
-        //    }, _ =>
-        //    {
-        //        if (UpdateManager.LastCheckError != null)
-        //            linkLabelUpdate.Text = catalog.GetString("Update check failed");
-                //else if (UpdateManager.LastUpdate != null && UpdateManager.LastUpdate.Version != VersionInfo.Version)
-                //    linkLabelUpdate.Text = catalog.GetStringFmt("Update to {0}", UpdateManager.LastUpdate.Version);
-                //else
-                //    linkLabelUpdate.Text = "";
-                //linkLabelUpdate.Enabled = true;
-                //linkLabelUpdate.Visible = linkLabelUpdate.Text.Length > 0;
-                //// Update link's elevation icon and size/position.
-                //if (UpdateManager.LastCheckError == null && UpdateManager.LastUpdate != null && UpdateManager.LastUpdate.Version != VersionInfo.Version && UpdateManager.UpdaterNeedsElevation)
-                //    linkLabelUpdate.Image = ElevationIcon;
-                //else
-                //    linkLabelUpdate.Image = null;
-        //    });
-        //}
         void CheckForUpdate()
         {
             // Uses a custom Task class which pre-dates the System.Threading.Task but provides much same features.
@@ -350,15 +324,10 @@ namespace ORTS
                     linkLabelUpdate.Text = catalog.GetString("Update check failed");
                     linkLabelChangeLog.Visible = true;
                 }
-                //if (UpdateManager.LastUpdate != null)
-                {
-                    Notifications.CheckNotifications(UpdateManager);
-
-                    // Drop any notifications for the channel not selected
-
-                    Notifications.ReplaceParameters();
-                    SetUpdateNotificationPage();
-                }
+                Notifications.CheckNotifications(UpdateManager);
+                Notifications.DropUnusedUpdateNotifications(UpdateManager);
+                Notifications.ReplaceParameters();
+                SetUpdateNotificationPage();
             });
         }
 
@@ -1562,48 +1531,6 @@ namespace ORTS
             Win32.LockWindowUpdate(IntPtr.Zero);
         }
 
-        /// <summary>
-        /// Populate the NotificationPages list
-        /// </summary>
-        //private void PopulateNotificationPageList()
-        //{
-            //NotificationPageList.Clear();
-            //if (NotificationPageList.Count == 0)
-            //{
-            //    var newNotificationPage = new NotificationPage();
-            //    NotificationPageList.Add(newNotificationPage);
-            //new NHeadingControl(panelDetails, "This is a dummy NotificationPage", Color.OrangeRed).Add(newNotificationPage);
-            //new NTitleControl(panelDetails, DateTime.Now, "Update is available").Add(newNotificationPage);
-            //new NRecordControl(panelDetails, "Update mode", 140, "Stable").Add(newNotificationPage);
-            //new NRecordControl(panelDetails, "Installed version", 140, "1.3.1").Add(newNotificationPage);
-            //new NRecordControl(panelDetails, "New version available", 140, "1.4").Add(newNotificationPage);
-            //new NButtonControl(panelDetails, "What's new", 90, "Find out on-line what's new in this version.").Add(newNotificationPage);
-            //new NButtonControl(panelDetails, "Install", 90, "Install the new version.").Add(newNotificationPage);
-            //new NHeadingControl(panelDetails, "Warning", Color.OrangeRed).Add(newNotificationPage);
-            //new NTextControl(panelDetails, "The update from your current version may affect the behaviour of some of your content.").Add(newNotificationPage);
-            //new NButtonControl(panelDetails, "Issue details", 90, "More details about this issue are available on-line.").Add(newNotificationPage);
-
-            //new NTitleControl(panelDetails, new DateTime(2024, 8, 31, 0, 0, 0), "Update is available").Add(newNotificationPage);
-            //new NRecordControl(panelDetails, "Update mode", 140, "Stable").Add(newNotificationPage);
-            //new NRecordControl(panelDetails, "Installed version", 140, "1.6").Add(newNotificationPage);
-            //new NRecordControl(panelDetails, "New version available", 140, "1.7").Add(newNotificationPage);
-            //new NButtonControl(panelDetails, "What's new", 90, "Find out on-line what's new in this version.").Add(newNotificationPage);
-            //new NHeadingControl(panelDetails, "Install Not Available", Color.OrangeRed).Add(newNotificationPage);
-            //new NTextControl(panelDetails, "V1.7 cannot be installed on your system until the graphics card is upgraded.").Add(newNotificationPage);
-            //new NButtonControl(panelDetails, "Graphics card", 90, "Find out on-line about graphics hardware needed.").Add(newNotificationPage);
-            //new NHeadingControl(panelDetails, "More Realism", Color.Blue).Add(newNotificationPage);
-            //new NTextControl(panelDetails, "This update supports graphics which are significantly more realistic.").Add(newNotificationPage);
-            //new NButtonControl(panelDetails, "Enhancement", 90, "More details about this enhancement are available on-line.").Add(newNotificationPage);
-
-            //}
-            //else
-            //{
-            //}
-            //var NotificationPage = NotificationPageList.LastOrDefault();
-            //new NTextControl(panelDetails, "").Add(NotificationPage);
-            //new NTextControl(panelDetails, "(Toggle icon to hide NotificationPages.)").Add(NotificationPage);
-        //}
-
         private void PopulateNotificationPageList()
         {
             SetUpdateNotificationPage();
@@ -1633,8 +1560,7 @@ namespace ORTS
             NotificationPageList.Clear();
             var page = new NotificationPage(panelDetails);
 
-            //if (IsUpdateAvailable())
-            if (true)
+            if (Notifications.Available)
             {
                 NewNotificationPageCount = 1;
                 if (AreNotificationPagesVisible)
@@ -1666,16 +1592,16 @@ namespace ORTS
                                 }
                                 break;
                             }
-                            //checkFailed = CheckIncludes(c);
-                            //includesMet = (checkFailed == null);
-                            //if (includesMet == false)
-                            //{
-                            //    foreach (var item in checkFailed.UnmetItemList)
-                            //    {
-                            //        AddItemToPage(page, item);
-                            //    }
-                            //    break;
-                            //}
+
+                            includesMet = (c.IncludesAnyOf.Count == 0 || CheckIncludes(c) != null);
+                            if (includesMet == false)
+                            {
+                                foreach (var item in c.UnmetItemList)
+                                {
+                                    AddItemToPage(page, item);
+                                }
+                                break;
+                            }
                         }
                         if (excludesMet == false || includesMet == false)
                             break;
@@ -1702,17 +1628,29 @@ namespace ORTS
                     // BETTER TO REPORT NO CONNECTION
                     var channelName = UpdateManager.ChannelName == "" ? "None" : UpdateManager.ChannelName;
                     var today = DateTime.Now.Date;
-                    new NTitleControl(page, 1, 1, $"{today:dd-MMM-yy}", "Installation is up to date").Add();
+                    new NTitleControl(page, 1, 1, $"{today:dd-MMM-yy}", "Notifications are not available").Add();
                     new NRecordControl(page, "Update mode", 140, channelName).Add();
                     new NRecordControl(page, "Installed version", 140, VersionInfo.VersionOrBuild).Add();
-                    new NRecordControl(page, "New version available", 140, "none").Add();
+
+                    new NHeadingControl(page, "Notifications are not available", "red").Add();
+                    new NTextControl(page, "Is your Internet connected?").Add();
+
+                    new NRetryControl(page, "Retry", 140, "Try again to fetch notifications", this).Add();
                 }
             }
             NotificationPageList.Add(page);
         }
 
+        /// <summary>
+        /// Returns any check that fails.
+        /// </summary>
+        /// <param name="check"></param>
+        /// <returns></returns>
         private Check CheckExcludes(Check check)
         {
+            if (check.ExcludesAllOf == null)
+                return null;
+
             foreach (var c in check.ExcludesAllOf)
             {
                 var lowerName = c.Name.ToLower();
@@ -1734,6 +1672,39 @@ namespace ORTS
             }
             return null;
         }
+
+        /// <summary>
+        /// Returns any check that succeeds.
+        /// </summary>
+        /// <param name="check"></param>
+        /// <returns></returns>
+        private Check CheckIncludes(Check check)
+        {
+            if (check.IncludesAnyOf == null)
+                return null;
+
+            foreach (var c in check.IncludesAnyOf)
+            {
+                var lowerName = c.Name.ToLower();
+                var lowerValue = c.Value.ToLower();
+                if (c is Contains)
+                {
+                    switch (lowerName)
+                    {
+                        case "direct3d":
+                            if (SystemInfo.Direct3DFeatureLevels.Contains(lowerValue))
+                                return check;
+                            break;
+                        default: // generic inclusion
+                            if (lowerName == lowerValue)
+                                return check;
+                            break;
+                    }
+                }
+            }
+            return null;
+        }
+
         private void AddItemToPage(NotificationPage page, Item item)
         {
             if (item is Record record)
@@ -1747,6 +1718,10 @@ namespace ORTS
             else if (item is Update update)
             {
                 new NUpdateControl(page, item.Label, item.Indent, update.Value, this).Add();
+            }
+            else if (item is Heading heading)
+            {
+                new NHeadingControl(page, item.Label, heading.Color).Add();
             }
             else if (item is Item item2)
             {

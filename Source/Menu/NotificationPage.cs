@@ -86,8 +86,9 @@ namespace ORTS
         }
         public class NHeadingControl : NDetail
         {
-            public NHeadingControl(NotificationPage notification, string text, Color color = default) : base(notification)
+            public NHeadingControl(NotificationPage notification, string text, string colorName = "black") : base(notification)
             {
+                var color = Color.FromName(colorName);
                 var left = LeftPadding;
                 Control = new Label
                 {
@@ -197,6 +198,15 @@ namespace ORTS
                 ButtonCount++;
             }
         }
+        public class NRetryControl : NButtonControl
+        {
+            public NRetryControl(NotificationPage notification, string legend, int width, string description, MainForm mainForm)
+            : base(notification, legend, width, description, mainForm)
+            {
+                Page.ButtonDictionary.Add(ButtonCount, this);
+                ButtonCount++;
+            }
+        }
         public void DoButton(UpdateManager updateManager, int key)
         {
             var button = ButtonDictionary[key];
@@ -204,6 +214,11 @@ namespace ORTS
                 Process.Start(((NLinkControl)button).Url);
             else if (button is NUpdateControl)
                 updateManager.Update();
+            else if (button is NRetryControl)
+            {
+                //updateManager.Force = true;
+                updateManager.Check();
+            }
         }
 
         public class NRecordControl : NDetail
