@@ -71,43 +71,44 @@ namespace Orts.Viewer3D.Popups
         internal static Texture2D RearAngleCockClosed;
         internal static Texture2D RearAngleCockOpened;
 
-        public int DisplaySizeY;
-        public bool LayoutUpdated = false;
         public bool AllSymbolsMode = true;
+        public int DisplaySizeY;
+        public bool LayoutUpdated;
         public int LocoRowCount;
         public int RowsCount;
         public int SeparatorCount;
         public int SpacerRowCount;
         public int SymbolsRowCount;
 
-        public int CarPositionVisible;
         public ControlLayout Client;
+        public bool CarPositionChanged;
+        public int CarPositionVisible;
         public int CurrentCarPosition;
         public int LabelTop;
-        public bool LastRowVisible = false;
+        public bool LastRowVisible;
         public int LocalScrollPosition;
         public int SelectedCarPosition;
         const int SymbolSize = 16;
 
+        public int CurrentDisplaySizeY;
+        public bool IsFullScreen;
+        public int OldPositionHeight;
+        public int RowHeight;
+        public bool UpdateTrainCarOperation;
         public int WindowHeightMax;
         public int WindowHeightMin;
         public int WindowWidthMax;
         public int WindowWidthMin;
-        public int CurrentDisplaySizeY;
-        public bool IsFullScreen = false;
-        public int RowHeight;
-        public int OldPositionHeight;
-        public bool UpdateTrainCarOperation = false;
         public List<int> LabelPositionTop = new List<int>();
 
         //Rectangle carLabelPosition;
+        public ControlLayoutVertical Vbox;
         public string CarLabelText;
         public int CarPosition;
         public int CarUIDLenght;
         public int DesiredHeight;
         public static bool FontChanged;
         public static bool FontToBold;
-        public ControlLayoutVertical Vbox;
 
         //Electrical power
         public string BatteryStatus;
@@ -116,10 +117,10 @@ namespace Orts.Viewer3D.Popups
         public string PowerSupplyStatus;
         public bool PowerSupplyUpdating;
         public bool SupplyStatusChanged;
-        public bool UpdatingPowerSupply = false;
+        public bool UpdatingPowerSupply;
 
-        public bool WarningEnabled = false;
-        public bool CarIdClicked = false;
+        public bool CarIdClicked;
+        public bool WarningEnabled;
         public bool ModifiedSetting
         {
             set;
@@ -460,7 +461,7 @@ namespace Orts.Viewer3D.Popups
                             break;
                         }
                     }
-                }               
+                }
             }
         }
         public void localScrollLayout(int selectedCarPosition)
@@ -501,6 +502,9 @@ namespace Orts.Viewer3D.Popups
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
         {
             base.PrepareFrame(elapsedTime, updateFull);
+
+            if (UserInput.IsPressed(UserCommand.CameraCarNext) || UserInput.IsPressed(UserCommand.CameraCarPrevious) || UserInput.IsPressed(UserCommand.CameraCarFirst) || UserInput.IsPressed(UserCommand.CameraCarLast))
+                CarPositionChanged = true;
 
             if (updateFull)
             {
@@ -580,14 +584,16 @@ namespace Orts.Viewer3D.Popups
                     carOperations.CarOperationChanged = carOperations.Visible && carOperations.CarOperationChanged;
                 }
 
-                if (trainCarWebpage != null && CarPosition != trainCarViewer.CarPosition && trainCarWebpage.Connections > 0)
+                if (CarPositionChanged || (trainCarWebpage != null && CarPosition != trainCarViewer.CarPosition && trainCarWebpage.Connections > 0))
                 {
                     // Required to scroll the main window from the web version
                     UpdateTrainCarOperation = true;
                     CarPosition = trainCarViewer.CarPosition;
+                    SelectedCarPosition = CarPositionChanged ? CarPosition : SelectedCarPosition;
                     LabelTop = LabelPositionTop[SelectedCarPosition];
                     Layout();
                     localScrollLayout(SelectedCarPosition);
+                    CarPositionChanged = false;
                 }
                 //Resize this window after the font has been changed externally
                 else if (MultiPlayerWindow.FontChanged)

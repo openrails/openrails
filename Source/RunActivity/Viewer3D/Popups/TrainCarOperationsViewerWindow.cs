@@ -74,20 +74,20 @@ namespace Orts.Viewer3D.Popups
         internal static Texture2D ResetBrakesOff;
         internal static Texture2D ResetBrakesOn;
 
+        public string BatteryStatus;
+        string CircuitBreakerState;
+        public int LocoRowCount;
+        public string PowerSupplyStatus;
+        public int RowsCount;
+        public int SpacerRowCount;
+        public int SymbolsRowCount;
+        const int SymbolWidth = 32;
+        public static bool FontChanged;
+        public static bool FontToBold;
         public int WindowHeightMin;
         public int WindowHeightMax;
         public int WindowWidthMin;
         public int WindowWidthMax;
-        public string PowerSupplyStatus;
-        public string BatteryStatus;
-        string CircuitBreakerState;
-        public int SpacerRowCount;
-        public int SymbolsRowCount;
-        public int LocoRowCount;
-        public int RowsCount;
-        const int SymbolWidth = 32;
-        public static bool FontChanged;
-        public static bool FontToBold;
         public int windowHeight { get; set; } //required by TrainCarWindow
         public int CarPosition
         {
@@ -132,10 +132,10 @@ namespace Orts.Viewer3D.Popups
         public List<ListLabel> Labels = new List<ListLabel>();
 
         Train PlayerTrain;
-        int LastPlayerTrainCars;
         bool LastPlayerLocomotiveFlippedState;
+        int LastPlayerTrainCars;
         int OldCarPosition;
-        bool ResetAllSymbols = false;
+        bool ResetAllSymbols;
         public TrainCarOperationsViewerWindow(WindowManager owner)
             : base(owner, Window.DecorationSize.X + CarListPadding + ((owner.TextFontDefault.Height + 12) * 20), Window.DecorationSize.Y + ((owner.TextFontDefault.Height + 12) * 2), Viewer.Catalog.GetString("Train Operations Viewer"))
         {
@@ -375,11 +375,19 @@ namespace Orts.Viewer3D.Popups
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
         {
             base.PrepareFrame(elapsedTime, updateFull);
+            if (UserInput.IsPressed(UserCommand.CameraCarNext) && CarPosition > 0)
+                CarPosition--;
+            else if (UserInput.IsPressed(UserCommand.CameraCarPrevious) && CarPosition < Owner.Viewer.PlayerTrain.Cars.Count - 1)
+                CarPosition++;
+            else if (UserInput.IsPressed(UserCommand.CameraCarFirst))
+                CarPosition = 0;
+            else if (UserInput.IsPressed(UserCommand.CameraCarLast))
+                CarPosition = Owner.Viewer.PlayerTrain.Cars.Count - 1;
 
             if (updateFull)
             {
                 var carOperations = Owner.Viewer.CarOperationsWindow;
-                var trainCarOperations = Owner.Viewer.TrainCarOperationsWindow;                
+                var trainCarOperations = Owner.Viewer.TrainCarOperationsWindow;
 
                 if (CouplerChanged || PlayerTrain != Owner.Viewer.PlayerTrain || Owner.Viewer.PlayerTrain.Cars.Count != LastPlayerTrainCars || (Owner.Viewer.PlayerLocomotive != null &&
                 LastPlayerLocomotiveFlippedState != Owner.Viewer.PlayerLocomotive.Flipped))
