@@ -1625,7 +1625,7 @@ namespace ORTS
                 NewNotificationPageCount = 0;
                 if (AreNotificationPagesVisible)
                 {
-                    // BETTER TO REPORT NO CONNECTION
+                    // Reports notifications are not available.
                     var channelName = UpdateManager.ChannelName == "" ? "None" : UpdateManager.ChannelName;
                     var today = DateTime.Now.Date;
                     new NTitleControl(page, 1, 1, $"{today:dd-MMM-yy}", "Notifications are not available").Add();

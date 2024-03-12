@@ -26,6 +26,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Schema;
 using ORTS.Common;
 using ORTS.Updater;
 using SharpDX.Direct3D9;
@@ -158,7 +159,7 @@ namespace ORTS
             // Input from file
             var filename = @"c:\_tmp\notifications.json";
 
-            // read file into a string and deserialize JSON to a type
+            // read file into a string and deserialize JSON into Notifications
             var notificationsSerial = File.ReadAllText(filename);
 
             JsonSerializerSettings settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
@@ -203,61 +204,64 @@ namespace ORTS
         {
             if (field.Contains("{{") == false)
                 return field;
+            if (field.Contains("}}") == false)
+                return field;
 
-            field = field.TrimStart(' ', '{');
-            field = field.TrimEnd('}', ' ');
+            var parameterArray = field.Split('{', '}'); // 5 elements: prefix, "", target, "", suffix
+            var target = parameterArray[2].ToLower();
+            var replacement = parameterArray[2]; // Default is original text
 
-            switch (field.ToLower())
+            switch (target)
             {
                 case "update_mode":
-                    field = (UpdateManager.ChannelName == "")
+                    replacement = (UpdateManager.ChannelName == "")
                         ? "none"
                         : UpdateManager.ChannelName;
                     break;
                 case "new_version":
-                    field = (UpdateManager.LastUpdate == null || UpdateManager.ChannelName == "")
+                    replacement = (UpdateManager.LastUpdate == null || UpdateManager.ChannelName == "")
                         ? "none"
                         : UpdateManager.LastUpdate.Version;
                     break;
                 case "release_date":
-                    field = (UpdateManager.LastUpdate == null) 
-                        ? "none" 
+                    replacement = (UpdateManager.LastUpdate == null)
+                        ? "none"
                         : $"{UpdateManager.LastUpdate.Date:dd-MMM-yy}";
                     break;
                 case "installed_version":
-                    field = SystemInfo.Application.Version;
+                    replacement = SystemInfo.Application.Version;
                     break;
                 case "runtime":
-                    field = SystemInfo.Runtime.ToString();
+                    replacement = SystemInfo.Runtime.ToString();
                     break;
                 case "system":
-                    field = SystemInfo.OperatingSystem.ToString();
+                    replacement = SystemInfo.OperatingSystem.ToString();
                     break;
                 case "memory":
-                    field = SystemInfo.Direct3DFeatureLevels.ToString();
+                    replacement = SystemInfo.Direct3DFeatureLevels.ToString();
                     break;
                 case "cpu":
-                    field = "";
+                    replacement = "";
                     foreach (var cpu in SystemInfo.CPUs)
                     {
-                        field += $", {cpu.Name}";
+                        replacement += $", {cpu.Name}";
                     }
                     break;
                 case "gpu":
-                    field = "";
+                    replacement = "";
                     foreach (var gpu in SystemInfo.GPUs)
                     {
-                        field += $", {gpu.Name}";
+                        replacement += $", {gpu.Name}";
                     }
                     break;
                 case "direct3d":
-                    field = string.Join(",", SystemInfo.Direct3DFeatureLevels);
+                    replacement = string.Join(",", SystemInfo.Direct3DFeatureLevels);
                     break;
                 default:
                     break;
             }
 
-            return field;
+            return parameterArray[0] + replacement + parameterArray[4];
         }
 
         /// <summary>
