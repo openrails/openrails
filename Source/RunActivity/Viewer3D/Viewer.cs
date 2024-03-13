@@ -1430,7 +1430,7 @@ namespace Orts.Viewer3D
                             if (mouseRenderer.IsMouseWithin())
                             {
                                 var UserCommandControlTypes = (PlayerLocomotiveViewer as MSTSLocomotiveViewer).UserCommandControlTypes;
-                                if (UserCommandControlTypes.ContainsKey(controlRenderer.Control.ControlType.Type))
+                                if (UserCommandControlTypes.ContainsKey(controlRenderer.Control.ControlType.Type) && UserInput.IsMouseWheelChanged)
                                 {
                                     continue;
                                 }
