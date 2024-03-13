@@ -138,6 +138,8 @@ namespace ORTS
             var options = Environment.GetCommandLineArgs().Where(a => (a.StartsWith("-") || a.StartsWith("/"))).Select(a => a.Substring(1));
             Settings = new UserSettings(options);
 
+            Cursor = Cursors.Default;
+
             LoadOptions();
             LoadLanguage();
 

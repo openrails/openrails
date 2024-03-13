@@ -46,6 +46,8 @@ namespace ORTS
         private Thread ImageThread;
         private readonly string InfoTempFilename;
 
+        private bool ClosingBlocked;
+
         //attribute used to refresh UI
         private readonly SynchronizationContext SynchronizationContext;
 
@@ -761,20 +763,22 @@ namespace ORTS
                 mainForm.radioButtonModeActivity.Checked = true;
 
                 mainForm.LoadActivityList();
-                // hardcoded: + Explore in Activity Mode +
-                mainForm.comboBoxActivity.SelectedIndex = 1;
+                mainForm.comboBoxActivity.SelectedIndex = determineSelectedIndex(mainForm.comboBoxActivity, route.Start.Activity);
 
-                mainForm.LoadLocomotiveList();
-                mainForm.comboBoxLocomotive.SelectedIndex = determineSelectedIndex(mainForm.comboBoxLocomotive, route.Start.Locomotive);
-                mainForm.comboBoxConsist.SelectedIndex = determineSelectedIndex(mainForm.comboBoxConsist, route.Start.Consist);
+                if ((route.Start.Activity == "- Explore Route -") || (route.Start.Activity == "+ Explore in Activity Mode +"))
+                {
+                    mainForm.LoadLocomotiveList();
+                    mainForm.comboBoxLocomotive.SelectedIndex = determineSelectedIndex(mainForm.comboBoxLocomotive, route.Start.Locomotive);
+                    mainForm.comboBoxConsist.SelectedIndex = determineSelectedIndex(mainForm.comboBoxConsist, route.Start.Consist);
 
-                mainForm.LoadStartAtList();
-                mainForm.comboBoxStartAt.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartAt, route.Start.StartingAt);
-                mainForm.comboBoxHeadTo.SelectedIndex = determineSelectedIndex(mainForm.comboBoxHeadTo, route.Start.HeadingTo);
+                    mainForm.LoadStartAtList();
+                    mainForm.comboBoxStartAt.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartAt, route.Start.StartingAt);
+                    mainForm.comboBoxHeadTo.SelectedIndex = determineSelectedIndex(mainForm.comboBoxHeadTo, route.Start.HeadingTo);
 
-                mainForm.comboBoxStartTime.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartTime, route.Start.Time);
-                mainForm.comboBoxStartSeason.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartSeason, route.Start.Season);
-                mainForm.comboBoxStartWeather.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartWeather, route.Start.Weather);
+                    mainForm.comboBoxStartTime.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartTime, route.Start.Time);
+                    mainForm.comboBoxStartSeason.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartSeason, route.Start.Season);
+                    mainForm.comboBoxStartWeather.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartWeather, route.Start.Weather);
+                }
             }
             catch (StartNotFound error)
             {
@@ -798,7 +802,7 @@ namespace ORTS
             // close the MainForm dialog, starts OR
             Owner.DialogResult = DialogResult.OK;
 
-            EnableButtons();
+            ClosingBlocked = false;
         }
 
         private int determineSelectedIndex(ComboBox comboBox, string compareWith)
@@ -816,6 +820,20 @@ namespace ORTS
                 throw new StartNotFound(Catalog.GetStringFmt(compareWith));
             }
 
+            if ((classOfItem == "DefaultExploreActivity") && (compareWith == "- Explore Route -"))
+            {
+                // "- Explore Route -" gets translated,
+                // so it might not be found in the combobox
+                found = true;
+                index = 0;
+            }
+            if ((classOfItem == "DefaultExploreActivity") && (compareWith == "+ Explore in Activity Mode +"))
+            {
+                // "+ Explore in Activity Mode +" gets translated
+                found = true;
+                index = 1;
+            }
+
             while (!found && (index < comboBox.Items.Count))
             {
                 string comboboxName = "";
@@ -827,6 +845,9 @@ namespace ORTS
                     case "Route":
                         comboboxName = ((Menu.Route)comboBox.Items[index]).Name;
                         break;
+                    case "DefaultExploreActivity":
+                        comboboxName = ((Menu.Activity)comboBox.Items[index]).Name;
+                        break;
                     case "Locomotive":
                         comboboxName = ((Menu.Locomotive)comboBox.Items[index]).Name;
                         break;
@@ -834,7 +855,7 @@ namespace ORTS
                         comboboxName = ((Menu.Consist)comboBox.Items[index]).Name;
                         break;
                     case "String":
-                        comboboxName = (String)comboBox.Items[index];
+                        comboboxName = (string)comboBox.Items[index];
                         break;
                     case "Path":
                         comboboxName = ((Menu.Path)comboBox.Items[index]).End;
@@ -948,7 +969,7 @@ namespace ORTS
                     }), (TotalBytes / 1024).ToString("N0"));
                 }
 
-                while ((deleteThread.IsAlive) && (sw.ElapsedMilliseconds <= 1000)) { }
+                while (deleteThread.IsAlive && (sw.ElapsedMilliseconds <= 1000)) { }
             }
         }
         #endregion
@@ -958,6 +979,8 @@ namespace ORTS
         {
             ContentRouteSettings.Route route = Routes[RouteName];
             string message;
+
+            DisableButtons();
 
             List<string> commitStrings = getCommits(route.DirectoryInstalledIn);
             if (commitStrings.Count > 0)
@@ -991,6 +1014,8 @@ namespace ORTS
                 message = Catalog.GetString("No updates found");
                 MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+
+            EnableButtons();
         }
 
         private bool doThePull(ContentRouteSettings.Route route) {
@@ -1024,7 +1049,7 @@ namespace ORTS
 
         private void DisableButtons()
         {
-            UseWaitCursor = true;
+            setCursorToWaitCursor();
 
             dataGridViewDownloadContent.Enabled = false;
             InstallPathTextBox.Enabled = false;
@@ -1037,11 +1062,17 @@ namespace ORTS
             updateButton.Enabled = false;
         }
 
-        private void EnableButtons()
+        private void setCursorToWaitCursor()
         {
-            ContentRouteSettings.Route route = Routes[RouteName];
+            ClosingBlocked = true;
 
-            UseWaitCursor = false;
+            MainForm mainForm = (MainForm)Owner;
+            mainForm.Cursor = Cursors.WaitCursor;
+        }
+
+        private void EnableButtons()
+        { 
+            ContentRouteSettings.Route route = Routes[RouteName];
 
             dataGridViewDownloadContent.Enabled = true;
             InstallPathTextBox.Enabled = true;
@@ -1051,6 +1082,16 @@ namespace ORTS
             startButton.Enabled = route.Installed && !string.IsNullOrWhiteSpace(route.Start.Route);
             deleteButton.Enabled = route.Installed;
             updateButton.Enabled = route.Installed && (route.getDownloadType() == ContentRouteSettings.DownloadType.github);
+
+            setCursorToDefaultCursor();
+        }
+
+        private void setCursorToDefaultCursor()
+        {
+            MainForm mainForm = (MainForm)Owner;
+            mainForm.Cursor = Cursors.Default;
+
+            ClosingBlocked = false;
         }
 
         private bool areThereChangedAddedFiles(ContentRouteSettings.Route route)
@@ -1225,7 +1266,7 @@ namespace ORTS
 
         private void DownloadContentForm_FormClosing(object sender, FormClosingEventArgs formClosingEventArgs)
         {
-            if (UseWaitCursor)
+            if (ClosingBlocked)
             {
                 // cancelled event, so continue
                 formClosingEventArgs.Cancel = true;
