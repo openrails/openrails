@@ -15,20 +15,32 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.RollingStock;
+using SpriteBatch = Microsoft.Xna.Framework.Graphics.SpriteBatch;
 
 namespace Orts.Viewer3D.Popups
 {
     public class ControlRectangle : Window
     {
         private readonly Texture2D Line;
-        private readonly int Thickness = 3;
+        private int Thickness = 1;
         private readonly Color Color = Color.Yellow;
         private readonly Viewer Viewer;
+        private bool CabViewFront;
+        private bool IsOverRectangle = false;
+        private class ListRect
+        {
+            public bool Front;
+            public Rectangle CabRectangle;
+            public string Name;
+        }
+        private List<ListRect> ListRectangles = new List<ListRect>();
+        private ListRect ListRects;
 
         public ControlRectangle(WindowManager owner, Viewer viewer) : base(owner)
         {
@@ -36,7 +48,6 @@ namespace Orts.Viewer3D.Popups
             Line.SetData(new[] { Color });
             Viewer = viewer;
         }
-
         public override void Draw(SpriteBatch spriteBatch)
         {
             if (Viewer.Camera is CabCamera && (Viewer.PlayerLocomotiveViewer as MSTSLocomotiveViewer)._hasCabRenderer)
@@ -44,44 +55,72 @@ namespace Orts.Viewer3D.Popups
                 var cabRenderer = (Viewer.PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer;
 
                 var loco = Viewer.PlayerLocomotive as MSTSLocomotive;
-                var cabViewFrontRear = loco.UsingRearCab ? 1 : 0;
+                CabViewFront = !loco.UsingRearCab;
+
                 var itemsFrontCount = loco.CabViewList[(int)CabViewType.Front].CVFFile.CabViewControls.Count();
                 var itemsRearCount = loco.CabViewList.Count > 1 ? loco.CabViewList[(int)CabViewType.Rear].CVFFile.CabViewControls.Count() : 0;
-                
-                foreach (var controlRenderer in cabRenderer.ControlMap.Values.Skip(cabViewFrontRear == 0 ? 0 : itemsFrontCount).Take(cabViewFrontRear == 0 ? itemsFrontCount : itemsRearCount))
+
+                foreach (var controlRenderer in cabRenderer.ControlMap.Values.Skip(CabViewFront ? 0 : itemsFrontCount).Take(CabViewFront ? itemsFrontCount : itemsRearCount))
                 {
                     if ((Viewer.Camera as CabCamera).SideLocation == controlRenderer.Control.CabViewpoint && controlRenderer is ICabViewMouseControlRenderer mouseRenderer)
-                    {                        
+                    {
                         if (mouseRenderer.isMouseControl())
                         {
                             Rectangle rectangle = mouseRenderer.DestinationRectangleGet();
-
                             int width = rectangle.Width;
                             int height = rectangle.Height;
 
                             if (width > 0)
                             {
                                 // do not know why rectangles with width and height = 0 are there
+                                ListRects = ListRectangles.FirstOrDefault(c => c.Name == mouseRenderer.GetControlName() && c.Front == CabViewFront);
+                                if (ListRects == null)
+                                {
+                                    ListRectangles.Add(new ListRect
+                                    {
+                                        CabRectangle = rectangle,
+                                        Front = CabViewFront,
+                                        Name = mouseRenderer.GetControlName(),
+                                    });
+                                }
+                                else
+                                {
+                                    ListRects.CabRectangle = rectangle;
+                                }
 
-                                // top line
-                                DrawLine(spriteBatch, rectangle.X, rectangle.Y, width, Thickness, 0);
+                                Thickness = 1; // default
+                                if (mouseRenderer.IsMouseWithin())
+                                {
+                                    ListRects = ListRectangles.FirstOrDefault(c => c.CabRectangle == rectangle && c.Front == CabViewFront);
 
-                                // bottom line
-                                DrawLine(spriteBatch, rectangle.X, rectangle.Y + height - Thickness, width, Thickness, 0);
+                                    if (ListRects != null && rectangle.Intersects(ListRects.CabRectangle) && ListRects.Name == mouseRenderer.GetControlName() && !IsOverRectangle)
+                                    {
+                                        Thickness = 3; // Highlights the currently selected rectangle
+                                        IsOverRectangle = true;
+                                    }
+                                }
 
-                                // left line
-                                DrawLine(spriteBatch, rectangle.X + Thickness, rectangle.Y, height, Thickness, 90);
-
-                                // right line
-                                DrawLine(spriteBatch, rectangle.X + width, rectangle.Y, height, Thickness, 90);
+                                DrawRectangle(spriteBatch, rectangle.X, rectangle.Y, width, height, Thickness, Color);
                             }
                         }
                     }
                 }
+                IsOverRectangle = false;
             }
         }
 
-        private void DrawLine(SpriteBatch spriteBatch, int X, int Y, int width, int height, int degrees)
+        private void DrawRectangle(SpriteBatch spriteBatch, int newX, int newY, int width, int height, int Thickness, Color Color)
+        {   // top line
+            DrawLine(spriteBatch, newX, newY, width, Thickness, 0, Color);
+            // bottom line
+            DrawLine(spriteBatch, newX, newY + height - Thickness, width, Thickness, 0, Color);
+            // left line
+            DrawLine(spriteBatch, newX + Thickness, newY, height, Thickness, 90, Color);
+            // right line
+            DrawLine(spriteBatch, newX + width, newY, height, Thickness, 90, Color);
+        }
+
+        private void DrawLine(SpriteBatch spriteBatch, int X, int Y, int width, int height, int degrees, Color Color)
         {
             spriteBatch.Draw(
                 Line,
