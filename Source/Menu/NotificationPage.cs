@@ -29,9 +29,11 @@ namespace ORTS
         public List<NDetail> NDetailList = new List<NDetail>();
         public Dictionary<int, NButtonControl> ButtonDictionary = new Dictionary<int, NButtonControl>();
         public Panel Panel;
+        private Notifications _notifications;
 
-        public NotificationPage(Panel panel)
+        public NotificationPage(Notifications notifications, Panel panel)
         {
+            _notifications = notifications;
             Panel = panel;
             NButtonControl.ButtonCount = 0;
         }
@@ -216,8 +218,10 @@ namespace ORTS
                 updateManager.Update();
             else if (button is NRetryControl)
             {
-                //updateManager.Force = true;
-                updateManager.Check();
+                // REPLACE THIS BY  PASSING EVENT BACK TO MAINFORM
+                _notifications.Available = true;
+                _notifications.CheckNotifications();
+                FlowNDetails();
             }
         }
 

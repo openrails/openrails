@@ -39,133 +39,76 @@ using Font = System.Drawing.Font;
 
 namespace ORTS
 {
-    class Notifications
+    public class Notifications
     {
         public List<Notification> NotificationList = new List<Notification>();
         public List<Check> CheckList = new List<Check>();
-        public UpdateManager UpdateManager;
         public bool Available { get; set; } = true;
+        private UpdateManager UpdateManager;
+        private MainForm MainForm;
 
-        public Notifications() { }
-
-
-        public void CheckNotifications(UpdateManager updateManager)
+        public Notifications(MainForm mainForm, UpdateManager updateManager) 
         {
-            var notifications = GetNotifications(); // Make this a background task
-            Available = (updateManager.LastCheckError is System.Net.WebException) == false;
-            NotificationList = notifications.NotificationList;
-            CheckList = notifications.CheckList;
+            MainForm = mainForm;
             UpdateManager = updateManager;
+        }
+
+
+        // Make this a background task
+        public void CheckNotifications()
+        {
+            try
+            {
+                // Cannot assign JSON object directly to this, since that is readonly.
+                // So capture its 2 lists and assign those individually
+                var temporaryNotifications = GetNotifications();
+                NotificationList = temporaryNotifications.NotificationList;
+                CheckList = temporaryNotifications.CheckList;
+
+                Available = true;
+                DropUnusedUpdateNotifications();
+                ReplaceParameters();
+
+                MainForm.PopulateNotificationPageList();
+            }
+            catch (System.Net.WebException ex)
+            {
+                Available = false;
+            }
         }
 
         public Notifications GetNotifications()
         {
-            //// Fetch the update URL (adding ?force=true if forced) and cache the update/error.
-            //var client = new WebClient()
-            //{
-            //    CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache),
-            //    Encoding = Encoding.UTF8,
-            //};
-            //client.Headers[HttpRequestHeader.UserAgent] = GetUserAgent();
-            //var notificationsUri = new Uri("");
-            //var notificationsData = client.DownloadString(notificationsUri);
-            //var notifications = JsonConvert.DeserializeObject<NotificationList>(notificationsData);
+            //// Input from local file
+            //var filename = @"c:\_tmp\notifications.json";
+
+            //// read file into a string and deserialize JSON into Notifications
+            //var notificationsSerial = File.ReadAllText(filename);
 
 
-            // Input from string
-            //string json = @"
-            //{
-            //    'notificationList':
-            //        [
-            //            {
-            //                'date': '{{release_date}}',
-            //                'title': 'Update is available',
-            //                'prefixItemList': 
-            //                    [
-            //                        {
-            //                            '$type':'ORTS.Record, Menu',
-            //                            'label': 'Update mode',
-            //                            'indent': 140,
-            //                            'value': 'Stable'
-            //                        },
-            //                        {
-            //                            '$type':'ORTS.Record, Menu',
-            //                            'label': 'Installed version',
-            //                            'indent': 140,
-            //                            'value': '{{installed_version}}'
-            //                        },
-            //                        {
-            //                            '$type':'ORTS.Record, Menu',
-            //                            'label': 'New version available',
-            //                            'indent': 140,
-            //                            'value': '{{new_version}}'
-            //                        },
-            //                        {
-            //                            '$type':'ORTS.Link, Menu',
-            //                            'label': 'What_s new',
-            //                            'indent': 140,
-            //                            'value': 'Find out on-line what_s new in this version.',
-            //                            'url': 'https://www.openrails.org/discover/latest_stable_version'
-            //                        }
-            //                    ],
-            //                'metLists':
-            //                    { 
-            //                        'itemList': 
-            //                            [
-            //                                {
-            //                                    '$type':'ORTS.Update, Menu',
-            //                                    'channel': 'testing',
-            //                                    'label': 'Install',
-            //                                    'indent': 140,
-            //                                    'value': 'Install the new version'
-            //                                }
-            //                            ],
-            //                        'checkIdList':
-            //                            [
-            //                                {
-            //                                    'id': 'not_updated'
-            //                                }
-            //                            ]
-            //                    },
-            //                'suffixItemList': []
-            //            }
-            //        ],
-            //    'CheckList': 
-            //        [
-            //            {
-            //                'id': 'not_updated',
-            //                'includesAnyOf': [],
-            //                'excludesAllOf': 
-            //                    [
-            //                        { 
-            //                            '$type':'ORTS.Contains, Menu',
-            //                            'application': '{{installed_version}}'
-            //                        }
-            //                    ]
-            //            }
-            //        ]
-            //}";
-
-            //JsonSerializerSettings settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
-            //var notifications = JsonConvert.DeserializeObject<JsonInput>(json, settings);
-
-
-            // Write to file
-            // serialize formatted JSON to a file
-            //string jsonOutput = JsonConvert.SerializeObject(notifications, Formatting.Indented);
-            //File.WriteAllText(@"c:\_tmp\notifications.json", jsonOutput);
-
-
-            // Input from file
-            var filename = @"c:\_tmp\notifications.json";
-
-            // read file into a string and deserialize JSON into Notifications
-            var notificationsSerial = File.ReadAllText(filename);
+            // Input from remote file
+            var notificationsSerial = GetRemoteJson();
 
             JsonSerializerSettings settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
             var jsonInput = JsonConvert.DeserializeObject<Notifications>(notificationsSerial, settings);
 
             return jsonInput;
+        }
+
+        /// <summary>
+        /// Fetch the Notifications from https://static.openrails.org/notifications/notifications.json
+        /// </summary>
+        private string GetRemoteJson()
+        {
+            var client = new WebClient()
+            {
+                CachePolicy = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.BypassCache),
+                Encoding = Encoding.UTF8,
+            };
+            // Helpful to supply server with data for its log file.
+            client.Headers[HttpRequestHeader.UserAgent] = $"{System.Windows.Forms.Application.ProductName}/{VersionInfo.VersionOrBuild}";
+            
+            return client.DownloadString(new Uri("https://wepp.co.uk/openrails/notifications.json"));
         }
 
         public void ReplaceParameters()
@@ -268,9 +211,9 @@ namespace ORTS
         /// Drop any notifications for the channel not selected
         /// </summary>
         /// <param name="updateManager"></param>
-        public void DropUnusedUpdateNotifications(UpdateManager updateManager)
+        public void DropUnusedUpdateNotifications()
         {
-            var updateModeSetting = updateManager.ChannelName.ToLower();
+            var updateModeSetting = UpdateManager.ChannelName.ToLower();
             foreach(var n in NotificationList)
             {
                 if (n.UpdateMode == null)   // Skip notifications which are not updates
@@ -278,7 +221,7 @@ namespace ORTS
 
                 var lowerUpdateMode = n.UpdateMode.ToLower();
 
-                // If setting == "none", then keep just one update notification
+                // If setting == "none", then keep just one update notification, e.g. the stable one
                 if (updateModeSetting == "" && lowerUpdateMode == "stable")
                     continue;
 
@@ -295,7 +238,7 @@ namespace ORTS
         public List<Check> CheckList { get; set; }
     }
 
-    class Notification
+    public class Notification
     {
         public string Date { get; set; }
         public string Title { get; set; }
@@ -327,21 +270,21 @@ namespace ORTS
         public string Value { get; set; }
         public string UpdateMode { get; set; }
     }
-    class Item
+    public class Item
     {
         public string Label { get; set; }
         public int Indent { get; set; } = 140;
     }
-    class Met
+    public class Met
     {
         public List<Item> ItemList { get; set; }
         public List<CheckId> CheckIdList { get; set; }
     }
-    class CheckId
+    public class CheckId
     {
         public string Id { get; set; }
     }
-    class Check
+    public class Check
     {
         public string Id { get; set; }
         public List<Criteria> IncludesAnyOf { get; set; }
@@ -353,7 +296,7 @@ namespace ORTS
     class Contains : Criteria { }
     class NoLessThan : Criteria { }
     class NoMoreThan : Criteria { }
-    class Criteria
+    public class Criteria
     {
         // System Information "examples"
         public string Name { get; set; }    // installed_version, runtime, system, memory, cpu, gpu, direct3d

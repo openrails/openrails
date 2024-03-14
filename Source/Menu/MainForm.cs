@@ -65,7 +65,7 @@ namespace ORTS
         List<Path> Paths = new List<Path>();
         List<TimetableInfo> TimetableSets = new List<TimetableInfo>();
         List<WeatherFileInfo> TimetableWeatherFileSet = new List<WeatherFileInfo>();
-        Notifications Notifications = new Notifications();
+        Notifications Notifications = null;
         Task<List<Folder>> FolderLoader;
         Task<List<Route>> RouteLoader;
         Task<List<Activity>> ActivityLoader;
@@ -133,6 +133,7 @@ namespace ORTS
             UpdateEnabled();
             UpdateManager = new UpdateManager(System.IO.Path.GetDirectoryName(Application.ExecutablePath), Application.ProductName, VersionInfo.VersionOrBuild);
             ElevationIcon = new Icon(SystemIcons.Shield, SystemInformation.SmallIconSize).ToBitmap();
+            Notifications = new Notifications(this, UpdateManager);
         }
 
         void MainForm_Shown(object sender, EventArgs e)
@@ -324,10 +325,10 @@ namespace ORTS
                     linkLabelUpdate.Text = catalog.GetString("Update check failed");
                     linkLabelChangeLog.Visible = true;
                 }
-                Notifications.CheckNotifications(UpdateManager);
-                Notifications.DropUnusedUpdateNotifications(UpdateManager);
-                Notifications.ReplaceParameters();
-                SetUpdateNotificationPage();
+                Notifications.CheckNotifications();
+                //Notifications.DropUnusedUpdateNotifications();
+                //Notifications.ReplaceParameters();
+                //SetUpdateNotificationPage();
             });
         }
 
@@ -560,7 +561,7 @@ namespace ORTS
                     case DialogResult.OK:
                         LoadFolderList();
                         CheckForUpdate();
-                        Notifications.CheckNotifications(UpdateManager);
+                        Notifications.CheckNotifications();
                         break;
                     case DialogResult.Retry:
                         RestartMenu();
@@ -1531,7 +1532,7 @@ namespace ORTS
             Win32.LockWindowUpdate(IntPtr.Zero);
         }
 
-        private void PopulateNotificationPageList()
+       public void PopulateNotificationPageList()
         {
             SetUpdateNotificationPage();
 
@@ -1558,7 +1559,7 @@ namespace ORTS
             NewNotificationPageCount = (IsUpdateAvailable()) ? 1 : 0;
             UpdateNotificationPageAlert();
             NotificationPageList.Clear();
-            var page = new NotificationPage(panelDetails);
+            var page = new NotificationPage(Notifications, panelDetails);
 
             if (Notifications.Available)
             {
