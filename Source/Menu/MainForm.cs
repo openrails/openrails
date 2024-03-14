@@ -15,16 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using GNU.Gettext;
-using GNU.Gettext.WinForms;
-using Orts.Formats.OR;
-using ORTS.Common;
-using ORTS.Menu;
-using ORTS.Settings;
-using ORTS.Updater;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -32,10 +24,14 @@ using System.IO;
 using System.Linq;
 using System.Resources;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using static ORTS.NotificationPage;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
+using Orts.Formats.OR;
+using ORTS.Common;
+using ORTS.Menu;
+using ORTS.Settings;
+using ORTS.Updater;
 using Path = ORTS.Menu.Path;
 
 namespace ORTS
@@ -65,7 +61,6 @@ namespace ORTS
         List<Path> Paths = new List<Path>();
         List<TimetableInfo> TimetableSets = new List<TimetableInfo>();
         List<WeatherFileInfo> TimetableWeatherFileSet = new List<WeatherFileInfo>();
-        Notifications Notifications = null;
         Task<List<Folder>> FolderLoader;
         Task<List<Route>> RouteLoader;
         Task<List<Activity>> ActivityLoader;
@@ -76,6 +71,7 @@ namespace ORTS
         readonly ResourceManager Resources = new ResourceManager("ORTS.Properties.Resources", typeof(MainForm).Assembly);
         readonly UpdateManager UpdateManager;
         readonly Image ElevationIcon;
+        NotificationManager NotificationManager;
 
         internal string RunActivityProgram
         {
@@ -133,7 +129,7 @@ namespace ORTS
             UpdateEnabled();
             UpdateManager = new UpdateManager(System.IO.Path.GetDirectoryName(Application.ExecutablePath), Application.ProductName, VersionInfo.VersionOrBuild);
             ElevationIcon = new Icon(SystemIcons.Shield, SystemInformation.SmallIconSize).ToBitmap();
-            Notifications = new Notifications(this, UpdateManager);
+            NotificationManager = new NotificationManager(this, UpdateManager);
         }
 
         void MainForm_Shown(object sender, EventArgs e)
@@ -325,10 +321,7 @@ namespace ORTS
                     linkLabelUpdate.Text = catalog.GetString("Update check failed");
                     linkLabelChangeLog.Visible = true;
                 }
-                Notifications.CheckNotifications();
-                //Notifications.DropUnusedUpdateNotifications();
-                //Notifications.ReplaceParameters();
-                //SetUpdateNotificationPage();
+                NotificationManager.CheckNotifications();
             });
         }
 
@@ -561,7 +554,7 @@ namespace ORTS
                     case DialogResult.OK:
                         LoadFolderList();
                         CheckForUpdate();
-                        Notifications.CheckNotifications();
+                        //Notifications.CheckNotifications();
                         break;
                     case DialogResult.Retry:
                         RestartMenu();
@@ -1467,18 +1460,6 @@ namespace ORTS
         }
 
         #region NotificationPages
-        // Will probably move this region and the Details region into separate files.
-
-        bool AreNotificationPagesVisible = false;
-        // New notifications are those with a date after the NotificationsReadDate.
-        // Notifications are listed in reverse date order, with the newest one at the front.
-        // We don't track the reading of each notification but set the NewNotificationCount = 0 after the last of the new ones has been read.
-        int NewNotificationPageCount = 1;
-        int LastNotificationPageViewed = 0;
-        int NotificationIndex = 0;
-
-        List<NotificationPage> NotificationPageList = new List<NotificationPage>();
-
         private void pbNotificationsNone_Click(object sender, EventArgs e)
         {
             ToggleNotificationPages();
@@ -1494,28 +1475,28 @@ namespace ORTS
 
         private void ToggleNotificationPages()
         {
-            if (AreNotificationPagesVisible == false)
+            if (NotificationManager.ArePagesVisible == false)
             {
-                AreNotificationPagesVisible = true; // Set before calling ShowNotifcations()
+                NotificationManager.ArePagesVisible = true; // Set before calling ShowNotifcations()
                 ShowNotificationPages();
                 FiddleNewNotificationPageCount();
             }
             else
             {
-                AreNotificationPagesVisible = false;
+                NotificationManager.ArePagesVisible = false;
                 ShowDetails();
             }
         }
 
         private void FiddleNewNotificationPageCount()
         {
-            LastNotificationPageViewed = 1;
+            NotificationManager.LastPageViewed = 1;
             UpdateNotificationPageAlert();
         }
 
-        private void UpdateNotificationPageAlert()
+        public void UpdateNotificationPageAlert()
         {
-            if (LastNotificationPageViewed >= NewNotificationPageCount)
+            if (NotificationManager.LastPageViewed >= NotificationManager.NewPageCount)
             {
                 pbNotificationsSome.Visible = false;
                 lblNotificationCount.Visible = false;
@@ -1526,19 +1507,10 @@ namespace ORTS
         {
             Win32.LockWindowUpdate(Handle);
             ClearPanel();
-            PopulateNotificationPageList();
-            var NotificationPage = GetCurrentNotificationPage();
-            NotificationPage.FlowNDetails();
+            NotificationManager.PopulatePageList();
+            var notificationPage = GetCurrentNotificationPage();
+            notificationPage.FlowNDetails();
             Win32.LockWindowUpdate(IntPtr.Zero);
-        }
-
-       public void PopulateNotificationPageList()
-        {
-            SetUpdateNotificationPage();
-
-            var NotificationPage = NotificationPageList.LastOrDefault();
-            new NTextControl(NotificationPage, "").Add();
-            new NTextControl(NotificationPage, "(Toggle icon to hide NotificationPages.)").Add();
         }
 
         /// <summary>
@@ -1547,193 +1519,12 @@ namespace ORTS
         /// <returns></returns>
         NotificationPage GetCurrentNotificationPage()
         {
-            return NotificationPageList[0];
+            return NotificationManager.PageList[0];
         }
 
-        /// <summary>
-        /// Ultimately there will be a list of notifications downloaded from openrails/content.
-        /// Until then, there is a single notification announcing either that a new update is available or the installation is up to date.
-        /// </summary>
-        void SetUpdateNotificationPage()
+        public NotificationPage CreateNotificationPage(Notifications notifications)
         {
-            NewNotificationPageCount = (IsUpdateAvailable()) ? 1 : 0;
-            UpdateNotificationPageAlert();
-            NotificationPageList.Clear();
-            var page = new NotificationPage(Notifications, panelDetails);
-
-            if (Notifications.Available)
-            {
-                NewNotificationPageCount = 1;
-                if (AreNotificationPagesVisible)
-                {
-                    var list = Notifications.NotificationList;
-                    var n = list[NotificationIndex];
-
-                    new NTitleControl(page, NotificationIndex + 1, list.Count, n.Date, n.Title).Add();
-
-                    foreach(var item in n.PrefixItemList)
-                    {
-                        AddItemToPage(page, item);
-                    }
-
-                    // Check constraints
-                    var excludesMet = true;
-                    var includesMet = true;
-                    foreach (var nc in n.MetLists.CheckIdList)
-                    {
-                        foreach (var c in Notifications.CheckList.Where(c => c.Id == nc.Id))
-                        {
-                            var checkFailed = CheckExcludes(c);
-                            excludesMet = (checkFailed == null);
-                            if (excludesMet == false)
-                            {
-                                foreach (var item in checkFailed.UnmetItemList)
-                                {
-                                    AddItemToPage(page, item);
-                                }
-                                break;
-                            }
-
-                            includesMet = (c.IncludesAnyOf.Count == 0 || CheckIncludes(c) != null);
-                            if (includesMet == false)
-                            {
-                                foreach (var item in c.UnmetItemList)
-                                {
-                                    AddItemToPage(page, item);
-                                }
-                                break;
-                            }
-                        }
-                        if (excludesMet == false || includesMet == false)
-                            break;
-                    }
-                    if (excludesMet && includesMet)
-                    {
-                        foreach (var item in n.MetLists.ItemList)
-                        {
-                            AddItemToPage(page, item);
-                        }
-                    }
-
-                    foreach (var item in n.SuffixItemList)
-                    {
-                        AddItemToPage(page, item);
-                    }
-                }
-            }
-            else
-            {
-                NewNotificationPageCount = 0;
-                if (AreNotificationPagesVisible)
-                {
-                    // Reports notifications are not available.
-                    var channelName = UpdateManager.ChannelName == "" ? "None" : UpdateManager.ChannelName;
-                    var today = DateTime.Now.Date;
-                    new NTitleControl(page, 1, 1, $"{today:dd-MMM-yy}", "Notifications are not available").Add();
-                    new NRecordControl(page, "Update mode", 140, channelName).Add();
-                    new NRecordControl(page, "Installed version", 140, VersionInfo.VersionOrBuild).Add();
-
-                    new NHeadingControl(page, "Notifications are not available", "red").Add();
-                    new NTextControl(page, "Is your Internet connected?").Add();
-
-                    new NRetryControl(page, "Retry", 140, "Try again to fetch notifications", this).Add();
-                }
-            }
-            NotificationPageList.Add(page);
-        }
-
-        /// <summary>
-        /// Returns any check that fails.
-        /// </summary>
-        /// <param name="check"></param>
-        /// <returns></returns>
-        private Check CheckExcludes(Check check)
-        {
-            if (check.ExcludesAllOf == null)
-                return null;
-
-            foreach (var c in check.ExcludesAllOf)
-            {
-                var lowerName = c.Name.ToLower();
-                var lowerValue = c.Value.ToLower();
-                if (c is Contains)
-                {
-                    switch (lowerName)
-                    {
-                        case "installed_version":
-                            if (SystemInfo.Application.Version.Contains(lowerValue))
-                                return check;
-                            break;
-                        default: // generic exclusion
-                            if (lowerName == lowerValue)
-                                return check;
-                            break;
-                    }
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Returns any check that succeeds.
-        /// </summary>
-        /// <param name="check"></param>
-        /// <returns></returns>
-        private Check CheckIncludes(Check check)
-        {
-            if (check.IncludesAnyOf == null)
-                return null;
-
-            foreach (var c in check.IncludesAnyOf)
-            {
-                var lowerName = c.Name.ToLower();
-                var lowerValue = c.Value.ToLower();
-                if (c is Contains)
-                {
-                    switch (lowerName)
-                    {
-                        case "direct3d":
-                            if (SystemInfo.Direct3DFeatureLevels.Contains(lowerValue))
-                                return check;
-                            break;
-                        default: // generic inclusion
-                            if (lowerName == lowerValue)
-                                return check;
-                            break;
-                    }
-                }
-            }
-            return null;
-        }
-
-        private void AddItemToPage(NotificationPage page, Item item)
-        {
-            if (item is Record record)
-            {
-                new NRecordControl(page, item.Label, item.Indent, record.Value).Add();
-            }
-            else if (item is Link link)
-            {
-                new NLinkControl(page, item.Label, item.Indent, link.Value, this, link.Url).Add();
-            }
-            else if (item is Update update)
-            {
-                new NUpdateControl(page, item.Label, item.Indent, update.Value, this).Add();
-            }
-            else if (item is Heading heading)
-            {
-                new NHeadingControl(page, item.Label, heading.Color).Add();
-            }
-            else if (item is Item item2)
-            {
-                new NTextControl(page, item.Label).Add();
-            }
-        }
-
-        bool IsUpdateAvailable()
-        {
-            return UpdateManager.LastUpdate != null
-                && UpdateManager.LastUpdate.Version != VersionInfo.Version;
+            return new NotificationPage(notifications, panelDetails);
         }
 
         // 3 should be enough, but is there a way to get unlimited buttons?

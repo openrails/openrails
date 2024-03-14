@@ -29,11 +29,11 @@ namespace ORTS
         public List<NDetail> NDetailList = new List<NDetail>();
         public Dictionary<int, NButtonControl> ButtonDictionary = new Dictionary<int, NButtonControl>();
         public Panel Panel;
-        private Notifications _notifications;
+        private Notifications Notifications;
 
         public NotificationPage(Notifications notifications, Panel panel)
         {
-            _notifications = notifications;
+            Notifications = notifications;
             Panel = panel;
             NButtonControl.ButtonCount = 0;
         }
@@ -59,7 +59,7 @@ namespace ORTS
                 Page = page;
             }
             public void Add()
-            {                
+            {
                 Page.NDetailList.Add(this);
             }
         }
@@ -130,7 +130,7 @@ namespace ORTS
             public static int ButtonCount = 0;
             public Button Button;
             public NButtonControl(NotificationPage notification, string legend, int width, string description, MainForm mainForm) : base(notification)
-    {
+            {
                 var buttonLeft = LeftPaddingIndented;
                 Button = new Button
                 {
@@ -183,9 +183,9 @@ namespace ORTS
         public class NLinkControl : NButtonControl
         {
             public string Url;
-            public NLinkControl(NotificationPage notification, string legend, int width, string description, MainForm mainForm, string url) 
+            public NLinkControl(NotificationPage notification, string legend, int width, string description, MainForm mainForm, string url)
             : base(notification, legend, width, description, mainForm)
-            { 
+            {
                 Url = url;
                 Page.ButtonDictionary.Add(ButtonCount, this);
                 ButtonCount++;
@@ -218,9 +218,9 @@ namespace ORTS
                 updateManager.Update();
             else if (button is NRetryControl)
             {
-                // REPLACE THIS BY  PASSING EVENT BACK TO MAINFORM
-                _notifications.Available = true;
-                _notifications.CheckNotifications();
+                // REPLACE THIS BY PASSING EVENT BACK TO MAINFORM
+                Notifications.Available = true;
+                //_notifications.CheckNotifications();
                 FlowNDetails();
             }
         }
