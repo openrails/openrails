@@ -791,6 +791,9 @@ namespace ORTS
                 // close this dialog
                 DialogResult = DialogResult.OK;
 
+                setCursorToDefaultCursor();
+                ClosingBlocked = false;
+
                 return;
             }
 
