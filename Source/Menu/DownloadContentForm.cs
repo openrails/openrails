@@ -775,7 +775,7 @@ namespace ORTS
                     mainForm.comboBoxStartAt.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartAt, route.Start.StartingAt);
                     mainForm.comboBoxHeadTo.SelectedIndex = determineSelectedIndex(mainForm.comboBoxHeadTo, route.Start.HeadingTo);
 
-                    mainForm.comboBoxStartTime.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartTime, route.Start.Time);
+                    mainForm.comboBoxStartTime.Text = route.Start.Time;
                     mainForm.comboBoxStartSeason.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartSeason, route.Start.Season);
                     mainForm.comboBoxStartWeather.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartWeather, route.Start.Weather);
                 }
@@ -790,6 +790,9 @@ namespace ORTS
 
                 // close this dialog
                 DialogResult = DialogResult.OK;
+
+                setCursorToDefaultCursor();
+                ClosingBlocked = false;
 
                 return;
             }
@@ -880,7 +883,23 @@ namespace ORTS
             }
             else
             {
-                throw new StartNotFound(Catalog.GetStringFmt(compareWith));
+                if (classOfItem == "Route")
+                {
+                    // if a route is not found and amount of routes is 1
+                    // then default to this one and only route
+                    if (comboBox.Items.Count == 1)
+                    {
+                        index = 0;
+                    }
+                    else
+                    {
+                        throw new StartNotFound(Catalog.GetStringFmt(compareWith));
+                    }
+                }
+                else
+                {
+                    throw new StartNotFound(Catalog.GetStringFmt(compareWith));
+                }
             }
 
             return index;
