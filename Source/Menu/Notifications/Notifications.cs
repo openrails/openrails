@@ -24,7 +24,6 @@ namespace ORTS
     {
         public List<Notification> NotificationList = new List<Notification>();
         public List<Check> CheckList = new List<Check>();
-        public bool Available { get; set; } = true;
     }
 
     class JsonInput

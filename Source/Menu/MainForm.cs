@@ -325,6 +325,14 @@ namespace ORTS
             });
         }
 
+        // Event raised by Retry button in NotificationPages so user can retry updates following an error notification.
+        public event EventHandler CheckUpdatesAgain;
+
+        public virtual void OnCheckUpdatesAgain(EventArgs e)
+        {
+            CheckForUpdate();
+        }
+
         void LoadLanguage()
         {
             if (Settings.Language.Length > 0)
@@ -1524,7 +1532,7 @@ namespace ORTS
 
         public NotificationPage CreateNotificationPage(Notifications notifications)
         {
-            return new NotificationPage(notifications, panelDetails);
+            return new NotificationPage(this, panelDetails);
         }
 
         // 3 should be enough, but is there a way to get unlimited buttons?
@@ -1540,6 +1548,7 @@ namespace ORTS
         {
             GetCurrentNotificationPage().DoButton(UpdateManager, 2);
         }
+
         #endregion NotificationPages
     }
 }

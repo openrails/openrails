@@ -29,11 +29,11 @@ namespace ORTS
         public List<NDetail> NDetailList = new List<NDetail>();
         public Dictionary<int, NButtonControl> ButtonDictionary = new Dictionary<int, NButtonControl>();
         public Panel Panel;
-        private Notifications Notifications;
+        private MainForm MainForm; // Needed so the Retry button can raise an event which the form can catch.
 
-        public NotificationPage(Notifications notifications, Panel panel)
+        public NotificationPage(MainForm mainForm, Panel panel)
         {
-            Notifications = notifications;
+            MainForm = mainForm;
             Panel = panel;
             NButtonControl.ButtonCount = 0;
         }
@@ -58,6 +58,10 @@ namespace ORTS
             {
                 Page = page;
             }
+
+            /// <summary>
+            /// Use as "new NTextControl(NotificationPage, "text").Add();"
+            /// </summary>
             public void Add()
             {
                 Page.NDetailList.Add(this);
@@ -69,7 +73,7 @@ namespace ORTS
         /// </summary>
         public class NTitleControl : NDetail
         {
-            public NTitleControl(NotificationPage notification, int current, int total, string date, string text) : base(notification)
+            public NTitleControl(NotificationPage page, int current, int total, string date, string text) : base(page)
             {
                 var title = $"Notification {current}/{total}: {date} - {text}";
                 var left = LeftPadding;
@@ -80,15 +84,15 @@ namespace ORTS
                     Font = new Font(Page.Panel.Font, FontStyle.Bold),
                     TextAlign = ContentAlignment.BottomLeft,
                     Height = TitleHeight,
-                    Width = Page.Panel.Width - ScrollBarWidth - left,
+                    Width = page.Panel.Width - ScrollBarWidth - left,
                     Left = LeftPadding
                 };
-                Page.Panel.Controls.Add(Control);
+                page.Panel.Controls.Add(Control);
             }
         }
         public class NHeadingControl : NDetail
         {
-            public NHeadingControl(NotificationPage notification, string text, string colorName = "black") : base(notification)
+            public NHeadingControl(NotificationPage page, string text, string colorName = "black") : base(page)
             {
                 var color = Color.FromName(colorName);
                 var left = LeftPadding;
@@ -100,16 +104,16 @@ namespace ORTS
                     Font = new Font(Page.Panel.Font, FontStyle.Bold),
                     TextAlign = ContentAlignment.BottomLeft,
                     Height = HeadingHeight,
-                    Width = Page.Panel.Width - ScrollBarWidth - left,
+                    Width = page.Panel.Width - ScrollBarWidth - left,
                     Left = left,
                     Top = TopPadding,
                 };
-                Page.Panel.Controls.Add(Control);
+                page.Panel.Controls.Add(Control);
             }
         }
         public class NTextControl : NDetail
         {
-            public NTextControl(NotificationPage notification, string text) : base(notification)
+            public NTextControl(NotificationPage page, string text) : base(page)
             {
                 var left = LeftPaddingIndented;
                 Control = new Label
@@ -119,17 +123,17 @@ namespace ORTS
                     Font = new Font(Page.Panel.Font, FontStyle.Regular),
                     TextAlign = ContentAlignment.BottomLeft,
                     Height = TextHeight,
-                    Width = Page.Panel.Width - ScrollBarWidth - left,
+                    Width = page.Panel.Width - ScrollBarWidth - left,
                     Left = left,
                 };
-                Page.Panel.Controls.Add(Control);
+                page.Panel.Controls.Add(Control);
             }
         }
         public class NButtonControl : NDetail
         {
             public static int ButtonCount = 0;
             public Button Button;
-            public NButtonControl(NotificationPage notification, string legend, int width, string description, MainForm mainForm) : base(notification)
+            public NButtonControl(NotificationPage page, string legend, int width, string description, MainForm mainForm) : base(page)
             {
                 var buttonLeft = LeftPaddingIndented;
                 Button = new Button
@@ -173,39 +177,39 @@ namespace ORTS
                     Font = new Font(Page.Panel.Font, FontStyle.Regular),
                     TextAlign = ContentAlignment.MiddleLeft,
                     Height = ButtonHeight,
-                    Width = Page.Panel.Width - ScrollBarWidth - labelLeft,
+                    Width = page.Panel.Width - ScrollBarWidth - labelLeft,
                     Top = TopPadding,
                     Left = labelLeft
                 };
-                Page.Panel.Controls.Add(Control);
+                page.Panel.Controls.Add(Control);
             }
         }
         public class NLinkControl : NButtonControl
         {
             public string Url;
-            public NLinkControl(NotificationPage notification, string legend, int width, string description, MainForm mainForm, string url)
-            : base(notification, legend, width, description, mainForm)
+            public NLinkControl(NotificationPage page, string legend, int width, string description, MainForm mainForm, string url)
+            : base(page, legend, width, description, mainForm)
             {
                 Url = url;
-                Page.ButtonDictionary.Add(ButtonCount, this);
+                page.ButtonDictionary.Add(ButtonCount, this);
                 ButtonCount++;
             }
         }
         public class NUpdateControl : NButtonControl
         {
-            public NUpdateControl(NotificationPage notification, string legend, int width, string description, MainForm mainForm)
-            : base(notification, legend, width, description, mainForm)
+            public NUpdateControl(NotificationPage page, string legend, int width, string description, MainForm mainForm)
+            : base(page, legend, width, description, mainForm)
             {
-                Page.ButtonDictionary.Add(ButtonCount, this);
+                page.ButtonDictionary.Add(ButtonCount, this);
                 ButtonCount++;
             }
         }
         public class NRetryControl : NButtonControl
         {
-            public NRetryControl(NotificationPage notification, string legend, int width, string description, MainForm mainForm)
-            : base(notification, legend, width, description, mainForm)
+            public NRetryControl(NotificationPage page, string legend, int width, string description, MainForm mainForm)
+            : base(page, legend, width, description, mainForm)
             {
-                Page.ButtonDictionary.Add(ButtonCount, this);
+                page.ButtonDictionary.Add(ButtonCount, this);
                 ButtonCount++;
             }
         }
@@ -218,10 +222,7 @@ namespace ORTS
                 updateManager.Update();
             else if (button is NRetryControl)
             {
-                // REPLACE THIS BY PASSING EVENT BACK TO MAINFORM
-                Notifications.Available = true;
-                //_notifications.CheckNotifications();
-                FlowNDetails();
+                MainForm.OnCheckUpdatesAgain(EventArgs.Empty);
             }
         }
 
@@ -229,13 +230,13 @@ namespace ORTS
         {
             public Label Field;
 
-            public NRecordControl(NotificationPage notification, string label, int width, string field) : base(notification)
+            public NRecordControl(NotificationPage page, string label, int width, string field) : base(page)
             {
                 Control = new Label
                 {
                     Text = label + ":",
                     UseMnemonic = false,
-                    Font = new Font(Page.Panel.Font, FontStyle.Bold),
+                    Font = new Font(page.Panel.Font, FontStyle.Bold),
                     TextAlign = ContentAlignment.BottomRight,
                     Width = width,
                     Height = RecordHeight,
@@ -249,9 +250,9 @@ namespace ORTS
                 {
                     Text = field,
                     UseMnemonic = false,
-                    Font = new Font(Page.Panel.Font, FontStyle.Regular),
+                    Font = new Font(page.Panel.Font, FontStyle.Regular),
                     TextAlign = ContentAlignment.BottomLeft,
-                    Width = Page.Panel.Width - ScrollBarWidth - left,
+                    Width = page.Panel.Width - ScrollBarWidth - left,
                     Height = RecordHeight,
                     Left = left,
                     Top = TopPadding

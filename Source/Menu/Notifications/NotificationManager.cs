@@ -20,9 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Orts.Formats.OR;
 using ORTS.Common;
 using ORTS.Updater;
 using static ORTS.Common.SystemInfo;
@@ -42,7 +40,9 @@ namespace ORTS
 
         public Notifications Notifications;
         public List<NotificationPage> PageList = new List<NotificationPage>();
-        private MainForm MainForm;
+        private Exception Error;
+
+        private MainForm MainForm; // Needed so we can add controls to the NotificationPage
         private UpdateManager UpdateManager;
 
         public NotificationManager(MainForm mainForm, UpdateManager updateManager) 
@@ -56,16 +56,17 @@ namespace ORTS
         {
             try
             {
+                Error = null;
                 Notifications = GetNotifications();
-                Notifications.Available = true;
                 DropUnusedUpdateNotifications();
                 ReplaceParameters();
 
                 PopulatePageList();
+                ArePagesVisible = false;
             }
             catch (WebException ex)
             {
-                Notifications.Available = false;
+                Error = ex;
             }
         }
 
@@ -118,76 +119,19 @@ namespace ORTS
         /// </summary>
         void SetUpdateNotificationPage()
         {
-            NewPageCount = (IsUpdateAvailable()) ? 1 : 0;
             MainForm.UpdateNotificationPageAlert();
             PageList.Clear();
             var page = MainForm.CreateNotificationPage(Notifications);
 
-            if (Notifications.Available)
-            {
-                NewPageCount = 1;
-                if (ArePagesVisible)
-                {
-                    var list = Notifications.NotificationList;
-                    var n = list[Index];
-
-                    new NTitleControl(page, Index + 1, list.Count, n.Date, n.Title).Add();
-
-                    foreach (var item in n.PrefixItemList)
-                    {
-                        AddItemToPage(page, item);
-                    }
-
-                    // Check constraints
-                    var excludesMet = true;
-                    var includesMet = true;
-                    foreach (var nc in n.MetLists.CheckIdList)
-                    {
-                        foreach (var c in Notifications.CheckList.Where(c => c.Id == nc.Id))
-                        {
-                            var checkFailed = CheckExcludes(c);
-                            excludesMet = (checkFailed == null);
-                            if (excludesMet == false)
-                            {
-                                foreach (var item in checkFailed.UnmetItemList)
-                                {
-                                    AddItemToPage(page, item);
-                                }
-                                break;
-                            }
-
-                            includesMet = (c.IncludesAnyOf.Count == 0 || CheckIncludes(c) != null);
-                            if (includesMet == false)
-                            {
-                                foreach (var item in c.UnmetItemList)
-                                {
-                                    AddItemToPage(page, item);
-                                }
-                                break;
-                            }
-                        }
-                        if (excludesMet == false || includesMet == false)
-                            break;
-                    }
-                    if (excludesMet && includesMet)
-                    {
-                        foreach (var item in n.MetLists.ItemList)
-                        {
-                            AddItemToPage(page, item);
-                        }
-                    }
-
-                    foreach (var item in n.SuffixItemList)
-                    {
-                        AddItemToPage(page, item);
-                    }
-                }
-            }
-            else
+            if (UpdateManager.LastCheckError != null || Error != null)
             {
                 NewPageCount = 0;
-                if (ArePagesVisible)
+                //if (ArePagesVisible)
                 {
+                    var message = (UpdateManager.LastCheckError != null) 
+                        ? UpdateManager.LastCheckError.Message
+                        : Error.Message;
+
                     // Reports notifications are not available.
                     var channelName = UpdateManager.ChannelName == "" ? "None" : UpdateManager.ChannelName;
                     var today = DateTime.Now.Date;
@@ -196,19 +140,77 @@ namespace ORTS
                     new NRecordControl(page, "Installed version", 140, VersionInfo.VersionOrBuild).Add();
 
                     new NHeadingControl(page, "Notifications are not available", "red").Add();
+                    new NTextControl(page, $"Error: {message}").Add();
                     new NTextControl(page, "Is your Internet connected?").Add();
 
                     new NRetryControl(page, "Retry", 140, "Try again to fetch notifications", MainForm).Add();
+                    PageList.Add(page);
                 }
+                return;
+            }
+
+            NewPageCount = 1;
+            var list = Notifications.NotificationList;
+            var n = list[Index];
+
+            new NTitleControl(page, Index + 1, list.Count, n.Date, n.Title).Add();
+
+            foreach (var item in n.PrefixItemList)
+            {
+                AddItemToPage(page, item);
+            }
+
+            // Check constraints
+            var excludesMet = true;
+            var includesMet = true;
+            foreach (var nc in n.MetLists.CheckIdList)
+            {
+                foreach (var c in Notifications.CheckList.Where(c => c.Id == nc.Id))
+                {
+                    var checkFailed = CheckExcludes(c);
+                    excludesMet = (checkFailed == null);
+                    if (excludesMet == false)
+                    {
+                        foreach (var item in checkFailed.UnmetItemList)
+                        {
+                            AddItemToPage(page, item);
+                        }
+                        break;
+                    }
+
+                    includesMet = (c.IncludesAnyOf.Count == 0 || CheckIncludes(c) != null);
+                    if (includesMet == false)
+                    {
+                        foreach (var item in c.UnmetItemList)
+                        {
+                            AddItemToPage(page, item);
+                        }
+                        break;
+                    }
+                }
+                if (excludesMet == false || includesMet == false)
+                    break;
+            }
+            if (excludesMet && includesMet)
+            {
+                foreach (var item in n.MetLists.ItemList)
+                {
+                    AddItemToPage(page, item);
+                }
+            }
+
+            foreach (var item in n.SuffixItemList)
+            {
+                AddItemToPage(page, item);
             }
             PageList.Add(page);
         }
 
-        private bool IsUpdateAvailable()
-        {
-            return UpdateManager.LastUpdate != null
-                && UpdateManager.LastUpdate.Version != VersionInfo.Version;
-        }
+        //private bool IsUpdateAvailable()
+        //{
+        //    return UpdateManager.LastUpdate != null
+        //        && UpdateManager.LastUpdate.Version != VersionInfo.Version;
+        //}
 
         private void AddItemToPage(NotificationPage page, Item item)
         {
