@@ -883,7 +883,23 @@ namespace ORTS
             }
             else
             {
-                throw new StartNotFound(Catalog.GetStringFmt(compareWith));
+                if (classOfItem == "Route")
+                {
+                    // if a route is not found and amount of routes is 1
+                    // then default to this one and only route
+                    if (comboBox.Items.Count == 1)
+                    {
+                        index = 0;
+                    }
+                    else
+                    {
+                        throw new StartNotFound(Catalog.GetStringFmt(compareWith));
+                    }
+                }
+                else
+                {
+                    throw new StartNotFound(Catalog.GetStringFmt(compareWith));
+                }
             }
 
             return index;
