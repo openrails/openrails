@@ -316,11 +316,6 @@ namespace ORTS
                 return null;
             }, _ =>
             {
-                if (UpdateManager.LastCheckError != null)
-                {
-                    linkLabelUpdate.Text = catalog.GetString("Update check failed");
-                    linkLabelChangeLog.Visible = true;
-                }
                 NotificationManager.CheckNotifications();
             });
         }
@@ -511,27 +506,6 @@ namespace ORTS
         #endregion
 
         #region Misc. buttons and options
-        void linkLabelUpdate_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            if (UpdateManager.LastCheckError != null)
-            {
-                MessageBox.Show(catalog.GetStringFmt("The update check failed due to an error:\n\n{0}", UpdateManager.LastCheckError), Application.ProductName);
-                return;
-            }
-
-            UpdateManager.Update();
-
-            if (UpdateManager.LastUpdateError != null)
-            {
-                MessageBox.Show(catalog.GetStringFmt("The update failed due to an error:\n\n{0}", UpdateManager.LastUpdateError), Application.ProductName);
-                return;
-            }
-        }
-
-        void linkLabelChangeLog_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            Process.Start(UpdateManager.ChangeLogLink);
-        }
 
         void buttonTools_Click(object sender, EventArgs e)
         {

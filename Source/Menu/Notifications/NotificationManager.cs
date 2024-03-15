@@ -126,26 +126,23 @@ namespace ORTS
             if (UpdateManager.LastCheckError != null || Error != null)
             {
                 NewPageCount = 0;
-                //if (ArePagesVisible)
-                {
-                    var message = (UpdateManager.LastCheckError != null) 
-                        ? UpdateManager.LastCheckError.Message
-                        : Error.Message;
+                var message = (UpdateManager.LastCheckError != null) 
+                    ? UpdateManager.LastCheckError.Message
+                    : Error.Message;
 
-                    // Reports notifications are not available.
-                    var channelName = UpdateManager.ChannelName == "" ? "None" : UpdateManager.ChannelName;
-                    var today = DateTime.Now.Date;
-                    new NTitleControl(page, 1, 1, $"{today:dd-MMM-yy}", "Notifications are not available").Add();
-                    new NRecordControl(page, "Update mode", 140, channelName).Add();
-                    new NRecordControl(page, "Installed version", 140, VersionInfo.VersionOrBuild).Add();
+                // Reports notifications are not available.
+                var channelName = UpdateManager.ChannelName == "" ? "None" : UpdateManager.ChannelName;
+                var today = DateTime.Now.Date;
+                new NTitleControl(page, 1, 1, $"{today:dd-MMM-yy}", "Notifications are not available").Add();
+                new NRecordControl(page, "Update mode", 140, channelName).Add();
+                new NRecordControl(page, "Installed version", 140, VersionInfo.VersionOrBuild).Add();
 
-                    new NHeadingControl(page, "Notifications are not available", "red").Add();
-                    new NTextControl(page, $"Error: {message}").Add();
-                    new NTextControl(page, "Is your Internet connected?").Add();
+                new NHeadingControl(page, "Notifications are not available", "red").Add();
+                new NTextControl(page, $"Error: {message}").Add();
+                new NTextControl(page, "Is your Internet connected?").Add();
 
-                    new NRetryControl(page, "Retry", 140, "Try again to fetch notifications", MainForm).Add();
-                    PageList.Add(page);
-                }
+                new NRetryControl(page, "Retry", 140, "Try again to fetch notifications", MainForm).Add();
+                PageList.Add(page);
                 return;
             }
 
@@ -206,12 +203,6 @@ namespace ORTS
             PageList.Add(page);
         }
 
-        //private bool IsUpdateAvailable()
-        //{
-        //    return UpdateManager.LastUpdate != null
-        //        && UpdateManager.LastUpdate.Version != VersionInfo.Version;
-        //}
-
         private void AddItemToPage(NotificationPage page, Item item)
         {
             if (item is Record record)
@@ -238,6 +229,7 @@ namespace ORTS
 
         /// <summary>
         /// Returns any check that fails.
+        /// (Could be extended to include other SystemInfo values.)
         /// </summary>
         /// <param name="check"></param>
         /// <returns></returns>
@@ -270,6 +262,7 @@ namespace ORTS
 
         /// <summary>
         /// Returns any check that succeeds.
+        /// (Could be extended to include other SystemInfo values.)
         /// </summary>
         /// <param name="check"></param>
         /// <returns></returns>
@@ -318,7 +311,7 @@ namespace ORTS
                 if (updateModeSetting == "" && lowerUpdateMode == "stable")
                     continue;
 
-                // Mark unused updates for deletion
+                // Mark unused updates for deletion outside loop
                 n.ToDelete = lowerUpdateMode != updateModeSetting;
             }
             Notifications.NotificationList.RemoveAll(n => n.ToDelete);

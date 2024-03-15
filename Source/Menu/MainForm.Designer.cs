@@ -95,10 +95,8 @@ namespace ORTS
             this.comboBoxTimetable = new System.Windows.Forms.ComboBox();
             this.comboBoxTimetableSet = new System.Windows.Forms.ComboBox();
             this.label15 = new System.Windows.Forms.Label();
-            this.linkLabelUpdate = new System.Windows.Forms.LinkLabel();
             this.testingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStripTools = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.linkLabelChangeLog = new System.Windows.Forms.LinkLabel();
             this.contextMenuStripDocuments = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.pbNotificationsNone = new System.Windows.Forms.PictureBox();
             this.pictureBoxLogo = new System.Windows.Forms.PictureBox();
@@ -846,17 +844,6 @@ namespace ORTS
             this.label15.Text = "Timetable set:";
             this.label15.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // linkLabelUpdate
-            // 
-            this.linkLabelUpdate.ImageAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.linkLabelUpdate.Location = new System.Drawing.Point(400, 9);
-            this.linkLabelUpdate.Name = "linkLabelUpdate";
-            this.linkLabelUpdate.Size = new System.Drawing.Size(200, 16);
-            this.linkLabelUpdate.TabIndex = 37;
-            this.linkLabelUpdate.UseMnemonic = false;
-            this.linkLabelUpdate.Visible = false;
-            this.linkLabelUpdate.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelUpdate_LinkClicked);
-            // 
             // testingToolStripMenuItem
             // 
             this.testingToolStripMenuItem.Name = "testingToolStripMenuItem";
@@ -871,18 +858,6 @@ namespace ORTS
             this.testingToolStripMenuItem});
             this.contextMenuStripTools.Name = "contextMenuStrip1";
             this.contextMenuStripTools.Size = new System.Drawing.Size(112, 26);
-            // 
-            // linkLabelChangeLog
-            // 
-            this.linkLabelChangeLog.Location = new System.Drawing.Point(299, 9);
-            this.linkLabelChangeLog.Name = "linkLabelChangeLog";
-            this.linkLabelChangeLog.Size = new System.Drawing.Size(100, 16);
-            this.linkLabelChangeLog.TabIndex = 39;
-            this.linkLabelChangeLog.TabStop = true;
-            this.linkLabelChangeLog.Text = "What\'s new?";
-            this.linkLabelChangeLog.UseMnemonic = false;
-            this.linkLabelChangeLog.Visible = false;
-            this.linkLabelChangeLog.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelChangeLog_LinkClicked);
             // 
             // contextMenuStripDocuments
             // 
@@ -944,13 +919,11 @@ namespace ORTS
             this.Controls.Add(this.lblNotificationCount);
             this.Controls.Add(this.pbNotificationsSome);
             this.Controls.Add(this.pbNotificationsNone);
-            this.Controls.Add(this.linkLabelChangeLog);
             this.Controls.Add(this.panelModeTimetable);
             this.Controls.Add(this.panelModeActivity);
             this.Controls.Add(this.radioButtonModeTimetable);
             this.Controls.Add(this.radioButtonModeActivity);
             this.Controls.Add(this.label25);
-            this.Controls.Add(this.linkLabelUpdate);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.panelDetails);
             this.Controls.Add(this.comboBoxFolder);
@@ -1045,10 +1018,8 @@ namespace ORTS
         private System.Windows.Forms.ComboBox comboBoxTimetable;
         private System.Windows.Forms.ComboBox comboBoxTimetableSet;
         private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.LinkLabel linkLabelUpdate;
         private System.Windows.Forms.ToolStripMenuItem testingToolStripMenuItem;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripTools;
-        private System.Windows.Forms.LinkLabel linkLabelChangeLog;
         private System.Windows.Forms.Button buttonDocuments;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripDocuments;
         private System.Windows.Forms.Button buttonResumeMP;
