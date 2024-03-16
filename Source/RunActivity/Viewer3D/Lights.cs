@@ -292,8 +292,8 @@ namespace Orts.Viewer3D
             bool locomotiveFlipped = leadLocomotiveCar != null && leadLocomotiveCar.Flipped;
             bool locomotiveReverseCab = leadLocomotive != null && leadLocomotive.UsingRearCab;
             bool newCarIsReversed = Car.Flipped ^ locomotiveFlipped ^ locomotiveReverseCab;
-            bool newCarIsFirst = !Car.Lights.IgnoredConditions[1] && Car.Train == null || (locomotiveFlipped ^ locomotiveReverseCab ? Car.Train.LastCar : Car.Train.FirstCar) == Car;
-            bool newCarIsLast = !Car.Lights.IgnoredConditions[1] && Car.Train == null || (locomotiveFlipped ^ locomotiveReverseCab ? Car.Train.FirstCar : Car.Train.LastCar) == Car;
+            bool newCarIsFirst = !Car.Lights.IgnoredConditions[1] && (locomotiveFlipped ^ locomotiveReverseCab ? Car.Train?.LastCar : Car.Train?.FirstCar) == Car;
+            bool newCarIsLast = !Car.Lights.IgnoredConditions[1] && (locomotiveFlipped ^ locomotiveReverseCab ? Car.Train?.FirstCar : Car.Train?.LastCar) == Car;
             // Penalty
 			bool newPenalty = !Car.Lights.IgnoredConditions[2] && leadLocomotive != null && leadLocomotive.TrainBrakeController.EmergencyBraking;
             // Control
