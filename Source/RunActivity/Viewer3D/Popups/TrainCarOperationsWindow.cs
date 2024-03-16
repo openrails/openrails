@@ -322,8 +322,10 @@ namespace Orts.Viewer3D.Popups
                         line.AddSpace(textHeight / 2, line.RemainingHeight);
                     }
 
-                    if (LabelPositionTop.Count == 0)
+                    // Avoids crash when the PlayerTrain was changed from the Train List window
+                    if (LabelPositionTop.Count == 0 || PlayerTrain.Cars.Count != LabelPositionTop.Count)
                     {
+                        LabelPositionTop.Clear();
                         var n = scrollbox.Position.Y;// first row
                         for (var i = 0; i < PlayerTrain.Cars.Count; i++)
                         {   // Position of each row
