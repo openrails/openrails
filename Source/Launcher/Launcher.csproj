@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(BuildDotNet)' == 'true'">net6-windows</TargetFrameworks>
-    <TargetFrameworks Condition="'$(TargetFrameworks)' == ''">net20</TargetFrameworks>
+    <TargetFramework>net20</TargetFramework>
     <OutputType>WinExe</OutputType>
     <RootNamespace>ORTS</RootNamespace>
     <AssemblyName>OpenRails</AssemblyName>
