@@ -287,7 +287,7 @@ namespace Orts.Viewer3D
             // Should prevent some unneeded computation, but is a little messy. May revise in the future
             
             // Headlight
-			int newTrainHeadlight = !Car.Lights.IgnoredConditions[0] ? (Car.Train != null ? Car.Train.TrainType != Train.TRAINTYPE.STATIC ? leadLocomotiveCar.Headlight : 0 : 0) : 0;
+			int newTrainHeadlight = !Car.Lights.IgnoredConditions[0] ? (Car.Train?.TrainType != Train.TRAINTYPE.STATIC ? (leadLocomotiveCar != null ? leadLocomotiveCar.Headlight : 2) : 0) : 0;
             // Unit
             bool locomotiveFlipped = leadLocomotiveCar != null && leadLocomotiveCar.Flipped;
             bool locomotiveReverseCab = leadLocomotive != null && leadLocomotive.UsingRearCab;
@@ -320,11 +320,11 @@ namespace Orts.Viewer3D
             // Friction brakes, activation force is arbitrary
             bool newBrakeOn = !Car.Lights.IgnoredConditions[9] && Car.BrakeForceN > 250.0f;
             // Reverser: -1: reverse, 0: within 10% of neutral, 1: forwards. Automatically swaps if this car is reversed
-            int newReverserState = !Car.Lights.IgnoredConditions[10] ? ((Car.Train.MUDirection == Direction.N || Math.Abs(Car.Train.MUReverserPercent) < 10.0f) ? 0 : 
+            int newReverserState = (!Car.Lights.IgnoredConditions[10] && Car.Train != null) ? ((Car.Train.MUDirection == Direction.N || Math.Abs(Car.Train.MUReverserPercent) < 10.0f) ? 0 : 
                 Car.Train.MUDirection == Direction.Forward ? 1 : -1) * (Car.Flipped ? -1 : 1) : 0;
             // Passenger doors
-            bool newLeftDoorOpen = !Car.Lights.IgnoredConditions[11] && Car.Train.DoorState(DoorSide.Left) != DoorState.Closed;
-            bool newRightDoorOpen = !Car.Lights.IgnoredConditions[11] && Car.Train.DoorState(DoorSide.Right) != DoorState.Closed;
+            bool newLeftDoorOpen = !Car.Lights.IgnoredConditions[11] && Car.Train?.DoorState(DoorSide.Left) != DoorState.Closed;
+            bool newRightDoorOpen = !Car.Lights.IgnoredConditions[11] && Car.Train?.DoorState(DoorSide.Right) != DoorState.Closed;
             // Horn and bell (for flashing ditch lights)
             bool newHornOn = !Car.Lights.IgnoredConditions[12] && leadLocomotive != null && leadLocomotive.HornRecent;
             bool newBellOn = !Car.Lights.IgnoredConditions[13] && leadLocomotive != null && leadLocomotive.BellRecent;
