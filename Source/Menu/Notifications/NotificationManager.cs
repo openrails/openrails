@@ -248,13 +248,13 @@ namespace ORTS
                                 return check;
                             break;
                         case "installed_version":
-                            if (SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > 0)
+                            if (SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
                                 return check;
                             break;
                         case "system":
                             var os = SystemInfo.OperatingSystem;
                             var system = $"{os.Name} {os.Version} {os.Architecture} {os.Language} {os.Languages ?? new string[0]}";
-                            if (system.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > 0)
+                            if (system.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
                                 return check;
                             break;
                         default: // Any check that is not recognised fails.
@@ -286,13 +286,13 @@ namespace ORTS
                                 return check;
                             break;
                         case "installed_version":
-                            if (SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > 0)
+                            if (SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
                                 return check;
                             break;
                         case "system":
                             var os = SystemInfo.OperatingSystem;
                             var system = $"{os.Name} {os.Version} {os.Architecture} {os.Language} {os.Languages ?? new string[0]}";
-                            if (system.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > 0)
+                            if (system.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
                                 return check;
                             break;
                         default: // Any check that is not recognised fails.
