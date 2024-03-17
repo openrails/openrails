@@ -229,7 +229,6 @@ namespace ORTS
 
         /// <summary>
         /// Returns any check that fails.
-        /// (Could be extended to include other SystemInfo values.)
         /// </summary>
         /// <param name="check"></param>
         /// <returns></returns>
@@ -240,20 +239,26 @@ namespace ORTS
 
             foreach (var c in check.ExcludesAllOf)
             {
-                var lowerName = c.Name.ToLower();
-                var lowerValue = c.Value.ToLower();
                 if (c is Contains)
                 {
-                    switch (lowerName)
+                    switch (c.Name)
                     {
+                        case "direct3d":
+                            if (SystemInfo.Direct3DFeatureLevels.Contains(c.Value, StringComparer.OrdinalIgnoreCase))
+                                return check;
+                            break;
                         case "installed_version":
-                            if (SystemInfo.Application.Version.Contains(lowerValue))
+                            if (SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > 0)
                                 return check;
                             break;
-                        default: // generic exclusion
-                            if (lowerName == lowerValue)
+                        case "system":
+                            var os = SystemInfo.OperatingSystem;
+                            var system = $"{os.Name} {os.Version} {os.Architecture} {os.Language} {os.Languages ?? new string[0]}";
+                            if (system.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > 0)
                                 return check;
                             break;
+                        default: // Any check that is not recognised fails.
+                            return check;
                     }
                 }
             }
@@ -262,7 +267,6 @@ namespace ORTS
 
         /// <summary>
         /// Returns any check that succeeds.
-        /// (Could be extended to include other SystemInfo values.)
         /// </summary>
         /// <param name="check"></param>
         /// <returns></returns>
@@ -273,20 +277,26 @@ namespace ORTS
 
             foreach (var c in check.IncludesAnyOf)
             {
-                var lowerName = c.Name.ToLower();
-                var lowerValue = c.Value.ToLower();
                 if (c is Contains)
                 {
-                    switch (lowerName)
+                    switch (c.Name)
                     {
                         case "direct3d":
-                            if (SystemInfo.Direct3DFeatureLevels.Contains(lowerValue))
+                            if (SystemInfo.Direct3DFeatureLevels.Contains(c.Value, StringComparer.OrdinalIgnoreCase))
                                 return check;
                             break;
-                        default: // generic inclusion
-                            if (lowerName == lowerValue)
+                        case "installed_version":
+                            if (SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > 0)
                                 return check;
                             break;
+                        case "system":
+                            var os = SystemInfo.OperatingSystem;
+                            var system = $"{os.Name} {os.Version} {os.Architecture} {os.Language} {os.Languages ?? new string[0]}";
+                            if (system.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > 0)
+                                return check;
+                            break;
+                        default: // Any check that is not recognised fails.
+                            return null;
                     }
                 }
             }
