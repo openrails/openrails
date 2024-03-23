@@ -1319,7 +1319,7 @@ namespace Orts.Simulation.AIs
                 Simulator.NameDictionary.Add(train.Name.ToLower(), train);
                 if (train.TrainType == Train.TRAINTYPE.PLAYER || train.TrainType == Train.TRAINTYPE.INTENDED_PLAYER)
                 {
-                    if (AITrains[0].TrainType == Train.TRAINTYPE.PLAYER)
+                    if (AITrains.Count > 0 && AITrains[0].TrainType == Train.TRAINTYPE.PLAYER)
                         AITrains.RemoveAt(0);
                     AITrains.Insert(0, train);
                 }
