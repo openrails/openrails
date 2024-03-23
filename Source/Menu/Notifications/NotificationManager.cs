@@ -378,7 +378,9 @@ namespace ORTS
                         : UpdateManager.ChannelName;
                     break;
                 case "new_version":
-                    replacement = UpdateManager.LastUpdate == null || UpdateManager.ChannelName == ""
+                    replacement = UpdateManager.LastUpdate == null 
+                        || UpdateManager.ChannelName == ""
+                        || UpdateManager.LastUpdate.Version == SystemInfo.Application.Version
                         ? "none"
                         : UpdateManager.LastUpdate.Version;
                     break;
