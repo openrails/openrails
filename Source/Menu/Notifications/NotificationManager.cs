@@ -251,6 +251,8 @@ namespace ORTS
                             if (SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
                                 return check;
                             break;
+                        case "already updated": // ReplaceParameter() changed {{new_version}} to "already updated"
+                            break;
                         case "system":
                             var os = SystemInfo.OperatingSystem;
                             var system = $"{os.Name} {os.Version} {os.Architecture} {os.Language} {os.Languages ?? new string[0]}";
@@ -380,9 +382,10 @@ namespace ORTS
                 case "new_version":
                     replacement = UpdateManager.LastUpdate == null 
                         || UpdateManager.ChannelName == ""
-                        || UpdateManager.LastUpdate.Version == SystemInfo.Application.Version
-                        ? "none"
-                        : UpdateManager.LastUpdate.Version;
+                        ? "not available"
+                        : UpdateManager.LastUpdate.Version == SystemInfo.Application.Version
+                            ? "already updated"
+                            : UpdateManager.LastUpdate.Version;
                     break;
                 case "release_date":
                     replacement = UpdateManager.LastUpdate == null
