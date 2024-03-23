@@ -248,9 +248,8 @@ namespace ORTS
                                 return check;
                             break;
                         case "installed_version":
-                            //if (SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
-                            if ("U2024.03.20-0022".IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
-                                    return check;
+                            if (SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
+                                return check;
                             break;
                         case "system":
                             var os = SystemInfo.OperatingSystem;
