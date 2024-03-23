@@ -248,8 +248,9 @@ namespace ORTS
                                 return check;
                             break;
                         case "installed_version":
-                            if (SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
-                                return check;
+                            //if (SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
+                            if ("U2024.03.20-0022".IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
+                                    return check;
                             break;
                         case "system":
                             var os = SystemInfo.OperatingSystem;
@@ -378,7 +379,9 @@ namespace ORTS
                         : UpdateManager.ChannelName;
                     break;
                 case "new_version":
-                    replacement = UpdateManager.LastUpdate == null || UpdateManager.ChannelName == ""
+                    replacement = UpdateManager.LastUpdate == null 
+                        || UpdateManager.ChannelName == ""
+                        || UpdateManager.LastUpdate.Version == SystemInfo.Application.Version
                         ? "none"
                         : UpdateManager.LastUpdate.Version;
                     break;
