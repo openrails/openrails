@@ -1275,16 +1275,28 @@ namespace Orts.Simulation.RollingStocks
             CompressorRestartPressurePSI = locoCopy.CompressorRestartPressurePSI;
             CompressorIsMUControlled = locoCopy.CompressorIsMUControlled;
             TrainBrakePipeLeakPSIorInHgpS = locoCopy.TrainBrakePipeLeakPSIorInHgpS;
+            BrakePipeTimeFactorS = locoCopy.BrakePipeTimeFactorS;
+            BrakeServiceTimeFactorPSIpS = locoCopy.BrakeServiceTimeFactorPSIpS;
+            BrakeEmergencyTimeFactorPSIpS = locoCopy.BrakeEmergencyTimeFactorPSIpS;
+            BrakePipeChargingRatePSIorInHgpS = locoCopy.BrakePipeChargingRatePSIorInHgpS;
+            BrakePipeQuickChargingRatePSIpS = locoCopy.BrakePipeQuickChargingRatePSIpS;
             MaxMainResPressurePSI = locoCopy.MaxMainResPressurePSI;
             MainResPressurePSI = locoCopy.MaxMainResPressurePSI;
             MaximumMainReservoirPipePressurePSI = locoCopy.MaximumMainReservoirPipePressurePSI;
             MainResVolumeM3 = locoCopy.MainResVolumeM3;
             MainResChargingRatePSIpS = locoCopy.MainResChargingRatePSIpS;
+            EngineBrakeApplyRatePSIpS = locoCopy.EngineBrakeApplyRatePSIpS;
+            EngineBrakeReleaseRatePSIpS = locoCopy.EngineBrakeReleaseRatePSIpS;
             BrakePipeDischargeTimeFactor = locoCopy.BrakePipeDischargeTimeFactor;
             DriveWheelOnlyBrakes = locoCopy.DriveWheelOnlyBrakes;
             DynamicBrakeBlendingEnabled = locoCopy.DynamicBrakeBlendingEnabled;
             DynamicBrakeAvailable = locoCopy.DynamicBrakeAvailable;
             airPipeSystem = locoCopy.airPipeSystem;
+            DoesVacuumBrakeCutPower = locoCopy.DoesBrakeCutPower;
+            DoesBrakeCutPower = locoCopy.DoesBrakeCutPower;
+            BrakeCutsPowerAtBrakeCylinderPressurePSI = locoCopy.BrakeCutsPowerAtBrakeCylinderPressurePSI;
+            BrakeCutsPowerAtBrakePipePressurePSI = locoCopy.BrakeCutsPowerAtBrakePipePressurePSI;
+            BrakeRestoresPowerAtBrakePipePressurePSI = locoCopy.BrakeRestoresPowerAtBrakePipePressurePSI;
             DynamicBrakeCommandStartTime = locoCopy.DynamicBrakeCommandStartTime;
             DynamicBrakeBlendingOverride = locoCopy.DynamicBrakeBlendingOverride;
             DynamicBrakeBlendingForceMatch = locoCopy.DynamicBrakeBlendingForceMatch;
@@ -1293,6 +1305,7 @@ namespace Orts.Simulation.RollingStocks
             MainPressureUnit = locoCopy.MainPressureUnit;
             BrakeSystemPressureUnits = locoCopy.BrakeSystemPressureUnits;
             IsDriveable = copy.IsDriveable;
+            EngineOperatingProcedures = locoCopy.EngineOperatingProcedures;
 
             ThrottleController = (MSTSNotchController)locoCopy.ThrottleController.Clone();
             SteamHeatController = (MSTSNotchController)locoCopy.SteamHeatController.Clone();
@@ -1310,9 +1323,14 @@ namespace Orts.Simulation.RollingStocks
             }
             else
                 DPDynamicBrakeController = null;
+            DPSyncTrainApplication = locoCopy.DPSyncTrainApplication;
+            DPSyncTrainRelease = locoCopy.DPSyncTrainRelease;
+            DPSyncEmergency = locoCopy.DPSyncEmergency;
+            DPSyncIndependent = locoCopy.DPSyncIndependent;
 
             LocomotivePowerSupply.Copy(locoCopy.LocomotivePowerSupply);
             TrainControlSystem.Copy(locoCopy.TrainControlSystem);
+            VigilanceMonitor = locoCopy.VigilanceMonitor;
             LocomotiveName = locoCopy.LocomotiveName;
             MaxVaccuumMaxPressurePSI = locoCopy.MaxVaccuumMaxPressurePSI;
             VacuumBrakeEQFitted = locoCopy.VacuumBrakeEQFitted;
@@ -1326,6 +1344,8 @@ namespace Orts.Simulation.RollingStocks
             WaterScoopWidthM = locoCopy.WaterScoopWidthM;
             CruiseControl = locoCopy.CruiseControl?.Clone(this);
             MultiPositionControllers = locoCopy.CloneMPC(this);
+            OnLineCabRadio = locoCopy.OnLineCabRadio;
+            OnLineCabRadioURL = locoCopy.OnLineCabRadioURL;
         }
 
         /// <summary>
