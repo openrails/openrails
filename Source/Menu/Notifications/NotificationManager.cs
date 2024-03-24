@@ -89,7 +89,7 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Fetch the Notifications from https://static.openrails.org/notifications/notifications.json
+        /// Fetch the Notifications from https://static.openrails.org/notifications/menu.json
         /// </summary>
         private string GetRemoteJson()
         {
@@ -101,7 +101,7 @@ namespace ORTS
             // Helpful to supply server with data for its log file.
             client.Headers[HttpRequestHeader.UserAgent] = $"{System.Windows.Forms.Application.ProductName}/{VersionInfo.VersionOrBuild}";
 
-            return client.DownloadString(new Uri("https://wepp.co.uk/openrails/notifications.json"));
+            return client.DownloadString(new Uri("https://wepp.co.uk/openrails/notifications/menu.json"));
         }
 
         public void PopulatePageList()
@@ -241,27 +241,7 @@ namespace ORTS
             {
                 if (c is Contains)
                 {
-                    switch (c.Name)
-                    {
-                        case "direct3d":
-                            if (SystemInfo.Direct3DFeatureLevels.Contains(c.Value, StringComparer.OrdinalIgnoreCase))
-                                return check;
-                            break;
-                        case "installed_version":
-                            if (SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
-                                return check;
-                            break;
-                        case "already updated": // ReplaceParameter() changed {{new_version}} to "already updated"
-                            break;
-                        case "system":
-                            var os = SystemInfo.OperatingSystem;
-                            var system = $"{os.Name} {os.Version} {os.Architecture} {os.Language} {os.Languages ?? new string[0]}";
-                            if (system.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
-                                return check;
-                            break;
-                        default: // Any check that is not recognised fails.
-                            return check;
-                    }
+                    CheckContains(check, c);
                 }
             }
             return null;
@@ -279,28 +259,32 @@ namespace ORTS
 
             foreach (var c in check.IncludesAnyOf)
             {
-                if (c is Contains)
-                {
-                    switch (c.Name)
-                    {
-                        case "direct3d":
-                            if (SystemInfo.Direct3DFeatureLevels.Contains(c.Value, StringComparer.OrdinalIgnoreCase))
-                                return check;
-                            break;
-                        case "installed_version":
-                            if (SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
-                                return check;
-                            break;
-                        case "system":
-                            var os = SystemInfo.OperatingSystem;
-                            var system = $"{os.Name} {os.Version} {os.Architecture} {os.Language} {os.Languages ?? new string[0]}";
-                            if (system.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
-                                return check;
-                            break;
-                        default: // Any check that is not recognised fails.
-                            return null;
-                    }
-                }
+                CheckContains(check, c);
+            }
+            return null;
+        }
+
+        private Check CheckContains(Check check, Criteria c)
+        {
+            switch (c.Name)
+            {
+                case "direct3d":
+                    if (SystemInfo.Direct3DFeatureLevels.Contains(c.Value, StringComparer.OrdinalIgnoreCase))
+                        return check;
+                    break;
+                case "installed_version":
+                    if (c.Value == "none" // as Update Mode == "none"
+                    || SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
+                        return check;
+                    break;
+                case "system":
+                    var os = SystemInfo.OperatingSystem;
+                    var system = $"{os.Name} {os.Version} {os.Architecture} {os.Language} {os.Languages ?? new string[0]}";
+                    if (system.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
+                        return check;
+                    break;
+                default: // Any check that is not recognised succeeds.
+                    return null;
             }
             return null;
         }
@@ -379,13 +363,11 @@ namespace ORTS
                         ? "none"
                         : UpdateManager.ChannelName;
                     break;
-                case "new_version":
+                case "latest_version":
                     replacement = UpdateManager.LastUpdate == null 
                         || UpdateManager.ChannelName == ""
-                        ? "not available"
-                        : UpdateManager.LastUpdate.Version == SystemInfo.Application.Version
-                            ? "already updated"
-                            : UpdateManager.LastUpdate.Version;
+                        ? "none"
+                        : UpdateManager.LastUpdate.Version;
                     break;
                 case "release_date":
                     replacement = UpdateManager.LastUpdate == null
