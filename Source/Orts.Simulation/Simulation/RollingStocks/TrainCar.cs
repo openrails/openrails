@@ -583,6 +583,9 @@ namespace Orts.Simulation.RollingStocks
         protected SmoothedData CurveForceFilter = new SmoothedData(0.75f);
         public float CurveForceNFiltered;
 
+        protected SmoothedData CurveSquealAoAmRadFilter = new SmoothedData(0.75f);
+        public float CurveSquealAoAmRadFiltered;
+
         public float TunnelForceN;  // Resistive force due to tunnel, in Newtons
         public float FrictionForceN; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
         public float BrakeForceN;    // current braking force applied to slow train (Newtons) - will be impacted by wheel/rail friction
@@ -969,6 +972,9 @@ namespace Orts.Simulation.RollingStocks
             }
 
             AngleOfAttackmRad = GetAngleofAttackmRad();
+
+            CurveSquealAoAmRadFilter.Update(elapsedClockSeconds, AngleOfAttackmRad);
+            CurveSquealAoAmRadFiltered = CurveSquealAoAmRadFilter.SmoothedValue;
 
             UpdateCurveSpeedLimit(); // call this first as it will provide inputs for the curve force.
             UpdateCurveForce(elapsedClockSeconds);
@@ -2265,6 +2271,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(CarHeatCurrentCompartmentHeatJ);
             outf.Write(CarSteamHeatMainPipeSteamPressurePSI);
             outf.Write(CarHeatCompartmentHeaterOn);
+            outf.Write(CurveSquealAoAmRadFiltered);
         }
 
         // Game restore
@@ -2289,6 +2296,8 @@ namespace Orts.Simulation.RollingStocks
             CarSteamHeatMainPipeSteamPressurePSI = inf.ReadSingle();
             CarHeatCompartmentHeaterOn = inf.ReadBoolean();
             FreightAnimations?.LoadDataList?.Clear();
+            CurveSquealAoAmRadFiltered = inf.ReadSingle();
+            CurveSquealAoAmRadFilter.ForceSmoothValue(CurveSquealAoAmRadFiltered);
         }
 
         //================================================================================================//
