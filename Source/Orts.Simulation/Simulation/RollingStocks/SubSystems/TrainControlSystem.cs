@@ -280,8 +280,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 };
 
                 // TrainControlSystem getters
-                Script.IsTrainControlEnabled = () => Locomotive == Locomotive.Train.LeadLocomotive && Locomotive.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING;
-                Script.IsAutopiloted = () => Locomotive == Simulator.PlayerLocomotive && Locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING;
+                Script.IsTrainControlEnabled = () => Locomotive == Locomotive.Train.LeadLocomotive && Locomotive.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Locomotive.Train.Autopilot;
+                Script.IsAutopiloted = () => Locomotive == Simulator.PlayerLocomotive && (Locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || Locomotive.Train.Autopilot);
                 Script.IsAlerterEnabled = () =>
                 {
                     return Simulator.Settings.Alerter
@@ -822,6 +822,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 case Train.TRAINTYPE.AI_AUTOGENERATE:
                 case Train.TRAINTYPE.REMOTE:
                 case Train.TRAINTYPE.AI_INCORPORATED:
+                    if (Locomotive.Train.Autopilot && Locomotive == Simulator.PlayerLocomotive)
+                        Locomotive.Train.UpdatePlayerTrainData();
                     DisableRestrictions();
                     break;
 

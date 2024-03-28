@@ -276,7 +276,7 @@ namespace Orts.Viewer3D
             if (Car.Lights == null)
                 return false;
 
-			Debug.Assert(Viewer.PlayerTrain.LeadLocomotive == Viewer.PlayerLocomotive ||Viewer.PlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING ||
+			Debug.Assert(Viewer.PlayerTrain.LeadLocomotive == Viewer.PlayerLocomotive ||Viewer.PlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || Viewer.PlayerTrain.Autopilot ||
                 Viewer.PlayerTrain.TrainType == Train.TRAINTYPE.REMOTE || Viewer.PlayerTrain.TrainType == Train.TRAINTYPE.STATIC, "PlayerTrain.LeadLocomotive must be PlayerLocomotive.");
 			var leadLocomotiveCar = Car.Train?.LeadLocomotive;
             if (leadLocomotiveCar == null && Car.Train?.Cars[0] is MSTSLocomotive) // AI trains have no lead locomotive

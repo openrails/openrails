@@ -36,6 +36,7 @@ using Orts.Simulation;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.Timetables;
 using Orts.Viewer3D.Popups;
 using Orts.Viewer3D.Processes;
 using Orts.Viewer3D.RollingStock;
@@ -460,7 +461,7 @@ namespace Orts.Viewer3D
             if (PlayerLocomotive == null) PlayerLocomotive = Simulator.InitialPlayerLocomotive();
             SelectedTrain = PlayerTrain;
             PlayerTrain.InitializePlayerTrainData();
-            if (PlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+            if (PlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING  || PlayerTrain.Autopilot)
             {
                 Simulator.Trains[0].LeadLocomotive = null;
                 Simulator.Trains[0].LeadLocomotiveIndex = -1;
@@ -1005,7 +1006,7 @@ namespace Orts.Viewer3D
             {
                 if (PlayerLocomotive.ThrottlePercent >= 1
                     || Math.Abs(PlayerLocomotive.SpeedMpS) > 1
-                    || !IsReverserInNeutral(PlayerLocomotive))
+                    || !IsReverserInNeutral(PlayerLocomotive) && !((PlayerLocomotive.Train.Autopilot) || PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING))
                 {
                     Simulator.Confirmer.Warning(CabControl.ChangeCab, CabSetting.Warn2);
                 }
@@ -1234,22 +1235,23 @@ namespace Orts.Viewer3D
 
             if (UserInput.IsPressed(UserCommand.GameAutopilotMode))
             {
-                if (PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+                var playerTrain = PlayerLocomotive.Train;
+                if (playerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || playerTrain is TTTrain && playerTrain.Autopilot)
                 {
-                    var success = ((AITrain)PlayerLocomotive.Train).SwitchToPlayerControl();
+                    var success = ((AITrain)playerTrain).SwitchToPlayerControl();
                     if (success)
                     {   
                         Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Switched to player control"));
                         DbfEvalAutoPilot = false;//Debrief eval
                     }
                 }
-                else if (PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN)
+                else if (playerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || playerTrain is TTTrain && !playerTrain.Autopilot)
                 {
-                    if (PlayerLocomotive.Train.ControlMode == Train.TRAIN_CONTROL.MANUAL)
+                    if (playerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL)
                         Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You can't switch from manual to autopilot mode"));
                     else
                     {
-                        var success = ((AITrain)PlayerLocomotive.Train).SwitchToAutopilotControl();
+                        var success = ((AITrain)playerTrain).SwitchToAutopilotControl();
                         if (success)
                         {
                             Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Switched to autopilot"));
@@ -1691,9 +1693,11 @@ namespace Orts.Viewer3D
             ThreeDimCabCamera.ChangeCab(Simulator.PlayerLocomotive);
             HeadOutForwardCamera.ChangeCab(Simulator.PlayerLocomotive);
             HeadOutBackCamera.ChangeCab(Simulator.PlayerLocomotive);
-            if (!Simulator.PlayerLocomotive.HasFront3DCab && !Simulator.PlayerLocomotive.HasRear3DCab)
+            if (!Simulator.PlayerLocomotive.HasFront3DCab && !Simulator.PlayerLocomotive.HasRear3DCab &&
+                (Simulator.PlayerLocomotive.HasFrontCab || Simulator.PlayerLocomotive.HasRearCab))
                 CabCamera.Activate(); // If you need anything else here the cameras should check for it.
-            else ThreeDimCabCamera.Activate();
+            else if (Simulator.PlayerLocomotive.HasFront3DCab || Simulator.PlayerLocomotive.HasRear3DCab)
+                ThreeDimCabCamera.Activate();
             SetCommandReceivers();
         }
 
