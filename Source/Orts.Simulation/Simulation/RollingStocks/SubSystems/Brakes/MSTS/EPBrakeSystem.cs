@@ -97,7 +97,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
                 else
                 {
-                    demandedAutoCylPressurePSI = Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * MaxTripleValveCylPressurePSI;
+                    demandedAutoCylPressurePSI = Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * ServiceMaxCylPressurePSI;
+                    if (TwoStageLowPressureActive && demandedAutoCylPressurePSI > TwoStageLowPressurePSI) // Force EP system to respect two stage braking
+                        demandedAutoCylPressurePSI = TwoStageLowPressurePSI;
                     HoldingValve = AutoCylPressurePSI <= demandedAutoCylPressurePSI ? ValveState.Lap : ValveState.Release;
                 }
                 
@@ -105,12 +107,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                 if (AutoCylPressurePSI < demandedAutoCylPressurePSI && !Car.WheelBrakeSlideProtectionActive)
                 {
-                    float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
-                    if (BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio < AutoCylPressurePSI + dp)
-                        dp = (BrakeLine2PressurePSI - AutoCylPressurePSI) / (1 + AuxBrakeLineVolumeRatio / AuxCylVolumeRatio);
+                    float dp = elapsedClockSeconds * ServiceApplicationRatePSIpS;
+                    if (BrakeLine2PressurePSI - dp * CylBrakeLineVolumeRatio < AutoCylPressurePSI + dp)
+                        dp = (BrakeLine2PressurePSI - AutoCylPressurePSI) / (1 + CylBrakeLineVolumeRatio);
                     if (dp > demandedAutoCylPressurePSI - AutoCylPressurePSI)
                         dp = demandedAutoCylPressurePSI - AutoCylPressurePSI;
-                    BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio / AuxCylVolumeRatio;
+                    BrakeLine2PressurePSI -= dp * CylBrakeLineVolumeRatio;
                     AutoCylPressurePSI += dp;
                 }
             }

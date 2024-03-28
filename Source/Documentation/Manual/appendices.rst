@@ -90,7 +90,9 @@ Pressure                psi             air         psi                         
 \                                                   kPa                         KiloPascal
 \                       inHg            vacuum      inHg                        inches of mercury 
 Pressure Rate of Change psi/s                       psi/s
+\                                                   psi/min
 \                                                   bar/s
+\                                                   bar/min
 \                                                   kpa/s
 \                                                   inHg/s
 Energy Density          kJ/kg                       kJ/kg                       kiloJoule per kilogram
