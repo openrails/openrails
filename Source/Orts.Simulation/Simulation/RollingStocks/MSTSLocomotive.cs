@@ -2067,7 +2067,6 @@ namespace Orts.Simulation.RollingStocks
 
             TrainControlSystem.Update(elapsedClockSeconds);
 
-            LocomotivePowerSupply?.Update(elapsedClockSeconds);
             UpdateControllers(elapsedClockSeconds);
 
             // Train Heading - only check the lead locomotive otherwise flipped locomotives further in consist will overwrite the train direction
@@ -2224,6 +2223,9 @@ namespace Orts.Simulation.RollingStocks
 
                     //Force to display
                     FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
+
+                    // Only update power supply for player driven locomotives
+                    LocomotivePowerSupply?.Update(elapsedClockSeconds);
                     break;
                 default:
                     break;
