@@ -2283,7 +2283,12 @@ namespace Orts.Viewer3D
                         if (String.IsNullOrEmpty(sharedShape.ReferencePath))
                             material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, imageName), (int)options, texture.MipMapLODBias);
                         else
-                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName), (int)options, texture.MipMapLODBias);
+                        {
+                            if (imageName.ToUpper().Contains(nameof(CABViewControlTypes.ORTS_ETCS)))
+                                material = sharedShape.Viewer.MaterialManager.Load("Screen", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, Helpers.TextureFlags.None, sharedShape.ReferencePath, imageName));
+                            else
+                                material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName), (int)options, texture.MipMapLODBias);
+                        }
                     }
                     else
                     {
