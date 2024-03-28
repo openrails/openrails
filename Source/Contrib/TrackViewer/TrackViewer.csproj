@@ -27,6 +27,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\..\3rdPartyLibs\openal-soft\Win32\OpenAL32.dll">
+      <Link>Native\X86\OpenAL32.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\3rdPartyLibs\openal-soft\Win64\OpenAL32.dll">
+      <Link>Native\X64\OpenAL32.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\activeBroken.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -89,6 +97,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.355802">
       <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.49-beta">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.0.1641" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />

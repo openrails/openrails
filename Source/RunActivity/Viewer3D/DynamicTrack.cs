@@ -129,6 +129,7 @@ namespace Orts.Viewer3D
         Viewer Viewer;
         WorldPosition worldPosition;
         public DynamicTrackPrimitive Primitive;
+        public readonly int Uid;
 
         public DynamicTrackViewer(Viewer viewer, DyntrackObj dtrack, WorldPosition position, WorldPosition endPosition)
         {
@@ -145,12 +146,14 @@ namespace Orts.Viewer3D
 
             // Instantiate classes
             Primitive = new DynamicTrackPrimitive(Viewer, dtrack, worldPosition, endPosition);
+            Uid = (int)dtrack.UID;
         }
 
-        public DynamicTrackViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition)
+        public DynamicTrackViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition, int uid)
         {
             Viewer = viewer;
             worldPosition = position;
+            Uid = uid;
         }
 
         /// <summary>

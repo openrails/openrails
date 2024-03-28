@@ -1227,6 +1227,14 @@ namespace ORTS.TrackViewer.UserInterface
             menuPgupExtendsPath.IsChecked = menuPgupExtendsPath2.IsChecked;
             MenuPgupExtendsPathAction_Click(null, null);
         }
+
+        public void MenuSceneWindow_Click(object sender, RoutedEventArgs e)
+        {
+            if (trackViewer.CurrentRoute == null)
+                return;
+            trackViewer.InitializeSceneView(null);
+            trackViewer.ShowSceneView();
+        }
     }
 
     #region IPreferenceChanger

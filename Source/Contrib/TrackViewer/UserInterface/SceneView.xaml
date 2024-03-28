@@ -1,0 +1,444 @@
+﻿<Window x:Class="ORTS.TrackViewer.UserInterface.SceneView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:System="clr-namespace:System;assembly=mscorlib"
+        xmlns:local="clr-namespace:ORTS.TrackViewer.UserInterface"
+        mc:Ignorable="d"
+        Title="Scene View" SizeToContent="WidthAndHeight">
+    <Window.CommandBindings>
+        <CommandBinding Command="Undo" Executed="UndoCommand" CanExecute="UndoRedoCanExecute"/>
+        <CommandBinding Command="Redo" Executed="RedoCommand" CanExecute="UndoRedoCanExecute"/>
+        <CommandBinding Command="Stop" Executed="CancelCommand"/>
+        <CommandBinding Command="{x:Static local:SceneView.Rotate}" Executed="RotateCommand"/>
+        <CommandBinding Command="{x:Static local:SceneView.Move}" Executed="MoveCommand"/>
+        <CommandBinding Command="{x:Static local:SceneView.MoveHandle}" Executed="MoveHandleCommand"/>
+        <CommandBinding Command="{x:Static local:SceneView.ToggleOrtho}" Executed="ToggleOrthoCommand"/>
+        <CommandBinding Command="{x:Static local:SceneView.ToggleElevationLock}" Executed="ToggleElevationLockCommand"/>
+        <CommandBinding Command="{x:Static local:SceneView.ToggleObjectSnap}" Executed="ToggleObjectSnapCommand"/>
+    </Window.CommandBindings>
+    <Window.InputBindings>
+        <KeyBinding Key="Esc" Command="Stop"/><!--This one doesn't work, Escape is eaten somewhere, need to workaround it in code-->
+        <KeyBinding Key="R" Command="{x:Static local:SceneView.Rotate}"/>
+        <KeyBinding Key="M" Command="{x:Static local:SceneView.Move}"/>
+        <KeyBinding Key="H" Command="{x:Static local:SceneView.MoveHandle}"/>
+        <KeyBinding Key="F3" Command="{x:Static local:SceneView.ToggleObjectSnap}"/>
+        <KeyBinding Key="F7" Command="{x:Static local:SceneView.ToggleElevationLock}"/>
+        <KeyBinding Key="F8" Command="{x:Static local:SceneView.ToggleOrtho}"/>
+    </Window.InputBindings>
+    <DockPanel LastChildFill="True">
+        <Menu DockPanel.Dock="Top" Height="22" Name="menuMain" Width="Auto">
+            <Menu.Resources>
+                <SolidColorBrush x:Key="canvas" Opacity="0" />
+                <SolidColorBrush x:Key="light-defaultgrey" Color="#212121" Opacity="1" />
+                <SolidColorBrush x:Key="light-defaultgrey-10" Color="#212121" Opacity="0.1" />
+                <SolidColorBrush x:Key="light-blue" Color="#005dba" Opacity="1" />
+                <System:Double x:Key="cls-1">0.75</System:Double>
+            </Menu.Resources>
+            <MenuItem Header="_File">
+                <MenuItem Header="Nothing to see here" Name="menuNothing" />
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Undo" Command="Undo" InputGestureText="Ctrl+Z">
+                    <MenuItem.Icon>
+                        <Rectangle Width="16 " Height="16" Name="UndoIcon">
+                            <Rectangle.Fill>
+                                <DrawingBrush Stretch="None">
+                                    <DrawingBrush.Drawing>
+                                        <DrawingGroup>
+                                            <DrawingGroup x:Name="canvasUndo">
+                                                <GeometryDrawing Brush="{DynamicResource canvas}" Geometry="F1M16,16H0V0H16Z" />
+                                                <GeometryDrawing Brush="{DynamicResource canvas}" Geometry="F1M16,16H0V0H16Z" />
+                                            </DrawingGroup>
+                                            <DrawingGroup x:Name="level_1Undo">
+                                                <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M13.973,5.689A4.571,4.571,0,0,1,12.85,8.854l-6,6-.707-.707,6-6a3.61,3.61,0,0,0,.83-2.454,3.674,3.674,0,0,0-1.028-2.639,3.892,3.892,0,0,0-5.1-.2L3.705,6H8V7H2.5L2,6.5V1H3V5.291L6.143,2.148a4.926,4.926,0,0,1,6.478.17A4.677,4.677,0,0,1,13.973,5.689Z" />
+                                            </DrawingGroup>
+                                        </DrawingGroup>
+                                    </DrawingBrush.Drawing>
+                                </DrawingBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Redo" Command="Redo" InputGestureText="Ctrl+Y">
+                    <MenuItem.Icon>
+                        <Rectangle Width="16 " Height="16" Name="RedoIcon">
+                            <Rectangle.Fill>
+                                <DrawingBrush Stretch="None">
+                                    <DrawingBrush.Drawing>
+                                        <DrawingGroup>
+                                            <DrawingGroup x:Name="canvasRedo">
+                                                <GeometryDrawing Brush="{DynamicResource canvas}" Geometry="F1M0,0H16V16H0Z" />
+                                            </DrawingGroup>
+                                            <DrawingGroup x:Name="level_1Redo">
+                                                <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M3.379,2.318a4.926,4.926,0,0,1,6.478-.17L13,5.291V1h1V6.5l-.5.5H8V6h4.3L9.15,2.855a3.892,3.892,0,0,0-5.1.2A3.674,3.674,0,0,0,3.027,5.694a3.61,3.61,0,0,0,.83,2.454l6,6-.707.707-6-6A4.571,4.571,0,0,1,2.027,5.689,4.677,4.677,0,0,1,3.379,2.318Z" />
+                                            </DrawingGroup>
+                                        </DrawingGroup>
+                                    </DrawingBrush.Drawing>
+                                </DrawingBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="_Move" Command="{x:Static local:SceneView.Move}" InputGestureText="M">
+                    <MenuItem.Icon>
+                        <Rectangle Width="16 " Height="16" Name="DimensionUsageViewIcon">
+                            <Rectangle.Fill>
+                                <DrawingBrush Stretch="None">
+                                    <DrawingBrush.Drawing>
+                                        <DrawingGroup>
+                                            <DrawingGroup x:Name="canvasMove">
+                                                <GeometryDrawing Brush="{DynamicResource canvas}" Geometry="F1M16,16H0V0H16Z" />
+                                            </DrawingGroup>
+                                            <DrawingGroup x:Name="level_1Move">
+                                                <DrawingGroup Opacity="{DynamicResource cls-1}">
+                                                    <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M.915,3.8.208,3.09,2.152,1.146h.707L4.8,3.09,4.1,3.8,3,2.7V6.129H2.982L2,6.7V2.712Z" />
+                                                    <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M12.3,3H10.756V2h2.75l.5.5v2.75h-1V3.706L8,8.715,7.25,8.284l-.259.149-.046-.08Z" />
+                                                    <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M14.859,13.146v.708L12.915,15.8l-.707-.707L13.3,14H8.771L9,13.6V13h4.3l-1.091-1.091.707-.707Z" />
+                                                </DrawingGroup>
+                                                <GeometryDrawing Brush="{DynamicResource light-defaultgrey-10}" Geometry="F1M5.5,8.655v3.464l-3,1.732L.5,12.7V9.232L3.5,7.5Z" />
+                                                <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M5.75,8.284l-2-1.155h-.5l-3,1.732L0,9.294v3.464l.25.432,2,1.156h.5l3-1.733L6,12.181V8.717ZM3.5,8.139l1,.578-2,1.154-1-.577ZM1,10.16l1,.577v2.31l-1-.578Zm2,2.887v-2.31L5,9.582v2.31Z" />
+                                                <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M8,9.871v3.464l-.25.433-3,1.732L4,15.067V11.6l.25-.433,3-1.733Z" />
+                                            </DrawingGroup>
+                                        </DrawingGroup>
+                                    </DrawingBrush.Drawing>
+                                </DrawingBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="_Rotate" Command="{x:Static local:SceneView.Rotate}" InputGestureText="R">
+                    <MenuItem.Icon>
+                        <Rectangle Width="16 " Height="16" Name="RotateIcon">
+                            <Rectangle.Fill>
+                                <DrawingBrush Stretch="None">
+                                    <DrawingBrush.Drawing>
+                                        <DrawingGroup>
+                                            <DrawingGroup x:Name="canvasRotate">
+                                                <GeometryDrawing Brush="{DynamicResource canvas}" Geometry="F1M16,0V16H0V0Z" />
+                                            </DrawingGroup>
+                                            <DrawingGroup x:Name="level_1Rotate">
+                                                <GeometryDrawing Brush="{DynamicResource light-defaultgrey-10}" Geometry="F1M12.5,3.39V9.16l-2.04,1.18.11-.18-.39-.24L8.03,8.57,8,8.62l-1,1.6-.44.7-.27.43L2.5,9.16V3.39L7.5.5Z" />
+                                                <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M15,8.5a4.771,4.771,0,0,0-2-3.717V3.39l-.25-.44L7.75.07h-.5l-5,2.88L2,3.39V4.783A4.771,4.771,0,0,0,0,8.5c0,1.9,1.33,3.65,3.5,4.65.165.077.326.143.5.21V12.29c-.174-.077-.338-.162-.5-.25A4.236,4.236,0,0,1,1,8.5,3.531,3.531,0,0,1,2,6.125V9.16l.25.43,3.78,2.18.26-.42.27-.43L3,8.87V4.25L7,6.56v3.66l1-1.6V6.56l4-2.31V8.87L10.18,9.92l.39.24-.11.18-.56.9,2.85-1.65L13,9.16V6.125A3.531,3.531,0,0,1,14,8.5a3.618,3.618,0,0,1-1.26,2.65,7.633,7.633,0,0,1-5.12,1.839L9.19,10.48l-.847-.531L6.265,13.267l.158.69L9.6,15.948l.531-.847L8.322,13.966A8.432,8.432,0,0,0,13.43,11.88,4.609,4.609,0,0,0,15,8.5ZM7.5,5.7l-4-2.31,4-2.31,4,2.31Z" />
+                                            </DrawingGroup>
+                                        </DrawingGroup>
+                                    </DrawingBrush.Drawing>
+                                </DrawingBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Move _Handle" Command="{x:Static local:SceneView.MoveHandle}" InputGestureText="H">
+                    <MenuItem.Icon>
+                        <Rectangle Width="16 " Height="16" Name="ReferencedDimension">
+                            <Rectangle.Fill>
+                                <DrawingBrush Stretch="None">
+                                    <DrawingBrush.Drawing>
+                                        <DrawingGroup>
+                                            <DrawingGroup x:Name="canvasRef">
+                                                <GeometryDrawing Brush="{DynamicResource canvas}" Geometry="F1M16,0V16H0V0Z" />
+                                            </DrawingGroup>
+                                            <DrawingGroup x:Name="level_1Ref">
+                                                <DrawingGroup Opacity="{DynamicResource cls-1}">
+                                                    <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M12.91,11.2l-.7.71L13.3,13H7.85v.27L7.12,14H13.3l-1.09,1.09.7.71,1.95-1.95v-.7ZM13,5.5h1v-3L13.5,2h-3V3h1.8L5.71,9.59l.71.71L13,3.71ZM2.15,1.15.21,3.09l.7.71L2,2.71v7.87l1-1V2.7L4.1,3.8l.7-.71L2.86,1.15Z" />
+                                                </DrawingGroup>
+                                                <GeometryDrawing Brush="{DynamicResource light-blue}" Geometry="F1M3.647,14.646,5.293,13H0V12H5.293L3.647,10.354l.707-.708,2.5,2.5v.708l-2.5,2.5Z" />
+                                            </DrawingGroup>
+                                        </DrawingGroup>
+                                    </DrawingBrush.Drawing>
+                                </DrawingBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="Ortho Mode X-Z" Command="{x:Static local:SceneView.ToggleOrtho}" InputGestureText="F8"/>
+                <MenuItem Header="Elevation Lock Y" Command="{x:Static local:SceneView.ToggleElevationLock}" InputGestureText="F7"/>
+                <MenuItem Header="Object Snap" Command="{x:Static local:SceneView.ToggleObjectSnap}" InputGestureText="F3" IsCheckable="True"/>
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem Header="Nothing to see here" Name="menuNothing3" />
+            </MenuItem>
+        </Menu>
+        <StatusBar DockPanel.Dock="Bottom" Name="tvStatusbar" VerticalAlignment="Bottom">
+            <StatusBar.Resources>
+                <SolidColorBrush x:Key="colorX" Color="#FFF7DCDC" />
+                <SolidColorBrush x:Key="colorY" Color="#FFC3CFFB" />
+                <SolidColorBrush x:Key="colorZ" Color="#FFCDF9D8" />
+                <SolidColorBrush x:Key="canvas" Opacity="0" />
+                <SolidColorBrush x:Key="light-defaultgrey-10" Color="#212121" Opacity="0.1" />
+                <SolidColorBrush x:Key="light-defaultgrey" Color="#212121" Opacity="1" />
+            </StatusBar.Resources>
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="85" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="58" />
+                            <ColumnDefinition Width="58" />
+                            <ColumnDefinition Width="58" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="85" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="58" />
+                            <ColumnDefinition Width="58" />
+                            <ColumnDefinition Width="58" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="63" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="63" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="63"/>
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            <StatusBarItem Grid.Column="0">
+                <Rectangle Width="16 " Height="16" Name="VideoCameraIcon">
+                    <Rectangle.Fill>
+                        <DrawingBrush Stretch="None">
+                            <DrawingBrush.Drawing>
+                                <DrawingGroup>
+                                    <DrawingGroup x:Name="canvasCamera">
+                                        <GeometryDrawing Brush="{DynamicResource canvas}" Geometry="F1M16,0V16H0V0Z" />
+                                    </DrawingGroup>
+                                    <DrawingGroup x:Name="level_1Camera">
+                                        <GeometryDrawing Brush="{DynamicResource light-defaultgrey-10}" Geometry="F1M15.5,4.555v6.89a.5.5,0,0,1-.817.387L11.5,9.567V12.5H.5v-9h11V6.433l3.183-2.265A.5.5,0,0,1,15.5,4.555Z" />
+                                        <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M15.428,3.651a.973.973,0,0,0-1.034.11L12,5.463V3.5L11.5,3H.5L0,3.5v9l.5.5h11l.5-.5V10.536l2.367,1.683a.992.992,0,0,0,.631.227,1.009,1.009,0,0,0,.43-.1.992.992,0,0,0,.572-.9V4.555A.992.992,0,0,0,15.428,3.651ZM11,12H1V4H11Zm3.974-.575L12,9.31V6.69l3-2.135Z" />
+                                    </DrawingGroup>
+                                </DrawingGroup>
+                            </DrawingBrush.Drawing>
+                        </DrawingBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="1">
+                <TextBlock Name="tileXZ">
+                    <TextBlock.ToolTip>
+                        <TextBlock Text="Shows tileX and tileZ of the world location at the mouse pointer"/>
+                    </TextBlock.ToolTip>
+                </TextBlock>
+            </StatusBarItem>
+            <Separator Grid.Column="2" />
+            <StatusBarItem Grid.Column="3">
+                <TextBlock Name="LocationX" Width="55" TextAlignment="Right">
+                    <TextBlock.ToolTip>
+                        <TextBlock Text="X-coordinate (without tileX) at the mouse pointer"/>
+                    </TextBlock.ToolTip>
+                </TextBlock>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="4">
+                <TextBlock Name="LocationY" Width="55" TextAlignment="Right">
+                    <TextBlock.ToolTip>
+                        <TextBlock Text="Y-coordinate at the mouse pointer"/>
+                    </TextBlock.ToolTip>
+                </TextBlock>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="5">
+                <TextBlock Name="LocationZ" Width="55" TextAlignment="Right">
+                    <TextBlock.ToolTip>
+                        <TextBlock Text="Z-coordinate (without tileZ) at the mouse pointer"/>
+                    </TextBlock.ToolTip>
+                </TextBlock>
+            </StatusBarItem>
+            <Separator Grid.Column="6"/>
+            <StatusBarItem Grid.Column="7">
+                <Rectangle Width="16 " Height="16" Name="TransformPositionCursorIcon">
+                    <Rectangle.Fill>
+                        <DrawingBrush Stretch="None">
+                            <DrawingBrush.Drawing>
+                                <DrawingGroup>
+                                    <DrawingGroup x:Name="canvasCursor">
+                                        <GeometryDrawing Brush="{DynamicResource canvas}" Geometry="F1M16,0V16H0V0Z" />
+                                    </DrawingGroup>
+                                    <DrawingGroup x:Name="level_1Cursor">
+                                        <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M7,10H8v3H7ZM7,8H8V7H7ZM2,8H5V7H2Zm8-1V8h3V7ZM7,5H8V2H7Z" />
+                                    </DrawingGroup>
+                                </DrawingGroup>
+                            </DrawingBrush.Drawing>
+                        </DrawingBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="8">
+                <TextBlock Name="tileXZcursor">
+                    <TextBlock.ToolTip>
+                        <TextBlock Text="Shows tileX and tileZ of the world location at the mouse pointer"/>
+                    </TextBlock.ToolTip>
+                </TextBlock>
+            </StatusBarItem>
+            <Separator Grid.Column="9" />
+            <StatusBarItem Grid.Column="10">
+                <TextBlock Name="LocationXcursor" Width="55" TextAlignment="Right">
+                    <TextBlock.ToolTip>
+                        <TextBlock Text="X-coordinate (without tileX) at the mouse pointer"/>
+                    </TextBlock.ToolTip>
+                </TextBlock>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="11">
+                <TextBlock Name="LocationYcursor" Width="55" TextAlignment="Right">
+                    <TextBlock.ToolTip>
+                        <TextBlock Text="Y-coordinate at the mouse pointer"/>
+                    </TextBlock.ToolTip>
+                </TextBlock>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="12">
+                <TextBlock Name="LocationZcursor" Width="55" TextAlignment="Right">
+                    <TextBlock.ToolTip>
+                        <TextBlock Text="Z-coordinate (without tileZ) at the mouse pointer"/>
+                    </TextBlock.ToolTip>
+                </TextBlock>
+            </StatusBarItem>
+            <Separator Grid.Column="13"/>
+            <StatusBarItem Grid.Column="14">
+                <ToggleButton Name="LockXAxis" Background="{DynamicResource colorX}">
+                    <Rectangle Width="16" Height="16" Name="LockXAxisIcon">
+                        <Rectangle.Resources>
+                            <SolidColorBrush x:Key="lockColorX" Color="#212121" Opacity="0.1" />
+                        </Rectangle.Resources>
+                        <Rectangle.Fill>
+                            <DrawingBrush Stretch="None">
+                                <DrawingBrush.Drawing>
+                                    <DrawingGroup>
+                                        <DrawingGroup x:Name="canvasX">
+                                            <GeometryDrawing Brush="{DynamicResource canvas}" Geometry="F1M16,16H0V0H16Z" />
+                                        </DrawingGroup>
+                                        <DrawingGroup x:Name="level_1X">
+                                            <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M10,10.086V10a2.934,2.934,0,0,1,.108-.754L8.938,7.5,11.954,3H10.069L7.977,6.114,5.873,3H4L7,7.5,4,12H5.873l2.1-3.114,1.3,1.928Z" />
+                                            <GeometryDrawing Brush="{DynamicResource lockColorX}" Geometry="F1M15.5,11.5v4h-5v-4Z" />
+                                            <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M15.5,11H15V10a2,2,0,0,0-4,0v1h-.5l-.5.5v4l.5.5h5l.5-.5v-4ZM12,10a1,1,0,0,1,2,0v1H12Zm3,5H11V12h4Z" />
+                                        </DrawingGroup>
+                                    </DrawingGroup>
+                                </DrawingBrush.Drawing>
+                            </DrawingBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                </ToggleButton>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="15">
+                <Border BorderThickness="1 1 0 0" BorderBrush="Gray">
+                    <Border BorderThickness="0 0 1 1" BorderBrush="AntiqueWhite">
+                        <TextBlock Name="DeltaXBlock" Width="55" TextAlignment="Right" Background="{DynamicResource colorX}"/>
+                    </Border>
+                </Border>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="16">
+                <ToggleButton Name="LockYAxis" Background="{DynamicResource colorY}">
+                    <Rectangle Width="16 " Height="16" Name="LockYAxisIcon">
+                        <Rectangle.Resources>
+                            <SolidColorBrush x:Key="lockColorY" Color="#212121" Opacity="0.1" />
+                        </Rectangle.Resources>
+                        <Rectangle.Fill>
+                            <DrawingBrush Stretch="None">
+                                <DrawingBrush.Drawing>
+                                    <DrawingGroup>
+                                        <DrawingGroup x:Name="canvasY">
+                                            <GeometryDrawing Brush="{DynamicResource canvas}" Geometry="F1M16,16H0V0H16Z" />
+                                        </DrawingGroup>
+                                        <DrawingGroup>
+                                            <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M8.39,7.971V12H6.818V7.971L4,3.125H5.907l1.691,3,1.7-3h1.907Z" />
+                                            <GeometryDrawing Brush="{DynamicResource lockColorY}" Geometry="F1M15.5,11.5v4h-5v-4Z" />
+                                            <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M15.5,11H15V10a2,2,0,0,0-4,0v1h-.5l-.5.5v4l.5.5h5l.5-.5v-4ZM12,10a1,1,0,0,1,2,0v1H12Zm3,5H11V12h4Z" />
+                                        </DrawingGroup>
+                                    </DrawingGroup>
+                                </DrawingBrush.Drawing>
+                            </DrawingBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                </ToggleButton>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="17">
+                <Border BorderThickness="1 1 0 0" BorderBrush="Gray">
+                    <Border BorderThickness="0 0 1 1" BorderBrush="AntiqueWhite">
+                        <TextBlock Name="DeltaYBlock" Width="55" TextAlignment="Right" Background="{DynamicResource colorY}"/>
+                    </Border>
+                </Border>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="18">
+                <ToggleButton Name="LockZAxis" Background="{DynamicResource colorZ}">
+                    <Rectangle Width="16 " Height="16" Name="LockZAxisIcon">
+                        <Rectangle.Resources>
+                            <SolidColorBrush x:Key="lockColorZ" Color="#212121" Opacity="0.1" />
+                        </Rectangle.Resources>
+                        <Rectangle.Fill>
+                            <DrawingBrush Stretch="None">
+                                <DrawingBrush.Drawing>
+                                    <DrawingGroup>
+                                        <DrawingGroup x:Name="canvasZ">
+                                            <GeometryDrawing Brush="{DynamicResource canvas}" Geometry="F1M16,16H0V0H16Z" />
+                                        </DrawingGroup>
+                                        <DrawingGroup>
+                                            <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M4.216,10.3l4.09-5.841H4V3h6.225V4.451L6.123,10.3H9.782L9,11.086v.789H4.216Z" />
+                                            <GeometryDrawing Brush="{DynamicResource lockColorZ}" Geometry="F1M15.5,11.5v4h-5v-4Z" />
+                                            <GeometryDrawing Brush="{DynamicResource light-defaultgrey}" Geometry="F1M15.5,11H15V10a2,2,0,0,0-4,0v1h-.5l-.5.5v4l.5.5h5l.5-.5v-4ZM12,10a1,1,0,0,1,2,0v1H12Zm3,5H11V12h4Z" />
+                                        </DrawingGroup>
+                                    </DrawingGroup>
+                                </DrawingBrush.Drawing>
+                            </DrawingBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                </ToggleButton>
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="19">
+                <Border BorderThickness="1 1 0 0" BorderBrush="Gray">
+                    <Border BorderThickness="0 0 1 1" BorderBrush="AntiqueWhite">
+                        <TextBlock Name="DeltaZBlock" Width="55" TextAlignment="Right" Background="{DynamicResource colorZ}"/>
+                    </Border>
+                </Border>
+            </StatusBarItem>
+        </StatusBar>
+        <Border BorderThickness="2">
+            <StackPanel Orientation="Vertical" Width="150">
+                <TextBox FontWeight="Bold" Name="Filename" Text="{Binding SelectedWorldObject.FileName}"/>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="0.7*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Tile X" HorizontalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="Tile Z" HorizontalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="2" Text="UID" HorizontalAlignment="Center"/>
+                    <TextBox Grid.Row="1" Grid.Column="0" Name="TileX" TextAlignment="Center"/>
+                    <TextBox Grid.Row="1" Grid.Column="1" Name="TileZ" TextAlignment="Center"/>
+                    <TextBox Grid.Row="1" Grid.Column="2" Name="Uid" TextAlignment="Center"/>
+                </Grid>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="Position" HorizontalAlignment="Center"/>
+                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Rotation" HorizontalAlignment="Center"/>
+                    <TextBlock Grid.Row="1" Text="X "/>
+                    <TextBlock Grid.Row="2" Text="Y "/>
+                    <TextBlock Grid.Row="3" Text="Z "/>
+                    <TextBox Grid.Row="1" Grid.Column="1" x:Name="PosX" Text="{Binding SelectedObject.Location.Location.X, StringFormat=N3}" PreviewTextInput="FloatValidationTextBox"/>
+                    <TextBox Grid.Row="2" Grid.Column="1" x:Name="PosY" Text="{Binding SelectedObject.Location.Location.Y, StringFormat=N3}" PreviewTextInput="FloatValidationTextBox"/>
+                    <TextBox Grid.Row="3" Grid.Column="1" x:Name="PosZ" Text="{Binding SelectedObject.Location.Location.Z, StringFormat=N3}" PreviewTextInput="FloatValidationTextBox"/>
+                    <TextBox Grid.Row="1" Grid.Column="2" x:Name="RotX" PreviewTextInput="FloatValidationTextBox"/>
+                    <TextBox Grid.Row="2" Grid.Column="2" x:Name="RotY" PreviewTextInput="FloatValidationTextBox"/>
+                    <TextBox Grid.Row="3" Grid.Column="2" x:Name="RotZ" PreviewTextInput="FloatValidationTextBox"/>
+                </Grid>
+            </StackPanel>
+        </Border>
+        <Grid DockPanel.Dock="Bottom" x:Name="GraphicsHostElement" />
+    </DockPanel>
+</Window>

@@ -29,6 +29,7 @@
 
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
 namespace ORTS.TrackViewer.UserInterface
@@ -59,14 +60,14 @@ namespace ORTS.TrackViewer.UserInterface
         /// <summary>
         /// Call this to update the mouse and keyboard states.
         /// </summary>
-        public static void Update()
+        public static void Update(TrackViewer trackViewer)
         {
             //if (MultiPlayer.MPManager.IsMultiPlayer() && MultiPlayer.MPManager.Instance().ComposingText) return;
             LastKeyboardState = KeyboardState;
             LastMouseState = MouseState;
             // Make sure we have an "idle" (everything released) keyboard and mouse state if the window isn't active.
             KeyboardState = new KeyboardState(GetKeysWithPrintScreenFix(Keyboard.GetState()));
-            MouseState = Mouse.GetState();
+            MouseState = trackViewer.IsTrackViewerWindowActive ? Mouse.GetState(trackViewer.Window) : new MouseState(0, 0, LastMouseState.ScrollWheelValue, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
             /* this part might be needed for message composing
             if (LastKeyboardState != KeyboardState  && ComposingMessage)
             {

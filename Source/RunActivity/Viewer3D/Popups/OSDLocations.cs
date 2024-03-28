@@ -69,6 +69,9 @@ namespace Orts.Viewer3D.Popups
 
         void UpdateLabelLists()
         {
+            if (Owner.Viewer.Simulator.PlayerLocomotive == null)
+                return;
+
             var tdb = Owner.Viewer.Simulator.TDB.TrackDB;
             var stationStops = Owner.Viewer.Simulator.PlayerLocomotive.Train.StationStops;
             var activity = Owner.Viewer.Simulator.ActivityRun;

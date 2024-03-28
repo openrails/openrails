@@ -24,6 +24,7 @@ using System.Windows.Controls;
 using Newtonsoft.Json;
 
 using ORTS.Common;
+using ORTS.TrackViewer.UserInterface;
 
 namespace ORTS.TrackViewer.Drawing.Labels
 {
@@ -34,7 +35,7 @@ namespace ORTS.TrackViewer.Drawing.Labels
     /// The list of labels can be saved or loaded to .json. This will not be done automatically.
     /// The labels can be modified either w.r.t. to their location (dragging) or w.r.t. their text.
     /// </summary>
-    class DrawLabels
+    public class DrawLabels
     {
         #region private fields
         /// <summary>This is the list of labels that we need to draw and possibly modify </summary>
@@ -56,6 +57,15 @@ namespace ORTS.TrackViewer.Drawing.Labels
         private WorldLocation draggingStartLocation;
         /// <summary>Are we currently dragging?</summary>
         private bool dragging = false;   // draggingLabelToReplace is not nullable, so we cannot use that
+
+        private TrackViewer TrackViewer;
+
+        private ContextMenu ContextMenu;
+
+        private MenuItem EditLabelMenuItem;
+
+        public MenuItem SetLocationMenuItem;
+
         #endregion
 
         #region Constructor
@@ -64,9 +74,12 @@ namespace ORTS.TrackViewer.Drawing.Labels
         /// Constructor
         /// </summary>
         /// <param name="fontHeight">The height of the font so we can correct during drawing</param>
-        public DrawLabels(int fontHeight)
+        public DrawLabels(TrackViewer trackViewer, int fontHeight)
         {
             this.fontHeight = fontHeight;
+            TrackViewer = trackViewer;
+
+            CreateContextMenu();
         }
         #endregion
 
@@ -88,7 +101,7 @@ namespace ORTS.TrackViewer.Drawing.Labels
                     DrawLabel(label);
                 }
                 float distanceSquared = WorldLocation.GetDistanceSquared2D(label.WorldLocation, drawArea.MouseLocation);
-                if (distanceSquared < closestDistanceSquared )
+                if (distanceSquared < closestDistanceSquared)
                 {
                     closestDistanceSquared = distanceSquared;
                     closestToMouseLabel = label;
@@ -107,7 +120,7 @@ namespace ORTS.TrackViewer.Drawing.Labels
         /// <param name="label">The lable to draw</param>
         private void DrawLabel(StorableLabel label)
         {
-            drawArea.DrawExpandingString(label.WorldLocation, label.LabelText, 0, -fontHeight/2);
+            drawArea.DrawExpandingString(label.WorldLocation, label.LabelText, 0, -fontHeight / 2);
         }
 
         #endregion
@@ -120,36 +133,58 @@ namespace ORTS.TrackViewer.Drawing.Labels
         /// <param name="mouseY">Current Y-location of the mouse to determine popu location</param>
         internal void AddLabel(int mouseX, int mouseY)
         {
-            var labelInputPopup = new EditLabel("<label>", mouseX, mouseY, 
+            var labelInputPopup = new EditLabel("<label>", mouseX, mouseY,
                 (newLabelText) => labels.Add(drawArea.MouseLocation, newLabelText),
                 allowDelete: false);
             TrackViewer.Localize(labelInputPopup);
             labelInputPopup.ShowDialog();
         }
 
-        /// <summary>
-        /// Popup a context menu that allows you to edit the text of a label
-        /// </summary>
-        /// <param name="mouseX">Current X-location of the mouse to determine popup location</param>
-        /// <param name="mouseY">Current Y-location of the mouse to determine popu location</param>
-        internal void PopupContextMenu(int mouseX, int mouseY)
+        private void CreateContextMenu()
         {
-            if (!Properties.Settings.Default.showLabels) return;
-            if (labels.Labels.Count() == 0) return;
-            var editingLabel = closestToMouseLabel;
-
-            var contextMenu = new ContextMenu();
-
-            var editLabelMenuItem = new MenuItem
+            ContextMenu = new ContextMenu();
+            EditLabelMenuItem = new MenuItem
             {
                 Header = "Edit label",
                 IsCheckable = false
             };
-            editLabelMenuItem.Click += new RoutedEventHandler((sender, e) => ModifyLabel(closestToMouseLabel, mouseX, mouseY));
+            EditLabelMenuItem.Click += new RoutedEventHandler((sender, e) => ModifyLabel(closestToMouseLabel,
+                TrackViewer.Window.ClientBounds.Left + TVUserInput.MouseLocationX,
+                TrackViewer.Window.ClientBounds.Left + TVUserInput.MouseLocationY));
 
-            contextMenu.Items.Add(editLabelMenuItem);
-            contextMenu.PlacementRectangle = new Rect((double)mouseX, (double)mouseY, 20, 20);
-            contextMenu.IsOpen = true;
+            ContextMenu.Items.Add(EditLabelMenuItem);
+
+            SetLocationMenuItem = new MenuItem() { Header = "View scene here" };
+            SetLocationMenuItem.Icon = TrackViewer.menuControl.ThreeDSceneIcon;
+            SetLocationMenuItem.Click += new RoutedEventHandler((sender, e) => TrackViewer.menuControl.MenuSceneWindow_Click(sender, e));
+            SetLocationMenuItem.Click += new RoutedEventHandler(async (sender, e) => await TrackViewer.SceneView?.SetCameraLocation(
+                SetLocationMenuItem.CommandParameter as WorldLocation? ?? new WorldLocation()));
+            ContextMenu.Items.Add(SetLocationMenuItem);
+        }
+
+        /// <summary>
+        /// Popup a context menu that allows you to edit the text of a label
+        /// </summary>
+        /// <param name="mouseX">Current X-location of the mouse to determine popup location</param>
+        /// <param name="mouseY">Current Y-location of the mouse to determine popup location</param>
+        internal void PopupContextMenu(int mouseX, int mouseY, WorldLocation mouseLocation)
+        {
+            if (!Properties.Settings.Default.showLabels || labels.Labels.Count() == 0)
+                EditLabelMenuItem.Visibility = Visibility.Collapsed;
+            else
+                EditLabelMenuItem.Visibility = Visibility.Visible;
+
+            SetLocationMenuItem.CommandParameter = mouseLocation;
+
+            var visible = false;
+            foreach (MenuItem item in ContextMenu.Items)
+                visible |= item.Visibility == Visibility.Visible;
+
+            if (visible)
+            {
+                ContextMenu.PlacementRectangle = new Rect((double)mouseX, (double)mouseY, 20, 20);
+                ContextMenu.IsOpen = true;
+            }
         }
 
         /// <summary>
@@ -266,7 +301,7 @@ namespace ORTS.TrackViewer.Drawing.Labels
                 MessageBox.Show(TrackViewer.catalog.GetString("The .json file could not be read properly."));
                 return;
             }
-            
+
             bool itemsWereRemoved = labelsNew.Sanitize();
             int itemsLeft = labelsNew.Labels.Count();
             string message = string.Empty;
@@ -320,8 +355,8 @@ namespace ORTS.TrackViewer.Drawing.Labels
             //The new location is then 'original' + 'current' - 'start'.
             draggingStartLocation.NormalizeTo(drawArea.MouseLocation.TileX, drawArea.MouseLocation.TileZ);
             WorldLocation shiftedLocation = new WorldLocation(
-                draggingLabelToReplace.WorldLocation.TileX      + drawArea.MouseLocation.TileX      - draggingStartLocation.TileX,
-                draggingLabelToReplace.WorldLocation.TileZ      + drawArea.MouseLocation.TileZ      - draggingStartLocation.TileZ,
+                draggingLabelToReplace.WorldLocation.TileX + drawArea.MouseLocation.TileX - draggingStartLocation.TileX,
+                draggingLabelToReplace.WorldLocation.TileZ + drawArea.MouseLocation.TileZ - draggingStartLocation.TileZ,
                 draggingLabelToReplace.WorldLocation.Location.X + drawArea.MouseLocation.Location.X - draggingStartLocation.Location.X,
                 0,
                 draggingLabelToReplace.WorldLocation.Location.Z + drawArea.MouseLocation.Location.Z - draggingStartLocation.Location.Z

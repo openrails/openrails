@@ -110,6 +110,9 @@ namespace Orts.Viewer3D
         [CallOnThread("Updater")]
         public TrainCarViewer GetViewer(TrainCar car)
         {
+            if (car == null)
+                return null;
+
             var cars = Cars;
             if (cars.ContainsKey(car))
                 return cars[car];
@@ -124,9 +127,13 @@ namespace Orts.Viewer3D
         [CallOnThread("Updater")]
         public void LoadPrep()
         {
+            if (Viewer.Simulator.Trains == null)
+                return;
+
             var visibleCars = new List<TrainCar>();
             var removeDistance = Viewer.Settings.ViewingDistance * 1.5f;
-            visibleCars.Add(Viewer.PlayerLocomotive);
+            if (Viewer.PlayerLocomotive != null)
+                visibleCars.Add(Viewer.PlayerLocomotive);
             foreach (var train in Viewer.Simulator.Trains)
                 foreach (var car in train.Cars)
                     if (WorldLocation.ApproximateDistance(Viewer.Camera.CameraWorldLocation, car.WorldPosition.WorldLocation) < removeDistance && car != Viewer.PlayerLocomotive)
