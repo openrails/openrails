@@ -33,6 +33,7 @@ What's been improved
 
 - 64-bit compatibility lifting the 3GB RAM limit
 - Better use of VRAM
+- New default skybox, light, and snowflake assets contributed by community members. Thanks to Erick Cantu, Paul Peterson, and BaldoBi for their contributions!
 
 
 
