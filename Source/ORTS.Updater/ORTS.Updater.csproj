@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks Condition="'$(BuildDotNet)' == 'true'">net6-windows</TargetFrameworks>
+    <TargetFrameworks Condition="'$(TargetFrameworks)' == ''">net472</TargetFrameworks>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <OutputType>Library</OutputType>
     <UseWindowsForms>true</UseWindowsForms>

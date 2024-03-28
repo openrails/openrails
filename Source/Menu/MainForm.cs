@@ -31,8 +31,8 @@ using System.IO;
 using System.Linq;
 using System.Resources;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Windows.Forms;
+using Activity = ORTS.Menu.Activity;
 using Path = ORTS.Menu.Path;
 
 namespace ORTS
