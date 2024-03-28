@@ -4349,7 +4349,7 @@ namespace Orts.Simulation.RollingStocks
             AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StartIncrease(target);
             TrainBrakeController.CommandStartTime = Simulator.ClockTime;
-            if (CruiseControl != null && CruiseControl.TrainBrakeCommandHasPriorityOverCruiseControl)
+            if (CruiseControl != null && (CruiseControl.TrainBrakeCommandHasPriorityOverCruiseControl || CruiseControl.TrainBrakeCommandHasPriorityOverAcceleratingCruiseControl))
             {
                 CruiseControl.TrainBrakePriority = true;
             }
@@ -4438,7 +4438,8 @@ namespace Orts.Simulation.RollingStocks
             if (change != 0)
             {
                 new TrainBrakeCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
-                if (change > 0 && CruiseControl != null && CruiseControl.TrainBrakeCommandHasPriorityOverCruiseControl) CruiseControl.TrainBrakePriority = true;
+                if (change > 0 && CruiseControl != null && ( CruiseControl.TrainBrakeCommandHasPriorityOverCruiseControl || CruiseControl.TrainBrakeCommandHasPriorityOverAcceleratingCruiseControl)) 
+                    CruiseControl.TrainBrakePriority = true;
                 SignalEvent(Event.TrainBrakeChange);
                 AlerterReset(TCSEvent.TrainBrakeChanged);
             }
