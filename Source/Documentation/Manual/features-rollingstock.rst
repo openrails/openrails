@@ -1912,8 +1912,18 @@ Use the following .eng parameter to load a circuit breaker script::
   )
 
 ``ORTSCircuitBreaker`` refers to the circuit breaker script in the engine's ``Script`` 
-subfolder. For this field, the .cs extension is optional. "Automatic" and "Manual" load the generic OR 
-circuit breaker implementation, so do `not` use these names for your own script.
+subfolder. For this field, the .cs extension is optional. Alternatively, there are several
+built-in OR circuit breaker implementations:
+
+- "Automatic": no driver intervention required, circuit breaker is closed when conditions are met.
+- "Manual": a circuit breaker switch with open and closed positions.
+- "PushButtons": a circuit breaker with dedicated open and close buttons.
+- "TwoStage": circuit breaker closing is authorized by a switch. If the switch is off, 
+  the circuit breaker is kept open. Once the switch is activated, it is required to use
+  a second button to order the closing.
+
+Please do `not` use these names for your own script, since the generic implementation will
+be loaded instead.
 
 ``ORTSCircuitBreakerClosingDelay`` refers to the delay between the closing command of the circuit breaker
 and the effective closing of the circuit breaker.
