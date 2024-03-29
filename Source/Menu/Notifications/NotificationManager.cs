@@ -101,6 +101,8 @@ namespace ORTS
             // Helpful to supply server with data for its log file.
             client.Headers[HttpRequestHeader.UserAgent] = $"{System.Windows.Forms.Application.ProductName}/{VersionInfo.VersionOrBuild}";
 
+            // Trial for glTD and PBR graphics
+            //return client.DownloadString(new Uri("https://wepp.co.uk/openrails/notifications/menu_testing_direct3d.json"));
             return client.DownloadString(new Uri("https://wepp.co.uk/openrails/notifications/menu.json"));
         }
 
@@ -241,7 +243,7 @@ namespace ORTS
             {
                 if (c is Contains)
                 {
-                    CheckContains(check, c);
+                    return CheckContains(check, c);
                 }
             }
             return null;
@@ -259,7 +261,7 @@ namespace ORTS
 
             foreach (var c in check.IncludesAnyOf)
             {
-                CheckContains(check, c);
+                return CheckContains(check, c);
             }
             return null;
         }
