@@ -927,11 +927,20 @@ namespace Orts.Simulation.AIs
                         }
 
                         if (train.InitialSpeed != 0)
+                        {
                             car.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
+
+                            if (car is MSTSLocomotive loco)
+                                loco.SetPower(true);
+                        }
                     }
                     else
                     {
                         car.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
+
+                        if (car is MSTSLocomotive loco)
+                            loco.SetPower(true);
+
                         car.CarID = "AI" + train.Number.ToString() + " - " + (train.Cars.Count - 1).ToString();
                     }
 
