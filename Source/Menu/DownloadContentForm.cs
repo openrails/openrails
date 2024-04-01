@@ -142,6 +142,13 @@ namespace ORTS
         }
         #endregion
 
+        #region InstallPathTextBox
+        private void InstallPathTextBox_TextChanged(object sender, EventArgs e)
+        {
+            Settings.Content.InstallPath = InstallPathTextBox.Text;
+        }
+        #endregion
+
         #region InstallPathBrowseButton
         private void InstallPathBrowseButton_Click(object sender, EventArgs e)
         {
@@ -175,6 +182,14 @@ namespace ORTS
 
             DisableButtons();
 
+            message = Catalog.GetStringFmt("Route to be installed in \"{0}\", are you sure?", installPathRoute);
+            if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+            {
+                // cancelled
+                EnableButtons();
+                return;
+            }
+
             // various checks for the directory where the route is installed
 
             string pathDirectoryExe = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
@@ -191,39 +206,33 @@ namespace ORTS
                 return;
             }
 
-            DriveInfo dInfo = new DriveInfo(installPathRoute);
-
-            long size = route.InstallSize + route.DownloadSize;
-
-            if (size > (dInfo.AvailableFreeSpace * 1.1))
+            try
             {
-                message = Catalog.GetStringFmt("Not enough diskspace on drive {0} ({1}), available {2} kB, needed {3} kB, still continue?",
-                    dInfo.Name,
-                    dInfo.VolumeLabel,
-                    (dInfo.AvailableFreeSpace / 1024).ToString("N0"),
-                    (size / 1024).ToString("N0"));
+                DriveInfo dInfo = new DriveInfo(installPathRoute);
 
-                if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
+                long size = route.InstallSize + route.DownloadSize;
+
+                if (size > (dInfo.AvailableFreeSpace * 1.1))
                 {
-                    // cancelled
-                    EnableButtons();
-                    return;
+                    message = Catalog.GetStringFmt("Not enough diskspace on drive {0} ({1}), available {2} kB, needed {3} kB, still continue?",
+                        dInfo.Name,
+                        dInfo.VolumeLabel,
+                        (dInfo.AvailableFreeSpace / 1024).ToString("N0"),
+                        (size / 1024).ToString("N0"));
+
+                    if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes)
+                    {
+                        // cancelled
+                        EnableButtons();
+                        return;
+                    }
                 }
             }
-
-            message = Catalog.GetStringFmt("Route to be installed in \"{0}\", are you sure?", installPathRoute);
-
-            if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) != DialogResult.OK)
+            catch (System.IO.DriveNotFoundException)
             {
-                // cancelled
-                EnableButtons();
-                return;
-            }
-
-            if (!Directory.Exists(installPath))
-            {
-                message = Catalog.GetStringFmt("Directory \"{0}\" does not exist", installPath);
+                message = Catalog.GetStringFmt("Drive not available");
                 MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // cancelled
                 EnableButtons();
                 return;
             }
@@ -254,8 +263,6 @@ namespace ORTS
                     return;
                 }
             }
-
-            Settings.Content.InstallPath = installPath;
 
             // the download
 
@@ -922,7 +929,7 @@ namespace ORTS
             DisableButtons();
 
             message = Catalog.GetStringFmt("Directory \"{0}\" is to be deleted, are you really sure?", route.DirectoryInstalledIn);
-            if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.OK)
+            if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
             {
                 // cancelled
                 EnableButtons();
@@ -935,7 +942,7 @@ namespace ORTS
                 {
                     writeAndStartInfoFile();
                     message = Catalog.GetStringFmt("Changed or added local files found in Directory \"{0}\", see Info at the bottom for more information. Do you want to continue?", route.DirectoryInstalledIn);
-                    if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.OK)
+                    if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
                     {
                         // cancelled
                         EnableButtons();
@@ -1006,7 +1013,7 @@ namespace ORTS
             {
                 writeAndStartInfoFile();
                 message = Catalog.GetString("Remote updates found, see Info at the bottom for more information. Do you want to continue?");
-                if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.OK)
+                if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
                 {
                     // cancelled
                     EnableButtons();
@@ -1015,7 +1022,7 @@ namespace ORTS
                 if (areThereChangedAddedFiles(route))
                 {
                     message = Catalog.GetString("Changed or added local files found, Update might fail, see Info at the bottom for more information. Do you want to continue?");
-                    if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.OK)
+                    if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
                     {
                         // cancelled
                         EnableButtons();

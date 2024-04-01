@@ -27,7 +27,7 @@ namespace ORTS.Settings
     {
         #region User Settings
 
-        [Default("C:\\OpenRailsRoutes")]
+        [Default("")]
         public string InstallPath { get; set; }
 
         #endregion
@@ -36,6 +36,10 @@ namespace ORTS.Settings
         : base(SettingsStore.GetSettingStore(UserSettings.SettingsFilePath, UserSettings.RegistryKey, "Content"))
         {
             Load(options);
+            if (string.IsNullOrEmpty(InstallPath))
+            {
+                InstallPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) , "Open Rails", "Content");
+            }
         }
 
         public override object GetDefaultValue(string name)
