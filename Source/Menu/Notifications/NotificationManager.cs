@@ -22,6 +22,7 @@ using System.Net;
 using System.Text;
 using Newtonsoft.Json;
 using ORTS.Common;
+using ORTS.Settings;
 using ORTS.Updater;
 using static ORTS.Common.SystemInfo;
 using static ORTS.NotificationPage;
@@ -44,11 +45,13 @@ namespace ORTS
 
         private MainForm MainForm; // Needed so we can add controls to the NotificationPage
         private UpdateManager UpdateManager;
+        private UserSettings Settings;
 
-        public NotificationManager(MainForm mainForm, UpdateManager updateManager) 
+        public NotificationManager(MainForm mainForm, UpdateManager updateManager, UserSettings settings) 
         { 
             MainForm = mainForm;
             this.UpdateManager = updateManager;
+            this.Settings = settings;
         }
 
         // Make this a background task
@@ -72,18 +75,23 @@ namespace ORTS
 
         public Notifications GetNotifications()
         {
-            //// Input from local file
-            //var filename = @"c:\_tmp\notifications.json";
+            String notificationsSerial;
+            // To support testing of a new menu.json file, GetNotifications tests for a local file first and uses that if present.
 
-            //// read file into a string and deserialize JSON into Notifications
-            //var notificationsSerial = File.ReadAllText(filename);
+            var filename = @"menu.json";
+            if (System.IO.File.Exists(filename))
+            {
+                // Input from local file into a string
+                notificationsSerial = System.IO.File.ReadAllText(filename);
+            }
+            else
+            {
+                // Input from remote file into a string
+                notificationsSerial = GetRemoteJson();
+            }
 
-
-            // Input from remote file
-            var notificationsSerial = GetRemoteJson();
-
-            var settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
-            var jsonInput = JsonConvert.DeserializeObject<Notifications>(notificationsSerial, settings);
+            var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
+            var jsonInput = JsonConvert.DeserializeObject<Notifications>(notificationsSerial, jsonSettings);
 
             return jsonInput;
         }
@@ -103,6 +111,10 @@ namespace ORTS
 
             // Trial for glTD and PBR graphics
             //return client.DownloadString(new Uri("https://wepp.co.uk/openrails/notifications/menu_testing_direct3d.json"));
+
+            // Trial for UserSettings
+            //return client.DownloadString(new Uri("https://wepp.co.uk/openrails/notifications/menu_testing_user_settings.json"));
+
             return client.DownloadString(new Uri("https://wepp.co.uk/openrails/notifications/menu.json"));
         }
 
@@ -128,7 +140,7 @@ namespace ORTS
             if (UpdateManager.LastCheckError != null || Error != null)
             {
                 NewPageCount = 0;
-                var message = (UpdateManager.LastCheckError != null) 
+                var message = (UpdateManager.LastCheckError != null)
                     ? UpdateManager.LastCheckError.Message
                     : Error.Message;
 
@@ -159,32 +171,65 @@ namespace ORTS
                 AddItemToPage(page, item);
             }
 
-            // Check constraints
+            // Check constraints if there is a MetList.
+            // If a check fails then its UnmetList is added to the page, otherwise the MetList is added.
+            if (n.MetLists != null || n.MetLists.ItemList.Count == 0)
+            {
+                CheckConstraints(page, n);
+            }            
+
+            foreach (var item in n.SuffixItemList)
+            {
+                AddItemToPage(page, item);
+            }
+            PageList.Add(page);
+        }
+
+        /// <summary>
+        /// IncludesAnyOf() implements D == d OR E == e OR ...
+        /// ExcludesAllOf() implements A != a AND B != b AND ...
+        /// CheckConstraints() implements ExcludesAnyOf() AND IncludesAnyOf(), but all parts are optional.
+        /// </summary>
+        /// <param name="page"></param>
+        /// <param name="n"></param>
+        private void CheckConstraints(NotificationPage page, Notification n)
+        {
             var excludesMet = true;
             var includesMet = true;
             foreach (var nc in n.MetLists.CheckIdList)
             {
                 foreach (var c in Notifications.CheckList.Where(c => c.Id == nc.Id))
                 {
-                    var checkFailed = CheckExcludes(c);
-                    excludesMet = (checkFailed == null);
-                    if (excludesMet == false)
+                    if (c.ExcludesAllOf == null)    // ExcludesAnyOf is optional
+                        excludesMet = true;
+                    else
                     {
-                        foreach (var item in checkFailed.UnmetItemList)
+                        var checkFailed = CheckExcludes(c);
+                        excludesMet = (checkFailed == null);
+                        if (excludesMet == false)
                         {
-                            AddItemToPage(page, item);
+                            foreach (var item in checkFailed.UnmetItemList)
+                            {
+                                AddItemToPage(page, item);
+                            }
+                            break;
                         }
-                        break;
                     }
 
-                    includesMet = (c.IncludesAnyOf.Count == 0 || CheckIncludes(c) != null);
-                    if (includesMet == false)
+                    if (c.IncludesAnyOf == null)    // IncludesAnyOf is optional
+                        includesMet = true;
+                    else
                     {
-                        foreach (var item in c.UnmetItemList)
+                        var checkPassed = CheckIncludes(c);
+                        includesMet = (checkPassed != null);
+                        if (includesMet == false)
                         {
-                            AddItemToPage(page, item);
+                            foreach (var item in c.UnmetItemList)
+                            {
+                                AddItemToPage(page, item);
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
                 if (excludesMet == false || includesMet == false)
@@ -197,12 +242,6 @@ namespace ORTS
                     AddItemToPage(page, item);
                 }
             }
-
-            foreach (var item in n.SuffixItemList)
-            {
-                AddItemToPage(page, item);
-            }
-            PageList.Add(page);
         }
 
         private void AddItemToPage(NotificationPage page, Item item)
@@ -236,12 +275,9 @@ namespace ORTS
         /// <returns></returns>
         private Check CheckExcludes(Check check)
         {
-            if (check.ExcludesAllOf == null)
-                return null;
-
             foreach (var c in check.ExcludesAllOf)
             {
-                if (c is Contains)
+                if (c is Contains) // Other criteria might be added such as greater_than and less_than
                 {
                     return CheckContains(check, c);
                 }
@@ -256,12 +292,12 @@ namespace ORTS
         /// <returns></returns>
         private Check CheckIncludes(Check check)
         {
-            if (check.IncludesAnyOf == null)
-                return null;
-
             foreach (var c in check.IncludesAnyOf)
             {
-                return CheckContains(check, c);
+                if (c is Contains)
+                {
+                    return CheckContains(check, c);
+                }
             }
             return null;
         }
@@ -285,11 +321,35 @@ namespace ORTS
                     if (system.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
                         return check;
                     break;
-                default: // Any check that is not recognised succeeds.
-                    return null;
+                default: 
+                    if (GetSetting(c.Name).IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
+                    {
+                        return check;
+                    }
+                    if (c.Name.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
+                    {
+                        return check;
+                    }
+                    return null;    // Any check that is not recognised is skipped.
             }
             return null;
         }
+
+        /// <summary>
+        /// Gets the property value of a UserSetting. The setting must match case as in "Setting.SimpleControlPhysics".
+        /// </summary>
+        /// <param name="settingText"></param>
+        /// <returns></returns>
+        string GetSetting(string settingText)
+        {
+            var nameArray = settingText.Split('.'); // 2 elements: "Settings, "<property>", e.g. "SimpleControlPhysics" 
+            if (nameArray[0] == "Settings" && nameArray.Length == 2)
+            {
+                return Settings.GetType().GetProperty(nameArray[1])?.GetValue(Settings).ToString() ?? "";
+            }
+            return "";
+        }
+
 
         /// <summary>
         /// Drop any notifications for the channel not selected
@@ -406,6 +466,10 @@ namespace ORTS
                     replacement = string.Join(",", Direct3DFeatureLevels);
                     break;
                 default:
+                    var propertyValue = GetSetting(field);
+                    replacement = (propertyValue == "") 
+                        ? field     // strings that are not recognised are not replaced.
+                        : propertyValue;
                     break;
             }
 
