@@ -1448,6 +1448,19 @@ namespace Orts.Simulation.RollingStocks
                         // Model current based upon a four cylinder, balanced compound, type Vauclain, as built by Baldwin, with no receiver between the HP and LP cylinder
                         // Set to compound operation intially
 
+                        // include check to see if it is a balanced compound locomotive, ie number of HP cylinders = number of LP cylinders
+                        if(SteamEngines[i].NumberCylinders != SteamEngines[i].LPNumberCylinders && Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            
+                            Trace.TraceInformation("This doesn't appear to be a balanced compound locomotive, ie LP Cylinders = HP Cylinders. Game performnce may not be realistic.");
+                            SteamEngines[i].NumberCylinders = 2;
+                            SteamEngines[i].LPNumberCylinders = 2;
+
+                            Trace.TraceInformation("Compound locomotive set to balanced with HP Cylinder = {0} and LP Cylinder = {1}", SteamEngines[i].NumberCylinders, SteamEngines[i].LPNumberCylinders);
+
+                        }
+
+
                         CompoundCylinderRatio = (SteamEngines[i].LPCylindersDiameterM * SteamEngines[i].LPCylindersDiameterM) / (SteamEngines[i].CylindersDiameterM * SteamEngines[i].CylindersDiameterM);
                         SteamEngines[i].MaxTractiveEffortLbf = CylinderEfficiencyRate * (1.6f * MaxBoilerPressurePSI * Me.ToIn(SteamEngines[i].LPCylindersDiameterM) * Me.ToIn(SteamEngines[i].LPCylindersDiameterM) * Me.ToIn(SteamEngines[i].LPCylindersStrokeM)) / ((CompoundCylinderRatio + 1.0f) * (Me.ToIn(SteamEngines[i].AttachedAxle.WheelRadiusM * 2.0f)));
 
@@ -5794,6 +5807,7 @@ namespace Orts.Simulation.RollingStocks
 
                     for (int i = 0; i < SteamEngines[numberofengine].NumberCylinders; i++)
                     {
+                       
                         // This feature sues some different reference angles as follows:
                         // AxlePositionRad - comes from the axle module and is -180 - 0 - 180
                         // Crank Angle - converts the above range to 0 - 180 - 0 - this is the principle reference used so that it lines up with reference
