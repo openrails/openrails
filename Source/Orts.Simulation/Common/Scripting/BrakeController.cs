@@ -226,8 +226,6 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public void SetDynamicBrakeIntervention(float value)
         {
-            if (value > 0 && Host.TrainDynamicBrakeIntervention <= 0)
-                Host.TrainDynamicBrakeCommandStartTime = Host.Simulator.ClockTime;
             if (value <= 0)
                 Host.TrainDynamicBrakeIntervention = -1;
             else Host.TrainDynamicBrakeIntervention = Math.Min(value, 1);
@@ -279,6 +277,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         /// <returns>The nullable state fraction</returns>
         public abstract float? GetStateFraction();
+        public virtual string GetStateName()
+        {
+            return ControllerStateDictionary.Dict[GetState()];
+        }
     }
 
     public enum BrakeControllerEvent

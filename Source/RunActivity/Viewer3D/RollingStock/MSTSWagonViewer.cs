@@ -38,7 +38,7 @@ namespace Orts.Viewer3D.RollingStock
 {
     public class MSTSWagonViewer : TrainCarViewer
     {
-        protected PoseableShape TrainCarShape;
+        public PoseableShape TrainCarShape { get; protected set; }
         protected AnimatedShape FreightShape;
         protected AnimatedShape InteriorShape;
         AnimatedShape FrontCouplerShape;
@@ -781,7 +781,7 @@ namespace Orts.Viewer3D.RollingStock
                         var axle = kvp.Key >= 0 && kvp.Key < loco.LocomotiveAxles.Count ? loco.LocomotiveAxles[kvp.Key] : null;
                         if (axle != null)
                             //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
-                            kvp.Value.UpdateLoop(((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && loco.UsingRearCab) ? -1 : 1) * axle.AxleSpeedMpS * elapsedTime.ClockSeconds / MathHelper.TwoPi / axle.WheelRadiusM);
+                            kvp.Value.UpdateLoop(((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && loco.UsingRearCab) ? -1 : 1) * (float)axle.AxleSpeedMpS * elapsedTime.ClockSeconds / MathHelper.TwoPi / axle.WheelRadiusM);
                         else if (AnimationDriveWheelRadiusM > 0.001)
                             kvp.Value.UpdateLoop(distanceTravelledM / MathHelper.TwoPi / AnimationDriveWheelRadiusM);
                     }
@@ -794,7 +794,7 @@ namespace Orts.Viewer3D.RollingStock
                     if (axle != null)
                     {
                         //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
-                        wheelRotationMatrix = Matrix.CreateRotationX(((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && loco.UsingRearCab) ? -1 : 1) * -axle.AxlePositionRad);
+                        wheelRotationMatrix = Matrix.CreateRotationX(((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && loco.UsingRearCab) ? -1 : 1) * -(float)axle.AxlePositionRad);
                     }
                     else
                     {

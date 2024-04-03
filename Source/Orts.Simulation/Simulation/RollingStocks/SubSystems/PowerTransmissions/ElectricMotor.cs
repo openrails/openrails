@@ -61,7 +61,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         }
 
-        public virtual float GetDevelopedTorqueNm(float motorSpeedRadpS)
+        public virtual double GetDevelopedTorqueNm(double motorSpeedRadpS)
         {
             return 0;
         }

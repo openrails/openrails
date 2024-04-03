@@ -118,7 +118,7 @@ namespace Orts.Viewer3D.RollingStock
         {
             if (Locomotive.Direction != Direction.Forward
             && (Locomotive.ThrottlePercent >= 1
-            || Math.Abs(Locomotive.SpeedMpS) > 1))
+            || Math.Abs(Locomotive.SpeedMpS) > 1 || Locomotive.DynamicBrakeIntervention >= 0))
             {
                 Viewer.Simulator.Confirmer.Warning(CabControl.Reverser, CabSetting.Warn1);
                 return;
@@ -130,7 +130,7 @@ namespace Orts.Viewer3D.RollingStock
         {
             if (Locomotive.Direction != Direction.Reverse
             && (Locomotive.ThrottlePercent >= 1
-            || Math.Abs(Locomotive.SpeedMpS) > 1))
+            || Math.Abs(Locomotive.SpeedMpS) > 1 || Locomotive.DynamicBrakeIntervention >= 0))
             {
                 Viewer.Simulator.Confirmer.Warning(CabControl.Reverser, CabSetting.Warn1);
                 return;
@@ -2112,7 +2112,9 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.BLOWER:
                 case CABViewControlTypes.DAMPERS_FRONT:
                 case CABViewControlTypes.STEAM_HEAT:
-                case CABViewControlTypes.STEAM_BOOSTER:
+                case CABViewControlTypes.STEAM_BOOSTER_AIR:
+                case CABViewControlTypes.STEAM_BOOSTER_IDLE:
+                case CABViewControlTypes.STEAM_BOOSTER_LATCH:
                 case CABViewControlTypes.ORTS_WATER_SCOOP:
                 case CABViewControlTypes.WATER_INJECTOR1:
                 case CABViewControlTypes.WATER_INJECTOR2:
@@ -2430,7 +2432,6 @@ namespace Orts.Viewer3D.RollingStock
                     }
                     break;
                 case CABViewControlTypes.STEAM_HEAT: Locomotive.SetSteamHeatValue(ChangedValue(Locomotive.SteamHeatController.IntermediateValue)); break;
-                case CABViewControlTypes.STEAM_BOOSTER: (Locomotive as MSTSSteamLocomotive).SetSteamBoosterValue(ChangedValue((Locomotive as MSTSSteamLocomotive).SteamBoosterController.IntermediateValue)); break;
                 case CABViewControlTypes.ORTS_WATER_SCOOP: if (((Locomotive as MSTSSteamLocomotive).WaterScoopDown ? 1 : 0) != ChangedValue(Locomotive.WaterScoopDown ? 1 : 0)) new ToggleWaterScoopCommand(Viewer.Log); break;
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
                     new CircuitBreakerClosingOrderCommand(Viewer.Log, ChangedValue((Locomotive as MSTSElectricLocomotive).ElectricPowerSupply.CircuitBreaker.DriverClosingOrder ? 1 : 0) > 0);
@@ -2475,7 +2476,9 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.WATER_INJECTOR1: (Locomotive as MSTSSteamLocomotive).SetInjector1Value(ChangedValue((Locomotive as MSTSSteamLocomotive).Injector1Controller.IntermediateValue)); break;
                 case CABViewControlTypes.WATER_INJECTOR2: (Locomotive as MSTSSteamLocomotive).SetInjector2Value(ChangedValue((Locomotive as MSTSSteamLocomotive).Injector2Controller.IntermediateValue)); break;
                 case CABViewControlTypes.CYL_COCKS: if (((Locomotive as MSTSSteamLocomotive).CylinderCocksAreOpen ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).CylinderCocksAreOpen ? 1 : 0)) new ToggleCylinderCocksCommand(Viewer.Log); break;
-                case CABViewControlTypes.ORTS_BLOWDOWN_VALVE: if (((Locomotive as MSTSSteamLocomotive).BlowdownValveOpen ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).BlowdownValveOpen ? 1 : 0)) new ToggleBlowdownValveCommand(Viewer.Log); break;
+                case CABViewControlTypes.STEAM_BOOSTER_AIR: if (((Locomotive as MSTSSteamLocomotive).SteamBoosterAirOpen ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).SteamBoosterAirOpen ? 1 : 0)) new ToggleSteamBoosterAirCommand(Viewer.Log); break;
+                case CABViewControlTypes.STEAM_BOOSTER_IDLE: if (((Locomotive as MSTSSteamLocomotive).SteamBoosterIdle ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).SteamBoosterIdle ? 1 : 0)) new ToggleSteamBoosterIdleCommand(Viewer.Log); break;
+                case CABViewControlTypes.STEAM_BOOSTER_LATCH: if (((Locomotive as MSTSSteamLocomotive).SteamBoosterLatchOn ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).SteamBoosterLatchOn ? 1 : 0)) new ToggleSteamBoosterLatchCommand(Viewer.Log); break;
                 case CABViewControlTypes.ORTS_CYL_COMP: if (((Locomotive as MSTSSteamLocomotive).CylinderCompoundOn ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).CylinderCompoundOn ? 1 : 0)) new ToggleCylinderCompoundCommand(Viewer.Log); break;
                 case CABViewControlTypes.STEAM_INJ1: if (((Locomotive as MSTSSteamLocomotive).Injector1IsOn ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).Injector1IsOn ? 1 : 0)) new ToggleInjectorCommand(Viewer.Log, 1); break;
                 case CABViewControlTypes.STEAM_INJ2: if (((Locomotive as MSTSSteamLocomotive).Injector2IsOn ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).Injector2IsOn ? 1 : 0)) new ToggleInjectorCommand(Viewer.Log, 2); break;
@@ -3079,6 +3082,7 @@ namespace Orts.Viewer3D.RollingStock
             //          <CSComment> Now speedometer is handled like the other digitals
 
             base.PrepareFrame(frame, elapsedTime);
+            digital.OldValue = Num;
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
@@ -3152,6 +3156,8 @@ namespace Orts.Viewer3D.RollingStock
                     displayedText = String.Format(Format, Num);
                     DrawColor = Color.White;
                 }
+                digital.OldValue = Num;
+
                 // <CSComment> Speedometer is now managed like the other digitals
 
                 return displayedText;
@@ -3228,6 +3234,8 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     displayedText = String.Format(Format, Num);
                 }
+                digital.OldValue = Num;
+
                 // <CSComment> Speedometer is now managed like the other digitals
 
                 return displayedText;

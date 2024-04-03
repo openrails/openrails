@@ -24,6 +24,7 @@ What's been added
 - Distributed Power display, in-cab and on webpage
 - Progress bar for timetable "pre-run"
 - HUD extended for diesel-mechanical loco
+- New features for loco/wagon lighting, including horn-activated flashing ditch lights
 
 
 

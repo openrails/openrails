@@ -27,7 +27,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         public float Value;
         public bool Smooth;
         public ControllerState Type;
-        public MSTSNotch(float v, int s, string type, STFReader stf)
+        public string Name;
+        public MSTSNotch(float v, int s, string type, string name, STFReader stf)
         {
             Value = v;
             Smooth = s == 0 ? false : true;
@@ -85,6 +86,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     STFException.TraceInformation(stf, "Skipped unknown notch type " + type);
                     break;
             }
+            Name = name;
         }
         public MSTSNotch(float v, bool s, int t)
         {
@@ -98,13 +100,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             Value = other.Value;
             Smooth = other.Smooth;
             Type = other.Type;
-        }
-
-        public MSTSNotch(BinaryReader inf)
-        {
-            Value = inf.ReadSingle();
-            Smooth = inf.ReadBoolean();
-            Type = (ControllerState)inf.ReadInt32();
+            Name = other.Name;
         }
 
         public MSTSNotch Clone()
@@ -114,14 +110,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
         public string GetName()
         {
+            if (!string.IsNullOrEmpty(Name)) return Name;
             return ControllerStateDictionary.Dict[Type];
-        }
-
-        public void Save(BinaryWriter outf)
-        {
-            outf.Write(Value);
-            outf.Write(Smooth);
-            outf.Write((int)Type);
         }
     }
 
@@ -229,8 +219,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     float value = stf.ReadFloat(STFReader.UNITS.None, null);
                     int smooth = stf.ReadInt(null);
                     string type = stf.ReadString();
-                    Notches.Add(new MSTSNotch(value, smooth, type, stf));
-                    if (type != ")") stf.SkipRestOfBlock();
+                    string name = null;
+                    while(type != ")" && !stf.EndOfBlock())
+                    {
+                        switch (stf.ReadItem().ToLower())
+                        {
+                            case "(":
+                                stf.SkipRestOfBlock();
+                                break;
+                            case "ortslabel":
+                                name = stf.ReadStringBlock(null);
+                                break;
+                        }
+                    }
+                    Notches.Add(new MSTSNotch(value, smooth, type, name, stf));
                 }),
             });
             SetValue(CurrentValue);
@@ -542,33 +544,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             outf.Write(MinimumValue);
             outf.Write(MaximumValue);
             outf.Write(StepSize);
-            outf.Write(CurrentNotch);            
-            outf.Write(Notches.Count);
-            
-            foreach(MSTSNotch notch in Notches)
-            {
-                notch.Save(outf);                
-            }            
+            outf.Write(CurrentNotch);           
         }
 
         public virtual void Restore(BinaryReader inf)
         {
-            Notches.Clear();
-
             IntermediateValue = CurrentValue = inf.ReadSingle();            
             MinimumValue = inf.ReadSingle();
             MaximumValue = inf.ReadSingle();
             StepSize = inf.ReadSingle();
             CurrentNotch = inf.ReadInt32();
 
-            UpdateValue = 0;
-
-            int count = inf.ReadInt32();
-
-            for (int i = 0; i < count; ++i)
-            {
-                Notches.Add(new MSTSNotch(inf));
-            }           
+            UpdateValue = 0;         
         }
 
         public MSTSNotch GetCurrentNotch()

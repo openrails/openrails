@@ -596,6 +596,15 @@ namespace ORTS.Common
         }
 
         /// <summary>
+        /// Formatted localized speed string, used to display tracking speed, with 2 decimal precision
+        /// </summary>
+        public static string FormatVeryLowSpeedDisplay(float speed, bool isMetric)
+        {
+            return String.Format(CultureInfo.CurrentCulture,
+                "{0:F2} {1}", MpS.FromMpS(speed, isMetric), isMetric ? kmph : mph);
+        }
+
+        /// <summary>
         /// Formatted localized speed string, used to display speed limits, with 0 decimal precision
         /// </summary>
         public static string FormatSpeedLimit(float speed, bool isMetric)
@@ -721,6 +730,12 @@ namespace ORTS.Common
         {
             var volume = isMetric ? volumeM3 : Me3.ToFt3(volumeM3);
             return String.Format(CultureInfo.CurrentCulture, "{0:F0} {1}", volume, isMetric ? m3 : ft3);
+        }
+
+        public static string FormatSmallVolume(float volumeM3, bool isMetric)
+        {
+            var volume = isMetric ? volumeM3 : Me3.ToFt3(volumeM3);
+            return String.Format(CultureInfo.CurrentCulture, "{0:N3} {1}", volume, isMetric ? m3 : ft3);
         }
 
         public static string FormatFuelVolume(float volumeL, bool isMetric, bool isUK)

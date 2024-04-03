@@ -27,6 +27,8 @@ using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
+using Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Viewer3D.Processes;
 using ORTS.Common;
 using ORTS.Scripting.Api;
@@ -112,7 +114,7 @@ namespace Orts.Viewer3D.Popups
             ForceGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
             ForceGraphMotiveForce = ForceGraphs.Add(Viewer.Catalog.GetString("Motive force"), "0%", "100%", Color.Green, 75);
             ForceGraphDynamicForce = ForceGraphs.AddOverlapped(Color.Red, 75);
-            ForceGraphNumOfSubsteps = ForceGraphs.Add(Viewer.Catalog.GetString("Num of substeps"), "0", "50", Color.Blue, 25);
+            ForceGraphNumOfSubsteps = ForceGraphs.Add(Viewer.Catalog.GetString("Num of substeps"), "0", "100", Color.Blue, 25);
 
             DebugGraphs = new HUDGraphSet(Viewer, HUDGraphMaterial);
             DebugGraphMemory = DebugGraphs.Add(Viewer.Catalog.GetString("Memory"), "0GB", String.Format("{0:F0}GB", (float)Host.CPUMemoryVirtualLimit / 1024 / 1024 / 1024), Color.Orange, 50);
@@ -201,7 +203,7 @@ namespace Orts.Viewer3D.Popups
                     ForceGraphDynamicForce.AddSample(-loco.MotiveForceN / loco.MaxForceN);
                 }
 
-                ForceGraphNumOfSubsteps.AddSample(loco.LocomotiveAxles.NumOfSubstepsPS / 50.0f);
+                ForceGraphNumOfSubsteps.AddSample(loco.LocomotiveAxles.NumOfSubstepsPS / 100.0f);
 
                 ForceGraphs.PrepareFrame(frame);
             }
@@ -477,9 +479,9 @@ namespace Orts.Viewer3D.Popups
             if (Viewer.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
                 TableAddLine(table, Viewer.Catalog.GetString("Autopilot") + "???");
 
-            if (Viewer.PlayerTrain.IsWheelSlip)
+            if (Viewer.PlayerTrain.HuDIsWheelSlip)
                 TableAddLine(table, Viewer.Catalog.GetString("Wheel slip") + "!!!");
-            else if (Viewer.PlayerTrain.IsWheelSlipWarninq)
+            else if (Viewer.PlayerTrain.HuDIsWheelSlipWarninq)
                 TableAddLine(table, Viewer.Catalog.GetString("Wheel slip warning") + "???");
 
             if (Viewer.PlayerTrain.IsBrakeSkid )
@@ -582,6 +584,11 @@ namespace Orts.Viewer3D.Popups
             }
         }
 
+        /// <summary>
+        /// Calculates Whyte notation for the vehicle
+        /// For duplex steam locomotives wheel axles can be grouped under the main object shape, and hence the multiple engines will be counted as a single grouping.
+        /// For multiple engines, the number of wheels defined in the attached axles will be used to determine the axles in the "non-bogie" groupings.
+        /// </summary>
         static string GetCarWhyteLikeNotation(TrainCar car)
         {
             if (car.WheelAxles.Count == 0)
@@ -590,18 +597,85 @@ namespace Orts.Viewer3D.Popups
             var whyte = new List<string>();
             var currentCount = 0;
             var currentBogie = car.WheelAxles[0].BogieIndex;
-            foreach (var axle in car.WheelAxles)
+            bool PreviousAxlePart = true; // Assume a bogie
+
+            var steamloco = car as MSTSSteamLocomotive;
+
+            if (car is MSTSSteamLocomotive && steamloco.SteamEngines.Count > 1)
             {
-                if (currentBogie != axle.BogieIndex)
+                var i = 0; // Count for number of steam engines
+                var axlesCount = 0;
+
+                foreach (var axle in car.WheelAxles)
                 {
-                    whyte.Add(currentCount.ToString());
-                    currentBogie = axle.BogieIndex;
-                    currentCount = 0;
+                    if (!axle.Part.bogie) // if not a bogie then check for the number of axles.
+                    {
+                        if (currentBogie != axle.BogieIndex && currentCount != 0)
+                        {
+                            whyte.Add(currentCount.ToString());
+                            currentBogie = axle.BogieIndex;
+                            currentCount = 0;
+                        }
+
+                        if (steamloco.SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                        {
+                            currentCount += 2;
+                            axlesCount += 1;
+
+                            if (axlesCount >= steamloco.SteamEngines[i].AttachedAxle.NumWheelsetAxles && currentCount != 0)
+                            {
+                                whyte.Add(currentCount.ToString());
+                                currentBogie = axle.BogieIndex;
+                                currentCount = 0;
+                                axlesCount = 0;
+                                i = i + 1;
+                            }
+                        }
+                    }
+                    else if (axle.Part.bogie) // this is a bogie
+                    {
+                        if ( PreviousAxlePart)
+                        {
+                            currentBogie = axle.BogieIndex;
+                        }
+
+                        if (currentBogie != axle.BogieIndex && currentCount != 0)
+                        {
+                            whyte.Add(currentCount.ToString());
+                            currentBogie = axle.BogieIndex;
+                            currentCount = 0;
+                        }
+                        currentCount += 2;
+                    }
+
+                    if (axle.Part.bogie)
+                    {
+                        PreviousAxlePart = true;
+                    }
+                    else
+                    {
+                        PreviousAxlePart = false;
+                    }
                 }
-                currentCount += 2;
+
+                whyte.Add(currentCount.ToString());
+                return String.Join("-", whyte.ToArray());
             }
-            whyte.Add(currentCount.ToString());
-            return String.Join("-", whyte.ToArray());
+            else // default axle computation - used for most wheel configurations
+            {
+                foreach (var axle in car.WheelAxles)
+                {
+                    if (currentBogie != axle.BogieIndex && currentCount != 0)
+                    {
+                        whyte.Add(currentCount.ToString());
+                        currentBogie = axle.BogieIndex;
+                        currentCount = 0;
+                    }
+                    currentCount += 2;
+                }
+                whyte.Add(currentCount.ToString());
+                return String.Join("-", whyte.ToArray());
+            }
         }
 
         void TextPageLocomotiveInfo(TableData table)
@@ -1078,35 +1152,47 @@ namespace Orts.Viewer3D.Popups
                 {
                     if (mstsLocomotive.AdvancedAdhesionModel)
                     {
-                        TableAddLine(table, Viewer.Catalog.GetString("(Advanced adhesion model)"));
+                        var text = Viewer.Catalog.GetString("(Advanced adhesion model)");
+                        if (Axles.UsePolachAdhesion == false) text += "???";
+                        TableAddLine(table, text);
                         int row0 = table.CurrentRow;
-                        TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Wheel slip"));
+                        TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Wheel slip (Thres)"));
                         TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Conditions"));
                         TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Axle drive force"));
                         TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Axle brake force"));
                         TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Number of substeps"));
+                        TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Wheel Adh. (Max)"));
                         TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Axle out force"));
                         TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Comp Axle out force"));
-                        TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Wheel speed"));
-                        for (int i=0; i<mstsLocomotive.LocomotiveAxles.Count; i++)
+                        TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Wheel speed (Slip)"));
+                        if (HUDEngineType == TrainCar.EngineTypes.Steam && (HUDSteamEngineType == TrainCar.SteamEngineTypes.Compound || HUDSteamEngineType == TrainCar.SteamEngineTypes.Simple || HUDSteamEngineType == TrainCar.SteamEngineTypes.Unknown))
+                        {
+                            TableSetCell(table, table.CurrentRow++, table.CurrentLabelColumn, Viewer.Catalog.GetString("Wheel ang. pos."));
+                        }
+
+                        for (int i = 0; i < mstsLocomotive.LocomotiveAxles.Count; i++)
                         {
                             table.CurrentRow = row0;
                             var axle = mstsLocomotive.LocomotiveAxles[i];
-                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2*i, "{0:F0}% ({1:F0}%/{2})", axle.SlipSpeedPercent, axle.SlipDerivationPercentpS, FormatStrings.s);
-                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2*i, "{0:F0}%", mstsLocomotive.AdhesionConditions * 100.0f);
-                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2*i, "{0} ({1})", FormatStrings.FormatForce(axle.DriveForceN, mstsLocomotive.IsMetric),
-                            FormatStrings.FormatPower(axle.DriveForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
-                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2*i, "{0}", FormatStrings.FormatForce(axle.BrakeRetardForceN, mstsLocomotive.IsMetric));
-                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2*i, "{0:F0}", axle.NumOfSubstepsPS);
-                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2*i, "{0} ({1})",
-                            FormatStrings.FormatForce(axle.AxleForceN, mstsLocomotive.IsMetric),
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0:F0}% ({1})", axle.SlipSpeedPercent, FormatStrings.FormatVeryLowSpeedDisplay((float)axle.WheelSlipThresholdMpS, mstsLocomotive.IsMetric));
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0:F0}%", mstsLocomotive.AdhesionConditions * 100.0f);
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0} ({1})", FormatStrings.FormatForce(axle.DriveForceN, mstsLocomotive.IsMetric), FormatStrings.FormatPower(axle.DriveForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0}", FormatStrings.FormatForce(axle.BrakeRetardForceN, mstsLocomotive.IsMetric));
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0:F0}", axle.NumOfSubstepsPS);
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0:F0}%  ({1:F0}%)", axle.WheelAdhesion * 100, axle.MaximumPolachWheelAdhesion * 100);
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0} ({1})", FormatStrings.FormatForce(axle.AxleForceN, mstsLocomotive.IsMetric),
                             FormatStrings.FormatPower(axle.AxleForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
-                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2*i, "{0} ({1})",
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0} ({1})",
                             FormatStrings.FormatForce(axle.CompensatedAxleForceN, mstsLocomotive.IsMetric),
                             FormatStrings.FormatPower(axle.CompensatedAxleForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
-                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2*i, "{0} ({1})", FormatStrings.FormatSpeedDisplay(axle.AxleSpeedMpS, mstsLocomotive.IsMetric), FormatStrings.FormatSpeedDisplay(axle.SlipSpeedMpS, mstsLocomotive.IsMetric));
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0} ({1})", FormatStrings.FormatSpeedDisplay((float)axle.AxleSpeedMpS, mstsLocomotive.IsMetric), FormatStrings.FormatVeryLowSpeedDisplay(axle.SlipSpeedMpS, mstsLocomotive.IsMetric));
+
+                            if (HUDEngineType == TrainCar.EngineTypes.Steam && (HUDSteamEngineType == TrainCar.SteamEngineTypes.Compound || HUDSteamEngineType == TrainCar.SteamEngineTypes.Simple || HUDSteamEngineType == TrainCar.SteamEngineTypes.Unknown))
+                            {
+                                TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0:N0}º", axle.AxlePositionRad * 180 / Math.PI + 180);
+                            }
                         }
-                        if (HUDEngineType == TrainCar.EngineTypes.Steam && (HUDSteamEngineType == TrainCar.SteamEngineTypes.Compound || HUDSteamEngineType == TrainCar.SteamEngineTypes.Simple || HUDSteamEngineType == TrainCar.SteamEngineTypes.Unknown)) TableAddLabelValue(table, Viewer.Catalog.GetString("Wheel ang. pos."), "{0}º", (int)(mstsLocomotive.LocomotiveAxles[0].AxlePositionRad * 180 / Math.PI + 180));
+
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Loco Adhesion"), "{0:F0}%", mstsLocomotive.LocomotiveCoefficientFrictionHUD * 100.0f);
                         TableAddLabelValue(table, Viewer.Catalog.GetString("Wagon Adhesion"), "{0:F0}%", mstsLocomotive.WagonCoefficientFrictionHUD * 100.0f);
 
