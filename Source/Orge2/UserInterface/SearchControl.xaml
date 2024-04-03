@@ -1,0 +1,16 @@
+﻿<Window x:Class="ORTS.Orge.UserInterface.SearchControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Height="95" Width="200" Title="Search">
+    <StackPanel Orientation="Vertical">
+        <StackPanel Orientation="Horizontal">
+            <Label Name="labelType">TrackNode:</Label>
+            <TextBox Height="23" HorizontalAlignment="Left" Margin="2" Name="textboxIndex" VerticalAlignment="Top" 
+                     Width="80" PreviewTextInput="NumberValidationTextBox" KeyDown="OnKeyDownHandler"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Height="23" Name="buttonCancel" Margin="20,3,20,3" VerticalAlignment="Top" Click="ButtonCancel_Click">Cancel</Button>
+            <Button Height="23" Name="buttonSearch" Margin="20,3,20,3" VerticalAlignment="Top" Click="ButtonSearch_Click">Search</Button>
+        </StackPanel>
+    </StackPanel>
+</Window>

@@ -1,0 +1,62 @@
+﻿<Window x:Class="ORTS.Orge.Editing.WaitPointDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Wait Point" Width="450" Height="310">
+    <StackPanel Orientation="Vertical">
+        <StackPanel Orientation="Horizontal">
+            <RadioButton GroupName="shuntingOption" Name="selectWait" VerticalAlignment="Center" 
+                         Content="Wait time: " Checked="Option_CheckChanged"  Width="75"/>
+            <TextBox Height="23" Name="waitTimeMinutes" Width="30" PreviewTextInput="NumberValidationTextBox" KeyDown="OnKeyDownHandler" TextChanged="TwoDigits_TextChanged"/>
+            <Label Content="minutes"/>
+            <TextBox Height="23" Name="waitTimeSeconds" Width="35" PreviewTextInput="NumberValidationTextBox" KeyDown="OnKeyDownHandler" TextChanged="TwoDigits_TextChanged"/>
+            <Label Content="seconds"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <Label Content="Openrails advanced shunting options:"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Height="30">
+            <RadioButton GroupName="shuntingOption" Name="selectUntil" VerticalAlignment="Center" 
+                         Content="Wait until:  " Checked="Option_CheckChanged"  Width="75"/>
+            <TextBox Height="23" Name="untilTimeHours" Width="30" PreviewTextInput="NumberValidationTextBox" KeyDown="OnKeyDownHandler" TextChanged="TwoDigits_TextChanged"/>
+            <Label Content=":"/>
+            <TextBox Height="23" Name="untilTimeMinutes" Width="30" PreviewTextInput="NumberValidationTextBox" KeyDown="OnKeyDownHandler" TextChanged="TwoDigits_TextChanged"/>
+            <Label Content="HH:MM"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Height="30">
+            <RadioButton GroupName="shuntingOption" Name="selectUncouple" VerticalAlignment="Center" 
+                         Content="Uncouple: keep " Width="105" Checked="Option_CheckChanged" />
+            <TextBox Height="23" Name="uncoupleCars" Width="30" PreviewTextInput="NumberValidationTextBox" KeyDown="OnKeyDownHandler" TextChanged="TwoDigits_TextChanged"/>
+            <Label Content=" cars, and wait"/>
+            <TextBox Height="23" Name="uncoupleWaitSeconds" Width="30" PreviewTextInput="NumberValidationTextBox" KeyDown="OnKeyDownHandler" TextChanged="TwoDigits_TextChanged"/>
+            <Label Content="seconds. "/>
+            <CheckBox Name="keepRear" VerticalAlignment="Center" Content="Keep rear" Unchecked="Option_CheckChanged" Checked="Option_CheckChanged"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Height="30">
+            <RadioButton GroupName="shuntingOption" Name="selectJoinSplit" VerticalAlignment="Center" 
+                         Content="Join and split" Width="105" Checked="Option_CheckChanged" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Height="30">
+            <RadioButton GroupName="shuntingOption" Name="aiRequestPassRed" VerticalAlignment="Center" 
+                         Content="AI train request to pass red signal" Checked="Option_CheckChanged" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Height="30">
+            <RadioButton GroupName="shuntingOption" Name="selectBlowHorn" VerticalAlignment="Center" 
+                         Content="Blow horn for" Width="105" Checked="Option_CheckChanged" />
+            <TextBox Height="23" Name="blowHornSeconds" Width="35" PreviewTextInput="NumberValidationTextBox" KeyDown="OnKeyDownHandler" TextChanged="TwoDigits_TextChanged"/>
+            <Label Content="seconds.  11 = American horn sequence."/>
+        </StackPanel>
+        <Separator/>
+        <StackPanel Orientation="Horizontal">
+            <Label Content="Wait time code as decimal ="/>
+            <Label Name="WaitTimeDecimal" Content="00000"/>
+            <Label Content="hexadecimal ="/>
+            <Label Name="WaitTimeHexadecimal" Content="0000"/>
+        </StackPanel>
+        <Separator/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Height="23" Content=" OK " Name="buttonOK" Margin="20,3,20,3" VerticalAlignment="Top" Click="ButtonOK_Click"/>
+            <Button Height="23" Content=" Cancel " Name="buttonCancel" Margin="20,3,20,3" VerticalAlignment="Top" Click="ButtonCancel_Click"/>
+        </StackPanel>
+
+    </StackPanel>
+</Window>
