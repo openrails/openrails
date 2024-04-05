@@ -27,6 +27,8 @@ namespace ORTS.ContentManager.Models
     public class Consist
     {
         public readonly string Name;
+        public readonly string NumEngines; // using "+" between DPU sets
+        public readonly string NumCars;
 
         public readonly IEnumerable<Car> Cars;
 
@@ -38,8 +40,31 @@ namespace ORTS.ContentManager.Models
                 var file = new ConsistFile(content.PathName);
                 Name = file.Name;
 
+                var EngCount = 0;
+                var WagCount = 0;
+                var Separator = ""; // when set, indicates that subsequent engines are in a separate block
+
                 Cars = from car in file.Train.TrainCfg.WagonList
                            select new Car(car);
+
+                foreach (Wagon wag in file.Train.TrainCfg.WagonList)
+                {
+                    if (wag.IsEngine)
+                    {
+                        EngCount++;
+                    } else
+                    {
+                        if (EngCount > 0)
+                        {
+                            NumEngines = NumEngines + Separator + EngCount.ToString();
+                            EngCount = 0; Separator = "+";
+                        }
+                        WagCount++;
+                    }
+                }
+                if (EngCount > 0) { NumEngines = NumEngines + Separator + EngCount.ToString(); }
+                if (NumEngines == null) { NumEngines = "0"; }
+                NumCars = WagCount.ToString();
             }
         }
 
