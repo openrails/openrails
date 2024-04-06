@@ -3,57 +3,55 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RunActivity", "RunActivity\RunActivity.csproj", "{9BE44F64-417D-4AA6-AF4D-2A6A0CBC814D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunActivity", "RunActivity\RunActivity.csproj", "{9BE44F64-417D-4AA6-AF4D-2A6A0CBC814D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Menu", "Menu\Menu.csproj", "{5EA53243-5C52-4F9C-A730-C35F6C68FB74}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Menu", "Menu\Menu.csproj", "{5EA53243-5C52-4F9C-A730-C35F6C68FB74}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Launcher", "Launcher\Launcher.csproj", "{7027354D-7C20-4514-BCEB-177CD7D58952}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Launcher", "Launcher\Launcher.csproj", "{7027354D-7C20-4514-BCEB-177CD7D58952}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{2B0A170A-878A-4114-BB28-7306C713E185}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{2B0A170A-878A-4114-BB28-7306C713E185}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orts.Formats.Msts", "Orts.Formats.Msts\Orts.Formats.Msts.csproj", "{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Formats.Msts", "Orts.Formats.Msts\Orts.Formats.Msts.csproj", "{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orts.Parsers.Msts", "Orts.Parsers.Msts\Orts.Parsers.Msts.csproj", "{8A84696C-3559-49B8-B27F-BB6932D8A1C6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Parsers.Msts", "Orts.Parsers.Msts\Orts.Parsers.Msts.csproj", "{8A84696C-3559-49B8-B27F-BB6932D8A1C6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ORTS.Common", "ORTS.Common\ORTS.Common.csproj", "{DA94D876-7D35-46C3-AECE-AFACE72C686C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Common", "ORTS.Common\ORTS.Common.csproj", "{DA94D876-7D35-46C3-AECE-AFACE72C686C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ORTS.Content", "ORTS.Content\ORTS.Content.csproj", "{812685A7-2683-4102-A3CA-2A5CED2E61EE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Content", "ORTS.Content\ORTS.Content.csproj", "{812685A7-2683-4102-A3CA-2A5CED2E61EE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ORTS.IO", "ORTS.IO\ORTS.IO.csproj", "{6AB8B673-5775-4536-A58A-BA0A15899583}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.IO", "ORTS.IO\ORTS.IO.csproj", "{6AB8B673-5775-4536-A58A-BA0A15899583}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ORTS.Menu", "ORTS.Menu\ORTS.Menu.csproj", "{1C5B0B41-2FE9-41C9-8B21-CCDCBEB3DDA5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Menu", "ORTS.Menu\ORTS.Menu.csproj", "{1C5B0B41-2FE9-41C9-8B21-CCDCBEB3DDA5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ORTS.Settings", "ORTS.Settings\ORTS.Settings.csproj", "{67F84996-8769-4FD8-819B-464AF269037B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Settings", "ORTS.Settings\ORTS.Settings.csproj", "{67F84996-8769-4FD8-819B-464AF269037B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ORTS.Updater", "ORTS.Updater\ORTS.Updater.csproj", "{88108A94-0389-43FF-A75C-C55BD202FC8D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Updater", "ORTS.Updater\ORTS.Updater.csproj", "{88108A94-0389-43FF-A75C-C55BD202FC8D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ActivityEditor", "Contrib\ActivityEditor\ActivityEditor\ActivityEditor.csproj", "{306C904F-BE41-4B39-A0C4-51068B7F205E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActivityEditor", "Contrib\ActivityEditor\ActivityEditor\ActivityEditor.csproj", "{306C904F-BE41-4B39-A0C4-51068B7F205E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ContentManager", "Contrib\ContentManager\ContentManager.csproj", "{E3E04859-2734-46EA-99B6-8A9721E85D3F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentManager", "Contrib\ContentManager\ContentManager.csproj", "{E3E04859-2734-46EA-99B6-8A9721E85D3F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibAE", "Contrib\ActivityEditor\LibAE\LibAE.csproj", "{B79691A7-BF8C-40B4-ADE0-5F30F2730414}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibAE", "Contrib\ActivityEditor\LibAE\LibAE.csproj", "{B79691A7-BF8C-40B4-ADE0-5F30F2730414}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TrackViewer", "Contrib\TrackViewer\TrackViewer.csproj", "{79C3A70B-7535-40CB-8448-91AB87CBAE44}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrackViewer", "Contrib\TrackViewer\TrackViewer.csproj", "{79C3A70B-7535-40CB-8448-91AB87CBAE44}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orts.Simulation", "Orts.Simulation\Orts.Simulation.csproj", "{333C4378-D82E-4B47-B561-6BA923B8FDFD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Simulation", "Orts.Simulation\Orts.Simulation.csproj", "{333C4378-D82E-4B47-B561-6BA923B8FDFD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataCollector", "Contrib\DataCollector\DataCollector.csproj", "{22CC0DE5-5E0C-4CA4-9CC0-FF1FE6C6B2BA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataCollector", "Contrib\DataCollector\DataCollector.csproj", "{22CC0DE5-5E0C-4CA4-9CC0-FF1FE6C6B2BA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Updater", "Updater\Updater.csproj", "{9C6D17E1-DC48-4B96-B9DA-A9B41F685327}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Updater", "Updater\Updater.csproj", "{9C6D17E1-DC48-4B96-B9DA-A9B41F685327}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orts.Parsers.OR", "Orts.Parsers.OR\Orts.Parsers.OR.csproj", "{1CC3BD5C-06C5-4784-B067-F93945A7CA2C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Parsers.OR", "Orts.Parsers.OR\Orts.Parsers.OR.csproj", "{1CC3BD5C-06C5-4784-B067-F93945A7CA2C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orts.Formats.OR", "Orts.Formats.OR\Orts.Formats.OR.csproj", "{0D8D312B-2C02-4B77-A795-566394A9DB95}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Formats.OR", "Orts.Formats.OR\Orts.Formats.OR.csproj", "{0D8D312B-2C02-4B77-A795-566394A9DB95}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataConverter", "Contrib\DataConverter\DataConverter.csproj", "{D4848FAB-C391-438B-BE29-3BFFF9469480}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataConverter", "Contrib\DataConverter\DataConverter.csproj", "{D4848FAB-C391-438B-BE29-3BFFF9469480}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataValidator", "Contrib\DataValidator\DataValidator.csproj", "{2C4EBEBF-71E9-4336-B4DF-288E8BD399A7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataValidator", "Contrib\DataValidator\DataValidator.csproj", "{2C4EBEBF-71E9-4336-B4DF-288E8BD399A7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ContentChecker", "ContentChecker\ContentChecker.csproj", "{316A8CAC-8BD4-4A64-A384-4A3C28C5D3D8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentChecker", "ContentChecker\ContentChecker.csproj", "{316A8CAC-8BD4-4A64-A384-4A3C28C5D3D8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatorTester", "Contrib\SimulatorTester\SimulatorTester.csproj", "{792B01A1-5C43-4FFA-A4C0-BBDC95A4A178}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orge2", "..\..\..\HACKopenRailsAGAIN\openrails-master\Source\Contrib\Orge2\Orge2.csproj", "{DEE529BD-588D-4B2C-9D3E-6574269B00E6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimulatorTester", "Contrib\SimulatorTester\SimulatorTester.csproj", "{792B01A1-5C43-4FFA-A4C0-BBDC95A4A178}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -161,10 +159,6 @@ Global
 		{792B01A1-5C43-4FFA-A4C0-BBDC95A4A178}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{792B01A1-5C43-4FFA-A4C0-BBDC95A4A178}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{792B01A1-5C43-4FFA-A4C0-BBDC95A4A178}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DEE529BD-588D-4B2C-9D3E-6574269B00E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DEE529BD-588D-4B2C-9D3E-6574269B00E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DEE529BD-588D-4B2C-9D3E-6574269B00E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DEE529BD-588D-4B2C-9D3E-6574269B00E6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
