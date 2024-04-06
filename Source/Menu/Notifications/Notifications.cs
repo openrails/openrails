@@ -82,14 +82,20 @@ namespace ORTS
     {
         public string Id { get; set; }
         public List<Criteria> IncludesAnyOf { get; set; }
+        public List<Criteria> IncludesAllOf { get; set; }
+        public List<Criteria> ExcludesAnyOf { get; set; }
         public List<Criteria> ExcludesAllOf { get; set; }
         public List<Item> UnmetItemList { get; set; }
         public bool IsChecked { get; set; } = false;
         public bool IsMet { get; set; } = false;
     }
     class Contains : Criteria { }
+    
+    // Not implemented yet
+    // String comparison, not numerical
     class NoLessThan : Criteria { }
     class NoMoreThan : Criteria { }
+    
     public class Criteria
     {
         // System Information "examples"
