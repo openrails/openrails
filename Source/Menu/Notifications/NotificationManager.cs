@@ -76,9 +76,9 @@ namespace ORTS
         public Notifications GetNotifications()
         {
             String notificationsSerial;
-            // To support testing of a new menu.json file, GetNotifications tests for a local file first and uses that if present.
+            // To support testing of a new menu.json file, GetNotifications tests for a local file test.json first and uses that if present.
 
-            var filename = @"menu.json";
+            var filename = @"menu_test.json";
             if (System.IO.File.Exists(filename))
             {
                 // Input from local file into a string
@@ -97,7 +97,8 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Fetch the Notifications from https://static.openrails.org/notifications/menu.json
+        /// Fetch the Notifications from     https://static.openrails.org/api/notifications/menu.json 
+        /// This file is copied hourly from Github openrails/notifications/
         /// </summary>
         private string GetRemoteJson()
         {
@@ -108,12 +109,6 @@ namespace ORTS
             };
             // Helpful to supply server with data for its log file.
             client.Headers[HttpRequestHeader.UserAgent] = $"{System.Windows.Forms.Application.ProductName}/{VersionInfo.VersionOrBuild}";
-
-            // Trial for glTD and PBR graphics
-            //return client.DownloadString(new Uri("https://wepp.co.uk/openrails/notifications/menu_testing_direct3d.json"));
-
-            // Trial for UserSettings
-            //return client.DownloadString(new Uri("https://wepp.co.uk/openrails/notifications/menu_testing_user_settings.json"));
 
             return client.DownloadString(new Uri("https://wepp.co.uk/openrails/notifications/menu.json"));
         }
@@ -128,7 +123,7 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Ultimately there will be a list of notifications downloaded from openrails/content.
+        /// Ultimately there will be a list of notifications downloaded from     https://static.openrails.org/api/notifications/menu.json .
         /// Until then, there is a single notification announcing either that a new update is available or the installation is up to date.
         /// </summary>
         void SetUpdateNotificationPage()
@@ -186,61 +181,79 @@ namespace ORTS
         }
 
         /// <summary>
-        /// IncludesAnyOf() implements D == d OR E == e OR ...
+        /// ExcludesAnyOf() implements A != a OR B != b AND ...
         /// ExcludesAllOf() implements A != a AND B != b AND ...
-        /// CheckConstraints() implements ExcludesAnyOf() AND IncludesAnyOf(), but all parts are optional.
+        /// IncludesAnyOf() implements D == d OR E == e OR ...
+        /// IncludesAllOf() implements D == d AND E == e OR ...
+        /// CheckConstraints() implements ExcludesAnyOf() AND ExcludesAllOf() AND IncludesAnyOf() AND IncludesAllOf(), but all parts are optional.
         /// </summary>
         /// <param name="page"></param>
         /// <param name="n"></param>
         private void CheckConstraints(NotificationPage page, Notification n)
         {
-            var excludesMet = true;
-            var includesMet = true;
             foreach (var nc in n.MetLists.CheckIdList)
             {
-                foreach (var c in Notifications.CheckList.Where(c => c.Id == nc.Id))
+                // Find the matching check
+                var c = Notifications.CheckList.Where(check => check.Id == nc.Id).FirstOrDefault();
+                if (c != null)
                 {
-                    if (c.ExcludesAllOf == null)    // ExcludesAnyOf is optional
-                        excludesMet = true;
-                    else
+                    // Check the ALL constraints
+                    if (c.ExcludesAllOf != null)    // ExcludesAllOf is optional
                     {
-                        var checkFailed = CheckExcludes(c);
-                        excludesMet = (checkFailed == null);
-                        if (excludesMet == false)
+                        var checkFailed = CheckMatch(c, c.ExcludesAllOf);
+                        if (checkFailed != null)
                         {
                             foreach (var item in checkFailed.UnmetItemList)
                             {
                                 AddItemToPage(page, item);
                             }
-                            break;
+                            return;
                         }
                     }
 
-                    if (c.IncludesAnyOf == null)    // IncludesAnyOf is optional
-                        includesMet = true;
-                    else
+                    // NOT TESTED YET
+                    //if (c.IncludesAllOf != null)    // IncludesAllOf is optional
+                    //{
+                    //    var checkFailed = CheckAll(c, c.IncludesAllOf);
+                    //    if (checkFailed != null)
+                    //    {
+                    //        foreach (var item in checkFailed.UnmetItemList)
+                    //        {
+                    //            AddItemToPage(page, item);
+                    //        }
+                    //        return;
+                    //    }
+                    //}
+
+                    // Check the ANY constraints
+                    if (c.ExcludesAnyOf != null)    // ExcludesAnyOf is optional
                     {
-                        var checkPassed = CheckIncludes(c);
-                        includesMet = (checkPassed != null);
-                        if (includesMet == false)
+                        if (CheckMatch(c, c.ExcludesAnyOf) != null)
                         {
                             foreach (var item in c.UnmetItemList)
                             {
                                 AddItemToPage(page, item);
                             }
-                            break;
+                            return;
+                        }
+                    }
+
+                    if (c.IncludesAnyOf != null)    // IncludesAnyOf is optional
+                    {
+                        if (CheckMatch(c, c.IncludesAnyOf) == null)
+                        {
+                            foreach (var item in c.UnmetItemList)
+                            {
+                                AddItemToPage(page, item);
+                            }
+                            return;
                         }
                     }
                 }
-                if (excludesMet == false || includesMet == false)
-                    break;
             }
-            if (excludesMet && includesMet)
+            foreach (var item in n.MetLists.ItemList)
             {
-                foreach (var item in n.MetLists.ItemList)
-                {
-                    AddItemToPage(page, item);
-                }
+                AddItemToPage(page, item);
             }
         }
 
@@ -269,34 +282,39 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Returns any check that fails.
+        /// Returns null or the first check that matches.
         /// </summary>
         /// <param name="check"></param>
         /// <returns></returns>
-        private Check CheckExcludes(Check check)
+        private Check CheckMatch(Check check, List<Criteria> criteriaList)
         {
-            foreach (var c in check.ExcludesAllOf)
+            foreach (var c in criteriaList)
             {
-                if (c is Contains) // Other criteria might be added such as greater_than and less_than
+                if (c is Contains) // Other criteria might be added such as NoLessThan and NoMoreThan.
                 {
-                    return CheckContains(check, c);
+                    var matchedCheck = CheckContains(check, c);
+                    if (matchedCheck != null)
+                        return matchedCheck;
                 }
             }
             return null;
         }
 
         /// <summary>
-        /// Returns any check that succeeds.
+        /// Returns null or the first check that does not match.
         /// </summary>
         /// <param name="check"></param>
         /// <returns></returns>
-        private Check CheckIncludes(Check check)
+        private Check CheckNoMatch(Check check, List<Criteria> criteriaList)
         {
-            foreach (var c in check.IncludesAnyOf)
+            foreach (var c in criteriaList)
             {
-                if (c is Contains)
+                if (c is Contains) // Other criteria might be added such as NoLessThan and NoMoreThan.
                 {
-                    return CheckContains(check, c);
+                    if (CheckContains(check, c) == null)
+                    {
+                        return check;
+                    }
                 }
             }
             return null;
@@ -311,8 +329,7 @@ namespace ORTS
                         return check;
                     break;
                 case "installed_version":
-                    if (c.Value == "none" // as Update Mode == "none"
-                    || SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
+                    if (SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
                         return check;
                     break;
                 case "system":
@@ -321,7 +338,7 @@ namespace ORTS
                     if (system.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
                         return check;
                     break;
-                default: 
+                default:
                     if (GetSetting(c.Name).IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
                     {
                         return check;
@@ -388,6 +405,8 @@ namespace ORTS
             foreach (var c in Notifications.CheckList)
             {
                 c.ExcludesAllOf?.ForEach(criteria => ReplaceCriteriaParameter(criteria));
+                c.IncludesAllOf?.ForEach(criteria => ReplaceCriteriaParameter(criteria));
+                c.ExcludesAnyOf?.ForEach(criteria => ReplaceCriteriaParameter(criteria));
                 c.IncludesAnyOf?.ForEach(criteria => ReplaceCriteriaParameter(criteria));
             }
         }
