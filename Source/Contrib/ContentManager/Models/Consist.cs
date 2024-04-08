@@ -44,11 +44,10 @@ namespace ORTS.ContentManager.Models
                 var WagCount = 0;
                 var Separator = ""; // when set, indicates that subsequent engines are in a separate block
 
-                Cars = from car in file.Train.TrainCfg.WagonList
-                           select new Car(car);
-
+                var CarList = new List<Car>();
                 foreach (Wagon wag in file.Train.TrainCfg.WagonList)
                 {
+                    CarList.Add(new Car(wag));
                     if (wag.IsEngine)
                     {
                         EngCount++;
@@ -65,6 +64,7 @@ namespace ORTS.ContentManager.Models
                 if (EngCount > 0) { NumEngines = NumEngines + Separator + EngCount.ToString(); }
                 if (NumEngines == null) { NumEngines = "0"; }
                 NumCars = WagCount.ToString();
+                Cars = CarList;
             }
         }
 
