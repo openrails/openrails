@@ -60,6 +60,9 @@ namespace Orts.Viewer3D
         private readonly float[,] DesertZones = { { 30, 45, -120, -105 } }; // minlat, maxlat, minlong, maxlong
         public float Time;
 
+        // Daylight offset (-12h to +12h)
+        public int DaylightOffset = 0;
+
         // Variables used for wind calculations
         const int WindSpeedBeaufort = 6;
         const float WindInstantaneousDirectionLimitRad = (float)(45 * Math.PI / 180);
@@ -537,16 +540,16 @@ namespace Orts.Viewer3D
 
                 // Daylight offset is useful for debugging night running timetables; it ranges from -12h to +12h
                 string FormatDaylightOffsetHour(int h) => h <= 0 ? h.ToString() : $"+{h}";
-                if (UserInput.IsPressed(UserCommand.DebugDaylightOffsetIncrease) && Weather.DaylightOffset < 12)
+                if (UserInput.IsPressed(UserCommand.DebugDaylightOffsetIncrease) && DaylightOffset < 12)
                 {
-                    Weather.DaylightOffset += 1;
-                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Increased daylight offset to {0} h", FormatDaylightOffsetHour(Weather.DaylightOffset)));
+                    DaylightOffset += 1;
+                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Increased daylight offset to {0} h", FormatDaylightOffsetHour(DaylightOffset)));
                 }
 
-                if (UserInput.IsPressed(UserCommand.DebugDaylightOffsetDecrease) && Weather.DaylightOffset > -12)
+                if (UserInput.IsPressed(UserCommand.DebugDaylightOffsetDecrease) && DaylightOffset > -12)
                 {
-                    Weather.DaylightOffset -= 1;
-                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Decreased daylight offset to {0} h", FormatDaylightOffsetHour(Weather.DaylightOffset)));
+                    DaylightOffset -= 1;
+                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Decreased daylight offset to {0} h", FormatDaylightOffsetHour(DaylightOffset)));
                 }
 
                 UpdateWind(elapsedTime);
