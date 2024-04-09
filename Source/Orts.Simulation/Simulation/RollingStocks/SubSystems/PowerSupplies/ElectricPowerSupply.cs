@@ -108,16 +108,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public override void Save(BinaryWriter outf)
         {
-            outf.Write(ScriptName);
-
             base.Save(outf);
             CircuitBreaker.Save(outf);
         }
 
         public override void Restore(BinaryReader inf)
         {
-            ScriptName = inf.ReadString();
-
             base.Restore(inf);
             CircuitBreaker.Restore(inf);
         }
@@ -271,7 +267,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 case PowerSupplyEvent.QuickPowerOn:
                     QuickPowerOn = true;
-                    SignalEventToBatterySwitch(PowerSupplyEvent.CloseBatterySwitch);
+                    SignalEventToBatterySwitch(PowerSupplyEvent.QuickPowerOn);
                     SignalEventToMasterKey(PowerSupplyEvent.TurnOnMasterKey);
                     SignalEventToPantograph(PowerSupplyEvent.RaisePantograph, 1);
                     SignalEventToOtherTrainVehiclesWithId(PowerSupplyEvent.RaisePantograph, 1);
@@ -285,7 +281,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     SignalEventToPantographs(PowerSupplyEvent.LowerPantograph);
                     SignalEventToOtherTrainVehicles(PowerSupplyEvent.LowerPantograph);
                     SignalEventToMasterKey(PowerSupplyEvent.TurnOffMasterKey);
-                    SignalEventToBatterySwitch(PowerSupplyEvent.OpenBatterySwitch);
+                    SignalEventToBatterySwitch(PowerSupplyEvent.QuickPowerOff);
                     break;
 
                 default:

@@ -355,13 +355,6 @@ by MSTS, while the advanced one is based on a model more similar to reality.
 For more information read the section on :ref:`Adhesion Models <physics-adhesion>` later in this
 manual.
 
-Adhesion moving average filter size
------------------------------------
-
-The computations related to adhesion are passed through a moving average
-filter. Higher values cause smoother operation, but also less
-responsiveness. 10 is the default filter size.
-
 Break couplers
 --------------
 
@@ -406,6 +399,16 @@ Uncheck this option for a more detailed behaviour in which the player has to sta
 
 The default setting is checked.
 
+
+At game start, Electric - power connected
+-----------------------------------
+
+When this option is checked, stationary electric locos start the simulation with power available.
+Uncheck this option for a more detailed behaviour in which the player has to switch on electrical equipment.
+
+The default setting is checked.
+
+In timetable mode, power status is not affected by these options.
 
 .. _options-forced-red:
 
@@ -501,6 +504,83 @@ default values are reloaded.
 By clicking on *Export* a printable text file ``Open Rails
 Keyboard.txt`` is generated on the desktop, showing all links between
 commands and keys.
+
+
+RailDriver Options
+==================
+
+Open Rails has built-in support for the RailDriver controller from P.I.Engineering so
+you do not need any extra software for the RailDriver to work with Open Rails.
+
+If your RailDriver is connected, you should see a RailDriver tab in the options menu:
+
+.. image:: images/options-raildriver.png
+
+
+Use this tab to calibrate the 6 analog controls and assign operations to the
+44 switches on your RailDriver device.
+
+
+Calibrating RailDriver Levers
+-----------------------------
+RailDriver uses analog inputs that appear to vary from unit to unit.  
+In theory the range of each lever is 0-255 but, in practice, the actual range can be much narrower. 
+For this reason Open Rails uses a calibration routine to adjust to the actual range of each lever.
+
+You will need to calibrate the RailDriver, even if you’ve previously calibrated your RailDriver in other software.
+However, you will only need to perform a full calibration once as Open Rails will use that calibration from then on.
+
+Click the Callibration button and follow the prompts:
+
+.. image:: images/options-raildriver-calibration-message.png
+
+Note the image on screen will also visually guide you to the control being calibrated as in this example:
+
+.. image:: images/options-raildriver-calibration.png
+
+You will be prompted in sequence to calibrate all 6 of the RailDriver analog controls:
+
+- Reverser
+- Throttle
+- Automatic Brake
+- Independent Brake
+- Light/wiper switches
+
+If you make a mistake during calibration, simply restart the process again.
+
+
+Assigning RailDriver Switches
+-----------------------------
+
+You can modify the assignments by clicking on a field (e.g. "Pause") and pressing the
+RailDriver button you want for that operation.
+Three symbols will appear at the right of the field: use them to validate the change, 
+cancel it or restore the default value.
+
+.. image:: images/options-raildriver-assignment.png
+
+
+Other controls on this tab
+--------------------------
+
+Click on *Check* to verify that the changes made are compatible;
+that is, that no button is used for more than one command.
+
+Click on *Defaults* to reset all the assignments.
+
+Click on *Export* to generate a report file ``Open Rails
+RailDriver.txt`` on the desktop, listing all links between
+commands and switches.
+
+
+Using your RailDriver from within Open Rails
+--------------------------------------------
+
+To engage the RailDriver, use the Open Rails function named “Game External Controller (Raildriver)”.
+By default this is assigned to the backtick key (` )
+
+You can look up this function’s keybinding in-game by using the F1 help screen.
+
 
 Data Logger Options
 ===================
@@ -617,14 +697,19 @@ bottom of the screen.
 This is helpful for operations that don't have visible feedback and also
 allows you to control the train without being in the cab.
 
-The default setting is checked. 
-Uncheck this option if you prefer to monitor your cab instruments and
-don't want to see these messages.
+Informational, Warning and Error messages are displayed here also. 
+
+The default setting of this option is to show all messages. Dropdown list gives the following choices:
+
+- None: no messages suppressed (default)
+- Information: informational messages and control confirmations suppressed
+- Warning: warning messages and the ones mentioned above suppressed
+- Error: error messages and the ones mentioned above suppressed
 
 OR uses the same message scheme for system messages such as "Game saved"
 or "Replay ended" but you cannot suppress these system messages.
 
-Once the game has started, you can toggle the confirmations on and off 
+Once the game has started, you can cycle through the above settings  
 by pressing ``Ctrl+Alt+F10``. 
 
 

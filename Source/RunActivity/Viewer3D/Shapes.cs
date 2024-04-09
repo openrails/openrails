@@ -94,8 +94,14 @@ namespace Orts.Viewer3D
 
         public void Mark(SharedShape shape)
         {
-            if (Shapes.ContainsValue(shape))
-                ShapeMarks[Shapes.First(kvp => kvp.Value == shape).Key] = true;
+            foreach (var key in Shapes.Keys)
+            {
+                if (Shapes[key] == shape)
+                {
+                    ShapeMarks[key] = true;
+                    break;
+                }
+            }
         }
 
         public void Sweep()

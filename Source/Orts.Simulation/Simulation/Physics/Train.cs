@@ -76,6 +76,9 @@ namespace Orts.Simulation.Physics
     public class Train
     {
         public List<TrainCar> Cars = new List<TrainCar>();           // listed front to back
+        public List<TrainCar> DPLeadUnits = new List<TrainCar>();    // list of all DP lead locomotives
+        // list of connected locomotives, each element is a list of the connected locomotives themselves
+        public List<List<TrainCar>> LocoGroups = new List<List<TrainCar>>();
         public int Number;
         public string Name;
         public string TcsParametersFileName;
@@ -96,6 +99,7 @@ namespace Orts.Simulation.Physics
         }
         public Traveller RearTDBTraveller;               // positioned at the back of the last car in the train
         public Traveller FrontTDBTraveller;              // positioned at the front of the train by CalculatePositionOfCars
+        Traveller CalculatorTraveller;            // CalculatePositionOfCars uses it for the calculations
         public float Length;                             // length of train from FrontTDBTraveller to RearTDBTraveller
         public float MassKg;                             // weight of the train
         public float SpeedMpS;                           // meters per second +ve forward, -ve when backing
@@ -134,9 +138,10 @@ namespace Orts.Simulation.Physics
         // but Class VacuumSinglePipe uses it for vacuum in InHg.
         public float BrakeLine2PressurePSI;              // extra line for dual line systems, main reservoir
         public float BrakeLine3PressurePSI;              // extra line just in case, engine brake pressure
-        public float BrakeLine4 = -1;                    // extra line just in case, ep brake control line. -1: release/inactive, 0: hold, 0 < value <=1: apply
+        public float BrakeLine4 = -1;                    // extra line just in case, ep brake control line. -2: hold, -1: inactive, 0: release, 0 < value <=1: apply
         public RetainerSetting RetainerSetting = RetainerSetting.Exhaust;
         public int RetainerPercent = 100;
+        public float TotalBrakePipeFlowM3pS; // Total flow rate of air from all MR to BP
         public float TotalTrainBrakePipeVolumeM3; // Total volume of train brake pipe
         public float TotalTrainBrakeCylinderVolumeM3; // Total volume of train brake cylinders
         public float TotalTrainBrakeSystemVolumeM3; // Total volume of train brake system
@@ -154,6 +159,8 @@ namespace Orts.Simulation.Physics
 
         public bool IsWheelSlipWarninq;
         public bool IsWheelSlip;
+        public bool HuDIsWheelSlipWarninq;
+        public bool HuDIsWheelSlip;
         public bool IsBrakeSkid;
 
         public bool HotBoxSetOnTrain = false;
@@ -318,14 +325,14 @@ namespace Orts.Simulation.Physics
 
         public enum TRAIN_CONTROL
         {
-            AUTO_SIGNAL,
-            AUTO_NODE,
-            MANUAL,
-            EXPLORER,
-            OUT_OF_CONTROL,
-            INACTIVE,
-            TURNTABLE,
-            UNDEFINED
+            [GetParticularString("TrainControl", "Auto Signal")] AUTO_SIGNAL,
+            [GetParticularString("TrainControl", "Auto Node")] AUTO_NODE,
+            [GetParticularString("TrainControl", "Manual")] MANUAL,
+            [GetParticularString("TrainControl", "Explorer")] EXPLORER,
+            [GetParticularString("TrainControl", "Out of Control")] OUT_OF_CONTROL,
+            [GetParticularString("TrainControl", "Inactive")] INACTIVE,
+            [GetParticularString("TrainControl", "Turntable")] TURNTABLE,
+            [GetParticularString("TrainControl", "Undefined")] UNDEFINED
         }
 
         private TRAIN_CONTROL controlMode = TRAIN_CONTROL.UNDEFINED;
@@ -420,6 +427,8 @@ namespace Orts.Simulation.Physics
 
         public bool nextRouteReady = false;                             // indication to activity.cs that a reversal has taken place
 
+        readonly List<int[]> sectionList = new List<int[]>(); // internally used in UpdateSectionState()
+
         // Deadlock Info : 
         // list of sections where deadlock begins
         // per section : list with trainno and end section
@@ -504,6 +513,9 @@ namespace Orts.Simulation.Physics
                         //if (lead.EngineBrakeController != null)
                         //    lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
                     }
+
+                // If lead locomotive changes, distributed power needs to be updated
+                SetDPUnitIDs(true);
             }
         }
 
@@ -686,6 +698,7 @@ namespace Orts.Simulation.Physics
             BrakeLine2PressurePSI = inf.ReadSingle();
             BrakeLine3PressurePSI = inf.ReadSingle();
             BrakeLine4 = inf.ReadSingle();
+            TotalBrakePipeFlowM3pS = inf.ReadSingle();
             aiBrakePercent = inf.ReadSingle();
             LeadLocomotiveIndex = inf.ReadInt32();
             RetainerSetting = (RetainerSetting)inf.ReadInt32();
@@ -949,9 +962,8 @@ namespace Orts.Simulation.Physics
             {
                 for (int i = 0; i < count; ++i)
                 {
-                    TrainCar car = RollingStock.Load(simulator, this, inf.ReadString(), false);
+                    TrainCar car = RollingStock.Load(simulator, this, inf.ReadString());
                     car.Restore(inf);
-                    car.Initialize();
                 }
             }
             SetDPUnitIDs(true);
@@ -1035,6 +1047,7 @@ namespace Orts.Simulation.Physics
             outf.Write(BrakeLine2PressurePSI);
             outf.Write(BrakeLine3PressurePSI);
             outf.Write(BrakeLine4);
+            outf.Write(TotalBrakePipeFlowM3pS);
             outf.Write(aiBrakePercent);
             outf.Write(LeadLocomotiveIndex);
             outf.Write((int)RetainerSetting);
@@ -1310,6 +1323,7 @@ namespace Orts.Simulation.Physics
             LeadLocomotiveIndex = Math.Abs(nextCabIndex) - 1;
             Trace.Assert(LeadLocomotive != null, "Tried to switch to non-existent loco");
             TrainCar newLead = LeadLocomotive;  // Changing LeadLocomotiveIndex also changed LeadLocomotive
+            SetDPUnitIDs(true); // DP IDs must be reprocessed when lead locomotive changes
             ((MSTSLocomotive)newLead).UsingRearCab = nextCabIndex < 0;
 
             if (oldLead != null && newLead != null && oldLead != newLead)
@@ -1368,6 +1382,7 @@ namespace Orts.Simulation.Physics
             else if (coud > 1)
                 LeadLocomotiveIndex = firstLead;
             TrainCar newLead = LeadLocomotive;
+            SetDPUnitIDs(true); // DP IDs must be reprocessed when lead locomotive changes
             if (prevLead != null && newLead != null && prevLead != newLead)
                 newLead.CopyControllerSettings(prevLead);
         }
@@ -1523,19 +1538,79 @@ namespace Orts.Simulation.Physics
         /// </summary>
         public void SetDPUnitIDs(bool keepRemoteGroups = false)
         {
+            // List to keep track of new 'lead' DP units
+            // 'Lead' DP units follow the air brake commands of the master loco, 'trail' DP units do not
+            List<TrainCar> tempDPLeads = new List<TrainCar>();
+            TrainCar tempDPLead = null;
+            // Value judging how compatible this locomotive is to the lead locomotive for DP purposes
+            float dpRating = 0;
+
+            // List of each DP group's locomotives
+            List<List<TrainCar>> tempLocoGroups = new List<List<TrainCar>>();
+
+            var prevId = -1;
             var id = 0;
+
             foreach (var car in Cars)
             {
-                //Console.WriteLine("___{0} {1}", car.CarID, id);
-                if (car is MSTSLocomotive)
+                if (car is MSTSLocomotive loco)
                 {
-                    (car as MSTSLocomotive).DPUnitID = id;
+                    float thisDPRating = DetermineDPCompatibility(LeadLocomotive, car);
+
+                    loco.DPUnitID = id;
+
+                    if (id != prevId) // New locomotive group
+                    {
+                        // Add the most suitable unit from the previous group as a DP lead unit
+                        if (tempDPLead != null && !tempDPLeads.Contains(tempDPLead))
+                            tempDPLeads.Add(tempDPLead);
+
+                        dpRating = thisDPRating;
+                        tempDPLead = car;
+
+                        prevId = id;
+                    }
+                    else // Same locomotive group
+                        // Check to see if this locomotive is more compatible than previous ones
+                        if (thisDPRating > dpRating)
+                        {
+                            dpRating = thisDPRating;
+                            tempDPLead = car;
+                        }
+
                     if (car.RemoteControlGroup == 1 && !keepRemoteGroups)
                         car.RemoteControlGroup = 0;
                 }
                 else
                     id++;
             }
+
+            // Add final DP lead unit
+            if (tempDPLead != null && !tempDPLeads.Contains(tempDPLead))
+                tempDPLeads.Add(tempDPLead);
+
+            foreach (TrainCar locoCar in tempDPLeads)
+            {
+                // The train's lead unit should always be a DP lead unit, even if not at the front
+                // If a different locomotive in the lead loco's group has been declared DP lead, replace that loco with the lead loco
+                if (LeadLocomotive is MSTSLocomotive lead && locoCar is MSTSLocomotive loco)
+                    if (loco.DPUnitID == lead.DPUnitID && locoCar != LeadLocomotive)
+                    {
+                        tempDPLeads.Insert(tempDPLeads.IndexOf(locoCar), LeadLocomotive);
+                        tempDPLeads.Remove(locoCar);
+                        break; // foreach doesn't like it when the collection is modified during the loop, break to mitigate error
+                    }
+            }
+
+            DPLeadUnits = tempDPLeads;
+
+            foreach (TrainCar loco in DPLeadUnits)
+            {
+                // Find all locomotives connected to each DP unit
+                tempLocoGroups.Add(DetermineLocomotiveGroup(loco));
+            }
+
+            LocoGroups = tempLocoGroups;
         }
 
         /// <summary>
@@ -1951,6 +2026,8 @@ namespace Orts.Simulation.Physics
 
             bool whlslp = false;
             bool whlslpwrn = false;
+            bool hudwhlslp = false;
+            bool hudwhlslpwrn = false;
             bool whlskd = false;
 
             TrainCar uncoupleBehindCar = null;
@@ -1977,6 +2054,12 @@ namespace Orts.Simulation.Physics
                     whlslp = true;
                 if (car.WheelSlipWarning)
                     whlslpwrn = true;
+
+                if (car.HuDIsWheelSlip)
+                    hudwhlslp = true;
+                if (car.HuDIsWheelSlipWarninq)
+                    hudwhlslpwrn = true;
+
                 if (car.BrakeSkid)
                 {
                     whlskd = true;
@@ -2009,6 +2092,10 @@ namespace Orts.Simulation.Physics
 
             IsWheelSlip = whlslp;
             IsWheelSlipWarninq = whlslpwrn;
+
+            HuDIsWheelSlip = hudwhlslp;
+            HuDIsWheelSlipWarninq = hudwhlslpwrn;
+
             IsBrakeSkid = whlskd;
 
             // Coupler breaker
@@ -4016,6 +4103,8 @@ namespace Orts.Simulation.Physics
                     fullServPressurePSI = lead.BrakeSystem is VacuumSinglePipe ? 16 : maxPressurePSI - lead.TrainBrakeController.FullServReductionPSI;
                     EqualReservoirPressurePSIorInHg = Math.Min(maxPressurePSI, EqualReservoirPressurePSIorInHg);
                     lead.TrainBrakeController.UpdatePressure(ref EqualReservoirPressurePSIorInHg, 1000, ref BrakeLine4);
+                    if (!(lead.BrakeSystem is EPBrakeSystem))
+                        BrakeLine4 = -1;
                     EqualReservoirPressurePSIorInHg =
                             MathHelper.Max(EqualReservoirPressurePSIorInHg, fullServPressurePSI);
                 }
@@ -4214,6 +4303,127 @@ namespace Orts.Simulation.Physics
 
         //================================================================================================//
         /// <summary>
+        /// Find connected locomotives
+        /// <\summary>
+
+        // Finds all locomotives connected to the TrainCar reference provided as input,
+        // returning the connected locomotives* as a list of TrainCars.
+        // Returns null if there are no locomotives in the given group.
+        // *If the input is a steam locomotive, the output will instead be the steam locomotive and any tenders connected.
+        // Useful for determining locomotive brake propagation on groups of locomotives other than the lead group.
+
+        public List<TrainCar> DetermineLocomotiveGroup(TrainCar loco)
+        {
+            if (loco is MSTSLocomotive)
+            {
+                List<TrainCar> tempGroup = new List<TrainCar>();
+                int first;
+                int last;
+
+                first = last = Cars.IndexOf(loco);
+
+                // If locomotive is a steam locomotive, check for tenders only
+                if (first >= 0 && loco is MSTSSteamLocomotive)
+                {
+                    if (last < Cars.Count - 1 && !loco.Flipped && Cars[last + 1].WagonType == TrainCar.WagonTypes.Tender)
+                        last++;
+                    else if (first > 0 && loco.Flipped && Cars[first - 1].WagonType == TrainCar.WagonTypes.Tender)
+                        first--;
+                }
+                else // Other locomotive types
+                {
+                    for (int i = last; i < Cars.Count && (Cars[i] is MSTSLocomotive && !(Cars[i] is MSTSSteamLocomotive)); i++)
+                        last = i;
+                    for (int i = first; i >= 0 && (Cars[i] is MSTSLocomotive && !(Cars[i] is MSTSSteamLocomotive)); i--)
+                        first = i;
+                }
+
+                if (first < 0 || last < 0)
+                    return null;
+                else
+                {
+                    for (int i = first; i <= last; i++)
+                        tempGroup.Add(Cars[i]);
+                    return tempGroup;
+                }
+            }
+            else
+                return null;
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Find connected DP lead locomotive
+        /// <\summary>
+
+        // Finds the DP lead locomotive to the TrainCar reference provided as input,
+        // returning the TrainCar reference to the DP lead unit.
+        // Returns null if there are no DP lead units controlling the given train car.
+
+        public TrainCar DetermineDPLeadLocomotive(TrainCar locoCar)
+        {
+            if (Cars.Contains(locoCar) && locoCar is MSTSLocomotive loco)
+                foreach (TrainCar dpLead in DPLeadUnits)
+                    if (dpLead is MSTSLocomotive dpLeadLoco && dpLeadLoco.DPUnitID == loco.DPUnitID)
+                        return dpLead;
+
+            return null;
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Find compatibility of DP connection between two locomotives
+        /// <\summary>
+
+        // Returns a score judging the compatibility of a lead locomotive (first input as a TrainCar)
+        // and remote locomotive (second input as a TrainCar). The more capabilities the two locomotives
+        // share, the higher the number returned. There is an additional slight bias for remote
+        // locomotives having higher capabilities than the lead locomotive.
+        // Returns -1 if one of the input TrainCars isn't a locomotive
+
+        public float DetermineDPCompatibility(TrainCar leadCar, TrainCar remoteCar)
+        {
+            float score = 0;
+
+            if (leadCar is MSTSLocomotive lead && remoteCar is MSTSLocomotive remote)
+            {
+                if (remote.DPSyncTrainApplication)
+                {
+                    if (lead.DPSyncTrainApplication)
+                        score++;
+                    else
+                        score += 0.1f;
+                }
+                if (remote.DPSyncTrainRelease)
+                {
+                    if (lead.DPSyncTrainRelease)
+                        score++;
+                    else
+                        score += 0.1f;
+                }
+                if (remote.DPSyncEmergency)
+                {
+                    if (lead.DPSyncEmergency)
+                        score++;
+                    else
+                        score += 0.1f;
+                }
+                if (remote.DPSyncIndependent)
+                {
+                    if (lead.DPSyncIndependent)
+                        score++;
+                    else
+                        score += 0.1f;
+                }
+
+                return score;
+            }
+            else
+                return -1;
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// Propagate brake pressure
         /// <\summary>
 
@@ -4222,7 +4432,11 @@ namespace Orts.Simulation.Physics
             if (LeadLocomotive is MSTSLocomotive lead)
             {
                 if (lead.TrainBrakeController != null)
+                {
                     lead.TrainBrakeController.UpdatePressure(ref EqualReservoirPressurePSIorInHg, elapsedClockSeconds, ref BrakeLine4);
+                    if (!(lead.BrakeSystem is EPBrakeSystem))
+                        BrakeLine4 = -1;
+                }
                 if (lead.EngineBrakeController != null)
                     lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, elapsedClockSeconds);
                 lead.BrakeSystem.PropagateBrakePressure(elapsedClockSeconds);
@@ -4353,7 +4567,7 @@ namespace Orts.Simulation.Physics
                     IsFreight = true;
                 if ((car.WagonType == TrainCar.WagonTypes.Passenger) || (car.IsDriveable && car.HasPassengerCapacity))
                     PassengerCarsNumber++;
-                if (car.IsDriveable && (car as MSTSLocomotive).CabViewList.Count > 0) IsPlayable = true;
+                if (car.IsDriveable && ((car as MSTSLocomotive).CabViewList.Count > 0 || car.HasFront3DCab || car.HasRear3DCab)) IsPlayable = true;
             }
             if (TrainType == TRAINTYPE.AI_INCORPORATED && IncorporatingTrainNo > -1) IsPlayable = true;
         } // CheckFreight
@@ -4377,7 +4591,9 @@ namespace Orts.Simulation.Physics
 
             // TODO : check if train moved back into previous section
 
-            var traveller = new Traveller(RearTDBTraveller);
+            CalculatorTraveller = CalculatorTraveller ?? new Traveller(RearTDBTraveller);
+            var traveller = CalculatorTraveller;
+            traveller.Copy(RearTDBTraveller);
             // The traveller location represents the back of the train.
             var length = 0f;
 
@@ -4452,7 +4668,7 @@ namespace Orts.Simulation.Physics
                 car.UpdateFreightAnimationDiscretePositions();
             }
 
-            FrontTDBTraveller = traveller;
+            (FrontTDBTraveller, CalculatorTraveller) = (CalculatorTraveller, FrontTDBTraveller);
             Length = length;
             travelled += distance;
         } // CalculatePositionOfCars
@@ -5453,7 +5669,7 @@ namespace Orts.Simulation.Physics
                 if (car is MSTSLocomotive) locoBehind = false;
                 if (car.SpeedMpS > 0)
                 {
-                    car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
+                    car.SpeedMpS += (car.TotalForceN / car.MassKG) * elapsedTime;
                     if (car.SpeedMpS < 0)
                         car.SpeedMpS = 0;
                     // If car is manual braked, air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  
@@ -5466,7 +5682,7 @@ namespace Orts.Simulation.Physics
                 }
                 else if (car.SpeedMpS < 0)
                 {
-                    car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
+                    car.SpeedMpS += (car.TotalForceN / car.MassKG) * elapsedTime;
                     if (car.SpeedMpS > 0)
                         car.SpeedMpS = 0;
                     // If car is manual braked, air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  
@@ -6520,7 +6736,7 @@ namespace Orts.Simulation.Physics
         public void UpdateSectionState(int backward)
         {
 
-            List<int[]> sectionList = new List<int[]>();
+            sectionList.Clear();
 
             int lastIndex = PreviousPosition[0].RouteListIndex;
             int presentIndex = PresentPosition[0].RouteListIndex;
@@ -20024,6 +20240,7 @@ namespace Orts.Simulation.Physics
 
         public class DistanceTravelledActions : LinkedList<DistanceTravelledItem>
         {
+            readonly List<DistanceTravelledItem> itemList = new List<DistanceTravelledItem>();
 
             //================================================================================================//
             //
@@ -20110,7 +20327,7 @@ namespace Orts.Simulation.Physics
 
             public List<DistanceTravelledItem> GetActions(float distance)
             {
-                List<DistanceTravelledItem> itemList = new List<DistanceTravelledItem>();
+                itemList.Clear();
 
                 bool itemsCollected = false;
                 LinkedListNode<DistanceTravelledItem> nextNode = this.First;
@@ -20135,7 +20352,7 @@ namespace Orts.Simulation.Physics
 
             public List<DistanceTravelledItem> GetAuxActions(Train thisTrain, float distance)
             {
-                List<DistanceTravelledItem> itemList = new List<DistanceTravelledItem>();
+                itemList.Clear();
                 LinkedListNode<DistanceTravelledItem> nextNode = this.First;
 
                 while (nextNode != null)
@@ -20158,7 +20375,7 @@ namespace Orts.Simulation.Physics
 
             public List<DistanceTravelledItem> GetActions(float distance, Type reqType)
             {
-                List<DistanceTravelledItem> itemList = new List<DistanceTravelledItem>();
+                itemList.Clear();
 
                 bool itemsCollected = false;
                 LinkedListNode<DistanceTravelledItem> nextNode = this.First;

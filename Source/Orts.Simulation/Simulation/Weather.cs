@@ -108,5 +108,9 @@ namespace Orts.Simulation
             get => (float)Math.Atan2(WindInstantaneousDirection.X, -WindInstantaneousDirection.Y);
             set => WindInstantaneousDirection = new Vector2((float)Math.Sin(value), -(float)Math.Cos(value));
         }
+
+        // FIXME: This is not a weather simulation field
+        // Daylight offset (-12h to +12h)
+        public int DaylightOffset = 0;
     }
 }

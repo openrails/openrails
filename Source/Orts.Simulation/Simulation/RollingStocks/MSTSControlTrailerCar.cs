@@ -41,7 +41,7 @@ namespace Orts.Simulation.RollingStocks
 {
     public class MSTSControlTrailerCar : MSTSLocomotive
     {
-        public int ControllerNumberOfGears = 1;
+        public int ControllerNumberOfGears = 0;
         bool HasGearController = false;
         bool ControlGearUp = false;
         bool ControlGearDown = false;
@@ -128,6 +128,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Save(BinaryWriter outf)
         {
+            base.Save(outf);
             ControllerFactory.Save(GearBoxController, outf);
             outf.Write(ControlGearIndication);
             outf.Write(ControlGearIndex);
@@ -173,7 +174,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     var locog = car as MSTSDieselLocomotive;
 
-                    if (locog != null && car != this && !locog.IsLeadLocomotive() && (ControlGearDown || ControlGearUp))
+                    if (locog != null && locog.DieselEngines[0].GearBox != null && locog.DieselEngines[0].GearBox != null && car != this && !locog.IsLeadLocomotive() && (ControlGearDown || ControlGearUp))
                     {
                         if (ControlGearUp)
                         {
@@ -193,7 +194,7 @@ namespace Orts.Simulation.RollingStocks
                     }
 
                     // Read values for the HuD and other requirements, will be based upon the last motorcar
-                    if (locog != null)
+                    if (locog != null && locog.DieselEngines[0].GearBox != null && locog.DieselEngines[0].GearBox != null)
                     {
                         ControlGearIndex = locog.DieselEngines[0].GearBox.CurrentGearIndex;
                         ControlGearIndication = locog.DieselEngines[0].GearBox.GearIndication;

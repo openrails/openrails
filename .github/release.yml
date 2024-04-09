@@ -1,0 +1,22 @@
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+    authors:
+      - appveyor
+      - dependabot
+      - github-actions
+  categories:
+    - title: New Features
+      labels:
+        - enhancement
+    - title: Documentation and Localization
+      labels:
+        - documentation
+        - locales
+    - title: Bug Fixes
+      labels:
+        - bug
+    - title: Other Changes
+      labels:
+        - "*"

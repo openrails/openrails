@@ -141,7 +141,7 @@ namespace Orts.Viewer3D
                 // Fill in the sun- and moon-position lookup tables
                 for (int i = 0; i < skySteps.MaxSteps; i++)
                 {
-                    mstsskysolarPosArray[i] = SunMoonPos.SolarAngle(mstsskylatitude, mstsskylongitude, ((float)i / skySteps.MaxSteps), date);
+                    mstsskysolarPosArray[i] = SunMoonPos.SolarAngle(mstsskylatitude, mstsskylongitude, MSTSSkyViewer.ENVFile.Sun, ((float)i / skySteps.MaxSteps), date);
                     mstsskylunarPosArray[i] = SunMoonPos.LunarAngle(mstsskylatitude, mstsskylongitude, ((float)i / skySteps.MaxSteps), date);
                 }
                 // Phase of the moon is generated at random
@@ -221,7 +221,7 @@ namespace Orts.Viewer3D
             date.Day = 21;
             date.Year = 2017;
             float fractClockTime = (float)MSTSSkyViewer.Simulator.ClockTime / 86400;
-            mstsskysolarDirection = SunMoonPos.SolarAngle(mstsskylatitude, mstsskylongitude, fractClockTime, date);
+            mstsskysolarDirection = SunMoonPos.SolarAngle(mstsskylatitude, mstsskylongitude, MSTSSkyViewer.ENVFile.Sun, fractClockTime, date);
             mstsskyworldLoc = null;
             mstsskylatitude = 0;
             mstsskylongitude = 0;
@@ -512,7 +512,7 @@ namespace Orts.Viewer3D
                         mstsskytexturey = mstsskytexture[i].TileY;
 
                     }
-                    else if(mstsskytexture[i].Fadein_Begin_Time != null)
+                    else if(mstsskytexture[i].FadeInBeginTime != null)
                     {
                         MSTSSkyStarTexture = MSTSSkyTexture[i];
                         mstsskytexturex = mstsskytexture[i].TileX;
@@ -536,9 +536,9 @@ namespace Orts.Viewer3D
                 MSTSSkyTexture.Add(SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "SkyDome1.png")));
                 MSTSSkyStarTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Starmap_N.png"));
             }
-            if (viewer.ENVFile.SkySatellite != null)
+            if (viewer.ENVFile.SkySatellites != null)
             {
-                var mstsskysatellitetexture = Viewer.ENVFile.SkySatellite.ToArray();
+                var mstsskysatellitetexture = Viewer.ENVFile.SkySatellites.ToArray();
 
                 string mstsSkySunTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskysatellitetexture[0].TextureName.ToString();
                 string mstsSkyMoonTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskysatellitetexture[1].TextureName.ToString();

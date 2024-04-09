@@ -1135,14 +1135,16 @@ namespace Orts.Common
                         {
                             Receiver.Headlight = 1;
                             Receiver.Simulator.Confirmer.Confirm(CabControl.Headlight, CabSetting.Neutral);
+                            Receiver.SignalEvent(Event.LightSwitchToggle);
                         }
                         break;
                     case 1:
                         Receiver.Headlight = 2;
                         Receiver.Simulator.Confirmer.Confirm(CabControl.Headlight, CabSetting.On);
+                        Receiver.SignalEvent(Event.LightSwitchToggle);
                         break;
                 }
-                Receiver.SignalEvent(Event.LightSwitchToggle);
+                
             }
             else
             {
@@ -1153,14 +1155,15 @@ namespace Orts.Common
                         {
                             Receiver.Headlight = 0;
                             Receiver.Simulator.Confirmer.Confirm(CabControl.Headlight, CabSetting.Off);
+                            Receiver.SignalEvent(Event.LightSwitchToggle);
                         }
                         break;
                     case 2:
                         Receiver.Headlight = 1;
                         Receiver.Simulator.Confirmer.Confirm(CabControl.Headlight, CabSetting.Neutral);
+                        Receiver.SignalEvent(Event.LightSwitchToggle);
                         break;
                 }
-                Receiver.SignalEvent(Event.LightSwitchToggle);
             }
         }
     }
@@ -1239,6 +1242,47 @@ namespace Orts.Common
             Receiver.ToggleMirrors();
         }
     }
+
+    [Serializable()]
+    public sealed class ToggleWindowLeftCommand : Command
+    {
+        public static MSTSWagon Receiver { get; set; }
+
+        public ToggleWindowLeftCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver is MSTSLocomotive locomotive && locomotive.UsingRearCab)
+                locomotive.ToggleWindow(rear: true, left: false);
+            else
+                Receiver.ToggleWindow(rear: false, left: true);
+        }
+    }
+
+    [Serializable()]
+    public sealed class ToggleWindowRightCommand : Command
+    {
+        public static MSTSWagon Receiver { get; set; }
+
+        public ToggleWindowRightCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver is MSTSLocomotive locomotive && locomotive.UsingRearCab)
+                locomotive.ToggleWindow(rear: true, left: true);
+            else
+                Receiver.ToggleWindow(rear: false, left: false);
+        }
+    }
+
 
     [Serializable()]
     public sealed class ToggleBatterySwitchCommand : BooleanCommand
@@ -1529,6 +1573,71 @@ namespace Orts.Common
 
 
     // Steam controls
+
+    // Steam booster command
+
+    [Serializable()]
+    public sealed class ToggleSteamBoosterAirCommand : Command
+    {
+        public static MSTSSteamLocomotive Receiver { get; set; }
+
+        public ToggleSteamBoosterAirCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver == null) return;
+            Receiver.ToggleSteamBoosterAir();
+            // Report();
+        }
+    }
+
+    // Steam Booster Idle Valve
+
+    [Serializable()]
+    public sealed class ToggleSteamBoosterIdleCommand : Command
+    {
+        public static MSTSSteamLocomotive Receiver { get; set; }
+
+        public ToggleSteamBoosterIdleCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver == null) return;
+            Receiver.ToggleSteamBoosterIdle();
+            // Report();
+        }
+    }
+
+    // Steam Booster Latch
+
+    [Serializable()]
+    public sealed class ToggleSteamBoosterLatchCommand : Command
+    {
+        public static MSTSSteamLocomotive Receiver { get; set; }
+
+        public ToggleSteamBoosterLatchCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver == null) return;
+            Receiver.ToggleSteamBoosterLatch();
+            // Report();
+        }
+    }
+
+    // Steam heat command
     [Serializable()]
     public sealed class ContinuousSteamHeatCommand : ContinuousCommand
     {
@@ -2265,9 +2374,9 @@ namespace Orts.Common
         {
             if (Receiver?.Train != null)
             {
+                var wagonFilePath = PickedEOTType.ToLower();
                 if (ToState)
                 {
-                    var wagonFilePath = PickedEOTType.ToLower();
                     try
                     {
                         EOT eot = (EOT)RollingStock.Load(Receiver.Train.Simulator, Receiver.Train, wagonFilePath);
@@ -2284,8 +2393,14 @@ namespace Orts.Common
                 }
                 else
                 {
-                    Receiver.Train.RecalculateRearTDBTraveller();
                     var car = Receiver.Train.Cars[Receiver.Train.Cars.Count - 1];
+                    if (wagonFilePath != car.WagFilePath.ToLower())
+                    {
+                        car = Receiver.Train.Cars[0];
+                        if (Receiver.Train.LeadLocomotive != null) Receiver.Train.LeadLocomotiveIndex--;
+                    }
+                    else
+                        Receiver.Train.RecalculateRearTDBTraveller();
                     car.Train = null;
                     car.IsPartOfActiveTrain = false;  // to stop sounds
                     Receiver.Train.Cars.Remove(car);

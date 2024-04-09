@@ -19,6 +19,7 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Orts.Simulation;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 
@@ -107,7 +108,10 @@ namespace Orts.Viewer3D.Popups
                     else if (FieldOfView != Owner.Viewer.Camera.FieldOfView)
                     {
                         FieldOfView = Owner.Viewer.Camera.FieldOfView;
-                        SetNotice(Viewer.Catalog.GetStringFmt("FOV: {0:F0}°", FieldOfView));
+                        if (playerLocomotive.Simulator.Settings.SuppressConfirmations == (int)ConfirmLevel.None)
+                        {
+                            SetNotice(Viewer.Catalog.GetStringFmt("FOV: {0:F0}°", FieldOfView));
+                        }
                     }
                 }
             }

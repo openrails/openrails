@@ -43,6 +43,8 @@ using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
+using Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;
@@ -71,6 +73,23 @@ namespace Orts.Simulation.RollingStocks
         public Doors Doors;        
         public Door RightDoor => Doors.RightDoor;
         public Door LeftDoor => Doors.LeftDoor;
+
+        public enum WindowState
+            // Don't change the order of entries within this enum
+        {
+            Closed,
+            Closing,
+            Opening,
+            Open,
+        }
+
+        public static int LeftWindowFrontIndex = 0;
+        public static int RightWindowFrontIndex = 1;
+        public static int LeftWindowRearIndex = 2;
+        public static int RightWindowRearIndex = 3;
+        public WindowState[] WindowStates = new WindowState[4];
+        public float[] SoundHeardInternallyCorrection = new float[2];
+
         public bool MirrorOpen;
         public bool UnloadingPartsOpen;
         public bool WaitForAnimationReady; // delay counter to start loading/unliading is on;
@@ -85,8 +104,7 @@ namespace Orts.Simulation.RollingStocks
 
         public bool GenericItem1;
         public bool GenericItem2;
-
-        Interpolator BrakeShoeFrictionFactor;  // Factor of friction for wagon brake shoes
+                
         const float WaterLBpUKG = 10.0f;    // lbs of water in 1 gal (uk)
         float TempMassDiffRatio;
 
@@ -94,6 +112,11 @@ namespace Orts.Simulation.RollingStocks
         public float Variable1;  // used to convey status to soundsource
         public float Variable2;
         public float Variable3;
+        // additional engines
+        public float Variable1_2;
+        public float Variable1_3;
+        public float Variable1_4;
+        public float Variable2_Booster;
 
         // wag file data
         public string MainShapeFileName;
@@ -107,6 +130,7 @@ namespace Orts.Simulation.RollingStocks
         public string InteriorSoundFileName;
         public string Cab3DSoundFileName;
         public float ExternalSoundPassThruPercent = -1;
+        public float TrackSoundPassThruPercent = -1;
         public float WheelRadiusM = Me.FromIn(18.0f);  // Provide some defaults in case it's missing from the wag - Wagon wheels could vary in size from approx 10" to 25".
         protected float StaticFrictionFactorN;    // factor to multiply friction by to determine static or starting friction - will vary depending upon whether roller or friction bearing
         float FrictionLowSpeedN; // Davis low speed value 0 - 5 mph
@@ -143,12 +167,13 @@ namespace Orts.Simulation.RollingStocks
         public float Curtius_KnifflerC = 0.161f;             //                                      speedMpS * 3.6 + B
         public float AdhesionK = 0.7f;   //slip characteristics slope
         public float AxleInertiaKgm2;    //axle inertia
-        public float AdhesionDriveWheelRadiusM;
         public float WheelSpeedMpS;
         public float WheelSpeedSlipMpS; // speed of wheel if locomotive is slipping
         public float SlipWarningThresholdPercent = 70;
         public MSTSNotchController WeightLoadController; // Used to control freight loading in freight cars
         public float AbsWheelSpeedMpS; // Math.Abs(WheelSpeedMpS) is used frequently in the subclasses, maybe it's more efficient to compute it once
+
+        public Axles LocomotiveAxles; // Only used at locomotives for efficiency
 
         // Colours for smoke and steam effects
         public Color ExhaustTransientColor = Color.Black;
@@ -222,6 +247,7 @@ namespace Orts.Simulation.RollingStocks
             None,
             TripleValve, // Plain triple valve
             Distributor, // Triple valve with graduated release
+            DistributingValve, // Triple valve + driver brake valve control. Only for locomotives
         }
         /// <summary>
         /// Type of brake valve in the car
@@ -265,6 +291,11 @@ namespace Orts.Simulation.RollingStocks
         /// Attached steam locomotive in case this wagon is an auxiliary tender
         /// </summary>
         public MSTSSteamLocomotive AuxTendersSteamLocomotive { get; private set; }
+
+        /// <summary>
+        /// Tender attached to this steam locomotive
+        /// </summary>
+        public TrainCar AttachedTender { get; private set; }
 
         /// <summary>
         /// Steam locomotive has a tender coupled to it
@@ -342,6 +373,7 @@ namespace Orts.Simulation.RollingStocks
         {
             Pantographs = new Pantographs(this);
             Doors = new Doors(this);
+            LocomotiveAxles = new Axles(this);
         }
 
         public void Load()
@@ -493,6 +525,11 @@ namespace Orts.Simulation.RollingStocks
             if (MSTSWagonNumWheels == 0 && InitWagonNumAxles == 0 )
             {
                 DerailmentCoefficientEnabled = false;
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Derailment Coefficient set to false for Wagon {0}", WagFilePath);
+                }
             }
 
             // Ensure Drive Axles is set to a default if no OR value added to WAG file
@@ -509,7 +546,7 @@ namespace Orts.Simulation.RollingStocks
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("Number of Wagon Axles set to default value of {0}", WagonNumAxles);
+                    Trace.TraceInformation("Number of Wagon Axles set to default value of {0} on Wagon {1}", WagonNumAxles, WagFilePath);
                 }
             }
             else
@@ -590,8 +627,54 @@ namespace Orts.Simulation.RollingStocks
 
             // Initialise key wagon parameters
             MassKG = InitialMassKG;
+
             MaxHandbrakeForceN = InitialMaxHandbrakeForceN;
-            MaxBrakeForceN = InitialMaxBrakeForceN;
+
+            FrictionBrakeBlendingMaxForceN = InitialMaxBrakeForceN; // set the value of braking when blended with dynamic brakes
+
+            if (MaxBrakeShoeForceN != 0 && BrakeShoeType != BrakeShoeTypes.Unknown)
+            {
+                MaxBrakeForceN = MaxBrakeShoeForceN;            
+            }
+            else
+            {
+                MaxBrakeForceN = InitialMaxBrakeForceN;
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Unknown BrakeShoeType set to OR default (Cast Iron) with a MaxBrakeForce of {0}", FormatStrings.FormatForce(MaxBrakeForceN, IsMetric));
+                }
+            }
+
+            // Initialise number of brake shoes per wagon
+            if (NumberCarBrakeShoes == 0 && WagonType == WagonTypes.Engine)
+            {
+                var LocoTest = Simulator.PlayerLocomotive as MSTSLocomotive;
+
+                if (LocoTest != null && LocoTest.DriveWheelOnlyBrakes)
+                {
+                    NumberCarBrakeShoes = LocoNumDrvAxles * 4; // Assume 4 brake shoes per axle on drive wheels only                    
+                }
+                else
+                {
+                    NumberCarBrakeShoes = (LocoNumDrvAxles * 4) + (WagonNumAxles * 4); // Assume 4 brake shoes per axle on all wheels
+                } 
+
+                if (Simulator.Settings.VerboseConfigurationMessages && (BrakeShoeType != BrakeShoeTypes.User_Defined || BrakeShoeType != BrakeShoeTypes.Unknown))
+                {
+                    Trace.TraceInformation("Number of Locomotive Brakeshoes set to default value of {0}", NumberCarBrakeShoes);
+                }
+            }
+            else if (NumberCarBrakeShoes == 0)
+            {
+                NumberCarBrakeShoes = WagonNumAxles * 4; // Assume 4 brake shoes per axle
+
+                if (Simulator.Settings.VerboseConfigurationMessages && (BrakeShoeType != BrakeShoeTypes.User_Defined || BrakeShoeType != BrakeShoeTypes.Unknown))
+                {
+                    Trace.TraceInformation("Number of Wagon Brakeshoes set to default value of {0}", NumberCarBrakeShoes);
+                }
+            }
+
             CentreOfGravityM = InitialCentreOfGravityM;
 
             if (FreightAnimations != null)
@@ -663,7 +746,11 @@ namespace Orts.Simulation.RollingStocks
                     LoadEmptyWagonFrontalAreaM2 = WagonFrontalAreaM2;
                 }
 
-                if (FreightAnimations.EmptyMaxBrakeForceN > 0)
+                if (FreightAnimations.EmptyMaxBrakeShoeForceN > 0)
+                {
+                    LoadEmptyMaxBrakeForceN = FreightAnimations.EmptyMaxBrakeShoeForceN;
+                }
+                else if (FreightAnimations.EmptyMaxBrakeForceN > 0)
                 {
                     LoadEmptyMaxBrakeForceN = FreightAnimations.EmptyMaxBrakeForceN;
                 }
@@ -739,8 +826,11 @@ namespace Orts.Simulation.RollingStocks
                         LoadFullWagonFrontalAreaM2 = WagonFrontalAreaM2;
                     }
 
-
-                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeForceN > 0)
+                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeShoeForceN > 0)
+                    {
+                        LoadFullMaxBrakeForceN = FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeShoeForceN;
+                    }
+                    else if (FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeForceN > 0)
                     {
                         LoadFullMaxBrakeForceN = FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeForceN;
                     }
@@ -826,8 +916,11 @@ namespace Orts.Simulation.RollingStocks
                         LoadFullWagonFrontalAreaM2 = WagonFrontalAreaM2;
                     }
 
-
-                    if (FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeForceN > 0)
+                    if (FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeShoeForceN > 0)
+                    {
+                        LoadFullMaxBrakeForceN = FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeShoeForceN;
+                    }
+                    else if (FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeForceN > 0)
                     {
                         LoadFullMaxBrakeForceN = FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeForceN;
                     }
@@ -947,7 +1040,6 @@ namespace Orts.Simulation.RollingStocks
                 Trace.TraceInformation("Empty Values = Brake {0} Handbrake {1} DavisA {2} DavisB {3} DavisC {4} CoGY {5}", LoadEmptyMaxBrakeForceN, LoadEmptyMaxHandbrakeForceN, LoadEmptyORTSDavis_A, LoadEmptyORTSDavis_B, LoadEmptyORTSDavis_C, LoadEmptyCentreOfGravityM_Y);
                 Trace.TraceInformation("Full Values = Brake {0} Handbrake {1} DavisA {2} DavisB {3} DavisC {4} CoGY {5}", LoadFullMaxBrakeForceN, LoadFullMaxHandbrakeForceN, LoadFullORTSDavis_A, LoadFullORTSDavis_B, LoadFullORTSDavis_C, LoadFullCentreOfGravityM_Y);
 #endif
-
             }
 
             // Determine whether or not to use the Davis friction model. Must come after freight animations are initialized.
@@ -975,6 +1067,7 @@ namespace Orts.Simulation.RollingStocks
             Pantographs.Initialize();
             Doors.Initialize();
             PassengerCarPowerSupply?.Initialize();
+            LocomotiveAxles.Initialize();
 
             base.Initialize();
                        
@@ -1005,9 +1098,9 @@ namespace Orts.Simulation.RollingStocks
 
         public override void InitializeMoving()
         {
-            PassengerCarPowerSupply?.InitializeMoving();
-
             base.InitializeMoving();
+            PassengerCarPowerSupply?.InitializeMoving();
+            LocomotiveAxles.InitializeMoving();
         }
 
         /// <summary>
@@ -1123,6 +1216,21 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsbrakeshoefriction": BrakeShoeFrictionFactor = new Interpolator(stf); break;
                 case "wagon(maxhandbrakeforce": InitialMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(maxbrakeforce": InitialMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(ortsmaxbrakeshoeforce": MaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(ortsnumbercarbrakeshoes": NumberCarBrakeShoes = stf.ReadIntBlock(null); break;
+                case "wagon(ortsbrakeshoetype":
+                    stf.MustMatch("(");
+                    var brakeShoeType = stf.ReadString();
+                    try
+                    {
+                        BrakeShoeType = (BrakeShoeTypes)Enum.Parse(typeof(BrakeShoeTypes), brakeShoeType);
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Assumed unknown brake shoe type " + brakeShoeType);
+                    }
+                    break;
+
                 case "wagon(ortswheelbrakeslideprotection":
                   // stf.MustMatch("(");
                     var brakeslideprotection = stf.ReadFloatBlock(STFReader.UNITS.None, null);
@@ -1185,6 +1293,7 @@ namespace Orts.Simulation.RollingStocks
                             case "triple_valve": BrakeValve = BrakeValveType.TripleValve; break;
                             case "distributor":
                             case "graduated_release_triple_valve": BrakeValve = BrakeValveType.Distributor; break;
+                            case "distributing_valve": BrakeValve = BrakeValveType.DistributingValve; break;
                             case "emergency_brake_reservoir": EmergencyReservoirPresent = true; break;
                             case "handbrake": HandBrakePresent = true; break;
                             case "auxilary_reservoir": // MSTS legacy parameter - use is discouraged
@@ -1363,6 +1472,7 @@ namespace Orts.Simulation.RollingStocks
                     stf.ReadFloat(STFReader.UNITS.None, null);
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(ortscurtius_kniffler":
                 case "wagon(ortsadhesion(ortscurtius_kniffler":
                     //e.g. Wagon ( ORTSAdhesion ( ORTSCurtius_Kniffler ( 7.5 44 0.161 0.7 ) ) )
                     stf.MustMatch("(");
@@ -1372,20 +1482,14 @@ namespace Orts.Simulation.RollingStocks
                     AdhesionK = stf.ReadFloat(STFReader.UNITS.None, 0.7f); if (AdhesionK <= 0) AdhesionK = 0.7f;
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(ortsslipwarningthreshold":
                 case "wagon(ortsadhesion(ortsslipwarningthreshold":
                     stf.MustMatch("(");
                     SlipWarningThresholdPercent = stf.ReadFloat(STFReader.UNITS.None, 70.0f); if (SlipWarningThresholdPercent <= 0) SlipWarningThresholdPercent = 70.0f;
                     stf.SkipRestOfBlock();
                     break;
-                case "wagon(ortsadhesion(wheelset(axle(ortsinertia":
-                    stf.MustMatch("(");
-                    AxleInertiaKgm2 = stf.ReadFloat(STFReader.UNITS.RotationalInertia, null);
-                    stf.SkipRestOfBlock();
-                    break;
-                case "wagon(ortsadhesion(wheelset(axle(ortsradius":
-                    stf.MustMatch("(");
-                    AdhesionDriveWheelRadiusM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    stf.SkipRestOfBlock();
+                case "wagon(ortsadhesion(wheelset":
+                    LocomotiveAxles.Parse(lowercasetoken, stf);
                     break;
                 case "wagon(lights":
                     Lights = new LightCollection(stf);
@@ -1428,10 +1532,18 @@ namespace Orts.Simulation.RollingStocks
                     FreightAnimations = new FreightAnimations(stf, this);
                     break;
                 case "wagon(ortsexternalsoundpassedthroughpercent": ExternalSoundPassThruPercent = stf.ReadFloatBlock(STFReader.UNITS.None, -1); break;
+                case "wagon(ortstracksoundpassedthroughpercent": TrackSoundPassThruPercent = stf.ReadFloatBlock(STFReader.UNITS.None, -1); break;
                 case "wagon(ortsalternatepassengerviewpoints": // accepted only if there is already a passenger viewpoint
                     if (HasInsideView)
                     {
                         ParseAlternatePassengerViewPoints(stf);
+                    }
+                    else stf.SkipRestOfBlock();
+                    break;
+                case "wagon(ortsalternate3dcabviewpoints": // accepted only if there is already a 3D cabview
+                    if (Cab3DShapeFileName != null)
+                    {
+                        ParseAlternate3DCabViewPoints(stf);
                     }
                     else stf.SkipRestOfBlock();
                     break;
@@ -1455,6 +1567,7 @@ namespace Orts.Simulation.RollingStocks
             HasPassengerCapacity = copy.HasPassengerCapacity;
             WagonType = copy.WagonType;
             WagonSpecialType = copy.WagonSpecialType;
+            BrakeShoeType = copy.BrakeShoeType;
             FreightShapeFileName = copy.FreightShapeFileName;
             FreightAnimMaxLevelM = copy.FreightAnimMaxLevelM;
             FreightAnimMinLevelM = copy.FreightAnimMinLevelM;
@@ -1497,6 +1610,8 @@ namespace Orts.Simulation.RollingStocks
             InitialMaxBrakeForceN = copy.InitialMaxBrakeForceN;
             InitialMaxHandbrakeForceN = copy.InitialMaxHandbrakeForceN;
             MaxBrakeForceN = copy.MaxBrakeForceN;
+            MaxBrakeShoeForceN = copy.MaxBrakeShoeForceN;
+            NumberCarBrakeShoes = copy.NumberCarBrakeShoes;
             MaxHandbrakeForceN = copy.MaxHandbrakeForceN;
             WindowDeratingFactor = copy.WindowDeratingFactor;
             DesiredCompartmentTempSetpointC = copy.DesiredCompartmentTempSetpointC;
@@ -1550,10 +1665,10 @@ namespace Orts.Simulation.RollingStocks
             Curtius_KnifflerC = copy.Curtius_KnifflerC;
             AdhesionK = copy.AdhesionK;
             AxleInertiaKgm2 = copy.AxleInertiaKgm2;
-            AdhesionDriveWheelRadiusM = copy.AdhesionDriveWheelRadiusM;
             SlipWarningThresholdPercent = copy.SlipWarningThresholdPercent;
             Lights = copy.Lights;
             ExternalSoundPassThruPercent = copy.ExternalSoundPassThruPercent;
+            TrackSoundPassThruPercent = copy.TrackSoundPassThruPercent;
             foreach (PassengerViewPoint passengerViewPoint in copy.PassengerViewpoints)
                 PassengerViewpoints.Add(passengerViewPoint);
             foreach (ViewPoint headOutViewPoint in copy.HeadOutViewpoints)
@@ -1613,6 +1728,20 @@ namespace Orts.Simulation.RollingStocks
                 PowerSupply = new ScriptedPassengerCarPowerSupply(this);
                 PassengerCarPowerSupply.Copy(copy.PassengerCarPowerSupply);
             }
+            LocomotiveAxles.Copy(copy.LocomotiveAxles);
+            MoveParamsToAxle();
+        }
+
+        /// <summary>
+        /// We are moving parameters from locomotive to axle. 
+        /// </summary>
+        public void MoveParamsToAxle()
+        {
+            foreach (var axle in LocomotiveAxles)
+            {
+                axle.SlipWarningTresholdPercent = SlipWarningThresholdPercent;
+                axle.AdhesionK = AdhesionK;
+            }
         }
 
         protected void ParseWagonInside(STFReader stf)
@@ -1658,6 +1787,15 @@ namespace Orts.Simulation.RollingStocks
             });
         }
 
+        // parses additional 3Dcab viewpoints, if any
+        protected void ParseAlternate3DCabViewPoints(STFReader stf)
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new[] {
+                new STFReader.TokenProcessor("ortsalternate3dcabviewpoint", ()=>{ Parse3DCab(stf); }),
+            });
+        }
+
         public static float ParseFloat(string token)
         {   // is there a better way to ignore any suffix?
             while (token.Length > 0)
@@ -1682,7 +1820,11 @@ namespace Orts.Simulation.RollingStocks
         {
             outf.Write(Variable1);
             outf.Write(Variable2);
+            outf.Write(Variable2_Booster);
             outf.Write(Variable3);
+            outf.Write(Variable1_2);
+            outf.Write(Variable1_3);
+            outf.Write(Variable1_4);
             outf.Write(IsDavisFriction);
             outf.Write(IsRollerBearing);
             outf.Write(IsLowTorqueRollerBearing);
@@ -1725,6 +1867,12 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(DerailPossible);
             outf.Write(DerailExpected);
             outf.Write(DerailElapsedTimeS);
+            for (int index = 0; index < 4; index++)
+            {
+                outf.Write((int)WindowStates[index]);
+            }
+
+            LocomotiveAxles.Save(outf);
 
             base.Save(outf);
         }
@@ -1737,7 +1885,11 @@ namespace Orts.Simulation.RollingStocks
         {
             Variable1 = inf.ReadSingle();
             Variable2 = inf.ReadSingle();
+            Variable2_Booster = inf.ReadSingle();
             Variable3 = inf.ReadSingle();
+            Variable1_2 = inf.ReadSingle();
+            Variable1_3 = inf.ReadSingle();
+            Variable1_4 = inf.ReadSingle();
             IsDavisFriction = inf.ReadBoolean();
             IsRollerBearing = inf.ReadBoolean();
             IsLowTorqueRollerBearing = inf.ReadBoolean();
@@ -1778,6 +1930,13 @@ namespace Orts.Simulation.RollingStocks
             DerailPossible = inf.ReadBoolean();
             DerailExpected = inf.ReadBoolean();
             DerailElapsedTimeS = inf.ReadSingle();
+            for (int index = 0; index < 4; index++)
+            {
+                WindowStates[index] = (WindowState)inf.ReadInt32();
+            }
+
+            MoveParamsToAxle();
+            LocomotiveAxles.Restore(inf);
 
             base.Restore(inf);
         }
@@ -1860,7 +2019,7 @@ namespace Orts.Simulation.RollingStocks
 
                 AuxWagonType = "AuxiliaryTender";
             }
-            else
+            else if (AuxWagonType == "")
             {
                 AuxWagonType = WagonType.ToString();
             }
@@ -2032,16 +2191,25 @@ namespace Orts.Simulation.RollingStocks
                             MassKG = MathHelper.Clamp(MassKG, LoadEmptyMassKg, LoadFullMassKg); // Clamp Mass to between the empty and full wagon values   
                             // Adjust drive wheel weight
                             SteamLocomotiveIdentification.DrvWheelWeightKg = (MassKG / InitialMassKG) * SteamLocomotiveIdentification.InitialDrvWheelWeightKg;
+
+                            // update drive wheel weight for each multiple steam engine
+                            UpdateDriveWheelWeight(LocoIndex, MassKG, SteamLocomotiveIdentification.SteamEngines.Count);
+
                         }
                         else // locomotive must be a tender type locomotive
                         // This is a tender locomotive. A tender locomotive does not have any fuel onboard.
                         // Thus the loco weight only changes as boiler level goes up and down, and coal mass varies in the fire
                         {
-                            MassKG = LoadEmptyMassKg + Kg.FromLb(SteamLocomotiveIdentification.BoilerMassLB) + SteamLocomotiveIdentification.FireMassKG;
-                            MassKG = MathHelper.Clamp(MassKG, LoadEmptyMassKg, LoadFullMassKg); // Clamp Mass to between the empty and full wagon values        
-                        // Adjust drive wheel weight
+                            MassKG = LoadEmptyMassKg + Kg.FromLb(SteamLocomotiveIdentification.BoilerMassLB) + SteamLocomotiveIdentification.FireMassKG + +(SteamLocomotiveIdentification.CurrentTrackSandBoxCapacityM3 * SteamLocomotiveIdentification.SandWeightKgpM3);
+                            var MassUpperLimit = LoadFullMassKg * 1.02f; // Allow full load to go slightly higher so that rounding errors do not skew results
+                            MassKG = MathHelper.Clamp(MassKG, LoadEmptyMassKg, MassUpperLimit); // Clamp Mass to between the empty and full wagon values        
+                                                                                                // Adjust drive wheel weight
                             SteamLocomotiveIdentification.DrvWheelWeightKg = (MassKG / InitialMassKG) * SteamLocomotiveIdentification.InitialDrvWheelWeightKg;
-                        }
+
+                            // update drive wheel weight for each multiple steam engine
+                            UpdateDriveWheelWeight(LocoIndex, MassKG, SteamLocomotiveIdentification.SteamEngines.Count);
+
+                        }          
 
                         // Update wagon physics parameters sensitive to wagon mass change
                         // Calculate the difference ratio, ie how full the wagon is. This value allows the relevant value to be scaled from the empty mass to the full mass of the wagon
@@ -2083,8 +2251,9 @@ namespace Orts.Simulation.RollingStocks
                     if (DieselLocomotiveIdentification != null)
                     {
 
-                        MassKG = LoadEmptyMassKg + (DieselLocomotiveIdentification.DieselLevelL * DieselLocomotiveIdentification.DieselWeightKgpL) + DieselLocomotiveIdentification.CurrentLocomotiveSteamHeatBoilerWaterCapacityL;
-                        MassKG = MathHelper.Clamp(MassKG, LoadEmptyMassKg, LoadFullMassKg); // Clamp Mass to between the empty and full wagon values  
+                        MassKG = LoadEmptyMassKg + (DieselLocomotiveIdentification.DieselLevelL * DieselLocomotiveIdentification.DieselWeightKgpL) + DieselLocomotiveIdentification.CurrentLocomotiveSteamHeatBoilerWaterCapacityL + (DieselLocomotiveIdentification.CurrentTrackSandBoxCapacityM3 * DieselLocomotiveIdentification.SandWeightKgpM3);
+                        var MassUpperLimit = LoadFullMassKg * 1.02f; // Allow full load to go slightly higher so that rounding errors do not skew results
+                        MassKG = MathHelper.Clamp(MassKG, LoadEmptyMassKg, MassUpperLimit); // Clamp Mass to between the empty and full wagon values  
                         // Adjust drive wheel weight
                         DieselLocomotiveIdentification.DrvWheelWeightKg = (MassKG / InitialMassKG) * DieselLocomotiveIdentification.InitialDrvWheelWeightKg;
 
@@ -2118,7 +2287,19 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        private void UpdateTrainBaseResistance()
+        private void UpdateDriveWheelWeight(int index,  float masskg, int numberofengines)
+        {
+           var  LocoIdentification = Train.Cars[index] as MSTSSteamLocomotive;
+            if (LocoIdentification != null)
+            {
+                for (int i = 0; i < LocoIdentification.SteamEngines.Count; i++)
+                {
+                    LocoIdentification.SteamEngines[i].AttachedAxle.WheelWeightKg = (MassKG / InitialMassKG) * LocoIdentification.SteamEngines[i].AttachedAxle.InitialDrvWheelWeightKg;
+                 }
+            }
+        }
+
+            private void UpdateTrainBaseResistance()
         {
             IsBelowMergeSpeed = AbsSpeedMpS < MergeSpeedMpS;
             IsStandStill = AbsSpeedMpS < 0.1f;
@@ -3404,6 +3585,22 @@ namespace Orts.Simulation.RollingStocks
             if (Simulator.PlayerLocomotive == this) Simulator.Confirmer.Confirm(CabControl.Mirror, MirrorOpen ? CabSetting.On : CabSetting.Off);
         }
 
+        public void ToggleWindow(bool rear, bool left)
+        {
+            var open = false;
+            var index = (left ? 0 : 1) + 2 * (rear ? 1 : 0);
+                if (WindowStates[index] == WindowState.Closed || WindowStates[index] == WindowState.Closing)
+                    WindowStates[index] = WindowState.Opening;
+                else if (WindowStates[index] == WindowState.Open || WindowStates[index] == WindowState.Opening)
+                    WindowStates[index] = WindowState.Closing;
+                if (WindowStates[index] == WindowState.Opening) open = true;
+
+
+            if (open) SignalEvent(Event.WindowOpening); // hook for sound trigger
+            else SignalEvent(Event.WindowClosing);
+            if (Simulator.PlayerLocomotive == this) Simulator.Confirmer.Confirm(left ^ rear ? CabControl.WindowLeft : CabControl.WindowRight, open ? CabSetting.On : CabSetting.Off);
+        }
+
         public void FindControlActiveLocomotive()
         {
             // Find the active locomotive associated with a control car
@@ -3492,6 +3689,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     SteamLocomotiveTender = Train.Cars[0] as MSTSSteamLocomotive;
                     SteamLocomotiveTender.HasTenderCoupled = false;
+                    SteamLocomotiveTender.AttachedTender = null;
                 }
 
                 var tenderIndex = 0;
@@ -3505,6 +3703,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     SteamLocomotiveTender = Train.Cars[tenderIndex] as MSTSSteamLocomotive;
                     SteamLocomotiveTender.HasTenderCoupled = true;
+                    SteamLocomotiveTender.AttachedTender = Train.Cars[tenderIndex + 1];
                 }
 
                 else if (tenderIndex > 0 && Train.Cars[tenderIndex - 1].WagonType == WagonTypes.Tender) // Assuming the tender is "in front" of the locomotive, ie it is running in reverse
@@ -3512,11 +3711,13 @@ namespace Orts.Simulation.RollingStocks
                     // TO BE CHECKED - What happens if multiple locomotives are coupled together in reverse?
                     SteamLocomotiveTender = Train.Cars[tenderIndex] as MSTSSteamLocomotive;
                     SteamLocomotiveTender.HasTenderCoupled = true;
+                    SteamLocomotiveTender.AttachedTender = Train.Cars[tenderIndex - 1];
                 }
                 else // Assuming that locomotive is a tank locomotive, and no tender is coupled
                 {
                     SteamLocomotiveTender = Train.Cars[tenderIndex] as MSTSSteamLocomotive;
                     SteamLocomotiveTender.HasTenderCoupled = false;
+                    SteamLocomotiveTender.AttachedTender = null;
                 }
             }
         }
@@ -3942,46 +4143,6 @@ namespace Orts.Simulation.RollingStocks
             if (FreightAnimations.LoadedOne != null) fraction = FreightAnimations.LoadedOne.LoadPerCent / 100;
             return fraction;
         }
-
-        /// <summary>
-        /// Returns the Brake shoe coefficient.
-        /// </summary>
-
-        public override float GetUserBrakeShoeFrictionFactor()
-        {
-            var frictionfraction = 0.0f;
-            if ( BrakeShoeFrictionFactor == null)
-            {
-                frictionfraction = 0.0f;
-            }
-            else
-            {
-                frictionfraction = BrakeShoeFrictionFactor[MpS.ToKpH(AbsSpeedMpS)];
-            }
-            
-            return frictionfraction;
-        }
-
-        /// <summary>
-        /// Returns the Brake shoe coefficient at zero speed.
-        /// </summary>
-
-        public override float GetZeroUserBrakeShoeFrictionFactor()
-        {
-            var frictionfraction = 0.0f;
-            if (BrakeShoeFrictionFactor == null)
-            {
-                frictionfraction = 0.0f;
-            }
-            else
-            {
-                frictionfraction = BrakeShoeFrictionFactor[0.0f];
-            }
-
-            return frictionfraction;
-        }       
-      
-        
         
         /// <summary>
         /// Starts a continuous increase in controlled value.

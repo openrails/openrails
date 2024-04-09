@@ -2115,6 +2115,7 @@ namespace Orts.Formats.Msts
                     // if only 1 part, it is a single function call without assignment
 
                     AssignType = SCRTermType.Invalid;
+                    AssignParameter = -1;    // preset assignparameter is not found
 
                     if (StatementParts.Length == 2)
                     {
@@ -2133,6 +2134,13 @@ namespace Orts.Formats.Msts
                                 AssignType = SCRTermType.LocalFloat;
                                 AssignParameter = (int)intFloat.Value;
                             }
+                        }
+
+                        // check if parameter has been defined
+                        if (AssignParameter < 0)
+                        {
+                            Trace.TraceInformation("Local variable {0} not defined for script {1}", assignPart, Statement.Scriptname);
+                            AssignParameter = 0;
                         }
 
                         // Term part

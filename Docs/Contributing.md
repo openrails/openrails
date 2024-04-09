@@ -18,21 +18,35 @@ If you've got a feature suggestion for Open Rails, please report it in [our road
 
 You are free to make any modifications to the Open Rails code that you like; that's how open source works. However, if you'd like your feature to be included in the official version, there is a process to ensure that the community agrees and to review the code for potential issues prior to inclusion.
 
-In most cases, you can get started immediately with making the changes and creating a pull request. We do ask for some additional steps to be taken for some bugs and all new features, but they can come before or after the pull request. Please feel free to share ideas and proposals as pull requests!
+In most cases, you can get started immediately with making the changes and creating a pull request. We have _additional requirements_ for some bugs and all new features, but they can come before or after the pull request is created. Please feel free to share ideas and proposals as pull requests!
 
-**Note:** You must start your work from the "master" branch and merged pull requests back into the "master" branch, unless we direct you otherwise.
+**Note:** You must fork the Open Rails repository before you start working on it. We do not allow you to push branches to the official repository.
+
+**Note:** You should do your work on separate branches; they must be created from the "master" branch and pull requests must merge back into the "master" branch, unless we direct you otherwise.
 
 ### Documentation and translations
 
 If you'd like to improve the [documentation](./), [manual](../Source/Documentation/Manual), or [translations](../Source/Locales) you can get started immediately.
 
-There are no requirements for the pull request.
+There are no additional requirements for the pull request.
+
+### Contributed projects
+
+If you'd like to improve the [contributed projects](../Source/Contrib) you can get started immediately.
+
+There are no additional requirements for the pull request.
+
+### Refactoring process
+
+If you'd like to refactor the existing code you can get started immediately, but please have a look at our [architecture requirements](#architecture-requirements). We welcome architectural discussions on our [forum](http://www.elvastower.com/forums/index.php?/forum/256-developing-features/).
+
+There are no additional requirements for the pull request.
 
 ### Bug process
 
 If you'd like to fix a bug, you can get started immediately. If the fix turns out to be very small, you do not even need a bug report. Otherwise, you will need to make sure it has been reported on [our bug tracker on Launchpad](https://bugs.launchpad.net/or). If it has not, you can report the bug *and* fix it!
 
-There are no requirements for creating the pull request.
+There are no additional requirements for _creating_ the pull request.
 
 These things must be done in the required order:
 
@@ -154,7 +168,7 @@ When we start preparing for a new Stable Version, all code in the Testing Versio
 
 ### Submitting your code
 
-When you're done writing code, you should make a pull request on GitHub. The title and description of the requests should concisely indicate what bug or feature you've implemented and you will need to include links to whichever of the following are appropriate:
+When you're done writing code, you should make a pull request on GitHub from your fork's branch back to the official repository's "master" branch. The title and description of the requests should concisely indicate what bug or feature you've implemented and you will need to include links to whichever of the following are appropriate:
 
 * Bug report
 * Road-map card

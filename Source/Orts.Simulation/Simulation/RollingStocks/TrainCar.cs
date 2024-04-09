@@ -139,6 +139,8 @@ namespace Orts.Simulation.RollingStocks
            0.0f, 31.0f
         };
 
+        public Interpolator BrakeShoeFrictionFactor;  // Factor of friction for wagon brake shoes
+
         public static Interpolator SteamHeatBoilerWaterUsageGalukpH()
         {
             return new Interpolator(SteamUsageLbpH, WaterUsageGalukpH);
@@ -210,8 +212,10 @@ namespace Orts.Simulation.RollingStocks
 
         public float MaxHandbrakeForceN;
         public float MaxBrakeForceN = 89e3f;
+        public float MaxBrakeShoeForceN; // This is the force applied to the brake shoe, hence it will be decreased by CoF to give force applied to the wheel
+        public int NumberCarBrakeShoes;
         public float InitialMaxHandbrakeForceN;  // Initial force when agon initialised
-        public float InitialMaxBrakeForceN = 89e3f;   // Initial force when agon initialised
+        public float InitialMaxBrakeForceN = 89e3f;   // Initial force when wagon initialised, this is the force on the wheel, ie after the brake shoe.
 
         // Coupler Animation
         public AnimatedCoupler FrontCoupler = new AnimatedCoupler();
@@ -268,13 +272,11 @@ namespace Orts.Simulation.RollingStocks
         public bool BrakeSkid = false;
         public bool BrakeSkidWarning = false;
         public bool HUDBrakeSkid = false;
-        public float BrakeShoeCoefficientFriction = 1.0f; // Brake Shoe coefficient - for simple adhesion model set to 1
-        public float BrakeShoeCoefficientFrictionAdjFactor = 1.0f; // Factor to adjust Brake force by - based upon changing friction coefficient with speed, will change when wheel goes into skid
-        public float BrakeShoeRetardCoefficientFrictionAdjFactor = 1.0f; // Factor of adjust Retard Brake force by - independent of skid
-        float DefaultBrakeShoeCoefficientFriction;  // A default value of brake shoe friction is no user settings are present.
+
         float BrakeWheelTreadForceN; // The retarding force apparent on the tread of the wheel
         float WagonBrakeAdhesiveForceN; // The adhesive force existing on the wheels of the wagon
         public float SkidFriction = 0.08f; // Friction if wheel starts skidding - based upon wheel dynamic friction of approx 0.08
+        public float HuDBrakeShoeFriction;
 
         public float AuxTenderWaterMassKG;    // Water mass in auxiliary tender
         public string AuxWagonType;           // Store wagon type for use with auxilary tender calculations
@@ -313,6 +315,8 @@ namespace Orts.Simulation.RollingStocks
 
         public bool WheelSlip;  // true if locomotive wheels slipping
         public bool WheelSlipWarning;
+        public bool HuDIsWheelSlipWarninq;
+        public bool HuDIsWheelSlip;
         public bool WheelSkid;  // True if wagon wheels lock up.
         public float _AccelerationMpSS;
         protected IIRFilter AccelerationFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, 1.0f, 0.1f);
@@ -335,6 +339,8 @@ namespace Orts.Simulation.RollingStocks
         public float ActivityHotBoxDurationS;
         public float ActivityElapsedDurationS;
         public float HotBoxStartTimeS;
+
+        bool RigidWheelBaseInitialised = false;
 
         // Setup for ambient temperature dependency
         Interpolator OutsideWinterTempbyLatitudeC;  // Interploator to calculate ambient Winter temperature based upon the latitude of the route
@@ -482,6 +488,7 @@ namespace Orts.Simulation.RollingStocks
         {
             get
             {
+                float percent = -1;
                 if (RemoteControlGroup == 0 && Train != null)
                 {
                     if (Train.LeadLocomotive is MSTSLocomotive locomotive)
@@ -492,16 +499,17 @@ namespace Orts.Simulation.RollingStocks
                         }
                     }
 
-                    return Train.MUDynamicBrakePercent;
+                    percent = Train.MUDynamicBrakePercent;
                 }
                 else if (RemoteControlGroup == 1 && Train != null)
                 {
-                    return Train.DPDynamicBrakePercent;
+                    percent = Train.DPDynamicBrakePercent;
                 }
                 else
                 {
-                    return LocalDynamicBrakePercent;
+                    percent = LocalDynamicBrakePercent;
                 }
+                return Math.Max(percent, this is MSTSLocomotive loco ? loco.DynamicBrakeBlendingPercent : -1);
             }
             set
             {
@@ -542,7 +550,8 @@ namespace Orts.Simulation.RollingStocks
         // TrainCar.Update() must set these variables
         public float MotiveForceN;   // ie motor power in Newtons  - signed relative to direction of car -
         public float TractiveForceN = 0f; // Raw tractive force for electric sound variable2
-        public SmoothedData MotiveForceSmoothedN = new SmoothedData(0.5f);
+        public SmoothedData MotiveForceSmoothN = new SmoothedData(0.5f);
+        public float MotiveForceSmoothedN;
         public float PrevMotiveForceN;
         // Gravity forces have negative values on rising grade. 
         // This means they have the same sense as the motive forces and will push the train downhill.
@@ -576,8 +585,10 @@ namespace Orts.Simulation.RollingStocks
 
         public float TunnelForceN;  // Resistive force due to tunnel, in Newtons
         public float FrictionForceN; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
-        public float BrakeForceN;    // brake force applied to slow train (Newtons) - will be impacted by wheel/rail friction
+        public float BrakeForceN;    // current braking force applied to slow train (Newtons) - will be impacted by wheel/rail friction
         public float BrakeRetardForceN;    // brake force applied to wheel by brakeshoe (Newtons) independent of friction wheel/rail friction
+        public float BrakeShoeForceN;
+        public float FrictionBrakeBlendingMaxForceN; // This is the maximum force for the friction barke when it is blended with the dynamic brake
 
         // Sum of all the forces acting on a Traincar in the direction of driving.
         // MotiveForceN and GravityForceN act to accelerate the train. The others act to brake the train.
@@ -634,11 +645,10 @@ namespace Orts.Simulation.RollingStocks
         protected int WagonNumAxles; // Number of axles on a wagon
         protected int InitWagonNumAxles; // Initial read of number of axles on a wagon
         protected float MSTSWagonNumWheels; // Number of axles on a wagon - used to read MSTS value as default
-        protected int LocoNumDrvAxles; // Number of drive axles on locomotive
+        public int LocoNumDrvAxles; // Number of drive axles on locomotive
         protected float MSTSLocoNumDrvWheels; // Number of drive axles on locomotive - used to read MSTS value as default
         public float DriverWheelRadiusM = Me.FromIn(30.0f); // Drive wheel radius of locomotive wheels - Wheel radius of loco drive wheels can be anywhere from about 10" to 40".
-
-        public enum SteamEngineTypes
+                public enum SteamEngineTypes
         {
             Unknown,
             Simple,
@@ -647,6 +657,16 @@ namespace Orts.Simulation.RollingStocks
         }
 
         public SteamEngineTypes SteamEngineType;
+
+        public enum SandingSystemTypes
+        {
+            Unknown,
+            Air,
+            Steam,
+            Gravity,
+        }
+
+        public SandingSystemTypes SandingSystemType;
 
         public enum WagonTypes
         {
@@ -677,7 +697,18 @@ namespace Orts.Simulation.RollingStocks
         }
         public WagonSpecialTypes WagonSpecialType;
 
-    protected float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
+        public enum BrakeShoeTypes
+        {
+            Unknown,
+            Cast_Iron_P6,
+            Cast_Iron_P10,
+            Disc_Pads,
+            High_Friction_Composite,
+            User_Defined,
+        }
+        public BrakeShoeTypes BrakeShoeType;
+
+        protected float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
         protected float RigidWheelBaseM;   // Vehicle rigid wheelbase, read from MSTS Wagon file
         protected float TrainCrossSectionAreaM2; // Cross sectional area of the train
         protected float DoubleTunnelCrossSectAreaM2;
@@ -700,8 +731,9 @@ namespace Orts.Simulation.RollingStocks
 
         public virtual void Initialize()
         {
+            BrakeSystem.Initialize();
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
-            
+
             //CurveForceFilter.Initialize();
 
             // Initialize tunnel resistance values
@@ -799,6 +831,102 @@ namespace Orts.Simulation.RollingStocks
         // called when it's time to update the MotiveForce and FrictionForce
         public virtual void Update(float elapsedClockSeconds)
         {
+            // Initialize RigidWheelBaseM in first loop if not defined in ENG file, then ignore
+            if (RigidWheelBaseM == 0 && !RigidWheelBaseInitialised)   // Calculate default values if no value in Wag File
+            {
+                float Axles = WheelAxles.Count;
+                float Bogies = Parts.Count - 1;
+                float BogieSize = Axles / Bogies;
+
+                RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
+
+                // Calculate the number of axles in a car
+
+                if (WagonType != WagonTypes.Engine)   // if car is not a locomotive then determine wheelbase
+                {
+                    if (Bogies < 2)  // if less then two bogies assume that it is a fixed wheelbase wagon
+                    {
+                        if (Axles == 2)
+                        {
+                            RigidWheelBaseM = 3.5052f;       // Assume a standard 4 wheel (2 axle) wagon - wheel base - 11' 6" (3.5052m)
+                        }
+                        else if (Axles == 3)
+                        {
+                            RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel (3 axle) wagon - wheel base - 12' 2" (3.6576m)
+                        }
+
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            Trace.TraceInformation("Rigid Wheelbase of CarID {0} set to {1} for number of axles {2}", CarID, FormatStrings.FormatVeryShortDistanceDisplay(RigidWheelBaseM, IsMetric), Axles);
+                        }
+
+                    }
+                    else if (Bogies == 2)
+                    {
+                        if (BogieSize == 2)
+                        {
+                            if (WagonType == WagonTypes.Passenger)
+                            {
+                                RigidWheelBaseM = 2.4384f;       // Assume a standard 4 wheel passenger bogie (2 axle) wagon - wheel base - 8' (2.4384m)
+                            }
+                            else
+                            {
+                                RigidWheelBaseM = 1.6764f;       // Assume a standard 4 wheel freight bogie (2 axle) wagon - wheel base - 5' 6" (1.6764m)
+                            }
+                        }
+                        else if (BogieSize == 3)
+                        {
+                            RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel bogie (3 axle) wagon - wheel base - 12' 2" (3.6576m)
+                        }
+
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            Trace.TraceInformation("Rigid Wheelbase of CarID {0} set to {1} for number of axles {2}", CarID, FormatStrings.FormatVeryShortDistanceDisplay(RigidWheelBaseM, IsMetric), BogieSize);
+                        }
+
+                    }
+                }
+                else if (WagonType == WagonTypes.Engine)   // if car is a locomotive and either a diesel or electric then determine wheelbase
+                {
+                    if (EngineType != EngineTypes.Steam)  // Assume that it is a diesel or electric locomotive
+                    {
+                        if (BogieSize == 2)
+                        {
+                            RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
+                        }
+                        else if (BogieSize == 3)
+                        {
+                            RigidWheelBaseM = 3.5052f;       // Assume a standard 6 wheel bogie (3 axle) locomotive - wheel base - 11' 6" (3.5052m)
+                        }
+
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            Trace.TraceInformation("Rigid Wheelbase of CarID {0} set to {1} for number of axles {2}", CarID, FormatStrings.FormatVeryShortDistanceDisplay(RigidWheelBaseM, IsMetric), BogieSize);
+                        }
+                    }
+                    else // assume steam locomotive
+                    {
+
+                        if (LocoNumDrvAxles >= Axles) // Test to see if ENG file value is too big (typically doubled)
+                        {
+                            LocoNumDrvAxles = LocoNumDrvAxles / 2;  // Appears this might be the number of wheels rather then the axles.
+                        }
+
+                        //    Approximation for calculating rigid wheelbase for steam locomotives
+                        // Wheelbase = 1.25 x (Loco Drive Axles - 1.0) x Drive Wheel diameter
+
+                        RigidWheelBaseM = 1.25f * (LocoNumDrvAxles - 1.0f) * (DriverWheelRadiusM * 2.0f);
+
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            Trace.TraceInformation("Rigid Wheelbase of CarID {0} set to {1} for number of axles {2}", CarID, FormatStrings.FormatVeryShortDistanceDisplay(RigidWheelBaseM, IsMetric), LocoNumDrvAxles);
+                        }
+                    }
+                }
+
+                RigidWheelBaseInitialised = true; // Don't process again
+            }
+
 
             // Initialise ambient temperatures on first initial loop, then ignore
             if (!AmbientTemperatureInitialised)
@@ -955,35 +1083,6 @@ namespace Orts.Simulation.RollingStocks
             if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain)
             {
 
-                // Get user defined brake shoe coefficient if defined in WAG file
-                float UserFriction = GetUserBrakeShoeFrictionFactor();
-                float ZeroUserFriction = GetZeroUserBrakeShoeFrictionFactor();
-                float AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // User set adjustment factor - convert to a factor where 100% = no change to adhesion
-
-                // This section calculates an adjustment factor for the brake force dependent upon the "base" (zero speed) friction value. 
-                //For a user defined case the base value is the zero speed value from the curve entered by the user.
-                // For a "default" case where no user data has been added to the WAG file, the base friction value has been assumed to be 0.2, thus maximum value of 20% applied.
-
-                if (UserFriction != 0)  // User defined friction has been applied in WAG file - Assume MaxBrakeForce is correctly set in the WAG, so no adjustment required 
-                {
-                    BrakeShoeCoefficientFrictionAdjFactor = UserFriction / ZeroUserFriction * AdhesionMultiplier; // Factor calculated by normalising zero speed value on friction curve applied in WAG file
-                    BrakeShoeRetardCoefficientFrictionAdjFactor = UserFriction / ZeroUserFriction * AdhesionMultiplier;
-                    BrakeShoeCoefficientFriction = UserFriction * AdhesionMultiplier; // For display purposes on HUD
-                }
-                else
-                // User defined friction NOT applied in WAG file - Assume MaxBrakeForce is incorrectly set in the WAG, so adjustment is required 
-                {
-                    DefaultBrakeShoeCoefficientFriction = (7.6f / (MpS.ToKpH(AbsSpeedMpS) + 17.5f) + 0.07f) * AdhesionMultiplier; // Base Curtius - Kniffler equation - u = 0.50, all other values are scaled off this formula
-                    BrakeShoeCoefficientFrictionAdjFactor = DefaultBrakeShoeCoefficientFriction / 0.2f * AdhesionMultiplier;  // Assuming that current MaxBrakeForce has been set with an existing Friction Coff of 0.2f, an adjustment factor needs to be developed to reduce the MAxBrakeForce by a relative amount
-                    BrakeShoeRetardCoefficientFrictionAdjFactor = DefaultBrakeShoeCoefficientFriction / 0.2f * AdhesionMultiplier;
-                    BrakeShoeCoefficientFriction = DefaultBrakeShoeCoefficientFriction * AdhesionMultiplier;  // For display purposes on HUD
-                }
-
-                // Clamp adjustment factor to a value of 1.0 - i.e. the brakeforce can never exceed the Brake Force value defined in the WAG file
-                BrakeShoeCoefficientFrictionAdjFactor = MathHelper.Clamp(BrakeShoeCoefficientFrictionAdjFactor, 0.01f, 1.0f);
-                BrakeShoeRetardCoefficientFrictionAdjFactor = MathHelper.Clamp(BrakeShoeRetardCoefficientFrictionAdjFactor, 0.01f, 1.0f);
-
-
                 // ************  Check if diesel or electric - assumed already be cover by advanced adhesion model *********
 
                 if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)
@@ -1036,9 +1135,7 @@ namespace Orts.Simulation.RollingStocks
                         WheelBrakeSlideProtectionTimerS = wheelBrakeSlideTimerResetValueS;
                         WheelBrakeSlideProtectionDumpValveLockout = false;
 
-                    }
-                    
-
+                    }       
 
                     // Calculate adhesive force based upon whether in skid or not
                     if (BrakeSkid)
@@ -1078,16 +1175,11 @@ namespace Orts.Simulation.RollingStocks
                 else
                 {
                     BrakeSkid = false; 	// wagon wheel is not slipping
-                    BrakeShoeRetardCoefficientFrictionAdjFactor = 1.0f;
                 }
             }
             else  // set default values if simple adhesion model, or if diesel or electric locomotive is used, which doesn't check for brake skid.
             {
                 BrakeSkid = false; 	// wagon wheel is not slipping
-                BrakeShoeCoefficientFrictionAdjFactor = 1.0f;  // Default value set to leave existing brakeforce constant regardless of changing speed
-                BrakeShoeRetardCoefficientFrictionAdjFactor = 1.0f;
-                BrakeShoeCoefficientFriction = 1.0f;  // Default value for display purposes
-
             }
 
 #if DEBUG_BRAKE_SLIDE
@@ -1238,40 +1330,40 @@ namespace Orts.Simulation.RollingStocks
             if (CarBehind != null)
             {
 
-                if (CurrentCurveRadius != 0 || CarBehind.CurrentCurveRadius != 0)
+                if (CurrentCurveRadiusM != 0 || CarBehind.CurrentCurveRadiusM != 0)
                 {
                     //When coming into a curve or out of a curve it is possible for an infinity value to occur, this next section ensures that never happens
-                    if (CurrentCurveRadius == 0)
+                    if (CurrentCurveRadiusM == 0)
                     {
                         float AspirationalCurveRadius = 10000;
                         CouplerAlphaAngleRad = BogieDistanceThisCarM / AspirationalCurveRadius;
                         CouplerGammaAngleRad = BogieCentresAdjVehiclesM / (2.0f * AspirationalCurveRadius);
 
 
-                        finalCouplerAlphaAngleRad = BogieDistanceThisCarM / CarBehind.CurrentCurveRadius;
-                        finalCouplerGammaAngleRad = BogieCentresAdjVehiclesM / (2.0f * CarBehind.CurrentCurveRadius);
+                        finalCouplerAlphaAngleRad = BogieDistanceThisCarM / CarBehind.CurrentCurveRadiusM;
+                        finalCouplerGammaAngleRad = BogieCentresAdjVehiclesM / (2.0f * CarBehind.CurrentCurveRadiusM);
                     }
                     else
                     {
-                        CouplerAlphaAngleRad = BogieDistanceThisCarM / CurrentCurveRadius;  // current car curve
-                        CouplerGammaAngleRad = BogieCentresAdjVehiclesM / (2.0f * CurrentCurveRadius); // assume curve between cars is the same as the curve for the front car.
-                        finalCouplerAlphaAngleRad = BogieDistanceThisCarM / CurrentCurveRadius;  // current car curve
-                        finalCouplerGammaAngleRad = BogieCentresAdjVehiclesM / (2.0f * CurrentCurveRadius); // assume curve between cars is the same as the curve for the front car.
+                        CouplerAlphaAngleRad = BogieDistanceThisCarM / CurrentCurveRadiusM;  // current car curve
+                        CouplerGammaAngleRad = BogieCentresAdjVehiclesM / (2.0f * CurrentCurveRadiusM); // assume curve between cars is the same as the curve for the front car.
+                        finalCouplerAlphaAngleRad = BogieDistanceThisCarM / CurrentCurveRadiusM;  // current car curve
+                        finalCouplerGammaAngleRad = BogieCentresAdjVehiclesM / (2.0f * CurrentCurveRadiusM); // assume curve between cars is the same as the curve for the front car.
                     }
 
                     //When coming into a curve or out of a curve it is possible for an infinity value to occur, which can cause calculation issues, this next section ensures that never happens
-                    if (CarBehind.CurrentCurveRadius == 0)
+                    if (CarBehind.CurrentCurveRadiusM == 0)
                     {
                         float AspirationalCurveRadius = 10000;
                         CouplerBetaAngleRad = BogieDistanceBehindCarM / AspirationalCurveRadius;
 
-                        finalCouplerBetaAngleRad = BogieDistanceBehindCarM / CurrentCurveRadius;
+                        finalCouplerBetaAngleRad = BogieDistanceBehindCarM / CurrentCurveRadiusM;
                     }
                     else
                     {
-                        CouplerBetaAngleRad = BogieDistanceBehindCarM / CarBehind.CurrentCurveRadius; // curve of following car
+                        CouplerBetaAngleRad = BogieDistanceBehindCarM / CarBehind.CurrentCurveRadiusM; // curve of following car
 
-                        finalCouplerBetaAngleRad = BogieDistanceBehindCarM / CarBehind.CurrentCurveRadius; // curve of following car
+                        finalCouplerBetaAngleRad = BogieDistanceBehindCarM / CarBehind.CurrentCurveRadiusM; // curve of following car
                     }
 
                     float AngleBetweenCarbodies = CouplerAlphaAngleRad + CouplerBetaAngleRad + 2.0f * CouplerGammaAngleRad;
@@ -1284,7 +1376,7 @@ namespace Orts.Simulation.RollingStocks
                     var finalWagonFrontCouplerAngleRad = (BogieCentresAdjVehiclesM * (finalCouplerGammaAngleRad + finalCouplerBetaAngleRad) - OverhangThisCarM * finalAngleBetweenCarbodies) / couplerDistanceM;
 
                     // If first car is starting to turn then slowly increase coupler angle to the maximum value expected
-                    if (CurrentCurveRadius != 0 && CarBehind.CurrentCurveRadius == 0)
+                    if (CurrentCurveRadiusM != 0 && CarBehind.CurrentCurveRadiusM == 0)
                     {
                         WagonRearCouplerAngleRad += 0.0006f;
                         WagonRearCouplerAngleRad = MathHelper.Clamp(WagonRearCouplerAngleRad, 0, finalWagonRearCouplerAngleRad);
@@ -1293,7 +1385,7 @@ namespace Orts.Simulation.RollingStocks
                         CarBehind.WagonFrontCouplerAngleRad = MathHelper.Clamp(CarBehind.WagonFrontCouplerAngleRad, 0, finalWagonFrontCouplerAngleRad);
 
                     }
-                    else if (CurrentCurveRadius != 0 && CarBehind.CurrentCurveRadius != 0) // both cars on the curve
+                    else if (CurrentCurveRadiusM != 0 && CarBehind.CurrentCurveRadiusM != 0) // both cars on the curve
                     {
                         // Find coupler angle for rear coupler on the car
                         WagonRearCouplerAngleRad = (BogieCentresAdjVehiclesM * (CouplerGammaAngleRad + CouplerAlphaAngleRad) - OverhangBehindCarM * AngleBetweenCarbodies) / couplerDistanceM;
@@ -1302,7 +1394,7 @@ namespace Orts.Simulation.RollingStocks
                     }
 
                     // If first car is still on straight, and last car is still on the curve, then slowly decrease coupler angle so that it is "straight" again
-                    else if (CurrentCurveRadius == 0 && CarBehind.CurrentCurveRadius != 0)
+                    else if (CurrentCurveRadiusM == 0 && CarBehind.CurrentCurveRadiusM != 0)
                     {
                         WagonRearCouplerAngleRad -= 0.0006f;
                         WagonRearCouplerAngleRad = MathHelper.Clamp(WagonRearCouplerAngleRad, 0, finalWagonRearCouplerAngleRad);
@@ -1344,18 +1436,18 @@ namespace Orts.Simulation.RollingStocks
                         // Car ahead rear coupler angle
                         var ThiscarCouplerlengthft = Me.ToFt(CarCouplerFaceLengthM - CarBodyLengthM) + CouplerSlackM / 2;
                         var CarbehindCouplerlengthft = Me.ToFt(CarBehind.CarCouplerFaceLengthM - CarBehind.CarBodyLengthM) + CouplerSlackM / 2;
-                        var A1 = Math.Sqrt(Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBogieCentreLengthM), 2) / 4.0f);
+                        var A1 = Math.Sqrt(Math.Pow(Me.ToFt(CurrentCurveRadiusM), 2) - Math.Pow(Me.ToFt(CarBogieCentreLengthM), 2) / 4.0f);
                         var A2 = (Me.ToFt(CarCouplerFaceLengthM) / 2.0f) - ThiscarCouplerlengthft;
                         var A = (float)Math.Atan(A1 / A2);
 
                         var B = (float)Math.Asin(2.0f * Me.ToFt(CarTrackPlayM) / Me.ToFt(CarBogieCentreLengthM));
                         var C1 = Math.Pow(ThiscarCouplerlengthft + CarbehindCouplerlengthft, 2);
 
-                        var C2_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBogieCentreLengthM), 2) / 4.0f);
+                        var C2_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadiusM), 2) - Math.Pow(Me.ToFt(CarBogieCentreLengthM), 2) / 4.0f);
                         var C2_2 = (2.0f * Me.ToFt(CarTrackPlayM) * (Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft)) / Me.ToFt(CarBogieCentreLengthM);
                         var C2 = Math.Pow((C2_1 + C2_2), 2);
 
-                        var C3_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBehind.CarBogieCentreLengthM), 2) / 4.0f);
+                        var C3_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadiusM), 2) - Math.Pow(Me.ToFt(CarBehind.CarBogieCentreLengthM), 2) / 4.0f);
                         var C3_2 = (2.0f * Me.ToFt(CarBehind.CarTrackPlayM) * (Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft)) / Me.ToFt(CarBehind.CarBogieCentreLengthM);
                         var C3 = Math.Pow((C3_1 + C3_2), 2);
 
@@ -1371,18 +1463,18 @@ namespace Orts.Simulation.RollingStocks
 
 
                         // This car front coupler angle
-                        var X1 = Math.Sqrt(Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBehind.CarBogieCentreLengthM), 2) / 4.0f);
+                        var X1 = Math.Sqrt(Math.Pow(Me.ToFt(CurrentCurveRadiusM), 2) - Math.Pow(Me.ToFt(CarBehind.CarBogieCentreLengthM), 2) / 4.0f);
                         var X2 = (Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f) - CarbehindCouplerlengthft;
                         var X = (float)Math.Atan(X1 / X2);
 
                         var Y = (float)Math.Asin(2.0f * Me.ToFt(CarBehind.CarTrackPlayM) / Me.ToFt(CarBehind.CarBogieCentreLengthM));
 
                         var Z1 = Math.Pow(ThiscarCouplerlengthft + CarbehindCouplerlengthft, 2);
-                        var Z2_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBehind.CarBogieCentreLengthM), 2) / 4.0f);
+                        var Z2_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadiusM), 2) - Math.Pow(Me.ToFt(CarBehind.CarBogieCentreLengthM), 2) / 4.0f);
                         var Z2_2 = (2.0f * Me.ToFt(CarBehind.CarTrackPlayM) * (Me.ToFt(CarBehind.CarCouplerFaceLengthM) / 2.0f - CarbehindCouplerlengthft)) / Me.ToFt(CarBehind.CarBogieCentreLengthM);
                         var Z2 = Math.Pow((Z2_1 + Z2_2), 2);
 
-                        var Z3_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadius), 2) - Math.Pow(Me.ToFt(CarBogieCentreLengthM), 2) / 4.0f);
+                        var Z3_1 = Math.Sqrt(Math.Pow(Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft, 2) + Math.Pow(Me.ToFt(CurrentCurveRadiusM), 2) - Math.Pow(Me.ToFt(CarBogieCentreLengthM), 2) / 4.0f);
                         var Z3_2 = (2.0f * Me.ToFt(CarTrackPlayM) * (Me.ToFt(CarCouplerFaceLengthM) / 2.0f - ThiscarCouplerlengthft)) / Me.ToFt(CarBogieCentreLengthM);
                         var Z3 = Math.Pow((Z3_1 + Z3_2), 2);
 
@@ -1401,7 +1493,7 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else if (CarAhead != null)
                 {
-                    if (CurrentCurveRadius == 0 && CarBehind.CurrentCurveRadius == 0 && CarAhead.CurrentCurveRadius == 0)
+                    if (CurrentCurveRadiusM == 0 && CarBehind.CurrentCurveRadiusM == 0 && CarAhead.CurrentCurveRadiusM == 0)
                     {
                         AdjustedWagonRearCouplerAngleRad = 0.0f;
                         CarBehind.AdjustedWagonFrontCouplerAngleRad = 0.0f;
@@ -1502,7 +1594,7 @@ namespace Orts.Simulation.RollingStocks
                 var numAxles = LocoNumDrvAxles + WagonNumAxles;
                 var numWheels = numAxles * 2;
 
-                if (CurrentCurveRadius != 0)
+                if (CurrentCurveRadiusM != 0)
                 {
                     float A = 0;
                     float B1 = 0;
@@ -1527,7 +1619,7 @@ namespace Orts.Simulation.RollingStocks
                         B1 = MassKG;
                     }
                     var B2 = GravitationalAccelerationMpS2 * (float)Math.Sin(SuperElevationAngleRad);
-                    var B3 = (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
+                    var B3 = (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadiusM;
                     var B4 = CentreOfGravityM.Y / TrackGaugeM;
 
                     TotalWagonVerticalDerailForceN = A + B1 * (B3 - B2) * B4;
@@ -1561,7 +1653,7 @@ namespace Orts.Simulation.RollingStocks
                         {
                             BB1 = MassKG;
                         }
-                        var BB2 = (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadius;
+                        var BB2 = (float)Math.Pow(Math.Abs(SpeedMpS), 2) / CurrentCurveRadiusM;
                         var BB3 = GravitationalAccelerationMpS2 * (float)Math.Sin(SuperElevationAngleRad);
 
                         TotalWagonLateralDerailForceN = Math.Abs(AA1 + BB1 * (BB2 - BB3));
@@ -1590,7 +1682,7 @@ namespace Orts.Simulation.RollingStocks
                     NadalDerailmentCoefficient = ((float) Math.Tan(MaximumWheelFlangeAngleRad) - wagonAdhesion) / (1f + wagonAdhesion * (float) Math.Tan(MaximumWheelFlangeAngleRad));
 
                     // Calculate Angle of Attack - AOA = sin-1(2 * bogie wheel base / curve radius)
-                    AngleOfAttackRad = (float)Math.Asin(2 * RigidWheelBaseM / CurrentCurveRadius);
+                    AngleOfAttackRad = (float)Math.Asin(2 * RigidWheelBaseM / CurrentCurveRadiusM);
                     var angleofAttackmRad = AngleOfAttackRad * 1000f; // Convert to micro radians
 
                     // Calculate the derail climb distance - uses the general form equation 2.4 from the above publication
@@ -1685,7 +1777,7 @@ namespace Orts.Simulation.RollingStocks
         {
             string curveDirection = "Straight";
 
-            if (CarBehind != null && (CurrentCurveRadius != 0 || CarBehind.CurrentCurveRadius != 0))
+            if (CarBehind != null && (CurrentCurveRadiusM != 0 || CarBehind.CurrentCurveRadiusM != 0))
             {
 
                 // Front Wagon Direction
@@ -1772,27 +1864,27 @@ namespace Orts.Simulation.RollingStocks
 
             // get curve radius
 
-            if (CurrentCurveRadius > 0)  // only check curve speed if it is a curve
+            if (CurrentCurveRadiusM > 0)  // only check curve speed if it is a curve
             {
                 float SpeedToleranceMpS = Me.FromMi(pS.FrompH(2.5f));  // Set bandwidth tolerance for resetting notifications
 
                 // If super elevation set in Route (TRK) file
                 if (Simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM != null)
                 {
-                    SuperelevationM = Simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM[CurrentCurveRadius];
+                    SuperelevationM = Simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM[CurrentCurveRadiusM];
 
                 }
                 else
                 {
                     // Set to OR default values
-                    if (CurrentCurveRadius > 2000)
+                    if (CurrentCurveRadiusM > 2000)
                     {
                         if (RouteSpeedMpS > 55.0)   // If route speed limit is greater then 200km/h, assume high speed passenger route
                         {
                             // Calculate superelevation based upon the route speed limit and the curve radius
                             // SE = ((TrackGauge x Velocity^2 ) / Gravity x curve radius)
 
-                            SuperelevationM = (TrackGaugeM * RouteSpeedMpS * RouteSpeedMpS) / (GravitationalAccelerationMpS2 * CurrentCurveRadius);
+                            SuperelevationM = (TrackGaugeM * RouteSpeedMpS * RouteSpeedMpS) / (GravitationalAccelerationMpS2 * CurrentCurveRadiusM);
 
                         }
                         else
@@ -1802,36 +1894,36 @@ namespace Orts.Simulation.RollingStocks
 
                     }
                     // Set Superelevation value - based upon standard figures
-                    else if (CurrentCurveRadius <= 2000 & CurrentCurveRadius > 1600)
+                    else if (CurrentCurveRadiusM <= 2000 & CurrentCurveRadiusM > 1600)
                     {
                         SuperelevationM = 0.0254f;  // Assume 1" (or 0.0254m)
                     }
-                    else if (CurrentCurveRadius <= 1600 & CurrentCurveRadius > 1200)
+                    else if (CurrentCurveRadiusM <= 1600 & CurrentCurveRadiusM > 1200)
                     {
                         SuperelevationM = 0.038100f;  // Assume 1.5" (or 0.038100m)
                     }
-                    else if (CurrentCurveRadius <= 1200 & CurrentCurveRadius > 1000)
+                    else if (CurrentCurveRadiusM <= 1200 & CurrentCurveRadiusM > 1000)
                     {
                         SuperelevationM = 0.050800f;  // Assume 2" (or 0.050800m)
                     }
-                    else if (CurrentCurveRadius <= 1000 & CurrentCurveRadius > 800)
+                    else if (CurrentCurveRadiusM <= 1000 & CurrentCurveRadiusM > 800)
                     {
                         SuperelevationM = 0.063500f;  // Assume 2.5" (or 0.063500m)
                     }
-                    else if (CurrentCurveRadius <= 800 & CurrentCurveRadius > 600)
+                    else if (CurrentCurveRadiusM <= 800 & CurrentCurveRadiusM > 600)
                     {
                         SuperelevationM = 0.0889f;  // Assume 3.5" (or 0.0889m)
                     }
-                    else if (CurrentCurveRadius <= 600 & CurrentCurveRadius > 500)
+                    else if (CurrentCurveRadiusM <= 600 & CurrentCurveRadiusM > 500)
                     {
                         SuperelevationM = 0.1016f;  // Assume 4" (or 0.1016m)
                     }
                     // for tighter radius curves assume on branch lines and less superelevation
-                    else if (CurrentCurveRadius <= 500 & CurrentCurveRadius > 280)
+                    else if (CurrentCurveRadiusM <= 500 & CurrentCurveRadiusM > 280)
                     {
                         SuperelevationM = 0.0889f;  // Assume 3" (or 0.0762m)
                     }
-                    else if (CurrentCurveRadius <= 280 & CurrentCurveRadius > 0)
+                    else if (CurrentCurveRadiusM <= 280 & CurrentCurveRadiusM > 0)
                     {
                         SuperelevationM = 0.063500f;  // Assume 2.5" (or 0.063500m)
                     }
@@ -1850,14 +1942,14 @@ namespace Orts.Simulation.RollingStocks
 
                 SuperElevationAngleRad = (float)Math.Sinh(SuperelevationM); // Balanced superelevation only angle
 
-                MaxCurveEqualLoadSpeedMps = (float)Math.Sqrt((SuperelevationM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM); // Used for calculating curve resistance
+                MaxCurveEqualLoadSpeedMps = (float)Math.Sqrt((SuperelevationM * GravitationalAccelerationMpS2 * CurrentCurveRadiusM) / TrackGaugeM); // Used for calculating curve resistance
 
                 // Railway companies often allow the vehicle to exceed the equal loading speed, provided that the passengers didn't feel uncomfortable, and that the car was not likely to excced the maximum critical speed
                 SuperElevationTotalM = SuperelevationM + UnbalancedSuperElevationM;
 
                 float SuperElevationTotalAngleRad = (float)Math.Sinh(SuperElevationTotalM); // Total superelevation includes both balanced and unbalanced superelevation
 
-                float MaxSafeCurveSpeedMps = (float)Math.Sqrt((SuperElevationTotalM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM);
+                float MaxSafeCurveSpeedMps = (float)Math.Sqrt((SuperElevationTotalM * GravitationalAccelerationMpS2 * CurrentCurveRadiusM) / TrackGaugeM);
 
                 // Calculate critical speed - indicates the speed above which stock will overturn - sum of the moments of centrifrugal force and the vertical weight of the vehicle around the CoG
                 // critical speed = SQRT ( (centrifrugal force x gravity x curve radius) / Vehicle weight)
@@ -1867,10 +1959,10 @@ namespace Orts.Simulation.RollingStocks
                 float CosTheta = (float)Math.Cos(SuperElevationAngleRad);
                 float HalfTrackGaugeM = TrackGaugeM / 2.0f;
 
-                float CriticalMaxSpeedMpS = (float)Math.Sqrt((CurrentCurveRadius * GravitationalAccelerationMpS2 * (CentreOfGravityM.Y * SinTheta + HalfTrackGaugeM * CosTheta)) / (CentreOfGravityM.Y * CosTheta - HalfTrackGaugeM * SinTheta));
+                float CriticalMaxSpeedMpS = (float)Math.Sqrt((CurrentCurveRadiusM * GravitationalAccelerationMpS2 * (CentreOfGravityM.Y * SinTheta + HalfTrackGaugeM * CosTheta)) / (CentreOfGravityM.Y * CosTheta - HalfTrackGaugeM * SinTheta));
 
                 float Sin2Theta = 0.5f * (1 - (float)Math.Cos(2.0 * SuperElevationAngleRad));
-                float CriticalMinSpeedMpS = (float)Math.Sqrt((GravitationalAccelerationMpS2 * CurrentCurveRadius * HalfTrackGaugeM * Sin2Theta) / (CosTheta * (CentreOfGravityM.Y * CosTheta + HalfTrackGaugeM * SinTheta)));
+                float CriticalMinSpeedMpS = (float)Math.Sqrt((GravitationalAccelerationMpS2 * CurrentCurveRadiusM * HalfTrackGaugeM * Sin2Theta) / (CosTheta * (CentreOfGravityM.Y * CosTheta + HalfTrackGaugeM * SinTheta)));
 
                 if (CurveSpeedDependent) // Function enabled by menu selection for curve speed limit
                 {
@@ -2026,86 +2118,32 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public virtual void UpdateCurveForce(float elapsedClockSeconds)
         {
-            if (CurrentCurveRadius > 0)
+            if (CurrentCurveRadiusM > 0)
             {
-                if (RigidWheelBaseM == 0)   // Calculate default values if no value in Wag File
-                {                        
-                    float Axles = WheelAxles.Count;
-                    float Bogies = Parts.Count - 1;
-                    float BogieSize = Axles / Bogies;
 
-                    RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
+                // References:
 
-                    // Calculate the number of axles in a car
+                // i) The modern locomotive by  Clarence Edgar Allen – 1912 – pg 82 - https://archive.org/details/modernlocomotive00allerich
 
-                    if (WagonType != WagonTypes.Engine)   // if car is not a locomotive then determine wheelbase
-                    {
-                        if (Bogies < 2)  // if less then two bogies assume that it is a fixed wheelbase wagon
-                        {
-                            if (Axles == 2)
-                            {
-                                RigidWheelBaseM = 3.5052f;       // Assume a standard 4 wheel (2 axle) wagon - wheel base - 11' 6" (3.5052m)
-                            }
-                            else if (Axles == 3)
-                            {
-                                RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel (3 axle) wagon - wheel base - 12' 2" (3.6576m)
-                            }
-                        }
-                        else if (Bogies == 2)
-                        {
-                            if (Axles == 2)
-                            {
-                                if (WagonType == WagonTypes.Passenger)
-                                {
-                                    RigidWheelBaseM = 2.4384f;       // Assume a standard 4 wheel passenger bogie (2 axle) wagon - wheel base - 8' (2.4384m)
-                                }
-                                else
-                                {
-                                    RigidWheelBaseM = 1.6764f;       // Assume a standard 4 wheel freight bogie (2 axle) wagon - wheel base - 5' 6" (1.6764m)
-                                }
-                            }
-                            else if (Axles == 3)
-                            {
-                                RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel bogie (3 axle) wagon - wheel base - 12' 2" (3.6576m)
-                            }
-                        }
-                    }
-                    if (WagonType == WagonTypes.Engine)   // if car is a locomotive and either a diesel or electric then determine wheelbase
-                    {
-                        if (EngineType != EngineTypes.Steam)  // Assume that it is a diesel or electric locomotive
-                        {
-                            if (Axles == 2)
-                            {
-                                RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
-                            }
-                            else if (Axles == 3)
-                            {
-                                RigidWheelBaseM = 3.5052f;       // Assume a standard 6 wheel bogie (3 axle) locomotive - wheel base - 11' 6" (3.5052m)
-                            }
-                        }
-                        else // assume steam locomotive
-                        {
+                //  ii)	Resistance to Traffic of Railway Rolling Stock by P.N.Astakhov – Moscow 1966 – pg 112
+                //  http://scbist.com/scb/uploaded/1_astahov_p_n_soprotivlenie_dvizheniyu_zheleznodorozhnogo_podv.pdf
 
-                            if (LocoNumDrvAxles >= Axles) // Test to see if ENG file value is too big (typically doubled)
-                            {
-                                LocoNumDrvAxles = LocoNumDrvAxles / 2;  // Appears this might be the number of wheels rather then the axles.
-                            }
+                // The CurveForce is a combination of these two components such that resistance will vary with stock characteristics and speed.
+                // These formulas are a mix of imperial and metric expressions so these will be retained and converted to a common UoM in Newtons once calculations are complete.
 
-                            //    Approximation for calculating rigid wheelbase for steam locomotives
-                            // Wheelbase = 1.25 x (Loco Drive Axles - 1.0) x Drive Wheel diameter
-
-                            RigidWheelBaseM = 1.25f * (LocoNumDrvAxles - 1.0f) * (DriverWheelRadiusM * 2.0f); 
-                        }
-                    }
-                }
-
-                // Curve Resistance = (Vehicle mass x Coeff Friction) * (Track Gauge + Vehicle Fixed Wheelbase) / (2 * curve radius)
+                // Base Curve Resistance (from refernce i)) = (Vehicle mass x Coeff Friction) * (Track Gauge + Vehicle Fixed Wheelbase) / (2 * curve radius)
                 // Vehicle Fixed Wheel base is the distance between the wheels, ie bogie or fixed wheels
 
-                CurveForceN = MassKG * Train.WagonCoefficientFriction * (TrackGaugeM + RigidWheelBaseM) / (2.0f * CurrentCurveRadius);
-                float CurveResistanceSpeedFactor = Math.Abs((MaxCurveEqualLoadSpeedMps - AbsSpeedMpS) / MaxCurveEqualLoadSpeedMps) * StartCurveResistanceFactor;
-                CurveForceN *= CurveResistanceSpeedFactor * CurveResistanceZeroSpeedFactor;
-                CurveForceN *= GravitationalAccelerationMpS2; // to convert to Newtons
+                var rBaseWagonN = 9.81f * MassKG * Train.WagonCoefficientFriction * (TrackGaugeM + RigidWheelBaseM) / (2.0f * CurrentCurveRadiusM);
+
+                // Speed Curve Resistance (from reference ii) - second term only) = ((Speed^2 / Curve Radius) - (Superelevation / Track Gauge) * Gravitational acceleration) * Constant
+
+                var speedConstant = 1.5f;
+                var MToMM = 1000;
+                var rspeedKgpTonne = speedConstant * Math.Abs((SpeedMpS * SpeedMpS / CurrentCurveRadiusM) - ((MToMM * SuperelevationM / MToMM * TrackGaugeM) * GravitationalAccelerationMpS2));
+                var rSpeedWagonN = GravitationalAccelerationMpS2 * (Kg.ToTonne(MassKG) * rspeedKgpTonne);
+
+                CurveForceN = rBaseWagonN + rSpeedWagonN;
             }
             else
             {
@@ -2295,8 +2333,9 @@ namespace Orts.Simulation.RollingStocks
             {
                 var loco = this as MSTSLocomotive;
                 var i = (int)CabViewType.Rear;
-                if (loco == null || loco.CabView3D == null) return false;
-                return (loco.CabView3D.ViewPointList.Count > i);
+                if (loco == null || loco.CabView3D == null || loco.CabView3D.ViewPointList.Count <= i) return false;
+                var cabViewAngle = loco.CabView3D.ViewPointList[i].StartDirection.Y;
+                return ((cabViewAngle >= 90 && cabViewAngle <= 270) || (cabViewAngle <= -90 && cabViewAngle >= -270));
             }
         }
 
@@ -2738,12 +2777,11 @@ namespace Orts.Simulation.RollingStocks
             var carIndex = Train.Cars.IndexOf(this);
             //Certain locomotives are testing as articulated wagons for some reason.
             if (WagonType != WagonTypes.Engine)
-                if (WheelAxles.Count >= 2)
-                    if (articulatedFront || articulatedRear)
-                    {
-                        WheelAxlesLoaded = true;
-                        SetUpWheelsArticulation(carIndex);
-                    }
+                if (WheelAxles.Count != 1 && (articulatedFront || articulatedRear))
+                {
+                    WheelAxlesLoaded = true;
+                    SetUpWheelsArticulation(carIndex);
+                }
         } // end SetUpWheels()
 
         protected void SetUpWheelsArticulation(int carIndex)
@@ -2892,7 +2930,7 @@ namespace Orts.Simulation.RollingStocks
         }
 
         #region Traveller-based updates
-        public float CurrentCurveRadius;
+        public float CurrentCurveRadiusM;
 
         internal void UpdatedTraveler(Traveller traveler, float elapsedTimeS, float distanceM, float speedMpS)
         {
@@ -2900,7 +2938,7 @@ namespace Orts.Simulation.RollingStocks
             if (elapsedTimeS > 0.25f)
                 return;
 
-            CurrentCurveRadius = traveler.GetCurveRadius();
+            CurrentCurveRadiusM = traveler.GetCurveRadius();
             UpdateVibrationAndTilting(traveler, elapsedTimeS, distanceM, speedMpS);
             UpdateSuperElevation(traveler, elapsedTimeS);
         }
@@ -2983,7 +3021,7 @@ namespace Orts.Simulation.RollingStocks
 
             // Don't add vibrations to train cars less than 2.5 meter in length; they're unsuitable for these calculations.
             // Don't let vibrate car before EOT to avoid EOT not moving together with that car
-            if (CarLengthM < 2.5f || Train.EOT != null && Train.Cars[Train.Cars.Count - 2] == this) return;
+            if (CarLengthM < 2.5f || Train.EOT != null && Train.Cars.Count > 1 && Train.Cars[Train.Cars.Count - 2] == this) return;
             if (Simulator.Settings.CarVibratingLevel != 0)
             {
 
@@ -3245,14 +3283,150 @@ namespace Orts.Simulation.RollingStocks
             return 0f;
         }
 
-        public virtual float GetUserBrakeShoeFrictionFactor()
-        {
-            return 0f;
+        /// <summary>
+        /// Returns the coefficient of friction (CoF) for the brake shoe. For legacy operation, it will be a "representation" of the CoF that will adjust 
+        /// the brake retard force with speed.
+        /// </summary>
+        public virtual float GetBrakeShoeFrictionFactor()
+        {            
+            var frictionfraction = 0.0f;
+            float AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // User set adjustment factor - convert to a factor where 100% = no change to adhesion
+
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain)
+            {
+                // Formula 9 and 10 from the paper "Study of the influence of the brake shoe temperature and wheel tread on braking effectiveness" by P Ivanov1, A Khudonogov1,
+                // E Dulskiy1, N Manuilov1, A Khamnaeva1, A Korsun1, S Treskin is used for the Cast Iron and Hi Friction Composite brake shoe friction curves.
+                // https://iopscience.iop.org/article/10.1088/1742-6596/1614/1/012086/pdf
+                //
+                // These formulas are based upon the work of Karwatzki, which is described further in "Fahrdynamik des Schienenverkehrs" by Dietrich Wende 2003.
+                // Karwatzki developed a formula for brakeshoe friction that used 5 constant values k1, ..... , k5.
+                // Wende present a number of different brake shoes k values, two sets of which line up with the UIC values above.
+
+                if (BrakeShoeType == BrakeShoeTypes.Cast_Iron_P6)
+                {
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.024f, 62.5f, 12.5f, 100, 20);
+                }
+                else if (BrakeShoeType == BrakeShoeTypes.Cast_Iron_P10)
+                {
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.05f, 62.5f, 31.25f, 100, 20);
+                }
+                else if (BrakeShoeType == BrakeShoeTypes.High_Friction_Composite)
+                {
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.055f, 200, 50, 150, 75);
+                }
+                else if (BrakeShoeType == BrakeShoeTypes.Disc_Pads)
+                {
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.385f, -24.5f, -27.2f, 39.5f, 33);
+                }
+                else if (BrakeShoeType == BrakeShoeTypes.User_Defined)
+                {
+                    frictionfraction = BrakeShoeFrictionFactor[MpS.ToKpH(AbsSpeedMpS)];
+                }
+                else // default curve - assume that this is legacy stock
+                {
+                    if (BrakeShoeFrictionFactor != null)  // User defined friction has been applied in WAG file, but brake shoe has not be described, hence a legacy condition - Assume MaxBrakeForce is correctly set in the WAG, so no adjustment required 
+                    {
+                        float userFriction = BrakeShoeFrictionFactor[MpS.ToKpH(AbsSpeedMpS)];
+                        float zeroUserFriction = BrakeShoeFrictionFactor[MpS.ToKpH(0)];
+
+                        frictionfraction = userFriction / zeroUserFriction * AdhesionMultiplier; // Factor calculated by normalising zero speed value on friction curve applied in WAG file
+
+                        // Clamp adjustment factor to a value of 1.0 - i.e. the brakeforce can never exceed the Brake Force value defined in the WAG file
+                        frictionfraction = MathHelper.Clamp(frictionfraction, 0.01f, 1.0f);
+                    }
+                    else
+                    {
+                        // Base Curtius - Kniffler equation - u = 0.50, all other values are scaled off this formula
+                        float defaultBrakeShoeCoefficientFriction = (7.6f / (MpS.ToKpH(AbsSpeedMpS) + 17.5f) + 0.07f) * AdhesionMultiplier;
+
+                        // Assuming that current MaxBrakeForce has been set with an existing Friction CoF of 0.2f, an adjustment factor needs to be developed to reduce
+                        // the MAxBrakeForce by a relative amount. Note force will be higher then ENG file value at low speed and reduce to actual value at higher speeds.
+                        frictionfraction = defaultBrakeShoeCoefficientFriction / 0.2f * AdhesionMultiplier;  // Assuming that current MaxBrakeForce has been set with an existing Friction CoF of 0.2f, an adjustment factor needs to be developed to reduce the MAxBrakeForce by a relative amount
+
+                        // Clamp adjustment factor to a value of 1.0 - i.e. the brakeforce can never exceed the Brake Force value defined in the WAG file
+                        frictionfraction = MathHelper.Clamp(frictionfraction, 0.01f, 1.0f);
+                    }
+                }
+
+                return frictionfraction;
+            }
+            else
+            {
+                // set default values if simple adhesion model, or if diesel or electric locomotive is used, which doesn't check for brake skid.
+
+                frictionfraction = 1.0f;  // Default value set to leave existing brakeforce constant regardless of changing speed
+                return frictionfraction;
+            }
         }
 
-        public virtual float GetZeroUserBrakeShoeFrictionFactor()
+        /// <summary>
+        /// Returns the coefficient of friction (CoF) of the brake shoe for display on the HuD.
+        /// For legacy operation, it will be different to the "representation" of the CoF calculated above, and be the actual CoF.
+        /// </summary>
+        public virtual float GetBrakeShoeFrictionCoefficientHuD()
         {
-            return 0f;
+            var frictionfraction = 0.0f;
+            float AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // User set adjustment factor - convert to a factor where 100% = no change to adhesion
+
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain)
+            {
+                // Formula 9 and 10 from the paper "Study of the influence of the brake shoe temperature and wheel tread on braking effectiveness" by P Ivanov1, A Khudonogov1,
+                // E Dulskiy1, N Manuilov1, A Khamnaeva1, A Korsun1, S Treskin is used for the Cast Iron and Hi Friction Composite brake shoe friction curves.
+                // https://iopscience.iop.org/article/10.1088/1742-6596/1614/1/012086/pdf
+                //
+                // These formulas are based upon the work of Karwatzki, which is described further in "Fahrdynamik des Schienenverkehrs" by Dietrich Wende 2003.
+                // Karwatzki developed a formula for brakeshoe friction that used 5 constant values k1, ..... , k5.
+                // Wende present a number of different brake shoes k values, two sets of which line up with the UIC values above.
+
+                if (BrakeShoeType == BrakeShoeTypes.Cast_Iron_P6)
+                {
+                    frictionfraction = KarwatzkiBrakeShoeFriction (0.024f, 62.5f, 12.5f, 100, 20);
+                }
+                else if (BrakeShoeType == BrakeShoeTypes.Cast_Iron_P10)
+                {
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.05f, 62.5f, 31.25f, 100, 20);
+                }
+                else if (BrakeShoeType == BrakeShoeTypes.High_Friction_Composite)
+                {
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.055f, 200, 50f, 150, 75);
+                }
+                else if (BrakeShoeType == BrakeShoeTypes.Disc_Pads)
+                {
+                    frictionfraction = KarwatzkiBrakeShoeFriction(0.385f, -24.5f, -27.2f, 39.5f, 33);
+                }
+                else if (BrakeShoeType == BrakeShoeTypes.User_Defined)
+                {
+                    frictionfraction = BrakeShoeFrictionFactor[MpS.ToKpH(AbsSpeedMpS)];
+                }
+                else // default curve - assume that this is legacy stock
+                {
+                    if (BrakeShoeFrictionFactor != null)  // User defined friction has been applied in WAG file, but brake shoe has not be described, hence a legacy condition - Assume MaxBrakeForce is correctly set in the WAG, so no adjustment required 
+                    {
+                        frictionfraction = BrakeShoeFrictionFactor[MpS.ToKpH(AbsSpeedMpS)];
+                    }
+                    else
+                    {
+                        frictionfraction = 7.6f / ((MpS.ToKpH(AbsSpeedMpS) + 17.5f) + 0.07f) * AdhesionMultiplier; // Base Curtius - Kniffler equation - u = 0.50, all other values are scaled off this formula
+                    }
+                }
+
+                return frictionfraction;
+            }
+            else
+            {
+                frictionfraction = 1.0f;  // Default value set to leave existing brakeforce constant regardless of changing speed
+                return frictionfraction;
+            }
+        }
+
+        public float KarwatzkiBrakeShoeFriction ( float k1, float k2, float k3, float k4, float k5 )
+        {
+                var friction = 0.0f;
+                float NewtonsTokNewtons = 0.001f;
+                float brakeShoeForcekN = NewtonsTokNewtons * BrakeShoeForceN / NumberCarBrakeShoes;
+                friction = k1 * ((brakeShoeForcekN + k2) / (brakeShoeForcekN + k3)) * ((MpS.ToKpH(AbsSpeedMpS) + k4) / (MpS.ToKpH(AbsSpeedMpS) + k5));
+
+                return friction;
         }
 
         public virtual void InitializeCarHeatingVariables()

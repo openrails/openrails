@@ -16,7 +16,6 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 // This code processes the Timetable definition and converts it into playable train information
-//
 
 using System;
 using System.Collections.Generic;
@@ -32,7 +31,6 @@ namespace Orts.Simulation.Timetables
     /// </summary>
     public class TurntableInfo : PoolInfo
     {
-
         //================================================================================================//
         /// <summary>
         /// Constructor
@@ -41,7 +39,6 @@ namespace Orts.Simulation.Timetables
         public TurntableInfo(Simulator simulatorref) : base(simulatorref)
         {
         }
-
 
         //================================================================================================//
         /// <summary>
@@ -55,33 +52,33 @@ namespace Orts.Simulation.Timetables
             Dictionary<string, TimetableTurntablePool> turntables = new Dictionary<string, TimetableTurntablePool>();
             List<string> filenames;
 
-            // get filenames to process
+            // Get filenames to process
             filenames = GetTurntableFilenames(arguments[0]);
 
-            // get file contents as strings
+            // Get file contents as strings
             Trace.Write("\n");
             foreach (string filePath in filenames)
             {
-                // get contents as strings
+                // Get contents as strings
                 Trace.Write("Turntable File : " + filePath + "\n");
                 var turntableInfo = new TimetableReader(filePath);
 
-                // read lines from input until 'Name' definition is found
+                // Read lines from input until 'Name' definition is found
                 int lineindex = 1;
                 while (lineindex < turntableInfo.Strings.Count)
                 {
                     switch (turntableInfo.Strings[lineindex][0].ToLower().Trim())
                     {
-                        // skip comment
+                        // Skip comment
                         case "#comment":
                             lineindex++;
                             break;
 
-                        // process name
-                        // do not increase lineindex as that is done in called method
+                        // Process name
+                        // Do not increase lineindex as that is done in called method
                         case "#name":
                             TimetableTurntablePool newTurntable = new TimetableTurntablePool(turntableInfo, ref lineindex, simulator);
-                            // store if valid pool
+                            // Store if valid pool
                             if (!String.IsNullOrEmpty(newTurntable.PoolName))
                             {
                                 if (turntables.ContainsKey(newTurntable.PoolName))
@@ -107,7 +104,7 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-            return (turntables);
+            return turntables;
         }
 
 
@@ -121,7 +118,7 @@ namespace Orts.Simulation.Timetables
         {
             List<string> filenames = new List<string>();
 
-            // check type of timetable file - list or single
+            // Check type of timetable file - list or single
             string fileDirectory = Path.GetDirectoryName(filePath);
 
             foreach (var ORTurntableFile in Directory.GetFiles(fileDirectory, "*.turntable_or"))
@@ -133,7 +130,7 @@ namespace Orts.Simulation.Timetables
                 filenames.Add(ORTunrtableFile);
             }
 
-            return (filenames);
+            return filenames;
         }
     }
 }

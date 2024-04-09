@@ -403,6 +403,29 @@ Trigger       Function
 243           GenericItem2Off
 =========     =====================================
 
+Trigger 252 is activated when the braking system detects an
+emergency brake application and starts venting air from the Brake Pipe.
+
+Following triggers are related to windows animation:
+
+.. _sound-windows:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+260           WindowClosing
+261           WindowOpening
+=========     =====================================
+
+The following triggers are related to the steam booster engine:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+321           BoosterCylinderCocksOpen
+322           BoosterCylinderCocksClose
+=========     =====================================
+
 Variable Triggers
 -----------------
 
@@ -410,7 +433,7 @@ ORTS
 ^^^^
 
 The sound objects attached to a vehicle (wagon or loco) can respond in volume and frequency to changes in the vehicle's properties.
-There are 7 properties:
+There are a number of triggers as follows:
 
 - distance squared from a sound source (m\ :sup:`2`)
 
@@ -422,9 +445,11 @@ There are 7 properties:
 
 - 3 variables in range 0 - 1:
 
-  - Variable1 reflects the throttle
+  - Variable1 reflects the throttle. For steam locomotives it is possible to have multiple steam engines, thus this variable can be applied
+   to each engine, by using a sound trigger of the form ``Variable1_x_inc_past`` or ``Variable1_x_dec_past``, where x = steam engine number.
 
-  - Variable2 reflects the engine's RPM (diesel) or Tractive Force (electric) or cylinder pressure (steam)
+  - Variable2 reflects the engine's RPM (diesel) or Tractive Force (electric) or cylinder pressure (steam). Where a Booster Engine is fitted, 
+  then ``Variable2BoosterControlled`` can be used to control cylinder pressure for booster engines on steam locomotives.
 
   - Variable3 reflects the dynamic brake (diesel | electric) or fuel rate (steam)
 		
@@ -604,3 +629,22 @@ section of any .eng or .wag file (or in their "include" file as explained
 
 where the number in parenthesis may be anyone from 0 (nothing heard internally) 
 to 100 (external sound reproduced at original volume).  
+
+
+.. _sound-internal-track:   
+
+Manage % of internal track sound heard internally for a specific trainset
+=========================================================================
+
+The percentage of internal track sound heard internally for a specific 
+trainset may be defined for any trainset inserting in the Wagon 
+section of any .eng or .wag file (or in their "include" file as explained 
+:ref:`here <physics-inclusions>`) following line::
+
+  ORTSTrackSoundPassedThroughPercent ( 40 ) 
+
+where the number in parenthesis may be anyone from 0 (nothing heard ) 
+to 100 (internal track sound reproduced at volume as defined in .sms file).  
+
+If the parameter is not present, the internal track sound is 
+reproduced at the volume as defined in .sms file.

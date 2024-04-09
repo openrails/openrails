@@ -31,6 +31,17 @@ namespace Orts.Viewer3D.WebServices
         public double RangeFraction;
     }
 
+
+    /// <summary>
+    /// Contains a posted value for a single cab control.
+    /// </summary>
+    public struct ControlValuePost
+    {
+        public string TypeName;
+        public int ControlIndex;
+        public double Value;
+    }
+
     public static class LocomotiveViewerExtensions
     {
         /// <summary>
