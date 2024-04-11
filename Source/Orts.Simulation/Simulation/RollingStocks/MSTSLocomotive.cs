@@ -3234,7 +3234,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 var fogBaseFrictionCoefficientFactor = 1.0f;
                 var pricBaseFrictionCoefficientFactor = 1.0f;
-                float pric = Simulator.Weather.PricipitationIntensityPPSPM2 * 1000;
+                float pric = Simulator.Weather.PrecipitationIntensityPPSPM2 * 1000;
                 // precipitation will calculate a base coefficient value between 60% (light rain) and 90% (heavy rain) - this will be a factor that is used to adjust the base value 
                 // assume linear value between upper and lower precipitation values. Limits are set in the weather module, ie Rain = 0.01ppm (10) and Snow = 0.005ppm (5)
                 float precGrad = (0.2f - 0) / (10f - 5f);
@@ -3250,7 +3250,7 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 // Adjust adhesion for impact of fog - default = 20000m = 20km
-                float fog = Simulator.Weather.FogDistance;
+                float fog = Simulator.Weather.VisibilityM;
                 if (fog < 20000) // as fog thickens then decrease adhesion
                 {
                     fogBaseFrictionCoefficientFactor = Math.Min((fog * 2.75e-4f + 0.6f), 1.0f); // If fog is less then 2km then it will impact friction, decrease adhesion to 60% (same as light rain transition)
