@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009 - 2023 by the Open Rails project.
+// COPYRIGHT 2009 - 2023 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -239,7 +239,7 @@ namespace Orts.Viewer3D
             }
 
             WorldLocation.GetDistance(CameraWorldLocation, Viewer.Camera.CameraWorldLocation).Deconstruct(out var x, out var _, out var y);
-            CloudPositionM += elapsedTime.ClockSeconds * Weather.WindAverageDirection * Weather.WindAverageSpeedMpS - new Vector2(x, y);
+            CloudPositionM += elapsedTime.ClockSeconds * Weather.WindAverageDirection * Weather.WindAverageSpeedMpS - new Vector2(x, -y);
             CameraWorldLocation = Viewer.Camera.CameraWorldLocation;
         }
 
