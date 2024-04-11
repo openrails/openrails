@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009 - 2023 by the Open Rails project.
+// COPYRIGHT 2009 - 2023 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -261,7 +261,7 @@ namespace Orts.Viewer3D
             var tiles = viewer.Tiles;
             var scenery = viewer.World.Scenery;
             var worldLocation = viewer.Camera.CameraWorldLocation;
-            var particleDirection2D = viewer.Simulator.Weather.WindInstantaneousDirection * viewer.Simulator.Weather.WindInstantaneousSpeedMpS;
+            var particleDirection2D = viewer.World.WeatherControl.PrecipitationSlewMpS;
             var particleDirection3D = new Vector3(particleDirection2D.X, 0, particleDirection2D.Y);
 
             if (TimeParticlesLastEmitted == 0)

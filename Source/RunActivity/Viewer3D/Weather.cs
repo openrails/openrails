@@ -48,6 +48,7 @@ namespace Orts.Viewer3D
         public readonly List<SoundSourceBase> WeatherSounds = new List<SoundSourceBase>();
 
         public Vector4 CloudScalePosition { get => new Vector4(CloudScale.X, CloudScale.Y, CloudPositionM.X / SkyPrimitive.RadiusM, CloudPositionM.Y / SkyPrimitive.RadiusM); }
+        public Vector2 PrecipitationSlewMpS { get; set; }
 
         Vector2 CloudScale;
         Vector2 CloudPositionM;
@@ -240,6 +241,7 @@ namespace Orts.Viewer3D
 
             WorldLocation.GetDistance(CameraWorldLocation, Viewer.Camera.CameraWorldLocation).Deconstruct(out var x, out var _, out var y);
             CloudPositionM += elapsedTime.ClockSeconds * Weather.WindAverageDirection * Weather.WindAverageSpeedMpS - new Vector2(x, -y);
+            PrecipitationSlewMpS = Weather.WindInstantaneousDirection * Weather.WindInstantaneousSpeedMpS - new Vector2(x, -y) / elapsedTime.ClockSeconds;
             CameraWorldLocation = Viewer.Camera.CameraWorldLocation;
         }
 
