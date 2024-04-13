@@ -29,6 +29,13 @@ namespace ORTS.ContentManager.Models
         public readonly string Name;
         public readonly string NumEngines; // using "+" between DPU sets
         public readonly string NumCars;
+        public readonly float MaxSpeedMps;
+        public readonly float LengthM = 0F;
+        public readonly float WeightKG = 0F;
+        public readonly float PowerW = 0F;
+        public readonly float MaxTractiveForceN = 0F;
+        public readonly float MaxBrakeForce = 0F;
+        public readonly int NumOperativeBrakes = 0;
 
         public readonly IEnumerable<Car> Cars;
 
@@ -39,6 +46,7 @@ namespace ORTS.ContentManager.Models
             {
                 var file = new ConsistFile(content.PathName);
                 Name = file.Name;
+                MaxSpeedMps = file.Train.TrainCfg.MaxVelocity.A;
 
                 var EngCount = 0;
                 var WagCount = 0;
@@ -48,6 +56,7 @@ namespace ORTS.ContentManager.Models
                 foreach (Wagon wag in file.Train.TrainCfg.WagonList)
                 {
                     CarList.Add(new Car(wag));
+
                     if (wag.IsEngine)
                     {
                         EngCount++;

@@ -35,23 +35,34 @@ namespace ORTS.ContentManager.Models
         public readonly CarType Type;
         public readonly string Name;
         public readonly string Description;
+        public readonly float MassKG;
+        public readonly float LengthM;
+        public readonly float MaxBarkeForceN;
+        public readonly float MaxPowerW;
+        public readonly float MaxForceN;
+        public readonly float MaxSpeedMps;
 
         public Car(Content content)
         {
             Debug.Assert(content.Type == ContentType.Car);
+
+            // .eng files also have a wagon block
+            var wagFile = new WagonFile(content.PathName);
+            Type = CarType.Wagon;
+            Name = wagFile.Name;
+            MassKG = wagFile.MassKG;
+            LengthM = wagFile.LengthM;
+            MaxBarkeForceN = wagFile.MaxBrakeForceN;
+
             if (System.IO.Path.GetExtension(content.PathName).Equals(".eng", StringComparison.OrdinalIgnoreCase))
             {
-                var file = new EngineFile(content.PathName);
+                var engFile = new EngineFile(content.PathName);
                 Type = CarType.Engine;
-                Name = file.Name;
-                Description = file.Description;
-            }
-            else if (System.IO.Path.GetExtension(content.PathName).Equals(".wag", StringComparison.OrdinalIgnoreCase))
-            {
-                var file = new WagonFile(content.PathName);
-                Type = CarType.Wagon;
-                Name = file.Name;
-                Description = "";
+                Name = engFile.Name;
+                MaxPowerW = engFile.MaxPowerW;
+                MaxForceN = engFile.MaxForceN;
+                MaxSpeedMps = engFile.MaxSpeedMps;
+                Description = engFile.Description;
             }
         }
     }
