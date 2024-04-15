@@ -199,7 +199,7 @@ namespace Orts.Formats.Msts
 
     public class VolumeCurve
     {
-        public enum Controls { None, DistanceControlled, SpeedControlled, Variable1Controlled, Variable1_2Controlled, Variable1_3Controlled, Variable1_4Controlled, Variable2Controlled, Variable2BoosterControlled, Variable3Controlled, BrakeCylControlled, CurveForceControlled, AngleofAttackControlled, CarFrictionControlled };
+        public enum Controls { None, DistanceControlled, SpeedControlled, Variable1Controlled, Variable1_2Controlled, Variable1_3Controlled, Variable1_4Controlled, Variable2Controlled, Variable2BoosterControlled, Variable3Controlled, BrakeCylControlled, CurveForceControlled, AngleofAttackControlled, CarFrictionControlled, WheelRpMControlled };
 
         public Controls Control = Controls.None;
         public float Granularity = 1.0f;
@@ -225,6 +225,7 @@ namespace Orts.Formats.Msts
                 case "curveforcecontrolled": Control = Controls.CurveForceControlled; break;
                 case "angleofattackcontrolled": Control = Controls.AngleofAttackControlled; break;
                 case "carfrictioncontrolled": Control = Controls.CarFrictionControlled; break;
+                case "wheelrpmcontrolled": Control = Controls.WheelRpMControlled; break;
                 default: STFException.TraceWarning(stf, "Crash expected: Skipped unknown VolumeCurve/Frequencycurve type " + type); stf.SkipRestOfBlock(); return;
             }
             stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -346,7 +347,7 @@ namespace Orts.Formats.Msts
     public class Variable_Trigger : Trigger
     {
         public enum Events { Speed_Inc_Past, Speed_Dec_Past, Distance_Inc_Past, Distance_Dec_Past,
-        Variable1_Inc_Past, Variable1_2_Inc_Past, Variable1_3_Inc_Past, Variable1_4_Inc_Past, Variable1_Dec_Past, Variable1_2_Dec_Past, Variable1_3_Dec_Past, Variable1_4_Dec_Past, Variable2_Inc_Past, Variable2_Dec_Past, Variable3_Inc_Past, Variable3_Dec_Past, BrakeCyl_Inc_Past, BrakeCyl_Dec_Past, CurveForce_Inc_Past, CurveForce_Dec_Past, AngleofAttack_Inc_Past, AngleofAttack_Dec_Past
+        Variable1_Inc_Past, Variable1_2_Inc_Past, Variable1_3_Inc_Past, Variable1_4_Inc_Past, Variable1_Dec_Past, Variable1_2_Dec_Past, Variable1_3_Dec_Past, Variable1_4_Dec_Past, Variable2_Inc_Past, Variable2_Dec_Past, Variable3_Inc_Past, Variable3_Dec_Past, BrakeCyl_Inc_Past, BrakeCyl_Dec_Past, CurveForce_Inc_Past, CurveForce_Dec_Past, AngleofAttack_Inc_Past, AngleofAttack_Dec_Past, WheelRpM_Dec_Past, WheelRPM_Inc_Past
         };
 
         public Events Event;
@@ -394,6 +395,8 @@ namespace Orts.Formats.Msts
                 case "curveforce_dec_past": Event = Events.CurveForce_Dec_Past; break;
                 case "angleofattack_inc_past": Event = Events.AngleofAttack_Inc_Past; break;
                 case "angleofattack_dec_past": Event = Events.AngleofAttack_Dec_Past; break;
+                case "wheelrpm_inc_past": Event = Events.WheelRPM_Inc_Past; break;
+                case "wheelrpm_dec_past": Event = Events.WheelRpM_Dec_Past; break;
             }
 
            
