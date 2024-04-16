@@ -270,7 +270,8 @@ namespace ORTS.ContentManager
                     var content = pending[path];
                     pending.Remove(path);
 
-                    if (content.Name.ToLowerInvariant().Contains(search))
+                    // do not add root element to search results, see bug 1944070
+                    if (content.Type != ContentType.Root && content.Name.ToLowerInvariant().Contains(search))
                         finds.Add(new SearchResult(content, path));
 
                     foreach (var child in ((ContentType[])Enum.GetValues(typeof(ContentType))).SelectMany(ct => content.Get(ct)))
