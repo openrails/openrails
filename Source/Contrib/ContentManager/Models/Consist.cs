@@ -19,7 +19,9 @@ using Orts.Formats.Msts;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace ORTS.ContentManager.Models
@@ -31,8 +33,8 @@ namespace ORTS.ContentManager.Models
         public readonly string NumCars;
         public readonly float MaxSpeedMps;
         public readonly float LengthM = 0F;
-        public readonly float WeightKG = 0F;
-        public readonly float PowerW = 0F;
+        public readonly float MassKG = 0F;
+        public readonly float MaxPowerW = 0F;
         public readonly float MaxTractiveForceN = 0F;
         public readonly float MaxBrakeForce = 0F;
         public readonly int NumOperativeBrakes = 0;
@@ -52,23 +54,47 @@ namespace ORTS.ContentManager.Models
                 var WagCount = 0;
                 var Separator = ""; // when set, indicates that subsequent engines are in a separate block
 
+                var basePath = System.IO.Path.Combine(System.IO.Path.Combine(content.Parent.PathName, "Trains"), "Trainset");
+
                 var CarList = new List<Car>();
                 foreach (Wagon wag in file.Train.TrainCfg.WagonList)
                 {
                     CarList.Add(new Car(wag));
 
-                    if (wag.IsEngine)
+                    try
                     {
-                        EngCount++;
-                    } else
-                    {
-                        if (EngCount > 0)
+                        var fileType = wag.IsEngine ? ".eng" : ".wag";
+                        var filePath = System.IO.Path.Combine(System.IO.Path.Combine(basePath, wag.Folder), wag.Name + fileType);
+                        var wagonFile = new WagonFile(filePath);
+                        var engFile = wag.IsEngine ? new EngineFile(filePath) : null;
+
+                        LengthM += wagonFile.LengthM;
+                        MassKG += wagonFile.MassKG;
+                        MaxBrakeForce += wagonFile.MaxBrakeForceN;
+                        if (wagonFile.MaxBrakeForceN > 0) NumOperativeBrakes++;
+
+                        if (wag.IsEngine && engFile.MaxForceN > 25000)  // exclude legacy driving trailers / cab-cars
                         {
-                            NumEngines = NumEngines + Separator + EngCount.ToString();
-                            EngCount = 0; Separator = "+";
+                            EngCount++;
+
+                            MaxPowerW += engFile.MaxPowerW;
+                            MaxTractiveForceN += engFile.MaxForceN;
                         }
-                        WagCount++;
+                        else if (!wag.IsEOT && wagonFile.LengthM > 1.1) // exclude legacy EOT
+                        {
+                            WagCount++;
+                        }
+                    } catch (IOException e) // continue without details when eng/wag file does not exist
+                    {
+                        if (wag.IsEngine) EngCount++; else WagCount++;
                     }
+
+                    if (!wag.IsEngine && EngCount > 0)
+                    {
+                        NumEngines = NumEngines + Separator + EngCount.ToString();
+                        EngCount = 0; Separator = "+";
+                    }
+
                 }
                 if (EngCount > 0) { NumEngines = NumEngines + Separator + EngCount.ToString(); }
                 if (NumEngines == null) { NumEngines = "0"; }

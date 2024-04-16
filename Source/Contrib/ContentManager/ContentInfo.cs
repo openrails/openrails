@@ -27,7 +27,7 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using Path = ORTS.ContentManager.Models.Path;
-using FormatStrings = ORTS.Common.FormatStrings;
+using ORTS.Common;
 
 namespace ORTS.ContentManager
 {
@@ -189,6 +189,12 @@ namespace ORTS.ContentManager
                     details.AppendFormat("NumEngines:\t{1}{0}", Environment.NewLine, data.NumEngines);
                     details.AppendFormat("NumCars:\t{1}{0}", Environment.NewLine, data.NumCars);
                     details.AppendFormat("MaxSpeed:\t{1}{0}", Environment.NewLine, FormatStrings.FormatSpeedLimit(data.MaxSpeedMps, IsMetric));
+                    details.AppendFormat("Weight:\t{1}{0}", Environment.NewLine, FormatStrings.FormatLargeMass(data.MassKG, IsMetric, IsUk));
+                    details.AppendFormat("Length:\t{1}{0}", Environment.NewLine, FormatStrings.FormatShortDistanceDisplay(data.LengthM, IsMetric));
+                    details.AppendFormat("Power:\t{1}{0}", Environment.NewLine, FormatStrings.FormatPower(data.MaxPowerW, IsMetric, isImperialBHP, isImperialBTUpS));
+                    details.AppendFormat("MaxTE:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MaxTractiveForceN, IsMetric));
+                    if (!IsMetric && !IsUk) details.AppendFormat("HPT:\t{1}{0}", Environment.NewLine, FormatStrings.FormatHPT(data.MaxPowerW, data.MassKG));
+                    if (!IsMetric && !IsUk) details.AppendFormat("TPOB:\t{1}{0}", Environment.NewLine, FormatStrings.FormatTPOB(data.MassKG, data.NumOperativeBrakes));
                     details.AppendLine();
                     details.AppendFormat("Car ID:\tDirection:\tName:\t{0}", Environment.NewLine);
                     foreach (var car in data.Cars)

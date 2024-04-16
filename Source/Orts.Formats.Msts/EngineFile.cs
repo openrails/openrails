@@ -28,6 +28,7 @@ namespace Orts.Formats.Msts
     public class EngineFile
     {
         public string Name;
+        public string EngineType;
         public float MaxPowerW;
         public float MaxForceN;
         public float MaxSpeedMps;
@@ -43,6 +44,7 @@ namespace Orts.Formats.Msts
                         stf.ReadString();
                         stf.ParseBlock(new STFReader.TokenProcessor[] {
                             new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
+                            new STFReader.TokenProcessor("type", ()=>{ EngineType = stf.ReadStringBlock(null); }),
                             new STFReader.TokenProcessor("maxpower", ()=>{ MaxPowerW = stf.ReadFloatBlock( STFReader.UNITS.Power, null); }),
                             new STFReader.TokenProcessor("maxforce", ()=>{ MaxForceN = stf.ReadFloatBlock( STFReader.UNITS.Force, null); }),
                             new STFReader.TokenProcessor("maxvelocity", ()=>{ MaxSpeedMps = stf.ReadFloatBlock( STFReader.UNITS.Speed, null); }),

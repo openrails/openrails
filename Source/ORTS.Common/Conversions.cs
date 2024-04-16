@@ -913,5 +913,33 @@ namespace ORTS.Common
 
             return string.Format("{0:D2}:{1:D2}", hour, minute);
         }
+
+
+        /// <summary>
+        /// Calculate and format horsepower per ton for consist, rounded to one decimal.
+        /// </summary>
+        /// <param name="consistPowerW"></param>
+        /// <param name="consistMassKG"></param>
+        /// <returns>horsepower-per-ton formated to one decimal.</returns>
+        //TODO: implement UK and metric version
+        public static string FormatHPT(float consistPowerW, float consistMassKG)
+        {
+            var hpt = consistMassKG > 0 ? W.ToHp(consistPowerW) / Kg.ToTUS(consistMassKG) : 0;
+            return string.Format("{0:0.0}", hpt);
+        }
+
+
+        /// <summary>
+        /// Calculate and format tons per operative brake for consist, rounded to an integer.
+        /// </summary>
+        /// <param name="consistMassKG"></param>
+        /// <param name="consistNumOpBrakes"></param>
+        /// <returns>tons-per-operative-brake formated to an integer.</returns>
+        //TODO: implement UK and metric version
+        public static string FormatTPOB(float consistMassKG, float consistNumOpBrakes)
+        {
+            var tpob = consistNumOpBrakes > 0 ? Kg.ToTUS(consistMassKG) / consistNumOpBrakes : 0;
+            return string.Format("{0:0}", tpob);
+        }
     }
 }

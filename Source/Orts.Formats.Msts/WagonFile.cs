@@ -49,6 +49,7 @@ namespace Orts.Formats.Msts
         }
 
         public string Name;
+        public string WagonType;
         public float MassKG;
         public float LengthM;
         public float MaxBrakeForceN;
@@ -62,6 +63,7 @@ namespace Orts.Formats.Msts
                         stf.ReadString();
                         stf.ParseBlock(new STFReader.TokenProcessor[] {
                             new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
+                            new STFReader.TokenProcessor("type", ()=>{ WagonType = stf.ReadStringBlock(null); }),
                             new STFReader.TokenProcessor("mass", ()=>{ MassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); }),
                             new STFReader.TokenProcessor("size", ()=>{ LengthM = new CarSize( stf).CarLength; }),
                             new STFReader.TokenProcessor("maxbrakeforce", ()=>{ MaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); }),
