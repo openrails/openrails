@@ -3436,7 +3436,7 @@ namespace Orts.Simulation.RollingStocks
                 var friction = 0.0f;
                 float NewtonsTokNewtons = 0.001f;
                 float brakeShoeForcekN = NewtonsTokNewtons * BrakeShoeForceN / NumberCarBrakeShoes;
-            if (brakeShoeForcekN > 22.5) // Make sure that brake shoe force doesn't exceed 22.5 as it will cause a -ve brakeshoe CoF
+            if (brakeShoeForcekN > 21) // Make sure that brake shoe force doesn't exceed 21 as it will cause a -ve brakeshoe CoF
             {
                 brakeShoeForcekN = 21;
             }
