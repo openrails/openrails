@@ -743,7 +743,7 @@ namespace Orts.Simulation.RollingStocks
                 float NewtonsTokNewtons = 0.001f;
                 float maxBrakeShoeForcekN = NewtonsTokNewtons * MaxBrakeShoeForceN / NumberCarBrakeShoes;
 
-                if (maxBrakeShoeForcekN > 21 && Simulator.Settings.VerboseConfigurationMessages)
+                if (maxBrakeShoeForcekN > 20 && Simulator.Settings.VerboseConfigurationMessages)
                 {
                     Trace.TraceInformation("Maximum force per brakeshoe is {0} and has exceeded {1}, check MaxBrakeShoeForceN {2} or NumberCarBrakeShoes {3}",  FormatStrings.FormatForce(maxBrakeShoeForcekN * 1000, IsMetric), FormatStrings.FormatForce(20 * 1000, IsMetric), FormatStrings.FormatForce(MaxBrakeShoeForceN, IsMetric), NumberCarBrakeShoes);
                 }
@@ -3463,9 +3463,9 @@ namespace Orts.Simulation.RollingStocks
                 var friction = 0.0f;
                 float NewtonsTokNewtons = 0.001f;
                 float brakeShoeForcekN = NewtonsTokNewtons * BrakeShoeForceN / NumberCarBrakeShoes;
-            if (brakeShoeForcekN > 22.5) // Make sure that brake shoe force doesn't exceed 22.5 as it will cause a -ve brakeshoe CoF
+            if (brakeShoeForcekN > 20) // Make sure that brake shoe force doesn't exceed 20 as it will cause a -ve brakeshoe CoF
             {
-                brakeShoeForcekN = 21;
+                brakeShoeForcekN = 20;
             }
                 friction = k1 * ((brakeShoeForcekN + k2) / (brakeShoeForcekN + k3)) * ((MpS.ToKpH(AbsSpeedMpS) + k4) / (MpS.ToKpH(AbsSpeedMpS) + k5));
 
