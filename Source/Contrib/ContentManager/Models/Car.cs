@@ -33,6 +33,7 @@ namespace ORTS.ContentManager.Models
     public class Car
     {
         public readonly CarType Type;
+        public readonly string SubType;
         public readonly string Name;
         public readonly string Description;
         public readonly float MassKG;
@@ -49,6 +50,7 @@ namespace ORTS.ContentManager.Models
             // .eng files also have a wagon block
             var wagFile = new WagonFile(content.PathName);
             Type = CarType.Wagon;
+            SubType = wagFile.WagonType;
             Name = wagFile.Name;
             MassKG = wagFile.MassKG;
             LengthM = wagFile.LengthM;
@@ -58,6 +60,7 @@ namespace ORTS.ContentManager.Models
             {
                 var engFile = new EngineFile(content.PathName);
                 Type = CarType.Engine;
+                SubType = engFile.EngineType;
                 Name = engFile.Name;
                 MaxPowerW = engFile.MaxPowerW;
                 MaxForceN = engFile.MaxForceN;

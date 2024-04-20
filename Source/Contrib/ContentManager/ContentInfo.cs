@@ -33,11 +33,11 @@ namespace ORTS.ContentManager
 {
     public static class ContentInfo
     {
-        // fixed for now; need to read from user settings (see Wagon.cs)
+        // will be set from ConntentManagerGUI constructor
         public static bool IsMetric = false;
-        public static bool IsUk = false;
-        public static bool isImperialBHP = false;
-        public static bool isImperialBTUpS = false;
+        public static bool IsUK = false;
+        public static bool IsImperialBHP = false; // using default; seems only used for steam locos
+        public static bool IsImperialBTUpS = false;  // using default; seems only be used for steam locos
 
         public static string GetText(Content content)
         {
@@ -189,28 +189,29 @@ namespace ORTS.ContentManager
                     details.AppendFormat("NumEngines:\t{1}{0}", Environment.NewLine, data.NumEngines);
                     details.AppendFormat("NumCars:\t{1}{0}", Environment.NewLine, data.NumCars);
                     details.AppendFormat("MaxSpeed:\t{1}{0}", Environment.NewLine, FormatStrings.FormatSpeedLimit(data.MaxSpeedMps, IsMetric));
-                    details.AppendFormat("Weight:\t{1}{0}", Environment.NewLine, FormatStrings.FormatLargeMass(data.MassKG, IsMetric, IsUk));
+                    details.AppendFormat("Weight:\t{1}{0}", Environment.NewLine, FormatStrings.FormatLargeMass(data.MassKG, IsMetric, IsUK));
                     details.AppendFormat("Length:\t{1}{0}", Environment.NewLine, FormatStrings.FormatShortDistanceDisplay(data.LengthM, IsMetric));
-                    details.AppendFormat("Power:\t{1}{0}", Environment.NewLine, FormatStrings.FormatPower(data.MaxPowerW, IsMetric, isImperialBHP, isImperialBTUpS));
+                    details.AppendFormat("Power:\t{1}{0}", Environment.NewLine, FormatStrings.FormatPower(data.MaxPowerW, IsMetric, IsImperialBHP, IsImperialBTUpS));
                     details.AppendFormat("MaxTE:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MaxTractiveForceN, IsMetric));
-                    if (!IsMetric && !IsUk) details.AppendFormat("HPT:\t{1}{0}", Environment.NewLine, FormatStrings.FormatHPT(data.MaxPowerW, data.MassKG));
-                    if (!IsMetric && !IsUk) details.AppendFormat("TPOB:\t{1}{0}", Environment.NewLine, FormatStrings.FormatTPOB(data.MassKG, data.NumOperativeBrakes));
+                    if (!IsMetric && !IsUK) details.AppendFormat("HPT:\t{1}{0}", Environment.NewLine, FormatStrings.FormatHPT(data.MaxPowerW, data.MassKG));
+                    if (!IsMetric && !IsUK) details.AppendFormat("TPOB:\t{1}{0}", Environment.NewLine, FormatStrings.FormatTPOB(data.MassKG, data.NumOperativeBrakes));
                     details.AppendLine();
-                    details.AppendFormat("Car ID:\tDirection:\tName:\t{0}", Environment.NewLine);
+                    details.AppendFormat("Car ID:\tDirection:\tWeight:\tName:\t{0}", Environment.NewLine);
                     foreach (var car in data.Cars)
-                        details.AppendFormat("{1}\t{2}\t\u0001{3}\u0002Car\u0001{0}", Environment.NewLine, car.ID, car.Direction, car.Name);
+                        details.AppendFormat("{1}\t{2}\t{3}\t\u0001{4}\u0002Car\u0001{0}", Environment.NewLine, car.ID, car.Direction, car.IsEngine ? "Engine" : FormatStrings.FormatMassBar(car.MassKG), car.Name);
                     details.AppendFormat("{0}", Environment.NewLine);
                 }
                 else if (content.Type == ContentType.Car)
                 {
                     var data = new Car(content);
                     details.AppendFormat("Type:\t{1}{0}", Environment.NewLine, data.Type);
+                    details.AppendFormat("SubType:\t{1}{0}", Environment.NewLine, data.SubType);
                     details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, data.Name);
-                    details.AppendFormat("Weight:\t{1} ({2}){0}", Environment.NewLine, FormatStrings.FormatMass(data.MassKG, IsMetric), FormatStrings.FormatLargeMass(data.MassKG, IsMetric, IsUk));
+                    details.AppendFormat("Weight:\t{1} ({2}){0}", Environment.NewLine, FormatStrings.FormatMass(data.MassKG, IsMetric), FormatStrings.FormatLargeMass(data.MassKG, IsMetric, IsUK));
                     details.AppendFormat("Length:\t{1}{0}", Environment.NewLine, FormatStrings.FormatShortDistanceDisplay(data.LengthM, IsMetric));
                     if (data.Type == CarType.Engine)
                     {
-                        details.AppendFormat("MaxPowerW:\t{1}{0}", Environment.NewLine, FormatStrings.FormatPower(data.MaxPowerW, IsMetric, isImperialBHP, isImperialBTUpS));
+                        details.AppendFormat("MaxPowerW:\t{1}{0}", Environment.NewLine, FormatStrings.FormatPower(data.MaxPowerW, IsMetric, IsImperialBHP, IsImperialBTUpS));
                         details.AppendFormat("MaxForce:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MaxForceN, IsMetric));
                         details.AppendFormat("MaxSpeed:\t{1}{0}", Environment.NewLine, FormatStrings.FormatSpeedLimit(data.MaxSpeedMps, IsMetric));
                     }

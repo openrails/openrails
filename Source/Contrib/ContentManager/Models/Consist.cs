@@ -59,8 +59,7 @@ namespace ORTS.ContentManager.Models
                 var CarList = new List<Car>();
                 foreach (Wagon wag in file.Train.TrainCfg.WagonList)
                 {
-                    CarList.Add(new Car(wag));
-
+                    float wagonMassKG = 0;
                     try
                     {
                         var fileType = wag.IsEngine ? ".eng" : ".wag";
@@ -70,6 +69,7 @@ namespace ORTS.ContentManager.Models
 
                         LengthM += wagonFile.LengthM;
                         MassKG += wagonFile.MassKG;
+                        wagonMassKG = wagonFile.MassKG;
                         MaxBrakeForce += wagonFile.MaxBrakeForceN;
                         if (wagonFile.MaxBrakeForceN > 0) NumOperativeBrakes++;
 
@@ -95,6 +95,7 @@ namespace ORTS.ContentManager.Models
                         EngCount = 0; Separator = "+";
                     }
 
+                    CarList.Add(new Car(wag, wagonMassKG));
                 }
                 if (EngCount > 0) { NumEngines = NumEngines + Separator + EngCount.ToString(); }
                 if (NumEngines == null) { NumEngines = "0"; }
@@ -113,12 +114,16 @@ namespace ORTS.ContentManager.Models
             public readonly string ID;
             public readonly string Name;
             public readonly Direction Direction;
+            public readonly bool IsEngine;
+            public readonly float MassKG;
 
-            internal Car(Wagon car)
+            internal Car(Wagon car, float massKg)
             {
                 ID = car.UiD.ToString();
                 Name = car.Folder + "/" + car.Name;
                 Direction = car.Flip ? Consist.Direction.Backwards : Consist.Direction.Forwards;
+                IsEngine = car.IsEngine;
+                MassKG = massKg;
             }
         }
     }

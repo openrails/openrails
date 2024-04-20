@@ -720,6 +720,25 @@ namespace ORTS.Common
                 return FormatMass(massKg, isMetric);
         }
 
+        public static string FormatMassBar( float massKg)
+        {
+            string massBar;
+            var range = (int) Math.Ceiling(massKg / 20000);
+            switch (range)
+            {
+                case 1: massBar = "*"; break;
+                case 2: massBar = "**"; break;
+                case 3: massBar = "***"; break;
+                case 4: massBar = "****"; break;
+                case 5: massBar = "*****"; break;
+                case 6: massBar = "******"; break;
+                case 7: massBar = "*******"; break;
+                case 8: massBar = "********"; break;
+                default: massBar = massKg < 1.0 ? "?" : "********>"; break;
+            }
+            return massBar;
+        }
+
         public static string FormatArea(float areaM2, bool isMetric)
         {
             var area = isMetric ? areaM2 : Me2.ToFt2(areaM2);
