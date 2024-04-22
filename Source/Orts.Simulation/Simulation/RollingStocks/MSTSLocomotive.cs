@@ -2156,10 +2156,13 @@ namespace Orts.Simulation.RollingStocks
 
                                 // if train is a geared locomotive then set it to automatic operation as AI driver can't operate manual gearboxes
                                 if (de.GearBox != null)
+                                {
                                     de.GearBox.GearBoxOperation = GearBoxOperation.Automatic;
 
-                                // Set gear to "low gear" at start.
-                                de.GearBox.currentGearIndex = de.GearBox.NumOfGears - 1;
+                                    // Set gear to at start.
+                                    de.GearBox.currentGearIndex = de.GearBox.NumOfGears - 1;
+                                }
+                            
                             }
                         }
                     }
