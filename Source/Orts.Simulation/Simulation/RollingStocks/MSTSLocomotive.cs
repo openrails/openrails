@@ -2162,8 +2162,8 @@ namespace Orts.Simulation.RollingStocks
                                     de.GearBox.GearBoxOperation = GearBoxOperation.Automatic;
 
                                     // Set gear to at start.
-                                de.GearBox.currentGearIndex = de.GearBox.NumOfGears - 1;
-                            }
+                                    de.GearBox.currentGearIndex = de.GearBox.NumOfGears - 1;
+                                }
                             
                             }
                         }
