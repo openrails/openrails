@@ -250,7 +250,8 @@ namespace Orts.Viewer3D
                             if (!SharedSMSFileManager.AutoTrackSound || (
                                 _curTType != SharedSMSFileManager.SwitchSMSNumber &&
                                 _curTType != SharedSMSFileManager.CurveSMSNumber &&
-                                _curTType != SharedSMSFileManager.CurveSwitchSMSNumber))
+                                _curTType != SharedSMSFileManager.CurveSwitchSMSNumber &&
+                                _curTType != SharedSMSFileManager.CurveSquealSMSNumber))
                                 Car.TrackSoundType = _curTType;
                             else
                             {
