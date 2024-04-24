@@ -193,18 +193,23 @@ Note: To avoid overloading the simulator, please keep API calls to once or twice
      - | ``Orts.Simulation.Physics .Train.TrainInfo``
    * - | GET
      - | ``/API/TIME``
-     - | Retrieves just the simulation time in seconds since midnight.
-     - | ``Orts.Viewer3D.WebServices .WebServer.ORTSApiController .ApiTime``
+     - | Retrieves the simulation time in seconds since midnight.
+     - | ``Orts.Viewer3D. WebServices.WebServer .ORTSApiController System.Double``
    * - | GET
      - | ``/API/MAP``
      - | Retrieves the postion and direction of the train.
        | Next to various Open Rails route data.
-     - | ``Orts.Viewer3D.WebServices .WebServer.ORTSApiController .ApiMap``
+     - | ``Orts.Common .LatLonDirection``
    * - | GET
      - | ``/API/CABCONTROLS``
-     - | Retrieves an array of the cab controls for the player localhost
+     - | Retrieves an array of the cab controls for the player loco
        | TypeName, MinValue, MaxValue, RangeFraction.
-     - | ``Orts.Viewer3D.WebServices .WebServer.ORTSApiController .ApiCabControls``
+     - | ``Orts.Viewer3D. WebServices.WebServer .ORTSApiController List<ControlValue>``
+   * - | POST
+     - | ``/API/CABCONTROLS``
+     - | Sets value of a cab control for the player loco such as
+       | Throttle/Regulator, Train Brake, Direction/Reverser.
+     - | ``Orts.Viewer3D .WebServices.WebServer .ORTSApiController void``
    * - | GET
      - | ``/API/APISAMPLE``
      - | A test object that demonstrates the JSON serialization of various
