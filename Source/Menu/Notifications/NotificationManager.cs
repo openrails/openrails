@@ -181,11 +181,13 @@ namespace ORTS
         }
 
         /// <summary>
-        /// ExcludesAnyOf() implements A != a OR B != b AND ...
-        /// ExcludesAllOf() implements A != a AND B != b AND ...
-        /// IncludesAnyOf() implements D == d OR E == e OR ...
-        /// IncludesAllOf() implements D == d AND E == e OR ...
         /// CheckConstraints() implements ExcludesAnyOf() AND ExcludesAllOf() AND IncludesAnyOf() AND IncludesAllOf(), but all parts are optional.
+        /// Consider first the Excludes:
+        ///   ExcludesAnyOf() Unmet if A == a OR B == b OR ...
+        ///   ExcludesAllOf() Unmet if A == a AND B == b AND ...
+        /// and then the Includes:
+        ///   IncludesAnyOf() Met if D == d OR E == e OR ...
+        ///   IncludesAllOf() Met if D == d AND E == e OR ...
         /// </summary>
         /// <param name="page"></param>
         /// <param name="n"></param>
@@ -197,10 +199,10 @@ namespace ORTS
                 var c = Notifications.CheckList.Where(check => check.Id == nc.Id).FirstOrDefault();
                 if (c != null)
                 {
-                    // Check the ALL constraints
+                    // Check the Excludes constraints first
                     if (c.ExcludesAllOf != null)    // ExcludesAllOf is optional
                     {
-                        var checkFailed = CheckMatch(c, c.ExcludesAllOf);
+                        var checkFailed = CheckMissingMatch(c, c.ExcludesAllOf);
                         if (checkFailed != null)
                         {
                             foreach (var item in checkFailed.UnmetItemList)
@@ -210,25 +212,9 @@ namespace ORTS
                             return;
                         }
                     }
-
-                    // NOT TESTED YET
-                    //if (c.IncludesAllOf != null)    // IncludesAllOf is optional
-                    //{
-                    //    var checkFailed = CheckAll(c, c.IncludesAllOf);
-                    //    if (checkFailed != null)
-                    //    {
-                    //        foreach (var item in checkFailed.UnmetItemList)
-                    //        {
-                    //            AddItemToPage(page, item);
-                    //        }
-                    //        return;
-                    //    }
-                    //}
-
-                    // Check the ANY constraints
-                    if (c.ExcludesAnyOf != null)    // ExcludesAnyOf is optional
+                    if ( c.ExcludesAnyOf?.Count > 0)    // ExcludesAnyOf is optional
                     {
-                        if (CheckMatch(c, c.ExcludesAnyOf) != null)
+                        if (CheckAnyMatch(c, c.ExcludesAnyOf) != null)
                         {
                             foreach (var item in c.UnmetItemList)
                             {
@@ -238,9 +224,22 @@ namespace ORTS
                         }
                     }
 
-                    if (c.IncludesAnyOf != null)    // IncludesAnyOf is optional
+                    // Check the Includes constraints last
+                    if (c.IncludesAllOf?.Count > 0)    // IncludesAllOf is optional
                     {
-                        if (CheckMatch(c, c.IncludesAnyOf) == null)
+                        var checkFailed = CheckMissingMatch(c, c.IncludesAllOf);
+                        if (checkFailed != null)
+                        {
+                            foreach (var item in checkFailed.UnmetItemList)
+                            {
+                                AddItemToPage(page, item);
+                            }
+                            return;
+                        }
+                    }
+                    if (c.IncludesAnyOf?.Count > 0) // IncludesAnyOf is optional
+                    {
+                        if (CheckAnyMatch(c, c.IncludesAnyOf) == null)
                         {
                             foreach (var item in c.UnmetItemList)
                             {
@@ -286,7 +285,7 @@ namespace ORTS
         /// </summary>
         /// <param name="check"></param>
         /// <returns></returns>
-        private Check CheckMatch(Check check, List<Criteria> criteriaList)
+        private Check CheckAnyMatch(Check check, List<Criteria> criteriaList)
         {
             foreach (var c in criteriaList)
             {
@@ -305,7 +304,7 @@ namespace ORTS
         /// </summary>
         /// <param name="check"></param>
         /// <returns></returns>
-        private Check CheckNoMatch(Check check, List<Criteria> criteriaList)
+        private Check CheckMissingMatch(Check check, List<Criteria> criteriaList)
         {
             foreach (var c in criteriaList)
             {
