@@ -29,29 +29,29 @@ namespace Orts.Formats.Msts
     {
         public class CarSize
         {
-            public float CarWidth;
-            public float CarHeight;
-            public float CarLength;
+            public float WidthM;
+            public float HeightM;
+            public float LengthM;
 
             public CarSize(STFReader stf)
             {
                 stf.MustMatch("(");
-                CarWidth = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                CarHeight = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                CarLength = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                stf.SkipRestOfBlock(); // or should this be stf.MustMatch(")")
+                WidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                HeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                LengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                stf.MustMatch(")");
             }
 
             public override string ToString()
             {
-                return CarWidth.ToString() + "x" + CarHeight.ToString() + "x" + CarLength.ToString();
+                return WidthM.ToString() + "x" + HeightM.ToString() + "x" + LengthM.ToString();
             }
         }
 
         public string Name;
         public string WagonType;
         public float MassKG;
-        public float LengthM;
+        public CarSize WagonSize;
         public float MaxBrakeForceN;
 
         public WagonFile(string filePath)
@@ -65,7 +65,7 @@ namespace Orts.Formats.Msts
                             new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
                             new STFReader.TokenProcessor("type", ()=>{ WagonType = stf.ReadStringBlock(null); }),
                             new STFReader.TokenProcessor("mass", ()=>{ MassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); }),
-                            new STFReader.TokenProcessor("size", ()=>{ LengthM = new CarSize( stf).CarLength; }),
+                            new STFReader.TokenProcessor("size", ()=>{ WagonSize = new CarSize( stf); }),
                             new STFReader.TokenProcessor("maxbrakeforce", ()=>{ MaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); }),
                         });
                     }),

@@ -53,7 +53,7 @@ namespace ORTS.ContentManager.Models
             SubType = wagFile.WagonType;
             Name = wagFile.Name;
             MassKG = wagFile.MassKG;
-            LengthM = wagFile.LengthM;
+            LengthM = wagFile.WagonSize.LengthM;
             MaxBarkeForceN = wagFile.MaxBrakeForceN;
 
             if (System.IO.Path.GetExtension(content.PathName).Equals(".eng", StringComparison.OrdinalIgnoreCase))

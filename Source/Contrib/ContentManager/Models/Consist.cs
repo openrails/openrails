@@ -67,7 +67,7 @@ namespace ORTS.ContentManager.Models
                         var wagonFile = new WagonFile(filePath);
                         var engFile = wag.IsEngine ? new EngineFile(filePath) : null;
 
-                        LengthM += wagonFile.LengthM;
+                        LengthM += wagonFile.WagonSize.LengthM;
                         MassKG += wagonFile.MassKG;
                         wagonMassKG = wagonFile.MassKG;
                         MaxBrakeForce += wagonFile.MaxBrakeForceN;
@@ -80,7 +80,7 @@ namespace ORTS.ContentManager.Models
                             MaxPowerW += engFile.MaxPowerW;
                             MaxTractiveForceN += engFile.MaxForceN;
                         }
-                        else if (!wag.IsEOT && wagonFile.LengthM > 1.1) // exclude legacy EOT
+                        else if (!wag.IsEOT && wagonFile.WagonSize.LengthM > 1.1) // exclude legacy EOT
                         {
                             WagCount++;
                         }

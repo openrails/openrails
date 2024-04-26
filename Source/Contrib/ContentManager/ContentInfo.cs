@@ -193,12 +193,12 @@ namespace ORTS.ContentManager
                     details.AppendFormat("Length:\t{1}{0}", Environment.NewLine, FormatStrings.FormatShortDistanceDisplay(data.LengthM, IsMetric));
                     details.AppendFormat("Power:\t{1}{0}", Environment.NewLine, FormatStrings.FormatPower(data.MaxPowerW, IsMetric, IsImperialBHP, IsImperialBTUpS));
                     details.AppendFormat("MaxTE:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MaxTractiveForceN, IsMetric));
-                    if (!IsMetric && !IsUK) details.AppendFormat("HPT:\t{1}{0}", Environment.NewLine, FormatStrings.FormatHPT(data.MaxPowerW, data.MassKG));
-                    if (!IsMetric && !IsUK) details.AppendFormat("TPOB:\t{1}{0}", Environment.NewLine, FormatStrings.FormatTPOB(data.MassKG, data.NumOperativeBrakes));
+                    if (!IsMetric && !IsUK) details.AppendFormat("HPT:\t{1}{0}", Environment.NewLine, FormatHPT(data.MaxPowerW, data.MassKG));
+                    if (!IsMetric && !IsUK) details.AppendFormat("TPOB:\t{1}{0}", Environment.NewLine, FormatTPOB(data.MassKG, data.NumOperativeBrakes));
                     details.AppendLine();
                     details.AppendFormat("Car ID:\tDirection:\tWeight:\tName:\t{0}", Environment.NewLine);
                     foreach (var car in data.Cars)
-                        details.AppendFormat("{1}\t{2}\t{3}\t\u0001{4}\u0002Car\u0001{0}", Environment.NewLine, car.ID, car.Direction, car.IsEngine ? "Engine" : FormatStrings.FormatMassBar(car.MassKG), car.Name);
+                        details.AppendFormat("{1}\t{2}\t{3}\t\u0001{4}\u0002Car\u0001{0}", Environment.NewLine, car.ID, car.Direction, car.IsEngine ? "Engine" : FormatMassBar(car.MassKG), car.Name);
                     details.AppendFormat("{0}", Environment.NewLine);
                 }
                 else if (content.Type == ContentType.Car)
@@ -242,6 +242,47 @@ namespace ORTS.ContentManager
         static string FormatDateTime(DateTime dateTime)
         {
             return String.Format("{0} {1}", dateTime.Day - 1, dateTime.ToLongTimeString());
+        }
+
+        /// <summary>
+        /// Create a simple bar graph (string of asterisk) for the car mass.
+        /// </summary>
+        /// <param name="massKg"></param>
+        /// <returns>String of asterisk representing the mass.</returns>
+        static string FormatMassBar(float massKg)
+        {
+            string massBar;
+            var range = (int)Math.Ceiling(massKg / 20000);
+            if (massKg < 1.0) { massBar = "?";  }
+            else if (range > 8) { massBar = new string('*', 8) + '>'; }
+            else { massBar = new string('*', range); }
+            return massBar;
+        }
+
+        /// <summary>
+        /// Calculate and format horsepower per ton for consist, rounded to one decimal.
+        /// </summary>
+        /// <param name="consistPowerW"></param>
+        /// <param name="consistMassKG"></param>
+        /// <returns>horsepower-per-ton formated to one decimal.</returns>
+        //TODO: implement UK and metric version
+        static string FormatHPT(float consistPowerW, float consistMassKG)
+        {
+            var hpt = consistMassKG > 0 ? W.ToHp(consistPowerW) / Kg.ToTUS(consistMassKG) : 0;
+            return string.Format("{0:0.0}", hpt);
+        }
+
+        /// <summary>
+        /// Calculate and format tons per operative brake for consist, rounded to an integer.
+        /// </summary>
+        /// <param name="consistMassKG"></param>
+        /// <param name="consistNumOpBrakes"></param>
+        /// <returns>tons-per-operative-brake formated to an integer.</returns>
+        //TODO: implement UK and metric version
+        static string FormatTPOB(float consistMassKG, float consistNumOpBrakes)
+        {
+            var tpob = consistNumOpBrakes > 0 ? Kg.ToTUS(consistMassKG) / consistNumOpBrakes : 0;
+            return string.Format("{0:0}", tpob);
         }
     }
 }
