@@ -71,7 +71,7 @@ namespace ORTS.ContentManager.Models
                         MassKG += wagonFile.MassKG;
                         wagonMassKG = wagonFile.MassKG;
                         MaxBrakeForce += wagonFile.MaxBrakeForceN;
-                        if (wagonFile.MaxBrakeForceN > 0) NumOperativeBrakes++;
+                        if (wagonFile.MaxBrakeForceN > 0) { NumOperativeBrakes++; }
 
                         if (wag.IsEngine && engFile.MaxForceN > 25000)  // exclude legacy driving trailers / cab-cars
                         {
@@ -86,7 +86,7 @@ namespace ORTS.ContentManager.Models
                         }
                     } catch (IOException e) // continue without details when eng/wag file does not exist
                     {
-                        if (wag.IsEngine) EngCount++; else WagCount++;
+                        if (wag.IsEngine) { EngCount++; } else { WagCount++; }
                     }
 
                     if (!wag.IsEngine && EngCount > 0)

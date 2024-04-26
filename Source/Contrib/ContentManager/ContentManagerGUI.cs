@@ -79,7 +79,6 @@ namespace ORTS.ContentManager
             ContentInfo.IsMetric = Settings.Units == "Metric" || (Settings.Units == "Automatic" && System.Globalization.RegionInfo.CurrentRegion.IsMetric) || (Settings.Units == "Route" && System.Globalization.RegionInfo.CurrentRegion.IsMetric);
             ContentInfo.IsUK = Settings.Units == "UK";
 
-
             // Start off the tree with the Content Manager itself at the root and expand to show packages.
             treeViewContent.Nodes.Add(CreateContentNode(ContentManager));
             treeViewContent.Nodes[0].Expand();
