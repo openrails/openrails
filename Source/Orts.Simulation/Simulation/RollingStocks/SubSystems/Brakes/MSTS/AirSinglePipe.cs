@@ -604,6 +604,27 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 CylAreaM2 = (float)((Math.PI * (CylDiameterM * CylDiameterM) / 4.0f));
                 CylVolumeM3 = CylAreaM2 * CylStrokeM;
+
+                if (CylPipeVolumeM3 <= 0 && AuxCylVolumeRatio > 0 && !((Car as MSTSWagon).SupplyReservoirPresent || Car is MSTSLocomotive))
+                {
+                    // Estimate the piping volume that results in the intended full service cylinder pressure
+                    // Assuming 70 psi as brake pipe pressure
+                    float nomPipePressurePSI = 70.0f;
+                    float nomCylPressurePSI = nomPipePressurePSI * (AuxCylVolumeRatio / (AuxCylVolumeRatio + 1.0f));
+
+                    float tempPipeVolumeM3 = (-CylVolumeM3 * OneAtmospherePSI - nomCylPressurePSI * (CylVolumeM3 + AuxResVolumeM3) + nomPipePressurePSI * AuxResVolumeM3)
+                        / (CylCount * nomCylPressurePSI);
+
+                    if (tempPipeVolumeM3 < 0.05f * CylVolumeM3)
+                    {
+                        Trace.TraceWarning($"Auxiliary reservoir on car {Car.WagFilePath} appears to be too small for the brake cylinder(s). " +
+                            $"Consider increasing the auxiliary reservoir size, reducing cylinder size, or using a supply reservoir to provide sufficient cylinder pressures.");
+
+                        tempPipeVolumeM3 = 0.05f * CylVolumeM3;
+                    }
+
+                    CylPipeVolumeM3 = tempPipeVolumeM3;
+                }
             }
             if (CylPipeVolumeM3 <= 0 && CylVolumeM3 >= 0)
                 CylPipeVolumeM3 = 0.2f * CylVolumeM3;
@@ -698,9 +719,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.DistributingValve || (Car as MSTSWagon).SupplyReservoirPresent ||
                 TwoStageRelayValveRatio != RelayValveRatio || RelayValveInshotPSI != 0 || EngineRelayValveInshotPSI != 0;
 
-            if (AuxCylVolumeRatio == 0 && RelayValveFitted)
+            if (AuxCylVolumeRatio <= 0 && RelayValveFitted)
                 AuxCylVolumeRatio = 2.5f;
-            else if (AuxCylVolumeRatio == 0)
+            else if (AuxCylVolumeRatio <= 0)
                 AuxCylVolumeRatio = AuxResVolumeM3 / TotalCylVolumeM3;
 
             // Determine the air source for the brake cylinders
@@ -1099,7 +1120,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         // Amount of air vented is proportional to pressure reduction from external sources
                         dpPipe = MathHelper.Clamp(-SmoothedBrakePipeChangePSIpS.SmoothedValue * AcceleratedApplicationFactor, 0, AcceleratedApplicationLimitPSIpS) * elapsedClockSeconds;
                     }
-                    if (TripleValveState == ValveState.Emergency)
+                    if (TripleValveState == ValveState.Emergency && !QuickActionFitted)
                     dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
                     else
                         dp = elapsedClockSeconds * ServiceApplicationRatePSIpS;
