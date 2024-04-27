@@ -3244,8 +3244,11 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 - ``Wagon(ORTSBrakeCylinderPipingVolume`` -- The volume of the piping between
   the brake valve and each brake cylinder, including any volume of air in the
   brake cylinder when released. This volume does not change as the brake
-  cylinder extends, and can be manipulated to change the effective triple
-  valve ratio. (Default is 20% of the applied brake cylinder volume.)
+  cylinder extends, but can still affect the final brake cylinder pressure.
+  If not specified, Open Rails will automatically calculate a volume to
+  produce appropriate brake cylinder pressures from the given `TripleValveRatio`.
+  A warning will be produced if the automatic calculation cannot determine
+  a suitable piping volume.
 - ``Wagon(ORTSNumberBrakeCylinders`` -- Sets the number of brake cylinders
   on the car, multiplies the brake cylinder volume. (Default 1 brake cylinder.)
 - ``Wagon(ORTSEmergencyValveActuationRate`` -- Threshold rate for emergency
@@ -3360,6 +3363,7 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   Can also be implemented as ``Engine(ORTSSupplyResCapacity`` for engines.
 - ``Wagon(ORTSSupplyResChargingRate`` -- The rate at which the pressure of the
   supply reservoir will increase when charging from the brake pipe or MR pipe.
+  Can also be implemented as ``Engine(ORTSSupplyResChargingRate`` for engines.
 - ``Engine(ORTSMainResChargingRate`` -- Rate of main reservoir pressure change
   in psi per second when the compressor is on (default .4).
 - ``Engine(ORTSEngineBrakeReleaseRate`` -- Rate of engine brake pressure
