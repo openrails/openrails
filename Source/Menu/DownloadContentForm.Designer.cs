@@ -70,6 +70,8 @@ namespace ORTS
             // 
             this.dataGridViewDownloadContent.AllowUserToAddRows = false;
             this.dataGridViewDownloadContent.AllowUserToDeleteRows = false;
+            this.dataGridViewDownloadContent.AllowUserToResizeColumns = false;
+            this.dataGridViewDownloadContent.AllowUserToResizeRows = false;
             this.dataGridViewDownloadContent.BackgroundColor = System.Drawing.SystemColors.ControlLightLight;
             this.dataGridViewDownloadContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridViewDownloadContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
@@ -78,6 +80,7 @@ namespace ORTS
             this.Url});
             this.dataGridViewDownloadContent.GridColor = System.Drawing.SystemColors.Control;
             this.dataGridViewDownloadContent.Location = new System.Drawing.Point(3, 9);
+            this.dataGridViewDownloadContent.MultiSelect = false;
             this.dataGridViewDownloadContent.Name = "dataGridViewDownloadContent";
             this.dataGridViewDownloadContent.ReadOnly = true;
             this.dataGridViewDownloadContent.RowHeadersVisible = false;

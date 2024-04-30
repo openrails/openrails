@@ -72,6 +72,13 @@ namespace ORTS
 
             dataGridViewDownloadContent.Sort(dataGridViewDownloadContent.Columns[0], ListSortDirection.Ascending);
 
+            for (int index = 0; index < Routes.Count; index++)
+            {
+                DataGridViewRow row = dataGridViewDownloadContent.Rows[index];
+                DataGridViewCell cell = row.Cells[2];
+                cell.ToolTipText = cell.Value.ToString();
+            }
+
             InstallPathTextBox.Text = settings.Content.InstallPath;
 
             ImageTempFilename = Path.GetTempFileName();
@@ -722,7 +729,7 @@ namespace ORTS
                     outputFile.WriteLine(changedFile + "<br>");
                 }
                 outputFile.WriteLine("</p>");
-            }
+                    }
 
             outputFile.WriteLine("<p>" + Catalog.GetString("Remote GitHub Updates available:") + "<br>");
 
@@ -739,8 +746,8 @@ namespace ORTS
                 }
                 outputFile.WriteLine("</p>");
             }
-            else
-            {
+                else
+                {
                 outputFile.WriteLine("- " + Catalog.GetString("No updates found") + "<br></p>");
             }
 
