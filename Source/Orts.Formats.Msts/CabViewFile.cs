@@ -322,6 +322,8 @@ namespace Orts.Formats.Msts
         METRES_SEC_SEC,
         KMµHOURµHOUR,
         KM_HOUR_HOUR,
+        KMµHOURµMIN,
+        KM_HOUR_MIN,
         KMµHOURµSEC,
         KM_HOUR_SEC,
         METRESµSECµHOUR,
