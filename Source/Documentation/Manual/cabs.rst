@@ -785,6 +785,26 @@ can be customized with following line, to be added within the control block in t
 .cvf file::
 
    ORTSLabel ( "string" )
+
+Custom Display Units
+--------------------
+
+Due to the wide variety of railroad equipment across the world, Open Rails may not
+provide the units of measure needed for a cabview control. In this case, the tokens
+`ORTSUnitsScaleFactor` and `ORTSUnitsOffset` can be added to the control block in
+the .cvf file to create the units of measure required for the cab view.
+
+- ORTSUnitsScaleFactor ( x ): Multiplies the value shown by the cab view control
+  by a factor of x, allowing for arbitrary conversion of units of measure. For
+  example, a cab view control displaying MILES_PER_HOUR with ORTSUnitsScaleFactor ( 1.467 )
+  would instead display a value equivalent to feet per second.
+- ORTSUnitsOffset ( x ): After applying the scale factor, adds x to the value shown
+  by the cab view control. To subtract from the shown value, set x to a negative number.
+  For example, a cab view control with units of BAR and ORTSUnitsOffset ( 0.987 ) would show
+  pressure as absolute pressure, rather than gauge pressure.
+
+Note that while these tokens can be used to convert between many units, it is recommended
+to use built in Open Rails units wherever suitable.
    
 Multiple screen pages on displays
 ---------------------------------
