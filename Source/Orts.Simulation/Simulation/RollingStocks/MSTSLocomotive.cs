@@ -6133,6 +6133,9 @@ namespace Orts.Simulation.RollingStocks
                         data = Train.EOT.GetDataOf(cvc);
                     break;
             }
+
+            data = cvc.UnitsOffset + (data * cvc.UnitsScale);
+
             return data;
         }
 
