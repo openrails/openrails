@@ -926,12 +926,14 @@ namespace Orts.Simulation.AIs
                             mstsSteamLocomotive.TenderCoalMassKG = mstsSteamLocomotive.MaxTenderCoalMassKG * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelCoal / 100.0f;
                         }
 
-                        if (train.InitialSpeed != 0)
-                            car.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
+                        if (train.InitialSpeed != 0 && car is MSTSLocomotive loco)
+                            loco.SetPower(true);
                     }
                     else
                     {
-                        car.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
+                        if (car is MSTSLocomotive loco)
+                            loco.SetPower(true);
+
                         car.CarID = "AI" + train.Number.ToString() + " - " + (train.Cars.Count - 1).ToString();
                     }
 
