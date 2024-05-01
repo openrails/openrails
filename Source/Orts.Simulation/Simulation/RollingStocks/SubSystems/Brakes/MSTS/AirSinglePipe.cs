@@ -604,23 +604,31 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 CylAreaM2 = (float)((Math.PI * (CylDiameterM * CylDiameterM) / 4.0f));
                 CylVolumeM3 = CylAreaM2 * CylStrokeM;
 
-                // Estimate the piping volume that results in the intended full service cylinder pressure
-                if (CylPipeVolumeM3 <= 0 && AuxCylVolumeRatio > 0)
+                // Estimate the piping volume if it has not been defined yet
+                // Piping volume cannot be 0 as this can cause division by 0
+                if (CylPipeVolumeM3 <= 0)
                 {
-                    // Assuming 70 psi as brake pipe pressure
-                    float nomPipePressurePSI = 70.0f;
-                    float nomCylPressurePSI = nomPipePressurePSI * (AuxCylVolumeRatio / (AuxCylVolumeRatio + 1.0f));
+                    if (AuxCylVolumeRatio > 0 && !((Car as MSTSWagon).SupplyReservoirPresent || Car is MSTSLocomotive))
+                    {   // User has defined a triple valve ratio and the cylinder will be drawing air from the aux res
+                        // Set piping volume to produce expected pressure for the triple valve ratio
+                        // Assuming 70 psi as brake pipe pressure
+                        float nomPipePressurePSI = 70.0f;
+                        float nomCylPressurePSI = nomPipePressurePSI * (AuxCylVolumeRatio / (AuxCylVolumeRatio + 1.0f));
 
-                    float tempPipeVolumeM3 = (-(CylVolumeM3 * OneAtmospherePSI) - nomCylPressurePSI * (CylVolumeM3 + AuxResVolumeM3) + (nomPipePressurePSI * AuxResVolumeM3))
-                        / (CylCount * nomCylPressurePSI);
+                        float tempPipeVolumeM3 = (-(CylVolumeM3 * OneAtmospherePSI) - nomCylPressurePSI * (CylVolumeM3 + AuxResVolumeM3) + (nomPipePressurePSI * AuxResVolumeM3))
+                            / (CylCount * nomCylPressurePSI);
 
-                    CylPipeVolumeM3 = Math.Max(tempPipeVolumeM3, 0.05f * CylVolumeM3);
+                        // Piping volume must be at least 5% of full cylinder volume
+                        CylPipeVolumeM3 = Math.Max(tempPipeVolumeM3, 0.05f * CylVolumeM3);
 
-                    // Produce a warning if the brake configuration will be unable to achieve desired pressure due to aux res too small
-                    // If car has a supply res or a main res, aux res size doesn't matter
-                    if (tempPipeVolumeM3 < 0.05f * CylVolumeM3 && !((Car as MSTSWagon).SupplyReservoirPresent || Car is MSTSLocomotive))
-                        Trace.TraceWarning($"Auxiliary reservoir on car {Car.WagFilePath} appears to be too small for the brake cylinder(s). " +
-                            $"Consider increasing the auxiliary reservoir size, reducing cylinder size, or using a supply reservoir to provide sufficient cylinder pressures.");
+                        // Produce a warning if the brake configuration will be unable to achieve desired pressure due to aux res too small
+                        // If car has a supply res or a main res, aux res size doesn't matter
+                        if (tempPipeVolumeM3 < 0.05f * CylVolumeM3)
+                            Trace.TraceWarning($"Auxiliary reservoir on car {Car.WagFilePath} appears to be too small for the brake cylinder(s). " +
+                                $"Consider increasing the auxiliary reservoir size, reducing cylinder size, or using a supply reservoir to provide sufficient cylinder pressures.");
+                    }
+                    else // Assume piping volume is 20% of full cylinder volume
+                        CylPipeVolumeM3 = 0.20f * CylVolumeM3; 
                 }
 
                 // Advanced brake cylinder sim needs a spring pressure defined, otherwise it can remain 0
@@ -628,46 +636,49 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     BrakeCylinderSpringPressurePSI = 5.0f;
 
                 // Precalculate the relationship between air in cylinder lines and cylinder travel
+                if (CylTravelTab == null) // May have been initialized already
+                {
+                    // Assumptions from PRR characteristic curve:
+                    // pg 40: https://ia600906.us.archive.org/24/items/braketestsreport00penn/braketestsreport00penn.pdf
+                    // Brake cylinder reaches rated travel at 50 psi
+                    // Brake cylinder travel is 80% of nominal when pressure reaches the spring counter-pressure
+                    // Other assumptions:
+                    // Brake cylinder travel remains at 0 until reaching half the spring counter-pressure
+                    // Brake cylinder travel is linear w.r.t. total air in the cylinder line, not entirely accurate but greatly simplifies code
+                    float[] airPV = new float[5];
+                    float[] cylTravel = new float[5];
 
-                // Assumptions from PRR characteristic curve:
-                // pg 40: https://ia600906.us.archive.org/24/items/braketestsreport00penn/braketestsreport00penn.pdf
-                // Brake cylinder reaches rated travel at 50 psi
-                // Brake cylinder travel is 80% of nominal when pressure reaches the spring counter-pressure
-                // Other assumptions:
-                // Brake cylinder travel remains at 0 until reaching half the spring counter-pressure
-                // Brake cylinder travel is linear w.r.t. total air in the cylinder line, not entirely accurate but greatly simplifies code
-                float[] airPV = new float[5];
-                float[] cylTravel = new float[5];
+                    float nomPSI = 50.0f;
 
-                float nomPSI = 50.0f;
+                    // Prevent interpolator error. Max cyl pressure and nominal pressure need to be slightly offset
+                    if (ReferencePressurePSI == nomPSI)
+                        nomPSI -= 5.0f;
+                    // Prevent interpolator error. Spring pressure should never be this large
+                    if (BrakeCylinderSpringPressurePSI >= nomPSI)
+                        BrakeCylinderSpringPressurePSI = nomPSI - 5.0f;
 
-                // Prevent interpolator error. Max cyl pressure and nominal pressure need to be slightly offset
-                if (ReferencePressurePSI == nomPSI)
-                    nomPSI -= 5.0f;
-                // Prevent interpolator error. Spring pressure should never be this large
-                if (BrakeCylinderSpringPressurePSI >= nomPSI)
-                    BrakeCylinderSpringPressurePSI = nomPSI - 5.0f;
+                    // 0 cylinder travel with 0 air in cylinder
+                    cylTravel[0] = 0;
+                    airPV[0] = AdvancedBrakeCylinderAir(0, true);
+                    // 0 cylinder travel when pressure is insufficient to budge spring
+                    cylTravel[1] = 0;
+                    airPV[1] = AdvancedBrakeCylinderAir(BrakeCylinderSpringPressurePSI / 2.0f, true);
+                    // 80% cylinder travel when spring pressure is fully overcome
+                    cylTravel[2] = CylStrokeM * 0.8f;
+                    airPV[2] = AdvancedBrakeCylinderAir(BrakeCylinderSpringPressurePSI, true);
+                    // 100% cylinder travel at 50 psi, with linear change in travel between 50 psi and max pressure
+                    // This will work whether the max cylinder pressure is above or below 50 psi
+                    float strokePerPsi = (CylStrokeM - cylTravel[2]) / (50.0f - BrakeCylinderSpringPressurePSI);
 
-                // 0 cylinder travel with 0 air in cylinder
-                cylTravel[0] = 0;
-                airPV[0] = AdvancedBrakeCylinderAir(0, true);
-                // 0 cylinder travel when pressure is insufficient to budge spring
-                cylTravel[1] = 0;
-                airPV[1] = AdvancedBrakeCylinderAir(BrakeCylinderSpringPressurePSI / 2.0f, true);
-                // 80% cylinder travel when spring pressure is fully overcome
-                cylTravel[2] = CylStrokeM * 0.8f;
-                airPV[2] = AdvancedBrakeCylinderAir(BrakeCylinderSpringPressurePSI, true);
-                // 100% cylinder travel at 50 psi, with linear change in travel between 50 psi and max pressure
-                // This will work whether the max cylinder pressure is above or below 50 psi
-                float strokePerPsi = (CylStrokeM - cylTravel[2]) / (50.0f - BrakeCylinderSpringPressurePSI);
+                    cylTravel[3] = (strokePerPsi * (Math.Min(nomPSI, ReferencePressurePSI) - 50.0f)) + CylStrokeM;
+                    airPV[3] = AdvancedBrakeCylinderAir(Math.Min(nomPSI, ReferencePressurePSI), true);
 
-                cylTravel[3] = (strokePerPsi * (Math.Min(nomPSI, ReferencePressurePSI) - 50.0f)) + CylStrokeM;
-                airPV[3] = AdvancedBrakeCylinderAir(Math.Min(nomPSI, ReferencePressurePSI), true);
+                    cylTravel[4] = (strokePerPsi * (Math.Max(nomPSI, ReferencePressurePSI) - 50.0f)) + CylStrokeM;
+                    airPV[4] = AdvancedBrakeCylinderAir(Math.Max(nomPSI, ReferencePressurePSI), true);
 
-                cylTravel[4] = (strokePerPsi * (Math.Max(nomPSI, ReferencePressurePSI) - 50.0f)) + CylStrokeM;
-                airPV[4] = AdvancedBrakeCylinderAir(Math.Max(nomPSI, ReferencePressurePSI), true);
+                    CylTravelTab = new Interpolator(airPV, cylTravel);
 
-                CylTravelTab = new Interpolator(airPV, cylTravel);
+                }
             }
             if (CylVolumeM3 <= 0 && AuxCylVolumeRatio > 0)
                 CylVolumeM3 = AuxResVolumeM3 / AuxCylVolumeRatio / CylCount;
