@@ -5195,6 +5195,10 @@ namespace Orts.Simulation.RollingStocks
                                 data = this.AccelerationMpSS * 3.6f;
                                 break;
 
+                            case CABViewControlUnits.KM_HOUR_MIN:
+                                data = this.AccelerationMpSS * 3.6f * 60.0f;
+                                break;
+
                             case CABViewControlUnits.KM_HOUR_HOUR:
                                 data = this.AccelerationMpSS * 3.6f * 3600.0f;
                                 break;
@@ -5216,7 +5220,7 @@ namespace Orts.Simulation.RollingStocks
                         break;
                     }
 
-                 case CABViewControlTypes.ORTS_WATER_SCOOP:
+                case CABViewControlTypes.ORTS_WATER_SCOOP:
                     data = WaterScoopDown ? 1 : 0;
                     break;
 
