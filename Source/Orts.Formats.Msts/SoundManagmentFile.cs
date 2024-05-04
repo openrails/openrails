@@ -38,6 +38,7 @@ namespace Orts.Formats.Msts
         public static int CurveSwitchSMSNumber;
         public static int CurveSquealSMSNumber;
         public static bool AutoTrackSound = false;
+        public static bool PlayDefaultTrackSoundsContinuous = false;
 
         public static SoundManagmentFile Get(string path)
         {

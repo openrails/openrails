@@ -347,18 +347,57 @@ namespace Orts.Viewer3D
             bool retval = true;
             NeedsFrequentUpdate = false;
 
-            if (_activeInSource != null)
+            // Plays the default sound region continuously, and then other regions as they are triggered.
+            if (SharedSMSFileManager.PlayDefaultTrackSoundsContinuous)
             {
-                retval &= _activeInSource.Update();
-                NeedsFrequentUpdate |= _activeInSource.NeedsFrequentUpdate;
-            }
+                // Play base (default) sound continuously
+                if (_activeInSource != null)
+                {
+                    _activeInSource = _inSources[0];
+                    retval &= _activeInSource.Update();
+                    NeedsFrequentUpdate |= _activeInSource.NeedsFrequentUpdate;
+                    _activeInSource = _inSources[_curTType];
+                }
 
-            if (_activeOutSource != null)
+                if (_activeOutSource != null)
+                {
+                    _activeOutSource = _outSources[0];
+                    retval &= _activeOutSource.Update();
+                    NeedsFrequentUpdate |= _activeOutSource.NeedsFrequentUpdate;
+                    _activeOutSource = _outSources[_curTType];
+                }
+
+                if (_curTType != 0) // if base sound is not being played, then play additional relevant track region sound
+                {
+                    if (_activeInSource != null)
+                    {
+                        retval &= _activeInSource.Update();
+                        NeedsFrequentUpdate |= _activeInSource.NeedsFrequentUpdate;
+                    }
+
+                    if (_activeOutSource != null)
+                    {
+                        retval &= _activeOutSource.Update();
+                        NeedsFrequentUpdate |= _activeOutSource.NeedsFrequentUpdate;
+                    }
+                }
+
+            }
+            else // Legacy operation, plays sounds when in relevant track sound region
             {
-                retval &= _activeOutSource.Update();
-                NeedsFrequentUpdate |= _activeOutSource.NeedsFrequentUpdate;
-            }
 
+                if (_activeInSource != null)
+                {
+                    retval &= _activeInSource.Update();
+                    NeedsFrequentUpdate |= _activeInSource.NeedsFrequentUpdate;
+                }
+
+                if (_activeOutSource != null)
+                {
+                    retval &= _activeOutSource.Update();
+                    NeedsFrequentUpdate |= _activeOutSource.NeedsFrequentUpdate;
+                }
+            }
             return retval;
         }
 

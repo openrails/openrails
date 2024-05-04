@@ -124,6 +124,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortscurvesquealsmsnumber", ()=>{ CurveSquealSMSNumber = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("ortscurveswitchsmsnumber", ()=>{ CurveSwitchSMSNumber = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("ortsopendoorsinaitrains", ()=>{ OpenDoorsInAITrains = stf.ReadBoolBlock(false); }),
+                new STFReader.TokenProcessor("playtracksoundsbasecontinuous", ()=>{ TrackSoundDefaultContinuousPlay = stf.ReadBoolBlock(false); }),
 
            });
             //TODO This should be changed to STFException.TraceError() with defaults values created
@@ -152,6 +153,7 @@ namespace Orts.Formats.Msts
         public string DefaultSignalSMS;
 		public float TempRestrictedSpeed = -1f;
         public Interpolator SuperElevationHgtpRadiusM; // Superelevation of tracks
+        public bool TrackSoundDefaultContinuousPlay = false;
 
         // Values for calculating Tunnel Resistance - will override default values.
         public float SingleTunnelAreaM2; 
