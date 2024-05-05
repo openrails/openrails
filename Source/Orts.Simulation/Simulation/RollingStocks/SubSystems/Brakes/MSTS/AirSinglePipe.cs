@@ -916,7 +916,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     }
                     TripleValveState = ValveState.Release;
                 }
-                else if (TripleValveState != ValveState.Emergency)
+                else if (TripleValveState != ValveState.Emergency || (TripleValveState == ValveState.Emergency && BrakeLine1PressurePSI > AuxResPressurePSI))
                 {
                     TripleValveState = ValveState.Lap;
                 }    
@@ -1040,8 +1040,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                     if (threshold < InitialApplicationThresholdPSI * AuxCylVolumeRatio) // Prevent brakes getting stuck with a small amount of air on distributor systems
                         threshold = 0;
-                    if (MRPAuxResCharging && HighSpeedReducingPressurePSI > 0 && threshold > HighSpeedReducingPressurePSI)
-                        threshold = HighSpeedReducingPressurePSI; // Small workaround to improve compatibility between modern systems and HSRV (such systems shouldn't have an HSRV equipped)
+                    // Prevent air from being perpetually vented by the HSRV in graduated release systems
+                    if (HighSpeedReducingPressurePSI > 0 && threshold > HighSpeedReducingPressurePSI
+                        && ((MRPAuxResCharging && !(Car as MSTSWagon).SupplyReservoirPresent) || BrakeLine1PressurePSI > AuxResPressurePSI))
+                        threshold = HighSpeedReducingPressurePSI;
                 }
                 else
                 {
@@ -1133,7 +1135,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         // Amount of air vented is proportional to pressure reduction from external sources
                         dpPipe = MathHelper.Clamp(-SmoothedBrakePipeChangePSIpS.SmoothedValue * AcceleratedApplicationFactor, 0, AcceleratedApplicationLimitPSIpS) * elapsedClockSeconds;
                     }
-                    if (TripleValveState == ValveState.Emergency && !QuickActionFitted)
+                    if (TripleValveState == ValveState.Emergency && (!QuickActionFitted || BrakeLine1PressurePSI < AutoCylPressurePSI))
                         dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
                     else
                         dp = elapsedClockSeconds * ServiceApplicationRatePSIpS;
