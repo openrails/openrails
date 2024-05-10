@@ -123,7 +123,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortscurvesmsnumber", ()=>{ CurveSMSNumber = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("ortscurveswitchsmsnumber", ()=>{ CurveSwitchSMSNumber = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("ortsopendoorsinaitrains", ()=>{ OpenDoorsInAITrains = stf.ReadBoolBlock(false); }),
-                new STFReader.TokenProcessor("playtracksoundsbasecontinuous", ()=>{ TrackSoundDefaultContinuousPlay = stf.ReadBoolBlock(false); }),
+                new STFReader.TokenProcessor("ortsplaytracksoundsbasecontinuous", ()=>{ TrackSoundDefaultContinuousPlay = stf.ReadBoolBlock(false); }),
                 new STFReader.TokenProcessor("ortsdistancebetweentrackjoints", ()=>{ DistanceBetweenTrackJointsM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
 
            });
