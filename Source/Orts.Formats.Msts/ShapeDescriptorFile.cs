@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
+using System;
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
@@ -47,7 +47,6 @@ namespace Orts.Formats.Msts
             public SDShape()
             {
                 ESD_Bounding_Box = new ESD_Bounding_Box();
-                ESD_Complex = new List<ESD_Complex_Box>();
             }
 
             public SDShape(STFReader stf)
@@ -64,23 +63,6 @@ namespace Orts.Formats.Msts
                         if (ESD_Bounding_Box.Min == null || ESD_Bounding_Box.Max == null)  // ie quietly handle ESD_Bounding_Box()
                             ESD_Bounding_Box = null;
                     }),
-                    new STFReader.TokenProcessor("esd_complex", ()=>{
-                        ESD_Complex = new List<ESD_Complex_Box>();
-                        stf.MustMatch("(");
-                        var count = stf.ReadInt(null);
-                        stf.ParseBlock(new[]
-                        {
-                            new STFReader.TokenProcessor("esd_complex_box", () =>
-                            {
-                                if (ESD_Complex.Count >= count)
-                                    STFException.TraceWarning(stf, "Skipped extra ESD_Complex_Box");
-                                else
-                                    ESD_Complex.Add(new ESD_Complex_Box(stf));
-                            }),
-                        });
-                        if (ESD_Complex.Count < count)
-                            STFException.TraceWarning(stf, (count - ESD_Complex.Count).ToString() + " missing ESD_Complex_Boxes");
-                    }),
                     new STFReader.TokenProcessor("esd_ortssoundfilename", ()=>{ ESD_SoundFileName = stf.ReadStringBlock(null); }),
                     new STFReader.TokenProcessor("esd_ortsbellanimationfps", ()=>{ ESD_CustomAnimationFPS = stf.ReadFloatBlock(STFReader.UNITS.Frequency, null); }),
                     new STFReader.TokenProcessor("esd_ortscustomanimationfps", ()=>{ ESD_CustomAnimationFPS = stf.ReadFloatBlock(STFReader.UNITS.Frequency, null); }),
@@ -91,7 +73,6 @@ namespace Orts.Formats.Msts
             public int ESD_Detail_Level;
             public int ESD_Alternative_Texture;
             public ESD_Bounding_Box ESD_Bounding_Box;
-            public List<ESD_Complex_Box> ESD_Complex;
             public bool ESD_No_Visual_Obstruction;
             public bool ESD_Snapable;
             public bool ESD_SubObj;
@@ -103,9 +84,8 @@ namespace Orts.Formats.Msts
         {
             public ESD_Bounding_Box() // default used for files with no SD file
             {
-                Min = TWorldPosition.Zero;
-                Max = TWorldPosition.Zero;
-                Extra = TWorldPosition.Zero;
+                Min = new TWorldPosition(0, 0, 0);
+                Max = new TWorldPosition(0, 0, 0);
             }
 
             public ESD_Bounding_Box(STFReader stf)
@@ -123,61 +103,8 @@ namespace Orts.Formats.Msts
                 Z = stf.ReadFloat(STFReader.UNITS.None, null);
                 Max = new TWorldPosition(X, Y, Z);
                 // JP2indirt.sd has extra parameters
-                item = stf.ReadString();
-                if (item == ")")
-                {
-                    Extra = TWorldPosition.Zero;
-                    return;
-                }
-                stf.StepBackOneItem();
-                X = stf.ReadFloat(STFReader.UNITS.None, null);
-                Y = stf.ReadFloat(STFReader.UNITS.None, null);
-                Z = stf.ReadFloat(STFReader.UNITS.None, null);
-                Extra = new TWorldPosition(X, Y, Z);
                 stf.SkipRestOfBlock();
             }
-            public TWorldPosition Min;
-            public TWorldPosition Max;
-            public TWorldPosition Extra;
-        }
-
-        public class ESD_Complex_Box
-        {
-            public ESD_Complex_Box() // default used for files with no SD file
-            {
-                Rotation = TWorldPosition.Zero;
-                Translation = TWorldPosition.Zero;
-                Min = TWorldPosition.Zero;
-                Max = TWorldPosition.Zero;
-            }
-
-            public ESD_Complex_Box(STFReader stf)
-            {
-                stf.MustMatch("(");
-                string item = stf.ReadString();
-                if (item == ")") return;    // quietly return on ESD_Complex_Box()
-                stf.StepBackOneItem();
-                float X = stf.ReadFloat(STFReader.UNITS.None, null);
-                float Y = stf.ReadFloat(STFReader.UNITS.None, null);
-                float Z = stf.ReadFloat(STFReader.UNITS.None, null);
-                Rotation = new TWorldPosition(X, Y, Z);
-                X = stf.ReadFloat(STFReader.UNITS.None, null);
-                Y = stf.ReadFloat(STFReader.UNITS.None, null);
-                Z = stf.ReadFloat(STFReader.UNITS.None, null);
-                Translation = new TWorldPosition(X, Y, Z);
-                X = stf.ReadFloat(STFReader.UNITS.None, null);
-                Y = stf.ReadFloat(STFReader.UNITS.None, null);
-                Z = stf.ReadFloat(STFReader.UNITS.None, null);
-                Min = new TWorldPosition(X, Y, Z);
-                X = stf.ReadFloat(STFReader.UNITS.None, null);
-                Y = stf.ReadFloat(STFReader.UNITS.None, null);
-                Z = stf.ReadFloat(STFReader.UNITS.None, null);
-                Max = new TWorldPosition(X, Y, Z);
-                // JP2indirt.sd has extra parameters
-                stf.SkipRestOfBlock();
-            }
-            public TWorldPosition Rotation;
-            public TWorldPosition Translation;
             public TWorldPosition Min;
             public TWorldPosition Max;
         }

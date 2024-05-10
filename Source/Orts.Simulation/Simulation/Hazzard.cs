@@ -104,9 +104,6 @@ namespace Orts.Simulation
 		[CallOnThread("Updater")]
 		public void Update(float elapsedClockSeconds)
 		{
-            if (Simulator.PlayerLocomotive == null)
-                return;
-
 			var playerLocation = Simulator.PlayerLocomotive.WorldPosition.WorldLocation;
 
 			foreach (var haz in Hazzards)

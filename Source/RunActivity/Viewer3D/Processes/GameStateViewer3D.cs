@@ -19,7 +19,6 @@
 
 using Orts.MultiPlayer;
 using Orts.Viewer3D.Debugging;
-using Orts.Viewer3D.Popups;
 using System;
 
 namespace Orts.Viewer3D.Processes
@@ -35,8 +34,7 @@ namespace Orts.Viewer3D.Processes
         {
             Viewer = viewer;
             Viewer.Simulator.Paused = true;
-            if (Viewer.QuitWindow  != null )
-                Viewer.QuitWindow.Visible = true;
+            Viewer.QuitWindow.Visible = true;
         }
 
         internal override void BeginRender(RenderFrame frame)
@@ -46,7 +44,7 @@ namespace Orts.Viewer3D.Processes
                 if ((Game.Settings.ProfilingFrameCount > 0 && ++ProfileFrames > Game.Settings.ProfilingFrameCount) || (Game.Settings.ProfilingTime > 0 && Viewer != null && Viewer.RealTime >= Game.Settings.ProfilingTime))
                     Game.PopState();
 
-            if (FirstFrame && !Viewer.EditorMode)
+            if (FirstFrame)
             {
                 // Turn off the 10FPS fixed-time-step and return to running as fast as we can.
                 Game.IsFixedTimeStep = false;
@@ -61,12 +59,6 @@ namespace Orts.Viewer3D.Processes
                 Program.SoundDebugForm.Hide();
                 Viewer.SoundDebugFormEnabled = false;
 
-                FirstFrame = false;
-            }
-            if (FirstFrame && Viewer.EditorMode)
-            {
-                Game.IsFixedTimeStep = false;
-                Game.InactiveSleepTime = TimeSpan.Zero;
                 FirstFrame = false;
             }
             Viewer.BeginRender(frame);

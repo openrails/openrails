@@ -27,8 +27,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework;
 
 namespace Orts.Viewer3D.Processes
 {
@@ -84,13 +82,6 @@ namespace Orts.Viewer3D.Processes
         public HostProcess HostProcess { get; private set; }
 
         /// <summary>
-        /// To allow to render into a secondary window
-        /// </summary>
-        public GameWindow SwapChainWindow;
-
-        public bool IsRenderWindowActive { get; private set; }
-
-        /// <summary>
         /// Gets the current <see cref="GameState"/>, if there is one, or <c>null</c>.
         /// </summary>
         public GameState State { get { return States.Count > 0 ? States.Peek() : null; } }
@@ -114,10 +105,6 @@ namespace Orts.Viewer3D.Processes
             WebServerProcess = new WebServerProcess(this);
             HostProcess = new HostProcess(this);
             States = new Stack<GameState>();
-
-            // Not using the built-in IsActive property, for beaing able to reconfigure in case of rendering to a secondary window
-            this.Activated += ActivateRunActivity;
-            this.Deactivated += DeactivateRunActivity;
         }
 
         [ThreadName("Render")]
@@ -190,7 +177,7 @@ namespace Orts.Viewer3D.Processes
         }
 
         [CallOnThread("Loader")]
-        public void PushState(GameState state)
+        internal void PushState(GameState state)
         {
             state.Game = this;
             States.Push(state);
@@ -198,7 +185,7 @@ namespace Orts.Viewer3D.Processes
         }
 
         [CallOnThread("Loader")]
-        public void PopState()
+        internal void PopState()
         {
             State.Dispose();
             States.Pop();
@@ -206,7 +193,7 @@ namespace Orts.Viewer3D.Processes
         }
 
         [CallOnThread("Loader")]
-        public void ReplaceState(GameState state)
+        internal void ReplaceState(GameState state)
         {
             if (State != null)
             {
@@ -257,8 +244,5 @@ namespace Orts.Viewer3D.Processes
             if (Settings.ShowErrorDialogs)
                 System.Windows.Forms.MessageBox.Show(error.ToString(), Application.ProductName + " " + VersionInfo.VersionOrBuild);
         }
-
-        public void ActivateRunActivity(object sender, EventArgs e) { IsRenderWindowActive = true; }
-        public void DeactivateRunActivity(object sender, EventArgs e) { IsRenderWindowActive = false; }
     }
 }

@@ -36,6 +36,7 @@ using Orts.Simulation;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.Timetables;
 using Orts.Viewer3D.Popups;
 using Orts.Viewer3D.Processes;
 using Orts.Viewer3D.RollingStock;
@@ -78,6 +79,7 @@ namespace Orts.Viewer3D
         /// Monotonically increasing time value (in seconds) for the game/viewer. Starts at 0 and only ever increases, at real-time.
         /// </summary>
         public double RealTime { get; private set; }
+        public double LastSave = -1;
         InfoDisplay InfoDisplay;
         public WindowManager WindowManager { get; private set; }
         public MessagesWindow MessagesWindow { get; private set; } // Game message window (special, always visible)
@@ -110,7 +112,6 @@ namespace Orts.Viewer3D
         public ControlRectangle ControlRectangle { get; private set; } // to display the control rectangles
 
         private OutOfFocusWindow OutOfFocusWindow; // to show colored rectangle around the main window when not in focus
-        public EditorShapes EditorShapes { get; set; }
 
         // Route Information
         public TileManager Tiles { get; private set; }
@@ -141,7 +142,6 @@ namespace Orts.Viewer3D
         public BrakemanCamera BrakemanCamera { get; private set; } // Camera 6
         public List<FreeRoamCamera> FreeRoamCameraList = new List<FreeRoamCamera>();
         public FreeRoamCamera FreeRoamCamera { get { return FreeRoamCameraList[0]; } } // Camera 8
-        public OrbitingCamera OrbitingCamera { get; private set; }
 
         /// <summary>
         /// Activate the 2D or 3D cab camera depending on the current player preference.
@@ -178,12 +178,7 @@ namespace Orts.Viewer3D
         void CameraActivate()
         {
             if (Camera == null || !Camera.IsAvailable) //passenger camera may jump to a train without passenger view
-            {
-                if (PlayerLocomotive != null)
                 FrontCamera.Activate();
-            else
-                    OrbitingCamera.Activate();
-            }
             else
                 Camera.Activate();
         }
@@ -203,7 +198,6 @@ namespace Orts.Viewer3D
 
         public Vector3 NearPoint { get; private set; }
         public Vector3 FarPoint { get; private set; }
-        public Vector3 TerrainPoint { get; private set; }
 
         public bool MapViewerEnabled { get; set; }
         public bool SoundDebugFormEnabled { get; set; }
@@ -273,8 +267,6 @@ namespace Orts.Viewer3D
         public static double DbfEvalIniAutoPilotTimeS = 0;//Debrief eval  
         public static bool DbfEvalAutoPilot = false;//DebriefEval
 
-        public bool EditorMode; // Ignore all optimization and speed-up attempts if set
-
         /// <summary>
         /// Finds time of last entry to set ReplayEndsAt and provide the Replay started message.
         /// </summary>
@@ -311,7 +303,8 @@ namespace Orts.Viewer3D
             Game = game;
             Settings = simulator.Settings;
             Use3DCabProperty = Settings.GetSavingProperty<bool>("Use3DCab");
-            EditorMode = Simulator.ViewerMode;
+
+            LastSave = Simulator.Settings.AutoSaveInterval * 60;
 
             RenderProcess = game.RenderProcess;
             UpdaterProcess = game.UpdaterProcess;
@@ -328,9 +321,7 @@ namespace Orts.Viewer3D
             WellKnownCameras.Add(HeadOutBackCamera = new HeadOutCamera(this, HeadOutCamera.HeadDirection.Backward));
             WellKnownCameras.Add(TracksideCamera = new TracksideCamera(this));
             WellKnownCameras.Add(SpecialTracksideCamera = new SpecialTracksideCamera(this));
-            FreeRoamCameraList.Add(new FreeRoamCamera(this, FrontCamera)); // Any existing camera will suffice to satisfy .Save() and .Restore()
-            WellKnownCameras.Add(FreeRoamCamera);
-            WellKnownCameras.Add(OrbitingCamera = new OrbitingCamera(this));
+            WellKnownCameras.Add(new FreeRoamCamera(this, FrontCamera)); // Any existing camera will suffice to satisfy .Save() and .Restore()
             WellKnownCameras.Add(ThreeDimCabCamera = new ThreeDimCabCamera(this));
 
             string ORfilepath = System.IO.Path.Combine(Simulator.RoutePath, "OpenRails");
@@ -474,12 +465,12 @@ namespace Orts.Viewer3D
         {
             GraphicsDevice = RenderProcess.GraphicsDevice;
             UpdateAdapterInformation(GraphicsDevice.Adapter);
-            DefaultViewport = new Viewport(0, 0, DisplaySize.X, DisplaySize.Y);
+            DefaultViewport = GraphicsDevice.Viewport;
 
             if (PlayerLocomotive == null) PlayerLocomotive = Simulator.InitialPlayerLocomotive();
             SelectedTrain = PlayerTrain;
-            PlayerTrain?.InitializePlayerTrainData();
-            if (PlayerTrain?.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+            PlayerTrain.InitializePlayerTrainData();
+            if (PlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING  || PlayerTrain.Autopilot)
             {
                 Simulator.Trains[0].LeadLocomotive = null;
                 Simulator.Trains[0].LeadLocomotiveIndex = -1;
@@ -495,12 +486,6 @@ namespace Orts.Viewer3D
             ShapeManager = new SharedShapeManager(this);
             SignalTypeDataManager = new SignalTypeDataManager(this);
 
-            if (EditorMode)
-            {
-                EditorShapes = new EditorShapes(this);
-            }
-            else
-            {
             WindowManager = new WindowManager(this);
             MessagesWindow = new MessagesWindow(WindowManager);
             NoticeWindow = new NoticeWindow(WindowManager);
@@ -536,7 +521,6 @@ namespace Orts.Viewer3D
             WindowManager.Initialize();
 
             InfoDisplay = new InfoDisplay(this);
-            }
 
             World = new World(this, Simulator.ClockTime);
 
@@ -582,7 +566,6 @@ namespace Orts.Viewer3D
         /// </summary>
         public void SetCommandReceivers()
         {
-            if (PlayerLocomotive != null)
             Simulator.SetCommandReceivers();
             ImmediateRefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
             RefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
@@ -762,7 +745,7 @@ namespace Orts.Viewer3D
         public void Load()
         {
             World.Load();
-            WindowManager?.Load();
+            WindowManager.Load();
         }
 
         [CallOnThread("Updater")]
@@ -771,7 +754,15 @@ namespace Orts.Viewer3D
             RealTime += elapsedRealTime;
             var elapsedTime = new ElapsedTime(Simulator.GetElapsedClockSeconds(elapsedRealTime), elapsedRealTime);
 
-            if (ComposeMessageWindow?.Visible == true)
+            // auto save
+            if (Simulator.Settings.AutoSaveActive && RealTime > LastSave && !Simulator.Paused)
+            {
+                GameStateRunActivity.Save();
+                LastSave = RealTime + Simulator.Settings.AutoSaveInterval * 60;
+            }
+
+            // show message
+            if (ComposeMessageWindow.Visible == true)
             {
                 UserInput.Handled();
                 ComposeMessageWindow.AppendMessage(UserInput.GetPressedKeys(), UserInput.GetPreviousPressedKeys());
@@ -786,7 +777,7 @@ namespace Orts.Viewer3D
                 (Camera as TrackingCamera).SwapCameras();
             }
             Simulator.Update(elapsedTime.ClockSeconds);
-            if (PlayerLocomotive?.Train?.BrakingTime == -2) // We just had a wagon with stuck brakes
+            if (PlayerLocomotive.Train.BrakingTime == -2) // We just had a wagon with stuck brakes
             {
                 LoadDefectCarSound(PlayerLocomotive.Train.Cars[-(int)PlayerLocomotive.Train.ContinuousBrakingTime], "BrakesStuck.sms");
             }
@@ -798,7 +789,6 @@ namespace Orts.Viewer3D
                 MPManager.Instance().Update(Simulator.GameTime);
             }
 
-            if (PlayerLocomotive != null)
             UserInput.RDState.ShowSpeed(MpS.FromMpS(PlayerLocomotive.SpeedMpS, PlayerLocomotive.IsMetric));
 
             // This has to be done also for stopped trains
@@ -888,17 +878,16 @@ namespace Orts.Viewer3D
             Camera.PrepareFrame(frame, elapsedTime);
             frame.PrepareFrame(elapsedTime);
             World.PrepareFrame(frame, elapsedTime);
-            EditorShapes?.PrepareFrame(frame, elapsedTime);
-            InfoDisplay?.PrepareFrame(frame, elapsedTime);
+            InfoDisplay.PrepareFrame(frame, elapsedTime);
             // TODO: This is not correct. The ActivityWindow's PrepareFrame is already called by the WindowManager!
             if (Simulator.ActivityRun != null) ActivityWindow.PrepareFrame(elapsedTime, true);
 
-            if (Settings.SuppressConfirmations < (int)ConfirmLevel.Error && OutOfFocusWindow != null)
+            if (Settings.SuppressConfirmations < (int)ConfirmLevel.Error)
                 // confirm level Error might be set to suppressed when taking a movie
                 // do not show the out of focus red square in that case 
-                OutOfFocusWindow.Visible = !this.Game.IsRenderWindowActive;
+                OutOfFocusWindow.Visible = !this.Game.IsActive;
 
-            WindowManager?.PrepareFrame(frame, elapsedTime);
+            WindowManager.PrepareFrame(frame, elapsedTime);
 
             SwitchPanelModule.SendSwitchPanelIfChanged();
             
@@ -939,27 +928,27 @@ namespace Orts.Viewer3D
         [CallOnThread("Updater")]
         void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsMouseLeftButtonDown || (Camera is ThreeDimCabCamera || EditorMode) && RenderProcess.IsMouseVisible)
+            var train = Program.Viewer.PlayerLocomotive.Train;//DebriefEval
+
+            if (UserInput.IsMouseLeftButtonDown || (Camera is ThreeDimCabCamera && RenderProcess.IsMouseVisible))
             {
                 Vector3 nearsource = new Vector3((float)UserInput.MouseX, (float)UserInput.MouseY, 0f);
                 Vector3 farsource = new Vector3((float)UserInput.MouseX, (float)UserInput.MouseY, 1f);
                 Matrix world = Matrix.CreateTranslation(0, 0, 0);
                 NearPoint = DefaultViewport.Unproject(nearsource, Camera.XnaProjection, Camera.XnaView, world);
                 FarPoint = DefaultViewport.Unproject(farsource, Camera.XnaProjection, Camera.XnaView, world);
-                TerrainPoint = EditorMode ? GetTerrainPoint() : NearPoint;
             }
 
             if (UserInput.IsPressed(UserCommand.CameraReset))
                 Camera.Reset();
 
-            Camera?.HandleUserInput(elapsedTime);
+            Camera.HandleUserInput(elapsedTime);
 
-            if (EditorMode)
-                return;
+            if (PlayerLocomotiveViewer != null)
+                PlayerLocomotiveViewer.HandleUserInput(elapsedTime);
 
-            PlayerLocomotiveViewer?.HandleUserInput(elapsedTime);
-            InfoDisplay?.HandleUserInput(elapsedTime);
-            WindowManager?.HandleUserInput(elapsedTime);
+            InfoDisplay.HandleUserInput(elapsedTime);
+            WindowManager.HandleUserInput(elapsedTime);
 
             // Check for game control keys
             if (MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommand.GameMultiPlayerTexting))
@@ -968,7 +957,7 @@ namespace Orts.Viewer3D
                 ComposeMessageWindow.InitMessage();
             }
             if ((MPManager.IsMultiPlayer() || (Settings.MultiplayerClient && MPManager.Simulator.Confirmer != null)) && UserInput.IsPressed(UserCommand.DisplayMultiPlayerWindow)){ MultiPlayerWindow.Visible = !MultiPlayerWindow.Visible; }
-            if (!MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommand.GamePauseMenu)) { if (QuitWindow != null) QuitWindow.Visible = Simulator.Paused = !QuitWindow.Visible; }
+            if (!MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommand.GamePauseMenu)) { QuitWindow.Visible = Simulator.Paused = !QuitWindow.Visible; }
             if (MPManager.IsMultiPlayer() && UserInput.IsPressed(UserCommand.GamePauseMenu)) { if (Simulator.Confirmer != null) Simulator.Confirmer.Information(Viewer.Catalog.GetString("In MP, use Alt-F4 to quit directly")); }
 
             if (UserInput.IsPressed(UserCommand.GameFullscreen)) { RenderProcess.ToggleFullScreen(); }
@@ -988,7 +977,11 @@ namespace Orts.Viewer3D
                 Simulator.GameSpeed = 1;
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.SimulationSpeed, CabSetting.Off, Simulator.GameSpeed * 100);
             }
-            if (UserInput.IsPressed(UserCommand.GameSave)) { GameStateRunActivity.Save(); }
+            if (UserInput.IsPressed(UserCommand.GameSave))
+            {
+                GameStateRunActivity.Save();
+                LastSave = RealTime + 60 * Simulator.Settings.AutoSaveInterval;
+            }
             if (UserInput.IsPressed(UserCommand.DisplayHelpWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) HelpWindow.TabAction(); else HelpWindow.Visible = !HelpWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayTrackMonitorWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrackMonitorWindow.TabAction(); else TrackMonitorWindow.Visible = !TrackMonitorWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayTrainDrivingWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrainDrivingWindow.TabAction(); else TrainDrivingWindow.Visible = !TrainDrivingWindow.Visible;
@@ -1056,7 +1049,7 @@ namespace Orts.Viewer3D
             {
                 if (PlayerLocomotive.ThrottlePercent >= 1
                     || Math.Abs(PlayerLocomotive.SpeedMpS) > 1
-                    || !IsReverserInNeutral(PlayerLocomotive))
+                    || !IsReverserInNeutral(PlayerLocomotive) && !((PlayerLocomotive.Train.Autopilot) || PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING))
                 {
                     Simulator.Confirmer.Warning(CabControl.ChangeCab, CabSetting.Warn2);
                 }
@@ -1285,22 +1278,23 @@ namespace Orts.Viewer3D
 
             if (UserInput.IsPressed(UserCommand.GameAutopilotMode))
             {
-                if (PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+                var playerTrain = PlayerLocomotive.Train;
+                if (playerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || playerTrain is TTTrain && playerTrain.Autopilot)
                 {
-                    var success = ((AITrain)PlayerLocomotive.Train).SwitchToPlayerControl();
+                    var success = ((AITrain)playerTrain).SwitchToPlayerControl();
                     if (success)
                     {   
                         Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Switched to player control"));
                         DbfEvalAutoPilot = false;//Debrief eval
                     }
                 }
-                else if (PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN)
+                else if (playerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || playerTrain is TTTrain && !playerTrain.Autopilot)
                 {
-                    if (PlayerLocomotive.Train.ControlMode == Train.TRAIN_CONTROL.MANUAL)
+                    if (playerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL)
                         Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You can't switch from manual to autopilot mode"));
                     else
                     {
-                        var success = ((AITrain)PlayerLocomotive.Train).SwitchToAutopilotControl();
+                        var success = ((AITrain)playerTrain).SwitchToAutopilotControl();
                         if (success)
                         {
                             Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Switched to autopilot"));
@@ -1314,7 +1308,7 @@ namespace Orts.Viewer3D
             if (DbfEvalAutoPilot && (Simulator.ClockTime - DbfEvalIniAutoPilotTimeS) > 1.0000 )
             {              
                 DbfEvalAutoPilotTimeS = DbfEvalAutoPilotTimeS + (Simulator.ClockTime - DbfEvalIniAutoPilotTimeS);//Debrief eval
-                PlayerLocomotive.Train.DbfEvalValueChanged = true;
+                train.DbfEvalValueChanged = true;
                 DbfEvalIniAutoPilotTimeS = Simulator.ClockTime;//Debrief eval
             }
             if (UserInput.IsPressed(UserCommand.DebugDumpKeymap))
@@ -1673,7 +1667,7 @@ namespace Orts.Viewer3D
 
             UserInput.Handled();
 
-            MouseState currentMouseState = Mouse.GetState(Game.SwapChainWindow ?? Game.Window);
+            MouseState currentMouseState = Mouse.GetState();
 
             if (currentMouseState.X != originalMouseState.X ||
                 currentMouseState.Y != originalMouseState.Y)
@@ -1682,35 +1676,6 @@ namespace Orts.Viewer3D
             RenderProcess.IsMouseVisible = ForceMouseVisible || RealTime < MouseVisibleTillRealTime;
             originalMouseState = currentMouseState;
             RenderProcess.ActualCursor = ActualCursor;
-        }
-
-        public Vector3 GetTerrainPoint()
-        {
-            var threshold = 0.1f;
-            var nearPoint = NearPoint;
-            var farPoint = FarPoint;
-            var midPoint = farPoint;
-            for (var i = 0; i < 16; i++)
-            {
-                var terrainLevel = Tiles.GetElevation(Camera.TileX, Camera.TileZ, midPoint.X, -midPoint.Z);
-                var delta = Math.Abs(midPoint.Y - terrainLevel);
-                if (delta < threshold)
-                {
-                    midPoint.Y = terrainLevel;
-                    break;
-                }
-                if ((midPoint.Y > terrainLevel) ^ (nearPoint.Y < farPoint.Y))
-                {
-                    nearPoint = midPoint;
-                    midPoint += (farPoint - midPoint) * 0.5f;
-                }
-                else
-                {
-                    farPoint = midPoint;
-                    midPoint += (nearPoint - midPoint) * 0.5f;
-                }
-            }
-            return midPoint;
         }
 
         static bool IsReverserInNeutral(TrainCar car)
@@ -1780,9 +1745,11 @@ namespace Orts.Viewer3D
             ThreeDimCabCamera.ChangeCab(Simulator.PlayerLocomotive);
             HeadOutForwardCamera.ChangeCab(Simulator.PlayerLocomotive);
             HeadOutBackCamera.ChangeCab(Simulator.PlayerLocomotive);
-            if (!Simulator.PlayerLocomotive.HasFront3DCab && !Simulator.PlayerLocomotive.HasRear3DCab)
+            if (!Simulator.PlayerLocomotive.HasFront3DCab && !Simulator.PlayerLocomotive.HasRear3DCab &&
+                (Simulator.PlayerLocomotive.HasFrontCab || Simulator.PlayerLocomotive.HasRearCab))
                 CabCamera.Activate(); // If you need anything else here the cameras should check for it.
-            else ThreeDimCabCamera.Activate();
+            else if (Simulator.PlayerLocomotive.HasFront3DCab || Simulator.PlayerLocomotive.HasRear3DCab)
+                ThreeDimCabCamera.Activate();
             SetCommandReceivers();
         }
 
@@ -1829,13 +1796,13 @@ namespace Orts.Viewer3D
         [CallOnThread("Loader")]
         public void Mark()
         {
-            WindowManager?.Mark();
+            WindowManager.Mark();
         }
 
         [CallOnThread("Render")]
         internal void Terminate()
         {
-            InfoDisplay?.Terminate();
+            InfoDisplay.Terminate();
         }
 
         private int trainCount;
@@ -1973,7 +1940,7 @@ namespace Orts.Viewer3D
         {
             if (frame.IsScreenChanged)
             {
-                WindowManager?.ScreenChanged();
+                WindowManager.ScreenChanged();
                 AdjustCabHeight(DisplaySize.X, DisplaySize.Y);
             }
 
@@ -1997,7 +1964,6 @@ namespace Orts.Viewer3D
             {
                 Visibility = VisibilityState.Hidden;
                 // Hide MessageWindow
-                if (MessagesWindow != null)
                 MessagesWindow.Visible = false;
                 // Audible confirmation that screenshot taken
                 ViewerSounds.HandleEvent(Event.TakeScreenshot);
@@ -2018,8 +1984,6 @@ namespace Orts.Viewer3D
                 SaveScreenshotToFile(Game.GraphicsDevice, Path.Combine(UserSettings.UserDataFolder, SaveActivityFileStem + ".png"), true);
                 MessagesWindow.AddMessage(Catalog.GetString("Game saved"), 5);
             }
-
-            (RenderFrame.FinalRenderTarget as SwapChainRenderTarget)?.Present();
         }
 
         [CallOnThread("Render")]

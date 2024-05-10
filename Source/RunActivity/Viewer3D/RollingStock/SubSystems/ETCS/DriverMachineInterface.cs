@@ -754,7 +754,8 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
     public class CircularSpeedGaugeRenderer : CabViewDigitalRenderer
     {
-        DriverMachineInterface DMI;
+        public DriverMachineInterface DMI;
+
         [CallOnThread("Loader")]
         public CircularSpeedGaugeRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCDigital control, CabShader shader)
             : base(viewer, locomotive, control, shader)
@@ -871,6 +872,21 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public bool isMouseControl()
         {
             return true;
+        }
+    }
+
+    public class ThreeDimCabScreen// : ICabViewMouseControlRenderer
+    {
+        PoseableShape TrainCarShape;
+        Matrix XNAMatrix;
+        Viewer Viewer;
+        public CabViewControlRenderer CVFR;
+        public ThreeDimCabScreen(Viewer viewer, int iMatrix, PoseableShape trainCarShape, CabViewControlRenderer c)
+        {
+            CVFR = c;
+            Viewer = viewer;
+            TrainCarShape = trainCarShape;
+            XNAMatrix = TrainCarShape.SharedShape.Matrices[iMatrix];
         }
     }
 }

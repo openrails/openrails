@@ -283,10 +283,7 @@ namespace Orts.Viewer3D.Processes
             while (ASyncUpdatePending < 1)
                 j = Interlocked.CompareExchange(ref ASyncUpdatePending, 1, 0);
             lock (SoundSources)
-            {
-                if (!SoundSources.ContainsKey(owner))
-                    SoundSources.Add(owner, sources);
-            }
+                SoundSources.Add(owner, sources);
             while (ASyncUpdatePending > 0)
                 j = Interlocked.CompareExchange(ref ASyncUpdatePending, 0, 1);
         }

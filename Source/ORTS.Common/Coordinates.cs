@@ -181,13 +181,6 @@ namespace ORTS.Common
         {
             return WorldLocation.ToString();
         }
-
-        public void CopyFrom(WorldPosition copy)
-        {
-            TileX = copy.TileX;
-            TileZ = copy.TileZ;
-            XNAMatrix = copy.XNAMatrix;
-        }
     }
 
 

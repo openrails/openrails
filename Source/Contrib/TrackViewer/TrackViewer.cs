@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
+// COPYRIGHT 2014, 2018 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -35,8 +35,6 @@ using ORTS.TrackViewer.Drawing.Labels;
 using ORTS.TrackViewer.UserInterface;
 using ORTS.TrackViewer.Editing;
 using ORTS.TrackViewer.Editing.Charts;
-using Orts.Viewer3D.Processes;
-using Orts.Viewer3D;
 
 namespace ORTS.TrackViewer
 {
@@ -50,13 +48,9 @@ namespace ORTS.TrackViewer
     /// <summary>
     /// This is the main type for your game
     /// </summary>
-    public class TrackViewer : Orts.Viewer3D.Processes.Game
+    public class TrackViewer : Microsoft.Xna.Framework.Game
     {
         #region Public members
-        private static RenderTarget2D DummyRenderTarget;
-        public bool IsTrackViewerWindowActive { get; private set; }
-
-
         /// <summary>String showing the date of the program</summary>
         public readonly static string TrackViewerVersion = "2018/01/09";
         /// <summary>Path where the content (like .png files) is stored</summary>
@@ -115,10 +109,10 @@ namespace ORTS.TrackViewer
         /// <summary>The routines to draw the terrain textures</summary>
         public DrawTerrain drawTerrain; //todo, get it private again: statusbar
 
-        public DrawLabels drawLabels;
+        DrawLabels drawLabels;
 
         /// <summary>The menu at the top</summary>
-        public MenuControl menuControl;
+        MenuControl menuControl;
         /// <summary>The status bar at the bottom</summary>
         StatusBarControl statusBarControl;
 
@@ -130,10 +124,7 @@ namespace ORTS.TrackViewer
         private const int maxSkipDrawAmount = 10;
 
         /// <summary>The fontmanager that we use to draw strings</summary>
-        public FontManager fontManager;
-
-        public SceneView SceneView;
-
+        private FontManager fontManager;
         /// <summary>The command-line arguments</summary>
         private string[] commandLineArgs;
         #endregion
@@ -143,7 +134,7 @@ namespace ORTS.TrackViewer
         /// <summary>
         /// Constructor. This is where it all starts.
         /// </summary>
-        public TrackViewer(string[] args) : base(new ORTS.Settings.UserSettings(new[] { "" }))
+        public TrackViewer(string[] args)
         {
             if (Properties.Settings.Default.CallUpgrade)
             {
@@ -153,7 +144,7 @@ namespace ORTS.TrackViewer
 
             this.commandLineArgs = args;
 
-            graphics = RenderProcess.GraphicsDeviceManager;
+            graphics = new GraphicsDeviceManager(this);
             ContentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
 
             Content.RootDirectory = "Content";
@@ -175,10 +166,6 @@ namespace ORTS.TrackViewer
             LanguageManager = new LanguageManager();
             LanguageManager.LoadLanguage(); // need this before all menus and stuff are initialized.
 
-            Activated += ActivateTrackViewer;
-            Deactivated += DeactivateTrackViewer;
-
-            PushState(new GameStateStandBy());
         }
 
         /// <summary>
@@ -238,50 +225,6 @@ namespace ORTS.TrackViewer
             base.Initialize();
         }
 
-        public void InitializeSceneView(string[] args)
-        {
-            // Inject the secondary window into RunActivity
-            SwapChainWindow = GameWindow.Create(this,
-                GraphicsDevice.PresentationParameters.BackBufferWidth,
-                GraphicsDevice.PresentationParameters.BackBufferHeight);
-
-            RenderFrame.FinalRenderTarget = new SwapChainRenderTarget(GraphicsDevice,
-                SwapChainWindow.Handle,
-                GraphicsDevice.PresentationParameters.BackBufferWidth,
-                GraphicsDevice.PresentationParameters.BackBufferHeight,
-                false,
-                GraphicsDevice.PresentationParameters.BackBufferFormat,
-                GraphicsDevice.PresentationParameters.DepthStencilFormat,
-                1,
-                RenderTargetUsage.PlatformContents,
-                PresentInterval.Two);
-
-            SceneView = new SceneView(SwapChainWindow.Handle);
-
-            // The primary window activation events should not affect RunActivity
-            Activated -= ActivateRunActivity;
-            Deactivated -= DeactivateRunActivity;
-
-            /// A workaround for a MonoGame bug where the <see cref="Microsoft.Xna.Framework.Input.Keyboard.GetState()" />
-            /// doesn't return the valid keyboard state. Needs to be enabled via reflection in a private method.
-            var keyboardSetActive = typeof(Microsoft.Xna.Framework.Input.Keyboard)
-                .GetMethod("SetActive", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-
-            // The secondary window activation events should affect RunActivity
-            SceneView.Activated += ActivateRunActivity;
-            SceneView.Activated += new System.EventHandler((sender, e) => keyboardSetActive.Invoke(null, new object[] { true }));
-            SceneView.Deactivated += DeactivateRunActivity;
-            SceneView.Deactivated += new System.EventHandler((sender, e) => keyboardSetActive.Invoke(null, new object[] { false }));
-
-            ReplaceState(new GameStateRunActivity(new[] { "-start", "-viewer", CurrentRoute.Path + "\\dummy\\.pat", "", "10:00", "1", "0" }));
-        }
-
-        public void ShowSceneView()
-        {
-            SceneView.Show();
-            SceneView.Activate();
-        }
-
         /// <summary>
         /// Set the sizes of the various subwindows that they can use to draw upon.
         /// </summary>
@@ -318,9 +261,6 @@ namespace ORTS.TrackViewer
             BasicShapes.LoadContent(GraphicsDevice, spriteBatch, ContentPath);
             drawAreaInset.LoadContent(GraphicsDevice, spriteBatch, 2, 2, 2);
             //drawTerrain.LoadContent(GraphicsDevice); // can only be done when route is known!
-
-            DummyRenderTarget = DummyRenderTarget ?? new RenderTarget2D(graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
-            RenderFrame.FinalRenderTarget = DummyRenderTarget;
         }
 
         /// <summary>
@@ -365,23 +305,13 @@ namespace ORTS.TrackViewer
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (RenderProcess?.Viewer != null && SceneView != null)
-            {
-                SceneView.Viewer = SceneView.Viewer ?? RenderProcess.Viewer;
-                SceneView.Update(gameTime);
-            }
-
-            if (!this.IsTrackViewerWindowActive)
+            if (!this.IsActive)
             {
                 lostFocus = true;
-                if (this.IsRenderWindowActive)
-                {
-                    base.Update(gameTime);
-                }
                 return;
             }
 
-            TVUserInput.Update(this);
+            TVUserInput.Update();
             if (lostFocus)
             {
                 // if the previous call was in inactive mode, we do want TVUserInput to be updated, but we will only
@@ -524,7 +454,7 @@ namespace ORTS.TrackViewer
 
                 if (TVUserInput.IsMouseRightButtonPressed())
                 {
-                    drawLabels.PopupContextMenu(mouseLocationAbsoluteX, mouseLocationAbsoluteY, DrawArea.MouseLocation);
+                    drawLabels.PopupContextMenu(mouseLocationAbsoluteX, mouseLocationAbsoluteY);
                 }
             }
 
@@ -593,8 +523,6 @@ namespace ORTS.TrackViewer
             HandleCommandLineArgs();
 
             SetTitle();
-
-            RenderProcess.IsMouseVisible = true;
         }
 
         /// <summary>
@@ -603,7 +531,6 @@ namespace ORTS.TrackViewer
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            graphics.GraphicsDevice.SetRenderTarget(null);
 
             // Even if there is nothing new to draw for main window, we might still need to draw for the shadow textures.
             if (DrawTrackDB != null && Properties.Settings.Default.showInset)
@@ -670,21 +597,6 @@ namespace ORTS.TrackViewer
             base.Draw(gameTime);
             skipDrawAmount = maxSkipDrawAmount;
         }
-
-        /*protected override void BeginRun()
-        {
-            HostProcess.Start();
-            //WebServerProcess.Start();
-            //SoundProcess.Start();
-            LoaderProcess.Start();
-            UpdaterProcess.Start();
-            RenderProcess.Start();
-            WatchdogProcess.Start();
-            //base.BeginRun();
-        }*/
-
-        public void ActivateTrackViewer(object sender, EventArgs e) { IsTrackViewerWindowActive = true; }
-        public void DeactivateTrackViewer(object sender, EventArgs e) { IsTrackViewerWindowActive = false; }
 
         #endregion
 
@@ -981,7 +893,7 @@ namespace ORTS.TrackViewer
             {
                 RouteData = new RouteData(newRoute.Path, messageHandler);
                 DrawTrackDB = new DrawTrackDB(this.RouteData, messageHandler);
-                drawLabels = new DrawLabels(this, fontManager.DefaultFont.Height);
+                drawLabels = new DrawLabels(fontManager.DefaultFont.Height);
                 CurrentRoute = newRoute;
 
                 Properties.Settings.Default.defaultRoute = CurrentRoute.Path.Split('\\').Last();
@@ -1287,10 +1199,5 @@ namespace ORTS.TrackViewer
             //Localize(statusBarControl);
         }
         #endregion
-    }
-
-    class GameStateStandBy : GameState
-    {
-        public GameStateStandBy() { }
     }
 }

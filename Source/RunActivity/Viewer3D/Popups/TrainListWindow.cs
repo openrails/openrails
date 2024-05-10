@@ -80,7 +80,7 @@ namespace Orts.Viewer3D.Popups
                 foreach (var thisTrain in Owner.Viewer.Simulator.AI.AITrains)
                 {
                     if (thisTrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC && thisTrain.TrainType != Train.TRAINTYPE.PLAYER
-                        && ! (thisTrain.TrainType == Train.TRAINTYPE.AI_INCORPORATED && !thisTrain.IncorporatingTrain.IsPathless))
+                        && ! (thisTrain.TrainType == Train.TRAINTYPE.AI_INCORPORATED && !thisTrain.IncorporatingTrain.IsPathless) && !thisTrain.Autopilot)
                     {
                         var line = scrollbox.AddLayoutHorizontalLineOfText();
                         TrainLabel number, name, viewed;

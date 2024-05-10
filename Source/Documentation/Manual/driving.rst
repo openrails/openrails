@@ -1354,8 +1354,7 @@ or unloading operation is ongoing.
 Autopilot Mode
 ==============
 
-When in activity mode or in Explore in activity mode, through this feature 
-it is possible to stay
+Through this feature it is possible to stay
 in the cab of the player train, but to let Open Rails move the train,
 respecting path, signals, speeds and station stops.
 
@@ -1368,8 +1367,8 @@ but it can also be used to run an activity (or part of it, as it is
 possible to turn autopilot mode on or off at runtime) as a trainspotter or 
 a visitor within the cab.
 
-Autopilot mode is active only in activity mode (i.e. not in explorer or 
-timetable modes).
+Autopilot mode is available in activity, timetable and explore in activity 
+mode (i.e. not in explorer mode).
 
 When starting the game with any activity, you are in player driving mode. 
 If you press Alt+A, you enter the autopilot mode: you are in the loco's 
@@ -1392,7 +1391,7 @@ auto mode.
 Station stops, waiting points and reverse points are synchronized as far as 
 possible in the two modes.
 
-Cars can also be uncoupled in autopilot mode (but check that the train will 
+In activity mode cars can also be uncoupled in autopilot mode (but check that the train will 
 stop in enough time, otherwise it is better to change to player driven 
 mode). A static consist can also be coupled in autopilot mode.
 

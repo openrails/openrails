@@ -117,7 +117,7 @@ namespace Orts.Viewer3D
         }
 
         //no use anymore
-        public static int DecomposeStaticSuperElevationOneSection(Viewer viewer, List<DynamicTrackViewer> dTrackList, int TileX, int TileZ, TrVectorSection ts, int uid)
+        public static int DecomposeStaticSuperElevationOneSection(Viewer viewer, List<DynamicTrackViewer> dTrackList, int TileX, int TileZ, TrVectorSection ts)
         {
             if (ts == null) return 0;
 
@@ -156,7 +156,7 @@ namespace Orts.Viewer3D
             sv = ts.StartElev; ev = ts.EndElev; mv = ts.MaxElev;
 
             //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-            dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, tss.SectionCurve.Radius, tss.SectionCurve.Angle * 3.14f / 180, sv, ev, mv, dir, uid));
+            dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, tss.SectionCurve.Radius, tss.SectionCurve.Angle * 3.14f / 180, sv, ev, mv, dir));
             return 1;
         }
 
@@ -204,7 +204,7 @@ namespace Orts.Viewer3D
                 sv = ts.StartElev; ev = ts.EndElev; mv = ts.MaxElev;
 
                 //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, tss.SectionCurve.Radius, tss.SectionCurve.Angle * 3.14f / 180, sv, ev, mv, dir, -1));
+                dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, tss.SectionCurve.Radius, tss.SectionCurve.Angle * 3.14f / 180, sv, ev, mv, dir));
             }
             return 1;
         }
@@ -269,7 +269,7 @@ namespace Orts.Viewer3D
         /// <param name="dTrackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
         public static void DecomposeConvertedDynamicSuperElevation(Viewer viewer, List<DynamicTrackViewer> dTrackList, TrackObj dTrackObj,
-            WorldPosition worldMatrixInput, int uid)
+            WorldPosition worldMatrixInput)
         {
             // The following vectors represent local positioning relative to root of original (5-part) section:
             Vector3 localV = Vector3.Zero; // Local position (in x-z plane)
@@ -352,7 +352,7 @@ namespace Orts.Viewer3D
                 //if (section.SectionCurve != null) FindSectionValue(shape, root, nextRoot, viewer.Simulator, section, TileX, TileZ, dTrackObj.UID);
 
                 //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir, uid));
+                dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir));
                 localV = localProjectedV; // Next subsection
             }
         }
@@ -447,7 +447,7 @@ namespace Orts.Viewer3D
                 //                if (section.SectionCurve != null) FindSectionValue(shape, root, nextRoot, viewer.Simulator, section, TileX, TileZ, dTrackObj.UID);
 
                 //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir, (int)dTrackObj.UID));
+                dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir));
 
                 localV = localProjectedV; // Next subsection
             }
@@ -485,8 +485,8 @@ namespace Orts.Viewer3D
     public class SuperElevationViewer : DynamicTrackViewer
     {
         public SuperElevationViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition, float radius, float angle,
-            float s, float e, float m, float dir, int uid)//values for start, end and max elevation
-            : base(viewer, position, endPosition, uid)
+            float s, float e, float m, float dir)//values for start, end and max elevation
+            : base(viewer, position, endPosition)
         {
             // Instantiate classes
             Primitive = new SuperElevationPrimitive(viewer, position, endPosition, radius, angle, s, e, m, dir);

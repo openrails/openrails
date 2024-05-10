@@ -122,7 +122,7 @@ namespace Orts.Viewer3D
                     nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
                     root.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
                     //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                    trackList.Add(new WireViewer(viewer, root, nextRoot, radius, length, (int)trackObj.UID));
+                    trackList.Add(new WireViewer(viewer, root, nextRoot, radius, length));
                     localV = localProjectedV; // Next subsection
                 }
             }
@@ -213,7 +213,7 @@ namespace Orts.Viewer3D
                 nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
                 root.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
                 nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                trackList.Add(new WireViewer(viewer, root, nextRoot, radius, length, (int)trackObj.UID));
+                trackList.Add(new WireViewer(viewer, root, nextRoot, radius, length));
                 localV = localProjectedV; // Next subsection
             }
         }
@@ -303,7 +303,7 @@ namespace Orts.Viewer3D
 
 
                 // Create a new WireViewer for the subsection
-                trackList.Add(new WireViewer(viewer, root, nextRoot, radius, length, (int)trackObj.UID));
+                trackList.Add(new WireViewer(viewer, root, nextRoot, radius, length));
                 localV = localProjectedV; // Next subsection
             }
         }
@@ -311,8 +311,8 @@ namespace Orts.Viewer3D
 
     public class WireViewer : DynamicTrackViewer
     {
-        public WireViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition, float radius, float angle, int uid)
-            : base(viewer, position, endPosition, uid)
+        public WireViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition, float radius, float angle)
+            : base(viewer, position, endPosition)
         {
 
             // Instantiate classes

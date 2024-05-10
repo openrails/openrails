@@ -37,7 +37,6 @@ namespace Orts.Viewer3D
         const float TrackMergeDistance = 7; // Must be >= 2 * (RampLength + TrackHalfWidth).
         const float TrackRailHeight = 0.275f;
         const float TrainRailHeightMaximum = 1;
-        public readonly int Uid;
 
         readonly Viewer Viewer;
         public readonly CarSpawnerObj CarSpawnerObj;
@@ -59,7 +58,6 @@ namespace Orts.Viewer3D
             Debug.Assert(TrackMergeDistance >= 2 * (RampLength + TrackHalfWidth), "TrackMergeDistance is less than 2 * (RampLength + TrackHalfWidth); vertical inconsistencies will occur at close, but not merged, tracks.");
             Viewer = viewer;
             CarSpawnerObj = carSpawnerObj;
-            Uid = (int)carSpawnerObj.UID;
 
             if (viewer.Simulator.RDB == null || viewer.Simulator.CarSpawnerFile == null)
                 throw new InvalidOperationException("RoadCarSpawner requires a RDB and CARSPAWN.DAT");

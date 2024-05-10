@@ -35,7 +35,7 @@ namespace Orts.Viewer3D.Processes
 
         public Point DisplaySize { get; private set; }
         public GraphicsDevice GraphicsDevice { get { return Game.GraphicsDevice; } }
-        public bool IsActive { get { return Game.IsRenderWindowActive; } }
+        public bool IsActive { get { return Game.IsActive; } }
         public Viewer Viewer { get { return Game.State is GameStateViewer3D ? (Game.State as GameStateViewer3D).Viewer : null; } }
 
         public Profiler Profiler { get; private set; }
@@ -157,17 +157,13 @@ namespace Orts.Viewer3D.Processes
                 pp.BackBufferWidth = GameWindowSize.X;
                 pp.BackBufferHeight = GameWindowSize.Y;
             }
-            pp.RenderTargetUsage = RenderTargetUsage.PreserveContents;
         }
 
         internal void Start()
         {
             Game.WatchdogProcess.Register(WatchdogToken);
 
-            var width = Game.SwapChainWindow?.ClientBounds.Width ?? GraphicsDevice.Viewport.Width;
-            var height = Game.SwapChainWindow?.ClientBounds.Height ?? GraphicsDevice.Viewport.Height;
-
-            DisplaySize = new Point(width, height);
+            DisplaySize = new Point(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
             // Validate that the DirectX feature level is one we understand
             if (!Enum.IsDefined(typeof(DirectXFeature), "Level" + Game.Settings.DirectXFeatureLevel))
@@ -279,7 +275,7 @@ namespace Orts.Viewer3D.Processes
             {
                 GraphicsDeviceManager.ToggleFullScreen();
                 ToggleFullScreenRequested = false;
-                Viewer.DefaultViewport = new Viewport(0, 0, Viewer.DisplaySize.X, Viewer.DisplaySize.Y);
+                Viewer.DefaultViewport = GraphicsDevice.Viewport;
             }
 
             if (gameTime.TotalGameTime.TotalSeconds > 0.001)
@@ -306,12 +302,10 @@ namespace Orts.Viewer3D.Processes
             // Sort-of hack to allow the NVIDIA PerfHud to display correctly.
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
-            var width = Game.SwapChainWindow?.ClientBounds.Width ?? GraphicsDevice.Viewport.Width;
-            var height = Game.SwapChainWindow?.ClientBounds.Height ?? GraphicsDevice.Viewport.Height;
-            CurrentFrame.IsScreenChanged = (DisplaySize.X != width) || (DisplaySize.Y != height);
+            CurrentFrame.IsScreenChanged = (DisplaySize.X != GraphicsDevice.Viewport.Width) || (DisplaySize.Y != GraphicsDevice.Viewport.Height);
             if (CurrentFrame.IsScreenChanged)
             {
-                DisplaySize = new Point(width, height);
+                DisplaySize = new Point(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
                 InitializeShadowMapLocations();
             }
 
