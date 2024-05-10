@@ -229,7 +229,7 @@ namespace Orts.Formats.Msts
                 case "carfrictioncontrolled": Control = Controls.CarFrictionControlled; break;
                 case "wheelrpmcontrolled": Control = Controls.WheelRpMControlled; break;
                 case "trackjointscontrolled": Control = Controls.TrackJointsControlled; break;
-                case "switchscontrolled": Control = Controls.SwitchControlled; break;
+                case "switchcontrolled": Control = Controls.SwitchControlled; break;
                 default: STFException.TraceWarning(stf, "Crash expected: Skipped unknown VolumeCurve/Frequencycurve type " + type); stf.SkipRestOfBlock(); return;
             }
             stf.ParseBlock(new STFReader.TokenProcessor[] {
