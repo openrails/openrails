@@ -596,6 +596,7 @@ namespace Orts.Viewer3D
             SharedSMSFileManager.AutoTrackSound = false;
             SharedSMSFileManager.SwitchSMSNumber = Simulator.TRK.Tr_RouteFile.SwitchSMSNumber;
             SharedSMSFileManager.PlayDefaultTrackSoundsContinuous = Simulator.TRK.Tr_RouteFile.TrackSoundDefaultContinuousPlay;
+            SharedSMSFileManager.DistanceBetweenTrackJointsM = Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
 
             if (SharedSMSFileManager.SwitchSMSNumber < -1 || SharedSMSFileManager.SwitchSMSNumber >= TrackTypes.Count)
             {
@@ -610,14 +611,7 @@ namespace Orts.Viewer3D
                 SharedSMSFileManager.CurveSMSNumber = -1;
                 Trace.TraceInformation("Curve SMS Number out of range");
             }
-            if (SharedSMSFileManager.CurveSMSNumber != -1) SharedSMSFileManager.AutoTrackSound = true;
 
-            SharedSMSFileManager.CurveSquealSMSNumber = Simulator.TRK.Tr_RouteFile.CurveSquealSMSNumber;
-            if (SharedSMSFileManager.CurveSquealSMSNumber < -1 || SharedSMSFileManager.CurveSquealSMSNumber >= TrackTypes.Count)
-            {
-                SharedSMSFileManager.CurveSquealSMSNumber = -1;
-                Trace.TraceInformation("Curve Squeal SMS Number out of range");
-            }
             if (SharedSMSFileManager.CurveSMSNumber != -1) SharedSMSFileManager.AutoTrackSound = true;
 
             SharedSMSFileManager.CurveSwitchSMSNumber = Simulator.TRK.Tr_RouteFile.CurveSwitchSMSNumber;
