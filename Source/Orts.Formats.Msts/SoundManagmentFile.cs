@@ -201,7 +201,7 @@ namespace Orts.Formats.Msts
 
     public class VolumeCurve
     {
-        public enum Controls { None, DistanceControlled, SpeedControlled, Variable1Controlled, Variable1_2Controlled, Variable1_3Controlled, Variable1_4Controlled, Variable2Controlled, Variable2BoosterControlled, Variable3Controlled, BrakeCylControlled, CurveForceControlled, AngleofAttackControlled, CarFrictionControlled, WheelRpMControlled, TrackJointsControlled, SwitchControlled };
+        public enum Controls { None, DistanceControlled, SpeedControlled, Variable1Controlled, Variable1_2Controlled, Variable1_3Controlled, Variable1_4Controlled, Variable2Controlled, Variable2BoosterControlled, Variable3Controlled, BrakeCylControlled, CurveForceControlled, AngleofAttackControlled, CarFrictionControlled, WheelRpMControlled, TrackJointControlled, SwitchControlled };
 
         public Controls Control = Controls.None;
         public float Granularity = 1.0f;
@@ -228,7 +228,7 @@ namespace Orts.Formats.Msts
                 case "angleofattackcontrolled": Control = Controls.AngleofAttackControlled; break;
                 case "carfrictioncontrolled": Control = Controls.CarFrictionControlled; break;
                 case "wheelrpmcontrolled": Control = Controls.WheelRpMControlled; break;
-                case "trackjointscontrolled": Control = Controls.TrackJointsControlled; break;
+                case "trackjointcontrolled": Control = Controls.TrackJointControlled; break;
                 case "switchcontrolled": Control = Controls.SwitchControlled; break;
                 default: STFException.TraceWarning(stf, "Crash expected: Skipped unknown VolumeCurve/Frequencycurve type " + type); stf.SkipRestOfBlock(); return;
             }

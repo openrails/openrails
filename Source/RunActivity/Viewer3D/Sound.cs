@@ -1558,7 +1558,17 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.VolumeCurve.Controls.AngleofAttackControlled: return car.CurveSquealAoAmRadFiltered;
                 case Orts.Formats.Msts.VolumeCurve.Controls.CarFrictionControlled: return car.Train.WagonCoefficientFriction;
                 case Orts.Formats.Msts.VolumeCurve.Controls.WheelRpMControlled: var wheelRpM = pS.TopM((float)(car.AbsSpeedMpS / (2 * Math.PI * car.WheelRadiusM))); return wheelRpM;
-                case Orts.Formats.Msts.VolumeCurve.Controls.TrackJointsControlled: var jointSpacingTimeS = SharedSMSFileManager.DistanceBetweenTrackJointsM / car.AbsSpeedMpS; return jointSpacingTimeS;
+                case Orts.Formats.Msts.VolumeCurve.Controls.TrackJointControlled:
+                    float jointSpacingTimeS = 0;
+                    if (car.AbsSpeedMpS != 0)
+                    {
+                        jointSpacingTimeS = SharedSMSFileManager.DistanceBetweenTrackJointsM / car.AbsSpeedMpS;
+                    }
+                    else
+                    {
+                        jointSpacingTimeS = 0;
+                    }
+                    return jointSpacingTimeS;
                 case Orts.Formats.Msts.VolumeCurve.Controls.SwitchControlled: var switchPresent = 0;
                     if (SharedSMSFileManager.CarOnSwitch)
                         switchPresent = 1;
@@ -2117,7 +2127,15 @@ namespace Orts.Viewer3D
                     return wheelRpM;
                 case Orts.Formats.Msts.Variable_Trigger.Events.TrackJoints_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.TrackJoints_Inc_Past:
-                    var jointSpacingTimeS = SharedSMSFileManager.DistanceBetweenTrackJointsM / car.AbsSpeedMpS; 
+                    float jointSpacingTimeS = 0;
+                        if (car.AbsSpeedMpS != 0)
+                    {
+                        jointSpacingTimeS = SharedSMSFileManager.DistanceBetweenTrackJointsM / car.AbsSpeedMpS;
+                    }
+                    else
+                    {
+                        jointSpacingTimeS = 0;
+                    }     
                     return jointSpacingTimeS;
                 case Orts.Formats.Msts.Variable_Trigger.Events.CarOnSwitch_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CarOnSwitch_Inc_Past:
