@@ -3265,7 +3265,9 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   Speeds up emergency application along the entire train. (default 0)
 - ``Wagon(ORTSEmergencyResQuickRelease`` -- Set to 1 (default 0) to enable quick release,
   in which emergency reservoir air is used to increase the brake pipe pressure
-  during release. Remains active until aux res has recharged.
+  during release. Remains active until aux res has recharged. For systems with a
+  dedicated quick release reservoir but without higher brake cylinder pressure in
+  emergency, set this to 2 to disable use of the emergency res for brake cylinder pressure. 
 - ``Wagon(ORTSMainResPipeAuxResCharging`` -- Boolean value that indicates,
   for twin pipe systems, if the main reservoir pipe is used for charging the auxiliary
   reservoirs. Alternately, if equipped with a supply reservoir, the supply reservoir
@@ -3335,11 +3337,11 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   cylinder pressure reaches the pressure specified here (default 0,
   which disables quick service).
 - ``Wagon(ORTSQuickServiceApplicationRate`` -- Optional setting for brake cylinder
-  application rate during quick service, can be used to increase speed of initial
+  application rate used during quick service, can be used to increase speed of initial
   applications. Has no effect if set lower than ``MaxApplicationRate`` (default 0).
-- ``Wagon(ORTSQuickServiceVentRate`` -- Optional ability for the brake pipe
-  pressure to be locally reduced at the specified rate while quick service is active
-  (default 0).
+- ``Wagon(ORTSQuickServiceVentRate`` -- Dramatically speeds up propagation of initial
+  applications by venting the wagon brake pipe pressure at the specified rate until
+  an initial application has been established (default 0).
 - ``Wagon(ORTSAcceleratedApplicationFactor`` -- Triple valves can speed up applications
   by measuring the rate of brake pipe reduction, multiplying the reduction
   by the factor specified here, then locally venting that amount of brake pipe air.
