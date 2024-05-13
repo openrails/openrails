@@ -663,6 +663,8 @@ and the state of these parameters when the wagon or locomotive is full.
    single: EmptyORTSWagonFrontalArea
    single: EmptyORTSDavisDragConstant
    single: EmptyCentreOfGravity_Y
+   single: EmptyBrakeRelayValveRatio
+   single: EmptyBrakeRelayValveInshot
    single: IsGondola
    single: UnloadingStartDelay
    single: FreightAnimContinuous
@@ -680,11 +682,13 @@ and the state of these parameters when the wagon or locomotive is full.
    single: FullORTSWagonFrontalArea
    single: FullORTSDavisDragConstant
    single: FullCentreOfGravity_Y
+   single: FullBrakeRelayValveRatio
+   single: FullBrakeRelayValveInshot
 
 To configure the stock correctly the following empty and full parameters need to be 
 included in the ORTSFreightAnims file. Empty values are included in the first block, 
 and full values are included in the second code block. A sample code block is shown 
-below.::
+below::
 
     ORTSFreightAnims
     (
@@ -719,6 +723,58 @@ below.::
       FullCentreOfGravity_Y ( 1.8 ) 
      )
   )
+
+For some rolling stock, it may be more realistic to handle variations in load/empty
+brake force by changing the brake cylinder pressure developed, rather than changing
+the brake force directly. In such cases, the empty/load relay valve parameters work
+best. Unlike other freight physics parameters, the relay valve ratio will not change
+continuously as freight is loaded. Instead, when the freight load is above 25% capacity,
+the loaded relay valve ratio is used, otherwise the empty ratio (or the ratio defined
+in the main .wag file) is used. The level of brake cylinder in-shot can also be changed
+depending on the load level as is often the case on load proportioning equipment. The
+standard behavior of these parameters is defined in more detail in the 
+:ref:`air brakes physics <physics-braking-parameters>` section.
+
+Here is an example of a gondola with a 50% load/empty valve::
+
+    ORTSMaxBrakeShoeForce ( 31300lb )
+    MaxHandbrakeForce ( 32000lb )
+
+    ORTSFreightAnims (
+        MSTSFreightAnimEnabled ( 0 )
+        WagonEmptyWeight( 28.9t-us )
+
+        EmptyBrakeRelayValveRatio ( 0.5 )
+        EmptyBrakeRelayValveInshot ( -15psi )
+
+        ORTSDavis_A ( 87.35lbf )
+        ORTSDavis_B ( 0.289lbf/mph )
+        ORTSDavis_C ( 0.144lbf/mph^2 )
+        ORTSWagonFrontalArea ( 120ft^2 )
+        ORTSDavisDragConstant ( 0.0012 )
+        EmptyCentreOfGravity_Y ( 1.377 )
+        IsGondola( 1 )
+        UnloadingStartDelay ( 5 )
+
+        FreightAnimContinuous (
+            IntakePoint ( 0.0 6.0 FreightCoal )
+            Shape ( COAL_LOAD.s )
+            MaxHeight ( 0.0 )
+            MinHeight ( -2.2 )
+            FreightWeightWhenFull ( 114.1t-us )
+            FullAtStart ( 0 )
+
+            FullBrakeRelayValveRatio ( 1.0 )
+            FullBrakeRelayValveInshot ( 0psi )
+
+            FullORTSDavis_A ( 258.5lbf )
+            FullORTSDavis_B ( 1.43lbf/mph )
+            FullORTSDavis_C ( 0.0504lbf/mph^2 )
+            ORTSWagonFrontalArea ( 120ft^2 )
+            ORTSDavisDragConstant ( 0.00042 )
+            FullCentreOfGravity_Y ( 2.251 ) 
+        )
+    ) 
 
 .. index::
    single: Shape
