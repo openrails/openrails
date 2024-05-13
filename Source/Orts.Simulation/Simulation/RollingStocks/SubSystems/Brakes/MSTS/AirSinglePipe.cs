@@ -300,6 +300,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             return TotalCylVolumeM3;
         }
 
+        public override float GetNormalizedCylTravel()
+        {
+            return CurrentCylTravelM / CylStrokeM;
+        }
+
         public float GetFullServPressurePSI()
         {
             return FullServPressurePSI;
@@ -653,8 +658,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     // Other assumptions:
                     // Brake cylinder travel remains at 0 until reaching half the spring counter-pressure
                     // Brake cylinder travel is linear w.r.t. total air in the cylinder line, not entirely accurate but greatly simplifies code
-                    float[] airPV = new float[5];
-                    float[] cylTravel = new float[5];
+                    float[] airPV = new float[7];
+                    float[] cylTravel = new float[7];
 
                     float nomPSI = 50.0f;
 
@@ -683,6 +688,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                     cylTravel[4] = (strokePerPsi * (Math.Max(nomPSI, ReferencePressurePSI) - 50.0f)) + CylStrokeM;
                     airPV[4] = AdvancedBrakeCylinderAir(Math.Max(nomPSI, ReferencePressurePSI), true);
+                    // Absolute maximum cylinder travel limited to 160% of nominal
+                    cylTravel[5] = CylStrokeM * 1.6f;
+                    airPV[5] = AdvancedBrakeCylinderAir((cylTravel[5] - cylTravel[2]) / strokePerPsi);
+
+                    cylTravel[6] = cylTravel[5];
+                    airPV[6] = airPV[5] * 2.0f;
 
                     CylTravelTab = new Interpolator(airPV, cylTravel);
 
@@ -811,7 +822,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             else if (dp < 0)
             {
-                recalculate = true;
                 if (pressurePSI < 0)
                 {
                     currentAir = 0;
@@ -1407,6 +1417,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         dp = QuickServiceLimitPSI - AutoCylPressurePSI;
                     if (QuickServiceBulbPressurePSI - (dp * volumeRatio) < AutoCylPressurePSI + dp)
                         dp = (QuickServiceBulbPressurePSI - AutoCylPressurePSI) / (1 + volumeRatio);
+                    if (dp < 0)
+                        dp = 0;
                     if (CylSource == 0)
                         AutoCylPressurePSI = CalculateBrakeCylinderPressure(ref AutoCylAirPV, dp, QuickServiceLimitPSI);
                     else
@@ -1737,7 +1749,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (CylDiameterM > 0 && Car.Train.IsPlayerDriven)
                 CurrentCylTravelM = CylTravelTab[CylAirPV];
             else
-                CurrentCylTravelM = 0;
+                CurrentCylTravelM = CylPressurePSI > BrakeCylinderSpringPressurePSI ? CylStrokeM : 0.0f;
 
             // During braking wheelslide control is effected throughout the train by additional equipment on each vehicle. In the piping to each pair of brake cylinders are fitted electrically operated 
             // dump valves. When axle rotations which are sensed electrically, differ by a predetermined speed the dump valves are operated releasing brake cylinder pressure to both axles of the affected 

@@ -216,6 +216,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             return TotalCylVolumeM3;
         }
 
+        public override float GetNormalizedCylTravel()
+        {
+            return CylPressurePSIA > VacResPressureAdjPSIA() ? 1.0f : 0.0f;
+        }
+
         public override float GetVacResVolume()
         {
             return VacResVolM3;

@@ -104,6 +104,20 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
+        /// Smoothly changes the animation to a particular frame whilst clamping it to the frame count range.
+        /// </summary>
+        public void UpdateFrameClamp(float frame, ElapsedTime elapsedTime)
+        {
+            float newState;
+            if (Math.Abs(frame - AnimationKey) > 1.0f * elapsedTime.ClockSeconds)
+                newState = AnimationKey + Math.Sign(frame - AnimationKey) * elapsedTime.ClockSeconds;
+            else
+                newState = frame;
+
+            SetFrameClamp(newState);
+        }
+
+        /// <summary>
         /// Sets the animation to a particular frame whilst cycling back to the start as input goes beyond the last frame.
         /// </summary>
         public void SetFrameCycle(float frame)

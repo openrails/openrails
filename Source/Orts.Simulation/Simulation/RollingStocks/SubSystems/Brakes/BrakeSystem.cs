@@ -76,6 +76,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         public abstract float GetCylPressurePSI();
         public abstract float GetCylVolumeM3();
         public abstract float GetTotalCylVolumeM3();
+        public abstract float GetNormalizedCylTravel();
         public abstract float GetVacResPressurePSI();
         public abstract float GetVacResVolume();
         public abstract float GetVacBrakeCylNumber();
