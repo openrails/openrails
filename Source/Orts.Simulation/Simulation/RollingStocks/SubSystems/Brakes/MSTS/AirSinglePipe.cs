@@ -71,8 +71,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float SupplyResChargingRatePSIpS;
         protected float EmergAuxVolumeRatio = 1.4f;
         protected bool RelayValveFitted = false;
-        public float RelayValveRatio { get; protected set; } = 1;
-        protected float RelayValveInshotPSI;
+        // Public to allow manipulation by freight animations
+        public float RelayValveRatio = 1;
+        public float RelayValveInshotPSI;
         public float EngineRelayValveRatio { get; protected set; } = 0;
         protected float EngineRelayValveInshotPSI;
         protected float RelayValveApplicationRatePSIpS = 50;
@@ -449,6 +450,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             outf.Write(AngleCockBOpenAmount);
             outf.Write(BleedOffValveOpen);
             outf.Write((int)HoldingValve);
+            outf.Write(RelayValveRatio);
+            outf.Write(RelayValveInshotPSI);
             outf.Write(UniformChargingActive);
             outf.Write(UniformReleaseActive);
             outf.Write(QuickServiceActive);
@@ -486,6 +489,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             AngleCockBOpenAmount = inf.ReadSingle();
             BleedOffValveOpen = inf.ReadBoolean();
             HoldingValve = (ValveState)inf.ReadInt32();
+            RelayValveRatio = inf.ReadSingle();
+            RelayValveInshotPSI = inf.ReadSingle();
             UniformChargingActive = inf.ReadBoolean();
             UniformReleaseActive = inf.ReadBoolean();
             QuickServiceActive = inf.ReadInt32();
@@ -1171,19 +1176,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
                 else
                 {
+                    // Accelerated application: Air is vented from the brake pipe to speed up service applications
+                        // Amount of air vented is proportional to pressure reduction from external sources
+                    if (AcceleratedApplicationFactor > 0)
+                        dpPipe = MathHelper.Clamp(-SmoothedBrakePipeChangePSIpS.SmoothedValue * AcceleratedApplicationFactor, 0, AcceleratedApplicationLimitPSIpS) * elapsedClockSeconds;
+                if (BrakeLine1PressurePSI - dpPipe < 0)
+                    dpPipe = BrakeLine1PressurePSI;
+
                     if (AutoCylPressurePSI < QuickServiceLimitPSI)
                         dp = elapsedClockSeconds * Math.Max(QuickServiceApplicationRatePSIpS, MaxApplicationRatePSIpS);
                     else if (TripleValveState == ValveState.Emergency && (!QuickActionFitted || BrakeLine1PressurePSI < AutoCylPressurePSI))
-                    dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
+                        dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
                     else
                         dp = elapsedClockSeconds * ServiceApplicationRatePSIpS;
                 }
-                // Accelerated application: Air is vented from the brake pipe to speed up service applications
-                // Amount of air vented is proportional to pressure reduction from external sources
-                if (AcceleratedApplicationFactor > 0)
-                    dpPipe = MathHelper.Clamp(-SmoothedBrakePipeChangePSIpS.SmoothedValue * AcceleratedApplicationFactor, 0, AcceleratedApplicationLimitPSIpS) * elapsedClockSeconds;
-                if (BrakeLine1PressurePSI - dpPipe < 0)
-                    dpPipe = BrakeLine1PressurePSI;
 
                 if (AuxResPressurePSI - AutoCylPressurePSI < 20.0f)
                     dp = Math.Min(dp, Math.Max(MaxApplicationRatePSIpS * (AuxResPressurePSI - AutoCylPressurePSI) / 20.0f, 0)); // Reduce application rate as pressure difference diminishes
@@ -1700,6 +1706,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 if (demandedPressurePSI > CylPressurePSI)
                 {
                     float dp = elapsedClockSeconds * RelayValveApplicationRatePSIpS;
+                    // Reduce glitchyness caused by extremely low demanded pressures
+                    if (CylSource != 0 && demandedPressurePSI < BrakeCylinderSpringPressurePSI / 2.0f)
+                        dp *= 0.2f;
                     if (dp > demandedPressurePSI - CylPressurePSI)
                         dp = demandedPressurePSI - CylPressurePSI;
                     if (MaxCylPressurePSI < CylPressurePSI + dp)
@@ -1715,10 +1724,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             SupplyResPressurePSI -= dp * volumeRatio;
                             break;
                         case 2: // Main res
-                            volumeRatio = TotalCylVolumeM3 / loco.MainResVolumeM3;
-                            if (loco.MainResPressurePSI - (dp * volumeRatio) < CylPressurePSI + dp)
+                    if (loco != null)
+                    {
+                                volumeRatio = TotalCylVolumeM3 / loco.MainResVolumeM3;
+                                if (loco.MainResPressurePSI - (dp * volumeRatio) < CylPressurePSI + dp)
                             dp = (loco.MainResPressurePSI - CylPressurePSI) / (1 + volumeRatio);
                         loco.MainResPressurePSI -= dp * volumeRatio;
+                    }
                             break;
                         case 3: // Main res pipe
                             volumeRatio = TotalCylVolumeM3 / BrakePipeVolumeM3;
@@ -1733,6 +1745,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 else if (demandedPressurePSI < CylPressurePSI)
                 {
                     float dp = elapsedClockSeconds * RelayValveReleaseRatePSIpS;
+                    // Reduce glitchyness caused by extremely low demanded pressures
+                    if (CylSource != 0 && demandedPressurePSI < BrakeCylinderSpringPressurePSI / 2.0f)
+                        dp *= 0.2f;
                     if (dp > CylPressurePSI - demandedPressurePSI)
                         dp = CylPressurePSI - demandedPressurePSI;
                     if (CylPressurePSI - dp < 0)
