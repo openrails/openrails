@@ -3143,6 +3143,8 @@ notch of the train brake controller, where 0 means no dynamic brake and 1 means 
 Native Open Rails Braking Parameters
 ------------------------------------
 
+.. _physics-braking-parameters:
+
 Open Rails has implemented additional specific braking parameters to
 deliver realism in braking performance in the simulation.
 

@@ -1487,6 +1487,53 @@ to the oscillation from center point to an oscillation end point. The file shoul
 one cue point at its beginning and one after the time interval of a complete bell swing 
 forward and backward, and should have a final fadeoff for best result. 
 
+Brake Equipment Animations
+==========================
+
+Open Rails now supports animation of brake rigging components driven by the brake system
+simulation.
+
+Brake Cylinder Animation
+------------------------
+
+On engines and wagons with :ref:`advanced brake cylinder parameters <physics-braking-parameters>`
+`ORTSBrakeCylinderDiameter` and `ORTSBrakeCylinderPistonTravel` defined, Open Rails will
+simulate the motion of the brake cylinders and brake rigging. This simulation can be used
+to drive animations of brake cylinders using animation matricies with names that
+start with `ORTSBRAKECYLINDER`. This animation type should NOT be used for any brake equipment
+that can be actuated by the brake cylinder and the handbrakes. See the section on brake rigging
+animation for details.
+
+Unlike other animation types, the keyframes for brake cylinders do not represent time.
+Instead, the key value represents the level of brake cylinder extension. A value of 0.8
+represents the state where the brake cylinder has taken up the slack in the brake rigging,
+1.0 represents the level of brake cylinder extension at 50 psi/3.5 bar, and the maximum
+value of cylinder extension is 1.6, which should not be possible in normal operation.
+These values are the same regardless of the settings used in the engine or wagon file.
+
+Note that the advanced brake cylinder calculations are only run on air brake systems on the
+player train to save computing power. As such, brake cylinder animations on AI trains
+or brake systems other than air brakes behave in a simplified manner.
+
+Handbrake Animation
+-------------------
+
+Handbrake wheels and levers can also be animated using the same process as two-state animations
+such as mirrors. The matrix name for animated handbrakes must begin with `ORTSHANDBRAKE`.
+
+Brake Rigging and Brake Shoe Animation
+--------------------------------------
+
+For any brake equipment that is actuated by both the handbrake and the brake cylinders (typically,
+this includes brake rigging and brake shoes, but sometimes also includes brake cylinders themselves),
+use animations with a matrix name starting with `ORTSBRAKERIGGING`. For this type of animation, the
+animation state will respond to the brake cylinder travel or the handbrake, whichever input is greater.
+
+The same keyframe rules as brake cylinder animations apply here. The 0.8 key should represent the state
+where the brake shoes have made contact with the friction surface, and no further motion of brake shoes
+should occur after 0.8. Applying the handbrake will drive the animation to the 1.0 state, the same
+as a 50 psi/3.5 bar application of the brakes.
+
 Coupler and Airhose Animation
 =============================
 
