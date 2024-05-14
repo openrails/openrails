@@ -204,7 +204,7 @@ namespace ORTS
             string topPathDirectoryExe = determineTopDirectory(pathDirectoryExe.Substring(6));
             string topInstallPath = determineTopDirectory(installPath);
 
-            if (OptionsForm.isWrongPath(installPath, Catalog)) {
+            if (OptionsForm.ContentFolder.isWrongPath(installPath, Catalog)) {
                 // cancelled
                 EnableButtons();
                 return;
