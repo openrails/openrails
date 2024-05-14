@@ -204,10 +204,7 @@ namespace ORTS
             string topPathDirectoryExe = determineTopDirectory(pathDirectoryExe.Substring(6));
             string topInstallPath = determineTopDirectory(installPath);
 
-            if (topPathDirectoryExe.Equals(topInstallPath, StringComparison.OrdinalIgnoreCase))
-            {
-                message = Catalog.GetStringFmt("Top directory {0} is the same for exe and route, installing in this directory not allowed", topInstallPath);
-                MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+            if (OptionsForm.isWrongPath(installPath, Catalog)) {
                 // cancelled
                 EnableButtons();
                 return;
