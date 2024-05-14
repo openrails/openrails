@@ -697,7 +697,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     airPV[4] = AdvancedBrakeCylinderAir(Math.Max(nomPSI, ReferencePressurePSI), true);
                     // Absolute maximum cylinder travel limited to 160% of nominal
                     cylTravel[5] = CylStrokeM * 1.6f;
-                    airPV[5] = AdvancedBrakeCylinderAir((cylTravel[5] - cylTravel[2]) / strokePerPsi);
+                    airPV[5] = AdvancedBrakeCylinderAir((cylTravel[5] - cylTravel[2]) / strokePerPsi , true);
 
                     cylTravel[6] = cylTravel[5];
                     airPV[6] = airPV[5] * 2.0f;
