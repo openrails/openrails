@@ -109,8 +109,6 @@ namespace ORTS
 
         GettextResourceManager catalog = new GettextResourceManager("Menu");
 
-        public bool DoWithTask = true;
-
         #region Main Form
         public MainForm()
         {
@@ -137,8 +135,6 @@ namespace ORTS
         {
             var options = Environment.GetCommandLineArgs().Where(a => (a.StartsWith("-") || a.StartsWith("/"))).Select(a => a.Substring(1));
             Settings = new UserSettings(options);
-
-            Cursor = Cursors.Default;
 
             LoadOptions();
             LoadLanguage();
@@ -578,14 +574,6 @@ namespace ORTS
             }
         }
 
-        void buttonDownloadContent_Click(object sender, EventArgs e)
-        {
-            using (var form = new DownloadContentForm(Settings))
-            {
-                form.ShowDialog(this);
-            }
-        }
-        
         void buttonStart_Click(object sender, EventArgs e)
         {
             SaveOptions();
@@ -744,14 +732,12 @@ namespace ORTS
         #endregion
 
         #region Folder list
-        public void LoadFolderList()
+        void LoadFolderList()
         {
             var initialized = Initialized;
             Folders.Clear();
             ShowFolderList();
 
-            if (DoWithTask)
-            {
             FolderLoader = new Task<List<Folder>>(this, () => Folder.GetFolders(Settings).OrderBy(f => f.Name).ToList(), (folders) =>
             {
                 Folders = folders;
@@ -761,11 +747,12 @@ namespace ORTS
 
                 if (!initialized && Folders.Count == 0)
                 {
-                        using (var form = new DownloadContentForm(Settings))
+                    using (var form = new OptionsForm(Settings, UpdateManager, true))
                     {
                         switch (form.ShowDialog(this))
                         {
                             case DialogResult.OK:
+                                LoadFolderList();
                                 break;
                             case DialogResult.Retry:
                                 RestartMenu();
@@ -774,12 +761,6 @@ namespace ORTS
                     }
                 }
             });
-        }
-            else
-            {
-                Folders = Folder.GetFolders(Settings).OrderBy(f => f.Name).ToList();
-                ShowFolderList();
-            }
         }
 
         void ShowFolderList()
@@ -793,7 +774,7 @@ namespace ORTS
         #endregion
 
         #region Route list
-        public void LoadRouteList()
+        void LoadRouteList()
         {
             if (RouteLoader != null)
                 RouteLoader.Cancel();
@@ -806,20 +787,12 @@ namespace ORTS
             ShowStartAtList();
             ShowHeadToList();
 
-            if (DoWithTask)
-            {
             var selectedFolder = SelectedFolder;
             RouteLoader = new Task<List<Route>>(this, () => Route.GetRoutes(selectedFolder).OrderBy(r => r.ToString()).ToList(), (routes) =>
             {
                 Routes = routes;
                 ShowRouteList();
             });
-        }
-            else
-            {
-                Routes = Route.GetRoutes(SelectedFolder).OrderBy(r => r.ToString()).ToList();
-                ShowRouteList();
-            }
         }
 
         void ShowRouteList()
@@ -842,7 +815,7 @@ namespace ORTS
         #endregion
 
         #region Activity list
-        public void LoadActivityList()
+        void LoadActivityList()
         {
             if (ActivityLoader != null)
                 ActivityLoader.Cancel();
@@ -850,8 +823,6 @@ namespace ORTS
             Activities.Clear();
             ShowActivityList();
 
-            if (DoWithTask)
-            {
             var selectedFolder = SelectedFolder;
             var selectedRoute = SelectedRoute;
             ActivityLoader = new Task<List<Activity>>(this, () => Activity.GetActivities(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (activities) =>
@@ -859,12 +830,6 @@ namespace ORTS
                 Activities = activities;
                 ShowActivityList();
             });
-        }
-            else
-            {
-                Activities = Activity.GetActivities(SelectedFolder, SelectedRoute).OrderBy(a => a.ToString()).ToList();
-                ShowActivityList();
-            }
         }
 
         void ShowActivityList()
@@ -891,7 +856,7 @@ namespace ORTS
         #endregion
 
         #region Consist lists
-        public void LoadLocomotiveList()
+        void LoadLocomotiveList()
         {
             if (ConsistLoader != null)
                 ConsistLoader.Cancel();
@@ -900,8 +865,6 @@ namespace ORTS
             ShowLocomotiveList();
             ShowConsistList();
 
-            if (DoWithTask)
-            {
             var selectedFolder = SelectedFolder;
             ConsistLoader = new Task<List<Consist>>(this, () => Consist.GetConsists(selectedFolder).OrderBy(a => a.ToString()).ToList(), (consists) =>
             {
@@ -909,13 +872,6 @@ namespace ORTS
                 if (SelectedActivity == null || SelectedActivity is ExploreActivity)
                     ShowLocomotiveList();
             });
-        }
-            else
-            {
-                Consists = Consist.GetConsists(SelectedFolder).OrderBy(a => a.ToString()).ToList();
-                if (SelectedActivity == null || SelectedActivity is ExploreActivity)
-                    ShowLocomotiveList();
-            }
         }
 
         void ShowLocomotiveList()
@@ -957,7 +913,7 @@ namespace ORTS
         #endregion
 
         #region Path lists
-        public void LoadStartAtList()
+        void LoadStartAtList()
         {
             if (PathLoader != null)
                 PathLoader.Cancel();
@@ -966,8 +922,6 @@ namespace ORTS
             ShowStartAtList();
             ShowHeadToList();
 
-            if (DoWithTask)
-            {
             var selectedRoute = SelectedRoute;
             PathLoader = new Task<List<Path>>(this, () => Path.GetPaths(selectedRoute, false).OrderBy(a => a.ToString()).ToList(), (paths) =>
             {
@@ -975,13 +929,6 @@ namespace ORTS
                 if (SelectedActivity == null || SelectedActivity is ExploreActivity)
                     ShowStartAtList();
             });
-        }
-            else
-            {
-                Paths = Path.GetPaths(SelectedRoute, false).OrderBy(a => a.ToString()).ToList();
-                if (SelectedActivity == null || SelectedActivity is ExploreActivity)
-                    ShowStartAtList();
-            }
         }
 
         void ShowStartAtList()
@@ -1061,7 +1008,7 @@ namespace ORTS
         #endregion
 
         #region Timetable Set list
-        public void LoadTimetableSetList()
+        void LoadTimetableSetList()
         {
             if (TimetableSetLoader != null)
                 TimetableSetLoader.Cancel();
@@ -1070,8 +1017,6 @@ namespace ORTS
 
             TimetableSets.Clear();
             ShowTimetableSetList();
-
-            if (DoWithTask) {
             var selectedFolder = SelectedFolder;
             var selectedRoute = SelectedRoute;
             TimetableSetLoader = new Task<List<TimetableInfo>>(this, () => TimetableInfo.GetTimetableInfo(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableSets) =>
@@ -1085,14 +1030,6 @@ namespace ORTS
                 TimetableWeatherFileSet = timetableWeatherFileSet;
                 ShowTimetableWeatherSet();
             });
-        }
-            else
-            {
-                TimetableSets = TimetableInfo.GetTimetableInfo(SelectedFolder, SelectedRoute).OrderBy(a => a.ToString()).ToList();
-                ShowTimetableSetList();
-                TimetableWeatherFileSet = WeatherFileInfo.GetTimetableWeatherFiles(SelectedFolder, SelectedRoute).OrderBy(a => a.ToString()).ToList();
-                ShowTimetableWeatherSet();
-            }
         }
 
         void ShowTimetableSetList()
@@ -1132,7 +1069,7 @@ namespace ORTS
         #endregion
 
         #region Timetable list
-        public void ShowTimetableList()
+        void ShowTimetableList()
         {
             comboBoxTimetable.Items.Clear();
             if (SelectedTimetableSet != null)
@@ -1146,7 +1083,7 @@ namespace ORTS
         #endregion
 
         #region Timetable Train list
-        public void ShowTimetableTrainList()
+        void ShowTimetableTrainList()
         {
             comboBoxTimetableTrain.Items.Clear();
             if (SelectedTimetable != null)
@@ -1424,7 +1361,7 @@ namespace ORTS
             comboBox.SelectedIndex = 0;
         }
 
-        public class KeyedComboBoxItem
+        private class KeyedComboBoxItem
         {
             public readonly int Key;
             public readonly string Value;
