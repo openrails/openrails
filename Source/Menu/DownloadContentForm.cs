@@ -948,8 +948,7 @@ namespace ORTS
 
                 if (areThereChangedAddedFiles(route))
                 {
-                    writeAndStartInfoFile();
-                    message = Catalog.GetStringFmt("Changed or added local files found in Directory \"{0}\", see Info at the bottom for more information. Do you want to continue?", route.DirectoryInstalledIn);
+                    message = Catalog.GetStringFmt("Changed or added local files found in Directory \"{0}\". Do you want to continue?", route.DirectoryInstalledIn);
                     if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
                     {
                         // cancelled
@@ -1019,8 +1018,7 @@ namespace ORTS
             List<string> commitStrings = getCommits(route.DirectoryInstalledIn);
             if (commitStrings.Count > 0)
             {
-                writeAndStartInfoFile();
-                message = Catalog.GetString("Remote updates found, see Info at the bottom for more information. Do you want to continue?");
+                message = Catalog.GetString("Remote updates found. Do you want to continue?");
                 if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
                 {
                     // cancelled
@@ -1029,7 +1027,7 @@ namespace ORTS
                 }
                 if (areThereChangedAddedFiles(route))
                 {
-                    message = Catalog.GetString("Changed or added local files found, Update might fail, see Info at the bottom for more information. Do you want to continue?");
+                    message = Catalog.GetString("Changed or added local files found, Update might fail. Do you want to continue?");
                     if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
                     {
                         // cancelled
