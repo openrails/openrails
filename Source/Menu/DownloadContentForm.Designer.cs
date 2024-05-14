@@ -70,6 +70,8 @@ namespace ORTS
             // 
             this.dataGridViewDownloadContent.AllowUserToAddRows = false;
             this.dataGridViewDownloadContent.AllowUserToDeleteRows = false;
+            this.dataGridViewDownloadContent.AllowUserToResizeColumns = false;
+            this.dataGridViewDownloadContent.AllowUserToResizeRows = false;
             this.dataGridViewDownloadContent.BackgroundColor = System.Drawing.SystemColors.ControlLightLight;
             this.dataGridViewDownloadContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridViewDownloadContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
@@ -78,6 +80,7 @@ namespace ORTS
             this.Url});
             this.dataGridViewDownloadContent.GridColor = System.Drawing.SystemColors.Control;
             this.dataGridViewDownloadContent.Location = new System.Drawing.Point(3, 9);
+            this.dataGridViewDownloadContent.MultiSelect = false;
             this.dataGridViewDownloadContent.Name = "dataGridViewDownloadContent";
             this.dataGridViewDownloadContent.ReadOnly = true;
             this.dataGridViewDownloadContent.RowHeadersVisible = false;
@@ -112,7 +115,7 @@ namespace ORTS
             // InstallPathLabel
             // 
             this.InstallPathLabel.AutoSize = true;
-            this.InstallPathLabel.Location = new System.Drawing.Point(21, 478);
+            this.InstallPathLabel.Location = new System.Drawing.Point(3, 478);
             this.InstallPathLabel.Name = "InstallPathLabel";
             this.InstallPathLabel.Size = new System.Drawing.Size(62, 13);
             this.InstallPathLabel.TabIndex = 1;
@@ -120,7 +123,7 @@ namespace ORTS
             // 
             // InstallPathTextBox
             // 
-            this.InstallPathTextBox.Location = new System.Drawing.Point(89, 475);
+            this.InstallPathTextBox.Location = new System.Drawing.Point(84, 475);
             this.InstallPathTextBox.Name = "InstallPathTextBox";
             this.InstallPathTextBox.Size = new System.Drawing.Size(445, 20);
             this.InstallPathTextBox.TabIndex = 2;
@@ -139,7 +142,7 @@ namespace ORTS
             // downloadContentButton
             // 
             this.downloadContentButton.Enabled = false;
-            this.downloadContentButton.Location = new System.Drawing.Point(3, 507);
+            this.downloadContentButton.Location = new System.Drawing.Point(84, 507);
             this.downloadContentButton.Name = "downloadContentButton";
             this.downloadContentButton.Size = new System.Drawing.Size(75, 23);
             this.downloadContentButton.TabIndex = 5;
@@ -168,7 +171,7 @@ namespace ORTS
             // 
             // infoButton
             // 
-            this.infoButton.Location = new System.Drawing.Point(745, 472);
+            this.infoButton.Location = new System.Drawing.Point(3, 507);
             this.infoButton.Name = "infoButton";
             this.infoButton.Size = new System.Drawing.Size(75, 23);
             this.infoButton.TabIndex = 4;
@@ -179,7 +182,7 @@ namespace ORTS
             // startButton
             // 
             this.startButton.Enabled = false;
-            this.startButton.Location = new System.Drawing.Point(84, 507);
+            this.startButton.Location = new System.Drawing.Point(165, 507);
             this.startButton.Name = "startButton";
             this.startButton.Size = new System.Drawing.Size(75, 23);
             this.startButton.TabIndex = 6;
@@ -190,7 +193,7 @@ namespace ORTS
             // deleteButton
             // 
             this.deleteButton.Enabled = false;
-            this.deleteButton.Location = new System.Drawing.Point(165, 507);
+            this.deleteButton.Location = new System.Drawing.Point(246, 507);
             this.deleteButton.Name = "deleteButton";
             this.deleteButton.Size = new System.Drawing.Size(75, 23);
             this.deleteButton.TabIndex = 7;
@@ -200,7 +203,7 @@ namespace ORTS
             // 
             // updateButton
             // 
-            this.updateButton.Location = new System.Drawing.Point(246, 507);
+            this.updateButton.Location = new System.Drawing.Point(327, 507);
             this.updateButton.Name = "updateButton";
             this.updateButton.Size = new System.Drawing.Size(75, 23);
             this.updateButton.TabIndex = 8;

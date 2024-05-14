@@ -72,6 +72,13 @@ namespace ORTS
 
             dataGridViewDownloadContent.Sort(dataGridViewDownloadContent.Columns[0], ListSortDirection.Ascending);
 
+            for (int index = 0; index < Routes.Count; index++)
+            {
+                DataGridViewRow row = dataGridViewDownloadContent.Rows[index];
+                DataGridViewCell cell = row.Cells[2];
+                cell.ToolTipText = cell.Value.ToString();
+            }
+
             InstallPathTextBox.Text = settings.Content.InstallPath;
 
             ImageTempFilename = Path.GetTempFileName();
@@ -611,6 +618,7 @@ namespace ORTS
                 else
                 {
                     outputFile.WriteLine("- " + Catalog.GetString("Installation profile") + ": " + RouteName + "<br>");
+                    outputFile.WriteLine("- " + Catalog.GetString("Activity") + ": " + route.Start.Activity + "<br>");
                     outputFile.WriteLine("- " + Catalog.GetString("Route") + ": " + route.Start.Route + "<br>");
                     outputFile.WriteLine("- " + Catalog.GetString("Locomotive") + ": " + route.Start.Locomotive + "<br>");
                     outputFile.WriteLine("- " + Catalog.GetString("Consist") + ": " + route.Start.Consist + "<br>");
@@ -722,7 +730,7 @@ namespace ORTS
                     outputFile.WriteLine(changedFile + "<br>");
                 }
                 outputFile.WriteLine("</p>");
-            }
+                    }
 
             outputFile.WriteLine("<p>" + Catalog.GetString("Remote GitHub Updates available:") + "<br>");
 
@@ -739,8 +747,8 @@ namespace ORTS
                 }
                 outputFile.WriteLine("</p>");
             }
-            else
-            {
+                else
+                {
                 outputFile.WriteLine("- " + Catalog.GetString("No updates found") + "<br></p>");
             }
 
@@ -940,8 +948,7 @@ namespace ORTS
 
                 if (areThereChangedAddedFiles(route))
                 {
-                    writeAndStartInfoFile();
-                    message = Catalog.GetStringFmt("Changed or added local files found in Directory \"{0}\", see Info at the bottom for more information. Do you want to continue?", route.DirectoryInstalledIn);
+                    message = Catalog.GetStringFmt("Changed or added local files found in Directory \"{0}\". Do you want to continue?", route.DirectoryInstalledIn);
                     if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
                     {
                         // cancelled
@@ -1011,8 +1018,7 @@ namespace ORTS
             List<string> commitStrings = getCommits(route.DirectoryInstalledIn);
             if (commitStrings.Count > 0)
             {
-                writeAndStartInfoFile();
-                message = Catalog.GetString("Remote updates found, see Info at the bottom for more information. Do you want to continue?");
+                message = Catalog.GetString("Remote updates found. Do you want to continue?");
                 if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
                 {
                     // cancelled
@@ -1021,7 +1027,7 @@ namespace ORTS
                 }
                 if (areThereChangedAddedFiles(route))
                 {
-                    message = Catalog.GetString("Changed or added local files found, Update might fail, see Info at the bottom for more information. Do you want to continue?");
+                    message = Catalog.GetString("Changed or added local files found, Update might fail. Do you want to continue?");
                     if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
                     {
                         // cancelled
