@@ -6136,7 +6136,10 @@ namespace Orts.Simulation.RollingStocks
                         data = Train.EOT.GetDataOf(cvc);
                     break;
             }
-
+            // Don't waste time calculating exponents if one isn't set
+            // To avoid potential imaginary numbers, use data's absolute value
+            if (cvc.UnitsExponent != 1.0f)
+                data = Math.Sign(data)*(float)Math.Pow(Math.Abs(data), cvc.UnitsExponent);
             data = cvc.UnitsOffset + (data * cvc.UnitsScale);
 
             return data;
