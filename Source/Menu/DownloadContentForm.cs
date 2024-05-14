@@ -618,6 +618,7 @@ namespace ORTS
                 else
                 {
                     outputFile.WriteLine("- " + Catalog.GetString("Installation profile") + ": " + RouteName + "<br>");
+                    outputFile.WriteLine("- " + Catalog.GetString("Activity") + ": " + route.Start.Activity + "<br>");
                     outputFile.WriteLine("- " + Catalog.GetString("Route") + ": " + route.Start.Route + "<br>");
                     outputFile.WriteLine("- " + Catalog.GetString("Locomotive") + ": " + route.Start.Locomotive + "<br>");
                     outputFile.WriteLine("- " + Catalog.GetString("Consist") + ": " + route.Start.Consist + "<br>");
