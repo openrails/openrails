@@ -533,202 +533,205 @@
     <Content Include="Content\TrackMonitorImages.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsArrowLeft.png">
+    <Content Include="Content\TrainOperations\TrainOperationsArrowLeft.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsArrowRight.png">
+    <Content Include="Content\TrainOperations\TrainOperationsArrowRight.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBattAlwaysOn.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBattAlwaysOn.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBattAlwaysOn32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBattAlwaysOn32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBattOff.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBattOff.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBattOff32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBattOff32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBattOn.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBattOn.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBattOn32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBattOn32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBleedOffValveClosed.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBleedOffValveClosed.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBleedOffValveClosed32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBleedOffValveClosed32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBleedOffValveNotAvailable.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBleedOffValveNotAvailable.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBleedOffValveNotAvailable32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBleedOffValveNotAvailable32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBleedOffValveOpened.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBleedOffValveOpened.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBleedOffValveOpened32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBleedOffValveOpened32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBrakeHoseCon.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBrakeHoseCon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBrakeHoseCon32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBrakeHoseCon32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBrakeHoseDis.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBrakeHoseDis.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBrakeHoseDis32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBrakeHoseDis32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBrakeHoseFirstDis.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBrakeHoseFirstDis.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBrakeHoseFirstDis32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBrakeHoseFirstDis32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBrakeHoseLastDis.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBrakeHoseLastDis.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsBrakeHoseLastDis32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsBrakeHoseLastDis32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\TrainOperationsCoupler.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsCoupler32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsCoupler.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsCouplerNotAvailable.png">
+    <Content Include="Content\TrainOperations\TrainOperationsCoupler32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsCouplerNotAvailable32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsCouplerNotAvailable.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsCouplerFront.png">
+    <Content Include="Content\TrainOperations\TrainOperationsCouplerNotAvailable32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsCouplerFront32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsCouplerFront.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsCouplerRear.png">
+    <Content Include="Content\TrainOperations\TrainOperationsCouplerFront32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsCouplerRear32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsCouplerRear.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsETSconnected.png">
+    <Content Include="Content\TrainOperations\TrainOperationsCouplerRear32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsETSconnected32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsETSconnected.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsETSdisconnected.png">
+    <Content Include="Content\TrainOperations\TrainOperationsETSconnected32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsETSdisconnected32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsETSdisconnected.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsEmpty.png">
+    <Content Include="Content\TrainOperations\TrainOperationsETSdisconnected32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsEmpty32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsEmpty.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsFrontAngleCockClosed.png">
+    <Content Include="Content\TrainOperations\TrainOperationsEmpty32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsFrontAngleCockClosed32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsFrontAngleCockClosed.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsFrontAngleCockOpened.png">
+    <Content Include="Content\TrainOperations\TrainOperationsFrontAngleCockClosed32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsFrontAngleCockOpened32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsFrontAngleCockOpened.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsHandBrakeNoAvailable.png">
+    <Content Include="Content\TrainOperations\TrainOperationsFrontAngleCockOpened32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsHandBrakeNoSet.png">
+    <Content Include="Content\TrainOperations\TrainOperationsHandBrakeNoAvailable.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsHandBrakeNoSet32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsHandBrakeNoSet.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsHandBrakeNotAvailable.png">
+    <Content Include="Content\TrainOperations\TrainOperationsHandBrakeNoSet32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsHandBrakeNotAvailable32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsHandBrakeNotAvailable.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsHandBrakeSet.png">
+    <Content Include="Content\TrainOperations\TrainOperationsHandBrakeNotAvailable32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsHandBrakeSet32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsHandBrakeSet.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsLoco32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsHandBrakeSet32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsLocoGreen32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsLoco32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsLocoRed32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsLocoGreen32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsMUconnected.png">
+    <Content Include="Content\TrainOperations\TrainOperationsLocoRed32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsMUconnected32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsMUconnected.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsMUdisconnected.png">
+    <Content Include="Content\TrainOperations\TrainOperationsMUconnected32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsMUdisconnected32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsMUdisconnected.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsPowerChanging.png">
+    <Content Include="Content\TrainOperations\TrainOperationsMUdisconnected32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsPowerChanging32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsPowerChanging.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsPowerOff.png">
+    <Content Include="Content\TrainOperations\TrainOperationsPowerChanging32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsPowerOff32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsPowerOff.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsPowerOn.png">
+    <Content Include="Content\TrainOperations\TrainOperationsPowerOff32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsPowerOn32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsPowerOn.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsRearAngleCockClosed.png">
+    <Content Include="Content\TrainOperations\TrainOperationsPowerOn32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsRearAngleCockClosed32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsRearAngleCockClosed.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsRearAngleCockOpened.png">
+    <Content Include="Content\TrainOperations\TrainOperationsRearAngleCockClosed32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsRearAngleCockOpened32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsRearAngleCockOpened.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsResetBrakesOff32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsRearAngleCockOpened32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\TrainOperationsResetBrakesOn32.png">
+    <Content Include="Content\TrainOperations\TrainOperationsResetBrakesOff32.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\TrainOperations\TrainOperationsResetBrakesOn32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\train_TM.png">
