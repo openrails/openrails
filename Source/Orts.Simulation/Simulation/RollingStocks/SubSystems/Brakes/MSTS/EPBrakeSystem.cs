@@ -150,7 +150,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             base.Initialize(handbrakeOn, maxPressurePSI, fullServPressurePSI, immediateRelease);
             AutoCylPressurePSI = Math.Max(AutoCylPressurePSI, Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * MaxCylPressurePSI);
-            CylPressurePSI = ForceBrakeCylinderPressure(ref CylAirPV, AutoCylPressurePSI);
+            CylPressurePSI = ForceBrakeCylinderPressure(ref CylAirPSIM3, AutoCylPressurePSI);
         }
     }
 }
