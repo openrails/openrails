@@ -109,14 +109,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 if (ScriptName != null)
                 {
-                    switch(ScriptName)
+                    switch(ScriptName.ToLowerInvariant())
                     {
-                        case "Automatic":
-                            Script = new AutomaticCircuitBreaker() as CircuitBreaker;
+                        case "automatic":
+                            Script = new AutomaticCircuitBreaker();
                             break;
 
-                        case "Manual":
-                            Script = new ManualCircuitBreaker() as CircuitBreaker;
+                        case "manual":
+                            Script = new ManualCircuitBreaker();
+                            break;
+
+                        case "pushbuttons":
+                            Script = new PushButtonsCircuitBreaker();
+                            break;
+
+                        case "twostage":
+                            Script = new TwoStageCircuitBreaker();
                             break;
 
                         default:
@@ -128,7 +136,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 // Fallback to automatic circuit breaker if the above failed.
                 if (Script == null)
                 {
-                    Script = new AutomaticCircuitBreaker() as CircuitBreaker;
+                    Script = new AutomaticCircuitBreaker();
                 }
 
                 Script.AttachToHost(this);
@@ -371,6 +379,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             switch (evt)
             {
+                case PowerSupplyEvent.QuickPowerOn:
                 case PowerSupplyEvent.CloseCircuitBreaker:
                     SetDriverClosingOrder(true);
                     SetDriverOpeningOrder(false);
@@ -383,12 +392,254 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                     break;
 
+                case PowerSupplyEvent.QuickPowerOff:
                 case PowerSupplyEvent.OpenCircuitBreaker:
                     SetDriverClosingOrder(false);
                     SetDriverOpeningOrder(true);
                     SignalEvent(Event.CircuitBreakerClosingOrderOff);
 
                     Confirm(CabControl.CircuitBreakerClosingOrder, CabSetting.Off);
+                    break;
+            }
+        }
+    }
+
+    public class PushButtonsCircuitBreaker : CircuitBreaker
+    {
+        private Timer ClosingTimer;
+        private CircuitBreakerState PreviousState;
+        private bool QuickPowerOn;
+
+        public override void Initialize()
+        {
+            ClosingTimer = new Timer(this);
+            ClosingTimer.Setup(ClosingDelayS());
+
+            SetDriverClosingAuthorization(true);
+        }
+
+        public override void Update(float elapsedSeconds)
+        {
+            SetClosingAuthorization(TCSClosingAuthorization() && CurrentPantographState() == PantographState.Up);
+
+            switch (CurrentState())
+            {
+                case CircuitBreakerState.Closed:
+                    if (!ClosingAuthorization() || DriverOpeningOrder() || TCSOpeningOrder())
+                    {
+                        SetCurrentState(CircuitBreakerState.Open);
+                    }
+                    break;
+
+                case CircuitBreakerState.Closing:
+                    if (ClosingAuthorization() && (DriverClosingOrder() || TCSClosingOrder() || QuickPowerOn))
+                    {
+                        if (!ClosingTimer.Started)
+                        {
+                            ClosingTimer.Start();
+                        }
+
+                        if (ClosingTimer.Triggered)
+                        {
+                            QuickPowerOn = false;
+                            ClosingTimer.Stop();
+                            SetCurrentState(CircuitBreakerState.Closed);
+                        }
+                    }
+                    else
+                    {
+                        QuickPowerOn = false;
+                        ClosingTimer.Stop();
+                        SetCurrentState(CircuitBreakerState.Open);
+                    }
+                    break;
+
+                case CircuitBreakerState.Open:
+                    if (ClosingAuthorization() && (DriverClosingOrder() || TCSClosingOrder() || QuickPowerOn))
+                    {
+                        SetCurrentState(CircuitBreakerState.Closing);
+                    }
+                    break;
+            }
+
+            if (PreviousState != CurrentState())
+            {
+                switch (CurrentState())
+                {
+                    case CircuitBreakerState.Open:
+                        SignalEvent(Event.CircuitBreakerOpen);
+                        break;
+
+                    case CircuitBreakerState.Closing:
+                        SignalEvent(Event.CircuitBreakerClosing);
+                        break;
+
+                    case CircuitBreakerState.Closed:
+                        SignalEvent(Event.CircuitBreakerClosed);
+                        break;
+                }
+            }
+
+            PreviousState = CurrentState();
+        }
+
+        public override void HandleEvent(PowerSupplyEvent evt)
+        {
+            switch (evt)
+            {
+                case PowerSupplyEvent.CloseCircuitBreakerButtonPressed:
+                    SetDriverOpeningOrder(false);
+                    SetDriverClosingOrder(true);
+                    SignalEvent(Event.CircuitBreakerClosingOrderOn);
+                    Confirm(CabControl.CircuitBreakerClosingOrder, CabSetting.On);
+                    if (!ClosingAuthorization())
+                    {
+                        Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Circuit breaker closing not authorized"));
+                    }
+                    break;
+                case PowerSupplyEvent.CloseCircuitBreakerButtonReleased:
+                    SetDriverClosingOrder(false);
+                    break;
+                case PowerSupplyEvent.OpenCircuitBreakerButtonPressed:
+                    SetDriverClosingOrder(false);
+                    SetDriverOpeningOrder(true);
+                    SignalEvent(Event.CircuitBreakerClosingOrderOff);
+                    Confirm(CabControl.CircuitBreakerClosingOrder, CabSetting.Off);
+                    break;
+                case PowerSupplyEvent.OpenCircuitBreakerButtonReleased:
+                    SetDriverOpeningOrder(false);
+                    break;
+                case PowerSupplyEvent.QuickPowerOn:
+                    QuickPowerOn = true;
+                    break;
+                case PowerSupplyEvent.QuickPowerOff:
+                    QuickPowerOn = false;
+                    SetCurrentState(CircuitBreakerState.Open);
+                    break;
+            }
+        }
+    }
+
+    public class TwoStageCircuitBreaker : CircuitBreaker
+    {
+        private Timer ClosingTimer;
+        private CircuitBreakerState PreviousState;
+
+        private Timer InitTimer;
+        private bool QuickPowerOn;
+
+        public override void Initialize()
+        {
+            ClosingTimer = new Timer(this);
+            ClosingTimer.Setup(ClosingDelayS());
+        }
+
+        public override void Update(float elapsedSeconds)
+        {
+
+            SetClosingAuthorization(TCSClosingAuthorization() && DriverClosingAuthorization() && CurrentPantographState() == PantographState.Up);
+
+            switch (CurrentState())
+            {
+                case CircuitBreakerState.Closed:
+                    if (!ClosingAuthorization() || TCSOpeningOrder())
+                    {
+                        SetCurrentState(CircuitBreakerState.Open);
+                    }
+                    break;
+
+                case CircuitBreakerState.Closing:
+                    if (ClosingAuthorization() && (DriverClosingOrder() || TCSClosingOrder() || QuickPowerOn))
+                    {
+                        if (!ClosingTimer.Started)
+                        {
+                            ClosingTimer.Start();
+                        }
+
+                        if (ClosingTimer.Triggered)
+                        {
+                            QuickPowerOn = false;
+                            ClosingTimer.Stop();
+                            SetCurrentState(CircuitBreakerState.Closed);
+                        }
+                    }
+                    else
+                    {
+                        QuickPowerOn = false;
+                        ClosingTimer.Stop();
+                        SetCurrentState(CircuitBreakerState.Open);
+                    }
+                    break;
+
+                case CircuitBreakerState.Open:
+                    if (ClosingAuthorization() && (DriverClosingOrder() || TCSClosingOrder() || QuickPowerOn))
+                    {
+                        SetCurrentState(CircuitBreakerState.Closing);
+                    }
+                    break;
+            }
+
+            if (PreviousState != CurrentState())
+            {
+                switch (CurrentState())
+                {
+                    case CircuitBreakerState.Open:
+                        SignalEvent(Event.CircuitBreakerOpen);
+                        break;
+
+                    case CircuitBreakerState.Closing:
+                        SignalEvent(Event.CircuitBreakerClosing);
+                        break;
+
+                    case CircuitBreakerState.Closed:
+                        SignalEvent(Event.CircuitBreakerClosed);
+                        break;
+                }
+            }
+
+            PreviousState = CurrentState();
+        }
+
+        public override void HandleEvent(PowerSupplyEvent evt)
+        {
+            switch (evt)
+            {
+                case PowerSupplyEvent.CloseCircuitBreakerButtonPressed:
+                    SetDriverClosingOrder(true);
+                    SignalEvent(Event.CircuitBreakerClosingOrderOn);
+                    Confirm(CabControl.CircuitBreakerClosingOrder, CabSetting.On);
+                    if (!ClosingAuthorization())
+                    {
+                        Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Circuit breaker closing not authorized"));
+                    }
+                    break;
+
+                case PowerSupplyEvent.CloseCircuitBreakerButtonReleased:
+                    SetDriverClosingOrder(false);
+                    SignalEvent(Event.CircuitBreakerClosingOrderOff);
+                    break;
+
+                case PowerSupplyEvent.GiveCircuitBreakerClosingAuthorization:
+                    SetDriverClosingAuthorization(true);
+                    SignalEvent(Event.CircuitBreakerClosingAuthorizationOn);
+                    Confirm(CabControl.CircuitBreakerClosingAuthorization, CabSetting.On);
+                    break;
+
+                case PowerSupplyEvent.RemoveCircuitBreakerClosingAuthorization:
+                    SetDriverClosingAuthorization(false);
+                    SignalEvent(Event.CircuitBreakerClosingAuthorizationOff);
+                    Confirm(CabControl.CircuitBreakerClosingAuthorization, CabSetting.Off);
+                    break;
+
+                case PowerSupplyEvent.QuickPowerOn:
+                    QuickPowerOn = true;
+                    SetDriverClosingAuthorization(true);
+                    break;
+
+                case PowerSupplyEvent.QuickPowerOff:
+                    QuickPowerOn = false;
+                    SetDriverClosingAuthorization(false);
+                    SetCurrentState(CircuitBreakerState.Open);
                     break;
             }
         }

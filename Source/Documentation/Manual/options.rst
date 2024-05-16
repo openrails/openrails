@@ -505,32 +505,82 @@ By clicking on *Export* a printable text file ``Open Rails
 Keyboard.txt`` is generated on the desktop, showing all links between
 commands and keys.
 
+
 RailDriver Options
 ==================
 
+Open Rails has built-in support for the RailDriver controller from P.I.Engineering so
+you do not need any extra software for the RailDriver to work with Open Rails.
+
+If your RailDriver is connected, you should see a RailDriver tab in the options menu:
+
 .. image:: images/options-raildriver.png
 
-This tab allows configuring a RailDriver device. In this panel you will
-find listed the RailDriver buttons that are associated
-with all ORTS commands.
 
-You can modify them by clicking on a field and pressing the new desired
-button. Three symbols will appear at the right of the field: with the first
-one you validate the change, with the second one you cancel it, with the
-third one you return to the default value.
+Use this tab to calibrate the 6 analog controls and assign operations to the
+44 switches on your RailDriver device.
 
-By clicking on *Check* ORTS verifies that the changes made are compatible,
-that is, that there is no button that is used for more than one command.
 
-By clicking on *Defaults* all changes that were made are reset, and the
-default values are reloaded.
+Calibrating RailDriver Levers
+-----------------------------
+RailDriver uses analog inputs that appear to vary from unit to unit.  
+In theory the range of each lever is 0-255 but, in practice, the actual range can be much narrower. 
+For this reason Open Rails uses a calibration routine to adjust to the actual range of each lever.
 
-By clicking on *Export* a printable text file ``Open Rails
-RailDriver.txt`` is generated on the desktop, showing all links between
-commands and buttons.
+You will need to calibrate the RailDriver, even if you’ve previously calibrated your RailDriver in other software.
+However, you will only need to perform a full calibration once as Open Rails will use that calibration from then on.
 
-By clicking on *Calibrate* a guided procedure will be started to
-calibrate all RailDriver levers.
+Click the Callibration button and follow the prompts:
+
+.. image:: images/options-raildriver-calibration-message.png
+
+Note the image on screen will also visually guide you to the control being calibrated as in this example:
+
+.. image:: images/options-raildriver-calibration.png
+
+You will be prompted in sequence to calibrate all 6 of the RailDriver analog controls:
+
+- Reverser
+- Throttle
+- Automatic Brake
+- Independent Brake
+- Light/wiper switches
+
+If you make a mistake during calibration, simply restart the process again.
+
+
+Assigning RailDriver Switches
+-----------------------------
+
+You can modify the assignments by clicking on a field (e.g. "Pause") and pressing the
+RailDriver button you want for that operation.
+Three symbols will appear at the right of the field: use them to validate the change, 
+cancel it or restore the default value.
+
+.. image:: images/options-raildriver-assignment.png
+
+
+Other controls on this tab
+--------------------------
+
+Click on *Check* to verify that the changes made are compatible;
+that is, that no button is used for more than one command.
+
+Click on *Defaults* to reset all the assignments.
+
+Click on *Export* to generate a report file ``Open Rails
+RailDriver.txt`` on the desktop, listing all links between
+commands and switches.
+
+
+Using your RailDriver from within Open Rails
+--------------------------------------------
+
+To engage the RailDriver, use the Open Rails function named “Game External Controller (Raildriver)”.
+By default this is assigned to the backtick key (` )
+
+You can look up this function’s keybinding in-game by using the F1 help screen.
+
 
 Data Logger Options
 ===================

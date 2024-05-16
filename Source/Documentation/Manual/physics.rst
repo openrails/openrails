@@ -2350,6 +2350,52 @@ The actual set value of traction or dynamic brake of *async* group is shown in
 lines *Throttle* and *Dynamic Brake*, respectively, in brackets, e.g.: 
 Throttle: 0% (50%).
 
+In addition to applying power and dynamic brake, remote units can also manage the
+train brake, independent brake, and emergency brake in sync with the lead locomotive.
+This can dramatically speed up brake application and release on long trains, which has
+allowed trains to increase in length substantially without major decreases in brake
+performance. Only one locomotive in each group, the 'lead' DP unit, will have brakes
+cut-in. Usually this is the same locomotive recieving throttle data from the lead
+locomotive. In Open Rails, these locomotives are designated automatically. To determine
+which units are the 'lead' in each group, check the ID row on the DPU Info window.
+
+As described earlier, operation in *sync* mode or *async* mode has no effect on air
+brake behavior. In reality, additional remote modes such as *set-out*, *bv out*,
+and *isolate* would disable air brakes on remote units, but these modes are not
+present for simplicity.
+
+.. index::
+   single: ORTSDPBrakeSynchronization
+
+By default, Open Rails will treat remote groups as manned helpers who typically
+would not assist in train brake operations, so only independent brakes will synchronize.
+To enable train brake synchronization, the token ``engine(ORTSDPBrakeSynchronization(``
+should be used. The valid settings for ``ORTSDPBrakeSynchronization`` are as follows:
+
+- ``"Apply"``: DP units will reduce the brake pipe pressure locally to match the
+  equalizing reservoir pressure of the controlling locomotive. (The controlling
+  locomotive must also have the ``"Apply"`` setting.)
+- ``"Release"``: DP units will increase the brake pipe pressure locally to match
+  the equalizing reservoir pressure of the controlling locomotive. (The controlling
+  locomotive must also have the ``"Release"`` setting.)
+- ``"Emergency"``: DP units will vent the brake pipe to 0 if an emergency application
+  is triggered by the controlling locomotive. (The controlling locomotive must also
+  have the ``"Emergency"`` setting.)
+- ``"Independent"``: DP units will match the brake cylinder pressure of the
+  controlling locomotive, and will automatically bail-off automatic brake
+  applications if needed. (The controlling locomotive must also have the
+  ``"Independent"`` setting.)
+                - NOTE: Although ``"Independent"`` is enabled by default,
+                  if ``ORTSDPBrakeSynchronization`` is present in the .eng
+                  file but ``"Independent"`` is not specified as an option,
+                  independent brakes will NOT be synchronized.
+
+All settings can be combined as needed, simply place a comma between each setting
+in the string: ``ORTSDPBrakeSynchronization("Apply, Release, Emergency, Independent")``
+will simulate the configuration of most modern locomotives. Unlike other distributed power
+features, brake synchronization can be applied to any locomotive type to simulate a wide
+variety of braking systems.
+
 Distributed power info and commands can also be displayed and operated through 
 cabview controls, as explained :ref:`here <cabs-distributed-power>`
 
@@ -4401,6 +4447,81 @@ drag constants are used in calculating the still air resistance, then it might b
 inputting these values.
 
 
+.. _physics-track-sanding:
+
+Track Sanding
+=============
+
+Sanding of the track is required at times to increase the wheel adhesion.
+
+Open Rails supports air and steam operated track sanders which consume air or steam and sand. Typically 
+OR has standard defaults which it uses to allow track sanding to operate, however if the user knows the 
+actual values for the locomotive that they are modelling then they can override these values by entering 
+the following parameters in the engine section of the ENG file. Note - if values are not known then it is 
+highly recommended that the default values be used.
+
+When using any of the following parameters, the sanding system type needs to be set by allocating either "Steam" or 
+"Air" to the ``SandingSystemType`` ( x ) parameter in engine section of file.
+
+**Steam Consumption**
+
+``ORTSMaxTrackSanderSteamConsumptionForward`` - total steam consumption for all sanders when traveling in 
+forward direction, ie in front of wheel.
+
+``ORTSMaxTrackSanderSteamConsumptionForward`` - total steam consumption for all sanders when traveling in 
+reverse direction, ie behind wheel. Note, = 0 when not used.
+
+All steam consumption parameters are in lbs/sec.
+
+For steam sanding there will be a visible presence of steam when the sander is operated, this steam effect 
+can be added by using one or both of the following aparmeters.
+
+``SanderSteamExhaustForwardFX`` - steam effect when travelling forward, ie in front of wheel.
+
+``SanderSteamExhaustReverseFX`` - steam effect when travelling in reverse, ie in behind the wheel.
+
+**Air Consumption**
+
+``ORTSMaxTrackSanderAirConsumptionForward`` - total air consumption for all sanders when traveling in reverse 
+direction, ie behind wheel. Note, = 0 when not used.
+
+``ORTSMaxTrackSanderAirConsumptionForward`` - total air consumption for all sanders when traveling in forward 
+direction, ie in front of wheel.
+
+All air consumption parameters are in cuft/sec.
+
+**Sand Consumption**
+
+``ORTSMaxTrackSanderSandConsumptionForward`` - total sand consumption for all sanders when traveling in forward 
+direction, ie in front of wheel.
+
+``ORTSMaxTrackSanderSandConsumptionReverse`` - total sand consumption for all sanders when traveling in reverse 
+direction, ie behind wheel. Note, = 0 when not used.
+
+All sand consumption parameters are in cuft/sec.
+
+.. _physics-hammer-blow:
+
+Hammer Blow
+===========
+
+Hammer blow is as a result of the weights added to the wheels (eg connecting and reciprocating rods) of a steam 
+engine. The Excess (or Over) Balance weight was the weight that contributed to the hammer blow of the wheel, and it 
+increased typically with the square of the wheel speed.
+
+When the hammer force exceeded the weight on the wheel it was possible for the wheel to lift off the rails, this 
+created a "hammering effect" on the rails, which could damage track and other infrastructure such as bridges.
+
+The Hammer force is recorded in the HuD for the steam locomotive, and it will be in white text when "normal", 
+yellow text when within 10% of the point where the wheel will start to lift off the track, and red when the wheel 
+is lifting off the track.
+
+As a result of high hammer forces, some locomotives were speed restricted to prevent excessive damage to track 
+infrastructure.
+
+OR will use default values to set this feature up. If the Excess (or Over) Balance weight is known for a locomotive 
+it can be entered using ``ExcessRodBalance``, as a mass value.
+
 .. _physics-trailing-locomotive-resistance:
 
 Trailing Locomotive Resistance
@@ -4638,7 +4759,8 @@ Example::
       )
     )
 
-The state of the battery switch can be used in the :ref:`power supply scripts <features-scripting-powersupply>` and the :ref:`cabview controls <cabs-battery-switch>`.
+The state of the battery switch can be used in the :ref:`power supply scripts <features-scripting-powersupply>`,
+:ref:`cabview controls <cabs-battery-switch>`, and :ref:`train car lighting <features-light-conditions>`.
 
 .. _physics-master-key:
 

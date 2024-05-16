@@ -38,7 +38,6 @@ What's been improved
 - accurate friction simulation for 4 types of brake shoes
 
 
-
 Other changes
 --------------------
 

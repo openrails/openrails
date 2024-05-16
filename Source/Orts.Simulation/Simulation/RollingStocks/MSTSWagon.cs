@@ -298,6 +298,11 @@ namespace Orts.Simulation.RollingStocks
         public MSTSSteamLocomotive AuxTendersSteamLocomotive { get; private set; }
 
         /// <summary>
+        /// Tender attached to this steam locomotive
+        /// </summary>
+        public TrainCar AttachedTender { get; private set; }
+
+        /// <summary>
         /// Steam locomotive has a tender coupled to it
         /// </summary>
         public MSTSSteamLocomotive SteamLocomotiveTender { get; private set; }
@@ -1596,6 +1601,7 @@ namespace Orts.Simulation.RollingStocks
             TenderWagonMaxCoalMassKG = copy.TenderWagonMaxCoalMassKG;
             TenderWagonMaxWaterMassKG = copy.TenderWagonMaxWaterMassKG;
             InitWagonNumAxles = copy.InitWagonNumAxles;
+            WagonNumAxles = copy.WagonNumAxles;
             DerailmentCoefficientEnabled = copy.DerailmentCoefficientEnabled;
             WagonNumBogies = copy.WagonNumBogies;
             MSTSWagonNumWheels = copy.MSTSWagonNumWheels;
@@ -1667,6 +1673,7 @@ namespace Orts.Simulation.RollingStocks
             AxleInertiaKgm2 = copy.AxleInertiaKgm2;
             SlipWarningThresholdPercent = copy.SlipWarningThresholdPercent;
             Lights = copy.Lights;
+            HasInsideView = copy.HasInsideView;
             ExternalSoundPassThruPercent = copy.ExternalSoundPassThruPercent;
             TrackSoundPassThruPercent = copy.TrackSoundPassThruPercent;
             foreach (PassengerViewPoint passengerViewPoint in copy.PassengerViewpoints)
@@ -1825,18 +1832,12 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(Variable1_2);
             outf.Write(Variable1_3);
             outf.Write(Variable1_4);
-            outf.Write(IsDavisFriction);
-            outf.Write(IsRollerBearing);
-            outf.Write(IsLowTorqueRollerBearing);
-            outf.Write(IsFrictionBearing);
             outf.Write(Friction0N);
             outf.Write(DavisAN);
             outf.Write(DavisBNSpM);
             outf.Write(DavisCNSSpMM);
-            outf.Write(StandstillFrictionN);
             outf.Write(MergeSpeedFrictionN);
             outf.Write(IsBelowMergeSpeed);
-            outf.Write(MergeSpeedMpS);
             outf.Write(MassKG);
             outf.Write(MaxBrakeForceN);
             outf.Write(MaxHandbrakeForceN);
@@ -1890,18 +1891,12 @@ namespace Orts.Simulation.RollingStocks
             Variable1_2 = inf.ReadSingle();
             Variable1_3 = inf.ReadSingle();
             Variable1_4 = inf.ReadSingle();
-            IsDavisFriction = inf.ReadBoolean();
-            IsRollerBearing = inf.ReadBoolean();
-            IsLowTorqueRollerBearing = inf.ReadBoolean();
-            IsFrictionBearing = inf.ReadBoolean();
             Friction0N = inf.ReadSingle();
             DavisAN = inf.ReadSingle();
             DavisBNSpM = inf.ReadSingle();
             DavisCNSSpMM = inf.ReadSingle();
-            StandstillFrictionN = inf.ReadSingle();
             MergeSpeedFrictionN = inf.ReadSingle();
             IsBelowMergeSpeed = inf.ReadBoolean();
-            MergeSpeedMpS = inf.ReadSingle();
             MassKG = inf.ReadSingle();
             MaxBrakeForceN = inf.ReadSingle();
             MaxHandbrakeForceN = inf.ReadSingle();
@@ -3690,6 +3685,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     SteamLocomotiveTender = Train.Cars[0] as MSTSSteamLocomotive;
                     SteamLocomotiveTender.HasTenderCoupled = false;
+                    SteamLocomotiveTender.AttachedTender = null;
                 }
 
                 var tenderIndex = 0;
@@ -3703,6 +3699,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     SteamLocomotiveTender = Train.Cars[tenderIndex] as MSTSSteamLocomotive;
                     SteamLocomotiveTender.HasTenderCoupled = true;
+                    SteamLocomotiveTender.AttachedTender = Train.Cars[tenderIndex + 1];
                 }
 
                 else if (tenderIndex > 0 && Train.Cars[tenderIndex - 1].WagonType == WagonTypes.Tender) // Assuming the tender is "in front" of the locomotive, ie it is running in reverse
@@ -3710,11 +3707,13 @@ namespace Orts.Simulation.RollingStocks
                     // TO BE CHECKED - What happens if multiple locomotives are coupled together in reverse?
                     SteamLocomotiveTender = Train.Cars[tenderIndex] as MSTSSteamLocomotive;
                     SteamLocomotiveTender.HasTenderCoupled = true;
+                    SteamLocomotiveTender.AttachedTender = Train.Cars[tenderIndex - 1];
                 }
                 else // Assuming that locomotive is a tank locomotive, and no tender is coupled
                 {
                     SteamLocomotiveTender = Train.Cars[tenderIndex] as MSTSSteamLocomotive;
                     SteamLocomotiveTender.HasTenderCoupled = false;
+                    SteamLocomotiveTender.AttachedTender = null;
                 }
             }
         }

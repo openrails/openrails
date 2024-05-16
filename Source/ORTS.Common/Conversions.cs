@@ -732,6 +732,12 @@ namespace ORTS.Common
             return String.Format(CultureInfo.CurrentCulture, "{0:F0} {1}", volume, isMetric ? m3 : ft3);
         }
 
+        public static string FormatSmallVolume(float volumeM3, bool isMetric)
+        {
+            var volume = isMetric ? volumeM3 : Me3.ToFt3(volumeM3);
+            return String.Format(CultureInfo.CurrentCulture, "{0:N3} {1}", volume, isMetric ? m3 : ft3);
+        }
+
         public static string FormatFuelVolume(float volumeL, bool isMetric, bool isUK)
         {
             var volume = isMetric ? volumeL : isUK ? L.ToGUK(volumeL) : L.ToGUS(volumeL);

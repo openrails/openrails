@@ -707,6 +707,16 @@ namespace Orts.Viewer3D
 
             }
         }
+
+        /// <summary>
+        /// Marks the generic track profile, so that its textures never get deleted
+        /// </summary>
+        [CallOnThread("Loader")]
+        public void Mark()
+        {
+            foreach (LOD lod in LODs)
+                lod.Mark();
+        }
     }
 
     public class LOD

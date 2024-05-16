@@ -315,6 +315,8 @@ namespace Orts.Simulation.RollingStocks
 
         public bool WheelSlip;  // true if locomotive wheels slipping
         public bool WheelSlipWarning;
+        public bool HuDIsWheelSlipWarninq;
+        public bool HuDIsWheelSlip;
         public bool WheelSkid;  // True if wagon wheels lock up.
         public float _AccelerationMpSS;
         protected IIRFilter AccelerationFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, 1.0f, 0.1f);
@@ -337,6 +339,8 @@ namespace Orts.Simulation.RollingStocks
         public float ActivityHotBoxDurationS;
         public float ActivityElapsedDurationS;
         public float HotBoxStartTimeS;
+
+        bool RigidWheelBaseInitialised = false;
 
         // Setup for ambient temperature dependency
         Interpolator OutsideWinterTempbyLatitudeC;  // Interploator to calculate ambient Winter temperature based upon the latitude of the route
@@ -644,8 +648,7 @@ namespace Orts.Simulation.RollingStocks
         public int LocoNumDrvAxles; // Number of drive axles on locomotive
         protected float MSTSLocoNumDrvWheels; // Number of drive axles on locomotive - used to read MSTS value as default
         public float DriverWheelRadiusM = Me.FromIn(30.0f); // Drive wheel radius of locomotive wheels - Wheel radius of loco drive wheels can be anywhere from about 10" to 40".
-
-        public enum SteamEngineTypes
+                public enum SteamEngineTypes
         {
             Unknown,
             Simple,
@@ -654,6 +657,16 @@ namespace Orts.Simulation.RollingStocks
         }
 
         public SteamEngineTypes SteamEngineType;
+
+        public enum SandingSystemTypes
+        {
+            Unknown,
+            Air,
+            Steam,
+            Gravity,
+        }
+
+        public SandingSystemTypes SandingSystemType;
 
         public enum WagonTypes
         {
@@ -720,6 +733,18 @@ namespace Orts.Simulation.RollingStocks
         {
             BrakeSystem.Initialize();
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
+
+            // Check Brake Shoe Friction parameters
+            if (BrakeShoeType == BrakeShoeTypes.Cast_Iron_P10 || BrakeShoeType == BrakeShoeTypes.Cast_Iron_P6 || BrakeShoeType == BrakeShoeTypes.High_Friction_Composite || BrakeShoeType == BrakeShoeTypes.Disc_Pads)
+            {
+                float NewtonsTokNewtons = 0.001f;
+                float maxBrakeShoeForcekN = NewtonsTokNewtons * MaxBrakeShoeForceN / NumberCarBrakeShoes;
+
+                if (maxBrakeShoeForcekN > 20 && Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Maximum force per brakeshoe is {0} and has exceeded {1}, check MaxBrakeShoeForceN {2} or NumberCarBrakeShoes {3}",  FormatStrings.FormatForce(maxBrakeShoeForcekN * 1000, IsMetric), FormatStrings.FormatForce(20 * 1000, IsMetric), FormatStrings.FormatForce(MaxBrakeShoeForceN, IsMetric), NumberCarBrakeShoes);
+                }
+            } 
             
             //CurveForceFilter.Initialize();
 
@@ -818,6 +843,102 @@ namespace Orts.Simulation.RollingStocks
         // called when it's time to update the MotiveForce and FrictionForce
         public virtual void Update(float elapsedClockSeconds)
         {
+            // Initialize RigidWheelBaseM in first loop if not defined in ENG file, then ignore
+            if (RigidWheelBaseM == 0 && !RigidWheelBaseInitialised)   // Calculate default values if no value in Wag File
+            {
+                float Axles = WheelAxles.Count;
+                float Bogies = Parts.Count - 1;
+                float BogieSize = Axles / Bogies;
+
+                RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
+
+                // Calculate the number of axles in a car
+
+                if (WagonType != WagonTypes.Engine)   // if car is not a locomotive then determine wheelbase
+                {
+                    if (Bogies < 2)  // if less then two bogies assume that it is a fixed wheelbase wagon
+                    {
+                        if (Axles == 2)
+                        {
+                            RigidWheelBaseM = 3.5052f;       // Assume a standard 4 wheel (2 axle) wagon - wheel base - 11' 6" (3.5052m)
+                        }
+                        else if (Axles == 3)
+                        {
+                            RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel (3 axle) wagon - wheel base - 12' 2" (3.6576m)
+                        }
+
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            Trace.TraceInformation("Rigid Wheelbase of CarID {0} set to {1} for number of axles {2}", CarID, FormatStrings.FormatVeryShortDistanceDisplay(RigidWheelBaseM, IsMetric), Axles);
+                        }
+
+                    }
+                    else if (Bogies == 2)
+                    {
+                        if (BogieSize == 2)
+                        {
+                            if (WagonType == WagonTypes.Passenger)
+                            {
+                                RigidWheelBaseM = 2.4384f;       // Assume a standard 4 wheel passenger bogie (2 axle) wagon - wheel base - 8' (2.4384m)
+                            }
+                            else
+                            {
+                                RigidWheelBaseM = 1.6764f;       // Assume a standard 4 wheel freight bogie (2 axle) wagon - wheel base - 5' 6" (1.6764m)
+                            }
+                        }
+                        else if (BogieSize == 3)
+                        {
+                            RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel bogie (3 axle) wagon - wheel base - 12' 2" (3.6576m)
+                        }
+
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            Trace.TraceInformation("Rigid Wheelbase of CarID {0} set to {1} for number of axles {2}", CarID, FormatStrings.FormatVeryShortDistanceDisplay(RigidWheelBaseM, IsMetric), BogieSize);
+                        }
+
+                    }
+                }
+                else if (WagonType == WagonTypes.Engine)   // if car is a locomotive and either a diesel or electric then determine wheelbase
+                {
+                    if (EngineType != EngineTypes.Steam)  // Assume that it is a diesel or electric locomotive
+                    {
+                        if (BogieSize == 2)
+                        {
+                            RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
+                        }
+                        else if (BogieSize == 3)
+                        {
+                            RigidWheelBaseM = 3.5052f;       // Assume a standard 6 wheel bogie (3 axle) locomotive - wheel base - 11' 6" (3.5052m)
+                        }
+
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            Trace.TraceInformation("Rigid Wheelbase of CarID {0} set to {1} for number of axles {2}", CarID, FormatStrings.FormatVeryShortDistanceDisplay(RigidWheelBaseM, IsMetric), BogieSize);
+                        }
+                    }
+                    else // assume steam locomotive
+                    {
+
+                        if (LocoNumDrvAxles >= Axles) // Test to see if ENG file value is too big (typically doubled)
+                        {
+                            LocoNumDrvAxles = LocoNumDrvAxles / 2;  // Appears this might be the number of wheels rather then the axles.
+                        }
+
+                        //    Approximation for calculating rigid wheelbase for steam locomotives
+                        // Wheelbase = 1.25 x (Loco Drive Axles - 1.0) x Drive Wheel diameter
+
+                        RigidWheelBaseM = 1.25f * (LocoNumDrvAxles - 1.0f) * (DriverWheelRadiusM * 2.0f);
+
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            Trace.TraceInformation("Rigid Wheelbase of CarID {0} set to {1} for number of axles {2}", CarID, FormatStrings.FormatVeryShortDistanceDisplay(RigidWheelBaseM, IsMetric), LocoNumDrvAxles);
+                        }
+                    }
+                }
+
+                RigidWheelBaseInitialised = true; // Don't process again
+            }
+
 
             // Initialise ambient temperatures on first initial loop, then ignore
             if (!AmbientTemperatureInitialised)
@@ -2011,76 +2132,6 @@ namespace Orts.Simulation.RollingStocks
         {
             if (CurrentCurveRadiusM > 0)
             {
-                if (RigidWheelBaseM == 0)   // Calculate default values if no value in Wag File
-                {
-                    float Axles = WheelAxles.Count;
-                    float Bogies = Parts.Count - 1;
-                    float BogieSize = Axles / Bogies;
-
-                    RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
-
-                    // Calculate the number of axles in a car
-
-                    if (WagonType != WagonTypes.Engine)   // if car is not a locomotive then determine wheelbase
-                    {
-                        if (Bogies < 2)  // if less then two bogies assume that it is a fixed wheelbase wagon
-                        {
-                            if (Axles == 2)
-                            {
-                                RigidWheelBaseM = 3.5052f;       // Assume a standard 4 wheel (2 axle) wagon - wheel base - 11' 6" (3.5052m)
-                            }
-                            else if (Axles == 3)
-                            {
-                                RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel (3 axle) wagon - wheel base - 12' 2" (3.6576m)
-                            }
-                        }
-                        else if (Bogies == 2)
-                        {
-                            if (Axles == 2)
-                            {
-                                if (WagonType == WagonTypes.Passenger)
-                                {
-                                    RigidWheelBaseM = 2.4384f;       // Assume a standard 4 wheel passenger bogie (2 axle) wagon - wheel base - 8' (2.4384m)
-                                }
-                                else
-                                {
-                                    RigidWheelBaseM = 1.6764f;       // Assume a standard 4 wheel freight bogie (2 axle) wagon - wheel base - 5' 6" (1.6764m)
-                                }
-                            }
-                            else if (Axles == 3)
-                            {
-                                RigidWheelBaseM = 3.6576f;       // Assume a standard 6 wheel bogie (3 axle) wagon - wheel base - 12' 2" (3.6576m)
-                            }
-                        }
-                    }
-                    if (WagonType == WagonTypes.Engine)   // if car is a locomotive and either a diesel or electric then determine wheelbase
-                    {
-                        if (EngineType != EngineTypes.Steam)  // Assume that it is a diesel or electric locomotive
-                        {
-                            if (Axles == 2)
-                            {
-                                RigidWheelBaseM = 1.6764f;       // Set a default in case no option is found - assume a standard 4 wheel (2 axle) bogie - wheel base - 5' 6" (1.6764m)
-                            }
-                            else if (Axles == 3)
-                            {
-                                RigidWheelBaseM = 3.5052f;       // Assume a standard 6 wheel bogie (3 axle) locomotive - wheel base - 11' 6" (3.5052m)
-                            }
-                        }
-                        else // assume steam locomotive
-                        {
-
-                            if (LocoNumDrvAxles >= Axles) // Test to see if ENG file value is too big (typically doubled)
-                            {
-                                LocoNumDrvAxles = LocoNumDrvAxles / 2;  // Appears this might be the number of wheels rather then the axles.
-                            }
-
-                            //    Approximation for calculating rigid wheelbase for steam locomotives
-                            // Wheelbase = 1.25 x (Loco Drive Axles - 1.0) x Drive Wheel diameter
-
-                            RigidWheelBaseM = 1.25f * (LocoNumDrvAxles - 1.0f) * (DriverWheelRadiusM * 2.0f);
-                        }
-                    }
-                }
 
                 // References:
 
@@ -3385,6 +3436,10 @@ namespace Orts.Simulation.RollingStocks
                 var friction = 0.0f;
                 float NewtonsTokNewtons = 0.001f;
                 float brakeShoeForcekN = NewtonsTokNewtons * BrakeShoeForceN / NumberCarBrakeShoes;
+            if (brakeShoeForcekN > 20) // Make sure that brake shoe force doesn't exceed 20 as it will cause a -ve brakeshoe CoF
+            {
+                brakeShoeForcekN = 20;
+            }
                 friction = k1 * ((brakeShoeForcekN + k2) / (brakeShoeForcekN + k3)) * ((MpS.ToKpH(AbsSpeedMpS) + k4) / (MpS.ToKpH(AbsSpeedMpS) + k5));
 
                 return friction;
