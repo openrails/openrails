@@ -319,6 +319,12 @@ namespace ORTS
             return null;
         }
 
+        /// <summary>
+        /// Returns the check if a match is found, else returns null
+        /// </summary>
+        /// <param name="check"></param>
+        /// <param name="c"></param>
+        /// <returns></returns>
         private Check CheckContains(Check check, Criteria c)
         {
             switch (c.Name)
@@ -343,6 +349,44 @@ namespace ORTS
                         return check;
                     }
                     if (c.Name.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
+                    {
+                        return check;
+                    }
+                    return null;    // Any check that is not recognised is skipped.
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the check if a match is not found, else returns null
+        /// </summary>
+        /// <param name="check"></param>
+        /// <param name="c"></param>
+        /// <returns></returns>
+        private Check CheckNotContains(Check check, Criteria c)
+        {
+            switch (c.Name)
+            {
+                case "direct3d":
+                    if (SystemInfo.Direct3DFeatureLevels.Contains(c.Value, StringComparer.OrdinalIgnoreCase) == false)
+                        return check;
+                    break;
+                case "installed_version":
+                    if (SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1 == false)
+                        return check;
+                    break;
+                case "system":
+                    var os = SystemInfo.OperatingSystem;
+                    var system = $"{os.Name} {os.Version} {os.Architecture} {os.Language} {os.Languages ?? new string[0]}";
+                    if (system.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1 == false)
+                        return check;
+                    break;
+                default:
+                    if (GetSetting(c.Name).IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1 == false)
+                    {
+                        return check;
+                    }
+                    if (c.Name.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1 == false)
                     {
                         return check;
                     }
