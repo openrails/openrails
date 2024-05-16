@@ -5223,7 +5223,7 @@ namespace Orts.Simulation.RollingStocks
                         break;
                     }
 
-                 case CABViewControlTypes.ORTS_WATER_SCOOP:
+                case CABViewControlTypes.ORTS_WATER_SCOOP:
                     data = WaterScoopDown ? 1 : 0;
                     break;
 
