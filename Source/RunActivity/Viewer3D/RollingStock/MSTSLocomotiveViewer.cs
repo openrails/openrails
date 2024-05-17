@@ -2235,8 +2235,10 @@ namespace Orts.Viewer3D.RollingStock
                         {
                             if (Locomotive.CruiseControl != null)
                             {
-                                if (Locomotive.CruiseControl.SpeedRegMode == Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Auto && !Locomotive.CruiseControl.DynamicBrakePriority)
+                                if ((Locomotive.CruiseControl.SpeedRegMode == Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Auto && !Locomotive.CruiseControl.DynamicBrakePriority) || Locomotive.DynamicBrakeIntervention > 0)
+                                {
                                     index = 0;
+                                }
                                 else
                                     index = PercentToIndex(dynBrakePercent);
                             }
