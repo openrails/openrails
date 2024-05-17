@@ -58,8 +58,8 @@ namespace ORTS
             Catalog = new GettextResourceManager("Menu");
             Settings = settings;
 
-            Settings.Routes.LoadContentAndInstalled();
-            Routes = settings.Routes.Routes;
+            Settings.Content.ContentRouteSettings.LoadContent();
+            Routes = Settings.Content.ContentRouteSettings.Routes;
             for (int index = 0; index < Routes.Count; index++)
             {
                 string routeName = Routes.ElementAt(index).Key;
@@ -79,7 +79,12 @@ namespace ORTS
                 cell.ToolTipText = cell.Value.ToString();
             }
 
-            InstallPathTextBox.Text = settings.Content.InstallPath;
+            if (string.IsNullOrEmpty(settings.ContentInstallPath))
+            {
+                settings.ContentInstallPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Open Rails", "Content");
+            }
+
+            InstallPathTextBox.Text = settings.ContentInstallPath;
 
             ImageTempFilename = Path.GetTempFileName();
             InfoTempFilename = Path.GetTempFileName();
@@ -152,7 +157,7 @@ namespace ORTS
         #region InstallPathTextBox
         private void InstallPathTextBox_TextChanged(object sender, EventArgs e)
         {
-            Settings.Content.InstallPath = InstallPathTextBox.Text;
+            Settings.ContentInstallPath = InstallPathTextBox.Text;
         }
         #endregion
 
@@ -296,7 +301,7 @@ namespace ORTS
             route.DirectoryInstalledIn = installPathRoute;
 
             Settings.Folders.Save();
-            Settings.Routes.Save();
+            Settings.Content.Save();
 
             if (!string.IsNullOrWhiteSpace(route.Start.Route))
             {
@@ -957,17 +962,23 @@ namespace ORTS
                 await Task.Run(() => deleteRoute(route.DirectoryInstalledIn));
             }
 
-            if (Settings.Folders.Folders[route.ContentName] == route.ContentDirectory)
+            if (Settings.Folders.Folders.ContainsKey(route.ContentName))
             {
-                Settings.Folders.Folders.Remove(route.ContentName);
+                if (Settings.Folders.Folders[route.ContentName] == route.ContentDirectory)
+                {
+                    Settings.Folders.Folders.Remove(route.ContentName);
+                }
+                Settings.Folders.Save();
             }
-            Settings.Folders.Save();
 
             route.Installed = false;
             route.DateInstalled = DateTime.MinValue;
             route.DirectoryInstalledIn = "";
 
-            Settings.Routes.Save();
+            // remove from registry, but leave entry in Routes for this route name
+            ContentRouteSettings.Route routeSaved = route;
+            Settings.Content.Save();
+            Routes[RouteName] = routeSaved;
 
             dataGridViewDownloadContent.CurrentRow.Cells[1].Value = "";
 
@@ -1053,8 +1064,10 @@ namespace ORTS
             {
                 using (var repo = new Repository(route.DirectoryInstalledIn))
                 {
-                    LibGit2Sharp.PullOptions options = new LibGit2Sharp.PullOptions();
-                    options.FetchOptions = new FetchOptions();
+                    LibGit2Sharp.PullOptions options = new LibGit2Sharp.PullOptions
+                    {
+                        FetchOptions = new FetchOptions()
+                    };
 
                     // User information to create a merge commit
                     var signature = new LibGit2Sharp.Signature(
