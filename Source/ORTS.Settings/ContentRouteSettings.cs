@@ -19,11 +19,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using LibGit2Sharp;
-using System.Windows.Forms;
 
 namespace ORTS.Settings
 {
@@ -112,13 +110,8 @@ namespace ORTS.Settings
         // RouteSettings are presented to the user in the menu DownloadContent form 
         // 
         // lines are a mix from:
-        // - routes already downloaded, stored in {ApplicationData}\{ProductName\Settings\ORRoute.json", 
-        //       eg: "C:\\Users\\Siebren\\AppData\\Roaming\\Open Rails\\Settings\ORRoute.json"
+        // - routes already downloaded, stored in registry Computer\HKEY_CURRENT_USER\SOFTWARE\OpenRails\ORTS\ContentRoutes
         // - routes which can be downloaded, stored in GitHub "https://github.com/openrails/content.git" file routes.json
-        //
-        // this .cs file is not like all the other *Settings.cs files, which are derived from class SettingsBase
-        // and store their settings in the registry
-        // but since this class stores settings also, be it in a file, it looks like a good place
         //
         // where above the word route is mentioned, "Installation profile" is ment as can be found in OR's Main menu
 
@@ -127,36 +120,8 @@ namespace ORTS.Settings
             Routes = new Dictionary<string, Route>();
         }
 
-        private string RouteJsonName;
-
-        public void LoadContentAndInstalled()
+        public void LoadContent()
         {
-            // set json route filename
-
-            string userDataSettingsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName, "Settings");
-            if (!Directory.Exists(userDataSettingsFolder))
-            {
-                Directory.CreateDirectory(userDataSettingsFolder);
-            }
-
-            RouteJsonName = Path.Combine(userDataSettingsFolder, "ORRoute.json");
-
-            if (!string.IsNullOrWhiteSpace(RouteJsonName))
-            {
-                if (File.Exists(RouteJsonName))
-                {
-                    try
-                    {
-                        string json = File.ReadAllText(RouteJsonName);
-                        Routes = JsonConvert.DeserializeObject<IDictionary<string, Route>>(json);
-                    }
-                    catch (Exception error)
-                    {
-                        throw new Exception("Error during reading " + RouteJsonName + ": " + error.Message, error);
-                    }
-                }
-            }
-
             // only for debug purposes
             string definedContentJsonName = @"c:\content\routes.json";
 
@@ -309,22 +274,6 @@ namespace ORTS.Settings
             {
                 directoryRemoveReadOnlyFlags(subDirectoryName);
             }
-        }
-
-        public void Save()
-        {
-            IDictionary<string, Route> routes = new Dictionary<string, Route>();
-
-            for (int index = 0; index < Routes.Count; index++)
-            {
-                // only save the installed routes
-                if (Routes.ElementAt(index).Value.Installed)
-                {
-                    routes.Add(Routes.ElementAt(index));
-                }
-            }
-            string json = JsonConvert.SerializeObject(routes, Formatting.Indented);
-            File.WriteAllText(RouteJsonName, json);
         }
     }
 }

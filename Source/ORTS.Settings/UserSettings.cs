@@ -436,13 +436,16 @@ namespace ORTS.Settings
         [Default(0)] // TrackMonitor.DisplayMode.All
         public int TrackMonitorDisplayMode { get; set; }
 
+        // Content form settings
+        [Default("")]
+        public string ContentInstallPath { get; set; }
+
         #endregion
 
         public FolderSettings Folders { get; private set; }
         public InputSettings Input { get; private set; }
         public RailDriverSettings RailDriver { get; private set; }
-        public ContentSettings Content { get; private set; }
-        public ContentRouteSettings Routes { get; private set; }    
+        public ContentSettings Content { get; private set; }   
 
         public UserSettings(IEnumerable<string> options)
             : base(SettingsStore.GetSettingStore(SettingsFilePath, RegistryKey, null))
@@ -455,7 +458,6 @@ namespace ORTS.Settings
             Input = new InputSettings(options);
             RailDriver = new RailDriverSettings(options);
             Content = new ContentSettings(options);
-            Routes = new ContentRouteSettings();
         }
 
         /// <summary>
