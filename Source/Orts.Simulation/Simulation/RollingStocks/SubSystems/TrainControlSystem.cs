@@ -426,7 +426,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.SetDynamicBrakeController = (value) =>
                 {
                 if (Locomotive.DynamicBrakeController == null) return;
-                Locomotive.DynamicBrakeChangeActiveState(value > 0);
                 Locomotive.DynamicBrakeController.SetValue(value);
                 };
                 Script.SetPantographsDown = () =>

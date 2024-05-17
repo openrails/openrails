@@ -118,7 +118,7 @@ namespace Orts.Viewer3D.RollingStock
         {
             if (Locomotive.Direction != Direction.Forward
             && (Locomotive.ThrottlePercent >= 1
-            || Math.Abs(Locomotive.SpeedMpS) > 1 || Locomotive.DynamicBrakeIntervention >= 0))
+            || Math.Abs(Locomotive.SpeedMpS) > 1 || Locomotive.DynamicBrakeController.CurrentValue > 0))
             {
                 Viewer.Simulator.Confirmer.Warning(CabControl.Reverser, CabSetting.Warn1);
                 return;
@@ -130,7 +130,7 @@ namespace Orts.Viewer3D.RollingStock
         {
             if (Locomotive.Direction != Direction.Reverse
             && (Locomotive.ThrottlePercent >= 1
-            || Math.Abs(Locomotive.SpeedMpS) > 1 || Locomotive.DynamicBrakeIntervention >= 0))
+            || Math.Abs(Locomotive.SpeedMpS) > 1 || Locomotive.DynamicBrakeController.CurrentValue > 0))
             {
                 Viewer.Simulator.Confirmer.Warning(CabControl.Reverser, CabSetting.Warn1);
                 return;
@@ -2130,31 +2130,18 @@ namespace Orts.Viewer3D.RollingStock
                     break;
                 case CABViewControlTypes.DYNAMIC_BRAKE:
                 case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
-                    var dynBrakePercent = Locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING ?
-                        Locomotive.DynamicBrakePercent : Locomotive.LocalDynamicBrakePercent;
+                    var dynBrakePercent = Locomotive.DynamicBrakeController.CurrentValue;
                     if (Locomotive.DynamicBrakeController != null)
                     {
-                        if (dynBrakePercent == -1)
+                        if (dynBrakePercent <= 0)
                         {
                             index = 0;
                             break;
                         }
                         if (!Locomotive.HasSmoothStruc)
-                        {
                             index = Locomotive.DynamicBrakeController != null ? Locomotive.DynamicBrakeController.CurrentNotch : 0;
-                        }
                         else
-                        {
-                            if (Locomotive.CruiseControl != null)
-                            {
-                                if (Locomotive.CruiseControl.SpeedRegMode == Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Auto && !Locomotive.CruiseControl.DynamicBrakePriority)
-                                    index = 0;
-                                else
-                                    index = PercentToIndex(dynBrakePercent);
-                            }
-                            else
-                                index = PercentToIndex(dynBrakePercent);
-                        }
+                            index = PercentToIndex(dynBrakePercent);
                     }
                     else
                     {
