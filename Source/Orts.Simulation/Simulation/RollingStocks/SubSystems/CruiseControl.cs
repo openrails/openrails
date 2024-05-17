@@ -1040,8 +1040,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 // return back to manual, clear all we have controlled before and let the driver to set up new stuff
                 SpeedRegMode = SpeedRegulatorMode.Manual;
                 //                Locomotive.ThrottleController.SetPercent(0);
-                //                Locomotive.SetDynamicBrakePercent(0);
-                Locomotive.DynamicBrakeChangeActiveState(false);
+                Locomotive.SetDynamicBrakePercent(0);
             }
             if (SelectedSpeedMpS == 0)
             {

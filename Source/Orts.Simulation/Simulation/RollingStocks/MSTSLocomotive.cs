@@ -479,6 +479,9 @@ namespace Orts.Simulation.RollingStocks
         public float ThrottleIntervention = -1;
         public float DynamicBrakeIntervention = -1;
 
+        // Has dynamic brake movement been paused to give user a chance to react?
+        private bool DynamicBrakePause = false;
+
         public enum TractionMotorTypes
         {
             DC,
@@ -1390,7 +1393,6 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(PreviousGearBoxNotch);
             outf.Write(previousChangedGearBoxNotch);
             outf.Write(DynamicBrake);
-            outf.Write(DynamicBrakeIntervention);
             outf.Write(CurrentTrackSandBoxCapacityM3);
             outf.Write(CurrentTrackSanderSandConsumptionM3pS);
             outf.Write(CurrentTrackSanderAirConsumptionM3pS);
@@ -1450,7 +1452,6 @@ namespace Orts.Simulation.RollingStocks
             previousChangedGearBoxNotch = inf.ReadInt32();
 
             DynamicBrake = inf.ReadBoolean();
-            DynamicBrakeIntervention = inf.ReadSingle();
             CurrentTrackSandBoxCapacityM3 = inf.ReadSingle();
             CurrentTrackSanderSandConsumptionM3pS = inf.ReadSingle();
             CurrentTrackSanderAirConsumptionM3pS = inf.ReadSingle();
@@ -2107,10 +2108,10 @@ namespace Orts.Simulation.RollingStocks
                     if (DynamicBrakeCommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
                     {
                         DynamicBrake = true; // Engage
-                        if (IsLeadLocomotive() && DynamicBrakeIntervention >= 0)
+                        if (IsLeadLocomotive() && DynamicBrakeController.CurrentValue > 0)
                             Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
                     }
-                    else if (IsLeadLocomotive() && DynamicBrakeIntervention >= 0)
+                    else if (IsLeadLocomotive() && DynamicBrakeController.CurrentValue > 0)
                         Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
                 }
             }
@@ -2191,6 +2192,8 @@ namespace Orts.Simulation.RollingStocks
                     }
                     if (DynamicBrakeController != null && DynamicBrakeController.UpdateValue != 0.0 && (DynamicBrake || !DynamicBrakeControllerSetupLock))
                     {
+                        // Check if dynamic brake needs to be disabled before displaying control confirmation
+                        if (!CheckDisableDynamicBrake())
                         Simulator.Confirmer.UpdateWithPerCent(
                             CabControl.DynamicBrake,
                             DynamicBrakeController.UpdateValue > 0 ? CabSetting.Increase : CabSetting.Decrease,
@@ -2393,18 +2396,27 @@ namespace Orts.Simulation.RollingStocks
             {
                 LocalDynamicBrakePercent = TrainBrakeController.TrainDynamicBrakeIntervention * 100;
             }
-            if (DynamicBrakeController != null && DynamicBrakeIntervention >= 0)
+            if (DynamicBrakeController != null && DynamicBrakeController.CurrentValue > 0)
             {
+                float prevValue = DynamicBrakeController.CurrentValue;
                 if (DynamicBrake || !DynamicBrakeControllerSetupLock)
-                {
                     DynamicBrakeController.Update(elapsedClockSeconds);
-                    DynamicBrakeIntervention = DynamicBrakeController.CurrentValue;
+                // Dynamic brake is about to be disabled, pause motion of controller to prevent accidental shut-off
+                if (DynamicBrakeController.CurrentValue <= 0)
+                {
+                    if (!DynamicBrakePause)
+                    {
+                        DynamicBrakePause = true;
+                        StopDynamicBrakeDecrease();
+                        DynamicBrakeController.CurrentValue = prevValue;
                 }
                 else
-                {
-                    DynamicBrakeIntervention = 0;
+                        DynamicBrakePause = false;
                 }
-                LocalDynamicBrakePercent = Math.Max(DynamicBrakeIntervention * 100, LocalDynamicBrakePercent);
+                else if (DynamicBrakeController.CurrentValue > prevValue)
+                    DynamicBrakePause = false;
+
+                LocalDynamicBrakePercent = Math.Max(DynamicBrakeController.CurrentValue * 100, LocalDynamicBrakePercent);
             }
             if (IsLeadLocomotive()) DynamicBrakePercent = LocalDynamicBrakePercent;
 
@@ -3595,7 +3607,7 @@ namespace Orts.Simulation.RollingStocks
                     checkBraking = false;
                 }
             }
-            if (DynamicBrakeController != null && DynamicBrakeIntervention >= 0 && checkBraking)
+            if (DynamicBrakeController != null && DynamicBrakeController.CurrentValue > 0 && checkBraking)
             {
                 if (!(CombinedControlType == CombinedControl.ThrottleDynamic
                     || CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0))
@@ -3605,7 +3617,7 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrakeIntervention >= 0)
+            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrakeController.CurrentValue > 0)
                 StartDynamicBrakeDecrease(null);
             else if (CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0)
                 StartTrainBrakeDecrease(null);
@@ -4062,32 +4074,41 @@ namespace Orts.Simulation.RollingStocks
         public void SetCombinedHandleValue(float value)
         {
             bool ccUseCombinedControl = CruiseControl != null && (CruiseControl.UseThrottleAsForceSelector || CruiseControl.UseThrottleAsSpeedSelector ) && CruiseControl.UseThrottleInCombinedControl; 
-            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrakeIntervention >= 0 &&
+            bool canBrake = ThrottleController.CurrentValue == 0;
+            if (ccUseCombinedControl && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
+                canBrake = (CruiseControl.UseThrottleAsForceSelector && CruiseControl.SelectedMaxAccelerationPercent == 0) || (CruiseControl.UseThrottleAsSpeedSelector && CruiseControl.SelectedSpeedMpS == 0);
+
+            // Check if currently braking, update brake controllers accordingly
+            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrakeController.CurrentValue > 0 &&
                 !(ccUseCombinedControl && !CruiseControl.DynamicBrakePriority && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto))
             {
-                if (DynamicBrakeController.CurrentValue == 0 && value < CombinedControlSplitPosition)
-                    DynamicBrakeChangeActiveState(false);
-                else if (DynamicBrakeIntervention > -1)
                     SetDynamicBrakeValue((MathHelper.Clamp(value, CombinedControlSplitPosition, 1) - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
             }
             else if (CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0)
             {
                 SetTrainBrakeValue((MathHelper.Clamp(value, CombinedControlSplitPosition, 1) - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
             }
-            else
+            // Currently not braking, check if we need to start braking
+            else if (canBrake && value > CombinedControlSplitPosition)
             {
-                bool canBrake = ThrottleController.CurrentValue == 0;
-                if (ccUseCombinedControl && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto) canBrake = (CruiseControl.UseThrottleAsForceSelector && CruiseControl.SelectedMaxAccelerationPercent == 0) || (CruiseControl.UseThrottleAsSpeedSelector && CruiseControl.SelectedSpeedMpS == 0);
-                if (CombinedControlType == CombinedControl.ThrottleDynamic && canBrake && value > CombinedControlSplitPosition)
-                {
-                    DynamicBrakeChangeActiveState(true);
-                    if (CruiseControl != null && CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl) CruiseControl.DynamicBrakePriority = true;
-                }
-                else if (CombinedControlType == CombinedControl.ThrottleAir && canBrake && value > CombinedControlSplitPosition)
+                if (CombinedControlType == CombinedControl.ThrottleDynamic)
+                    SetDynamicBrakeValue((MathHelper.Clamp(value, CombinedControlSplitPosition, 1) - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
+                else if (CombinedControlType == CombinedControl.ThrottleAir)
                     SetTrainBrakeValue((MathHelper.Clamp(value, CombinedControlSplitPosition, 1) - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
-                else if (DynamicBrakeIntervention < 0 ||
+
+                // Set throttle intermediate value to 0 to remove any garbage data left over
+                ThrottleController.IntermediateValue = 0;
+            }
+            // Return to throttling
+            else if ((DynamicBrakeController.CurrentValue <= 0 && value < CombinedControlSplitPosition) ||
                     (CruiseControl != null && !CruiseControl.DynamicBrakePriority && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto))
+            {
                     SetThrottleValue(1 - MathHelper.Clamp(value, 0, CombinedControlSplitPosition) / CombinedControlSplitPosition);
+
+                if (CombinedControlType == CombinedControl.ThrottleAir)
+                    TrainBrakeController.IntermediateValue = 0;
+                else if (CombinedControlType == CombinedControl.ThrottleDynamic)
+                    DynamicBrakeController.IntermediateValue = 0;
             }
         }
 
@@ -4099,6 +4120,10 @@ namespace Orts.Simulation.RollingStocks
         /// <returns>Combined position into 0-1 range, where arrangement is [[1--throttle--0]split[0--dynamic|airbrake--1]]</returns>
         public float GetCombinedHandleValue(bool intermediateValue)
         {
+            float throttleValue = intermediateValue ? ThrottleController.IntermediateValue : ThrottleController.CurrentValue;
+            float dynamicsValue = intermediateValue ? DynamicBrakeController.IntermediateValue : DynamicBrakeController.CurrentValue;
+            float brakesValue = intermediateValue ? TrainBrakeController.IntermediateValue : TrainBrakeController.CurrentValue;
+
             if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
             {
                 if (CruiseControl.SelectedMaxAccelerationPercent != 0 && CruiseControl.HasIndependentThrottleDynamicBrakeLever)
@@ -4114,30 +4139,19 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrakeIntervention >= 0)
-            {
-                if (CruiseControl != null)
-                {
-                    if (CruiseControl.SkipThrottleDisplay && !CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl)
+            if (CombinedControlType == CombinedControl.ThrottleDynamic && throttleValue <= 0 && dynamicsValue > 0)
                     {
+                if (CruiseControl != null && CruiseControl.SkipThrottleDisplay && !CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl)
                         return CombinedControlSplitPosition;
-                    }
                     else
-                    {
-                        return CombinedControlSplitPosition + (1 - CombinedControlSplitPosition) * (intermediateValue ? DynamicBrakeController.IntermediateValue : DynamicBrakeController.CurrentValue);
+                    return CombinedControlSplitPosition + (1 - CombinedControlSplitPosition) * dynamicsValue;
                     }
-                }
-                else
-                {
-                    return CombinedControlSplitPosition + (1 - CombinedControlSplitPosition) * (intermediateValue ? DynamicBrakeController.IntermediateValue : DynamicBrakeController.CurrentValue);
-                }
-            }
-            else if (CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0)
-                return CombinedControlSplitPosition + (1 - CombinedControlSplitPosition) * (intermediateValue ? TrainBrakeController.IntermediateValue : TrainBrakeController.CurrentValue);
+            else if (CombinedControlType == CombinedControl.ThrottleAir && throttleValue <= 0 && brakesValue > 0)
+                return CombinedControlSplitPosition + (1 - CombinedControlSplitPosition) * brakesValue;
             else if (CruiseControl == null)
-                return CombinedControlSplitPosition * (1 - (intermediateValue ? ThrottleController.IntermediateValue : ThrottleController.CurrentValue));
+                return CombinedControlSplitPosition * (1 - throttleValue);
             else if (CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Manual)
-                return CombinedControlSplitPosition * (1 - (intermediateValue ? ThrottleController.IntermediateValue : ThrottleController.CurrentValue));
+                return CombinedControlSplitPosition * (1 - throttleValue);
             else if (CruiseControl.UseThrottleAsSpeedSelector)
                 return CombinedControlSplitPosition * (1 - (CruiseControl.SelectedSpeedMpS / MaxSpeedMpS));
             else if (CruiseControl.UseThrottleAsForceSelector && CruiseControl.UseThrottleInCombinedControl)
@@ -4703,7 +4717,6 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Confirmer.Warning(CabControl.DynamicBrake, CabSetting.Warn1);
                 return;
             }
-            AlerterReset(TCSEvent.DynamicBrakeChanged);
             if (CruiseControl != null && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && (CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl ||
                 (CruiseControl.DisableCruiseControlOnThrottleAndZeroForce && CruiseControl.SelectedMaxAccelerationPercent == 0)))
             {
@@ -4713,14 +4726,13 @@ namespace Orts.Simulation.RollingStocks
             if (!CanUseDynamicBrake())
                 return;
 
-            if (DynamicBrakeIntervention < 0)
+            // Only allow increasing dynamic brake if dynamic braking is off, there's no setup lock, or dynamic braking is already active
+            if (DynamicBrake || !DynamicBrakeControllerSetupLock || DynamicBrakeController.CurrentValue <= 0)
             {
-                DynamicBrakeChangeActiveState(true);
-            }
-            else if (DynamicBrake || !DynamicBrakeControllerSetupLock)
-            {
-                SignalEvent(Event.DynamicBrakeChange);
                 DynamicBrakeController.StartIncrease(target);
+
+                AlerterReset(TCSEvent.DynamicBrakeChanged);
+                SignalEvent(Event.DynamicBrakeChange);
                 if (!HasSmoothStruc)
                 {
                     StopDynamicBrakeIncrease();
@@ -4741,29 +4753,23 @@ namespace Orts.Simulation.RollingStocks
 
         public void StartDynamicBrakeDecrease(float? target)
         {
-            if (Direction == Direction.N)
+            // Only allow decreasing dynamic brake if dynamic brake isn't off
+            // Note: For safety, this will allow decreasing the dynamic brake even if a mechanical interlock should have locked dynamic brake in off position
+            if (DynamicBrakeController.CurrentValue > 0)
             {
-                Simulator.Confirmer.Warning(CabControl.DynamicBrake, CabSetting.Warn1);
-                return;
-            }
-            AlerterReset(TCSEvent.DynamicBrakeChanged);
-            if (!CanUseDynamicBrake())
-                return;
-
-            if (DynamicBrakeIntervention <= 0)
-            {
-                DynamicBrakeChangeActiveState(false);
-            }
-            else if (DynamicBrake || !DynamicBrakeControllerSetupLock)
-            {
-                SignalEvent(Event.DynamicBrakeChange);
                 DynamicBrakeController.StartDecrease(target);
+
+                AlerterReset(TCSEvent.DynamicBrakeChanged);
+                SignalEvent(Event.DynamicBrakeChange);
                 if (!HasSmoothStruc)
                 {
                     StopDynamicBrakeDecrease();
+                    if (!CheckDisableDynamicBrake())
                     Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
+                    return;
                 }
             }
+            CheckDisableDynamicBrake();
         }
 
         public void StopDynamicBrakeDecrease()
@@ -4796,33 +4802,38 @@ namespace Orts.Simulation.RollingStocks
 
         public void SetDynamicBrakeValue(float value)
         {
-            if (DynamicBrakeIntervention < 0 && ThrottleController.CurrentValue == 0 && value > 0.05f)
+            // Always allow dynamic brake decrease, but only allow dynamic brake increase with specific conditions
+            if (value > DynamicBrakeController.CurrentValue)
             {
-                DynamicBrakeChangeActiveState(true);
-                if (CruiseControl != null && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl)
+                if (Direction == Direction.N)
                 {
-                    CruiseControl.DynamicBrakePriority = true;
-                }
-            }
-            if (DynamicBrakeIntervention >= 0 && DynamicBrakeController.CurrentValue == 0 && value < -0.05f)
-            {
-                DynamicBrakeChangeActiveState(false);
+                    Simulator.Confirmer.Warning(CabControl.DynamicBrake, CabSetting.Warn1);
                 return;
             }
-            if ((!DynamicBrake && DynamicBrakeControllerSetupLock) || CruiseControl != null && CruiseControl.UseThrottleAsForceSelector && !CruiseControl.DynamicBrakePriority && !CruiseControl.UseThrottleInCombinedControl)
+                if (!CanUseDynamicBrake())
                 return;
+                if (!DynamicBrake && DynamicBrakeControllerSetupLock && DynamicBrakeController.CurrentValue > 0)
+                    return;
+                if (CruiseControl != null && CruiseControl.UseThrottleAsForceSelector && !CruiseControl.DynamicBrakePriority && !CruiseControl.UseThrottleInCombinedControl)
+                    return;
+            }
 
-            var controller = DynamicBrakeController;
-            var oldValue = controller.IntermediateValue;
-            var change = controller.SetValue(value);
+            var oldValue = DynamicBrakeController.IntermediateValue;
+            var change = DynamicBrakeController.SetValue(value);
             if (change != 0)
             {
-                new DynamicBrakeCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
+                new DynamicBrakeCommand(Simulator.Log, change > 0, DynamicBrakeController.CurrentValue, Simulator.ClockTime);
                 SignalEvent(Event.DynamicBrakeChange);
                 AlerterReset(TCSEvent.DynamicBrakeChanged);
             }
-            if (oldValue != controller.IntermediateValue)
-                Simulator.Confirmer.UpdateWithPerCent(CabControl.DynamicBrake, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, DynamicBrakeController.CurrentValue * 100);
+            if (oldValue != DynamicBrakeController.IntermediateValue && !CheckDisableDynamicBrake())
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.DynamicBrake, oldValue < DynamicBrakeController.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, DynamicBrakeController.CurrentValue * 100);
+
+            if (ThrottleController.CurrentValue <= 0 && DynamicBrakeController.CurrentValue > 0)
+            {
+                if (CruiseControl != null && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl)
+                    CruiseControl.DynamicBrakePriority = true;
+            }
         }
 
         public void SetDynamicBrakePercent(float percent)
@@ -4835,7 +4846,6 @@ namespace Orts.Simulation.RollingStocks
             if (!CanUseDynamicBrake())
                 return;
             DynamicBrakeController.SetPercent(percent);
-            DynamicBrakeChangeActiveState(percent >= 0);
         }
 
         public void SetDynamicBrakePercentWithSound(float percent)
@@ -4853,22 +4863,16 @@ namespace Orts.Simulation.RollingStocks
                 SignalEvent(Event.DynamicBrakeChange);
         }
 
-        public void DynamicBrakeChangeActiveState(bool toState)
+        public bool CheckDisableDynamicBrake()
         {
-            if (toState && DynamicBrakeIntervention < 0)
+            if (DynamicBrakeController.CurrentValue <= 0)
             {
-                DynamicBrakeIntervention = 0;
-                DynamicBrakeController.CommandStartTime = Simulator.ClockTime;
-                StopDynamicBrakeIncrease();
-            }
-            else if (!toState && DynamicBrakeIntervention > -1)
-            {
-                DynamicBrakeIntervention = -1;
-                DynamicBrakeController.CommandStartTime = Simulator.ClockTime;
-                StopDynamicBrakeIncrease();
+                StopDynamicBrakeDecrease();
                 Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.Off);
                 SignalEvent(Event.DynamicBrakeOff);
+                return true;
             }
+            return false;
         }
 
         protected bool CanUseDynamicBrake()
