@@ -4731,7 +4731,7 @@ namespace Orts.Simulation.RollingStocks
                 return;
 
             // Only allow increasing dynamic brake if dynamic braking is off, there's no setup lock, or dynamic braking is already active
-            if (DynamicBrake || !DynamicBrakeControllerSetupLock || DynamicBrakeController.CurrentValue <= 0)
+            if (DynamicBrakeController != null && (DynamicBrake || !DynamicBrakeControllerSetupLock || DynamicBrakeController.CurrentValue <= 0))
             {
                 float prevValue = DynamicBrakeController.CurrentValue;
 
@@ -4767,7 +4767,7 @@ namespace Orts.Simulation.RollingStocks
         {
             // Only allow decreasing dynamic brake if dynamic brake isn't off
             // Note: For safety, this will allow decreasing the dynamic brake even if a mechanical interlock should have locked dynamic brake in off position
-            if (DynamicBrakeController.CurrentValue > 0)
+            if (DynamicBrakeController?.CurrentValue > 0)
             {
                 DynamicBrakeController.StartDecrease(target);
 
@@ -4878,7 +4878,7 @@ namespace Orts.Simulation.RollingStocks
         public bool CheckDisableDynamicBrake()
         {
             // Only disable the dynamic brake if the lever is in the off position and the controller isn't trying to increase
-            if (DynamicBrakeController.CurrentValue <= 0 && DynamicBrakeController.UpdateValue <= 0)
+            if (DynamicBrakeController?.CurrentValue <= 0 && DynamicBrakeController?.UpdateValue <= 0)
             {
                 StopDynamicBrakeDecrease();
                 Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.Off);
