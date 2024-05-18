@@ -2222,13 +2222,18 @@ namespace Orts.Viewer3D.RollingStock
                         Locomotive.DynamicBrakePercent : Locomotive.LocalDynamicBrakePercent;
                     if (dynBrakePercent <= 0)
                             index = 0;
-                    else if (!Locomotive.HasSmoothStruc && Locomotive.DynamicBrakeController != null)
-                        index = Locomotive.DynamicBrakeController.CurrentNotch;
+                    else if (Locomotive.DynamicBrakeController != null)
+                    {
+                        if (!Locomotive.HasSmoothStruc)
+                            index = Locomotive.DynamicBrakeController.CurrentNotch;
+                        else
+                            index = PercentToIndex(Locomotive.DynamicBrakeController.CurrentValue);
+                                }
                                 else
                                     index = PercentToIndex(dynBrakePercent);
                     break;
                 case CABViewControlTypes.CPH_DISPLAY:
-                    if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && Locomotive.DynamicBrakePercent >= 0)
+                    if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && Locomotive.DynamicBrakeController?.CurrentValue > 0)
                         // TODO <CSComment> This is a sort of hack to allow MSTS-compliant operation of Dynamic brake indications in the standard USA case with 8 steps (e.g. Dash9)
                         // This hack returns to code of previous OR versions (e.g. release 1.0).
                         // The clean solution for MSTS compliance would be not to increment the percentage of the dynamic brake at first dynamic brake key pression, so that
@@ -2238,8 +2243,8 @@ namespace Orts.Viewer3D.RollingStock
                         index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
                     break;
                 case CABViewControlTypes.CP_HANDLE:
-                    if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && Locomotive.DynamicBrakePercent >= 0
-                            || Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleAir && Locomotive.TrainBrakeController.CurrentValue > 0)
+                    if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && Locomotive.DynamicBrakeController?.CurrentValue > 0
+                            || Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleAir && Locomotive.TrainBrakeController?.CurrentValue > 0)
                             index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
                         else
                             index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
