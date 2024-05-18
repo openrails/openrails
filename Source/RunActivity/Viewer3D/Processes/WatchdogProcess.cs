@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+// COPYRIGHT 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -36,7 +36,7 @@ namespace Orts.Viewer3D.Processes
     public class WatchdogProcess
     {
         readonly Profiler Profiler = new Profiler("Watchdog");
-        readonly ProcessState State = new ProcessState("Sound");
+        readonly ProcessState State = new ProcessState("Watchdog");
         readonly Game Game;
         readonly Thread Thread;
 
