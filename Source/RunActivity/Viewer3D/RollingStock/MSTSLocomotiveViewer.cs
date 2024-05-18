@@ -118,7 +118,7 @@ namespace Orts.Viewer3D.RollingStock
         {
             if (Locomotive.Direction != Direction.Forward
             && (Locomotive.ThrottlePercent >= 1
-            || Math.Abs(Locomotive.SpeedMpS) > 1 || Locomotive.DynamicBrakeController.CurrentValue > 0))
+            || Math.Abs(Locomotive.SpeedMpS) > 1 || Locomotive.DynamicBrakeController?.CurrentValue > 0))
             {
                 Viewer.Simulator.Confirmer.Warning(CabControl.Reverser, CabSetting.Warn1);
                 return;
@@ -130,7 +130,7 @@ namespace Orts.Viewer3D.RollingStock
         {
             if (Locomotive.Direction != Direction.Reverse
             && (Locomotive.ThrottlePercent >= 1
-            || Math.Abs(Locomotive.SpeedMpS) > 1 || Locomotive.DynamicBrakeController.CurrentValue > 0))
+            || Math.Abs(Locomotive.SpeedMpS) > 1 || Locomotive.DynamicBrakeController?.CurrentValue > 0))
             {
                 Viewer.Simulator.Confirmer.Warning(CabControl.Reverser, CabSetting.Warn1);
                 return;
@@ -2132,22 +2132,12 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
                     var dynBrakePercent = Locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING ?
                         Locomotive.DynamicBrakePercent : Locomotive.LocalDynamicBrakePercent;
-                    if (Locomotive.DynamicBrakeController != null)
-                    {
-                        if (dynBrakePercent <= 0)
-                        {
-                            index = 0;
-                            break;
-                        }
-                        if (!Locomotive.HasSmoothStruc)
-                            index = Locomotive.DynamicBrakeController != null ? Locomotive.DynamicBrakeController.CurrentNotch : 0;
-                        else
-                            index = PercentToIndex(dynBrakePercent);
-                    }
+                    if (dynBrakePercent <= 0)
+                        index = 0;
+                    else if (!Locomotive.HasSmoothStruc && Locomotive.DynamicBrakeController != null)
+                        index = Locomotive.DynamicBrakeController.CurrentNotch;
                     else
-                    {
                         index = PercentToIndex(dynBrakePercent);
-                    }
                     break;
                 case CABViewControlTypes.CPH_DISPLAY:
                     if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && Locomotive.DynamicBrakePercent >= 0)
