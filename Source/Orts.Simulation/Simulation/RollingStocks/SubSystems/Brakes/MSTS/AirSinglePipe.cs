@@ -537,7 +537,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             FullServPressurePSI = fullServPressurePSI;
             AutoCylAirPSIM3 = immediateRelease ? 0 : (maxPressurePSI - BrakeLine1PressurePSI) * AuxResVolumeM3;
             QuickServiceBulbPressurePSI = BrakeLine1PressurePSI < maxPressurePSI ? BrakeLine1PressurePSI : 0;
-            if (CylSource == 0)
+            if (CylSource == CylinderSource.AuxRes)
                 AutoCylPressurePSI = ForceBrakeCylinderPressure(ref AutoCylAirPSIM3, AdvancedBrakeCylinderPressure(AutoCylAirPSIM3));
             else
                 AutoCylPressurePSI = immediateRelease ? 0 : Math.Min((maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio, MaxTripleValveCylPressurePSI);
@@ -1165,7 +1165,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         AuxResPressurePSI -= elapsedClockSeconds * MaxApplicationRatePSIpS;
                         if (AuxResPressurePSI < 0)
                             AuxResPressurePSI = 0;
-                        if (CylSource == 0)
+                        if (CylSource == CylinderSource.AuxRes)
                             AutoCylPressurePSI = CalculateBrakeCylinderPressure(ref AutoCylAirPSIM3, -elapsedClockSeconds * MaxReleaseRatePSIpS, 0);
                         else
                             AutoCylPressurePSI -= elapsedClockSeconds * MaxReleaseRatePSIpS;
@@ -1232,7 +1232,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 if (dp < 0)
                     dp = 0;
 
-                if (CylSource == 0) // Aux res is directly connected to brake cylinder, no relay valve
+                if (CylSource == CylinderSource.AuxRes) // Aux res is directly connected to brake cylinder, no relay valve
                 {
                     float prevAutoCylAirPSIM3 = AutoCylAirPSIM3;
                     AutoCylPressurePSI = CalculateBrakeCylinderPressure(ref AutoCylAirPSIM3, dp, threshold);
@@ -1263,7 +1263,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             dp = elapsedClockSeconds * MaxReleaseRatePSIpS;
                             if (AutoCylPressurePSI - dp < AuxResPressurePSI + dp / AuxCylVolumeRatio)
                                 dp = Math.Max((AutoCylPressurePSI - AuxResPressurePSI) * (AuxCylVolumeRatio / (1 + AuxCylVolumeRatio)), 0);
-                            if (CylSource == 0)
+                            if (CylSource == CylinderSource.AuxRes)
                                 AutoCylPressurePSI = CalculateBrakeCylinderPressure(ref AutoCylAirPSIM3, -dp, AuxResPressurePSI);
                             else
                                 AutoCylPressurePSI -= dp;
@@ -1329,7 +1329,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             dp = (BrakeLine1PressurePSI - AutoCylPressurePSI) / (1 + CylBrakeLineVolumeRatio);
                         if (dp < 0)
                             dp = 0;
-                        if (CylSource == 0)
+                        if (CylSource == CylinderSource.AuxRes)
                             AutoCylPressurePSI = CalculateBrakeCylinderPressure(ref AutoCylAirPSIM3, dp, BrakeLine1PressurePSI);
                         else
                             AutoCylPressurePSI += dp;
@@ -1386,7 +1386,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 if (dp < 0)
                     dp = 0;
 
-                if (CylSource == 0) // Aux res is directly connected to brake cylinder, no relay valve
+                if (CylSource == CylinderSource.AuxRes) // Aux res is directly connected to brake cylinder, no relay valve
                     AutoCylPressurePSI = CalculateBrakeCylinderPressure(ref AutoCylAirPSIM3, -dp, threshold);
                 else
                     AutoCylPressurePSI -= dp;
@@ -1399,7 +1399,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 float dp = elapsedClockSeconds * ReleaseRatePSIpS;
                 if (AutoCylPressurePSI - dp < target)
                     dp = AutoCylPressurePSI - target;
-                if (CylSource == 0)
+                if (CylSource == CylinderSource.AuxRes)
                     AutoCylPressurePSI = CalculateBrakeCylinderPressure(ref AutoCylAirPSIM3, -dp, target);
                 else
                     AutoCylPressurePSI -= dp;
@@ -1410,7 +1410,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 dp *= MathHelper.Clamp(MathHelper.Lerp(1.0f, 0.1f, (AutoCylPressurePSI - HighSpeedReducingPressurePSI) / 5.0f), 0.1f, 1.0f); // Rate of release reduces as pressure difference increases
                 if (AutoCylPressurePSI - dp < HighSpeedReducingPressurePSI)
                     dp = AutoCylPressurePSI - HighSpeedReducingPressurePSI;
-                if (CylSource == 0)
+                if (CylSource == CylinderSource.AuxRes)
                     AutoCylPressurePSI = CalculateBrakeCylinderPressure(ref AutoCylAirPSIM3, -dp, HighSpeedReducingPressurePSI);
                 else
                     AutoCylPressurePSI -= dp;
@@ -1455,7 +1455,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         dp = (QuickServiceBulbPressurePSI - AutoCylPressurePSI) / (1 + volumeRatio);
                     if (dp < 0)
                         dp = 0;
-                    if (CylSource == 0)
+                    if (CylSource == CylinderSource.AuxRes)
                         AutoCylPressurePSI = CalculateBrakeCylinderPressure(ref AutoCylAirPSIM3, dp, QuickServiceLimitPSI);
                     else
                         AutoCylPressurePSI += dp;
@@ -1735,7 +1735,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     float dp = elapsedClockSeconds * RelayValveApplicationRatePSIpS;
                     // Reduce glitchyness caused by extremely low demanded pressures
-                    if (CylSource != 0 && demandedPressurePSI < BrakeCylinderSpringPressurePSI / 2.0f)
+                    if (CylSource != CylinderSource.AuxRes && demandedPressurePSI < BrakeCylinderSpringPressurePSI / 2.0f)
                         dp *= 0.2f;
                     if (dp > demandedPressurePSI - CylPressurePSI)
                         dp = demandedPressurePSI - CylPressurePSI;
@@ -1774,7 +1774,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     float dp = elapsedClockSeconds * RelayValveReleaseRatePSIpS;
                     // Reduce glitchyness caused by extremely low demanded pressures
-                    if (CylSource != 0 && demandedPressurePSI < BrakeCylinderSpringPressurePSI / 2.0f)
+                    if (CylSource != CylinderSource.AuxRes && demandedPressurePSI < BrakeCylinderSpringPressurePSI / 2.0f)
                         dp *= 0.2f;
                     if (dp > CylPressurePSI - demandedPressurePSI)
                         dp = CylPressurePSI - demandedPressurePSI;
@@ -1820,7 +1820,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                     if (AuxResPressurePSI - dp < 0)
                         dp = AuxResPressurePSI;
-                    if (CylSource == 0)
+                    if (CylSource == CylinderSource.AuxRes)
                         AutoCylPressurePSI = CalculateBrakeCylinderPressure(ref AutoCylAirPSIM3, -dp, 0);
                     else
                         AutoCylPressurePSI -= dp;
