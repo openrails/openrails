@@ -2005,6 +2005,7 @@ namespace Orts.Viewer3D.RollingStock
         float Scale = 1;
         int OldFrameIndex = 0;
         public bool ButtonState = false;
+        int SplitIndex = -1;
 
         /// <summary>
         /// Accumulated mouse movement. Used for controls with no assigned notch controllers, e.g. headlight and reverser.
@@ -2040,6 +2041,8 @@ namespace Orts.Viewer3D.RollingStock
                     break;
                 default: ChangedValue = (value) => value + NormalizedMouseMovement(); break;
             }
+            // The cab view control index shown when combined control is at the split position
+            SplitIndex = PercentToIndex(Locomotive.CombinedControlSplitPosition);
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -2145,21 +2148,12 @@ namespace Orts.Viewer3D.RollingStock
                         index = PercentToIndex(dynBrakePercent);
                     break;
                 case CABViewControlTypes.CPH_DISPLAY:
-                    if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && Locomotive.DynamicBrakeController?.CurrentValue > 0)
-                        // TODO <CSComment> This is a sort of hack to allow MSTS-compliant operation of Dynamic brake indications in the standard USA case with 8 steps (e.g. Dash9)
-                        // This hack returns to code of previous OR versions (e.g. release 1.0).
-                        // The clean solution for MSTS compliance would be not to increment the percentage of the dynamic brake at first dynamic brake key pression, so that
-                        // subsequent steps become of 12.5% as in MSTS instead of 11.11% as in OR. This requires changes in the physics logic </CSComment>
-                        index = (int)((ControlDiscrete.FramesCount) * Locomotive.GetCombinedHandleValue(false));
-                    else
-                        index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
-                    break;
                 case CABViewControlTypes.CP_HANDLE:
-                    if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && Locomotive.DynamicBrakeController?.CurrentValue > 0
-                            || Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleAir && Locomotive.TrainBrakeController?.CurrentValue > 0)
-                            index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
-                        else
-                            index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
+                    var combinedHandlePosition = Locomotive.GetCombinedHandleValue(false);
+                    index = PercentToIndex(combinedHandlePosition);
+                    // Make sure power indications are not shown when locomotive is in braking range
+                    if (combinedHandlePosition > Locomotive.CombinedControlSplitPosition)
+                        index = Math.Max(index, SplitIndex + 1);
                     break;
                 case CABViewControlTypes.ORTS_SELECTED_SPEED_DISPLAY:
                     if (Locomotive.CruiseControl == null)
@@ -2816,9 +2810,29 @@ namespace Orts.Viewer3D.RollingStock
             {
                 try
                 {
-                    var val = ControlDiscrete.Values[0] <= ControlDiscrete.Values[ControlDiscrete.Values.Count - 1] ?
-                        ControlDiscrete.Values.Where(v => (float)v <= percent + 0.00001).Last() : ControlDiscrete.Values.Where(v => (float)v <= percent + 0.00001).First();
-                    index = ControlDiscrete.Values.IndexOf(val);
+                    // Binary search process to find the control value closest to percent
+                    List<double> vals = ControlDiscrete.Values;
+                    // Check if control values were defined in reverse, reverse them back for this calculation
+                    // This is less efficient, so creators should be encouraged to not do this
+                    bool reversed = ControlDiscrete.Values[0] > ControlDiscrete.Values[ControlDiscrete.Values.Count - 1];
+                    if (reversed)
+                        vals.Reverse();
+
+                    // Returns index of first val larger than percent, or bitwise compliment of this index if percent isn't in the list
+                    int checkIndex = vals.BinarySearch(percent);
+
+                    if (checkIndex < 0)
+                        checkIndex = ~checkIndex;
+                    if (checkIndex > vals.Count - 1)
+                        checkIndex = vals.Count - 1;
+                    // Choose lower index if it is closer to percent
+                    if (checkIndex > 0 && Math.Abs(vals[checkIndex - 1] - percent) < Math.Abs(vals[checkIndex] - percent))
+                        checkIndex--;
+                    // Re-reverse the index as needed
+                    if (reversed)
+                        checkIndex = (vals.Count - 1) - checkIndex;
+
+                    index = checkIndex;
                 }
                 catch
                 {
