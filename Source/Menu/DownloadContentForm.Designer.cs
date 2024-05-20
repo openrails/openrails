@@ -59,9 +59,9 @@ namespace ORTS
             this.pictureBoxRoute = new System.Windows.Forms.PictureBox();
             this.textBoxRoute = new System.Windows.Forms.RichTextBox();
             this.infoButton = new System.Windows.Forms.Button();
-            this.startButton = new System.Windows.Forms.Button();
             this.deleteButton = new System.Windows.Forms.Button();
             this.updateButton = new System.Windows.Forms.Button();
+            this.okButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewDownloadContent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxRoute)).BeginInit();
             this.SuspendLayout();
@@ -179,17 +179,6 @@ namespace ORTS
             this.infoButton.UseVisualStyleBackColor = true;
             this.infoButton.Click += new System.EventHandler(this.InfoButton_Click);
             // 
-            // startButton
-            // 
-            this.startButton.Enabled = false;
-            this.startButton.Location = new System.Drawing.Point(165, 507);
-            this.startButton.Name = "startButton";
-            this.startButton.Size = new System.Drawing.Size(75, 23);
-            this.startButton.TabIndex = 6;
-            this.startButton.Text = "Start";
-            this.startButton.UseVisualStyleBackColor = true;
-            this.startButton.Click += new System.EventHandler(this.StartButton_Click);
-            // 
             // deleteButton
             // 
             this.deleteButton.Enabled = false;
@@ -203,22 +192,33 @@ namespace ORTS
             // 
             // updateButton
             // 
-            this.updateButton.Location = new System.Drawing.Point(327, 507);
+            this.updateButton.Location = new System.Drawing.Point(165, 507);
             this.updateButton.Name = "updateButton";
             this.updateButton.Size = new System.Drawing.Size(75, 23);
-            this.updateButton.TabIndex = 8;
+            this.updateButton.TabIndex = 6;
             this.updateButton.Text = "Update";
             this.updateButton.UseVisualStyleBackColor = true;
             this.updateButton.Click += new System.EventHandler(this.updateButton_Click);
+            // 
+            // buttonOK
+            // 
+            this.okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.okButton.Location = new System.Drawing.Point(745, 507);
+            this.okButton.Name = "okButton";
+            this.okButton.Size = new System.Drawing.Size(75, 23);
+            this.okButton.TabIndex = 8;
+            this.okButton.Text = "OK";
+            this.okButton.UseVisualStyleBackColor = true;
+            this.okButton.Click += new System.EventHandler(this.okButton_Click);
             // 
             // DownloadContentForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(824, 542);
+            this.Controls.Add(this.okButton);
             this.Controls.Add(this.updateButton);
             this.Controls.Add(this.deleteButton);
-            this.Controls.Add(this.startButton);
             this.Controls.Add(this.infoButton);
             this.Controls.Add(this.textBoxRoute);
             this.Controls.Add(this.pictureBoxRoute);
@@ -252,8 +252,8 @@ namespace ORTS
         private PictureBox pictureBoxRoute;
         private RichTextBox textBoxRoute;
         private Button infoButton;
-        private Button startButton;
         private Button deleteButton;
         private Button updateButton;
+        private Button okButton;
     }
 }
