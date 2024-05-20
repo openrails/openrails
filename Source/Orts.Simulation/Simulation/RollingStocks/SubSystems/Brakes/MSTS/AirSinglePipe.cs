@@ -543,7 +543,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 AutoCylPressurePSI = immediateRelease ? 0 : Math.Min((maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio, MaxTripleValveCylPressurePSI);
             CylPressurePSI = ForceBrakeCylinderPressure(ref CylAirPSIM3, Math.Max(AutoCylPressurePSI * RelayValveRatio, BrakeLine3PressurePSI * EngineRelayValveRatio));
 
-            AuxResPressurePSI = Math.Max(TwoPipes && MRPAuxResCharging && !(Car as MSTSWagon).SupplyReservoirPresent ?
+            AuxResPressurePSI = Math.Max((Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.Distributor
+                && TwoPipes && MRPAuxResCharging && !(Car as MSTSWagon).SupplyReservoirPresent ?
                 maxPressurePSI : maxPressurePSI - (AutoCylAirPSIM3 / AuxResVolumeM3), BrakeLine1PressurePSI);
             if ((Car as MSTSWagon).EmergencyReservoirPresent)
                 EmergResPressurePSI = Math.Max(AuxResPressurePSI, maxPressurePSI);
