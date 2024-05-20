@@ -1270,13 +1270,14 @@ namespace Orts.Formats.Msts
                             Positions.Add(0);
                             // We will need the FramesCount later!
                             // We use Positions only here
-                            Positions.Add(FramesCount);
+                            Positions.Add(FramesCount - 1);
 
                             // Fill empty Values
-                            for (int i = 0; i < FramesCount; i++)
+                            for (int i = 0; i < (FramesCount - 1); i++)
                                 Values.Add(0);
                             Values[0] = MinValue;
 
+                            // Add maximum value to the end
                             Values.Add(MaxValue);
                         }
                         else if (Values.Count == 2 && Values[0] == 0 && Values[1] < MaxValue && Positions[0] == 0 && Positions[1] == 1 && Values.Count < FramesCount)
@@ -1289,13 +1290,13 @@ namespace Orts.Formats.Msts
 			                //Orientation ( 0 )
 			                //DirIncrease ( 0 )
 			                //ScaleRange ( 0 1 )
-                            Positions.Add(FramesCount);
+                            Positions.Add(FramesCount - 1);
                             // Fill empty Values
-                            for (int i = Values.Count; i < FramesCount; i++)
+                            for (int i = Values.Count; i < (FramesCount - 1); i++)
                                 Values.Add(Values[1]);
+                            // Add maximum value to the end
                             Values.Add(MaxValue);                            
                         }
-
                         else
                         {
                             //This if clause covers among others following cases:
@@ -1321,11 +1322,6 @@ namespace Orts.Formats.Msts
                                 }
                                 iValues++;
                             }
-
-                            // Add the maximums to the end, the Value will be removed
-                            // We use Positions only here
-                            if (Values.Count > 0 && Values[0] <= Values[Values.Count - 1]) Values.Add(MaxValue);
-                            else if (Values.Count > 0 && Values[0] > Values[Values.Count - 1]) Values.Add(MinValue);
                         }
 
                         // OK, we have a valid size of Positions and Values
@@ -1351,9 +1347,6 @@ namespace Orts.Formats.Msts
                                 p = Positions[i];
                             }
                         }
-
-                        // Don't need the MaxValue added before, remove it
-                        Values.RemoveAt(Values.Count - 1);
                     }
                 }
 
