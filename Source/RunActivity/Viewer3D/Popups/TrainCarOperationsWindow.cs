@@ -183,46 +183,46 @@ namespace Orts.Viewer3D.Popups
             if (Coupler == null)
             {
                 // texture rectangles :                    X, Y, width, height
-                Rectangle ArrowLeftRect = new Rectangle(51, 119, 16, 16);
-                Rectangle ArrowRightRect = new Rectangle(51, 68, 16, 16);
+                Rectangle ArrowLeftRect = new Rectangle(48, 112, 16, 16);
+                Rectangle ArrowRightRect = new Rectangle(48, 64, 16, 16);
 
                 Rectangle BattAlwaysOnRect = new Rectangle(0, 0, 16, 16);
-                Rectangle BattOffRect = new Rectangle(17, 0, 16, 16);
-                Rectangle BattOnRect = new Rectangle(34, 0, 16, 16);
+                Rectangle BattOffRect = new Rectangle(16, 0, 16, 16);
+                Rectangle BattOnRect = new Rectangle(32, 0, 16, 16);
 
-                Rectangle EmptyRect = new Rectangle(51, 0, 16, 16);
+                Rectangle EmptyRect = new Rectangle(48, 0, 16, 16);
 
-                Rectangle BleedOffValveNotAvailableRect = new Rectangle(0, 17, 16, 16);
-                Rectangle BleedOffValveClosedRect = new Rectangle(17, 17, 16, 16);
-                Rectangle BleedOffValveOpenedRect = new Rectangle(34, 17, 16, 16);
+                Rectangle BleedOffValveNotAvailableRect = new Rectangle(0, 16, 16, 16);
+                Rectangle BleedOffValveClosedRect = new Rectangle(16, 16, 16, 16);
+                Rectangle BleedOffValveOpenedRect = new Rectangle(32, 16, 16, 16);
 
-                Rectangle BrakeHoseConRect = new Rectangle(0, 34, 16, 16);
-                Rectangle BrakeHoseDisRect = new Rectangle(17, 34, 16, 16);
-                Rectangle BrakeHoseFirstDisRect = new Rectangle(34, 34, 16, 16);
-                Rectangle BrakeHoseLastDisRect = new Rectangle(51, 34, 16, 16);
+                Rectangle BrakeHoseConRect = new Rectangle(0, 32, 16, 16);
+                Rectangle BrakeHoseDisRect = new Rectangle(16, 32, 16, 16);
+                Rectangle BrakeHoseFirstDisRect = new Rectangle(32, 32, 16, 16);
+                Rectangle BrakeHoseLastDisRect = new Rectangle(48, 32, 16, 16);
 
-                Rectangle CouplerNotAvailableRect = new Rectangle(0, 51, 16, 16);
-                Rectangle CouplerFrontRect = new Rectangle(17, 51, 16, 16);
-                Rectangle CouplerRect = new Rectangle(34, 51, 16, 16);
-                Rectangle CouplerRearRect = new Rectangle(51, 51, 16, 16);
+                Rectangle CouplerNotAvailableRect = new Rectangle(0, 48, 16, 16);
+                Rectangle CouplerFrontRect = new Rectangle(16, 48, 16, 16);
+                Rectangle CouplerRect = new Rectangle(32, 48, 16, 16);
+                Rectangle CouplerRearRect = new Rectangle(48, 48, 16, 16);
 
-                Rectangle HandBrakeNotAvailableRect = new Rectangle(0, 68, 16, 16);
-                Rectangle HandBrakeSetRect = new Rectangle(17, 68, 16, 16);
-                Rectangle HandBrakeNotSetRect = new Rectangle(34, 68, 16, 16);
+                Rectangle HandBrakeNotAvailableRect = new Rectangle(0, 64, 16, 16);
+                Rectangle HandBrakeSetRect = new Rectangle(16, 64, 16, 16);
+                Rectangle HandBrakeNotSetRect = new Rectangle(32, 64, 16, 16);
 
-                Rectangle ETSconnectedRect = new Rectangle(0, 85, 16, 16);
-                Rectangle ETSdisconnectedRect = new Rectangle(17, 85, 16, 16);
-                Rectangle MUconnectedRect = new Rectangle(34, 85, 16, 16);
-                Rectangle MUdisconnectedRect = new Rectangle(51, 85, 16, 16);
+                Rectangle ETSconnectedRect = new Rectangle(0, 80, 16, 16);
+                Rectangle ETSdisconnectedRect = new Rectangle(16, 80, 16, 16);
+                Rectangle MUconnectedRect = new Rectangle(32, 80, 16, 16);
+                Rectangle MUdisconnectedRect = new Rectangle(48, 80, 16, 16);
 
-                Rectangle FrontAngleCockClosedRect = new Rectangle(0, 102, 16, 16);
-                Rectangle RearAngleCockClosedRect = new Rectangle(17, 102, 16, 16);
-                Rectangle FrontAngleCockOpenedRect = new Rectangle(34, 102, 16, 16);
-                Rectangle RearAngleCockOpenedRect = new Rectangle(51, 102, 16, 16);
+                Rectangle FrontAngleCockClosedRect = new Rectangle(0, 96, 16, 16);
+                Rectangle RearAngleCockClosedRect = new Rectangle(16, 96, 16, 16);
+                Rectangle FrontAngleCockOpenedRect = new Rectangle(32, 96, 16, 16);
+                Rectangle RearAngleCockOpenedRect = new Rectangle(48, 96, 16, 16);
 
-                Rectangle PowerOnRect = new Rectangle(0, 119, 16, 16);
-                Rectangle PowerOffRect = new Rectangle(17, 119, 16, 16);
-                Rectangle PowerChangingRect = new Rectangle(34, 119, 16, 16);
+                Rectangle PowerOnRect = new Rectangle(0, 112, 16, 16);
+                Rectangle PowerOffRect = new Rectangle(16, 112, 16, 16);
+                Rectangle PowerChangingRect = new Rectangle(32, 112, 16, 16);
 
                 var GraphicsDeviceRender = Owner.Viewer.RenderProcess.GraphicsDevice;
                 var TrainOperationsPath = System.IO.Path.Combine(Owner.Viewer.ContentPath, "TrainOperations\\TrainOperationsMap.png");
@@ -244,7 +244,7 @@ namespace Orts.Viewer3D.Popups
 
                 BrakeHoseCon = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseConRect);
                 BrakeHoseDis = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseDisRect);
-                BrakeHoseFirstDis = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseLastDisRect);
+                BrakeHoseFirstDis = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseFirstDisRect);
                 BrakeHoseLastDis = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseLastDisRect);
 
                 FrontAngleCockOpened = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, FrontAngleCockOpenedRect);
