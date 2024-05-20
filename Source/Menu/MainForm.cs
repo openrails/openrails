@@ -31,7 +31,6 @@ using System.IO;
 using System.Linq;
 using System.Resources;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Windows.Forms;
 using Path = ORTS.Menu.Path;
 
@@ -108,8 +107,6 @@ namespace ORTS
         public UserAction SelectedAction { get; set; }
 
         GettextResourceManager catalog = new GettextResourceManager("Menu");
-
-        public bool DoWithTask = true;
 
         #region Main Form
         public MainForm()
@@ -750,36 +747,34 @@ namespace ORTS
             Folders.Clear();
             ShowFolderList();
 
-            if (DoWithTask)
+            FolderLoader = new Task<List<Folder>>(this, () => Folder.GetFolders(Settings).OrderBy(f => f.Name).ToList(), (folders) =>
             {
-                FolderLoader = new Task<List<Folder>>(this, () => Folder.GetFolders(Settings).OrderBy(f => f.Name).ToList(), (folders) =>
-                {
-                    Folders = folders;
-                    ShowFolderList();
-                    if (Folders.Count > 0)
-                        comboBoxFolder.Focus();
+                Folders = folders;
+                ShowFolderList();
+                if (Folders.Count > 0)
+                    comboBoxFolder.Focus();
 
-                    if (!initialized && Folders.Count == 0)
+                if (!initialized && Folders.Count == 0)
+                {
+                    using (var form = new DownloadContentForm(Settings))
                     {
-                        using (var form = new DownloadContentForm(Settings))
+                        switch (form.ShowDialog(this))
                         {
-                            switch (form.ShowDialog(this))
-                            {
-                                case DialogResult.OK:
-                                    break;
-                                case DialogResult.Retry:
-                                    RestartMenu();
-                                    break;
-                            }
+                            case DialogResult.OK:
+                                break;
+                            case DialogResult.Retry:
+                                RestartMenu();
+                                break;
                         }
                     }
-                });
-            }
-            else
-            {
-                Folders = Folder.GetFolders(Settings).OrderBy(f => f.Name).ToList();
-                ShowFolderList();
-            }
+                }
+            });
+        }
+
+        public void LoadFolderListWhithoutTask()
+        {
+            Folders = Folder.GetFolders(Settings).OrderBy(f => f.Name).ToList();
+            ShowFolderList();
         }
 
         void ShowFolderList()
@@ -806,20 +801,12 @@ namespace ORTS
             ShowStartAtList();
             ShowHeadToList();
 
-            if (DoWithTask)
+            var selectedFolder = SelectedFolder;
+            RouteLoader = new Task<List<Route>>(this, () => Route.GetRoutes(selectedFolder).OrderBy(r => r.ToString()).ToList(), (routes) =>
             {
-                var selectedFolder = SelectedFolder;
-                RouteLoader = new Task<List<Route>>(this, () => Route.GetRoutes(selectedFolder).OrderBy(r => r.ToString()).ToList(), (routes) =>
-                {
-                    Routes = routes;
-                    ShowRouteList();
-                });
-            }
-            else
-            {
-                Routes = Route.GetRoutes(SelectedFolder).OrderBy(r => r.ToString()).ToList();
+                Routes = routes;
                 ShowRouteList();
-            }
+            });
         }
 
         void ShowRouteList()
@@ -850,21 +837,13 @@ namespace ORTS
             Activities.Clear();
             ShowActivityList();
 
-            if (DoWithTask)
+            var selectedFolder = SelectedFolder;
+            var selectedRoute = SelectedRoute;
+            ActivityLoader = new Task<List<Activity>>(this, () => Activity.GetActivities(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (activities) =>
             {
-                var selectedFolder = SelectedFolder;
-                var selectedRoute = SelectedRoute;
-                ActivityLoader = new Task<List<Activity>>(this, () => Activity.GetActivities(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (activities) =>
-                {
-                    Activities = activities;
-                    ShowActivityList();
-                });
-            }
-            else
-            {
-                Activities = Activity.GetActivities(SelectedFolder, SelectedRoute).OrderBy(a => a.ToString()).ToList();
+                Activities = activities;
                 ShowActivityList();
-            }
+            });
         }
 
         void ShowActivityList()
@@ -900,22 +879,13 @@ namespace ORTS
             ShowLocomotiveList();
             ShowConsistList();
 
-            if (DoWithTask)
+            var selectedFolder = SelectedFolder;
+            ConsistLoader = new Task<List<Consist>>(this, () => Consist.GetConsists(selectedFolder).OrderBy(a => a.ToString()).ToList(), (consists) =>
             {
-                var selectedFolder = SelectedFolder;
-                ConsistLoader = new Task<List<Consist>>(this, () => Consist.GetConsists(selectedFolder).OrderBy(a => a.ToString()).ToList(), (consists) =>
-                {
-                    Consists = consists;
-                    if (SelectedActivity == null || SelectedActivity is ExploreActivity)
-                        ShowLocomotiveList();
-                });
-            }
-            else
-            {
-                Consists = Consist.GetConsists(SelectedFolder).OrderBy(a => a.ToString()).ToList();
+                Consists = consists;
                 if (SelectedActivity == null || SelectedActivity is ExploreActivity)
                     ShowLocomotiveList();
-            }
+            });
         }
 
         void ShowLocomotiveList()
@@ -966,22 +936,13 @@ namespace ORTS
             ShowStartAtList();
             ShowHeadToList();
 
-            if (DoWithTask)
+            var selectedRoute = SelectedRoute;
+            PathLoader = new Task<List<Path>>(this, () => Path.GetPaths(selectedRoute, false).OrderBy(a => a.ToString()).ToList(), (paths) =>
             {
-                var selectedRoute = SelectedRoute;
-                PathLoader = new Task<List<Path>>(this, () => Path.GetPaths(selectedRoute, false).OrderBy(a => a.ToString()).ToList(), (paths) =>
-                {
-                    Paths = paths;
-                    if (SelectedActivity == null || SelectedActivity is ExploreActivity)
-                        ShowStartAtList();
-                });
-            }
-            else
-            {
-                Paths = Path.GetPaths(SelectedRoute, false).OrderBy(a => a.ToString()).ToList();
+                Paths = paths;
                 if (SelectedActivity == null || SelectedActivity is ExploreActivity)
                     ShowStartAtList();
-            }
+            });
         }
 
         void ShowStartAtList()
@@ -991,6 +952,10 @@ namespace ORTS
                 comboBoxStartAt.Items.Clear();
                 foreach (var place in Paths.Select(p => p.Start).Distinct().OrderBy(s => s.ToString()))
                     comboBoxStartAt.Items.Add(place);
+                if (comboBoxStartAt.Items.Count > 0)
+                {
+                    comboBoxStartAt.SelectedIndex = 0;
+                }
                 // Because this list is unique names, we have to do some extra work to select it.
                 if (Settings.Menu_Selection.Length >= (int)UserSettings.Menu_SelectionIndex.Path)
                 {
@@ -1071,28 +1036,19 @@ namespace ORTS
             TimetableSets.Clear();
             ShowTimetableSetList();
 
-            if (DoWithTask) {
-                var selectedFolder = SelectedFolder;
-                var selectedRoute = SelectedRoute;
-                TimetableSetLoader = new Task<List<TimetableInfo>>(this, () => TimetableInfo.GetTimetableInfo(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableSets) =>
-                {
-                    TimetableSets = timetableSets;
-                    ShowTimetableSetList();
-                });
-
-                TimetableWeatherFileLoader = new Task<List<WeatherFileInfo>>(this, () => WeatherFileInfo.GetTimetableWeatherFiles(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableWeatherFileSet) =>
-                {
-                    TimetableWeatherFileSet = timetableWeatherFileSet;
-                    ShowTimetableWeatherSet();
-                });
-            }
-            else
+            var selectedFolder = SelectedFolder;
+            var selectedRoute = SelectedRoute;
+            TimetableSetLoader = new Task<List<TimetableInfo>>(this, () => TimetableInfo.GetTimetableInfo(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableSets) =>
             {
-                TimetableSets = TimetableInfo.GetTimetableInfo(SelectedFolder, SelectedRoute).OrderBy(a => a.ToString()).ToList();
+                TimetableSets = timetableSets;
                 ShowTimetableSetList();
-                TimetableWeatherFileSet = WeatherFileInfo.GetTimetableWeatherFiles(SelectedFolder, SelectedRoute).OrderBy(a => a.ToString()).ToList();
+            });
+
+            TimetableWeatherFileLoader = new Task<List<WeatherFileInfo>>(this, () => WeatherFileInfo.GetTimetableWeatherFiles(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableWeatherFileSet) =>
+            {
+                TimetableWeatherFileSet = timetableWeatherFileSet;
                 ShowTimetableWeatherSet();
-            }
+            });
         }
 
         void ShowTimetableSetList()
@@ -1389,21 +1345,127 @@ namespace ORTS
 
         void UpdateFromMenuSelection<T>(ComboBox comboBox, UserSettings.Menu_SelectionIndex index, Func<T, string> map, T defaultValue)
         {
-            if (Settings.Menu_Selection.Length > (int)index && Settings.Menu_Selection[(int)index] != "")
+            if (((index == UserSettings.Menu_SelectionIndex.Folder) ||
+                 ((comboBoxFolder.Items.Count > 0) && (SelectedFolder != null) &&
+                  (Settings.Menu_Selection.Count() > 0) &&
+                  (SelectedFolder.Path == Settings.Menu_Selection[(int)UserSettings.Menu_SelectionIndex.Folder]))) &&
+                (Settings.Menu_Selection.Length > (int)index) && 
+                (Settings.Menu_Selection[(int)index] != ""))
             {
                 if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
+                {
                     comboBox.Text = Settings.Menu_Selection[(int)index];
+                }
                 else
+                {
                     SelectComboBoxItem<T>(comboBox, item => map(item) == Settings.Menu_Selection[(int)index]);
+                }
             }
             else
             {
-                if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
-                    comboBox.Text = map(defaultValue);
-                else if (defaultValue != null)
+                var routes = Settings.Content.ContentRouteSettings.Routes;
+                if ((SelectedFolder != null) &&
+                    routes.ContainsKey(SelectedFolder.Name) &&
+                    routes[SelectedFolder.Name].Installed &&
+                    !string.IsNullOrEmpty(routes[SelectedFolder.Name].Start.Route))
+                {
+                    var route = routes[SelectedFolder.Name];
+                    string valueComboboxToSetTo = "";
+                    switch (index)
+                    {
+                        case UserSettings.Menu_SelectionIndex.Route:
+                            valueComboboxToSetTo = route.Start.Route;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Activity:
+                            valueComboboxToSetTo = route.Start.Activity;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Locomotive:
+                            valueComboboxToSetTo = route.Start.Locomotive;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Consist:
+                            valueComboboxToSetTo = route.Start.Consist;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Path:
+                            valueComboboxToSetTo = route.Start.StartingAt;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Time:
+                            valueComboboxToSetTo = route.Start.Time;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Season:
+                            valueComboboxToSetTo = route.Start.Season;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Weather:
+                            valueComboboxToSetTo = route.Start.Weather;
+                            break;
+                        default:
+                            break;
+                    }
+                    bool found = false;
+                    if ((index != UserSettings.Menu_SelectionIndex.Path) ||
+                        (SelectedActivity == null) || (!(SelectedActivity is ExploreActivity)))
+                    {
+                        if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
+                        {
+                            comboBox.Text = valueComboboxToSetTo;
+                            found = true;
+                        } 
+                        else
+                        {
+                            found = searchInComboBox(comboBox,  valueComboboxToSetTo);
+                        }
+                    }
+                    else
+                    {
+                        found = searchInComboBox(comboBoxStartAt, valueComboboxToSetTo);
+                        found = searchInComboBox(comboBoxHeadTo, valueComboboxToSetTo);
+                    }
+                    if (!found)
+                    {
+                        if (comboBox.Items.Count > 0)
+                        {
+                            comboBox.SelectedIndex = 0;
+                        }
+                    }
+                }
+                else
+                {
+                    SetToDefault(comboBox, index, map, defaultValue);
+                }
+            }
+        }
+
+        bool searchInComboBox(ComboBox comboBox, string valueComboboxToSetTo)
+        {
+            for (var i = 0; i < comboBox.Items.Count; i++)
+            {
+                if ((string)comboBox.Items[i].ToString() == valueComboboxToSetTo)
+                {
+                    comboBox.SelectedIndex = i;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        void SetToDefault<T>(ComboBox comboBox, UserSettings.Menu_SelectionIndex index, Func<T, string> map, T defaultValue)
+        {
+            if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
+            {
+                comboBox.Text = map(defaultValue);
+            }
+            else
+            {
+                if (defaultValue != null)
+                {
                     SelectComboBoxItem<T>(comboBox, item => map(item) == map(defaultValue));
-                else if (comboBox.Items.Count > 0)
-                    comboBox.SelectedIndex = 0;
+                }
+                else
+                {
+                    if (comboBox.Items.Count > 0)
+                    {
+                        comboBox.SelectedIndex = 0;
+                    }
+                }
             }
         }
 

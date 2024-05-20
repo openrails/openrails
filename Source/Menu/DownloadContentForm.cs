@@ -303,24 +303,14 @@ namespace ORTS
             Settings.Folders.Save();
             Settings.Content.Save();
 
-            if (!string.IsNullOrWhiteSpace(route.Start.Route))
-            {
-                // start information available
-                MessageBox.Show(Catalog.GetString("Route installed, press 'Start' button to start Open Rails for this route."),
-                    Catalog.GetString("Done"), MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-            }
-            else
-            {
-                // no start information available
-                MainForm mainForm = ((MainForm)Owner);
-                mainForm.DoWithTask = false;
-                mainForm.LoadFolderList();
-                mainForm.comboBoxFolder.SelectedIndex = determineSelectedIndex(mainForm.comboBoxFolder, RouteName);
-                mainForm.DoWithTask = true;
+            MainForm mainForm = ((MainForm)Owner);
+            mainForm.LoadFolderListWhithoutTask();
+            mainForm.comboBoxFolder.SelectedIndex = determineSelectedIndex(mainForm.comboBoxFolder, RouteName);
 
-                MessageBox.Show(Catalog.GetString("Route installed."),
-                    Catalog.GetString("Done"), MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-            }
+            MessageBox.Show(Catalog.GetString("Route installed."),
+            Catalog.GetString("Done"), MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+
+            Refresh();
 
             EnableButtons();
         }
@@ -479,7 +469,6 @@ namespace ORTS
             }
             catch (Exception)
             {
-                // catch all errors during the delete
                 return false;
             }
 
@@ -758,73 +747,6 @@ namespace ORTS
         }
         #endregion
 
-        #region StartButton
-        void StartButton_Click(object sender, EventArgs e)
-        {
-            DisableButtons();
-
-            ContentRouteSettings.Route route = Routes[RouteName];
-            string contentName = route.ContentName;
-            MainForm mainForm = ((MainForm)Owner);
-
-            mainForm.DoWithTask = false;
-
-            try
-            {
-                mainForm.LoadFolderList();
-                mainForm.comboBoxFolder.SelectedIndex = determineSelectedIndex(mainForm.comboBoxFolder, contentName);
-
-                mainForm.LoadRouteList();
-                mainForm.comboBoxRoute.SelectedIndex = determineSelectedIndex(mainForm.comboBoxRoute, route.Start.Route);
-
-                mainForm.radioButtonModeActivity.Checked = true;
-
-                mainForm.LoadActivityList();
-                mainForm.comboBoxActivity.SelectedIndex = determineSelectedIndex(mainForm.comboBoxActivity, route.Start.Activity);
-
-                if ((route.Start.Activity == "- Explore Route -") || (route.Start.Activity == "+ Explore in Activity Mode +"))
-                {
-                    mainForm.LoadLocomotiveList();
-                    mainForm.comboBoxLocomotive.SelectedIndex = determineSelectedIndex(mainForm.comboBoxLocomotive, route.Start.Locomotive);
-                    mainForm.comboBoxConsist.SelectedIndex = determineSelectedIndex(mainForm.comboBoxConsist, route.Start.Consist);
-
-                    mainForm.LoadStartAtList();
-                    mainForm.comboBoxStartAt.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartAt, route.Start.StartingAt);
-                    mainForm.comboBoxHeadTo.SelectedIndex = determineSelectedIndex(mainForm.comboBoxHeadTo, route.Start.HeadingTo);
-
-                    mainForm.comboBoxStartTime.Text = route.Start.Time;
-                    mainForm.comboBoxStartSeason.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartSeason, route.Start.Season);
-                    mainForm.comboBoxStartWeather.SelectedIndex = determineSelectedIndex(mainForm.comboBoxStartWeather, route.Start.Weather);
-                }
-            }
-            catch (StartNotFound error)
-            {
-
-                string message = Catalog.GetStringFmt("Starting not possible, start from main form instead. Searching for '{0}'.", error.Message);
-                MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-                mainForm.DoWithTask = true;
-
-                // close this dialog
-                DialogResult = DialogResult.OK;
-
-                setCursorToDefaultCursor();
-                ClosingBlocked = false;
-
-                return;
-            }
-
-            mainForm.DoWithTask = true;
-
-            // close this dialog
-            DialogResult = DialogResult.OK;
-
-            // close the MainForm dialog, starts OR
-            Owner.DialogResult = DialogResult.OK;
-
-            ClosingBlocked = false;
-        }
-
         private int determineSelectedIndex(ComboBox comboBox, string compareWith)
         {
             bool found = false;
@@ -928,7 +850,6 @@ namespace ORTS
                 : base(message)
             { }
         }
-        #endregion
 
         #region DeleteButton
         private async void DeleteButton_Click(object sender, EventArgs e)
@@ -982,6 +903,9 @@ namespace ORTS
 
             dataGridViewDownloadContent.CurrentRow.Cells[1].Value = "";
 
+            MainForm mainForm = ((MainForm)Owner);
+            mainForm.LoadFolderListWhithoutTask();
+
             Refresh();
 
             EnableButtons();
@@ -993,7 +917,7 @@ namespace ORTS
             {
                 ContentRouteSettings.directoryDelete(directoryInstalledIn);
             });
-            // start download in thread to be able to show the progress in the main thread
+            // start delete in thread to be able to show the progress in the main thread
             deleteThread.Start();
 
             while (deleteThread.IsAlive)
@@ -1055,6 +979,11 @@ namespace ORTS
                 MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
+            MainForm mainForm = ((MainForm)Owner);
+            mainForm.comboBoxFolder.SelectedIndex = determineSelectedIndex(mainForm.comboBoxFolder, RouteName);
+
+            Refresh();
+
             EnableButtons();
         }
 
@@ -1089,6 +1018,13 @@ namespace ORTS
         }
         #endregion
 
+        #region okButton
+        void okButton_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.OK;
+        }
+        #endregion
+
         private void DisableButtons()
         {
             setCursorToWaitCursor();
@@ -1097,11 +1033,10 @@ namespace ORTS
             InstallPathTextBox.Enabled = false;
             InstallPathBrowseButton.Enabled = false;
             infoButton.Enabled = false;
-
             downloadContentButton.Enabled = false;
-            startButton.Enabled = false;
-            deleteButton.Enabled = false;
             updateButton.Enabled = false;
+            deleteButton.Enabled = false;
+            okButton.Enabled = false;
         }
 
         private void setCursorToWaitCursor()
@@ -1121,9 +1056,9 @@ namespace ORTS
             InstallPathBrowseButton.Enabled = true;
             infoButton.Enabled = true;
             downloadContentButton.Enabled = !route.Installed;
-            startButton.Enabled = route.Installed && !string.IsNullOrWhiteSpace(route.Start.Route);
-            deleteButton.Enabled = route.Installed;
             updateButton.Enabled = route.Installed && (route.getDownloadType() == ContentRouteSettings.DownloadType.github);
+            deleteButton.Enabled = route.Installed;
+            okButton.Enabled = true;
 
             setCursorToDefaultCursor();
         }
