@@ -1007,6 +1007,7 @@ namespace Orts.Formats.Msts
         public bool MouseControl;
         public int Orientation;
         public int Direction;
+        public bool Reversed { get; protected set; } = false;
 
         public List<double> Values 
         {
@@ -1022,8 +1023,8 @@ namespace Orts.Formats.Msts
         public List<int> Positions = new List<int>();
 
         private int _ValuesRead;
-        private int numPositions;
-        private bool canFill = true;
+        private int NumPositions;
+        private bool CanFill = true;
 
         public struct NewScreenData
         {
@@ -1076,7 +1077,7 @@ namespace Orts.Formats.Msts
                         stf.MustMatch("(");
                         // If Positions are not filled before by Values
                         bool shouldFill = (Positions.Count == 0);
-                        numPositions = stf.ReadInt(null); // Number of Positions
+                        NumPositions = stf.ReadInt(null); // Number of Positions
 
                         var minPosition = 0;
                         var positionsRead = 0;
@@ -1117,20 +1118,20 @@ namespace Orts.Formats.Msts
 
                         // Check if eligible for filling
 
-                        if (Positions.Count > 1 && Positions[0] != 0) canFill = false;
+                        if (Positions.Count > 1 && Positions[0] != 0) CanFill = false;
                         else 
                         { 
                             for (var iPos = 1; iPos <= Positions.Count - 1; iPos++)
                             {
                                 if (Positions[iPos] > Positions[iPos-1]) continue;
-                                canFill = false;
+                                CanFill = false;
                                 break;
                             }
                         }
 
                         // This is a protection against GP40 locomotives that erroneously have positions pointing beyond frame count limit.
 
-                        if (Positions.Count > 1 && canFill && Positions.Count < FramesCount && Positions[Positions.Count-1] >= FramesCount && Positions[0] == 0)
+                        if (Positions.Count > 1 && CanFill && Positions.Count < FramesCount && Positions[Positions.Count-1] >= FramesCount && Positions[0] == 0)
                         {
                             STFException.TraceInformation(stf, "Some NumPositions entries refer to non-exisiting frames, trying to renumber");
                             Positions[Positions.Count - 1] = FramesCount - 1;
@@ -1155,7 +1156,7 @@ namespace Orts.Formats.Msts
                             }
                             // Avoid later repositioning, put every value to its Position
                             // But before resize Values if needed
-                            if (numValues != numPositions)
+                            if (numValues != NumPositions)
                             { 
                                 while (Values.Count <= Positions[_ValuesRead])
                                 {
@@ -1214,7 +1215,7 @@ namespace Orts.Formats.Msts
 
                     // Only shuffle data in following cases
 
-                    if (Values.Count != Positions.Count || (Values.Count < FramesCount & canFill)|| ( Values.Count > 0 && Values[0] == Values[Values.Count - 1] && Values[0] == 0))
+                    if (Values.Count != Positions.Count || (Values.Count < FramesCount & CanFill)|| ( Values.Count > 0 && Values[0] == Values[Values.Count - 1] && Values[0] == 0))
                     {
 
                         // Fixup Positions and Values collections first
@@ -1257,7 +1258,11 @@ namespace Orts.Formats.Msts
                             // Fill empty Values
                             for (int i = 0; i < (FramesCount - 1); i++)
                                 Values.Add(0);
-                            Values[0] = MinValue;
+                            // Some dummy controls will have only one frame
+                            if (Values.Count > 0)
+                                Values[0] = MinValue;
+                            else
+                                Values.Add(MinValue);
 
                             // Add maximum value to the end
                             Values.Add(MaxValue);
@@ -1353,13 +1358,21 @@ namespace Orts.Formats.Msts
                         break;
                 }
             }
-//            catch (Exception error)
-//            {
-//                if (error is STFException) // Parsing error, so pass it on
-//                    throw;
-//                else                       // Unexpected error, so provide a hint
-//                    throw new STFException(stf, "Problem with NumPositions/NumValues/NumFrames/ScaleRange");
-//            } // End of Need check the Values collection for validity
+            //            catch (Exception error)
+            //            {
+            //                if (error is STFException) // Parsing error, so pass it on
+            //                    throw;
+            //                else                       // Unexpected error, so provide a hint
+            //                    throw new STFException(stf, "Problem with NumPositions/NumValues/NumFrames/ScaleRange");
+            //            } // End of Need check the Values collection for validity
+
+            // Ensure resulting set of values has the correct format (sorted least to greatest) and resort
+            // Assume values have been entered in reverse order if final value is less than initial value
+            if (Values.Count > 0 && Values[0] > Values[Values.Count - 1])
+                Reversed = true;
+            // Force sort values from least to greatest
+            Values.Sort();
+
         } // End of Constructor
 
         protected void ParseNewScreen(STFReader stf)
@@ -1407,7 +1420,7 @@ namespace Orts.Formats.Msts
                             stf.ParseBlock( new STFReader.TokenProcessor[] {
                                 new STFReader.TokenProcessor("style", ()=>{ MSStyles.Add(ParseNumStyle(stf));
                                 }),
-                                new STFReader.TokenProcessor("switchval", ()=>{ Values.Add(stf.ReadFloatBlock(STFReader.UNITS.None, null))
+                                new STFReader.TokenProcessor("switchval", ()=>{ Values.Add(stf.ReadDoubleBlock(null))
                                 ; }),
                         });}),
                     });
@@ -1419,6 +1432,13 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortsscreenpage", () => {ParseScreen(stf); }),
                 new STFReader.TokenProcessor("ortscabviewpoint", ()=>{ParseCabViewpoint(stf); }),
             });
+
+            // Ensure resulting set of values has the correct format (sorted least to greatest) and resort
+            // Assume values have been entered in reverse order if final value is less than initial value
+            if (Values.Count > 0 && Values[0] > Values[Values.Count - 1])
+                Reversed = true;
+            // Force sort values from least to greatest
+            Values.Sort();
         }
         protected int ParseNumStyle(STFReader stf)
         {
@@ -1457,7 +1477,7 @@ namespace Orts.Formats.Msts
                             stf.ParseBlock( new STFReader.TokenProcessor[] {
                                 new STFReader.TokenProcessor("style", ()=>{ MSStyles.Add(ParseNumStyle(stf));
                                 }),
-                                new STFReader.TokenProcessor("switchval", ()=>{ Values.Add(stf.ReadFloatBlock(STFReader.UNITS.None, null))
+                                new STFReader.TokenProcessor("switchval", ()=>{ Values.Add(stf.ReadDoubleBlock(null))
                                 ; }),
                         });}),
                     });
@@ -1469,6 +1489,13 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortsscreenpage", () => {ParseScreen(stf); }),
                 new STFReader.TokenProcessor("ortscabviewpoint", ()=>{ParseCabViewpoint(stf); }),
             });
+
+            // Ensure resulting set of values has the correct format (sorted least to greatest) and resort
+            // Assume values have been entered in reverse order if final value is less than initial value
+            if (Values.Count > 0 && Values[0] > Values[Values.Count - 1])
+                Reversed = true;
+            // Force sort values from least to greatest
+            Values.Sort();
         }
         protected int ParseNumStyle(STFReader stf)
         {
