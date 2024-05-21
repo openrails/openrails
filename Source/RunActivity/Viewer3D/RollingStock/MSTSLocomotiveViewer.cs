@@ -2241,7 +2241,12 @@ namespace Orts.Viewer3D.RollingStock
                     index = PercentToIndex(combinedHandlePosition);
                     // Make sure power indications are not shown when locomotive is in braking range
                     if (combinedHandlePosition > Locomotive.CombinedControlSplitPosition)
-                        index = Math.Max(index, SplitIndex + 1);
+                    {
+                        if (ControlDiscrete.Reversed)
+                            index = Math.Min(index, SplitIndex - 1);
+                        else
+                            index = Math.Max(index, SplitIndex + 1);
+                    }
                     break;
                 case CABViewControlTypes.ORTS_SELECTED_SPEED_DISPLAY:
                     if (Locomotive.CruiseControl == null)
@@ -2910,33 +2915,25 @@ namespace Orts.Viewer3D.RollingStock
                 try
                 {
                     // Binary search process to find the control value closest to percent
-                    List<double> vals = ControlDiscrete.Values;
-                    // Check if control values were defined in reverse, reverse them back for this calculation
-                    // This is less efficient, so creators should be encouraged to not do this
-                    bool reversed = ControlDiscrete.Values[0] > ControlDiscrete.Values[ControlDiscrete.Values.Count - 1];
-                    if (reversed)
-                        vals.Reverse();
-
-                    // Returns index of first val larger than percent, or bitwise compliment of this index if percent isn't in the list
-                    int checkIndex = vals.BinarySearch(percent);
+                    // Returns index of first val LARGER than percent, or bitwise compliment of this index if percent isn't in the list
+                    int checkIndex = ControlDiscrete.Values.BinarySearch(percent);
 
                     if (checkIndex < 0)
                         checkIndex = ~checkIndex;
-                    if (checkIndex > vals.Count - 1)
-                        checkIndex = vals.Count - 1;
+                    if (checkIndex > ControlDiscrete.Values.Count - 1)
+                        checkIndex = ControlDiscrete.Values.Count - 1;
                     // Choose lower index if it is closer to percent
-                    if (checkIndex > 0 && Math.Abs(vals[checkIndex - 1] - percent) < Math.Abs(vals[checkIndex] - percent))
+                    if (checkIndex > 0 && Math.Abs(ControlDiscrete.Values[checkIndex - 1] - percent) < Math.Abs(ControlDiscrete.Values[checkIndex] - percent))
                         checkIndex--;
-                    // Re-reverse the index as needed
-                    if (reversed)
-                        checkIndex = (vals.Count - 1) - checkIndex;
+                    // If values were originally defined in reverse, correct index to account for the reversing
+                    if (ControlDiscrete.Reversed)
+                        checkIndex = (ControlDiscrete.Values.Count - 1) - checkIndex;
 
                     index = checkIndex;
                 }
                 catch
                 {
-                    var val = ControlDiscrete.Values.Min();
-                    index = ControlDiscrete.Values.IndexOf(val);
+                    index = ControlDiscrete.Reversed ? ControlDiscrete.Values.Count - 1 : 0;
                 }
             }
             else if (ControlDiscrete.MaxValue != ControlDiscrete.MinValue)
