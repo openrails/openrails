@@ -78,19 +78,30 @@ namespace ORTS
     {
         public string Id { get; set; }
     }
+
     public class Check
     {
         public string Id { get; set; }
-        public List<Criteria> IncludesAnyOf { get; set; }
-        public List<Criteria> IncludesAllOf { get; set; }
-        public List<Criteria> ExcludesAnyOf { get; set; }
-        public List<Criteria> ExcludesAllOf { get; set; }
+        public List<CheckAllOf> CheckAnyOf { get; set; }
         public List<Item> UnmetItemList { get; set; }
-        public bool IsChecked { get; set; } = false;
-        public bool IsMet { get; set; } = false;
     }
+
+    public class CheckAllOf
+    {
+        public List<Criteria> AllOf { get; set; }
+    }
+
+    public class Excludes : CheckAllOf
+    {
+    }
+
+    public class Includes : CheckAllOf
+    {
+    }
+
     class Contains : Criteria { }
-    
+    class NotContains : Criteria { }
+
     // Not implemented yet
     // String comparison, not numerical
     class NoLessThan : Criteria { }
@@ -99,7 +110,12 @@ namespace ORTS
     public class Criteria
     {
         // System Information "examples"
-        public string Name { get; set; }    // installed_version, runtime, system, memory, cpu, gpu, direct3d
+        public string Name { get; set; }    // installed_version, direct3d, runtime, system, memory, cpu, gpu
         public string Value { get; set; }   // {{new_version}}, {{10_0}}
+    }
+
+    public class OverrideValues
+    {
+        public List<Criteria> ValueList = new List<Criteria>();
     }
 }
