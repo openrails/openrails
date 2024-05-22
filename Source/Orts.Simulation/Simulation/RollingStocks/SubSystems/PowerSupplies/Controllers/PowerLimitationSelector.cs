@@ -20,8 +20,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Orts.Common;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using ORTS.Common;
 using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
@@ -29,12 +31,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
     public class PowerLimitationSelectorPosition
     {
         public string Name;
-        public bool DefaultPosition;
+        public float PowerW;
 
-        public PowerLimitationSelectorPosition(string name, bool defaultPosition)
+        public PowerLimitationSelectorPosition(string name, float powerW)
         {
             Name = name;
-            DefaultPosition = defaultPosition;
+            PowerW = powerW;
         }
     }
 
@@ -58,7 +60,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         /// <summary>
         /// Relative path to the script from the script directory of the locomotive
         /// </summary>
-        public string ScriptPath;
+        public string ScriptName;
 
         public PowerLimitationSelector Script;
 
@@ -72,7 +74,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             stf.MustMatch("(");
             stf.ParseBlock(new[]
             {
-                new STFReader.TokenProcessor("script", () => { ScriptPath = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("script", () => { ScriptName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("selectorpositions", () =>
                 {
                     stf.MustMatch("(");
@@ -81,18 +83,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         new STFReader.TokenProcessor("selectorposition", () =>
                         {
                             string name = null;
+                            float powerW = float.MaxValue;
                             bool defaultPosition = false;
 
                             stf.MustMatch("(");
                             stf.ParseBlock(new[]
                             {
                                 new STFReader.TokenProcessor("name", () => name = stf.ReadStringBlock(null)),
+                                new STFReader.TokenProcessor("maxpower", () => powerW = stf.ReadFloatBlock(STFReader.UNITS.Power, float.MaxValue)),
                                 new STFReader.TokenProcessor("default", () => defaultPosition = Convert.ToBoolean(stf.ReadBoolBlock(false))),
                             });
 
                             if (name != null && !Positions.Exists(x => x.Name == name))
                             {
-                                Positions.Add(new PowerLimitationSelectorPosition(name, defaultPosition));
+                                var pos = new PowerLimitationSelectorPosition(name, powerW);
+                                Positions.Add(pos);
+                                if (defaultPosition) Position = pos;
                             }
                             else
                             {
@@ -110,19 +116,26 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             {
                 Positions.Add(position);
             }
+            Position = other.Position;
 
-            ScriptPath = other.ScriptPath;
+            ScriptName = other.ScriptName;
         }
 
         public void Initialize()
         {
-            Position = Positions.FirstOrDefault(x => x.DefaultPosition) ?? Positions.FirstOrDefault();
+            if (Position == null) Position = Positions.FirstOrDefault();
 
-            if (Script == null && ScriptPath != null)
+            if (ScriptName == "Default")
+            {
+                Script = new DefaultPowerLimitationSelector();
+            }
+            else if (Script == null && ScriptName != null)
             {
                 string[] pathArray = { Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script") };
-                Script = Simulator.ScriptManager.Load(pathArray, ScriptPath) as PowerLimitationSelector;
+                Script = Simulator.ScriptManager.Load(pathArray, ScriptName) as PowerLimitationSelector;
             }
+
+            if (Script == null) Script = new DefaultPowerLimitationSelector();
 
             Script?.AttachToHost(this);
             Script?.Initialize();
@@ -157,6 +170,62 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         public void HandleEvent(PowerSupplyEvent evt, int id)
         {
             Script?.HandleEvent(evt, id);
+        }
+    }
+    public class DefaultPowerLimitationSelector : PowerLimitationSelector
+    {
+        public override void HandleEvent(PowerSupplyEvent evt)
+        {
+            switch (evt)
+            {
+                case PowerSupplyEvent.IncreasePowerLimitationSelectorPosition:
+                    IncreasePosition();
+                    break;
+
+                case PowerSupplyEvent.DecreasePowerLimitationSelectorPosition:
+                    DecreasePosition();
+                    break;
+            }
+        }
+        string GetPositionName()
+        {
+            if (Position == null) return "";
+            if (string.IsNullOrEmpty(Position.Name)) return FormatStrings.FormatPower(Position.PowerW, true, false, false);
+            return Position.Name;
+        }
+
+        private void IncreasePosition()
+        {
+            if (Positions.Count < 2) return;
+
+            int index = Positions.IndexOf(Position);
+
+            if (index < Positions.Count - 1)
+            {
+                index++;
+
+                Position = Positions[index];
+
+                SignalEvent(Event.PowerLimitationSelectorIncrease);
+                Message(CabControl.None, Simulator.Catalog.GetStringFmt("Power selector changed to {0}", GetPositionName()));
+            }
+        }
+
+        private void DecreasePosition()
+        {
+            if (Positions.Count < 2) return;
+
+            int index = Positions.IndexOf(Position);
+
+            if (index > 0)
+            {
+                index--;
+
+                Position = Positions[index];
+
+                SignalEvent(Event.PowerLimitationSelectorDecrease);
+                Message(CabControl.None, Simulator.Catalog.GetStringFmt("Power selector changed to {0}", GetPositionName()));
+            }
         }
     }
 }

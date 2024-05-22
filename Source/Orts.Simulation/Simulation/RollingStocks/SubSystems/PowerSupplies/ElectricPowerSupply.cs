@@ -42,11 +42,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float PantographVoltageVDC { get; set; }
         public float FilterVoltageV { get; set; } = 0;
 
-        public float MaximumPowerW
-        {
-            get => Locomotive.MaxPowerW;
-            set => Locomotive.MaxPowerW = value;
-        }
+        public float MaximumPowerW;
 
         public ScriptedElectricPowerSupply(MSTSLocomotive locomotive) :
             base(locomotive)
@@ -268,6 +264,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             break;
                     }
                     break;
+            }
+
+            if (PowerLimitationSelector.Position != null)
+            {
+                MaximumPowerW = PowerLimitationSelector.Position.PowerW;
             }
 
             // By default, on electric locomotives, dynamic brake is always available (rheostatic brake is always available).
