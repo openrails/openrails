@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Orts.Common;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Scripting.Api;
@@ -29,12 +30,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
     public class PantographSelectorPosition
     {
         public string Name;
-        public bool DefaultPosition;
 
-        public PantographSelectorPosition(string name, bool defaultPosition)
+        public PantographSelectorPosition(string name)
         {
             Name = name;
-            DefaultPosition = defaultPosition;
         }
     }
 
@@ -58,7 +57,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         /// <summary>
         /// Relative path to the script from the script directory of the locomotive
         /// </summary>
-        public string ScriptPath;
+        public string ScriptName;
 
         public PantographSelector Script;
 
@@ -72,7 +71,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             stf.MustMatch("(");
             stf.ParseBlock(new[]
             {
-                new STFReader.TokenProcessor("script", () => { ScriptPath = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("script", () => { ScriptName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("selectorpositions", () =>
                 {
                     stf.MustMatch("(");
@@ -92,7 +91,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
                             if (name != null && !Positions.Exists(x => x.Name == name))
                             {
-                                Positions.Add(new PantographSelectorPosition(name, defaultPosition));
+                                var pos = new PantographSelectorPosition(name);
+                                Positions.Add(pos);
+                                if (defaultPosition) Position = pos;
                             }
                             else
                             {
@@ -111,18 +112,28 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 Positions.Add(position);
             }
 
-            ScriptPath = other.ScriptPath;
+            ScriptName = other.ScriptName;
         }
 
         public void Initialize()
         {
-            Position = Positions.FirstOrDefault(x => x.DefaultPosition) ?? Positions.FirstOrDefault();
+            if (Position == null) Position = Positions.FirstOrDefault();
 
-            if (Script == null && ScriptPath != null)
+            if (ScriptName == "Default")
+            {
+                Script = new DefaultPantographSelector(false);
+            }
+            else if (ScriptName == "Circular")
+            {
+                Script = new DefaultPantographSelector(true);
+            }
+            else if (Script == null && ScriptName != null)
             {
                 string[] pathArray = { Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script") };
-                Script = Simulator.ScriptManager.Load(pathArray, ScriptPath) as PantographSelector;
+                Script = Simulator.ScriptManager.Load(pathArray, ScriptName) as PantographSelector;
             }
+
+            if (Script == null) Script = new DefaultPantographSelector(false);
 
             Script?.AttachToHost(this);
             Script?.Initialize();
@@ -157,6 +168,65 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         public void HandleEvent(PowerSupplyEvent evt, int id)
         {
             Script?.HandleEvent(evt, id);
+        }
+    }
+
+    public class DefaultPantographSelector : PantographSelector
+    {
+        public readonly bool IsCircular;
+        public DefaultPantographSelector(bool circular)
+        {
+            IsCircular = circular;
+        }
+        public override void HandleEvent(PowerSupplyEvent evt)
+        {
+            switch (evt)
+            {
+                case PowerSupplyEvent.IncreasePantographSelectorPosition:
+                    IncreasePosition();
+                    break;
+
+                case PowerSupplyEvent.DecreasePantographSelectorPosition:
+                    DecreasePosition();
+                    break;
+            }
+        }
+        private void IncreasePosition()
+        {
+            if (Positions.Count < 2) return;
+
+            int index = Positions.IndexOf(Position);
+            int newIndex = index;
+
+            if (index < Positions.Count - 1) newIndex++;
+            else if (IsCircular) newIndex = 0;
+
+            if (index != newIndex)
+            {
+                Position = Positions[newIndex];
+
+                SignalEvent(Event.PantographSelectorIncrease);
+                Message(CabControl.None, Simulator.Catalog.GetStringFmt("Pantograph selector changed to {0}", Position.Name));
+            }
+        }
+
+        private void DecreasePosition()
+        {
+            if (Positions.Count < 2) return;
+
+            int index = Positions.IndexOf(Position);
+            int newIndex = index;
+
+            if (index > 0) newIndex--;
+            else if (IsCircular) newIndex = Positions.Count - 1;
+
+            if (index != newIndex)
+            {
+                Position = Positions[newIndex];
+
+                SignalEvent(Event.PantographSelectorDecrease);
+                Message(CabControl.None, Simulator.Catalog.GetStringFmt("Pantograph selector changed to {0}", Position.Name));
+            }
         }
     }
 }

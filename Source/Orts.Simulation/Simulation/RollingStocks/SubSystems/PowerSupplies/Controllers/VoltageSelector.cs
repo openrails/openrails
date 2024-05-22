@@ -20,8 +20,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Orts.Common;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using ORTS.Common;
 using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
@@ -57,7 +59,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         /// <summary>
         /// Relative path to the script from the script directory of the locomotive
         /// </summary>
-        public string ScriptPath;
+        public string ScriptName;
 
         public VoltageSelector Script;
 
@@ -71,7 +73,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             stf.MustMatch("(");
             stf.ParseBlock(new[]
             {
-                new STFReader.TokenProcessor("script", () => { ScriptPath = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("script", () => { ScriptName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("selectorpositions", () =>
                 {
                     stf.MustMatch("(");
@@ -110,21 +112,26 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 Positions.Add(position);
             }
 
-            ScriptPath = other.ScriptPath;
+            ScriptName = other.ScriptName;
         }
 
         public void Initialize()
         {
-            Position =
-                Positions.FirstOrDefault(x =>
-                    x.VoltageV == PowerSupply.Locomotive.Train.Simulator.TRK.Tr_RouteFile.MaxLineVoltage) ??
-                Positions.FirstOrDefault();
-
-            if (Script == null && ScriptPath != null)
+            if (ScriptName == "Default")
+            {
+                Script = new DefaultVoltageSelector(false);
+            }
+            else if (ScriptName == "Circular")
+            {
+                Script = new DefaultVoltageSelector(true);
+            }
+            else if (Script == null && ScriptName != null)
             {
                 string[] pathArray = { Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script") };
-                Script = Simulator.ScriptManager.Load(pathArray, ScriptPath) as VoltageSelector;
+                Script = Simulator.ScriptManager.Load(pathArray, ScriptName) as VoltageSelector;
             }
+
+            if (Script == null) Script = new DefaultVoltageSelector(false);
 
             Script?.AttachToHost(this);
             Script?.Initialize();
@@ -159,6 +166,77 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         public void HandleEvent(PowerSupplyEvent evt, int id)
         {
             Script?.HandleEvent(evt, id);
+        }
+    }
+    public class DefaultVoltageSelector : VoltageSelector
+    {
+        public readonly bool IsCircular;
+        public DefaultVoltageSelector(bool circular)
+        {
+            IsCircular = circular;
+        }
+        public override void Initialize()
+        {
+            Position =
+                Positions.FirstOrDefault(x =>
+                    x.VoltageV == PowerSupply.Locomotive.Train.Simulator.TRK.Tr_RouteFile.MaxLineVoltage) ??
+                Positions.FirstOrDefault();
+        }
+        string GetPositionName()
+        {
+            if (Position == null) return "";
+            if (string.IsNullOrEmpty(Position.Name)) return FormatStrings.FormatVoltage(Position.VoltageV);
+            return Position.Name;
+        }
+        public override void HandleEvent(PowerSupplyEvent evt)
+        {
+            switch (evt)
+            {
+                case PowerSupplyEvent.IncreaseVoltageSelectorPosition:
+                    IncreasePosition();
+                    break;
+
+                case PowerSupplyEvent.DecreaseVoltageSelectorPosition:
+                    DecreasePosition();
+                    break;
+            }
+        }
+        private void IncreasePosition()
+        {
+            if (Positions.Count < 2) return;
+
+            int index = Positions.IndexOf(Position);
+            int newIndex = index;
+
+            if (index < Positions.Count - 1) newIndex++;
+            else if (IsCircular) newIndex = 0;
+
+            if (index != newIndex)
+            {
+                Position = Positions[newIndex];
+
+                SignalEvent(Event.VoltageSelectorIncrease);
+                Message(CabControl.None, Simulator.Catalog.GetStringFmt("Voltage selector changed to {0}", GetPositionName()));
+            }
+        }
+
+        private void DecreasePosition()
+        {
+            if (Positions.Count < 2) return;
+
+            int index = Positions.IndexOf(Position);
+            int newIndex = index;
+
+            if (index > 0) newIndex--;
+            else if (IsCircular) newIndex = Positions.Count - 1;
+
+            if (index != newIndex)
+            {
+                Position = Positions[newIndex];
+
+                SignalEvent(Event.VoltageSelectorDecrease);
+                Message(CabControl.None, Simulator.Catalog.GetStringFmt("Voltage selector changed to {0}", GetPositionName()));
+            }
         }
     }
 }
