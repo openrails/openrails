@@ -2129,8 +2129,18 @@ namespace Orts.Viewer3D.RollingStock
                     };
                     break;
             }
-            // The cab view control index shown when combined control is at the split position
-            SplitIndex = PercentToIndex(Locomotive.CombinedControlSplitPosition);
+            // Determine the cab view control index shown when combined control is at the split position
+            // Find the index of the next value LARGER than the split value
+            int splitIndex = ControlDiscrete.Values.BinarySearch(Locomotive.CombinedControlSplitPosition);
+            // Account for any edge cases
+            if (splitIndex < 0)
+                splitIndex = ~splitIndex;
+            if (splitIndex > ControlDiscrete.Values.Count - 1)
+                splitIndex = ControlDiscrete.Values.Count - 1;
+            if (ControlDiscrete.Reversed)
+                splitIndex = (ControlDiscrete.Values.Count - 1) - splitIndex;
+
+            SplitIndex = splitIndex;
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -2239,13 +2249,14 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.CP_HANDLE:
                     var combinedHandlePosition = Locomotive.GetCombinedHandleValue(false);
                     index = PercentToIndex(combinedHandlePosition);
-                    // Make sure power indications are not shown when locomotive is in braking range
-                    if (combinedHandlePosition > Locomotive.CombinedControlSplitPosition)
+                    // Make sure any deviation from the split position gives a different index
+                    int handleRelativePos = combinedHandlePosition.CompareTo(Locomotive.CombinedControlSplitPosition);
+                    if (handleRelativePos != 0)
                     {
-                        if (ControlDiscrete.Reversed)
-                            index = Math.Min(index, SplitIndex - 1);
-                        else
+                        if (handleRelativePos == (ControlDiscrete.Reversed ? - 1 : 1))
                             index = Math.Max(index, SplitIndex + 1);
+                        else
+                            index = Math.Min(index, SplitIndex - 1);
                     }
                     break;
                 case CABViewControlTypes.ORTS_SELECTED_SPEED_DISPLAY:

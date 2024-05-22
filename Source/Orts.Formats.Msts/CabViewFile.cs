@@ -1131,14 +1131,25 @@ namespace Orts.Formats.Msts
                                 Positions[i] = i;
                         }
 
-                        // Check if eligible for filling
+                        // Possible that positions were defined in reverse, eg: 3DTrains Surfliner trains
+                        // Ensure positions are sorted from least to greatest before proceeding
+                        if (Positions.Count > 0 && Positions[0] > Positions[Positions.Count - 1])
+                        {
+                            Reversed ^= true;
+                            // Recalculate positions in reverse
+                            for (int i = 0; i < Positions.Count; i++)
+                                Positions[i] = (FramesCount - 1) - Positions[i];
+                        }
 
-                        if (Positions.Count > 1 && Positions[0] != 0) CanFill = false;
+                        // Check if eligible for filling
+                        if (Positions.Count > 1 && Positions[0] != 0)
+                            CanFill = false;
                         else 
                         { 
                             for (var iPos = 1; iPos <= Positions.Count - 1; iPos++)
                             {
-                                if (Positions[iPos] > Positions[iPos-1]) continue;
+                                if (Positions[iPos] > Positions[iPos-1])
+                                    continue;
                                 CanFill = false;
                                 break;
                             }
@@ -1276,14 +1287,16 @@ namespace Orts.Formats.Msts
                             // Fill empty Values
                             for (int i = 0; i < (FramesCount - 1); i++)
                                 Values.Add(0);
+                            // Offset for min and max values to achieve equal frame spacing
+                            double offset = 1.0 / (2.0 * FramesCount);
                             // Some dummy controls will have only one frame
                             if (Values.Count > 0)
-                            Values[0] = MinValue;
+                                Values[0] = MinValue + offset;
                             else
-                                Values.Add(MinValue);
+                                Values.Add(MinValue + offset);
 
                             // Add maximum value to the end
-                            Values.Add(MaxValue);
+                            Values.Add(MaxValue - offset);
                         }
                         else if (Values.Count == 2 && Values[0] == 0 && Values[1] < MaxValue && Positions[0] == 0 && Positions[1] == 1 && Values.Count < FramesCount)
                         {
@@ -1295,12 +1308,15 @@ namespace Orts.Formats.Msts
 			                //Orientation ( 0 )
 			                //DirIncrease ( 0 )
 			                //ScaleRange ( 0 1 )
+                            // Add missing positions
                             Positions.Add(FramesCount - 1);
                             // Fill empty Values
                             for (int i = Values.Count; i < (FramesCount - 1); i++)
-                                Values.Add(Values[1]);
+                                Values.Add(0);
+                            // Offset for min and max values to achieve equal frame spacing
+                            double offset = 1.0 / (2.0 * FramesCount);
                             // Add maximum value to the end
-                            Values.Add(MaxValue);                            
+                            Values.Add(MaxValue - offset);                            
                         }
                         else
                         {
@@ -1387,7 +1403,7 @@ namespace Orts.Formats.Msts
             // Ensure resulting set of values has the correct format (sorted least to greatest) and resort
             // Assume values have been entered in reverse order if final value is less than initial value
             if (Values.Count > 0 && Values[0] > Values[Values.Count - 1])
-                Reversed = true;
+                Reversed ^= true;
             // Force sort values from least to greatest
             Values.Sort();
 
@@ -1442,9 +1458,8 @@ namespace Orts.Formats.Msts
                                 ; }),
                         });}),
                     });
-                    if (Values.Count > 0) MaxValue = Values.Last();
-                    for (int i = Values.Count; i < FramesCount; i++)
-                        Values.Add(-10000);
+                    if (Values.Count > 0)
+                        MaxValue = Values.Max();
                 }),
                 new STFReader.TokenProcessor("ortsdisplay", ()=>{ParseDisplay(stf); }),
                 new STFReader.TokenProcessor("ortsscreenpage", () => {ParseScreen(stf); }),
@@ -1457,7 +1472,10 @@ namespace Orts.Formats.Msts
             // Ensure resulting set of values has the correct format (sorted least to greatest) and resort
             // Assume values have been entered in reverse order if final value is less than initial value
             if (Values.Count > 0 && Values[0] > Values[Values.Count - 1])
-                Reversed = true;
+                Reversed ^= true;
+            // Fill in missing values 
+            for (int i = Values.Count; i < FramesCount; i++)
+                Values.Add(Values[Values.Count - 1]);
             // Force sort values from least to greatest
             Values.Sort();
         }
@@ -1502,9 +1520,8 @@ namespace Orts.Formats.Msts
                                 ; }),
                         });}),
                     });
-                    if (Values.Count > 0) MaxValue = Values.Last();
-                    for (int i = Values.Count; i < FramesCount; i++)
-                        Values.Add(-10000);
+                    if (Values.Count > 0)
+                        MaxValue = Values.Max();
                 }),
                 new STFReader.TokenProcessor("ortsdisplay", ()=>{ParseDisplay(stf); }),
                 new STFReader.TokenProcessor("ortsscreenpage", () => {ParseScreen(stf); }),
@@ -1517,7 +1534,10 @@ namespace Orts.Formats.Msts
             // Ensure resulting set of values has the correct format (sorted least to greatest) and resort
             // Assume values have been entered in reverse order if final value is less than initial value
             if (Values.Count > 0 && Values[0] > Values[Values.Count - 1])
-                Reversed = true;
+                Reversed ^= true;
+            // Fill in missing values 
+            for (int i = Values.Count; i < FramesCount; i++)
+                Values.Add(Values[Values.Count - 1]);
             // Force sort values from least to greatest
             Values.Sort();
         }
