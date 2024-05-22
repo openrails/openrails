@@ -2512,7 +2512,10 @@ namespace Orts.Simulation.RollingStocks
                 if (TractiveForceCurves == null)
                 {
                     float maxForceN = MaxForceN * t * (1 - PowerReduction);
-                    float maxPowerW = MaxPowerW * t * t * (1 - PowerReduction);
+                    float maxPowerW = MaxPowerW;
+                    if (this is MSTSElectricLocomotive electric && electric.ElectricPowerSupply.MaximumPowerW > 0)
+                        maxPowerW = electric.ElectricPowerSupply.MaximumPowerW;
+                    maxPowerW *= t * t * (1 - PowerReduction);
 
                     if (maxForceN * AbsTractionSpeedMpS > maxPowerW)
                         maxForceN = maxPowerW / AbsTractionSpeedMpS;
@@ -2527,6 +2530,12 @@ namespace Orts.Simulation.RollingStocks
                 else
                 {
                     TractiveForceN = TractiveForceCurves.Get(t, AbsTractionSpeedMpS) * (1 - PowerReduction);
+                    if (this is MSTSElectricLocomotive electric && electric.ElectricPowerSupply.MaximumPowerW > 0)
+                    {
+                        float maxPowerW = electric.ElectricPowerSupply.MaximumPowerW * t * (1 - PowerReduction);
+                        if (TractiveForceN * AbsTractionSpeedMpS > maxPowerW)
+                            TractiveForceN = maxPowerW / AbsTractionSpeedMpS;
+                    }
                     if (TractiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                         TractiveForceN = 0;
                 }
