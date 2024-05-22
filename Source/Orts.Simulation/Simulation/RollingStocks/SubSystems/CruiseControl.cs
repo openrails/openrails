@@ -1473,11 +1473,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     }
                     break;
                 case CABViewControlTypes.ORTS_MOTIVE_FORCE:
-                    data = Locomotive.FilteredMotiveForceN;
+                    data = Locomotive.FilteredTractiveForceN;
                     break;
                 case CABViewControlTypes.ORTS_MOTIVE_FORCE_KILONEWTON:
-                    if (Locomotive.FilteredMotiveForceN > Locomotive.DynamicBrakeForceN)
-                        data = (float)Math.Round(Locomotive.FilteredMotiveForceN / 1000, 0);
+                    if (Locomotive.FilteredTractiveForceN > Locomotive.DynamicBrakeForceN)
+                        data = (float)Math.Round(Locomotive.FilteredTractiveForceN / 1000, 0);
                     else if (Locomotive.DynamicBrakeForceN > 0)
                         data = -(float)Math.Round(Locomotive.DynamicBrakeForceN / 1000, 0);
                     break;

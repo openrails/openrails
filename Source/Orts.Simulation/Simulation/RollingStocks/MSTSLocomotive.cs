@@ -498,7 +498,7 @@ namespace Orts.Simulation.RollingStocks
         public float SaveAdhesionFilter;
         public float AdhesionConditions;
 
-        public float FilteredMotiveForceN;
+        public float FilteredTractiveForceN;
 
         public double CommandStartTime;
 
@@ -2173,7 +2173,7 @@ namespace Orts.Simulation.RollingStocks
                     AntiSlip = true; // Always set AI trains to AntiSlip
                     SimpleAdhesion();   // Simple adhesion model used for AI trains
                     AdvancedAdhesionModel = false;
-                    if (Train.IsActualPlayerTrain) FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
+                    if (Train.IsActualPlayerTrain) FilteredTractiveForceN = CurrentFilter.Filter(TractiveForceN, elapsedClockSeconds);
                     WheelSpeedMpS = Flipped ? -AbsSpeedMpS : AbsSpeedMpS;            //make the wheels go round
                     break;
                 case Train.TRAINTYPE.STATIC:
@@ -2233,7 +2233,7 @@ namespace Orts.Simulation.RollingStocks
                     }
 
                     //Force to display
-                    FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
+                    FilteredTractiveForceN = CurrentFilter.Filter(TractiveForceN, elapsedClockSeconds);
                     break;
                 default:
                     break;
@@ -5266,10 +5266,10 @@ namespace Orts.Simulation.RollingStocks
                             {
                                 //float rangeFactor = direction == 0 ? (float)cvc.MaxValue : (float)cvc.MinValue;
                                 float rangeFactor = direction == 0 ? MaxCurrentA : (float)cvc.MinValue;
-                                if (FilteredMotiveForceN != 0)
-                                    data = this.FilteredMotiveForceN / MaxForceN * rangeFactor;
+                                if (FilteredTractiveForceN != 0)
+                                    data = FilteredTractiveForceN / MaxForceN * rangeFactor;
                                 else
-                                    data = this.LocomotiveAxles[cvc.ControlId].DriveForceN / MaxForceN * rangeFactor;
+                                    data = TractiveForceN / MaxForceN * rangeFactor;
                                 data = Math.Abs(data);
                             }
                             if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
@@ -5296,7 +5296,7 @@ namespace Orts.Simulation.RollingStocks
                             if (cvc.ControlType.Type == CABViewControlTypes.AMMETER_ABS) data = Math.Abs(data);
                             break;
                         }
-                        data = this.MotiveForceN / MaxForceN * MaxCurrentA;
+                        data = TractiveForceN / MaxForceN * MaxCurrentA;
                         if (cvc.ControlType.Type == CABViewControlTypes.AMMETER_ABS) data = Math.Abs(data);
                         break;
                     }
@@ -5312,10 +5312,10 @@ namespace Orts.Simulation.RollingStocks
                         data = 0.0f;
                         if (ThrottlePercent > 0)
                         {
-                            if (FilteredMotiveForceN != 0)
-                                data = this.FilteredMotiveForceN / MaxForceN * MaxCurrentA;
+                            if (FilteredTractiveForceN != 0)
+                                data = FilteredTractiveForceN / MaxForceN * MaxCurrentA;
                             else
-                                data = this.LocomotiveAxles[cvc.ControlId].DriveForceN / MaxForceN * MaxCurrentA;
+                                data = TractiveForceN / MaxForceN * MaxCurrentA;
                             data = Math.Abs(data);
                         }
                         if (DynamicBrake && DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
@@ -5333,10 +5333,10 @@ namespace Orts.Simulation.RollingStocks
                         if (cvc is CVCGauge && ((CVCGauge)cvc).Orientation == 0)
                             direction = ((CVCGauge)cvc).Direction;
                         data = 0.0f;
-                        if (FilteredMotiveForceN != 0)
-                            data = this.FilteredMotiveForceN;
+                        if (FilteredTractiveForceN != 0)
+                            data = FilteredTractiveForceN;
                         else
-                            data = this.LocomotiveAxles[cvc.ControlId].DriveForceN;
+                            data = TractiveForceN;
                         if (DynamicBrake && DynamicBrakePercent > 0)
                         {
                             data = DynamicBrakeForceN;
@@ -5381,10 +5381,10 @@ namespace Orts.Simulation.RollingStocks
                         if (cvc is CVCGauge && ((CVCGauge)cvc).Orientation == 0)
                             direction = ((CVCGauge)cvc).Direction;
                         data = 0.0f;
-                        if (FilteredMotiveForceN != 0)
-                            data = Math.Abs(this.FilteredMotiveForceN);
+                        if (FilteredTractiveForceN != 0)
+                            data = Math.Abs(FilteredTractiveForceN);
                         else
-                            data = Math.Abs(this.LocomotiveAxles[cvc.ControlId].DriveForceN);
+                            data = Math.Abs(TractiveForceN);
                         if (DynamicBrake && DynamicBrakePercent > 0)
                         {
                             data = -Math.Abs(DynamicBrakeForceN);
@@ -5430,9 +5430,9 @@ namespace Orts.Simulation.RollingStocks
                         data = 0.0f;
                         if (Math.Abs(SpeedMpS) == 0.0f)
                             data = 0.0f;
-                        else if (Math.Abs(FilteredMotiveForceN) - Math.Abs(BrakeForceN + DynamicBrakeForceN) > 0)
-                            data = Math.Abs(this.FilteredMotiveForceN);
-                        else if (Math.Abs(FilteredMotiveForceN) - Math.Abs(BrakeForceN + DynamicBrakeForceN) < 0)
+                        else if (Math.Abs(FilteredTractiveForceN) - Math.Abs(BrakeForceN + DynamicBrakeForceN) > 0)
+                            data = Math.Abs(FilteredTractiveForceN);
+                        else if (Math.Abs(FilteredTractiveForceN) - Math.Abs(BrakeForceN + DynamicBrakeForceN) < 0)
                             data = -Math.Abs(BrakeForceN + DynamicBrakeForceN);
                         switch (cvc.Units)
                         {
