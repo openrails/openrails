@@ -2248,16 +2248,17 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.CPH_DISPLAY:
                 case CABViewControlTypes.CP_HANDLE:
                     var combinedHandlePosition = Locomotive.GetCombinedHandleValue(false);
-                    index = PercentToIndex(combinedHandlePosition);
                     // Make sure any deviation from the split position gives a different index
                     int handleRelativePos = combinedHandlePosition.CompareTo(Locomotive.CombinedControlSplitPosition);
                     if (handleRelativePos != 0)
                     {
                         if (handleRelativePos == (ControlDiscrete.Reversed ? - 1 : 1))
-                            index = Math.Max(index, SplitIndex + 1);
+                            index = Math.Max(PercentToIndex(combinedHandlePosition), SplitIndex + 1);
                         else
-                            index = Math.Min(index, SplitIndex - 1);
+                            index = Math.Min(PercentToIndex(combinedHandlePosition), SplitIndex - 1);
                     }
+                    else
+                        index = SplitIndex;
                     break;
                 case CABViewControlTypes.ORTS_SELECTED_SPEED_DISPLAY:
                     if (Locomotive.CruiseControl == null)
