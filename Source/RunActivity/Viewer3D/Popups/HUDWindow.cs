@@ -1237,8 +1237,7 @@ namespace Orts.Viewer3D.Popups
                 Viewer.Catalog.GetString("Brk Slide"),
                 Viewer.Catalog.GetString("Bear Temp"),
                 Viewer.Catalog.GetString(" "),
-                Viewer.Catalog.GetString("DrailCof"),
-                Viewer.Catalog.GetString("AoA")
+                Viewer.Catalog.GetString("DerailCoeff")
                 
                 );
             TableAddLine(table);
@@ -1268,7 +1267,6 @@ namespace Orts.Viewer3D.Popups
                 TableSetCell(table, 17, "{0} {1}", FormatStrings.FormatTemperature(car.WheelBearingTemperatureDegC, car.IsMetric, false), car.DisplayWheelBearingTemperatureStatus);
                 TableSetCell(table, 18, car.Flipped ? Viewer.Catalog.GetString("Flipped") : "");
                 TableSetCell(table, 19, "{0:F2}{1}", car.DerailmentCoefficient, car.DerailExpected ? "!!!" : car.DerailPossible ? "???" : "");
-                TableSetCell(table, 20, "{0:F2}", car.AngleOfAttackmRad);
                 TableAddLine(table);
 
             }

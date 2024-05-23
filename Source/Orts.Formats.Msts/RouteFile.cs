@@ -123,8 +123,6 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortscurvesmsnumber", ()=>{ CurveSMSNumber = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("ortscurveswitchsmsnumber", ()=>{ CurveSwitchSMSNumber = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("ortsopendoorsinaitrains", ()=>{ OpenDoorsInAITrains = stf.ReadBoolBlock(false); }),
-                new STFReader.TokenProcessor("ortsplaytracksoundsbasecontinuous", ()=>{ TrackSoundDefaultContinuousPlay = stf.ReadBoolBlock(false); }),
-                new STFReader.TokenProcessor("ortsdistancebetweentrackjoints", ()=>{ DistanceBetweenTrackJointsM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
 
            });
             //TODO This should be changed to STFException.TraceError() with defaults values created
@@ -153,8 +151,6 @@ namespace Orts.Formats.Msts
         public string DefaultSignalSMS;
 		public float TempRestrictedSpeed = -1f;
         public Interpolator SuperElevationHgtpRadiusM; // Superelevation of tracks
-        public bool TrackSoundDefaultContinuousPlay = false;
-        public float DistanceBetweenTrackJointsM;
 
         // Values for calculating Tunnel Resistance - will override default values.
         public float SingleTunnelAreaM2; 
@@ -179,7 +175,7 @@ namespace Orts.Formats.Msts
         public string DefaultTurntableSMS;
         public bool ? OpenDoorsInAITrains; // true if option active
 
-        public int SwitchSMSNumber = -1; // defines the number of the switch SMS files in file ttype.dat
+        public int SwitchSMSNumber = -1; // defines the number of the switch SMS files in file ttypedat
         public int CurveSMSNumber = -1; // defines the number of the curve SMS files in file ttype.dat
         public int CurveSwitchSMSNumber = -1; // defines the number of the curve-switch SMS files in file ttype.dat
 
