@@ -2268,7 +2268,7 @@ namespace Orts.Simulation.RollingStocks
             UpdateHornAndBell(elapsedClockSeconds);
 
             UpdateSoundVariables(elapsedClockSeconds);
-            PrevMotiveForceN = MotiveForceN;
+            PrevTractiveForceN = MotiveForceN;
             base.Update(elapsedClockSeconds);
 
 #if DEBUG_ADHESION
