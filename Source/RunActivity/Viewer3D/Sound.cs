@@ -337,27 +337,68 @@ namespace Orts.Viewer3D
         {
             bool stateChange = false;
             if (SharedSMSFileManager.AutoTrackSound) stateChange = UpdateCarOnSwitchAndCurve();
-//            if (stateChange) Trace.TraceInformation("Time {4} TrainName {5} carNo {0} IsOnSwitch {1} IsOnCurve {6} TracksoundType {2} _CurTType {3} Radius {7} Before",
-//                Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name, CarOnCurve, Car.CurrentCurveRadius);
+            //            if (stateChange) Trace.TraceInformation("Time {4} TrainName {5} carNo {0} IsOnSwitch {1} IsOnCurve {6} TracksoundType {2} _CurTType {3} Radius {7} Before",
+            //                Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name, CarOnCurve, Car.CurrentCurveRadius);
             if ((!CarOnSwitch && !CarOnCurve) || !SharedSMSFileManager.AutoTrackSound)
                 UpdateTType(stateChange);
-//            if (stateChange) Trace.TraceInformation("Time {4} TrainName {5} carNo {0} IsOnSwitch {1} IsOnCurve {6} TracksoundType {2} _CurTType {3} Radius {7} After",
-//                Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name, CarOnCurve, Car.CurrentCurveRadius);
+            //            if (stateChange) Trace.TraceInformation("Time {4} TrainName {5} carNo {0} IsOnSwitch {1} IsOnCurve {6} TracksoundType {2} _CurTType {3} Radius {7} After",
+            //                Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name, CarOnCurve, Car.CurrentCurveRadius);
             bool retval = true;
             NeedsFrequentUpdate = false;
 
-            if (_activeInSource != null)
+            // Plays the default sound region continuously, and then overlays other regions as they are triggered.
+            if (SharedSMSFileManager.PlayDefaultTrackSoundsContinuous)
             {
-                retval &= _activeInSource.Update();
-                NeedsFrequentUpdate |= _activeInSource.NeedsFrequentUpdate;
-            }
+                // Check to see if car is on a switch
+                CheckIfOnSwitch();
+                SharedSMSFileManager.CarOnSwitch = CarOnSwitch; // copy for use in SMS file
 
-            if (_activeOutSource != null)
+                // Play base (default) sound continuously
+                if (_activeInSource != null)
+                {
+                    _activeInSource = _inSources[0];
+                    retval &= _activeInSource.Update();
+                    NeedsFrequentUpdate |= _activeInSource.NeedsFrequentUpdate;
+                    _activeInSource = _inSources[_curTType];
+                }
+
+                if (_activeOutSource != null)
+                {
+                    _activeOutSource = _outSources[0];
+                    retval &= _activeOutSource.Update();
+                    NeedsFrequentUpdate |= _activeOutSource.NeedsFrequentUpdate;
+                    _activeOutSource = _outSources[_curTType];
+                }
+
+                if (_curTType != 0) // if base sound is not being played, then play additional relevant track region sound
+                {
+                    if (_activeInSource != null)
+                    {
+                        retval &= _activeInSource.Update();
+                        NeedsFrequentUpdate |= _activeInSource.NeedsFrequentUpdate;
+                    }
+
+                    if (_activeOutSource != null)
+                    {
+                        retval &= _activeOutSource.Update();
+                        NeedsFrequentUpdate |= _activeOutSource.NeedsFrequentUpdate;
+                    }
+                }
+            }
+            else // Legacy operation, plays sounds when in relevant track sound region
             {
-                retval &= _activeOutSource.Update();
-                NeedsFrequentUpdate |= _activeOutSource.NeedsFrequentUpdate;
-            }
+                if (_activeInSource != null)
+                {
+                    retval &= _activeInSource.Update();
+                    NeedsFrequentUpdate |= _activeInSource.NeedsFrequentUpdate;
+                }
 
+                if (_activeOutSource != null)
+                {
+                    retval &= _activeOutSource.Update();
+                    NeedsFrequentUpdate |= _activeOutSource.NeedsFrequentUpdate;
+                }
+            }
             return retval;
         }
 
@@ -378,6 +419,39 @@ namespace Orts.Viewer3D
             Car = null;
         }
 
+        // Checks to see whether train is on a switch 
+        public bool CheckIfOnSwitch()
+        {
+            CarOnSwitch = false;
+
+            if (Car.Train.PresentPosition[0].TCSectionIndex != Car.Train.PresentPosition[1].TCSectionIndex)
+            {
+                try
+                {
+                    var copyOccupiedTrack = Car.Train.OccupiedTrack.ToArray();
+                    foreach (var thisSection in copyOccupiedTrack)
+                    {
+                        if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
+                        {
+                            // train is on a switch; let's see if car is on a switch too
+                            WorldLocation switchLocation = UidLocation(Viewer.Simulator.TDB.TrackDB.TrackNodes[thisSection.OriginalIndex].UiD);
+                            var distanceFromSwitch = WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, switchLocation);
+                            if (distanceFromSwitch < Car.CarLengthM * Car.CarLengthM + Math.Min(Car.SpeedMpS * 3, 150))
+                            {
+                                CarOnSwitch = true;
+                                return CarOnSwitch;
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    return CarOnSwitch;
+                }
+            }
+            return CarOnSwitch;
+        }
+
         //Checks whether car on switch or on curve or both and selects related .sms file;
         // returns true if state has changed
 
@@ -395,36 +469,15 @@ namespace Orts.Viewer3D
 
                     var CarBehind = Car.Train.Cars[CarNo + CarIncr];
                     var carPreviouslyOnSwitch = CarOnSwitch;
-                    CarOnSwitch = false;
-                    if (Car.Train.PresentPosition[0].TCSectionIndex != Car.Train.PresentPosition[1].TCSectionIndex)
-                    {
-                        try
-                        {
-                            var copyOccupiedTrack = Car.Train.OccupiedTrack.ToArray();
-                            foreach (var thisSection in copyOccupiedTrack)
-                            {
-                                if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
-                                {
-                                    // train is on a switch; let's see if car is on a switch too
-                                    WorldLocation switchLocation = UidLocation(Viewer.Simulator.TDB.TrackDB.TrackNodes[thisSection.OriginalIndex].UiD);
-                                    var distanceFromSwitch = WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, switchLocation);
-                                    if (distanceFromSwitch < Car.CarLengthM * Car.CarLengthM + Math.Min(Car.SpeedMpS * 3, 150))
-                                    {
-                                        CarOnSwitch = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        catch
-                        {
 
-                        }
-                    }
+                    CheckIfOnSwitch();
+
                     // here check for curve
                     var carPreviouslyOnCurve = CarOnCurve;
                     CarOnCurve = false;
-                    if ((Car.CurrentCurveRadiusM > 0 && (Car.CurrentCurveRadiusM < 301
+
+                    // Uses original curve sound system
+                    if (SharedSMSFileManager.CurveSwitchSMSNumber != -1 && (Car.CurrentCurveRadiusM > 0 && (Car.CurrentCurveRadiusM < 301
                          || (Car.CurrentCurveRadiusM < 350 && Car.WagonType == TrainCar.WagonTypes.Freight))) ||
                         (CarBehind.CurrentCurveRadiusM > 0 && (CarBehind.CurrentCurveRadiusM < 301
                          || (CarBehind.CurrentCurveRadiusM < 350 && Car.WagonType == TrainCar.WagonTypes.Freight))))
@@ -444,6 +497,7 @@ namespace Orts.Viewer3D
                         {
                             _curTType = SharedSMSFileManager.CurveSwitchSMSNumber;
                         }
+                        // original curve squeal
                         else if (CarOnCurve && SharedSMSFileManager.CurveSMSNumber != -1)
                         {
                             _curTType = SharedSMSFileManager.CurveSMSNumber;
@@ -1502,6 +1556,28 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.VolumeCurve.Controls.Variable3Controlled: return car.Variable3;
                 case Orts.Formats.Msts.VolumeCurve.Controls.BrakeCylControlled: return car.BrakeSystem.GetCylPressurePSI();
                 case Orts.Formats.Msts.VolumeCurve.Controls.CurveForceControlled: return car.CurveForceNFiltered;
+                case Orts.Formats.Msts.VolumeCurve.Controls.AngleofAttackControlled: return car.CurveSquealAoAmRadFiltered;
+                case Orts.Formats.Msts.VolumeCurve.Controls.CarFrictionControlled: return car.Train.WagonCoefficientFriction;
+                case Orts.Formats.Msts.VolumeCurve.Controls.WheelRpMControlled: var wheelRpM = pS.TopM((float)(car.AbsSpeedMpS / (2 * Math.PI * car.WheelRadiusM))); return wheelRpM;
+                case Orts.Formats.Msts.VolumeCurve.Controls.TrackJointControlled:
+                    float jointSpacingTimeS = 0;
+                    if (car.AbsSpeedMpS != 0)
+                    {
+                        jointSpacingTimeS = SharedSMSFileManager.DistanceBetweenTrackJointsM / car.AbsSpeedMpS;
+                    }
+                    else
+                    {
+                        jointSpacingTimeS = 0;
+                    }
+                    return jointSpacingTimeS;
+                case Orts.Formats.Msts.VolumeCurve.Controls.SwitchControlled:
+                    var switchPresent = 0;
+                    if (SharedSMSFileManager.CarOnSwitch)
+                        switchPresent = 1;
+                    else
+                        switchPresent = 0;
+                    return switchPresent;
+
                 default: return 0;
             }
         }
@@ -1904,7 +1980,7 @@ namespace Orts.Viewer3D
             Initialize();
         }
 
-        public override void  Initialize()
+        public override void Initialize()
         {
             StartValue = SMS.Event == Orts.Formats.Msts.Variable_Trigger.Events.Distance_Dec_Past ? float.MaxValue : 0;
 
@@ -1918,7 +1994,7 @@ namespace Orts.Viewer3D
             IsBellow = StartValue < SMS.Threshold;
         }
 
-        public override void TryTrigger( )
+        public override void TryTrigger()
         {
             float newValue = ReadValue();
             bool triggered = false;
@@ -1936,6 +2012,10 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.AngleofAttack_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.WheelRpM_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.TrackJoints_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarOnSwitch_Dec_Past:
                     if (newValue < SMS.Threshold)
                     {
                         Signaled = true;
@@ -1953,6 +2033,10 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.AngleofAttack_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.WheelRPM_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.TrackJoints_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarOnSwitch_Inc_Past:
                     if (newValue > SMS.Threshold)
                     {
                         Signaled = true;
@@ -2036,6 +2120,34 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Inc_Past:
                     return car.CurveForceNFiltered;
+                case Orts.Formats.Msts.Variable_Trigger.Events.AngleofAttack_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.AngleofAttack_Inc_Past:
+                    return car.CurveSquealAoAmRadFiltered;
+                case Orts.Formats.Msts.Variable_Trigger.Events.WheelRpM_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.WheelRPM_Inc_Past:
+                    var wheelRpM = pS.TopM((float)(car.AbsSpeedMpS / (2 * Math.PI * car.WheelRadiusM)));
+                    return wheelRpM;
+                case Orts.Formats.Msts.Variable_Trigger.Events.TrackJoints_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.TrackJoints_Inc_Past:
+                    float jointSpacingTimeS = 0;
+                    if (car.AbsSpeedMpS != 0)
+                    {
+                        jointSpacingTimeS = SharedSMSFileManager.DistanceBetweenTrackJointsM / car.AbsSpeedMpS;
+                    }
+                    else
+                    {
+                        jointSpacingTimeS = 0;
+                    }
+                    return jointSpacingTimeS;
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarOnSwitch_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarOnSwitch_Inc_Past:
+                    var switchPresent = 0;
+                    if (SharedSMSFileManager.CarOnSwitch)
+                        switchPresent = 1;
+                    else
+                        switchPresent = 0;
+                    return switchPresent;
+
                 default:
                     return 0;
             }
