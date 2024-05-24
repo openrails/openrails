@@ -1038,13 +1038,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             DemandedThrottlePercent = Math.Max(DemandedThrottlePercent, ReverseThrottleRPMTab[Locomotive.DieselPowerSupply.DieselEngineMinRpm]);
 
-            if (Locomotive.Direction == Direction.Reverse)
-                Locomotive.PrevTractiveForceN *= -1f;
-
             if ((State == DieselEngineState.Running) && (Locomotive.ThrottlePercent > 0))
             {
                 var abstempTractiveForce = Math.Abs(Locomotive.PrevTractiveForceN);
-                OutputPowerW = ( abstempTractiveForce > 0 ? abstempTractiveForce * Locomotive.AbsSpeedMpS : 0) / Locomotive.DieselEngines.NumOfActiveEngines;
+                OutputPowerW = ( abstempTractiveForce > 0 ? abstempTractiveForce * Locomotive.AbsWheelSpeedMpS : 0) / Locomotive.DieselEngines.NumOfActiveEngines;
             }
             else
             {
