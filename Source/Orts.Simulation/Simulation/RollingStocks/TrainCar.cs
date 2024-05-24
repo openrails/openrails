@@ -299,6 +299,8 @@ namespace Orts.Simulation.RollingStocks
         public float _SpeedMpS; // meters per second; updated by train physics, relative to direction of car  50mph = 22MpS
         public float _PrevSpeedMpS;
         public float AbsSpeedMpS; // Math.Abs(SpeedMps) expression is repeated many times in the subclasses, maybe this deserves a class variable
+        public float WheelSpeedMpS;
+        public float AbsWheelSpeedMpS; // Math.Abs(WheelSpeedMpS) is used frequently in the subclasses, maybe it's more efficient to compute it once
         public float CouplerSlackM;  // extra distance between cars (calculated based on relative speeds)
         public int HUDCouplerForceIndication = 0; // Flag to indicate whether coupler is 1 - pulling, 2 - pushing or 0 - neither
         public float CouplerSlack2M;  // slack calculated using draft gear force
@@ -2203,7 +2205,7 @@ namespace Orts.Simulation.RollingStocks
                 String.Format("{0}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric)),
                 loco.DieselEngines[0].GearBox.HuDShaftRPM,
                 // For Locomotive HUD display shows "forward" motive power (& force) as a positive value, braking power (& force) will be shown as negative values.
-                FormatStrings.FormatPower(TractiveForceN * SpeedMpS, IsMetric, false, false),
+                FormatStrings.FormatPower(TractiveForceN * WheelSpeedMpS, IsMetric, false, false),
                 String.Format("{0}{1}", FormatStrings.FormatForce(TractiveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
                 Simulator.Catalog.GetString(locomotivetypetext)
                 );
@@ -2218,7 +2220,7 @@ namespace Orts.Simulation.RollingStocks
                 ThrottlePercent,
                 String.Format("{0}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric)),
                 // For Locomotive HUD display shows "forward" motive power (& force) as a positive value, braking power (& force) will be shown as negative values.
-                FormatStrings.FormatPower(TractiveForceN * SpeedMpS, IsMetric, false, false),
+                FormatStrings.FormatPower(TractiveForceN * WheelSpeedMpS, IsMetric, false, false),
                 String.Format("{0}{1}", FormatStrings.FormatForce(TractiveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
                 Simulator.Catalog.GetString(locomotivetypetext)
                 );
