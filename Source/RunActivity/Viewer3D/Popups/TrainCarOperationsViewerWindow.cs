@@ -58,6 +58,7 @@ namespace Orts.Viewer3D.Popups
         internal static Texture2D ETSdisconnected32;
         internal static Texture2D FrontAngleCockOpened;
         internal static Texture2D FrontAngleCockClosed;
+        internal static Texture2D FrontAngleCockPartial;
         internal static Texture2D HandBrakeSet;
         internal static Texture2D HandBrakeNotSet;
         internal static Texture2D HandBrakeNotAvailable;
@@ -71,9 +72,12 @@ namespace Orts.Viewer3D.Popups
         internal static Texture2D PowerChanging;
         internal static Texture2D RearAngleCockOpened;
         internal static Texture2D RearAngleCockClosed;
+        internal static Texture2D RearAngleCockPartial;
         internal static Texture2D ResetBrakesOff;
         internal static Texture2D ResetBrakesOn;
 
+        public List<bool> AngleCockAPartiallyOpened = new List<bool>();
+        public List<bool> AngleCockBPartiallyOpened = new List<bool>();
         public string BatteryStatus;
         string CircuitBreakerState;
         public int LocoRowCount;
@@ -218,6 +222,8 @@ namespace Orts.Viewer3D.Popups
                 Rectangle RearAngleCockClosedRect = new Rectangle(32, 224, 32, 32);
                 Rectangle FrontAngleCockOpenedRect = new Rectangle(64, 224, 32, 32);
                 Rectangle RearAngleCockOpenedRect = new Rectangle(96, 224, 32, 32);
+                Rectangle FrontAngleCockPartialRect = new Rectangle(96, 160, 32, 32);
+                Rectangle RearAngleCockPartialRect = new Rectangle(96, 288, 32, 32);
 
                 Rectangle PowerOnRect = new Rectangle(0, 288, 32, 32);
                 Rectangle PowerOffRect = new Rectangle(32, 288, 32, 32);
@@ -252,6 +258,7 @@ namespace Orts.Viewer3D.Popups
 
                 FrontAngleCockClosed = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, FrontAngleCockClosedRect);
                 FrontAngleCockOpened = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, FrontAngleCockOpenedRect);
+                FrontAngleCockPartial = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, FrontAngleCockPartialRect);
 
                 HandBrakeNotAvailable = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, HandBrakeNotAvailableRect);
                 HandBrakeNotSet = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, HandBrakeNotSetRect);
@@ -269,6 +276,7 @@ namespace Orts.Viewer3D.Popups
 
                 RearAngleCockClosed = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, RearAngleCockClosedRect);
                 RearAngleCockOpened = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, RearAngleCockOpenedRect);
+                RearAngleCockPartial = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, RearAngleCockPartialRect);
 
                 ResetBrakesOff = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, ResetBrakesOffRect);
                 ResetBrakesOn = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, ResetBrakesOnRect);
@@ -320,6 +328,11 @@ namespace Orts.Viewer3D.Popups
                 BrakeSystem brakeSystem = (trainCar as MSTSWagon).BrakeSystem;
                 MSTSLocomotive locomotive = trainCar as MSTSLocomotive;
                 MSTSWagon wagon = trainCar as MSTSWagon;
+
+                // reset AngleCockAPartiallyOpened
+                AngleCockAPartiallyOpened = Enumerable.Repeat(false, PlayerTrain.Cars.Count).ToList();
+                // reset AngleCockBPartiallyOpened
+                AngleCockBPartiallyOpened = Enumerable.Repeat(false, PlayerTrain.Cars.Count).ToList();
 
                 bool isElectricDieselLocomotive = (trainCar is MSTSElectricLocomotive) || (trainCar is MSTSDieselLocomotive);
 
@@ -482,6 +495,30 @@ namespace Orts.Viewer3D.Popups
                     UpdateWindowSize();
                     TrainCarOperationsChanged = true;
                 }
+
+                for (var position = 0 ; position < Owner.Viewer.PlayerTrain.Cars.Count; position++)
+                {
+                    if (trainCarOperations.WarningCarPosition[position])
+                    {
+                        var carAngleCockAOpenAmount = Owner.Viewer.PlayerTrain.Cars[position].BrakeSystem.AngleCockAOpenAmount;
+                        var carAngleCockBOpenAmount = Owner.Viewer.PlayerTrain.Cars[position].BrakeSystem.AngleCockBOpenAmount;
+                        if (carAngleCockAOpenAmount >= 1 && AngleCockAPartiallyOpened[position])
+                        {
+                            AngleCockAPartiallyOpened[position] = false;
+                            Layout();
+                            TrainCarOperationsChanged = true;
+                        }
+                        if (carAngleCockBOpenAmount >= 1 && AngleCockBPartiallyOpened[position])
+                        {
+                            AngleCockBPartiallyOpened[position] = false;
+                            Layout();
+                            TrainCarOperationsChanged = true;
+                        }
+                        AngleCockAPartiallyOpened[position] = carAngleCockAOpenAmount < 1 && carAngleCockAOpenAmount > 0;
+                        AngleCockBPartiallyOpened[position] = carAngleCockBOpenAmount < 1 && carAngleCockBOpenAmount > 0;
+                    }
+                }
+
                 //required by traincarwindow to ModifyWindowSize()
                 windowHeight = Vbox != null ? Vbox.Position.Height : 0;
             }
@@ -778,7 +815,7 @@ namespace Orts.Viewer3D.Popups
             readonly TrainCarOperationsViewerWindow TrainCarViewer;
             readonly int CarPosition;
             readonly bool First;
-
+            readonly float carAngleCockAOpenAmount;
             public buttonFrontAngleCock(int x, int y, int size, Viewer viewer, TrainCar car, int carPosition)
                 : base(x, y, size, size)
             {
@@ -786,7 +823,12 @@ namespace Orts.Viewer3D.Popups
                 TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
                 CarPosition = carPosition;
                 First = car == Viewer.PlayerTrain.Cars.First();
-                Texture = First ? FrontAngleCockClosed : (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.AngleCockAOpen ? FrontAngleCockOpened : FrontAngleCockClosed;
+                var carAngleCockAOpenAmount = Viewer.PlayerTrain.Cars[CarPosition].BrakeSystem.AngleCockAOpenAmount;
+
+                Texture = First ? FrontAngleCockClosed
+                    : carAngleCockAOpenAmount >= 1 ? FrontAngleCockOpened
+                    : carAngleCockAOpenAmount <= 0 ? FrontAngleCockClosed
+                    : FrontAngleCockPartial;
                 Source = new Rectangle(0, 0, size, size);
                 Click += new Action<Control, Point>(buttonFrontAngleCock_Click);
             }
@@ -796,7 +838,9 @@ namespace Orts.Viewer3D.Popups
                 if (First) return;
 
                 new ToggleAngleCockACommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockAOpen);
-                if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockAOpen)
+                var carAngleCockAOpenAmount = Viewer.PlayerTrain.Cars[CarPosition].BrakeSystem.AngleCockAOpenAmount;
+
+                if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockAOpen && carAngleCockAOpenAmount >= 1)
                 {
                     Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Front angle cock opened"));
                     Texture = FrontAngleCockOpened;
@@ -815,7 +859,6 @@ namespace Orts.Viewer3D.Popups
             readonly TrainCarOperationsViewerWindow TrainCarViewer;
             readonly int CarPosition;
             readonly bool Last;
-
             public buttonRearAngleCock(int x, int y, int size, Viewer viewer, TrainCar car, int carPosition)
                 : base(x, y, size, size)
             {
@@ -823,8 +866,15 @@ namespace Orts.Viewer3D.Popups
                 TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
                 CarPosition = carPosition;
                 Last = car == Viewer.PlayerTrain.Cars.Last();
-                Texture = Last ? RearAngleCockClosed : (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.AngleCockBOpen ? RearAngleCockOpened : RearAngleCockClosed;
+                var carAngleCockBOpenAmount = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.AngleCockBOpenAmount;
+
+                Texture = Last ? RearAngleCockClosed
+                    : carAngleCockBOpenAmount >= 1 ? RearAngleCockOpened
+                    : carAngleCockBOpenAmount <= 0 ? RearAngleCockClosed
+                    : RearAngleCockPartial;
+
                 Source = new Rectangle(0, 0, size, size);
+
                 Click += new Action<Control, Point>(buttonRearAngleCock_Click);
             }
 
@@ -833,7 +883,9 @@ namespace Orts.Viewer3D.Popups
                 if (Last) return;
 
                 new ToggleAngleCockBCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockBOpen);
-                if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockBOpen)
+                var carAngleCockBOpenAmount = (Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockBOpenAmount; 
+                
+                if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockBOpen && carAngleCockBOpenAmount >= 1)
                 {
                     Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Rear angle cock opened"));
                     Texture = RearAngleCockOpened;

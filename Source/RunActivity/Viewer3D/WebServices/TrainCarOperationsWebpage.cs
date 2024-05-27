@@ -552,12 +552,15 @@ namespace Orts.Viewer3D.WebServices
         {
             TrainCar trainCar = Viewer.PlayerTrain.Cars[carPosition];
             bool first = trainCar == Viewer.PlayerTrain.Cars.First();
+            var carAngleCockAOpenAmount = Viewer.PlayerTrain.Cars[carPosition].BrakeSystem.AngleCockAOpenAmount;
 
             StatusCurrent.Status[carPosition].Add(
                 new OperationsStatus.Operation
                 {
                     Enabled = true,
-                    Filename = trainCar.BrakeSystem.AngleCockAOpen ? "TrainOperationsFrontAngleCockOpened32.png" : "TrainOperationsFrontAngleCockClosed32.png",
+                    Filename = carAngleCockAOpenAmount >= 1 ? "TrainOperationsFrontAngleCockOpened32.png" 
+                        : carAngleCockAOpenAmount <= 0 ? "TrainOperationsFrontAngleCockClosed32.png"
+                        : "TrainOperationsFrontAngleCockPartial32.png",
                     Functionname = "buttonFrontAngleCockClick",
                     CarPosition = carPosition
                 });
@@ -732,12 +735,15 @@ namespace Orts.Viewer3D.WebServices
         {
             TrainCar trainCar = Viewer.PlayerTrain.Cars[carPosition];
             bool last = trainCar == Viewer.PlayerTrain.Cars.Last();
+            var carAngleCockBOpenAmount = Viewer.PlayerTrain.Cars[carPosition].BrakeSystem.AngleCockBOpenAmount;
 
             StatusCurrent.Status[carPosition].Add(
                 new OperationsStatus.Operation
                 {
                     Enabled = true,
-                    Filename = trainCar.BrakeSystem.AngleCockBOpen ? "TrainOperationsRearAngleCockOpened32.png" : "TrainOperationsRearAngleCockClosed32.png",
+                    Filename = carAngleCockBOpenAmount >= 1 ? "TrainOperationsRearAngleCockOpened32.png"
+                        : carAngleCockBOpenAmount <= 0 ? "TrainOperationsRearAngleCockClosed32.png"
+                        : "TrainOperationsRearAngleCockPartial32.png",
                     Functionname = "buttonRearAngleCockClick",
                     CarPosition = carPosition
                 });
