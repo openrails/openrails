@@ -426,29 +426,44 @@ namespace Orts.Viewer3D
 
             if (Car.Train.PresentPosition[0].TCSectionIndex != Car.Train.PresentPosition[1].TCSectionIndex)
             {
+//                Trace.TraceInformation("Track Type#1 {0}", Car.Train.PresentPosition[1].TCSectionIndex);
                 try
                 {
                     var copyOccupiedTrack = Car.Train.OccupiedTrack.ToArray();
                     foreach (var thisSection in copyOccupiedTrack)
                     {
-                        if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
+//                        Trace.TraceInformation("Track Type {0}", thisSection.CircuitType);
+                        //   if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
+                        if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction )
                         {
+//                            Trace.TraceInformation("Check Switch#0");
+
                             // train is on a switch; let's see if car is on a switch too
                             WorldLocation switchLocation = UidLocation(Viewer.Simulator.TDB.TrackDB.TrackNodes[thisSection.OriginalIndex].UiD);
                             var distanceFromSwitch = WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, switchLocation);
                             if (distanceFromSwitch < Car.CarLengthM * Car.CarLengthM + Math.Min(Car.SpeedMpS * 3, 150))
                             {
                                 CarOnSwitch = true;
+//                                Trace.TraceInformation("Check Switch#1a");
                                 return CarOnSwitch;
                             }
+                        }
+
+                        if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
+                        {
+                            CarOnSwitch = true;
+//                            Trace.TraceInformation("Check Switch#1b");
+                            return CarOnSwitch;
                         }
                     }
                 }
                 catch
                 {
+//                    Trace.TraceInformation("Check Switch#2");
                     return CarOnSwitch;
                 }
             }
+//            Trace.TraceInformation("Check Switch#3");
             return CarOnSwitch;
         }
 
