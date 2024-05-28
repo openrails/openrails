@@ -38,7 +38,7 @@ namespace ORTS
         public string Title { get; set; }
         public string UpdateMode { get; set; }
         public List<Item> PrefixItemList { get; set; }
-        public Met MetLists { get; set; }
+        public Met Met { get; set; }
         public List<Item> SuffixItemList { get; set; }
         public bool ToDelete { get; set; } = false; // So we can mark items for deletion and then delete in single statement.
     }
@@ -48,11 +48,10 @@ namespace ORTS
     }
     class Text : Item
     {
-        public string Color { get; set; } = "black";
     }
     class Heading : Item
     {
-        public string Color { get; set; } = "red";
+        public string Color { get; set; } = "blue";
     }
     class Link : Item
     {
@@ -67,6 +66,7 @@ namespace ORTS
     public class Item
     {
         public string Label { get; set; }
+        public string Color { get; set; } = "black";
         public int Indent { get; set; } = 140;
     }
     public class Met
@@ -82,13 +82,13 @@ namespace ORTS
     public class Check
     {
         public string Id { get; set; }
-        public List<CheckAllOf> CheckAnyOf { get; set; }
+        public List<CheckAllOf> AnyOfList { get; set; }
         public List<Item> UnmetItemList { get; set; }
     }
 
     public class CheckAllOf
     {
-        public List<Criteria> AllOf { get; set; }
+        public List<Criteria> AllOfList { get; set; }
     }
 
     public class Excludes : CheckAllOf
@@ -110,8 +110,8 @@ namespace ORTS
     public class Criteria
     {
         // System Information "examples"
-        public string Name { get; set; }    // installed_version, direct3d, runtime, system, memory, cpu, gpu
-        public string Value { get; set; }   // {{new_version}}, {{10_0}}
+        public string Property { get; set; }    // installed_version, direct3d, runtime, system, memory, cpu, gpu
+        public string Value { get; set; }       // {{new_version}}, {{10_0}}
     }
 
     public class OverrideValues
