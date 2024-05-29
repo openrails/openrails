@@ -437,7 +437,7 @@ namespace Orts.Viewer3D
                 for (var i = 0; i < Light.States.Count - 1; i++)
                     transitionHandler(i, i, i + 1);
                 for (var i = Light.States.Count - 1; i > 0; i--)
-                    transitionHandler(Light.States.Count * 2 - 1 - i, i, i - 1);
+                    transitionHandler((Light.States.Count * 2 - 2) - i, i, i - 1);
             }
             else
             {
