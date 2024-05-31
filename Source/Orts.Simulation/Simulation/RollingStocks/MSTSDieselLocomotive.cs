@@ -1074,7 +1074,7 @@ namespace Orts.Simulation.RollingStocks
             status.AppendFormat("{0} {1}\t", GetStringAttribute.GetPrettyName(Direction), Flipped ? Simulator.Catalog.GetString("(flipped)") : "");
             status.AppendFormat("{0}\t", IsLeadLocomotive() || RemoteControlGroup < 0 ? "———" : RemoteControlGroup == 0 ? Simulator.Catalog.GetString("Sync") : Simulator.Catalog.GetString("Async"));
             status.AppendFormat("{0}\t", FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK));
-            status.AppendFormat("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), CouplerOverloaded ? "???" : "");
+            status.AppendFormat("{0}{1}", FormatStrings.FormatForce(TractiveForceN, IsMetric), CouplerOverloaded ? "???" : "");
             status.Append(DieselEngines.GetDPStatus());
 
             return status.ToString();
