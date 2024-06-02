@@ -478,6 +478,15 @@ namespace Orts.Simulation.RollingStocks
         public float ThrottleIntervention = -1;
         public float DynamicBrakeIntervention = -1;
 
+        public enum SteamLocomotiveFuelTypes
+        {
+            Unknown,
+            Oil,
+            Wood, // not used at the moment
+            Coal, // defaults to coal
+        }
+
+        public SteamLocomotiveFuelTypes SteamLocomotiveFuelType;
         public enum TractionMotorTypes
         {
             DC,
