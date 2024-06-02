@@ -32,6 +32,7 @@ using ORTS.Common;
 using ORTS.Menu;
 using ORTS.Settings;
 using ORTS.Updater;
+using Activity = ORTS.Menu.Activity;
 using Path = ORTS.Menu.Path;
 
 namespace ORTS

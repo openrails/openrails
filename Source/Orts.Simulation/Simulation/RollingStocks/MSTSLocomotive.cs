@@ -444,6 +444,10 @@ namespace Orts.Simulation.RollingStocks
         public bool DoesBrakeCutPower { get; private set; }
         public float BrakeCutsPowerAtBrakeCylinderPressurePSI { get; private set; }
         public bool DoesHornTriggerBell { get; private set; }
+        public bool DPSyncTrainApplication { get; private set; }
+        public bool DPSyncTrainRelease { get; private set; }
+        public bool DPSyncEmergency { get; private set; }
+        public bool DPSyncIndependent { get; private set; } = true;
 
         protected const float DefaultCompressorRestartToMaxSysPressureDiff = 35;    // Used to check if difference between these two .eng parameters is correct, and to correct it
         protected const float DefaultMaxMainResToCompressorRestartPressureDiff = 10; // Used to check if difference between these two .eng parameters is correct, and to correct it
@@ -1141,6 +1145,19 @@ namespace Orts.Simulation.RollingStocks
                         }
                     }
                     break;
+                case "engine(ortsdpbrakesynchronization":
+                    var dpSyncModes = stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(',');
+                    if (dpSyncModes.Contains("apply"))
+                        DPSyncTrainApplication = true;
+                    if (dpSyncModes.Contains("release"))
+                        DPSyncTrainRelease = true;
+                    if (dpSyncModes.Contains("emergency"))
+                        DPSyncEmergency = true;
+                    if (dpSyncModes.Contains("independent"))
+                        DPSyncIndependent = true;
+                    else // Independent synchronization is assumed to be enabled unless explicitly not enabled
+                        DPSyncIndependent = false;
+                    break;
                 case "engine(ortsdynamicblendingoverride": DynamicBrakeBlendingOverride = stf.ReadBoolBlock(false); break;
                 case "engine(ortsdynamicblendingforcematch": DynamicBrakeBlendingForceMatch = stf.ReadBoolBlock(false); break;
                 case "engine(vacuumbrakeshasvacuumpump": VacuumPumpFitted = stf.ReadBoolBlock(false); break;
@@ -1256,16 +1273,28 @@ namespace Orts.Simulation.RollingStocks
             CompressorRestartPressurePSI = locoCopy.CompressorRestartPressurePSI;
             CompressorIsMUControlled = locoCopy.CompressorIsMUControlled;
             TrainBrakePipeLeakPSIorInHgpS = locoCopy.TrainBrakePipeLeakPSIorInHgpS;
+            BrakePipeTimeFactorS = locoCopy.BrakePipeTimeFactorS;
+            BrakeServiceTimeFactorPSIpS = locoCopy.BrakeServiceTimeFactorPSIpS;
+            BrakeEmergencyTimeFactorPSIpS = locoCopy.BrakeEmergencyTimeFactorPSIpS;
+            BrakePipeChargingRatePSIorInHgpS = locoCopy.BrakePipeChargingRatePSIorInHgpS;
+            BrakePipeQuickChargingRatePSIpS = locoCopy.BrakePipeQuickChargingRatePSIpS;
             MaxMainResPressurePSI = locoCopy.MaxMainResPressurePSI;
             MainResPressurePSI = locoCopy.MaxMainResPressurePSI;
             MaximumMainReservoirPipePressurePSI = locoCopy.MaximumMainReservoirPipePressurePSI;
             MainResVolumeM3 = locoCopy.MainResVolumeM3;
             MainResChargingRatePSIpS = locoCopy.MainResChargingRatePSIpS;
+            EngineBrakeApplyRatePSIpS = locoCopy.EngineBrakeApplyRatePSIpS;
+            EngineBrakeReleaseRatePSIpS = locoCopy.EngineBrakeReleaseRatePSIpS;
             BrakePipeDischargeTimeFactor = locoCopy.BrakePipeDischargeTimeFactor;
             DriveWheelOnlyBrakes = locoCopy.DriveWheelOnlyBrakes;
             DynamicBrakeBlendingEnabled = locoCopy.DynamicBrakeBlendingEnabled;
             DynamicBrakeAvailable = locoCopy.DynamicBrakeAvailable;
             airPipeSystem = locoCopy.airPipeSystem;
+            DoesVacuumBrakeCutPower = locoCopy.DoesVacuumBrakeCutPower;
+            DoesBrakeCutPower = locoCopy.DoesBrakeCutPower;
+            BrakeCutsPowerAtBrakeCylinderPressurePSI = locoCopy.BrakeCutsPowerAtBrakeCylinderPressurePSI;
+            BrakeCutsPowerAtBrakePipePressurePSI = locoCopy.BrakeCutsPowerAtBrakePipePressurePSI;
+            BrakeRestoresPowerAtBrakePipePressurePSI = locoCopy.BrakeRestoresPowerAtBrakePipePressurePSI;
             DynamicBrakeCommandStartTime = locoCopy.DynamicBrakeCommandStartTime;
             DynamicBrakeBlendingOverride = locoCopy.DynamicBrakeBlendingOverride;
             DynamicBrakeBlendingForceMatch = locoCopy.DynamicBrakeBlendingForceMatch;
@@ -1274,6 +1303,7 @@ namespace Orts.Simulation.RollingStocks
             MainPressureUnit = locoCopy.MainPressureUnit;
             BrakeSystemPressureUnits = locoCopy.BrakeSystemPressureUnits;
             IsDriveable = copy.IsDriveable;
+            EngineOperatingProcedures = locoCopy.EngineOperatingProcedures;
 
             ThrottleController = (MSTSNotchController)locoCopy.ThrottleController.Clone();
             SteamHeatController = (MSTSNotchController)locoCopy.SteamHeatController.Clone();
@@ -1291,9 +1321,14 @@ namespace Orts.Simulation.RollingStocks
             }
             else
                 DPDynamicBrakeController = null;
+            DPSyncTrainApplication = locoCopy.DPSyncTrainApplication;
+            DPSyncTrainRelease = locoCopy.DPSyncTrainRelease;
+            DPSyncEmergency = locoCopy.DPSyncEmergency;
+            DPSyncIndependent = locoCopy.DPSyncIndependent;
 
             LocomotivePowerSupply.Copy(locoCopy.LocomotivePowerSupply);
             TrainControlSystem.Copy(locoCopy.TrainControlSystem);
+            VigilanceMonitor = locoCopy.VigilanceMonitor;
             LocomotiveName = locoCopy.LocomotiveName;
             MaxVaccuumMaxPressurePSI = locoCopy.MaxVaccuumMaxPressurePSI;
             VacuumBrakeEQFitted = locoCopy.VacuumBrakeEQFitted;
@@ -1307,6 +1342,8 @@ namespace Orts.Simulation.RollingStocks
             WaterScoopWidthM = locoCopy.WaterScoopWidthM;
             CruiseControl = locoCopy.CruiseControl?.Clone(this);
             MultiPositionControllers = locoCopy.CloneMPC(this);
+            OnLineCabRadio = locoCopy.OnLineCabRadio;
+            OnLineCabRadioURL = locoCopy.OnLineCabRadioURL;
         }
 
         /// <summary>
@@ -1679,7 +1716,8 @@ namespace Orts.Simulation.RollingStocks
                 // for airtwinpipe system, make sure that a value is set for it
                 if (MaximumMainReservoirPipePressurePSI == 0)
                 {
-                    MaximumMainReservoirPipePressurePSI = MaxMainResPressurePSI;
+                    // Add 5 psi to account for main res overcharging that might happen
+                    MaximumMainReservoirPipePressurePSI = MaxMainResPressurePSI + 5.0f;
                     if (Simulator.Settings.VerboseConfigurationMessages)
                     {
                         Trace.TraceInformation("AirBrakeMaxMainResPipePressure not set in ENG file, set to default pressure of {0}.", FormatStrings.FormatPressure(MaximumMainReservoirPipePressurePSI, PressureUnit.PSI, MainPressureUnit, true));
@@ -1977,9 +2015,6 @@ namespace Orts.Simulation.RollingStocks
 
             // Pass Gearbox commands
 
-
-
-
             // Note - at the moment there is only one GearBox Controller created, but a gearbox for each diesel engine is created. 
             // This code keeps all gearboxes in the locomotive aligned with the first engine and gearbox.
             if (gearloco != null && gearloco.DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic && GearBoxController.CurrentNotch != previousChangedGearBoxNotch)
@@ -2118,8 +2153,16 @@ namespace Orts.Simulation.RollingStocks
                                     if (de.State != DieselEngineState.Running)
                                         de.Initialize();
                                 }
+
+                                // if train is a geared locomotive then set it to automatic operation as AI driver can't operate manual gearboxes
                                 if (de.GearBox != null)
+                                {
                                     de.GearBox.GearBoxOperation = GearBoxOperation.Automatic;
+
+                                    // Set gear to at start.
+                                    de.GearBox.currentGearIndex = de.GearBox.NumOfGears - 1;
+                                }
+                            
                             }
                         }
                     }
@@ -2755,22 +2798,39 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-            // Turn compressor on and off
-            if (MainResPressurePSI < CompressorRestartPressurePSI && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn && !CompressorIsOn)
+            // Determine compressor synchronization
+            bool syncCompressor = false;
+
+            // Compressor synchronization is ignored if 5 psi above the high setpoint
+            // Only accept synchronization if MU cable is connected and locomotive power supply is on
+            if (RemoteControlGroup != -1 && MainResPressurePSI < MaxMainResPressurePSI + 5.0f 
+                && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn)
             {
-                SignalEvent(Event.CompressorOn);
-                foreach (var car in Train.Cars)
+                foreach (List<TrainCar> locoGroup in Train.LocoGroups)
                 {
-                    if (car is MSTSLocomotive loco && loco.RemoteControlGroup == 0 && loco.LocomotivePowerSupply.AuxiliaryPowerSupplyOn && !loco.CompressorIsOn && loco.CompressorIsMUControlled)
+                    // Only synchronize in a group of locomotives directly connected
+                    // or synchronize between any two locomotives with MU controlled mode
+                    foreach (TrainCar locoCar in locoGroup)
                     {
-                        loco.SignalEvent(Event.CompressorOn);
+                        if (locoCar is MSTSLocomotive loco)
+                            syncCompressor |= loco.RemoteControlGroup != -1 && (locoGroup.Contains(this as TrainCar) || (CompressorIsMUControlled && loco.CompressorIsMUControlled))
+                                && loco.CompressorIsOn && loco.MainResPressurePSI < loco.MaxMainResPressurePSI;
+
+                        // No need to check repeatedly if we already know to sync compressors
+                        if (syncCompressor)
+                            break;
                     }
+                    if (syncCompressor)
+                        break;
                 }
             }
-            else if ((MainResPressurePSI >= MaxMainResPressurePSI || LocomotivePowerSupply.AuxiliaryPowerSupplyState != PowerSupplyState.PowerOn) && CompressorIsOn)
-            {
+
+            if ((MainResPressurePSI < CompressorRestartPressurePSI || (syncCompressor && MainResPressurePSI < MaxMainResPressurePSI))
+                && LocomotivePowerSupply.AuxiliaryPowerSupplyState == PowerSupplyState.PowerOn && !CompressorIsOn)
+                SignalEvent(Event.CompressorOn);
+            else if (((MainResPressurePSI >= MaxMainResPressurePSI && !syncCompressor)
+                || LocomotivePowerSupply.AuxiliaryPowerSupplyState != PowerSupplyState.PowerOn) && CompressorIsOn)
                 SignalEvent(Event.CompressorOff);
-            }
 
             if (CompressorIsOn)
                 MainResPressurePSI += elapsedClockSeconds * reservoirChargingRate;
@@ -5135,6 +5195,10 @@ namespace Orts.Simulation.RollingStocks
                                 data = this.AccelerationMpSS * 3.6f;
                                 break;
 
+                            case CABViewControlUnits.KM_HOUR_MIN:
+                                data = this.AccelerationMpSS * 3.6f * 60.0f;
+                                break;
+
                             case CABViewControlUnits.KM_HOUR_HOUR:
                                 data = this.AccelerationMpSS * 3.6f * 3600.0f;
                                 break;
@@ -5156,7 +5220,7 @@ namespace Orts.Simulation.RollingStocks
                         break;
                     }
 
-                 case CABViewControlTypes.ORTS_WATER_SCOOP:
+                case CABViewControlTypes.ORTS_WATER_SCOOP:
                     data = WaterScoopDown ? 1 : 0;
                     break;
 
@@ -5606,6 +5670,32 @@ namespace Orts.Simulation.RollingStocks
                         }
                         break;
                     }
+                case CABViewControlTypes.ORTS_TRAIN_AIR_FLOW_METER:
+                    {
+                        switch (cvc.Units)
+                        {
+                            case CABViewControlUnits.CUBIC_FT_MIN:
+                                data = this.Train.TotalBrakePipeFlowM3pS * 35.3147f * 60.0f;
+                                break;
+
+                            case CABViewControlUnits.LITRES_S:
+                            case CABViewControlUnits.LITERS_S:
+                                data = this.Train.TotalBrakePipeFlowM3pS * 1000.0f;
+                                break;
+
+                            case CABViewControlUnits.LITRES_MIN:
+                            case CABViewControlUnits.LITERS_MIN:
+                                data = this.Train.TotalBrakePipeFlowM3pS * 1000.0f * 60.0f;
+                                break;
+
+                            case CABViewControlUnits.CUBIC_M_S:
+                            default:
+                                data = this.Train.TotalBrakePipeFlowM3pS;
+                                break;
+
+                        }
+                        break;
+                    }
                 case CABViewControlTypes.FRICTION_BRAKING:
                     {
                         data = (BrakeSystem == null) ? 0.0f : BrakeSystem.GetCylPressurePSI();
@@ -6043,6 +6133,12 @@ namespace Orts.Simulation.RollingStocks
                         data = Train.EOT.GetDataOf(cvc);
                     break;
             }
+            // Don't waste time calculating exponents if one isn't set
+            // To avoid potential imaginary numbers, use data's absolute value
+            if (cvc.UnitsExponent != 1.0f)
+                data = Math.Sign(data)*(float)Math.Pow(Math.Abs(data), cvc.UnitsExponent);
+            data = cvc.UnitsOffset + (data * cvc.UnitsScale);
+
             return data;
         }
 
