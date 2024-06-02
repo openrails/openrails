@@ -109,8 +109,6 @@ namespace Orts.Viewer3D
         public TrainListWindow TrainListWindow { get; private set; } // for switching driven train
         public TTDetachWindow TTDetachWindow { get; private set; } // for detaching player train in timetable mode
         public EOTListWindow EOTListWindow { get; private set; } // to select EOT
-        public ControlRectangle ControlRectangle { get; private set; } // to display the control rectangles
-
         private OutOfFocusWindow OutOfFocusWindow; // to show colored rectangle around the main window when not in focus
 
         // Route Information
@@ -513,7 +511,6 @@ namespace Orts.Viewer3D
             TrainListWindow = new TrainListWindow(WindowManager);
             TTDetachWindow = new TTDetachWindow(WindowManager);
             EOTListWindow = new EOTListWindow(WindowManager);
-            ControlRectangle = new ControlRectangle(WindowManager, this);
             if (Settings.SuppressConfirmations < (int)ConfirmLevel.Error)
                 // confirm level Error might be set to suppressed when taking a movie
                 // do not show the out of focus red square in that case
@@ -1041,7 +1038,6 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommand.DebugSignalling)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayTrainListWindow)) TrainListWindow.Visible = !TrainListWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayEOTListWindow)) EOTListWindow.Visible = !EOTListWindow.Visible;
-            if (UserInput.IsPressed(UserCommand.DisplayControlRectangle)) ControlRectangle.Visible = !ControlRectangle.Visible;
 
 
             if (UserInput.IsPressed(UserCommand.GameChangeCab))
@@ -1408,21 +1404,13 @@ namespace Orts.Viewer3D
 
             if (Camera is CabCamera && (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._hasCabRenderer)
             {
-                if (UserInput.IsMouseLeftButtonPressed || UserInput.IsMouseWheelChanged)
+                if (UserInput.IsMouseLeftButtonPressed)
                 {
                     var cabRenderer = (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer;
                     foreach (var controlRenderer in cabRenderer.ControlMap.Values)
                     {
-                        if ((Camera as CabCamera).SideLocation == controlRenderer.Control.CabViewpoint && controlRenderer is ICabViewMouseControlRenderer mouseRenderer)
+                        if ((Camera as CabCamera).SideLocation == controlRenderer.Control.CabViewpoint && controlRenderer is ICabViewMouseControlRenderer mouseRenderer && mouseRenderer.IsMouseWithin())
                         {
-                            if (mouseRenderer.IsMouseWithin())
-                            {
-                                var UserCommandControlTypes = (PlayerLocomotiveViewer as MSTSLocomotiveViewer).UserCommandControlTypes;
-                                if (UserCommandControlTypes.ContainsKey(controlRenderer.Control.ControlType.Type) && UserInput.IsMouseWheelChanged)
-                                {
-                                    continue;
-                                }
-
                             if ((controlRenderer.Control.Screens == null || controlRenderer.Control.Screens[0] == "all"))
                             {
                                 MouseChangingControl = mouseRenderer;
@@ -1443,12 +1431,11 @@ namespace Orts.Viewer3D
                         }
                     }
                 }
-                }
 
                 if (MouseChangingControl != null)
                 {
                     MouseChangingControl.HandleUserInput();
-                    if (UserInput.IsMouseLeftButtonReleased || UserInput.IsMouseWheelChanged)
+                    if (UserInput.IsMouseLeftButtonReleased)
                     {
                         MouseChangingControl = null;
                         UserInput.Handled();

@@ -864,15 +864,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             ControlView.SpriteBatch.End();
             ControlView.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, Shader);
         }
-
-        public Rectangle DestinationRectangleGet()
-        {
-            return DrawPosition;
-        }
-        public bool isMouseControl()
-        {
-            return true;
-        }
     }
 
     public class ThreeDimCabScreen// : ICabViewMouseControlRenderer
