@@ -92,7 +92,7 @@ namespace ORTS
         }
         public class NHeadingControl : NDetail
         {
-            public NHeadingControl(NotificationPage page, string text, string colorName = "black") : base(page)
+            public NHeadingControl(NotificationPage page, string text, string colorName = "blue") : base(page)
             {
                 var color = Color.FromName(colorName);
                 var left = LeftPadding;
@@ -113,11 +113,13 @@ namespace ORTS
         }
         public class NTextControl : NDetail
         {
-            public NTextControl(NotificationPage page, string text) : base(page)
+            public NTextControl(NotificationPage page, string text, string colorName = "black") : base(page)
             {
+                var color = Color.FromName(colorName);
                 var left = LeftPaddingIndented;
                 Control = new Label
                 {
+                    ForeColor = color,
                     Text = text,
                     UseMnemonic = false,
                     Font = new Font(Page.Panel.Font, FontStyle.Regular),

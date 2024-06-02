@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -24,6 +25,7 @@ using Newtonsoft.Json;
 using ORTS.Common;
 using ORTS.Settings;
 using ORTS.Updater;
+using SharpDX;
 using static ORTS.Common.SystemInfo;
 using static ORTS.NotificationPage;
 
@@ -42,6 +44,7 @@ namespace ORTS
         public Notifications Notifications;
         public List<NotificationPage> PageList = new List<NotificationPage>();
         private Exception Error;
+        private Dictionary<string, string> ParameterDictionary;
 
         private MainForm MainForm; // Needed so we can add controls to the NotificationPage
         private UpdateManager UpdateManager;
@@ -62,7 +65,14 @@ namespace ORTS
                 Error = null;
                 Notifications = GetNotifications();
                 DropUnusedUpdateNotifications();
+                ParameterDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                
+                // To support testing, add any overriding values to the ValueDictionary
+                GetOverrideParameters()?.ParameterValueList.ForEach(i => ParameterDictionary.Add(i.Parameter, i.Value));
+                LogOverrideParameters();
+
                 ReplaceParameters();
+                LogParameters();
 
                 PopulatePageList();
                 ArePagesVisible = false;
@@ -73,16 +83,24 @@ namespace ORTS
             }
         }
 
+        static bool Log = false;
+        static string LogFile = "notifications_trial_log.txt";
+
         public Notifications GetNotifications()
         {
-            String notificationsSerial;
-            // To support testing of a new menu.json file, GetNotifications tests for a local file test.json first and uses that if present.
+            string notificationsSerial;
+            // To support testing of a new remote notifications.json file before it is published,
+            // GetNotifications tests first for a local file notifications_trial.json
+            // and uses that if present, else it uses the remote file.
 
-            var filename = @"menu_test.json";
+            var filename = @"notifications_trial.json";
             if (System.IO.File.Exists(filename))
             {
                 // Input from local file into a string
                 notificationsSerial = System.IO.File.ReadAllText(filename);
+
+                // Turn on logging
+                Log = true;
             }
             else
             {
@@ -97,7 +115,7 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Fetch the Notifications from     https://static.openrails.org/api/notifications/menu.json 
+        /// Fetch the Notifications from https://static.openrails.org/api/notifications/menu.json 
         /// This file is copied hourly from Github openrails/notifications/
         /// </summary>
         private string GetRemoteJson()
@@ -119,11 +137,11 @@ namespace ORTS
 
             var NotificationPage = PageList.LastOrDefault();
             new NTextControl(NotificationPage, "").Add();
-            new NTextControl(NotificationPage, "(Toggle icon to hide NotificationPages.)").Add();
+            new NTextControl(NotificationPage, "(Toggle icon to hide these notifications.)").Add();
         }
 
         /// <summary>
-        /// Ultimately there will be a list of notifications downloaded from     https://static.openrails.org/api/notifications/menu.json .
+        /// Ultimately there will be a list of notifications downloaded from https://static.openrails.org/api/notifications/menu.json .
         /// Until then, there is a single notification announcing either that a new update is available or the installation is up to date.
         /// </summary>
         void SetUpdateNotificationPage()
@@ -158,102 +176,70 @@ namespace ORTS
             NewPageCount = 1;
             var list = Notifications.NotificationList;
             var n = list[Index];
+            LogNotification(n);
 
+            var skipPage = false;
             new NTitleControl(page, Index + 1, list.Count, n.Date, n.Title).Add();
 
-            foreach (var item in n.PrefixItemList)
-            {
-                AddItemToPage(page, item);
-            }
+            // Check constraints for the MetList.
+            var failingCheck = (n.Met.ItemList?.Count > 0 && n.Met.CheckIdList?.Count > 0) 
+                ? CheckConstraints(n) 
+                : null;
 
-            // Check constraints if there is a MetList.
-            // If a check fails then its UnmetList is added to the page, otherwise the MetList is added.
-            if (n.MetLists != null || n.MetLists.ItemList.Count == 0)
+            // If any check fails then its UnmetList is added to the page, otherwise the MetList is added.
+            n.PrefixItemList?.ForEach(item => AddItemToPage(page, item));
+            if (failingCheck == null)
             {
-                CheckConstraints(page, n);
-            }            
-
-            foreach (var item in n.SuffixItemList)
-            {
-                AddItemToPage(page, item);
+                n.Met.ItemList?.ForEach(item => AddItemToPage(page, item));
             }
-            PageList.Add(page);
+            else
+            {
+                if (failingCheck.UnmetItemList == null) // Omit this section to skip the notification entirely.
+                {
+                    // Don't skip if there is only one notification.
+                    if (list.Count > 1) skipPage = true;
+                }
+                else
+                {
+                    failingCheck.UnmetItemList?.ForEach(item => AddItemToPage(page, item));
+                }
+            }
+            n.SuffixItemList?.ForEach(item => AddItemToPage(page, item));
+            if (skipPage == false) PageList.Add(page);
         }
 
         /// <summary>
-        /// CheckConstraints() implements ExcludesAnyOf() AND ExcludesAllOf() AND IncludesAnyOf() AND IncludesAllOf(), but all parts are optional.
-        /// Consider first the Excludes:
-        ///   ExcludesAnyOf() Unmet if A == a OR B == b OR ...
-        ///   ExcludesAllOf() Unmet if A == a AND B == b AND ...
-        /// and then the Includes:
-        ///   IncludesAnyOf() Met if D == d OR E == e OR ...
-        ///   IncludesAllOf() Met if D == d AND E == e OR ...
+        /// CheckConstraints() checks the constraints in sequence, but all parts are optional.
+        /// If all the constraints in any Includes are met, then the whole check is met.
+        /// If all the constraints in any Excludes are met, then the whole check is not met.
+        /// Returns null if the whole check is met else returns the check that failed.
         /// </summary>
-        /// <param name="page"></param>
         /// <param name="n"></param>
-        private void CheckConstraints(NotificationPage page, Notification n)
+        private Check CheckConstraints(Notification n)
         {
-            foreach (var nc in n.MetLists.CheckIdList)
+            Check failingCheck = null;
+            foreach (var nc in n.Met.CheckIdList) // CheckIdList is optional
             {
-                // Find the matching check
-                var c = Notifications.CheckList.Where(check => check.Id == nc.Id).FirstOrDefault();
-                if (c != null)
-                {
-                    // Check the Excludes constraints first
-                    if (c.ExcludesAllOf != null)    // ExcludesAllOf is optional
-                    {
-                        var checkFailed = CheckMissingMatch(c, c.ExcludesAllOf);
-                        if (checkFailed != null)
-                        {
-                            foreach (var item in checkFailed.UnmetItemList)
-                            {
-                                AddItemToPage(page, item);
-                            }
-                            return;
-                        }
-                    }
-                    if ( c.ExcludesAnyOf?.Count > 0)    // ExcludesAnyOf is optional
-                    {
-                        if (CheckAnyMatch(c, c.ExcludesAnyOf) != null)
-                        {
-                            foreach (var item in c.UnmetItemList)
-                            {
-                                AddItemToPage(page, item);
-                            }
-                            return;
-                        }
-                    }
+                LogChecks(nc);
 
-                    // Check the Includes constraints last
-                    if (c.IncludesAllOf?.Count > 0)    // IncludesAllOf is optional
+                // Find the matching check
+                var check = Notifications.CheckList.Where(c => c.Id == nc.Id).FirstOrDefault();
+                if (check != null && check.AnyOfList.Count() > 0)
+                {
+                    foreach(var anyOf in check.AnyOfList)
                     {
-                        var checkFailed = CheckMissingMatch(c, c.IncludesAllOf);
-                        if (checkFailed != null)
+                        if (anyOf is Excludes)
                         {
-                            foreach (var item in checkFailed.UnmetItemList)
-                            {
-                                AddItemToPage(page, item);
-                            }
-                            return;
+                            if (CheckAllMatch(anyOf.AllOfList) == true) return check; // immediate fail so quit
                         }
-                    }
-                    if (c.IncludesAnyOf?.Count > 0) // IncludesAnyOf is optional
-                    {
-                        if (CheckAnyMatch(c, c.IncludesAnyOf) == null)
+                        if (anyOf is Includes)
                         {
-                            foreach (var item in c.UnmetItemList)
-                            {
-                                AddItemToPage(page, item);
-                            }
-                            return;
+                            if (CheckAllMatch(anyOf.AllOfList) == false) failingCheck = check; // fail but continue testing other Includes
                         }
                     }
                 }
             }
-            foreach (var item in n.MetLists.ItemList)
-            {
-                AddItemToPage(page, item);
-            }
+            return failingCheck;
         }
 
         private void AddItemToPage(NotificationPage page, Item item)
@@ -274,142 +260,49 @@ namespace ORTS
             {
                 new NHeadingControl(page, item.Label, heading.Color).Add();
             }
+            else if (item is Text text)
+            {
+                new NTextControl(page, item.Label, text.Color).Add();
+            }
             else if (item is Item item2)
             {
                 new NTextControl(page, item.Label).Add();
             }
         }
 
-        /// <summary>
-        /// Returns null or the first check that matches.
-        /// </summary>
-        /// <param name="check"></param>
-        /// <returns></returns>
-        private Check CheckAnyMatch(Check check, List<Criteria> criteriaList)
+        private bool CheckAllMatch(List<Criteria> criteriaList)
         {
             foreach (var c in criteriaList)
             {
-                if (c is Contains) // Other criteria might be added such as NoLessThan and NoMoreThan.
+                if (c is Contains) // other criteria might be added such as NoLessThan and NoMoreThan.
                 {
-                    var matchedCheck = CheckContains(check, c);
-                    if (matchedCheck != null)
-                        return matchedCheck;
+                    if (CheckContains(c, true) == false) return false;
+                }
+                if (c is NotContains)
+                {
+                    if (CheckContains(c, false) == false) return false;
                 }
             }
-            return null;
+            return true;
         }
 
         /// <summary>
-        /// Returns null or the first check that does not match.
+        /// Returns true if a match is found and sense = true. For NotContains, use sense = false.
         /// </summary>
-        /// <param name="check"></param>
+        /// <param name="criteria"></param>
+        /// <param name="sense"></param>
         /// <returns></returns>
-        private Check CheckMissingMatch(Check check, List<Criteria> criteriaList)
+        private bool CheckContains(Criteria criteria, bool sense)
         {
-            foreach (var c in criteriaList)
-            {
-                if (c is Contains) // Other criteria might be added such as NoLessThan and NoMoreThan.
-                {
-                    if (CheckContains(check, c) == null)
-                    {
-                        return check;
-                    }
-                }
-            }
-            return null;
-        }
+            // If Property was a parameter, then use the expansion
+            var content = ParameterDictionary.ContainsKey(criteria.Property)
+                ? ParameterDictionary[criteria.Property]
+                : criteria.Property;
 
-        /// <summary>
-        /// Returns the check if a match is found, else returns null
-        /// </summary>
-        /// <param name="check"></param>
-        /// <param name="c"></param>
-        /// <returns></returns>
-        private Check CheckContains(Check check, Criteria c)
-        {
-            switch (c.Name)
-            {
-                case "direct3d":
-                    if (SystemInfo.Direct3DFeatureLevels.Contains(c.Value, StringComparer.OrdinalIgnoreCase))
-                        return check;
-                    break;
-                case "installed_version":
-                    if (SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
-                        return check;
-                    break;
-                case "system":
-                    var os = SystemInfo.OperatingSystem;
-                    var system = $"{os.Name} {os.Version} {os.Architecture} {os.Language} {os.Languages ?? new string[0]}";
-                    if (system.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
-                        return check;
-                    break;
-                default:
-                    if (GetSetting(c.Name).IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
-                    {
-                        return check;
-                    }
-                    if (c.Name.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1)
-                    {
-                        return check;
-                    }
-                    return null;    // Any check that is not recognised is skipped.
-            }
-            return null;
+            var result = content.IndexOf(criteria.Value, StringComparison.OrdinalIgnoreCase) > -1 == sense;
+            LogCheckContains(criteria.Value, sense, content, result);
+            return result;
         }
-
-        /// <summary>
-        /// Returns the check if a match is not found, else returns null
-        /// </summary>
-        /// <param name="check"></param>
-        /// <param name="c"></param>
-        /// <returns></returns>
-        private Check CheckNotContains(Check check, Criteria c)
-        {
-            switch (c.Name)
-            {
-                case "direct3d":
-                    if (SystemInfo.Direct3DFeatureLevels.Contains(c.Value, StringComparer.OrdinalIgnoreCase) == false)
-                        return check;
-                    break;
-                case "installed_version":
-                    if (SystemInfo.Application.Version.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1 == false)
-                        return check;
-                    break;
-                case "system":
-                    var os = SystemInfo.OperatingSystem;
-                    var system = $"{os.Name} {os.Version} {os.Architecture} {os.Language} {os.Languages ?? new string[0]}";
-                    if (system.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1 == false)
-                        return check;
-                    break;
-                default:
-                    if (GetSetting(c.Name).IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1 == false)
-                    {
-                        return check;
-                    }
-                    if (c.Name.IndexOf(c.Value, StringComparison.OrdinalIgnoreCase) > -1 == false)
-                    {
-                        return check;
-                    }
-                    return null;    // Any check that is not recognised is skipped.
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the property value of a UserSetting. The setting must match case as in "Setting.SimpleControlPhysics".
-        /// </summary>
-        /// <param name="settingText"></param>
-        /// <returns></returns>
-        string GetSetting(string settingText)
-        {
-            var nameArray = settingText.Split('.'); // 2 elements: "Settings, "<property>", e.g. "SimpleControlPhysics" 
-            if (nameArray[0] == "Settings" && nameArray.Length == 2)
-            {
-                return Settings.GetType().GetProperty(nameArray[1])?.GetValue(Settings).ToString() ?? "";
-            }
-            return "";
-        }
-
 
         /// <summary>
         /// Drop any notifications for the channel not selected
@@ -442,15 +335,16 @@ namespace ORTS
                 n.Title = ReplaceParameter(n.Title);
                 n.Date = ReplaceParameter(n.Date);
                 n.PrefixItemList?.ForEach(item => ReplaceItemParameter(item));
-                n.MetLists?.ItemList?.ForEach(item => ReplaceItemParameter(item));
+                n.Met.ItemList?.ForEach(item => ReplaceItemParameter(item));
                 n.SuffixItemList?.ForEach(item => ReplaceItemParameter(item));
             }
-            foreach (var c in Notifications.CheckList)
+            foreach (var list in Notifications.CheckList)
             {
-                c.ExcludesAllOf?.ForEach(criteria => ReplaceCriteriaParameter(criteria));
-                c.IncludesAllOf?.ForEach(criteria => ReplaceCriteriaParameter(criteria));
-                c.ExcludesAnyOf?.ForEach(criteria => ReplaceCriteriaParameter(criteria));
-                c.IncludesAnyOf?.ForEach(criteria => ReplaceCriteriaParameter(criteria));
+                foreach(var c in list?.AnyOfList)
+                {
+                    c?.AllOfList.ForEach(criteria => ReplaceCriteriaPropertyParameter(criteria));
+                    c?.AllOfList.ForEach(criteria => ReplaceCriteriaValueParameter(criteria));
+                }
             }
         }
 
@@ -464,78 +358,223 @@ namespace ORTS
                 update.Value = ReplaceParameter(update.Value);
         }
 
-        private void ReplaceCriteriaParameter(Criteria criteria)
+        /// <summary>
+        /// If Property is a parameter, remove {{..}} and add it and its replacement to the dictionary.
+        /// </summary>
+        /// <param name="criteria"></param>
+        private void ReplaceCriteriaPropertyParameter(Criteria criteria)
+        {
+            if (ContainsParameter(criteria.Property))
+            {
+                criteria.Property = ReplaceParameter(criteria.Property);
+            }
+        }
+
+        private void ReplaceCriteriaValueParameter(Criteria criteria)
         {
             criteria.Value = ReplaceParameter(criteria.Value);
         }
 
         private string ReplaceParameter(string field)
         {
-            if (field.Contains("{{") == false)
-                return field;
-            if (field.Contains("}}") == false)
-                return field;
+            if (ContainsParameter(field) == false) return field;
 
             var parameterArray = field.Split('{', '}'); // 5 elements: prefix, "", target, "", suffix
-            var target = parameterArray[2].ToLower();
+            var target = parameterArray[2];
+            var lowerCaseTarget = parameterArray[2].ToLower();
             var replacement = parameterArray[2]; // Default is original text
 
-            switch (target)
+            // If found in dictionary, then use that else extract it from program
+            if (ParameterDictionary.ContainsKey(lowerCaseTarget))
             {
-                case "update_mode":
-                    replacement = UpdateManager.ChannelName == ""
-                        ? "none"
-                        : UpdateManager.ChannelName;
-                    break;
-                case "latest_version":
-                    replacement = UpdateManager.LastUpdate == null 
-                        || UpdateManager.ChannelName == ""
-                        ? "none"
-                        : UpdateManager.LastUpdate.Version;
-                    break;
-                case "release_date":
-                    replacement = UpdateManager.LastUpdate == null
-                        ? "none"
-                        : $"{UpdateManager.LastUpdate.Date:dd-MMM-yy}";
-                    break;
-                case "installed_version":
-                    replacement = SystemInfo.Application.Version;
-                    break;
-                case "runtime":
-                    replacement = Runtime.ToString();
-                    break;
-                case "system":
-                    replacement = SystemInfo.OperatingSystem.ToString();
-                    break;
-                case "memory":
-                    replacement = Direct3DFeatureLevels.ToString();
-                    break;
-                case "cpu":
-                    replacement = "";
-                    foreach (var cpu in CPUs)
-                    {
-                        replacement += $", {cpu.Name}";
-                    }
-                    break;
-                case "gpu":
-                    replacement = "";
-                    foreach (var gpu in GPUs)
-                    {
-                        replacement += $", {gpu.Name}";
-                    }
-                    break;
-                case "direct3d":
-                    replacement = string.Join(",", Direct3DFeatureLevels);
-                    break;
-                default:
-                    var propertyValue = GetSetting(field);
-                    replacement = (propertyValue == "") 
-                        ? field     // strings that are not recognised are not replaced.
-                        : propertyValue;
-                    break;
+                replacement = ParameterDictionary[lowerCaseTarget];
+            }
+            else
+            {
+                switch (lowerCaseTarget)
+                {
+                    // Using "none" instead of "" so that records are readable.
+                    case "update_mode":
+                        replacement = (UpdateManager.ChannelName == "")
+                            ? "none"
+                            : UpdateManager.ChannelName;
+                        break;
+                    case "latest_version":
+                        replacement = UpdateManager.LastUpdate == null
+                            || UpdateManager.ChannelName == ""
+                            ? "none"
+                            : UpdateManager.LastUpdate.Version;
+                        break;
+                    case "release_date":
+                        replacement = UpdateManager.LastUpdate == null
+                            ? "none"
+                            : $"{UpdateManager.LastUpdate.Date:dd-MMM-yy}";
+                        break;
+
+                    case "installed_version":
+                        replacement = SystemInfo.Application.Version;
+                        break;
+                    case "runtime":
+                        replacement = Runtime.ToString();
+                        break;
+                    case "system":
+                        replacement = SystemInfo.OperatingSystem.ToString();
+                        break;
+                    case "memory":
+                        replacement = Direct3DFeatureLevels.ToString();
+                        break;
+                    case "cpu":
+                        replacement = "";
+                        foreach (var cpu in CPUs)
+                        {
+                            replacement += $", {cpu.Name}";
+                        }
+                        break;
+                    case "gpu":
+                        replacement = "";
+                        foreach (var gpu in GPUs)
+                        {
+                            replacement += $", {gpu.Name}";
+                        }
+                        break;
+                    case "direct3d":
+                        replacement = string.Join(",", Direct3DFeatureLevels);
+                        break;
+
+                    case "installed_routes":
+                        replacement = GetInstalledRoutes();
+                        break;
+
+                    default:
+                        var propertyValue = GetSetting(target);
+                        replacement = (propertyValue == "")
+                            ? field     // strings that are not recognised are not replaced.
+                            : propertyValue.ToLower().Replace("false", "off").Replace("true", "on");
+                        break;
+                }
+                ParameterDictionary.Add(lowerCaseTarget, replacement);
             }
 
             return parameterArray[0] + replacement + parameterArray[4];
+        }
+
+        private bool ContainsParameter(string field)
+        {
+            if (field.Contains("{{") == false) return false;
+            if (field.Contains("}}") == false) return false;
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the property value of a UserSetting. The setting must match case as in "Setting.SimpleControlPhysics".
+        /// </summary>
+        /// <param name="settingText"></param>
+        /// <returns></returns>
+        string GetSetting(string settingText)
+        {
+            var nameArray = settingText.Split('.'); // 2 elements: "Settings, "<property>", e.g. "SimpleControlPhysics" 
+            if (nameArray[0] == "Settings" && nameArray.Length == 2)
+            {
+                return Settings.GetType().GetProperty(nameArray[1])?.GetValue(Settings).ToString() ?? "";
+            }
+            return "";
+        }
+
+        private string GetInstalledRoutes()
+        {
+            var installedRouteList = "";
+            var contentDictionary = Settings.Folders.Folders;
+            foreach (var folder in contentDictionary)
+            {
+                var path = folder.Value + @"\ROUTES\";
+                if (Directory.Exists(path))
+                {
+                    foreach (var routePath in Directory.GetDirectories(path))
+                    {
+                        // Extract the last folder in the path - the route folder name, e.g. "SCE"
+                        var routeName = System.IO.Path.GetFileName(routePath).ToLower();
+                        installedRouteList += routeName + ",";
+                    }
+                }
+            }
+            return installedRouteList;
+        }
+
+        public OverrideParameterList GetOverrideParameters()
+        {
+            // To support testing of a new remote notifications.json file before it is published,
+            // GetNotifications tests first for a local file notifications_override_values.json
+            // and uses that if present to override the current program values, else it extracts these from the program.
+
+            var filename = @"notifications_trial_parameters.json";
+            if (System.IO.File.Exists(filename))
+            {
+                // Input from local file into a string
+                var overrideParametersSerial = System.IO.File.ReadAllText(filename);
+
+                var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
+                var jsonInput = JsonConvert.DeserializeObject<OverrideParameterList>(overrideParametersSerial, jsonSettings);
+
+                return jsonInput;
+            }
+            else
+                return null;
+        }
+
+        public void LogOverrideParameters()
+        {
+            if (Log == false) return;
+
+            if (File.Exists(LogFile)) File.Delete(LogFile);
+
+            using (StreamWriter sw = File.CreateText(LogFile))
+            {
+                sw.WriteLine("Parameters overridden:");
+                foreach (var p in ParameterDictionary)
+                {
+                    sw.WriteLine($"{p.Key} = {p.Value}");
+                }
+                sw.WriteLine();
+            }
+        }
+
+        public void LogParameters()
+        {
+            if (Log == false) return;
+
+            using (StreamWriter sw = File.AppendText(LogFile))
+            {
+                sw.WriteLine("Parameters used:");
+                foreach (var p in ParameterDictionary)
+                {
+                    sw.WriteLine($"{p.Key} = {p.Value}");
+                }
+                sw.WriteLine();
+            }
+        }
+
+        public void LogNotification(Notification n)
+        {
+            AppendToLog($"Notification: {n.Title}");
+        }
+        public void LogChecks(CheckId ci)
+        {
+            AppendToLog($"CheckId: {ci.Id}");
+        }
+        public void LogCheckContains(string value, bool sense, string content, bool result)
+        {
+            var negation = sense ? "" : "NOT ";
+            AppendToLog($"Check: '{value}' {negation}contained in '{content}' = {result}");
+        }
+
+        public void AppendToLog(string record)
+        {
+            if (Log == false) return;
+
+            using (StreamWriter sw = File.AppendText(LogFile))
+            {
+                sw.WriteLine(record);
+            }
         }
     }
 }
