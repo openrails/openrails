@@ -51,7 +51,7 @@ namespace ORTS
     }
     class Heading : Item
     {
-        public string Color { get; set; } = "blue";
+        new public string Color { get; set; } = "blue";
     }
     class Link : Item
     {
@@ -114,8 +114,14 @@ namespace ORTS
         public string Value { get; set; }       // {{new_version}}, {{10_0}}
     }
 
-    public class OverrideValues
+    public class ParameterValue
     {
-        public List<Criteria> ValueList = new List<Criteria>();
+        public string Parameter { get; set; }    // installed_version, direct3d, runtime, system, memory, cpu, gpu
+        public string Value { get; set; }       // {{new_version}}, {{10_0}}
+    }
+
+    public class OverrideParameterList
+    {
+        public List<ParameterValue> ParameterValueList = new List<ParameterValue>();
     }
 }

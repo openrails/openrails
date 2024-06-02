@@ -25,6 +25,7 @@ using Newtonsoft.Json;
 using ORTS.Common;
 using ORTS.Settings;
 using ORTS.Updater;
+using SharpDX;
 using static ORTS.Common.SystemInfo;
 using static ORTS.NotificationPage;
 
@@ -67,9 +68,12 @@ namespace ORTS
                 ParameterDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 
                 // To support testing, add any overriding values to the ValueDictionary
-                GetOverrideValues()?.ValueList.ForEach(i => ParameterDictionary.Add(i.Property, i.Value));
+                GetOverrideParameters()?.ParameterValueList.ForEach(i => ParameterDictionary.Add(i.Parameter, i.Value));
+                LogOverrideParameters();
 
                 ReplaceParameters();
+                LogParameters();
+
                 PopulatePageList();
                 ArePagesVisible = false;
             }
@@ -78,6 +82,9 @@ namespace ORTS
                 Error = ex;
             }
         }
+
+        static bool Log = false;
+        static string LogFile = "notifications_trial_log.txt";
 
         public Notifications GetNotifications()
         {
@@ -91,6 +98,9 @@ namespace ORTS
             {
                 // Input from local file into a string
                 notificationsSerial = System.IO.File.ReadAllText(filename);
+
+                // Turn on logging
+                Log = true;
             }
             else
             {
@@ -105,7 +115,7 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Fetch the Notifications from     https://static.openrails.org/api/notifications/menu.json 
+        /// Fetch the Notifications from https://static.openrails.org/api/notifications/menu.json 
         /// This file is copied hourly from Github openrails/notifications/
         /// </summary>
         private string GetRemoteJson()
@@ -131,7 +141,7 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Ultimately there will be a list of notifications downloaded from     https://static.openrails.org/api/notifications/menu.json .
+        /// Ultimately there will be a list of notifications downloaded from https://static.openrails.org/api/notifications/menu.json .
         /// Until then, there is a single notification announcing either that a new update is available or the installation is up to date.
         /// </summary>
         void SetUpdateNotificationPage()
@@ -166,7 +176,9 @@ namespace ORTS
             NewPageCount = 1;
             var list = Notifications.NotificationList;
             var n = list[Index];
+            LogNotification(n);
 
+            var skipPage = false;
             new NTitleControl(page, Index + 1, list.Count, n.Date, n.Title).Add();
 
             // Check constraints for the MetList.
@@ -182,10 +194,18 @@ namespace ORTS
             }
             else
             {
-                failingCheck.UnmetItemList?.ForEach(item => AddItemToPage(page, item));
+                if (failingCheck.UnmetItemList == null) // Omit this section to skip the notification entirely.
+                {
+                    // Don't skip if there is only one notification.
+                    if (list.Count > 1) skipPage = true;
+                }
+                else
+                {
+                    failingCheck.UnmetItemList?.ForEach(item => AddItemToPage(page, item));
+                }
             }
             n.SuffixItemList?.ForEach(item => AddItemToPage(page, item));
-            PageList.Add(page);
+            if (skipPage == false) PageList.Add(page);
         }
 
         /// <summary>
@@ -200,6 +220,8 @@ namespace ORTS
             Check failingCheck = null;
             foreach (var nc in n.Met.CheckIdList) // CheckIdList is optional
             {
+                LogChecks(nc);
+
                 // Find the matching check
                 var check = Notifications.CheckList.Where(c => c.Id == nc.Id).FirstOrDefault();
                 if (check != null && check.AnyOfList.Count() > 0)
@@ -276,7 +298,10 @@ namespace ORTS
             var content = ParameterDictionary.ContainsKey(criteria.Property)
                 ? ParameterDictionary[criteria.Property]
                 : criteria.Property;
-            return content.IndexOf(criteria.Value, StringComparison.OrdinalIgnoreCase) > -1 == sense;
+
+            var result = content.IndexOf(criteria.Value, StringComparison.OrdinalIgnoreCase) > -1 == sense;
+            LogCheckContains(criteria.Value, sense, content, result);
+            return result;
         }
 
         /// <summary>
@@ -355,17 +380,18 @@ namespace ORTS
             if (ContainsParameter(field) == false) return field;
 
             var parameterArray = field.Split('{', '}'); // 5 elements: prefix, "", target, "", suffix
-            var target = parameterArray[2].ToLower();
+            var target = parameterArray[2];
+            var lowerCaseTarget = parameterArray[2].ToLower();
             var replacement = parameterArray[2]; // Default is original text
 
             // If found in dictionary, then use that else extract it from program
-            if (ParameterDictionary.ContainsKey(target))
+            if (ParameterDictionary.ContainsKey(lowerCaseTarget))
             {
-                replacement = ParameterDictionary[target];
+                replacement = ParameterDictionary[lowerCaseTarget];
             }
             else
             {
-                switch (target)
+                switch (lowerCaseTarget)
                 {
                     // Using "none" instead of "" so that records are readable.
                     case "update_mode":
@@ -420,13 +446,13 @@ namespace ORTS
                         break;
 
                     default:
-                        var propertyValue = GetSetting(field);
+                        var propertyValue = GetSetting(target);
                         replacement = (propertyValue == "")
                             ? field     // strings that are not recognised are not replaced.
-                            : propertyValue;
+                            : propertyValue.ToLower().Replace("false", "off").Replace("true", "on");
                         break;
                 }
-                ParameterDictionary.Add(target, replacement);
+                ParameterDictionary.Add(lowerCaseTarget, replacement);
             }
 
             return parameterArray[0] + replacement + parameterArray[4];
@@ -474,25 +500,81 @@ namespace ORTS
             return installedRouteList;
         }
 
-        public OverrideValues GetOverrideValues()
+        public OverrideParameterList GetOverrideParameters()
         {
             // To support testing of a new remote notifications.json file before it is published,
             // GetNotifications tests first for a local file notifications_override_values.json
             // and uses that if present to override the current program values, else it extracts these from the program.
 
-            var filename = @"notifications_override_values.json";
+            var filename = @"notifications_trial_parameters.json";
             if (System.IO.File.Exists(filename))
             {
                 // Input from local file into a string
-                var overrideValuesSerial = System.IO.File.ReadAllText(filename);
+                var overrideParametersSerial = System.IO.File.ReadAllText(filename);
 
                 var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
-                var jsonInput = JsonConvert.DeserializeObject<OverrideValues>(overrideValuesSerial, jsonSettings);
+                var jsonInput = JsonConvert.DeserializeObject<OverrideParameterList>(overrideParametersSerial, jsonSettings);
 
                 return jsonInput;
             }
             else
                 return null;
+        }
+
+        public void LogOverrideParameters()
+        {
+            if (Log == false) return;
+
+            if (File.Exists(LogFile)) File.Delete(LogFile);
+
+            using (StreamWriter sw = File.CreateText(LogFile))
+            {
+                sw.WriteLine("Parameters overridden:");
+                foreach (var p in ParameterDictionary)
+                {
+                    sw.WriteLine($"{p.Key} = {p.Value}");
+                }
+                sw.WriteLine();
+            }
+        }
+
+        public void LogParameters()
+        {
+            if (Log == false) return;
+
+            using (StreamWriter sw = File.AppendText(LogFile))
+            {
+                sw.WriteLine("Parameters used:");
+                foreach (var p in ParameterDictionary)
+                {
+                    sw.WriteLine($"{p.Key} = {p.Value}");
+                }
+                sw.WriteLine();
+            }
+        }
+
+        public void LogNotification(Notification n)
+        {
+            AppendToLog($"Notification: {n.Title}");
+        }
+        public void LogChecks(CheckId ci)
+        {
+            AppendToLog($"CheckId: {ci.Id}");
+        }
+        public void LogCheckContains(string value, bool sense, string content, bool result)
+        {
+            var negation = sense ? "" : "NOT ";
+            AppendToLog($"Check: '{value}' {negation}contained in '{content}' = {result}");
+        }
+
+        public void AppendToLog(string record)
+        {
+            if (Log == false) return;
+
+            using (StreamWriter sw = File.AppendText(LogFile))
+            {
+                sw.WriteLine(record);
+            }
         }
     }
 }
