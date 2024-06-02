@@ -67,7 +67,9 @@ namespace ORTS.Common
             }
             catch (ManagementException error)
             {
-                Trace.WriteLine(error);
+                // Likely to catch multiple exceptions like:
+                // Exception thrown: 'System.IO.InvalidDataException' in ORTS.Menu.dll
+                //Trace.WriteLine(error);
             }
 
             NativeMethods.GlobalMemoryStatusEx(MemoryStatusExtended);
