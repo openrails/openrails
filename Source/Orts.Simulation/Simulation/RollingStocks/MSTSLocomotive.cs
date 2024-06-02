@@ -239,6 +239,16 @@ namespace Orts.Simulation.RollingStocks
         //float DebugSpeed = 5.0f; // Initialise at 5 mph
         //float DebugTimer = 0.0f;
 
+        public enum SteamLocomotiveFuelTypes
+        {
+            Unknown,
+            Oil,
+            Wood, // not used at the moment
+            Coal, // defaults to coal
+        }
+
+        public SteamLocomotiveFuelTypes SteamLocomotiveFuelType;
+
         // Adhesion parameters
         public enum SlipControlType
         {
@@ -478,15 +488,6 @@ namespace Orts.Simulation.RollingStocks
         public float ThrottleIntervention = -1;
         public float DynamicBrakeIntervention = -1;
 
-        public enum SteamLocomotiveFuelTypes
-        {
-            Unknown,
-            Oil,
-            Wood, // not used at the moment
-            Coal, // defaults to coal
-        }
-
-        public SteamLocomotiveFuelTypes SteamLocomotiveFuelType;
         public enum TractionMotorTypes
         {
             DC,
