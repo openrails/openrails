@@ -225,7 +225,6 @@ namespace Orts.Simulation.RollingStocks
         float BoilerSteamDensityLBpFT3; // Steam Density based on current boiler pressure
         float BoilerWaterDensityLBpFT3; // Water Density based on current boiler pressure
         float BoilerWaterTempK;
-        public float FuelBurnRateSmoothedKGpS;
         float FuelFeedRateKGpS;
         float DesiredChange;     // Amount of change to increase fire mass, clamped to range 0.0 - 1.0
         public float CylinderSteamUsageLBpS;
@@ -291,10 +290,14 @@ namespace Orts.Simulation.RollingStocks
         float PressureRatio = 0.001f;    // Ratio to control burn rate - based upon boiler pressure
         float BurnRateRawKGpS;           // Raw combustion (burn) rate
         float MaxCombustionRateKgpS;
+        SmoothedData FuelRateOil = new SmoothedData(3); // Oil Stoker is more responsive and only takes x seconds to fully react to changing needs.
         SmoothedData FuelRateStoker = new SmoothedData(15); // Stoker is more responsive and only takes x seconds to fully react to changing needs.
-        SmoothedData FuelRate = new SmoothedData(45); // Automatic fireman takes x seconds to fully react to changing needs.
-        SmoothedData BurnRateSmoothKGpS = new SmoothedData(150); // Changes in BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat.
-        float FuelRateSmoothed = 0.0f;     // Smoothed Fuel Rate
+        SmoothedData FuelRateCoal = new SmoothedData(45); // Automatic fireman takes x seconds to fully react to changing needs for coal firing.
+        SmoothedData CoalBurnRateSmoothKGpS = new SmoothedData(150); // Changes in BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat.
+        SmoothedData OilBurnRateSmoothKGpS = new SmoothedData(3); // Changes in Oil BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat. Oil faster then steam
+        float FuelFeedRateSmoothedKGpS = 0.0f;     // Smoothed Fuel feedd Rate
+        public float FuelBurnRateSmoothedKGpS; // Smoothed fuel burning rate
+        float OilSpecificGravity = 0.9659f; // Assume a mid range of API for this value, say API = 15.
 
         int NumberofTractiveForceValues = 36;
         float[,] TractiveForceAverageN = new float[5, 37];
@@ -964,6 +967,19 @@ namespace Orts.Simulation.RollingStocks
                         STFException.TraceWarning(stf, "Assumed unknown engine type " + steamengineType);
                     }
                     break;
+                case "engine(steamlocomotivefueltype":
+                    stf.MustMatch("(");
+                    var steamLocomotiveFuelType = stf.ReadString();
+                    try
+                    {
+                        SteamLocomotiveFuelType = (SteamLocomotiveFuelTypes)Enum.Parse(typeof(SteamLocomotiveFuelTypes), steamLocomotiveFuelType);
+                    }
+                    catch
+                    {
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                            STFException.TraceWarning(stf, "Assumed unknown engine type " + steamLocomotiveFuelType);
+                    }
+                    break;
                 case "engine(ortssteamboilertype":
                     stf.MustMatch("(");
                     string typeString1 = stf.ReadString();
@@ -1057,6 +1073,7 @@ namespace Orts.Simulation.RollingStocks
             SteamGearRatioHigh = locoCopy.SteamGearRatioHigh;
             MaxSteamGearPistonRateFtpM = locoCopy.MaxSteamGearPistonRateFtpM;
             SteamEngineType = locoCopy.SteamEngineType;
+            SteamLocomotiveFuelType = locoCopy.SteamLocomotiveFuelType;
             IsSaturated = locoCopy.IsSaturated;
             IsTenderRequired = locoCopy.IsTenderRequired;
             HasSuperheater = locoCopy.HasSuperheater;
@@ -1130,7 +1147,7 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Save(LargeEjectorController, outf);
             outf.Write(FuelBurnRateSmoothedKGpS);
             outf.Write(BoilerHeatSmoothedBTU);
-            outf.Write(FuelRateSmoothed);
+            outf.Write(FuelFeedRateSmoothedKGpS);
             base.Save(outf);
         }
 
@@ -1193,11 +1210,12 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Restore(SmallEjectorController, inf);
             ControllerFactory.Restore(LargeEjectorController, inf);
             FuelBurnRateSmoothedKGpS = inf.ReadSingle();
-            BurnRateSmoothKGpS.ForceSmoothValue(FuelBurnRateSmoothedKGpS);
+            CoalBurnRateSmoothKGpS.ForceSmoothValue(FuelBurnRateSmoothedKGpS);
+            OilBurnRateSmoothKGpS.ForceSmoothValue(FuelBurnRateSmoothedKGpS);
             BoilerHeatSmoothedBTU = inf.ReadSingle();
             BoilerHeatSmoothBTU.ForceSmoothValue(BoilerHeatSmoothedBTU);
-            FuelRateSmoothed = inf.ReadSingle();
-            FuelRate.ForceSmoothValue(FuelRateSmoothed);
+            FuelFeedRateSmoothedKGpS = inf.ReadSingle();
+            FuelRateCoal.ForceSmoothValue(FuelFeedRateSmoothedKGpS);
             base.Restore(inf);
         }
 
@@ -1289,6 +1307,16 @@ namespace Orts.Simulation.RollingStocks
                     BoilerEfficiencyGrateAreaLBpFT2toX = SteamTable.SatBoilerEfficiencyGrateAreaInterpolatorLbstoX();
                     Trace.TraceInformation("BoilerEfficiencyGrateAreaLBpFT2toX (Saturated) - default information read from SteamTables");
                 }
+
+            }
+
+            // Type of fuel selected
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Unknown)
+            {
+                SteamLocomotiveFuelType = SteamLocomotiveFuelTypes.Coal;
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("SteamLocomotiveFuelType set to Default value of {0}", SteamLocomotiveFuelType);
 
             }
 
@@ -3377,7 +3405,7 @@ namespace Orts.Simulation.RollingStocks
                 Variable2_Booster = Variable2;
             }
 
-            Variable3 = FuelRateSmoothed * 100;
+            Variable3 = FuelFeedRateSmoothedKGpS * 100;
 
             const int rotations = 2;
             const int fullLoop = 10 * rotations;
@@ -3696,6 +3724,12 @@ namespace Orts.Simulation.RollingStocks
             else // ***********  AI Fireman *****************
             {
 
+//                if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+//                {
+//                    BurnRateRawKGpS = (W.ToKW(W.FromBTUpS(PreviousBoilerHeatOutBTUpS - BoilerHeatExceptionsBtupS)) / FuelCalorificKJpKG);
+//                }
+//                else
+                {
                 if (PreviousTotalSteamUsageLBpS > TheoreticalMaxSteamOutputLBpS)
                 {
                     FiringSteamUsageRateLBpS = TheoreticalMaxSteamOutputLBpS; // hold usage rate if steam usage rate exceeds boiler max output
@@ -3769,6 +3803,7 @@ namespace Orts.Simulation.RollingStocks
                     BurnRateRawKGpS = 0.9f * pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)])); // AI fire on goes to approx 100% of fire needed to maintain full boiler steam generation
                 }
             }
+            }
 
             float MinimumBurnRateKGpS = 0.0012626f; // Set minimum burn rate @ 10lb/hr
             BurnRateRawKGpS = MathHelper.Clamp(BurnRateRawKGpS, MinimumBurnRateKGpS, BurnRateRawKGpS); // ensure burnrate never goes to zero, unless the fire drops to an unacceptable level, or a fusible plug blows
@@ -3825,8 +3860,20 @@ namespace Orts.Simulation.RollingStocks
                 BurnRateRawKGpS = 0.0f; // Drop fire due to melting of fusible plug and steam quenching fire, change later to allow graduate ramp down.
             }
 
-            BurnRateSmoothKGpS.Update(elapsedClockSeconds, BurnRateRawKGpS);
-            FuelBurnRateSmoothedKGpS = BurnRateSmoothKGpS.SmoothedValue;
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+            {
+                //     var oilburnrate = throttle * MaxFuelBurnGrateKGpS;
+                //     OilBurnRateSmoothKGpS.Update(elapsedClockSeconds, oilburnrate);
+
+                OilBurnRateSmoothKGpS.Update(elapsedClockSeconds, BurnRateRawKGpS);
+                FuelBurnRateSmoothedKGpS = OilBurnRateSmoothKGpS.SmoothedValue;
+            }
+            else
+            {
+                CoalBurnRateSmoothKGpS.Update(elapsedClockSeconds, BurnRateRawKGpS);
+                FuelBurnRateSmoothedKGpS = CoalBurnRateSmoothKGpS.SmoothedValue;
+            }
+
             FuelBurnRateSmoothedKGpS = MathHelper.Clamp(FuelBurnRateSmoothedKGpS, 0.0f, MaxFuelBurnGrateKGpS); // clamp burnrate to max fuel that can be burnt within grate limit
             #endregion
 
@@ -3834,22 +3881,37 @@ namespace Orts.Simulation.RollingStocks
 
             if (FiringIsManual)
             {
-                FuelRateSmoothed = CoalIsExhausted ? 0 : FiringRateController.CurrentValue;
-                FuelFeedRateKGpS = MaxFiringRateKGpS * FuelRateSmoothed;
+                FuelFeedRateSmoothedKGpS = CoalIsExhausted ? 0 : FiringRateController.CurrentValue;
+                FuelFeedRateKGpS = MaxFiringRateKGpS * FuelFeedRateSmoothedKGpS;
             }
             else if (elapsedClockSeconds > 0.001 && MaxFiringRateKGpS > 0.001)
             {
                 // Automatic fireman, ish.
-                DesiredChange = MathHelper.Clamp(((IdealFireMassKG - FireMassKG) + FuelBurnRateSmoothedKGpS) / MaxFiringRateKGpS, 0.001f, 1);
-                if (StokerIsMechanical) // if a stoker is fitted expect a quicker response to fuel feeding
+
+                if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
                 {
+
+                    // var OilDesiredRate = MathHelper.Clamp(FuelBurnRateSmoothedKGpS / MaxFiringRateKGpS, 0.001f, 1);
+
+                    var OilDesiredRate = BurnRateRawKGpS;
+
+                    FuelRateOil.Update(elapsedClockSeconds, OilDesiredRate); // faster fuel feed rate for stoker    
+                    FuelFeedRateSmoothedKGpS = CoalIsExhausted ? 0 : FuelRateOil.SmoothedValue; // If tender coal is empty stop fuelrate (feeding coal onto fire). 
+                    DisplayMaxFiringRateKGpS = MaxFiringRateKGpS; // Reset display max firing rate to new figure
+
+                }
+                else if (StokerIsMechanical) // if a stoker is fitted expect a quicker response to fuel feeding
+                {
+
+                    DesiredChange = MathHelper.Clamp(((IdealFireMassKG - FireMassKG) + FuelBurnRateSmoothedKGpS) / MaxFiringRateKGpS, 0.001f, 1);
                     FuelRateStoker.Update(elapsedClockSeconds, DesiredChange); // faster fuel feed rate for stoker    
-                    FuelRateSmoothed = CoalIsExhausted ? 0 : FuelRateStoker.SmoothedValue; // If tender coal is empty stop fuelrate (feeding coal onto fire). 
+                    FuelFeedRateSmoothedKGpS = CoalIsExhausted ? 0 : FuelRateStoker.SmoothedValue; // If tender coal is empty stop fuelrate (feeding coal onto fire). 
                 }
                 else
                 {
-                    FuelRate.Update(elapsedClockSeconds, DesiredChange); // slower fuel feed rate for fireman
-                    FuelRateSmoothed = CoalIsExhausted ? 0 : FuelRate.SmoothedValue; // If tender coal is empty stop fuelrate (feeding coal onto fire).
+                    DesiredChange = MathHelper.Clamp(((IdealFireMassKG - FireMassKG) + FuelBurnRateSmoothedKGpS) / MaxFiringRateKGpS, 0.001f, 1);
+                    FuelRateCoal.Update(elapsedClockSeconds, DesiredChange); // slower fuel feed rate for AI fireman
+                    FuelFeedRateSmoothedKGpS = CoalIsExhausted ? 0 : FuelRateCoal.SmoothedValue; // If tender coal is empty stop fuelrate (feeding coal onto fire).
                 }
 
                 float CurrentFireLevelfactor = 0.95f; // factor representing the how low firemass has got compared to ideal firemass  
@@ -3882,15 +3944,17 @@ namespace Orts.Simulation.RollingStocks
                 if (FuelBoost && !FuelBoostReset) // if fuel boost is still on, and hasn't been reset - needs further refinement as this shouldn't be able to be maintained indefinitely
                 {
                     DisplayMaxFiringRateKGpS = MaxTheoreticalFiringRateKgpS; // Set display value with temporary higher shovelling level
-                    FuelFeedRateKGpS = MaxTheoreticalFiringRateKgpS * FuelRateSmoothed;  // At times of heavy burning allow AI fireman to overfuel
+                    FuelFeedRateKGpS = MaxTheoreticalFiringRateKgpS * FuelFeedRateSmoothedKGpS;  // At times of heavy burning allow AI fireman to overfuel
                     FuelBoostOnTimerS += elapsedClockSeconds; // Time how long to fuel boost for
                 }
                 else
                 {
-                    DisplayMaxFiringRateKGpS = MaxFiringRateKGpS; // Rest display max firing rate to new figure
-                    FuelFeedRateKGpS = MaxFiringRateKGpS * FuelRateSmoothed;
+                    DisplayMaxFiringRateKGpS = MaxFiringRateKGpS; // Reset display max firing rate to new figure
+                    FuelFeedRateKGpS = MaxFiringRateKGpS * FuelFeedRateSmoothedKGpS;
                 }
+
             }
+
             // Calculate update to firemass as a result of adding fuel to the fire
             FireMassKG += elapsedClockSeconds * (FuelFeedRateKGpS - FuelBurnRateSmoothedKGpS);
             FireMassKG = MathHelper.Clamp(FireMassKG, 0, MaxFireMassKG);
@@ -7764,6 +7828,24 @@ namespace Orts.Simulation.RollingStocks
 #endif
 
             status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Fireman"));
+
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+            {
+                status.AppendFormat("{0}\t{1}\t{2:N0}/{7}\t\t{3}\t{4:N0}/{7}\t\t{5}\t{6:N0}/{7}\n",
+                Simulator.Catalog.GetString("Fire:"),
+                Simulator.Catalog.GetString("MaxFireR"),
+                FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(OilSpecificGravity * (Kg.ToLb(DisplayMaxFiringRateKGpS) / WaterLBpUKG))), IsMetric, IsUK),
+                Simulator.Catalog.GetString("FeedRate"),
+                FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(OilSpecificGravity * (Kg.ToLb(FuelFeedRateSmoothedKGpS) / WaterLBpUKG))), IsMetric, IsUK),
+                Simulator.Catalog.GetString("BurnRate"),
+                FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(OilSpecificGravity * (Kg.ToLb(FuelBurnRateSmoothedKGpS) / WaterLBpUKG))), IsMetric, IsUK),
+                FormatStrings.h
+                );
+
+            }
+            else
+            {
+
             status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}\t{6:N0}/{13}\t\t{7}\t{8:N0}/{13}\t\t{9}\t{10:N0}/{13}\t\t{11}\t{12}/{14}{13}\t{15}\t{16}/{18}{17}\t\t{19}\t{20:N0}\n",
                 Simulator.Catalog.GetString("Fire:"),
                 Simulator.Catalog.GetString("Ideal"),
@@ -7773,7 +7855,7 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetString("MaxFireR"),
                 FormatStrings.FormatMass(pS.TopH(DisplayMaxFiringRateKGpS), IsMetric),
                 Simulator.Catalog.GetString("FeedRate"),
-                FormatStrings.FormatMass(pS.TopH(FuelFeedRateKGpS), IsMetric),
+                FormatStrings.FormatMass(pS.TopH(FuelFeedRateSmoothedKGpS), IsMetric),
                 Simulator.Catalog.GetString("BurnRate"),
                 FormatStrings.FormatMass(pS.TopH(FuelBurnRateSmoothedKGpS), IsMetric),
                 Simulator.Catalog.GetString("Combust"),
@@ -7787,6 +7869,8 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetString("MaxBurn"),
                 MaxFiringRateLbpH
                 );
+            }
+
 
 #if DEBUG_LOCO_BURN_AI
             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8:N2}\t{9}\t{10:N2}\t{11}\t{12:N0}\t{13}\t{14:N0}\t{15}\t{16:N0}\t{17}\t{18:N0}\t{19}\t{20:N0}\t{21}\t{22}\t{23}\t{24}\t{25}\t{26}\n {27}\t{28}\t{29:N3}\n",
@@ -7860,6 +7944,24 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
+                if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+                {
+                    status.AppendFormat("{0}\t{1}\t{2:N0}\t{3:N0}%\t{4}\t{5}\t\t{6:N0}%\t{7}\t{8:N0}\t{9}\t\t{10:N0}\n",
+                        Simulator.Catalog.GetString("Tender:"),
+                        Simulator.Catalog.GetString("Oil"),
+                        FormatStrings.FormatFuelVolume(L.FromGUK(OilSpecificGravity * (Kg.ToLb(TenderCoalMassKG) / WaterLBpUKG)), IsMetric, IsUK),
+                        TenderCoalMassKG / MaxTenderCoalMassKG * 100,
+                        Simulator.Catalog.GetString("Water"),
+                        FormatStrings.FormatFuelVolume(L.FromGUK(CombinedTenderWaterVolumeUKG), IsMetric, IsUK),
+                        CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG * 100,
+                        Simulator.Catalog.GetString("Steam"),
+                        FormatStrings.FormatMass(Kg.FromLb(CumulativeCylinderSteamConsumptionLbs), IsMetric),
+                        Simulator.Catalog.GetString("TotSteam"),
+                        FormatStrings.FormatMass(Kg.FromLb(CummulativeTotalSteamConsumptionLbs), IsMetric)
+                        );
+                }
+                else // default to coal
+                {
                 status.AppendFormat("{0}\t{1}\t{2}\t{3:N0}%\t{4}\t{5}\t\t{6:N0}%\t{7}\t{8:N0}\t{9}\t\t{10:N0}\n",
                     Simulator.Catalog.GetString("Tender:"),
                     Simulator.Catalog.GetString("Coal"),
@@ -7874,6 +7976,35 @@ namespace Orts.Simulation.RollingStocks
                     FormatStrings.FormatMass(Kg.FromLb(CummulativeTotalSteamConsumptionLbs), IsMetric)
                     );
             }
+            }
+
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+            {
+
+                status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\n",
+                Simulator.Catalog.GetString("Status:"),
+                Simulator.Catalog.GetString("OilOut"),
+                CoalIsExhausted ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("WaterOut"),
+                WaterIsExhausted ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("FireOut"),
+                FireIsExhausted ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("Stoker"),
+                StokerIsMechanical ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("Boost"),
+                FuelBoost ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("GrLimit"),
+                IsGrateLimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("FireOn"),
+                SetFireOn ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("FireOff"),
+                SetFireOff ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("AIOR"),
+                AIFireOverride ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
+                );
+            }
+            else
+            {
 
             status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\n",
                 Simulator.Catalog.GetString("Status:"),
@@ -7896,6 +8027,8 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetString("AIOR"),
                 AIFireOverride ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
                 );
+
+            }
 
             if (SteamEngineType == SteamEngineTypes.Geared)
             {
