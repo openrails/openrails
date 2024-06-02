@@ -734,6 +734,18 @@ namespace Orts.Simulation.RollingStocks
             BrakeSystem.Initialize();
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
 
+            // Check Brake Shoe Friction parameters
+            if (BrakeShoeType == BrakeShoeTypes.Cast_Iron_P10 || BrakeShoeType == BrakeShoeTypes.Cast_Iron_P6 || BrakeShoeType == BrakeShoeTypes.High_Friction_Composite || BrakeShoeType == BrakeShoeTypes.Disc_Pads)
+            {
+                float NewtonsTokNewtons = 0.001f;
+                float maxBrakeShoeForcekN = NewtonsTokNewtons * MaxBrakeShoeForceN / NumberCarBrakeShoes;
+
+                if (maxBrakeShoeForcekN > 20 && Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Maximum force per brakeshoe is {0} and has exceeded {1}, check MaxBrakeShoeForceN {2} or NumberCarBrakeShoes {3}",  FormatStrings.FormatForce(maxBrakeShoeForcekN * 1000, IsMetric), FormatStrings.FormatForce(20 * 1000, IsMetric), FormatStrings.FormatForce(MaxBrakeShoeForceN, IsMetric), NumberCarBrakeShoes);
+                }
+            } 
+            
             //CurveForceFilter.Initialize();
 
             // Initialize tunnel resistance values
@@ -3424,6 +3436,10 @@ namespace Orts.Simulation.RollingStocks
                 var friction = 0.0f;
                 float NewtonsTokNewtons = 0.001f;
                 float brakeShoeForcekN = NewtonsTokNewtons * BrakeShoeForceN / NumberCarBrakeShoes;
+            if (brakeShoeForcekN > 20) // Make sure that brake shoe force doesn't exceed 20 as it will cause a -ve brakeshoe CoF
+            {
+                brakeShoeForcekN = 20;
+            }
                 friction = k1 * ((brakeShoeForcekN + k2) / (brakeShoeForcekN + k3)) * ((MpS.ToKpH(AbsSpeedMpS) + k4) / (MpS.ToKpH(AbsSpeedMpS) + k5));
 
                 return friction;
