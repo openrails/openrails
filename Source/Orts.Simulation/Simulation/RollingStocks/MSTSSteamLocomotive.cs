@@ -6348,7 +6348,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     absStartTractiveEffortN = Math.Abs(TractiveForceN); // update to new maximum TE
                 }
-            }          
+            }
             if (float.IsNaN(MotiveForceN))
                 MotiveForceN = 0;
 
