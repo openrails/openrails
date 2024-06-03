@@ -1592,6 +1592,9 @@ namespace Orts.Viewer3D
                     else
                         switchPresent = 0;
                     return switchPresent;
+                case Orts.Formats.Msts.VolumeCurve.Controls.TunnelControlled:
+                    var tunnelSize = car.CarTunnelData.numTunnelPaths;
+                    return tunnelSize;
 
                 default: return 0;
             }
@@ -2031,6 +2034,7 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.WheelRpM_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.TrackJoints_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CarOnSwitch_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Dec_Past:
                     if (newValue < SMS.Threshold)
                     {
                         Signaled = true;
@@ -2052,6 +2056,7 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.WheelRPM_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.TrackJoints_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CarOnSwitch_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Inc_Past:
                     if (newValue > SMS.Threshold)
                     {
                         Signaled = true;
@@ -2162,6 +2167,14 @@ namespace Orts.Viewer3D
                     else
                         switchPresent = 0;
                     return switchPresent;
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Inc_Past:
+                    var inTunnel = 0;
+                    if (car.CarTunnelData.FrontPositionBeyondStartOfTunnel.HasValue) // Car is in tunnel
+                        inTunnel = 1;
+                    else
+                        inTunnel = 0;
+                    return inTunnel;
 
                 default:
                     return 0;
