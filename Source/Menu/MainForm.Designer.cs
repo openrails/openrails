@@ -54,7 +54,6 @@ namespace ORTS
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
             this.panelDetails = new System.Windows.Forms.Panel();
-            this.pictureBoxLogo = new System.Windows.Forms.PictureBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.buttonDocuments = new System.Windows.Forms.Button();
             this.buttonDownloadContent = new System.Windows.Forms.Button();
@@ -97,18 +96,22 @@ namespace ORTS
             this.comboBoxTimetable = new System.Windows.Forms.ComboBox();
             this.comboBoxTimetableSet = new System.Windows.Forms.ComboBox();
             this.label15 = new System.Windows.Forms.Label();
-            this.linkLabelUpdate = new System.Windows.Forms.LinkLabel();
             this.testingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStripTools = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.linkLabelChangeLog = new System.Windows.Forms.LinkLabel();
             this.contextMenuStripDocuments = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.pbNotificationsNone = new System.Windows.Forms.PictureBox();
+            this.pictureBoxLogo = new System.Windows.Forms.PictureBox();
+            this.pbNotificationsSome = new System.Windows.Forms.PictureBox();
+            this.lblNotificationCount = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).BeginInit();
             this.panel1.SuspendLayout();
             this.panelModeActivity.SuspendLayout();
             this.panelModeTimetable.SuspendLayout();
             this.contextMenuStripTools.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbNotificationsNone)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbNotificationsSome)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonStart
@@ -348,17 +351,6 @@ namespace ORTS
             this.panelDetails.Name = "panelDetails";
             this.panelDetails.Size = new System.Drawing.Size(543, 379);
             this.panelDetails.TabIndex = 20;
-            // 
-            // pictureBoxLogo
-            // 
-            this.pictureBoxLogo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.pictureBoxLogo.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxLogo.Image")));
-            this.pictureBoxLogo.Location = new System.Drawing.Point(12, 472);
-            this.pictureBoxLogo.Name = "pictureBoxLogo";
-            this.pictureBoxLogo.Size = new System.Drawing.Size(64, 64);
-            this.pictureBoxLogo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBoxLogo.TabIndex = 5;
-            this.pictureBoxLogo.TabStop = false;
             // 
             // panel1
             // 
@@ -863,19 +855,6 @@ namespace ORTS
             this.label15.Text = "Timetable set:";
             this.label15.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // linkLabelUpdate
-            // 
-            this.linkLabelUpdate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.linkLabelUpdate.ImageAlign = System.Drawing.ContentAlignment.TopLeft;
-            this.linkLabelUpdate.Location = new System.Drawing.Point(577, 9);
-            this.linkLabelUpdate.Name = "linkLabelUpdate";
-            this.linkLabelUpdate.Size = new System.Drawing.Size(265, 16);
-            this.linkLabelUpdate.TabIndex = 37;
-            this.linkLabelUpdate.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            this.linkLabelUpdate.UseMnemonic = false;
-            this.linkLabelUpdate.Visible = false;
-            this.linkLabelUpdate.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelUpdate_LinkClicked);
-            // 
             // testingToolStripMenuItem
             // 
             this.testingToolStripMenuItem.Name = "testingToolStripMenuItem";
@@ -891,36 +870,71 @@ namespace ORTS
             this.contextMenuStripTools.Name = "contextMenuStrip1";
             this.contextMenuStripTools.Size = new System.Drawing.Size(112, 26);
             // 
-            // linkLabelChangeLog
-            // 
-            this.linkLabelChangeLog.Location = new System.Drawing.Point(299, 9);
-            this.linkLabelChangeLog.Name = "linkLabelChangeLog";
-            this.linkLabelChangeLog.Size = new System.Drawing.Size(272, 16);
-            this.linkLabelChangeLog.TabIndex = 39;
-            this.linkLabelChangeLog.TabStop = true;
-            this.linkLabelChangeLog.Text = "What\'s new?";
-            this.linkLabelChangeLog.UseMnemonic = false;
-            this.linkLabelChangeLog.Visible = false;
-            this.linkLabelChangeLog.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabelChangeLog_LinkClicked);
-            // 
             // contextMenuStripDocuments
             // 
             this.contextMenuStripDocuments.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.contextMenuStripDocuments.Name = "contextMenuStripDocuments";
             this.contextMenuStripDocuments.Size = new System.Drawing.Size(61, 4);
             // 
+            // pbNotificationsNone
+            // 
+            this.pbNotificationsNone.Image = global::ORTS.Properties.Resources.chat_icon_no_message_transparent;
+            this.pbNotificationsNone.InitialImage = ((System.Drawing.Image)(resources.GetObject("pbNotificationsNone.InitialImage")));
+            this.pbNotificationsNone.Location = new System.Drawing.Point(805, 0);
+            this.pbNotificationsNone.Name = "pbNotificationsNone";
+            this.pbNotificationsNone.Size = new System.Drawing.Size(37, 31);
+            this.pbNotificationsNone.TabIndex = 40;
+            this.pbNotificationsNone.TabStop = false;
+            this.pbNotificationsNone.Click += new System.EventHandler(this.pbNotificationsNone_Click);
+            // 
+            // pictureBoxLogo
+            // 
+            this.pictureBoxLogo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.pictureBoxLogo.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxLogo.Image")));
+            this.pictureBoxLogo.Location = new System.Drawing.Point(12, 472);
+            this.pictureBoxLogo.Name = "pictureBoxLogo";
+            this.pictureBoxLogo.Size = new System.Drawing.Size(64, 64);
+            this.pictureBoxLogo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBoxLogo.TabIndex = 5;
+            this.pictureBoxLogo.TabStop = false;
+            // 
+            // pbNotificationsSome
+            // 
+            this.pbNotificationsSome.BackColor = System.Drawing.Color.Transparent;
+            this.pbNotificationsSome.Image = global::ORTS.Properties.Resources.chat_icon_new_message_transparent;
+            this.pbNotificationsSome.Location = new System.Drawing.Point(805, 0);
+            this.pbNotificationsSome.Name = "pbNotificationsSome";
+            this.pbNotificationsSome.Size = new System.Drawing.Size(37, 31);
+            this.pbNotificationsSome.TabIndex = 41;
+            this.pbNotificationsSome.TabStop = false;
+            this.pbNotificationsSome.Click += new System.EventHandler(this.pbNotificationsSome_Click);
+            // 
+            // lblNotificationCount
+            // 
+            this.lblNotificationCount.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(234)))), ((int)(((byte)(0)))), ((int)(((byte)(6)))));
+            this.lblNotificationCount.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblNotificationCount.ForeColor = System.Drawing.Color.White;
+            this.lblNotificationCount.Location = new System.Drawing.Point(827, 3);
+            this.lblNotificationCount.Name = "lblNotificationCount";
+            this.lblNotificationCount.Size = new System.Drawing.Size(8, 8);
+            this.lblNotificationCount.TabIndex = 42;
+            this.lblNotificationCount.Text = "1";
+            this.lblNotificationCount.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblNotificationCount.Click += new System.EventHandler(this.lblNotificationCount_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(854, 548);
-            this.Controls.Add(this.linkLabelChangeLog);
+            this.Controls.Add(this.lblNotificationCount);
+            this.Controls.Add(this.pbNotificationsSome);
+            this.Controls.Add(this.pbNotificationsNone);
             this.Controls.Add(this.panelModeTimetable);
             this.Controls.Add(this.panelModeActivity);
             this.Controls.Add(this.radioButtonModeTimetable);
             this.Controls.Add(this.radioButtonModeActivity);
             this.Controls.Add(this.label25);
-            this.Controls.Add(this.linkLabelUpdate);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.panelDetails);
             this.Controls.Add(this.comboBoxFolder);
@@ -942,7 +956,6 @@ namespace ORTS
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox3.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).EndInit();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.panelModeActivity.ResumeLayout(false);
@@ -950,6 +963,9 @@ namespace ORTS
             this.panelModeTimetable.ResumeLayout(false);
             this.panelModeTimetable.PerformLayout();
             this.contextMenuStripTools.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pbNotificationsNone)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbNotificationsSome)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1013,10 +1029,8 @@ namespace ORTS
         private System.Windows.Forms.ComboBox comboBoxTimetable;
         private System.Windows.Forms.ComboBox comboBoxTimetableSet;
         private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.LinkLabel linkLabelUpdate;
         private System.Windows.Forms.ToolStripMenuItem testingToolStripMenuItem;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripTools;
-        private System.Windows.Forms.LinkLabel linkLabelChangeLog;
         private System.Windows.Forms.Button buttonDocuments;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripDocuments;
         private System.Windows.Forms.Button buttonDownloadContent;
@@ -1026,5 +1040,8 @@ namespace ORTS
         private System.Windows.Forms.Button buttonStartMP;
         private System.Windows.Forms.Label labelTimetableWeatherFile;
         private System.Windows.Forms.ComboBox comboBoxTimetableWeatherFile;
+        private System.Windows.Forms.PictureBox pbNotificationsNone;
+        private System.Windows.Forms.PictureBox pbNotificationsSome;
+        private System.Windows.Forms.Label lblNotificationCount;
     }
 }
