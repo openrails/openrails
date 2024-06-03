@@ -1302,12 +1302,12 @@ namespace Orts.Formats.Msts
                         {
                             //This if clause covers among others following cases:
                             // Case 1 (e.g. engine brake lever of gp38):
-			                //NumFrames ( 18 2 9 )
-			                //NumPositions ( 2 0 1 )
-			                //NumValues ( 2 0 0.3 )
-			                //Orientation ( 0 )
-			                //DirIncrease ( 0 )
-			                //ScaleRange ( 0 1 )
+                            //NumFrames ( 18 2 9 )
+                            //NumPositions ( 2 0 1 )
+                            //NumValues ( 2 0 0.3 )
+                            //Orientation ( 0 )
+                            //DirIncrease ( 0 )
+                            //ScaleRange ( 0 1 )
                             // Add missing positions
                             Positions.Add(FramesCount - 1);
                             // Fill empty Values
@@ -1322,12 +1322,12 @@ namespace Orts.Formats.Msts
                         {
                             //This if clause covers among others following cases:
                             // Case 1 (e.g. train brake lever of Acela): 
-			                //NumFrames ( 12 4 3 )
-			                //NumPositions ( 5 0 1 9 10 11 )
-			                //NumValues ( 5 0 0.2 0.85 0.9 0.95 )
-			                //Orientation ( 1 )
-			                //DirIncrease ( 1 )
-			                //ScaleRange ( 0 1 )
+                            //NumFrames ( 12 4 3 )
+                            //NumPositions ( 5 0 1 9 10 11 )
+                            //NumValues ( 5 0 0.2 0.85 0.9 0.95 )
+                            //Orientation ( 1 )
+                            //DirIncrease ( 1 )
+                            //ScaleRange ( 0 1 )
                             //
                             // Fill empty Values
                             int iValues = 1;

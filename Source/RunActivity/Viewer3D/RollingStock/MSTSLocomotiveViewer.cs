@@ -2147,16 +2147,16 @@ namespace Orts.Viewer3D.RollingStock
                     var dynBrakePercent = (Locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || Locomotive.Train.Autopilot) ?
                         Locomotive.DynamicBrakePercent : Locomotive.LocalDynamicBrakePercent;
                     if (dynBrakePercent <= 0)
-                            index = 0;
+                        index = 0;
                     else if (Locomotive.DynamicBrakeController != null)
                     {
                         if (!Locomotive.HasSmoothStruc)
                             index = Locomotive.DynamicBrakeController.CurrentNotch;
                         else
                             index = PercentToIndex(Locomotive.DynamicBrakeController.CurrentValue);
-                                }
-                                else
-                                    index = PercentToIndex(dynBrakePercent);
+                    }
+                    else
+                        index = PercentToIndex(dynBrakePercent);
                     break;
                 case CABViewControlTypes.CPH_DISPLAY:
                 case CABViewControlTypes.CP_HANDLE:
