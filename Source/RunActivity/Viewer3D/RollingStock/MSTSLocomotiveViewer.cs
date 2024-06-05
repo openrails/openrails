@@ -4206,7 +4206,7 @@ namespace Orts.Viewer3D.RollingStock
 
             if (locoViewer.ThreeDimentionCabRenderer.ControlMap.TryGetValue(Key, out CabViewControlRenderer cvfr))
             {
-                float index = cvfr is CabViewDiscreteRenderer renderer ? renderer.GetDrawIndex() : cvfr.GetRangeFraction() * FrameCount;
+                float index = cvfr is CabViewDiscreteRenderer renderer ? renderer.GetDrawIndex() : cvfr.GetRangeFraction() * MaxFrame;
                 SetFrameClamp(index);
             }
         }
