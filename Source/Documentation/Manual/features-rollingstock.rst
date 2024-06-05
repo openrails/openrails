@@ -1560,12 +1560,14 @@ start with `ORTSBRAKECYLINDER`. This animation type should NOT be used for any b
 that can be actuated by the brake cylinder and the handbrakes. See the section on brake rigging
 animation for details.
 
-Unlike other animation types, the keyframes for brake cylinders do not represent time.
-Instead, the key value represents the level of brake cylinder extension. A value of 0.8
-represents the state where the brake cylinder has taken up the slack in the brake rigging,
-1.0 represents the level of brake cylinder extension at 50 psi/3.5 bar, and the maximum
-value of cylinder extension is 1.6, which should not be possible in normal operation.
-These values are the same regardless of the settings used in the engine or wagon file.
+Unlike other animation types, the keyframes for brake cylinders do not represent time, and cannot
+be set to arbitrary values. Instead, the key value represents the level of brake cylinder
+extension. A keyframe value of 8 represents the state where the brake cylinder has taken up the
+slack in the brake rigging, 10 represents the level of brake cylinder extension at 50 psi/3.5
+bar, and the maximum value of cylinder extension is 16, which should not be possible in normal
+operation. These values are the same regardless of the settings used in the engine or wagon file.
+NOTE: Brake animations should at minimum have 2 animation frames, one at keyframe 0 and the
+second at keyframe 8. Other keyframes are optional and may be included to fine-tune the animation.
 
 Note that the advanced brake cylinder calculations are only run on air brake systems on the
 player train to save computing power. As such, brake cylinder animations on AI trains
@@ -1575,7 +1577,8 @@ Handbrake Animation
 -------------------
 
 Handbrake wheels and levers can also be animated using the same process as two-state animations
-such as mirrors. The matrix name for animated handbrakes must begin with `ORTSHANDBRAKE`.
+such as mirrors, and the keyframe values will represent time in seconds like other animations.
+The matrix name for animated handbrakes must begin with `ORTSHANDBRAKE`.
 
 Brake Rigging and Brake Shoe Animation
 --------------------------------------
@@ -1585,10 +1588,10 @@ this includes brake rigging and brake shoes, but sometimes also includes brake c
 use animations with a matrix name starting with `ORTSBRAKERIGGING`. For this type of animation, the
 animation state will respond to the brake cylinder travel or the handbrake, whichever input is greater.
 
-The same keyframe rules as brake cylinder animations apply here. The 0.8 key should represent the state
+The same keyframe rules as brake cylinder animations apply here. A key value of 8 should represent the state
 where the brake shoes have made contact with the friction surface, and no further motion of brake shoes
-should occur after 0.8. Applying the handbrake will drive the animation to the 1.0 state, the same
-as a 50 psi/3.5 bar application of the brakes.
+should occur after 8, though the brake levers may still animate beyond this point. Applying the
+handbrake will also drive the animation to keyframe 10 (ie: same as 50 psi/3.5 bar application).
 
 Coupler and Airhose Animation
 =============================

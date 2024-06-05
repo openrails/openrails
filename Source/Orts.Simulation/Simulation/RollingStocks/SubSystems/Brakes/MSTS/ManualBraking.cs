@@ -358,7 +358,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override float GetNormalizedCylTravel()
         {
-            return ManualBrakingCurrentFraction;
+            return Car.BrakeShoeForceN > 0.0f ? 1.0f : 0.0f;
         }
 
         public override float GetVacResVolume()
