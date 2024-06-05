@@ -422,7 +422,7 @@ namespace Orts.Viewer3D
         public LightPrimitive(Light light)
         {
             Light = light;
-            StateCount = Light.Cycle ? 2 * Light.States.Count - 2 : Light.States.Count;
+            StateCount = Math.Max(Light.Cycle ? 2 * Light.States.Count - 2 : Light.States.Count, 1);
             UpdateStates(State, (State + 1) % StateCount);
         }
 
