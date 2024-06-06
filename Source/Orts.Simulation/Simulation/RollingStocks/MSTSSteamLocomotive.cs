@@ -297,7 +297,8 @@ namespace Orts.Simulation.RollingStocks
         SmoothedData OilBurnRateSmoothKGpS = new SmoothedData(3); // Changes in Oil BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat. Oil faster then steam
         float FuelFeedRateSmoothedKGpS = 0.0f;     // Smoothed Fuel feedd Rate
         public float FuelBurnRateSmoothedKGpS; // Smoothed fuel burning rate
-        float OilSpecificGravity = 0.9659f; // Assume a mid range of API for this value, say API = 15.
+        float OilSpecificGravity = 0.9659f; // Assume a mid range of API for this value, say API = 15 @ 20 Cdeg.
+        float WaterSpecificGravity = 1.0f; // Water @ 20 degC.
 
         int NumberofTractiveForceValues = 36;
         float[,] TractiveForceAverageN = new float[5, 37];
@@ -383,7 +384,7 @@ namespace Orts.Simulation.RollingStocks
         float IdealFireDepthIN = 7.0f;      // Assume standard coal coverage of grate = 7 inches.
         float FuelDensityKGpM3 = 864.5f;    // Anthracite Coal : 50 - 58 (lb/ft3), 800 - 929 (kg/m3)
         float DamperFactorManual = 1.0f;    // factor to control draft through fire when locomotive is running in Manual mode
-        public float WaterLBpUKG = 10.0f;    // lbs of water in 1 gal (uk)
+        public float WaterLBpUKG = 10.021f;    // lbs of water in 1 gal (uk)
         public float MaxTenderCoalMassKG = 1;          // Maximum read from Eng File -  - this value must be non-zero, if not defined in ENG file, can cause NaN errors
         public float TenderCoalMassKG              // Decreased by firing and increased by refilling
         {
@@ -391,6 +392,7 @@ namespace Orts.Simulation.RollingStocks
             set { FuelController.CurrentValue = value / MaxTenderCoalMassKG; }
         }
 
+        float MaxTenderOilMassL;
         float DamperBurnEffect;             // Effect of the Damper control Used in manual firing)
         float Injector1Fraction = 0.0f;     // Fraction (0-1) of injector 1 flow from Fireman controller or AI
         float Injector2Fraction = 0.0f;     // Fraction (0-1) of injector  of injector 2 flow from Fireman controller or AI
@@ -914,10 +916,12 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortssuperheatcutoffpressurefactor": SuperheatCutoffPressureFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(shovelcoalmass": ShovelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(maxtendercoalmass": MaxTenderCoalMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "engine(ortsmaxtenderfueloilvolume": MaxTenderOilMassL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
                 case "engine(maxtenderwatermass": MaxLocoTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(steamfiremanmaxpossiblefiringrate": MaxFiringRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 2.2046f / 3600; break;
                 case "engine(steamfiremanismechanicalstoker": Stoker = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortssteamfiremanmaxpossiblefiringrate": ORTSMaxFiringRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 2.2046f / 3600; break;
+                case "engine(ortsfueloilspecificgravity": OilSpecificGravity = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(enginecontrollers(cutoff": CutoffController.Parse(stf); break;
                 case "engine(enginecontrollers(ortssmallejector": SmallEjectorController.Parse(stf); SmallEjectorControllerFitted = true; break;
                 case "engine(enginecontrollers(ortslargeejector": LargeEjectorController.Parse(stf); LargeEjectorControllerFitted = true; break;
@@ -1083,6 +1087,8 @@ namespace Orts.Simulation.RollingStocks
             CylinderExhausttoCutoff = locoCopy.CylinderExhausttoCutoff;
             CylinderCompressiontoCutoff = locoCopy.CylinderCompressiontoCutoff;
             CylinderAdmissiontoCutoff = locoCopy.CylinderAdmissiontoCutoff;
+            OilSpecificGravity = locoCopy.OilSpecificGravity;
+            MaxTenderOilMassL = locoCopy.MaxTenderOilMassL;
 
             SteamEngines.Copy(locoCopy.SteamEngines);
         }
@@ -1275,6 +1281,12 @@ namespace Orts.Simulation.RollingStocks
 
             CutoffInitialPressureDropRatioUpper = SteamTable.CutoffInitialPressureUpper();
             CutoffInitialPressureDropRatioLower = SteamTable.CutoffInitialPressureLower();
+
+            // Set Oil mass - if an oil locomotive
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil && MaxTenderOilMassL != 0)
+            {
+                MaxTenderCoalMassKG = MaxTenderOilMassL * OilSpecificGravity;
+            }
 
             // Assign default steam table values if cylinder event is not in ENG file
             if (CylinderExhausttoCutoff == null)
@@ -1477,9 +1489,9 @@ namespace Orts.Simulation.RollingStocks
                         // Set to compound operation intially
 
                         // include check to see if it is a balanced compound locomotive, ie number of HP cylinders = number of LP cylinders
-                        if(SteamEngines[i].NumberCylinders != SteamEngines[i].LPNumberCylinders && Simulator.Settings.VerboseConfigurationMessages)
+                        if (SteamEngines[i].NumberCylinders != SteamEngines[i].LPNumberCylinders && Simulator.Settings.VerboseConfigurationMessages)
                         {
-                            
+
                             Trace.TraceInformation("This doesn't appear to be a balanced compound locomotive, ie LP Cylinders = HP Cylinders. Game performnce may not be realistic.");
                             SteamEngines[i].NumberCylinders = 2;
                             SteamEngines[i].LPNumberCylinders = 2;
@@ -2029,13 +2041,13 @@ namespace Orts.Simulation.RollingStocks
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
-                if (SteamEngines[i].MaxIndicatedHorsePowerHP == 0 && SteamEngines.Count == 1 && MaxIndicatedHorsePowerHP != 0) 
-                    // if MaxIHP is not set in ENG file, then set a default
+                if (SteamEngines[i].MaxIndicatedHorsePowerHP == 0 && SteamEngines.Count == 1 && MaxIndicatedHorsePowerHP != 0)
+                // if MaxIHP is not set in ENG file, then set a default
                 {
                     SteamEngines[i].MaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                 }
                 else if (SteamEngines[i].MaxIndicatedHorsePowerHP == 0)
-                { 
+                {
                     // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
                     SteamEngines[i].MaxIndicatedHorsePowerHP = MaxSpeedFactor * (SteamEngines[i].MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;  // To be checked what MaxTractive Effort is for the purposes of this formula.
                     MaxIndicatedHorsePowerHP += SteamEngines[i].MaxIndicatedHorsePowerHP;
@@ -2065,7 +2077,7 @@ namespace Orts.Simulation.RollingStocks
             // Check to see if MaxIHP is in fact limited by the boiler
             if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
             {
-             //   MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler - No need to limit IHP, naturally limited by steam production?????
+                //   MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler - No need to limit IHP, naturally limited by steam production?????
                 ISBoilerLimited = true;
             }
             else
