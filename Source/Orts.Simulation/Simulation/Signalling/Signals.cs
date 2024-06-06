@@ -567,7 +567,7 @@ namespace Orts.Simulation.Signalling
                 // update required part
                 // in preupdate, process all
 
-                int totalSignal = SignalObjects.Length - 1;
+                int totalSignal = foundSignals;
 
                 int updatestep = (totalSignal / 20) + 1;
                 if (preUpdate)
