@@ -1288,6 +1288,12 @@ namespace Orts.Simulation.RollingStocks
                 MaxTenderCoalMassKG = MaxTenderOilMassL * OilSpecificGravity;
             }
 
+            // Oil burning locomotives will always have mechanical stokers
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+            {
+                StokerIsMechanical = true;
+            }
+
             // Assign default steam table values if cylinder event is not in ENG file
             if (CylinderExhausttoCutoff == null)
             {
