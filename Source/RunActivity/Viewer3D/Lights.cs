@@ -422,7 +422,7 @@ namespace Orts.Viewer3D
         public LightPrimitive(Light light)
         {
             Light = light;
-            StateCount = Light.Cycle ? 2 * Light.States.Count - 2 : Light.States.Count;
+            StateCount = Math.Max(Light.Cycle ? 2 * Light.States.Count - 2 : Light.States.Count, 1);
             UpdateStates(State, (State + 1) % StateCount);
         }
 
@@ -437,7 +437,7 @@ namespace Orts.Viewer3D
                 for (var i = 0; i < Light.States.Count - 1; i++)
                     transitionHandler(i, i, i + 1);
                 for (var i = Light.States.Count - 1; i > 0; i--)
-                    transitionHandler(Light.States.Count * 2 - 1 - i, i, i - 1);
+                    transitionHandler((Light.States.Count * 2 - 2) - i, i, i - 1);
             }
             else
             {
@@ -891,6 +891,12 @@ namespace Orts.Viewer3D
 
         protected override void UpdateStates(int stateIndex1, int stateIndex2)
         {
+            // Cycling light: state index will be set above actual number of states
+            if (stateIndex1 >= Light.States.Count)
+                stateIndex1 = StateCount - stateIndex1;
+            if (stateIndex2 >= Light.States.Count)
+                stateIndex2 = StateCount - stateIndex2;
+
             var state1 = Light.States[stateIndex1];
             var state2 = Light.States[stateIndex2];
 
