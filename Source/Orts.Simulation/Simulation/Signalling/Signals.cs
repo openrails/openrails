@@ -585,7 +585,7 @@ namespace Orts.Simulation.Signalling
                 }
 
                 updatecount += updatestep;
-                updatecount = updatecount > totalSignal ? 0 : updatecount;
+                updatecount = updatecount >= totalSignal ? 0 : updatecount;
             }
         }
 
