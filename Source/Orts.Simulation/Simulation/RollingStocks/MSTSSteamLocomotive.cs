@@ -294,7 +294,9 @@ namespace Orts.Simulation.RollingStocks
         SmoothedData FuelRateStoker = new SmoothedData(15); // Stoker is more responsive and only takes x seconds to fully react to changing needs.
         SmoothedData FuelRateCoal = new SmoothedData(45); // Automatic fireman takes x seconds to fully react to changing needs for coal firing.
         SmoothedData CoalBurnRateSmoothKGpS = new SmoothedData(150); // Changes in BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat.
-        SmoothedData OilBurnRateSmoothKGpS = new SmoothedData(3); // Changes in Oil BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat. Oil faster then steam
+        SmoothedData OilBurnRateSmoothKGpS = new SmoothedData(6); // Changes in Oil BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat. Oil faster then steam
+        SmoothedData OilBurnRateReductionSmoothKGpS = new SmoothedData(0.25f); // When in reduction we would expect the heat to drop off rapidly for an oil fire
+
         float FuelFeedRateSmoothedKGpS = 0.0f;     // Smoothed Fuel feedd Rate
         public float FuelBurnRateSmoothedKGpS; // Smoothed fuel burning rate
         float OilSpecificGravity = 0.9659f; // Assume a mid range of API for this value, say API = 15 @ 20 Cdeg.
@@ -488,6 +490,7 @@ namespace Orts.Simulation.RollingStocks
         float TimeFuelBoostOnS = 300.0f;    // Time to allow fuel boosting to go on for 
         float TimeFuelBoostResetS = 1200.0f;// Time to wait before next fuel boost
         float throttle;
+        float previousThrottle;
         float SpeedEquivMpS = 27.0f;          // Equvalent speed of 60mph in mps (27m/s) - used for damper control
 
         // Cylinder related parameters
@@ -3742,84 +3745,77 @@ namespace Orts.Simulation.RollingStocks
             else // ***********  AI Fireman *****************
             {
 
-//                if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
-//                {
-//                    BurnRateRawKGpS = (W.ToKW(W.FromBTUpS(PreviousBoilerHeatOutBTUpS - BoilerHeatExceptionsBtupS)) / FuelCalorificKJpKG);
-//                }
-//                else
+                if (PreviousTotalSteamUsageLBpS > TheoreticalMaxSteamOutputLBpS)
                 {
-                    if (PreviousTotalSteamUsageLBpS > TheoreticalMaxSteamOutputLBpS)
+                    FiringSteamUsageRateLBpS = TheoreticalMaxSteamOutputLBpS; // hold usage rate if steam usage rate exceeds boiler max output
+                }
+                else
+                {
+                    FiringSteamUsageRateLBpS = PreviousTotalSteamUsageLBpS; // Current steam usage rate
+                }
+
+                AIFiremanBurnFactorExceed = HeatRatio * PressureRatio;  // Firing rate for AI fireman if firemass drops, and fireman needs to exceed normal capacity
+                AIFiremanBurnFactor = HeatRatio * PressureRatio * FullBoilerHeatRatio * MaxBoilerHeatRatio; // Firing rate factor under normal conditions
+                float AIFiremanStartingBurnFactor = 4.0f;
+
+                if (ShovelAnyway && BoilerHeatBTU < MaxBoilerHeatBTU) // will force fire burn rate to increase even though boiler heat seems excessive
+                {
+                    // burnrate will be the radiation loss @ rest & then related to heat usage as a factor of the maximum boiler output
+                    // ignores total bolier heat to allow burn rate to increase if boiler heat usage is exceeding input
+                    BurnRateRawKGpS = (W.ToKW(W.FromBTUpS(PreviousBoilerHeatOutBTUpS - BoilerHeatExceptionsBtupS)) / FuelCalorificKJpKG) * AIFiremanBurnFactorExceed;
+                }
+                else
+                {
+
+                    if (BoilerHeatBTU > MaxBoilerHeatBTU && BoilerHeatBTU <= MaxBoilerSafetyPressHeatBTU && throttle > 0.1 && cutoff > 0.1 && BoilerHeatInBTUpS < PreviousBoilerHeatOutBTUpS && FullMaxPressBoilerHeat)
+                    // This allows for situation where boiler heat has gone beyond safety valve heat, and is reducing, but steam will be required shortly so don't allow fire to go too low
                     {
-                        FiringSteamUsageRateLBpS = TheoreticalMaxSteamOutputLBpS; // hold usage rate if steam usage rate exceeds boiler max output
+                        // Burn Rate rate if Boiler Heat is too high
+                        BurnRateRawKGpS = (W.ToKW(W.FromBTUpS(PreviousBoilerHeatOutBTUpS - BoilerHeatExceptionsBtupS)) / FuelCalorificKJpKG) * AIFiremanStartingBurnFactor; // Calculate the amount of coal that should be burnt based upon heat used by boiler
                     }
                     else
                     {
-                        FiringSteamUsageRateLBpS = PreviousTotalSteamUsageLBpS; // Current steam usage rate
+                        // Burn Rate rate if Boiler Heat is "normal"
+                        BurnRateRawKGpS = (W.ToKW(W.FromBTUpS(PreviousBoilerHeatOutBTUpS - BoilerHeatExceptionsBtupS)) / FuelCalorificKJpKG) * AIFiremanBurnFactor;
                     }
+                }
 
-                    AIFiremanBurnFactorExceed = HeatRatio * PressureRatio;  // Firing rate for AI fireman if firemass drops, and fireman needs to exceed normal capacity
-                    AIFiremanBurnFactor = HeatRatio * PressureRatio * FullBoilerHeatRatio * MaxBoilerHeatRatio; // Firing rate factor under normal conditions
-                    float AIFiremanStartingBurnFactor = 4.0f;
+                // AIFireOverride flag set to challenge driver if boiler AI fireman is overriden - ie steam safety valves will be set and blow if pressure is excessive
+                if (SetFireOn || SetFireOff) // indicate that AI fireman override is in use
+                {
+                    AIFireOverride = true; // Set whenever SetFireOn or SetFireOff are selected
+                }
+                else if (BoilerPressurePSI < MaxBoilerPressurePSI && BoilerHeatSmoothedBTU < MaxBoilerHeatBTU && BoilerHeatBTU < MaxBoilerSafetyPressHeatBTU)
+                {
+                    AIFireOverride = false; // Reset if pressure and heat back to "normal"
+                }
 
-                    if (ShovelAnyway && BoilerHeatBTU < MaxBoilerHeatBTU) // will force fire burn rate to increase even though boiler heat seems excessive
+                if (SetFireReset)  // Check FireReset Override command - resets fireoff and fireon override
+                {
+                    SetFireOff = false;
+                    SetFireOn = false;
+                    SetFireReset = false;
+                }
+
+                // Check FireOff Override command - allows player to force fire low in preparation for a station stop
+                if (SetFireOff)
+                {
+                    if (BoilerPressurePSI < MaxBoilerPressurePSI - 20.0f || BoilerHeatSmoothedBTU < 0.90f || (absSpeedMpS < 0.01f && throttle < 0.01f))
                     {
-                        // burnrate will be the radiation loss @ rest & then related to heat usage as a factor of the maximum boiler output
-                        // ignores total bolier heat to allow burn rate to increase if boiler heat usage is exceeding input
-                        BurnRateRawKGpS = (W.ToKW(W.FromBTUpS(PreviousBoilerHeatOutBTUpS - BoilerHeatExceptionsBtupS)) / FuelCalorificKJpKG) * AIFiremanBurnFactorExceed;
-                    }
-                    else
-                    {
-
-                        if (BoilerHeatBTU > MaxBoilerHeatBTU && BoilerHeatBTU <= MaxBoilerSafetyPressHeatBTU && throttle > 0.1 && cutoff > 0.1 && BoilerHeatInBTUpS < PreviousBoilerHeatOutBTUpS && FullMaxPressBoilerHeat)
-                        // This allows for situation where boiler heat has gone beyond safety valve heat, and is reducing, but steam will be required shortly so don't allow fire to go too low
-                        {
-                            // Burn Rate rate if Boiler Heat is too high
-                            BurnRateRawKGpS = (W.ToKW(W.FromBTUpS(PreviousBoilerHeatOutBTUpS - BoilerHeatExceptionsBtupS)) / FuelCalorificKJpKG) * AIFiremanStartingBurnFactor; // Calculate the amount of coal that should be burnt based upon heat used by boiler
-                        }
-                        else
-                        {
-                            // Burn Rate rate if Boiler Heat is "normal"
-                            BurnRateRawKGpS = (W.ToKW(W.FromBTUpS(PreviousBoilerHeatOutBTUpS - BoilerHeatExceptionsBtupS)) / FuelCalorificKJpKG) * AIFiremanBurnFactor;
-                        }
+                        SetFireOff = false; // Disable FireOff if bolierpressure too low
                     }
 
-                    // AIFireOverride flag set to challenge driver if boiler AI fireman is overriden - ie steam safety valves will be set and blow if pressure is excessive
-                    if (SetFireOn || SetFireOff) // indicate that AI fireman override is in use
-                    {
-                        AIFireOverride = true; // Set whenever SetFireOn or SetFireOff are selected
-                    }
-                    else if (BoilerPressurePSI < MaxBoilerPressurePSI && BoilerHeatSmoothedBTU < MaxBoilerHeatBTU && BoilerHeatBTU < MaxBoilerSafetyPressHeatBTU)
-                    {
-                        AIFireOverride = false; // Reset if pressure and heat back to "normal"
-                    }
+                    BurnRateRawKGpS = 0.0035f;
+                }
 
-                    if (SetFireReset)  // Check FireReset Override command - resets fireoff and fireon override
+                // Check FireOn Override command - allows player to force the fire up in preparation for a station departure
+                if (SetFireOn)
+                {
+                    if ((BoilerHeatSmoothedBTU > 0.995f * MaxBoilerHeatBTU && absSpeedMpS > 10.0f) || BoilerPressurePSI > MaxBoilerPressurePSI || absSpeedMpS <= 10.0f && (BoilerHeatSmoothedBTU > MaxBoilerHeatBTU || BoilerHeatBTU > 1.1f * MaxBoilerSafetyPressHeatBTU))
                     {
-                        SetFireOff = false;
-                        SetFireOn = false;
-                        SetFireReset = false;
+                        SetFireOn = false; // Disable FireOn if bolierpressure and boilerheat back to "normal"
                     }
-
-                    // Check FireOff Override command - allows player to force fire low in preparation for a station stop
-                    if (SetFireOff)
-                    {
-                        if (BoilerPressurePSI < MaxBoilerPressurePSI - 20.0f || BoilerHeatSmoothedBTU < 0.90f || (absSpeedMpS < 0.01f && throttle < 0.01f))
-                        {
-                            SetFireOff = false; // Disable FireOff if bolierpressure too low
-                        }
-
-                        BurnRateRawKGpS = 0.0035f;
-                    }
-
-                    // Check FireOn Override command - allows player to force the fire up in preparation for a station departure
-                    if (SetFireOn)
-                    {
-                        if ((BoilerHeatSmoothedBTU > 0.995f * MaxBoilerHeatBTU && absSpeedMpS > 10.0f) || BoilerPressurePSI > MaxBoilerPressurePSI || absSpeedMpS <= 10.0f && (BoilerHeatSmoothedBTU > MaxBoilerHeatBTU || BoilerHeatBTU > 1.1f * MaxBoilerSafetyPressHeatBTU))
-                        {
-                            SetFireOn = false; // Disable FireOn if bolierpressure and boilerheat back to "normal"
-                        }
-                        BurnRateRawKGpS = 0.9f * pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)])); // AI fire on goes to approx 100% of fire needed to maintain full boiler steam generation
-                    }
+                    BurnRateRawKGpS = 0.9f * pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)])); // AI fire on goes to approx 100% of fire needed to maintain full boiler steam generation
                 }
             }
 
@@ -3877,7 +3873,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 BurnRateRawKGpS = 0.0f; // Drop fire due to melting of fusible plug and steam quenching fire, change later to allow graduate ramp down.
             }
-            
+
             if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
             {
                 var oilburnrate = BurnRateRawKGpS;
@@ -3887,10 +3883,23 @@ namespace Orts.Simulation.RollingStocks
                     oilburnrate = MaxFiringRateKGpS; // burning rate can never be more then the max firing rate
                 }
 
-          //      OilBurnRateSmoothKGpS.ForceSmoothValue(oilburnrate);
-
+                OilBurnRateReductionSmoothKGpS.Update(elapsedClockSeconds, oilburnrate);
                 OilBurnRateSmoothKGpS.Update(elapsedClockSeconds, oilburnrate);
-                FuelBurnRateSmoothedKGpS = OilBurnRateSmoothKGpS.SmoothedValue;
+
+                if (previousThrottle < throttle)
+                {
+                    // Fire combustion drops rapidly if throttle closed (assume fuel feed is reduced rapidly)
+                    FuelBurnRateSmoothedKGpS = OilBurnRateReductionSmoothKGpS.SmoothedValue;
+                    OilBurnRateSmoothKGpS.ForceSmoothValue(oilburnrate);
+                }
+                else
+                {
+                    // Fire combustion is normal
+                    FuelBurnRateSmoothedKGpS = OilBurnRateSmoothKGpS.SmoothedValue;
+                }
+
+                previousThrottle = throttle;
+
             }
             else
             {
