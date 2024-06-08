@@ -294,7 +294,9 @@ namespace Orts.Simulation.RollingStocks
         SmoothedData FuelRateStoker = new SmoothedData(15); // Stoker is more responsive and only takes x seconds to fully react to changing needs.
         SmoothedData FuelRateCoal = new SmoothedData(45); // Automatic fireman takes x seconds to fully react to changing needs for coal firing.
         SmoothedData CoalBurnRateSmoothKGpS = new SmoothedData(150); // Changes in BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat.
-        SmoothedData OilBurnRateSmoothKGpS = new SmoothedData(3); // Changes in Oil BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat. Oil faster then steam
+        SmoothedData OilBurnRateSmoothKGpS = new SmoothedData(6); // Changes in Oil BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat. Oil faster then steam
+        SmoothedData OilBurnRateReductionSmoothKGpS = new SmoothedData(0.25f); // When in reduction we would expect the heat to drop off rapidly for an oil fire
+
         float FuelFeedRateSmoothedKGpS = 0.0f;     // Smoothed Fuel feedd Rate
         public float FuelBurnRateSmoothedKGpS; // Smoothed fuel burning rate
         float OilSpecificGravity = 0.9659f; // Assume a mid range of API for this value, say API = 15 @ 20 Cdeg.
@@ -488,6 +490,7 @@ namespace Orts.Simulation.RollingStocks
         float TimeFuelBoostOnS = 300.0f;    // Time to allow fuel boosting to go on for 
         float TimeFuelBoostResetS = 1200.0f;// Time to wait before next fuel boost
         float throttle;
+        float previousThrottle;
         float SpeedEquivMpS = 27.0f;          // Equvalent speed of 60mph in mps (27m/s) - used for damper control
 
         // Cylinder related parameters
@@ -3742,12 +3745,6 @@ namespace Orts.Simulation.RollingStocks
             else // ***********  AI Fireman *****************
             {
 
-//                if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
-//                {
-//                    BurnRateRawKGpS = (W.ToKW(W.FromBTUpS(PreviousBoilerHeatOutBTUpS - BoilerHeatExceptionsBtupS)) / FuelCalorificKJpKG);
-//                }
-//                else
-                {
                 if (PreviousTotalSteamUsageLBpS > TheoreticalMaxSteamOutputLBpS)
                 {
                     FiringSteamUsageRateLBpS = TheoreticalMaxSteamOutputLBpS; // hold usage rate if steam usage rate exceeds boiler max output
@@ -3821,7 +3818,6 @@ namespace Orts.Simulation.RollingStocks
                     BurnRateRawKGpS = 0.9f * pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)])); // AI fire on goes to approx 100% of fire needed to maintain full boiler steam generation
                 }
             }
-            }
 
             float MinimumBurnRateKGpS = 0.0012626f; // Set minimum burn rate @ 10lb/hr
             BurnRateRawKGpS = MathHelper.Clamp(BurnRateRawKGpS, MinimumBurnRateKGpS, BurnRateRawKGpS); // ensure burnrate never goes to zero, unless the fire drops to an unacceptable level, or a fusible plug blows
@@ -3887,10 +3883,23 @@ namespace Orts.Simulation.RollingStocks
                     oilburnrate = MaxFiringRateKGpS; // burning rate can never be more then the max firing rate
                 }
 
-          //      OilBurnRateSmoothKGpS.ForceSmoothValue(oilburnrate);
-
+                OilBurnRateReductionSmoothKGpS.Update(elapsedClockSeconds, oilburnrate);
                 OilBurnRateSmoothKGpS.Update(elapsedClockSeconds, oilburnrate);
-                FuelBurnRateSmoothedKGpS = OilBurnRateSmoothKGpS.SmoothedValue;
+
+                if (previousThrottle < throttle)
+                {
+                    // Fire combustion drops rapidly if throttle closed (assume fuel feed is reduced rapidly)
+                    FuelBurnRateSmoothedKGpS = OilBurnRateReductionSmoothKGpS.SmoothedValue;
+                    OilBurnRateSmoothKGpS.ForceSmoothValue(oilburnrate);
+                }
+                else
+                {
+                    // Fire combustion is normal
+                    FuelBurnRateSmoothedKGpS = OilBurnRateSmoothKGpS.SmoothedValue;
+                }
+
+                previousThrottle = throttle;
+
             }
             else
             {
