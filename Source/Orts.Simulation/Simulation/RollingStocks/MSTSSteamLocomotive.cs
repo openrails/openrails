@@ -3887,6 +3887,8 @@ namespace Orts.Simulation.RollingStocks
                     oilburnrate = MaxFiringRateKGpS; // burning rate can never be more then the max firing rate
                 }
 
+          //      OilBurnRateSmoothKGpS.ForceSmoothValue(oilburnrate);
+
                 OilBurnRateSmoothKGpS.Update(elapsedClockSeconds, oilburnrate);
                 FuelBurnRateSmoothedKGpS = OilBurnRateSmoothKGpS.SmoothedValue;
             }
@@ -6801,7 +6803,7 @@ namespace Orts.Simulation.RollingStocks
                 GeneratorSteamUsageLBpS = 0.0f; // No generator fitted to locomotive
             }
 
-            if (StokerIsMechanical)
+            if (StokerIsMechanical && SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Coal)
             {
                 StokerSteamUsageLBpS = pS.FrompH(MaxBoilerOutputLBpH) * (StokerMinUsage + (StokerMaxUsage - StokerMinUsage) * FuelFeedRateKGpS / MaxFiringRateKGpS);  // Caluculate current steam usage based on fuel feed rates
                 BoilerMassLB -= elapsedClockSeconds * StokerSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by mechanical stoker  
