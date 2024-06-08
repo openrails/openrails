@@ -3880,10 +3880,14 @@ namespace Orts.Simulation.RollingStocks
             
             if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
             {
-                //     var oilburnrate = throttle * MaxFuelBurnGrateKGpS;
-                //     OilBurnRateSmoothKGpS.Update(elapsedClockSeconds, oilburnrate);
+                var oilburnrate = BurnRateRawKGpS;
 
-                OilBurnRateSmoothKGpS.Update(elapsedClockSeconds, BurnRateRawKGpS);
+                if (BurnRateRawKGpS > MaxFiringRateKGpS)
+                {
+                    oilburnrate = MaxFiringRateKGpS; // burning rate can never be more then the max firing rate
+                }
+
+                OilBurnRateSmoothKGpS.Update(elapsedClockSeconds, oilburnrate);
                 FuelBurnRateSmoothedKGpS = OilBurnRateSmoothKGpS.SmoothedValue;
             }
             else
@@ -7488,9 +7492,20 @@ namespace Orts.Simulation.RollingStocks
                     status.AppendFormat("{0} = {1:F0}%\n", Simulator.Catalog.GetString("Fire Heat Loss"), FireHeatLossPercent * 100);
             }
 
-            status.AppendFormat("{0}{5} = {3:F0}% {1}, {4:F0}% {2}{5}\n", Simulator.Catalog.GetString("Fuel levels"), Simulator.Catalog.GetString("coal"), Simulator.Catalog.GetString("water"), 100 * coalPercent, 100 * waterPercent, fuelSafety);
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+            {
+                status.AppendFormat("{0}{5} = {3:F0}% {1}, {4:F0}% {2}{5}\n", Simulator.Catalog.GetString("Fuel levels"), Simulator.Catalog.GetString("oil"), Simulator.Catalog.GetString("water"), 100 * coalPercent, 100 * waterPercent, fuelSafety);
+            }
+            else if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+            {
+                status.AppendFormat("{0}{5} = {3:F0}% {1}, {4:F0}% {2}{5}\n", Simulator.Catalog.GetString("Fuel levels"), Simulator.Catalog.GetString("wood"), Simulator.Catalog.GetString("water"), 100 * coalPercent, 100 * waterPercent, fuelSafety);
+            }
+            else
+            {
+                status.AppendFormat("{0}{5} = {3:F0}% {1}, {4:F0}% {2}{5}\n", Simulator.Catalog.GetString("Fuel levels"), Simulator.Catalog.GetString("coal"), Simulator.Catalog.GetString("water"), 100 * coalPercent, 100 * waterPercent, fuelSafety);
+            }
 
-            return status.ToString();
+                    return status.ToString();
         }
 
         public override string GetDebugStatus()
@@ -7967,7 +7982,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
                 {
-                    status.AppendFormat("{0}\t{1}\t{2:N0}\t{3:N0}%\t{4}\t{5}\t\t{6:N0}%\t{7}\t{8:N0}\t{9}\t\t{10:N0}\n",
+                    status.AppendFormat("{0}\t{1}\t{2:N0}\t\t{3:N0}%\t{4}\t{5}\t\t{6:N0}%\t{7}\t{8:N0}\t{9}\t\t{10:N0}\n",
                         Simulator.Catalog.GetString("Tender:"),
                         Simulator.Catalog.GetString("Oil"),
                         FormatStrings.FormatFuelVolume(L.FromGUK(OilSpecificGravity * (Kg.ToLb(TenderCoalMassKG) / WaterLBpUKG)), IsMetric, IsUK),
