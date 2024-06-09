@@ -277,9 +277,20 @@ namespace Orts.Viewer3D
         public PoseableShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
             : base(viewer, path, initialPosition, flags)
         {
+            // In some cases, a corrupt shape file can prevent matrices from loading
+            if (SharedShape.Matrices.Length > 0)
+            {
             XNAMatrices = new Matrix[SharedShape.Matrices.Length];
             for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                 XNAMatrices[iMatrix] = SharedShape.Matrices[iMatrix];
+            }
+            else
+            {
+                Trace.TraceWarning("Could not determine matrices for shape file {0} file may be corrupt", SharedShape.FilePath);
+                // The 0th matrix should always be the identity matrix, add this to avoid crashes elsewhere
+                XNAMatrices = new Matrix[1];
+                XNAMatrices[0] = Matrix.Identity;
+            }
 
             if (SharedShape.LodControls.Length > 0 && SharedShape.LodControls[0].DistanceLevels.Length > 0 && SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length > 0 && SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0)
                 Hierarchy = SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy;
