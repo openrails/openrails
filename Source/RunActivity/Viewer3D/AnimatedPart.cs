@@ -104,17 +104,15 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
-        /// Smoothly changes the animation to a particular frame whilst clamping it to the frame count range.
+        /// Smoothly changes the animation to a particular frame whilst clamping it to the frame count range,
+        /// with adjustable animation speed (default 1 animation frame/sec).
         /// </summary>
-        public void UpdateFrameClamp(float frame, ElapsedTime elapsedTime)
+        public void UpdateFrameClamp(float frame, ElapsedTime elapsedTime, float fps = 1.0f)
         {
-            float newState;
-            if (Math.Abs(frame - AnimationKey) > 10.0f * elapsedTime.ClockSeconds)
-                newState = AnimationKey + Math.Sign(frame - AnimationKey) * 10.0f * elapsedTime.ClockSeconds;
+            if (Math.Abs(frame - AnimationKey) > elapsedTime.ClockSeconds * fps)
+                SetFrameClamp(AnimationKey + Math.Sign(frame - AnimationKey) * elapsedTime.ClockSeconds * fps);
             else
-                newState = frame;
-
-            SetFrameClamp(newState);
+                SetFrameClamp(frame);
         }
 
         /// <summary>
@@ -147,20 +145,21 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
-        /// Updates an animated part that toggles between two states (e.g. pantograph, doors, mirrors).
+        /// Updates an animated part that toggles between two states (e.g. pantograph, doors, mirrors),
+        /// with adjustable animation speed (default 1 animation frame/sec).
         /// </summary>
-        public void UpdateState(bool state, ElapsedTime elapsedTime)
+        public void UpdateState(bool state, ElapsedTime elapsedTime, float fps = 1.0f)
         {
-            SetFrameClamp(AnimationKey + (state ? 1 : -1) * elapsedTime.ClockSeconds);
+            SetFrameClamp(AnimationKey + (state ? 1 : -1) * elapsedTime.ClockSeconds * fps);
         }
 
         /// <summary>
-        /// Updates an animated part that toggles between two states and returns relative value of 
-        /// animation key (between 0 and 1).
+        /// Updates an animated part that toggles between two states with adjustable animation speed (default 1 animation frame/sec)
+        /// and returns relative value of animation key (between 0 and 1).
         /// </summary>
-        public float UpdateAndReturnState(bool state, ElapsedTime elapsedTime)
+        public float UpdateAndReturnState(bool state, ElapsedTime elapsedTime, float fps = 1.0f)
         {
-            SetFrameClamp(AnimationKey + (state ? 1 : -1) * elapsedTime.ClockSeconds);
+            SetFrameClamp(AnimationKey + (state ? 1 : -1) * elapsedTime.ClockSeconds * fps);
             return AnimationKey / MaxFrame;
         }
 
