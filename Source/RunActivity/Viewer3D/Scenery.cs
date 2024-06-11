@@ -367,8 +367,14 @@ namespace Orts.Viewer3D
                         // We might not have found the junction node; if so, fall back to the static track shape.
                         if (trJunctionNode != null)
                         {
-                            if (viewer.Simulator.UseSuperElevation > 0) SuperElevationManager.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ, shapeFilePath);
-                            sceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, trJunctionNode));
+                            if (viewer.Simulator.UseSuperElevation > 0)
+                                SuperElevationManager.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ, shapeFilePath);
+                            var newScenery = new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, trJunctionNode);
+                            sceneryObjects.Add(newScenery);
+
+                            string newShapeName = Path.GetFileName(newScenery.SharedShape.FilePath);
+                            if (!viewer.TrackProfileIndicies.ContainsKey(newShapeName))
+                                viewer.TrackProfileIndicies.Add(newShapeName, GetBestTrackProfile(viewer, newScenery.SharedShape));
                         }
                         else
                         {
@@ -376,15 +382,19 @@ namespace Orts.Viewer3D
                             if (viewer.Simulator.UseSuperElevation > 0
                                 && SuperElevationManager.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ, shapeFilePath))
                             {
-                                //var success = SuperElevation.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ, shapeFilePath);
-                                //if (success == 0) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
+                                // Need to load the static shape file to determine which track profile to use
+                                var superelevatedShape = viewer.ShapeManager.Get(shapeFilePath);
+
+                                string newShapeName = Path.GetFileName(superelevatedShape.FilePath);
+                                if (!viewer.TrackProfileIndicies.ContainsKey(newShapeName))
+                                    viewer.TrackProfileIndicies.Add(newShapeName, GetBestTrackProfile(viewer, superelevatedShape));
                             }
                             //otherwise, use shapes
                             else if (!containsMovingTable) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
                             else
                             {
                                 var found = false;
-                                foreach (var movingTable in Program.Simulator.            MovingTables)
+                                foreach (var movingTable in Program.Simulator.MovingTables)
                                 {
                                     if (worldObject.UID == movingTable.UID && WFileName == movingTable.WFile)
                                     {
@@ -420,6 +430,14 @@ namespace Orts.Viewer3D
                     }
                     else if (worldObject.GetType() == typeof(DyntrackObj))
                     {
+                        if (viewer.TRPs == null)
+                        {
+                            // First to need a track profile creates it
+                            Trace.Write(" TRP");
+                            // Creates profile and loads materials into SceneryMaterials
+                            TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.TRPs);
+                        }
+
                         if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
                             Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
                         // Add DyntrackDrawers for individual subsections
@@ -644,6 +662,50 @@ namespace Orts.Viewer3D
                 dTrack.PrepareFrame(frame, elapsedTime);
             foreach (var forest in forestList)
                 forest.PrepareFrame(frame, elapsedTime);
+        }
+
+        /// <summary>
+        /// Determines the index of the track profile that would be the most suitable replacement
+        /// for the given shared shape object.
+        /// </summary>
+        public static int GetBestTrackProfile(Viewer viewer, SharedShape shape)
+        {
+            if (viewer.TRPs == null)
+            {
+                // First to need a track profile creates it
+                Trace.Write(" TRP");
+                // Creates profile and loads materials into SceneryMaterials
+                TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.TRPs);
+            }
+
+            float score = 0;
+            int bestIndex = -1;
+            for (int i = 0; i < viewer.TRPs.Count; i++)
+            {
+                
+                float prevScore = score;
+                // Default behavior: Attempt to match track shape to track profile using texture names alone
+                foreach (string image in viewer.TRPs[i].TrackProfile.Images)
+                {
+                    if (shape.ImageNames.Contains(image, StringComparer.InvariantCultureIgnoreCase))
+                        score++;
+                    else // Slight bias to prefer track profiles with more textures defined
+                        score += 0.05f;
+                }
+                foreach (string image in shape.ImageNames)
+                {
+                    // Bias against track profiles that are missing textures
+                    if (!viewer.TRPs[i].TrackProfile.Images.Contains(image, StringComparer.InvariantCultureIgnoreCase))
+                        score -= 0.25f;
+                }
+                if (score > prevScore)
+                    bestIndex = i;
+            }
+
+            if (bestIndex < 0)
+                return 0;
+            else
+                return bestIndex;
         }
 
         /// <summary>
