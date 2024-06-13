@@ -249,8 +249,8 @@ namespace Orts.Viewer3D
         //public RenderProcess RenderProcess; // TODO: Pass this along in function calls
 
         /// <summary>
-        /// Creates a TRPFile instance from a track profile file (XML or STF) or canned.
-        /// (Precedence is XML [.XML], STF [.DAT], default [canned]).
+        /// Creates a List<TRPFile></TRPFile> instance from a set of track profile file(s)
+        /// (XML or STF) or canned. (Precedence is XML [.XML], STF [.DAT], default [canned]).
         /// </summary>
         /// <param name="viewer">Viewer.</param>
         /// <param name="routePath">Path to route.</param>
@@ -263,14 +263,36 @@ namespace Orts.Viewer3D
 
             if (Directory.Exists(path))
             {
+                // The file called "TrProfile" should be used as the default track profile, if present
+                string xmlDefault = path + @"\TrProfile.xml";
+                string stfDefault = path + @"\TrProfile.stf";
+
+                if (File.Exists(xmlDefault))
+                {
+                    trpFiles.Add(new TRPFile(viewer, xmlDefault));
+                    profileNames.Add(Path.GetFileNameWithoutExtension(xmlDefault));
+                }
+                else if (File.Exists(stfDefault))
+                {
+                    trpFiles.Add(new TRPFile(viewer, stfDefault));
+                    profileNames.Add(Path.GetFileNameWithoutExtension(stfDefault));
+                }
+                else // Add the canned (Kuju) track profile if no default is given
+                    trpFiles.Add(new TRPFile(viewer, ""));
+
                 // Get all .xml/.stf files that start with "TrProfile"
                 string[] xmlProfiles = Directory.GetFiles(path, "TrProfile*.xml");
                 string[] stfProfiles = Directory.GetFiles(path, "TrProfile*.stf");
 
                 foreach (string xmlProfile in xmlProfiles)
                 {
-                    trpFiles.Add(new TRPFile(viewer, xmlProfile));
-                    profileNames.Add(Path.GetFileNameWithoutExtension(xmlProfile));
+                    string xmlName = Path.GetFileNameWithoutExtension(xmlProfile);
+                    // Don't try to add the default track profile twice
+                    if (!profileNames.Contains(xmlName))
+                    {
+                        trpFiles.Add(new TRPFile(viewer, xmlProfile));
+                        profileNames.Add(xmlName);
+                    }
                 }
                 foreach (string stfProfile in stfProfiles)
                 {
@@ -284,7 +306,7 @@ namespace Orts.Viewer3D
                 }
             }
 
-            // Add default profile only if no other profiles were added
+            // Add canned profile if no profiles were found
             if (trpFiles.Count <= 0)
                 trpFiles.Add(new TRPFile(viewer, ""));
 
