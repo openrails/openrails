@@ -678,28 +678,30 @@ namespace Orts.Viewer3D
                 TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.TRPs);
             }
 
-            float score = 0;
+            float score = float.NegativeInfinity;
             int bestIndex = -1;
             for (int i = 0; i < viewer.TRPs.Count; i++)
             {
-                
                 float prevScore = score;
+                score = 0;
                 // Default behavior: Attempt to match track shape to track profile using texture names alone
                 foreach (string image in viewer.TRPs[i].TrackProfile.Images)
                 {
                     if (shape.ImageNames.Contains(image, StringComparer.InvariantCultureIgnoreCase))
                         score++;
-                    else // Slight bias to prefer track profiles with more textures defined
-                        score += 0.05f;
+                    else // Slight bias against track profiles with extra textures defined
+                        score -= 0.05f;
                 }
                 foreach (string image in shape.ImageNames)
                 {
-                    // Bias against track profiles that are missing textures
+                    // Strong bias against track profiles that are missing textures
                     if (!viewer.TRPs[i].TrackProfile.Images.Contains(image, StringComparer.InvariantCultureIgnoreCase))
                         score -= 0.25f;
                 }
                 if (score > prevScore)
                     bestIndex = i;
+                else
+                    score = prevScore;
             }
 
             if (bestIndex < 0)
