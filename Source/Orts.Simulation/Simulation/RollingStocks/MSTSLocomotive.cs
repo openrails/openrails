@@ -1296,6 +1296,7 @@ namespace Orts.Simulation.RollingStocks
             DriveWheelOnlyBrakes = locoCopy.DriveWheelOnlyBrakes;
             DynamicBrakeBlendingEnabled = locoCopy.DynamicBrakeBlendingEnabled;
             DynamicBrakeAvailable = locoCopy.DynamicBrakeAvailable;
+            FrictionBrakeBlendingMaxForceN = locoCopy.FrictionBrakeBlendingMaxForceN;
             airPipeSystem = locoCopy.airPipeSystem;
             DoesVacuumBrakeCutPower = locoCopy.DoesVacuumBrakeCutPower;
             DoesBrakeCutPower = locoCopy.DoesBrakeCutPower;
