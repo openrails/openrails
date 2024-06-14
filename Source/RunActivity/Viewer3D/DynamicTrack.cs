@@ -151,6 +151,8 @@ namespace Orts.Viewer3D
         /// </summary>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            var lodBias = ((float)Viewer.Settings.LODBias / 100 + 1);
+
             // Offset relative to the camera-tile origin
             int dTileX = worldPosition.TileX - Viewer.Camera.TileX;
             int dTileZ = worldPosition.TileZ - Viewer.Camera.TileZ;
@@ -166,15 +168,16 @@ namespace Orts.Viewer3D
             if (!Viewer.Camera.InFov(Primitive.MSTSLODCenter, Primitive.ObjectRadius)) return;
 
             // Scan LODs in forward order, and find first LOD in-range
+            // lodIndex marks first in-range LOD
             LOD lod;
             int lodIndex;
             for (lodIndex = 0; lodIndex < Primitive.TrProfile.LODs.Count; lodIndex++)
             {
                 lod = (LOD)Primitive.TrProfile.LODs[lodIndex];
-                if (Viewer.Camera.InRange(Primitive.MSTSLODCenter, 0, lod.CutoffRadius)) break;
+                if (Viewer.Camera.InRange(Primitive.MSTSLODCenter, 0, lod.CutoffRadius * lodBias)) break;
             }
+            // Ignore any mesh too far away for the furthest LOD
             if (lodIndex == Primitive.TrProfile.LODs.Count) return;
-            // lodIndex marks first in-range LOD
 
             // Initialize xnaXfmWrtCamTile to object-tile to camera-tile translation:
             Matrix xnaXfmWrtCamTile = Matrix.CreateTranslation(tileOffsetWrtCamera);
@@ -199,7 +202,7 @@ namespace Orts.Viewer3D
                 lod = (LOD)Primitive.TrProfile.LODs[lodIndex];
                 for (int j = lod.PrimIndexStart; j < lod.PrimIndexStop; j++)
                 {
-                    frame.AddPrimitive(Primitive.ShapePrimitives[j].Material, Primitive.ShapePrimitives[j], RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
+                    frame.AddPrimitive(Primitive.ShapePrimitives[j].Material, Primitive.ShapePrimitives[j], RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.None);
                 }
                 lodIndex++;
             }
