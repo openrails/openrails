@@ -230,6 +230,7 @@ namespace Orts.Simulation.RollingStocks
         public float CylinderSteamUsageLBpS;
         public float NewCylinderSteamUsageLBpS;
         public float BlowerSteamUsageLBpS;
+        public float FuelOilHeatingSteamUsageLbpS;
         public float EvaporationLBpS;          // steam generation rate
         public float FireMassKG;      // Mass of coal currently on grate area
         public float FireRatio;     // Ratio of actual firemass to ideal firemass
@@ -3582,6 +3583,52 @@ namespace Orts.Simulation.RollingStocks
 
         private void UpdateTender(float elapsedClockSeconds)
         {
+            // Calculate steam usage required to heat fuel oil in oil fired locomotive
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil )
+            {
+                // The following calculations are based upon the interpretation of information in
+                // https://www.spiraxsarco.com/learn-about-steam/steam-engineering-principles-and-heat-transfer/heating-with-coils-and-jackets#article-top
+                // and movement of the locomotive is described in this article
+                // https://www.spiraxsarco.com/learn-about-steam/steam-engineering-principles-and-heat-transfer/energy-consumption-of-tanks-and-vats
+                // Currently due to the difficulty of finding input information some assumptions have be made, and will be described through the calculation process.
+                // 
+                // The first step is to calculate the amount of heat lost through the sides of the oil tank on the tender (this loss will ultimately need to be
+                // compensated by steam heating
+                // This can be calculated by Q (heat Loss) = Txf Coeff for tank sides * Area of Sides * Temp Diff (external vs internal)
+                // The most accurate calculation could be made if the bottom, sides and top of oil tank area was known, and also if the aount of exposed surface
+                // (subject to wind effect)
+                float TankSurfaceAreatoMassRatio = 0.015f; // based upon the inspection of the oil masses in a couple of known locomotives
+                float AssumedSurfaceAreaFt2 = Kg.ToLb(MaxTenderOilMassL * OilSpecificGravity) * TankSurfaceAreatoMassRatio;
+                float AreaExposedtoWindMovementFraction = 0.42f;
+                float OilTempRequired = 150; // Oil to be heated to 150degF
+                float HeatDiff = OilTempRequired - C.ToF(CarOutsideTempC);
+                float HeatTransferCoefficientBtuphft2F = 0.00001263f * HeatDiff * HeatDiff + 0.001175f * HeatDiff + 1.776f;
+                
+                float HeatLossNoWindBTUph = (1- AreaExposedtoWindMovementFraction) * HeatTransferCoefficientBtuphft2F * AssumedSurfaceAreaFt2 * HeatDiff;
+
+                // To compensate for the train movement we need to add a wind factor
+                float WindCoeff = -0.0074f * absSpeedMpS * absSpeedMpS + 0.3817f * absSpeedMpS + 1f;
+                WindCoeff = MathHelper.Clamp(WindCoeff, 1.0f, 5.78f); // Wind speed effect will not cause any more impact once over about 25 m/s
+
+                float HeatLossWindBTUph = (1 - AreaExposedtoWindMovementFraction) * HeatTransferCoefficientBtuphft2F * AssumedSurfaceAreaFt2 * HeatDiff * WindCoeff;
+
+                float HeatLossTotalBTUph = HeatLossWindBTUph + HeatLossNoWindBTUph;
+
+                float HeatingCoilEfficiency = 0.12f;
+                float SteamEnthalpyBTUpLb = 980;
+                FuelOilHeatingSteamUsageLbpS = pS.FrompH(HeatLossTotalBTUph / (HeatingCoilEfficiency * SteamEnthalpyBTUpLb));
+
+                // adjust boiler heat and volume due to steam usage
+                BoilerMassLB -= elapsedClockSeconds * FuelOilHeatingSteamUsageLbpS; // Reduce boiler mass to reflect steam usage by fuel oil heating coils  
+                BoilerHeatBTU -= elapsedClockSeconds * FuelOilHeatingSteamUsageLbpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by fuel oil heating coils
+                BoilerHeatOutBTUpS += FuelOilHeatingSteamUsageLbpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by mecahnical stoker
+                TotalSteamUsageLBpS += FuelOilHeatingSteamUsageLbpS;
+
+                // Increase tender water mass as steam heating condensate feed back into tender
+                CombinedTenderWaterVolumeUKG += (elapsedClockSeconds * FuelOilHeatingSteamUsageLbpS) / WaterLBpUKG;
+
+            }
+
             TenderWaterLevelFraction = CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG;
             float TempCylinderSteamUsageLbpS = CylinderSteamUsageLBpS;
             // Limit Cylinder steam usage to the maximum boiler evaporation rate, lower limit is for when the locomotive is at rest and "no steam" is being used by cylinder, ensures some coal is used.
@@ -7603,6 +7650,8 @@ namespace Orts.Simulation.RollingStocks
 
             if (!(BrakeSystem is Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS.VacuumSinglePipe))
             {
+                if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+                {
                 // Display air compressor information
                 status.AppendFormat("{0}\t{1}\t{2}/{23}\t{3}\t{4}/{23}\t{5}\t{6}/{23}\t{7}\t{8}/{23}\t{9}\t{10}/{23}\t{11}\t{12}/{23}\t{13}\t{14}/{23}\t{15}\t{16}/{23}\t{17}\t{18}/{23}\t{19}\t{20}/{23}\t({21}x{22:N1}\")\n",
                     Simulator.Catalog.GetString("Usage:"),
@@ -7618,6 +7667,35 @@ namespace Orts.Simulation.RollingStocks
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylCockSteamUsageDisplayLBpS)), IsMetric),
                     Simulator.Catalog.GetString("Genertr"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(GeneratorSteamUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("OilHeat"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(FuelOilHeatingSteamUsageLbpS)), IsMetric),
+                        Simulator.Catalog.GetString("BlowD"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowdownSteamUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("Booster"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(HuDBoosterSteamConsumptionLbpS)), IsMetric),
+                        Simulator.Catalog.GetString("MaxSafe"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(MaxSafetyValveDischargeLbspS)), IsMetric),
+                        NumSafetyValves,
+                        SafetyValveSizeIn,
+                        FormatStrings.h);
+                }
+                else
+                {
+                    // Display air compressor information with stoker fired locomotive
+                    status.AppendFormat("{0}\t{1}\t{2}/{23}\t{3}\t{4}/{23}\t{5}\t{6}/{23}\t{7}\t{8}/{23}\t{9}\t{10}/{23}\t{11}\t{12}/{23}\t{13}\t{14}/{23}\t{15}\t{16}/{23}\t{17}\t{18}/{23}\t{19}\t{20}/{23}\t({21}x{22:N1}\")\n",
+                        Simulator.Catalog.GetString("Usage:"),
+                        Simulator.Catalog.GetString("Cyl"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylinderSteamUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("Blower"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowerSteamUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("Comprsr"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CompSteamUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("SafetyV"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(SafetyValveUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("CylCock"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylCockSteamUsageDisplayLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("Genertr"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(GeneratorSteamUsageLBpS)), IsMetric),
                     Simulator.Catalog.GetString("Stoker"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(StokerSteamUsageLBpS)), IsMetric),
                     Simulator.Catalog.GetString("BlowD"),
@@ -7630,9 +7708,44 @@ namespace Orts.Simulation.RollingStocks
                     SafetyValveSizeIn,
                     FormatStrings.h);
             }
+            }
             else
             {
-                // Display steam ejector information instead of air compressor
+
+                if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+                {
+                    // Display steam ejector information instead of air compressor with stoker
+                    status.AppendFormat("{0}\t{1}\t{2}/{23}\t{3}\t{4}/{23}\t{5}\t{6}/{23}\t{7}\t{8}/{23}\t{9}\t{10}/{23}\t{11}\t{12}/{23}\t{13}\t{14}/{23}\t{15}\t{16}/{23}\t{17}\t{18}/{23}\t{19}\t{20}/{23}\t({21}x{22:N1}\")\n",
+                    Simulator.Catalog.GetString("Usage:"),
+                    Simulator.Catalog.GetString("Cyl"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylinderSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("Blower"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowerSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("Ejector"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(EjectorTotalSteamConsumptionLbpS)), IsMetric),
+                    Simulator.Catalog.GetString("SafetyV"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(SafetyValveUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("CylCock"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylCockSteamUsageDisplayLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("Genertr"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(GeneratorSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("OilHeat"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(FuelOilHeatingSteamUsageLbpS)), IsMetric),
+                    Simulator.Catalog.GetString("BlowD"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowdownSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("Booster"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(HuDBoosterSteamConsumptionLbpS)), IsMetric),
+                    Simulator.Catalog.GetString("MaxSafe"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(MaxSafetyValveDischargeLbspS)), IsMetric),
+                    NumSafetyValves,
+                    SafetyValveSizeIn,
+                    FormatStrings.h);
+
+                }
+                else
+                {
+
+                    // Display steam ejector information instead of air compressor with stoker
                 status.AppendFormat("{0}\t{1}\t{2}/{23}\t{3}\t{4}/{23}\t{5}\t{6}/{23}\t{7}\t{8}/{23}\t{9}\t{10}/{23}\t{11}\t{12}/{23}\t{13}\t{14}/{23}\t{15}\t{16}/{23}\t{17}\t{18}/{23}\t{19}\t{20}/{23}\t({21}x{22:N1}\")\n",
                     Simulator.Catalog.GetString("Usage:"),
                     Simulator.Catalog.GetString("Cyl"),
@@ -7658,6 +7771,7 @@ namespace Orts.Simulation.RollingStocks
                     NumSafetyValves,
                     SafetyValveSizeIn,
                     FormatStrings.h);
+            }
             }
 
 
