@@ -92,6 +92,15 @@ namespace ORTS.Scripting.Api
         protected bool CurrentDynamicBrakeAvailability() => LpsHost.DynamicBrakeAvailable;
 
         /// <summary>
+        /// Maximum dynamic braking power of the locomotive
+        /// </summary>
+        protected float MaximumDynamicBrakePowerW
+        {
+            get => LpsHost.MaximumDynamicBrakePowerW;
+            set => LpsHost.MaximumDynamicBrakePowerW = value;
+        }
+
+        /// <summary>
         /// Current throttle percentage
         /// </summary>
         protected float ThrottlePercent() => Locomotive.ThrottlePercent;

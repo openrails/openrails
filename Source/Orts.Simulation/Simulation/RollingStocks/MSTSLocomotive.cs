@@ -2557,13 +2557,18 @@ namespace Orts.Simulation.RollingStocks
             // Calculate the total tractive force for the locomotive - ie Traction + Dynamic Braking force.
             // Note typically only one of the above will only ever be non-zero at the one time.
             // For flipped locomotives the force is "flipped" elsewhere, whereas dynamic brake force is "flipped" below by the direction of the speed.
-
             if (DynamicBrakePercent > 0 && DynamicBrake && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
             {
                 float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsTractionSpeedMpS);
                 if (f > 0 && LocomotivePowerSupply.DynamicBrakeAvailable)
                 {
                     DynamicBrakeForceN = f * (1 - PowerReduction);
+                    if (LocomotivePowerSupply.MaximumDynamicBrakePowerW > 0)
+                    {
+                        float maxPowerW = LocomotivePowerSupply.MaximumDynamicBrakePowerW * DynamicBrakePercent / 100 * (1 - PowerReduction);
+                        if (DynamicBrakeForceN * AbsTractionSpeedMpS > maxPowerW)
+                            DynamicBrakeForceN = maxPowerW / AbsTractionSpeedMpS;
+                    }
                     TractiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * DynamicBrakeForceN;                 
                 }
                 else
