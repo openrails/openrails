@@ -507,13 +507,13 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.DisplayHelpWindow] = new UserCommandModifiableKeyInput(0x3B, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplayHUD] = new UserCommandModifiableKeyInput(0x3F, KeyModifiers.Alt, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplayTrainDrivingWindow] = new UserCommandModifiableKeyInput(0x3F, Commands[(int)UserCommand.DisplayNextWindowTab]);
-            Commands[(int)UserCommand.DisplayTrainCarOperationsWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Control | KeyModifiers.Alt);
+            Commands[(int)UserCommand.DisplayTrainCarOperationsWindow] = new UserCommandKeyInput(0x43);
             Commands[(int)UserCommand.DisplayMultiPlayerWindow] = new UserCommandKeyInput(0x0A, KeyModifiers.Shift);
             Commands[(int)UserCommand.DisplayNextStationWindow] = new UserCommandKeyInput(0x44);
             Commands[(int)UserCommand.DisplayStationLabels] = new UserCommandModifiableKeyInput(0x40, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplaySwitchWindow] = new UserCommandKeyInput(0x42);
             Commands[(int)UserCommand.DisplayTrackMonitorWindow] = new UserCommandModifiableKeyInput(0x3E, Commands[(int)UserCommand.DisplayNextWindowTab]);
-            Commands[(int)UserCommand.DisplayTrainOperationsWindow] = new UserCommandKeyInput(0x43);
+            Commands[(int)UserCommand.DisplayTrainOperationsWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommand.DisplayTrainDpuWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Shift);
             Commands[(int)UserCommand.DisplayEOTListWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Control);
             Commands[(int)UserCommand.DisplayControlRectangle] = new UserCommandKeyInput(0x3F, KeyModifiers.Control);
