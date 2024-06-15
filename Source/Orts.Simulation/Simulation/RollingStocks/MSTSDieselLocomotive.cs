@@ -773,6 +773,12 @@ namespace Orts.Simulation.RollingStocks
                 if (f > 0 && LocomotivePowerSupply.DynamicBrakeAvailable)
                 {
                     DynamicBrakeForceN = f * (1 - PowerReduction);
+                    if (LocomotivePowerSupply.MaximumDynamicBrakePowerW > 0)
+                    {
+                        float maxPowerW = LocomotivePowerSupply.MaximumDynamicBrakePowerW * DynamicBrakePercent / 100 * (1 - PowerReduction);
+                        if (DynamicBrakeForceN * AbsTractionSpeedMpS > maxPowerW)
+                            DynamicBrakeForceN = maxPowerW / AbsTractionSpeedMpS;
+                    }
                     TractiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * DynamicBrakeForceN;                 
                 }
                 else

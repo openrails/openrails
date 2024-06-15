@@ -54,6 +54,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
             set{}
         }
+        public float MaximumDynamicBrakePowerW { get; set; } = 0;
 
         public PowerSupplyState AuxiliaryPowerSupplyState
         {
