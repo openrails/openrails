@@ -303,6 +303,8 @@ namespace Orts.Simulation.RollingStocks
         float OilSpecificGravity = 0.9659f; // Assume a mid range of API for this value, say API = 15 @ 20 Cdeg.
         float WaterSpecificGravity = 1.0f; // Water @ 20 degC.
 
+        bool FuelOilSteamHeatingReqd = false;
+
         int NumberofTractiveForceValues = 36;
         float[,] TractiveForceAverageN = new float[5, 37];
         float AverageTractiveForceN;
@@ -925,6 +927,11 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(steamfiremanmaxpossiblefiringrate": MaxFiringRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 2.2046f / 3600; break;
                 case "engine(steamfiremanismechanicalstoker": Stoker = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortssteamfiremanmaxpossiblefiringrate": ORTSMaxFiringRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 2.2046f / 3600; break;
+                case "engine(ortsfueloilheatingrequired":
+                    var heating = stf.ReadIntBlock(null);
+                    if (heating == 1)
+                        FuelOilSteamHeatingReqd = true;
+                    break;
                 case "engine(ortsfueloilspecificgravity": OilSpecificGravity = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(enginecontrollers(cutoff": CutoffController.Parse(stf); break;
                 case "engine(enginecontrollers(ortssmallejector": SmallEjectorController.Parse(stf); SmallEjectorControllerFitted = true; break;
@@ -1053,6 +1060,7 @@ namespace Orts.Simulation.RollingStocks
             MaxLocoTenderWaterMassKG = locoCopy.MaxLocoTenderWaterMassKG;
             MaxFiringRateKGpS = locoCopy.MaxFiringRateKGpS;
             Stoker = locoCopy.Stoker;
+            FuelOilSteamHeatingReqd = locoCopy.FuelOilSteamHeatingReqd;
             ORTSMaxFiringRateKGpS = locoCopy.ORTSMaxFiringRateKGpS;
             CutoffController = (MSTSNotchController)locoCopy.CutoffController.Clone();
             Injector1Controller = (MSTSNotchController)locoCopy.Injector1Controller.Clone();
@@ -3584,7 +3592,7 @@ namespace Orts.Simulation.RollingStocks
         private void UpdateTender(float elapsedClockSeconds)
         {
             // Calculate steam usage required to heat fuel oil in oil fired locomotive
-            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil )
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil && FuelOilSteamHeatingReqd )
             {
                 // The following calculations are based upon the interpretation of information in
                 // https://www.spiraxsarco.com/learn-about-steam/steam-engineering-principles-and-heat-transfer/heating-with-coils-and-jackets#article-top
@@ -6856,7 +6864,7 @@ namespace Orts.Simulation.RollingStocks
                 GeneratorSteamUsageLBpS = 0.0f; // No generator fitted to locomotive
             }
 
-            if (StokerIsMechanical && SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Coal)
+            if (StokerIsMechanical && SteamLocomotiveFuelType != SteamLocomotiveFuelTypes.Oil)
             {
                 StokerSteamUsageLBpS = pS.FrompH(MaxBoilerOutputLBpH) * (StokerMinUsage + (StokerMaxUsage - StokerMinUsage) * FuelFeedRateKGpS / MaxFiringRateKGpS);  // Caluculate current steam usage based on fuel feed rates
                 BoilerMassLB -= elapsedClockSeconds * StokerSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by mechanical stoker  
