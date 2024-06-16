@@ -81,8 +81,11 @@ printable version of the command set as described in paragraph
 immediately get the scrollable F1 Information Window as shown and 
 described :ref:`below <driving-help>`.
 
-Alternatively, you can operate the cabview controls by mouse click 
-(buttons) and mouse drag (levers and rotary switches).
+Alternatively, you can operate the cabview controls by left mouse click 
+(buttons) and left mouse button drag (levers and rotary switches). For 2D cabs
+instead of dragging you can also use the mouse scroll wheel. 
+The Display Control Rectangle command ``<Ctrl+F5>`` shows the rectangles in which
+a control is mouse sensitive.
 
 Throttle Control
 ----------------
