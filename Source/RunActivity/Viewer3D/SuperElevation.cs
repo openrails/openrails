@@ -24,7 +24,7 @@ using Orts.Simulation;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
 
 namespace Orts.Viewer3D
 {
@@ -84,6 +84,11 @@ namespace Orts.Viewer3D
                         continue;
                     }
                     sectionsinShape.Add(tmp);
+
+                    // Determine the track profile to use for this section
+                    // It's possible that the tsection ID used by the track section points to the wrong shape
+                    // Use the static shape name instead to get expected results
+                    DynamicTrackViewer.GetBestTrackProfile(viewer, tmp, Path.GetFileName(shapeFilePath));
 
                     drawn++;
                 }

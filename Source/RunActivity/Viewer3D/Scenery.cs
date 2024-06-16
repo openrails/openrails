@@ -300,6 +300,14 @@ namespace Orts.Viewer3D
                     }
             }
 
+            // Generate track profiles if none have been set up yet
+            if (viewer.TRPs == null)
+            {
+                Trace.Write(" TRP");
+                // Creates profile and loads materials into SceneryMaterials
+                TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.TRPs);
+            }
+
             // create all the individual scenery objects specified in the WFile
             foreach (var worldObject in WFile.Tr_Worldfile)
             {
@@ -369,12 +377,7 @@ namespace Orts.Viewer3D
                         {
                             if (viewer.Simulator.UseSuperElevation > 0)
                                 SuperElevationManager.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ, shapeFilePath);
-                            var newScenery = new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, trJunctionNode);
-                            sceneryObjects.Add(newScenery);
-
-                            string newShapeName = Path.GetFileName(newScenery.SharedShape.FilePath);
-                            if (!viewer.TrackProfileIndicies.ContainsKey(newShapeName))
-                                viewer.TrackProfileIndicies.Add(newShapeName, GetBestTrackProfile(viewer, newScenery.SharedShape));
+                            sceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, trJunctionNode));
                         }
                         else
                         {
@@ -382,12 +385,7 @@ namespace Orts.Viewer3D
                             if (viewer.Simulator.UseSuperElevation > 0
                                 && SuperElevationManager.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ, shapeFilePath))
                             {
-                                // Need to load the static shape file to determine which track profile to use
-                                var superelevatedShape = viewer.ShapeManager.Get(shapeFilePath);
-
-                                string newShapeName = Path.GetFileName(superelevatedShape.FilePath);
-                                if (!viewer.TrackProfileIndicies.ContainsKey(newShapeName))
-                                    viewer.TrackProfileIndicies.Add(newShapeName, GetBestTrackProfile(viewer, superelevatedShape));
+                                // No need to add shapes for this segment of track
                             }
                             //otherwise, use shapes
                             else if (!containsMovingTable) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
@@ -662,52 +660,6 @@ namespace Orts.Viewer3D
                 dTrack.PrepareFrame(frame, elapsedTime);
             foreach (var forest in forestList)
                 forest.PrepareFrame(frame, elapsedTime);
-        }
-
-        /// <summary>
-        /// Determines the index of the track profile that would be the most suitable replacement
-        /// for the given shared shape object.
-        /// </summary>
-        public static int GetBestTrackProfile(Viewer viewer, SharedShape shape)
-        {
-            if (viewer.TRPs == null)
-            {
-                // First to need a track profile creates it
-                Trace.Write(" TRP");
-                // Creates profile and loads materials into SceneryMaterials
-                TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.TRPs);
-            }
-
-            float score = float.NegativeInfinity;
-            int bestIndex = -1;
-            for (int i = 0; i < viewer.TRPs.Count; i++)
-            {
-                float prevScore = score;
-                score = 0;
-                // Default behavior: Attempt to match track shape to track profile using texture names alone
-                foreach (string image in viewer.TRPs[i].TrackProfile.Images)
-                {
-                    if (shape.ImageNames.Contains(image, StringComparer.InvariantCultureIgnoreCase))
-                        score++;
-                    else // Slight bias against track profiles with extra textures defined
-                        score -= 0.05f;
-                }
-                foreach (string image in shape.ImageNames)
-                {
-                    // Strong bias against track profiles that are missing textures
-                    if (!viewer.TRPs[i].TrackProfile.Images.Contains(image, StringComparer.InvariantCultureIgnoreCase))
-                        score -= 0.25f;
-                }
-                if (score > prevScore)
-                    bestIndex = i;
-                else
-                    score = prevScore;
-            }
-
-            if (bestIndex < 0)
-                return 0;
-            else
-                return bestIndex;
         }
 
         /// <summary>
