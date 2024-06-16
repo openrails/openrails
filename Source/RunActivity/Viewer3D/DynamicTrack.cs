@@ -29,6 +29,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using System.Xml.Schema;
 
@@ -216,17 +217,28 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
-        /// Returns the index of the track profile that best suits the given TrVectorSection
-        /// The result is cached in the section object for future use
+        /// Returns the index of the track profile that best suits the given Viewer and TrVectorSection object,
+        /// with an optional shape file name to use as reference.
+        /// The result is cached in the vector section object for future use
         /// </summary>
         /// <returns>Index of viewer.TRPs</returns>
-        public static int GetBestTrackProfile(Viewer viewer, TrVectorSection trSection)
+        public static int GetBestTrackProfile(Viewer viewer, TrVectorSection trSection, string shapeName = "")
         {
-            string shapeName = "";
-            if (viewer.Simulator.TSectionDat.TrackShapes.ContainsKey(trSection.ShapeIndex))
+            int trpIndex;
+            if (shapeName == "" && viewer.Simulator.TSectionDat.TrackShapes.ContainsKey(trSection.ShapeIndex))
                 shapeName = viewer.Simulator.TSectionDat.TrackShapes.Get(trSection.ShapeIndex).FileName;
 
-            viewer.TrackProfileIndicies.TryGetValue(shapeName, out int trpIndex);
+            if (viewer.TrackProfileIndicies.ContainsKey(shapeName))
+                viewer.TrackProfileIndicies.TryGetValue(shapeName, out trpIndex);
+            else if (shapeName != "") // Haven't checked this track shape yet
+            {
+                // Need to load the shape file if not already loaded
+                var trackShape = viewer.ShapeManager.Get(viewer.Simulator.BasePath + @"\Global\Shapes\" + shapeName);
+                trpIndex = GetBestTrackProfile(viewer, trackShape);
+                viewer.TrackProfileIndicies.Add(shapeName, trpIndex);
+            }
+            else // Not enough info-use default track profile
+                trpIndex = 0;
 
             trSection.TRPIndex = trpIndex;
             return trpIndex;
@@ -234,6 +246,46 @@ namespace Orts.Viewer3D
         // Note: Dynamic track objects will ALWAYS use TRPIndex = 0
         // This is because dynamic tracks don't have shapes, and as such lack the information needed
         // to select a specific track profile.
+
+        /// <summary>
+        /// Determines the index of the track profile that would be the most suitable replacement
+        /// for the given shared shape object.
+        /// </summary>
+        public static int GetBestTrackProfile(Viewer viewer, SharedShape shape)
+        {
+            float score = float.NegativeInfinity;
+            int bestIndex = -1;
+            for (int i = 0; i < viewer.TRPs.Count; i++)
+            {
+                float bestScore = score;
+                score = 0;
+                // Default behavior: Attempt to match track shape to track profile using texture names alone
+                foreach (string image in viewer.TRPs[i].TrackProfile.Images)
+                {
+                    if (shape.ImageNames != null && shape.ImageNames.Contains(image, StringComparer.InvariantCultureIgnoreCase))
+                        score++;
+                    else // Slight bias against track profiles with extra textures defined
+                        score -= 0.05f;
+                }
+                if (score > bestScore && shape.ImageNames != null) // Only continue checking if current profile might be the best one
+                {
+                    foreach (string image in shape.ImageNames)
+                    {
+                        // Strong bias against track profiles that are missing textures
+                        if (!viewer.TRPs[i].TrackProfile.Images.Contains(image, StringComparer.InvariantCultureIgnoreCase))
+                            score -= 0.25f;
+                    }
+                }
+                if (score > bestScore)
+                    bestIndex = i;
+                else
+                    score = bestScore;
+            }
+
+            if (bestIndex < 0)
+                bestIndex = 0;
+            return bestIndex;
+        }
     }
 
     // A track profile consists of a number of groups used for LOD considerations.  There are LODs,
