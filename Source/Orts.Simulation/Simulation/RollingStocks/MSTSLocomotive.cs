@@ -1236,6 +1236,10 @@ namespace Orts.Simulation.RollingStocks
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
             DynamicBrakePartialBailOff = locoCopy.DynamicBrakePartialBailOff;
             DynamicBrakeMaxCurrentA = locoCopy.DynamicBrakeMaxCurrentA;
+            DynamicBrakeSpeed1MpS = locoCopy.DynamicBrakeSpeed1MpS;
+            DynamicBrakeSpeed2MpS = locoCopy.DynamicBrakeSpeed2MpS;
+            DynamicBrakeSpeed3MpS = locoCopy.DynamicBrakeSpeed3MpS;
+            DynamicBrakeSpeed4MpS = locoCopy.DynamicBrakeSpeed4MpS;
             CombinedControlType = locoCopy.CombinedControlType;
             CombinedControlSplitPosition = locoCopy.CombinedControlSplitPosition;
             DynamicBrakeDelayS = locoCopy.DynamicBrakeDelayS;
@@ -1292,6 +1296,7 @@ namespace Orts.Simulation.RollingStocks
             DriveWheelOnlyBrakes = locoCopy.DriveWheelOnlyBrakes;
             DynamicBrakeBlendingEnabled = locoCopy.DynamicBrakeBlendingEnabled;
             DynamicBrakeAvailable = locoCopy.DynamicBrakeAvailable;
+            FrictionBrakeBlendingMaxForceN = locoCopy.FrictionBrakeBlendingMaxForceN;
             airPipeSystem = locoCopy.airPipeSystem;
             DoesVacuumBrakeCutPower = locoCopy.DoesVacuumBrakeCutPower;
             DoesBrakeCutPower = locoCopy.DoesBrakeCutPower;
