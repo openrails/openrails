@@ -95,6 +95,7 @@ namespace Orts.Simulation
         public string ActivityFileName;
         public string TimetableFileName;
         public bool TimetableMode;
+        public bool ViewerMode;
         public bool PreUpdate;
         public ActivityFile Activity;
         public Activity ActivityRun;
@@ -441,6 +442,16 @@ namespace Orts.Simulation
             IsAutopilotMode = true;
         }
 
+        public void SetViewer(string consist, string start, string season, string weather)
+        {
+            conFileName = consist;
+            var time = start.Split(':');
+            TimeSpan StartTime = new TimeSpan(int.Parse(time[0]), time.Length > 1 ? int.Parse(time[1]) : 0, time.Length > 2 ? int.Parse(time[2]) : 0);
+            ClockTime = StartTime.TotalSeconds;
+            Season = (SeasonType)int.Parse(season);
+            WeatherType = (WeatherType)int.Parse(weather);
+        }
+
         public void Start(CancellationToken cancellation)
         {
             ContainerManager = new ContainerManager(this);
@@ -519,6 +530,15 @@ namespace Orts.Simulation
                 if (!TrainDictionary.ContainsKey(playerTTTrain.Number)) TrainDictionary.Add(playerTTTrain.Number, playerTTTrain);
                 if (!NameDictionary.ContainsKey(playerTTTrain.Name.ToLower())) NameDictionary.Add(playerTTTrain.Name.ToLower(), playerTTTrain);
             }
+        }
+
+        public void StartViewer(string[] arguments, CancellationToken cancellation)
+        {
+            ViewerMode = true;
+            Signals = new Signals(this, SIGCFG, cancellation);
+            TurntableFile = new TurntableFile(RoutePath + @"\openrails\turntables.dat", RoutePath + @"\shapes\", MovingTables, this);
+            LevelCrossings = new LevelCrossings(this);
+            Trains = new TrainList(this);
         }
 
         public void Stop()
@@ -625,6 +645,8 @@ namespace Orts.Simulation
         /// </summary>
         public TrainCar InitialPlayerLocomotive()
         {
+            if (Trains == null || Trains.Count == 0)
+                return null;
             Train playerTrain = Trains[0];    // we install the player train first
             PlayerLocomotive = SetPlayerLocomotive(playerTrain);
             return PlayerLocomotive;
@@ -824,13 +846,16 @@ namespace Orts.Simulation
                 }
             }
 
-            foreach (Train train in Trains)
+            if (Trains != null)
             {
-                if ((train.SpeedMpS != 0 || (train.ControlMode == Train.TRAIN_CONTROL.EXPLORER && train.TrainType == Train.TRAINTYPE.REMOTE && MPManager.IsServer())) &&
-                    train.GetType() != typeof(AITrain) && train.GetType() != typeof(TTTrain) &&
-                    (PlayerLocomotive == null || train != PlayerLocomotive.Train))
+                foreach (Train train in Trains)
                 {
-                    movingTrains.Add(train);
+                    if ((train.SpeedMpS != 0 || (train.ControlMode == Train.TRAIN_CONTROL.EXPLORER && train.TrainType == Train.TRAINTYPE.REMOTE && MPManager.IsServer())) &&
+                        train.GetType() != typeof(AITrain) && train.GetType() != typeof(TTTrain) &&
+                        (PlayerLocomotive == null || train != PlayerLocomotive.Train))
+                    {
+                        movingTrains.Add(train);
+                    }
                 }
             }
 

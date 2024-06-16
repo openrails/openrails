@@ -71,8 +71,8 @@ namespace Orts.Viewer3D
             LastKeyboardState = KeyboardState;
             LastMouseState = MouseState;
             // Make sure we have an "idle" (everything released) keyboard and mouse state if the window isn't active.
-            KeyboardState = game.IsActive ? new KeyboardState(GetKeysWithPrintScreenFix(Keyboard.GetState())) : new KeyboardState();
-            MouseState = game.IsActive ? Mouse.GetState() : new MouseState(0, 0, LastMouseState.ScrollWheelValue, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+            KeyboardState = game.IsRenderWindowActive ? new KeyboardState(GetKeysWithPrintScreenFix(Keyboard.GetState())) : new KeyboardState();
+            MouseState = game.IsRenderWindowActive ? Mouse.GetState(game.SwapChainWindow ?? game.Window) : new MouseState(0, 0, LastMouseState.ScrollWheelValue, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
             MouseButtonsSwapped = System.Windows.Forms.SystemInformation.MouseButtonsSwapped;
 
             MouseSpeedX = Math.Abs(MouseState.X - LastMouseState.X);
@@ -178,6 +178,7 @@ namespace Orts.Viewer3D
 
         public static Keys[] GetPressedKeys() { return KeyboardState.GetPressedKeys(); }
         public static Keys[] GetPreviousPressedKeys() { return LastKeyboardState.GetPressedKeys(); }
+        public static bool ModifiersMaskShiftCtrlAlt(bool shift, bool ctrl, bool alt) { return shift == IsKeyboardShiftDown && ctrl == IsKeyboardControlDown && alt == IsKeyboardAltDown; }
 
         public static bool IsMouseMoved { get { return MouseState.X != LastMouseState.X || MouseState.Y != LastMouseState.Y; } }
         public static int MouseMoveX { get { return MouseState.X - LastMouseState.X; } }
@@ -203,5 +204,9 @@ namespace Orts.Viewer3D
         public static bool IsMouseRightButtonDown { get { return MouseButtonsSwapped ? MouseState.LeftButton == ButtonState.Pressed : MouseState.RightButton == ButtonState.Pressed; } }
         public static bool IsMouseRightButtonPressed { get { return MouseButtonsSwapped ? MouseState.LeftButton == ButtonState.Pressed && LastMouseState.LeftButton == ButtonState.Released : MouseState.RightButton == ButtonState.Pressed && LastMouseState.RightButton == ButtonState.Released; } }
         public static bool IsMouseRightButtonReleased { get { return MouseButtonsSwapped ? MouseState.LeftButton == ButtonState.Released && LastMouseState.LeftButton == ButtonState.Pressed : MouseState.RightButton == ButtonState.Released && LastMouseState.RightButton == ButtonState.Pressed; } }
+
+        public static bool IsKeyboardShiftDown { get { return KeyboardState.IsKeyDown(Keys.LeftShift) || KeyboardState.IsKeyDown(Keys.RightShift); } }
+        public static bool IsKeyboardControlDown { get { return KeyboardState.IsKeyDown(Keys.LeftControl) || KeyboardState.IsKeyDown(Keys.RightControl); } }
+        public static bool IsKeyboardAltDown { get { return KeyboardState.IsKeyDown(Keys.LeftAlt) || KeyboardState.IsKeyDown(Keys.RightAlt); } }
     }
 }

@@ -539,6 +539,15 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.GameSwitchManualMode] = new UserCommandKeyInput(0x32, KeyModifiers.Control);
             Commands[(int)UserCommand.GameSwitchPicked] = new UserCommandKeyInput(0x22, KeyModifiers.Alt);
             Commands[(int)UserCommand.GameUncoupleWithMouse] = new UserCommandKeyInput(0x16);
+            
+            Commands[(int)UserCommand.EditorCancel] = new UserCommandKeyInput(0x01);
+            Commands[(int)UserCommand.EditorUndo] = new UserCommandKeyInput(Keys.Z, KeyModifiers.Control); // Not assigning by scan code, because on German influenced keyboard layounts
+            Commands[(int)UserCommand.EditorRedo] = new UserCommandKeyInput(Keys.Y, KeyModifiers.Control); // the Y and Z keys are exchanged, and we want these to match the o/s
+            Commands[(int)UserCommand.EditorMove] = new UserCommandKeyInput(Keys.M);
+            Commands[(int)UserCommand.EditorMoveHandle] = new UserCommandKeyInput(Keys.M, KeyModifiers.Alt);
+            Commands[(int)UserCommand.EditorLockOrthogonal] = new UserCommandModifierInput(KeyModifiers.Shift);
+            Commands[(int)UserCommand.EditorLockElevation] = new UserCommandModifierInput(KeyModifiers.Control);
+            Commands[(int)UserCommand.EditorRotate] = new UserCommandKeyInput(Keys.R);
         }
         #endregion
 
