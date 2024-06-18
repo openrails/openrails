@@ -424,18 +424,6 @@ namespace ORTS.Settings
         [DoNotSave]
         public bool MultiplayerServer { get; set; }
 
-        // In-game settings:
-        [Default(false)]
-        public bool Letterbox2DCab { get; set; }
-        [Default(true)]
-        public bool Use3DCab { get; set; }
-        [Default(0x7)] // OSDLocations.DisplayState.Auto
-        public int OSDLocationsState { get; set; }
-        [Default(0x1)] // OSDCars.DisplayState.Trains
-        public int OSDCarsState { get; set; }
-        [Default(0)] // TrackMonitor.DisplayMode.All
-        public int TrackMonitorDisplayMode { get; set; }
-
         // map settings
         [Default(false)]
         public bool Map_showTrainStateCheckbox { get; set; }
@@ -479,6 +467,18 @@ namespace ORTS.Settings
         public bool Map_showAllTrainsRadio { get; set; }
         [Default(new[] { 104, 104, 800, 600 })]
         public int[] Map_MapViewer { get; set; }
+
+        // In-game settings:
+        [Default(false)]
+        public bool Letterbox2DCab { get; set; }
+        [Default(true)]
+        public bool Use3DCab { get; set; }
+        [Default(0x7)] // OSDLocations.DisplayState.Auto
+        public int OSDLocationsState { get; set; }
+        [Default(0x1)] // OSDCars.DisplayState.Trains
+        public int OSDCarsState { get; set; }
+        [Default(0)] // TrackMonitor.DisplayMode.All
+        public int TrackMonitorDisplayMode { get; set; }
         #endregion
 
         public FolderSettings Folders { get; private set; }
