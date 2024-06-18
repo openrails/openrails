@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Menu": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "TstLoadContentAndInstalled": "1"
+      }
+    }
+  }
+}
