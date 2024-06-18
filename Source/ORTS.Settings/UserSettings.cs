@@ -479,6 +479,7 @@ namespace ORTS.Settings
         public int OSDCarsState { get; set; }
         [Default(0)] // TrackMonitor.DisplayMode.All
         public int TrackMonitorDisplayMode { get; set; }
+
         #endregion
 
         public FolderSettings Folders { get; private set; }
