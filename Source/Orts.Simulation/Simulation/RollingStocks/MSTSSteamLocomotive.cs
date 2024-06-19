@@ -294,9 +294,11 @@ namespace Orts.Simulation.RollingStocks
         SmoothedData FuelRateOil = new SmoothedData(3); // Oil Stoker is more responsive and only takes x seconds to fully react to changing needs.
         SmoothedData FuelRateStoker = new SmoothedData(15); // Stoker is more responsive and only takes x seconds to fully react to changing needs.
         SmoothedData FuelRateCoal = new SmoothedData(45); // Automatic fireman takes x seconds to fully react to changing needs for coal firing.
-        SmoothedData CoalBurnRateSmoothKGpS = new SmoothedData(150); // Changes in BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat.
-        SmoothedData OilBurnRateSmoothKGpS = new SmoothedData(6); // Changes in Oil BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat. Oil faster then steam
-        SmoothedData OilBurnRateReductionSmoothKGpS = new SmoothedData(0.25f); // When in reduction we would expect the heat to drop off rapidly for an oil fire
+        SmoothedData BurnRateCoalSmoothKGpS = new SmoothedData(150); // Changes in BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat.
+        SmoothedData BurnRateOilSmoothKGpS = new SmoothedData(6); // Changes in Oil BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat. Oil faster then steam
+        SmoothedData BurnRateWoodSmoothKGpS = new SmoothedData(20); // Changes in Wood BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat.
+
+        SmoothedData BurnRateOilReductionSmoothKGpS = new SmoothedData(0.25f); // When in reduction we would expect the heat to drop off rapidly for an oil fire
 
         float FuelFeedRateSmoothedKGpS = 0.0f;     // Smoothed Fuel feedd Rate
         public float FuelBurnRateSmoothedKGpS; // Smoothed fuel burning rate
@@ -1228,8 +1230,9 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Restore(SmallEjectorController, inf);
             ControllerFactory.Restore(LargeEjectorController, inf);
             FuelBurnRateSmoothedKGpS = inf.ReadSingle();
-            CoalBurnRateSmoothKGpS.ForceSmoothValue(FuelBurnRateSmoothedKGpS);
-            OilBurnRateSmoothKGpS.ForceSmoothValue(FuelBurnRateSmoothedKGpS);
+            BurnRateCoalSmoothKGpS.ForceSmoothValue(FuelBurnRateSmoothedKGpS);
+            BurnRateOilSmoothKGpS.ForceSmoothValue(FuelBurnRateSmoothedKGpS);
+            BurnRateWoodSmoothKGpS.ForceSmoothValue(FuelBurnRateSmoothedKGpS);
             BoilerHeatSmoothedBTU = inf.ReadSingle();
             BoilerHeatSmoothBTU.ForceSmoothValue(BoilerHeatSmoothedBTU);
             FuelFeedRateSmoothedKGpS = inf.ReadSingle();
@@ -3938,28 +3941,33 @@ namespace Orts.Simulation.RollingStocks
                     oilburnrate = MaxFiringRateKGpS; // burning rate can never be more then the max firing rate
                 }
 
-                OilBurnRateReductionSmoothKGpS.Update(elapsedClockSeconds, oilburnrate);
-                OilBurnRateSmoothKGpS.Update(elapsedClockSeconds, oilburnrate);
+                BurnRateOilReductionSmoothKGpS.Update(elapsedClockSeconds, oilburnrate);
+                BurnRateOilSmoothKGpS.Update(elapsedClockSeconds, oilburnrate);
 
                 if (previousThrottle < throttle)
                 {
                     // Fire combustion drops rapidly if throttle closed (assume fuel feed is reduced rapidly)
-                    FuelBurnRateSmoothedKGpS = OilBurnRateReductionSmoothKGpS.SmoothedValue;
-                    OilBurnRateSmoothKGpS.ForceSmoothValue(oilburnrate);
+                    FuelBurnRateSmoothedKGpS = BurnRateOilReductionSmoothKGpS.SmoothedValue;
+                    BurnRateOilSmoothKGpS.ForceSmoothValue(oilburnrate);
                 }
                 else
                 {
                     // Fire combustion is normal
-                    FuelBurnRateSmoothedKGpS = OilBurnRateSmoothKGpS.SmoothedValue;
+                    FuelBurnRateSmoothedKGpS = BurnRateOilSmoothKGpS.SmoothedValue;
                 }
 
                 previousThrottle = throttle;
 
             }
+            else if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+            {
+                BurnRateWoodSmoothKGpS.Update(elapsedClockSeconds, BurnRateRawKGpS);
+                FuelBurnRateSmoothedKGpS = BurnRateWoodSmoothKGpS.SmoothedValue;
+            }
             else
             {
-                CoalBurnRateSmoothKGpS.Update(elapsedClockSeconds, BurnRateRawKGpS);
-                FuelBurnRateSmoothedKGpS = CoalBurnRateSmoothKGpS.SmoothedValue;
+                BurnRateCoalSmoothKGpS.Update(elapsedClockSeconds, BurnRateRawKGpS);
+                FuelBurnRateSmoothedKGpS = BurnRateCoalSmoothKGpS.SmoothedValue;
             }
 
             FuelBurnRateSmoothedKGpS = MathHelper.Clamp(FuelBurnRateSmoothedKGpS, 0.0f, MaxFuelBurnGrateKGpS); // clamp burnrate to max fuel that can be burnt within grate limit
@@ -4013,7 +4021,14 @@ namespace Orts.Simulation.RollingStocks
                             FuelBoost = true; // boost shoveling 
                             if (!StokerIsMechanical && IsPlayerTrain)  // Don't display message if stoker in operation
                             {
-                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("FireMass is getting low. Your fireman will shovel faster, but don't wear him out."));
+                                if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+                                {
+                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("FireMass is getting low. Your fireman will add fuel faster, but don't wear him out."));
+                                }
+                                else
+                                {
+                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("FireMass is getting low. Your fireman will shovel faster, but don't wear him out."));
+                                }
                             }
                         }
                     }
@@ -4025,7 +4040,14 @@ namespace Orts.Simulation.RollingStocks
                         FuelBoost = false; // disable boost shoveling 
                         if (!StokerIsMechanical && IsPlayerTrain)  // Don't display message if stoker in operation
                         {
-                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("FireMass is back within limits. Your fireman will shovel as per normal."));
+                            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+                            {
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("FireMass is back within limits. Your fireman will add fuel as normal."));
+                            }
+                            else
+                            {
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("FireMass is back within limits. Your fireman will shovel as per normal."));
+                            }
                         }
                     }
                 }
