@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RunActivity": {
+      "commandName": "Project",
+      "commandLineArgs": "-start -exploreactivity \"D:\\OpenRails\\Demo Model 1\\Demo Model 1\\ROUTES\\SCE\\PATHS\\MT_MT_0930 Edinburgh-Glasgow Queen Street(player) - original.PAT\" \"D:\\OpenRails\\Demo Model 1\\Demo Model 1\\TRAINS\\CONSISTS\\MT_MT_Class 27 102 & 6 mk2 PP.CON\" 12:00 1 0"
+    }
+  }
+}
