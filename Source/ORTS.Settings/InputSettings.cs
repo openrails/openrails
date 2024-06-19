@@ -515,6 +515,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.DisplayTrainOperationsWindow] = new UserCommandKeyInput(0x43);
             Commands[(int)UserCommand.DisplayTrainDpuWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Shift);
             Commands[(int)UserCommand.DisplayEOTListWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Control);
+            Commands[(int)UserCommand.DisplayControlRectangle] = new UserCommandKeyInput(0x3F, KeyModifiers.Control);
 
             Commands[(int)UserCommand.GameAutopilotMode] = new UserCommandKeyInput(0x1E, KeyModifiers.Alt);
             Commands[(int)UserCommand.GameChangeCab] = new UserCommandKeyInput(0x12, KeyModifiers.Control);

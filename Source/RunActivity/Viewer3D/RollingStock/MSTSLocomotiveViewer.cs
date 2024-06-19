@@ -1700,6 +1700,8 @@ namespace Orts.Viewer3D.RollingStock
         void HandleUserInput();
         string GetControlName();
         string ControlLabel { get; }
+        Rectangle DestinationRectangleGet();
+        bool isMouseControl();
     }
 
     /// <summary>
@@ -2855,6 +2857,16 @@ namespace Orts.Viewer3D.RollingStock
             }
 
             return index;
+        }
+
+        public Rectangle DestinationRectangleGet()
+        {
+            return DestinationRectangle;
+        }
+
+        public bool isMouseControl()
+        {
+            return ControlDiscrete.MouseControl;
         }
     }
 
