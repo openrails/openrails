@@ -1012,7 +1012,22 @@ namespace Orts.Viewer3D
             }
             if (UserInput.IsPressed(UserCommand.DisplaySwitchWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) SwitchWindow.TabAction(); else SwitchWindow.Visible = !SwitchWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayTrainOperationsWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrainOperationsWindow.TabAction(); else { TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible; if (!TrainOperationsWindow.Visible) CarOperationsWindow.Visible = false; }
-            if (UserInput.IsPressed(UserCommand.DisplayTrainCarOperationsWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrainCarOperationsWindow.TabAction(); else { TrainCarOperationsWindow.Visible = !TrainCarOperationsWindow.Visible; if (!TrainCarOperationsWindow.Visible) CarOperationsWindow.Visible = false; }
+
+            if (UserInput.IsPressed(UserCommand.DisplayTrainCarOperationsWindow))
+            {
+                if (UserInput.IsDown(UserCommand.DisplayNextWindowTab))
+                    TrainCarOperationsWindow.TabAction();
+                else
+                {
+                    TrainCarOperationsWindow.Visible = !TrainCarOperationsWindow.Visible;
+                    if (!TrainCarOperationsWindow.Visible)
+                    {
+                        TrainCarOperationsViewerWindow.Visible = false;
+                        CarOperationsWindow.Visible = false;
+                    }
+                }
+            }
+
             if (UserInput.IsPressed(UserCommand.DisplayTrainDpuWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrainDpuWindow.Visible = !TrainDpuWindow.Visible ; else TrainDpuWindow.TabAction();
             if (UserInput.IsPressed(UserCommand.DisplayNextStationWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) NextStationWindow.TabAction(); else NextStationWindow.Visible = !NextStationWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayCompassWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) CompassWindow.TabAction(); else CompassWindow.Visible = !CompassWindow.Visible;
