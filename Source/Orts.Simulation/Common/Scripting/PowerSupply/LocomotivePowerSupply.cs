@@ -186,6 +186,21 @@ namespace ORTS.Scripting.Api
             get => LpsHost.ServiceRetentionActive;
             set => LpsHost.ServiceRetentionActive = value;
         }
+        /// <summary>
+        /// Sets the value for a cabview control.
+        /// </summary>
+        public void SetCabDisplayControl(int index, float value)
+        {
+            LpsHost.CabDisplayControls[index] = value;
+        }
+
+        /// <summary>
+        /// Sets the name which is to be shown which putting the cursor above a cabview control.
+        /// </summary>
+        public void SetCustomizedCabviewControlName(int index, string name)
+        {
+            LpsHost.CustomizedCabviewControlNames[index] = name;
+        }
 
         /// <summary>
         /// Sets the current state of the main power supply (power from the pantograph or the generator)
