@@ -39,6 +39,7 @@ using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Scripting.Api;
 using Event = Orts.Common.Event;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 
 namespace Orts.Viewer3D.RollingStock
 {
@@ -2291,6 +2292,7 @@ namespace Orts.Viewer3D.RollingStock
                     if (index == -2) index = ControlDiscrete.Values.Count - 1;
                     break;
                 case CABViewControlTypes.ORTS_TCS:
+                case CABViewControlTypes.ORTS_POWER_SUPPLY:
                 // Jindrich
                 case CABViewControlTypes.ORTS_RESTRICTED_SPEED_ZONE_ACTIVE:
                 case CABViewControlTypes.ORTS_SELECTED_SPEED_MODE:
@@ -2351,7 +2353,8 @@ namespace Orts.Viewer3D.RollingStock
 
         public string GetControlName()
         {
-            if (ControlDiscrete.ControlType.Type == CABViewControlTypes.ORTS_TCS) return (Locomotive as MSTSLocomotive).TrainControlSystem.GetDisplayString(ControlDiscrete.ControlType.Id);
+            if (ControlDiscrete.ControlType.Type == CABViewControlTypes.ORTS_TCS) return Locomotive.TrainControlSystem.GetDisplayString(ControlDiscrete.ControlType.Id);
+            if (ControlDiscrete.ControlType.Type == CABViewControlTypes.ORTS_POWER_SUPPLY && Locomotive.LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply) return supply.GetDisplayString(ControlDiscrete.ControlType.Id);
             return GetControlType().ToString();
         }
 
@@ -2638,12 +2641,27 @@ namespace Orts.Viewer3D.RollingStock
 
                 // Train Control System controls
                 case CABViewControlTypes.ORTS_TCS:
-                    int commandIndex = Control.ControlType.Id - 1;
-                    Locomotive.TrainControlSystem.TCSCommandButtonDown.TryGetValue(commandIndex, out bool currentValue);
-                    if (ChangedValue(1) > 0 ^ currentValue)
-                        new TCSButtonCommand(Viewer.Log, !currentValue, commandIndex);
-                    Locomotive.TrainControlSystem.TCSCommandSwitchOn.TryGetValue(commandIndex, out bool currentSwitchValue);
-                    new TCSSwitchCommand(Viewer.Log, ChangedValue(currentSwitchValue ? 1 : 0) > 0, commandIndex);
+                    {
+                        int commandIndex = Control.ControlType.Id - 1;
+                        Locomotive.TrainControlSystem.TCSCommandButtonDown.TryGetValue(commandIndex, out bool currentValue);
+                        if (ChangedValue(1) > 0 ^ currentValue)
+                            new TCSButtonCommand(Viewer.Log, !currentValue, commandIndex);
+                        Locomotive.TrainControlSystem.TCSCommandSwitchOn.TryGetValue(commandIndex, out bool currentSwitchValue);
+                        new TCSSwitchCommand(Viewer.Log, ChangedValue(currentSwitchValue ? 1 : 0) > 0, commandIndex);
+                    }
+                    break;
+
+                // Power Supply controls
+                case CABViewControlTypes.ORTS_POWER_SUPPLY:
+                    if (Locomotive.LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply)
+                    {
+                        int commandIndex = Control.ControlType.Id - 1;
+                        supply.PowerSupplyCommandButtonDown.TryGetValue(commandIndex, out bool currentValue);
+                        if (ChangedValue(1) > 0 ^ currentValue)
+                            new PowerSupplyButtonCommand(Viewer.Log, !currentValue, commandIndex);
+                        supply.PowerSupplyCommandSwitchOn.TryGetValue(commandIndex, out bool currentSwitchValue);
+                        new PowerSupplySwitchCommand(Viewer.Log, ChangedValue(currentSwitchValue ? 1 : 0) > 0, commandIndex);
+                    }
                     break;
 
                 // Jindrich

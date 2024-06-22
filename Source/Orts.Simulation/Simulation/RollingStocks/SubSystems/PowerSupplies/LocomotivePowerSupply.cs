@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Orts.Parsers.Msts;
@@ -86,6 +87,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public bool ServiceRetentionButton { get; set; } = false;
         public bool ServiceRetentionCancellationButton { get; set; } = false;
         public bool ServiceRetentionActive { get; set; } = false;
+        public Dictionary<int, float> CabDisplayControls = new Dictionary<int, float>();
+
+        // generic power supply commands
+        public Dictionary<int, bool> PowerSupplyCommandButtonDown = new Dictionary<int, bool>();
+        public Dictionary<int, bool> PowerSupplyCommandSwitchOn = new Dictionary<int, bool>();
+        // List of customized control strings;
+        public Dictionary<int, string> CustomizedCabviewControlNames = new Dictionary<int, string>();
 
         private bool firstUpdate = true;
 
@@ -281,6 +289,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             AbstractScript.Message = Locomotive.Simulator.Confirmer.Message;
             AbstractScript.SignalEvent = Locomotive.SignalEvent;
             AbstractScript.SignalEventToTrain = (evt) => Locomotive.Train?.SignalEvent(evt);
+        }
+        
+        // Converts the generic string (e.g. ORTS_POWER_SUPPLY5) shown when browsing with the mouse on a PowerSupply control
+        // to a customized string defined in the script
+        public string GetDisplayString(int commandIndex)
+        {
+            if (CustomizedCabviewControlNames.TryGetValue(commandIndex - 1, out string name)) return name;
+            return "ORTS_POWER_SUPPLY"+commandIndex;
         }
     }
 
