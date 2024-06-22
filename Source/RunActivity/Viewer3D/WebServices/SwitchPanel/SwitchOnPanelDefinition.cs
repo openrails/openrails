@@ -19,7 +19,6 @@
 using System.Collections.Generic;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common.Input;
-using ORTS.Common;
 using Orts.Simulation.Physics;
 
 namespace Orts.Viewer3D.WebServices.SwitchPanel
