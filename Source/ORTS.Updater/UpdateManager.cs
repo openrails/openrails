@@ -55,7 +55,7 @@ namespace ORTS.Updater
         readonly string ProductName;
         readonly string ProductVersion;
         readonly UpdateSettings Settings;
-        readonly UpdateState State;
+        public readonly UpdateState State;
         UpdateSettings Channel;
         bool Force;
 
