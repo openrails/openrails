@@ -67,6 +67,11 @@ namespace Orts.Viewer3D.Processes
         public static int[] ShadowMapDiameter; // diameter of shadow map
         public static float[] ShadowMapLimit; // diameter of shadow map far edge from camera
 
+        public const int MAX_BONES = 128;
+        public const int MAX_LIGHTS = 20; // must not be lower than 2.
+        public const int MAX_MORPH_BUFFERS = 8;
+        public const bool CLEARCOAT = true;
+
         internal RenderProcess(Game game)
         {
             Game = game;
