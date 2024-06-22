@@ -100,6 +100,20 @@ namespace ORTS.Scripting.Api
             set => LpsHost.MaximumDynamicBrakePowerW = value;
         }
 
+        /// Dynamic brake percent demanded by power supply
+        /// </summary>
+        protected float PowerSupplyDynamicBrakePercent
+        {
+            get
+            {
+                return LpsHost.PowerSupplyDynamicBrakePercent;
+            }
+            set
+            {
+                LpsHost.PowerSupplyDynamicBrakePercent = value;
+            }
+        }
+
         /// <summary>
         /// Current throttle percentage
         /// </summary>
