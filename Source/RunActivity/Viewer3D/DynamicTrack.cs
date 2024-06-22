@@ -29,6 +29,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using System.Xml.Schema;
 
@@ -130,21 +131,13 @@ namespace Orts.Viewer3D
         WorldPosition worldPosition;
         public DynamicTrackPrimitive Primitive;
 
-        public DynamicTrackViewer(Viewer viewer, DyntrackObj dtrack, WorldPosition position, WorldPosition endPosition)
+        public DynamicTrackViewer(Viewer viewer, DyntrackObj dtrack, WorldPosition position, WorldPosition endPosition, int trpIndex = 0)
         {
             Viewer = viewer;
             worldPosition = position;
 
-            if (viewer.TRP == null)
-            {
-                // First to need a track profile creates it
-                Trace.Write(" TRP");
-                // Creates profile and loads materials into SceneryMaterials
-                TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.TRP);
-            }
-
             // Instantiate classes
-            Primitive = new DynamicTrackPrimitive(Viewer, dtrack, worldPosition, endPosition);
+            Primitive = new DynamicTrackPrimitive(Viewer, dtrack, worldPosition, endPosition, trpIndex);
         }
 
         public DynamicTrackViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition)
@@ -159,6 +152,8 @@ namespace Orts.Viewer3D
         /// </summary>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            var lodBias = ((float)Viewer.Settings.LODBias / 100 + 1);
+
             // Offset relative to the camera-tile origin
             int dTileX = worldPosition.TileX - Viewer.Camera.TileX;
             int dTileZ = worldPosition.TileZ - Viewer.Camera.TileZ;
@@ -174,15 +169,16 @@ namespace Orts.Viewer3D
             if (!Viewer.Camera.InFov(Primitive.MSTSLODCenter, Primitive.ObjectRadius)) return;
 
             // Scan LODs in forward order, and find first LOD in-range
+            // lodIndex marks first in-range LOD
             LOD lod;
             int lodIndex;
             for (lodIndex = 0; lodIndex < Primitive.TrProfile.LODs.Count; lodIndex++)
             {
                 lod = (LOD)Primitive.TrProfile.LODs[lodIndex];
-                if (Viewer.Camera.InRange(Primitive.MSTSLODCenter, 0, lod.CutoffRadius)) break;
+                if (Viewer.Camera.InRange(Primitive.MSTSLODCenter, 0, lod.CutoffRadius * lodBias)) break;
             }
+            // Ignore any mesh too far away for the furthest LOD
             if (lodIndex == Primitive.TrProfile.LODs.Count) return;
-            // lodIndex marks first in-range LOD
 
             // Initialize xnaXfmWrtCamTile to object-tile to camera-tile translation:
             Matrix xnaXfmWrtCamTile = Matrix.CreateTranslation(tileOffsetWrtCamera);
@@ -207,7 +203,7 @@ namespace Orts.Viewer3D
                 lod = (LOD)Primitive.TrProfile.LODs[lodIndex];
                 for (int j = lod.PrimIndexStart; j < lod.PrimIndexStop; j++)
                 {
-                    frame.AddPrimitive(Primitive.ShapePrimitives[j].Material, Primitive.ShapePrimitives[j], RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
+                    frame.AddPrimitive(Primitive.ShapePrimitives[j].Material, Primitive.ShapePrimitives[j], RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.None);
                 }
                 lodIndex++;
             }
@@ -218,6 +214,77 @@ namespace Orts.Viewer3D
         {
             foreach (LOD lod in Primitive.TrProfile.LODs)
                 lod.Mark();
+        }
+
+        /// <summary>
+        /// Returns the index of the track profile that best suits the given Viewer and TrVectorSection object,
+        /// with an optional shape file name to use as reference.
+        /// The result is cached in the vector section object for future use
+        /// </summary>
+        /// <returns>Index of viewer.TRPs</returns>
+        public static int GetBestTrackProfile(Viewer viewer, TrVectorSection trSection, string shapeName = "")
+        {
+            int trpIndex;
+            if (shapeName == "" && viewer.Simulator.TSectionDat.TrackShapes.ContainsKey(trSection.ShapeIndex))
+                shapeName = viewer.Simulator.TSectionDat.TrackShapes.Get(trSection.ShapeIndex).FileName;
+
+            if (viewer.TrackProfileIndicies.ContainsKey(shapeName))
+                viewer.TrackProfileIndicies.TryGetValue(shapeName, out trpIndex);
+            else if (shapeName != "") // Haven't checked this track shape yet
+            {
+                // Need to load the shape file if not already loaded
+                var trackShape = viewer.ShapeManager.Get(viewer.Simulator.BasePath + @"\Global\Shapes\" + shapeName);
+                trpIndex = GetBestTrackProfile(viewer, trackShape);
+                viewer.TrackProfileIndicies.Add(shapeName, trpIndex);
+            }
+            else // Not enough info-use default track profile
+                trpIndex = 0;
+
+            trSection.TRPIndex = trpIndex;
+            return trpIndex;
+        }
+        // Note: Dynamic track objects will ALWAYS use TRPIndex = 0
+        // This is because dynamic tracks don't have shapes, and as such lack the information needed
+        // to select a specific track profile.
+
+        /// <summary>
+        /// Determines the index of the track profile that would be the most suitable replacement
+        /// for the given shared shape object.
+        /// </summary>
+        public static int GetBestTrackProfile(Viewer viewer, SharedShape shape)
+        {
+            float score = float.NegativeInfinity;
+            int bestIndex = -1;
+            for (int i = 0; i < viewer.TRPs.Count; i++)
+            {
+                float bestScore = score;
+                score = 0;
+                // Default behavior: Attempt to match track shape to track profile using texture names alone
+                foreach (string image in viewer.TRPs[i].TrackProfile.Images)
+                {
+                    if (shape.ImageNames != null && shape.ImageNames.Contains(image, StringComparer.InvariantCultureIgnoreCase))
+                        score++;
+                    else // Slight bias against track profiles with extra textures defined
+                        score -= 0.05f;
+                }
+                if (score > bestScore && shape.ImageNames != null) // Only continue checking if current profile might be the best one
+                {
+                    foreach (string image in shape.ImageNames)
+                    {
+                        // Strong bias against track profiles that are missing textures
+                        if (!viewer.TRPs[i].TrackProfile.Images.Contains(image, StringComparer.InvariantCultureIgnoreCase))
+                            score -= 0.25f;
+                    }
+                }
+                if (score > bestScore)
+                    bestIndex = i;
+                else
+                    score = bestScore;
+            }
+
+            if (bestIndex < 0)
+                bestIndex = 0;
+            return bestIndex;
         }
     }
 
@@ -237,31 +304,67 @@ namespace Orts.Viewer3D
         //public RenderProcess RenderProcess; // TODO: Pass this along in function calls
 
         /// <summary>
-        /// Creates a TRPFile instance from a track profile file (XML or STF) or canned.
-        /// (Precedence is XML [.XML], STF [.DAT], default [canned]).
+        /// Creates a List<TRPFile></TRPFile> instance from a set of track profile file(s)
+        /// (XML or STF) or canned. (Precedence is XML [.XML], STF [.DAT], default [canned]).
         /// </summary>
         /// <param name="viewer">Viewer.</param>
         /// <param name="routePath">Path to route.</param>
-        /// <param name="trpFile">TRPFile created (out).</param>
-        public static void CreateTrackProfile(Viewer viewer, string routePath, out TRPFile trpFile)
+        /// <param name="trpFiles">List of TRPFile(s) created (out).</param>
+        public static void CreateTrackProfile(Viewer viewer, string routePath, out List<TRPFile> trpFiles)
         {
             string path = routePath + @"\TrackProfiles";
-            //Establish default track profile
-            if (Directory.Exists(path) && File.Exists(path + @"\TrProfile.xml"))
+            List<string> profileNames = new List<string>();
+            trpFiles = new List<TRPFile>();
+
+            if (Directory.Exists(path))
             {
-                // XML-style
-                trpFile = new TRPFile(viewer, path + @"\TrProfile.xml");
+                // The file called "TrProfile" should be used as the default track profile, if present
+                string xmlDefault = path + @"\TrProfile.xml";
+                string stfDefault = path + @"\TrProfile.stf";
+
+                if (File.Exists(xmlDefault))
+                {
+                    trpFiles.Add(new TRPFile(viewer, xmlDefault));
+                    profileNames.Add(Path.GetFileNameWithoutExtension(xmlDefault));
+                }
+                else if (File.Exists(stfDefault))
+                {
+                    trpFiles.Add(new TRPFile(viewer, stfDefault));
+                    profileNames.Add(Path.GetFileNameWithoutExtension(stfDefault));
+                }
+                else // Add the canned (Kuju) track profile if no default is given
+                    trpFiles.Add(new TRPFile(viewer, ""));
+
+                // Get all .xml/.stf files that start with "TrProfile"
+                string[] xmlProfiles = Directory.GetFiles(path, "TrProfile*.xml");
+                string[] stfProfiles = Directory.GetFiles(path, "TrProfile*.stf");
+
+                foreach (string xmlProfile in xmlProfiles)
+                {
+                    string xmlName = Path.GetFileNameWithoutExtension(xmlProfile);
+                    // Don't try to add the default track profile twice
+                    if (!profileNames.Contains(xmlName))
+                    {
+                        trpFiles.Add(new TRPFile(viewer, xmlProfile));
+                        profileNames.Add(xmlName);
+                    }
+                }
+                foreach (string stfProfile in stfProfiles)
+                {
+                    string stfName = Path.GetFileNameWithoutExtension(stfProfile);
+                    // If an .stf profile and .xml profile have the same name, prefer the xml profile
+                    if (!profileNames.Contains(stfName))
+                    {
+                        trpFiles.Add(new TRPFile(viewer, stfProfile));
+                        profileNames.Add(stfName);
+                    }
+                }
             }
-            else if (Directory.Exists(path) && File.Exists(path + @"\TrProfile.stf"))
-            {
-                // MSTS-style
-                trpFile = new TRPFile(viewer, path + @"\TrProfile.stf");
-            }
-            else
-            {
-                // default
-                trpFile = new TRPFile(viewer, "");
-            }
+
+            // Add canned profile if no profiles were found
+            if (trpFiles.Count <= 0)
+                trpFiles.Add(new TRPFile(viewer, ""));
+
             // FOR DEBUGGING: Writes XML file from current TRP
             //TRP.TrackProfile.SaveAsXML(@"C:/Users/Walt/Desktop/TrProfile.xml");
         }
@@ -390,6 +493,7 @@ namespace Orts.Viewer3D
         public PitchControls PitchControl = PitchControls.None; // Method of control for profile replication pitch
         public float PitchControlScalar; // Scalar parameter for PitchControls
         public ArrayList LODs = new ArrayList(); // Array of Levels-Of-Detail
+        public List<string> Images = new List<string>();
 
         /// <summary>
         /// Enumeration of LOD control methods
@@ -552,6 +656,17 @@ namespace Orts.Viewer3D
 
             lod.LODItems.Add(lodItem); // Append this LODItem to LODItems array
             LODs.Add(lod); // Append this LOD to LODs array
+
+            // Add textures
+            foreach (LOD level in LODs)
+            {
+                foreach (LODItem item in level.LODItems)
+                {
+                    string texFileName = Path.GetFileNameWithoutExtension(item.TexName);
+                    if (!Images.Contains(texFileName))
+                        Images.Add(texFileName);
+                }
+            }
         }
 
         /// <summary>
@@ -571,7 +686,20 @@ namespace Orts.Viewer3D
                 new STFReader.TokenProcessor("lod", ()=> { LODs.Add(new LOD(viewer, stf)); }),
             });
 
-            if (LODs.Count == 0) throw new Exception("missing LODs");
+            if (LODs.Count == 0)
+                throw new Exception("missing LODs");
+            else // Add textures
+            {
+                foreach (LOD level in LODs)
+                {
+                    foreach (LODItem item in level.LODItems)
+                    {
+                        string texFileName = Path.GetFileNameWithoutExtension(item.TexName);
+                        if (!Images.Contains(texFileName))
+                            Images.Add(texFileName);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -649,7 +777,20 @@ namespace Orts.Viewer3D
                     }
                 }
             }
-            if (LODs.Count == 0) throw new Exception("missing LODs");
+            if (LODs.Count == 0)
+                throw new Exception("missing LODs");
+            else // Add textures
+            {
+                foreach (LOD level in LODs)
+                {
+                    foreach (LODItem item in level.LODItems)
+                    {
+                        string texFileName = Path.GetFileNameWithoutExtension(item.TexName);
+                        if (!Images.Contains(texFileName))
+                            Images.Add(texFileName);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -986,7 +1127,7 @@ namespace Orts.Viewer3D
         /// Constructor.
         /// </summary>
         public DynamicTrackPrimitive(Viewer viewer, DyntrackObj track, WorldPosition worldPosition,
-                                WorldPosition endPosition)
+                                WorldPosition endPosition, int trpIndex = 0)
         {
             // DynamicTrackPrimitive is responsible for creating a mesh for a section with a single subsection.
             // It also must update worldPosition to reflect the end of this subsection, subsequently to
@@ -1013,7 +1154,7 @@ namespace Orts.Viewer3D
 
             XNAEnd = endPosition.XNAMatrix.Translation;
 
-            TrProfile = viewer.TRP.TrackProfile;
+            TrProfile = viewer.TRPs[trpIndex].TrackProfile;
             // Count all of the LODItems in all the LODs
             int count = 0;
             for (int i = 0; i < TrProfile.LODs.Count; i++)
