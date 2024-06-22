@@ -46,7 +46,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public PowerSupplyState MainPowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool MainPowerSupplyOn => MainPowerSupplyState == PowerSupplyState.PowerOn;
         public bool DynamicBrakeAvailable { get; set; } = false;
-
+        public float PowerSupplyDynamicBrakePercent { get; set; } = -1;
         public float MaximumDynamicBrakePowerW { get; set; } = 0;
 
         public PowerSupplyState AuxiliaryPowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
