@@ -6284,10 +6284,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     absStartTractiveEffortN = Math.Abs(TractiveForceN); // update to new maximum TE
                 }
-            }          
-
-            MotiveForceSmoothN.Update(elapsedClockSeconds, MotiveForceN);
-            MotiveForceSmoothedN = MotiveForceSmoothN.SmoothedValue;
+            }
             if (float.IsNaN(MotiveForceN))
                 MotiveForceN = 0;
 

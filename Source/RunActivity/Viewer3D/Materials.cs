@@ -79,7 +79,7 @@ namespace Orts.Viewer3D
                             if (File.Exists(aceTexture))
                             {
                                 texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, aceTexture);
-                                Trace.TraceWarning("Required texture {1} not existing; using existing texture {2}", path, aceTexture);
+                                Trace.TraceWarning("Required texture {0} not existing; using existing texture {1}", path, aceTexture);
                             }
                             else return defaultTexture;
                         }
