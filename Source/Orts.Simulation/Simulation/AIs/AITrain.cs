@@ -710,7 +710,7 @@ namespace Orts.Simulation.AIs
 
                 if (Cars[0] is MSTSLocomotive leadingLoco)
                 {
-                    var isRainingOrSnowing = Simulator.Weather.PricipitationIntensityPPSPM2 > 0;
+                    var isRainingOrSnowing = Simulator.Weather.PrecipitationIntensityPPSPM2 > 0;
                     if (leadingLoco.Wiper && !isRainingOrSnowing)
                         leadingLoco.SignalEvent(Event.WiperOff);
                     else if (!leadingLoco.Wiper && isRainingOrSnowing)
