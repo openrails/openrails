@@ -68,7 +68,7 @@ namespace ORTS.Settings
                                                                                     // Btn 04 Default Legend Station/Siding Names
                                                                                     // Btn 05 Default Legend Car #
             DefaultUserCommands.Add(UserCommand.DisplaySwitchWindow, 6);            // Btn 06 Default Legend Switching Drive Aids
-            DefaultUserCommands.Add(UserCommand.DisplayTrainOperationsWindow, 7);   // Btn 07 Default Legend Train Operations
+            DefaultUserCommands.Add(UserCommand.DisplayTrainCarOperationsWindow, 7);// Btn 07 Default Legend Train Car Operations
             DefaultUserCommands.Add(UserCommand.DisplayNextStationWindow, 8);       // Btn 08 Default Legend Next Station Window
                                                                                     // Btn 09 Default Legend Ops Notebook
                                                                                     // Btn 10 Default Legend Hide Drive Aids

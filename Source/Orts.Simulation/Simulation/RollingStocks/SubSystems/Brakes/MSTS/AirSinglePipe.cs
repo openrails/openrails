@@ -340,6 +340,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             outf.Write(FullServPressurePSI);
             outf.Write((int)TripleValveState);
             outf.Write(FrontBrakeHoseConnected);
+            outf.Write(RearBrakeHoseConnected);
             outf.Write(AngleCockAOpen);
             outf.Write(AngleCockAOpenAmount);
             outf.Write(AngleCockBOpen);
@@ -368,6 +369,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             FullServPressurePSI = inf.ReadSingle();
             TripleValveState = (ValveState)inf.ReadInt32();
             FrontBrakeHoseConnected = inf.ReadBoolean();
+            RearBrakeHoseConnected = inf.ReadBoolean();
             AngleCockAOpen = inf.ReadBoolean();
             AngleCockAOpenAmount = inf.ReadSingle();
             AngleCockBOpen = inf.ReadBoolean();

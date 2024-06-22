@@ -340,17 +340,6 @@ namespace Orts.Viewer3D.Popups
             UpdateWindowSize();
         }
 
-        public override void TabAction() => CycleMode();
-
-        /// <summary>
-        /// Change between full and abbreviated text mode.
-        /// </summary>
-        public void CycleMode()
-        {
-            normalTextMode = !normalTextMode;
-            UpdateWindowSize();
-        }
-
         private void UpdateWindowSize()
         {
             labels = TrainDPUWindowList(Owner.Viewer, normalTextMode).ToList();
