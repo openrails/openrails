@@ -133,6 +133,11 @@ namespace ORTS.Scripting.Api
         public void SignalEventToCircuitBreaker(PowerSupplyEvent evt) => CircuitBreaker.HandleEvent(evt);
 
         /// <summary>
+        /// Sends an event to the circuit breaker
+        /// </summary>
+        public void SignalEventToCircuitBreaker(PowerSupplyEvent evt, int id) => CircuitBreaker.HandleEvent(evt, id);
+
+        /// <summary>
         /// Sends an event to the voltage selector
         /// </summary>
         public void SignalEventToVoltageSelector(PowerSupplyEvent evt) => VoltageSelector.HandleEvent(evt);
@@ -178,6 +183,7 @@ namespace ORTS.Scripting.Api
             base.HandleEvent(evt, id);
 
             // By default, send the event to every component
+            SignalEventToCircuitBreaker(evt, id);
             SignalEventToVoltageSelector(evt, id);
             SignalEventToPantographSelector(evt, id);
             SignalEventToPowerLimitationSelector(evt, id);
