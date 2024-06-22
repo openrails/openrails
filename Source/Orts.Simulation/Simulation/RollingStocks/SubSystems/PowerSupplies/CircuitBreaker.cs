@@ -461,6 +461,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     {
                         SetCurrentState(CircuitBreakerState.Closing);
                     }
+                    else if (QuickPowerOn)
+                    {
+                        QuickPowerOn = false;
+                    }
                     break;
             }
 
@@ -577,6 +581,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     if (ClosingAuthorization() && (DriverClosingOrder() || TCSClosingOrder() || QuickPowerOn))
                     {
                         SetCurrentState(CircuitBreakerState.Closing);
+                    }
+                    else if (QuickPowerOn)
+                    {
+                        QuickPowerOn = false;
                     }
                     break;
             }
