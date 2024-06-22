@@ -183,6 +183,10 @@ namespace ORTS.Scripting.Api
         SwitchOffElectricTrainSupply,
         StallEngine,
         MessageFromTcs,
+        GenericPowerSupplyButtonPressed,
+        GenericPowerSupplyButtonReleased,
+        GenericPowerSupplySwitchOn,
+        GenericPowerSupplySwitchOff,
     }
 
     public enum PowerSupplyType
