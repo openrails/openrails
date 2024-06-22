@@ -318,12 +318,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     public class DefaultPassengerCarPowerSupply : PassengerCarPowerSupply
     {
         private Timer PowerOnTimer;
+        PowerSupplyState PassengerPowerSupplyState;
 
         public override void Initialize()
         {
             PowerOnTimer = new Timer(this);
             PowerOnTimer.Setup(PowerOnDelayS());
 
+            PassengerPowerSupplyState = PowerSupplyState.PowerOff;
             SetCurrentVentilationState(PowerSupplyState.PowerOff);
             SetCurrentHeatingState(PowerSupplyState.PowerOff);
             SetCurrentAirConditioningState(PowerSupplyState.PowerOff);
@@ -343,7 +345,35 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 case PowerSupplyState.PowerOff:
                     if (PowerOnTimer.Started)
                         PowerOnTimer.Stop();
+                    if (PassengerPowerSupplyState != PowerSupplyState.PowerOff)
+                    {
+                        PassengerPowerSupplyState = PowerSupplyState.PowerOff;
+                        SignalEvent(Event.PowerConverterOff);
+                    }
+                    break;
 
+                case PowerSupplyState.PowerOn:
+                    if (!PowerOnTimer.Started)
+                        PowerOnTimer.Start();
+                    switch (PassengerPowerSupplyState)
+                    {
+                        case PowerSupplyState.PowerOff:
+                            PassengerPowerSupplyState = PowerSupplyState.PowerOnOngoing;
+                            break;
+                        case PowerSupplyState.PowerOnOngoing:
+                            if (PowerOnTimer.Triggered)
+                            {
+                                PassengerPowerSupplyState = PowerSupplyState.PowerOn;
+                                SignalEvent(Event.PowerConverterOn);
+                            }
+                            break;
+                    }
+                    break;
+            }
+
+            switch (PassengerPowerSupplyState)
+            {
+                case PowerSupplyState.PowerOff:
                     if (CurrentVentilationState() == PowerSupplyState.PowerOn)
                     {
                         SetCurrentVentilationState(PowerSupplyState.PowerOff);
@@ -365,11 +395,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     SetCurrentElectricTrainSupplyPowerW(0f);
                     SetCurrentHeatFlowRateW(0f);
                     break;
-
                 case PowerSupplyState.PowerOn:
-                    if (!PowerOnTimer.Started)
-                        PowerOnTimer.Start();
-
                     if (CurrentVentilationState() == PowerSupplyState.PowerOff)
                     {
                         SetCurrentVentilationState(PowerSupplyState.PowerOn);
