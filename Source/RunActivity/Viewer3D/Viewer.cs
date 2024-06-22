@@ -992,13 +992,6 @@ namespace Orts.Viewer3D
             }
             if (UserInput.IsPressed(UserCommand.DisplaySwitchWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) SwitchWindow.TabAction(); else SwitchWindow.Visible = !SwitchWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayTrainOperationsWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrainOperationsWindow.TabAction(); else { TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible; if (!TrainOperationsWindow.Visible) CarOperationsWindow.Visible = false; }
-
-            // dpu window has no tab action,
-            // tab action is normally triggered by using the shift key next to the key to open the window
-            // however the key to open the dpu window does alreay needs the shift key to be pressed, being Shift+F9
-            if (UserInput.IsPressed(UserCommand.DisplayTrainDpuWindow))
-                    TrainDpuWindow.Visible = !TrainDpuWindow.Visible;
-
             if (UserInput.IsPressed(UserCommand.DisplayNextStationWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) NextStationWindow.TabAction(); else NextStationWindow.Visible = !NextStationWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayCompassWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) CompassWindow.TabAction(); else CompassWindow.Visible = !CompassWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DebugTracks)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TracksDebugWindow.TabAction(); else TracksDebugWindow.Visible = !TracksDebugWindow.Visible;
@@ -1006,6 +999,11 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommand.DisplayTrainListWindow)) TrainListWindow.Visible = !TrainListWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayEOTListWindow)) EOTListWindow.Visible = !EOTListWindow.Visible;
 
+            // dpu window has no tab action,
+            // tab action is normally triggered by using the shift key next to the key to open the window
+            // however the key to open the dpu window does alreay needs the shift key to be pressed, being Shift+F9
+            if (UserInput.IsPressed(UserCommand.DisplayTrainDpuWindow))
+                TrainDpuWindow.Visible = !TrainDpuWindow.Visible;
 
             if (UserInput.IsPressed(UserCommand.GameChangeCab))
             {
