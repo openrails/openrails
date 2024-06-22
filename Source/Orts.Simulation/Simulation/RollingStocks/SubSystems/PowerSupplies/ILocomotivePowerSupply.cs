@@ -32,7 +32,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         PowerSupplyState MainPowerSupplyState { get; set; }
         bool MainPowerSupplyOn { get; }
         bool DynamicBrakeAvailable { get; set; }
-
+        float PowerSupplyDynamicBrakePercent { get; set; }
         float MaximumDynamicBrakePowerW { get; set; }
 
         PowerSupplyState AuxiliaryPowerSupplyState { get; set; }
