@@ -189,7 +189,7 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Sets the value for a cabview control.
         /// </summary>
-        public void SetCabDisplayControl(int index, float value)
+        protected void SetCabDisplayControl(int index, float value)
         {
             LpsHost.CabDisplayControls[index] = value;
         }
@@ -197,7 +197,7 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Sets the name which is to be shown which putting the cursor above a cabview control.
         /// </summary>
-        public void SetCustomizedCabviewControlName(int index, string name)
+        protected void SetCustomizedCabviewControlName(int index, string name)
         {
             LpsHost.CustomizedCabviewControlNames[index] = name;
         }

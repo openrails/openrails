@@ -140,11 +140,13 @@ namespace ORTS.Scripting.Api
         /// Sends an event to the circuit breaker
         /// </summary>
         protected void SignalEventToCircuitBreaker(PowerSupplyEvent evt) => DmpsHost.CircuitBreaker.HandleEvent(evt);
+        protected void SignalEventToCircuitBreaker(PowerSupplyEvent evt, int id) => DmpsHost.CircuitBreaker.HandleEvent(evt, id);
 
         /// <summary>
         /// Sends an event to the traction cut-off relay
         /// </summary>
         protected void SignalEventToTractionCutOffRelay(PowerSupplyEvent evt) => DmpsHost.TractionCutOffRelay.HandleEvent(evt);
+        protected void SignalEventToTractionCutOffRelay(PowerSupplyEvent evt, int id) => DmpsHost.TractionCutOffRelay.HandleEvent(evt, id);
 
         /// <summary>
         /// Sends an event to the voltage selector
@@ -181,6 +183,7 @@ namespace ORTS.Scripting.Api
             base.HandleEvent(evt);
 
             // By default, send the event to every component
+            SignalEventToCircuitBreaker(evt);
             SignalEventToTractionCutOffRelay(evt);
             SignalEventToVoltageSelector(evt);
             SignalEventToPantographSelector(evt);
@@ -192,6 +195,8 @@ namespace ORTS.Scripting.Api
             base.HandleEvent(evt, id);
 
             // By default, send the event to every component
+            SignalEventToCircuitBreaker(evt, id);
+            SignalEventToTractionCutOffRelay(evt, id);
             SignalEventToVoltageSelector(evt, id);
             SignalEventToPantographSelector(evt, id);
             SignalEventToPowerLimitationSelector(evt, id);
