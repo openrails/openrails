@@ -80,6 +80,9 @@ namespace Orts.Viewer3D.RollingStock
         protected AnimatedPart Item2Continuous;
         protected AnimatedPart Item1TwoState;
         protected AnimatedPart Item2TwoState;
+        protected AnimatedPart BrakeCylinders;
+        protected AnimatedPart Handbrakes;
+        protected AnimatedPart BrakeRigging;
         AnimatedPart UnloadingParts;
 
         public Dictionary<string, List<ParticleEmitterViewer>> ParticleDrawers = new Dictionary<string, List<ParticleEmitterViewer>>();
@@ -341,6 +344,9 @@ namespace Orts.Viewer3D.RollingStock
             Item2Continuous = new AnimatedPart(TrainCarShape);
             Item1TwoState = new AnimatedPart(TrainCarShape);
             Item2TwoState = new AnimatedPart(TrainCarShape);
+            BrakeCylinders = new AnimatedPart(TrainCarShape);
+            Handbrakes = new AnimatedPart(TrainCarShape);
+            BrakeRigging = new AnimatedPart(TrainCarShape);
 
             if (car.FreightAnimations != null)
                 FreightAnimations = new FreightAnimationsViewer(viewer, car, wagonFolderSlash);
@@ -431,6 +437,9 @@ namespace Orts.Viewer3D.RollingStock
             RightWindowRear.SetState(MSTSWagon.WindowStates[MSTSWagon.RightWindowRearIndex] >= MSTSWagon.WindowState.Opening);
             Item1TwoState.SetState(MSTSWagon.GenericItem1);
             Item2TwoState.SetState(MSTSWagon.GenericItem2);
+            BrakeCylinders.SetFrameClamp(MSTSWagon.BrakeSystem.GetNormalizedCylTravel() * 10.0f);
+            Handbrakes.SetState(MSTSWagon.GetTrainHandbrakeStatus());
+            BrakeRigging.SetFrameClamp(Math.Max(MSTSWagon.BrakeSystem.GetNormalizedCylTravel(), MSTSWagon.GetTrainHandbrakeStatus() ? 1.0f : 0.0f) * 10.0f);
             UnloadingParts.SetState(MSTSWagon.UnloadingPartsOpen);
 
             InitializeUserInputCommands();
@@ -617,6 +626,18 @@ namespace Orts.Viewer3D.RollingStock
             {
                 Item2TwoState.AddMatrix(matrix);
             }
+            else if (matrixName.StartsWith("ORTSBRAKECYLINDER")) // brake cylinder animation
+            {
+                BrakeCylinders.AddMatrix(matrix);
+            }
+            else if (matrixName.StartsWith("ORTSHANDBRAKE")) // handbrake wheel animation
+            {
+                Handbrakes.AddMatrix(matrix);
+            }
+            else if (matrixName.StartsWith("ORTSBRAKERIGGING")) // brake rigging/brake shoes animation
+            {
+                BrakeRigging.AddMatrix(matrix);
+            }
             else
             {
                 if (matrixAnimated && matrix != 0)
@@ -669,6 +690,9 @@ namespace Orts.Viewer3D.RollingStock
             UnloadingParts.UpdateState(MSTSWagon.UnloadingPartsOpen, elapsedTime);
             Item1TwoState.UpdateState(MSTSWagon.GenericItem1, elapsedTime);
             Item2TwoState.UpdateState(MSTSWagon.GenericItem2, elapsedTime);
+            BrakeCylinders.UpdateFrameClamp(MSTSWagon.BrakeSystem.GetNormalizedCylTravel() * 10.0f, elapsedTime, 10.0f);
+            Handbrakes.UpdateState(MSTSWagon.GetTrainHandbrakeStatus(), elapsedTime);
+            BrakeRigging.UpdateFrameClamp(Math.Max(MSTSWagon.BrakeSystem.GetNormalizedCylTravel(), MSTSWagon.GetTrainHandbrakeStatus() ? 1.0f : 0.0f) * 10.0f, elapsedTime, 10.0f);
             UpdateAnimation(frame, elapsedTime);
 
             var car = Car as MSTSWagon;
@@ -750,11 +774,11 @@ namespace Orts.Viewer3D.RollingStock
                 foreach (ParticleEmitterViewer drawer in drawers)
                     drawer.PrepareFrame(frame, elapsedTime);
 
-            if (!(car is MSTSLocomotive) && (LeftWindowFront.FrameCount > 0 || RightWindowFront.FrameCount > 0))
+            if (!(car is MSTSLocomotive) && (LeftWindowFront.MaxFrame > 0 || RightWindowFront.MaxFrame > 0))
             {
-                if (LeftWindowFront.FrameCount > 0)
+                if (LeftWindowFront.MaxFrame > 0)
                     car.SoundHeardInternallyCorrection[MSTSWagon.LeftWindowFrontIndex] = LeftWindowFront.AnimationKeyFraction();
-                if (RightWindowFront.FrameCount > 0)
+                if (RightWindowFront.MaxFrame > 0)
                     car.SoundHeardInternallyCorrection[MSTSWagon.RightWindowFrontIndex] = RightWindowFront.AnimationKeyFraction();
             }
         }

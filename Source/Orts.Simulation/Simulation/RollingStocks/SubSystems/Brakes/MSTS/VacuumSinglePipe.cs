@@ -43,9 +43,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         //float BrakeRestorePSIA; 
         protected float VacResPressurePSIA;  // vacuum reservior pressure with piston in released position
         // defaults based on information in http://www.lmsca.org.uk/lms-coaches/LMSRAVB.pdf
-        public int NumBrakeCylinders = 2;
+        public int CylCount = 2;
+        // brake cylinder diameter
+        protected float CylDiameterM = Me.FromIn(18);
+        // brake cylinder stroke length
+        protected float CylStrokeM = Me.FromIn(4.5f);
         // brake cylinder volume with piston in applied position
-        protected float BrakeCylVolM3 = Me3.FromIn3((float)((18 / 2) * (18 / 2) * 4.5 * Math.PI));
+        protected float CylVolumeM3;
+        // total volume of all brake cylinders
+        protected float TotalCylVolumeM3;
         // vacuum reservior volume with piston in released position
         public float VacResVolM3 = Me3.FromIn3((float)((24 / 2) * (24 / 2) * 16 * Math.PI));
         // volume units need to be consistent but otherwise don't matter, defaults are cubic inches
@@ -82,8 +88,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             MaxForcePressurePSI = thiscopy.MaxForcePressurePSI;
             MaxReleaseRatePSIpS = thiscopy.MaxReleaseRatePSIpS;
             MaxApplicationRatePSIpS = thiscopy.MaxApplicationRatePSIpS;
-            NumBrakeCylinders = thiscopy.NumBrakeCylinders;
-            BrakeCylVolM3 = thiscopy.BrakeCylVolM3;
+            CylCount = thiscopy.CylCount;
+            CylDiameterM = thiscopy.CylDiameterM;
+            CylStrokeM = thiscopy.CylStrokeM;
+            CylVolumeM3 = thiscopy.CylVolumeM3;
+            TotalCylVolumeM3 = thiscopy.TotalCylVolumeM3;
             BrakePipeVolumeM3 = thiscopy.BrakePipeVolumeM3;
             VacResVolM3 = thiscopy.VacResVolM3;
             HasDirectAdmissionValue = thiscopy.HasDirectAdmissionValue;
@@ -101,7 +110,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // TODO - review for a better approach
             // Calculate the new vacuum based upon the volume reduction in the reservoir due to brake cylinder movement
             // Using Boyles formula: PsVs = PfVf, and a starting pressure equal to 1 psi calculate the change in pressure
-            float PressureChange = VacResVolM3 / (VacResVolM3 - (NumBrakeCylinders * BrakeCylFraction * BrakeCylVolM3));
+            float PressureChange = VacResVolM3 / (VacResVolM3 - (BrakeCylFraction * TotalCylVolumeM3));
             // Pressure Change should represent the incremental variation as the barke cylinder moves. 
             // Pressure is not linear and reversed compared to vacuum values, and hence more work maybe required to tidy this section of code up.
             float p = VacResPressurePSIA + PressureChange;
@@ -200,7 +209,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override float GetCylVolumeM3()
         {
-            return BrakeCylVolM3;
+            return CylVolumeM3;
+        }
+        public override float GetTotalCylVolumeM3()
+        {
+            return TotalCylVolumeM3;
+        }
+
+        public override float GetNormalizedCylTravel()
+        {
+            return CylPressurePSIA > VacResPressureAdjPSIA() ? 1.0f : 0.0f;
         }
 
         public override float GetVacResVolume()
@@ -210,7 +228,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override float GetVacBrakeCylNumber()
         {
-            return NumBrakeCylinders;
+            return CylCount;
         }
         
 
@@ -238,11 +256,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     break;
                 // OpenRails specific parameters
                 case "wagon(brakepipevolume": BrakePipeVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
+                case "wagon(ortsauxiliaryrescapacity":
                 case "wagon(ortsauxilaryrescapacity": VacResVolM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
-                case "wagon(ortsbrakecylindersize": float BrakeCylSizeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
-                    BrakeCylVolM3 = Me3.FromIn3((float)((Me.ToIn(BrakeCylSizeM) / 2) * (Me.ToIn(BrakeCylSizeM) / 2) * 4.5 * Math.PI)); // Calculate brake cylinder volume based upon size of BC, 4.5" of piston travel
-                    break;
-                case "wagon(ortsnumberbrakecylinders": NumBrakeCylinders = stf.ReadIntBlock(null); break;
+                case "wagon(ortsbrakecylindersize":
+                case "wagon(ortsbrakecylinderdiameter": CylDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortsbrakecylinderpistontravel": CylStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortsnumberbrakecylinders": CylCount = stf.ReadIntBlock(null); break;
             }
         }
 
@@ -281,6 +300,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             //CylVolumeM3 = MaxForcePressurePSI * MaxBrakeForceN * 0.00000059733491f; //an average volume (M3) of air used in brake cylinder for 1 N brake force.
             Car.Train.PreviousCarCount = Car.Train.Cars.Count;
 
+        }
+
+        public override void Initialize()
+        {
+            // Calculate brake cylinder volume from given quantities
+            CylVolumeM3 = (float)((Math.PI * (CylDiameterM * CylDiameterM) / 4.0f) * CylStrokeM);
+
+            // Calculate total volume of all brake cylinders now so we don't need to later
+            TotalCylVolumeM3 = CylVolumeM3 * CylCount;
         }
 
         public override void InitializeMoving() // used when initial speed > 0
@@ -473,7 +501,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 // Adjust vacuum reservoir if necessary
                 if (BrakeLine1PressurePSI < VacResPressurePSIA)
                 {
-                    float dp = elapsedClockSeconds * MaxApplicationRatePSIpS * (NumBrakeCylinders * BrakeCylVolM3) / VacResVolM3;
+                    float dp = elapsedClockSeconds * MaxApplicationRatePSIpS * (TotalCylVolumeM3) / VacResVolM3;
                     float vr = VacResVolM3 / BrakePipeVolumeM3;
                     if (VacResPressurePSIA - dp < BrakeLine1PressurePSI + dp * vr)
                     {
@@ -498,7 +526,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
                 else if (BrakeLine1PressurePSI < VacResPressurePSIA)
                 {
-                    float dp = elapsedClockSeconds * MaxApplicationRatePSIpS * (NumBrakeCylinders * BrakeCylVolM3) / VacResVolM3;
+                    float dp = elapsedClockSeconds * MaxApplicationRatePSIpS * (TotalCylVolumeM3) / VacResVolM3;
                     float vr = VacResVolM3 / BrakePipeVolumeM3;
                     if (VacResPressurePSIA - dp < BrakeLine1PressurePSI + dp * vr)
                     {
@@ -516,7 +544,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 else if (BrakeLine1PressurePSI < CylPressurePSIA) // Increase BP pressure, hence vacuum brakes are being released
                 {
                     float dp = elapsedClockSeconds * MaxReleaseRatePSIpS;
-                    float vr = NumBrakeCylinders * BrakeCylVolM3 / BrakePipeVolumeM3;
+                    float vr = TotalCylVolumeM3 / BrakePipeVolumeM3;
                     if (CylPressurePSIA - dp < BrakeLine1PressurePSI + dp * vr)
                         dp = (CylPressurePSIA - BrakeLine1PressurePSI) / (1 + vr);
                     CylPressurePSIA -= dp;
@@ -529,7 +557,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 else if (BrakeLine1PressurePSI > CylPressurePSIA)  // Decrease BP pressure, hence vacuum brakes are being applied
                 {
                     float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
-                    float vr = NumBrakeCylinders * BrakeCylVolM3 / BrakePipeVolumeM3;
+                    float vr = TotalCylVolumeM3 / BrakePipeVolumeM3;
                     if (CylPressurePSIA + dp > BrakeLine1PressurePSI - dp * vr)
                         dp = (BrakeLine1PressurePSI - CylPressurePSIA) / (1 + vr);
                     CylPressurePSIA += dp;
@@ -735,12 +763,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 // If vehicle is not a vacuum piped vehicle then calculate both volume of train pipe and BC, otherwise for vacuum piped vehicles only calculate train pipe
                 if (car.CarBrakeSystemType != "vacuum_piped")
                 {
-                    TempTotalTrainBrakeCylinderVolumeM3 += car.BrakeSystem.GetVacBrakeCylNumber() * car.BrakeSystem.GetCylVolumeM3(); // Calculate total brake cylinder volume of train
+                    TempTotalTrainBrakeCylinderVolumeM3 += car.BrakeSystem.GetTotalCylVolumeM3(); // Calculate total brake cylinder volume of train
 
                     car.BrakeSystem.BrakeCylFraction = 1.0f - (car.BrakeSystem.GetCylPressurePSI() / (MaxVacuumPipeLevelPSI));
                     car.BrakeSystem.BrakeCylFraction = MathHelper.Clamp(car.BrakeSystem.BrakeCylFraction, 0.01f, 1.0f); // Keep fraction within bounds
 
-                    TempCurrentBrakeCylinderVolumeM3 += (car.BrakeSystem.GetVacBrakeCylNumber() * car.BrakeSystem.GetCylVolumeM3() * car.BrakeSystem.BrakeCylFraction);
+                    TempCurrentBrakeCylinderVolumeM3 += (car.BrakeSystem.GetTotalCylVolumeM3() * car.BrakeSystem.BrakeCylFraction);
                 }
 
             }
