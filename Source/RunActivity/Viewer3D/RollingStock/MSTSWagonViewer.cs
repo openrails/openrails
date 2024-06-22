@@ -1402,6 +1402,14 @@ namespace Orts.Viewer3D.RollingStock
             try
             {
                 Viewer.SoundProcess.AddSoundSource(this, new SoundSource(Viewer, MSTSWagon, smsFilePath));
+                if (MSTSWagon is MSTSLocomotive && MSTSWagon.Train != null && MSTSWagon.Train.TrainType == Simulation.Physics.Train.TRAINTYPE.AI)
+                {
+                    if (MSTSWagon.CarID == MSTSWagon.Train.Cars[0].CarID)
+                    // Lead loco, enable AI train trigger
+                        MSTSWagon.SignalEvent(Orts.Common.Event.AITrainLeadLoco);
+                    // AI train helper loco
+                    else MSTSWagon.SignalEvent(Orts.Common.Event.AITrainHelperLoco);
+                }
             }
             catch (Exception error)
             {
