@@ -188,10 +188,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void HandleEvent(PowerSupplyEvent evt)
         {
-            if (Script != null)
-            {
-                Script.HandleEvent(evt);
-            }
+            Script?.HandleEvent(evt);
+        }
+
+        public void HandleEvent(PowerSupplyEvent evt, int id)
+        {
+            Script?.HandleEvent(evt, id);
         }
 
         public void Save(BinaryWriter outf)

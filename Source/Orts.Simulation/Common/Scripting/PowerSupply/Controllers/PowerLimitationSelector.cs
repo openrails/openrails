@@ -118,5 +118,21 @@ namespace ORTS.Scripting.Api
         protected void SignalEventToPowerSupply(PowerSupplyEvent evt) => PowerSupply.HandleEvent(evt);
 
         protected void SignalEventToPowerSupply(PowerSupplyEvent evt, int id) => PowerSupply.HandleEvent(evt, id);
+
+        /// <summary>
+        /// Sets the value for a cabview control.
+        /// </summary>
+        protected void SetCabDisplayControl(int index, float value)
+        {
+            PowerSupply.CabDisplayControls[index] = value;
+        }
+
+        /// <summary>
+        /// Sets the name which is to be shown which putting the cursor above a cabview control.
+        /// </summary>
+        protected void SetCustomizedCabviewControlName(int index, string name)
+        {
+            PowerSupply.CustomizedCabviewControlNames[index] = name;
+        }
     }
 }

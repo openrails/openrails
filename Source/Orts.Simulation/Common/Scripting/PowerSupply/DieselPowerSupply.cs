@@ -85,6 +85,7 @@ namespace ORTS.Scripting.Api
         /// Sends an event to the traction cut-off relay
         /// </summary>
         public void SignalEventToTractionCutOffRelay(PowerSupplyEvent evt) => TractionCutOffRelay.HandleEvent(evt);
+        public void SignalEventToTractionCutOffRelay(PowerSupplyEvent evt, int id) => TractionCutOffRelay.HandleEvent(evt, id);
 
         public override void HandleEvent(PowerSupplyEvent evt)
         {
@@ -93,6 +94,14 @@ namespace ORTS.Scripting.Api
             // By default, send the event to every component
             SignalEventToTractionCutOffRelay(evt);
             SignalEventToDieselEngines(evt);
+        }
+
+        public override void HandleEvent(PowerSupplyEvent evt, int id)
+        {
+            base.HandleEvent(evt, id);
+
+            // By default, send the event to every component
+            SignalEventToTractionCutOffRelay(evt, id);
         }
 
         public override void HandleEventFromLeadLocomotive(PowerSupplyEvent evt)
