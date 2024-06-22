@@ -6071,6 +6071,11 @@ namespace Orts.Simulation.RollingStocks
                     TrainControlSystem.CabDisplayControls.TryGetValue(cvc.ControlType.Id - 1, out data);
                     break;
 
+                case CABViewControlTypes.ORTS_POWER_SUPPLY:
+                    if (LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply)
+                        supply.CabDisplayControls.TryGetValue(cvc.ControlType.Id - 1, out data);
+                    break;
+
                 case CABViewControlTypes.ORTS_BATTERY_SWITCH_COMMAND_SWITCH:
                     data = LocomotivePowerSupply.BatterySwitch.CommandSwitch ? 1 : 0;
                     break;
