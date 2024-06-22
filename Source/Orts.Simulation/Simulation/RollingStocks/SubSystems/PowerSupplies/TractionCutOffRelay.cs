@@ -373,6 +373,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             switch (evt)
             {
                 case PowerSupplyEvent.CloseTractionCutOffRelay:
+                case PowerSupplyEvent.QuickPowerOn:
                     if (!DriverClosingOrder())
                     {
                         SetDriverClosingOrder(true);
@@ -388,6 +389,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     break;
 
                 case PowerSupplyEvent.OpenTractionCutOffRelay:
+                case PowerSupplyEvent.QuickPowerOff:
                     SetDriverClosingOrder(false);
                     SetDriverOpeningOrder(true);
                     SignalEvent(Event.TractionCutOffRelayClosingOrderOff);
