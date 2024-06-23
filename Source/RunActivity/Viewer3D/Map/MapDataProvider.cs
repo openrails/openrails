@@ -249,46 +249,45 @@ namespace Orts.Viewer3D.Map
             var desiredPositionY = (int)(wantY / MapViewer.spacing);  // The positionY of the ideal row for the text.
             var endX = startX + (name.Length * F.trainFont.Size);
 
-            if (endX < 0) // Out of drawing area
+            if ((endX < 0) || // Out of drawing area
+                    (F.alignedTextY == null))
                 return noFreeSlotFound;
 
             var positionY = desiredPositionY;
-            if (F.alignedTextY != null) {
-                while (positionY >= 0 && positionY < F.alignedTextY.Length)
+            while (positionY >= 0 && positionY < F.alignedTextY.Length)
+            {
+                // If the line contains no text yet, put it there
+                if (F.alignedTextNum[positionY] == 0)
+                    return SaveLabelLocation(startX, endX, positionY);
+
+                var conflict = false;
+
+                // Check if it intersects with any labels already in this row
+                for (var col = 0; col < F.alignedTextNum[positionY]; col++)
                 {
-                    // If the line contains no text yet, put it there
-                    if (F.alignedTextNum[positionY] == 0)
-                        return SaveLabelLocation(startX, endX, positionY);
-
-                    var conflict = false;
-
-                    // Check if it intersects with any labels already in this row
-                    for (var col = 0; col < F.alignedTextNum[positionY]; col++)
+                    var v = F.alignedTextY[positionY][col];
+                    //check conflict with a text, v.X is the start of the text, v.Y is the end of the text
+                    if (endX >= v.X && startX <= v.Y)
                     {
-                        var v = F.alignedTextY[positionY][col];
-                        //check conflict with a text, v.X is the start of the text, v.Y is the end of the text
-                        if (endX >= v.X && startX <= v.Y)
-                        {
-                            conflict = true;
-                            break;
-                        }
+                        conflict = true;
+                        break;
                     }
+                }
 
-                    if (conflict)
-                    {
-                        positionY--; // Try a different row: -1, -2, +2, +1
+                if (conflict)
+                {
+                    positionY--; // Try a different row: -1, -2, +2, +1
 
-                        if (positionY - desiredPositionY <= -2) // Cannot move up (-ve Y), so try to move it down (+ve Y)
-                            positionY = desiredPositionY + 2;   // Try +2 then +1
+                    if (positionY - desiredPositionY <= -2) // Cannot move up (-ve Y), so try to move it down (+ve Y)
+                        positionY = desiredPositionY + 2;   // Try +2 then +1
 
-                        if (positionY == desiredPositionY) // Back to original position again
-                            return noFreeSlotFound;
-                    }
-                    else
-                    {
-                        // Check that row has an unused column in its fixed size array
-                        return F.alignedTextNum[positionY] >= F.alignedTextY[positionY].Length ? noFreeSlotFound : SaveLabelLocation(startX, endX, positionY);
-                    }
+                    if (positionY == desiredPositionY) // Back to original position again
+                        return noFreeSlotFound;
+                }
+                else
+                {
+                    // Check that row has an unused column in its fixed size array
+                    return F.alignedTextNum[positionY] >= F.alignedTextY[positionY].Length ? noFreeSlotFound : SaveLabelLocation(startX, endX, positionY);
                 }
             }
             return noFreeSlotFound;
