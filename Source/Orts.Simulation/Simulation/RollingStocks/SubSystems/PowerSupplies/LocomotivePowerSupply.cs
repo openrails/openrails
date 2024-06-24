@@ -66,7 +66,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     if (car == null) continue;
                     if (!(car is MSTSWagon wagon)) continue;
                     if (!(wagon.PassengerCarPowerSupply?.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive) ?? false)) continue;
-                    result += wagon.PassengerCarPowerSupply.ElectricTrainSupplyPowerW / wagon.PassengerCarPowerSupply.ElectricTrainSupplyConnectedLocomotives.Count();
+                    result += wagon.PassengerCarPowerSupply.ElectricTrainSupplyPowerW / wagon.PassengerCarPowerSupply.ElectricTrainSupplyConnectedLocomotives.Count;
                 }
                 return result;
             }
