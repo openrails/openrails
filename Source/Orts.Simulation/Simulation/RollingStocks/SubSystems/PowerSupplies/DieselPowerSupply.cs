@@ -184,7 +184,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         SignalEvent(Event.EnginePowerOff);
                         SetCurrentMainPowerSupplyState(PowerSupplyState.PowerOff);
                     }
-                    SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
+                    if (CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn)
+                    {
+                        SignalEvent(Event.PowerConverterOff);
+                        SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
+                    }
                     break;
 
                 case DieselEngineState.Running:
@@ -226,7 +230,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     if (!AuxPowerOnTimer.Started)
                         AuxPowerOnTimer.Start();
 
-                    SetCurrentAuxiliaryPowerSupplyState(AuxPowerOnTimer.Triggered ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
+                    if (AuxPowerOnTimer.Triggered && CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOff)
+                    {
+                        SignalEvent(Event.PowerConverterOn);
+                        SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOn);
+                    }
                     break;
             }
 

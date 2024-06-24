@@ -213,7 +213,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         SignalEvent(Event.EnginePowerOff);
                         SetCurrentMainPowerSupplyState(PowerSupplyState.PowerOff);
                     }
-                    SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
+                    if (CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn)
+                    {
+                        SignalEvent(Event.PowerConverterOff);
+                        SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
+                    }
                     SetPantographVoltageV(PantographFilter.Filter(0.0f, elapsedClockSeconds));
                     SetFilterVoltageV(VoltageFilter.Filter(0.0f, elapsedClockSeconds));
                     break;
@@ -241,7 +245,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                                 SignalEvent(Event.EnginePowerOff);
                                 SetCurrentMainPowerSupplyState(PowerSupplyState.PowerOff);
                             }
-                            SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
+                            if (CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn)
+                            {
+                                SignalEvent(Event.PowerConverterOff);
+                                SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
+                            }
                             SetFilterVoltageV(VoltageFilter.Filter(0.0f, elapsedClockSeconds));
                             break;
 
@@ -259,7 +267,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                                 SignalEvent(Event.EnginePowerOn);
                                 SetCurrentMainPowerSupplyState(PowerSupplyState.PowerOn);
                             }
-                            SetCurrentAuxiliaryPowerSupplyState(AuxPowerOnTimer.Triggered ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
+                            if (AuxPowerOnTimer.Triggered && CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOff)
+                            {
+                                SignalEvent(Event.PowerConverterOn);
+                                SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOn);
+                            }
                             SetFilterVoltageV(VoltageFilter.Filter(PantographVoltageV(), elapsedClockSeconds));
                             break;
                     }
