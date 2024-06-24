@@ -46,9 +46,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public bool OtherCabInUse {
             get
             {
-                foreach (MSTSLocomotive locomotive in Locomotive.Train.Cars.OfType<MSTSLocomotive>())
+                foreach (TrainCar car in Locomotive.Train.Cars)
                 {
-                    if (locomotive != Locomotive && locomotive.LocomotivePowerSupply.MasterKey.On)
+                    if (car is MSTSLocomotive locomotive && locomotive != Locomotive && locomotive.LocomotivePowerSupply.MasterKey.On)
                     {
                         return true;
                     }
