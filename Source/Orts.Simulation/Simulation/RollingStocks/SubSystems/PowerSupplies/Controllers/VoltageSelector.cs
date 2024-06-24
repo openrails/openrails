@@ -133,6 +133,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
             if (Script == null) Script = new DefaultVoltageSelector(false);
 
+            Position =
+                Positions.FirstOrDefault(x =>
+                    x.VoltageV == PowerSupply.Locomotive.Train.Simulator.TRK.Tr_RouteFile.MaxLineVoltage) ??
+                Positions.FirstOrDefault();
+
             Script?.AttachToHost(this);
             Script?.Initialize();
         }
@@ -177,10 +182,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         }
         public override void Initialize()
         {
-            Position =
-                Positions.FirstOrDefault(x =>
-                    x.VoltageV == PowerSupply.Locomotive.Train.Simulator.TRK.Tr_RouteFile.MaxLineVoltage) ??
-                Positions.FirstOrDefault();
         }
         string GetPositionName()
         {
