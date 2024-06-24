@@ -63,22 +63,25 @@ namespace ORTS.Scripting.Api
         {
             DieselEngineState state = DieselEngineState.Unavailable;
 
-            foreach (MSTSDieselLocomotive locomotive in Train.Cars.OfType<MSTSDieselLocomotive>().Where(locomotive => locomotive.RemoteControlGroup != -1))
+            foreach (TrainCar car in Train.Cars)
             {
-                if (locomotive == Simulator.PlayerLocomotive)
+                if (car is MSTSDieselLocomotive locomotive && locomotive.RemoteControlGroup != -1)
                 {
-                    foreach (DieselEngine dieselEngine in locomotive.DieselEngines.DEList.Where(de => de != locomotive.DieselEngines[0]))
+                    if (locomotive == Simulator.PlayerLocomotive)
                     {
-                        if (dieselEngine.State > state)
-                            state = dieselEngine.State;
+                        foreach (DieselEngine dieselEngine in locomotive.DieselEngines)
+                        {
+                            if (dieselEngine != locomotive.DieselEngines[0] && dieselEngine.State > state)
+                                state = dieselEngine.State;
+                        }
                     }
-                }
-                else
-                {
-                    foreach (DieselEngine dieselEngine in locomotive.DieselEngines)
+                    else
                     {
-                        if (dieselEngine.State > state)
-                            state = dieselEngine.State;
+                        foreach (DieselEngine dieselEngine in locomotive.DieselEngines)
+                        {
+                            if (dieselEngine.State > state)
+                                state = dieselEngine.State;
+                        }
                     }
                 }
             }
@@ -149,7 +152,12 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public int NumberOfLocomotives()
         {
-            return Train.Cars.OfType<MSTSLocomotive>().Count();
+            int count=0;
+            for (int i=0; i<Train.Cars.Count; i++)
+            {
+                if (Train.Cars[i] is MSTSLocomotive) count++;
+            }
+            return count;
         }
 
         /// <summary>
@@ -157,7 +165,16 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public int IndexOfLocomotive()
         {
-            return Train.Cars.OfType<MSTSLocomotive>().ToList().IndexOf(Locomotive);
+            int count=0;
+            for (int i=0; i<Train.Cars.Count; i++)
+            {
+                if (Train.Cars[i] is MSTSLocomotive)
+                {
+                    if (Train.Cars[i] == Locomotive) return count;
+                    count++;
+                }
+            }
+            return -1;
         }
 
         /// <summary>
@@ -256,9 +273,9 @@ namespace ORTS.Scripting.Api
         {
             if (Locomotive == Train.LeadLocomotive)
             {
-                foreach (MSTSLocomotive locomotive in Train.Cars.OfType<MSTSLocomotive>())
+                foreach (TrainCar car in Train.Cars)
                 {
-                    if (locomotive != Locomotive && locomotive.RemoteControlGroup != -1)
+                    if (car is MSTSLocomotive locomotive && locomotive != Locomotive && locomotive.RemoteControlGroup != -1)
                     {
                         locomotive.LocomotivePowerSupply.HandleEventFromLeadLocomotive(evt);
                     }
@@ -273,9 +290,9 @@ namespace ORTS.Scripting.Api
         {
             if (Locomotive == Train.LeadLocomotive)
             {
-                foreach (MSTSLocomotive locomotive in Train.Cars.OfType<MSTSLocomotive>())
+                foreach (TrainCar car in Train.Cars)
                 {
-                    if (locomotive != Locomotive && locomotive.RemoteControlGroup != -1)
+                    if (car is MSTSLocomotive locomotive && locomotive != Locomotive && locomotive.RemoteControlGroup != -1)
                     {
                         locomotive.LocomotivePowerSupply.HandleEventFromLeadLocomotive(evt, id);
                     }
@@ -338,29 +355,32 @@ namespace ORTS.Scripting.Api
         {
             bool helperFound = false; //this avoids that locomotive engines toggle in opposite directions
 
-            foreach (MSTSDieselLocomotive locomotive in Train.Cars.OfType<MSTSDieselLocomotive>().Where(locomotive => locomotive.RemoteControlGroup != -1))
+            foreach (TrainCar car in Train.Cars)
             {
-                if (locomotive == Train.LeadLocomotive)
+                if (car is MSTSDieselLocomotive locomotive && locomotive.RemoteControlGroup != -1)
                 {
-                    // Engine number 1 or above are helper engines
-                    for (int i = 1; i < locomotive.DieselEngines.Count; i++)
+                    if (locomotive == Train.LeadLocomotive)
+                    {
+                        // Engine number 1 or above are helper engines
+                        for (int i = 1; i < locomotive.DieselEngines.Count; i++)
+                        {
+                            if (!helperFound)
+                            {
+                                helperFound = true;
+                            }
+
+                            locomotive.DieselEngines.HandleEvent(evt, i);
+                        }
+                    }
+                    else
                     {
                         if (!helperFound)
                         {
                             helperFound = true;
                         }
 
-                        locomotive.DieselEngines.HandleEvent(evt, i);
+                        locomotive.DieselEngines.HandleEvent(evt);
                     }
-                }
-                else
-                {
-                    if (!helperFound)
-                    {
-                        helperFound = true;
-                    }
-
-                    locomotive.DieselEngines.HandleEvent(evt);
                 }
             }
 
