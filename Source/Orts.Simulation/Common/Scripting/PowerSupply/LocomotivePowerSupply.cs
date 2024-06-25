@@ -67,7 +67,7 @@ namespace ORTS.Scripting.Api
             {
                 if (car is MSTSDieselLocomotive locomotive && locomotive.RemoteControlGroup != -1)
                 {
-                    if (locomotive == Simulator.PlayerLocomotive)
+                    if (locomotive == Train.LeadLocomotive)
                     {
                         foreach (DieselEngine dieselEngine in locomotive.DieselEngines)
                         {
@@ -271,7 +271,7 @@ namespace ORTS.Scripting.Api
         /// </summary>
         protected void SignalEventToOtherLocomotives(PowerSupplyEvent evt)
         {
-            if (Locomotive == Simulator.PlayerLocomotive)
+            if (Locomotive == Train.LeadLocomotive)
             {
                 foreach (TrainCar car in Train.Cars)
                 {
@@ -288,7 +288,7 @@ namespace ORTS.Scripting.Api
         /// </summary>
         protected void SignalEventToOtherLocomotivesWithId(PowerSupplyEvent evt, int id)
         {
-            if (Locomotive == Simulator.PlayerLocomotive)
+            if (Locomotive == Train.LeadLocomotive)
             {
                 foreach (TrainCar car in Train.Cars)
                 {
@@ -305,7 +305,7 @@ namespace ORTS.Scripting.Api
         /// </summary>
         protected void SignalEventToOtherTrainVehicles(PowerSupplyEvent evt)
         {
-            if (Locomotive == Simulator.PlayerLocomotive)
+            if (Locomotive == Train.LeadLocomotive)
             {
                 foreach (TrainCar car in Train.Cars)
                 {
@@ -322,7 +322,7 @@ namespace ORTS.Scripting.Api
         /// </summary>
         protected void SignalEventToOtherTrainVehiclesWithId(PowerSupplyEvent evt, int id)
         {
-            if (Locomotive == Simulator.PlayerLocomotive)
+            if (Locomotive == Train.LeadLocomotive)
             {
                 foreach (TrainCar car in Train.Cars)
                 {
@@ -330,6 +330,54 @@ namespace ORTS.Scripting.Api
                     {
                         car.PowerSupply?.HandleEventFromLeadLocomotive(evt, id);
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sends an event to the power supply of the lead locomotive
+        /// </summary>
+        protected void SignalEventToLeadLocomotive(PowerSupplyEvent evt)
+        {
+            (Train.LeadLocomotive as MSTSLocomotive)?.LocomotivePowerSupply.HandleEventFromOtherLocomotive(IndexOfLocomotive(), evt);
+        }
+
+        /// <summary>
+        /// Sends an event to the power supply of the lead locomotive
+        /// </summary>
+        protected void SignalEventToLeadLocomotive(PowerSupplyEvent evt, int id)
+        {
+            (Train.LeadLocomotive as MSTSLocomotive)?.LocomotivePowerSupply.HandleEventFromOtherLocomotive(IndexOfLocomotive(), evt, id);
+        }
+
+        /// <summary>
+        /// Sends an event to the power supply of specific locomotive
+        /// </summary>
+        protected void SignalEventToOtherLocomotive(int locoIndex, PowerSupplyEvent evt)
+        {
+            int count=0;
+            for (int i=0; i<Train.Cars.Count; i++)
+            {
+                if (Train.Cars[i] is MSTSLocomotive loco)
+                {
+                    if (count == locoIndex) loco.LocomotivePowerSupply.HandleEventFromOtherLocomotive(IndexOfLocomotive(), evt);
+                    count++;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sends an event to the power supply of specific locomotive
+        /// </summary>
+        protected void SignalEventToOtherLocomotive(int locoIndex, PowerSupplyEvent evt, int id)
+        {
+            int count=0;
+            for (int i=0; i<Train.Cars.Count; i++)
+            {
+                if (Train.Cars[i] is MSTSLocomotive loco)
+                {
+                    if (count == locoIndex) loco.LocomotivePowerSupply.HandleEventFromOtherLocomotive(IndexOfLocomotive(), evt, id);
+                    count++;
                 }
             }
         }
@@ -345,7 +393,7 @@ namespace ORTS.Scripting.Api
             {
                 if (car is MSTSDieselLocomotive locomotive && locomotive.RemoteControlGroup != -1)
                 {
-                    if (locomotive == Simulator.PlayerLocomotive)
+                    if (locomotive == Train.LeadLocomotive)
                     {
                         // Engine number 1 or above are helper engines
                         for (int i = 1; i < locomotive.DieselEngines.Count; i++)
@@ -428,6 +476,16 @@ namespace ORTS.Scripting.Api
             // By default, send the event to every component
             SignalEventToElectricTrainSupplySwitch(evt);
             SignalEventToTcs(evt);
+        }
+
+        public virtual void HandleEventFromOtherLocomotive(int locoIndex, PowerSupplyEvent evt)
+        {
+
+        }
+
+        public virtual void HandleEventFromOtherLocomotive(int locoIndex, PowerSupplyEvent evt, int id)
+        {
+
         }
 
         protected bool GetBoolParameter(string sectionName, string keyName, bool defaultValue) => LoadParameter(sectionName, keyName, defaultValue);
