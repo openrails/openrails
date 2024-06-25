@@ -224,5 +224,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public void HandleEventFromLeadLocomotive(PowerSupplyEvent evt, int id)
         {
         }
+
+        public void HandleEventFromOtherLocomotive(int locoIndex, PowerSupplyEvent evt)
+        {
+        }
+
+        public void HandleEventFromOtherLocomotive(int locoIndex, PowerSupplyEvent evt, int id)
+        {
+        }
     }
 }
