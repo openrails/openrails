@@ -115,6 +115,13 @@ namespace Orts.Simulation.RollingStocks
         bool Injector1SoundIsOn = false;
         public bool Injector2IsOn;
         bool Injector2SoundIsOn = false;
+        bool WaterMotionPumpFitted = false;
+        float WaterMotionPump1FlowRateLBpS;
+        float WaterMotionPump2FlowRateLBpS;
+        float MaximumWaterMotionPumpFlowRateLBpS;
+        bool WaterMotionPump1IsOn = false;
+        bool WaterMotionPump2IsOn = false;
+        float WaterMotionPumpHeatLossBTU;
         public bool CylinderCocksAreOpen;
         public bool BlowdownValveOpen;
         public bool CylinderCompoundOn;  // Flag to indicate whether compound locomotive is in compound or simple mode of operation - simple = true (ie bypass valve is open)
@@ -934,6 +941,11 @@ namespace Orts.Simulation.RollingStocks
                     if (heating == 1)
                         FuelOilSteamHeatingReqd = true;
                     break;
+                case "engine(ortswatermotionpump":
+                    var motionpump = stf.ReadIntBlock(null);
+                    if (motionpump == 1)
+                        WaterMotionPumpFitted = true;
+                    break;
                 case "engine(ortsfueloilspecificgravity": OilSpecificGravity = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(enginecontrollers(cutoff": CutoffController.Parse(stf); break;
                 case "engine(enginecontrollers(ortssmallejector": SmallEjectorController.Parse(stf); SmallEjectorControllerFitted = true; break;
@@ -1048,6 +1060,7 @@ namespace Orts.Simulation.RollingStocks
             CylinderPortOpeningFactor = locoCopy.CylinderPortOpeningFactor;
             BoilerVolumeFT3 = locoCopy.BoilerVolumeFT3;
             MaxBoilerPressurePSI = locoCopy.MaxBoilerPressurePSI;
+            WaterMotionPumpFitted = locoCopy.WaterMotionPumpFitted;
             MaxSuperheatRefTempF = locoCopy.MaxSuperheatRefTempF;
             MaxIndicatedHorsePowerHP = locoCopy.MaxIndicatedHorsePowerHP;
             SuperheatCutoffPressureFactor = locoCopy.SuperheatCutoffPressureFactor;
@@ -6999,6 +7012,41 @@ namespace Orts.Simulation.RollingStocks
 
         private void UpdateInjectors(float elapsedClockSeconds)
         {
+
+            if (WaterMotionPumpFitted)
+            {
+               MaximumWaterMotionPumpFlowRateLBpS = (1.2f * EvaporationLBpS) / 2.0f; // Assume two pumps and that they can pump a fraction more water the the maximum steam production
+
+                if (WaterMotionPump1IsOn && absSpeedMpS > 0)
+                {
+                    WaterMotionPump1FlowRateLBpS = MaximumWaterMotionPumpFlowRateLBpS * absSpeedMpS / MpS.FromMpH(MaxLocoSpeedMpH);
+                }
+
+                if (WaterMotionPump2IsOn && absSpeedMpS > 0)
+                {
+                    WaterMotionPump2FlowRateLBpS = MaximumWaterMotionPumpFlowRateLBpS * absSpeedMpS / MpS.FromMpH(MaxLocoSpeedMpH);
+                }
+
+                if (WaterIsExhausted)
+                {
+                    WaterMotionPump1FlowRateLBpS = 0.0f; // If the tender water is empty, stop flow into boiler
+                    WaterMotionPump2FlowRateLBpS = 0.0f; // If the tender water is empty, stop flow into boiler
+                }
+
+                float TotalPumpFlowRateLbpS = WaterMotionPump1FlowRateLBpS + WaterMotionPump2FlowRateLBpS;
+
+                // Calculate heat loss for water injected
+                // Loss of boiler heat due to water injection - loss is the diff between steam and water Heat
+                WaterMotionPumpHeatLossBTU = TotalPumpFlowRateLbpS * (WaterHeatPSItoBTUpLB[BoilerPressurePSI] - WaterHeatPSItoBTUpLB[0]);
+
+                // calculate Water steam heat based on injector water delivery temp
+                BoilerMassLB += elapsedClockSeconds * TotalPumpFlowRateLbpS;   // Boiler Mass increase by Injector both pumps
+                BoilerHeatBTU -= elapsedClockSeconds * WaterMotionPumpHeatLossBTU; // Total loss of boiler heat due to water injection - inject steam and water Heat   
+//                InjectorBoilerInputLB += (elapsedClockSeconds * Injector1Fraction * InjectorFlowRateLBpS); // Keep track of water flow into boilers from Injector 1
+                BoilerHeatOutBTUpS += WaterMotionPumpHeatLossBTU; // Total loss of boiler heat due to water injection - inject steam and water Heat
+            }
+            else
+            {
             #region Calculate Injector size
 
             // Calculate size of injectors to suit cylinder size.
@@ -7140,6 +7188,7 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
         }
+        }
 
         private void UpdateFiring(float absSpeedMpS)
         {
@@ -7190,6 +7239,27 @@ namespace Orts.Simulation.RollingStocks
 
             #region AI Fireman
             {
+
+                if (WaterMotionPumpFitted && !WaterIsExhausted)
+                {
+                    if (WaterGlassLevelIN > 7.99)        // turn pumps off if water level in boiler greater then 8.0, to stop cycling
+                    {
+                        WaterMotionPump1IsOn = false;
+                        WaterMotionPump2IsOn = false;
+                    }
+                    else if (WaterGlassLevelIN <= 7.0 && WaterGlassLevelIN > 5.75)  // turn water pump #1 on if water level in boiler drops below 7.0 and is above 
+                    {
+                        WaterMotionPump1IsOn = true;
+                        WaterMotionPump2IsOn = false;
+                    }
+                    else if (WaterGlassLevelIN <= 5.75 && WaterGlassLevelIN > 4.5)  // turn water pump #1 on if water level in boiler drops below 7.0 and is above 
+                    {
+                        WaterMotionPump1IsOn = true;
+                        WaterMotionPump2IsOn = true;
+                    }
+                }
+                else
+                {
                 // Injectors
                 // Injectors normally not on when stationary?
                 // Injector water delivery heat decreases with the capacity of the injectors, ideally one injector would be used as appropriate to match steam consumption. @nd one only used if required.
@@ -7364,6 +7434,7 @@ namespace Orts.Simulation.RollingStocks
                         InjectorLockedOut = true;
                         PlayInjector2SoundIfStarting();
                     }
+                }
                 }
 
                 float BoilerHeatCheck = BoilerHeatOutBTUpS / BoilerHeatInBTUpS;
@@ -8159,7 +8230,21 @@ namespace Orts.Simulation.RollingStocks
                 "FHLoss",
                 FireHeatLossPercent);
 #endif
-
+            if (WaterMotionPumpFitted)
+            {
+                status.AppendFormat("{0}\t{1}\t{2}/{7}\t\t{3}\t{4}/{7}\t\t{5}\t{6}/{7}\n",
+                    Simulator.Catalog.GetString("Pump:"),
+                    Simulator.Catalog.GetString("Max"),
+                    FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(MaximumWaterMotionPumpFlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
+                    Simulator.Catalog.GetString("Pump1"),
+                    FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(WaterMotionPump1FlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
+                    Simulator.Catalog.GetString("Pump2"),
+                    FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(WaterMotionPump2FlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
+                    FormatStrings.h
+                    );
+            }
+            else
+            {
             status.AppendFormat("{0}\t{1}\t{6}/{12}\t\t({7:N0} {13})\t{2}\t{8}/{12}\t\t{3}\t{9}\t\t{4}\t{10}/{12}\t\t{5}\t{11}\n",
                 Simulator.Catalog.GetString("Injector:"),
                 Simulator.Catalog.GetString("Max"),
@@ -8175,6 +8260,8 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.FormatTemperature(C.FromF(Injector2WaterDelTempF), IsMetric, false),
                 FormatStrings.h,
                 FormatStrings.mm);
+            }
+
 
             if (SteamIsAuxTenderCoupled)
             {
