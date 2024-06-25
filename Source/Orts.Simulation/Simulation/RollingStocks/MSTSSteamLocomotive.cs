@@ -122,6 +122,9 @@ namespace Orts.Simulation.RollingStocks
         bool WaterMotionPump1IsOn = false;
         bool WaterMotionPump2IsOn = false;
         float WaterMotionPumpHeatLossBTU;
+        bool WaterMotionPumpLockedOut = false;
+        float WaterMotionPumpLockOutResetTimeS = 15.0f; // Time to reset the pump lock out time - time to prevent change of pumps
+        float WaterMotionPumpLockOutTimeS; // Current lock out time - reset after Reset Time exceeded 
         public bool CylinderCocksAreOpen;
         public bool BlowdownValveOpen;
         public bool CylinderCompoundOn;  // Flag to indicate whether compound locomotive is in compound or simple mode of operation - simple = true (ie bypass valve is open)
@@ -1155,8 +1158,9 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(Injector2IsOn);
             outf.Write(Injector2Fraction);
             outf.Write(InjectorLockedOut);
+            outf.Write(WaterMotionPumpLockedOut);
             outf.Write(InjectorLockOutTimeS);
-            outf.Write(InjectorLockOutResetTimeS);
+            outf.Write(WaterMotionPumpLockOutTimeS);
             outf.Write(WaterTempNewK);
             outf.Write(BkW_Diff);
             outf.Write(WaterFraction);
@@ -1219,8 +1223,9 @@ namespace Orts.Simulation.RollingStocks
             Injector2IsOn = inf.ReadBoolean();
             Injector2Fraction = inf.ReadSingle();
             InjectorLockedOut = inf.ReadBoolean();
+            WaterMotionPumpLockedOut = inf.ReadBoolean();
             InjectorLockOutTimeS = inf.ReadSingle();
-            InjectorLockOutResetTimeS = inf.ReadSingle();
+            WaterMotionPumpLockOutTimeS = inf.ReadSingle();
             WaterTempNewK = inf.ReadSingle();
             BkW_Diff = inf.ReadSingle();
             WaterFraction = inf.ReadSingle();
@@ -7024,10 +7029,18 @@ namespace Orts.Simulation.RollingStocks
                 {
                     WaterMotionPump1FlowRateLBpS = MaximumWaterMotionPumpFlowRateLBpS * absSpeedMpS / MpS.FromMpH(MaxLocoSpeedMpH);
                 }
+                else
+                {
+                    WaterMotionPump1FlowRateLBpS = 0;
+                }
 
                 if (WaterMotionPump2IsOn && absSpeedMpS > 0)
                 {
                     WaterMotionPump2FlowRateLBpS = MaximumWaterMotionPumpFlowRateLBpS * absSpeedMpS / MpS.FromMpH(MaxLocoSpeedMpH);
+                }
+                else
+                {
+                    WaterMotionPump2FlowRateLBpS = 0;
                 }
 
                 if (WaterIsExhausted)
@@ -7039,14 +7052,29 @@ namespace Orts.Simulation.RollingStocks
                 float TotalPumpFlowRateLbpS = WaterMotionPump1FlowRateLBpS + WaterMotionPump2FlowRateLBpS;
 
                 // Calculate heat loss for water injected
-                // Loss of boiler heat due to water injection - loss is the diff between steam and water Heat
+                // Loss of boiler heat due to water injection - loss is the diff between steam and ambient temperature (or pressure)
                 WaterMotionPumpHeatLossBTU = TotalPumpFlowRateLbpS * (WaterHeatPSItoBTUpLB[BoilerPressurePSI] - WaterHeatPSItoBTUpLB[0]);
 
                 // calculate Water steam heat based on injector water delivery temp
-                BoilerMassLB += elapsedClockSeconds * TotalPumpFlowRateLbpS;   // Boiler Mass increase by Injector both pumps
-                BoilerHeatBTU -= elapsedClockSeconds * WaterMotionPumpHeatLossBTU; // Total loss of boiler heat due to water injection - inject steam and water Heat   
+                BoilerMassLB += elapsedClockSeconds * TotalPumpFlowRateLbpS;   // Boiler Mass increase by both pumps
+                BoilerHeatBTU -= elapsedClockSeconds * WaterMotionPumpHeatLossBTU; // Total loss of boiler heat due to water pump - inject cold water straight from tender  
 //                InjectorBoilerInputLB += (elapsedClockSeconds * Injector1Fraction * InjectorFlowRateLBpS); // Keep track of water flow into boilers from Injector 1
                 BoilerHeatOutBTUpS += WaterMotionPumpHeatLossBTU; // Total loss of boiler heat due to water injection - inject steam and water Heat
+
+                // Update pump lockout timer
+                if (WaterMotionPump1IsOn || WaterMotionPump2IsOn)
+                {
+                    if (WaterMotionPumpLockedOut)
+                    {
+                        WaterMotionPumpLockOutTimeS += elapsedClockSeconds;
+                    }
+                    if (WaterMotionPumpLockOutTimeS > WaterMotionPumpLockOutResetTimeS)
+                    {
+                        WaterMotionPumpLockedOut = false;
+                        WaterMotionPumpLockOutTimeS = 0.0f;
+
+                    }
+                }
             }
             else
             {
@@ -7245,20 +7273,23 @@ namespace Orts.Simulation.RollingStocks
 
                 if (WaterMotionPumpFitted && !WaterIsExhausted)
                 {
+                    
                     if (WaterGlassLevelIN > 7.99)        // turn pumps off if water level in boiler greater then 8.0, to stop cycling
                     {
                         WaterMotionPump1IsOn = false;
                         WaterMotionPump2IsOn = false;
                     }
-                    else if (WaterGlassLevelIN <= 7.0 && WaterGlassLevelIN > 5.75)  // turn water pump #1 on if water level in boiler drops below 7.0 and is above 
+                    else if (WaterGlassLevelIN <= 7.0 && WaterGlassLevelIN > 5.75 && !WaterMotionPumpLockedOut)  // turn water pump #1 on if water level in boiler drops below 7.0 and is above 
                     {
                         WaterMotionPump1IsOn = true;
                         WaterMotionPump2IsOn = false;
+                        WaterMotionPumpLockedOut = true;
                     }
-                    else if (WaterGlassLevelIN <= 5.75 && WaterGlassLevelIN > 4.5)  // turn water pump #1 on if water level in boiler drops below 7.0 and is above 
+                    else if (WaterGlassLevelIN <= 5.75 && WaterGlassLevelIN > 4.5 && !WaterMotionPumpLockedOut)  // turn water pump #2 on as well if water level in boiler drops below 5.75 and is above 
                     {
                         WaterMotionPump1IsOn = true;
                         WaterMotionPump2IsOn = true;
+                        WaterMotionPumpLockedOut = true;
                     }
                 }
                 else
