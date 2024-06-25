@@ -277,6 +277,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             AbstractScript?.HandleEventFromLeadLocomotive(evt, id);
         }
 
+        public void HandleEventFromOtherLocomotive(int locoIndex, PowerSupplyEvent evt)
+        {
+            AbstractScript?.HandleEventFromOtherLocomotive(locoIndex, evt);
+        }
+
+        public void HandleEventFromOtherLocomotive(int locoIndex, PowerSupplyEvent evt, int id)
+        {
+            AbstractScript?.HandleEventFromOtherLocomotive(locoIndex, evt, id);
+        }
+
         protected virtual void AssignScriptFunctions()
         {
             // AbstractScriptClass
