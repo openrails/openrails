@@ -46,5 +46,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         bool ServiceRetentionActive { get; set; }
 
         void HandleEventFromTcs(PowerSupplyEvent evt, string message);
+        void HandleEventFromOtherLocomotive(int locoIndex, PowerSupplyEvent evt);
+        void HandleEventFromOtherLocomotive(int locoIndex, PowerSupplyEvent evt, int id);
     }
 }
