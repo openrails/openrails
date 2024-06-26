@@ -34,7 +34,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         private DieselPowerSupply Script => AbstractScript as DieselPowerSupply;
 
         public float DieselEngineMinRpmForElectricTrainSupply { get; protected set; } = 0f;
-        public float DieselEngineMinRpm { get => ElectricTrainSupplyOn ? DieselEngineMinRpmForElectricTrainSupply : 0f; }
+        public float DieselEngineMinRpm;
 
         public ScriptedDieselPowerSupply(MSTSDieselLocomotive locomotive) :
             base(locomotive)
@@ -244,15 +244,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             if (ElectricTrainSupplyUnfitted())
             {
                 SetCurrentElectricTrainSupplyState(PowerSupplyState.Unavailable);
+                DieselEngineMinRpm = 0;
             }
             else if (CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn
                     && ElectricTrainSupplySwitchOn())
             {
                 SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOn);
+                DieselEngineMinRpm = DieselEngineMinRpmForElectricTrainSupply;
             }
             else
             {
                 SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOff);
+                DieselEngineMinRpm = 0;
             }
 
             UpdateSounds();
