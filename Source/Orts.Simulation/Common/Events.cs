@@ -376,7 +376,13 @@ namespace Orts.Common
                         case 66: return Event.Pantograph2Up;
                         case 67: return Event.Pantograph2Down;
 
+
                         // ORTS only Events
+                        case 90: return Event.WaterMotionPump1On;
+                        case 91: return Event.WaterMotionPump1Off;
+                        case 92: return Event.WaterMotionPump2On;
+                        case 93: return Event.WaterMotionPump2Off;
+
                         case 101: return Event.GearUp; // for gearbox based engines
                         case 102: return Event.GearDown; // for gearbox based engines
                         case 103: return Event.ReverserToForwardBackward; // reverser moved to forward or backward position
@@ -554,12 +560,6 @@ namespace Orts.Common
 
                         case 321: return Event.BoosterCylinderCocksOpen;
                         case 322: return Event.BoosterCylinderCocksClose;
-
-                        // Miscellaneous
-                        case 350: return Event.WaterMotionPump1On;
-                        case 351: return Event.WaterMotionPump1Off;
-                        case 352: return Event.WaterMotionPump2On;
-                        case 353: return Event.WaterMotionPump2Off;
 
                         default: return 0;
                     }
