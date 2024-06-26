@@ -140,9 +140,9 @@ namespace Orts.Viewer3D.Debugging
             MapThemeProvider = new MapThemeProvider();
             nodes = simulator.TDB.TrackDB.TrackNodes;
 
+            ViewWindow = new RectangleF(0, 0, 5000f, 5000f);
             InitializeForm();
 
-            ViewWindow = new RectangleF(0, 0, 5000f, 5000f);
             mapResolutionUpDown.Accelerations.Add(new NumericUpDownAcceleration(1, 100));
             selectedTrainList = new List<Train>();
 
