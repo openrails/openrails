@@ -56,6 +56,11 @@ namespace ORTS.Scripting.Api
         protected PantographState CurrentPantographState() => Pantographs.State;
 
         /// <summary>
+        /// Current state of the pantograph
+        /// </summary>
+        protected PantographState CurrentPantographState(int id) => Pantographs[id]?.State ?? PantographState.Unavailable;
+
+        /// <summary>
         /// Current state of the circuit breaker
         /// </summary>
         protected CircuitBreakerState CurrentCircuitBreakerState() => CircuitBreaker.State;
