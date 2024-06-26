@@ -51,6 +51,20 @@ namespace ORTS.Scripting.Api
             }
         }
 
+        public float DieselEngineMinRpmForElectricTrainSupply => DpsHost.DieselEngineMinRpmForElectricTrainSupply;
+
+        public float DieselEngineMinRpm
+        {
+            get
+            {
+                return DpsHost.DieselEngineMinRpm;
+            }
+            set
+            {
+                DpsHost.DieselEngineMinRpm = value;
+            }
+        }
+
         /// <summary>
         /// Current state of the circuit breaker
         /// </summary>
