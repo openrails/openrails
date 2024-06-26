@@ -198,7 +198,7 @@ namespace Orts.Viewer3D
         public Vector3 NearPoint { get; private set; }
         public Vector3 FarPoint { get; private set; }
 
-        public bool MapViewerEnabled { get; set; }
+        public bool MapViewerEnabled { get; set; } = false;
         public bool SoundDebugFormEnabled { get; set; }
 
         public List<TRPFile> TRPs; // Track profile file(s)
@@ -387,6 +387,7 @@ namespace Orts.Viewer3D
             outf.Write(Simulator.Trains.IndexOf(SelectedTrain));
 
             WindowManager.Save(outf);
+            outf.Write(MapViewerEnabled);
 
             outf.Write(WellKnownCameras.IndexOf(Camera));
             foreach (var camera in WellKnownCameras)
@@ -431,6 +432,7 @@ namespace Orts.Viewer3D
             }
 
             WindowManager.Restore(inf);
+            MapViewerEnabled = inf.ReadBoolean();
 
             var cameraToRestore = inf.ReadInt32();
             foreach (var camera in WellKnownCameras)
