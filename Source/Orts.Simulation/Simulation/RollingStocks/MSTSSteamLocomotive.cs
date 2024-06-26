@@ -115,12 +115,13 @@ namespace Orts.Simulation.RollingStocks
         bool Injector1SoundIsOn = false;
         public bool Injector2IsOn;
         bool Injector2SoundIsOn = false;
-        bool WaterMotionPumpFitted = false;
         float WaterMotionPump1FlowRateLBpS;
         float WaterMotionPump2FlowRateLBpS;
         float MaximumWaterMotionPumpFlowRateLBpS;
         bool WaterMotionPump1IsOn = false;
         bool WaterMotionPump2IsOn = false;
+        bool WaterMotionPumpSound1IsOn = false;
+        bool WaterMotionPumpSound2IsOn = false;
         float WaterMotionPumpHeatLossBTU;
         bool WaterMotionPumpLockedOut = false;
         float WaterMotionPumpLockOutResetTimeS = 15.0f; // Time to reset the pump lock out time - time to prevent change of pumps
@@ -944,11 +945,6 @@ namespace Orts.Simulation.RollingStocks
                     if (heating == 1)
                         FuelOilSteamHeatingReqd = true;
                     break;
-                case "engine(ortswatermotionpump":
-                    var motionpump = stf.ReadIntBlock(null);
-                    if (motionpump == 1)
-                        WaterMotionPumpFitted = true;
-                    break;
                 case "engine(ortsfueloilspecificgravity": OilSpecificGravity = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(enginecontrollers(cutoff": CutoffController.Parse(stf); break;
                 case "engine(enginecontrollers(ortssmallejector": SmallEjectorController.Parse(stf); SmallEjectorControllerFitted = true; break;
@@ -999,7 +995,7 @@ namespace Orts.Simulation.RollingStocks
                         STFException.TraceWarning(stf, "Assumed unknown engine type " + steamengineType);
                     }
                     break;
-                case "engine(steamlocomotivefueltype":
+                case "engine(ortssteamlocomotivefueltype":
                     stf.MustMatch("(");
                     var steamLocomotiveFuelType = stf.ReadString();
                     try
@@ -1009,7 +1005,20 @@ namespace Orts.Simulation.RollingStocks
                     catch
                     {
                         if (Simulator.Settings.VerboseConfigurationMessages)
-                            STFException.TraceWarning(stf, "Assumed unknown engine type " + steamLocomotiveFuelType);
+                            STFException.TraceWarning(stf, "Assumed unknown fuel type " + steamLocomotiveFuelType);
+                    }
+                    break;
+                case "engine(ortssteamlocomotivefeedwatersystemtype":
+                    stf.MustMatch("(");
+                    var feedwaterType = stf.ReadString();
+                    try
+                    {
+                        SteamLocomotiveFeedWaterType = (SteamLocomotiveFeedWaterSystemTypes)Enum.Parse(typeof(SteamLocomotiveFeedWaterSystemTypes), feedwaterType);
+                    }
+                    catch
+                    {
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                            STFException.TraceWarning(stf, "Assumed unknown feedwater type " + feedwaterType);
                     }
                     break;
                 case "engine(ortssteamboilertype":
@@ -1063,7 +1072,7 @@ namespace Orts.Simulation.RollingStocks
             CylinderPortOpeningFactor = locoCopy.CylinderPortOpeningFactor;
             BoilerVolumeFT3 = locoCopy.BoilerVolumeFT3;
             MaxBoilerPressurePSI = locoCopy.MaxBoilerPressurePSI;
-            WaterMotionPumpFitted = locoCopy.WaterMotionPumpFitted;
+            SteamLocomotiveFeedWaterType = locoCopy.SteamLocomotiveFeedWaterType;
             MaxSuperheatRefTempF = locoCopy.MaxSuperheatRefTempF;
             MaxIndicatedHorsePowerHP = locoCopy.MaxIndicatedHorsePowerHP;
             SuperheatCutoffPressureFactor = locoCopy.SuperheatCutoffPressureFactor;
@@ -7021,7 +7030,7 @@ namespace Orts.Simulation.RollingStocks
         private void UpdateInjectors(float elapsedClockSeconds)
         {
 
-            if (WaterMotionPumpFitted)
+            if (SteamLocomotiveFeedWaterType == SteamLocomotiveFeedWaterSystemTypes.MotionPump)
             {
                MaximumWaterMotionPumpFlowRateLBpS = (1.2f * EvaporationLBpS) / 2.0f; // Assume two pumps and that they can pump a fraction more water the the maximum steam production
 
@@ -7271,25 +7280,29 @@ namespace Orts.Simulation.RollingStocks
             #region AI Fireman
             {
 
-                if (WaterMotionPumpFitted && !WaterIsExhausted)
+                if (SteamLocomotiveFeedWaterType == SteamLocomotiveFeedWaterSystemTypes.MotionPump && !WaterIsExhausted)
                 {
                     
                     if (WaterGlassLevelIN > 7.99)        // turn pumps off if water level in boiler greater then 8.0, to stop cycling
                     {
                         WaterMotionPump1IsOn = false;
                         WaterMotionPump2IsOn = false;
+                        StopMotionPump1Sound();
+                        StopMotionPump2Sound();
                     }
                     else if (WaterGlassLevelIN <= 7.0 && WaterGlassLevelIN > 5.75 && !WaterMotionPumpLockedOut)  // turn water pump #1 on if water level in boiler drops below 7.0 and is above 
                     {
                         WaterMotionPump1IsOn = true;
                         WaterMotionPump2IsOn = false;
                         WaterMotionPumpLockedOut = true;
+                        PlayMotionPump1SoundIfStarting();
                     }
                     else if (WaterGlassLevelIN <= 5.75 && WaterGlassLevelIN > 4.5 && !WaterMotionPumpLockedOut)  // turn water pump #2 on as well if water level in boiler drops below 5.75 and is above 
                     {
                         WaterMotionPump1IsOn = true;
                         WaterMotionPump2IsOn = true;
                         WaterMotionPumpLockedOut = true;
+                        PlayMotionPump2SoundIfStarting();
                     }
                 }
                 else
@@ -7575,7 +7588,53 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
+        /// <summary>
+        /// Turn on the MotionPump 1 sound only when the pump starts.
+        /// </summary>
+        private void PlayMotionPump1SoundIfStarting()
+        {
+            if (!WaterMotionPumpSound1IsOn)
+            {
+                WaterMotionPumpSound1IsOn = true;
+                SignalEvent(Event.WaterMotionPump1On);
+            }
+        }
 
+        /// <summary>
+        /// Turn on the MotionPump 2 sound only when the pump starts.
+        /// </summary>
+        private void PlayMotionPump2SoundIfStarting()
+        {
+            if (!WaterMotionPumpSound2IsOn)
+            {
+                WaterMotionPumpSound2IsOn = true;
+                SignalEvent(Event.WaterMotionPump2On);
+            }
+        }
+
+        /// <summary>
+        /// Turn off the MotionPump 1 sound only when the pump stops.
+        /// </summary>
+        private void StopMotionPump1Sound()
+        {
+            if (WaterMotionPumpSound1IsOn)
+            {
+                WaterMotionPumpSound1IsOn = false;
+                SignalEvent(Event.WaterMotionPump1Off);
+            }
+        }
+
+        /// <summary>
+        /// Turn off the MotionPump 2 sound only when the pump stops.
+        /// </summary>
+        private void StopMotionPump2Sound()
+        {
+            if (WaterMotionPumpSound2IsOn)
+            {
+                WaterMotionPumpSound2IsOn = false;
+                SignalEvent(Event.WaterMotionPump2Off);
+            }
+        }
         protected override void UpdateCarSteamHeat(float elapsedClockSeconds)
         {
             // Update Steam Heating System
@@ -8264,7 +8323,7 @@ namespace Orts.Simulation.RollingStocks
                 "FHLoss",
                 FireHeatLossPercent);
 #endif
-            if (WaterMotionPumpFitted)
+            if (SteamLocomotiveFeedWaterType == SteamLocomotiveFeedWaterSystemTypes.MotionPump)
             {
                 status.AppendFormat("{0}\t{1}\t{2}/{7}\t\t{3}\t{4}/{7}\t\t{5}\t{6}/{7}\n",
                     Simulator.Catalog.GetString("Pump:"),

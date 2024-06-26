@@ -141,6 +141,10 @@ namespace Orts.Common
         WaterInjector1On,
         WaterInjector2Off,
         WaterInjector2On,
+        WaterMotionPump1Off,
+        WaterMotionPump1On,
+        WaterMotionPump2Off,
+        WaterMotionPump2On,
         BlowdownValveToggle,
         SteamHeatChange, 
         SteamPulse1,
@@ -550,6 +554,12 @@ namespace Orts.Common
 
                         case 321: return Event.BoosterCylinderCocksOpen;
                         case 322: return Event.BoosterCylinderCocksClose;
+
+                        // Miscellaneous
+                        case 350: return Event.WaterMotionPump1On;
+                        case 351: return Event.WaterMotionPump1Off;
+                        case 352: return Event.WaterMotionPump2On;
+                        case 353: return Event.WaterMotionPump2Off;
 
                         default: return 0;
                     }

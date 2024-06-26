@@ -249,6 +249,15 @@ namespace Orts.Simulation.RollingStocks
 
         public SteamLocomotiveFuelTypes SteamLocomotiveFuelType;
 
+        public enum SteamLocomotiveFeedWaterSystemTypes
+        {
+            Unknown,
+            MotionPump,
+            SteamInjector, // not used at the moment
+        }
+
+        public SteamLocomotiveFeedWaterSystemTypes SteamLocomotiveFeedWaterType;
+
         // Adhesion parameters
         public enum SlipControlType
         {
