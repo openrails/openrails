@@ -415,7 +415,7 @@ namespace Orts.Simulation.RollingStocks
         float Injector1Fraction = 0.0f;     // Fraction (0-1) of injector 1 flow from Fireman controller or AI
         float Injector2Fraction = 0.0f;     // Fraction (0-1) of injector  of injector 2 flow from Fireman controller or AI
         float SafetyValveStartPSI = 0.1f;   // Set safety valve to just over max pressure - allows for safety valve not to operate in AI firing
-        float InjectorBoilerInputLB = 0.0f; // Input into boiler from injectors
+        float BoilerWaterInputLB = 0.0f; // Water input into boiler from injectors and pumps
         const float WaterDensityAt100DegC1BarKGpM3 = 954.8f;
 
 
@@ -2750,7 +2750,7 @@ namespace Orts.Simulation.RollingStocks
 
             #region adjust state
             UpdateWaterGauge();
-            UpdateInjectors(elapsedClockSeconds);
+            UpdateWaterInjection(elapsedClockSeconds);
             UpdateFiring(absSpeedMpS);
             #endregion
 
@@ -3812,7 +3812,7 @@ namespace Orts.Simulation.RollingStocks
 
             if (HasTenderCoupled) // If a tender is coupled then water is available
             {
-                CombinedTenderWaterVolumeUKG -= InjectorBoilerInputLB / WaterLBpUKG;  // Adjust water usage in tender
+                CombinedTenderWaterVolumeUKG -= BoilerWaterInputLB / WaterLBpUKG;  // Adjust water usage in tender
             }
             else // if no tender coupled then check whether a tender is required
             {
@@ -3822,7 +3822,7 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else  // Tender is not required (ie tank locomotive) - therefore water will be carried on the locomotive (and possibly on aux tender)
                 {
-                    CombinedTenderWaterVolumeUKG -= InjectorBoilerInputLB / WaterLBpUKG;  // Adjust water usage in tender
+                    CombinedTenderWaterVolumeUKG -= BoilerWaterInputLB / WaterLBpUKG;  // Adjust water usage in tender
                 }
             }
 
@@ -3831,9 +3831,9 @@ namespace Orts.Simulation.RollingStocks
             CurrentLocoTenderWaterVolumeUKG = (Kg.ToLb(MaxLocoTenderWaterMassKG) / WaterLBpUKG) * TenderWaterPercent; // Adjust water level in locomotive tender
             PrevCombinedTenderWaterVolumeUKG = CombinedTenderWaterVolumeUKG;   // Store value for next iteration
             PreviousTenderWaterVolumeUKG = CombinedTenderWaterVolumeUKG;     // Store value for next iteration
-            WaterConsumptionLbpS = InjectorBoilerInputLB / elapsedClockSeconds; // water consumption
+            WaterConsumptionLbpS = BoilerWaterInputLB / elapsedClockSeconds; // water consumption
             WaterConsumptionLbpS = MathHelper.Clamp(WaterConsumptionLbpS, 0, WaterConsumptionLbpS);
-            CumulativeWaterConsumptionLbs += InjectorBoilerInputLB;
+            CumulativeWaterConsumptionLbs += BoilerWaterInputLB;
             if (CumulativeWaterConsumptionLbs > 0) DbfEvalCumulativeWaterConsumptionLbs = CumulativeWaterConsumptionLbs;//DebriefEval
 
 #if DEBUG_AUXTENDER
@@ -7027,8 +7027,9 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        private void UpdateInjectors(float elapsedClockSeconds)
+        private void UpdateWaterInjection(float elapsedClockSeconds)
         {
+            BoilerWaterInputLB = 0; // Used by UpdateTender() later in the cycle
 
             if (SteamLocomotiveFeedWaterType == SteamLocomotiveFeedWaterSystemTypes.MotionPump)
             {
@@ -7064,10 +7065,10 @@ namespace Orts.Simulation.RollingStocks
                 // Loss of boiler heat due to water injection - loss is the diff between steam and ambient temperature (or pressure)
                 WaterMotionPumpHeatLossBTU = TotalPumpFlowRateLbpS * (WaterHeatPSItoBTUpLB[BoilerPressurePSI] - WaterHeatPSItoBTUpLB[0]);
 
-                // calculate Water steam heat based on injector water delivery temp
+                // calculate Water steam heat based on pump flow rate
                 BoilerMassLB += elapsedClockSeconds * TotalPumpFlowRateLbpS;   // Boiler Mass increase by both pumps
                 BoilerHeatBTU -= elapsedClockSeconds * WaterMotionPumpHeatLossBTU; // Total loss of boiler heat due to water pump - inject cold water straight from tender  
-//                InjectorBoilerInputLB += (elapsedClockSeconds * Injector1Fraction * InjectorFlowRateLBpS); // Keep track of water flow into boilers from Injector 1
+                BoilerWaterInputLB += (elapsedClockSeconds * TotalPumpFlowRateLbpS); // Keep track of water flow into boilers from Pump
                 BoilerHeatOutBTUpS += WaterMotionPumpHeatLossBTU; // Total loss of boiler heat due to water injection - inject steam and water Heat
 
                 // Update pump lockout timer
@@ -7139,7 +7140,6 @@ namespace Orts.Simulation.RollingStocks
                     InjectorFlowRateLBpS = 0.0f; // If the tender water is empty, stop flow into boiler
                 }
 
-                InjectorBoilerInputLB = 0; // Used by UpdateTender() later in the cycle
                 if (WaterIsExhausted)
                 {
                     // don't fill boiler with injectors
@@ -7177,7 +7177,7 @@ namespace Orts.Simulation.RollingStocks
                         // calculate Water steam heat based on injector water delivery temp
                         BoilerMassLB += elapsedClockSeconds * Injector1Fraction * InjectorFlowRateLBpS;   // Boiler Mass increase by Injector 1
                         BoilerHeatBTU -= elapsedClockSeconds * (Inject1WaterHeatLossBTU + Inject1SteamHeatLossBTU); // Total loss of boiler heat due to water injection - inject steam and water Heat   
-                        InjectorBoilerInputLB += (elapsedClockSeconds * Injector1Fraction * InjectorFlowRateLBpS); // Keep track of water flow into boilers from Injector 1
+                        BoilerWaterInputLB += (elapsedClockSeconds * Injector1Fraction * InjectorFlowRateLBpS); // Keep track of water flow into boilers from Injector 1
                         BoilerHeatOutBTUpS += (Inject1WaterHeatLossBTU + Inject1SteamHeatLossBTU); // Total loss of boiler heat due to water injection - inject steam and water Heat
                     }
                     if (Injector2IsOn)
@@ -7208,7 +7208,7 @@ namespace Orts.Simulation.RollingStocks
                         // calculate Water steam heat based on injector water delivery temp
                         BoilerMassLB += elapsedClockSeconds * Injector2Fraction * InjectorFlowRateLBpS;   // Boiler Mass increase by Injector 1
                         BoilerHeatBTU -= elapsedClockSeconds * (Inject2WaterHeatLossBTU + Inject2SteamHeatLossBTU); // Total loss of boiler heat due to water injection - inject steam and water Heat   
-                        InjectorBoilerInputLB += (elapsedClockSeconds * Injector2Fraction * InjectorFlowRateLBpS); // Keep track of water flow into boilers from Injector 1
+                        BoilerWaterInputLB += (elapsedClockSeconds * Injector2Fraction * InjectorFlowRateLBpS); // Keep track of water flow into boilers from Injector 1
                         BoilerHeatOutBTUpS += (Inject2WaterHeatLossBTU + Inject2SteamHeatLossBTU); // Total loss of boiler heat due to water injection - inject steam and water Heat
                     }
                 }
