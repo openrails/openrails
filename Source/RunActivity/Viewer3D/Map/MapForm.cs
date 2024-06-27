@@ -123,6 +123,8 @@ namespace Orts.Viewer3D.Debugging
         private double lastUpdateTime;
 
         private bool MapCustomizationVisible = false;
+
+        private Form GameForm;
         #endregion
 
         public MapViewer(Simulator simulator, Viewer viewer)
@@ -153,6 +155,8 @@ namespace Orts.Viewer3D.Debugging
             {
                 AddNewMessage(e.Time, e.Message);
             };
+
+            GameForm = (Form)System.Windows.Forms.Control.FromHandle(Viewer.Game.Window.Handle); // qqq
 
             // Initialise the timer used to handle user input
             UITimer = new Timer();
@@ -1337,6 +1341,13 @@ namespace Orts.Viewer3D.Debugging
                 return;
             }
             Visible = true;
+
+            if (Viewer.MapViewerEnabledSetToTrue)
+            {
+                GenerateView();
+                GameForm.Focus();
+                Viewer.MapViewerEnabledSetToTrue = false;
+            }
 
             if (Program.Simulator.GameTime - lastUpdateTime < 1)
                 return;
