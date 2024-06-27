@@ -147,6 +147,12 @@ namespace ORTS.Scripting.Api
         /// </summary>
         protected bool ElectricTrainSupplyUnfitted() => LpsHost.ElectricTrainSupplySwitch.Mode == ElectricTrainSupplySwitch.ModeType.Unfitted;
 
+
+        /// <summary>
+        /// Power demanded by electric train supply
+        /// </summary>
+        protected float ElectricTrainSupplyPowerW => LpsHost.ElectricTrainSupplyPowerW;
+
         /// <summary>
         /// Returns the number of locomotives in the train
         /// </summary>
