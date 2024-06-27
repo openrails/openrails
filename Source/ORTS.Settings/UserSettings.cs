@@ -424,6 +424,50 @@ namespace ORTS.Settings
         [DoNotSave]
         public bool MultiplayerServer { get; set; }
 
+        // map settings
+        [Default(false)]
+        public bool Map_showTrainStateCheckbox { get; set; }
+        [Default(false)]
+        public bool Map_showTrainLabelsCheckbox { get; set; }
+        [Default(false)]
+        public bool Map_showSignalStateCheckbox { get; set; }
+        [Default(false)]
+        public bool Map_showSignalsCheckbox { get; set; }
+        [Default(false)]
+        public bool Map_showSwitchesCheckbox { get; set; }
+        [Default(false)]
+        public bool Map_showSidingLabelsCheckbox { get; set; }
+        [Default(false)]
+        public bool Map_showPlatformLabelsCheckbox { get; set; }
+        [Default(false)]
+        public bool Map_showPlatformsCheckbox { get; set; }
+        [Default(true)]
+        public bool Map_showTimeCheckbox { get; set; }
+        [Default(false)]
+        public bool Map_useAntiAliasingCheckbox { get; set; }
+        [Default(true)]
+        public bool Map_penaltyCheckbox { get; set; }
+        [Default(true)]
+        public bool Map_preferGreenCheckbox { get; set; }
+        [Default(true)]
+        public bool Map_allowJoiningCheckbox { get; set; }
+        [Default(true)]
+        public bool Map_allowThrowingSwitchesCheckbox { get; set; }
+        [Default(true)]
+        public bool Map_allowChangingSignalsCheckbox { get; set; }
+        [Default(true)]
+        public bool Map_drawPathCheckbox { get; set; }
+        [Default(5000)]
+        public int Map_mapResolutionUpDown { get; set; }
+        [Default("light")]
+        public string Map_rotateThemesButton { get; set; }
+        [Default(true)]
+        public bool Map_showActiveTrainsRadio { get; set; }
+        [Default(false)]
+        public bool Map_showAllTrainsRadio { get; set; }
+        [Default(new[] { 104, 104, 800, 600 })]
+        public int[] Map_MapViewer { get; set; }
+
         // In-game settings:
         [Default(false)]
         public bool Letterbox2DCab { get; set; }
@@ -493,7 +537,7 @@ namespace ORTS.Settings
             return Path.Combine(directory, hash + ".cache-or");
         }
 
-        PropertyInfo GetProperty(string name)
+        public PropertyInfo GetProperty(string name)
         {
             return GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
         }

@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using GNU.Gettext;
@@ -122,6 +123,8 @@ namespace Orts.Viewer3D.Debugging
         private double lastUpdateTime;
 
         private bool MapCustomizationVisible = false;
+
+        private Form GameForm;
         #endregion
 
         public MapViewer(Simulator simulator, Viewer viewer)
@@ -139,9 +142,9 @@ namespace Orts.Viewer3D.Debugging
             MapThemeProvider = new MapThemeProvider();
             nodes = simulator.TDB.TrackDB.TrackNodes;
 
+            ViewWindow = new RectangleF(0, 0, 5000f, 5000f);
             InitializeForm();
 
-            ViewWindow = new RectangleF(0, 0, 5000f, 5000f);
             mapResolutionUpDown.Accelerations.Add(new NumericUpDownAcceleration(1, 100));
             selectedTrainList = new List<Train>();
 
@@ -152,6 +155,8 @@ namespace Orts.Viewer3D.Debugging
             {
                 AddNewMessage(e.Time, e.Message);
             };
+
+            GameForm = (Form)System.Windows.Forms.Control.FromHandle(Viewer.Game.Window.Handle); // qqq
 
             // Initialise the timer used to handle user input
             UITimer = new Timer();
@@ -193,6 +198,110 @@ namespace Orts.Viewer3D.Debugging
             float[] dashPattern = { 4, 2 };
             ZoomTargetPen.DashPattern = dashPattern;
             pathPen.DashPattern = dashPattern;
+
+            setDefaults(this);
+        }
+
+        //
+        // set the defaults for all the map controls which have a property in UserSettings.c
+        // properties are stored in the registry or in a .ini file
+        //
+        private void setDefaults(System.Windows.Forms.Control controlToSet)
+        {
+            foreach (System.Windows.Forms.Control control in controlToSet.Controls)
+            {
+                // recursive call to find deeper controls
+                setDefaults(control);
+            }
+
+            string name = "Map_" + controlToSet.Name;
+            PropertyInfo property = Viewer.Settings.GetProperty(name);
+            if (property != null)
+            {
+                if (controlToSet is CheckBox checkBox)
+                {
+                    checkBox.Checked = (bool)property.GetValue(Viewer.Settings);
+                    checkBox.CheckedChanged += c_ControlChanged;
+                }
+                if (controlToSet is NumericUpDown numericUpDown)
+                {
+                    numericUpDown.Value = (int)property.GetValue(Viewer.Settings, null);
+                    numericUpDown.ValueChanged += c_ControlChanged;
+                }
+                if (controlToSet is Button button)
+                {
+                    if (name.Equals("Map_rotateThemesButton"))
+                    {
+                        ThemeName = (string)property.GetValue(Viewer.Settings, null);
+                        Theme = MapThemeProvider.GetTheme(ThemeName);
+
+                        ApplyThemeRecursively(this);
+                        MapCanvasColor = Theme.MapCanvasColor;
+                        TrackPen.Color = Theme.TrackColor;
+                    }
+                    button.Click += c_ControlChanged;
+                }
+                if (controlToSet is RadioButton radioButton)
+                {
+                    radioButton.Checked = (bool)property.GetValue(Viewer.Settings);
+                    radioButton.CheckedChanged += c_ControlChanged;
+                }
+                if (controlToSet is MapViewer mapViewer)
+                {
+                    Size size = new Size(
+                        ((int[])property.GetValue(Viewer.Settings, null))[2],
+                        ((int[])property.GetValue(Viewer.Settings, null))[3]);
+                    Size = size;
+
+                    StartPosition = FormStartPosition.Manual;
+                    this.Location = new System.Drawing.Point(
+                        ((int[])property.GetValue(Viewer.Settings, null))[0], 
+                        ((int[])property.GetValue(Viewer.Settings, null))[1]);
+
+                    mapViewer.Resize += c_ControlChanged;
+                    mapViewer.Move += c_ControlChanged;
+                }
+            }
+        }
+
+        //
+        // save the setting of a map control
+        //
+        void c_ControlChanged(object sender, EventArgs e)
+        {
+            if (sender is CheckBox checkBox)
+            {
+                string name = "Map_" + checkBox.Name;
+                Viewer.Settings.GetProperty(name).SetValue(Viewer.Settings, checkBox.CheckState == CheckState.Checked, null);
+                Viewer.Settings.Save(name);
+            }
+            if (sender is NumericUpDown numericUpDown)
+            {
+                string name = "Map_" + numericUpDown.Name;
+                Viewer.Settings.GetProperty(name).SetValue(Viewer.Settings, (int)numericUpDown.Value, null);
+                Viewer.Settings.Save(name);
+            }
+            if (sender is Button button)
+            {
+                string name = "Map_" + button.Name;
+                Viewer.Settings.GetProperty(name).SetValue(Viewer.Settings, ThemeName, null);
+                Viewer.Settings.Save(name);
+            }
+            if (sender is RadioButton radioButton)
+            {
+                string name = "Map_" + radioButton.Name;
+                Viewer.Settings.GetProperty(name).SetValue(Viewer.Settings, radioButton.Checked, null);
+                Viewer.Settings.Save(name);
+            }
+            if (sender is MapViewer mapViewer)
+            {
+                string name = "Map_" + mapViewer.Name;
+
+                int X = this.Bounds.X;
+                int Y = this.Bounds.Y;
+                Viewer.Settings.GetProperty(name).SetValue(Viewer.Settings, new int[] { X, Y, Size.Width, Size.Height }, null);
+                Viewer.Settings.Save(name);
+            }
         }
 
         #region initData
@@ -1232,6 +1341,13 @@ namespace Orts.Viewer3D.Debugging
                 return;
             }
             Visible = true;
+
+            if (Viewer.MapViewerEnabledSetToTrue)
+            {
+                GenerateView();
+                GameForm.Focus();
+                Viewer.MapViewerEnabledSetToTrue = false;
+            }
 
             if (Program.Simulator.GameTime - lastUpdateTime < 1)
                 return;

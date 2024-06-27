@@ -249,7 +249,8 @@ namespace Orts.Viewer3D.Map
             var desiredPositionY = (int)(wantY / MapViewer.spacing);  // The positionY of the ideal row for the text.
             var endX = startX + (name.Length * F.trainFont.Size);
 
-            if (endX < 0) // Out of drawing area
+            if ((endX < 0) || // Out of drawing area
+                    (F.alignedTextY == null))
                 return noFreeSlotFound;
 
             var positionY = desiredPositionY;
