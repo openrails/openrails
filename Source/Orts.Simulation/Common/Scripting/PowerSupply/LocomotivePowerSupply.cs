@@ -317,7 +317,14 @@ namespace ORTS.Scripting.Api
                 {
                     if (car != Locomotive && car != Train.LeadLocomotive && car.RemoteControlGroup != -1)
                     {
-                        car.PowerSupply?.HandleEventFromLeadLocomotive(evt);
+                        if (car.PowerSupply != null)
+                        {
+                            car.PowerSupply.HandleEventFromLeadLocomotive(evt);
+                        }
+                        else if (car is MSTSWagon wagon)
+                        {
+                            wagon.Pantographs.HandleEvent(evt);
+                        }
                     }
                 }
             }
@@ -334,7 +341,14 @@ namespace ORTS.Scripting.Api
                 {
                     if (car != Locomotive && car != Train.LeadLocomotive && car.RemoteControlGroup != -1)
                     {
-                        car.PowerSupply?.HandleEventFromLeadLocomotive(evt, id);
+                        if (car.PowerSupply != null)
+                        {
+                            car.PowerSupply.HandleEventFromLeadLocomotive(evt, id);
+                        }
+                        else if (car is MSTSWagon wagon)
+                        {
+                            wagon.Pantographs.HandleEvent(evt, id);
+                        }
                     }
                 }
             }
