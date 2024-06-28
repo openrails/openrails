@@ -1097,6 +1097,7 @@ namespace Orts.Simulation.RollingStocks
             }
             FreightAnimations?.Load(FreightAnimations.LoadDataList, true);
             InitializeLoadPhysics();
+            if (!(this is MSTSLocomotive) && Simulator.Settings.ElectricHotStart) Pantographs.HandleEvent(PowerSupplyEvent.RaisePantograph, 1);
         }
 
         public override void InitializeMoving()
