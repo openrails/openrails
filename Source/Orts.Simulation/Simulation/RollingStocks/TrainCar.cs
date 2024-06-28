@@ -3277,7 +3277,7 @@ namespace Orts.Simulation.RollingStocks
 
                         //                    Trace.TraceInformation(" Track Section - Index {0} Ciruit Type {1}", thisSectionIndex, thisSection.CircuitType);
 
-                        if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
+                        if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
                         {
 
                             // train is on a switch; let's see if car is on a switch too
@@ -3289,6 +3289,14 @@ namespace Orts.Simulation.RollingStocks
                                 return isOverJunction;
                             }
                         }
+
+
+                        if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
+                        {
+                            isOverJunction = true;
+                            return isOverJunction;
+                        }
+
                     }
                 }
                 catch
