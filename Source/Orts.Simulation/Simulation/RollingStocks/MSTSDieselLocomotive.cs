@@ -506,7 +506,7 @@ namespace Orts.Simulation.RollingStocks
                     Trace.TraceInformation("===================================================================================================================\n\n");
                 }
             }
-
+            if (!Simulator.Settings.NoDieselEngineStart) SetPower(true);
         }
 
         /// <summary>
