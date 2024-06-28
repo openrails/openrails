@@ -697,10 +697,10 @@ namespace Orts.Viewer3D.Popups
 
                 if (item.EngineType == TrainCar.EngineTypes.Steam && item.AuxWagonType == "Engine")
                 {//Fuel Steam
-                    nCoalvolume = nCoalvolume + (item as MSTSSteamLocomotive).MaxTenderCoalMassKG;
-                    nCoallevel = nCoallevel + (item as MSTSSteamLocomotive).TenderCoalMassKG;
+                    nCoalvolume = nCoalvolume + (item as MSTSSteamLocomotive).MaxTenderFuelMassKG;
+                    nCoallevel = nCoallevel + (item as MSTSSteamLocomotive).TenderFuelMassKG;
                     nCoalburned = nCoalvolume - nCoallevel;
-                    nCoalBurnedPerc = 1 - ((item as MSTSSteamLocomotive).TenderCoalMassKG / (item as MSTSSteamLocomotive).MaxTenderCoalMassKG);
+                    nCoalBurnedPerc = 1 - ((item as MSTSSteamLocomotive).TenderFuelMassKG / (item as MSTSSteamLocomotive).MaxTenderFuelMassKG);
                     cEnginetype.Add("Steam");
 
                     nWaterBurnedPerc = 1 - ((item as MSTSSteamLocomotive).CombinedTenderWaterVolumeUKG / (item as MSTSSteamLocomotive).MaxTotalCombinedWaterVolumeUKG);
