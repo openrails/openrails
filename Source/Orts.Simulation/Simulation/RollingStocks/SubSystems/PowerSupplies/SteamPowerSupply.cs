@@ -89,6 +89,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
 
         public bool BatteryOn => BatteryState == PowerSupplyState.PowerOn;
+        public float BatteryVoltageV { get; set; } = 72;
+        public float NominalBatteryVoltageV { get; set; } = 72;
 
         public PowerSupplyState CabPowerSupplyState
         {
@@ -158,6 +160,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 case "engine(ortsbattery(defaulton":
                     BatterySwitch.Parse(lowercasetoken, stf);
                     break;
+                case "engine(ortsbattery(voltage":
+                    BatteryVoltageV = NominalBatteryVoltageV = stf.ReadFloatBlock(STFReader.UNITS.Voltage, null);
+                    break;
                 case "engine(ortsmasterkey(mode":
                 case "engine(ortsmasterkey(delayoff":
                 case "engine(ortsmasterkey(headlightcontrol":
@@ -172,6 +177,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 BatterySwitch.Copy(steamOther.BatterySwitch);
                 MasterKey.Copy(steamOther.MasterKey);
+                BatteryVoltageV = NominalBatteryVoltageV = steamOther.NominalBatteryVoltageV;
             }
         }
 

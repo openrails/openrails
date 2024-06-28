@@ -17,6 +17,7 @@
 
 using Orts.Common;
 using Orts.Parsers.Msts;
+using ORTS.Common;
 using ORTS.Scripting.Api;
 using System.IO;
 
@@ -139,6 +140,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     {
         private Timer PowerOnTimer;
         private Timer AuxPowerOnTimer;
+        private IIRFilter BatteryVoltageFilter;
 
         /// <remarks>
         /// Used for the corresponding first engine on/off sound triggers.
@@ -153,6 +155,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public override void Initialize()
         {
+            BatteryVoltageFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(7), 0.001f);
+
             PowerOnTimer = new Timer(this);
             PowerOnTimer.Setup(PowerOnDelayS());
 
@@ -257,6 +261,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOff);
                 DieselEngineMinRpm = 0;
             }
+
+            BatteryVoltageV = BatteryVoltageFilter.Filter(CurrentBatteryState() == PowerSupplyState.PowerOn ? NominalBatteryVoltageV : 0.0f);
 
             UpdateSounds();
         }

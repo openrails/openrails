@@ -55,6 +55,19 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public bool BatterySwitchOn() => Host.BatterySwitch.On;
 
+        public float BatteryVoltageV
+        {
+            get
+            {
+                return Host.BatteryVoltageV;
+            }
+            set
+            {
+                Host.BatteryVoltageV = value;
+            }
+        }
+        public float NominalBatteryVoltageV => Host.NominalBatteryVoltageV;
+
         /// <summary>
         /// Sets the current state of the low voltage power supply
         /// Low voltage power is used by safety systems (such as TCS) or lights

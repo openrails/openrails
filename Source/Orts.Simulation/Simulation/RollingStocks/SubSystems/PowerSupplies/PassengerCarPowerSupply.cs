@@ -22,6 +22,7 @@ using System.Linq;
 using Orts.Common;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
+using ORTS.Common;
 using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
@@ -53,6 +54,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public PowerSupplyState BatteryState { get; set; }
         public bool BatteryOn => BatteryState == PowerSupplyState.PowerOn;
+        public float BatteryVoltageV { get; set; } = 0;
+        public float NominalBatteryVoltageV { get; set; } = 72;
 
         public PowerSupplyState VentilationState { get; set; }
         public PowerSupplyState HeatingState { get; set; }
@@ -93,6 +96,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     BatterySwitch.Parse(lowercasetoken, stf);
                     break;
 
+                case "wagon(ortsbattery(voltage":
+                    NominalBatteryVoltageV = stf.ReadFloatBlock(STFReader.UNITS.Voltage, null);
+                    break;
+
                 case "wagon(ortspowersupplycontinuouspower":
                     ContinuousPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, 0f);
                     break;
@@ -122,6 +129,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public void Copy(ScriptedPassengerCarPowerSupply other)
         {
             BatterySwitch.Copy(other.BatterySwitch);
+            NominalBatteryVoltageV = other.NominalBatteryVoltageV;
 
             ScriptName = other.ScriptName;
 
@@ -321,11 +329,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
     public class DefaultPassengerCarPowerSupply : PassengerCarPowerSupply
     {
+        private IIRFilter BatteryVoltageFilter;
         private Timer PowerOnTimer;
         PowerSupplyState PassengerPowerSupplyState;
 
         public override void Initialize()
         {
+            BatteryVoltageFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(7), 0.001f);
+
             PowerOnTimer = new Timer(this);
             PowerOnTimer.Setup(PowerOnDelayS());
 
@@ -441,6 +452,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     SetCurrentHeatFlowRateW(heatingPowerW + airConditioningThermalPowerW);
                     break;
             }
+            BatteryVoltageV = BatteryVoltageFilter.Filter(CurrentBatteryState() == PowerSupplyState.PowerOn ? NominalBatteryVoltageV : 0.0f);
         }
 
         public override void HandleEvent(PowerSupplyEvent evt)

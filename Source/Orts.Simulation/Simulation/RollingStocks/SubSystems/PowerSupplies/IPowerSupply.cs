@@ -38,6 +38,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         PowerSupplyState BatteryState { get; set; }
         bool BatteryOn { get; }
+        float BatteryVoltageV { get; set; }
+        float NominalBatteryVoltageV { get; set; }
 
         void HandleEvent(PowerSupplyEvent evt);
         void HandleEvent(PowerSupplyEvent evt, int id);

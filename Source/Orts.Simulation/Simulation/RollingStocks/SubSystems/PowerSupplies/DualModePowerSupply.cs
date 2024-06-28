@@ -188,6 +188,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     {
         private IIRFilter PantographFilter;
         private IIRFilter VoltageFilter;
+        private IIRFilter BatteryVoltageFilter;
         private Timer PowerOnTimer;
         private Timer AuxPowerOnTimer;
 
@@ -197,6 +198,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             PantographFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.7f), 0.001f);
             VoltageFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(0.7f), 0.001f);
+            BatteryVoltageFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, IIRFilter.HzToRad(7), 0.001f);
             
             PowerOnTimer = new Timer(this);
             PowerOnTimer.Setup(PowerOnDelayS());
@@ -270,6 +272,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOff);
             }
+            BatteryVoltageV = BatteryVoltageFilter.Filter(CurrentBatteryState() == PowerSupplyState.PowerOn ? NominalBatteryVoltageV : 0.0f);
         }
 
         public override void HandleEvent(PowerSupplyEvent evt)
