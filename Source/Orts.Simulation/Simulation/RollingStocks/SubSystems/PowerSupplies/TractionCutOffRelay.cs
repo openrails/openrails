@@ -163,6 +163,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             Script?.HandleEvent(evt);
         }
 
+        public void HandleEvent(PowerSupplyEvent evt, int id)
+        {
+            Script?.HandleEvent(evt, id);
+        }
+
         public void Save(BinaryWriter outf)
         {
             outf.Write(DelayS);
@@ -368,6 +373,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             switch (evt)
             {
                 case PowerSupplyEvent.CloseTractionCutOffRelay:
+                case PowerSupplyEvent.QuickPowerOn:
                     if (!DriverClosingOrder())
                     {
                         SetDriverClosingOrder(true);
@@ -383,6 +389,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     break;
 
                 case PowerSupplyEvent.OpenTractionCutOffRelay:
+                case PowerSupplyEvent.QuickPowerOff:
                     SetDriverClosingOrder(false);
                     SetDriverOpeningOrder(true);
                     SignalEvent(Event.TractionCutOffRelayClosingOrderOff);

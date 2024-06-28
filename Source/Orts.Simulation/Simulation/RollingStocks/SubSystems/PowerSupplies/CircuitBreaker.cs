@@ -188,10 +188,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void HandleEvent(PowerSupplyEvent evt)
         {
-            if (Script != null)
-            {
-                Script.HandleEvent(evt);
-            }
+            Script?.HandleEvent(evt);
+        }
+
+        public void HandleEvent(PowerSupplyEvent evt, int id)
+        {
+            Script?.HandleEvent(evt, id);
         }
 
         public void Save(BinaryWriter outf)
@@ -459,6 +461,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     {
                         SetCurrentState(CircuitBreakerState.Closing);
                     }
+                    else if (QuickPowerOn)
+                    {
+                        QuickPowerOn = false;
+                    }
                     break;
             }
 
@@ -575,6 +581,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     if (ClosingAuthorization() && (DriverClosingOrder() || TCSClosingOrder() || QuickPowerOn))
                     {
                         SetCurrentState(CircuitBreakerState.Closing);
+                    }
+                    else if (QuickPowerOn)
+                    {
+                        QuickPowerOn = false;
                     }
                     break;
             }

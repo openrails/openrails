@@ -26,17 +26,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     {
         TrainCar Car { get; }
         BatterySwitch BatterySwitch { get; }
+        Pantographs Pantographs { get; }
 
-        PowerSupplyState ElectricTrainSupplyState { get; }
+        PowerSupplyState ElectricTrainSupplyState { get; set; }
         bool ElectricTrainSupplyOn { get; }
         bool FrontElectricTrainSupplyCableConnected { get; set; }
         float ElectricTrainSupplyPowerW { get; }
 
-        PowerSupplyState LowVoltagePowerSupplyState { get; }
+        PowerSupplyState LowVoltagePowerSupplyState { get; set; }
         bool LowVoltagePowerSupplyOn { get; }
 
-        PowerSupplyState BatteryState { get; }
+        PowerSupplyState BatteryState { get; set; }
         bool BatteryOn { get; }
+        float BatteryVoltageV { get; set; }
+        float NominalBatteryVoltageV { get; set; }
 
         void HandleEvent(PowerSupplyEvent evt);
         void HandleEvent(PowerSupplyEvent evt, int id);
