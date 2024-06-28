@@ -403,11 +403,11 @@ namespace Orts.Simulation.RollingStocks
         float FuelDensityKGpM3 = 864.5f;    // Anthracite Coal : 50 - 58 (lb/ft3), 800 - 929 (kg/m3)
         float DamperFactorManual = 1.0f;    // factor to control draft through fire when locomotive is running in Manual mode
         public float WaterLBpUKG = 10.021f;    // lbs of water in 1 gal (uk)
-        public float MaxTenderCoalMassKG = 1;          // Maximum read from Eng File -  - this value must be non-zero, if not defined in ENG file, can cause NaN errors
-        public float TenderCoalMassKG              // Decreased by firing and increased by refilling
+        public float MaxTenderFuelMassKG = 1;          // Maximum read from Eng File -  - this value must be non-zero, if not defined in ENG file, can cause NaN errors
+        public float TenderFuelMassKG              // Decreased by firing and increased by refilling
         {
-            get { return FuelController.CurrentValue * MaxTenderCoalMassKG; }
-            set { FuelController.CurrentValue = value / MaxTenderCoalMassKG; }
+            get { return FuelController.CurrentValue * MaxTenderFuelMassKG; }
+            set { FuelController.CurrentValue = value / MaxTenderFuelMassKG; }
         }
 
         float MaxTenderOilMassL;
@@ -856,7 +856,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public void InitializeTenderWithCoal()
         {
-            FuelController.CurrentValue = TenderCoalMassKG / MaxTenderCoalMassKG;
+            FuelController.CurrentValue = TenderFuelMassKG / MaxTenderFuelMassKG;
         }
 
         /// <summary>
@@ -934,7 +934,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(vacuumbrakessmallejectorusagerate": EjectorSmallSteamConsumptionLbpS = pS.FrompH(stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null)); break;
                 case "engine(ortssuperheatcutoffpressurefactor": SuperheatCutoffPressureFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(shovelcoalmass": ShovelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
-                case "engine(maxtendercoalmass": MaxTenderCoalMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "engine(maxtendercoalmass": MaxTenderFuelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(ortsmaxtenderfueloilvolume": MaxTenderOilMassL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
                 case "engine(maxtenderwatermass": MaxLocoTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(steamfiremanmaxpossiblefiringrate": MaxFiringRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 2.2046f / 3600; break;
@@ -1083,7 +1083,7 @@ namespace Orts.Simulation.RollingStocks
             ShovelMassKG = locoCopy.ShovelMassKG;
             GearedTractiveEffortFactor = locoCopy.GearedTractiveEffortFactor;
             TractiveEffortFactor = locoCopy.TractiveEffortFactor;
-            MaxTenderCoalMassKG = locoCopy.MaxTenderCoalMassKG;
+            MaxTenderFuelMassKG = locoCopy.MaxTenderFuelMassKG;
             MaxLocoTenderWaterMassKG = locoCopy.MaxLocoTenderWaterMassKG;
             MaxFiringRateKGpS = locoCopy.MaxFiringRateKGpS;
             Stoker = locoCopy.Stoker;
@@ -1143,7 +1143,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(PreviousBoilerHeatOutBTUpS);
             outf.Write(PreviousBoilerHeatSmoothedBTU);
             outf.Write(BurnRateRawKGpS);
-            outf.Write(TenderCoalMassKG);
+            outf.Write(TenderFuelMassKG);
             outf.Write(MaxTotalCombinedWaterVolumeUKG);
             outf.Write(CombinedTenderWaterVolumeUKG);
             outf.Write(CumulativeWaterConsumptionLbs);
@@ -1208,7 +1208,7 @@ namespace Orts.Simulation.RollingStocks
             PreviousBoilerHeatOutBTUpS = inf.ReadSingle();
             PreviousBoilerHeatSmoothedBTU = inf.ReadSingle();
             BurnRateRawKGpS = inf.ReadSingle();
-            TenderCoalMassKG = inf.ReadSingle();
+            TenderFuelMassKG = inf.ReadSingle();
             MaxTotalCombinedWaterVolumeUKG = inf.ReadSingle();
             CombinedTenderWaterVolumeUKG = inf.ReadSingle();
             CumulativeWaterConsumptionLbs = inf.ReadSingle();
@@ -1350,7 +1350,7 @@ namespace Orts.Simulation.RollingStocks
             // Set Oil mass - if an oil locomotive
             if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil && MaxTenderOilMassL != 0)
             {
-                MaxTenderCoalMassKG = MaxTenderOilMassL * OilSpecificGravity;
+                MaxTenderFuelMassKG = MaxTenderOilMassL * OilSpecificGravity;
             }
 
             // Oil burning locomotives will always have mechanical stokers
@@ -2327,7 +2327,7 @@ namespace Orts.Simulation.RollingStocks
 
                 Trace.TraceInformation("**************** Fire ****************");
                 Trace.TraceInformation("Grate - Area {0:N1} sq ft, Limit {1:N1} lb/sq ft", Me2.ToFt2(GrateAreaM2), GrateLimitLBpFt2);
-                Trace.TraceInformation("Fuel - Calorific {0} btu/lb, Max Firing Rate {1} lbs/h Max Coal Load {2} lbs", KJpKg.ToBTUpLb(FuelCalorificKJpKG), Kg.ToLb(pS.TopH(MaxFiringRateKGpS)), Kg.ToLb(MaxTenderCoalMassKG));
+                Trace.TraceInformation("Fuel - Calorific {0} btu/lb, Max Firing Rate {1} lbs/h Max Coal Load {2} lbs", KJpKg.ToBTUpLb(FuelCalorificKJpKG), Kg.ToLb(pS.TopH(MaxFiringRateKGpS)), Kg.ToLb(MaxTenderFuelMassKG));
 
                 Trace.TraceInformation("========================================================================================================================================================");
 
@@ -3741,23 +3741,23 @@ namespace Orts.Simulation.RollingStocks
 
             if (HasTenderCoupled) // If a tender is coupled then coal is available
             {
-                TenderCoalMassKG -= elapsedClockSeconds * pS.FrompH(Kg.FromLb(NewBurnRateSteamToFuelLbspH[pS.TopH(TempCylinderSteamUsageLbpS)])); // Current Tender coal mass determined by burn rate.
-                TenderCoalMassKG = MathHelper.Clamp(TenderCoalMassKG, 0, MaxTenderCoalMassKG); // Clamp value so that it doesn't go out of bounds
+                TenderFuelMassKG -= elapsedClockSeconds * pS.FrompH(Kg.FromLb(NewBurnRateSteamToFuelLbspH[pS.TopH(TempCylinderSteamUsageLbpS)])); // Current Tender coal mass determined by burn rate.
+                TenderFuelMassKG = MathHelper.Clamp(TenderFuelMassKG, 0, MaxTenderFuelMassKG); // Clamp value so that it doesn't go out of bounds
             }
             else // if no tender coupled then check whether a tender is required
             {
                 if (IsTenderRequired == 1.0)  // Tender is required
                 {
-                    TenderCoalMassKG = 0.0f; // Set tender coal to zero (none available)
+                    TenderFuelMassKG = 0.0f; // Set tender coal to zero (none available)
                 }
                 else  // Tender is not required (ie tank locomotive) - therefore coal will be carried on the locomotive
                 {
-                    TenderCoalMassKG -= elapsedClockSeconds * pS.FrompH(Kg.FromLb(NewBurnRateSteamToFuelLbspH[pS.TopH(TempCylinderSteamUsageLbpS)])); // Current Tender coal mass determined by burn rate.
-                    TenderCoalMassKG = MathHelper.Clamp(TenderCoalMassKG, 0, MaxTenderCoalMassKG); // Clamp value so that it doesn't go out of bounds
+                    TenderFuelMassKG -= elapsedClockSeconds * pS.FrompH(Kg.FromLb(NewBurnRateSteamToFuelLbspH[pS.TopH(TempCylinderSteamUsageLbpS)])); // Current Tender coal mass determined by burn rate.
+                    TenderFuelMassKG = MathHelper.Clamp(TenderFuelMassKG, 0, MaxTenderFuelMassKG); // Clamp value so that it doesn't go out of bounds
                 }
             }
 
-            if (TenderCoalMassKG < 1.0)
+            if (TenderFuelMassKG < 1.0)
             {
                 if (!CoalIsExhausted)
                 {
@@ -7758,9 +7758,9 @@ namespace Orts.Simulation.RollingStocks
                     }
                 case CABViewControlTypes.FUEL_GAUGE:
                     if (cvc.Units == CABViewControlUnits.LBS)
-                        data = Kg.ToLb(TenderCoalMassKG);
+                        data = Kg.ToLb(TenderFuelMassKG);
                     else
-                        data = TenderCoalMassKG;
+                        data = TenderFuelMassKG;
                     break;
                 default:
                     data = base.GetDataOf(cvc);
@@ -7783,7 +7783,7 @@ namespace Orts.Simulation.RollingStocks
                 boilerPressureSafety = boilerPressurePercent <= 0.25 ? "!!!" : boilerPressurePercent <= 0.5 ? "???" : "";
             }
             var boilerWaterSafety = WaterFraction < WaterMinLevel || WaterFraction > WaterMaxLevel ? "!!!" : WaterFraction < WaterMinLevelSafe || WaterFraction > WaterMaxLevelSafe ? "???" : "";
-            var coalPercent = TenderCoalMassKG / MaxTenderCoalMassKG;
+            var coalPercent = TenderFuelMassKG / MaxTenderFuelMassKG;
             var waterPercent = CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG;
             var fuelSafety = CoalIsExhausted || WaterIsExhausted ? "!!!" : coalPercent <= 0.105 || waterPercent <= 0.105 ? "???" : "";
             var steamusagesafety = PreviousTotalSteamUsageLBpS > EvaporationLBpS ? "!!!" : PreviousTotalSteamUsageLBpS > EvaporationLBpS * 0.95f ? "???" : "";
@@ -8361,8 +8361,8 @@ namespace Orts.Simulation.RollingStocks
                 status.AppendFormat("{0}\t{1}\t{2}\t{3:N0}%\t{4}\t{5}\t\t{6:N0}%\t{7}\t{8}\t\t{9}\t{10}\t\t{11}\t{12:N0}\t{13}\t{14:N0}\n",
                     Simulator.Catalog.GetString("Tender:"),
                     Simulator.Catalog.GetString("Coal"),
-                    FormatStrings.FormatMass(TenderCoalMassKG, IsMetric),
-                    TenderCoalMassKG / MaxTenderCoalMassKG * 100,
+                    FormatStrings.FormatMass(TenderFuelMassKG, IsMetric),
+                    TenderFuelMassKG / MaxTenderFuelMassKG * 100,
                     Simulator.Catalog.GetString("Water(C)"),
                     FormatStrings.FormatFuelVolume(L.FromGUK(CombinedTenderWaterVolumeUKG), IsMetric, IsUK),
                     CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG * 100,
@@ -8383,8 +8383,8 @@ namespace Orts.Simulation.RollingStocks
                     status.AppendFormat("{0}\t{1}\t{2:N0}\t\t{3:N0}%\t{4}\t{5}\t\t{6:N0}%\t{7}\t{8:N0}\t{9}\t\t{10:N0}\n",
                         Simulator.Catalog.GetString("Tender:"),
                         Simulator.Catalog.GetString("Oil"),
-                        FormatStrings.FormatFuelVolume(L.FromGUK(OilSpecificGravity * (Kg.ToLb(TenderCoalMassKG) / WaterLBpUKG)), IsMetric, IsUK),
-                        TenderCoalMassKG / MaxTenderCoalMassKG * 100,
+                        FormatStrings.FormatFuelVolume(L.FromGUK(OilSpecificGravity * (Kg.ToLb(TenderFuelMassKG) / WaterLBpUKG)), IsMetric, IsUK),
+                        TenderFuelMassKG / MaxTenderFuelMassKG * 100,
                         Simulator.Catalog.GetString("Water"),
                         FormatStrings.FormatFuelVolume(L.FromGUK(CombinedTenderWaterVolumeUKG), IsMetric, IsUK),
                         CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG * 100,
@@ -8399,8 +8399,8 @@ namespace Orts.Simulation.RollingStocks
                     status.AppendFormat("{0}\t{1}\t{2:N0}\t\t{3:N0}%\t{4}\t{5}\t\t{6:N0}%\t{7}\t{8:N0}\t{9}\t\t{10:N0}\n",
                         Simulator.Catalog.GetString("Tender:"),
                         Simulator.Catalog.GetString("Wood"),
-                        FormatStrings.FormatFuelVolume(L.FromGUK(OilSpecificGravity * (Kg.ToLb(TenderCoalMassKG) / WaterLBpUKG)), IsMetric, IsUK),
-                        TenderCoalMassKG / MaxTenderCoalMassKG * 100,
+                        FormatStrings.FormatMass(TenderFuelMassKG, IsMetric),
+                        TenderFuelMassKG / MaxTenderFuelMassKG * 100,
                         Simulator.Catalog.GetString("Water"),
                         FormatStrings.FormatFuelVolume(L.FromGUK(CombinedTenderWaterVolumeUKG), IsMetric, IsUK),
                         CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG * 100,
@@ -8415,8 +8415,8 @@ namespace Orts.Simulation.RollingStocks
                     status.AppendFormat("{0}\t{1}\t{2}\t{3:N0}%\t{4}\t{5}\t\t{6:N0}%\t{7}\t{8:N0}\t{9}\t\t{10:N0}\n",
                         Simulator.Catalog.GetString("Tender:"),
                         Simulator.Catalog.GetString("Coal"),
-                        FormatStrings.FormatMass(TenderCoalMassKG, IsMetric),
-                        TenderCoalMassKG / MaxTenderCoalMassKG * 100,
+                        FormatStrings.FormatMass(TenderFuelMassKG, IsMetric),
+                        TenderFuelMassKG / MaxTenderFuelMassKG * 100,
                         Simulator.Catalog.GetString("Water"),
                         FormatStrings.FormatFuelVolume(L.FromGUK(CombinedTenderWaterVolumeUKG), IsMetric, IsUK),
                         CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG * 100,
@@ -9802,7 +9802,19 @@ namespace Orts.Simulation.RollingStocks
         /// <returns>Matching controller or null</returns>
         public override MSTSNotchController GetRefillController(uint type)
         {
-            if (type == (uint)PickupType.FuelCoal) return FuelController;
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+            {
+                if (type == (uint)PickupType.FuelWood) return FuelController;
+            }
+            else if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+            {
+                if (type == (uint)PickupType.FuelDiesel) return FuelController;
+            }
+            else
+            {
+                if (type == (uint)PickupType.FuelCoal) return FuelController;
+            }
+
             if (type == (uint)PickupType.FuelWater) return WaterController;
             return null;
         }
@@ -9814,8 +9826,8 @@ namespace Orts.Simulation.RollingStocks
         public override void SetStepSize(PickupObj matchPickup)
         {
             uint type = matchPickup.PickupType;
-            if (type == (uint)PickupType.FuelCoal && MaxTenderCoalMassKG != 0)
-                FuelController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / MaxTenderCoalMassKG);
+            if (type == (uint)PickupType.FuelCoal && MaxTenderFuelMassKG != 0)
+                FuelController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / MaxTenderFuelMassKG);
             else if (type == (uint)PickupType.FuelWater && MaxLocoTenderWaterMassKG != 0)
                 WaterController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / MaxLocoTenderWaterMassKG);
         }
@@ -9837,14 +9849,34 @@ namespace Orts.Simulation.RollingStocks
         /// <returns>0.0 to 1.0. If type is unknown, returns 0.0</returns>
         public override float GetFilledFraction(uint pickupType)
         {
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+            {
+                if (pickupType == (uint)PickupType.FuelWood)
+                {
+                    return FuelController.CurrentValue;
+                }
+            }
+            else if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+            {
+                if (pickupType == (uint)PickupType.FuelDiesel)
+                {
+                    return FuelController.CurrentValue;
+                }
+            }
+            else
+            {
+                if (pickupType == (uint)PickupType.FuelCoal)
+                {
+                    return FuelController.CurrentValue;
+                }
+            }
+
+
             if (pickupType == (uint)PickupType.FuelWater)
             {
                 return WaterController.CurrentValue;
             }
-            if (pickupType == (uint)PickupType.FuelCoal)
-            {
-                return FuelController.CurrentValue;
-            }
+
             return 0f;
         }
 
