@@ -84,6 +84,11 @@ namespace ORTS.Scripting.Api
         /// Driver's closing authorization of the traction cut-off relay
         /// </summary>
         public bool TractionCutOffRelayDriverClosingAuthorization() => TractionCutOffRelay.DriverClosingAuthorization;
+
+        /// <summary>
+        /// Closing authorization of the traction cut-off relay
+        /// </summary>
+        public bool TractionCutOffRelayClosingAuthorization() => TractionCutOffRelay.ClosingAuthorization;
         
         /// <summary>
         /// Sends an event to all diesel engines

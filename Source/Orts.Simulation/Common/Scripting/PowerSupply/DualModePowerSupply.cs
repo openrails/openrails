@@ -80,6 +80,11 @@ namespace ORTS.Scripting.Api
         protected bool CircuitBreakerDriverClosingAuthorization => CircuitBreaker.DriverClosingAuthorization;
 
         /// <summary>
+        /// Closing authorization of the circuit breaker
+        /// </summary>
+        protected bool CircuitBreakerClosingAuthorization => CircuitBreaker.ClosingAuthorization;
+
+        /// <summary>
         /// Voltage of the pantograph
         /// </summary>
         protected float PantographVoltageV
@@ -126,6 +131,11 @@ namespace ORTS.Scripting.Api
         /// Driver's closing authorization of the traction cut-off relay
         /// </summary>
         protected bool TractionCutOffRelayDriverClosingAuthorization => TractionCutOffRelay.DriverClosingAuthorization;
+
+        /// <summary>
+        /// Closing authorization of the traction cut-off relay
+        /// </summary>
+        protected bool TractionCutOffRelayClosingAuthorization() => TractionCutOffRelay.ClosingAuthorization;
 
         /// <summary>
         /// Current mode of the power supply

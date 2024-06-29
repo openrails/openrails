@@ -81,6 +81,11 @@ namespace ORTS.Scripting.Api
         protected bool CircuitBreakerDriverClosingAuthorization() => CircuitBreaker.DriverClosingAuthorization;
 
         /// <summary>
+        /// Closing authorization of the circuit breaker
+        /// </summary>
+        protected bool CircuitBreakerClosingAuthorization() => CircuitBreaker.ClosingAuthorization;
+
+        /// <summary>
         /// Voltage of the pantograph
         /// </summary>
         protected float PantographVoltageV() => EpsHost.PantographVoltageV;
