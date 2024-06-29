@@ -831,14 +831,14 @@ namespace Orts.Simulation.RollingStocks
             SteamEngines = new SteamEngines(this);
             PowerSupply = new SteamPowerSupply(this);
 
-            RefillTenderWithCoal();
+            RefillTenderWithFuel();
             RefillTenderWithWater();
         }
 
         /// <summary>
-        /// Sets the coal level to maximum.
+        /// Sets the fuel level to maximum.
         /// </summary>
-        public void RefillTenderWithCoal()
+        public void RefillTenderWithFuel()
         {
             FuelController.CurrentValue = 1.0f;
         }
@@ -934,6 +934,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(vacuumbrakessmallejectorusagerate": EjectorSmallSteamConsumptionLbpS = pS.FrompH(stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null)); break;
                 case "engine(ortssuperheatcutoffpressurefactor": SuperheatCutoffPressureFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(shovelcoalmass": ShovelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "engine(ortsmaxtenderwoodmass":
                 case "engine(maxtendercoalmass": MaxTenderFuelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(ortsmaxtenderfueloilvolume": MaxTenderOilMassL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
                 case "engine(maxtenderwatermass": MaxLocoTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
@@ -9826,7 +9827,7 @@ namespace Orts.Simulation.RollingStocks
         public override void SetStepSize(PickupObj matchPickup)
         {
             uint type = matchPickup.PickupType;
-            if (type == (uint)PickupType.FuelCoal && MaxTenderFuelMassKG != 0)
+            if (type == (uint)PickupType.FuelCoal && type == (uint)PickupType.FuelWood && type == (uint)PickupType.FuelDiesel && MaxTenderFuelMassKG != 0)
                 FuelController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / MaxTenderFuelMassKG);
             else if (type == (uint)PickupType.FuelWater && MaxLocoTenderWaterMassKG != 0)
                 WaterController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / MaxLocoTenderWaterMassKG);
@@ -9838,7 +9839,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void RefillImmediately()
         {
-            RefillTenderWithCoal();
+            RefillTenderWithFuel();
             RefillTenderWithWater();
         }
 

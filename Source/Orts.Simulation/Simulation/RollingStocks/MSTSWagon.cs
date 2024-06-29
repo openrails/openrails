@@ -148,7 +148,7 @@ namespace Orts.Simulation.RollingStocks
         public float TrailLocoResistanceFactor; // Factor to reduce base and wind resistance if locomotive is not leading - based upon original Davis drag coefficients
 
         bool TenderWeightInitialize = true;
-        float TenderWagonMaxCoalMassKG;
+        float TenderWagonMaxFuelMassKG;
         float TenderWagonMaxWaterMassKG;
 
         // Wind Impacts
@@ -1201,7 +1201,8 @@ namespace Orts.Simulation.RollingStocks
                     }
                     break;
                 case "wagon(ortsauxtenderwatermass": AuxTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
-                case "wagon(ortstenderwagoncoalmass": TenderWagonMaxCoalMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "wagon(ortstenderwagonwoodmass":
+                case "wagon(ortstenderwagoncoalmass": TenderWagonMaxFuelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "wagon(ortstenderwagonwatermass": TenderWagonMaxWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "wagon(ortsheatingwindowderatingfactor": WindowDeratingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(ortsheatingcompartmenttemperatureset": DesiredCompartmentTempSetpointC = stf.ReadFloatBlock(STFReader.UNITS.Temperature, null); break; 
@@ -1598,7 +1599,7 @@ namespace Orts.Simulation.RollingStocks
             MaximumWheelFlangeAngleRad = copy.MaximumWheelFlangeAngleRad;
             WheelFlangeLengthM = copy.WheelFlangeLengthM;
             AuxTenderWaterMassKG = copy.AuxTenderWaterMassKG;
-            TenderWagonMaxCoalMassKG = copy.TenderWagonMaxCoalMassKG;
+            TenderWagonMaxFuelMassKG = copy.TenderWagonMaxFuelMassKG;
             TenderWagonMaxWaterMassKG = copy.TenderWagonMaxWaterMassKG;
             InitWagonNumAxles = copy.InitWagonNumAxles;
             WagonNumAxles = copy.WagonNumAxles;
@@ -1964,7 +1965,7 @@ namespace Orts.Simulation.RollingStocks
             ConfirmSteamLocomotiveTender(); // Confirms that a tender is connected to the steam locomotive
 
             // Adjusts water and coal mass based upon values assigned to the tender found in the WAG file rather then those defined in ENG file.
-            if (WagonType == WagonTypes.Tender && TenderWeightInitialize && TenderWagonMaxCoalMassKG != 0 && TenderWagonMaxWaterMassKG != 0)
+            if (WagonType == WagonTypes.Tender && TenderWeightInitialize && TenderWagonMaxFuelMassKG != 0 && TenderWagonMaxWaterMassKG != 0)
             {
 
                 // Find the associated steam locomotive for this tender
@@ -1986,7 +1987,7 @@ namespace Orts.Simulation.RollingStocks
                         float TempMaxCombinedWater = TendersSteamLocomotive.MaxTotalCombinedWaterVolumeUKG;
                         TendersSteamLocomotive.MaxTotalCombinedWaterVolumeUKG = (TempMaxCombinedWater - (Kg.ToLb(TendersSteamLocomotive.MaxLocoTenderWaterMassKG) / WaterLBpUKG)) + (Kg.ToLb(TenderWagonMaxWaterMassKG) / WaterLBpUKG);
 
-                        TendersSteamLocomotive.MaxTenderFuelMassKG = TenderWagonMaxCoalMassKG;
+                        TendersSteamLocomotive.MaxTenderFuelMassKG = TenderWagonMaxFuelMassKG;
                         TendersSteamLocomotive.MaxLocoTenderWaterMassKG = TenderWagonMaxWaterMassKG;
 
                         if (Simulator.Settings.VerboseConfigurationMessages)
