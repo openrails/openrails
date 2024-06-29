@@ -262,6 +262,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             AbstractScript?.HandleEvent(evt, id);
         }
 
+        public void HandleEventFromTcs(PowerSupplyEvent evt)
+        {
+            AbstractScript?.HandleEventFromTcs(evt);
+        }
+
+        public void HandleEventFromTcs(PowerSupplyEvent evt, int id)
+        {
+            AbstractScript?.HandleEventFromTcs(evt, id);
+        }
+
         public void HandleEventFromTcs(PowerSupplyEvent evt, string message)
         {
             AbstractScript?.HandleEventFromTcs(evt, message);

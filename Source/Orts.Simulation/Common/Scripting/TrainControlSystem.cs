@@ -533,12 +533,32 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<string, string, string, string> GetStringParameter;
 
+
+        /// <summary>
+        /// Sends an event to the power supply
+        /// </summary>
+        /// <param name="evt">The event to send</param>
+        public void SignalEventToPowerSupply(PowerSupplyEvent evt)
+        {
+            Locomotive.LocomotivePowerSupply.HandleEventFromTcs(evt);
+        }
+
+        /// <summary>
+        /// Sends an event to the power supply
+        /// </summary>
+        /// <param name="evt">The event to send</param>
+        /// <param name="id">Additional id for the event</param>
+        public void SignalEventToPowerSupply(PowerSupplyEvent evt, int id)
+        {
+            Locomotive.LocomotivePowerSupply.HandleEventFromTcs(evt, id);
+        }
+
         /// <summary>
         /// Sends an event and/or a message to the power supply
         /// </summary>
         /// <param name="evt">The event to send</param>
         /// <param name="message">The message to send</param>
-        public void SignalEventToPowerSupply(PowerSupplyEvent evt = PowerSupplyEvent.MessageFromTcs, string message = "")
+        public void SignalEventToPowerSupply(PowerSupplyEvent evt, string message)
         {
             Locomotive.LocomotivePowerSupply.HandleEventFromTcs(evt, message);
         }

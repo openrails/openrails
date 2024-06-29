@@ -213,6 +213,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
         }
 
+        public void HandleEventFromTcs(PowerSupplyEvent evt)
+        {
+        }
+
+        public void HandleEventFromTcs(PowerSupplyEvent evt, int id)
+        {
+        }
+
         public void HandleEventFromTcs(PowerSupplyEvent evt, string message)
         {
         }

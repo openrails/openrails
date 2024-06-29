@@ -113,13 +113,6 @@ namespace ORTS.Scripting.Api
             SignalEventToPantograph(evt, id);
         }
 
-        /// <summary>
-        /// Called when the TCS wants to transmit an event and/or a message to power supply
-        /// </summary>
-        /// <param name="evt"></param>
-        /// <param name="message"></param>
-        public virtual void HandleEventFromTcs(PowerSupplyEvent evt, string message) {}
-
         public virtual void HandleEventFromLeadLocomotive(PowerSupplyEvent evt)
         {
             // By default, send the event to every component

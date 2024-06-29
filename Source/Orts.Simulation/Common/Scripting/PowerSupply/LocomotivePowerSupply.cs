@@ -508,6 +508,46 @@ namespace ORTS.Scripting.Api
 
         }
 
+        /// <summary>
+        /// Called when the TCS wants to transmit an event to power supply
+        /// </summary>
+        /// <param name="evt"></param>
+        public virtual void HandleEventFromTcs(PowerSupplyEvent evt)
+        {
+            switch (evt)
+            {
+                case PowerSupplyEvent.LowerPantograph:
+                case PowerSupplyEvent.RaisePantograph:
+                    SignalEventToPantographs(evt);
+                    SignalEventToOtherTrainVehicles(evt);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Called when the TCS wants to transmit an event to power supply
+        /// </summary>
+        /// <param name="evt"></param>
+        /// <param name="id"></param>
+        public virtual void HandleEventFromTcs(PowerSupplyEvent evt, int id)
+        {
+            switch (evt)
+            {
+                case PowerSupplyEvent.LowerPantograph:
+                case PowerSupplyEvent.RaisePantograph:
+                    SignalEventToPantograph(evt, id);
+                    SignalEventToOtherTrainVehiclesWithId(evt, id);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Called when the TCS wants to transmit an event and/or a message to power supply
+        /// </summary>
+        /// <param name="evt"></param>
+        /// <param name="message"></param>
+        public virtual void HandleEventFromTcs(PowerSupplyEvent evt, string message) {}
+
         protected bool GetBoolParameter(string sectionName, string keyName, bool defaultValue) => LoadParameter(sectionName, keyName, defaultValue);
         protected int GetIntParameter(string sectionName, string keyName, int defaultValue) => LoadParameter(sectionName, keyName, defaultValue);
         protected float GetFloatParameter(string sectionName, string keyName, float defaultValue) => LoadParameter(sectionName, keyName, defaultValue);
