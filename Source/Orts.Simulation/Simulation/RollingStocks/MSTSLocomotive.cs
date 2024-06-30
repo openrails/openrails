@@ -186,7 +186,7 @@ namespace Orts.Simulation.RollingStocks
         bool WaterScoopSoundOn = false;
         public float MaxTotalCombinedWaterVolumeUKG;
         public MSTSNotchController WaterController = new MSTSNotchController(0, 1, 0.01f);
-        public float CombinedTenderWaterVolumeUKG          // Decreased by running injectors and increased by refilling
+        public float CombinedTenderWaterVolumeUKG          // Decreased by running injectors or pumps and increased by refilling
         {          
             get { return WaterController.CurrentValue * MaxTotalCombinedWaterVolumeUKG; }
             set { WaterController.CurrentValue = value / MaxTotalCombinedWaterVolumeUKG; }
@@ -238,6 +238,25 @@ namespace Orts.Simulation.RollingStocks
         //float DebugSpeedIncrement = 5.0f; // Speed increment for debug display - in mph
         //float DebugSpeed = 5.0f; // Initialise at 5 mph
         //float DebugTimer = 0.0f;
+
+        public enum SteamLocomotiveFuelTypes
+        {
+            Unknown,
+            Oil,
+            Wood, // not used at the moment
+            Coal, // defaults to coal
+        }
+
+        public SteamLocomotiveFuelTypes SteamLocomotiveFuelType;
+
+        public enum SteamLocomotiveFeedWaterSystemTypes
+        {
+            Unknown,
+            MotionPump,
+            SteamInjector, // not used at the moment
+        }
+
+        public SteamLocomotiveFeedWaterSystemTypes SteamLocomotiveFeedWaterType;
 
         // Adhesion parameters
         public enum SlipControlType

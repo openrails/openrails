@@ -226,7 +226,7 @@ namespace Orts.Simulation
                 , new string [] { GetString("LargeEjector"), null, null, null, GetString("decrease"), GetString("increase") }
                 , new string [] { GetString("SmallEjector"), null, null, null, GetString("decrease"), GetString("increase") }
                 , new string [] { GetString("VacuumExhauster"), GetString("normal"), null, GetString("fast") }
-                , new string [] { GetString("Tender"), null, null, GetString("Coal re-filled"), null, GetString("Coal level") } 
+                , new string [] { GetString("Tender"), null, null, GetString("Fuel re-filled"), null, GetString("Fuel level") } 
                 , new string [] { GetString("Tender"), null, null, GetString("Water re-filled"), null, GetString("Water level") }
                 // General
                 , new string [] { GetString("Water Scoop"), GetString("up"), null, GetString("down") }
