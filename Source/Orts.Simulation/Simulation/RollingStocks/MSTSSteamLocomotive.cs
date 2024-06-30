@@ -313,7 +313,7 @@ namespace Orts.Simulation.RollingStocks
 
         float FuelFeedRateSmoothedKGpS = 0.0f;     // Smoothed Fuel feedd Rate
         public float FuelBurnRateSmoothedKGpS; // Smoothed fuel burning rate
-        float OilSpecificGravity = 0.9659f; // Assume a mid range of API for this value, say API = 15 @ 20 Cdeg.
+        public float OilSpecificGravity = 0.9659f; // Assume a mid range of API for this value, say API = 15 @ 20 Cdeg.
         float WaterSpecificGravity = 1.0f; // Water @ 20 degC.
 
         bool FuelOilSteamHeatingReqd = false;
@@ -410,7 +410,7 @@ namespace Orts.Simulation.RollingStocks
             set { FuelController.CurrentValue = value / MaxTenderFuelMassKG; }
         }
 
-        float MaxTenderOilMassL;
+        public float MaxTenderOilMassL;
         float DamperBurnEffect;             // Effect of the Damper control Used in manual firing)
         float Injector1Fraction = 0.0f;     // Fraction (0-1) of injector 1 flow from Fireman controller or AI
         float Injector2Fraction = 0.0f;     // Fraction (0-1) of injector  of injector 2 flow from Fireman controller or AI
@@ -7834,18 +7834,21 @@ namespace Orts.Simulation.RollingStocks
             status.AppendFormat("{0}\t\t{1}\n", Simulator.Catalog.GetString("Locomotive Type:"),
                 SteamLocoType);
 
-            status.AppendFormat("{0}\t{1}\t{6}\t{2}\t{7}\t{3}\t{8}\t{4}\t{9}\t{5}\t{10}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
                 Simulator.Catalog.GetString("Input:"),
                 Simulator.Catalog.GetString("Evap"),
-                Simulator.Catalog.GetString("Grate"),
-                Simulator.Catalog.GetString("Boiler"),
-                Simulator.Catalog.GetString("SuperHr"),
-                Simulator.Catalog.GetString("FuelCal"),
                 FormatStrings.FormatArea(EvaporationAreaM2, IsMetric),
-                FormatStrings.FormatArea(GrateAreaM2, IsMetric),
-                FormatStrings.FormatVolume(Me3.FromFt3(BoilerVolumeFT3), IsMetric),
+                Simulator.Catalog.GetString("SuperHr"),
                 FormatStrings.FormatArea(SuperheatAreaM2, IsMetric),
-                FormatStrings.FormatEnergyDensityByMass(FuelCalorificKJpKG, IsMetric));
+                Simulator.Catalog.GetString("Boiler"),
+                FormatStrings.FormatVolume(Me3.FromFt3(BoilerVolumeFT3), IsMetric),
+                Simulator.Catalog.GetString("Grate"),
+                FormatStrings.FormatArea(GrateAreaM2, IsMetric),
+                Simulator.Catalog.GetString("FType"),
+                SteamLocomotiveFuelType.ToString(),
+                Simulator.Catalog.GetString("FuelCal"),
+                FormatStrings.FormatEnergyDensityByMass(FuelCalorificKJpKG, IsMetric) 
+                );
 
             status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N3}\n",
                 Simulator.Catalog.GetString("Adj:"),
