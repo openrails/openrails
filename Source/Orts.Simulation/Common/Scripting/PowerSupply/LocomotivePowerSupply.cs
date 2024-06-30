@@ -103,6 +103,7 @@ namespace ORTS.Scripting.Api
             set => LpsHost.MaximumDynamicBrakePowerW = value;
         }
 
+        /// <summary>
         /// Dynamic brake percent demanded by power supply
         /// </summary>
         protected float PowerSupplyDynamicBrakePercent
@@ -113,7 +114,23 @@ namespace ORTS.Scripting.Api
             }
             set
             {
-                LpsHost.PowerSupplyDynamicBrakePercent = value;
+                if (value < 0) LpsHost.PowerSupplyDynamicBrakePercent = -1;
+                else LpsHost.PowerSupplyDynamicBrakePercent = Math.Min(value, 100);
+            }
+        }
+
+        /// <summary>
+        /// Maximum throttle percent allowed by power supply
+        /// </summary>
+        protected float MaxThrottlePercent
+        {
+            get
+            {
+                return LpsHost.MaxThrottlePercent;
+            }
+            set
+            {
+                LpsHost.MaxThrottlePercent = Math.Max(Math.Min(value, 100), 0);
             }
         }
 
