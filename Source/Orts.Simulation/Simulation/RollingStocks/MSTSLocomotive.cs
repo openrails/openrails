@@ -186,7 +186,7 @@ namespace Orts.Simulation.RollingStocks
         bool WaterScoopSoundOn = false;
         public float MaxTotalCombinedWaterVolumeUKG;
         public MSTSNotchController WaterController = new MSTSNotchController(0, 1, 0.01f);
-        public float CombinedTenderWaterVolumeUKG          // Decreased by running injectors and increased by refilling
+        public float CombinedTenderWaterVolumeUKG          // Decreased by running injectors or pumps and increased by refilling
         {          
             get { return WaterController.CurrentValue * MaxTotalCombinedWaterVolumeUKG; }
             set { WaterController.CurrentValue = value / MaxTotalCombinedWaterVolumeUKG; }
