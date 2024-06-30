@@ -52,6 +52,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using static Orts.Simulation.RollingStocks.MSTSLocomotive;
 using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks
@@ -149,6 +150,7 @@ namespace Orts.Simulation.RollingStocks
 
         bool TenderWeightInitialize = true;
         float TenderWagonMaxFuelMassKG;
+        float TenderWagonMaxOilMassL;
         float TenderWagonMaxWaterMassKG;
 
         protected float FrictionC1; // MSTS Friction parameters
@@ -1276,6 +1278,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsauxtenderwatermass": AuxTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "wagon(ortstenderwagonwoodmass":
                 case "wagon(ortstenderwagoncoalmass": TenderWagonMaxFuelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "wagon(ortsmaxtenderfueloilvolume": TenderWagonMaxOilVolumeL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
                 case "wagon(ortstenderwagonwatermass": TenderWagonMaxWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "wagon(ortsheatingwindowderatingfactor": WindowDeratingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(ortsheatingcompartmenttemperatureset": DesiredCompartmentTempSetpointC = stf.ReadFloatBlock(STFReader.UNITS.Temperature, null); break; 
@@ -1676,6 +1679,7 @@ namespace Orts.Simulation.RollingStocks
             WheelFlangeLengthM = copy.WheelFlangeLengthM;
             AuxTenderWaterMassKG = copy.AuxTenderWaterMassKG;
             TenderWagonMaxFuelMassKG = copy.TenderWagonMaxFuelMassKG;
+            TenderWagonMaxOilVolumeL = copy.TenderWagonMaxOilMassL;
             TenderWagonMaxWaterMassKG = copy.TenderWagonMaxWaterMassKG;
             InitWagonNumAxles = copy.InitWagonNumAxles;
             WagonNumAxles = copy.WagonNumAxles;
@@ -2047,7 +2051,7 @@ namespace Orts.Simulation.RollingStocks
             ConfirmSteamLocomotiveTender(); // Confirms that a tender is connected to the steam locomotive
 
             // Adjusts water and coal mass based upon values assigned to the tender found in the WAG file rather then those defined in ENG file.
-            if (WagonType == WagonTypes.Tender && TenderWeightInitialize && TenderWagonMaxFuelMassKG != 0 && TenderWagonMaxWaterMassKG != 0)
+            if (WagonType == WagonTypes.Tender && TenderWeightInitialize && (TenderWagonMaxFuelMassKG != 0 || TenderWagonMaxOilMassL != 0) && TenderWagonMaxWaterMassKG != 0)
             {
 
                 // Find the associated steam locomotive for this tender
@@ -2069,8 +2073,16 @@ namespace Orts.Simulation.RollingStocks
                         float TempMaxCombinedWater = TendersSteamLocomotive.MaxTotalCombinedWaterVolumeUKG;
                         TendersSteamLocomotive.MaxTotalCombinedWaterVolumeUKG = (TempMaxCombinedWater - (Kg.ToLb(TendersSteamLocomotive.MaxLocoTenderWaterMassKG) / WaterLBpUKG)) + (Kg.ToLb(TenderWagonMaxWaterMassKG) / WaterLBpUKG);
 
-                        TendersSteamLocomotive.MaxTenderFuelMassKG = TenderWagonMaxFuelMassKG;
                         TendersSteamLocomotive.MaxLocoTenderWaterMassKG = TenderWagonMaxWaterMassKG;
+
+                        if (TendersSteamLocomotive.SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+                        {
+                            TendersSteamLocomotive.MaxTenderFuelMassKG = TendersSteamLocomotive.MaxTenderOilMassL * TendersSteamLocomotive.OilSpecificGravity;
+                        }
+                        else
+                        {
+                            TendersSteamLocomotive.MaxTenderFuelMassKG = TenderWagonMaxFuelMassKG;
+                        }
 
                         if (Simulator.Settings.VerboseConfigurationMessages)
                         {
@@ -3895,6 +3907,9 @@ namespace Orts.Simulation.RollingStocks
                 return Couplers[0]; // defaults to the rear coupler (typically the first read)
             }
         }
+
+        public float TenderWagonMaxOilVolumeL { get; private set; }
+
         public override float GetCouplerZeroLengthM()
         {
             if (IsPlayerTrain && Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsAdvancedCoupler)
