@@ -182,29 +182,30 @@ namespace ORTS
             new NTitleControl(page, Index + 1, list.Count, n.Date, n.Title).Add();
 
             // Check constraints for the MetList.
-            var failingCheck = (n.Met.ItemList?.Count > 0 && n.Met.CheckIdList?.Count > 0) 
-                ? CheckConstraints(n) 
-                : null;
+            //var failingCheck = (n.Met.ItemList?.Count > 0 && n.Met.CheckIdList?.Count > 0) 
+            //    ? CheckConstraints(n) 
+            //    : null;
 
             // If any check fails then its UnmetList is added to the page, otherwise the MetList is added.
-            n.PrefixItemList?.ForEach(item => AddItemToPage(page, item));
-            if (failingCheck == null)
-            {
-                n.Met.ItemList?.ForEach(item => AddItemToPage(page, item));
-            }
-            else
-            {
-                if (failingCheck.UnmetItemList == null) // Omit this section to skip the notification entirely.
-                {
-                    // Don't skip if there is only one notification.
-                    if (list.Count > 1) skipPage = true;
-                }
-                else
-                {
-                    failingCheck.UnmetItemList?.ForEach(item => AddItemToPage(page, item));
-                }
-            }
-            n.SuffixItemList?.ForEach(item => AddItemToPage(page, item));
+            //n.PrefixItemList?.ForEach(item => AddItemToPage(page, item));
+            //if (failingCheck == null)
+            //{
+            //    n.Met.ItemList?.ForEach(item => AddItemToPage(page, item));
+            //}
+            //else
+            //{
+            //    if (failingCheck.UnmetItemList == null) // Omit this section to skip the notification entirely.
+            //    {
+            //        // Don't skip if there is only one notification.
+            //        if (list.Count > 1) skipPage = true;
+            //    }
+            //    else
+            //    {
+            //        failingCheck.UnmetItemList?.ForEach(item => AddItemToPage(page, item));
+            //    }
+            //}
+            //n.SuffixItemList?.ForEach(item => AddItemToPage(page, item));
+            n.ItemList?.ForEach(item => AddItemToPage(page, item));
             if (skipPage == false) PageList.Add(page);
         }
 
@@ -218,24 +219,24 @@ namespace ORTS
         private Check CheckConstraints(Notification n)
         {
             Check failingCheck = null;
-            foreach (var nc in n.Met.CheckIdList) // CheckIdList is optional
+            foreach (var checkName in n.CheckIdList) // CheckIdList is optional
             {
-                LogChecks(nc);
+                LogChecks(checkName);
 
                 // Find the matching check
-                var check = Notifications.CheckList.Where(c => c.Id == nc.Id).FirstOrDefault();
+                var check = Notifications.CheckList.Where(c => c.Id == checkName).FirstOrDefault();
                 if (check != null && check.AnyOfList.Count() > 0)
                 {
                     foreach(var anyOf in check.AnyOfList)
                     {
-                        if (anyOf is Excludes)
-                        {
-                            if (CheckAllMatch(anyOf.AllOfList) == true) return check; // immediate fail so quit
-                        }
-                        if (anyOf is Includes)
-                        {
-                            if (CheckAllMatch(anyOf.AllOfList) == false) failingCheck = check; // fail but continue testing other Includes
-                        }
+                        //if (anyOf is Excludes)
+                        //{
+                        //    if (CheckAllMatch(anyOf.AllOfList) == true) return check; // immediate fail so quit
+                        //}
+                        //if (anyOf is Includes)
+                        //{
+                        //    if (CheckAllMatch(anyOf.AllOfList) == false) failingCheck = check; // fail but continue testing other Includes
+                        //}
                     }
                 }
             }
@@ -323,9 +324,9 @@ namespace ORTS
                     continue;
 
                 // Mark unused updates for deletion outside loop
-                n.ToDelete = lowerUpdateMode != updateModeSetting;
+                //n.ToDelete = lowerUpdateMode != updateModeSetting;
             }
-            Notifications.NotificationList.RemoveAll(n => n.ToDelete);
+            //Notifications.NotificationList.RemoveAll(n => n.ToDelete);
         }
 
         public void ReplaceParameters()
@@ -334,9 +335,10 @@ namespace ORTS
             {
                 n.Title = ReplaceParameter(n.Title);
                 n.Date = ReplaceParameter(n.Date);
-                n.PrefixItemList?.ForEach(item => ReplaceItemParameter(item));
-                n.Met.ItemList?.ForEach(item => ReplaceItemParameter(item));
-                n.SuffixItemList?.ForEach(item => ReplaceItemParameter(item));
+                //n.PrefixItemList?.ForEach(item => ReplaceItemParameter(item));
+                //n.Met.ItemList?.ForEach(item => ReplaceItemParameter(item));
+                //n.SuffixItemList?.ForEach(item => ReplaceItemParameter(item));
+                n.ItemList?.ForEach(item => ReplaceItemParameter(item));
             }
             foreach (var list in Notifications.CheckList)
             {
@@ -557,9 +559,9 @@ namespace ORTS
         {
             AppendToLog($"Notification: {n.Title}");
         }
-        public void LogChecks(CheckId ci)
+        public void LogChecks(string checkName)
         {
-            AppendToLog($"CheckId: {ci.Id}");
+            AppendToLog($"CheckId: {checkName}");
         }
         public void LogCheckContains(string value, bool sense, string content, bool result)
         {

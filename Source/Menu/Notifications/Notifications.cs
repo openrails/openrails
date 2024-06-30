@@ -37,10 +37,8 @@ namespace ORTS
         public string Date { get; set; }
         public string Title { get; set; }
         public string UpdateMode { get; set; }
-        public List<Item> PrefixItemList { get; set; }
-        public Met Met { get; set; }
-        public List<Item> SuffixItemList { get; set; }
-        public bool ToDelete { get; set; } = false; // So we can mark items for deletion and then delete in single statement.
+        public List<Item> ItemList { get; set; }
+        public List<string> CheckIdList { get; set; }
     }
     class Record : Item
     {
@@ -69,35 +67,39 @@ namespace ORTS
         public string Color { get; set; } = "black";
         public int Indent { get; set; } = 140;
     }
-    public class Met
-    {
-        public List<Item> ItemList { get; set; }
-        public List<CheckId> CheckIdList { get; set; }
-    }
-    public class CheckId
-    {
-        public string Id { get; set; }
-    }
+    //public class Met
+    //{
+    //    public List<Item> ItemList { get; set; }
+    //    public List<CheckId> CheckIdList { get; set; }
+    //}
+    //public class CheckId
+    //{
+    //    public string Id { get; set; }
+    //}
 
     public class Check
     {
         public string Id { get; set; }
-        public List<CheckAllOf> AnyOfList { get; set; }
-        public List<Item> UnmetItemList { get; set; }
+        public List<AllOf> AnyOfList { get; set; }
+        //public List<Item> UnmetItemList { get; set; }
     }
 
-    public class CheckAllOf
+    //public class CheckAllOf
+    //{
+    //    public List<Criteria> AllOfList { get; set; }
+    //}
+    public class AllOf
     {
         public List<Criteria> AllOfList { get; set; }
     }
 
-    public class Excludes : CheckAllOf
-    {
-    }
+    //public class Excludes : CheckAllOf
+    //{
+    //}
 
-    public class Includes : CheckAllOf
-    {
-    }
+    //public class Includes : CheckAllOf
+    //{
+    //}
 
     class Contains : Criteria { }
     class NotContains : Criteria { }
