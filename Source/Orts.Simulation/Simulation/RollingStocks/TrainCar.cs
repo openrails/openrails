@@ -431,31 +431,36 @@ namespace Orts.Simulation.RollingStocks
         {
             get
             {
+                float percent;
                 if (RemoteControlGroup == 0 && Train != null)
                 {
+                    percent = Train.MUThrottlePercent;
                     if (Train.LeadLocomotive is MSTSLocomotive locomotive)
                     {
                         if (!locomotive.TrainControlSystem.TractionAuthorization
-                            || Train.MUThrottlePercent <= 0)
+                            || percent <= 0)
                         {
-                            return 0;
+                            percent = 0;
                         }
-                        else if (Train.MUThrottlePercent > locomotive.TrainControlSystem.MaxThrottlePercent)
+                        else if (percent > locomotive.TrainControlSystem.MaxThrottlePercent)
                         {
-                            return Math.Max(locomotive.TrainControlSystem.MaxThrottlePercent, 0);
+                            percent = Math.Max(locomotive.TrainControlSystem.MaxThrottlePercent, 0);
                         }
                     }
-
-                    return Train.MUThrottlePercent;
                 }
                 else if (RemoteControlGroup == 1 && Train != null)
                 {
-                    return Train.DPThrottlePercent;
+                    percent = Train.DPThrottlePercent;
                 }
                 else
                 {
-                    return LocalThrottlePercent;
+                    percent = LocalThrottlePercent;
                 }
+                if (this is MSTSLocomotive loco)
+                {
+                    if (loco.LocomotivePowerSupply.MaxThrottlePercent < percent) percent = Math.Max(loco.LocomotivePowerSupply.MaxThrottlePercent, 0);
+                }
+                return percent;
             }
             set
             {
