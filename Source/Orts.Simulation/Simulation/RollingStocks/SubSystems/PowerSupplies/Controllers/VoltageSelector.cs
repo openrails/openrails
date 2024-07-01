@@ -149,7 +149,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
         public void Save(BinaryWriter outf)
         {
-            outf.Write(Position.Name);
+            outf.Write(Position?.Name);
         }
 
         public void Restore(BinaryReader inf)
