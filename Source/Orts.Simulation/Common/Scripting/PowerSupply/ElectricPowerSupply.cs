@@ -129,15 +129,6 @@ namespace ORTS.Scripting.Api
         protected void SetFilterVoltageV(float voltage) => EpsHost.FilterVoltageV = voltage;
 
         /// <summary>
-        /// Maximum power of the locomotive
-        /// </summary>
-        protected float MaximumPowerW
-        {
-            get => EpsHost.MaximumPowerW;
-            set => EpsHost.MaximumPowerW = value;
-        }
-
-        /// <summary>
         /// Sends an event to the circuit breaker
         /// </summary>
         public void SignalEventToCircuitBreaker(PowerSupplyEvent evt) => CircuitBreaker.HandleEvent(evt);
