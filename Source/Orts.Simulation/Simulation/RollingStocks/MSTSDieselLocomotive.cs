@@ -685,27 +685,29 @@ namespace Orts.Simulation.RollingStocks
 
                 if (TractiveForceCurves == null)
                 {
-                    // This sets the maximum force of the locomotive, it will be adjusted down if it exceeds the max power of the locomotive.
-                    float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), AbsTractionSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * LocomotiveMaxRailOutputPowerW / AbsTractionSpeedMpS));
-
-                    // Maximum rail power is reduced by apparent throttle factor and the number of engines running (power ratio)
-                    float maxPowerW = LocomotiveMaxRailOutputPowerW * DieselEngineFractionPower * LocomotiveApparentThrottleSetting;
-
-                    // If unloading speed is in ENG file, and locomotive speed is greater then unloading speed, and less then max speed, then apply a decay factor to the power/force
-                    if (UnloadingSpeedMpS != 0 && AbsTractionSpeedMpS > UnloadingSpeedMpS && AbsTractionSpeedMpS < MaxSpeedMpS && !WheelSlip)
-                    {
-                        // use straight line curve to decay power to zero by 2 x unloading speed
-                        float unloadingspeeddecay = 1.0f - (1.0f / UnloadingSpeedMpS) * (AbsTractionSpeedMpS - UnloadingSpeedMpS);
-                        unloadingspeeddecay = MathHelper.Clamp(unloadingspeeddecay, 0.0f, 1.0f);  // Clamp decay within bounds
-                        maxPowerW *= unloadingspeeddecay;
-                    }
-
                     if (DieselEngines.HasGearBox)
                     {
                         TractiveForceN = DieselEngines.TractiveForceN;
                     }
                     else
                     {
+                        // This sets the maximum force of the locomotive, it will be adjusted down if it exceeds the max power of the locomotive.
+                        float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), AbsTractionSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * LocomotiveMaxRailOutputPowerW / AbsTractionSpeedMpS));
+
+                        // Maximum rail power is reduced by apparent throttle factor and the number of engines running (power ratio)
+                        float maxPowerW = LocomotiveMaxRailOutputPowerW * DieselEngineFractionPower * LocomotiveApparentThrottleSetting;
+
+                        if (DieselPowerSupply.MaximumPowerW > 0)
+                            maxPowerW = Math.Min(maxPowerW, DieselPowerSupply.MaximumPowerW * LocomotiveApparentThrottleSetting);
+
+                        // If unloading speed is in ENG file, and locomotive speed is greater then unloading speed, and less then max speed, then apply a decay factor to the power/force
+                        if (UnloadingSpeedMpS != 0 && AbsTractionSpeedMpS > UnloadingSpeedMpS && AbsTractionSpeedMpS < MaxSpeedMpS && !WheelSlip)
+                        {
+                            // use straight line curve to decay power to zero by 2 x unloading speed
+                            float unloadingspeeddecay = 1.0f - (1.0f / UnloadingSpeedMpS) * (AbsTractionSpeedMpS - UnloadingSpeedMpS);
+                            unloadingspeeddecay = MathHelper.Clamp(unloadingspeeddecay, 0.0f, 1.0f);  // Clamp decay within bounds
+                            maxPowerW *= unloadingspeeddecay;
+                        }
                         if (maxForceN * AbsSpeedMpS > maxPowerW)
                             maxForceN = maxPowerW / AbsTractionSpeedMpS;
 
@@ -725,6 +727,12 @@ namespace Orts.Simulation.RollingStocks
                     {
                         // Tractive force is read from Table using the apparent throttle setting, and then reduced by the number of engines running (power ratio)
                         TractiveForceN = TractiveForceCurves.Get(LocomotiveApparentThrottleSetting, AbsTractionSpeedMpS) * DieselEngineFractionPower * (1 - PowerReduction);
+                        if (DieselPowerSupply.MaximumPowerW > 0)
+                        {
+                            float maxPowerW = DieselPowerSupply.MaximumPowerW * t;
+                            if (TractiveForceN * AbsTractionSpeedMpS > maxPowerW)
+                                TractiveForceN = maxPowerW / AbsTractionSpeedMpS;
+                        }
                     }
 
                     if (TractiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())

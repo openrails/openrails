@@ -42,8 +42,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float PantographVoltageVDC { get; set; }
         public float FilterVoltageV { get; set; } = 0;
 
-        public float MaximumPowerW;
-
         public ScriptedElectricPowerSupply(MSTSLocomotive locomotive) :
             base(locomotive)
         {
