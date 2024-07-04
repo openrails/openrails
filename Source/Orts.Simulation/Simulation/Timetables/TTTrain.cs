@@ -2389,7 +2389,7 @@ namespace Orts.Simulation.Timetables
                 LeadLocomotiveIndex = otherTrain.LeadLocomotiveIndex;
 
                 // Copy other train speed if not restricted for either train
-                if (!otherTrain.SpeedSettings.restrictedSet && !SpeedSettings.restrictedSet || TrainMaxSpeedMpS == 0)
+                if ((!otherTrain.SpeedSettings.restrictedSet && !SpeedSettings.restrictedSet) || TrainMaxSpeedMpS == 0)
                 {
                     TrainMaxSpeedMpS = otherTrain.TrainMaxSpeedMpS;
                 }
@@ -4060,16 +4060,6 @@ namespace Orts.Simulation.Timetables
 
             ResetActions(true);
         }
-
-        //================================================================================================//
-        /// <summary>
-        /// If autopiloted, generate strings for NextStationWindow
-        /// Override for AITrain class
-        /// <\summary>
-        public void PopulateNextStationWindow()
-        {
-        }
-
 
         //================================================================================================//
         /// <summary>
@@ -13521,7 +13511,6 @@ namespace Orts.Simulation.Timetables
                 Trace.TraceInformation("Train {0} : detach to train {1} : cannot find new train \n", train.Name, DetachFormedTrainName);
             }
 
-//            newTrain.Autopilot = train.Autopilot;
             train.DetachUnits = iunits;
             train.DetachPosition = frontpos;
 
