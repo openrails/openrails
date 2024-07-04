@@ -1601,7 +1601,7 @@ namespace Orts.Simulation
             // find player train
             foreach (Train thisTrain in Trains)
             {
-                if (thisTrain.TrainType == Train.TRAINTYPE.PLAYER || thisTrain is TTTrain && thisTrain == Trains[0]
+                if (thisTrain.TrainType == Train.TRAINTYPE.PLAYER || (thisTrain is TTTrain && thisTrain == Trains[0])
                     || thisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || thisTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
                 {
                     TrainDictionary.Add(thisTrain.Number, thisTrain);
