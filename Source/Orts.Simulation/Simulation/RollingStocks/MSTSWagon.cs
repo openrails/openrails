@@ -1597,9 +1597,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "wagon(ortspowersupply":
                 case "wagon(ortspowerondelay":
-                case "wagon(ortsbattery(mode":
-                case "wagon(ortsbattery(delay":
-                case "wagon(ortsbattery(defaulton":
+                case "wagon(ortsbattery":
                 case "wagon(ortspowersupplycontinuouspower":
                 case "wagon(ortspowersupplyheatingpower":
                 case "wagon(ortspowersupplyairconditioningpower":

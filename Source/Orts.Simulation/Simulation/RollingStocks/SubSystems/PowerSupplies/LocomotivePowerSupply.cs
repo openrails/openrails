@@ -34,7 +34,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         protected Train Train => Locomotive.Train;
         protected int CarId = 0;
 
-        public BatterySwitch BatterySwitch { get; protected set; }
+        public Battery Battery {get; protected set; }
+        public BatterySwitch BatterySwitch => Battery.BatterySwitch;
         public Pantographs Pantographs => Locomotive.Pantographs;
         public MasterKey MasterKey { get; protected set; }
         public ElectricTrainSupplySwitch ElectricTrainSupplySwitch { get; protected set; }
@@ -78,8 +79,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public PowerSupplyState LowVoltagePowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool LowVoltagePowerSupplyOn => LowVoltagePowerSupplyState == PowerSupplyState.PowerOn;
 
-        public PowerSupplyState BatteryState { get; set; } = PowerSupplyState.PowerOff;
+        public PowerSupplyState BatteryState
+        {
+            get
+            {
+                return Battery.State;
+            }
+            set
+            {
+                Battery.State = value;
+            }
+        }
         public bool BatteryOn => BatteryState == PowerSupplyState.PowerOn;
+        public float BatteryVoltageV => BatteryOn ? Battery.VoltageV : 0;
 
         public PowerSupplyState CabPowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool CabPowerSupplyOn => CabPowerSupplyState == PowerSupplyState.PowerOn;
@@ -104,7 +116,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             Car = locomotive;
 
-            BatterySwitch = new BatterySwitch(Locomotive);
+            Battery = new Battery(Locomotive);
             MasterKey = new MasterKey(Locomotive);
             ElectricTrainSupplySwitch = new ElectricTrainSupplySwitch(Locomotive);
 
@@ -134,10 +146,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     AuxPowerOnDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null);
                     break;
 
-                case "engine(ortsbattery(mode":
-                case "engine(ortsbattery(delay":
-                case "engine(ortsbattery(defaulton":
-                    BatterySwitch.Parse(lowercasetoken, stf);
+                case "engine(ortsbattery":
+                    Battery.Parse(lowercasetoken, stf);
                     break;
                 case "engine(ortsmasterkey(mode":
                 case "engine(ortsmasterkey(delayoff":
@@ -155,7 +165,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             if (other is ScriptedLocomotivePowerSupply scriptedOther)
             {
-                BatterySwitch.Copy(scriptedOther.BatterySwitch);
+                Battery.Copy(scriptedOther.Battery);
                 MasterKey.Copy(scriptedOther.MasterKey);
                 ElectricTrainSupplySwitch.Copy(scriptedOther.ElectricTrainSupplySwitch);
 
@@ -169,7 +179,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public virtual void Initialize()
         {
-            BatterySwitch.Initialize();
+            Battery.Initialize();
             MasterKey.Initialize();
             ElectricTrainSupplySwitch.Initialize();
         }
@@ -179,7 +189,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// <\summary>
         public virtual void InitializeMoving()
         {
-            BatterySwitch.InitializeMoving();
+            Battery.InitializeMoving();
             MasterKey.InitializeMoving();
             ElectricTrainSupplySwitch.InitializeMoving();
 
@@ -198,7 +208,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public virtual void Save(BinaryWriter outf)
         {
-            BatterySwitch.Save(outf);
+            Battery.Save(outf);
             MasterKey.Save(outf);
             ElectricTrainSupplySwitch.Save(outf);
 
@@ -214,7 +224,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public virtual void Restore(BinaryReader inf)
         {
-            BatterySwitch.Restore(inf);
+            Battery.Restore(inf);
             MasterKey.Restore(inf);
             ElectricTrainSupplySwitch.Restore(inf);
 
@@ -250,7 +260,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
             }
 
-            BatterySwitch.Update(elapsedClockSeconds);
+            Battery.Update(elapsedClockSeconds);
             MasterKey.Update(elapsedClockSeconds);
             ElectricTrainSupplySwitch.Update(elapsedClockSeconds);
         }
