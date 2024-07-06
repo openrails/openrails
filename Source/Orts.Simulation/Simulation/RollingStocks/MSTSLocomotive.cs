@@ -6095,6 +6095,10 @@ namespace Orts.Simulation.RollingStocks
                     data = LocomotivePowerSupply.BatterySwitch.On ? 1 : 0;
                     break;
 
+                case CABViewControlTypes.ORTS_BATTERY_VOLTAGE:
+                    data = LocomotivePowerSupply.BatteryVoltageV;
+                    break;
+
                 case CABViewControlTypes.ORTS_MASTER_KEY:
                     data = LocomotivePowerSupply.MasterKey.CommandSwitch ? 1 : 0;
                     break;

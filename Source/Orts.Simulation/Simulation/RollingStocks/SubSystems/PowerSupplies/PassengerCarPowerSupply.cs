@@ -35,7 +35,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public Pantographs Pantographs => Wagon.Pantographs;
         protected int CarId = 0;
 
-        public BatterySwitch BatterySwitch { get; protected set; }
+        public Battery Battery { get; protected set; }
+        public BatterySwitch BatterySwitch => Battery.BatterySwitch;
 
         protected bool Activated = false;
         protected string ScriptName = "Default";
@@ -51,8 +52,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public PowerSupplyState LowVoltagePowerSupplyState { get; set; } = PowerSupplyState.PowerOff;
         public bool LowVoltagePowerSupplyOn => LowVoltagePowerSupplyState == PowerSupplyState.PowerOn;
 
-        public PowerSupplyState BatteryState { get; set; }
+        public PowerSupplyState BatteryState
+        {
+            get
+            {
+                return Battery.State;
+            }
+            set
+            {
+                Battery.State = value;
+            }
+        }
         public bool BatteryOn => BatteryState == PowerSupplyState.PowerOn;
+        public float BatteryVoltageV => BatteryOn ? Battery.VoltageV : 0;
 
         public PowerSupplyState VentilationState { get; set; }
         public PowerSupplyState HeatingState { get; set; }
@@ -72,7 +84,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             Car = wagon;
 
-            BatterySwitch = new BatterySwitch(Wagon);
+            Battery = new Battery(Wagon);
         }
 
         public virtual void Parse(string lowercasetoken, STFReader stf)
@@ -87,10 +99,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     PowerOnDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null);
                     break;
 
-                case "wagon(ortsbattery(mode":
-                case "wagon(ortsbattery(delay":
-                case "wagon(ortsbattery(defaulton":
-                    BatterySwitch.Parse(lowercasetoken, stf);
+                case "wagon(ortsbattery":
+                    Battery.Parse(lowercasetoken, stf);
                     break;
 
                 case "wagon(ortspowersupplycontinuouspower":
@@ -121,7 +131,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Copy(ScriptedPassengerCarPowerSupply other)
         {
-            BatterySwitch.Copy(other.BatterySwitch);
+            Battery.Copy(other.Battery);
 
             ScriptName = other.ScriptName;
 
@@ -153,7 +163,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 Activated = true;
             }
 
-            BatterySwitch.Initialize();
+            Battery.Initialize();
         }
 
         /// <summary>
@@ -161,7 +171,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// <\summary>
         public virtual void InitializeMoving()
         {
-            BatterySwitch.InitializeMoving();
+            Battery.InitializeMoving();
 
             ElectricTrainSupplyState = PowerSupplyState.PowerOn;
             BatteryState = PowerSupplyState.PowerOn;
@@ -171,7 +181,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public virtual void Save(BinaryWriter outf)
         {
-            BatterySwitch.Save(outf);
+            Battery.Save(outf);
 
             outf.Write(FrontElectricTrainSupplyCableConnected);
 
@@ -187,7 +197,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public virtual void Restore(BinaryReader inf)
         {
-            BatterySwitch.Restore(inf);
+            Battery.Restore(inf);
 
             FrontElectricTrainSupplyCableConnected = inf.ReadBoolean();
 
@@ -280,7 +290,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
             }
 
-            BatterySwitch.Update(elapsedClockSeconds);
+            Battery.Update(elapsedClockSeconds);
             Script?.Update(elapsedClockSeconds);
         }
 

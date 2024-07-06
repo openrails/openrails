@@ -49,6 +49,7 @@ namespace ORTS.Scripting.Api
         /// Current state of the battery
         /// </summary>
         public PowerSupplyState CurrentBatteryState() => Host.BatteryState;
+        public float BatteryVoltageV => Host.Battery.VoltageV;
 
         /// <summary>
         /// True if the battery is switched on
