@@ -32,7 +32,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public PowerSupplyType Type => PowerSupplyType.Steam;
 
         public Pantographs Pantographs => Locomotive.Pantographs;
-        public BatterySwitch BatterySwitch { get; protected set; }
+        public Battery Battery { get; protected set; }
+        public BatterySwitch BatterySwitch => Battery.BatterySwitch;
         public MasterKey MasterKey { get; protected set; }
         public ElectricTrainSupplySwitch ElectricTrainSupplySwitch => null;
 
@@ -73,7 +74,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                return BatterySwitch.On ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff;
+                return Battery.State == PowerSupplyState.PowerOn ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff;
             }
             set{}
         }
@@ -84,12 +85,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                return BatterySwitch.On ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff;
+                return Battery.State;
             }
-            set{}
+            set
+            {
+                Battery.State = value;
+            }
         }
 
         public bool BatteryOn => BatteryState == PowerSupplyState.PowerOn;
+        public float BatteryVoltageV => BatteryOn ? Battery.VoltageV : 0;
 
         public PowerSupplyState CabPowerSupplyState
         {
@@ -146,7 +151,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             Car = locomotive;
 
-            BatterySwitch = new BatterySwitch(Locomotive);
+            Battery = new Battery(Locomotive);
             MasterKey = new MasterKey(Locomotive);
         }
 
@@ -154,10 +159,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             switch (lowercasetoken)
             {
-                case "engine(ortsbattery(mode":
-                case "engine(ortsbattery(delay":
-                case "engine(ortsbattery(defaulton":
-                    BatterySwitch.Parse(lowercasetoken, stf);
+                case "engine(ortsbattery":
+                    Battery.Parse(lowercasetoken, stf);
                     break;
                 case "engine(ortsmasterkey(mode":
                 case "engine(ortsmasterkey(delayoff":
@@ -171,37 +174,38 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             if (other is SteamPowerSupply steamOther)
             {
-                BatterySwitch.Copy(steamOther.BatterySwitch);
+                Battery.Copy(steamOther.Battery);
                 MasterKey.Copy(steamOther.MasterKey);
             }
         }
 
         public void Initialize()
         {
-            BatterySwitch.Initialize();
+            Battery.Initialize();
             MasterKey.Initialize();
         }
 
         public virtual void InitializeMoving()
         {
-            BatterySwitch.InitializeMoving();
+            Battery.InitializeMoving();
             MasterKey.InitializeMoving();
         }
 
         public void Save(BinaryWriter outf)
         {
-            BatterySwitch.Save(outf);
+            Battery.Save(outf);
             MasterKey.Save(outf);
         }
 
         public void Restore(BinaryReader inf)
         {
-            BatterySwitch.Restore(inf);
+            Battery.Restore(inf);
             MasterKey.Restore(inf);
         }
 
         public void Update(float elapsedClockSeconds)
         {
+            Battery.State = BatterySwitch.On ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff;
         }
 
         public void HandleEvent(PowerSupplyEvent evt)

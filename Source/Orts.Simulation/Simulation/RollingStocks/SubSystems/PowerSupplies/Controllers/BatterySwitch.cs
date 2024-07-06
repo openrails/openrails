@@ -57,8 +57,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             switch (lowercasetoken)
             {
-                case "engine(ortsbattery(mode":
-                case "wagon(ortsbattery(mode":
+                case "mode":
                     string text = stf.ReadStringBlock("").ToLower();
                     if (text == "alwayson")
                     {
@@ -78,13 +77,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                     break;
 
-                case "engine(ortsbattery(delay":
-                case "wagon(ortsbattery(delay":
+                case "delay":
                     DelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, 0f);
                     break;
 
-                case "engine(ortsbattery(defaulton":
-                case "wagon(ortsbattery(defaulton":
+                case "defaulton":
                     DefaultOn = stf.ReadBoolBlock(false);
                     break;
             }

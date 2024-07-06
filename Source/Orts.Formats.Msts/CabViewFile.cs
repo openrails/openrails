@@ -83,6 +83,7 @@ namespace Orts.Formats.Msts
         LINE_VOLTAGE,
         ORTS_PANTOGRAPH_VOLTAGE_AC,
         ORTS_PANTOGRAPH_VOLTAGE_DC,
+        ORTS_BATTERY_VOLTAGE,
         AMMETER,
         AMMETER_ABS,
         LOAD_METER,
