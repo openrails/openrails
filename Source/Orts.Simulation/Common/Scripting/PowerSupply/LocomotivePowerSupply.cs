@@ -99,6 +99,15 @@ namespace ORTS.Scripting.Api
         }
 
         /// <summary>
+        /// Power limit for traction motors
+        /// </summary>
+        protected float AvailableTractionPowerW
+        {
+            get => LpsHost.AvailableTractionPowerW;
+            set => LpsHost.AvailableTractionPowerW = value;
+        }
+
+        /// <summary>
         /// Current availability of the dynamic brake
         /// </summary>
         protected bool CurrentDynamicBrakeAvailability() => LpsHost.DynamicBrakeAvailable;
