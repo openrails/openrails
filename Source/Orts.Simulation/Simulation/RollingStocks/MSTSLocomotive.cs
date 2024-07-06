@@ -5478,37 +5478,20 @@ namespace Orts.Simulation.RollingStocks
                         var direction = 0; // Forwards
                         if (cvc is CVCGauge && ((CVCGauge)cvc).Orientation == 0)
                             direction = ((CVCGauge)cvc).Direction;
-                        data = 0.0f;
                         data = DynamicBrakeForceN;
-                        if (data > 0 && SpeedMpS > 0 || data < 0 && SpeedMpS < 0)
-                        {
-                            data = 0;
-                            break;
-                        }
-                        data = Math.Abs(data);
                         switch (cvc.Units)
                         {
                             case CABViewControlUnits.AMPS:
-                                if (MaxCurrentA == 0)
-                                    MaxCurrentA = (float)cvc.MaxValue;
                                 if (DynamicBrakeMaxCurrentA == 0)
-                                    DynamicBrakeMaxCurrentA = (float)cvc.MinValue;
-                                if (ThrottlePercent > 0)
-                                {
-                                    data = 0;
-                                }
-                                if (DynamicBrakePercent > 0)
-                                {
-                                    data = (DynamicBrakeForceN / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
-                                }
-                                data = Math.Abs(data);
+                                    DynamicBrakeMaxCurrentA = (float)cvc.MaxValue;
+                                data = data / MaxDynamicBrakeForceN * DynamicBrakeMaxCurrentA;
                                 break;
 
                             case CABViewControlUnits.NEWTONS:
                                 break;
 
                             case CABViewControlUnits.KILO_NEWTONS:
-                                data = data / 1000.0f;
+                                data /= 1000.0f;
                                 break;
 
                             case CABViewControlUnits.KILO_LBS:
