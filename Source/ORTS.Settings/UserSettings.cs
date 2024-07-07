@@ -54,7 +54,7 @@ namespace ORTS.Settings
         {
             // Only one of these is allowed; if the INI file exists, we use that, otherwise we use the registry.
             RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
-            SettingsFilePath = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "OpenRails.ini");
+            SettingsFilePath = Path.Combine(ApplicationInfo.ProcessDirectory, "OpenRails.ini");
             if (File.Exists(SettingsFilePath))
                 RegistryKey = null;
             else

@@ -168,7 +168,7 @@ namespace ORTS
                         FileName = MainForm.RunActivityProgram,
                         Arguments = joinedParameters,
                         WindowStyle = ProcessWindowStyle.Normal,
-                        WorkingDirectory = Application.StartupPath,
+                        WorkingDirectory = ApplicationInfo.ProcessDirectory,
                     };
                     var process = Process.Start(processStartInfo);
                     process.WaitForExit();

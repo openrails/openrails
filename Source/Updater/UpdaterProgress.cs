@@ -25,7 +25,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
@@ -53,7 +52,7 @@ namespace Updater
             Settings = new UserSettings(new string[0]);
             LoadLanguage();
 
-            BasePath = Path.GetDirectoryName(Application.ExecutablePath);
+            BasePath = ApplicationInfo.ProcessDirectory;
             LauncherPath = UpdateManager.GetMainExecutable(BasePath, Application.ProductName);
         }
 
@@ -86,7 +85,7 @@ namespace Updater
         void ElevationThread()
         {
             // Remove both the /RELAUNCH= and /ELEVATE= command-line flags from the child process - it should not do either.
-            var processInfo = new ProcessStartInfo(Application.ExecutablePath, String.Join(" ", Environment.GetCommandLineArgs().Skip(1).Where(a => !a.StartsWith(UpdateManager.RelaunchCommandLine) && !a.StartsWith(UpdateManager.ElevationCommandLine)).ToArray()));
+            var processInfo = new ProcessStartInfo(ApplicationInfo.ProcessFile, String.Join(" ", Environment.GetCommandLineArgs().Skip(1).Where(a => !a.StartsWith(UpdateManager.RelaunchCommandLine) && !a.StartsWith(UpdateManager.ElevationCommandLine)).ToArray()));
             processInfo.Verb = "runas";
 
             var process = Process.Start(processInfo);

@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 
 namespace ORTS.Common
 {
@@ -28,8 +27,6 @@ namespace ORTS.Common
     /// </summary>
     public static class VersionInfo
     {
-        static readonly string ApplicationPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-
         /// <summary>Full version, e.g. stable: "1.4", testing: "T1.4-1-g1234567", unstable: "U2021.01.01-0000", local: ""</summary>
         public static readonly string Version = GetVersion("OpenRails.exe");
 
@@ -43,7 +40,7 @@ namespace ORTS.Common
         {
             try
             {
-                var version = FileVersionInfo.GetVersionInfo(Path.Combine(ApplicationPath, fileName));
+                var version = FileVersionInfo.GetVersionInfo(Path.Combine(ApplicationInfo.ProcessDirectory, fileName));
                 if (version.ProductVersion != version.FileVersion)
                     return version.ProductVersion;
             }
@@ -58,7 +55,7 @@ namespace ORTS.Common
             var builds = new Dictionary<TimeSpan, string>();
             try
             {
-                var version = FileVersionInfo.GetVersionInfo(Path.Combine(ApplicationPath, fileName));
+                var version = FileVersionInfo.GetVersionInfo(Path.Combine(ApplicationInfo.ProcessDirectory, fileName));
                 var datetime = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
                 var timespan = new TimeSpan(version.FileBuildPart, 0, 0, version.FilePrivatePart * 2);
                 return String.Format("{0} ({1:u})", version.FileVersion, datetime + timespan);
