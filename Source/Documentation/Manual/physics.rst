@@ -1224,6 +1224,7 @@ locomotive can be thought of in terms of the following broadly defined
 components:
 
 - Boiler and Fire (Heat conversion)
+- Fuel Type
 - Cylinder (Work done)
 
 Boiler and Fire (Heat conversion)
@@ -1246,7 +1247,7 @@ the Boiler Evaporation Area.
   contact with the boiler and the heat tubes running through the boiler.
   This area determined the amount of heat that could be transferred to
   the water in the boiler. As a rule of thumb a boiler could produce
-  approximately 12-15 lbs/h of steam per ft\ :sup:`2` of evaporation area.
+  approximately 12-15 lbs/h of steam per ft\ :sup:`2` of evaporation area (coal fired).
 - *Boiler Superheater Area* -- Typically modern steam locomotives are
   superheated, whereas older locomotives used only saturated steam.
   Superheating is the process of putting more heat into the steam
@@ -1254,6 +1255,52 @@ the Boiler Evaporation Area.
   and allowed the locomotive to produce more work, but with a reduction
   in steam and fuel usage. In other words a superheated locomotive
   tended to be more efficient then a saturated locomotive.
+
+Fuel Type
+.........
+
+Different fuel types will produce different levels of heat. For example,
+Coal has a fuel calorific value of around 13,800 BTU/lb, whereas Wood may 
+have values of between 3,000 and 7,000 BTU/lb (depending upon the condition 
+of the wood fuel), and Oil (Diesel) may have a value up around 17,000 BTU/lb.
+
+Hence the variations in fuel calorific value can dramatically impact the 
+amount of steam that it is able to produce and ultimately the performance of 
+the steam locomotive.
+
+Hence Open Rails supports the use of different fuel types for steam locomotives, 
+and these different fuel types can be configured with the following parameters.
+
+``ORTSSteamLocomotiveFuelType`` - indicates the type of fuel used by the locomotive - 
+currently Wood, Coal or Oil are available. Defaults to Coal.
+
+``ORTSMaxTenderWoodMass`` - amount of wood mass in tender (in ENG file)
+
+``ORTSTenderWagonWoodMass`` - amount of wood mass in tender (in tender WAG file - overwrites 
+the above value - non mandatory).
+
+``ORTSSteamLocomotiveFeedwaterSystemType`` - Older steam locomotives were fitted with 
+motion pumps to transfer water from the tender into the boiler. Steam injectors were 
+fitted to new locomotives from the 1860s. Currently MotionPump or Injector available. 
+Defaults to Injector.
+
+*FuelWood* is used in any IntakePoint statements used, and route fuel points need to 
+be set as wood type.
+
+``ORTSFuelOilHeatingRequired`` - some locomotives required the oil in the tender to be 
+steam heated, set to 1 (true) if this is the case. Defaults to false.
+
+``ORTSFuelOilSpecificGravity`` - specific gravity of the oil used as fuel on the locomotive.
+
+``ORTSMaxTenderFuelOilVolume`` - volume of oil carried in the tender, typically in gallons 
+or litres. (in ENG file)
+
+``ORTSTenderWagonFuelOilVolume`` - volume of oil carried in the tender, typically in gallons 
+or litres. (in tender WAG file  - overwrites the above value - non mandatory).
+
+*FuelDiesel* - is used in any IntakePoint statements, and route fuel points need to be set 
+as diesel type.
+
 
 Cylinder (Work done)
 ....................
