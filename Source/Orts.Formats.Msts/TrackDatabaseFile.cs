@@ -1451,7 +1451,7 @@ namespace Orts.Formats.Msts
             ItemName = thisSiding.ItemName;
             Flags1 = thisSiding.Flags1;
             LinkedPlatformItemId = thisSiding.LinkedSidingId;
-            Station = String.Copy(ItemName);
+            Station = ItemName;
         }
     }
 

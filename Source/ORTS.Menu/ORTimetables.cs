@@ -48,8 +48,8 @@ namespace ORTS.Menu
                 try
                 {
                     ORTTList.Add(new TimetableFileLite(filePath));
-                    Description = String.Copy(ORTTList[0].Description);
-                    fileName = String.Copy(filePath);
+                    Description = ORTTList[0].Description;
+                    fileName = filePath;
                 }
                 catch
                 {
@@ -70,8 +70,8 @@ namespace ORTS.Menu
                 {
                     TimetableGroupFileLite multiInfo = new TimetableGroupFileLite(filePath, directory);
                     ORTTList = multiInfo.ORTTInfo;
-                    Description = String.Copy(multiInfo.Description);
-                    fileName = String.Copy(filePath);
+                    Description = multiInfo.Description;
+                    fileName = filePath;
                 }
                 catch
                 {

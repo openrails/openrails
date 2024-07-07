@@ -118,7 +118,7 @@ namespace Orts.Formats.OR
             // process comment row - cell at first comment row and column is description
             // process path and consist row
 
-            Description = String.Copy(filePath);
+            Description = filePath;
 
             bool descFound = false;
             bool pathFound = false;
@@ -136,7 +136,7 @@ namespace Orts.Formats.OR
                 {
                     if (String.Compare(Parts[0], "#comment", true) == 0)
                     {
-                        Description = String.Copy(Parts[firstCommentColumn]);
+                        Description = Parts[firstCommentColumn];
                         descFound = true;
                     }
                 }
@@ -146,7 +146,7 @@ namespace Orts.Formats.OR
                     {
                         pathFound = true;
                         foreach (TrainInformation train in Trains)
-                            train.Path = String.Copy(Parts[train.Column]);
+                            train.Path = Parts[train.Column];
                     }
                 }
                 if (!consistFound)
@@ -156,7 +156,7 @@ namespace Orts.Formats.OR
                         consistFound = true;
                         foreach (TrainInformation train in Trains)
                         {
-                            train.Consist = String.Copy(Parts[train.Column]);
+                            train.Consist = Parts[train.Column];
                             train.LeadingConsist = ExtractConsist(train.Consist, out train.ReverseConsist);
                         }
                     }
@@ -167,7 +167,7 @@ namespace Orts.Formats.OR
                     {
                         startFound = true;
                         foreach (TrainInformation train in Trains)
-                            train.StartTime = String.Copy(Parts[train.Column]);
+                            train.StartTime = Parts[train.Column];
                     }
                 }
                 if (!briefingFound)
@@ -177,9 +177,9 @@ namespace Orts.Formats.OR
                         briefingFound = true;
 
                         // Newlines "\n" cannot be emdedded in CSV files, so HTML breaks "<br>" are used instead.
-                        Briefing = String.Copy(Parts[1].Replace("<br>", "\n"));
+                        Briefing = Parts[1].Replace("<br>", "\n");
                         foreach (TrainInformation train in Trains)
-                            train.Briefing = String.Copy(Parts[train.Column]).Replace("<br>", "\n");
+                            train.Briefing = Parts[train.Column].Replace("<br>", "\n");
                     }
                 }
 
@@ -192,8 +192,8 @@ namespace Orts.Formats.OR
         {
             bool isReverse = false;
 
-            string reqString = String.Copy(consistDef);
-            string consistProc = String.Copy(consistDef).Trim();
+            string reqString = consistDef;
+            string consistProc = consistDef.Trim();
 
             if (consistProc.Substring(0, 1).Equals("<"))
             {
@@ -228,7 +228,7 @@ namespace Orts.Formats.OR
                 }
                 else
                 {
-                    reqString = String.Copy(consistDef);
+                    reqString = consistDef;
 
                     int sepIndex = consistDef.IndexOf('$');
                     if (sepIndex > 0)
@@ -272,7 +272,7 @@ namespace Orts.Formats.OR
             public TrainInformation(int column, string train)
             {
                 Column = column;
-                Train = string.Copy(train);
+                Train = train;
                 Consist = string.Empty;
                 LeadingConsist = string.Empty;
                 Path = string.Empty;

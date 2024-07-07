@@ -160,7 +160,7 @@ namespace Orts.Simulation.AIs
             {
                 RandomizeEfficiency(ref Efficiency);
             }
-            Name = String.Copy(name);
+            Name = name;
             TrafficService = trafficService;
             MaxVelocityA = maxVelocityA;
             // <CSComment> TODO: as Cars.Count is always = 0 at this point, activityClearingDistanceM is set to the short distance also for long trains
@@ -6165,15 +6165,15 @@ namespace Orts.Simulation.AIs
                         break;
                 }
 
-                retString[7] = String.Copy(actString);
+                retString[7] = actString;
                 retString[8] = FormatStrings.FormatDistance(
                         nextActionInfo.ActivateDistanceM - PresentPosition[0].DistanceTravelledM, metric);
 
             }
 
-            retString[4] = String.Copy(movString);
-            retString[5] = String.Copy(abString);
-            retString[11] = String.Copy(nameString);
+            retString[4] = movString;
+            retString[5] = abString;
+            retString[11] = nameString;
 
             return retString;
         }

@@ -53,9 +53,9 @@ namespace Orts.Formats.Msts
 
         public scrReadInfo(string thisString, int thisInt, string thisScript)
         {
-            Readline = String.Copy(thisString);
+            Readline = thisString;
             Linenumber = thisInt;
-            Scriptname = String.Copy(thisScript);
+            Scriptname = thisScript;
         }
     }// class scrReadInfo
 
@@ -390,7 +390,7 @@ namespace Orts.Formats.Msts
 
                     else
                     {
-                        readInfo.Scriptname = String.Copy(scriptname);
+                        readInfo.Scriptname = scriptname;
                         ScriptLines.Add(readInfo);
 
                         if (readInfo.Linenumber % 1000 == 1)
@@ -716,7 +716,7 @@ namespace Orts.Formats.Msts
             }
             else
             {
-                readLine = String.Copy(keepLine);
+                readLine = keepLine;
                 keepLine = String.Empty;
 #if DEBUG_PRINT_IN
                 File.AppendAllText(din_fileLoc + @"sigfile.txt", "From store : " + readLine + "\n");
@@ -1506,7 +1506,7 @@ namespace Orts.Formats.Msts
                     Trace.TraceWarning("sigscr-file line {1} : Missing ) in IF statement ; starting with {0}",
                     presentstring, thisinfo.Linenumber.ToString());
 
-                    string reportString = String.Copy(presentstring);
+                    string reportString = presentstring;
                     if (possibleEnd > 0)
                     {
                         reportString = presentstring.Substring(0, possibleEnd);
@@ -2175,7 +2175,7 @@ namespace Orts.Formats.Msts
                             IDictionary<string, uint> LocalFloats, IDictionary<string, SignalFunction> signalFunctions, IList<string> ORNormalSubtypes, int linenumber)
                 {
 
-                    string keepString = String.Copy(TermLinePart);
+                    string keepString = TermLinePart;
                     string procString;
                     string operString;
                     bool syntaxerror = false;
@@ -2288,7 +2288,7 @@ namespace Orts.Formats.Msts
                             }
                             else
                             {
-                                procString = String.Copy(keepString);
+                                procString = keepString;
                                 keepString = String.Empty;
                             }
 

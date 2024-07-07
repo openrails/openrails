@@ -4223,7 +4223,7 @@ namespace Orts.Simulation.Signalling
 
                 if (refIndex == 0)
                 {
-                    thisDetails.Name = string.Copy(thisPlatform.Station);
+                    thisDetails.Name = thisPlatform.Station;
                     thisDetails.MinWaitingTime = thisPlatform.PlatformMinWaitingTime;
                     thisDetails.NumPassengersWaiting = (int)thisPlatform.PlatformNumPassengersWaiting;
                 }
