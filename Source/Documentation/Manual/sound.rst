@@ -147,6 +147,10 @@ trigger the above triggers.
 =========     ==============================================================================================================================================================
 Trigger       Function
 =========     ==============================================================================================================================================================
+ 90           WaterPump1ON - triggered whenever motion pump 1 turns on
+ 91           WaterPump1OFF - triggered whenever motion pump 1 turns off
+ 92           WaterPump2ON - triggered whenever motion pump 2 turns on
+ 93           WaterPump2OFF - triggered whenever motion pump 2 turns off
 101           GearUp : for gear-based engines, triggered by the ``<E>`` key, propagated to all gear-based diesel engines of a train and run also for AI trains
 102           GearDown : for gear-based engines, triggered by the ``<Shift+E>`` key, propagated to all gear-based diesel engines of a train and run also for AI trains
 103           ReverserToForwardBackward : reverser moved towards the forward or backward position
