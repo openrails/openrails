@@ -1205,7 +1205,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsauxtenderwatermass": AuxTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "wagon(ortstenderwagonwoodmass":
                 case "wagon(ortstenderwagoncoalmass": TenderWagonMaxFuelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
-                case "wagon(ortstenderfueloilvolume": TenderWagonMaxOilVolumeL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                case "wagon(ortstenderwagonfueloilvolume": TenderWagonMaxOilVolumeL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
                 case "wagon(ortstenderwagonwatermass": TenderWagonMaxWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "wagon(ortsheatingwindowderatingfactor": WindowDeratingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(ortsheatingcompartmenttemperatureset": DesiredCompartmentTempSetpointC = stf.ReadFloatBlock(STFReader.UNITS.Temperature, null); break; 
