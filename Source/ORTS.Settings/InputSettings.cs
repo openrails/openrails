@@ -147,7 +147,7 @@ namespace ORTS.Settings
         static extern int MapVirtualKey(int code, MapVirtualKeyType type);
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        static extern int GetKeyNameText(int scanCode, [Out] string name, int nameLength);
+        static extern int GetKeyNameText(int scanCode, [Out] char[] name, int nameLength);
         #endregion
 
         // Keyboard scancodes are basically constant; some keyboards have extra buttons (e.g. UK ones tend to have an
@@ -654,9 +654,9 @@ namespace ORTS.Settings
         public static string GetScanCodeKeyName(int scanCode)
         {
             var xnaName = Enum.GetName(typeof(Keys), GetScanCodeKeys(scanCode));
-            var keyName = new String('\0', 32);
-            var keyNameLength = GetKeyNameText(scanCode << 16, keyName, keyName.Length);
-            keyName = keyName.Substring(0, keyNameLength);
+            var keyNameBuffer = new char[32];
+            var keyNameLength = GetKeyNameText(scanCode << 16, keyNameBuffer, keyNameBuffer.Length);
+            var keyName = new string(keyNameBuffer, 0, keyNameLength);
 
             if (keyName.Length > 0)
             {
