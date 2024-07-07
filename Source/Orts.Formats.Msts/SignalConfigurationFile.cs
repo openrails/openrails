@@ -750,7 +750,7 @@ namespace Orts.Formats.Msts
                         SignalDrawState drawState = new SignalDrawState(stf);
                         if (drawStates.ContainsKey(drawState.Name))
                         {
-                            string TempNew = String.Copy("DST");
+                            string TempNew = "DST";
                             TempNew = String.Concat(TempNew,drawStates.Count.ToString());
                             drawStates.Add(TempNew, drawState);
                             STFException.TraceInformation(stf, "Duplicate SignalDrawState name \'"+drawState.Name+"\', using name \'"+TempNew+"\' instead");
@@ -956,7 +956,7 @@ namespace Orts.Formats.Msts
         public SignalDrawState(string reqName, int reqIndex)
         {
             Index = reqIndex;
-            Name = String.Copy(reqName);
+            Name = reqName;
             DrawLights = null;
         }
 
@@ -1065,7 +1065,7 @@ namespace Orts.Formats.Msts
         public SignalAspect(MstsSignalAspect reqAspect, string reqName)
         {
             Aspect = reqAspect;
-            DrawStateName = String.Copy(reqName);
+            DrawStateName = reqName;
             SpeedMpS = -1;
             Asap = false;
             NoSpeedReduction = false;

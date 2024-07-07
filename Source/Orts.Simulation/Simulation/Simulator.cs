@@ -493,7 +493,7 @@ namespace Orts.Simulation
             ContainerManager = new ContainerManager(this);
             Trains = new TrainList(this);
             PoolHolder = new Poolholder(this, arguments, cancellation);
-            PathName = String.Copy(arguments[1]);
+            PathName = arguments[1];
 
             TimetableInfo TTinfo = new TimetableInfo(this);
 
@@ -509,7 +509,7 @@ namespace Orts.Simulation
             // check for user defined weather file
             if (arguments.Length == 6)
             {
-                UserWeatherFile = String.Copy(arguments[5]);
+                UserWeatherFile = arguments[5];
             }
 
             if (playerTTTrain != null)
@@ -2137,12 +2137,12 @@ namespace Orts.Simulation
 
             if (!String.IsNullOrEmpty(ActivityFileName))
             {
-                logfilebase = String.Copy(UserSettings.UserDataFolder);
+                logfilebase = UserSettings.UserDataFolder;
                 logfilebase = String.Concat(logfilebase, "_", ActivityFileName);
             }
             else
             {
-                logfilebase = String.Copy(UserSettings.UserDataFolder);
+                logfilebase = UserSettings.UserDataFolder;
                 logfilebase = String.Concat(logfilebase, "_explorer");
             }
 
