@@ -278,9 +278,7 @@ namespace Orts.Viewer3D
 
 			Debug.Assert(Viewer.PlayerTrain.LeadLocomotive == Viewer.PlayerLocomotive ||Viewer.PlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING ||
                 Viewer.PlayerTrain.TrainType == Train.TRAINTYPE.REMOTE || Viewer.PlayerTrain.TrainType == Train.TRAINTYPE.STATIC, "PlayerTrain.LeadLocomotive must be PlayerLocomotive.");
-			var leadLocomotiveCar = Car.Train?.LeadLocomotive;
-            if (leadLocomotiveCar == null && Car.Train?.Cars[0] is MSTSLocomotive) // AI trains have no lead locomotive
-                leadLocomotiveCar = Car.Train.Cars[0];
+			var leadLocomotiveCar = Car.Train?.LeadLocomotive; // Note: Will return null for AI trains, this is intended behavior
 			var leadLocomotive = leadLocomotiveCar as MSTSLocomotive;
 
             // There are a lot of conditions now! IgnoredConditions[] stores which conditions are ignored, allowing shortcutting of many of these calculations
