@@ -16,7 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
-using ORTS.Updater;
+
 
 namespace ORTS
 {
@@ -37,10 +37,7 @@ namespace ORTS
         public string Date { get; set; }
         public string Title { get; set; }
         public string UpdateMode { get; set; }
-        public List<Item> PrefixItemList { get; set; }
-        public Met Met { get; set; }
-        public List<Item> SuffixItemList { get; set; }
-        public bool ToDelete { get; set; } = false; // So we can mark items for deletion and then delete in single statement.
+        public List<Item> ItemList { get; set; }
     }
     class Record : Item
     {
@@ -51,12 +48,15 @@ namespace ORTS
     }
     class Heading : Item
     {
-        new public string Color { get; set; } = "blue";
+        public new string Color { get; set; } = "blue";
     }
     class Link : Item
     {
         public string Value { get; set; }
         public string Url { get; set; }
+        public string StableUrl { get; set; }
+        public string TestingUrl { get; set; }
+        public string UnstableUrl { get; set; }
     }
     class Update : Item
     {
@@ -65,39 +65,45 @@ namespace ORTS
     }
     public class Item
     {
+        public List<string> IncludeIf { get; set; }
+        public List<string> IncludeIfNot { get; set; }
         public string Label { get; set; }
         public string Color { get; set; } = "black";
         public int Indent { get; set; } = 140;
     }
-    public class Met
-    {
-        public List<Item> ItemList { get; set; }
-        public List<CheckId> CheckIdList { get; set; }
-    }
-    public class CheckId
-    {
-        public string Id { get; set; }
-    }
+    //public class Met
+    //{
+    //    public List<Item> ItemList { get; set; }
+    //    public List<CheckId> CheckIdList { get; set; }
+    //}
+    //public class CheckId
+    //{
+    //    public string Id { get; set; }
+    //}
 
     public class Check
     {
         public string Id { get; set; }
-        public List<CheckAllOf> AnyOfList { get; set; }
-        public List<Item> UnmetItemList { get; set; }
+        public List<AnyOf> AnyOfList { get; set; }
+        //public List<Item> UnmetItemList { get; set; }
     }
 
-    public class CheckAllOf
+    //public class CheckAllOf
+    //{
+    //    public List<Criteria> AllOfList { get; set; }
+    //}
+    public class AnyOf
     {
         public List<Criteria> AllOfList { get; set; }
     }
 
-    public class Excludes : CheckAllOf
-    {
-    }
+    //public class Excludes : CheckAllOf
+    //{
+    //}
 
-    public class Includes : CheckAllOf
-    {
-    }
+    //public class Includes : CheckAllOf
+    //{
+    //}
 
     class Contains : Criteria { }
     class NotContains : Criteria { }

@@ -20,14 +20,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Policy;
 using System.Text;
 using Newtonsoft.Json;
 using ORTS.Common;
 using ORTS.Settings;
 using ORTS.Updater;
 using SharpDX;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static ORTS.Common.SystemInfo;
 using static ORTS.NotificationPage;
+
+//TODO Add caching of criteria
+//TODO Add "includeIf" for individual notifications
 
 namespace ORTS
 {
@@ -46,9 +51,9 @@ namespace ORTS
         private Exception Error;
         private Dictionary<string, string> ParameterDictionary;
 
-        private MainForm MainForm; // Needed so we can add controls to the NotificationPage
-        private UpdateManager UpdateManager;
-        private UserSettings Settings;
+        private readonly MainForm MainForm; // Needed so we can add controls to the NotificationPage
+        private readonly UpdateManager UpdateManager;
+        private readonly UserSettings Settings;
 
         public NotificationManager(MainForm mainForm, UpdateManager updateManager, UserSettings settings) 
         { 
@@ -64,7 +69,6 @@ namespace ORTS
             {
                 Error = null;
                 Notifications = GetNotifications();
-                DropUnusedUpdateNotifications();
                 ParameterDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 
                 // To support testing, add any overriding values to the ValueDictionary
@@ -84,7 +88,7 @@ namespace ORTS
         }
 
         static bool Log = false;
-        static string LogFile = "notifications_trial_log.txt";
+        const string LogFile = "notifications_trial_log.txt";
 
         public Notifications GetNotifications()
         {
@@ -128,7 +132,7 @@ namespace ORTS
             // Helpful to supply server with data for its log file.
             client.Headers[HttpRequestHeader.UserAgent] = $"{System.Windows.Forms.Application.ProductName}/{VersionInfo.VersionOrBuild}";
 
-            return client.DownloadString(new Uri("https://wepp.co.uk/openrails/notifications/menu.json"));
+            return client.DownloadString(new Uri("https://wepp.co.uk/openrails/notifications2/menu.json"));
         }
 
         public void PopulatePageList()
@@ -144,7 +148,7 @@ namespace ORTS
         /// Ultimately there will be a list of notifications downloaded from https://static.openrails.org/api/notifications/menu.json .
         /// Until then, there is a single notification announcing either that a new update is available or the installation is up to date.
         /// </summary>
-        void SetUpdateNotificationPage()
+        private void SetUpdateNotificationPage()
         {
             MainForm.UpdateNotificationPageAlert();
             PageList.Clear();
@@ -181,93 +185,60 @@ namespace ORTS
             var skipPage = false;
             new NTitleControl(page, Index + 1, list.Count, n.Date, n.Title).Add();
 
-            // Check constraints for the MetList.
-            var failingCheck = (n.Met.ItemList?.Count > 0 && n.Met.CheckIdList?.Count > 0) 
-                ? CheckConstraints(n) 
-                : null;
-
-            // If any check fails then its UnmetList is added to the page, otherwise the MetList is added.
-            n.PrefixItemList?.ForEach(item => AddItemToPage(page, item));
-            if (failingCheck == null)
+            // Check constraints for each item
+            foreach(var item in n.ItemList)
             {
-                n.Met.ItemList?.ForEach(item => AddItemToPage(page, item));
+                if (AreChecksMet(item)) AddItemToPage(page, item);
             }
-            else
-            {
-                if (failingCheck.UnmetItemList == null) // Omit this section to skip the notification entirely.
-                {
-                    // Don't skip if there is only one notification.
-                    if (list.Count > 1) skipPage = true;
-                }
-                else
-                {
-                    failingCheck.UnmetItemList?.ForEach(item => AddItemToPage(page, item));
-                }
-            }
-            n.SuffixItemList?.ForEach(item => AddItemToPage(page, item));
             if (skipPage == false) PageList.Add(page);
         }
 
-        /// <summary>
-        /// CheckConstraints() checks the constraints in sequence, but all parts are optional.
-        /// If all the constraints in any Includes are met, then the whole check is met.
-        /// If all the constraints in any Excludes are met, then the whole check is not met.
-        /// Returns null if the whole check is met else returns the check that failed.
-        /// </summary>
-        /// <param name="n"></param>
-        private Check CheckConstraints(Notification n)
+        #region Process Criteria
+        private bool AreChecksMet(Item item)
         {
-            Check failingCheck = null;
-            foreach (var nc in n.Met.CheckIdList) // CheckIdList is optional
+            if (item.IncludeIf != null || item.IncludeIfNot != null)
             {
-                LogChecks(nc);
-
-                // Find the matching check
-                var check = Notifications.CheckList.Where(c => c.Id == nc.Id).FirstOrDefault();
-                if (check != null && check.AnyOfList.Count() > 0)
+                AppendToLog($"Label: {item.Label}");
+            }
+                if (item.IncludeIf != null)
+            {
+                foreach (var checkName in item.IncludeIf)
                 {
-                    foreach(var anyOf in check.AnyOfList)
-                    {
-                        if (anyOf is Excludes)
-                        {
-                            if (CheckAllMatch(anyOf.AllOfList) == true) return check; // immediate fail so quit
-                        }
-                        if (anyOf is Includes)
-                        {
-                            if (CheckAllMatch(anyOf.AllOfList) == false) failingCheck = check; // fail but continue testing other Includes
-                        }
-                    }
+                    // Include if A=true AND B=true AND ...
+                    if (IsCheckMet(checkName) == false) return false;
                 }
             }
-            return failingCheck;
+            if (item.IncludeIfNot != null)
+            {
+                foreach (var checkName in item.IncludeIfNot)
+                {
+                    // Include if C=false AND D=false AND ...
+                    if (IsCheckMet(checkName) == true) return false;
+                }
+            }
+
+            return true;
         }
 
-        private void AddItemToPage(NotificationPage page, Item item)
+        private bool IsCheckMet(string checkname)
         {
-            if (item is Record record)
+            foreach (var check in Notifications.CheckList)
             {
-                new NRecordControl(page, item.Label, item.Indent, record.Value).Add();
+                if (check.Id == checkname)
+                {
+                    if (CheckAnyMatch(check.AnyOfList)) return true;
+                }
             }
-            else if (item is Link link)
+            return false;
+        }
+
+        private bool CheckAnyMatch(List<AnyOf> anyOfList)
+        {
+            foreach (var anyOf in anyOfList)
             {
-                new NLinkControl(page, item.Label, item.Indent, link.Value, MainForm, link.Url).Add();
+                if (CheckAllMatch(anyOf.AllOfList)) return true; 
             }
-            else if (item is Update update)
-            {
-                new NUpdateControl(page, item.Label, item.Indent, update.Value, MainForm).Add();
-            }
-            else if (item is Heading heading)
-            {
-                new NHeadingControl(page, item.Label, heading.Color).Add();
-            }
-            else if (item is Text text)
-            {
-                new NTextControl(page, item.Label, text.Color).Add();
-            }
-            else if (item is Item item2)
-            {
-                new NTextControl(page, item.Label).Add();
-            }
+            return false;
         }
 
         private bool CheckAllMatch(List<Criteria> criteriaList)
@@ -303,29 +274,61 @@ namespace ORTS
             LogCheckContains(criteria.Value, sense, content, result);
             return result;
         }
+        #endregion
 
-        /// <summary>
-        /// Drop any notifications for the channel not selected
-        /// </summary>
-        /// <param name="updateManager"></param>
-        public void DropUnusedUpdateNotifications()
+        private void AddItemToPage(NotificationPage page, Item item)
         {
-            var updateModeSetting = UpdateManager.ChannelName.ToLower();
-            foreach (var n in Notifications.NotificationList)
+            if (item is Record record)
             {
-                if (n.UpdateMode == null)   // Skip notifications which are not updates
-                    continue;
-
-                var lowerUpdateMode = n.UpdateMode.ToLower();
-
-                // If setting == "none", then keep just one update notification, e.g. the stable one
-                if (updateModeSetting == "" && lowerUpdateMode == "stable")
-                    continue;
-
-                // Mark unused updates for deletion outside loop
-                n.ToDelete = lowerUpdateMode != updateModeSetting;
+                new NRecordControl(page, item.Label, item.Indent, record.Value).Add();
             }
-            Notifications.NotificationList.RemoveAll(n => n.ToDelete);
+            else if (item is Link link)
+            {
+                var url = GetUrl(link);
+                if (string.IsNullOrEmpty(url) == false)
+                {
+                    new NLinkControl(page, item.Label, item.Indent, link.Value, MainForm, url).Add();
+                }
+            }
+            else if (item is Update update)
+            {
+                new NUpdateControl(page, item.Label, item.Indent, update.Value, MainForm).Add();
+            }
+            else if (item is Heading heading)
+            {
+                new NHeadingControl(page, item.Label, heading.Color).Add();
+            }
+            else if (item is Text text)
+            {
+                new NTextControl(page, item.Label, text.Color).Add();
+            }
+            else
+            {
+                new NTextControl(page, item.Label).Add();
+            }
+        }
+
+        private string GetUrl(Link link)
+        {
+            var url = link.Url;
+            if (string.IsNullOrEmpty(url))
+            {
+                switch (UpdateManager.ChannelName.ToLower())
+                {
+                    case "stable":
+                    case "": // Channel None
+                        url = link.StableUrl;
+                        break;
+                    case "testing":
+                        url = link.TestingUrl;
+                        break;
+                    case "unstable":
+                        url = link.UnstableUrl;
+                        break;
+                }
+            }
+
+            return url;
         }
 
         public void ReplaceParameters()
@@ -334,9 +337,10 @@ namespace ORTS
             {
                 n.Title = ReplaceParameter(n.Title);
                 n.Date = ReplaceParameter(n.Date);
-                n.PrefixItemList?.ForEach(item => ReplaceItemParameter(item));
-                n.Met.ItemList?.ForEach(item => ReplaceItemParameter(item));
-                n.SuffixItemList?.ForEach(item => ReplaceItemParameter(item));
+                //n.PrefixItemList?.ForEach(item => ReplaceItemParameter(item));
+                //n.Met.ItemList?.ForEach(item => ReplaceItemParameter(item));
+                //n.SuffixItemList?.ForEach(item => ReplaceItemParameter(item));
+                n.ItemList?.ForEach(item => ReplaceItemParameter(item));
             }
             foreach (var list in Notifications.CheckList)
             {
@@ -382,7 +386,7 @@ namespace ORTS
             var parameterArray = field.Split('{', '}'); // 5 elements: prefix, "", target, "", suffix
             var target = parameterArray[2];
             var lowerCaseTarget = parameterArray[2].ToLower();
-            var replacement = parameterArray[2]; // Default is original text
+            string replacement;
 
             // If found in dictionary, then use that else extract it from program
             if (ParameterDictionary.ContainsKey(lowerCaseTarget))
@@ -521,6 +525,7 @@ namespace ORTS
                 return null;
         }
 
+        #region Logging
         public void LogOverrideParameters()
         {
             if (Log == false) return;
@@ -557,14 +562,14 @@ namespace ORTS
         {
             AppendToLog($"Notification: {n.Title}");
         }
-        public void LogChecks(CheckId ci)
+        public void LogChecks(string checkName)
         {
-            AppendToLog($"CheckId: {ci.Id}");
+            AppendToLog($"CheckId: {checkName}");
         }
         public void LogCheckContains(string value, bool sense, string content, bool result)
         {
             var negation = sense ? "" : "NOT ";
-            AppendToLog($"Check: '{value}' {negation}contained in '{content}' = {result}");
+            AppendToLog($"Check: {result} = '{value}' {negation}contained in '{content}'");
         }
 
         public void AppendToLog(string record)
@@ -576,5 +581,6 @@ namespace ORTS
                 sw.WriteLine(record);
             }
         }
+        #endregion
     }
 }
