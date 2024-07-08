@@ -16,7 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
-using ORTS.Updater;
+
 
 namespace ORTS
 {
@@ -38,7 +38,6 @@ namespace ORTS
         public string Title { get; set; }
         public string UpdateMode { get; set; }
         public List<Item> ItemList { get; set; }
-        public List<string> CheckIdList { get; set; }
     }
     class Record : Item
     {
@@ -55,6 +54,9 @@ namespace ORTS
     {
         public string Value { get; set; }
         public string Url { get; set; }
+        public string StableUrl { get; set; }
+        public string TestingUrl { get; set; }
+        public string UnstableUrl { get; set; }
     }
     class Update : Item
     {
@@ -63,6 +65,8 @@ namespace ORTS
     }
     public class Item
     {
+        public List<string> IncludeIf { get; set; }
+        public List<string> IncludeIfNot { get; set; }
         public string Label { get; set; }
         public string Color { get; set; } = "black";
         public int Indent { get; set; } = 140;
@@ -80,7 +84,7 @@ namespace ORTS
     public class Check
     {
         public string Id { get; set; }
-        public List<AllOf> AnyOfList { get; set; }
+        public List<AnyOf> AnyOfList { get; set; }
         //public List<Item> UnmetItemList { get; set; }
     }
 
@@ -88,7 +92,7 @@ namespace ORTS
     //{
     //    public List<Criteria> AllOfList { get; set; }
     //}
-    public class AllOf
+    public class AnyOf
     {
         public List<Criteria> AllOfList { get; set; }
     }
