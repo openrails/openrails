@@ -51,9 +51,9 @@ namespace ORTS
         private Exception Error;
         private Dictionary<string, string> ParameterDictionary;
 
-        private MainForm MainForm; // Needed so we can add controls to the NotificationPage
-        private UpdateManager UpdateManager;
-        private UserSettings Settings;
+        private readonly MainForm MainForm; // Needed so we can add controls to the NotificationPage
+        private readonly UpdateManager UpdateManager;
+        private readonly UserSettings Settings;
 
         public NotificationManager(MainForm mainForm, UpdateManager updateManager, UserSettings settings) 
         { 
@@ -88,7 +88,7 @@ namespace ORTS
         }
 
         static bool Log = false;
-        static string LogFile = "notifications_trial_log.txt";
+        const string LogFile = "notifications_trial_log.txt";
 
         public Notifications GetNotifications()
         {
@@ -302,7 +302,7 @@ namespace ORTS
             {
                 new NTextControl(page, item.Label, text.Color).Add();
             }
-            else if (item is Item item2)
+            else
             {
                 new NTextControl(page, item.Label).Add();
             }
@@ -386,7 +386,7 @@ namespace ORTS
             var parameterArray = field.Split('{', '}'); // 5 elements: prefix, "", target, "", suffix
             var target = parameterArray[2];
             var lowerCaseTarget = parameterArray[2].ToLower();
-            var replacement = parameterArray[2]; // Default is original text
+            string replacement;
 
             // If found in dictionary, then use that else extract it from program
             if (ParameterDictionary.ContainsKey(lowerCaseTarget))

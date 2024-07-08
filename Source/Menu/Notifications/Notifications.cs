@@ -48,7 +48,7 @@ namespace ORTS
     }
     class Heading : Item
     {
-        new public string Color { get; set; } = "blue";
+        public new string Color { get; set; } = "blue";
     }
     class Link : Item
     {
