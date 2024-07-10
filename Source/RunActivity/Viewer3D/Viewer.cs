@@ -192,7 +192,9 @@ namespace Orts.Viewer3D
         public Vector3 NearPoint { get; private set; }
         public Vector3 FarPoint { get; private set; }
 
-        public bool MapViewerEnabled { get; set; }
+        public bool MapViewerEnabled { get; set; } = false;
+        public bool MapViewerEnabledSetToTrue {  get; set; } = false;
+
         public bool SoundDebugFormEnabled { get; set; }
 
         public TRPFile TRP; // Track profile file
@@ -376,6 +378,7 @@ namespace Orts.Viewer3D
             outf.Write(Simulator.Trains.IndexOf(SelectedTrain));
 
             WindowManager.Save(outf);
+            outf.Write(MapViewerEnabled);
 
             outf.Write(WellKnownCameras.IndexOf(Camera));
             foreach (var camera in WellKnownCameras)
@@ -420,6 +423,11 @@ namespace Orts.Viewer3D
             }
 
             WindowManager.Restore(inf);
+            MapViewerEnabled = inf.ReadBoolean();
+            if (MapViewerEnabled)
+            {
+                MapViewerEnabledSetToTrue = true;
+            }
 
             var cameraToRestore = inf.ReadInt32();
             foreach (var camera in WellKnownCameras)
@@ -1172,7 +1180,15 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommand.GameSwitchManualMode)) PlayerTrain.RequestToggleManualMode();
             if (UserInput.IsPressed(UserCommand.GameResetOutOfControlMode)) new ResetOutOfControlModeCommand(Log);
 
-            if (UserInput.IsPressed(UserCommand.GameMultiPlayerDispatcher)) { MapViewerEnabled = !MapViewerEnabled; return; }
+            if (UserInput.IsPressed(UserCommand.GameMultiPlayerDispatcher)) 
+            { 
+                MapViewerEnabled = !MapViewerEnabled; 
+                if (MapViewerEnabled)
+                {
+                    MapViewerEnabledSetToTrue = true;
+                }
+                return; 
+            }
             if (UserInput.IsPressed(UserCommand.DebugSoundForm)) { SoundDebugFormEnabled = !SoundDebugFormEnabled; return; }
 
             if (UserInput.IsPressed(UserCommand.CameraJumpSeeSwitch))
