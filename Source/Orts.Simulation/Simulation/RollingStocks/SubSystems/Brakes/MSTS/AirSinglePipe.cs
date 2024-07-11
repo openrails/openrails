@@ -765,7 +765,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 SupplyBrakeLineVolumeRatio = 3.1f;
                 CylBrakeLineVolumeRatio = 1.24f;
             }
-                     
+
             // If user specified only one two stage speed, set the other to be equal
             if (TwoStageSpeedDownMpS == 0 && TwoStageSpeedUpMpS > 0)
                 TwoStageSpeedDownMpS = TwoStageSpeedUpMpS;
@@ -779,7 +779,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // If relay valve ratio isn't used, assume it doesn't change
             if (TwoStageRelayValveRatio == 0)
                 TwoStageRelayValveRatio = RelayValveRatio;
-            
+
             RelayValveFitted |= (Car is MSTSLocomotive loco && (loco.DynamicBrakeAutoBailOff || loco.DynamicBrakePartialBailOff)) ||
                 (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.DistributingValve || (Car as MSTSWagon).SupplyReservoirPresent ||
                 TwoStageRelayValveRatio != RelayValveRatio || RelayValveInshotPSI != 0 || EngineRelayValveInshotPSI != 0;
@@ -1171,7 +1171,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         if (CylSource == CylinderSource.AuxRes)
                             AutoCylPressurePSI = CalculateBrakeCylinderPressure(ref AutoCylAirPSIM3, -elapsedClockSeconds * MaxReleaseRatePSIpS, 0);
                         else
-                        AutoCylPressurePSI -= elapsedClockSeconds * MaxReleaseRatePSIpS;
+                            AutoCylPressurePSI -= elapsedClockSeconds * MaxReleaseRatePSIpS;
                         if (AutoCylPressurePSI < 0)
                         {
                             AutoCylPressurePSI = 0;
@@ -1206,11 +1206,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 else
                 {
                     // Accelerated application: Air is vented from the brake pipe to speed up service applications
-                        // Amount of air vented is proportional to pressure reduction from external sources
+                    // Amount of air vented is proportional to pressure reduction from external sources
                     if (AcceleratedApplicationFactor > 0)
                         dpPipe = MathHelper.Clamp(-SmoothedBrakePipeChangePSIpS.SmoothedValue * AcceleratedApplicationFactor, 0, AcceleratedApplicationLimitPSIpS) * elapsedClockSeconds;
-                if (BrakeLine1PressurePSI - dpPipe < 0)
-                    dpPipe = BrakeLine1PressurePSI;
+                    if (BrakeLine1PressurePSI - dpPipe < 0)
+                        dpPipe = BrakeLine1PressurePSI;
 
                     if (AutoCylPressurePSI < QuickServiceLimitPSI)
                         dp = elapsedClockSeconds * Math.Max(QuickServiceApplicationRatePSIpS, MaxApplicationRatePSIpS);
@@ -1243,7 +1243,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
                 else
                 {
-                AutoCylPressurePSI += dp;
+                    AutoCylPressurePSI += dp;
                     AuxResPressurePSI -= dp / AuxCylVolumeRatio;
                 }
                 BrakeLine1PressurePSI -= dpPipe;
@@ -1269,7 +1269,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             if (CylSource == CylinderSource.AuxRes)
                                 AutoCylPressurePSI = CalculateBrakeCylinderPressure(ref AutoCylAirPSIM3, -dp, AuxResPressurePSI);
                             else
-                            AutoCylPressurePSI -= dp;
+                                AutoCylPressurePSI -= dp;
                             AuxResPressurePSI += dp / AuxCylVolumeRatio;
 
                             dp = elapsedClockSeconds * MaxAuxilaryChargingRatePSIpS;
@@ -1392,7 +1392,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 if (CylSource == CylinderSource.AuxRes) // Aux res is directly connected to brake cylinder, no relay valve
                     AutoCylPressurePSI = CalculateBrakeCylinderPressure(ref AutoCylAirPSIM3, -dp, threshold);
                 else
-                AutoCylPressurePSI -= dp;
+                    AutoCylPressurePSI -= dp;
             }
             // Special cases for equipment which bypasses triple valve
             else if ((TwoStageLowSpeedActive && AutoCylPressurePSI > TwoStageLowPressurePSI) ||
@@ -1465,7 +1465,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     QuickServiceBulbPressurePSI -= dp * volumeRatio;
                 }
             }
-            
+
             // Manage emergency res charging
             if ((Car as MSTSWagon).EmergencyReservoirPresent)
             {
@@ -1744,7 +1744,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         dp = demandedPressurePSI - CylPressurePSI;
                     if (MaxCylPressurePSI < CylPressurePSI + dp)
                         dp = MaxCylPressurePSI - CylPressurePSI;
-                    
+
                     float volumeRatio;
                     switch (CylSource)
                     {
@@ -1755,13 +1755,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             SupplyResPressurePSI -= dp * volumeRatio;
                             break;
                         case CylinderSource.MainRes:
-                    if (loco != null)
-                    {
+                            if (loco != null)
+                            {
                                 volumeRatio = TotalCylVolumeM3 / loco.MainResVolumeM3;
                                 if (loco.MainResPressurePSI - (dp * volumeRatio) < CylPressurePSI + dp)
-                            dp = (loco.MainResPressurePSI - CylPressurePSI) / (1 + volumeRatio);
-                        loco.MainResPressurePSI -= dp * volumeRatio;
-                    }
+                                    dp = (loco.MainResPressurePSI - CylPressurePSI) / (1 + volumeRatio);
+                                loco.MainResPressurePSI -= dp * volumeRatio;
+                            }
                             break;
                         case CylinderSource.MainResPipe:
                             volumeRatio = TotalCylVolumeM3 / BrakePipeVolumeM3;
@@ -2081,7 +2081,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                     else
                                         loco.MainResPressurePSI -= PressureDiffEqualToPipePSI * locoAirSystem.BrakePipeVolumeM3 / loco.MainResVolumeM3;
 
-                                        // Instantaneous flow rate from MR to BP
+                                    // Instantaneous flow rate from MR to BP
                                     tempBrakePipeFlow = (PressureDiffEqualToPipePSI * locoAirSystem.BrakePipeVolumeM3) / (OneAtmospherePSI * trainPipeTimeVariationS);
                                 }
                                 // reduce pressure in loco brake line if brake pipe pressure is above equalising pressure - apply brakes
