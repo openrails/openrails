@@ -678,8 +678,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         if (functionHead.signalType.DrawStates[key].Index == functionHead.draw_state)
                         {
                             drawStateName = functionHead.signalType.DrawStates[key].Name;
-                        break;
-                    }
+                            break;
+                        }
                     }
                     textAspect = functionHead?.TextSignalAspect ?? "";
                     break;
