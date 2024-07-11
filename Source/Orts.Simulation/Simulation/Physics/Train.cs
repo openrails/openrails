@@ -4117,7 +4117,7 @@ namespace Orts.Simulation.Physics
                     if (MUDynamicBrakePercent == 0)
                         MUDynamicBrakePercent = -1;
                 }
-                BrakeLine2PressurePSI = lead.MaximumMainReservoirPipePressurePSI;
+                BrakeLine2PressurePSI = lead.MainResPressurePSI;
                 ConnectBrakeHoses();
             }
             else

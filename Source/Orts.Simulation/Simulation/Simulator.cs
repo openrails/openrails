@@ -1809,9 +1809,13 @@ namespace Orts.Simulation
                 train2.InitializeBrakes();
             else
             {
-                train2.Cars[0].BrakeSystem.PropagateBrakePressure(5);
+                train2.Cars[0].BrakeSystem.PropagateBrakePressure(30);
                 foreach (MSTSWagon wagon in train2.Cars)
-                    wagon.MSTSBrakeSystem.Update(5);
+                {
+                    // Update twice to ensure steady state conditions
+                    wagon.MSTSBrakeSystem.Update(30);
+                    wagon.MSTSBrakeSystem.Update(30);
+                }
             }
             bool inPath;
 
@@ -1967,9 +1971,13 @@ namespace Orts.Simulation
                     selectedAsPlayer.MUDirection = Direction.Forward;
 
                     selectedAsPlayer.LeadLocomotive = null;
-                    selectedAsPlayer.Cars[0].BrakeSystem.PropagateBrakePressure(5);
+                    selectedAsPlayer.Cars[0].BrakeSystem.PropagateBrakePressure(30);
                     foreach (MSTSWagon wagon in selectedAsPlayer.Cars)
-                        wagon.MSTSBrakeSystem.Update(5);
+                    {
+                        // Update twice to ensure steady state conditions
+                        wagon.MSTSBrakeSystem.Update(30);
+                        wagon.MSTSBrakeSystem.Update(30);
+                    }
 
                     // and now let the former static train die
 
