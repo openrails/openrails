@@ -52,7 +52,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using static Orts.Simulation.RollingStocks.MSTSLocomotive;
 using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks
@@ -148,7 +147,7 @@ namespace Orts.Simulation.RollingStocks
         public float WagonFrontalAreaM2; // Frontal area of wagon
         public float TrailLocoResistanceFactor; // Factor to reduce base and wind resistance if locomotive is not leading - based upon original Davis drag coefficients
 
-        bool TenderWeightInitialize = true;
+        bool TenderWeightInitialized = false;
         float TenderWagonMaxFuelMassKG;
         float TenderWagonMaxOilMassL;
         float TenderWagonMaxWaterMassKG;
@@ -2051,7 +2050,7 @@ namespace Orts.Simulation.RollingStocks
             ConfirmSteamLocomotiveTender(); // Confirms that a tender is connected to the steam locomotive
 
             // Adjusts water and coal mass based upon values assigned to the tender found in the WAG file rather then those defined in ENG file.
-            if (WagonType == WagonTypes.Tender && TenderWeightInitialize && (TenderWagonMaxFuelMassKG != 0 || TenderWagonMaxOilMassL != 0) && TenderWagonMaxWaterMassKG != 0)
+            if (WagonType == WagonTypes.Tender && !TenderWeightInitialized && (TenderWagonMaxFuelMassKG != 0 || TenderWagonMaxOilMassL != 0) && TenderWagonMaxWaterMassKG != 0)
             {
 
                 // Find the associated steam locomotive for this tender
@@ -2075,7 +2074,7 @@ namespace Orts.Simulation.RollingStocks
 
                         TendersSteamLocomotive.MaxLocoTenderWaterMassKG = TenderWagonMaxWaterMassKG;
 
-                        if (TendersSteamLocomotive.SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+                        if (TendersSteamLocomotive.SteamLocomotiveFuelType == MSTSSteamLocomotive.SteamLocomotiveFuelTypes.Oil)
                         {
                             TendersSteamLocomotive.MaxTenderFuelMassKG = TendersSteamLocomotive.MaxTenderOilMassL * TendersSteamLocomotive.OilSpecificGravity;
                         }
@@ -2092,7 +2091,7 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 // Rest flag so that this loop is not executed again
-                TenderWeightInitialize = false;
+                TenderWeightInitialized = true;
             }
 
             UpdateTenderLoad(); // Updates the load physics characteristics of tender and aux tender

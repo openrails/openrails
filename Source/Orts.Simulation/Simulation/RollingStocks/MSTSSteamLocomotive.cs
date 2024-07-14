@@ -84,6 +84,8 @@ using Orts.Simulation;
 using Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using SharpDX.Direct3D9;
+using Orts.Simulation.RollingStocks;
+using static Orts.Simulation.RollingStocks.MSTSSteamLocomotive;
 
 namespace Orts.Simulation.RollingStocks
 {
@@ -684,11 +686,30 @@ namespace Orts.Simulation.RollingStocks
         float ConnectRodLengthFt = 10.8f;
         float RodCoGFt = 4.32f;  // 0.4 from crank end of rod
 
-        #endregion
+        public enum SteamLocomotiveFuelTypes
+        {
+            Unknown,
+            Oil,
+            Wood,
+            Coal, // defaults to coal
+        }
 
-        #region Variables for visual effects (steam, smoke)
+        public SteamLocomotiveFuelTypes SteamLocomotiveFuelType;
 
-        public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
+        public enum SteamLocomotiveFeedWaterSystemTypes
+        {
+            Unknown,
+            MotionPump,
+            SteamInjector, // not used at the moment
+        }
+
+        public SteamLocomotiveFeedWaterSystemTypes SteamLocomotiveFeedWaterType;
+
+#endregion
+
+#region Variables for visual effects (steam, smoke)
+
+public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         public float StackSteamVolumeM3pS;
         public float StackParticleDurationS;
         public float StackCount;
