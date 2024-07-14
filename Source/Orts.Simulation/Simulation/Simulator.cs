@@ -1317,11 +1317,11 @@ namespace Orts.Simulation
                         mstsSteamLocomotive.CombinedTenderWaterVolumeUKG = (Kg.ToLb(mstsSteamLocomotive.MaxLocoTenderWaterMassKG) / 10.0f) * Activity.Tr_Activity.Tr_Activity_Header.FuelWater / 100.0f;
 
                         // Adjust fuel stocks depending upon fuel used - in Explore mode
-                        if (mstsSteamLocomotive.SteamLocomotiveFuelType == MSTSLocomotive.SteamLocomotiveFuelTypes.Wood)
+                        if (mstsSteamLocomotive.SteamLocomotiveFuelType == MSTSSteamLocomotive.SteamLocomotiveFuelTypes.Wood)
                         {
                             mstsSteamLocomotive.TenderFuelMassKG = mstsSteamLocomotive.MaxTenderFuelMassKG * Activity.Tr_Activity.Tr_Activity_Header.FuelWood / 100.0f;
                         }
-                        else if (mstsSteamLocomotive.SteamLocomotiveFuelType == MSTSLocomotive.SteamLocomotiveFuelTypes.Oil)
+                        else if (mstsSteamLocomotive.SteamLocomotiveFuelType == MSTSSteamLocomotive.SteamLocomotiveFuelTypes.Oil)
                         {
                             mstsSteamLocomotive.TenderFuelMassKG = mstsSteamLocomotive.MaxTenderFuelMassKG * Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100.0f;
                         }
