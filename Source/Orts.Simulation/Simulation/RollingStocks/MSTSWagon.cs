@@ -147,8 +147,9 @@ namespace Orts.Simulation.RollingStocks
         public float WagonFrontalAreaM2; // Frontal area of wagon
         public float TrailLocoResistanceFactor; // Factor to reduce base and wind resistance if locomotive is not leading - based upon original Davis drag coefficients
 
-        bool TenderWeightInitialize = true;
-        float TenderWagonMaxCoalMassKG;
+        bool TenderWeightInitialized = false;
+        float TenderWagonMaxFuelMassKG;
+        float TenderWagonMaxOilMassL;
         float TenderWagonMaxWaterMassKG;
 
         // Wind Impacts
@@ -1278,7 +1279,9 @@ namespace Orts.Simulation.RollingStocks
                     }
                     break;
                 case "wagon(ortsauxtenderwatermass": AuxTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
-                case "wagon(ortstenderwagoncoalmass": TenderWagonMaxCoalMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "wagon(ortstenderwagonwoodmass":
+                case "wagon(ortstenderwagoncoalmass": TenderWagonMaxFuelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "wagon(ortstenderwagonfueloilvolume": TenderWagonMaxOilVolumeL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
                 case "wagon(ortstenderwagonwatermass": TenderWagonMaxWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "wagon(ortsheatingwindowderatingfactor": WindowDeratingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(ortsheatingcompartmenttemperatureset": DesiredCompartmentTempSetpointC = stf.ReadFloatBlock(STFReader.UNITS.Temperature, null); break; 
@@ -1678,7 +1681,8 @@ namespace Orts.Simulation.RollingStocks
             MaximumWheelFlangeAngleRad = copy.MaximumWheelFlangeAngleRad;
             WheelFlangeLengthM = copy.WheelFlangeLengthM;
             AuxTenderWaterMassKG = copy.AuxTenderWaterMassKG;
-            TenderWagonMaxCoalMassKG = copy.TenderWagonMaxCoalMassKG;
+            TenderWagonMaxFuelMassKG = copy.TenderWagonMaxFuelMassKG;
+            TenderWagonMaxOilVolumeL = copy.TenderWagonMaxOilMassL;
             TenderWagonMaxWaterMassKG = copy.TenderWagonMaxWaterMassKG;
             InitWagonNumAxles = copy.InitWagonNumAxles;
             WagonNumAxles = copy.WagonNumAxles;
@@ -2050,7 +2054,7 @@ namespace Orts.Simulation.RollingStocks
             ConfirmSteamLocomotiveTender(); // Confirms that a tender is connected to the steam locomotive
 
             // Adjusts water and coal mass based upon values assigned to the tender found in the WAG file rather then those defined in ENG file.
-            if (WagonType == WagonTypes.Tender && TenderWeightInitialize && TenderWagonMaxCoalMassKG != 0 && TenderWagonMaxWaterMassKG != 0)
+            if (WagonType == WagonTypes.Tender && !TenderWeightInitialized && (TenderWagonMaxFuelMassKG != 0 || TenderWagonMaxOilMassL != 0) && TenderWagonMaxWaterMassKG != 0)
             {
 
                 // Find the associated steam locomotive for this tender
@@ -2071,19 +2075,27 @@ namespace Orts.Simulation.RollingStocks
                         // amount of water defined in the ENG file, and adding the water defined in the WAG file.
                         float TempMaxCombinedWater = TendersSteamLocomotive.MaxTotalCombinedWaterVolumeUKG;
                         TendersSteamLocomotive.MaxTotalCombinedWaterVolumeUKG = (TempMaxCombinedWater - (Kg.ToLb(TendersSteamLocomotive.MaxLocoTenderWaterMassKG) / WaterLBpUKG)) + (Kg.ToLb(TenderWagonMaxWaterMassKG) / WaterLBpUKG);
-
-                        TendersSteamLocomotive.MaxTenderCoalMassKG = TenderWagonMaxCoalMassKG;
+                                                
                         TendersSteamLocomotive.MaxLocoTenderWaterMassKG = TenderWagonMaxWaterMassKG;
+
+                        if (TendersSteamLocomotive.SteamLocomotiveFuelType == MSTSSteamLocomotive.SteamLocomotiveFuelTypes.Oil)
+                        {
+                            TendersSteamLocomotive.MaxTenderFuelMassKG = TendersSteamLocomotive.MaxTenderOilMassL * TendersSteamLocomotive.OilSpecificGravity;
+                        }
+                        else
+                        {
+                            TendersSteamLocomotive.MaxTenderFuelMassKG = TenderWagonMaxFuelMassKG;
+                        }
 
                         if (Simulator.Settings.VerboseConfigurationMessages)
                         {
-                            Trace.TraceInformation("Fuel and Water Masses adjusted to Tender Values Specified in WAG File - Coal mass {0} kg, Water Mass {1}", FormatStrings.FormatMass(TendersSteamLocomotive.MaxTenderCoalMassKG, IsMetric), FormatStrings.FormatFuelVolume(L.FromGUK(TendersSteamLocomotive.MaxTotalCombinedWaterVolumeUKG), IsMetric, IsUK));
+                            Trace.TraceInformation("Fuel and Water Masses adjusted to Tender Values Specified in WAG File - Coal mass {0} kg, Water Mass {1}", FormatStrings.FormatMass(TendersSteamLocomotive.MaxTenderFuelMassKG, IsMetric), FormatStrings.FormatFuelVolume(L.FromGUK(TendersSteamLocomotive.MaxTotalCombinedWaterVolumeUKG), IsMetric, IsUK));
                         }
                     }
                 }
 
                 // Rest flag so that this loop is not executed again
-                TenderWeightInitialize = false;
+                TenderWeightInitialized = true;
             }
 
             UpdateTenderLoad(); // Updates the load physics characteristics of tender and aux tender
@@ -2274,7 +2286,7 @@ namespace Orts.Simulation.RollingStocks
                         // If = 0, then locomotive must be a tank type locomotive. A tank locomotive has the fuel (coal and water) onboard.
                         // Thus the loco weight changes as boiler level goes up and down, and coal mass varies with the fire mass. Also onboard fuel (coal and water ) will vary as used.
                         {
-                            MassKG = LoadEmptyMassKg + Kg.FromLb(SteamLocomotiveIdentification.BoilerMassLB) + SteamLocomotiveIdentification.FireMassKG + SteamLocomotiveIdentification.TenderCoalMassKG + Kg.FromLb(SteamLocomotiveIdentification.CombinedTenderWaterVolumeUKG * WaterLBpUKG);
+                            MassKG = LoadEmptyMassKg + Kg.FromLb(SteamLocomotiveIdentification.BoilerMassLB) + SteamLocomotiveIdentification.FireMassKG + SteamLocomotiveIdentification.TenderFuelMassKG + Kg.FromLb(SteamLocomotiveIdentification.CombinedTenderWaterVolumeUKG * WaterLBpUKG);
                             MassKG = MathHelper.Clamp(MassKG, LoadEmptyMassKg, LoadFullMassKg); // Clamp Mass to between the empty and full wagon values   
                             // Adjust drive wheel weight
                             SteamLocomotiveIdentification.DrvWheelWeightKg = (MassKG / InitialMassKG) * SteamLocomotiveIdentification.InitialDrvWheelWeightKg;
@@ -3295,7 +3307,7 @@ namespace Orts.Simulation.RollingStocks
                         Trace.TraceInformation("Tender @ position {0} does not have a locomotive associated with. Check that it is preceeded by a steam locomotive.", CarID);
                     }
 
-                    MassKG = FreightAnimations.WagonEmptyWeight + TendersSteamLocomotive.TenderCoalMassKG + Kg.FromLb( (TendersSteamLocomotive.CurrentLocoTenderWaterVolumeUKG * WaterLBpUKG));
+                    MassKG = FreightAnimations.WagonEmptyWeight + TendersSteamLocomotive.TenderFuelMassKG + Kg.FromLb( (TendersSteamLocomotive.CurrentLocoTenderWaterVolumeUKG * WaterLBpUKG));
                     MassKG = MathHelper.Clamp(MassKG, LoadEmptyMassKg, LoadFullMassKg); // Clamp Mass to between the empty and full wagon values   
 
                     // Update wagon parameters sensitive to wagon mass change
@@ -3899,6 +3911,9 @@ namespace Orts.Simulation.RollingStocks
                 return Couplers[0]; // defaults to the rear coupler (typically the first read)
             }
         }
+
+        public float TenderWagonMaxOilVolumeL { get; private set; }
+
         public override float GetCouplerZeroLengthM()
         {
             if (IsPlayerTrain && Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsAdvancedCoupler)

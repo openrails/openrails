@@ -922,8 +922,22 @@ namespace Orts.Simulation.AIs
 
                         if (Simulator.Activity != null && car is MSTSSteamLocomotive mstsSteamLocomotive)
                         {
+                            
                             mstsSteamLocomotive.CombinedTenderWaterVolumeUKG = ORTS.Common.Kg.ToLb(mstsSteamLocomotive.MaxLocoTenderWaterMassKG) / 10.0f * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelWater / 100.0f;
-                            mstsSteamLocomotive.TenderCoalMassKG = mstsSteamLocomotive.MaxTenderCoalMassKG * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelCoal / 100.0f;
+
+                            // Adjust fuel stocks depending upon fuel used - in Activity mode
+                            if (mstsSteamLocomotive.SteamLocomotiveFuelType == MSTSSteamLocomotive.SteamLocomotiveFuelTypes.Wood)
+                            {
+                                mstsSteamLocomotive.TenderFuelMassKG = mstsSteamLocomotive.MaxTenderFuelMassKG * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelWood / 100.0f;
+                            }
+                            else if (mstsSteamLocomotive.SteamLocomotiveFuelType == MSTSSteamLocomotive.SteamLocomotiveFuelTypes.Oil)
+                            {
+                                mstsSteamLocomotive.TenderFuelMassKG = mstsSteamLocomotive.MaxTenderFuelMassKG * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100.0f;
+                            }
+                            else // defaults to coal fired
+                            {
+                                mstsSteamLocomotive.TenderFuelMassKG = mstsSteamLocomotive.MaxTenderFuelMassKG * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelCoal / 100.0f;
+                            }
                         }
 
                         if (train.InitialSpeed != 0 && car is MSTSLocomotive loco)

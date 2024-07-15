@@ -84,6 +84,8 @@ using Orts.Simulation;
 using Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using SharpDX.Direct3D9;
+using Orts.Simulation.RollingStocks;
+using static Orts.Simulation.RollingStocks.MSTSSteamLocomotive;
 
 namespace Orts.Simulation.RollingStocks
 {
@@ -115,6 +117,17 @@ namespace Orts.Simulation.RollingStocks
         bool Injector1SoundIsOn = false;
         public bool Injector2IsOn;
         bool Injector2SoundIsOn = false;
+        float WaterMotionPump1FlowRateLBpS;
+        float WaterMotionPump2FlowRateLBpS;
+        float MaximumWaterMotionPumpFlowRateLBpS;
+        bool WaterMotionPump1IsOn = false;
+        bool WaterMotionPump2IsOn = false;
+        bool WaterMotionPumpSound1IsOn = false;
+        bool WaterMotionPumpSound2IsOn = false;
+        float WaterMotionPumpHeatLossBTU;
+        bool WaterMotionPumpLockedOut = false;
+        float WaterMotionPumpLockOutResetTimeS = 15.0f; // Time to reset the pump lock out time - time to prevent change of pumps
+        float WaterMotionPumpLockOutTimeS; // Current lock out time - reset after Reset Time exceeded 
         public bool CylinderCocksAreOpen;
         public bool BlowdownValveOpen;
         public bool CylinderCompoundOn;  // Flag to indicate whether compound locomotive is in compound or simple mode of operation - simple = true (ie bypass valve is open)
@@ -225,12 +238,12 @@ namespace Orts.Simulation.RollingStocks
         float BoilerSteamDensityLBpFT3; // Steam Density based on current boiler pressure
         float BoilerWaterDensityLBpFT3; // Water Density based on current boiler pressure
         float BoilerWaterTempK;
-        public float FuelBurnRateSmoothedKGpS;
         float FuelFeedRateKGpS;
         float DesiredChange;     // Amount of change to increase fire mass, clamped to range 0.0 - 1.0
         public float CylinderSteamUsageLBpS;
         public float NewCylinderSteamUsageLBpS;
         public float BlowerSteamUsageLBpS;
+        public float FuelOilHeatingSteamUsageLbpS;
         public float EvaporationLBpS;          // steam generation rate
         public float FireMassKG;      // Mass of coal currently on grate area
         public float FireRatio;     // Ratio of actual firemass to ideal firemass
@@ -291,10 +304,21 @@ namespace Orts.Simulation.RollingStocks
         float PressureRatio = 0.001f;    // Ratio to control burn rate - based upon boiler pressure
         float BurnRateRawKGpS;           // Raw combustion (burn) rate
         float MaxCombustionRateKgpS;
+        SmoothedData FuelRateOil = new SmoothedData(3); // Oil Stoker is more responsive and only takes x seconds to fully react to changing needs.
         SmoothedData FuelRateStoker = new SmoothedData(15); // Stoker is more responsive and only takes x seconds to fully react to changing needs.
-        SmoothedData FuelRate = new SmoothedData(45); // Automatic fireman takes x seconds to fully react to changing needs.
-        SmoothedData BurnRateSmoothKGpS = new SmoothedData(150); // Changes in BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat.
-        float FuelRateSmoothed = 0.0f;     // Smoothed Fuel Rate
+        SmoothedData FuelRateCoal = new SmoothedData(45); // Automatic fireman takes x seconds to fully react to changing needs for coal firing.
+        SmoothedData BurnRateCoalSmoothKGpS = new SmoothedData(150); // Changes in BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat.
+        SmoothedData BurnRateOilSmoothKGpS = new SmoothedData(6); // Changes in Oil BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat. Oil faster then steam
+        SmoothedData BurnRateWoodSmoothKGpS = new SmoothedData(20); // Changes in Wood BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat.
+
+        SmoothedData BurnRateOilReductionSmoothKGpS = new SmoothedData(0.25f); // When in reduction we would expect the heat to drop off rapidly for an oil fire
+
+        float FuelFeedRateSmoothedKGpS = 0.0f;     // Smoothed Fuel feedd Rate
+        public float FuelBurnRateSmoothedKGpS; // Smoothed fuel burning rate
+        public float OilSpecificGravity = 0.9659f; // Assume a mid range of API for this value, say API = 15 @ 20 Cdeg.
+        float WaterSpecificGravity = 1.0f; // Water @ 20 degC.
+
+        bool FuelOilSteamHeatingReqd = false;
 
         int NumberofTractiveForceValues = 36;
         float[,] TractiveForceAverageN = new float[5, 37];
@@ -354,7 +378,7 @@ namespace Orts.Simulation.RollingStocks
         Interpolator SaturatedSpeedFactorSpeedDropFtpMintoX; // Allowance for drop in TE for a saturated locomotive due to piston speed limitations
         Interpolator SuperheatedSpeedFactorSpeedDropFtpMintoX; // Allowance for drop in TE for a superheated locomotive due to piston speed limitations
 
-        Interpolator NewBurnRateSteamToCoalLbspH; // Combustion rate of steam generated per hour to Dry Coal per hour
+        Interpolator NewBurnRateSteamToFuelLbspH; // Combustion rate of steam generated per hour to Dry Coal per hour
 
         Interpolator2D CutoffInitialPressureDropRatioUpper;  // Upper limit of the pressure drop from initial pressure to cut-off pressure
         Interpolator2D CutoffInitialPressureDropRatioLower;  // Lower limit of the pressure drop from initial pressure to cut-off pressure
@@ -380,19 +404,20 @@ namespace Orts.Simulation.RollingStocks
         float IdealFireDepthIN = 7.0f;      // Assume standard coal coverage of grate = 7 inches.
         float FuelDensityKGpM3 = 864.5f;    // Anthracite Coal : 50 - 58 (lb/ft3), 800 - 929 (kg/m3)
         float DamperFactorManual = 1.0f;    // factor to control draft through fire when locomotive is running in Manual mode
-        public float WaterLBpUKG = 10.0f;    // lbs of water in 1 gal (uk)
-        public float MaxTenderCoalMassKG = 1;          // Maximum read from Eng File -  - this value must be non-zero, if not defined in ENG file, can cause NaN errors
-        public float TenderCoalMassKG              // Decreased by firing and increased by refilling
+        public float WaterLBpUKG = 10.021f;    // lbs of water in 1 gal (uk)
+        public float MaxTenderFuelMassKG = 1;          // Maximum read from Eng File -  - this value must be non-zero, if not defined in ENG file, can cause NaN errors
+        public float TenderFuelMassKG              // Decreased by firing and increased by refilling
         {
-            get { return FuelController.CurrentValue * MaxTenderCoalMassKG; }
-            set { FuelController.CurrentValue = value / MaxTenderCoalMassKG; }
+            get { return FuelController.CurrentValue * MaxTenderFuelMassKG; }
+            set { FuelController.CurrentValue = value / MaxTenderFuelMassKG; }
         }
 
+        public float MaxTenderOilMassL;
         float DamperBurnEffect;             // Effect of the Damper control Used in manual firing)
         float Injector1Fraction = 0.0f;     // Fraction (0-1) of injector 1 flow from Fireman controller or AI
         float Injector2Fraction = 0.0f;     // Fraction (0-1) of injector  of injector 2 flow from Fireman controller or AI
         float SafetyValveStartPSI = 0.1f;   // Set safety valve to just over max pressure - allows for safety valve not to operate in AI firing
-        float InjectorBoilerInputLB = 0.0f; // Input into boiler from injectors
+        float BoilerWaterInputLB = 0.0f; // Water input into boiler from injectors and pumps
         const float WaterDensityAt100DegC1BarKGpM3 = 954.8f;
 
 
@@ -483,6 +508,7 @@ namespace Orts.Simulation.RollingStocks
         float TimeFuelBoostOnS = 300.0f;    // Time to allow fuel boosting to go on for 
         float TimeFuelBoostResetS = 1200.0f;// Time to wait before next fuel boost
         float throttle;
+        float previousThrottle;
         float SpeedEquivMpS = 27.0f;          // Equvalent speed of 60mph in mps (27m/s) - used for damper control
 
         // Cylinder related parameters
@@ -660,11 +686,30 @@ namespace Orts.Simulation.RollingStocks
         float ConnectRodLengthFt = 10.8f;
         float RodCoGFt = 4.32f;  // 0.4 from crank end of rod
 
-        #endregion
+        public enum SteamLocomotiveFuelTypes
+        {
+            Unknown,
+            Oil,
+            Wood,
+            Coal, // defaults to coal
+        }
 
-        #region Variables for visual effects (steam, smoke)
+        public SteamLocomotiveFuelTypes SteamLocomotiveFuelType;
 
-        public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
+        public enum SteamLocomotiveFeedWaterSystemTypes
+        {
+            Unknown,
+            MotionPump,
+            SteamInjector, // not used at the moment
+        }
+
+        public SteamLocomotiveFeedWaterSystemTypes SteamLocomotiveFeedWaterType;
+
+#endregion
+
+#region Variables for visual effects (steam, smoke)
+
+public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         public float StackSteamVolumeM3pS;
         public float StackParticleDurationS;
         public float StackCount;
@@ -807,14 +852,14 @@ namespace Orts.Simulation.RollingStocks
             SteamEngines = new SteamEngines(this);
             PowerSupply = new SteamPowerSupply(this);
 
-            RefillTenderWithCoal();
+            RefillTenderWithFuel();
             RefillTenderWithWater();
         }
 
         /// <summary>
-        /// Sets the coal level to maximum.
+        /// Sets the fuel level to maximum.
         /// </summary>
-        public void RefillTenderWithCoal()
+        public void RefillTenderWithFuel()
         {
             FuelController.CurrentValue = 1.0f;
         }
@@ -832,7 +877,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public void InitializeTenderWithCoal()
         {
-            FuelController.CurrentValue = TenderCoalMassKG / MaxTenderCoalMassKG;
+            FuelController.CurrentValue = TenderFuelMassKG / MaxTenderFuelMassKG;
         }
 
         /// <summary>
@@ -910,11 +955,19 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(vacuumbrakessmallejectorusagerate": EjectorSmallSteamConsumptionLbpS = pS.FrompH(stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null)); break;
                 case "engine(ortssuperheatcutoffpressurefactor": SuperheatCutoffPressureFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(shovelcoalmass": ShovelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
-                case "engine(maxtendercoalmass": MaxTenderCoalMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "engine(ortsmaxtenderwoodmass":
+                case "engine(maxtendercoalmass": MaxTenderFuelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "engine(ortsmaxtenderfueloilvolume": MaxTenderOilMassL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
                 case "engine(maxtenderwatermass": MaxLocoTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(steamfiremanmaxpossiblefiringrate": MaxFiringRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 2.2046f / 3600; break;
                 case "engine(steamfiremanismechanicalstoker": Stoker = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortssteamfiremanmaxpossiblefiringrate": ORTSMaxFiringRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 2.2046f / 3600; break;
+                case "engine(ortsfueloilheatingrequired":
+                    var heating = stf.ReadIntBlock(null);
+                    if (heating == 1)
+                        FuelOilSteamHeatingReqd = true;
+                    break;
+                case "engine(ortsfueloilspecificgravity": OilSpecificGravity = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(enginecontrollers(cutoff": CutoffController.Parse(stf); break;
                 case "engine(enginecontrollers(ortssmallejector": SmallEjectorController.Parse(stf); SmallEjectorControllerFitted = true; break;
                 case "engine(enginecontrollers(ortslargeejector": LargeEjectorController.Parse(stf); LargeEjectorControllerFitted = true; break;
@@ -938,7 +991,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortscylinderefficiencyrate": CylinderEfficiencyRate = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortscylinderinitialpressuredrop": InitialPressureDropRatioRpMtoX = new Interpolator(stf); break;
                 case "engine(ortscylinderbackpressure": BackPressureIHPtoPSI = new Interpolator(stf); break;
-                case "engine(ortsburnrate": NewBurnRateSteamToCoalLbspH = new Interpolator(stf); break;
+                case "engine(ortsburnrate": NewBurnRateSteamToFuelLbspH = new Interpolator(stf); break;
                 case "engine(ortsboilerefficiency": BoilerEfficiencyGrateAreaLBpFT2toX = new Interpolator(stf); break;
                 case "engine(ortscylindereventexhaust": CylinderExhausttoCutoff = new Interpolator(stf); break;
                 case "engine(ortscylindereventcompression": CylinderCompressiontoCutoff = new Interpolator(stf); break;
@@ -962,6 +1015,32 @@ namespace Orts.Simulation.RollingStocks
                     catch
                     {
                         STFException.TraceWarning(stf, "Assumed unknown engine type " + steamengineType);
+                    }
+                    break;
+                case "engine(ortssteamlocomotivefueltype":
+                    stf.MustMatch("(");
+                    var steamLocomotiveFuelType = stf.ReadString();
+                    try
+                    {
+                        SteamLocomotiveFuelType = (SteamLocomotiveFuelTypes)Enum.Parse(typeof(SteamLocomotiveFuelTypes), steamLocomotiveFuelType);
+                    }
+                    catch
+                    {
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                            STFException.TraceWarning(stf, "Assumed unknown fuel type " + steamLocomotiveFuelType);
+                    }
+                    break;
+                case "engine(ortssteamlocomotivefeedwatersystemtype":
+                    stf.MustMatch("(");
+                    var feedwaterType = stf.ReadString();
+                    try
+                    {
+                        SteamLocomotiveFeedWaterType = (SteamLocomotiveFeedWaterSystemTypes)Enum.Parse(typeof(SteamLocomotiveFeedWaterSystemTypes), feedwaterType);
+                    }
+                    catch
+                    {
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                            STFException.TraceWarning(stf, "Assumed unknown feedwater type " + feedwaterType);
                     }
                     break;
                 case "engine(ortssteamboilertype":
@@ -1015,6 +1094,7 @@ namespace Orts.Simulation.RollingStocks
             CylinderPortOpeningFactor = locoCopy.CylinderPortOpeningFactor;
             BoilerVolumeFT3 = locoCopy.BoilerVolumeFT3;
             MaxBoilerPressurePSI = locoCopy.MaxBoilerPressurePSI;
+            SteamLocomotiveFeedWaterType = locoCopy.SteamLocomotiveFeedWaterType;
             MaxSuperheatRefTempF = locoCopy.MaxSuperheatRefTempF;
             MaxIndicatedHorsePowerHP = locoCopy.MaxIndicatedHorsePowerHP;
             SuperheatCutoffPressureFactor = locoCopy.SuperheatCutoffPressureFactor;
@@ -1025,10 +1105,11 @@ namespace Orts.Simulation.RollingStocks
             ShovelMassKG = locoCopy.ShovelMassKG;
             GearedTractiveEffortFactor = locoCopy.GearedTractiveEffortFactor;
             TractiveEffortFactor = locoCopy.TractiveEffortFactor;
-            MaxTenderCoalMassKG = locoCopy.MaxTenderCoalMassKG;
+            MaxTenderFuelMassKG = locoCopy.MaxTenderFuelMassKG;
             MaxLocoTenderWaterMassKG = locoCopy.MaxLocoTenderWaterMassKG;
             MaxFiringRateKGpS = locoCopy.MaxFiringRateKGpS;
             Stoker = locoCopy.Stoker;
+            FuelOilSteamHeatingReqd = locoCopy.FuelOilSteamHeatingReqd;
             ORTSMaxFiringRateKGpS = locoCopy.ORTSMaxFiringRateKGpS;
             CutoffController = (MSTSNotchController)locoCopy.CutoffController.Clone();
             Injector1Controller = (MSTSNotchController)locoCopy.Injector1Controller.Clone();
@@ -1051,12 +1132,13 @@ namespace Orts.Simulation.RollingStocks
             CylinderEfficiencyRate = locoCopy.CylinderEfficiencyRate;
             InitialPressureDropRatioRpMtoX = new Interpolator(locoCopy.InitialPressureDropRatioRpMtoX);
             BackPressureIHPtoPSI = new Interpolator(locoCopy.BackPressureIHPtoPSI);
-            NewBurnRateSteamToCoalLbspH = new Interpolator(locoCopy.NewBurnRateSteamToCoalLbspH);
+            NewBurnRateSteamToFuelLbspH = new Interpolator(locoCopy.NewBurnRateSteamToFuelLbspH);
             BoilerEfficiency = locoCopy.BoilerEfficiency;
             SteamGearRatioLow = locoCopy.SteamGearRatioLow;
             SteamGearRatioHigh = locoCopy.SteamGearRatioHigh;
             MaxSteamGearPistonRateFtpM = locoCopy.MaxSteamGearPistonRateFtpM;
             SteamEngineType = locoCopy.SteamEngineType;
+            SteamLocomotiveFuelType = locoCopy.SteamLocomotiveFuelType;
             IsSaturated = locoCopy.IsSaturated;
             IsTenderRequired = locoCopy.IsTenderRequired;
             HasSuperheater = locoCopy.HasSuperheater;
@@ -1066,6 +1148,8 @@ namespace Orts.Simulation.RollingStocks
             CylinderExhausttoCutoff = locoCopy.CylinderExhausttoCutoff;
             CylinderCompressiontoCutoff = locoCopy.CylinderCompressiontoCutoff;
             CylinderAdmissiontoCutoff = locoCopy.CylinderAdmissiontoCutoff;
+            OilSpecificGravity = locoCopy.OilSpecificGravity;
+            MaxTenderOilMassL = locoCopy.MaxTenderOilMassL;
 
             SteamEngines.Copy(locoCopy.SteamEngines);
         }
@@ -1081,7 +1165,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(PreviousBoilerHeatOutBTUpS);
             outf.Write(PreviousBoilerHeatSmoothedBTU);
             outf.Write(BurnRateRawKGpS);
-            outf.Write(TenderCoalMassKG);
+            outf.Write(TenderFuelMassKG);
             outf.Write(MaxTotalCombinedWaterVolumeUKG);
             outf.Write(CombinedTenderWaterVolumeUKG);
             outf.Write(CumulativeWaterConsumptionLbs);
@@ -1105,8 +1189,9 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(Injector2IsOn);
             outf.Write(Injector2Fraction);
             outf.Write(InjectorLockedOut);
+            outf.Write(WaterMotionPumpLockedOut);
             outf.Write(InjectorLockOutTimeS);
-            outf.Write(InjectorLockOutResetTimeS);
+            outf.Write(WaterMotionPumpLockOutTimeS);
             outf.Write(WaterTempNewK);
             outf.Write(BkW_Diff);
             outf.Write(WaterFraction);
@@ -1130,7 +1215,7 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Save(LargeEjectorController, outf);
             outf.Write(FuelBurnRateSmoothedKGpS);
             outf.Write(BoilerHeatSmoothedBTU);
-            outf.Write(FuelRateSmoothed);
+            outf.Write(FuelFeedRateSmoothedKGpS);
             base.Save(outf);
         }
 
@@ -1145,7 +1230,7 @@ namespace Orts.Simulation.RollingStocks
             PreviousBoilerHeatOutBTUpS = inf.ReadSingle();
             PreviousBoilerHeatSmoothedBTU = inf.ReadSingle();
             BurnRateRawKGpS = inf.ReadSingle();
-            TenderCoalMassKG = inf.ReadSingle();
+            TenderFuelMassKG = inf.ReadSingle();
             MaxTotalCombinedWaterVolumeUKG = inf.ReadSingle();
             CombinedTenderWaterVolumeUKG = inf.ReadSingle();
             CumulativeWaterConsumptionLbs = inf.ReadSingle();
@@ -1169,8 +1254,9 @@ namespace Orts.Simulation.RollingStocks
             Injector2IsOn = inf.ReadBoolean();
             Injector2Fraction = inf.ReadSingle();
             InjectorLockedOut = inf.ReadBoolean();
+            WaterMotionPumpLockedOut = inf.ReadBoolean();
             InjectorLockOutTimeS = inf.ReadSingle();
-            InjectorLockOutResetTimeS = inf.ReadSingle();
+            WaterMotionPumpLockOutTimeS = inf.ReadSingle();
             WaterTempNewK = inf.ReadSingle();
             BkW_Diff = inf.ReadSingle();
             WaterFraction = inf.ReadSingle();
@@ -1193,11 +1279,26 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Restore(SmallEjectorController, inf);
             ControllerFactory.Restore(LargeEjectorController, inf);
             FuelBurnRateSmoothedKGpS = inf.ReadSingle();
-            BurnRateSmoothKGpS.ForceSmoothValue(FuelBurnRateSmoothedKGpS);
             BoilerHeatSmoothedBTU = inf.ReadSingle();
             BoilerHeatSmoothBTU.ForceSmoothValue(BoilerHeatSmoothedBTU);
-            FuelRateSmoothed = inf.ReadSingle();
-            FuelRate.ForceSmoothValue(FuelRateSmoothed);
+            FuelFeedRateSmoothedKGpS = inf.ReadSingle();
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+            {
+                BurnRateWoodSmoothKGpS.ForceSmoothValue(FuelBurnRateSmoothedKGpS);
+                FuelRateCoal.ForceSmoothValue(FuelFeedRateSmoothedKGpS); // Wood and coalk rate currently the same
+            }
+            else if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+            {
+                BurnRateOilSmoothKGpS.ForceSmoothValue(FuelBurnRateSmoothedKGpS);
+                BurnRateOilReductionSmoothKGpS.ForceSmoothValue(FuelBurnRateSmoothedKGpS);
+                FuelRateOil.ForceSmoothValue(FuelFeedRateSmoothedKGpS);
+            }
+            else
+            {
+                BurnRateCoalSmoothKGpS.ForceSmoothValue(FuelBurnRateSmoothedKGpS);
+                FuelRateCoal.ForceSmoothValue(FuelFeedRateSmoothedKGpS);
+            }
+            
             base.Restore(inf);
         }
 
@@ -1258,12 +1359,33 @@ namespace Orts.Simulation.RollingStocks
             CutoffInitialPressureDropRatioUpper = SteamTable.CutoffInitialPressureUpper();
             CutoffInitialPressureDropRatioLower = SteamTable.CutoffInitialPressureLower();
 
+            // Type of fuel selected
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Unknown)
+            {
+                SteamLocomotiveFuelType = SteamLocomotiveFuelTypes.Coal;
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("SteamLocomotiveFuelType set to Default value of {0}", SteamLocomotiveFuelType);
+
+            }
+
+            // Set Oil mass - if an oil locomotive
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil && MaxTenderOilMassL != 0)
+            {
+                MaxTenderFuelMassKG = MaxTenderOilMassL * OilSpecificGravity;
+            }
+
+            // Oil burning locomotives will always have mechanical stokers
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+            {
+                StokerIsMechanical = true;
+            }
+
             // Assign default steam table values if cylinder event is not in ENG file
             if (CylinderExhausttoCutoff == null)
             {
                 CylinderExhausttoCutoff = SteamTable.CylinderEventExhausttoCutoff();
             }
-
 
             if (CylinderCompressiontoCutoff == null)
             {
@@ -1275,22 +1397,131 @@ namespace Orts.Simulation.RollingStocks
                 CylinderAdmissiontoCutoff = SteamTable.CylinderEventAdmissiontoCutoff();
             }
 
+            // Computed Values
+            // Read alternative OR Value for calculation of Ideal Fire Mass
+            if (GrateAreaM2 == 0)  // Calculate Grate Area if not present in ENG file
+            {
+                float MinGrateAreaSizeSqFt = 6.0f;
+                for (int i = 0; i < SteamEngines.Count; i++)
+                {
+                    GrateAreaM2 += Me2.FromFt2(((SteamEngines[i].NumberCylinders / 2.0f) * (Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersStrokeM)) * MEPFactor * MaxBoilerPressurePSI) / (Me.ToIn(SteamEngines[i].AttachedAxle.WheelRadiusM * 2.0f) * GrateAreaDesignFactor));
+                }
+
+                GrateAreaM2 = MathHelper.Clamp(GrateAreaM2, Me2.FromFt2(MinGrateAreaSizeSqFt), GrateAreaM2); // Clamp grate area to a minimum value of 6 sq ft
+                IdealFireMassKG = GrateAreaM2 * Me.FromIn(IdealFireDepthIN) * FuelDensityKGpM3;
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceWarning("Grate Area not found in ENG file and has been set to {0} m^2", GrateAreaM2); // Advise player that Grate Area is missing from ENG file
+            }
+            else
+                if (LocoIsOilBurner)
+                IdealFireMassKG = GrateAreaM2 * 720.0f * 0.08333f * 0.02382f * 1.293f;  // Check this formula as conversion factors maybe incorrect, also grate area is now in SqM
+            else
+                IdealFireMassKG = GrateAreaM2 * Me.FromIn(IdealFireDepthIN) * FuelDensityKGpM3;
+
+            // Calculate the maximum fuel burn rate based upon grate area and limit
+            float GrateLimitLBpFt2add = GrateLimitLBpFt2 * 1.10f;     // Alow burn rate to slightly exceed grate limit (by 10%)
+            MaxFuelBurnGrateKGpS = pS.FrompH(Kg.FromLb(Me2.ToFt2(GrateAreaM2) * GrateLimitLBpFt2add));
+
+            if (MaxFireMassKG == 0) // If not specified, assume twice as much as ideal. 
+                // Scale FIREBOX control to show FireMassKG as fraction of MaxFireMassKG.
+                MaxFireMassKG = 2 * IdealFireMassKG;
+
+            float baseTempK = C.ToK(C.FromF(PressureToTemperaturePSItoF[MaxBoilerPressurePSI]));
+            if (EvaporationAreaM2 == 0)        // If evaporation Area is not in ENG file then synthesize a value
+            {
+                float MinEvaporationAreaM2 = 100.0f;
+                for (int i = 0; i < SteamEngines.Count; i++)
+                {
+                    EvaporationAreaM2 = Me2.FromFt2(((SteamEngines[i].NumberCylinders / 2.0f) * (Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersStrokeM)) * MEPFactor * MaxBoilerPressurePSI) / (Me.ToIn(SteamEngines[i].AttachedAxle.WheelRadiusM * 2.0f) * EvapAreaDesignFactor));
+                }
+                EvaporationAreaM2 = MathHelper.Clamp(EvaporationAreaM2, Me2.FromFt2(MinEvaporationAreaM2), EvaporationAreaM2); // Clamp evaporation area to a minimum value of 6 sq ft, so that NaN values don't occur.
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceWarning("Evaporation Area not found in ENG file and has been set to {0} m^2", EvaporationAreaM2); // Advise player that Evaporation Area is missing from ENG file
+            }
+
+            CylinderSteamUsageLBpS = 1.0f;  // Set to 1 to ensure that there are no divide by zero errors
+            WaterFraction = 0.9f;  // Initialise boiler water level at 90%
+
+            float MaxWaterFraction = 0.9f; // Initialise the max water fraction when the boiler starts
+
+
+            if (BoilerEvapRateLbspFt2 == 0) // If boiler evaporation rate is not in ENG file then set a default value
+            {
+                if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+                {
+                    BoilerEvapRateLbspFt2 = 11.5f; // Default rate for evaporation rate. Assume a default rate of 12 lbs/sqft of evaporation area
+                }
+                else if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+                {
+                    BoilerEvapRateLbspFt2 = 18.0f; // Default rate for evaporation rate. Assume a default rate of 18 lbs/sqft of evaporation area
+                }
+                else
+                {
+                    BoilerEvapRateLbspFt2 = 15.0f; // Default rate for evaporation rate. Assume a default rate of 15 lbs/sqft of evaporation area
+                }
+            }
+            BoilerEvapRateLbspFt2 = MathHelper.Clamp(BoilerEvapRateLbspFt2, 7.5f, 30.0f); // Clamp BoilerEvap Rate to between 7.5 & 30 - some modern locomotives can go as high as 30, but majority are around 15.
+            TheoreticalMaxSteamOutputLBpS = pS.FrompH(Me2.ToFt2(EvaporationAreaM2) * BoilerEvapRateLbspFt2); // set max boiler theoretical steam output
+
+            float BoilerVolumeCheck = Me2.ToFt2(EvaporationAreaM2) / BoilerVolumeFT3;    //Calculate the Boiler Volume Check value.
+            if (BoilerVolumeCheck > 15) // If boiler volume is not in ENG file or less then a viable figure (ie high ratio figure), then set to a default value
+            {
+                BoilerVolumeFT3 = Me2.ToFt2(EvaporationAreaM2) / 8.3f; // Default rate for evaporation rate. Assume a default ratio of evaporation area * 1/8.3
+                // Advise player that Boiler Volume is missing from or incorrect in ENG file
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceWarning("Boiler Volume not found in ENG file, or doesn't appear to be a valid figure, and has been set to {0} Ft^3", BoilerVolumeFT3);
+            }
+
+
             // Assign default steam table values if table not in ENG file
             if (BoilerEfficiencyGrateAreaLBpFT2toX == null)
             {
-                if (HasSuperheater)
+                if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
                 {
-                    BoilerEfficiencyGrateAreaLBpFT2toX = SteamTable.SuperBoilerEfficiencyGrateAreaInterpolatorLbstoX();
-                    Trace.TraceInformation("BoilerEfficiencyGrateAreaLBpFT2toX (Superheated) - default information read from SteamTables");
+
+                    // This will calculate a default burnrate curve based upon the fuel calorific, Max Steam Output, and Boiler Efficiency
+                    // Firing Rate = (Max Evap / BE) x (Steam Btu/lb @ pressure / Fuel Calorific)
+
+                    float TempBoilerEfficiencyBurnRate = (0.94f / 2.0f);
+                    float TempMaxFiringRateLbpH = (pS.TopH(TheoreticalMaxSteamOutputLBpS) / TempBoilerEfficiencyBurnRate) * (SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI] / KJpKg.ToBTUpLb(FuelCalorificKJpKG));
+
+                    // Create a new default boiler efficiency curve based upon default information
+
+                    float[] TempBoilerEfficiencyRate = new float[] { 0.94f, 0.47f };
+
+                    float[] TempGrateFiringRate = new float[] { 0.0f, TempMaxFiringRateLbpH / Me2.ToFt2(GrateAreaM2) };
+
+                    BoilerEfficiencyGrateAreaLBpFT2toX = new Interpolator(TempGrateFiringRate, TempBoilerEfficiencyRate);
+
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("BoilerEfficiencyGrateAreaLBpFT2toX (Wood) - default information table created");
 
                 }
                 else
                 {
-                    BoilerEfficiencyGrateAreaLBpFT2toX = SteamTable.SatBoilerEfficiencyGrateAreaInterpolatorLbstoX();
-                    Trace.TraceInformation("BoilerEfficiencyGrateAreaLBpFT2toX (Saturated) - default information read from SteamTables");
+
+                    if (HasSuperheater)
+                    {
+                        BoilerEfficiencyGrateAreaLBpFT2toX = SteamTable.SuperBoilerEfficiencyGrateAreaInterpolatorLbstoX();
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                            Trace.TraceInformation("BoilerEfficiencyGrateAreaLBpFT2toX (Superheated) - default information read from SteamTables");
+
+                    }
+                    else
+                    {
+                        BoilerEfficiencyGrateAreaLBpFT2toX = SteamTable.SatBoilerEfficiencyGrateAreaInterpolatorLbstoX();
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                            Trace.TraceInformation("BoilerEfficiencyGrateAreaLBpFT2toX (Saturated) - default information read from SteamTables");
+                    }
                 }
 
             }
+
+            // This will calculate a default burnrate curve based upon the fuel calorific, Max Steam Output, and Boiler Efficiency
+            // Firing Rate = (Max Evap / BE) x (Steam Btu/lb @ pressure / Fuel Calorific)
+
+            float BoilerEfficiencyBurnRate = (BoilerEfficiencyGrateAreaLBpFT2toX[0.0f] / 2.0f);
+            MaxFiringRateLbpH = (pS.TopH(TheoreticalMaxSteamOutputLBpS) / BoilerEfficiencyBurnRate) * (SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI] / KJpKg.ToBTUpLb(FuelCalorificKJpKG));
 
             // Calculate Grate Limit
             // Rule of thumb indicates that Grate limit occurs when the Boiler Efficiency is equal to 50% of the BE at zero firing rate
@@ -1326,7 +1557,8 @@ namespace Orts.Simulation.RollingStocks
                 if (SteamEngineType != SteamEngineTypes.Geared)
                 {
                     IsGearAssumed = true;
-                    Trace.TraceWarning("Geared locomotive parameter not defined. Geared locomotive has been assumed");
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceWarning("Geared locomotive parameter not defined. Geared locomotive has been assumed");
                 }
             }
 
@@ -1449,9 +1681,9 @@ namespace Orts.Simulation.RollingStocks
                         // Set to compound operation intially
 
                         // include check to see if it is a balanced compound locomotive, ie number of HP cylinders = number of LP cylinders
-                        if(SteamEngines[i].NumberCylinders != SteamEngines[i].LPNumberCylinders && Simulator.Settings.VerboseConfigurationMessages)
+                        if (SteamEngines[i].NumberCylinders != SteamEngines[i].LPNumberCylinders && Simulator.Settings.VerboseConfigurationMessages)
                         {
-                            
+
                             Trace.TraceInformation("This doesn't appear to be a balanced compound locomotive, ie LP Cylinders = HP Cylinders. Game performnce may not be realistic.");
                             SteamEngines[i].NumberCylinders = 2;
                             SteamEngines[i].LPNumberCylinders = 2;
@@ -1487,12 +1719,14 @@ namespace Orts.Simulation.RollingStocks
                             if (MaxSteamGearPistonRateFtpM == 0)
                             {
                                 MaxSteamGearPistonRateFtpM = 700.0f; // Assume same value as standard steam locomotive
-                                Trace.TraceWarning("MaxSteamGearPistonRateRpM not found in ENG file, or doesn't appear to be a valid figure, and has been set to default value");
+                                if (Simulator.Settings.VerboseConfigurationMessages)
+                                    Trace.TraceWarning("MaxSteamGearPistonRateRpM not found in ENG file, or doesn't appear to be a valid figure, and has been set to default value");
                             }
                             if (SteamGearRatioLow == 0)
                             {
                                 SteamGearRatioLow = 5.0f;
-                                Trace.TraceWarning("SteamGearRatioLow not found in ENG file, or doesn't appear to be a valid figure, and has been set to default value");
+                                if (Simulator.Settings.VerboseConfigurationMessages)
+                                    Trace.TraceWarning("SteamGearRatioLow not found in ENG file, or doesn't appear to be a valid figure, and has been set to default value");
                             }
                             MotiveForceGearRatio = SteamGearRatioLow;
                             SteamGearRatio = SteamGearRatioLow;
@@ -1522,17 +1756,20 @@ namespace Orts.Simulation.RollingStocks
                             if (MaxSteamGearPistonRateFtpM == 0)
                             {
                                 MaxSteamGearPistonRateFtpM = 500.0f;
-                                Trace.TraceWarning("MaxSteamGearPistonRateRpM not found in ENG file, or doesn't appear to be a valid figure, and has been set to default value");
+                                if (Simulator.Settings.VerboseConfigurationMessages)
+                                    Trace.TraceWarning("MaxSteamGearPistonRateRpM not found in ENG file, or doesn't appear to be a valid figure, and has been set to default value");
                             }
                             if (SteamGearRatioLow == 0)
                             {
                                 SteamGearRatioLow = 9.0f;
-                                Trace.TraceWarning("SteamGearRatioLow not found in ENG file, or doesn't appear to be a valid figure, and has been set to default value");
+                                if (Simulator.Settings.VerboseConfigurationMessages)
+                                    Trace.TraceWarning("SteamGearRatioLow not found in ENG file, or doesn't appear to be a valid figure, and has been set to default value");
                             }
                             if (SteamGearRatioHigh == 0)
                             {
                                 SteamGearRatioHigh = 4.5f;
-                                Trace.TraceWarning("SteamGearRatioHigh not found in ENG file, or doesn't appear to be a valid figure, and has been set to default value");
+                                if (Simulator.Settings.VerboseConfigurationMessages)
+                                    Trace.TraceWarning("SteamGearRatioHigh not found in ENG file, or doesn't appear to be a valid figure, and has been set to default value");
                             }
                             // Adjust resistance for neutral gearing
                             GearedRetainedDavisAN = DavisAN; // remember davis a value for later
@@ -1577,7 +1814,8 @@ namespace Orts.Simulation.RollingStocks
                     }
                     else // Default to Simple Locomotive (Assumed Simple) shows up as "Unknown"
                     {
-                        Trace.TraceWarning("Steam engine type parameter not formally defined. Simple locomotive has been assumed");
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                            Trace.TraceWarning("Steam engine type parameter not formally defined. Simple locomotive has been assumed");
                         SteamLocoType = "Not formally defined (assumed simple) locomotive.";
                         //  SteamEngineType += "Simple";
                         MotiveForceGearRatio = 1.0f;  // set gear ratio to default, as not a geared locomotive
@@ -1622,74 +1860,18 @@ namespace Orts.Simulation.RollingStocks
                 if (HasSuperheater)
                 {
                     InitialPressureDropRatioRpMtoX = SteamTable.SuperInitialPressureDropRatioInterpolatorRpMtoX();
-                    Trace.TraceInformation("InitialPressureDropRatioRpMtoX (Superheated) - default information read from SteamTables");
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("InitialPressureDropRatioRpMtoX (Superheated) - default information read from SteamTables");
                 }
                 else
                 {
                     InitialPressureDropRatioRpMtoX = SteamTable.SatInitialPressureDropRatioInterpolatorRpMtoX();
-                    Trace.TraceInformation("InitialPressureDropRatioRpMtoX (Saturated) - default information read from SteamTables");
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("InitialPressureDropRatioRpMtoX (Saturated) - default information read from SteamTables");
                 }
 
             }
 
-            // Computed Values
-            // Read alternative OR Value for calculation of Ideal Fire Mass
-            if (GrateAreaM2 == 0)  // Calculate Grate Area if not present in ENG file
-            {
-                float MinGrateAreaSizeSqFt = 6.0f;
-                for (int i = 0; i < SteamEngines.Count; i++)
-                {
-                    GrateAreaM2 += Me2.FromFt2(((SteamEngines[i].NumberCylinders / 2.0f) * (Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersStrokeM)) * MEPFactor * MaxBoilerPressurePSI) / (Me.ToIn(SteamEngines[i].AttachedAxle.WheelRadiusM * 2.0f) * GrateAreaDesignFactor));
-                }
-
-                GrateAreaM2 = MathHelper.Clamp(GrateAreaM2, Me2.FromFt2(MinGrateAreaSizeSqFt), GrateAreaM2); // Clamp grate area to a minimum value of 6 sq ft
-                IdealFireMassKG = GrateAreaM2 * Me.FromIn(IdealFireDepthIN) * FuelDensityKGpM3;
-                Trace.TraceWarning("Grate Area not found in ENG file and has been set to {0} m^2", GrateAreaM2); // Advise player that Grate Area is missing from ENG file
-            }
-            else
-                if (LocoIsOilBurner)
-                IdealFireMassKG = GrateAreaM2 * 720.0f * 0.08333f * 0.02382f * 1.293f;  // Check this formula as conversion factors maybe incorrect, also grate area is now in SqM
-            else
-                IdealFireMassKG = GrateAreaM2 * Me.FromIn(IdealFireDepthIN) * FuelDensityKGpM3;
-
-            // Calculate the maximum fuel burn rate based upon grate area and limit
-            float GrateLimitLBpFt2add = GrateLimitLBpFt2 * 1.10f;     // Alow burn rate to slightly exceed grate limit (by 10%)
-            MaxFuelBurnGrateKGpS = pS.FrompH(Kg.FromLb(Me2.ToFt2(GrateAreaM2) * GrateLimitLBpFt2add));
-
-            if (MaxFireMassKG == 0) // If not specified, assume twice as much as ideal. 
-                // Scale FIREBOX control to show FireMassKG as fraction of MaxFireMassKG.
-                MaxFireMassKG = 2 * IdealFireMassKG;
-
-            float baseTempK = C.ToK(C.FromF(PressureToTemperaturePSItoF[MaxBoilerPressurePSI]));
-            if (EvaporationAreaM2 == 0)        // If evaporation Area is not in ENG file then synthesize a value
-            {
-                float MinEvaporationAreaM2 = 100.0f;
-                for (int i = 0; i < SteamEngines.Count; i++)
-                {
-                    EvaporationAreaM2 = Me2.FromFt2(((SteamEngines[i].NumberCylinders / 2.0f) * (Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersDiameterM) * Me.ToIn(SteamEngines[i].CylindersStrokeM)) * MEPFactor * MaxBoilerPressurePSI) / (Me.ToIn(SteamEngines[i].AttachedAxle.WheelRadiusM * 2.0f) * EvapAreaDesignFactor));
-                }
-                EvaporationAreaM2 = MathHelper.Clamp(EvaporationAreaM2, Me2.FromFt2(MinEvaporationAreaM2), EvaporationAreaM2); // Clamp evaporation area to a minimum value of 6 sq ft, so that NaN values don't occur.
-                Trace.TraceWarning("Evaporation Area not found in ENG file and has been set to {0} m^2", EvaporationAreaM2); // Advise player that Evaporation Area is missing from ENG file
-            }
-
-            CylinderSteamUsageLBpS = 1.0f;  // Set to 1 to ensure that there are no divide by zero errors
-            WaterFraction = 0.9f;  // Initialise boiler water level at 90%
-
-            float MaxWaterFraction = 0.9f; // Initialise the max water fraction when the boiler starts
-            if (BoilerEvapRateLbspFt2 == 0) // If boiler evaporation rate is not in ENG file then set a default value
-            {
-                BoilerEvapRateLbspFt2 = 15.0f; // Default rate for evaporation rate. Assume a default rate of 15 lbs/sqft of evaporation area
-            }
-            BoilerEvapRateLbspFt2 = MathHelper.Clamp(BoilerEvapRateLbspFt2, 7.5f, 30.0f); // Clamp BoilerEvap Rate to between 7.5 & 30 - some modern locomotives can go as high as 30, but majority are around 15.
-            TheoreticalMaxSteamOutputLBpS = pS.FrompH(Me2.ToFt2(EvaporationAreaM2) * BoilerEvapRateLbspFt2); // set max boiler theoretical steam output
-
-            float BoilerVolumeCheck = Me2.ToFt2(EvaporationAreaM2) / BoilerVolumeFT3;    //Calculate the Boiler Volume Check value.
-            if (BoilerVolumeCheck > 15) // If boiler volume is not in ENG file or less then a viable figure (ie high ratio figure), then set to a default value
-            {
-                BoilerVolumeFT3 = Me2.ToFt2(EvaporationAreaM2) / 8.3f; // Default rate for evaporation rate. Assume a default ratio of evaporation area * 1/8.3
-                // Advise player that Boiler Volume is missing from or incorrect in ENG file
-                Trace.TraceWarning("Boiler Volume not found in ENG file, or doesn't appear to be a valid figure, and has been set to {0} Ft^3", BoilerVolumeFT3);
-            }
 
             MaxBoilerHeatSafetyPressurePSI = MaxBoilerPressurePSI + SafetyValveStartPSI + 6.0f; // set locomotive maximum boiler pressure to calculate max heat, allow for safety valve + a bit
             MaxBoilerSafetyPressHeatBTU = MaxWaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[MaxBoilerHeatSafetyPressurePSI] * WaterHeatPSItoBTUpLB[MaxBoilerHeatSafetyPressurePSI] + (1 - MaxWaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[MaxBoilerHeatSafetyPressurePSI] * SteamHeatPSItoBTUpLB[MaxBoilerHeatSafetyPressurePSI];  // calculate the maximum possible heat in the boiler, assuming safety valve and a small margin
@@ -1794,13 +1976,8 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // Assign default steam table values if table not in ENG file
-            if (NewBurnRateSteamToCoalLbspH == null)
+            if (NewBurnRateSteamToFuelLbspH == null)
             {
-                // This will calculate a default burnrate curve based upon the fuel calorific, Max Steam Output, and Boiler Efficiency
-                // Firing Rate = (Max Evap / BE) x (Steam Btu/lb @ pressure / Fuel Calorific)
-
-                float BoilerEfficiencyBurnRate = (BoilerEfficiencyGrateAreaLBpFT2toX[0.0f] / 2.0f);
-                MaxFiringRateLbpH = (pS.TopH(TheoreticalMaxSteamOutputLBpS) / BoilerEfficiencyBurnRate) * (SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI] / KJpKg.ToBTUpLb(FuelCalorificKJpKG));
 
                 // Create a new default burnrate curve locomotive based upon default information
                 float[] TempSteamOutputRate = new float[]
@@ -1813,11 +1990,11 @@ namespace Orts.Simulation.RollingStocks
                                 0.0f, MaxFiringRateLbpH, (MaxFiringRateLbpH * 1.5f), (MaxFiringRateLbpH * 2.0f), (MaxFiringRateLbpH * 3.0f), (MaxFiringRateLbpH * 4.0f)
                     };
 
-                NewBurnRateSteamToCoalLbspH = new Interpolator(TempSteamOutputRate, TempCoalFiringRate);
+                NewBurnRateSteamToFuelLbspH = new Interpolator(TempSteamOutputRate, TempCoalFiringRate);
             }
             else // If user provided burn curve calculate the Max Firing Rate
             {
-                MaxFiringRateLbpH = NewBurnRateSteamToCoalLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)];
+                MaxFiringRateLbpH = NewBurnRateSteamToFuelLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)];
             }
 
             // Calculate Boiler output horsepower - based upon information in Johnsons book - The Steam Locomotive - pg 150
@@ -2001,13 +2178,13 @@ namespace Orts.Simulation.RollingStocks
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
-                if (SteamEngines[i].MaxIndicatedHorsePowerHP == 0 && SteamEngines.Count == 1 && MaxIndicatedHorsePowerHP != 0) 
-                    // if MaxIHP is not set in ENG file, then set a default
+                if (SteamEngines[i].MaxIndicatedHorsePowerHP == 0 && SteamEngines.Count == 1 && MaxIndicatedHorsePowerHP != 0)
+                // if MaxIHP is not set in ENG file, then set a default
                 {
                     SteamEngines[i].MaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                 }
                 else if (SteamEngines[i].MaxIndicatedHorsePowerHP == 0)
-                { 
+                {
                     // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
                     SteamEngines[i].MaxIndicatedHorsePowerHP = MaxSpeedFactor * (SteamEngines[i].MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;  // To be checked what MaxTractive Effort is for the purposes of this formula.
                     MaxIndicatedHorsePowerHP += SteamEngines[i].MaxIndicatedHorsePowerHP;
@@ -2037,7 +2214,7 @@ namespace Orts.Simulation.RollingStocks
             // Check to see if MaxIHP is in fact limited by the boiler
             if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
             {
-             //   MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler - No need to limit IHP, naturally limited by steam production?????
+                //   MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler - No need to limit IHP, naturally limited by steam production?????
                 ISBoilerLimited = true;
             }
             else
@@ -2081,7 +2258,7 @@ namespace Orts.Simulation.RollingStocks
             MaxCriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * MaxSpeedFactor;
             DisplayCriticalSpeedTractiveEffortLbf = MaxCriticalSpeedTractiveEffortLbf;
 
-            MaxCombustionRateKgpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)]));
+            MaxCombustionRateKgpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToFuelLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)]));
 
             // Calculate the maximum boiler heat input based on the steam generation rate
 
@@ -2172,7 +2349,7 @@ namespace Orts.Simulation.RollingStocks
 
                 Trace.TraceInformation("**************** Fire ****************");
                 Trace.TraceInformation("Grate - Area {0:N1} sq ft, Limit {1:N1} lb/sq ft", Me2.ToFt2(GrateAreaM2), GrateLimitLBpFt2);
-                Trace.TraceInformation("Fuel - Calorific {0} btu/lb, Max Firing Rate {1} lbs/h Max Coal Load {2} lbs", KJpKg.ToBTUpLb(FuelCalorificKJpKG), Kg.ToLb(pS.TopH(MaxFiringRateKGpS)), Kg.ToLb(MaxTenderCoalMassKG));
+                Trace.TraceInformation("Fuel - Calorific {0} btu/lb, Max Firing Rate {1} lbs/h Max Coal Load {2} lbs", KJpKg.ToBTUpLb(FuelCalorificKJpKG), Kg.ToLb(pS.TopH(MaxFiringRateKGpS)), Kg.ToLb(MaxTenderFuelMassKG));
 
                 Trace.TraceInformation("========================================================================================================================================================");
 
@@ -2595,7 +2772,7 @@ namespace Orts.Simulation.RollingStocks
 
             #region adjust state
             UpdateWaterGauge();
-            UpdateInjectors(elapsedClockSeconds);
+            UpdateWaterInjection(elapsedClockSeconds);
             UpdateFiring(absSpeedMpS);
             #endregion
 
@@ -3377,7 +3554,7 @@ namespace Orts.Simulation.RollingStocks
                 Variable2_Booster = Variable2;
             }
 
-            Variable3 = FuelRateSmoothed * 100;
+            Variable3 = FuelFeedRateSmoothedKGpS * 100;
 
             const int rotations = 2;
             const int fullLoop = 10 * rotations;
@@ -3533,6 +3710,52 @@ namespace Orts.Simulation.RollingStocks
 
         private void UpdateTender(float elapsedClockSeconds)
         {
+            // Calculate steam usage required to heat fuel oil in oil fired locomotive
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil && FuelOilSteamHeatingReqd )
+            {
+                // The following calculations are based upon the interpretation of information in
+                // https://www.spiraxsarco.com/learn-about-steam/steam-engineering-principles-and-heat-transfer/heating-with-coils-and-jackets#article-top
+                // and movement of the locomotive is described in this article
+                // https://www.spiraxsarco.com/learn-about-steam/steam-engineering-principles-and-heat-transfer/energy-consumption-of-tanks-and-vats
+                // Currently due to the difficulty of finding input information some assumptions have be made, and will be described through the calculation process.
+                // 
+                // The first step is to calculate the amount of heat lost through the sides of the oil tank on the tender (this loss will ultimately need to be
+                // compensated by steam heating
+                // This can be calculated by Q (heat Loss) = Txf Coeff for tank sides * Area of Sides * Temp Diff (external vs internal)
+                // The most accurate calculation could be made if the bottom, sides and top of oil tank area was known, and also if the aount of exposed surface
+                // (subject to wind effect)
+                float TankSurfaceAreatoMassRatio = 0.015f; // based upon the inspection of the oil masses in a couple of known locomotives
+                float AssumedSurfaceAreaFt2 = Kg.ToLb(MaxTenderOilMassL * OilSpecificGravity) * TankSurfaceAreatoMassRatio;
+                float AreaExposedtoWindMovementFraction = 0.42f;
+                float OilTempRequired = 150; // Oil to be heated to 150degF
+                float HeatDiff = OilTempRequired - C.ToF(CarOutsideTempC);
+                float HeatTransferCoefficientBtuphft2F = 0.00001263f * HeatDiff * HeatDiff + 0.001175f * HeatDiff + 1.776f;
+                
+                float HeatLossNoWindBTUph = (1- AreaExposedtoWindMovementFraction) * HeatTransferCoefficientBtuphft2F * AssumedSurfaceAreaFt2 * HeatDiff;
+
+                // To compensate for the train movement we need to add a wind factor
+                float WindCoeff = -0.0074f * absSpeedMpS * absSpeedMpS + 0.3817f * absSpeedMpS + 1f;
+                WindCoeff = MathHelper.Clamp(WindCoeff, 1.0f, 5.78f); // Wind speed effect will not cause any more impact once over about 25 m/s
+
+                float HeatLossWindBTUph = (1 - AreaExposedtoWindMovementFraction) * HeatTransferCoefficientBtuphft2F * AssumedSurfaceAreaFt2 * HeatDiff * WindCoeff;
+
+                float HeatLossTotalBTUph = HeatLossWindBTUph + HeatLossNoWindBTUph;
+
+                float HeatingCoilEfficiency = 0.12f;
+                float SteamEnthalpyBTUpLb = 980;
+                FuelOilHeatingSteamUsageLbpS = pS.FrompH(HeatLossTotalBTUph / (HeatingCoilEfficiency * SteamEnthalpyBTUpLb));
+
+                // adjust boiler heat and volume due to steam usage
+                BoilerMassLB -= elapsedClockSeconds * FuelOilHeatingSteamUsageLbpS; // Reduce boiler mass to reflect steam usage by fuel oil heating coils  
+                BoilerHeatBTU -= elapsedClockSeconds * FuelOilHeatingSteamUsageLbpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by fuel oil heating coils
+                BoilerHeatOutBTUpS += FuelOilHeatingSteamUsageLbpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by mecahnical stoker
+                TotalSteamUsageLBpS += FuelOilHeatingSteamUsageLbpS;
+
+                // Increase tender water mass as steam heating condensate feed back into tender
+                CombinedTenderWaterVolumeUKG += (elapsedClockSeconds * FuelOilHeatingSteamUsageLbpS) / WaterLBpUKG;
+
+            }
+
             TenderWaterLevelFraction = CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG;
             float TempCylinderSteamUsageLbpS = CylinderSteamUsageLBpS;
             // Limit Cylinder steam usage to the maximum boiler evaporation rate, lower limit is for when the locomotive is at rest and "no steam" is being used by cylinder, ensures some coal is used.
@@ -3540,23 +3763,23 @@ namespace Orts.Simulation.RollingStocks
 
             if (HasTenderCoupled) // If a tender is coupled then coal is available
             {
-                TenderCoalMassKG -= elapsedClockSeconds * pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(TempCylinderSteamUsageLbpS)])); // Current Tender coal mass determined by burn rate.
-                TenderCoalMassKG = MathHelper.Clamp(TenderCoalMassKG, 0, MaxTenderCoalMassKG); // Clamp value so that it doesn't go out of bounds
+                TenderFuelMassKG -= elapsedClockSeconds * pS.FrompH(Kg.FromLb(NewBurnRateSteamToFuelLbspH[pS.TopH(TempCylinderSteamUsageLbpS)])); // Current Tender coal mass determined by burn rate.
+                TenderFuelMassKG = MathHelper.Clamp(TenderFuelMassKG, 0, MaxTenderFuelMassKG); // Clamp value so that it doesn't go out of bounds
             }
             else // if no tender coupled then check whether a tender is required
             {
                 if (IsTenderRequired == 1.0)  // Tender is required
                 {
-                    TenderCoalMassKG = 0.0f; // Set tender coal to zero (none available)
+                    TenderFuelMassKG = 0.0f; // Set tender coal to zero (none available)
                 }
                 else  // Tender is not required (ie tank locomotive) - therefore coal will be carried on the locomotive
                 {
-                    TenderCoalMassKG -= elapsedClockSeconds * pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(TempCylinderSteamUsageLbpS)])); // Current Tender coal mass determined by burn rate.
-                    TenderCoalMassKG = MathHelper.Clamp(TenderCoalMassKG, 0, MaxTenderCoalMassKG); // Clamp value so that it doesn't go out of bounds
+                    TenderFuelMassKG -= elapsedClockSeconds * pS.FrompH(Kg.FromLb(NewBurnRateSteamToFuelLbspH[pS.TopH(TempCylinderSteamUsageLbpS)])); // Current Tender coal mass determined by burn rate.
+                    TenderFuelMassKG = MathHelper.Clamp(TenderFuelMassKG, 0, MaxTenderFuelMassKG); // Clamp value so that it doesn't go out of bounds
                 }
             }
 
-            if (TenderCoalMassKG < 1.0)
+            if (TenderFuelMassKG < 1.0)
             {
                 if (!CoalIsExhausted)
                 {
@@ -3611,7 +3834,7 @@ namespace Orts.Simulation.RollingStocks
 
             if (HasTenderCoupled) // If a tender is coupled then water is available
             {
-                CombinedTenderWaterVolumeUKG -= InjectorBoilerInputLB / WaterLBpUKG;  // Adjust water usage in tender
+                CombinedTenderWaterVolumeUKG -= BoilerWaterInputLB / WaterLBpUKG;  // Adjust water usage in tender
             }
             else // if no tender coupled then check whether a tender is required
             {
@@ -3621,7 +3844,7 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else  // Tender is not required (ie tank locomotive) - therefore water will be carried on the locomotive (and possibly on aux tender)
                 {
-                    CombinedTenderWaterVolumeUKG -= InjectorBoilerInputLB / WaterLBpUKG;  // Adjust water usage in tender
+                    CombinedTenderWaterVolumeUKG -= BoilerWaterInputLB / WaterLBpUKG;  // Adjust water usage in tender
                 }
             }
 
@@ -3630,9 +3853,9 @@ namespace Orts.Simulation.RollingStocks
             CurrentLocoTenderWaterVolumeUKG = (Kg.ToLb(MaxLocoTenderWaterMassKG) / WaterLBpUKG) * TenderWaterPercent; // Adjust water level in locomotive tender
             PrevCombinedTenderWaterVolumeUKG = CombinedTenderWaterVolumeUKG;   // Store value for next iteration
             PreviousTenderWaterVolumeUKG = CombinedTenderWaterVolumeUKG;     // Store value for next iteration
-            WaterConsumptionLbpS = InjectorBoilerInputLB / elapsedClockSeconds; // water consumption
+            WaterConsumptionLbpS = BoilerWaterInputLB / elapsedClockSeconds; // water consumption
             WaterConsumptionLbpS = MathHelper.Clamp(WaterConsumptionLbpS, 0, WaterConsumptionLbpS);
-            CumulativeWaterConsumptionLbs += InjectorBoilerInputLB;
+            CumulativeWaterConsumptionLbs += BoilerWaterInputLB;
             if (CumulativeWaterConsumptionLbs > 0) DbfEvalCumulativeWaterConsumptionLbs = CumulativeWaterConsumptionLbs;//DebriefEval
 
 #if DEBUG_AUXTENDER
@@ -3691,7 +3914,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 // Manual Firing - a small burning effect is maintained by the Radiation Steam Loss. The Blower is designed to be used when stationary, or if required when regulator is closed
                 // The exhaust steam from the cylinders drives the draught through the firebox, the damper is used to reduce (or increase) the draft as required.
-                BurnRateRawKGpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH((RadiationSteamLossLBpS + CalculatedCarHeaterSteamUsageLBpS) + BlowerBurnEffect + DamperBurnEffect)]));
+                BurnRateRawKGpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToFuelLbspH[pS.TopH((RadiationSteamLossLBpS + CalculatedCarHeaterSteamUsageLBpS) + BlowerBurnEffect + DamperBurnEffect)]));
             }
             else // ***********  AI Fireman *****************
             {
@@ -3766,7 +3989,7 @@ namespace Orts.Simulation.RollingStocks
                     {
                         SetFireOn = false; // Disable FireOn if bolierpressure and boilerheat back to "normal"
                     }
-                    BurnRateRawKGpS = 0.9f * pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)])); // AI fire on goes to approx 100% of fire needed to maintain full boiler steam generation
+                    BurnRateRawKGpS = 0.9f * pS.FrompH(Kg.FromLb(NewBurnRateSteamToFuelLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)])); // AI fire on goes to approx 100% of fire needed to maintain full boiler steam generation
                 }
             }
 
@@ -3825,8 +4048,44 @@ namespace Orts.Simulation.RollingStocks
                 BurnRateRawKGpS = 0.0f; // Drop fire due to melting of fusible plug and steam quenching fire, change later to allow graduate ramp down.
             }
 
-            BurnRateSmoothKGpS.Update(elapsedClockSeconds, BurnRateRawKGpS);
-            FuelBurnRateSmoothedKGpS = BurnRateSmoothKGpS.SmoothedValue;
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+            {
+                var oilburnrate = BurnRateRawKGpS;
+
+                if (BurnRateRawKGpS > MaxFiringRateKGpS)
+                {
+                    oilburnrate = MaxFiringRateKGpS; // burning rate can never be more then the max firing rate
+                }
+
+                BurnRateOilReductionSmoothKGpS.Update(elapsedClockSeconds, oilburnrate);
+                BurnRateOilSmoothKGpS.Update(elapsedClockSeconds, oilburnrate);
+
+                if (previousThrottle < throttle)
+                {
+                    // Fire combustion drops rapidly if throttle closed (assume fuel feed is reduced rapidly)
+                    FuelBurnRateSmoothedKGpS = BurnRateOilReductionSmoothKGpS.SmoothedValue;
+                    BurnRateOilSmoothKGpS.ForceSmoothValue(oilburnrate);
+                }
+                else
+                {
+                    // Fire combustion is normal
+                    FuelBurnRateSmoothedKGpS = BurnRateOilSmoothKGpS.SmoothedValue;
+                }
+
+                previousThrottle = throttle;
+
+            }
+            else if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+            {
+                BurnRateWoodSmoothKGpS.Update(elapsedClockSeconds, BurnRateRawKGpS);
+                FuelBurnRateSmoothedKGpS = BurnRateWoodSmoothKGpS.SmoothedValue;
+            }
+            else
+            {
+                BurnRateCoalSmoothKGpS.Update(elapsedClockSeconds, BurnRateRawKGpS);
+                FuelBurnRateSmoothedKGpS = BurnRateCoalSmoothKGpS.SmoothedValue;
+            }
+
             FuelBurnRateSmoothedKGpS = MathHelper.Clamp(FuelBurnRateSmoothedKGpS, 0.0f, MaxFuelBurnGrateKGpS); // clamp burnrate to max fuel that can be burnt within grate limit
             #endregion
 
@@ -3834,22 +4093,37 @@ namespace Orts.Simulation.RollingStocks
 
             if (FiringIsManual)
             {
-                FuelRateSmoothed = CoalIsExhausted ? 0 : FiringRateController.CurrentValue;
-                FuelFeedRateKGpS = MaxFiringRateKGpS * FuelRateSmoothed;
+                FuelFeedRateSmoothedKGpS = CoalIsExhausted ? 0 : FiringRateController.CurrentValue;
+                FuelFeedRateKGpS = MaxFiringRateKGpS * FuelFeedRateSmoothedKGpS;
             }
             else if (elapsedClockSeconds > 0.001 && MaxFiringRateKGpS > 0.001)
             {
                 // Automatic fireman, ish.
-                DesiredChange = MathHelper.Clamp(((IdealFireMassKG - FireMassKG) + FuelBurnRateSmoothedKGpS) / MaxFiringRateKGpS, 0.001f, 1);
-                if (StokerIsMechanical) // if a stoker is fitted expect a quicker response to fuel feeding
+
+                if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
                 {
+
+                    // var OilDesiredRate = MathHelper.Clamp(FuelBurnRateSmoothedKGpS / MaxFiringRateKGpS, 0.001f, 1);
+
+                    var OilDesiredRate = BurnRateRawKGpS;
+
+                    FuelRateOil.Update(elapsedClockSeconds, OilDesiredRate); // faster fuel feed rate for stoker    
+                    FuelFeedRateSmoothedKGpS = CoalIsExhausted ? 0 : FuelRateOil.SmoothedValue; // If tender coal is empty stop fuelrate (feeding coal onto fire). 
+                    DisplayMaxFiringRateKGpS = MaxFiringRateKGpS; // Reset display max firing rate to new figure
+
+                }
+                else if (StokerIsMechanical) // if a stoker is fitted expect a quicker response to fuel feeding
+                {
+
+                    DesiredChange = MathHelper.Clamp(((IdealFireMassKG - FireMassKG) + FuelBurnRateSmoothedKGpS) / MaxFiringRateKGpS, 0.001f, 1);
                     FuelRateStoker.Update(elapsedClockSeconds, DesiredChange); // faster fuel feed rate for stoker    
-                    FuelRateSmoothed = CoalIsExhausted ? 0 : FuelRateStoker.SmoothedValue; // If tender coal is empty stop fuelrate (feeding coal onto fire). 
+                    FuelFeedRateSmoothedKGpS = CoalIsExhausted ? 0 : FuelRateStoker.SmoothedValue; // If tender coal is empty stop fuelrate (feeding coal onto fire). 
                 }
                 else
                 {
-                    FuelRate.Update(elapsedClockSeconds, DesiredChange); // slower fuel feed rate for fireman
-                    FuelRateSmoothed = CoalIsExhausted ? 0 : FuelRate.SmoothedValue; // If tender coal is empty stop fuelrate (feeding coal onto fire).
+                    DesiredChange = MathHelper.Clamp(((IdealFireMassKG - FireMassKG) + FuelBurnRateSmoothedKGpS) / MaxFiringRateKGpS, 0.001f, 1);
+                    FuelRateCoal.Update(elapsedClockSeconds, DesiredChange); // slower fuel feed rate for AI fireman
+                    FuelFeedRateSmoothedKGpS = CoalIsExhausted ? 0 : FuelRateCoal.SmoothedValue; // If tender coal is empty stop fuelrate (feeding coal onto fire).
                 }
 
                 float CurrentFireLevelfactor = 0.95f; // factor representing the how low firemass has got compared to ideal firemass  
@@ -3863,7 +4137,14 @@ namespace Orts.Simulation.RollingStocks
                             FuelBoost = true; // boost shoveling 
                             if (!StokerIsMechanical && IsPlayerTrain)  // Don't display message if stoker in operation
                             {
-                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("FireMass is getting low. Your fireman will shovel faster, but don't wear him out."));
+                                if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+                                {
+                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("FireMass is getting low. Your fireman will add fuel faster, but don't wear him out."));
+                                }
+                                else
+                                {
+                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("FireMass is getting low. Your fireman will shovel faster, but don't wear him out."));
+                                }
                             }
                         }
                     }
@@ -3875,22 +4156,31 @@ namespace Orts.Simulation.RollingStocks
                         FuelBoost = false; // disable boost shoveling 
                         if (!StokerIsMechanical && IsPlayerTrain)  // Don't display message if stoker in operation
                         {
-                            Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("FireMass is back within limits. Your fireman will shovel as per normal."));
+                            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+                            {
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("FireMass is back within limits. Your fireman will add fuel as normal."));
+                            }
+                            else
+                            {
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("FireMass is back within limits. Your fireman will shovel as per normal."));
+                            }
                         }
                     }
                 }
                 if (FuelBoost && !FuelBoostReset) // if fuel boost is still on, and hasn't been reset - needs further refinement as this shouldn't be able to be maintained indefinitely
                 {
                     DisplayMaxFiringRateKGpS = MaxTheoreticalFiringRateKgpS; // Set display value with temporary higher shovelling level
-                    FuelFeedRateKGpS = MaxTheoreticalFiringRateKgpS * FuelRateSmoothed;  // At times of heavy burning allow AI fireman to overfuel
+                    FuelFeedRateKGpS = MaxTheoreticalFiringRateKgpS * FuelFeedRateSmoothedKGpS;  // At times of heavy burning allow AI fireman to overfuel
                     FuelBoostOnTimerS += elapsedClockSeconds; // Time how long to fuel boost for
                 }
                 else
                 {
-                    DisplayMaxFiringRateKGpS = MaxFiringRateKGpS; // Rest display max firing rate to new figure
-                    FuelFeedRateKGpS = MaxFiringRateKGpS * FuelRateSmoothed;
+                    DisplayMaxFiringRateKGpS = MaxFiringRateKGpS; // Reset display max firing rate to new figure
+                    FuelFeedRateKGpS = MaxFiringRateKGpS * FuelFeedRateSmoothedKGpS;
                 }
+
             }
+
             // Calculate update to firemass as a result of adding fuel to the fire
             FireMassKG += elapsedClockSeconds * (FuelFeedRateKGpS - FuelBurnRateSmoothedKGpS);
             FireMassKG = MathHelper.Clamp(FireMassKG, 0, MaxFireMassKG);
@@ -6712,7 +7002,7 @@ namespace Orts.Simulation.RollingStocks
                 GeneratorSteamUsageLBpS = 0.0f; // No generator fitted to locomotive
             }
 
-            if (StokerIsMechanical)
+            if (StokerIsMechanical && SteamLocomotiveFuelType != SteamLocomotiveFuelTypes.Oil)
             {
                 StokerSteamUsageLBpS = pS.FrompH(MaxBoilerOutputLBpH) * (StokerMinUsage + (StokerMaxUsage - StokerMinUsage) * FuelFeedRateKGpS / MaxFiringRateKGpS);  // Caluculate current steam usage based on fuel feed rates
                 BoilerMassLB -= elapsedClockSeconds * StokerSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by mechanical stoker  
@@ -6756,146 +7046,205 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        private void UpdateInjectors(float elapsedClockSeconds)
+        private void UpdateWaterInjection(float elapsedClockSeconds)
         {
-            #region Calculate Injector size
+            BoilerWaterInputLB = 0; // Used by UpdateTender() later in the cycle
 
-            // Calculate size of injectors to suit cylinder size.
-            for (int i = 0; i < SteamEngines.Count; i++)
+            if (SteamLocomotiveFeedWaterType == SteamLocomotiveFeedWaterSystemTypes.MotionPump)
             {
-                InjCylEquivSizeIN = (SteamEngines[i].NumberCylinders / 2.0f) * Me.ToIn(SteamEngines[i].CylindersDiameterM);
-            }
+               MaximumWaterMotionPumpFlowRateLBpS = (1.2f * EvaporationLBpS) / 2.0f; // Assume two pumps and that they can pump a fraction more water the the maximum steam production
 
-            // Based on equiv cyl size determine correct size injector
-            if (InjCylEquivSizeIN <= 19.0 && (2.0f * (pS.TopH(pS.FrompM(Injector09FlowratePSItoUKGpM[MaxBoilerPressurePSI])) * WaterLBpUKG)) > MaxBoilerOutputLBpH)
-            {
-                MaxInjectorFlowRateLBpS = pS.FrompM(Injector09FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 9mm Injector maximum flow rate @ maximm boiler pressure
-                InjectorFlowRateLBpS = pS.FrompM(Injector09FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 9mm Injector Flow rate 
-                InjectorSize = 09.0f; // store size for display in HUD
-            }
-            else if (InjCylEquivSizeIN <= 24.0 && (2.0f * (pS.TopH(pS.FrompM(Injector10FlowratePSItoUKGpM[MaxBoilerPressurePSI])) * WaterLBpUKG)) > MaxBoilerOutputLBpH)
-            {
-                MaxInjectorFlowRateLBpS = pS.FrompM(Injector10FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 10mm Injector maximum flow rate @ maximm boiler pressure
-                InjectorFlowRateLBpS = pS.FrompM(Injector10FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 10 mm Injector Flow rate 
-                InjectorSize = 10.0f; // store size for display in HUD                
-            }
-            else if (InjCylEquivSizeIN <= 26.0 && (2.0f * (pS.TopH(pS.FrompM(Injector11FlowratePSItoUKGpM[MaxBoilerPressurePSI])) * WaterLBpUKG)) > MaxBoilerOutputLBpH)
-            {
-                MaxInjectorFlowRateLBpS = pS.FrompM(Injector11FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 11mm Injector maximum flow rate @ maximm boiler pressure
-                InjectorFlowRateLBpS = pS.FrompM(Injector11FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 11 mm Injector Flow rate 
-                InjectorSize = 11.0f; // store size for display in HUD                
-            }
-            else if (InjCylEquivSizeIN <= 28.0 && (2.0f * (pS.TopH(pS.FrompM(Injector13FlowratePSItoUKGpM[MaxBoilerPressurePSI])) * WaterLBpUKG)) > MaxBoilerOutputLBpH)
-            {
-                MaxInjectorFlowRateLBpS = pS.FrompM(Injector13FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 13mm Injector maximum flow rate @ maximm boiler pressure
-                InjectorFlowRateLBpS = pS.FrompM(Injector13FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 13 mm Injector Flow rate 
-                InjectorSize = 13.0f; // store size for display in HUD                
-            }
-            else if (InjCylEquivSizeIN <= 30.0 && (2.0f * (pS.TopH(pS.FrompM(Injector14FlowratePSItoUKGpM[MaxBoilerPressurePSI])) * WaterLBpUKG)) > MaxBoilerOutputLBpH)
-            {
-                MaxInjectorFlowRateLBpS = pS.FrompM(Injector14FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 14mm Injector maximum flow rate @ maximm boiler pressure
-                InjectorFlowRateLBpS = pS.FrompM(Injector14FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 14 mm Injector Flow rate 
-                InjectorSize = 14.0f; // store size for display in HUD                
+                if (WaterMotionPump1IsOn && absSpeedMpS > 0)
+                {
+                    WaterMotionPump1FlowRateLBpS = MaximumWaterMotionPumpFlowRateLBpS * absSpeedMpS / MpS.FromMpH(MaxLocoSpeedMpH);
+                }
+                else
+                {
+                    WaterMotionPump1FlowRateLBpS = 0;
+                }
+
+                if (WaterMotionPump2IsOn && absSpeedMpS > 0)
+                {
+                    WaterMotionPump2FlowRateLBpS = MaximumWaterMotionPumpFlowRateLBpS * absSpeedMpS / MpS.FromMpH(MaxLocoSpeedMpH);
+                }
+                else
+                {
+                    WaterMotionPump2FlowRateLBpS = 0;
+                }
+
+                if (WaterIsExhausted)
+                {
+                    WaterMotionPump1FlowRateLBpS = 0.0f; // If the tender water is empty, stop flow into boiler
+                    WaterMotionPump2FlowRateLBpS = 0.0f; // If the tender water is empty, stop flow into boiler
+                }
+
+                float TotalPumpFlowRateLbpS = WaterMotionPump1FlowRateLBpS + WaterMotionPump2FlowRateLBpS;
+
+                // Calculate heat loss for water injected
+                // Loss of boiler heat due to water injection - loss is the diff between steam and ambient temperature (or pressure)
+                WaterMotionPumpHeatLossBTU = TotalPumpFlowRateLbpS * (WaterHeatPSItoBTUpLB[BoilerPressurePSI] - WaterHeatPSItoBTUpLB[0]);
+
+                // calculate Water steam heat based on pump flow rate
+                BoilerMassLB += elapsedClockSeconds * TotalPumpFlowRateLbpS;   // Boiler Mass increase by both pumps
+                BoilerHeatBTU -= elapsedClockSeconds * WaterMotionPumpHeatLossBTU; // Total loss of boiler heat due to water pump - inject cold water straight from tender  
+                BoilerWaterInputLB += (elapsedClockSeconds * TotalPumpFlowRateLbpS); // Keep track of water flow into boilers from Pump
+                BoilerHeatOutBTUpS += WaterMotionPumpHeatLossBTU; // Total loss of boiler heat due to water injection - inject steam and water Heat
+
+                // Update pump lockout timer
+                if (WaterMotionPump1IsOn || WaterMotionPump2IsOn)
+                {
+                    if (WaterMotionPumpLockedOut)
+                    {
+                        WaterMotionPumpLockOutTimeS += elapsedClockSeconds;
+                    }
+                    if (WaterMotionPumpLockOutTimeS > WaterMotionPumpLockOutResetTimeS)
+                    {
+                        WaterMotionPumpLockedOut = false;
+                        WaterMotionPumpLockOutTimeS = 0.0f;
+
+                    }
+                }
             }
             else
             {
-                MaxInjectorFlowRateLBpS = pS.FrompM(Injector15FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 15mm Injector maximum flow rate @ maximm boiler pressure
-                InjectorFlowRateLBpS = pS.FrompM(Injector15FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 15 mm Injector Flow rate 
-                InjectorSize = 15.0f; // store size for display in HUD                
-            }
-            #endregion
+                #region Calculate Injector size
 
-            if (WaterIsExhausted)
-            {
-                InjectorFlowRateLBpS = 0.0f; // If the tender water is empty, stop flow into boiler
-            }
-
-            InjectorBoilerInputLB = 0; // Used by UpdateTender() later in the cycle
-            if (WaterIsExhausted)
-            {
-                // don't fill boiler with injectors
-            }
-            else
-            {
-                // Injectors to fill boiler   
-                if (Injector1IsOn)
+                // Calculate size of injectors to suit cylinder size.
+                for (int i = 0; i < SteamEngines.Count; i++)
                 {
-                    // Calculate Injector 1 delivery water temp
-                    if (Injector1Fraction < InjCapMinFactorX[BoilerPressurePSI])
-                    {
-                        Injector1WaterDelTempF = InjDelWaterTempMinPressureFtoPSI[BoilerPressurePSI]; // set water delivery temp to minimum value
-                    }
-                    else
-                    {
-                        Injector1TempFraction = (Injector1Fraction - InjCapMinFactorX[BoilerPressurePSI]) / (1 - InjCapMinFactorX[MaxBoilerPressurePSI]); // Find the fraction above minimum value
-                        Injector1WaterDelTempF = InjDelWaterTempMinPressureFtoPSI[BoilerPressurePSI] - ((InjDelWaterTempMinPressureFtoPSI[BoilerPressurePSI] - InjDelWaterTempMaxPressureFtoPSI[BoilerPressurePSI]) * Injector1TempFraction);
-                        Injector1WaterDelTempF = MathHelper.Clamp(Injector1WaterDelTempF, 65.0f, 500.0f);
-                    }
-
-                    Injector1WaterTempPressurePSI = WaterTempFtoPSI[Injector1WaterDelTempF]; // calculate the pressure of the delivery water
-
-                    // Calculate amount of steam used to inject water
-                    MaxInject1SteamUsedLbpS = InjWaterFedSteamPressureFtoPSI[BoilerPressurePSI];  // Maximum amount of steam used at actual boiler pressure
-                    ActInject1SteamUsedLbpS = (Injector1Fraction * InjectorFlowRateLBpS) / MaxInject1SteamUsedLbpS; // Lbs of steam injected into boiler to inject water.
-
-                    // Calculate heat loss for steam injection
-                    Inject1SteamHeatLossBTU = ActInject1SteamUsedLbpS * (BoilerSteamHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector1WaterTempPressurePSI]); // Calculate heat loss for injection steam, ie steam heat to water delivery temperature
-
-                    // Calculate heat loss for water injected
-                    // Loss of boiler heat due to water injection - loss is the diff between steam and water Heat
-                    Inject1WaterHeatLossBTU = Injector1Fraction * InjectorFlowRateLBpS * (BoilerWaterHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector1WaterTempPressurePSI]);
-
-                    // calculate Water steam heat based on injector water delivery temp
-                    BoilerMassLB += elapsedClockSeconds * Injector1Fraction * InjectorFlowRateLBpS;   // Boiler Mass increase by Injector 1
-                    BoilerHeatBTU -= elapsedClockSeconds * (Inject1WaterHeatLossBTU + Inject1SteamHeatLossBTU); // Total loss of boiler heat due to water injection - inject steam and water Heat   
-                    InjectorBoilerInputLB += (elapsedClockSeconds * Injector1Fraction * InjectorFlowRateLBpS); // Keep track of water flow into boilers from Injector 1
-                    BoilerHeatOutBTUpS += (Inject1WaterHeatLossBTU + Inject1SteamHeatLossBTU); // Total loss of boiler heat due to water injection - inject steam and water Heat
+                    InjCylEquivSizeIN = (SteamEngines[i].NumberCylinders / 2.0f) * Me.ToIn(SteamEngines[i].CylindersDiameterM);
                 }
-                if (Injector2IsOn)
+
+                // Based on equiv cyl size determine correct size injector
+                if (InjCylEquivSizeIN <= 19.0 && (2.0f * (pS.TopH(pS.FrompM(Injector09FlowratePSItoUKGpM[MaxBoilerPressurePSI])) * WaterLBpUKG)) > MaxBoilerOutputLBpH)
                 {
-                    // Calculate Injector 2 delivery water temp
-                    if (Injector2Fraction < InjCapMinFactorX[BoilerPressurePSI])
-                    {
-                        Injector2WaterDelTempF = InjDelWaterTempMinPressureFtoPSI[BoilerPressurePSI]; // set water delivery temp to minimum value
-                    }
-                    else
-                    {
-                        Injector2TempFraction = (Injector2Fraction - InjCapMinFactorX[BoilerPressurePSI]) / (1 - InjCapMinFactorX[MaxBoilerPressurePSI]); // Find the fraction above minimum value
-                        Injector2WaterDelTempF = InjDelWaterTempMinPressureFtoPSI[BoilerPressurePSI] - ((InjDelWaterTempMinPressureFtoPSI[BoilerPressurePSI] - InjDelWaterTempMaxPressureFtoPSI[BoilerPressurePSI]) * Injector2TempFraction);
-                        Injector2WaterDelTempF = MathHelper.Clamp(Injector2WaterDelTempF, 65.0f, 500.0f);
-                    }
-                    Injector2WaterTempPressurePSI = WaterTempFtoPSI[Injector2WaterDelTempF]; // calculate the pressure of the delivery water
-
-                    // Calculate amount of steam used to inject water
-                    MaxInject2SteamUsedLbpS = InjWaterFedSteamPressureFtoPSI[BoilerPressurePSI];  // Maximum amount of steam used at boiler pressure
-                    ActInject2SteamUsedLbpS = (Injector2Fraction * InjectorFlowRateLBpS) / MaxInject2SteamUsedLbpS; // Lbs of steam injected into boiler to inject water.
-
-                    // Calculate heat loss for steam injection
-                    Inject2SteamHeatLossBTU = ActInject2SteamUsedLbpS * (BoilerSteamHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector2WaterTempPressurePSI]); // Calculate heat loss for injection steam, ie steam heat to water delivery temperature
-
-                    // Calculate heat loss for water injected
-                    Inject2WaterHeatLossBTU = Injector2Fraction * InjectorFlowRateLBpS * (BoilerWaterHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector2WaterTempPressurePSI]); // Loss of boiler heat due to water injection - loss is the diff between steam and water Heat
-
-                    // calculate Water steam heat based on injector water delivery temp
-                    BoilerMassLB += elapsedClockSeconds * Injector2Fraction * InjectorFlowRateLBpS;   // Boiler Mass increase by Injector 1
-                    BoilerHeatBTU -= elapsedClockSeconds * (Inject2WaterHeatLossBTU + Inject2SteamHeatLossBTU); // Total loss of boiler heat due to water injection - inject steam and water Heat   
-                    InjectorBoilerInputLB += (elapsedClockSeconds * Injector2Fraction * InjectorFlowRateLBpS); // Keep track of water flow into boilers from Injector 1
-                    BoilerHeatOutBTUpS += (Inject2WaterHeatLossBTU + Inject2SteamHeatLossBTU); // Total loss of boiler heat due to water injection - inject steam and water Heat
+                    MaxInjectorFlowRateLBpS = pS.FrompM(Injector09FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 9mm Injector maximum flow rate @ maximm boiler pressure
+                    InjectorFlowRateLBpS = pS.FrompM(Injector09FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 9mm Injector Flow rate 
+                    InjectorSize = 09.0f; // store size for display in HUD
                 }
-            }
-
-            // Update injector lockout timer
-            if (Injector1IsOn || Injector2IsOn)
-            {
-                if (InjectorLockedOut)
+                else if (InjCylEquivSizeIN <= 24.0 && (2.0f * (pS.TopH(pS.FrompM(Injector10FlowratePSItoUKGpM[MaxBoilerPressurePSI])) * WaterLBpUKG)) > MaxBoilerOutputLBpH)
                 {
-                    InjectorLockOutTimeS += elapsedClockSeconds;
+                    MaxInjectorFlowRateLBpS = pS.FrompM(Injector10FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 10mm Injector maximum flow rate @ maximm boiler pressure
+                    InjectorFlowRateLBpS = pS.FrompM(Injector10FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 10 mm Injector Flow rate 
+                    InjectorSize = 10.0f; // store size for display in HUD                
                 }
-                if (InjectorLockOutTimeS > InjectorLockOutResetTimeS)
+                else if (InjCylEquivSizeIN <= 26.0 && (2.0f * (pS.TopH(pS.FrompM(Injector11FlowratePSItoUKGpM[MaxBoilerPressurePSI])) * WaterLBpUKG)) > MaxBoilerOutputLBpH)
                 {
-                    InjectorLockedOut = false;
-                    InjectorLockOutTimeS = 0.0f;
+                    MaxInjectorFlowRateLBpS = pS.FrompM(Injector11FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 11mm Injector maximum flow rate @ maximm boiler pressure
+                    InjectorFlowRateLBpS = pS.FrompM(Injector11FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 11 mm Injector Flow rate 
+                    InjectorSize = 11.0f; // store size for display in HUD                
+                }
+                else if (InjCylEquivSizeIN <= 28.0 && (2.0f * (pS.TopH(pS.FrompM(Injector13FlowratePSItoUKGpM[MaxBoilerPressurePSI])) * WaterLBpUKG)) > MaxBoilerOutputLBpH)
+                {
+                    MaxInjectorFlowRateLBpS = pS.FrompM(Injector13FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 13mm Injector maximum flow rate @ maximm boiler pressure
+                    InjectorFlowRateLBpS = pS.FrompM(Injector13FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 13 mm Injector Flow rate 
+                    InjectorSize = 13.0f; // store size for display in HUD                
+                }
+                else if (InjCylEquivSizeIN <= 30.0 && (2.0f * (pS.TopH(pS.FrompM(Injector14FlowratePSItoUKGpM[MaxBoilerPressurePSI])) * WaterLBpUKG)) > MaxBoilerOutputLBpH)
+                {
+                    MaxInjectorFlowRateLBpS = pS.FrompM(Injector14FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 14mm Injector maximum flow rate @ maximm boiler pressure
+                    InjectorFlowRateLBpS = pS.FrompM(Injector14FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 14 mm Injector Flow rate 
+                    InjectorSize = 14.0f; // store size for display in HUD                
+                }
+                else
+                {
+                    MaxInjectorFlowRateLBpS = pS.FrompM(Injector15FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 15mm Injector maximum flow rate @ maximm boiler pressure
+                    InjectorFlowRateLBpS = pS.FrompM(Injector15FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 15 mm Injector Flow rate 
+                    InjectorSize = 15.0f; // store size for display in HUD                
+                }
+                #endregion
 
+                if (WaterIsExhausted)
+                {
+                    InjectorFlowRateLBpS = 0.0f; // If the tender water is empty, stop flow into boiler
+                }
+
+                if (WaterIsExhausted)
+                {
+                    // don't fill boiler with injectors
+                }
+                else
+                {
+                    // Injectors to fill boiler   
+                    if (Injector1IsOn)
+                    {
+                        // Calculate Injector 1 delivery water temp
+                        if (Injector1Fraction < InjCapMinFactorX[BoilerPressurePSI])
+                        {
+                            Injector1WaterDelTempF = InjDelWaterTempMinPressureFtoPSI[BoilerPressurePSI]; // set water delivery temp to minimum value
+                        }
+                        else
+                        {
+                            Injector1TempFraction = (Injector1Fraction - InjCapMinFactorX[BoilerPressurePSI]) / (1 - InjCapMinFactorX[MaxBoilerPressurePSI]); // Find the fraction above minimum value
+                            Injector1WaterDelTempF = InjDelWaterTempMinPressureFtoPSI[BoilerPressurePSI] - ((InjDelWaterTempMinPressureFtoPSI[BoilerPressurePSI] - InjDelWaterTempMaxPressureFtoPSI[BoilerPressurePSI]) * Injector1TempFraction);
+                            Injector1WaterDelTempF = MathHelper.Clamp(Injector1WaterDelTempF, 65.0f, 500.0f);
+                        }
+
+                        Injector1WaterTempPressurePSI = WaterTempFtoPSI[Injector1WaterDelTempF]; // calculate the pressure of the delivery water
+
+                        // Calculate amount of steam used to inject water
+                        MaxInject1SteamUsedLbpS = InjWaterFedSteamPressureFtoPSI[BoilerPressurePSI];  // Maximum amount of steam used at actual boiler pressure
+                        ActInject1SteamUsedLbpS = (Injector1Fraction * InjectorFlowRateLBpS) / MaxInject1SteamUsedLbpS; // Lbs of steam injected into boiler to inject water.
+
+                        // Calculate heat loss for steam injection
+                        Inject1SteamHeatLossBTU = ActInject1SteamUsedLbpS * (BoilerSteamHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector1WaterTempPressurePSI]); // Calculate heat loss for injection steam, ie steam heat to water delivery temperature
+
+                        // Calculate heat loss for water injected
+                        // Loss of boiler heat due to water injection - loss is the diff between steam and water Heat
+                        Inject1WaterHeatLossBTU = Injector1Fraction * InjectorFlowRateLBpS * (BoilerWaterHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector1WaterTempPressurePSI]);
+
+                        // calculate Water steam heat based on injector water delivery temp
+                        BoilerMassLB += elapsedClockSeconds * Injector1Fraction * InjectorFlowRateLBpS;   // Boiler Mass increase by Injector 1
+                        BoilerHeatBTU -= elapsedClockSeconds * (Inject1WaterHeatLossBTU + Inject1SteamHeatLossBTU); // Total loss of boiler heat due to water injection - inject steam and water Heat   
+                        BoilerWaterInputLB += (elapsedClockSeconds * Injector1Fraction * InjectorFlowRateLBpS); // Keep track of water flow into boilers from Injector 1
+                        BoilerHeatOutBTUpS += (Inject1WaterHeatLossBTU + Inject1SteamHeatLossBTU); // Total loss of boiler heat due to water injection - inject steam and water Heat
+                    }
+                    if (Injector2IsOn)
+                    {
+                        // Calculate Injector 2 delivery water temp
+                        if (Injector2Fraction < InjCapMinFactorX[BoilerPressurePSI])
+                        {
+                            Injector2WaterDelTempF = InjDelWaterTempMinPressureFtoPSI[BoilerPressurePSI]; // set water delivery temp to minimum value
+                        }
+                        else
+                        {
+                            Injector2TempFraction = (Injector2Fraction - InjCapMinFactorX[BoilerPressurePSI]) / (1 - InjCapMinFactorX[MaxBoilerPressurePSI]); // Find the fraction above minimum value
+                            Injector2WaterDelTempF = InjDelWaterTempMinPressureFtoPSI[BoilerPressurePSI] - ((InjDelWaterTempMinPressureFtoPSI[BoilerPressurePSI] - InjDelWaterTempMaxPressureFtoPSI[BoilerPressurePSI]) * Injector2TempFraction);
+                            Injector2WaterDelTempF = MathHelper.Clamp(Injector2WaterDelTempF, 65.0f, 500.0f);
+                        }
+                        Injector2WaterTempPressurePSI = WaterTempFtoPSI[Injector2WaterDelTempF]; // calculate the pressure of the delivery water
+
+                        // Calculate amount of steam used to inject water
+                        MaxInject2SteamUsedLbpS = InjWaterFedSteamPressureFtoPSI[BoilerPressurePSI];  // Maximum amount of steam used at boiler pressure
+                        ActInject2SteamUsedLbpS = (Injector2Fraction * InjectorFlowRateLBpS) / MaxInject2SteamUsedLbpS; // Lbs of steam injected into boiler to inject water.
+
+                        // Calculate heat loss for steam injection
+                        Inject2SteamHeatLossBTU = ActInject2SteamUsedLbpS * (BoilerSteamHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector2WaterTempPressurePSI]); // Calculate heat loss for injection steam, ie steam heat to water delivery temperature
+
+                        // Calculate heat loss for water injected
+                        Inject2WaterHeatLossBTU = Injector2Fraction * InjectorFlowRateLBpS * (BoilerWaterHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector2WaterTempPressurePSI]); // Loss of boiler heat due to water injection - loss is the diff between steam and water Heat
+
+                        // calculate Water steam heat based on injector water delivery temp
+                        BoilerMassLB += elapsedClockSeconds * Injector2Fraction * InjectorFlowRateLBpS;   // Boiler Mass increase by Injector 1
+                        BoilerHeatBTU -= elapsedClockSeconds * (Inject2WaterHeatLossBTU + Inject2SteamHeatLossBTU); // Total loss of boiler heat due to water injection - inject steam and water Heat   
+                        BoilerWaterInputLB += (elapsedClockSeconds * Injector2Fraction * InjectorFlowRateLBpS); // Keep track of water flow into boilers from Injector 1
+                        BoilerHeatOutBTUpS += (Inject2WaterHeatLossBTU + Inject2SteamHeatLossBTU); // Total loss of boiler heat due to water injection - inject steam and water Heat
+                    }
+                }
+
+                // Update injector lockout timer
+                if (Injector1IsOn || Injector2IsOn)
+                {
+                    if (InjectorLockedOut)
+                    {
+                        InjectorLockOutTimeS += elapsedClockSeconds;
+                    }
+                    if (InjectorLockOutTimeS > InjectorLockOutResetTimeS)
+                    {
+                        InjectorLockedOut = false;
+                        InjectorLockOutTimeS = 0.0f;
+
+                    }
                 }
             }
         }
@@ -6949,179 +7298,208 @@ namespace Orts.Simulation.RollingStocks
 
             #region AI Fireman
             {
-                // Injectors
-                // Injectors normally not on when stationary?
-                // Injector water delivery heat decreases with the capacity of the injectors, ideally one injector would be used as appropriate to match steam consumption. @nd one only used if required.
-                if (WaterGlassLevelIN > 7.99)        // turn injectors off if water level in boiler greater then 8.0, to stop cycling
+
+                if (SteamLocomotiveFeedWaterType == SteamLocomotiveFeedWaterSystemTypes.MotionPump && !WaterIsExhausted)
                 {
-                    Injector1IsOn = false;
-                    Injector1Fraction = 0.0f;
-                    Injector2IsOn = false;
-                    Injector2Fraction = 0.0f;
-                    StopInjector1Sound();
-                    StopInjector2Sound();
-                }
-                else if (WaterGlassLevelIN <= 7.0 && WaterGlassLevelIN > 6.875 && !InjectorLockedOut)  // turn injector 1 on 20% if water level in boiler drops below 7.0
-                {
-                    Injector1IsOn = true;
-                    Injector1Fraction = 0.1f;
-                    Injector2IsOn = false;
-                    Injector2Fraction = 0.0f;
-                    InjectorLockedOut = true;
-                    PlayInjector1SoundIfStarting();
-                }
-                else if (WaterGlassLevelIN <= 6.875 && WaterGlassLevelIN > 6.75 && !InjectorLockedOut)  // turn injector 1 on 20% if water level in boiler drops below 7.0
-                {
-                    Injector1IsOn = true;
-                    Injector1Fraction = 0.2f;
-                    Injector2IsOn = false;
-                    Injector2Fraction = 0.0f;
-                    InjectorLockedOut = true;
-                    PlayInjector1SoundIfStarting();
-                }
-                else if (WaterGlassLevelIN <= 6.75 && WaterGlassLevelIN > 6.675 && !InjectorLockedOut)  // turn injector 1 on 20% if water level in boiler drops below 7.0
-                {
-                    Injector1IsOn = true;
-                    Injector1Fraction = 0.3f;
-                    Injector2IsOn = false;
-                    Injector2Fraction = 0.0f;
-                    InjectorLockedOut = true;
-                    PlayInjector1SoundIfStarting();
-                }
-                else if (WaterGlassLevelIN <= 6.675 && WaterGlassLevelIN > 6.5 && !InjectorLockedOut)
-                {
-                    Injector1IsOn = true;
-                    Injector1Fraction = 0.4f;
-                    Injector2IsOn = false;
-                    Injector2Fraction = 0.0f;
-                    InjectorLockedOut = true;
-                    PlayInjector1SoundIfStarting();
-                }
-                else if (WaterGlassLevelIN <= 6.5 && WaterGlassLevelIN > 6.375 && !InjectorLockedOut)
-                {
-                    Injector1IsOn = true;
-                    Injector1Fraction = 0.5f;
-                    Injector2IsOn = false;
-                    Injector2Fraction = 0.0f;
-                    InjectorLockedOut = true;
-                    PlayInjector1SoundIfStarting();
-                }
-                else if (WaterGlassLevelIN <= 6.375 && WaterGlassLevelIN > 6.25 && !InjectorLockedOut)
-                {
-                    Injector1IsOn = true;
-                    Injector1Fraction = 0.6f;
-                    Injector2IsOn = false;
-                    Injector2Fraction = 0.0f;
-                    InjectorLockedOut = true;
-                    PlayInjector1SoundIfStarting();
-                }
-                else if (WaterGlassLevelIN <= 6.25 && WaterGlassLevelIN > 6.125 && !InjectorLockedOut)
-                {
-                    Injector1IsOn = true;
-                    Injector1Fraction = 0.7f;
-                    Injector2IsOn = false;
-                    Injector2Fraction = 0.0f;
-                    InjectorLockedOut = true;
-                    PlayInjector1SoundIfStarting();
-                }
-                else if (WaterGlassLevelIN <= 6.125 && WaterGlassLevelIN > 6.0 && !InjectorLockedOut)
-                {
-                    Injector1IsOn = true;
-                    Injector1Fraction = 0.8f;
-                    Injector2IsOn = false;
-                    Injector2Fraction = 0.0f;
-                    InjectorLockedOut = true;
-                    PlayInjector1SoundIfStarting();
-                }
-                else if (WaterGlassLevelIN <= 6.0 && WaterGlassLevelIN > 5.875 && !InjectorLockedOut)
-                {
-                    Injector1IsOn = true;
-                    Injector1Fraction = 0.9f;
-                    Injector2IsOn = false;
-                    Injector2Fraction = 0.0f;
-                    InjectorLockedOut = true;
-                    PlayInjector1SoundIfStarting();
-                }
-                else if (WaterGlassLevelIN <= 5.875 && WaterGlassLevelIN > 5.75 && !InjectorLockedOut)
-                {
-                    Injector1IsOn = true;
-                    Injector1Fraction = 1.0f;
-                    Injector2IsOn = false;
-                    Injector2Fraction = 0.0f;
-                    InjectorLockedOut = true;
-                    PlayInjector1SoundIfStarting();
-                }
-                else if (BoilerPressurePSI > (MaxBoilerPressurePSI - 100.0))  // If boiler pressure is not too low then turn on injector 2
-                {
-                    if (WaterGlassLevelIN <= 5.75 && WaterGlassLevelIN > 5.675 && !InjectorLockedOut)
+                    
+                    if (WaterGlassLevelIN > 7.99)        // turn pumps off if water level in boiler greater then 8.0, to stop cycling
                     {
-                        Injector2IsOn = true;
-                        Injector2Fraction = 0.1f;
-                        InjectorLockedOut = true;
-                        PlayInjector2SoundIfStarting();
+                        WaterMotionPump1IsOn = false;
+                        WaterMotionPump2IsOn = false;
+                        StopMotionPump1Sound();
+                        StopMotionPump2Sound();
                     }
-                    else if (WaterGlassLevelIN <= 5.675 && WaterGlassLevelIN > 5.5 && !InjectorLockedOut)
+                    else if (WaterGlassLevelIN <= 7.0 && WaterGlassLevelIN > 5.75 && !WaterMotionPumpLockedOut)  // turn water pump #1 on if water level in boiler drops below 7.0 and is above 
                     {
-                        Injector2IsOn = true;
-                        Injector2Fraction = 0.2f;
-                        InjectorLockedOut = true;
-                        PlayInjector2SoundIfStarting();
+                        WaterMotionPump1IsOn = true;
+                        WaterMotionPump2IsOn = false;
+                        WaterMotionPumpLockedOut = true;
+                        PlayMotionPump1SoundIfStarting();
                     }
-                    else if (WaterGlassLevelIN <= 5.5 && WaterGlassLevelIN > 5.325 && !InjectorLockedOut)
+                    else if (WaterGlassLevelIN <= 5.75 && WaterGlassLevelIN > 4.5 && !WaterMotionPumpLockedOut)  // turn water pump #2 on as well if water level in boiler drops below 5.75 and is above 
                     {
-                        Injector2IsOn = true;
-                        Injector2Fraction = 0.3f;
-                        InjectorLockedOut = true;
-                        PlayInjector2SoundIfStarting();
+                        WaterMotionPump1IsOn = true;
+                        WaterMotionPump2IsOn = true;
+                        WaterMotionPumpLockedOut = true;
+                        PlayMotionPump2SoundIfStarting();
                     }
-                    else if (WaterGlassLevelIN <= 5.325 && WaterGlassLevelIN > 5.25 && !InjectorLockedOut)
+                }
+                else
+                {
+                    // Injectors
+                    // Injectors normally not on when stationary?
+                    // Injector water delivery heat decreases with the capacity of the injectors, ideally one injector would be used as appropriate to match steam consumption. @nd one only used if required.
+                    if (WaterGlassLevelIN > 7.99)        // turn injectors off if water level in boiler greater then 8.0, to stop cycling
                     {
-                        Injector2IsOn = true;
-                        Injector2Fraction = 0.4f;
-                        InjectorLockedOut = true;
-                        PlayInjector2SoundIfStarting();
+                        Injector1IsOn = false;
+                        Injector1Fraction = 0.0f;
+                        Injector2IsOn = false;
+                        Injector2Fraction = 0.0f;
+                        StopInjector1Sound();
+                        StopInjector2Sound();
                     }
-                    else if (WaterGlassLevelIN <= 5.25 && WaterGlassLevelIN > 5.125 && !InjectorLockedOut)
+                    else if (WaterGlassLevelIN <= 7.0 && WaterGlassLevelIN > 6.875 && !InjectorLockedOut)  // turn injector 1 on 20% if water level in boiler drops below 7.0
                     {
-                        Injector2IsOn = true;
-                        Injector2Fraction = 0.5f;
+                        Injector1IsOn = true;
+                        Injector1Fraction = 0.1f;
+                        Injector2IsOn = false;
+                        Injector2Fraction = 0.0f;
                         InjectorLockedOut = true;
-                        PlayInjector2SoundIfStarting();
+                        PlayInjector1SoundIfStarting();
                     }
-                    else if (WaterGlassLevelIN <= 5.125 && WaterGlassLevelIN > 5.0 && !InjectorLockedOut)
+                    else if (WaterGlassLevelIN <= 6.875 && WaterGlassLevelIN > 6.75 && !InjectorLockedOut)  // turn injector 1 on 20% if water level in boiler drops below 7.0
                     {
-                        Injector2IsOn = true;
-                        Injector2Fraction = 0.6f;
+                        Injector1IsOn = true;
+                        Injector1Fraction = 0.2f;
+                        Injector2IsOn = false;
+                        Injector2Fraction = 0.0f;
                         InjectorLockedOut = true;
-                        PlayInjector2SoundIfStarting();
+                        PlayInjector1SoundIfStarting();
                     }
-                    else if (WaterGlassLevelIN <= 5.0 && WaterGlassLevelIN > 4.875 && !InjectorLockedOut)
+                    else if (WaterGlassLevelIN <= 6.75 && WaterGlassLevelIN > 6.675 && !InjectorLockedOut)  // turn injector 1 on 20% if water level in boiler drops below 7.0
                     {
-                        Injector2IsOn = true;
-                        Injector2Fraction = 0.7f;
+                        Injector1IsOn = true;
+                        Injector1Fraction = 0.3f;
+                        Injector2IsOn = false;
+                        Injector2Fraction = 0.0f;
                         InjectorLockedOut = true;
-                        PlayInjector2SoundIfStarting();
+                        PlayInjector1SoundIfStarting();
                     }
-                    else if (WaterGlassLevelIN <= 4.875 && WaterGlassLevelIN > 4.75 && !InjectorLockedOut)
+                    else if (WaterGlassLevelIN <= 6.675 && WaterGlassLevelIN > 6.5 && !InjectorLockedOut)
                     {
-                        Injector2IsOn = true;
-                        Injector2Fraction = 0.8f;
+                        Injector1IsOn = true;
+                        Injector1Fraction = 0.4f;
+                        Injector2IsOn = false;
+                        Injector2Fraction = 0.0f;
                         InjectorLockedOut = true;
-                        PlayInjector2SoundIfStarting();
+                        PlayInjector1SoundIfStarting();
                     }
-                    else if (WaterGlassLevelIN <= 4.75 && WaterGlassLevelIN > 4.625 && !InjectorLockedOut)
+                    else if (WaterGlassLevelIN <= 6.5 && WaterGlassLevelIN > 6.375 && !InjectorLockedOut)
                     {
-                        Injector2IsOn = true;
-                        Injector2Fraction = 0.9f;
+                        Injector1IsOn = true;
+                        Injector1Fraction = 0.5f;
+                        Injector2IsOn = false;
+                        Injector2Fraction = 0.0f;
                         InjectorLockedOut = true;
-                        PlayInjector2SoundIfStarting();
+                        PlayInjector1SoundIfStarting();
                     }
-                    else if (WaterGlassLevelIN <= 4.625 && WaterGlassLevelIN > 4.5 && !InjectorLockedOut)
+                    else if (WaterGlassLevelIN <= 6.375 && WaterGlassLevelIN > 6.25 && !InjectorLockedOut)
                     {
-                        Injector2IsOn = true;
-                        Injector2Fraction = 1.0f;
+                        Injector1IsOn = true;
+                        Injector1Fraction = 0.6f;
+                        Injector2IsOn = false;
+                        Injector2Fraction = 0.0f;
                         InjectorLockedOut = true;
-                        PlayInjector2SoundIfStarting();
+                        PlayInjector1SoundIfStarting();
+                    }
+                    else if (WaterGlassLevelIN <= 6.25 && WaterGlassLevelIN > 6.125 && !InjectorLockedOut)
+                    {
+                        Injector1IsOn = true;
+                        Injector1Fraction = 0.7f;
+                        Injector2IsOn = false;
+                        Injector2Fraction = 0.0f;
+                        InjectorLockedOut = true;
+                        PlayInjector1SoundIfStarting();
+                    }
+                    else if (WaterGlassLevelIN <= 6.125 && WaterGlassLevelIN > 6.0 && !InjectorLockedOut)
+                    {
+                        Injector1IsOn = true;
+                        Injector1Fraction = 0.8f;
+                        Injector2IsOn = false;
+                        Injector2Fraction = 0.0f;
+                        InjectorLockedOut = true;
+                        PlayInjector1SoundIfStarting();
+                    }
+                    else if (WaterGlassLevelIN <= 6.0 && WaterGlassLevelIN > 5.875 && !InjectorLockedOut)
+                    {
+                        Injector1IsOn = true;
+                        Injector1Fraction = 0.9f;
+                        Injector2IsOn = false;
+                        Injector2Fraction = 0.0f;
+                        InjectorLockedOut = true;
+                        PlayInjector1SoundIfStarting();
+                    }
+                    else if (WaterGlassLevelIN <= 5.875 && WaterGlassLevelIN > 5.75 && !InjectorLockedOut)
+                    {
+                        Injector1IsOn = true;
+                        Injector1Fraction = 1.0f;
+                        Injector2IsOn = false;
+                        Injector2Fraction = 0.0f;
+                        InjectorLockedOut = true;
+                        PlayInjector1SoundIfStarting();
+                    }
+                    else if (BoilerPressurePSI > (MaxBoilerPressurePSI - 100.0))  // If boiler pressure is not too low then turn on injector 2
+                    {
+                        if (WaterGlassLevelIN <= 5.75 && WaterGlassLevelIN > 5.675 && !InjectorLockedOut)
+                        {
+                            Injector2IsOn = true;
+                            Injector2Fraction = 0.1f;
+                            InjectorLockedOut = true;
+                            PlayInjector2SoundIfStarting();
+                        }
+                        else if (WaterGlassLevelIN <= 5.675 && WaterGlassLevelIN > 5.5 && !InjectorLockedOut)
+                        {
+                            Injector2IsOn = true;
+                            Injector2Fraction = 0.2f;
+                            InjectorLockedOut = true;
+                            PlayInjector2SoundIfStarting();
+                        }
+                        else if (WaterGlassLevelIN <= 5.5 && WaterGlassLevelIN > 5.325 && !InjectorLockedOut)
+                        {
+                            Injector2IsOn = true;
+                            Injector2Fraction = 0.3f;
+                            InjectorLockedOut = true;
+                            PlayInjector2SoundIfStarting();
+                        }
+                        else if (WaterGlassLevelIN <= 5.325 && WaterGlassLevelIN > 5.25 && !InjectorLockedOut)
+                        {
+                            Injector2IsOn = true;
+                            Injector2Fraction = 0.4f;
+                            InjectorLockedOut = true;
+                            PlayInjector2SoundIfStarting();
+                        }
+                        else if (WaterGlassLevelIN <= 5.25 && WaterGlassLevelIN > 5.125 && !InjectorLockedOut)
+                        {
+                            Injector2IsOn = true;
+                            Injector2Fraction = 0.5f;
+                            InjectorLockedOut = true;
+                            PlayInjector2SoundIfStarting();
+                        }
+                        else if (WaterGlassLevelIN <= 5.125 && WaterGlassLevelIN > 5.0 && !InjectorLockedOut)
+                        {
+                            Injector2IsOn = true;
+                            Injector2Fraction = 0.6f;
+                            InjectorLockedOut = true;
+                            PlayInjector2SoundIfStarting();
+                        }
+                        else if (WaterGlassLevelIN <= 5.0 && WaterGlassLevelIN > 4.875 && !InjectorLockedOut)
+                        {
+                            Injector2IsOn = true;
+                            Injector2Fraction = 0.7f;
+                            InjectorLockedOut = true;
+                            PlayInjector2SoundIfStarting();
+                        }
+                        else if (WaterGlassLevelIN <= 4.875 && WaterGlassLevelIN > 4.75 && !InjectorLockedOut)
+                        {
+                            Injector2IsOn = true;
+                            Injector2Fraction = 0.8f;
+                            InjectorLockedOut = true;
+                            PlayInjector2SoundIfStarting();
+                        }
+                        else if (WaterGlassLevelIN <= 4.75 && WaterGlassLevelIN > 4.625 && !InjectorLockedOut)
+                        {
+                            Injector2IsOn = true;
+                            Injector2Fraction = 0.9f;
+                            InjectorLockedOut = true;
+                            PlayInjector2SoundIfStarting();
+                        }
+                        else if (WaterGlassLevelIN <= 4.625 && WaterGlassLevelIN > 4.5 && !InjectorLockedOut)
+                        {
+                            Injector2IsOn = true;
+                            Injector2Fraction = 1.0f;
+                            InjectorLockedOut = true;
+                            PlayInjector2SoundIfStarting();
+                        }
                     }
                 }
 
@@ -7229,7 +7607,53 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
+        /// <summary>
+        /// Turn on the MotionPump 1 sound only when the pump starts.
+        /// </summary>
+        private void PlayMotionPump1SoundIfStarting()
+        {
+            if (!WaterMotionPumpSound1IsOn)
+            {
+                WaterMotionPumpSound1IsOn = true;
+                SignalEvent(Event.WaterMotionPump1On);
+            }
+        }
 
+        /// <summary>
+        /// Turn on the MotionPump 2 sound only when the pump starts.
+        /// </summary>
+        private void PlayMotionPump2SoundIfStarting()
+        {
+            if (!WaterMotionPumpSound2IsOn)
+            {
+                WaterMotionPumpSound2IsOn = true;
+                SignalEvent(Event.WaterMotionPump2On);
+            }
+        }
+
+        /// <summary>
+        /// Turn off the MotionPump 1 sound only when the pump stops.
+        /// </summary>
+        private void StopMotionPump1Sound()
+        {
+            if (WaterMotionPumpSound1IsOn)
+            {
+                WaterMotionPumpSound1IsOn = false;
+                SignalEvent(Event.WaterMotionPump1Off);
+            }
+        }
+
+        /// <summary>
+        /// Turn off the MotionPump 2 sound only when the pump stops.
+        /// </summary>
+        private void StopMotionPump2Sound()
+        {
+            if (WaterMotionPumpSound2IsOn)
+            {
+                WaterMotionPumpSound2IsOn = false;
+                SignalEvent(Event.WaterMotionPump2Off);
+            }
+        }
         protected override void UpdateCarSteamHeat(float elapsedClockSeconds)
         {
             // Update Steam Heating System
@@ -7353,9 +7777,9 @@ namespace Orts.Simulation.RollingStocks
                     }
                 case CABViewControlTypes.FUEL_GAUGE:
                     if (cvc.Units == CABViewControlUnits.LBS)
-                        data = Kg.ToLb(TenderCoalMassKG);
+                        data = Kg.ToLb(TenderFuelMassKG);
                     else
-                        data = TenderCoalMassKG;
+                        data = TenderFuelMassKG;
                     break;
                 default:
                     data = base.GetDataOf(cvc);
@@ -7378,7 +7802,7 @@ namespace Orts.Simulation.RollingStocks
                 boilerPressureSafety = boilerPressurePercent <= 0.25 ? "!!!" : boilerPressurePercent <= 0.5 ? "???" : "";
             }
             var boilerWaterSafety = WaterFraction < WaterMinLevel || WaterFraction > WaterMaxLevel ? "!!!" : WaterFraction < WaterMinLevelSafe || WaterFraction > WaterMaxLevelSafe ? "???" : "";
-            var coalPercent = TenderCoalMassKG / MaxTenderCoalMassKG;
+            var coalPercent = TenderFuelMassKG / MaxTenderFuelMassKG;
             var waterPercent = CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG;
             var fuelSafety = CoalIsExhausted || WaterIsExhausted ? "!!!" : coalPercent <= 0.105 || waterPercent <= 0.105 ? "???" : "";
             var steamusagesafety = PreviousTotalSteamUsageLBpS > EvaporationLBpS ? "!!!" : PreviousTotalSteamUsageLBpS > EvaporationLBpS * 0.95f ? "???" : "";
@@ -7403,9 +7827,20 @@ namespace Orts.Simulation.RollingStocks
                     status.AppendFormat("{0} = {1:F0}%\n", Simulator.Catalog.GetString("Fire Heat Loss"), FireHeatLossPercent * 100);
             }
 
-            status.AppendFormat("{0}{5} = {3:F0}% {1}, {4:F0}% {2}{5}\n", Simulator.Catalog.GetString("Fuel levels"), Simulator.Catalog.GetString("coal"), Simulator.Catalog.GetString("water"), 100 * coalPercent, 100 * waterPercent, fuelSafety);
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+            {
+                status.AppendFormat("{0}{5} = {3:F0}% {1}, {4:F0}% {2}{5}\n", Simulator.Catalog.GetString("Fuel levels"), Simulator.Catalog.GetString("oil"), Simulator.Catalog.GetString("water"), 100 * coalPercent, 100 * waterPercent, fuelSafety);
+            }
+            else if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+            {
+                status.AppendFormat("{0}{5} = {3:F0}% {1}, {4:F0}% {2}{5}\n", Simulator.Catalog.GetString("Fuel levels"), Simulator.Catalog.GetString("wood"), Simulator.Catalog.GetString("water"), 100 * coalPercent, 100 * waterPercent, fuelSafety);
+            }
+            else
+            {
+                status.AppendFormat("{0}{5} = {3:F0}% {1}, {4:F0}% {2}{5}\n", Simulator.Catalog.GetString("Fuel levels"), Simulator.Catalog.GetString("coal"), Simulator.Catalog.GetString("water"), 100 * coalPercent, 100 * waterPercent, fuelSafety);
+            }
 
-            return status.ToString();
+                    return status.ToString();
         }
 
         public override string GetDebugStatus()
@@ -7417,18 +7852,21 @@ namespace Orts.Simulation.RollingStocks
             status.AppendFormat("{0}\t\t{1}\n", Simulator.Catalog.GetString("Locomotive Type:"),
                 SteamLocoType);
 
-            status.AppendFormat("{0}\t{1}\t{6}\t{2}\t{7}\t{3}\t{8}\t{4}\t{9}\t{5}\t{10}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
                 Simulator.Catalog.GetString("Input:"),
                 Simulator.Catalog.GetString("Evap"),
-                Simulator.Catalog.GetString("Grate"),
-                Simulator.Catalog.GetString("Boiler"),
-                Simulator.Catalog.GetString("SuperHr"),
-                Simulator.Catalog.GetString("FuelCal"),
                 FormatStrings.FormatArea(EvaporationAreaM2, IsMetric),
-                FormatStrings.FormatArea(GrateAreaM2, IsMetric),
-                FormatStrings.FormatVolume(Me3.FromFt3(BoilerVolumeFT3), IsMetric),
+                Simulator.Catalog.GetString("SuperHr"),
                 FormatStrings.FormatArea(SuperheatAreaM2, IsMetric),
-                FormatStrings.FormatEnergyDensityByMass(FuelCalorificKJpKG, IsMetric));
+                Simulator.Catalog.GetString("Boiler"),
+                FormatStrings.FormatVolume(Me3.FromFt3(BoilerVolumeFT3), IsMetric),
+                Simulator.Catalog.GetString("Grate"),
+                FormatStrings.FormatArea(GrateAreaM2, IsMetric),
+                Simulator.Catalog.GetString("FType"),
+                SteamLocomotiveFuelType.ToString(),
+                Simulator.Catalog.GetString("FuelCal"),
+                FormatStrings.FormatEnergyDensityByMass(FuelCalorificKJpKG, IsMetric) 
+                );
 
             status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N3}\n",
                 Simulator.Catalog.GetString("Adj:"),
@@ -7495,23 +7933,87 @@ namespace Orts.Simulation.RollingStocks
 
             if (!(BrakeSystem is Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS.VacuumSinglePipe))
             {
-                // Display air compressor information
-                status.AppendFormat("{0}\t{1}\t{2}/{23}\t{3}\t{4}/{23}\t{5}\t{6}/{23}\t{7}\t{8}/{23}\t{9}\t{10}/{23}\t{11}\t{12}/{23}\t{13}\t{14}/{23}\t{15}\t{16}/{23}\t{17}\t{18}/{23}\t{19}\t{20}/{23}\t({21}x{22:N1}\")\n",
+                if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+                {
+                    // Display air compressor information
+                    status.AppendFormat("{0}\t{1}\t{2}/{23}\t{3}\t{4}/{23}\t{5}\t{6}/{23}\t{7}\t{8}/{23}\t{9}\t{10}/{23}\t{11}\t{12}/{23}\t{13}\t{14}/{23}\t{15}\t{16}/{23}\t{17}\t{18}/{23}\t{19}\t{20}/{23}\t({21}x{22:N1}\")\n",
+                        Simulator.Catalog.GetString("Usage:"),
+                        Simulator.Catalog.GetString("Cyl"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylinderSteamUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("Blower"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowerSteamUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("Comprsr"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CompSteamUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("SafetyV"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(SafetyValveUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("CylCock"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylCockSteamUsageDisplayLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("Genertr"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(GeneratorSteamUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("OilHeat"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(FuelOilHeatingSteamUsageLbpS)), IsMetric),
+                        Simulator.Catalog.GetString("BlowD"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowdownSteamUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("Booster"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(HuDBoosterSteamConsumptionLbpS)), IsMetric),
+                        Simulator.Catalog.GetString("MaxSafe"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(MaxSafetyValveDischargeLbspS)), IsMetric),
+                        NumSafetyValves,
+                        SafetyValveSizeIn,
+                        FormatStrings.h);
+                }
+                else
+                {
+                    // Display air compressor information with stoker fired locomotive
+                    status.AppendFormat("{0}\t{1}\t{2}/{23}\t{3}\t{4}/{23}\t{5}\t{6}/{23}\t{7}\t{8}/{23}\t{9}\t{10}/{23}\t{11}\t{12}/{23}\t{13}\t{14}/{23}\t{15}\t{16}/{23}\t{17}\t{18}/{23}\t{19}\t{20}/{23}\t({21}x{22:N1}\")\n",
+                        Simulator.Catalog.GetString("Usage:"),
+                        Simulator.Catalog.GetString("Cyl"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylinderSteamUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("Blower"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowerSteamUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("Comprsr"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CompSteamUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("SafetyV"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(SafetyValveUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("CylCock"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylCockSteamUsageDisplayLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("Genertr"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(GeneratorSteamUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("Stoker"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(StokerSteamUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("BlowD"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowdownSteamUsageLBpS)), IsMetric),
+                        Simulator.Catalog.GetString("Booster"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(HuDBoosterSteamConsumptionLbpS)), IsMetric),
+                        Simulator.Catalog.GetString("MaxSafe"),
+                        FormatStrings.FormatMass(pS.TopH(Kg.FromLb(MaxSafetyValveDischargeLbspS)), IsMetric),
+                        NumSafetyValves,
+                        SafetyValveSizeIn,
+                        FormatStrings.h);
+                }
+            }
+            else
+            {
+
+                if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+                {
+                    // Display steam ejector information instead of air compressor with stoker
+                    status.AppendFormat("{0}\t{1}\t{2}/{23}\t{3}\t{4}/{23}\t{5}\t{6}/{23}\t{7}\t{8}/{23}\t{9}\t{10}/{23}\t{11}\t{12}/{23}\t{13}\t{14}/{23}\t{15}\t{16}/{23}\t{17}\t{18}/{23}\t{19}\t{20}/{23}\t({21}x{22:N1}\")\n",
                     Simulator.Catalog.GetString("Usage:"),
                     Simulator.Catalog.GetString("Cyl"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylinderSteamUsageLBpS)), IsMetric),
                     Simulator.Catalog.GetString("Blower"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowerSteamUsageLBpS)), IsMetric),
-                    Simulator.Catalog.GetString("Comprsr"),
-                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CompSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("Ejector"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(EjectorTotalSteamConsumptionLbpS)), IsMetric),
                     Simulator.Catalog.GetString("SafetyV"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(SafetyValveUsageLBpS)), IsMetric),
                     Simulator.Catalog.GetString("CylCock"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylCockSteamUsageDisplayLBpS)), IsMetric),
                     Simulator.Catalog.GetString("Genertr"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(GeneratorSteamUsageLBpS)), IsMetric),
-                    Simulator.Catalog.GetString("Stoker"),
-                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(StokerSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("OilHeat"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(FuelOilHeatingSteamUsageLbpS)), IsMetric),
                     Simulator.Catalog.GetString("BlowD"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowdownSteamUsageLBpS)), IsMetric),
                     Simulator.Catalog.GetString("Booster"),
@@ -7521,11 +8023,13 @@ namespace Orts.Simulation.RollingStocks
                     NumSafetyValves,
                     SafetyValveSizeIn,
                     FormatStrings.h);
-            }
-            else
-            {
-                // Display steam ejector information instead of air compressor
-                status.AppendFormat("{0}\t{1}\t{2}/{23}\t{3}\t{4}/{23}\t{5}\t{6}/{23}\t{7}\t{8}/{23}\t{9}\t{10}/{23}\t{11}\t{12}/{23}\t{13}\t{14}/{23}\t{15}\t{16}/{23}\t{17}\t{18}/{23}\t{19}\t{20}/{23}\t({21}x{22:N1}\")\n",
+
+                }
+                else
+                {
+
+                    // Display steam ejector information instead of air compressor with stoker
+                    status.AppendFormat("{0}\t{1}\t{2}/{23}\t{3}\t{4}/{23}\t{5}\t{6}/{23}\t{7}\t{8}/{23}\t{9}\t{10}/{23}\t{11}\t{12}/{23}\t{13}\t{14}/{23}\t{15}\t{16}/{23}\t{17}\t{18}/{23}\t{19}\t{20}/{23}\t({21}x{22:N1}\")\n",
                     Simulator.Catalog.GetString("Usage:"),
                     Simulator.Catalog.GetString("Cyl"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylinderSteamUsageLBpS)), IsMetric),
@@ -7550,6 +8054,7 @@ namespace Orts.Simulation.RollingStocks
                     NumSafetyValves,
                     SafetyValveSizeIn,
                     FormatStrings.h);
+                }
             }
 
 
@@ -7764,7 +8269,24 @@ namespace Orts.Simulation.RollingStocks
 #endif
 
             status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Fireman"));
-            status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}\t{6:N0}/{13}\t\t{7}\t{8:N0}/{13}\t\t{9}\t{10:N0}/{13}\t\t{11}\t{12}/{14}{13}\t{15}\t{16}/{18}{17}\t\t{19}\t{20:N0}\n",
+
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+            {
+                status.AppendFormat("{0}\t{1}\t{2:N0}/{7}\t\t{3}\t{4:N0}/{7}\t\t{5}\t{6:N0}/{7}\n",
+                Simulator.Catalog.GetString("Fire:"),
+                Simulator.Catalog.GetString("MaxFireR"),
+                FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(OilSpecificGravity * (Kg.ToLb(DisplayMaxFiringRateKGpS) / WaterLBpUKG))), IsMetric, IsUK),
+                Simulator.Catalog.GetString("FeedRate"),
+                FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(OilSpecificGravity * (Kg.ToLb(FuelFeedRateSmoothedKGpS) / WaterLBpUKG))), IsMetric, IsUK),
+                Simulator.Catalog.GetString("BurnRate"),
+                FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(OilSpecificGravity * (Kg.ToLb(FuelBurnRateSmoothedKGpS) / WaterLBpUKG))), IsMetric, IsUK),
+                FormatStrings.h
+                );
+
+            }
+            else
+            {
+                status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}\t{6:N0}/{13}\t\t{7}\t{8:N0}/{13}\t\t{9}\t{10:N0}/{13}\t\t{11}\t{12}/{14}{13}\t{15}\t{16}/{18}{17}\t\t{19}\t{20:N0}\n",
                 Simulator.Catalog.GetString("Fire:"),
                 Simulator.Catalog.GetString("Ideal"),
                 FormatStrings.FormatMass(IdealFireMassKG, IsMetric),
@@ -7773,7 +8295,7 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetString("MaxFireR"),
                 FormatStrings.FormatMass(pS.TopH(DisplayMaxFiringRateKGpS), IsMetric),
                 Simulator.Catalog.GetString("FeedRate"),
-                FormatStrings.FormatMass(pS.TopH(FuelFeedRateKGpS), IsMetric),
+                FormatStrings.FormatMass(pS.TopH(FuelFeedRateKGpS), IsMetric),  // Check why not a smoothed value?
                 Simulator.Catalog.GetString("BurnRate"),
                 FormatStrings.FormatMass(pS.TopH(FuelBurnRateSmoothedKGpS), IsMetric),
                 Simulator.Catalog.GetString("Combust"),
@@ -7787,6 +8309,8 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetString("MaxBurn"),
                 MaxFiringRateLbpH
                 );
+            }
+
 
 #if DEBUG_LOCO_BURN_AI
             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8:N2}\t{9}\t{10:N2}\t{11}\t{12:N0}\t{13}\t{14:N0}\t{15}\t{16:N0}\t{17}\t{18:N0}\t{19}\t{20:N0}\t{21}\t{22}\t{23}\t{24}\t{25}\t{26}\n {27}\t{28}\t{29:N3}\n",
@@ -7821,8 +8345,22 @@ namespace Orts.Simulation.RollingStocks
                 "FHLoss",
                 FireHeatLossPercent);
 #endif
-
-            status.AppendFormat("{0}\t{1}\t{6}/{12}\t\t({7:N0} {13})\t{2}\t{8}/{12}\t\t{3}\t{9}\t\t{4}\t{10}/{12}\t\t{5}\t{11}\n",
+            if (SteamLocomotiveFeedWaterType == SteamLocomotiveFeedWaterSystemTypes.MotionPump)
+            {
+                status.AppendFormat("{0}\t{1}\t{2}/{7}\t\t{3}\t{4}/{7}\t\t{5}\t{6}/{7}\n",
+                    Simulator.Catalog.GetString("Pump:"),
+                    Simulator.Catalog.GetString("Max"),
+                    FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(MaximumWaterMotionPumpFlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
+                    Simulator.Catalog.GetString("Pump1"),
+                    FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(WaterMotionPump1FlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
+                    Simulator.Catalog.GetString("Pump2"),
+                    FormatStrings.FormatFuelVolume(pS.TopH(L.FromGUK(WaterMotionPump2FlowRateLBpS / WaterLBpUKG)), IsMetric, IsUK),
+                    FormatStrings.h
+                    );
+            }
+            else
+            {
+                status.AppendFormat("{0}\t{1}\t{6}/{12}\t\t({7:N0} {13})\t{2}\t{8}/{12}\t\t{3}\t{9}\t\t{4}\t{10}/{12}\t\t{5}\t{11}\n",
                 Simulator.Catalog.GetString("Injector:"),
                 Simulator.Catalog.GetString("Max"),
                 Simulator.Catalog.GetString("Inj1"),
@@ -7837,14 +8375,16 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.FormatTemperature(C.FromF(Injector2WaterDelTempF), IsMetric, false),
                 FormatStrings.h,
                 FormatStrings.mm);
+            }
+
 
             if (SteamIsAuxTenderCoupled)
             {
                 status.AppendFormat("{0}\t{1}\t{2}\t{3:N0}%\t{4}\t{5}\t\t{6:N0}%\t{7}\t{8}\t\t{9}\t{10}\t\t{11}\t{12:N0}\t{13}\t{14:N0}\n",
                     Simulator.Catalog.GetString("Tender:"),
                     Simulator.Catalog.GetString("Coal"),
-                    FormatStrings.FormatMass(TenderCoalMassKG, IsMetric),
-                    TenderCoalMassKG / MaxTenderCoalMassKG * 100,
+                    FormatStrings.FormatMass(TenderFuelMassKG, IsMetric),
+                    TenderFuelMassKG / MaxTenderFuelMassKG * 100,
                     Simulator.Catalog.GetString("Water(C)"),
                     FormatStrings.FormatFuelVolume(L.FromGUK(CombinedTenderWaterVolumeUKG), IsMetric, IsUK),
                     CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG * 100,
@@ -7860,22 +8400,108 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
-                status.AppendFormat("{0}\t{1}\t{2}\t{3:N0}%\t{4}\t{5}\t\t{6:N0}%\t{7}\t{8:N0}\t{9}\t\t{10:N0}\n",
-                    Simulator.Catalog.GetString("Tender:"),
-                    Simulator.Catalog.GetString("Coal"),
-                    FormatStrings.FormatMass(TenderCoalMassKG, IsMetric),
-                    TenderCoalMassKG / MaxTenderCoalMassKG * 100,
-                    Simulator.Catalog.GetString("Water"),
-                    FormatStrings.FormatFuelVolume(L.FromGUK(CombinedTenderWaterVolumeUKG), IsMetric, IsUK),
-                    CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG * 100,
-                    Simulator.Catalog.GetString("Steam"),
-                    FormatStrings.FormatMass(Kg.FromLb(CumulativeCylinderSteamConsumptionLbs), IsMetric),
-                    Simulator.Catalog.GetString("TotSteam"),
-                    FormatStrings.FormatMass(Kg.FromLb(CummulativeTotalSteamConsumptionLbs), IsMetric)
-                    );
+                if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+                {
+                    status.AppendFormat("{0}\t{1}\t{2:N0}\t\t{3:N0}%\t{4}\t{5}\t\t{6:N0}%\t{7}\t{8:N0}\t{9}\t\t{10:N0}\n",
+                        Simulator.Catalog.GetString("Tender:"),
+                        Simulator.Catalog.GetString("Oil"),
+                        FormatStrings.FormatFuelVolume(L.FromGUK(OilSpecificGravity * (Kg.ToLb(TenderFuelMassKG) / WaterLBpUKG)), IsMetric, IsUK),
+                        TenderFuelMassKG / MaxTenderFuelMassKG * 100,
+                        Simulator.Catalog.GetString("Water"),
+                        FormatStrings.FormatFuelVolume(L.FromGUK(CombinedTenderWaterVolumeUKG), IsMetric, IsUK),
+                        CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG * 100,
+                        Simulator.Catalog.GetString("Steam"),
+                        FormatStrings.FormatMass(Kg.FromLb(CumulativeCylinderSteamConsumptionLbs), IsMetric),
+                        Simulator.Catalog.GetString("TotSteam"),
+                        FormatStrings.FormatMass(Kg.FromLb(CummulativeTotalSteamConsumptionLbs), IsMetric)
+                        );
+                }
+                else if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+                {
+                    status.AppendFormat("{0}\t{1}\t{2:N0}\t\t{3:N0}%\t{4}\t{5}\t\t{6:N0}%\t{7}\t{8:N0}\t{9}\t\t{10:N0}\n",
+                        Simulator.Catalog.GetString("Tender:"),
+                        Simulator.Catalog.GetString("Wood"),
+                        FormatStrings.FormatMass(TenderFuelMassKG, IsMetric),
+                        TenderFuelMassKG / MaxTenderFuelMassKG * 100,
+                        Simulator.Catalog.GetString("Water"),
+                        FormatStrings.FormatFuelVolume(L.FromGUK(CombinedTenderWaterVolumeUKG), IsMetric, IsUK),
+                        CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG * 100,
+                        Simulator.Catalog.GetString("Steam"),
+                        FormatStrings.FormatMass(Kg.FromLb(CumulativeCylinderSteamConsumptionLbs), IsMetric),
+                        Simulator.Catalog.GetString("TotSteam"),
+                        FormatStrings.FormatMass(Kg.FromLb(CummulativeTotalSteamConsumptionLbs), IsMetric)
+                        );
+                }
+                else // default to coal
+                {
+                    status.AppendFormat("{0}\t{1}\t{2}\t{3:N0}%\t{4}\t{5}\t\t{6:N0}%\t{7}\t{8:N0}\t{9}\t\t{10:N0}\n",
+                        Simulator.Catalog.GetString("Tender:"),
+                        Simulator.Catalog.GetString("Coal"),
+                        FormatStrings.FormatMass(TenderFuelMassKG, IsMetric),
+                        TenderFuelMassKG / MaxTenderFuelMassKG * 100,
+                        Simulator.Catalog.GetString("Water"),
+                        FormatStrings.FormatFuelVolume(L.FromGUK(CombinedTenderWaterVolumeUKG), IsMetric, IsUK),
+                        CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG * 100,
+                        Simulator.Catalog.GetString("Steam"),
+                        FormatStrings.FormatMass(Kg.FromLb(CumulativeCylinderSteamConsumptionLbs), IsMetric),
+                        Simulator.Catalog.GetString("TotSteam"),
+                        FormatStrings.FormatMass(Kg.FromLb(CummulativeTotalSteamConsumptionLbs), IsMetric)
+                        );
+                }
             }
 
-            status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\n",
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+            {
+                status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\n",
+                Simulator.Catalog.GetString("Status:"),
+                Simulator.Catalog.GetString("OilOut"),
+                CoalIsExhausted ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("WaterOut"),
+                WaterIsExhausted ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("FireOut"),
+                FireIsExhausted ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("Stoker"),
+                StokerIsMechanical ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("Boost"),
+                FuelBoost ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("GrLimit"),
+                IsGrateLimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("FireOn"),
+                SetFireOn ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("FireOff"),
+                SetFireOff ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("AIOR"),
+                AIFireOverride ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
+                );
+            }
+            else if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+            {
+                status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\n",
+                Simulator.Catalog.GetString("Status:"),
+                Simulator.Catalog.GetString("WoodOut"),
+                CoalIsExhausted ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("WaterOut"),
+                WaterIsExhausted ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("FireOut"),
+                FireIsExhausted ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("Stoker"),
+                StokerIsMechanical ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("Boost"),
+                FuelBoost ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("GrLimit"),
+                IsGrateLimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("FireOn"),
+                SetFireOn ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("FireOff"),
+                SetFireOff ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("AIOR"),
+                AIFireOverride ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
+                );
+            }
+            else
+            {
+
+                status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\n",
                 Simulator.Catalog.GetString("Status:"),
                 Simulator.Catalog.GetString("CoalOut"),
                 CoalIsExhausted ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
@@ -7896,6 +8522,8 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetString("AIOR"),
                 AIFireOverride ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
                 );
+
+            }
 
             if (SteamEngineType == SteamEngineTypes.Geared)
             {
@@ -9196,7 +9824,19 @@ namespace Orts.Simulation.RollingStocks
         /// <returns>Matching controller or null</returns>
         public override MSTSNotchController GetRefillController(uint type)
         {
-            if (type == (uint)PickupType.FuelCoal) return FuelController;
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+            {
+                if (type == (uint)PickupType.FuelWood) return FuelController;
+            }
+            else if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+            {
+                if (type == (uint)PickupType.FuelDiesel) return FuelController;
+            }
+            else
+            {
+                if (type == (uint)PickupType.FuelCoal) return FuelController;
+            }
+
             if (type == (uint)PickupType.FuelWater) return WaterController;
             return null;
         }
@@ -9208,8 +9848,8 @@ namespace Orts.Simulation.RollingStocks
         public override void SetStepSize(PickupObj matchPickup)
         {
             uint type = matchPickup.PickupType;
-            if (type == (uint)PickupType.FuelCoal && MaxTenderCoalMassKG != 0)
-                FuelController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / MaxTenderCoalMassKG);
+            if (type == (uint)PickupType.FuelCoal && type == (uint)PickupType.FuelWood && type == (uint)PickupType.FuelDiesel && MaxTenderFuelMassKG != 0)
+                FuelController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / MaxTenderFuelMassKG);
             else if (type == (uint)PickupType.FuelWater && MaxLocoTenderWaterMassKG != 0)
                 WaterController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / MaxLocoTenderWaterMassKG);
         }
@@ -9220,7 +9860,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void RefillImmediately()
         {
-            RefillTenderWithCoal();
+            RefillTenderWithFuel();
             RefillTenderWithWater();
         }
 
@@ -9231,14 +9871,34 @@ namespace Orts.Simulation.RollingStocks
         /// <returns>0.0 to 1.0. If type is unknown, returns 0.0</returns>
         public override float GetFilledFraction(uint pickupType)
         {
+            if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+            {
+                if (pickupType == (uint)PickupType.FuelWood)
+                {
+                    return FuelController.CurrentValue;
+                }
+            }
+            else if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+            {
+                if (pickupType == (uint)PickupType.FuelDiesel)
+                {
+                    return FuelController.CurrentValue;
+                }
+            }
+            else
+            {
+                if (pickupType == (uint)PickupType.FuelCoal)
+                {
+                    return FuelController.CurrentValue;
+                }
+            }
+
+
             if (pickupType == (uint)PickupType.FuelWater)
             {
                 return WaterController.CurrentValue;
             }
-            if (pickupType == (uint)PickupType.FuelCoal)
-            {
-                return FuelController.CurrentValue;
-            }
+
             return 0f;
         }
 
