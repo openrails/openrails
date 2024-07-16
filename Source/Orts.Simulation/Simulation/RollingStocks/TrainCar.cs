@@ -2960,6 +2960,25 @@ namespace Orts.Simulation.RollingStocks
             CurrentCurveRadiusM = traveler.GetCurveRadius();
             UpdateVibrationAndTilting(traveler, elapsedTimeS, distanceM, speedMpS);
             UpdateSuperElevation(traveler, elapsedTimeS);
+
+            if (this is MSTSWagon wagon)
+            {        
+                bool isRackRailway = false;
+                var thisSection = traveler.GetCurrentSection();
+
+                if (thisSection != null && Simulator.TSectionDat.TrackShapes.ContainsKey(thisSection.ShapeIndex))
+                {
+                    TrackShape thisShape = Simulator.TSectionDat.TrackShapes[thisSection.ShapeIndex];
+                    isRackRailway |= thisShape.RackShape;
+                }
+                                
+                foreach (var axle in wagon.LocomotiveAxles)
+                {
+                    axle.IsRackRailway = isRackRailway;
+
+                    //  Trace.TraceInformation("IsRackRailway  {0} CarID {1}", axle.IsRackRailway, CarID);
+                }
+            }
         }
         #endregion
 

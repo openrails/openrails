@@ -64,6 +64,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using static Orts.Simulation.RollingStocks.MSTSSteamLocomotive;
 using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks
@@ -103,6 +104,15 @@ namespace Orts.Simulation.RollingStocks
             Sound,
             ContinuousSound
         }
+
+        public enum LocomotiveRailDriveTypes
+        {
+            Unknown,
+            Rack,
+            Adhesion, // defaults to adhesion
+        }
+
+        public LocomotiveRailDriveTypes LocomotiveRailDriveType;
 
         // simulation parameters
         public bool ManualHorn = false;
@@ -1199,6 +1209,19 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "engine(ortscruisecontrol": SetUpCruiseControl(stf); break;
                 case "engine(ortsmultipositioncontroller": SetUpMPC(stf); break;
+                case "engine(ortslocomotiveraildrivetype":
+                    stf.MustMatch("(");
+                    var locomotiveDriveType = stf.ReadString();
+                    try
+                    {
+                        LocomotiveRailDriveType = (LocomotiveRailDriveTypes)Enum.Parse(typeof(LocomotiveRailDriveTypes), locomotiveDriveType);
+                    }
+                    catch
+                    {
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                            STFException.TraceWarning(stf, "Assumed unknown fuel type " + locomotiveDriveType);
+                    }
+                    break;
                 default:
                     base.Parse(lowercasetoken, stf);
                     break;
@@ -1354,6 +1377,7 @@ namespace Orts.Simulation.RollingStocks
             MultiPositionControllers = locoCopy.CloneMPC(this);
             OnLineCabRadio = locoCopy.OnLineCabRadio;
             OnLineCabRadioURL = locoCopy.OnLineCabRadioURL;
+            LocomotiveRailDriveType = locoCopy.LocomotiveRailDriveType;
         }
 
         /// <summary>
@@ -1558,6 +1582,15 @@ namespace Orts.Simulation.RollingStocks
             else
             {
                 IsSteamHeatFitted = true;
+            }
+
+            // Type of rail drive selected
+            if (LocomotiveRailDriveType == LocomotiveRailDriveTypes.Unknown)
+            {
+                LocomotiveRailDriveType = LocomotiveRailDriveTypes.Adhesion;
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceInformation("LocomotiveRailDriveType set to Default value of {0}", LocomotiveRailDriveType);
             }
 
             SteamHeatPressureToTemperaturePSItoF = SteamTable.SteamHeatPressureToTemperatureInterpolatorPSItoF();
@@ -2018,6 +2051,16 @@ namespace Orts.Simulation.RollingStocks
                     TrainBrakePipeLeakPSIorInHgpS = ControlActiveLocomotive.TrainBrakePipeLeakPSIorInHgpS;
                 }
             }
+
+            // determine if this is an adhesion or rack locomotive
+            if (LocomotiveRailDriveType == LocomotiveRailDriveTypes.Rack)
+            {
+                foreach (var axle in LocomotiveAxles)
+                {
+                    axle.CogWheelFitted = true;
+                }
+            }
+
 
             var gearloco = this as MSTSDieselLocomotive;
 
