@@ -114,6 +114,8 @@ namespace Orts.Simulation.RollingStocks
 
         public LocomotiveRailDriveTypes LocomotiveRailDriveType;
 
+        public bool RackGogWheelEngaged = false;
+
         // simulation parameters
         public bool ManualHorn = false;
         public bool TCSHorn = false;
@@ -2058,6 +2060,14 @@ namespace Orts.Simulation.RollingStocks
                 foreach (var axle in LocomotiveAxles)
                 {
                     axle.CogWheelFitted = true;
+                    if (axle.IsRackRailway && axle.CogWheelFitted)
+                    {
+                        RackGogWheelEngaged = true;
+                    }
+                    else
+                    {
+                        RackGogWheelEngaged = false;
+                    }
                 }
             }
 
