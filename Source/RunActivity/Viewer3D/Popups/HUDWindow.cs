@@ -1177,7 +1177,7 @@ namespace Orts.Viewer3D.Popups
                             table.CurrentRow = row0;
                             var axle = mstsLocomotive.LocomotiveAxles[i];
                             TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0:F0}% ({1})", axle.SlipSpeedPercent, FormatStrings.FormatVeryLowSpeedDisplay((float)axle.WheelSlipThresholdMpS, mstsLocomotive.IsMetric));
-                            if (axle.IsRackRailway) TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, Viewer.Catalog.GetString("rack"));
+                            if (mstsLocomotive.RackGogWheelEngaged) TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, Viewer.Catalog.GetString("Rack"));
                             else TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0:F0}%", mstsLocomotive.AdhesionConditions * 100.0f);
                             TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0} ({1})", FormatStrings.FormatForce(axle.DriveForceN, mstsLocomotive.IsMetric), FormatStrings.FormatPower(axle.DriveForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
                             TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0}", FormatStrings.FormatForce(axle.BrakeRetardForceN, mstsLocomotive.IsMetric));

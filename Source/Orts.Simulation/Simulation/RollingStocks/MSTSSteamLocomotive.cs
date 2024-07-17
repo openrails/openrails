@@ -7912,6 +7912,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             // calculate values for display, so that display value doesn't go negative
             var superheatTempDisplayC = C.FromF(CurrentSuperheatTempF);
+
             superheatTempDisplayC = MathHelper.Clamp(superheatTempDisplayC, 0.0f, C.FromF(MaxSuperheatRefTempF));
 
             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
