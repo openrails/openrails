@@ -101,7 +101,6 @@ namespace Orts.Simulation.RollingStocks
         public bool IsDavisFriction = true; // Default to new Davis type friction
         public bool IsBelowMergeSpeed = true; // set indicator for low speed operation as per given speed
 
-
         public bool GenericItem1;
         public bool GenericItem2;
                 
@@ -1546,7 +1545,9 @@ namespace Orts.Simulation.RollingStocks
                     Couplers[CouplerCountLocation].Rigid = stf.ReadBoolBlock(true);
                     break;
                
-
+                case "wagon(ortscogwheel":
+                    CogWheelFitted = stf.ReadBoolBlock(false);
+                    break;
 
                 case "wagon(adheasion":
                     stf.MustMatch("(");
@@ -1752,6 +1753,7 @@ namespace Orts.Simulation.RollingStocks
             Curtius_KnifflerB = copy.Curtius_KnifflerB;
             Curtius_KnifflerC = copy.Curtius_KnifflerC;
             AdhesionK = copy.AdhesionK;
+            CogWheelFitted = copy.CogWheelFitted;
             AxleInertiaKgm2 = copy.AxleInertiaKgm2;
             SlipWarningThresholdPercent = copy.SlipWarningThresholdPercent;
             Lights = copy.Lights;

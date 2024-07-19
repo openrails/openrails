@@ -1595,6 +1595,11 @@ namespace Orts.Simulation.RollingStocks
                     Trace.TraceInformation("LocomotiveRailDriveType set to Default value of {0}", LocomotiveRailDriveType);
             }
 
+            if (LocomotiveRailDriveType == LocomotiveRailDriveTypes.Rack)
+            {
+                CogWheelFitted = true;
+            }
+
             SteamHeatPressureToTemperaturePSItoF = SteamTable.SteamHeatPressureToTemperatureInterpolatorPSItoF();
             SteamDensityPSItoLBpFT3 = SteamTable.SteamDensityInterpolatorPSItoLBpFT3();
             SteamHeatPSItoBTUpLB = SteamTable.SteamHeatInterpolatorPSItoBTUpLB();
@@ -1616,7 +1621,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // Check if current sander has been set
-            if (CurrentTrackSandBoxCapacityM3 == 0 )
+            if (CurrentTrackSandBoxCapacityM3 == 0)
             {
                 CurrentTrackSandBoxCapacityM3 = MaxTrackSandBoxCapacityM3;
             }
@@ -1626,7 +1631,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (MSTSLocoNumDrvWheels != 0 && MSTSLocoNumDrvWheels < 7)
                 {
-                    LocoNumDrvAxles = (int) MSTSLocoNumDrvWheels;
+                    LocoNumDrvAxles = (int)MSTSLocoNumDrvWheels;
                 }
                 else
                 {
