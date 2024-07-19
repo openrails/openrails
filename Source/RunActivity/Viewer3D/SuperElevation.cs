@@ -87,8 +87,8 @@ namespace Orts.Viewer3D
 
                     // Determine the track profile to use for this section
                     // It's possible that the tsection ID used by the track section points to the wrong shape
-                    // Use the static shape name instead to get expected results
-                    DynamicTrackViewer.GetBestTrackProfile(viewer, tmp, Path.GetFileName(shapeFilePath));
+                    // Instead, send the shape file path to ensure the correct shape is used in calculations
+                    DynamicTrackViewer.GetBestTrackProfile(viewer, tmp, shapeFilePath);
 
                     drawn++;
                 }

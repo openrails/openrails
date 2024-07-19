@@ -32,6 +32,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Schema;
+using System.Text.RegularExpressions;
 
 namespace Orts.Viewer3D
 {
@@ -222,20 +223,20 @@ namespace Orts.Viewer3D
         /// The result is cached in the vector section object for future use
         /// </summary>
         /// <returns>Index of viewer.TRPs</returns>
-        public static int GetBestTrackProfile(Viewer viewer, TrVectorSection trSection, string shapeName = "")
+        public static int GetBestTrackProfile(Viewer viewer, TrVectorSection trSection, string shapePath = "")
         {
             int trpIndex;
-            if (shapeName == "" && viewer.Simulator.TSectionDat.TrackShapes.ContainsKey(trSection.ShapeIndex))
-                shapeName = viewer.Simulator.TSectionDat.TrackShapes.Get(trSection.ShapeIndex).FileName;
+            if (shapePath == "" && viewer.Simulator.TSectionDat.TrackShapes.ContainsKey(trSection.ShapeIndex))
+                shapePath = String.Concat(viewer.Simulator.BasePath, @"\Global\Shapes\", viewer.Simulator.TSectionDat.TrackShapes.Get(trSection.ShapeIndex).FileName);
 
-            if (viewer.TrackProfileIndicies.ContainsKey(shapeName))
-                viewer.TrackProfileIndicies.TryGetValue(shapeName, out trpIndex);
-            else if (shapeName != "") // Haven't checked this track shape yet
+            if (viewer.TrackProfileIndicies.ContainsKey(shapePath))
+                viewer.TrackProfileIndicies.TryGetValue(shapePath, out trpIndex);
+            else if (shapePath != "") // Haven't checked this track shape yet
             {
                 // Need to load the shape file if not already loaded
-                var trackShape = viewer.ShapeManager.Get(viewer.Simulator.BasePath + @"\Global\Shapes\" + shapeName);
+                var trackShape = viewer.ShapeManager.Get(shapePath);
                 trpIndex = GetBestTrackProfile(viewer, trackShape);
-                viewer.TrackProfileIndicies.Add(shapeName, trpIndex);
+                viewer.TrackProfileIndicies.Add(shapePath, trpIndex);
             }
             else // Not enough info-use default track profile
                 trpIndex = 0;
@@ -255,25 +256,117 @@ namespace Orts.Viewer3D
         {
             float score = float.NegativeInfinity;
             int bestIndex = -1;
+
             for (int i = 0; i < viewer.TRPs.Count; i++)
             {
                 float bestScore = score;
                 score = 0;
-                // Default behavior: Attempt to match track shape to track profile using texture names alone
-                foreach (string image in viewer.TRPs[i].TrackProfile.Images)
+                if (viewer.TRPs[i].TrackProfile.IncludeImages == null && viewer.TRPs[i].TrackProfile.ExcludeImages == null
+                    && viewer.TRPs[i].TrackProfile.IncludeShapes == null && viewer.TRPs[i].TrackProfile.ExcludeShapes == null)
                 {
-                    if (shape.ImageNames != null && shape.ImageNames.Contains(image, StringComparer.InvariantCultureIgnoreCase))
-                        score++;
-                    else // Slight bias against track profiles with extra textures defined
-                        score -= 0.05f;
-                }
-                if (score > bestScore && shape.ImageNames != null) // Only continue checking if current profile might be the best one
-                {
-                    foreach (string image in shape.ImageNames)
+                    // Default behavior: Attempt to match track shape to track profile using texture names alone
+                    // If shape file is missing any textures, we can't use this method
+                    if (shape.ImageNames == null)
                     {
-                        // Strong bias against track profiles that are missing textures
-                        if (!viewer.TRPs[i].TrackProfile.Images.Contains(image, StringComparer.InvariantCultureIgnoreCase))
-                            score -= 0.25f;
+                        score = float.NegativeInfinity;
+                        continue;
+                    }
+                    foreach (string image in viewer.TRPs[i].TrackProfile.Images)
+                    {
+                        if (shape.ImageNames.Contains(image, StringComparer.InvariantCultureIgnoreCase))
+                            score++;
+                        else // Slight bias against track profiles with extra textures defined
+                            score -= 0.05f;
+                    }
+                    if (score > bestScore && score > 0) // Only continue checking if current profile might be the best one
+                    {
+                        foreach (string image in shape.ImageNames)
+                        {
+                            // Strong bias against track profiles that are missing textures
+                            if (!viewer.TRPs[i].TrackProfile.Images.Contains(image, StringComparer.InvariantCultureIgnoreCase))
+                                score -= 0.25f;
+                        }
+                    }
+                }
+                else // Manual override: Match track shape to track profile using user-defined filters
+                {
+                    // Check if the track shape is excluded by the track profile
+                    // If it is excluded, skip processing
+                    if (viewer.TRPs[i].TrackProfile.ExcludeShapes != null)
+                    {
+                        foreach (Regex filter in viewer.TRPs[i].TrackProfile.ExcludeShapes)
+                        {
+                            if (filter.IsMatch(Path.GetFileNameWithoutExtension(shape.FilePath)))
+                            {
+                                score = float.NegativeInfinity;
+                                break;
+                            }
+                        }
+                    }
+                    if (score > float.NegativeInfinity && shape.ImageNames != null
+                        && viewer.TRPs[i].TrackProfile.ExcludeImages != null)
+                    {
+                        foreach (Regex filter in viewer.TRPs[i].TrackProfile.ExcludeImages)
+                        {
+                            foreach (string image in shape.ImageNames)
+                            {
+                                if (filter.IsMatch(image))
+                                {
+                                    score = float.NegativeInfinity;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    // If no exclusions are found, check for inclusions instead
+                    if (score > float.NegativeInfinity)
+                    {
+                        // Still need to consider that this shape may need to be excluded if the track profile doesn't include its shape or textures
+                        // If the track profile doesn't specify any shapes or textures to include, assume the profile can be used
+                        bool shapeIncluded = false;
+                        bool imageIncluded = false;
+                        if (viewer.TRPs[i].TrackProfile.IncludeShapes != null)
+                        {
+                            foreach (Regex filter in viewer.TRPs[i].TrackProfile.IncludeShapes)
+                            {
+                                if (filter.IsMatch(Path.GetFileNameWithoutExtension(shape.FilePath)))
+                                {
+                                    shapeIncluded = true;
+                                    score += 10.0f / viewer.TRPs[i].TrackProfile.IncludeShapes.Count;
+                                }
+                            }
+                        }
+                        else // No include filter set for shapes, assume this shape is included
+                        {
+                            shapeIncluded = true;
+                            score += 5.0f;
+                        }
+                        if (shapeIncluded)
+                        {
+                            if (viewer.TRPs[i].TrackProfile.IncludeImages != null && shape.ImageNames != null)
+                            {
+                                foreach (Regex filter in viewer.TRPs[i].TrackProfile.IncludeImages)
+                                {
+                                    foreach (string image in shape.ImageNames)
+                                    {
+                                        if (filter.IsMatch(image))
+                                        {
+                                            imageIncluded = true;
+                                            score += 10.0f / viewer.TRPs[i].TrackProfile.IncludeImages.Count;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            else // No include filter set for textures, assume this shape is included
+                            {
+                                imageIncluded = true;
+                                score += 5.0f;
+                            }
+                        }
+                        // If the shape wasn't included or the textures weren't included, this track profile shouldn't be used
+                        if (shapeIncluded == false ||  imageIncluded == false)
+                            score = float.NegativeInfinity;
                     }
                 }
                 if (score > bestScore)
@@ -305,7 +398,7 @@ namespace Orts.Viewer3D
 
         /// <summary>
         /// Creates a List<TRPFile></TRPFile> instance from a set of track profile file(s)
-        /// (XML or STF) or canned. (Precedence is XML [.XML], STF [.DAT], default [canned]).
+        /// (XML or STF) or canned. (Precedence is XML [.XML], STF [.STF], default [canned]).
         /// </summary>
         /// <param name="viewer">Viewer.</param>
         /// <param name="routePath">Path to route.</param>
@@ -443,7 +536,16 @@ namespace Orts.Viewer3D
                         settings.ValidationEventHandler += new ValidationEventHandler(ValidationCallback);
                         settings.ValidationFlags |= XmlSchemaValidationFlags.ReportValidationWarnings;
                         settings.ValidationType = ValidationType.Schema; // Independent external file
-                        settings.Schemas.Add("TrProfile.xsd", XmlReader.Create(xsdFilespec)); // Add schema from file
+                        try
+                        {
+                            settings.Schemas.Add("TrProfile.xsd", XmlReader.Create(xsdFilespec)); // Add schema from file
+                        }
+                        catch
+                        {
+                            Trace.TraceWarning("Track profile XML constructor failed, could not create XML schema " + xsdFilespec);
+                            TrackProfile = new TrProfile(viewer);
+                            break;
+                        }
 
                         // Create an XML reader for the .xml file
                         using (XmlReader reader = XmlReader.Create(filespec, settings))
@@ -494,6 +596,11 @@ namespace Orts.Viewer3D
         public float PitchControlScalar; // Scalar parameter for PitchControls
         public ArrayList LODs = new ArrayList(); // Array of Levels-Of-Detail
         public List<string> Images = new List<string>();
+        // Manual overrides for matching track shapes/textures to track profiles
+        public List<Regex> IncludeShapes;
+        public List<Regex> ExcludeShapes;
+        public List<Regex> IncludeImages;
+        public List<Regex> ExcludeImages;
 
         /// <summary>
         /// Enumeration of LOD control methods
@@ -683,6 +790,10 @@ namespace Orts.Viewer3D
                 new STFReader.TokenProcessor("chordspan", ()=>{ ChordSpan = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 new STFReader.TokenProcessor("pitchcontrol", ()=> { PitchControl = GetPitchControl(stf.ReadStringBlock(null)); }),
                 new STFReader.TokenProcessor("pitchcontrolscalar", ()=>{ PitchControlScalar = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("includedshapes", ()=>{ IncludeShapes = ConvertToRegex(stf.ReadStringBlock(null)); }),
+                new STFReader.TokenProcessor("excludedshapes", ()=>{ ExcludeShapes = ConvertToRegex(stf.ReadStringBlock(null)); }),
+                new STFReader.TokenProcessor("includedtextures", ()=>{ IncludeImages = ConvertToRegex(stf.ReadStringBlock(null)); }),
+                new STFReader.TokenProcessor("excludedtextures", ()=>{ ExcludeImages = ConvertToRegex(stf.ReadStringBlock(null)); }),
                 new STFReader.TokenProcessor("lod", ()=> { LODs.Add(new LOD(viewer, stf)); }),
             });
 
@@ -717,6 +828,10 @@ namespace Orts.Viewer3D
                     ChordSpan = float.Parse(reader.GetAttribute("ChordSpan"));
                     PitchControl = GetPitchControl(reader.GetAttribute("PitchControl"));
                     PitchControlScalar = float.Parse(reader.GetAttribute("PitchControlScalar"));
+                    IncludeShapes = ConvertToRegex(reader.GetAttribute("IncludedShapes"));
+                    ExcludeShapes = ConvertToRegex(reader.GetAttribute("ExcludedShapes"));
+                    IncludeImages = ConvertToRegex(reader.GetAttribute("IncludedTextures"));
+                    ExcludeImages = ConvertToRegex(reader.GetAttribute("ExcludedTextures"));
                 }
                 else
                 {
@@ -857,6 +972,30 @@ namespace Orts.Viewer3D
         {
             foreach (LOD lod in LODs)
                 lod.Mark();
+        }
+
+        /// <summary>
+        /// Converts given string into a list of regular expression objects by splitting
+        /// the string at each comma to get individual filter substrings, then replacing
+        /// any wildcards * or ? with their regex equivalent.
+        /// </summary>
+        public static List<Regex> ConvertToRegex(string filters)
+        {
+            List<Regex> regexFilters = null;
+
+            if (filters != null)
+            {
+                // Split the string of filters into an array of individual filters
+                string[] filterList = filters.Replace(" ", "").Replace("\"", "").Split(',');
+
+                regexFilters = new List<Regex>();
+
+                // Convert filters to regular expressions that will use * and ? as wildcards. Case is to be ignored in this instance.
+                for (int i = 0; i < filterList.Length; i++)
+                    regexFilters.Add(new Regex(string.Concat("^", Regex.Escape(filterList[i]).Replace("\\?", ".").Replace("\\*", ".*"), "$"), RegexOptions.IgnoreCase));
+            }
+
+            return regexFilters;
         }
     }
 
