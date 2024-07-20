@@ -234,7 +234,7 @@ namespace Orts.Simulation.Timetables
                         {
                             lineindex++;
                             firstName = true;
-                            PoolName = String.Copy(inputLine[1].ToLower().Trim());
+                            PoolName = inputLine[1].ToLower().Trim();
                         }
                         break;
 
@@ -411,7 +411,7 @@ namespace Orts.Simulation.Timetables
             List<string> accessPathNames = new List<string>();
 
             string[] inputLine = fileContents.Strings[lineindex];
-            string storagePathName = String.Copy(inputLine[1]);
+            string storagePathName = inputLine[1];
 
             int? maxStoredUnits = null;
 
@@ -462,7 +462,7 @@ namespace Orts.Simulation.Timetables
 
                         while (nextfield < inputLine.Length && !String.IsNullOrEmpty(inputLine[nextfield]))
                         {
-                            accessPathNames.Add(String.Copy(inputLine[nextfield]));
+                            accessPathNames.Add(inputLine[nextfield]);
                             nextfield++;
                         }
 
@@ -528,7 +528,7 @@ namespace Orts.Simulation.Timetables
                 newPool.StoragePathReverseTraveller = new Traveller(simulatorref.TSectionDat, simulatorref.TDB.TrackDB.TrackNodes,
                     lastNode.Location.TileX, lastNode.Location.TileZ, lastNode.Location.Location.X, lastNode.Location.Location.Z, newDirection);
 
-                newPool.StorageName = String.Copy(storagePathName);
+                newPool.StorageName = storagePathName;
 
                 // If last element is end of track, remove it from path
                 int lastSectionIndex = newPool.StoragePath[newPool.StoragePath.Count - 1].TCSectionIndex;
@@ -758,7 +758,7 @@ namespace Orts.Simulation.Timetables
                 TTTrain lastTrain = train.GetOtherTTTrainByNumber(lastTrainNumber) ?? train.Simulator.GetAutoGenTTTrainByNumber(lastTrainNumber);
                 if (lastTrain != null)
                 {
-                    train.CreateAhead = String.Copy(lastTrain.Name).ToLower();
+                    train.CreateAhead = lastTrain.Name.ToLower();
                 }
             }
 
@@ -1533,7 +1533,7 @@ namespace Orts.Simulation.Timetables
                 {
                     foreach (var car in train.Cars)
                     {
-                        car.OrgConsist = String.Copy(train.ForcedConsistName);
+                        car.OrgConsist = train.ForcedConsistName;
                     }
                 }
             }
