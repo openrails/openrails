@@ -1345,7 +1345,12 @@ namespace Orts.Viewer3D.Debugging
             if (Viewer.MapViewerEnabledSetToTrue)
             {
                 GenerateView();
-                GameForm.Focus();
+                if (!mapBehindGameForm())
+                {
+                    // do not return focus to the main OR game window
+                    // when map is (partially) overlapping the game window
+                    GameForm.Focus();
+                }
                 Viewer.MapViewerEnabledSetToTrue = false;
             }
 
@@ -1355,6 +1360,25 @@ namespace Orts.Viewer3D.Debugging
             lastUpdateTime = Program.Simulator.GameTime;
 
             GenerateView();
+        }
+
+        private bool mapBehindGameForm()
+        {        
+            int mapX0 = Bounds.X;
+            int mapY0 = Bounds.Y;
+            int mapX1 = mapX0 + Size.Width;
+            int mapY1 = mapY0 + Size.Height;
+
+            int gameX0 = GameForm.Bounds.X;
+            int gameY0 = GameForm.Bounds.Y;
+            int gameX1 = GameForm.Size.Width;
+            int gameY1 = GameForm.Size.Height;
+
+            return
+                ((mapX0 >= gameX0) && (mapX0 <= gameX1)) && ((mapY0 >= gameY0) && (mapY0 <= gameY1)) ||
+                ((mapX0 >= gameX0) && (mapX0 <= gameX1)) && ((mapY1 >= gameY0) && (mapY1 <= gameY1)) ||
+                ((mapX1 >= gameX0) && (mapX1 <= gameX1)) && ((mapY0 >= gameY0) && (mapY0 <= gameY1)) ||
+                ((mapX1 >= gameX0) && (mapX1 <= gameX1)) && ((mapY1 >= gameY0) && (mapY1 <= gameY1));
         }
 
         private void allowJoiningCheckbox_CheckedChanged(object sender, EventArgs e)
