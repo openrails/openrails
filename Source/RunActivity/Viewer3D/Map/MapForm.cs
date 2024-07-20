@@ -1371,14 +1371,14 @@ namespace Orts.Viewer3D.Debugging
 
             int gameX0 = GameForm.Bounds.X;
             int gameY0 = GameForm.Bounds.Y;
-            int gameX1 = GameForm.Size.Width;
-            int gameY1 = GameForm.Size.Height;
+            int gameX1 = gameX0 + GameForm.Size.Width;
+            int gameY1 = gameY0 + GameForm.Size.Height;
 
             return
-                (((mapX0 >= gameX0) && (mapX0 <= gameX1)) && ((mapY0 >= gameY0) && (mapY0 <= gameY1))) ||
-                (((mapX0 >= gameX0) && (mapX0 <= gameX1)) && ((mapY1 >= gameY0) && (mapY1 <= gameY1))) ||
-                (((mapX1 >= gameX0) && (mapX1 <= gameX1)) && ((mapY0 >= gameY0) && (mapY0 <= gameY1))) ||
-                (((mapX1 >= gameX0) && (mapX1 <= gameX1)) && ((mapY1 >= gameY0) && (mapY1 <= gameY1)));
+                (((mapX0 > gameX0) && (mapX0 < gameX1)) && ((mapY0 > gameY0) && (mapY0 < gameY1))) ||
+                (((mapX0 > gameX0) && (mapX0 < gameX1)) && ((mapY1 > gameY0) && (mapY1 < gameY1))) ||
+                (((mapX1 > gameX0) && (mapX1 < gameX1)) && ((mapY0 > gameY0) && (mapY0 < gameY1))) ||
+                (((mapX1 > gameX0) && (mapX1 < gameX1)) && ((mapY1 > gameY0) && (mapY1 < gameY1)));
         }
 
         private void allowJoiningCheckbox_CheckedChanged(object sender, EventArgs e)
