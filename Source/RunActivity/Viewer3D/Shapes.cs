@@ -279,9 +279,9 @@ namespace Orts.Viewer3D
         {
             if (SharedShape.Matrices.Length > 0)
             {
-            XNAMatrices = new Matrix[SharedShape.Matrices.Length];
-            for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
-                XNAMatrices[iMatrix] = SharedShape.Matrices[iMatrix];
+                XNAMatrices = new Matrix[SharedShape.Matrices.Length];
+                for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
+                    XNAMatrices[iMatrix] = SharedShape.Matrices[iMatrix];
             }
             else // If the shape file is missing or fails to load, we need some default data to prevent crashes
             {
@@ -2307,8 +2307,8 @@ namespace Orts.Viewer3D
                             if (imageName.ToUpper().Contains(nameof(CABViewControlTypes.ORTS_ETCS)))
                                 material = sharedShape.Viewer.MaterialManager.Load("Screen", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, Helpers.TextureFlags.None, sharedShape.ReferencePath, imageName));
                             else
-                                material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName), (int)options, texture.MipMapLODBias);
-                        }
+                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName), (int)options, texture.MipMapLODBias);
+                    }
                     }
                     else
                     {
