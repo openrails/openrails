@@ -40,7 +40,7 @@ namespace ORTS.Common
         {
             Application = new Platform
             {
-                Name = System.Windows.Forms.Application.ProductName,
+                Name = ApplicationInfo.ProductName,
                 Version = VersionInfo.VersionOrBuild,
                 Architecture = RuntimeInformation.ProcessArchitecture.ToString(),
             };

@@ -27,6 +27,7 @@ using System.Windows.Forms;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
 using MSTS;
+using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Settings;
 using ORTS.Updater;
@@ -56,22 +57,6 @@ namespace ORTS
                 Name = "";
                 Path = "";
             }
-
-            public static bool isWrongPath(string path, GettextResourceManager catalog)
-            {
-                if (path.ToLower().Contains(Application.StartupPath.ToLower()))
-                {
-                    // check added because a succesful Update operation will empty the Open Rails folder and lose any content stored within it.
-                    MessageBox.Show(catalog.GetString
-                        ($"Cannot use content from any folder which lies inside the Open Rails program folder {Application.StartupPath}\n\n")
-                        , "Invalid content location"
-                        , MessageBoxButtons.OK
-                        , MessageBoxIcon.Error);
-                    return true;
-        }
-
-                return false;
-            }
         }
 
         public OptionsForm(UserSettings settings, UpdateManager updateManager, bool initialContentSetup)
@@ -88,7 +73,7 @@ namespace ORTS
             // Collect all the available language codes by searching for
             // localisation files, but always include English (base language).
             var languageCodes = new List<string> { "en" };
-            foreach (var path in Directory.GetDirectories(Path.GetDirectoryName(Application.ExecutablePath)))
+            foreach (var path in Directory.GetDirectories(ApplicationInfo.ProcessDirectory))
                 if (Directory.GetFiles(path, "*.Messages.resources.dll").Length > 0)
                     languageCodes.Add(Path.GetFileName(path));
 
@@ -750,8 +735,14 @@ namespace ORTS
             var current = bindingSourceContent.Current as ContentFolder;
             if (current != null && current.Name != textBoxContentName.Text)
             {
-                if (ContentFolder.isWrongPath(current.Path, catalog))
+                if (current.Path.ToLower().Contains(ApplicationInfo.ProcessDirectory.ToLower()))
                 {
+                    // Block added because a succesful Update operation will empty the Open Rails folder and lose any content stored within it.
+                    MessageBox.Show(catalog.GetString
+                        ($"Cannot use content from any folder which lies inside the Open Rails folder {ApplicationInfo.ProcessDirectory}\n\n")
+                        , "Invalid content location"
+                        , MessageBoxButtons.OK
+                        , MessageBoxIcon.Error);
                     DeleteContent();
                     return;
                 }
