@@ -86,6 +86,7 @@ using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using SharpDX.Direct3D9;
 using Orts.Simulation.RollingStocks;
 using static Orts.Simulation.RollingStocks.MSTSSteamLocomotive;
+using SharpDX.MediaFoundation;
 
 namespace Orts.Simulation.RollingStocks
 {
@@ -170,6 +171,8 @@ namespace Orts.Simulation.RollingStocks
         float BoosterEngineSpeedRpM;
         bool BoosterAirisLow = false;
         int BoosterEngineNumber;
+
+        float SteamLocomotiveRetardingDynamicBrakeForceN = 0;
 
         /// <summary>
         /// Grate limit of locomotive exceedeed?
@@ -2498,6 +2501,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             LocoTenderFrictionForceN = CombFrictionN;
 
             #region transfer energy
+
             UpdateFX(elapsedClockSeconds);
             UpdateTender(elapsedClockSeconds);
             UpdateFirebox(elapsedClockSeconds, absSpeedMpS);
@@ -2519,6 +2523,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 if (SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
                 {
+                    UpdateCounterPressure(elapsedClockSeconds, cutoff, i);
                     UpdateCylinders(elapsedClockSeconds, throttle, cutoff, absSpeedMpS, i);
                 }
                 else if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)  // Booster Engine
@@ -4874,6 +4879,54 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
         }
 
+        /// <summary>
+        /// Calculate the counter pressure to be used by a locomotive as a braking effect
+        /// To do this we first calculate the MEP air pressure of compressed air with each stroke, then we calculate the resulting "resisting" tractive force
+        /// </summary>
+        private void UpdateCounterPressure(float elapsedClockSeconds, float cutoff, int numberofengine)
+        {
+            SteamLocomotiveRetardingDynamicBrakeForceN = 0;
+
+            float currentDynamicBrakeFraction = DynamicBrakePercent / 100;
+
+            if (currentDynamicBrakeFraction > 0 && absSpeedMpS >0)
+            {
+                float CylinderVolumePoint_compression = (currentDynamicBrakeFraction * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM)) + CylinderClearancePC;
+                float CylinderVolumePoint_release = (Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) + 2 * CylinderClearancePC) - CylinderVolumePoint_compression;
+
+//                Trace.TraceInformation("Vol-release {0} Vol-compression {1} Stroke {2}", CylinderVolumePoint_release, CylinderVolumePoint_compression, Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM));
+
+                // Ratio of compression = stroke during compression = stroke @ start of compression / stroke and end of compression
+                float CylinderRatio_compression = CylinderVolumePoint_compression / CylinderClearancePC;
+                float CylinderRatio_release = CylinderVolumePoint_compression / (Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) + 2 * CylinderClearancePC);
+
+                float CompMeanPressure_compressionAtmPSI = OneAtmospherePSI * CylinderRatio_compression * ((float)Math.Log(CylinderRatio_compression, 10) / (CylinderRatio_compression - 1.0f));
+                float CompMeanPressure_releaseAtmPSI = CompMeanPressure_compressionAtmPSI * CylinderRatio_release * ((float)Math.Log(CylinderRatio_release) / (CylinderRatio_release - 1.0f));
+
+//                Trace.TraceInformation("MEPcomp {0} Log {1} CompRatio {2}", CompMeanPressure_compressionAtmPSI, (float)Math.Log(CylinderRatio_compression), CylinderRatio_compression);
+
+                float CylinderWork_compression_InLbs = CompMeanPressure_compressionAtmPSI * CylinderVolumePoint_compression;
+                float CylinderWork_release_InLbs = CompMeanPressure_releaseAtmPSI * CylinderVolumePoint_release;
+
+//                Trace.TraceInformation("Workc {0} Workr {1} Pc {2} Pr {3}", CylinderWork_compression_InLbs, CylinderWork_release_InLbs, CompMeanPressure_compressionAtmPSI, CompMeanPressure_releaseAtmPSI);
+
+                float TotalWorkCounterPressure = CylinderWork_compression_InLbs + CylinderWork_release_InLbs;
+
+                float CounterPressureMEP = TotalWorkCounterPressure / Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM);
+
+                // Calculate tractive retarding force
+                SteamLocomotiveRetardingDynamicBrakeForceN = N.FromLbf(CounterPressureMEP * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) / Me.ToIn(SteamEngines[numberofengine].AttachedAxle.CogWheelRadiusM));
+
+//                Trace.TraceInformation("CogRetardForce {0} throttle {1} MEP {2} Ratio-Comp {3} Ratio-Rel {4}", N.ToLbf(SteamLocomotiveRetardingDynamicBrakeForceN), throttle, CounterPressureMEP, CylinderRatio_compression, CylinderRatio_release);
+            }
+            else
+            {
+                SteamLocomotiveRetardingDynamicBrakeForceN = 0;
+            }
+
+
+        }
+
         private void UpdateCylinders(float elapsedClockSeconds, float throttle, float cutoff, float absSpeedMpS, int numberofengine)
         {
             // Calculate speed of locomotive in wheel rpm - used to determine changes in performance based upon speed.
@@ -6592,6 +6645,18 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             {
                 TractiveForceN = 0;
             }
+
+        //    if (DynamicBrakePercent > 0 && DynamicBrake)
+
+            if (DynamicBrakePercent > 0)
+            {
+                DynamicBrakeForceN = SteamLocomotiveRetardingDynamicBrakeForceN;
+            }
+            else
+            {
+                DynamicBrakeForceN = 0;
+            }
+
         }
 
 
