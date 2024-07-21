@@ -115,6 +115,7 @@ namespace Orts.Simulation.RollingStocks
         public LocomotiveRailDriveTypes LocomotiveRailDriveType;
 
         public bool RackGogWheelEngaged = false;
+        public float CogWheelDiameterM;
 
         // simulation parameters
         public bool ManualHorn = false;
@@ -3019,6 +3020,7 @@ namespace Orts.Simulation.RollingStocks
                 axle.BrakeRetardForceN = BrakeRetardForceN / LocomotiveAxles.Count;
                 axle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
                 axle.WheelRadiusM = DriverWheelRadiusM;
+                axle.CogWheelRadiusM = CogWheelRadiusM;
                 axle.WheelDistanceGaugeM = TrackGaugeM;
                 axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
                 axle.BogieRigidWheelBaseM = RigidWheelBaseM;

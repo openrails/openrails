@@ -258,6 +258,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     if (axle.AxleWeightN <= 0) axle.AxleWeightN = 9.81f * axle.WheelWeightKg;  //remains fixed for diesel/electric locomotives, but varies for steam locomotives
                     if (axle.NumWheelsetAxles <= 0) axle.NumWheelsetAxles = locomotive.LocoNumDrvAxles;
                     if (axle.WheelRadiusM <= 0) axle.WheelRadiusM = locomotive.DriverWheelRadiusM;
+                    if (axle.CogWheelRadiusM <= 0) axle.CogWheelRadiusM = locomotive.CogWheelRadiusM;
+                    if (!axle.CogWheelFitted) axle.CogWheelFitted = locomotive.CogWheelFitted;
                     if (axle.WheelFlangeAngleRad <= 0) axle.WheelFlangeAngleRad = locomotive.MaximumWheelFlangeAngleRad;
                     if (axle.DampingNs <= 0) axle.DampingNs = locomotive.MassKG / 1000.0f / AxleList.Count;
                     if (axle.FrictionN <= 0) axle.FrictionN = locomotive.MassKG / 1000.0f / AxleList.Count;
@@ -608,6 +610,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float WheelRadiusM;
 
         /// <summary>
+        /// Radius of wheels connected to rack track
+        /// </summary>
+        public float CogWheelRadiusM;
+
+        /// <summary>
         /// Wheel number
         /// </summary>
   //      public int NumberWheelAxles;
@@ -903,9 +910,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         WheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
                         AxleWeightN = 9.81f * WheelWeightKg;
                         break;
-                    case "cogwheel":
+                    case "cogwheelfitted":
                         CogWheelFitted = stf.ReadBoolBlock(false);
                         Trace.TraceInformation("CogWheel - {0}", CogWheelFitted);
+                        break;
+                    case "cogwheelradius":
+                        CogWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
                         break;
                     case "animatedparts":
                         foreach (var part in stf.ReadStringBlock("").ToUpper().Replace(" ", "").Split(','))
@@ -922,6 +932,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public void Copy(Axle other)
         {
             WheelRadiusM = other.WheelRadiusM;
+            CogWheelRadiusM = other.CogWheelRadiusM;
             WheelFlangeAngleRad = other.WheelFlangeAngleRad;
             NumWheelsetAxles = other.NumWheelsetAxles;
             InertiaKgm2 = other.InertiaKgm2;
