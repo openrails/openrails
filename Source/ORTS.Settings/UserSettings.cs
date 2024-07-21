@@ -22,7 +22,6 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
-using System.Windows.Forms;
 using ORTS.Common;
 
 namespace ORTS.Settings
@@ -60,7 +59,7 @@ namespace ORTS.Settings
             else
                 SettingsFilePath = null;
 
-            UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
+            UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationInfo.ProductName);
             // TODO: If using INI file, move these to application directory as well.
             if (!Directory.Exists(UserDataFolder)) Directory.CreateDirectory(UserDataFolder);
             DeletedSaveFolder = Path.Combine(UserDataFolder, "Deleted Saves");
@@ -490,7 +489,7 @@ namespace ORTS.Settings
             : base(SettingsStore.GetSettingStore(SettingsFilePath, RegistryKey, null))
         {
             CustomDefaultValues["LoggingPath"] = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-            CustomDefaultValues["ScreenshotPath"] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), Application.ProductName);
+            CustomDefaultValues["ScreenshotPath"] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), ApplicationInfo.ProductName);
             CustomDefaultValues["Multiplayer_User"] = Environment.UserName;
             Load(options);
             Folders = new FolderSettings(options);

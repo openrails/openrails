@@ -128,6 +128,13 @@ namespace Updater
                     progressBarUpdater.Value = e.ProgressPercentage;
                 }));
             };
+            updateManager.ProceedWithUpdateCheck += (object sender, ProceedWithUpdateCheckEventArgs e) =>
+            {
+                Invoke((Action)(() =>
+                {
+                    if (MessageBox.Show(e.Message, Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.YesNo) == DialogResult.Yes) e.Proceed = true;
+                }));
+            };
 
             var channelName = Enumerable.FirstOrDefault(Environment.GetCommandLineArgs(), a => a.StartsWith(UpdateManager.ChannelCommandLine));
             if (channelName != null && channelName.Length > UpdateManager.ChannelCommandLine.Length)
