@@ -912,7 +912,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         break;
                     case "cogwheelfitted":
                         CogWheelFitted = stf.ReadBoolBlock(false);
-                        Trace.TraceInformation("CogWheel - {0}", CogWheelFitted);
                         break;
                     case "cogwheelradius":
                         CogWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
