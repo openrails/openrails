@@ -186,7 +186,7 @@ namespace Orts.Simulation.RollingStocks
         bool WaterScoopSoundOn = false;
         public float MaxTotalCombinedWaterVolumeUKG;
         public MSTSNotchController WaterController = new MSTSNotchController(0, 1, 0.01f);
-        public float CombinedTenderWaterVolumeUKG          // Decreased by running injectors and increased by refilling
+        public float CombinedTenderWaterVolumeUKG          // Decreased by running injectors or pumps and increased by refilling
         {          
             get { return WaterController.CurrentValue * MaxTotalCombinedWaterVolumeUKG; }
             set { WaterController.CurrentValue = value / MaxTotalCombinedWaterVolumeUKG; }
@@ -354,7 +354,8 @@ namespace Orts.Simulation.RollingStocks
             { BrakeSystemComponent.EmergencyReservoir, PressureUnit.None },
             { BrakeSystemComponent.MainPipe, PressureUnit.None },
             { BrakeSystemComponent.BrakePipe, PressureUnit.None },
-            { BrakeSystemComponent.BrakeCylinder, PressureUnit.None }
+            { BrakeSystemComponent.BrakeCylinder, PressureUnit.None },
+            { BrakeSystemComponent.SupplyReservoir, PressureUnit.None }
         };
 
         protected float OdometerResetPositionM = 0;
@@ -755,6 +756,7 @@ namespace Orts.Simulation.RollingStocks
                     BrakeSystemPressureUnits[BrakeSystemComponent.MainPipe] = BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir]; // Main Pipe is supplied by Main Reservoir
                     BrakeSystemPressureUnits[BrakeSystemComponent.AuxiliaryReservoir] = BrakeSystemPressureUnits[BrakeSystemComponent.BrakePipe]; // Auxiliary Reservoir is supplied by Brake Pipe (in single pipe brakes)
                     BrakeSystemPressureUnits[BrakeSystemComponent.EmergencyReservoir] = BrakeSystemPressureUnits[BrakeSystemComponent.BrakePipe]; // Emergency Reservoir is supplied by Brake Pipe
+                    BrakeSystemPressureUnits[BrakeSystemComponent.SupplyReservoir] = BrakeSystemPressureUnits[BrakeSystemComponent.BrakePipe]; // Supply Reservoir is supplied by Brake Pipe and MR Pipe
 
                     foreach (BrakeSystemComponent component in BrakeSystemPressureUnits.Keys.ToList())
                     {
@@ -5456,37 +5458,20 @@ namespace Orts.Simulation.RollingStocks
                         var direction = 0; // Forwards
                         if (cvc is CVCGauge && ((CVCGauge)cvc).Orientation == 0)
                             direction = ((CVCGauge)cvc).Direction;
-                        data = 0.0f;
                         data = DynamicBrakeForceN;
-                        if (data > 0 && SpeedMpS > 0 || data < 0 && SpeedMpS < 0)
-                        {
-                            data = 0;
-                            break;
-                        }
-                        data = Math.Abs(data);
                         switch (cvc.Units)
                         {
                             case CABViewControlUnits.AMPS:
-                                if (MaxCurrentA == 0)
-                                    MaxCurrentA = (float)cvc.MaxValue;
                                 if (DynamicBrakeMaxCurrentA == 0)
-                                    DynamicBrakeMaxCurrentA = (float)cvc.MinValue;
-                                if (ThrottlePercent > 0)
-                                {
-                                    data = 0;
-                                }
-                                if (DynamicBrakePercent > 0)
-                                {
-                                    data = (DynamicBrakeForceN / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
-                                }
-                                data = Math.Abs(data);
+                                    DynamicBrakeMaxCurrentA = (float)cvc.MaxValue;
+                                data = data / MaxDynamicBrakeForceN * DynamicBrakeMaxCurrentA;
                                 break;
 
                             case CABViewControlUnits.NEWTONS:
                                 break;
 
                             case CABViewControlUnits.KILO_NEWTONS:
-                                data = data / 1000.0f;
+                                data /= 1000.0f;
                                 break;
 
                             case CABViewControlUnits.KILO_LBS:

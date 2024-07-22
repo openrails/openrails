@@ -2641,7 +2641,7 @@ namespace Orts.Simulation.Timetables
             }
             else if (TrainType == TRAINTYPE.PLAYER && ControlMode == TRAIN_CONTROL.TURNTABLE) // Turntable mode
             {
-                string infoString = String.Copy("Do NOT move the train");
+                string infoString = "Do NOT move the train";
 
                 if (LeadLocomotive.ThrottlePercent > 1)
                 {
@@ -7298,7 +7298,7 @@ namespace Orts.Simulation.Timetables
                         newWaitItem.startSectionIndex = sectionIndex < 0 ? TCRoute.TCRouteSubpaths[subrouteIndex][0].TCSectionIndex : sectionIndex;
                         newWaitItem.startSubrouteIndex = subrouteIndex;
 
-                        newWaitItem.referencedTrainName = String.Copy(reqReferenceTrain);
+                        newWaitItem.referencedTrainName = reqReferenceTrain;
 
                         // Check if name is full name, otherwise add timetable file info from this train
                         if (!newWaitItem.referencedTrainName.Contains(':'))
@@ -7404,7 +7404,7 @@ namespace Orts.Simulation.Timetables
                         newWaitItem.startSectionIndex = sectionIndex < 0 ? TCRoute.TCRouteSubpaths[subrouteIndex][0].TCSectionIndex : sectionIndex;
                         newWaitItem.startSubrouteIndex = subrouteIndex;
 
-                        newWaitItem.referencedTrainName = String.Copy(reqReferenceTrain);
+                        newWaitItem.referencedTrainName = reqReferenceTrain;
 
                         // Check if name is full name, otherwise add timetable file info from this train
                         if (!newWaitItem.referencedTrainName.Contains(':'))
@@ -7509,7 +7509,7 @@ namespace Orts.Simulation.Timetables
                             newWaitItem.startSubrouteIndex = subrouteIndex;
                             newWaitItem.stationIndex = stationIndex;
 
-                            newWaitItem.referencedTrainName = String.Copy(reqReferenceTrain);
+                            newWaitItem.referencedTrainName = reqReferenceTrain;
 
                             // Check if name is full name, otherwise add timetable file info from this train
                             if (!newWaitItem.referencedTrainName.Contains(':'))
@@ -9897,14 +9897,14 @@ namespace Orts.Simulation.Timetables
                         break;
                 }
 
-                retString[7] = String.Copy(actString);
+                retString[7] = actString;
                 retString[8] = FormatStrings.FormatDistance(
                         nextActionInfo.ActivateDistanceM - PresentPosition[0].DistanceTravelledM, metric);
             }
 
-            retString[4] = String.Copy(movString);
-            retString[5] = String.Copy(abString);
-            retString[11] = String.Copy(nameString);
+            retString[4] = movString;
+            retString[5] = abString;
+            retString[11] = nameString;
 
             return retString;
         }
@@ -12323,7 +12323,7 @@ namespace Orts.Simulation.Timetables
             formedTrain.AITrainDirectionForward = true;
             formedTrain.Name = String.IsNullOrEmpty(reqName)
                 ? String.Concat("D_", train.Number.ToString("0000"), "_", formedTrain.Number.ToString("00"))
-                : String.Copy(reqName);
+                : reqName;
             formedTrain.FormedOf = train.Number;
             formedTrain.FormedOfType = TTTrain.FormCommand.Detached;
             formedTrain.TrainType = Train.TRAINTYPE.AI_AUTOGENERATE;
@@ -13852,7 +13852,7 @@ namespace Orts.Simulation.Timetables
                 return;
             }
 
-            AttachTrainName = String.Copy(thisCommand.CommandValues[0]);
+            AttachTrainName = thisCommand.CommandValues[0];
             if (!AttachTrainName.Contains(":"))
             {
                 int seppos = thisTrain.Name.IndexOf(':');
@@ -13913,7 +13913,7 @@ namespace Orts.Simulation.Timetables
         public AttachInfo(TTTrain rrtrain)
         {
             AttachTrain = rrtrain.Number;
-            AttachTrainName = String.Copy(rrtrain.Name);
+            AttachTrainName = rrtrain.Name;
             StationPlatformReference = -1;
             FirstIn = false;
             SetBack = false;
@@ -14091,7 +14091,7 @@ namespace Orts.Simulation.Timetables
 
             if (thisCommand.CommandValues != null && thisCommand.CommandValues.Count > 0)
             {
-                PickUpTrainName = String.Copy(thisCommand.CommandValues[0]);
+                PickUpTrainName = thisCommand.CommandValues[0];
                 if (!PickUpTrainName.Contains(":"))
                 {
                     int seppos = thisTrain.Name.IndexOf(':');
@@ -14293,7 +14293,7 @@ namespace Orts.Simulation.Timetables
             // Set transfer train name
             if (thisCommand.CommandValues != null && thisCommand.CommandValues.Count > 0)
             {
-                TransferTrainName = String.Copy(thisCommand.CommandValues[0]);
+                TransferTrainName = thisCommand.CommandValues[0];
                 if (!TransferTrainName.Contains(":"))
                 {
                     int seppos = thisTrain.Name.IndexOf(':');
