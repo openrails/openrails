@@ -362,6 +362,11 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float DisplayTractiveForceN;
 
         /// <summary>
+        /// Steam Engine counter pressure barking force
+        /// </summary>
+        public float CylinderCounterPressureBrakeForceN;
+
+        /// <summary>
         /// Steam Engine maximum indicated horsepower
         /// </summary>
         public float MaxIndicatedHorsePowerHP;
