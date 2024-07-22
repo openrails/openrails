@@ -6006,9 +6006,10 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 float currentDynamicBrakeFraction = DynamicBrakePercent / 100;
 
-                if (currentDynamicBrakeFraction > 0 && absSpeedMpS > 0)
+                if (currentDynamicBrakeFraction > 0 && absSpeedMpS > 0 && cutoff != 0)
                 {
-                    float CylinderVolumePoint_compression = (currentDynamicBrakeFraction * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM)) + CylinderClearancePC;
+                    float absCutoff = Math.Abs(cutoff);
+                    float CylinderVolumePoint_compression = (currentDynamicBrakeFraction * absCutoff * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM)) + CylinderClearancePC;
                     float CylinderVolumePoint_release = (Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) + 2 * CylinderClearancePC) - CylinderVolumePoint_compression;
 
                     //                Trace.TraceInformation("Vol-release {0} Vol-compression {1} Stroke {2}", CylinderVolumePoint_release, CylinderVolumePoint_compression, Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM));
@@ -6042,14 +6043,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 {
                 SteamEngines[numberofengine].CylinderCounterPressureBrakeForceN = 0;
                 }
-
-
-            
-
-
-
-
-
         }
 
 
