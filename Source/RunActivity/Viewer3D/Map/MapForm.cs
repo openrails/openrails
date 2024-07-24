@@ -364,7 +364,11 @@ namespace Orts.Viewer3D.Debugging
             var maxsize = maxX - minX > maxY - minY ? maxX - minX : maxY - minY;
             // Take up to next 500
             maxsize = (int)((maxsize / 100) + 1) * 500;
-            mapResolutionUpDown.Maximum = (decimal)maxsize;
+            if ((decimal)maxsize < mapResolutionUpDown.Maximum)
+            {
+                // do not make maximum larger then the maximum defined in the Designer
+                mapResolutionUpDown.Maximum = (decimal)maxsize;
+            }
             Inited = true;
 
             if (simulator.TDB == null || simulator.TDB.TrackDB == null || simulator.TDB.TrackDB.TrItemTable == null)
