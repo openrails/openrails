@@ -208,9 +208,6 @@
             this.btnRDReset = new System.Windows.Forms.Button();
             this.btnCheck = new System.Windows.Forms.Button();
             this.btnRDSettingsExport = new System.Windows.Forms.Button();
-            this.buttonCheckKeys = new System.Windows.Forms.Button();
-            this.buttonDefaultKeys = new System.Windows.Forms.Button();
-            this.buttonExport = new System.Windows.Forms.Button();
             this.checkCorrectQuestionableBrakingParams = new System.Windows.Forms.CheckBox();
             this.label16 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
