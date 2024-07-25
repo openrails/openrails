@@ -322,7 +322,7 @@ namespace ORTS
         }
 
         // Event raised by Retry button in NotificationPages so user can retry updates following an error notification.
-        public event EventHandler CheckUpdatesAgain;
+        //public event EventHandler CheckUpdatesAgain;
 
         public virtual void OnCheckUpdatesAgain(EventArgs e)
         {

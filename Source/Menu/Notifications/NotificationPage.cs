@@ -30,8 +30,6 @@ namespace ORTS
 {
     public class NotificationPage
     {
-
-
         public List<NDetail> NDetailList = new List<NDetail>();
         public Dictionary<int, NButtonControl> ButtonDictionary = new Dictionary<int, NButtonControl>();
         public Panel Panel;
@@ -39,63 +37,22 @@ namespace ORTS
         public List<Control> ControlList = new List<Control>();
 
         public NotificationPage(MainForm mainForm, Panel panel, Image nextImage, Image previousImage, Image firstImage, Image lastImage, string pageCount,
-    bool previousVisible, bool firstVisible, bool nextVisible, bool lastVisisble)
+    bool previousVisible, bool firstVisible, bool nextVisible, bool lastVisible)
         {
             MainForm = mainForm;
             Panel = panel;
             NButtonControl.ButtonCount = 0;
 
-            var nextPageControl = new Button { Margin = new Padding(0), Text = "", FlatStyle = FlatStyle.Flat };            
-            nextPageControl.Left = panel.ClientSize.Width - 25;
-            nextPageControl.Top = 0;
-            nextPageControl.Width = 20;
-            nextPageControl.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-            nextPageControl.FlatAppearance.BorderSize = 0;
-            nextPageControl.BackgroundImageLayout = ImageLayout.Center;
-            nextPageControl.BackgroundImage = nextImage;
-            nextPageControl.Visible = nextVisible;
+            var nextPageControl = AddArrow(panel, nextImage, nextVisible, true, 25);
             nextPageControl.Click += new EventHandler(MainForm.Next_Click);
-            //ControlList.Add(nextPageControl);
             Panel.Controls.Add(nextPageControl);
 
-            var previousPageControl = new Button { Margin = new Padding(0), Text = "", FlatStyle = FlatStyle.Flat };
-            previousPageControl.Left = panel.ClientSize.Width - 90;
-            previousPageControl.Top = 0;
-            previousPageControl.Width = 20;
-            previousPageControl.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-            previousPageControl.FlatAppearance.BorderSize = 0;
-            previousPageControl.BackgroundImageLayout = ImageLayout.Center;
-            previousPageControl.BackgroundImage = previousImage;
-            previousPageControl.Visible = previousVisible;
+            var previousPageControl = AddArrow(panel, previousImage, previousVisible, true, 90);
             previousPageControl.Click += new EventHandler(MainForm.Previous_Click);
-            //ControlList.Add(previousPageControl);
             Panel.Controls.Add(previousPageControl);
 
-            var lastPageControl = new Button { Margin = new Padding(0), Text = "", FlatStyle = FlatStyle.Flat };
-            lastPageControl.Left = panel.ClientSize.Width - 25;
-            lastPageControl.Top = 0;
-            lastPageControl.Width = 20;
-            lastPageControl.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-            lastPageControl.FlatAppearance.BorderSize = 0;
-            lastPageControl.BackgroundImageLayout = ImageLayout.Center;
-            lastPageControl.BackgroundImage = lastImage;
-            lastPageControl.Visible = lastVisisble;
-            lastPageControl.Enabled = false;
-            //ControlList.Add(lastPageControl);
-            Panel.Controls.Add(lastPageControl);
-
-            var firstPageControl = new Button { Margin = new Padding(0), Text = "", FlatStyle = FlatStyle.Flat };
-            firstPageControl.Left = panel.ClientSize.Width - 90;
-            firstPageControl.Top = 0;
-            firstPageControl.Width = 20;
-            firstPageControl.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-            firstPageControl.FlatAppearance.BorderSize = 0;
-            firstPageControl.BackgroundImageLayout = ImageLayout.Center;
-            firstPageControl.BackgroundImage = firstImage;
-            firstPageControl.Visible = firstVisible;
-            firstPageControl.Enabled = false;
-            //ControlList.Add(firstPageControl);
-            Panel.Controls.Add(firstPageControl);
+            Panel.Controls.Add(AddArrow(panel, lastImage, lastVisible, false, 25));
+            Panel.Controls.Add(AddArrow(panel, firstImage, firstVisible, false, 90));
 
             var pageCountControl = new Label
             {
@@ -108,6 +65,21 @@ namespace ORTS
             };
             //ControlList.Add(pageCountControl);
             Panel.Controls.Add(pageCountControl);
+        }
+
+        private Button AddArrow(Panel panel, Image image, bool visible, bool enabled, int indentRight)
+        {
+            var button = new Button { Margin = new Padding(0), Text = "", FlatStyle = FlatStyle.Flat };
+            button.Left = panel.ClientSize.Width - indentRight;
+            button.Top = 0;
+            button.Width = 20;
+            button.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            button.FlatAppearance.BorderSize = 0;
+            button.BackgroundImageLayout = ImageLayout.Center;
+            button.BackgroundImage = image;
+            button.Visible = visible;
+            button.Enabled = enabled;
+            return button;
         }
 
         public class NDetail
