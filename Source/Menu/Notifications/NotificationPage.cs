@@ -21,8 +21,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using ORTS.Updater;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using Button = System.Windows.Forms.Button;
 using Image = System.Drawing.Image;
 
@@ -37,22 +35,22 @@ namespace ORTS
         public List<Control> ControlList = new List<Control>();
 
         public NotificationPage(MainForm mainForm, Panel panel, Image nextImage, Image previousImage, Image firstImage, Image lastImage, string pageCount,
-    bool previousVisible, bool firstVisible, bool nextVisible, bool lastVisible)
+            bool previousVisible, bool firstVisible, bool nextVisible, bool lastVisible)
         {
             MainForm = mainForm;
             Panel = panel;
             NButtonControl.ButtonCount = 0;
 
-            var nextPageControl = AddArrow(panel, nextImage, nextVisible, true, 25);
+            var nextPageControl = new Arrow(panel, nextImage, nextVisible, true, 25);
             nextPageControl.Click += new EventHandler(MainForm.Next_Click);
             Panel.Controls.Add(nextPageControl);
 
-            var previousPageControl = AddArrow(panel, previousImage, previousVisible, true, 90);
+            var previousPageControl = new Arrow(panel, previousImage, previousVisible, true, 90);
             previousPageControl.Click += new EventHandler(MainForm.Previous_Click);
             Panel.Controls.Add(previousPageControl);
 
-            Panel.Controls.Add(AddArrow(panel, lastImage, lastVisible, false, 25));
-            Panel.Controls.Add(AddArrow(panel, firstImage, firstVisible, false, 90));
+            Panel.Controls.Add( new Arrow(panel, lastImage, lastVisible, false, 25));
+            Panel.Controls.Add( new Arrow(panel, firstImage, firstVisible, false, 90));
 
             var pageCountControl = new Label
             {
@@ -67,19 +65,22 @@ namespace ORTS
             Panel.Controls.Add(pageCountControl);
         }
 
-        private Button AddArrow(Panel panel, Image image, bool visible, bool enabled, int indentRight)
-        {
-            var button = new Button { Margin = new Padding(0), Text = "", FlatStyle = FlatStyle.Flat };
-            button.Left = panel.ClientSize.Width - indentRight;
-            button.Top = 0;
-            button.Width = 20;
-            button.Anchor = AnchorStyles.Top | AnchorStyles.Left;
-            button.FlatAppearance.BorderSize = 0;
-            button.BackgroundImageLayout = ImageLayout.Center;
-            button.BackgroundImage = image;
-            button.Visible = visible;
-            button.Enabled = enabled;
-            return button;
+        public class Arrow : Button {
+            public Arrow(Panel panel, Image image, bool visible, bool enabled, int indentRight)
+            {
+                Margin = new Padding(0);
+                Text = "";
+                FlatStyle = FlatStyle.Flat;
+                Left = panel.ClientSize.Width - indentRight;
+                Top = 0;
+                Width = 20;
+                Anchor = AnchorStyles.Top | AnchorStyles.Left;
+                FlatAppearance.BorderSize = 0;
+                BackgroundImageLayout = ImageLayout.Center;
+                BackgroundImage = image;
+                Visible = visible;
+                Enabled = enabled;
+            }
         }
 
         public class NDetail
