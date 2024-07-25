@@ -21,21 +21,93 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using ORTS.Updater;
+using static System.Net.Mime.MediaTypeNames;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using Button = System.Windows.Forms.Button;
+using Image = System.Drawing.Image;
 
 namespace ORTS
 {
     public class NotificationPage
     {
+
+
         public List<NDetail> NDetailList = new List<NDetail>();
         public Dictionary<int, NButtonControl> ButtonDictionary = new Dictionary<int, NButtonControl>();
         public Panel Panel;
         private MainForm MainForm; // Needed so the Retry button can raise an event which the form can catch.
+        public List<Control> ControlList = new List<Control>();
 
-        public NotificationPage(MainForm mainForm, Panel panel)
+        public NotificationPage(MainForm mainForm, Panel panel, Image nextImage, Image previousImage, Image firstImage, Image lastImage, string pageCount,
+    bool previousVisible, bool firstVisible, bool nextVisible, bool lastVisisble)
         {
             MainForm = mainForm;
             Panel = panel;
             NButtonControl.ButtonCount = 0;
+
+            var nextPageControl = new Button { Margin = new Padding(0), Text = "", FlatStyle = FlatStyle.Flat };            
+            nextPageControl.Left = panel.ClientSize.Width - 25;
+            nextPageControl.Top = 0;
+            nextPageControl.Width = 20;
+            nextPageControl.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            nextPageControl.FlatAppearance.BorderSize = 0;
+            nextPageControl.BackgroundImageLayout = ImageLayout.Center;
+            nextPageControl.BackgroundImage = nextImage;
+            nextPageControl.Visible = nextVisible;
+            nextPageControl.Click += new EventHandler(MainForm.Next_Click);
+            //ControlList.Add(nextPageControl);
+            Panel.Controls.Add(nextPageControl);
+
+            var previousPageControl = new Button { Margin = new Padding(0), Text = "", FlatStyle = FlatStyle.Flat };
+            previousPageControl.Left = panel.ClientSize.Width - 90;
+            previousPageControl.Top = 0;
+            previousPageControl.Width = 20;
+            previousPageControl.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            previousPageControl.FlatAppearance.BorderSize = 0;
+            previousPageControl.BackgroundImageLayout = ImageLayout.Center;
+            previousPageControl.BackgroundImage = previousImage;
+            previousPageControl.Visible = previousVisible;
+            previousPageControl.Click += new EventHandler(MainForm.Previous_Click);
+            //ControlList.Add(previousPageControl);
+            Panel.Controls.Add(previousPageControl);
+
+            var lastPageControl = new Button { Margin = new Padding(0), Text = "", FlatStyle = FlatStyle.Flat };
+            lastPageControl.Left = panel.ClientSize.Width - 25;
+            lastPageControl.Top = 0;
+            lastPageControl.Width = 20;
+            lastPageControl.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            lastPageControl.FlatAppearance.BorderSize = 0;
+            lastPageControl.BackgroundImageLayout = ImageLayout.Center;
+            lastPageControl.BackgroundImage = lastImage;
+            lastPageControl.Visible = lastVisisble;
+            lastPageControl.Enabled = false;
+            //ControlList.Add(lastPageControl);
+            Panel.Controls.Add(lastPageControl);
+
+            var firstPageControl = new Button { Margin = new Padding(0), Text = "", FlatStyle = FlatStyle.Flat };
+            firstPageControl.Left = panel.ClientSize.Width - 90;
+            firstPageControl.Top = 0;
+            firstPageControl.Width = 20;
+            firstPageControl.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            firstPageControl.FlatAppearance.BorderSize = 0;
+            firstPageControl.BackgroundImageLayout = ImageLayout.Center;
+            firstPageControl.BackgroundImage = firstImage;
+            firstPageControl.Visible = firstVisible;
+            firstPageControl.Enabled = false;
+            //ControlList.Add(firstPageControl);
+            Panel.Controls.Add(firstPageControl);
+
+            var pageCountControl = new Label
+            {
+                Text = pageCount,
+                UseMnemonic = false,
+                Font = new Font(panel.Font, FontStyle.Bold),
+                Height = 15,
+                Left = panel.ClientSize.Width - 85 + (pageCount.Length * 9), // Keep the text centred between the < > arrows
+                Top = 3
+            };
+            //ControlList.Add(pageCountControl);
+            Panel.Controls.Add(pageCountControl);
         }
 
         public class NDetail
@@ -87,6 +159,7 @@ namespace ORTS
                     Width = page.Panel.Width - ScrollBarWidth - left,
                     Left = LeftPadding
                 };
+                //page.ControlList.Add(Control);
                 page.Panel.Controls.Add(Control);
             }
         }
@@ -108,6 +181,7 @@ namespace ORTS
                     Left = left,
                     Top = TopPadding,
                 };
+                //page.ControlList.Add(Control);
                 page.Panel.Controls.Add(Control);
             }
         }
@@ -128,6 +202,7 @@ namespace ORTS
                     Width = page.Panel.Width - ScrollBarWidth - left,
                     Left = left,
                 };
+                //page.ControlList.Add(Control);
                 page.Panel.Controls.Add(Control);
             }
         }
@@ -151,7 +226,8 @@ namespace ORTS
                     Top = TopPadding,
                     BackColor = SystemColors.ButtonFace
                 };
-                Page.Panel.Controls.Add(Button);
+                //page.ControlList.Add(Button);
+                page.Panel.Controls.Add(Button);
 
                 // 3 should be enough, but is there a way to get unlimited buttons?
                 switch (ButtonCount)
@@ -183,6 +259,7 @@ namespace ORTS
                     Top = TopPadding,
                     Left = labelLeft
                 };
+                //page.ControlList.Add(Control);
                 page.Panel.Controls.Add(Control);
             }
         }
@@ -228,6 +305,11 @@ namespace ORTS
             }
         }
 
+        public void DoNext(int key)
+        {
+
+        }
+
         public class NRecordControl : NDetail
         {
             public Label Field;
@@ -245,6 +327,7 @@ namespace ORTS
                     Left = LeftPadding,
                     Top = TopPadding
                 };
+                //page.ControlList.Add(Control);
                 Page.Panel.Controls.Add(Control);
 
                 var left = width + LeftPadding;
@@ -259,6 +342,7 @@ namespace ORTS
                     Left = left,
                     Top = TopPadding
                 };
+                //page.ControlList.Add(Field);
                 Page.Panel.Controls.Add(Field);
             }
         }
@@ -280,6 +364,7 @@ namespace ORTS
                     ((NRecordControl)nDetail).Field.Top = top;
                 }
 
+                this.Panel.Controls.Add(nDetail.Control);
                 top += nDetail.Control.Height + NDetail.VerticalSpacing;
             }
         }

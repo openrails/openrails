@@ -1569,6 +1569,13 @@ namespace ORTS
         }
 
         #region NotificationPages
+        public int CurrentNotificationNo = 0;
+        private bool firstVisible = true;
+        private bool previousVisible = false;
+        private bool lastVisible = false;
+        private bool nextVisible = true;
+
+
         private void pbNotificationsNone_Click(object sender, EventArgs e)
         {
             ToggleNotificationPages();
@@ -1599,7 +1606,7 @@ namespace ORTS
 
         private void FiddleNewNotificationPageCount()
         {
-            NotificationManager.LastPageViewed = 1;
+            //NotificationManager.LastPageViewed = 1;
             UpdateNotificationPageAlert();
         }
 
@@ -1616,7 +1623,7 @@ namespace ORTS
         {
             Win32.LockWindowUpdate(Handle);
             ClearPanel();
-            NotificationManager.PopulatePageList();
+            NotificationManager.PopulatePage();
             var notificationPage = GetCurrentNotificationPage();
             notificationPage.FlowNDetails();
             Win32.LockWindowUpdate(IntPtr.Zero);
@@ -1628,12 +1635,23 @@ namespace ORTS
         /// <returns></returns>
         NotificationPage GetCurrentNotificationPage()
         {
-            return NotificationManager.PageList[0];
+            return NotificationManager.Page;
         }
 
-        public NotificationPage CreateNotificationPage(Notifications notifications)
+        /// <summary>
+        /// Returns a new notificationPage with default images and label
+        /// </summary>
+        /// <returns></returns>
+        public NotificationPage CreateNotificationPage()
+        // Located in MainForm to get access to MainForm.Resources
         {
-            return new NotificationPage(this, panelDetails);
+            var previousImage = (Image)Resources.GetObject("Notification_previous");
+            var nextImage = (Image)Resources.GetObject("Notification_next");
+            var firstImage = (Image)Resources.GetObject("Notification_first");
+            var lastImage = (Image)Resources.GetObject("Notification_last");
+            var pageCount = $"{CurrentNotificationNo + 1}/{NotificationManager.Notifications.NotificationList.Count}";
+            return new NotificationPage(this, panelDetails, nextImage, previousImage, firstImage, lastImage, pageCount,
+                previousVisible, firstVisible, nextVisible, lastVisible);
         }
 
         // 3 should be enough, but is there a way to get unlimited buttons?
@@ -1648,6 +1666,51 @@ namespace ORTS
         public void Button2_Click(object sender, EventArgs e)
         {
             GetCurrentNotificationPage().DoButton(UpdateManager, 2);
+        }
+
+        public void Next_Click(object sender, EventArgs e)
+        {
+            ChangePage(1);
+            // GetCurrentNotificationPage().DoNext(1);
+        }
+
+        public void Previous_Click(object sender, EventArgs e)
+        {
+            ChangePage(-1);
+            //GetCurrentNotificationPage().DoNext(-1);
+        }
+
+        private void ChangePage(int step)
+        {
+            SetVisibility(step);
+            CurrentNotificationNo += step;
+            ShowNotificationPages();
+        }
+
+        private void SetVisibility(int step)
+        {
+            if (step < 0)
+            {
+                if (CurrentNotificationNo + step <= 0)
+                {
+                    previousVisible = false;
+                    firstVisible = true;
+                    return;
+                }
+            }
+            else
+            {
+                if (CurrentNotificationNo + step >= NotificationManager.Notifications.NotificationList.Count - 1)
+                {
+                    nextVisible = false;
+                    lastVisible = true;
+                    return;
+                }
+            }
+            nextVisible = true;
+            lastVisible = false;
+            previousVisible = true;
+            firstVisible = false;
         }
 
         #endregion NotificationPages

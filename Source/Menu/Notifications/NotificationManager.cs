@@ -34,6 +34,14 @@ using static ORTS.NotificationPage;
 //TODO Add caching of criteria
 //TODO Add "includeIf" for individual notifications
 
+// Notifications are read only once as a background task at start into NotificationList.
+// Every time the notifications page is re-visited, the options may have changed, so
+// the visibility of each notification in NotificationList is re-assessed. Also its date.
+// A SortedPageList is created which contains a list of indexes for the notifications to be shown sorted as latest first.
+// Every time the notifications page is re-visited or the page is incremented up or down,
+// the current notification is re-assessed and
+// the panel is re-loaded with Controls for the current page.
+
 namespace ORTS
 {
     class NotificationManager
@@ -44,16 +52,17 @@ namespace ORTS
         // We don't track the reading of each notification but set the NewNotificationCount = 0 after the last of the new ones has been read.
         public int NewPageCount = 1;
         public int LastPageViewed = 0;
-        public int Index = 0;
+        //public int Index = 0;
 
         public Notifications Notifications;
-        public List<NotificationPage> PageList = new List<NotificationPage>();
         private Exception Error;
         private Dictionary<string, string> ParameterDictionary;
 
         private readonly MainForm MainForm; // Needed so we can add controls to the NotificationPage
         private readonly UpdateManager UpdateManager;
         private readonly UserSettings Settings;
+
+        public NotificationPage Page { get; private set; }
 
         public NotificationManager(MainForm mainForm, UpdateManager updateManager, UserSettings settings) 
         { 
@@ -78,7 +87,7 @@ namespace ORTS
                 ReplaceParameters();
                 LogParameters();
 
-                PopulatePageList();
+                PopulatePage();
                 ArePagesVisible = false;
             }
             catch (WebException ex)
@@ -135,24 +144,22 @@ namespace ORTS
             return client.DownloadString(new Uri("https://wepp.co.uk/openrails/notifications2/menu.json"));
         }
 
-        public void PopulatePageList()
+        public void PopulatePage()
         {
-            SetUpdateNotificationPage();
-
-            var NotificationPage = PageList.LastOrDefault();
-            new NTextControl(NotificationPage, "").Add();
-            new NTextControl(NotificationPage, "(Toggle icon to hide these notifications.)").Add();
+            Page = UpdateNotificationPage();
+            new NTextControl(Page, "").Add();
+            new NTextControl(Page, "(Toggle icon to hide these notifications.)").Add();
         }
 
         /// <summary>
         /// Ultimately there will be a list of notifications downloaded from https://static.openrails.org/api/notifications/menu.json .
         /// Until then, there is a single notification announcing either that a new update is available or the installation is up to date.
         /// </summary>
-        private void SetUpdateNotificationPage()
+        private NotificationPage UpdateNotificationPage()
         {
+            var page = MainForm.CreateNotificationPage();
+
             MainForm.UpdateNotificationPageAlert();
-            PageList.Clear();
-            var page = MainForm.CreateNotificationPage(Notifications);
 
             if (UpdateManager.LastCheckError != null || Error != null)
             {
@@ -173,24 +180,23 @@ namespace ORTS
                 new NTextControl(page, "Is your Internet connected?").Add();
 
                 new NRetryControl(page, "Retry", 140, "Try again to fetch notifications", MainForm).Add();
-                PageList.Add(page);
-                return;
             }
 
             NewPageCount = 1;
             var list = Notifications.NotificationList;
-            var n = list[Index];
+            var n = list[MainForm.CurrentNotificationNo];
             LogNotification(n);
 
-            var skipPage = false;
-            new NTitleControl(page, Index + 1, list.Count, n.Date, n.Title).Add();
+            //var skipPage = false;
+            new NTitleControl(page, MainForm.CurrentNotificationNo + 1, list.Count, n.Date, n.Title).Add();
 
             // Check constraints for each item
-            foreach(var item in n.ItemList)
+            foreach (var item in n.ItemList)
             {
                 if (AreChecksMet(item)) AddItemToPage(page, item);
             }
-            if (skipPage == false) PageList.Add(page);
+
+            return page;
         }
 
         #region Process Criteria
@@ -337,9 +343,6 @@ namespace ORTS
             {
                 n.Title = ReplaceParameter(n.Title);
                 n.Date = ReplaceParameter(n.Date);
-                //n.PrefixItemList?.ForEach(item => ReplaceItemParameter(item));
-                //n.Met.ItemList?.ForEach(item => ReplaceItemParameter(item));
-                //n.SuffixItemList?.ForEach(item => ReplaceItemParameter(item));
                 n.ItemList?.ForEach(item => ReplaceItemParameter(item));
             }
             foreach (var list in Notifications.CheckList)
