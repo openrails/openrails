@@ -133,13 +133,25 @@
   <data name="ExpanderClosedDisabled" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Expander-closed-disabled.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="chat_icon_no_message_transparent" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\chat_icon_no_message_transparent.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="chat_icon_new_message_transparent" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\chat_icon_new_message_transparent.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ExpanderClosed" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Expander-closed.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="chat_icon_no_message_transparent" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\chat_icon_no_message_transparent.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="Notification_next" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Notification-next.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Notification_first" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\notification-first.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Notification_last" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\notification-last.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Notification_previous" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\resources\notification-previous.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>
