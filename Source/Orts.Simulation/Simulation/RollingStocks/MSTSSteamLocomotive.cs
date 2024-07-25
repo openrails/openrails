@@ -173,6 +173,7 @@ namespace Orts.Simulation.RollingStocks
         int BoosterEngineNumber;
                 
         bool CounterPressureBrakingFitted = false;
+        float CounterPressureMEP;
 
         /// <summary>
         /// Grate limit of locomotive exceedeed?
@@ -1480,7 +1481,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     Trace.TraceWarning("Boiler Volume not found in ENG file, or doesn't appear to be a valid figure, and has been set to {0} Ft^3", BoilerVolumeFT3);
             }
 
-
             // Assign default steam table values if table not in ENG file
             if (BoilerEfficiencyGrateAreaLBpFT2toX == null)
             {
@@ -1678,6 +1678,13 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
+
+                // Check that this is across all steam engines
+                if (LocomotiveRailDriveType == LocomotiveRailDriveTypes.Rack && SteamEngines[i].AttachedAxle.CogWheelRadiusM == 0)
+                {
+                    SteamEngines[i].AttachedAxle.CogWheelRadiusM = CogWheelRadiusM;
+                }
+
                 if (SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
                 {
                     if (SteamEngineType == SteamEngineTypes.Compound)
@@ -6018,8 +6025,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     float CylinderRatio_compression = CylinderVolumePoint_compression / CylinderClearancePC;
                     float CylinderRatio_release = CylinderVolumePoint_compression / (Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) + 2 * CylinderClearancePC);
 
-                    float CompMeanPressure_compressionAtmPSI = OneAtmospherePSI * CylinderRatio_compression * ((float)Math.Log(CylinderRatio_compression, 10) / (CylinderRatio_compression - 1.0f));
-                    float CompMeanPressure_releaseAtmPSI = CompMeanPressure_compressionAtmPSI * CylinderRatio_release * ((float)Math.Log(CylinderRatio_release) / (CylinderRatio_release - 1.0f));
+                // Note to convert to hyperbolic log, value needs to be multiplied by 2
+                    float CompMeanPressure_compressionAtmPSI = OneAtmospherePSI * CylinderRatio_compression * (2.0f * (float)Math.Log(CylinderRatio_compression, 10) / (CylinderRatio_compression - 1.0f));
+                    float CompMeanPressure_releaseAtmPSI = CompMeanPressure_compressionAtmPSI * CylinderRatio_release * (2.0f * (float)Math.Log(CylinderRatio_release) / (CylinderRatio_release - 1.0f));
 
                     //                Trace.TraceInformation("MEPcomp {0} Log {1} CompRatio {2}", CompMeanPressure_compressionAtmPSI, (float)Math.Log(CylinderRatio_compression), CylinderRatio_compression);
 
@@ -6030,18 +6038,21 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                     float TotalWorkCounterPressure = CylinderWork_compression_InLbs + CylinderWork_release_InLbs;
 
-                    float CounterPressureMEP = TotalWorkCounterPressure / Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM);
+                    CounterPressureMEP = TotalWorkCounterPressure / Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM);
 
                 // Assume no impact of "return" stroke as air is being drawn into cylinder
 
-                // Calculate tractive retarding force
-                SteamEngines[numberofengine].CylinderCounterPressureBrakeForceN = N.FromLbf(CounterPressureMEP * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) / Me.ToIn(SteamEngines[numberofengine].AttachedAxle.CogWheelRadiusM));
+                float CounterBalanceWheelDiamM = 2 * SteamEngines[numberofengine].AttachedAxle.CogWheelRadiusM;
 
-                    //                Trace.TraceInformation("CogRetardForce {0} throttle {1} MEP {2} Ratio-Comp {3} Ratio-Rel {4}", N.ToLbf(SteamLocomotiveRetardingDynamicBrakeForceN), throttle, CounterPressureMEP, CylinderRatio_compression, CylinderRatio_release);
-                }
-                else
+                // Calculate tractive retarding force
+                SteamEngines[numberofengine].CylinderCounterPressureBrakeForceN = N.FromLbf(CounterPressureMEP * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersDiameterM) * Me.ToIn(SteamEngines[numberofengine].CylindersStrokeM) / Me.ToIn(CounterBalanceWheelDiamM));
+
+//                Trace.TraceInformation("CogRetardForce {0} throttle {1} MEP {2} Ratio-Comp {3} Ratio-Rel {4} Pc {5} Pr {6} ", N.ToLbf(SteamEngines[numberofengine].CylinderCounterPressureBrakeForceN), throttle, CounterPressureMEP, CylinderRatio_compression, CylinderRatio_release, CompMeanPressure_compressionAtmPSI, CompMeanPressure_releaseAtmPSI);
+            }
+            else
                 {
                 SteamEngines[numberofengine].CylinderCounterPressureBrakeForceN = 0;
+                CounterPressureMEP = 0;
                 }
         }
 
@@ -6573,6 +6584,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             MaxPowerW = 0;
             MaxForceN = 0;
             DisplayTractiveForceN = 0;
+            float CounterPressureRetardingForceN = 0;
 
             if (WheelSlip && AdvancedAdhesionModel)
             {
@@ -6588,30 +6600,44 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             {
                 ApplyDirectionToTractiveForce(ref SteamEngines[i].RealTractiveForceN, i);
 
-                TractiveForceN += SteamEngines[i].RealTractiveForceN + DynamicBrakeForceN;
-
                 if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics)
                 {
-                    SteamEngines[i].AttachedAxle.DriveForceN = SteamEngines[i].RealTractiveForceN;
-
-                    // Counter Pressure braking system
-
+                    // Riggenbach Counter Pressure braking system
+                    // Note valve motion needs to be reversed, ie if travelling forward reverser needs to be set in reverse, similarly if travelling in reverse,
+                    // needs to be set in forward.
                     if (DynamicBrakePercent > 0 && CounterPressureBrakingFitted && absSpeedMpS > 0.1)
-                    {
-                        DynamicBrakeForceN += SteamEngines[i].CylinderCounterPressureBrakeForceN;
-                        TractiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * DynamicBrakeForceN;
-                        SteamEngines[i].AttachedAxle.DriveForceN = SteamEngines[i].RealTractiveForceN;
-                    }
-                    else
-                    {
-                        DynamicBrakeForceN = 0;
+                    {                        
+                        if (SpeedMpS > 0)
+                        {
+                            if (Direction == Direction.Reverse)
+                            {
+                                CounterPressureRetardingForceN = -1 * SteamEngines[i].CylinderCounterPressureBrakeForceN;
+                            }
+                            else
+                            {
+                                CounterPressureRetardingForceN = 0;
+                            }
+                        }
+                        else if (SpeedMpS < 0)
+                        {
+                            if (Direction == Direction.Forward)
+                            {
+                                CounterPressureRetardingForceN = SteamEngines[i].CylinderCounterPressureBrakeForceN;
+                            }
+                            else
+                            {
+                                CounterPressureRetardingForceN = 0;
+                            }
+                        }
+                        else
+                        {
+                            CounterPressureRetardingForceN = 0;
+                        }
                     }
 
-                    if (DynamicBrakeForceN > 0)
-                    {
-
-                        SteamEngines[i].AttachedAxle.DriveForceN = DynamicBrakeForceN;
-                    }
+                    SteamEngines[i].AttachedAxle.DriveForceN = SteamEngines[i].RealTractiveForceN + CounterPressureRetardingForceN;
+                    TractiveForceN += SteamEngines[i].RealTractiveForceN + CounterPressureRetardingForceN;
+                    DynamicBrakeForceN += SteamEngines[i].CylinderCounterPressureBrakeForceN;
 
                     UpdateAxleDriveForce();
 
@@ -6624,7 +6650,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     SteamEngines[i].DisplayTractiveForceN = SteamEngines[i].RealTractiveForceN;
                     MotiveForceN += SteamEngines[i].RealTractiveForceN;
                     DisplayTractiveForceN += SteamEngines[i].RealTractiveForceN;
-
                 }
 
                 // Set Max Power equal to max IHP
@@ -8699,25 +8724,59 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     }
                 }
 
-                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13} \t{14:N0}{15}\n",
-                    Simulator.Catalog.GetString("ForceTot:"),
-                    Simulator.Catalog.GetString("TheorTE"),
-                    FormatStrings.FormatForce(N.FromLbf(MaxTractiveEffortLbf), IsMetric),
-                    Simulator.Catalog.GetString("StartTE"),
-                    FormatStrings.FormatForce(absStartTractiveEffortN, IsMetric),
-                    Simulator.Catalog.GetString("AvTE"),
-                    FormatStrings.FormatForce(DisplayTractiveForceN, IsMetric),
-                    Simulator.Catalog.GetString("Draw"),
-                    FormatStrings.FormatForce(N.FromLbf(DrawBarPullLbsF), IsMetric),
-                    Simulator.Catalog.GetString("CritSpeed"),
-                    FormatStrings.FormatSpeedDisplay(MpS.FromMpH(MaxLocoSpeedMpH), IsMetric),
-                    Simulator.Catalog.GetString("SpdLmt"),
-                    IsCritTELimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
-                    Simulator.Catalog.GetString("Hammer"),
-                    FormatStrings.FormatForce(N.FromLbf(SteamEngines[0].HammerForceLbs), IsMetric),
-                    SteamEngines[0].IsWheelHammerForce ? "!!!" : SteamEngines[0].IsWheelHammerForceWarning ? "???" : ""
+                if (CounterPressureBrakingFitted)
+                {
+                    status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14:N0}{15}\t{16}\t{17}\t{18}\t{19}\t{20}\t{21}\n",
+                        Simulator.Catalog.GetString("ForceTot:"),
+                        Simulator.Catalog.GetString("TheorTE"),
+                        FormatStrings.FormatForce(N.FromLbf(MaxTractiveEffortLbf), IsMetric),
+                        Simulator.Catalog.GetString("StartTE"),
+                        FormatStrings.FormatForce(absStartTractiveEffortN, IsMetric),
+                        Simulator.Catalog.GetString("AvTE"),
+                        FormatStrings.FormatForce(DisplayTractiveForceN, IsMetric),
+                        Simulator.Catalog.GetString("Draw"),
+                        FormatStrings.FormatForce(N.FromLbf(DrawBarPullLbsF), IsMetric),
+                        Simulator.Catalog.GetString("CritSpeed"),
+                        FormatStrings.FormatSpeedDisplay(MpS.FromMpH(MaxLocoSpeedMpH), IsMetric),
+                        Simulator.Catalog.GetString("SpdLmt"),
+                        IsCritTELimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                        Simulator.Catalog.GetString("Hammer"),
+                        FormatStrings.FormatForce(N.FromLbf(SteamEngines[0].HammerForceLbs), IsMetric),
+                        SteamEngines[0].IsWheelHammerForce ? "!!!" : SteamEngines[0].IsWheelHammerForceWarning ? "???" : "",
+                        Simulator.Catalog.GetString("CtPress"),
+                        FormatStrings.FormatPressure(CounterPressureMEP, PressureUnit.PSI, MainPressureUnit, true),
+                        Simulator.Catalog.GetString("CtForce"),
+                        FormatStrings.FormatForce(SteamEngines[0].CylinderCounterPressureBrakeForceN, IsMetric),
+                        Simulator.Catalog.GetString("DyForce"),
+                        FormatStrings.FormatForce(DynamicBrakeForceN, IsMetric)
 
-                    );
+                        );
+                }
+                else
+                {
+                    status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13} \t{14:N0}{15}\n",
+                        Simulator.Catalog.GetString("ForceTot:"),
+                        Simulator.Catalog.GetString("TheorTE"),
+                        FormatStrings.FormatForce(N.FromLbf(MaxTractiveEffortLbf), IsMetric),
+                        Simulator.Catalog.GetString("StartTE"),
+                        FormatStrings.FormatForce(absStartTractiveEffortN, IsMetric),
+                        Simulator.Catalog.GetString("AvTE"),
+                        FormatStrings.FormatForce(DisplayTractiveForceN, IsMetric),
+                        Simulator.Catalog.GetString("Draw"),
+                        FormatStrings.FormatForce(N.FromLbf(DrawBarPullLbsF), IsMetric),
+                        Simulator.Catalog.GetString("CritSpeed"),
+                        FormatStrings.FormatSpeedDisplay(MpS.FromMpH(MaxLocoSpeedMpH), IsMetric),
+                        Simulator.Catalog.GetString("SpdLmt"),
+                        IsCritTELimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                        Simulator.Catalog.GetString("Hammer"),
+                        FormatStrings.FormatForce(N.FromLbf(SteamEngines[0].HammerForceLbs), IsMetric),
+                        SteamEngines[0].IsWheelHammerForce ? "!!!" : SteamEngines[0].IsWheelHammerForceWarning ? "???" : ""
+
+                        );
+
+
+
+                }
 
                 status.AppendFormat("{0}\t{1}\t{2:N0} {5}/{6}\t\t{3}\t{4:N0} \t{7} {8:N2}\n",
                     Simulator.Catalog.GetString("Move:"),
@@ -8729,7 +8788,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     FormatStrings.min,
                     Simulator.Catalog.GetString("Max-SpdF"),
                     DisplaySpeedFactor
-
                     );
             }
 
