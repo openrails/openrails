@@ -34,34 +34,43 @@ namespace ORTS
         private MainForm MainForm; // Needed so the Retry button can raise an event which the form can catch.
         public List<Control> ControlList = new List<Control>();
 
-        public NotificationPage(MainForm mainForm, Panel panel, Image nextImage, Image previousImage, Image firstImage, Image lastImage, string pageCount,
-            bool previousVisible, bool firstVisible, bool nextVisible, bool lastVisible)
+        public NotificationPage(MainForm mainForm, Panel panel, NotificationManager manager)
         {
             MainForm = mainForm;
             Panel = panel;
             NButtonControl.ButtonCount = 0;
+            AddPageCountAndArrows(manager);
+        }
 
-            var nextPageControl = new Arrow(panel, nextImage, nextVisible, true, 25);
+        private void AddPageCountAndArrows(NotificationManager manager)
+        {
+            var pageCount = manager.Notifications.NotificationList.Count; //TODO Refine this
+            var pageLabel = $"{manager.CurrentNotificationNo + 1}/{pageCount}";
+
+            // Swap visibility for clickable arrows and disabled ones at each end of range.
+            var nextVisibility = (manager.CurrentNotificationNo < pageCount - 1);
+            var nextPageControl = new Arrow(Panel, manager.NextImage, nextVisibility, true, 25);
             nextPageControl.Click += new EventHandler(MainForm.Next_Click);
             Panel.Controls.Add(nextPageControl);
 
-            var previousPageControl = new Arrow(panel, previousImage, previousVisible, true, 90);
+            Panel.Controls.Add(new Arrow(Panel, manager.LastImage, !nextVisibility, false, 25));
+
+            var previousVisibility = (manager.CurrentNotificationNo > 0);
+            var previousPageControl = new Arrow(Panel, manager.PreviousImage, previousVisibility, true, 90);
             previousPageControl.Click += new EventHandler(MainForm.Previous_Click);
             Panel.Controls.Add(previousPageControl);
 
-            Panel.Controls.Add( new Arrow(panel, lastImage, lastVisible, false, 25));
-            Panel.Controls.Add( new Arrow(panel, firstImage, firstVisible, false, 90));
+            Panel.Controls.Add(new Arrow(Panel, manager.FirstImage, !previousVisibility, false, 90));
 
             var pageCountControl = new Label
             {
-                Text = pageCount,
+                Text = pageLabel,
                 UseMnemonic = false,
-                Font = new Font(panel.Font, FontStyle.Bold),
+                Font = new Font(Panel.Font, FontStyle.Bold),
                 Height = 15,
-                Left = panel.ClientSize.Width - 85 + (pageCount.Length * 9), // Keep the text centred between the < > arrows
+                Left = Panel.ClientSize.Width - 85 + (pageLabel.Length * 9), // Keeps the text centred between the < > arrows
                 Top = 3
             };
-            //ControlList.Add(pageCountControl);
             Panel.Controls.Add(pageCountControl);
         }
 
@@ -85,32 +94,17 @@ namespace ORTS
 
         public class NDetail
         {
-            public static readonly int TopPadding = 20;
-            public static readonly int VerticalSpacing = 10;
-            public static readonly int LeftPadding = 10;
-            public static readonly int LeftPaddingIndented = 20;
-            public static readonly int TitleHeight = 20;
-            public static readonly int HeadingHeight = 30;
-            public static readonly int TextHeight = 18;
-            public static readonly int ButtonHeight = 30;
-            public static readonly int RecordHeight = 15;
-            public const int ScrollBarWidth = 20;
-
-            public NotificationPage Page { get; private set; }
             public Label Control;
-
-            public NDetail(NotificationPage page)
-            {
-                Page = page;
-            }
-
-            /// <summary>
-            /// Use as "new NTextControl(NotificationPage, "text").Add();"
-            /// </summary>
-            public void Add()
-            {
-                Page.NDetailList.Add(this);
-            }
+            public const int TopPadding = 20;
+            public const int VerticalSpacing = 10;
+            public const int LeftPadding = 10;
+            public const int LeftPaddingIndented = 20;
+            public const int TitleHeight = 20;
+            public const int HeadingHeight = 30;
+            public const int TextHeight = 18;
+            public const int ButtonHeight = 30;
+            public const int RecordHeight = 15;
+            public const int ScrollBarWidth = 20;
         }
 
         /// <summary>
@@ -118,7 +112,7 @@ namespace ORTS
         /// </summary>
         public class NTitleControl : NDetail
         {
-            public NTitleControl(NotificationPage page, int current, int total, string date, string text) : base(page)
+            public NTitleControl(NotificationPage page, int current, int total, string date, string text)// : base(page)
             {
                 var title = $"Notification {current}/{total}: {date} - {text}";
                 var left = LeftPadding;
@@ -126,19 +120,18 @@ namespace ORTS
                 {
                     Text = title,
                     UseMnemonic = false,
-                    Font = new Font(Page.Panel.Font, FontStyle.Bold),
+                    Font = new Font(page.Panel.Font, FontStyle.Bold),
                     TextAlign = ContentAlignment.BottomLeft,
                     Height = TitleHeight,
                     Width = page.Panel.Width - ScrollBarWidth - left,
                     Left = LeftPadding
                 };
-                //page.ControlList.Add(Control);
                 page.Panel.Controls.Add(Control);
             }
         }
         public class NHeadingControl : NDetail
         {
-            public NHeadingControl(NotificationPage page, string text, string colorName = "blue") : base(page)
+            public NHeadingControl(NotificationPage page, string text, string colorName = "blue") //: base(page)
             {
                 var color = Color.FromName(colorName);
                 var left = LeftPadding;
@@ -147,20 +140,19 @@ namespace ORTS
                     ForeColor = color,
                     Text = text,
                     UseMnemonic = false,
-                    Font = new Font(Page.Panel.Font, FontStyle.Bold),
+                    Font = new Font(page.Panel.Font, FontStyle.Bold),
                     TextAlign = ContentAlignment.BottomLeft,
                     Height = HeadingHeight,
                     Width = page.Panel.Width - ScrollBarWidth - left,
                     Left = left,
                     Top = TopPadding,
                 };
-                //page.ControlList.Add(Control);
                 page.Panel.Controls.Add(Control);
             }
         }
         public class NTextControl : NDetail
         {
-            public NTextControl(NotificationPage page, string text, string colorName = "black") : base(page)
+            public NTextControl(NotificationPage page, string text, string colorName = "black")// : base(page)
             {
                 var color = Color.FromName(colorName);
                 var left = LeftPaddingIndented;
@@ -169,13 +161,12 @@ namespace ORTS
                     ForeColor = color,
                     Text = text,
                     UseMnemonic = false,
-                    Font = new Font(Page.Panel.Font, FontStyle.Regular),
+                    Font = new Font(page.Panel.Font, FontStyle.Regular),
                     TextAlign = ContentAlignment.BottomLeft,
                     Height = TextHeight,
                     Width = page.Panel.Width - ScrollBarWidth - left,
                     Left = left,
                 };
-                //page.ControlList.Add(Control);
                 page.Panel.Controls.Add(Control);
             }
         }
@@ -183,7 +174,7 @@ namespace ORTS
         {
             public static int ButtonCount = 0;
             public Button Button;
-            public NButtonControl(NotificationPage page, string legend, int width, string description, MainForm mainForm) : base(page)
+            public NButtonControl(NotificationPage page, string legend, int width, string description, MainForm mainForm) //: base(page)
             {
                 var buttonLeft = LeftPaddingIndented;
                 Button = new Button
@@ -191,7 +182,7 @@ namespace ORTS
                     Margin = new Padding(20),
                     Text = legend,
                     UseMnemonic = false,
-                    Font = new Font(Page.Panel.Font, FontStyle.Regular),
+                    Font = new Font(page.Panel.Font, FontStyle.Regular),
                     TextAlign = ContentAlignment.MiddleCenter,
                     Height = ButtonHeight,
                     Width = width,
@@ -199,7 +190,6 @@ namespace ORTS
                     Top = TopPadding,
                     BackColor = SystemColors.ButtonFace
                 };
-                //page.ControlList.Add(Button);
                 page.Panel.Controls.Add(Button);
 
                 // 3 should be enough, but is there a way to get unlimited buttons?
@@ -225,14 +215,13 @@ namespace ORTS
                     Margin = new Padding(20),
                     Text = description,
                     UseMnemonic = false,
-                    Font = new Font(Page.Panel.Font, FontStyle.Regular),
+                    Font = new Font(page.Panel.Font, FontStyle.Regular),
                     TextAlign = ContentAlignment.MiddleLeft,
                     Height = ButtonHeight,
                     Width = page.Panel.Width - ScrollBarWidth - labelLeft,
                     Top = TopPadding,
                     Left = labelLeft
                 };
-                //page.ControlList.Add(Control);
                 page.Panel.Controls.Add(Control);
             }
         }
@@ -278,16 +267,11 @@ namespace ORTS
             }
         }
 
-        public void DoNext(int key)
-        {
-
-        }
-
         public class NRecordControl : NDetail
         {
             public Label Field;
 
-            public NRecordControl(NotificationPage page, string label, int width, string field) : base(page)
+            public NRecordControl(NotificationPage page, string label, int width, string field)//: base(page)
             {
                 Control = new Label
                 {
@@ -300,8 +284,7 @@ namespace ORTS
                     Left = LeftPadding,
                     Top = TopPadding
                 };
-                //page.ControlList.Add(Control);
-                Page.Panel.Controls.Add(Control);
+                page.Panel.Controls.Add(Control);
 
                 var left = width + LeftPadding;
                 Field = new Label
@@ -315,8 +298,7 @@ namespace ORTS
                     Left = left,
                     Top = TopPadding
                 };
-                //page.ControlList.Add(Field);
-                Page.Panel.Controls.Add(Field);
+                page.Panel.Controls.Add(Field);
             }
         }
 

@@ -136,7 +136,6 @@ namespace ORTS
         {
             var options = Environment.GetCommandLineArgs().Where(a => (a.StartsWith("-") || a.StartsWith("/"))).Select(a => a.Substring(1));
             Settings = new UserSettings(options);
-            NotificationManager = new NotificationManager(this, UpdateManager, Settings);
 
             LoadOptions();
             LoadLanguage();
@@ -245,6 +244,13 @@ namespace ORTS
                 }
                 else
                     buttonDocuments.Enabled = false;
+
+                NotificationManager = new NotificationManager(this, UpdateManager, Settings, panelDetails
+                    , (Image)Resources.GetObject("Notification_previous")
+                    , (Image)Resources.GetObject("Notification_next")
+                    , (Image)Resources.GetObject("Notification_first")
+                    , (Image)Resources.GetObject("Notification_last")
+                    );
             }
 
             ShowEnvironment();
@@ -1443,13 +1449,6 @@ namespace ORTS
         }
 
         #region NotificationPages
-        public int CurrentNotificationNo = 0;
-        private bool firstVisible = true;
-        private bool previousVisible = false;
-        private bool lastVisible = false;
-        private bool nextVisible = true;
-
-
         private void pbNotificationsNone_Click(object sender, EventArgs e)
         {
             ToggleNotificationPages();
@@ -1480,8 +1479,18 @@ namespace ORTS
 
         private void FiddleNewNotificationPageCount()
         {
-            //NotificationManager.LastPageViewed = 1;
+            //NotificationManager.LastPageViewed = 1; //TODO
             UpdateNotificationPageAlert();
+        }
+
+        public void ShowNotificationPages()
+        {
+            Win32.LockWindowUpdate(Handle);
+            ClearPanel();
+            NotificationManager.PopulatePage();
+            UpdateNotificationPageAlert();
+            NotificationManager.Page.FlowNDetails();
+            Win32.LockWindowUpdate(IntPtr.Zero);
         }
 
         public void UpdateNotificationPageAlert()
@@ -1493,98 +1502,28 @@ namespace ORTS
             }
         }
 
-        void ShowNotificationPages()
-        {
-            Win32.LockWindowUpdate(Handle);
-            ClearPanel();
-            NotificationManager.PopulatePage();
-            var notificationPage = GetCurrentNotificationPage();
-            notificationPage.FlowNDetails();
-            Win32.LockWindowUpdate(IntPtr.Zero);
-        }
-
-        /// <summary>
-        ///  INCOMPLETE
-        /// </summary>
-        /// <returns></returns>
-        NotificationPage GetCurrentNotificationPage()
-        {
-            return NotificationManager.Page;
-        }
-
-        /// <summary>
-        /// Returns a new notificationPage with default images and label
-        /// </summary>
-        /// <returns></returns>
-        public NotificationPage CreateNotificationPage()
-        // Located in MainForm to get access to MainForm.Resources
-        {
-            var previousImage = (Image)Resources.GetObject("Notification_previous");
-            var nextImage = (Image)Resources.GetObject("Notification_next");
-            var firstImage = (Image)Resources.GetObject("Notification_first");
-            var lastImage = (Image)Resources.GetObject("Notification_last");
-            var pageCount = $"{CurrentNotificationNo + 1}/{NotificationManager.Notifications.NotificationList.Count}";
-            return new NotificationPage(this, panelDetails, nextImage, previousImage, firstImage, lastImage, pageCount,
-                previousVisible, firstVisible, nextVisible, lastVisible);
-        }
-
         // 3 should be enough, but is there a way to get unlimited buttons?
         public void Button0_Click(object sender, EventArgs e)
         {
-            GetCurrentNotificationPage().DoButton(UpdateManager, 0);
+            NotificationManager.Page.DoButton(UpdateManager, 0);
         }
         public void Button1_Click(object sender, EventArgs e)
         {
-            GetCurrentNotificationPage().DoButton(UpdateManager, 1);
+            NotificationManager.Page.DoButton(UpdateManager, 1);
         }
         public void Button2_Click(object sender, EventArgs e)
         {
-            GetCurrentNotificationPage().DoButton(UpdateManager, 2);
+            NotificationManager.Page.DoButton(UpdateManager, 2);
         }
 
         public void Next_Click(object sender, EventArgs e)
         {
-            ChangePage(1);
-            // GetCurrentNotificationPage().DoNext(1);
+            NotificationManager.ChangePage(1);
         }
 
         public void Previous_Click(object sender, EventArgs e)
         {
-            ChangePage(-1);
-            //GetCurrentNotificationPage().DoNext(-1);
-        }
-
-        private void ChangePage(int step)
-        {
-            SetVisibility(step);
-            CurrentNotificationNo += step;
-            ShowNotificationPages();
-        }
-
-        private void SetVisibility(int step)
-        {
-            if (step < 0)
-            {
-                if (CurrentNotificationNo + step <= 0)
-                {
-                    previousVisible = false;
-                    firstVisible = true;
-                    return;
-                }
-            }
-            else
-            {
-                if (CurrentNotificationNo + step >= NotificationManager.Notifications.NotificationList.Count - 1)
-                {
-                    nextVisible = false;
-                    lastVisible = true;
-                    return;
-                }
-            }
-            nextVisible = true;
-            lastVisible = false;
-            previousVisible = true;
-            firstVisible = false;
+            NotificationManager.ChangePage(-1);
         }
 
         #endregion NotificationPages

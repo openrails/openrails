@@ -18,33 +18,31 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Security.Policy;
 using System.Text;
 using Newtonsoft.Json;
 using ORTS.Common;
 using ORTS.Settings;
 using ORTS.Updater;
-using SharpDX;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+//using SharpDX.Direct2D1;
 using static ORTS.Common.SystemInfo;
 using static ORTS.NotificationPage;
+using System.Drawing;
+using System.Windows.Forms;
+using System.Linq;
 
-//TODO Add caching of criteria
-//TODO Add "includeIf" for individual notifications
+//TODO indicate number of never read notifications
 
 // Notifications are read only once as a background task at start into NotificationList.
+// Every time the notifications page is re-visited, the position is discarded and first page is shown.
 // Every time the notifications page is re-visited, the options may have changed, so
 // the visibility of each notification in NotificationList is re-assessed. Also its date.
-// A SortedPageList is created which contains a list of indexes for the notifications to be shown sorted as latest first.
 // Every time the notifications page is re-visited or the page is incremented up or down,
-// the current notification is re-assessed and
-// the panel is re-loaded with Controls for the current page.
+// the current notification is re-assessed and the panel is re-loaded with items for the current page.
 
 namespace ORTS
 {
-    class NotificationManager
+    public class NotificationManager
     {
         public bool ArePagesVisible = false;
         // New notifications are those with a date after the NotificationsReadDate.
@@ -52,23 +50,42 @@ namespace ORTS
         // We don't track the reading of each notification but set the NewNotificationCount = 0 after the last of the new ones has been read.
         public int NewPageCount = 1;
         public int LastPageViewed = 0;
-        //public int Index = 0;
 
-        public Notifications Notifications;
+        public Notifications Notifications; // An object defined by the JSON schema
+        public int CurrentNotificationNo = 0;
+
         private Exception Error;
         private Dictionary<string, string> ParameterDictionary;
+
+        bool Log = false;
+        const string LogFile = "notifications_trial_log.txt";
 
         private readonly MainForm MainForm; // Needed so we can add controls to the NotificationPage
         private readonly UpdateManager UpdateManager;
         private readonly UserSettings Settings;
+        private readonly Panel Panel;
 
         public NotificationPage Page { get; private set; }
+        public Image PreviousImage { get; private set; }
+        public Image NextImage { get; private set; }
+        public Image FirstImage { get; private set; }
+        public Image LastImage { get; private set; }
 
-        public NotificationManager(MainForm mainForm, UpdateManager updateManager, UserSettings settings) 
+        public NotificationManager(MainForm mainForm, UpdateManager updateManager, UserSettings settings, Panel panel
+            , Image previousImage
+            , Image nextImage
+            , Image firstImage
+            , Image lastImage
+            ) 
         { 
             MainForm = mainForm;
             this.UpdateManager = updateManager;
             this.Settings = settings;
+            Panel = panel;
+            PreviousImage = previousImage;
+            NextImage = nextImage;
+            FirstImage = firstImage;
+            LastImage = lastImage;
         }
 
         // Make this a background task
@@ -77,6 +94,8 @@ namespace ORTS
             try
             {
                 Error = null;
+                ArePagesVisible = false;
+                CurrentNotificationNo = 0;
                 Notifications = GetNotifications();
                 ParameterDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 
@@ -87,8 +106,8 @@ namespace ORTS
                 ReplaceParameters();
                 LogParameters();
 
-                PopulatePage();
-                ArePagesVisible = false;
+                Notifications.NotificationList = IncludeValid(Notifications.NotificationList);
+                Notifications.NotificationList = SortByDate(Notifications.NotificationList);
             }
             catch (WebException ex)
             {
@@ -96,14 +115,11 @@ namespace ORTS
             }
         }
 
-        static bool Log = false;
-        const string LogFile = "notifications_trial_log.txt";
-
         public Notifications GetNotifications()
         {
             string notificationsSerial;
             // To support testing of a new remote notifications.json file before it is published,
-            // GetNotifications tests first for a local file notifications_trial.json
+            // GetNotifications() tests first for a local file notifications_trial.json
             // and uses that if present, else it uses the remote file.
 
             var filename = @"notifications_trial.json";
@@ -123,6 +139,8 @@ namespace ORTS
 
             var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
             var jsonInput = JsonConvert.DeserializeObject<Notifications>(notificationsSerial, jsonSettings);
+
+            //TODO Cache jsonInput
 
             return jsonInput;
         }
@@ -144,22 +162,31 @@ namespace ORTS
             return client.DownloadString(new Uri("https://wepp.co.uk/openrails/notifications2/menu.json"));
         }
 
-        public void PopulatePage()
+        private List<Notification> IncludeValid(List<Notification> list)
         {
-            Page = UpdateNotificationPage();
-            new NTextControl(Page, "").Add();
-            new NTextControl(Page, "(Toggle icon to hide these notifications.)").Add();
+            var filteredList = new List<Notification>();
+            foreach (var n in list)
+            {
+                if (AreNotificationChecksMet(n))
+                {
+                    if (n.Date == "none") n.Date = " none"; // UpdateChannel = "none" found; push this to end of the list
+                    filteredList.Insert(0, n); // Add to head of list to provide a basic pre-sort.
+                }
+            }
+            return filteredList;
+        }
+
+        private List<Notification> SortByDate(List<Notification> list)
+        {
+            return list.OrderByDescending(n => n.Date).ToList();
         }
 
         /// <summary>
-        /// Ultimately there will be a list of notifications downloaded from https://static.openrails.org/api/notifications/menu.json .
-        /// Until then, there is a single notification announcing either that a new update is available or the installation is up to date.
+        /// There is a list of notifications downloaded from https://static.openrails.org/api/notifications/menu.json .
         /// </summary>
-        private NotificationPage UpdateNotificationPage()
+        public void PopulatePage()
         {
-            var page = MainForm.CreateNotificationPage();
-
-            MainForm.UpdateNotificationPageAlert();
+            Page = new NotificationPage(MainForm, Panel, this); 
 
             if (UpdateManager.LastCheckError != null || Error != null)
             {
@@ -171,42 +198,69 @@ namespace ORTS
                 // Reports notifications are not available.
                 var channelName = UpdateManager.ChannelName == "" ? "None" : UpdateManager.ChannelName;
                 var today = DateTime.Now.Date;
-                new NTitleControl(page, 1, 1, $"{today:dd-MMM-yy}", "Notifications are not available").Add();
-                new NRecordControl(page, "Update mode", 140, channelName).Add();
-                new NRecordControl(page, "Installed version", 140, VersionInfo.VersionOrBuild).Add();
+                Page.NDetailList.Add(new NTitleControl(Page, 1, 1, $"{today:dd-MMM-yy}", "Notifications are not available"));
+                Page.NDetailList.Add(new NRecordControl(Page, "Update mode", 140, channelName));
+                Page.NDetailList.Add(new NRecordControl(Page, "Installed version", 140, VersionInfo.VersionOrBuild));
 
-                new NHeadingControl(page, "Notifications are not available", "red").Add();
-                new NTextControl(page, $"Error: {message}").Add();
-                new NTextControl(page, "Is your Internet connected?").Add();
+                Page.NDetailList.Add(new NHeadingControl(Page, "Notifications are not available", "red"));
+                Page.NDetailList.Add(new NTextControl(Page, $"Error: {message}"));
+                Page.NDetailList.Add(new NTextControl(Page, "Is your Internet connected?"));
 
-                new NRetryControl(page, "Retry", 140, "Try again to fetch notifications", MainForm).Add();
+                Page.NDetailList.Add(new NRetryControl(Page, "Retry", 140, "Try again to fetch notifications", MainForm));
             }
 
             NewPageCount = 1;
             var list = Notifications.NotificationList;
-            var n = list[MainForm.CurrentNotificationNo];
+            var n = list[CurrentNotificationNo];
             LogNotification(n);
 
             //var skipPage = false;
-            new NTitleControl(page, MainForm.CurrentNotificationNo + 1, list.Count, n.Date, n.Title).Add();
+            Page.NDetailList.Add(new NTitleControl(Page, CurrentNotificationNo + 1, list.Count, n.Date, n.Title));
 
             // Check constraints for each item
             foreach (var item in n.ItemList)
             {
-                if (AreChecksMet(item)) AddItemToPage(page, item);
+                if (AreItemChecksMet(item)) AddItemToPage(Page, item);
             }
 
-            return page;
+            Page.NDetailList.Add(new NTextControl(Page, ""));
+            Page.NDetailList.Add(new NTextControl(Page, "(Toggle icon to hide these notifications.)"));
         }
 
         #region Process Criteria
-        private bool AreChecksMet(Item item)
+        private bool AreNotificationChecksMet(Notification notification)
+        {
+            if (notification.IncludeIf != null || notification.IncludeIfNot != null)
+            {
+                AppendToLog($"Title: {notification.Title}");
+            }
+            if (notification.IncludeIf != null)
+            {
+                foreach (var checkName in notification.IncludeIf)
+                {
+                    // Include if A=true AND B=true AND ...
+                    if (IsCheckMet(checkName) == false) return false;
+                }
+            }
+            if (notification.IncludeIfNot != null)
+            {
+                foreach (var checkName in notification.IncludeIfNot)
+                {
+                    // Include if C=false AND D=false AND ...
+                    if (IsCheckMet(checkName) == true) return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool AreItemChecksMet(Item item)
         {
             if (item.IncludeIf != null || item.IncludeIfNot != null)
             {
                 AppendToLog($"Label: {item.Label}");
             }
-                if (item.IncludeIf != null)
+            if (item.IncludeIf != null)
             {
                 foreach (var checkName in item.IncludeIf)
                 {
@@ -226,6 +280,11 @@ namespace ORTS
             return true;
         }
 
+        /// <summary>
+        /// Could cache these checks to improve performance.
+        /// </summary>
+        /// <param name="checkname"></param>
+        /// <returns></returns>
         private bool IsCheckMet(string checkname)
         {
             foreach (var check in Notifications.CheckList)
@@ -286,31 +345,31 @@ namespace ORTS
         {
             if (item is Record record)
             {
-                new NRecordControl(page, item.Label, item.Indent, record.Value).Add();
+                Page.NDetailList.Add(new NRecordControl(page, item.Label, item.Indent, record.Value));
             }
             else if (item is Link link)
             {
                 var url = GetUrl(link);
                 if (string.IsNullOrEmpty(url) == false)
                 {
-                    new NLinkControl(page, item.Label, item.Indent, link.Value, MainForm, url).Add();
+                    Page.NDetailList.Add(new NLinkControl(page, item.Label, item.Indent, link.Value, MainForm, url));
                 }
             }
             else if (item is Update update)
             {
-                new NUpdateControl(page, item.Label, item.Indent, update.Value, MainForm).Add();
+                Page.NDetailList.Add(new NUpdateControl(page, item.Label, item.Indent, update.Value, MainForm));
             }
             else if (item is Heading heading)
             {
-                new NHeadingControl(page, item.Label, heading.Color).Add();
+                Page.NDetailList.Add(new NHeadingControl(page, item.Label, heading.Color));
             }
             else if (item is Text text)
             {
-                new NTextControl(page, item.Label, text.Color).Add();
+                Page.NDetailList.Add(new NTextControl(page, item.Label, text.Color));
             }
             else
             {
-                new NTextControl(page, item.Label).Add();
+                Page.NDetailList.Add(new NTextControl(page, item.Label));
             }
         }
 
@@ -415,7 +474,7 @@ namespace ORTS
                     case "release_date":
                         replacement = UpdateManager.LastUpdate == null
                             ? "none"
-                            : $"{UpdateManager.LastUpdate.Date:dd-MMM-yy}";
+                            : $"{UpdateManager.LastUpdate.Date:yyyy-MM-dd}";
                         break;
 
                     case "installed_version":
@@ -528,6 +587,13 @@ namespace ORTS
                 return null;
         }
 
+        public void ChangePage(int step)
+        {
+            CurrentNotificationNo += step;
+            //SetVisibility(step);
+            MainForm.ShowNotificationPages();
+        }
+
         #region Logging
         public void LogOverrideParameters()
         {
@@ -563,7 +629,7 @@ namespace ORTS
 
         public void LogNotification(Notification n)
         {
-            AppendToLog($"Notification: {n.Title}");
+            AppendToLog($"\r\nNotification: {n.Title}");
         }
         public void LogChecks(string checkName)
         {

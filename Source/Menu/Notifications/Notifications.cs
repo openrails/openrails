@@ -37,6 +37,8 @@ namespace ORTS
         public string Date { get; set; }
         public string Title { get; set; }
         public string UpdateMode { get; set; }
+        public List<string> IncludeIf { get; set; }
+        public List<string> IncludeIfNot { get; set; }
         public List<Item> ItemList { get; set; }
     }
     class Record : Item
