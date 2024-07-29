@@ -324,6 +324,7 @@ namespace ORTS
             }, _ =>
             {
                 NotificationManager.CheckNotifications();
+                UpdateNotificationPageAlert();
             });
         }
 
@@ -1468,19 +1469,13 @@ namespace ORTS
             {
                 NotificationManager.ArePagesVisible = true; // Set before calling ShowNotifcations()
                 ShowNotificationPages();
-                FiddleNewNotificationPageCount();
+                UpdateNotificationPageAlert();
             }
             else
             {
                 NotificationManager.ArePagesVisible = false;
                 ShowDetails();
             }
-        }
-
-        private void FiddleNewNotificationPageCount()
-        {
-            //NotificationManager.LastPageViewed = 1; //TODO
-            UpdateNotificationPageAlert();
         }
 
         public void ShowNotificationPages()
@@ -1495,7 +1490,13 @@ namespace ORTS
 
         public void UpdateNotificationPageAlert()
         {
-            if (NotificationManager.LastPageViewed >= NotificationManager.NewPageCount)
+            if (NotificationManager.NewPagesViewed < NotificationManager.NewPageCount)
+            {
+                pbNotificationsSome.Visible = true;
+                lblNotificationCount.Visible = true;
+                lblNotificationCount.Text = $"{NotificationManager.NewPageCount - NotificationManager.NewPagesViewed}";
+            }
+            else
             {
                 pbNotificationsSome.Visible = false;
                 lblNotificationCount.Visible = false;
