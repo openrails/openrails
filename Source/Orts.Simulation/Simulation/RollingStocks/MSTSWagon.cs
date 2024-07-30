@@ -1177,6 +1177,7 @@ namespace Orts.Simulation.RollingStocks
             }
             FreightAnimations?.Load(FreightAnimations.LoadDataList, true);
             InitializeLoadPhysics();
+            if (!(this is MSTSLocomotive) && Simulator.Settings.ElectricHotStart) Pantographs.HandleEvent(PowerSupplyEvent.RaisePantograph, 1);
         }
 
         public override void InitializeMoving()
@@ -1596,9 +1597,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "wagon(ortspowersupply":
                 case "wagon(ortspowerondelay":
-                case "wagon(ortsbattery(mode":
-                case "wagon(ortsbattery(delay":
-                case "wagon(ortsbattery(defaulton":
+                case "wagon(ortsbattery":
                 case "wagon(ortspowersupplycontinuouspower":
                 case "wagon(ortspowersupplyheatingpower":
                 case "wagon(ortspowersupplyairconditioningpower":

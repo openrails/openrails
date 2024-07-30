@@ -31,6 +31,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
@@ -49,15 +50,12 @@ namespace Orts.Simulation.RollingStocks
         int ControlGearIndication;
         TypesGearBox ControlGearBoxType;
 
+        private bool controlTrailerBrakeSystemSet = false;
+
         public MSTSControlTrailerCar(Simulator simulator, string wagFile)
             : base(simulator, wagFile)
         {
             PowerSupply = new ScriptedControlCarPowerSupply(this);
-        }
-
-        public override void LoadFromWagFile(string wagFilePath)
-        {
-            base.LoadFromWagFile(wagFilePath);
         }
 
         public override void Initialize()
@@ -83,19 +81,12 @@ namespace Orts.Simulation.RollingStocks
         {
             switch (lowercasetoken)
             {
-                case "engine(ortspowerondelay":
-                case "engine(ortsauxpowerondelay":
                 case "engine(ortspowersupply":
-                case "engine(ortstractioncutoffrelay":
-                case "engine(ortstractioncutoffrelayclosingdelay":
-                case "engine(ortsbattery(mode":
-                case "engine(ortsbattery(delay":
-                case "engine(ortsbattery(defaulton":
+                case "engine(ortspowersupplyparameters":
+                case "engine(ortsbattery":
                 case "engine(ortsmasterkey(mode":
                 case "engine(ortsmasterkey(delayoff":
                 case "engine(ortsmasterkey(headlightcontrol":
-                case "engine(ortselectrictrainsupply(mode":
-                case "engine(ortselectrictrainsupply(dieselengineminrpm":
                     LocomotivePowerSupply.Parse(lowercasetoken, stf);
                     break;
 
@@ -162,6 +153,31 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
+            FindControlActiveLocomotive();
+            // A control car typically doesn't have its own compressor and relies on the attached power car. However OR uses the lead locomotive as the reference car for compressor calculations.
+            // Hence whilst users are encouraged to leave these parameters out of the ENG file, they need to be setup for OR to work correctly.
+            // Some parameters need to be split across the unpowered and powered car for correct timing and volume calculations.
+            // This setup loop is only processed the first time that update is run.
+            if (!controlTrailerBrakeSystemSet)
+            {
+                if (ControlActiveLocomotive != null)
+                {
+                    // Split reservoir volume across the power car and the active locomotive
+                    MainResVolumeM3 = ControlActiveLocomotive.MainResVolumeM3 / 2;
+                    ControlActiveLocomotive.MainResVolumeM3 = MainResVolumeM3;
+
+                    MaxMainResPressurePSI = ControlActiveLocomotive.MaxMainResPressurePSI;
+                    MainResPressurePSI = MaxMainResPressurePSI;
+                    ControlActiveLocomotive.MainResPressurePSI = MainResPressurePSI;
+                    controlTrailerBrakeSystemSet = true; // Ensure this loop is only processes the first time update routine run
+                    MaximumMainReservoirPipePressurePSI = ControlActiveLocomotive.MaximumMainReservoirPipePressurePSI;
+                    CompressorRestartPressurePSI = ControlActiveLocomotive.CompressorRestartPressurePSI;
+                    MainResChargingRatePSIpS = ControlActiveLocomotive.MainResChargingRatePSIpS;
+                    BrakePipeChargingRatePSIorInHgpS = ControlActiveLocomotive.BrakePipeChargingRatePSIorInHgpS;
+                    TrainBrakePipeLeakPSIorInHgpS = ControlActiveLocomotive.TrainBrakePipeLeakPSIorInHgpS;
+                }
+            }
+
             base.Update(elapsedClockSeconds);
             WheelSpeedMpS = SpeedMpS; // Set wheel speed for control car, required to make wheels go around.
 
@@ -296,6 +312,39 @@ namespace Orts.Simulation.RollingStocks
 
             ControlGearUp = false;
             ControlGearDown = true;
+        }
+        public override float GetDataOf(CabViewControl cvc)
+        {
+            float data;
+            switch (cvc.ControlType.Type)
+            {
+                case CABViewControlTypes.AMMETER:
+                case CABViewControlTypes.AMMETER_ABS:
+                case CABViewControlTypes.DYNAMIC_BRAKE_FORCE:
+                case CABViewControlTypes.LOAD_METER:
+                case CABViewControlTypes.ORTS_DIESEL_TEMPERATURE:
+                case CABViewControlTypes.ORTS_OIL_PRESSURE:
+                case CABViewControlTypes.ORTS_SIGNED_TRACTION_BRAKING:
+                case CABViewControlTypes.ORTS_SIGNED_TRACTION_TOTAL_BRAKING:
+                case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_AUTHORIZED:
+                case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_CLOSED:
+                case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_DRIVER_CLOSING_AUTHORIZATION:
+                case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_DRIVER_CLOSING_ORDER:
+                case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_DRIVER_OPENING_ORDER:
+                case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_OPEN:
+                case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_OPEN_AND_AUTHORIZED:
+                case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_STATE:
+                case CABViewControlTypes.RPM:
+                case CABViewControlTypes.RPM_2:
+                case CABViewControlTypes.TRACTION_BRAKING:
+                case CABViewControlTypes.WHEELSLIP:
+                    data = ControlActiveLocomotive?.GetDataOf(cvc) ?? 0;
+                    break;
+                default:
+                    data = base.GetDataOf(cvc);
+                    break;
+            }
+            return data;
         }
     }
 }
