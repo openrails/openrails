@@ -1603,7 +1603,7 @@ namespace Orts.Viewer3D.RollingStock
         protected readonly MSTSLocomotive Locomotive;
         public readonly CabViewControl Control;
         protected readonly CabShader Shader;
-        protected readonly SpriteBatchMaterial ControlView;
+        public readonly SpriteBatchMaterial ControlView;
 
         protected Vector2 Position;
         protected Texture2D Texture;
@@ -3280,6 +3280,7 @@ namespace Orts.Viewer3D.RollingStock
         //Dictionary<int, DigitalDisplay> DigitParts = null;
         Dictionary<(CabViewControlType, int), ThreeDimCabDigit> DigitParts3D = null;
         Dictionary<(CabViewControlType, int), ThreeDimCabDPI> DPIDisplays3D = null;
+        Dictionary<(CabViewControlType, int), ThreeDimCabScreen> ScreenDisplays3D = null;
         AnimatedPart ExternalWipers = null; // setting to zero to prevent a warning. Probably this will be used later. TODO
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
         MSTSLocomotiveViewer LocoViewer;
@@ -3303,6 +3304,7 @@ namespace Orts.Viewer3D.RollingStock
             DigitParts3D = new Dictionary<(CabViewControlType, int), ThreeDimCabDigit>();
             Gauges = new Dictionary<(CabViewControlType, int), ThreeDimCabGaugeNative>();
             DPIDisplays3D = new Dictionary<(CabViewControlType, int), ThreeDimCabDPI>();
+            ScreenDisplays3D = new Dictionary<(CabViewControlType, int), ThreeDimCabScreen>();
             OnDemandAnimateParts = new Dictionary<(CabViewControlType, int), AnimatedPart>();
 
             // Find the animated parts
@@ -3368,7 +3370,16 @@ namespace Orts.Viewer3D.RollingStock
                             break;
                     }
 
-                    if (style != null && style is CabViewDigitalRenderer)//digits?
+                    if (style is CircularSpeedGaugeRenderer || style is DriverMachineInterfaceRenderer)
+                    {
+                        // Attach the control renderer to the material
+                        var material = Viewer.MaterialManager.Load("Screen", Helpers.GetTextureFile(Viewer.Simulator, Helpers.TextureFlags.None,
+                            TrainCarShape.SharedShape.ReferencePath, matrixName)) as ScreenMaterial;
+                        material?.Set2DRenderer(locoViewer.ThreeDimentionCabRenderer.ControlMap[key]);
+
+                        ScreenDisplays3D.Add(key, new ThreeDimCabScreen(viewer, iMatrix, TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
+                    }
+                    else if (style != null && style is CabViewDigitalRenderer)//digits?
                     {
                         //DigitParts.Add(key, new DigitalDisplay(viewer, TrainCarShape, iMatrix, parameter, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
                         DigitParts3D.Add(key, new ThreeDimCabDigit(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key], Locomotive));
