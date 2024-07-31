@@ -889,6 +889,30 @@ namespace Orts.Common
     }
 
     [Serializable()]
+    public sealed class WagonBrakeHoseRearConnectCommand : BooleanCommand
+    {
+        public static MSTSWagon Receiver { get; set; }
+
+        public WagonBrakeHoseRearConnectCommand(CommandLog log, MSTSWagon car, bool toState)
+            : base(log, toState)
+        {
+            Receiver = car;
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.BrakeSystem.RearBrakeHoseConnected = ToState;
+            // Report();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "connect" : "disconnect");
+        }
+    }
+
+    [Serializable()]
     public sealed class ToggleAngleCockACommand : BooleanCommand
     {
         public static MSTSWagon Receiver { get; set; }

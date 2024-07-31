@@ -78,19 +78,26 @@ namespace Orts.Viewer3D.Popups
                 var newLabels = new Dictionary<TrainCar, LabelPrimitive>(labels.Count);
                 var cars = Owner.Viewer.World.Trains.Cars;
                 var cameraLocation = Owner.Viewer.Camera.CameraWorldLocation;
+                var carID = Owner.Viewer.TrainCarOperationsViewerWindow.CurrentCarID;
+                //data from Webpage
+                var trainCarWebpage = Owner.Viewer.TrainCarOperationsWebpage;
+                var carIDWebpage = trainCarWebpage != null && trainCarWebpage.Connections > 0 ? trainCarWebpage.CurrentCarID : "";
+                bool isVisibleTrainCarViewerOrWebpage = Owner.Viewer.TrainCarOperationsViewerWindow.Visible || (trainCarWebpage != null && trainCarWebpage.Connections > 0 && Owner.Viewer.TrainCarOperationsWebpage.TrainCarSelected);
                 foreach (var car in cars.Keys)
                 {
                     // Calculates distance between camera and platform label.
                     var distance = WorldLocation.GetDistance(car.WorldPosition.WorldLocation, cameraLocation).Length();
-                    if (distance <= MaximumDistance)
+                    var carBodyLength = car.CarBodyLengthM < 21 ? 21 : car.CarBodyLengthM;
+                    if ((!isVisibleTrainCarViewerOrWebpage || !car.IsPlayerTrain) && distance <= MaximumDistance)
                     {
                         if ((State == DisplayState.Cars) || (State == DisplayState.Trains && (car.Train == null || car.Train.FirstCar == car)))
                         {
                             if (labels.ContainsKey(car))
                                 newLabels[car] = labels[car];
                             else
-                                newLabels[car] = new LabelPrimitive(Owner.Label3DMaterial, Color.Blue, Color.White, car.CarHeightM) { Position = car.WorldPosition };
+                                newLabels[car] = new LabelPrimitive(Owner.Label3DMaterial, Color.Blue, Color.White, car.CarHeightM, false) { Position = car.WorldPosition };
 
+                            newLabels[car].InsideBox = false;
                             newLabels[car].Text = State == DisplayState.Cars || car.Train == null ? car.CarID : car.Train.Name;
 
                             // Change color with distance.
@@ -98,12 +105,27 @@ namespace Orts.Viewer3D.Popups
                             newLabels[car].Color.A = newLabels[car].Outline.A = (byte)MathHelper.Lerp(255, 0, ratio);
                         }
                     }
+                    else if (car.IsPlayerTrain && isVisibleTrainCarViewerOrWebpage && (car.CarID == carID || car.CarID == carIDWebpage) && distance <= carBodyLength)
+                    {
+                        if ((State == DisplayState.Cars) || (State == DisplayState.Trains && (car.Train == null || car.Train.FirstCar == car)))
+                        {
+                            if (labels.ContainsKey(car))
+                                newLabels[car] = labels[car];
+                            else
+                                newLabels[car] = new LabelPrimitive(Owner.Label3DMaterial, Color.Blue, Color.White, car.CarHeightM, true) { Position = car.WorldPosition };
+
+                            newLabels[car].InsideBox = true;
+                            newLabels[car].Text = State == DisplayState.Cars || car.Train == null ? car.CarID : car.Train.Name;
+                        }
+                    }
                 }
                 Labels = newLabels;
             }
 
             foreach (var primitive in Labels.Values)
+            {
                 frame.AddPrimitive(Owner.Label3DMaterial, primitive, RenderPrimitiveGroup.Labels, ref Identity);
+            }
         }
 
         public DisplayState CurrentDisplayState

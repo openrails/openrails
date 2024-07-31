@@ -159,6 +159,11 @@ If you choose to develop your own pages, please consider sharing them with the O
 
 .. image:: images/switch-panel.png
 
+- The Train Car Operations page has the same functionality as the :ref:`Ctrl-Alt-F9 Train Operations Monitor <train-operations-monitor>`.
+  Advantage of having this windows as a web page is that it can be shown outside the Open Rails main window.
+  Even on another display like for instance a tablet. It has more or less the same functionality, more details
+  to be found :ref:`here <train-operations-monitor>`.
+
 .. _web-server-api:
 
 Application Programming Interfaces (APIs)

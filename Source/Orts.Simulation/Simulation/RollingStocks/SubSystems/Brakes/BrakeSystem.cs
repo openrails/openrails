@@ -47,6 +47,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         /// Front brake hoses connection status
         /// </summary>
         public bool FrontBrakeHoseConnected;
+
+        /// <summary>
+        /// Rear brake hoses connection status
+        /// </summary>
+        public bool RearBrakeHoseConnected;
+
         /// <summary>
         /// Front angle cock opened/closed status
         /// </summary>
