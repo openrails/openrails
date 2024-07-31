@@ -597,6 +597,9 @@ namespace Orts.Simulation.RollingStocks
         public float BrakeShoeForceN;
         public float FrictionBrakeBlendingMaxForceN; // This is the maximum force for the friction barke when it is blended with the dynamic brake
 
+        public bool CogWheelFitted = false;
+        bool isRackRailway = false;
+
         // Sum of all the forces acting on a Traincar in the direction of driving.
         // MotiveForceN and GravityForceN act to accelerate the train. The others act to brake the train.
         public float TotalForceN; // 
@@ -655,7 +658,8 @@ namespace Orts.Simulation.RollingStocks
         public int LocoNumDrvAxles; // Number of drive axles on locomotive
         protected float MSTSLocoNumDrvWheels; // Number of drive axles on locomotive - used to read MSTS value as default
         public float DriverWheelRadiusM = Me.FromIn(30.0f); // Drive wheel radius of locomotive wheels - Wheel radius of loco drive wheels can be anywhere from about 10" to 40".
-                public enum SteamEngineTypes
+        public float CogWheelRadiusM = Me.FromIn(22.0f);
+        public enum SteamEngineTypes
         {
             Unknown,
             Simple,
@@ -1099,7 +1103,8 @@ namespace Orts.Simulation.RollingStocks
         {
 
             // Only apply slide, and advanced brake friction, if advanced adhesion is selected, simplecontrolphysics is not set, and it is a Player train
-            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain)
+            // Rack stock with cog wheel fitted will not skid
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain && !(CogWheelFitted && isRackRailway))
             {
 
                 // ************  Check if diesel or electric - assumed already be cover by advanced adhesion model *********
@@ -2960,6 +2965,24 @@ namespace Orts.Simulation.RollingStocks
             CurrentCurveRadiusM = traveler.GetCurveRadius();
             UpdateVibrationAndTilting(traveler, elapsedTimeS, distanceM, speedMpS);
             UpdateSuperElevation(traveler, elapsedTimeS);
+
+            if (this is MSTSWagon wagon)
+            {        
+                var thisSection = traveler.GetCurrentSection();
+
+                if (thisSection != null && Simulator.TSectionDat.TrackShapes.ContainsKey(thisSection.ShapeIndex))
+                {
+                    TrackShape thisShape = Simulator.TSectionDat.TrackShapes[thisSection.ShapeIndex];
+                    isRackRailway |= thisShape.RackShape;
+                }
+                                
+                foreach (var axle in wagon.LocomotiveAxles)
+                {
+                    axle.IsRackRailway = isRackRailway;
+
+                    //  Trace.TraceInformation("IsRackRailway  {0} CarID {1}", axle.IsRackRailway, CarID);
+                }
+            }
         }
         #endregion
 
