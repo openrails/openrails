@@ -195,6 +195,9 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     case UserCommand.DisplayHUD:
                         IsPressedDisplayHUD();
                         return false;
+                    case UserCommand.DisplayTrainDpuWindow:
+                        IsPressedDisplayDpuWindow();
+                        return false;
                     default:
                         return true;
                 }
@@ -324,6 +327,52 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                 {
                     Viewer.HUDWindow.Visible = false;
                     Viewer.HUDWindow.TextPage = 0;
+                }
+            }
+        }
+
+        private void IsPressedDisplayDpuWindow()
+        {
+            if (!Viewer.TrainDpuWindow.Visible)
+            {
+                // DpuWindow not visible
+                Viewer.TrainDpuWindow.normalTextMode = true;
+                Viewer.TrainDpuWindow.normalVerticalMode = true;
+                Viewer.TrainDpuWindow.Visible = true;
+                Viewer.TrainDpuWindow.UpdateWindowSize();
+            }
+            else
+            {
+                // visible
+                if ((Viewer.TrainDpuWindow.normalTextMode == true) && (Viewer.TrainDpuWindow.normalVerticalMode == true))
+                {
+                    Viewer.TrainDpuWindow.normalVerticalMode = false;
+                    Viewer.TrainDpuWindow.UpdateWindowSize();
+                    return;
+                }
+
+                if ((Viewer.TrainDpuWindow.normalTextMode == true) && (Viewer.TrainDpuWindow.normalVerticalMode == false))
+                {
+                    Viewer.TrainDpuWindow.normalTextMode = false;
+                    Viewer.TrainDpuWindow.normalVerticalMode = true;
+                    Viewer.TrainDpuWindow.UpdateWindowSize();
+                    return;
+                }
+
+                if ((Viewer.TrainDpuWindow.normalTextMode == false) && (Viewer.TrainDpuWindow.normalVerticalMode == true))
+                {
+                    Viewer.TrainDpuWindow.normalVerticalMode = false;
+                    Viewer.TrainDpuWindow.UpdateWindowSize();
+                    return;
+                }
+
+                if ((Viewer.TrainDpuWindow.normalTextMode == false) && (Viewer.TrainDpuWindow.normalVerticalMode == false))
+                {
+                    Viewer.TrainDpuWindow.normalTextMode = true;
+                    Viewer.TrainDpuWindow.normalVerticalMode = true;
+                    Viewer.TrainDpuWindow.Visible = false;
+                    Viewer.TrainDpuWindow.UpdateWindowSize();
+                    return;
                 }
             }
         }
