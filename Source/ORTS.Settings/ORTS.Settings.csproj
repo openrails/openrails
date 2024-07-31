@@ -4,8 +4,6 @@
     <TargetFrameworks Condition="'$(TargetFrameworks)' == ''">net472</TargetFrameworks>
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <IsPublishable>False</IsPublishable>
     <AssemblyTitle>Open Rails Settings Library</AssemblyTitle>
     <Description>Open Rails Transport Simulator</Description>

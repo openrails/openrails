@@ -21,9 +21,7 @@ using System.Linq;
 using Orts.Simulation;
 using ORTS.Common;
 using System.IO;
-using System.Windows.Forms;
 using Orts.Common;
-using System.Diagnostics;
 
 namespace SimulatorTester
 {
@@ -37,23 +35,22 @@ namespace SimulatorTester
 
             if (files.Count != 1 || options.Contains("help", StringComparer.InvariantCultureIgnoreCase))
             {
-                var version = FileVersionInfo.GetVersionInfo(Application.ExecutablePath);
-                Console.WriteLine("{0} {1}", version.FileDescription, VersionInfo.VersionOrBuild);
+                Console.WriteLine("{0} {1}", ApplicationInfo.ApplicationName, VersionInfo.VersionOrBuild);
                 Console.WriteLine();
                 Console.WriteLine("Usage:");
-                Console.WriteLine("  {0} [options] <SAVE_FILE>", Path.GetFileNameWithoutExtension(Application.ExecutablePath));
+                Console.WriteLine("  {0} [options] <SAVE_FILE>", Path.GetFileNameWithoutExtension(ApplicationInfo.ProcessFile));
                 Console.WriteLine();
                 Console.WriteLine("Arguments:");
-                Console.WriteLine("  <SAVE_FILE>  {0} save file to use", Application.ProductName);
+                Console.WriteLine("  <SAVE_FILE>  {0} save file to use", ApplicationInfo.ProductName);
                 Console.WriteLine();
                 Console.WriteLine("Options:");
                 Console.WriteLine("  /quiet       Do not show summary of simulation (only exit code is set)");
-                Console.WriteLine("  /verbose     Show version and settings (similar to a {0} log)", Application.ProductName);
+                Console.WriteLine("  /verbose     Show version and settings (similar to a {0} log)", ApplicationInfo.ProductName);
                 Console.WriteLine("  /fps <FPS>   Set the simulation frame-rate [default: 10]");
                 Console.WriteLine("  /help        Show help and usage information");
-                Console.WriteLine("  ...and any standard {0} option", Application.ProductName);
+                Console.WriteLine("  ...and any standard {0} option", ApplicationInfo.ProductName);
                 Console.WriteLine();
-                Console.WriteLine("The {0} takes a save file and:", version.FileDescription);
+                Console.WriteLine("The {0} takes a save file and:", ApplicationInfo.ApplicationName);
                 Console.WriteLine("  - Loads the same activity as contained in the save file");
                 Console.WriteLine("  - Runs the simulation at the specified FPS for the same duration as the save file");
                 Console.WriteLine("  - Compares the final position with that contained in the save file");
@@ -65,7 +62,7 @@ namespace SimulatorTester
 
             if (settings.Verbose)
             {
-                Console.WriteLine("This is a log file for {0}. Please include this file in bug reports.", Application.ProductName);
+                Console.WriteLine("This is a log file for {0}. Please include this file in bug reports.", ApplicationInfo.ProductName);
                 LogSeparator();
 
                 SystemInfo.WriteSystemDetails(Console.Out);
@@ -73,7 +70,7 @@ namespace SimulatorTester
 
                 Console.WriteLine("Version      = {0}", VersionInfo.Version.Length > 0 ? VersionInfo.Version : "<none>");
                 Console.WriteLine("Build        = {0}", VersionInfo.Build);
-                Console.WriteLine("Executable   = {0}", Path.GetFileName(Application.ExecutablePath));
+                Console.WriteLine("Executable   = {0}", Path.GetFileName(ApplicationInfo.ProcessFile));
                 foreach (var arg in args)
                     Console.WriteLine("Argument     = {0}", arg);
                 LogSeparator();

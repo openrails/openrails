@@ -43,7 +43,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
-using System.Windows.Forms;
 
 namespace ContentChecker
 {
@@ -70,7 +69,7 @@ namespace ContentChecker
         /// <summary> The number of files that were actually loaded </summary>
         public int FilesLoaded { get; protected set; }
         /// <summary> The number of files that were not loaded but skipped </summary>
-        public int FilesSkipped {get; protected set;}
+        public int FilesSkipped { get; protected set; }
 
         /// <summary> The action to take when an additonal file has been identified. This is intended to be set externally </summary>
         protected Action<string, Loader> AddAdditionalFileAction { get; set; }
@@ -158,9 +157,6 @@ namespace ContentChecker
         {
             if (_graphicsDevice == null)
             {
-                // We use a Windows.Forms Control instead of an xna GAME because it is much easier to use.
-                var _c = new Control();
-
                 // Details probably do not matter too much
                 PresentationParameters parameters = new PresentationParameters()
                 {
@@ -168,7 +164,6 @@ namespace ContentChecker
                     BackBufferHeight = 100,
                     BackBufferFormat = SurfaceFormat.Color,
                     //DepthStencilFormat = DepthFormat.Depth24,
-                    DeviceWindowHandle = _c.Handle,
                     PresentationInterval = PresentInterval.Immediate,
                     IsFullScreen = false,
                 };

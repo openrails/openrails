@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -87,11 +86,10 @@ namespace Orts.DataConverter
 
         static void ShowHelp(List<IDataConverter> converters)
         {
-            var version = FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location);
-            Console.WriteLine("{0} {1}", version.FileDescription, VersionInfo.VersionOrBuild);
+            Console.WriteLine("{0} {1}", ApplicationInfo.ApplicationName, VersionInfo.VersionOrBuild);
             Console.WriteLine();
             Console.WriteLine("Usage:");
-            Console.WriteLine("  {0} /input <INPUT> [/output] [<OUTPUT> [...]]", Path.GetFileNameWithoutExtension(version.FileName));
+            Console.WriteLine("  {0} /input <INPUT> [/output] [<OUTPUT> [...]]", Path.GetFileNameWithoutExtension(ApplicationInfo.ProcessFile));
             Console.WriteLine();
             Console.WriteLine("Arguments:");
             Console.WriteLine("  <INPUT>   Specifies the file to read");
