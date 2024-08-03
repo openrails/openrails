@@ -30,6 +30,7 @@ using static ORTS.NotificationPage;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
+using System.Diagnostics;
 
 //TODO indicate number of never read notifications
 
@@ -45,11 +46,12 @@ namespace ORTS
     public class NotificationManager
     {
         public bool ArePagesVisible = false;
-        // New notifications are those with a date after the NotificationsReadDate.
+
         // Notifications are listed in reverse date order, with the newest one at the front.
-        // We don't track the reading of each notification but set the NewNotificationCount = 0 after the last of the new ones has been read.
-        public int NewPageCount = 1;
-        public int LastPageViewed = 0;
+        // We track the reading of each new notification but set the NewPageCount = 0 after the last of the new ones has been read.
+        public string LastViewDate; // This is the date when notifications were last viewed and is saved in yyyy-MM-dd format as a hidden UserSetting.
+        public int NewPageCount;    // New notifications are those with a date after the LastViewDate.
+        public int NewPagesViewed;  // Viewing always starts at the first, newest notification. The user sees (NewPageCount - NewpagesViewed) 
 
         public Notifications Notifications; // An object defined by the JSON schema
         public int CurrentNotificationNo = 0;
@@ -140,6 +142,11 @@ namespace ORTS
             var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
             var jsonInput = JsonConvert.DeserializeObject<Notifications>(notificationsSerial, jsonSettings);
 
+            NewPageCount = 0;
+            NewPagesViewed = 0;
+            LastViewDate = Settings.LastViewNotificationDate;
+            if (LastViewDate == "") LastViewDate = "2024-01-01"; // Date of this code - i.e. before Notifications went public
+
             //TODO Cache jsonInput
 
             return jsonInput;
@@ -164,12 +171,19 @@ namespace ORTS
 
         private List<Notification> IncludeValid(List<Notification> list)
         {
+            NewPageCount = 0;
+
             var filteredList = new List<Notification>();
             foreach (var n in list)
             {
                 if (AreNotificationChecksMet(n))
                 {
-                    if (n.Date == "none") n.Date = " none"; // UpdateChannel = "none" found; push this to end of the list
+                    if (n.Date == "none") 
+                        n.Date = " none"; // UpdateChannel = "none" found; push this to end of the list
+                    else
+                    {
+                        if (String.Compare(LastViewDate, n.Date) == -1) NewPageCount++;
+                    }
                     filteredList.Insert(0, n); // Add to head of list to provide a basic pre-sort.
                 }
             }
@@ -186,6 +200,8 @@ namespace ORTS
         /// </summary>
         public void PopulatePage()
         {
+            Settings.LastViewNotificationDate = $"{DateTime.Today:yyyy-MM-dd}";    
+            Settings.Save("LastViewNotificationDate");  // Saves the date on any viewing of notifications
             Page = new NotificationPage(MainForm, Panel, this); 
 
             if (UpdateManager.LastCheckError != null || Error != null)
@@ -209,7 +225,6 @@ namespace ORTS
                 Page.NDetailList.Add(new NRetryControl(Page, "Retry", 140, "Try again to fetch notifications", MainForm));
             }
 
-            NewPageCount = 1;
             var list = Notifications.NotificationList;
             var n = list[CurrentNotificationNo];
             LogNotification(n);
@@ -590,7 +605,12 @@ namespace ORTS
         public void ChangePage(int step)
         {
             CurrentNotificationNo += step;
-            //SetVisibility(step);
+            if (step > 0
+                && CurrentNotificationNo > NewPagesViewed   // and this is a new unviewed page
+                && CurrentNotificationNo <= NewPageCount) // and there are still new unviewed pages to be viewed
+            {
+                NewPagesViewed++;
+            }
             MainForm.ShowNotificationPages();
         }
 

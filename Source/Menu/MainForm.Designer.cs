@@ -887,6 +887,7 @@ namespace ORTS
             this.lblNotificationCount.TabIndex = 42;
             this.lblNotificationCount.Text = "1";
             this.lblNotificationCount.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblNotificationCount.Visible = false;
             this.lblNotificationCount.Click += new System.EventHandler(this.lblNotificationCount_Click);
             // 
             // pbNotificationsSome
