@@ -581,8 +581,8 @@ namespace Orts.Simulation.Timetables
             outf.Write(Efficiency);
             outf.Write(MaxVelocityA);
             outf.Write(UncondAttach);
-            outf.Write(doorCloseAdvance);
-            outf.Write(doorOpenDelay);
+            outf.Write(DoorCloseTimer);
+            outf.Write(DoorOpenTimer);
             // Dummy for level crossing horn pattern
             outf.Write(-1);
 
