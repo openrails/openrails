@@ -1538,8 +1538,6 @@ namespace Orts.Simulation.Physics
             // Update flipped state of each car.
             for (var i = 0; i < Cars.Count; i++)
                 Cars[i].Flipped = !Cars[i].Flipped;
-            // if AI train redefine first loco for sound
-            if (TrainType == TRAINTYPE.AI) (this as AITrain).RedefineAITriggers(this as AITrain);
         }
 
         /// <summary>

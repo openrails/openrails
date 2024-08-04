@@ -748,20 +748,14 @@ namespace Orts.Simulation
         public TrainCar SetPlayerLocomotive(Train playerTrain)
         {
             TrainCar PlayerLocomotive = null;
-            var leadFound = false;
             foreach (TrainCar car in playerTrain.Cars)
                 if (car.IsDriveable)  // first loco is the one the player drives
                 {
-                    if (!leadFound)
-                    {
                     PlayerLocomotive = car;
                     playerTrain.LeadLocomotive = car;
                     playerTrain.InitializeBrakes();
                     PlayerLocomotive.LocalThrottlePercent = playerTrain.AITrainThrottlePercent;
-                        PlayerLocomotive.SignalEvent(Event.PlayerTrainLeadLoco);
-                        leadFound = true;
-                    }
-                    else car.SignalEvent(Event.PlayerTrainHelperLoco);
+                    break;
                 }
             if (PlayerLocomotive == null)
                 throw new InvalidDataException("Can't find player locomotive in activity");
@@ -981,7 +975,6 @@ namespace Orts.Simulation
                     }
                     drivenTrain.Cars.Clear();
                     AI.TrainsToRemoveFromAI.Add((AITrain)train);
-                    PlayerLocomotive.SignalEvent(Event.PlayerTrainHelperLoco);
                     PlayerLocomotive = SetPlayerLocomotive(train);
                     (train as AITrain).SwitchToPlayerControl();
                     OnPlayerLocomotiveChanged();
@@ -1096,7 +1089,6 @@ namespace Orts.Simulation
                             {
                                 drivenTrain.Cars.Add(car);
                                 car.Train = drivenTrain;
-                                if (car is MSTSLocomotive) car.SignalEvent(Event.PlayerTrainHelperLoco);
                             }
                             FinishRearCoupling(drivenTrain, train, true);
                             return;
@@ -1127,7 +1119,6 @@ namespace Orts.Simulation
                                 drivenTrain.Cars.Add(car);
                                 car.Train = drivenTrain;
                                 car.Flipped = !car.Flipped;
-                                if (car is MSTSLocomotive) car.SignalEvent(Event.PlayerTrainHelperLoco);
                             }
                             FinishRearCoupling(drivenTrain, train, false);
                             return;
@@ -1192,7 +1183,6 @@ namespace Orts.Simulation
                                     TrainCar car = train.Cars[i];
                                     drivenTrain.Cars.Insert(i, car);
                                     car.Train = drivenTrain;
-                                    if (car is MSTSLocomotive) car.SignalEvent(Event.PlayerTrainHelperLoco);
                                 }
                                 if (drivenTrain.LeadLocomotiveIndex >= 0) drivenTrain.LeadLocomotiveIndex += train.Cars.Count;
                                 FinishFrontCoupling(drivenTrain, train, lead, true);
@@ -1226,7 +1216,6 @@ namespace Orts.Simulation
                                 drivenTrain.Cars.Insert(0, car);
                                 car.Train = drivenTrain;
                                 car.Flipped = !car.Flipped;
-                                if (car is MSTSLocomotive) car.SignalEvent(Event.PlayerTrainHelperLoco);
                             }
                             if (drivenTrain.LeadLocomotiveIndex >= 0) drivenTrain.LeadLocomotiveIndex += train.Cars.Count;
                             FinishFrontCoupling(drivenTrain, train, lead, false);
@@ -1829,19 +1818,6 @@ namespace Orts.Simulation
                 train2.TrainType = Train.TRAINTYPE.AI;
                 train.IncorporatedTrainNo = -1;
                 train2.MUDirection = Direction.Forward;
-                var leadFound = false;
-                foreach (var trainCar in train2.Cars)
-                {
-                    if (trainCar is MSTSLocomotive)
-                    {
-                        if (!leadFound)
-                        {
-                            trainCar.SignalEvent(Event.AITrainLeadLoco);
-                            leadFound = true;
-                        }
-                    }
-                    else trainCar.SignalEvent(Event.AITrainHelperLoco);
-                }
             }
             else train2.TrainType = Train.TRAINTYPE.STATIC;
             train2.LeadLocomotive = null;
