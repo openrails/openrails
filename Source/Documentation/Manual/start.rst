@@ -41,21 +41,114 @@ Click on the ``Options`` button and select the ``Content`` tab. See the
 Updating OR
 ===========
 
-When a new release of OR is available and your computer is online, a link 
-``Update to xnnnn`` appears in the upper right corner. The string ``xnnnn`` is 
-the release number of the newest release that matches your selected level 
-of update. Various level of updates called Update Channels are available. 
-You may choose the desired level in the ``Options-Update`` window, described 
-:ref:`below <options-updater>`.
+Four update modes are provided and you can update Open Rails with a single click of a button.
 
-When you click on the update link OR will download and install the new 
-release. In this way your version of Open Rails is always up to date. 
-Note, however, that previously saved games may not be compatible with 
-newer versions, as described :ref:`here <driving-saveresume>`.
+"Stable" is the default and recommended mode.
 
-Clicking the link ``What's new?`` in the upper centre part of the main menu 
-window will connect to a website that summarizes the most recent changes 
-to the OR program.
+"Testing" is updated more frequently than the "Stable" mode.
+
+If you follow the Open Rails project on the forums, then you will hear about bug-fixes and new features. 
+These are included in the "Unstable" version for developers and testers to try out. 
+Once they have been checked and approved, they are published (on Fridays) as the latest "Testing" version. 
+Any user can easily update to the current weekly "Testing" version and benefit from these improvements.
+
+New versions are advertised and installed using the :ref:`Notifications <notifications>` feature.
+
+You can change your current mode using Options > System > Update mode. 
+The fourth mode is "none", which does not search for a new version.
+
+
+.. _notifications:
+
+Notifications
+=============
+
+Notifications are brief messages sent to Open Rails when you launch Open Rails. 
+You can view these by clicking on the notifications icon and stop viewing by toggling the icon again.
+
+.. image:: images/notification-icon.png
+
+Old notifications persist, but when new ones are available, the icon is overlaid with a red indicator showing the number of new notifications. 
+The icons are presented in date order with the latest one first. Step through them by clicking on the arrows:
+
+.. image:: images/notification-red-indicator.png
+
+Static Notifications
+--------------------
+
+A simple notification may be shown in the same way to all users, such as:
+
+.. image:: images/notification-static.png
+
+Pressing the “Archive” button will launch your default browser to provide extra detail.
+
+Responsive Notifications
+------------------------
+
+Many notifications show differently depending on the user’s installation. 
+
+Responsive notifications are used to advise that a new version is available. 
+If a new version is available, then the notification might be shown as:
+
+.. image:: images/notification-update-available.png
+
+As before, the button “What’s new” will launch your default browser to provide extra detail. 
+The “Install” button is special and launches a seamless process to download the latest version available and use it to replace the active version.
+
+Once the user has upgraded, the previous message is no longer appropriate and the notification responds to the changes by showing as:
+
+.. image:: images/notification-update-installed.png
+
+Privacy Note
+------------
+
+No information is returned to the Open Rails web server.
+
+Update Mode
+-----------
+
+There are 4 update modes – Stable, Testing, Unstable and None. More details are available :ref:`here <updating-or>`.
+Note, however, that previously saved games may not be compatible with newer versions, as described :ref:`here <driving-saveresume>`.
+
+Checking Compatibility
+----------------------
+
+Responsive notifications are also used to check that an update is compatible with your system. For example, you might see useful warnings such as:
+
+.. image:: images/notification-update-incompatible.png
+
+Responding to Routes
+--------------------
+
+These notifications can respond to the routes you have installed, so you can be advised of updates to routes you have already installed. For example, you might see:
+
+.. image:: images/notification-routes.png
+
+But this notification would be missing if you don’t already have the route installed.
+
+Responding to Settings
+----------------------
+
+The notifications can also respond to the settings you are using - see :ref:`Open Rails Options<options>`.
+
+In this fictional example, you might see a message encouraging you to try an improved feature:
+
+.. image:: images/notification-settings.png
+
+However, if you have the option turned on already, then the notification is not shown.
+
+Communication Error
+-------------------
+
+If there is a problem with the Internet then the Notifications are replaced by a single prepared notification which gives a reason for the error and a chance to re-try:
+
+.. image:: images/notification-error.png
+
+Publishing Notifications
+------------------------
+
+The Notifications document explains how to publish notifications and is included in the :ref:`Documents drop-down<documents>`.
+
 
 Further General Buttons
 =======================
@@ -65,6 +158,8 @@ Tools
 
 By clicking this button you get access to the ancillary tools (see :ref:`here 
 <intro-reality>`).
+
+.. _documents:
 
 Documents
 ---------
