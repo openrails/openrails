@@ -25,7 +25,7 @@ namespace ORTS
 {
     static class Program
     {
-        [STAThread]  // required for use of the DirectoryBrowserDialog in the main form.
+        [STAThread]  // requred for use of the DirectoryBrowserDialog in the main form.
         static void Main(string[] args)
         {
             Application.EnableVisualStyles();
