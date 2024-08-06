@@ -102,6 +102,7 @@ namespace ORTS
             this.pbNotificationsSome = new System.Windows.Forms.PictureBox();
             this.pbNotificationsNone = new System.Windows.Forms.PictureBox();
             this.pictureBoxLogo = new System.Windows.Forms.PictureBox();
+            this.ttNotifications = new System.Windows.Forms.ToolTip(this.components);
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -888,6 +889,7 @@ namespace ORTS
             this.pbNotificationsSome.Size = new System.Drawing.Size(37, 31);
             this.pbNotificationsSome.TabIndex = 41;
             this.pbNotificationsSome.TabStop = false;
+            this.ttNotifications.SetToolTip(this.pbNotificationsSome, "Notifications published by Open Rails");
             this.pbNotificationsSome.Click += new System.EventHandler(this.pbNotificationsSome_Click);
             // 
             // pbNotificationsNone
@@ -899,6 +901,7 @@ namespace ORTS
             this.pbNotificationsNone.Size = new System.Drawing.Size(37, 31);
             this.pbNotificationsNone.TabIndex = 40;
             this.pbNotificationsNone.TabStop = false;
+            this.ttNotifications.SetToolTip(this.pbNotificationsNone, "Notifications published by Open Rails");
             this.pbNotificationsNone.Click += new System.EventHandler(this.pbNotificationsNone_Click);
             // 
             // pictureBoxLogo
@@ -918,8 +921,6 @@ namespace ORTS
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(854, 548);
             this.Controls.Add(this.lblNotificationCount);
-            this.Controls.Add(this.pbNotificationsSome);
-            this.Controls.Add(this.pbNotificationsNone);
             this.Controls.Add(this.panelModeTimetable);
             this.Controls.Add(this.panelModeActivity);
             this.Controls.Add(this.radioButtonModeTimetable);
@@ -935,6 +936,8 @@ namespace ORTS
             this.Controls.Add(this.pictureBoxLogo);
             this.Controls.Add(this.labelLogo);
             this.Controls.Add(this.label2);
+            this.Controls.Add(this.pbNotificationsSome);
+            this.Controls.Add(this.pbNotificationsNone);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
@@ -1032,5 +1035,6 @@ namespace ORTS
         private System.Windows.Forms.PictureBox pbNotificationsNone;
         private System.Windows.Forms.PictureBox pbNotificationsSome;
         private System.Windows.Forms.Label lblNotificationCount;
+        private System.Windows.Forms.ToolTip ttNotifications;
     }
 }

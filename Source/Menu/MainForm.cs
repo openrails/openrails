@@ -1490,11 +1490,11 @@ namespace ORTS
 
         public void UpdateNotificationPageAlert()
         {
-            if (NotificationManager.NewPagesViewed < NotificationManager.NewPageCount)
+            if (NotificationManager.NewPages.Viewed < NotificationManager.NewPages.Count)
             {
                 pbNotificationsSome.Visible = true;
                 lblNotificationCount.Visible = true;
-                lblNotificationCount.Text = $"{NotificationManager.NewPageCount - NotificationManager.NewPagesViewed}";
+                lblNotificationCount.Text = $"{NotificationManager.NewPages.Count - NotificationManager.NewPages.Viewed}";
             }
             else
             {
@@ -1506,8 +1506,15 @@ namespace ORTS
         // 3 should be enough, but is there a way to get unlimited buttons?
         public void Button0_Click(object sender, EventArgs e)
         {
-            NotificationManager.Page.DoButton(UpdateManager, 0);
+            if (NotificationManager.Notifications == null) // button0 is "Retry"
+            {
+                NotificationManager.CheckNotifications();
+                UpdateNotificationPageAlert();
+                ShowNotificationPages();
+            }
+            else NotificationManager.Page.DoButton(UpdateManager, 0);
         }
+
         public void Button1_Click(object sender, EventArgs e)
         {
             NotificationManager.Page.DoButton(UpdateManager, 1);

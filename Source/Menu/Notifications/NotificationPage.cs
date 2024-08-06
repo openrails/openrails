@@ -44,7 +44,7 @@ namespace ORTS
 
         private void AddPageCountAndArrows(NotificationManager manager)
         {
-            var pageCount = manager.Notifications.NotificationList.Count; //TODO Refine this
+            var pageCount = manager.Notifications?.NotificationList.Count ?? 0; // If not Internet, then Notifications == null
             var pageLabel = $"{manager.CurrentNotificationNo + 1}/{pageCount}";
 
             // Swap visibility for clickable arrows and disabled ones at each end of range.

@@ -24,15 +24,12 @@ using Newtonsoft.Json;
 using ORTS.Common;
 using ORTS.Settings;
 using ORTS.Updater;
-//using SharpDX.Direct2D1;
 using static ORTS.Common.SystemInfo;
 using static ORTS.NotificationPage;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
 using System.Diagnostics;
-
-//TODO indicate number of never read notifications
 
 // Notifications are read only once as a background task at start into NotificationList.
 // Every time the notifications page is re-visited, the position is discarded and first page is shown.
@@ -45,22 +42,23 @@ namespace ORTS
 {
     public class NotificationManager
     {
-        public bool ArePagesVisible = false;
-
-        // Notifications are listed in reverse date order, with the newest one at the front.
-        // We track the reading of each new notification but set the NewPageCount = 0 after the last of the new ones has been read.
-        public string LastViewDate; // This is the date when notifications were last viewed and is saved in yyyy-MM-dd format as a hidden UserSetting.
-        public int NewPageCount;    // New notifications are those with a date after the LastViewDate.
-        public int NewPagesViewed;  // Viewing always starts at the first, newest notification. The user sees (NewPageCount - NewpagesViewed) 
+        public class PageTracking
+        {
+            // Notifications are listed in reverse date order, with the newest one at the front.
+            public string LastViewDate { get; set; } // This is the date when notifications were last viewed and is saved in yyyy-MM-dd format as a hidden UserSetting.
+            public int Count { get; set; }  // New notifications are those with a date after the LastViewDate.
+            public int Viewed { get; set; } // Viewing always starts at the first, newest notification. The user sees (Count - Viewed) 
+        }
 
         public Notifications Notifications; // An object defined by the JSON schema
         public int CurrentNotificationNo = 0;
+        public bool ArePagesVisible = false;
 
         private Exception Error;
         private Dictionary<string, string> ParameterDictionary;
 
-        bool Log = false;
-        const string LogFile = "notifications_trial_log.txt";
+        private bool Log = false;
+        private const string LogFile = "notifications_trial_log.txt";
 
         private readonly MainForm MainForm; // Needed so we can add controls to the NotificationPage
         private readonly UpdateManager UpdateManager;
@@ -72,6 +70,7 @@ namespace ORTS
         public Image NextImage { get; private set; }
         public Image FirstImage { get; private set; }
         public Image LastImage { get; private set; }
+        public PageTracking NewPages { get; private set; }
 
         public NotificationManager(MainForm mainForm, UpdateManager updateManager, UserSettings settings, Panel panel
             , Image previousImage
@@ -88,9 +87,10 @@ namespace ORTS
             NextImage = nextImage;
             FirstImage = firstImage;
             LastImage = lastImage;
+            NewPages = new PageTracking();
         }
 
-        // Make this a background task
+        //TODO Make this a background task
         public void CheckNotifications()
         {
             try
@@ -142,10 +142,10 @@ namespace ORTS
             var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
             var jsonInput = JsonConvert.DeserializeObject<Notifications>(notificationsSerial, jsonSettings);
 
-            NewPageCount = 0;
-            NewPagesViewed = 0;
-            LastViewDate = Settings.LastViewNotificationDate;
-            if (LastViewDate == "") LastViewDate = "2024-01-01"; // Date of this code - i.e. before Notifications went public
+            NewPages.Count = 0;
+            NewPages.Viewed = 0;
+            NewPages.LastViewDate = Settings.LastViewNotificationDate;
+            if (NewPages.LastViewDate == "") NewPages.LastViewDate = "2024-01-01"; // Date of this code - i.e. before Notifications went public
 
             //TODO Cache jsonInput
 
@@ -167,11 +167,12 @@ namespace ORTS
             client.Headers[HttpRequestHeader.UserAgent] = $"{System.Windows.Forms.Application.ProductName}/{VersionInfo.VersionOrBuild}";
 
             return client.DownloadString(new Uri("https://wepp.co.uk/openrails/notifications2/menu.json"));
+            //return client.DownloadString(new Uri("https://static.openrails.org/api/notifications/menu.json"));
         }
 
         private List<Notification> IncludeValid(List<Notification> list)
         {
-            NewPageCount = 0;
+            NewPages.Count = 0;
 
             var filteredList = new List<Notification>();
             foreach (var n in list)
@@ -182,7 +183,7 @@ namespace ORTS
                         n.Date = " none"; // UpdateChannel = "none" found; push this to end of the list
                     else
                     {
-                        if (String.Compare(LastViewDate, n.Date) == -1) NewPageCount++;
+                        if (String.Compare(NewPages.LastViewDate, n.Date) == -1) NewPages.Count++;
                     }
                     filteredList.Insert(0, n); // Add to head of list to provide a basic pre-sort.
                 }
@@ -196,7 +197,7 @@ namespace ORTS
         }
 
         /// <summary>
-        /// There is a list of notifications downloaded from https://static.openrails.org/api/notifications/menu.json .
+        /// Adds details of the current notifications to the panel
         /// </summary>
         public void PopulatePage()
         {
@@ -206,7 +207,7 @@ namespace ORTS
 
             if (UpdateManager.LastCheckError != null || Error != null)
             {
-                NewPageCount = 0;
+                NewPages.Count = 0;
                 var message = (UpdateManager.LastCheckError != null)
                     ? UpdateManager.LastCheckError.Message
                     : Error.Message;
@@ -224,18 +225,19 @@ namespace ORTS
 
                 Page.NDetailList.Add(new NRetryControl(Page, "Retry", 140, "Try again to fetch notifications", MainForm));
             }
-
-            var list = Notifications.NotificationList;
-            var n = list[CurrentNotificationNo];
-            LogNotification(n);
-
-            //var skipPage = false;
-            Page.NDetailList.Add(new NTitleControl(Page, CurrentNotificationNo + 1, list.Count, n.Date, n.Title));
-
-            // Check constraints for each item
-            foreach (var item in n.ItemList)
+            else
             {
-                if (AreItemChecksMet(item)) AddItemToPage(Page, item);
+                var list = Notifications.NotificationList;
+                var n = list[CurrentNotificationNo];
+                LogNotification(n);
+
+                Page.NDetailList.Add(new NTitleControl(Page, CurrentNotificationNo + 1, list.Count, n.Date, n.Title));
+
+                // Check constraints for each item
+                foreach (var item in n.ItemList)
+                {
+                    if (AreItemChecksMet(item)) AddItemToPage(Page, item);
+                }
             }
 
             Page.NDetailList.Add(new NTextControl(Page, ""));
@@ -606,10 +608,10 @@ namespace ORTS
         {
             CurrentNotificationNo += step;
             if (step > 0
-                && CurrentNotificationNo > NewPagesViewed   // and this is a new unviewed page
-                && CurrentNotificationNo <= NewPageCount) // and there are still new unviewed pages to be viewed
+                && CurrentNotificationNo > NewPages.Viewed   // and this is a new unviewed page
+                && CurrentNotificationNo <= NewPages.Count) // and there are still new unviewed pages to be viewed
             {
-                NewPagesViewed++;
+                NewPages.Viewed++;
             }
             MainForm.ShowNotificationPages();
         }
