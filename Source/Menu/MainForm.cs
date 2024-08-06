@@ -242,15 +242,9 @@ namespace ORTS
                             LoadDocuments(docs, codePath, code);
                     }
                 }
-                else
-                    buttonDocuments.Enabled = false;
+                else buttonDocuments.Enabled = false;
 
-                NotificationManager = new NotificationManager(this, UpdateManager, Settings, panelDetails
-                    , (Image)Resources.GetObject("Notification_previous")
-                    , (Image)Resources.GetObject("Notification_next")
-                    , (Image)Resources.GetObject("Notification_first")
-                    , (Image)Resources.GetObject("Notification_last")
-                    );
+                NotificationManager = new NotificationManager(this, this.Resources, UpdateManager, Settings, panelDetails);
             }
 
             ShowEnvironment();
@@ -1468,8 +1462,8 @@ namespace ORTS
             if (NotificationManager.ArePagesVisible == false)
             {
                 NotificationManager.ArePagesVisible = true; // Set before calling ShowNotifcations()
+                //UpdateNotificationPageAlert();
                 ShowNotificationPages();
-                UpdateNotificationPageAlert();
             }
             else
             {
@@ -1509,7 +1503,7 @@ namespace ORTS
             if (NotificationManager.Notifications == null) // button0 is "Retry"
             {
                 NotificationManager.CheckNotifications();
-                UpdateNotificationPageAlert();
+                //UpdateNotificationPageAlert();
                 ShowNotificationPages();
             }
             else NotificationManager.Page.DoButton(UpdateManager, 0);

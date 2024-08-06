@@ -30,6 +30,8 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Linq;
 using System.Diagnostics;
+using System.Resources;
+using ORTS.Properties;
 
 // Notifications are read only once as a background task at start into NotificationList.
 // Every time the notifications page is re-visited, the position is discarded and first page is shown.
@@ -72,22 +74,19 @@ namespace ORTS
         public Image LastImage { get; private set; }
         public PageTracking NewPages { get; private set; }
 
-        public NotificationManager(MainForm mainForm, UpdateManager updateManager, UserSettings settings, Panel panel
-            , Image previousImage
-            , Image nextImage
-            , Image firstImage
-            , Image lastImage
-            ) 
-        { 
+        public NotificationManager(MainForm mainForm, ResourceManager resources, UpdateManager updateManager, UserSettings settings, Panel panel)
+        {
             MainForm = mainForm;
             this.UpdateManager = updateManager;
             this.Settings = settings;
             Panel = panel;
-            PreviousImage = previousImage;
-            NextImage = nextImage;
-            FirstImage = firstImage;
-            LastImage = lastImage;
             NewPages = new PageTracking();
+            
+            // Load images of arrows
+            PreviousImage = (Image)resources.GetObject("Notification_previous");
+            NextImage = (Image)resources.GetObject("Notification_next");
+            FirstImage = (Image)resources.GetObject("Notification_first");
+            LastImage = (Image)resources.GetObject("Notification_last");
         }
 
         //TODO Make this a background task
@@ -166,10 +165,16 @@ namespace ORTS
             // Helpful to supply server with data for its log file.
             client.Headers[HttpRequestHeader.UserAgent] = $"{System.Windows.Forms.Application.ProductName}/{VersionInfo.VersionOrBuild}";
 
+            //TODO
             return client.DownloadString(new Uri("https://wepp.co.uk/openrails/notifications2/menu.json"));
             //return client.DownloadString(new Uri("https://static.openrails.org/api/notifications/menu.json"));
         }
 
+        /// <summary>
+        /// Returns a list of Notifications excluding any that fail IncludeIf. Sorts Update channel "none" to the end.
+        /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
         private List<Notification> IncludeValid(List<Notification> list)
         {
             NewPages.Count = 0;
@@ -197,36 +202,21 @@ namespace ORTS
         }
 
         /// <summary>
-        /// Adds details of the current notifications to the panel
+        /// Adds details of the current notification to the panel
         /// </summary>
         public void PopulatePage()
         {
-            Settings.LastViewNotificationDate = $"{DateTime.Today:yyyy-MM-dd}";    
-            Settings.Save("LastViewNotificationDate");  // Saves the date on any viewing of notifications
             Page = new NotificationPage(MainForm, Panel, this); 
 
             if (UpdateManager.LastCheckError != null || Error != null)
             {
-                NewPages.Count = 0;
-                var message = (UpdateManager.LastCheckError != null)
-                    ? UpdateManager.LastCheckError.Message
-                    : Error.Message;
-
-                // Reports notifications are not available.
-                var channelName = UpdateManager.ChannelName == "" ? "None" : UpdateManager.ChannelName;
-                var today = DateTime.Now.Date;
-                Page.NDetailList.Add(new NTitleControl(Page, 1, 1, $"{today:dd-MMM-yy}", "Notifications are not available"));
-                Page.NDetailList.Add(new NRecordControl(Page, "Update mode", 140, channelName));
-                Page.NDetailList.Add(new NRecordControl(Page, "Installed version", 140, VersionInfo.VersionOrBuild));
-
-                Page.NDetailList.Add(new NHeadingControl(Page, "Notifications are not available", "red"));
-                Page.NDetailList.Add(new NTextControl(Page, $"Error: {message}"));
-                Page.NDetailList.Add(new NTextControl(Page, "Is your Internet connected?"));
-
-                Page.NDetailList.Add(new NRetryControl(Page, "Retry", 140, "Try again to fetch notifications", MainForm));
+                PopulateRetryPage();
             }
             else
             {
+                Settings.LastViewNotificationDate = $"{DateTime.Today:yyyy-MM-dd}";
+                Settings.Save("LastViewNotificationDate");  // Saves the date on any viewing of notifications
+
                 var list = Notifications.NotificationList;
                 var n = list[CurrentNotificationNo];
                 LogNotification(n);
@@ -242,6 +232,27 @@ namespace ORTS
 
             Page.NDetailList.Add(new NTextControl(Page, ""));
             Page.NDetailList.Add(new NTextControl(Page, "(Toggle icon to hide these notifications.)"));
+        }
+
+        private void PopulateRetryPage()
+        {
+            NewPages.Count = 0;
+
+            // Reports notifications are not available.
+            var channelName = UpdateManager.ChannelName == "" ? "None" : UpdateManager.ChannelName;
+            var today = DateTime.Now.Date;
+            Page.NDetailList.Add(new NTitleControl(Page, 1, 1, $"{today:dd-MMM-yy}", "Notifications are not available"));
+            Page.NDetailList.Add(new NRecordControl(Page, "Update mode", 140, channelName));
+            Page.NDetailList.Add(new NRecordControl(Page, "Installed version", 140, VersionInfo.VersionOrBuild));
+
+            Page.NDetailList.Add(new NHeadingControl(Page, "Notifications are not available", "red"));
+            var message = (UpdateManager.LastCheckError != null)
+                ? UpdateManager.LastCheckError.Message
+                : Error.Message;
+            Page.NDetailList.Add(new NTextControl(Page, $"Error: {message}"));
+            Page.NDetailList.Add(new NTextControl(Page, "Is your Internet connected?"));
+
+            Page.NDetailList.Add(new NRetryControl(Page, "Retry", 140, "Try again to fetch notifications", MainForm));
         }
 
         #region Process Criteria
