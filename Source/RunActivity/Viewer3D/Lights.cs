@@ -293,7 +293,7 @@ namespace Orts.Viewer3D
             bool newCarIsFirst = !Car.Lights.IgnoredConditions[1] && (locomotiveFlipped ^ locomotiveReverseCab ? Car.Train?.LastCar : Car.Train?.FirstCar) == Car;
             bool newCarIsLast = !Car.Lights.IgnoredConditions[1] && (locomotiveFlipped ^ locomotiveReverseCab ? Car.Train?.FirstCar : Car.Train?.LastCar) == Car;
             // Penalty
-			bool newPenalty = !Car.Lights.IgnoredConditions[2] && Car.Train.TrainType != Train.TRAINTYPE.AI
+			bool newPenalty = !Car.Lights.IgnoredConditions[2] && Car.Train != null && Car.Train.TrainType != Train.TRAINTYPE.AI
                 && leadLocomotive != null && leadLocomotive.TrainBrakeController.EmergencyBraking;
             // Control
             bool newCarIsPlayer = !Car.Lights.IgnoredConditions[3] && Car.Train != null && (Car.Train == Viewer.PlayerTrain || Car.Train.TrainType == Train.TRAINTYPE.REMOTE);
