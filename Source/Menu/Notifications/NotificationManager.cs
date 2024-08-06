@@ -35,15 +35,18 @@ using ORTS.Properties;
 
 // Notifications are read only once as a background task at start into NotificationList.
 // Every time the notifications page is re-visited, the position is discarded and first page is shown.
-// Every time the notifications page is re-visited, the options may have changed, so
+// Every time the notifications page is re-visited, the Update Mode option may have changed, so
 // the visibility of each notification in NotificationList is re-assessed. Also its date.
 // Every time the notifications page is re-visited or the page is incremented up or down,
-// the current notification is re-assessed and the panel is re-loaded with items for the current page.
+// the panel is re-loaded with items for the current page.
 
 namespace ORTS
 {
     public class NotificationManager
     {
+        // The Page points to the MainForm.Panel which holds the items for the current notification.
+        public NotificationPage Page { get; private set; }
+
         public class PageTracking
         {
             // Notifications are listed in reverse date order, with the newest one at the front.
@@ -67,7 +70,6 @@ namespace ORTS
         private readonly UserSettings Settings;
         private readonly Panel Panel;
 
-        public NotificationPage Page { get; private set; }
         public Image PreviousImage { get; private set; }
         public Image NextImage { get; private set; }
         public Image FirstImage { get; private set; }
@@ -221,7 +223,7 @@ namespace ORTS
                 var n = list[CurrentNotificationNo];
                 LogNotification(n);
 
-                Page.NDetailList.Add(new NTitleControl(Page, CurrentNotificationNo + 1, list.Count, n.Date, n.Title));
+                Page.NDetailList.Add(new NTitleControl(Panel, CurrentNotificationNo + 1, list.Count, n.Date, n.Title));
 
                 // Check constraints for each item
                 foreach (var item in n.ItemList)
@@ -230,8 +232,8 @@ namespace ORTS
                 }
             }
 
-            Page.NDetailList.Add(new NTextControl(Page, ""));
-            Page.NDetailList.Add(new NTextControl(Page, "(Toggle icon to hide these notifications.)"));
+            Page.NDetailList.Add(new NTextControl(Panel, ""));
+            Page.NDetailList.Add(new NTextControl(Panel, "(Toggle icon to hide these notifications.)"));
         }
 
         private void PopulateRetryPage()
@@ -241,16 +243,17 @@ namespace ORTS
             // Reports notifications are not available.
             var channelName = UpdateManager.ChannelName == "" ? "None" : UpdateManager.ChannelName;
             var today = DateTime.Now.Date;
-            Page.NDetailList.Add(new NTitleControl(Page, 1, 1, $"{today:dd-MMM-yy}", "Notifications are not available"));
-            Page.NDetailList.Add(new NRecordControl(Page, "Update mode", 140, channelName));
-            Page.NDetailList.Add(new NRecordControl(Page, "Installed version", 140, VersionInfo.VersionOrBuild));
+            Page.NDetailList.Add(new NTitleControl(Panel, 1, 1, $"{today:dd-MMM-yy}", "Notifications are not available"));
 
-            Page.NDetailList.Add(new NHeadingControl(Page, "Notifications are not available", "red"));
+            Page.NDetailList.Add(new NRecordControl(Panel, "Update mode", 140, channelName));
+            Page.NDetailList.Add(new NRecordControl(Panel, "Installed version", 140, VersionInfo.VersionOrBuild));
+
+            Page.NDetailList.Add(new NHeadingControl(Panel, "Notifications are not available", "red"));
             var message = (UpdateManager.LastCheckError != null)
                 ? UpdateManager.LastCheckError.Message
                 : Error.Message;
-            Page.NDetailList.Add(new NTextControl(Page, $"Error: {message}"));
-            Page.NDetailList.Add(new NTextControl(Page, "Is your Internet connected?"));
+            Page.NDetailList.Add(new NTextControl(Panel, $"Error: {message}"));
+            Page.NDetailList.Add(new NTextControl(Panel, "Is your Internet connected?"));
 
             Page.NDetailList.Add(new NRetryControl(Page, "Retry", 140, "Try again to fetch notifications", MainForm));
         }
@@ -373,31 +376,31 @@ namespace ORTS
         {
             if (item is Record record)
             {
-                Page.NDetailList.Add(new NRecordControl(page, item.Label, item.Indent, record.Value));
+                Page.NDetailList.Add(new NRecordControl(Panel, item.Label, item.Indent, record.Value));
             }
             else if (item is Link link)
             {
                 var url = GetUrl(link);
                 if (string.IsNullOrEmpty(url) == false)
                 {
-                    Page.NDetailList.Add(new NLinkControl(page, item.Label, item.Indent, link.Value, MainForm, url));
+                    Page.NDetailList.Add(new NLinkControl(Page, item.Label, item.Indent, link.Value, MainForm, url));
                 }
             }
             else if (item is Update update)
             {
-                Page.NDetailList.Add(new NUpdateControl(page, item.Label, item.Indent, update.Value, MainForm));
+                Page.NDetailList.Add(new NUpdateControl(Page, item.Label, item.Indent, update.Value, MainForm));
             }
             else if (item is Heading heading)
             {
-                Page.NDetailList.Add(new NHeadingControl(page, item.Label, heading.Color));
+                Page.NDetailList.Add(new NHeadingControl(Panel, item.Label, heading.Color));
             }
             else if (item is Text text)
             {
-                Page.NDetailList.Add(new NTextControl(page, item.Label, text.Color));
+                Page.NDetailList.Add(new NTextControl(Panel, item.Label, text.Color));
             }
             else
             {
-                Page.NDetailList.Add(new NTextControl(page, item.Label));
+                Page.NDetailList.Add(new NTextControl(Panel, item.Label));
             }
         }
 
