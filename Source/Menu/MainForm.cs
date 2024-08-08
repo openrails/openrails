@@ -310,7 +310,7 @@ namespace ORTS
 
         void CheckForUpdate()
         {
-            // Uses a custom Task class which pre-dates the System.Threading.Task but provides much same features.
+            // Uses a custom Task class which pre-dates the System.Threading.Task but provides much the same features.
             new Task<UpdateManager>(this, () =>
             {
                 UpdateManager.Check();
@@ -538,7 +538,6 @@ namespace ORTS
                     case DialogResult.OK:
                         LoadFolderList();
                         CheckForUpdate();
-                        //Notifications.CheckNotifications();
                         break;
                     case DialogResult.Retry:
                         RestartMenu();
@@ -1443,7 +1442,7 @@ namespace ORTS
             //TO DO: Debrief Eval TTActivity
         }
 
-        #region NotificationPages
+        #region Notifications
         private void pbNotificationsNone_Click(object sender, EventArgs e)
         {
             ToggleNotificationPages();
@@ -1526,6 +1525,6 @@ namespace ORTS
             NotificationManager.ChangePage(-1);
         }
 
-        #endregion NotificationPages
+        #endregion Notifications
     }
 }

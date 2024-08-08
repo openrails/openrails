@@ -17,35 +17,37 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Resources;
 using System.Text;
+using System.Windows.Forms;
 using Newtonsoft.Json;
 using ORTS.Common;
 using ORTS.Settings;
 using ORTS.Updater;
 using static ORTS.Common.SystemInfo;
 using static ORTS.NotificationPage;
-using System.Drawing;
-using System.Windows.Forms;
-using System.Linq;
-using System.Diagnostics;
-using System.Resources;
-using ORTS.Properties;
 
-// Notifications are read only once as a background task at start into NotificationList.
+// Behaviour
+// Notifications are read only once as a background task at start into Notifications.
 // Every time the notifications page is re-visited, the position is discarded and first page is shown.
 // Every time the notifications page is re-visited, the Update Mode option may have changed, so
 // the visibility of each notification in NotificationList is re-assessed. Also its date.
-// Every time the notifications page is re-visited or the page is incremented up or down,
-// the panel is re-loaded with items for the current page.
+// Every time the user selects a different notification page, the panel is re-loaded with items for that page.
 
 namespace ORTS
 {
     public class NotificationManager
     {
-        // The Page points to the MainForm.Panel which holds the items for the current notification.
+        public Notifications Notifications; // An object defined by the JSON schema
+        
+        // The Page points to the MainForm.Panel and also holds details of the items for the current notification.
         public NotificationPage Page { get; private set; }
+        public bool ArePagesVisible = false;
+        public int CurrentPageIndex = 0;
 
         public class PageTracking
         {
@@ -55,13 +57,11 @@ namespace ORTS
             public int Viewed { get; set; } // Viewing always starts at the first, newest notification. The user sees (Count - Viewed) 
         }
 
-        public Notifications Notifications; // An object defined by the JSON schema
-        public int CurrentNotificationNo = 0;
-        public bool ArePagesVisible = false;
-
-        private Exception Error;
+        // Parameters (e.g. {{installed_version}} are saved in the dictionary alongside their value.
+        // They are written once and potentially read many times.
         private Dictionary<string, string> ParameterDictionary;
-
+        
+        private Exception Error;
         private bool Log = false;
         private const string LogFile = "notifications_trial_log.txt";
 
@@ -90,15 +90,14 @@ namespace ORTS
             FirstImage = (Image)resources.GetObject("Notification_first");
             LastImage = (Image)resources.GetObject("Notification_last");
         }
-
-        //TODO Make this a background task
+        
         public void CheckNotifications()
         {
             try
             {
                 Error = null;
                 ArePagesVisible = false;
-                CurrentNotificationNo = 0;
+                CurrentPageIndex = 0;
                 Notifications = GetNotifications();
                 ParameterDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 
@@ -121,18 +120,18 @@ namespace ORTS
         public Notifications GetNotifications()
         {
             string notificationsSerial;
+
             // To support testing of a new remote notifications.json file before it is published,
             // GetNotifications() tests first for a local file notifications_trial.json
             // and uses that if present, else it uses the remote file.
-
             var filename = @"notifications_trial.json";
-            if (System.IO.File.Exists(filename))
+            if (File.Exists(filename))
             {
                 // Input from local file into a string
-                notificationsSerial = System.IO.File.ReadAllText(filename);
-
-                // Turn on logging
-                Log = true;
+                notificationsSerial = File.ReadAllText(filename);
+                
+                Log = true; // Turn on logging to LogFile
+                if (File.Exists(LogFile)) File.Delete(LogFile);
             }
             else
             {
@@ -147,8 +146,6 @@ namespace ORTS
             NewPages.Viewed = 0;
             NewPages.LastViewDate = Settings.LastViewNotificationDate;
             if (NewPages.LastViewDate == "") NewPages.LastViewDate = "2024-01-01"; // Date of this code - i.e. before Notifications went public
-
-            //TODO Cache jsonInput
 
             return jsonInput;
         }
@@ -167,9 +164,7 @@ namespace ORTS
             // Helpful to supply server with data for its log file.
             client.Headers[HttpRequestHeader.UserAgent] = $"{System.Windows.Forms.Application.ProductName}/{VersionInfo.VersionOrBuild}";
 
-            //TODO
-            return client.DownloadString(new Uri("https://wepp.co.uk/openrails/notifications2/menu.json"));
-            //return client.DownloadString(new Uri("https://static.openrails.org/api/notifications/menu.json"));
+            return client.DownloadString(new Uri("https://static.openrails.org/api/notifications/menu.json"));
         }
 
         /// <summary>
@@ -220,12 +215,12 @@ namespace ORTS
                 Settings.Save("LastViewNotificationDate");  // Saves the date on any viewing of notifications
 
                 var list = Notifications.NotificationList;
-                var n = list[CurrentNotificationNo];
+                var n = list[CurrentPageIndex];
                 LogNotification(n);
 
-                Page.NDetailList.Add(new NTitleControl(Panel, CurrentNotificationNo + 1, list.Count, n.Date, n.Title));
+                Page.NDetailList.Add(new NTitleControl(Panel, CurrentPageIndex + 1, list.Count, n.Date, n.Title));
 
-                // Check constraints for each item
+                // Check constraints foPageNoem
                 foreach (var item in n.ItemList)
                 {
                     if (AreItemChecksMet(item)) AddItemToPage(Page, item);
@@ -490,6 +485,7 @@ namespace ORTS
             {
                 switch (lowerCaseTarget)
                 {
+                    // Update parameters
                     // Using "none" instead of "" so that records are readable.
                     case "update_mode":
                         replacement = (UpdateManager.ChannelName == "")
@@ -508,6 +504,7 @@ namespace ORTS
                             : $"{UpdateManager.LastUpdate.Date:yyyy-MM-dd}";
                         break;
 
+                    // System parameters
                     case "installed_version":
                         replacement = SystemInfo.Application.Version;
                         break;
@@ -538,10 +535,10 @@ namespace ORTS
                         replacement = string.Join(",", Direct3DFeatureLevels);
                         break;
 
+                    // Routes, User Settings and Not Recognised
                     case "installed_routes":
                         replacement = GetInstalledRoutes();
                         break;
-
                     default:
                         var propertyValue = GetSetting(target);
                         replacement = (propertyValue == "")
@@ -569,7 +566,7 @@ namespace ORTS
         /// <returns></returns>
         string GetSetting(string settingText)
         {
-            var nameArray = settingText.Split('.'); // 2 elements: "Settings, "<property>", e.g. "SimpleControlPhysics" 
+            var nameArray = settingText.Split('.'); // 2 elements: "Settings.<property>", e.g. "SimpleControlPhysics" 
             if (nameArray[0] == "Settings" && nameArray.Length == 2)
             {
                 return Settings.GetType().GetProperty(nameArray[1])?.GetValue(Settings).ToString() ?? "";
@@ -589,7 +586,7 @@ namespace ORTS
                     foreach (var routePath in Directory.GetDirectories(path))
                     {
                         // Extract the last folder in the path - the route folder name, e.g. "SCE"
-                        var routeName = System.IO.Path.GetFileName(routePath).ToLower();
+                        var routeName = Path.GetFileName(routePath).ToLower();
                         installedRouteList += routeName + ",";
                     }
                 }
@@ -604,10 +601,10 @@ namespace ORTS
             // and uses that if present to override the current program values, else it extracts these from the program.
 
             var filename = @"notifications_trial_parameters.json";
-            if (System.IO.File.Exists(filename))
+            if (File.Exists(filename))
             {
                 // Input from local file into a string
-                var overrideParametersSerial = System.IO.File.ReadAllText(filename);
+                var overrideParametersSerial = File.ReadAllText(filename);
 
                 var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
                 var jsonInput = JsonConvert.DeserializeObject<OverrideParameterList>(overrideParametersSerial, jsonSettings);
@@ -620,10 +617,10 @@ namespace ORTS
 
         public void ChangePage(int step)
         {
-            CurrentNotificationNo += step;
+            CurrentPageIndex += step;
             if (step > 0
-                && CurrentNotificationNo > NewPages.Viewed   // and this is a new unviewed page
-                && CurrentNotificationNo <= NewPages.Count) // and there are still new unviewed pages to be viewed
+                && CurrentPageIndex > NewPages.Viewed  // and this is a new unviewed page
+                && CurrentPageIndex <= NewPages.Count) // and there are still new unviewed pages to be viewed
             {
                 NewPages.Viewed++;
             }
@@ -635,15 +632,10 @@ namespace ORTS
         {
             if (Log == false) return;
 
-            if (File.Exists(LogFile)) File.Delete(LogFile);
-
             using (StreamWriter sw = File.CreateText(LogFile))
             {
                 sw.WriteLine("Parameters overridden:");
-                foreach (var p in ParameterDictionary)
-                {
-                    sw.WriteLine($"{p.Key} = {p.Value}");
-                }
+                foreach (var p in ParameterDictionary) sw.WriteLine($"{p.Key} = {p.Value}");
                 sw.WriteLine();
             }
         }
@@ -655,10 +647,7 @@ namespace ORTS
             using (StreamWriter sw = File.AppendText(LogFile))
             {
                 sw.WriteLine("Parameters used:");
-                foreach (var p in ParameterDictionary)
-                {
-                    sw.WriteLine($"{p.Key} = {p.Value}");
-                }
+                foreach (var p in ParameterDictionary) sw.WriteLine($"{p.Key} = {p.Value}");
                 sw.WriteLine();
             }
         }
@@ -667,10 +656,7 @@ namespace ORTS
         {
             AppendToLog($"\r\nNotification: {n.Title}");
         }
-        public void LogChecks(string checkName)
-        {
-            AppendToLog($"CheckId: {checkName}");
-        }
+
         public void LogCheckContains(string value, bool sense, string content, bool result)
         {
             var negation = sense ? "" : "NOT ";
@@ -681,10 +667,7 @@ namespace ORTS
         {
             if (Log == false) return;
 
-            using (StreamWriter sw = File.AppendText(LogFile))
-            {
-                sw.WriteLine(record);
-            }
+            using (StreamWriter sw = File.AppendText(LogFile)) sw.WriteLine(record);
         }
         #endregion
     }

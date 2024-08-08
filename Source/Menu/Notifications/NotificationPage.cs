@@ -51,17 +51,17 @@ namespace ORTS
         private void AddPageCountAndArrows(NotificationManager manager)
         {
             var pageCount = manager.Notifications?.NotificationList.Count ?? 0; // If no Internet connection, then Notifications == null
-            var pageLabel = $"{manager.CurrentNotificationNo + 1}/{pageCount}";
+            var pageLabel = $"{manager.CurrentPageIndex + 1}/{pageCount}";
 
             // Swap visibility for clickable arrows and disabled ones at each end of range.
-            var nextVisibility = (manager.CurrentNotificationNo < pageCount - 1);
+            var nextVisibility = (manager.CurrentPageIndex < pageCount - 1);
             var nextPageControl = new Arrow(Panel, manager.NextImage, nextVisibility, true, 25);
             nextPageControl.Click += new EventHandler(MainForm.Next_Click);
             Panel.Controls.Add(nextPageControl);
 
             Panel.Controls.Add(new Arrow(Panel, manager.LastImage, !nextVisibility, false, 25));
 
-            var previousVisibility = (manager.CurrentNotificationNo > 0);
+            var previousVisibility = (manager.CurrentPageIndex > 0);
             var previousPageControl = new Arrow(Panel, manager.PreviousImage, previousVisibility, true, 90);
             previousPageControl.Click += new EventHandler(MainForm.Previous_Click);
             Panel.Controls.Add(previousPageControl);
