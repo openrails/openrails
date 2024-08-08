@@ -141,6 +141,10 @@ namespace Orts.Common
         WaterInjector1On,
         WaterInjector2Off,
         WaterInjector2On,
+        WaterMotionPump1Off,
+        WaterMotionPump1On,
+        WaterMotionPump2Off,
+        WaterMotionPump2On,
         BlowdownValveToggle,
         SteamHeatChange, 
         SteamPulse1,
@@ -372,7 +376,13 @@ namespace Orts.Common
                         case 66: return Event.Pantograph2Up;
                         case 67: return Event.Pantograph2Down;
 
+
                         // ORTS only Events
+                        case 90: return Event.WaterMotionPump1On;
+                        case 91: return Event.WaterMotionPump1Off;
+                        case 92: return Event.WaterMotionPump2On;
+                        case 93: return Event.WaterMotionPump2Off;
+
                         case 101: return Event.GearUp; // for gearbox based engines
                         case 102: return Event.GearDown; // for gearbox based engines
                         case 103: return Event.ReverserToForwardBackward; // reverser moved to forward or backward position

@@ -426,7 +426,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.SetDynamicBrakeController = (value) =>
                 {
                 if (Locomotive.DynamicBrakeController == null) return;
-                Locomotive.DynamicBrakeChangeActiveState(value > 0);
                 Locomotive.DynamicBrakeController.SetValue(value);
                 };
                 Script.SetPantographsDown = () =>
@@ -677,8 +676,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     foreach (var key in functionHead.signalType.DrawStates.Keys)
                     {
                         if (functionHead.signalType.DrawStates[key].Index == functionHead.draw_state)
+                        {
                             drawStateName = functionHead.signalType.DrawStates[key].Name;
-                        break;
+                            break;
+                        }
                     }
                     textAspect = functionHead?.TextSignalAspect ?? "";
                     break;

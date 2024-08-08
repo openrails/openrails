@@ -103,6 +103,7 @@ namespace Orts.Viewer3D
         public TrainListWindow TrainListWindow { get; private set; } // for switching driven train
         public TTDetachWindow TTDetachWindow { get; private set; } // for detaching player train in timetable mode
         public EOTListWindow EOTListWindow { get; private set; } // to select EOT
+        public ControlRectangle ControlRectangle { get; private set; } // to display the control rectangles
         private OutOfFocusWindow OutOfFocusWindow; // to show colored rectangle around the main window when not in focus
 
         // Route Information
@@ -191,7 +192,9 @@ namespace Orts.Viewer3D
         public Vector3 NearPoint { get; private set; }
         public Vector3 FarPoint { get; private set; }
 
-        public bool MapViewerEnabled { get; set; }
+        public bool MapViewerEnabled { get; set; } = false;
+        public bool MapViewerEnabledSetToTrue {  get; set; } = false;
+
         public bool SoundDebugFormEnabled { get; set; }
 
         public List<TRPFile> TRPs; // Track profile file(s)
@@ -378,6 +381,7 @@ namespace Orts.Viewer3D
             outf.Write(Simulator.Trains.IndexOf(SelectedTrain));
 
             WindowManager.Save(outf);
+            outf.Write(MapViewerEnabled);
 
             outf.Write(WellKnownCameras.IndexOf(Camera));
             foreach (var camera in WellKnownCameras)
@@ -422,6 +426,11 @@ namespace Orts.Viewer3D
             }
 
             WindowManager.Restore(inf);
+            MapViewerEnabled = inf.ReadBoolean();
+            if (MapViewerEnabled)
+            {
+                MapViewerEnabledSetToTrue = true;
+            }
 
             var cameraToRestore = inf.ReadInt32();
             foreach (var camera in WellKnownCameras)
@@ -504,6 +513,7 @@ namespace Orts.Viewer3D
             TrainListWindow = new TrainListWindow(WindowManager);
             TTDetachWindow = new TTDetachWindow(WindowManager);
             EOTListWindow = new EOTListWindow(WindowManager);
+            ControlRectangle = new ControlRectangle(WindowManager, this);
             if (Settings.SuppressConfirmations < (int)ConfirmLevel.Error)
                 // confirm level Error might be set to suppressed when taking a movie
                 // do not show the out of focus red square in that case
@@ -1002,6 +1012,7 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommand.DebugSignalling)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayTrainListWindow)) TrainListWindow.Visible = !TrainListWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayEOTListWindow)) EOTListWindow.Visible = !EOTListWindow.Visible;
+            if (UserInput.IsPressed(UserCommand.DisplayControlRectangle)) ControlRectangle.Visible = !ControlRectangle.Visible;
 
 
             if (UserInput.IsPressed(UserCommand.GameChangeCab))
@@ -1172,7 +1183,15 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommand.GameSwitchManualMode)) PlayerTrain.RequestToggleManualMode();
             if (UserInput.IsPressed(UserCommand.GameResetOutOfControlMode)) new ResetOutOfControlModeCommand(Log);
 
-            if (UserInput.IsPressed(UserCommand.GameMultiPlayerDispatcher)) { MapViewerEnabled = !MapViewerEnabled; return; }
+            if (UserInput.IsPressed(UserCommand.GameMultiPlayerDispatcher)) 
+            { 
+                MapViewerEnabled = !MapViewerEnabled; 
+                if (MapViewerEnabled)
+                {
+                    MapViewerEnabledSetToTrue = true;
+                }
+                return; 
+            }
             if (UserInput.IsPressed(UserCommand.DebugSoundForm)) { SoundDebugFormEnabled = !SoundDebugFormEnabled; return; }
 
             if (UserInput.IsPressed(UserCommand.CameraJumpSeeSwitch))

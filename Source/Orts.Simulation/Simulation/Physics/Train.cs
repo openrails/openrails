@@ -611,7 +611,7 @@ namespace Orts.Simulation.Physics
         {
             Init(simulator);
             Number = TotalNumber;
-            Name = String.Concat(String.Copy(orgTrain.Name), TotalNumber.ToString());
+            Name = String.Concat(orgTrain.Name, TotalNumber.ToString());
             TotalNumber++;
             SignalObjectItems = new List<ObjectItemInfo>();
             signalRef = simulator.Signals;
@@ -4117,7 +4117,7 @@ namespace Orts.Simulation.Physics
                     if (MUDynamicBrakePercent == 0)
                         MUDynamicBrakePercent = -1;
                 }
-                BrakeLine2PressurePSI = lead.MaximumMainReservoirPipePressurePSI;
+                BrakeLine2PressurePSI = lead.MainResPressurePSI;
                 ConnectBrakeHoses();
             }
             else
@@ -14429,7 +14429,7 @@ namespace Orts.Simulation.Physics
                 circuitString = String.Concat(circuitString, forwardstring);
             }
 
-            statusString[iColumn] = String.Copy(circuitString);
+            statusString[iColumn] = circuitString;
 
             return (statusString);
         }
@@ -14465,7 +14465,7 @@ namespace Orts.Simulation.Physics
         public string BuildSectionString(string thisString, TrackCircuitSection thisSection, int direction)
         {
 
-            string returnString = String.Copy(thisString);
+            string returnString = thisString;
 
             switch (thisSection.CircuitType)
             {
@@ -14626,8 +14626,8 @@ namespace Orts.Simulation.Physics
                 DateTime depTime = baseDT.AddSeconds((AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt.ActualDepart);
                 abString = depTime.ToString("HH:mm:ss");
             }
-            retString[4] = String.Copy(movString);
-            retString[5] = String.Copy(abString);
+            retString[4] = movString;
+            retString[5] = abString;
 
             return (retString);
         }
@@ -18349,7 +18349,7 @@ namespace Orts.Simulation.Physics
                     {
                         TCSubpathRoute inversePassPath = passPath.ReversePath(orgSignals);
                         int[] inverseIndex =
-                            thisDeadlock.AddPath(inversePassPath, endSectionIndex, String.Copy(thisDeadlockPathInfo.Name), String.Empty);
+                            thisDeadlock.AddPath(inversePassPath, endSectionIndex, thisDeadlockPathInfo.Name, String.Empty);
                         DeadlockPathInfo thisDeadlockInverseInfo = thisDeadlock.AvailablePathList[inverseIndex[0]];
 
                         Dictionary<int, float> altInversePathUsefullInfo = inversePassPath.GetUsefullLength(0.0f, orgSignals, -1, -1);

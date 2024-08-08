@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
+// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -102,7 +102,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
 
             // Changes brake type if tender fitted with steam brakes
-            if (Car.WagonType == MSTSWagon.WagonTypes.Tender) 
+            if (Car.WagonType == MSTSWagon.WagonTypes.Tender)
             {
                 var wagonid = Car as MSTSWagon;
                 // Find the associated steam locomotive for this tender
@@ -155,7 +155,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
 
             BrakeForceFraction = ManualBrakingCurrentFraction / ManualMaxBrakeValue;
-          
+
             // If car is a locomotive or tender, then process engine brake
             if (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender) // Engine brake
             {
@@ -171,7 +171,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
                         EngineBrakeDesiredFraction = EngineBrakeSettingValue * ManualMaxBrakeValue;
                     }
-              
+
 
                     if (EngineBrakingCurrentFraction < EngineBrakeDesiredFraction)
                     {
@@ -349,6 +349,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override float GetCylVolumeM3()
         {
             return 0;
+        }
+
+        public override float GetTotalCylVolumeM3()
+        {
+            return 0;
+        }
+
+        public override float GetNormalizedCylTravel()
+        {
+            return Car.BrakeShoeForceN > 0.0f ? 1.0f : 0.0f;
         }
 
         public override float GetVacResVolume()
