@@ -972,50 +972,81 @@ namespace Orts.Simulation
             return trackSection.SectionCurve != null ? Math.Sign(trackSection.SectionCurve.Angle) / trackSection.SectionCurve.Radius : 0;
         }
 
-        public float GetSuperElevation()
+        /// <summary>
+        /// Determines the superelevation and curve radius at the current location of the traveller.
+        /// Outputs the superelevation for the physics system and curve radius at the current location.
+        /// </summary>
+        /// <returns>Returns the visual superelevation at the current location.</returns>
+        public float GetSuperElevation(bool useVisualElev, out float physicsElev, out float curveRadius)
         {
-            if (trackSection == null)
-                return 0;
+            physicsElev = 0;
+            float visualElev = 0;
+            curveRadius = 0;
 
-            if (trackSection.SectionCurve == null)
-                return 0;
+            if (trackSection == null || trackSection.SectionCurve == null || trackVectorSection == null)
+                return visualElev;
 
-            if (trackVectorSection == null)
-                return 0;
+            float to = trackOffset / Math.Abs(MathHelper.ToRadians(trackSection.SectionCurve.Angle));
+            int sign = Math.Sign(trackSection.SectionCurve.Angle) > 0 ^ direction == TravellerDirection.Backward ? -1 : 1;
+            curveRadius = trackSection.SectionCurve.Radius;
 
-            var trackLength = Math.Abs(MathHelper.ToRadians(trackSection.SectionCurve.Angle));
-            var sign = Math.Sign(trackSection.SectionCurve.Angle) > 0 ^ direction == TravellerDirection.Backward ? -1 : 1;
-            var trackOffsetReverse = trackLength - trackOffset;
+            // Superelevation values may be negative to indicate the visual superelevation effect shouldn't match the physics effect
+            bool visualOverride = useVisualElev && (trackVectorSection.MidElevM < 0 || trackVectorSection.StartElevM < 0 || trackVectorSection.EndElevM < 0);
 
-            var startingElevation = trackVectorSection.StartElev;
-            var endingElevation = trackVectorSection.EndElev;
-            var elevation = trackVectorSection.MaxElev * sign;
-
-            // Check if there is no super-elevation at all.
-            if (elevation.AlmostEqual(0f, 0.001f))
-                return 0;
-
-            if (trackOffset < trackLength / 2)
+            if (to < 0.0f)
             {
-                // Start of the curve; if there is starting super-elevation, use max super-elevation.
-                if (startingElevation.AlmostEqual(0f, 0.001f))
-                    return elevation * trackOffset * 2 / trackLength;
-
-                return elevation;
+                physicsElev = Math.Abs(trackVectorSection.StartElevM);
+                if (visualOverride)
+                    visualElev = Math.Max(trackVectorSection.StartElevM, 0);
+            }
+            else if (to < 0.5f)
+            {
+                physicsElev = MathHelper.Lerp(Math.Abs(trackVectorSection.StartElevM), Math.Abs(trackVectorSection.MidElevM), to * 2.0f);
+                if (visualOverride)
+                    visualElev = MathHelper.Lerp(Math.Max(trackVectorSection.StartElevM, 0), Math.Max(trackVectorSection.MidElevM, 0), to * 2.0f);
+            }
+            else if (to < 1.0f)
+            {
+                physicsElev = MathHelper.Lerp(Math.Abs(trackVectorSection.MidElevM), Math.Abs(trackVectorSection.EndElevM), (to - 0.5f) * 2.0f);
+                if (visualOverride)
+                    visualElev = MathHelper.Lerp(Math.Max(trackVectorSection.MidElevM, 0), Math.Max(trackVectorSection.EndElevM, 0), (to - 0.5f) * 2.0f);
+            }
+            else
+            {
+                physicsElev = Math.Abs(trackVectorSection.EndElevM);
+                if (visualOverride)
+                    visualElev = Math.Max(trackVectorSection.EndElevM, 0);
             }
 
-            // End of the curve; if there is ending super-elevation, use max super-elevation.
-            if (endingElevation.AlmostEqual(0f, 0.001f))
-                return elevation * trackOffsetReverse * 2 / trackLength;
+            // Return 0 visual superelevation if superelevation is disabled in settings
+            if (!useVisualElev)
+                visualElev = 0;
+            else if (!visualOverride)
+                visualElev = physicsElev;
 
-            return elevation;
+            visualElev *= sign; // Correct the direction of tilt for the direction of travel
+
+            return visualElev;
         }
 
-        public float GetSuperElevation(float smoothingOffset)
+        /// <summary>
+        /// Determines the superelevations and curve radii at multiple locations by moving the
+        /// traveller through an array of given offsets. 
+        /// </summary>
+        /// <returns>Returns the array of visual superelevations at each processed location.</returns>
+        public float[] GetSuperElevation(bool useVisualElev, float[] smoothingOffset, out float[] physicsElev, out float[] curveRadius)
         {
-            var offset = new Traveller(this);
-            offset.Move(smoothingOffset);
-            return (GetSuperElevation() + offset.GetSuperElevation()) / 2;
+            physicsElev = new float[smoothingOffset.Length];
+            float[] visualElev = new float[smoothingOffset.Length];
+            curveRadius = new float[smoothingOffset.Length];
+
+            for (int i = 0; i < smoothingOffset.Length; i++)
+            {
+                Move(smoothingOffset[i]); // Move the traveller to the next component
+                visualElev[i] = GetSuperElevation(useVisualElev, out physicsElev[i], out curveRadius[i]);
+            }
+
+            return visualElev;
         }
 
         public float FindTiltedZ(float speed) //will test 1 second ahead, computed will return desired elev. only
@@ -1032,7 +1063,7 @@ namespace Orts.Simulation
             }
             else if (ts.SectionCurve != null)
             {
-                float maxv = tvs.MaxElev;
+                float maxv = tvs.MidElevM;
                 maxv = 0.14f * speed / 40f;//max 8 degree
                 //maxv *= speed / 40f;
                 //if (maxv.AlmostEqual(0f, 0.001f)) maxv = 0.02f; //short curve, add some effect anyway

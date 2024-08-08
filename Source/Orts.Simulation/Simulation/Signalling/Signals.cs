@@ -3922,7 +3922,7 @@ namespace Orts.Simulation.Signalling
                     }
                     else
                     {
-                        for (int iObject = 0; iObject < thisItemList.Count - 1 && !endOfRoute; iObject++)
+                        for (int iObject = 0; iObject < thisItemList.Count && !endOfRoute; iObject++)
                         {
                             TrackCircuitSignalItem thisItem = thisItemList[iObject];
 

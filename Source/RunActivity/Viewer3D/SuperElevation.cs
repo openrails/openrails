@@ -24,7 +24,6 @@ using Orts.Simulation;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Orts.Viewer3D
 {
@@ -47,7 +46,8 @@ namespace Orts.Viewer3D
             {
                 shape = viewer.Simulator.TSectionDat.TrackShapes.Get(trackObj.SectionIdx);
 
-                if (shape.RoadShape == true) return false;
+                if (shape.RoadShape == true)
+                    return false;
             }
             catch (Exception)
             {
@@ -70,14 +70,16 @@ namespace Orts.Viewer3D
                     count++;
                     uint sid = id.TrackSections[i];
                     TrackSection section = viewer.Simulator.TSectionDat.TrackSections.Get(sid);
-                    if (Math.Abs(section.SectionSize.Width - viewer.Simulator.SuperElevationGauge) > 0.2) continue;//the main route has a gauge different than mine
+                    if (Math.Abs(section.SectionSize.Width - viewer.Simulator.SuperElevationGauge) > 0.2)
+                        continue;//the main route has a gauge different than mine
                     if (section.SectionCurve == null)
                     {
                         continue;
                         //with strait track, will remove all related sections later
                     }
                     TrVectorSection tmp = null;
-                    if (section.SectionCurve != null) tmp = FindSectionValue(shape, viewer.Simulator, section, TileX, TileZ, trackObj.UID);
+                    if (section.SectionCurve != null)
+                        tmp = FindSectionValue(shape, viewer.Simulator, section, TileX, TileZ, trackObj.UID);
 
                     if (tmp == null) //cannot find the track for super elevation, will return 0;
                     {
@@ -85,13 +87,19 @@ namespace Orts.Viewer3D
                     }
                     sectionsinShape.Add(tmp);
 
+                    // Determine the track profile to use for this section
+                    // It's possible that the tsection ID used by the track section points to the wrong shape
+                    // Instead, send the shape file path to ensure the correct shape is used in calculations
+                    DynamicTrackViewer.GetBestTrackProfile(viewer, tmp, shapeFilePath);
+
                     drawn++;
                 }
             }
 
-            if (drawn <= count || isTunnel)//tunnel or not every section is in SE, will remove all sections in the shape out
+            if (drawn <= count || isTunnel) // tunnel or not every section is in SE, will remove all sections in the shape out
             {
-                if (sectionsinShape.Count > 0) RemoveTracks(viewer.Simulator, sectionsinShape);
+                if (sectionsinShape.Count > 0)
+                    RemoveTracks(viewer.Simulator, sectionsinShape);
                 return false;
             }
             return true;
@@ -104,12 +112,33 @@ namespace Orts.Viewer3D
             {
                 List<TrVectorSection> curve = null;
                 var pos = -1;
-                foreach (var c in simulator.SuperElevation.Curves) { if (c.Contains(tmpSec)) { curve = c; break; } }//find which curve has the section
+                foreach (var c in simulator.SuperElevation.Curves)
+                {
+                    if (c.Contains(tmpSec))
+                    {
+                        curve = c;
+                        break;
+                    }
+                } // find which curve has the section
                 if (curve != null)
                 {
+                    // Disable visual superelevation on affected sections to prevent graphical issues
+                    // Negative value of superelevation tells sim to consider superelevation for physics, but not for graphics
                     pos = curve.IndexOf(tmpSec);
-                    if (pos >= 1) curve[pos - 1].EndElev = 0; if (pos < curve.Count - 1) curve[pos + 1].StartElev = 0;
-                    RemoveSectionsFromMap(simulator, tmpSec);//remove all sections in the curve from future consideration
+                    if (pos > 0)
+                    {
+                        curve[pos - 1].EndElevM = -1.0f * Math.Abs(curve[pos - 1].EndElevM);
+                    }
+                    if (pos < curve.Count - 1)
+                    {
+                        curve[pos + 1].StartElevM = -1.0f * Math.Abs(curve[pos + 1].StartElevM);
+                    }
+
+                    curve[pos].StartElevM = -1.0f * Math.Abs(curve[pos].StartElevM);
+                    curve[pos].MidElevM = -1.0f * Math.Abs(curve[pos].MidElevM);
+                    curve[pos].EndElevM = -1.0f * Math.Abs(curve[pos].EndElevM);
+
+                    RemoveSectionsFromMap(simulator, tmpSec); // remove all sections in the curve from future consideration
                     curve.Remove(tmpSec);
                 }
             }
@@ -152,15 +181,18 @@ namespace Orts.Viewer3D
             WorldPosition nextRoot = new WorldPosition(root);
             nextRoot.XNAMatrix.Translation = displacement;
 
-            sv = ev = mv = 0f; dir = 1f;
-            sv = ts.StartElev; ev = ts.EndElev; mv = ts.MaxElev;
+            dir = 1f;
+            sv = (float)Math.Asin(Math.Max(ts.StartElevM, 0.0f) / viewer.Simulator.SuperElevationGauge);
+            mv = (float)Math.Asin(Math.Max(ts.MidElevM, 0.0f) / viewer.Simulator.SuperElevationGauge);
+            ev = (float)Math.Asin(Math.Max(ts.EndElevM, 0.0f) / viewer.Simulator.SuperElevationGauge);
+
+            int trpIndex = ts.TRPIndex < 0 ? DynamicTrackViewer.GetBestTrackProfile(viewer, ts) : ts.TRPIndex;
 
             //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-            dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, tss.SectionCurve.Radius, tss.SectionCurve.Angle * 3.14f / 180, sv, ev, mv, dir));
+            dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, tss.SectionCurve.Radius, tss.SectionCurve.Angle * 3.14f / 180, sv, ev, mv, dir, trpIndex));
             return 1;
         }
 
-        //no use anymore
         public static int DecomposeStaticSuperElevation(Viewer viewer, List<DynamicTrackViewer> dTrackList, int TileX, int TileZ)
         {
             var key = (int)(Math.Abs(TileX) + Math.Abs(TileZ));
@@ -201,10 +233,14 @@ namespace Orts.Viewer3D
                 nextRoot.XNAMatrix.Translation = displacement;
 
                 dir = 1f;
-                sv = ts.StartElev; ev = ts.EndElev; mv = ts.MaxElev;
+                sv = (float)Math.Asin(Math.Max(ts.StartElevM, 0.0f) / viewer.Simulator.SuperElevationGauge);
+                mv = (float)Math.Asin(Math.Max(ts.MidElevM, 0.0f) / viewer.Simulator.SuperElevationGauge);
+                ev = (float)Math.Asin(Math.Max(ts.EndElevM, 0.0f) / viewer.Simulator.SuperElevationGauge);
+
+                int trpIndex = ts.TRPIndex < 0 ? DynamicTrackViewer.GetBestTrackProfile(viewer, ts) : ts.TRPIndex;
 
                 //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, tss.SectionCurve.Radius, tss.SectionCurve.Angle * 3.14f / 180, sv, ev, mv, dir));
+                dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, tss.SectionCurve.Radius, tss.SectionCurve.Angle * 3.14f / 180, sv, ev, mv, dir, trpIndex));
             }
             return 1;
         }
@@ -348,7 +384,8 @@ namespace Orts.Viewer3D
                 nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
                 root.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
                 nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                sv = ev = mv = 0f; dir = 1f;
+                sv = ev = mv = 0f;
+                dir = 1f;
                 //if (section.SectionCurve != null) FindSectionValue(shape, root, nextRoot, viewer.Simulator, section, TileX, TileZ, dTrackObj.UID);
 
                 //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
@@ -485,22 +522,25 @@ namespace Orts.Viewer3D
     public class SuperElevationViewer : DynamicTrackViewer
     {
         public SuperElevationViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition, float radius, float angle,
-            float s, float e, float m, float dir)//values for start, end and max elevation
+            float s, float e, float m, float dir, int trpIndex = 0)//values for start, end and max elevation
             : base(viewer, position, endPosition)
         {
             // Instantiate classes
-            Primitive = new SuperElevationPrimitive(viewer, position, endPosition, radius, angle, s, e, m, dir);
+            Primitive = new SuperElevationPrimitive(viewer, position, endPosition, radius, angle, s, e, m, dir, trpIndex);
         }
     }
 
     public class SuperElevationPrimitive : DynamicTrackPrimitive
     {
-        float StartElev, MaxElev, EndElv;
+        float StartElev, MidElev, EndElev;
         public SuperElevationPrimitive(Viewer viewer, WorldPosition worldPosition,
-        WorldPosition endPosition, float radius, float angle, float s, float e, float m, float dir)
+            WorldPosition endPosition, float radius, float angle, float s, float e, float m, float dir, int trpIndex = 0)
             : base()
         {
-            StartElev = s; EndElv = e; MaxElev = m;
+            StartElev = s;
+            MidElev = m;
+            EndElev = e;
+
             // SuperElevationPrimitive is responsible for creating a mesh for a section with a single subsection.
             // It also must update worldPosition to reflect the end of this subsection, subsequently to
             // serve as the beginning of the next subsection.
@@ -517,7 +557,6 @@ namespace Orts.Viewer3D
                 DTrackData.IsCurved = 0;
                 DTrackData.param1 = angle;
                 DTrackData.param2 = 0;
-
             }
             else
             {
@@ -527,14 +566,7 @@ namespace Orts.Viewer3D
             }
             DTrackData.deltaY = 0;
 
-            if (viewer.TRP == null)
-            {
-                // First to need a track profile creates it
-                Trace.Write(" TRP");
-                // Creates profile and loads materials into SceneryMaterials
-                TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.TRP);
-            }
-            TrProfile = viewer.TRP.TrackProfile;
+            TrProfile = viewer.TRPs[trpIndex].TrackProfile;
 
             XNAEnd = endPosition.XNAMatrix.Translation;
 
@@ -568,9 +600,9 @@ namespace Orts.Viewer3D
             else ObjectRadius = DTrackData.param2 * (float)Math.Sin(0.5 * Math.Abs(DTrackData.param1)); // half chord length
         }
 
-        int offSet = 0;
-        int whichCase = 0;
-        float elevated;
+        int Offset = 0;
+
+        float Elevated;
         /// <summary>
         /// Builds a SuperElevation LOD to SuperElevationProfile specifications as one vertex buffer and one index buffer.
         /// The order in which the buffers are built reflects the nesting in the TrProfile.  The nesting order is:
@@ -583,8 +615,10 @@ namespace Orts.Viewer3D
         public new ShapePrimitive BuildPrimitive(Viewer viewer, WorldPosition worldPosition, int iLOD, int iLODItem)
         {
             // Call for track section to initialize itself
-            if (DTrackData.IsCurved == 0) LinearGen();
-            else CircArcGen();
+            if (DTrackData.IsCurved == 0)
+                LinearGen();
+            else
+                CircArcGen();
 
             // Count vertices and indices
             LOD lod = (LOD)TrProfile.LODs[iLOD];
@@ -600,19 +634,13 @@ namespace Orts.Viewer3D
             // Build the mesh for lod
             VertexIndex = 0;
             IndexIndex = 0;
-            whichCase = 0; //0: no elevation (MaxElev=0), 1: start (startE = 0, Max!=end), 
-            //2: end (end=0, max!=start), 3: middle (start>0, end>0), 4: start and finish in one
 
-            if (StartElev.AlmostEqual(0f, 0.001f) && MaxElev.AlmostEqual(0f, 0.001f) && EndElv.AlmostEqual(0f, 0.001f)) whichCase = 0;//no elev
-            else if (StartElev.AlmostEqual(0f, 0.001f) && EndElv.AlmostEqual(0f, 0.001f)) whichCase = 4;//finish/start in one
-            else if (StartElev.AlmostEqual(0f, 0.001f) && !EndElv.AlmostEqual(0f, 0.001f)) whichCase = 1;//start
-            else if (EndElv.AlmostEqual(0f, 0.001f) && !StartElev.AlmostEqual(0f, 0.001f)) whichCase = 2;//finish
-            else whichCase = 3;//in middle
             Matrix PreRotation = Matrix.Identity;
-            elevated = MaxElev;
-            if (whichCase == 3 || whichCase == 2) PreRotation = Matrix.CreateRotationZ(-elevated * Math.Sign(DTrackData.param1));
+            Elevated = StartElev;
+            if (StartElev > 0.001f)
+                PreRotation = Matrix.CreateRotationZ(-Elevated * Math.Sign(DTrackData.param1));
             //if section is in the middle of curve, will only rotate the first set of vertex, others will follow the same rotation
-            prevRotation = 0f;
+            PrevRotation = 0f;
 
             Vector3 tmp;
             // Initial load of baseline cross section polylines for this LOD only:
@@ -622,10 +650,10 @@ namespace Orts.Viewer3D
                 {
                     tmp = new Vector3(v.Position.X, v.Position.Y, v.Position.Z);
 
-                    if (whichCase == 3 || whichCase == 2)
+                    if (StartElev > 0.001f)
                     {
                         tmp = Vector3.Transform(tmp, PreRotation);
-                        prevRotation = MaxElev;
+                        PrevRotation = StartElev;
                     }
                     VertexList[VertexIndex].Position = tmp;
                     VertexList[VertexIndex].Normal = v.Normal;
@@ -638,14 +666,15 @@ namespace Orts.Viewer3D
             // Now generate and load subsequent cross sections
             OldRadius = -center;
             uint stride = VertexIndex;
-            offSet = 0;
+            Offset = 0;
 
             for (uint i = 0; i < NumSections; i++)
             {
-                currentRotation = determineRotation(DTrackData.param1);
-                elevated = currentRotation - prevRotation;
-                prevRotation = currentRotation;
-                if (DTrackData.param1 > 0) elevated *= -1;
+                CurrentRotation = DetermineRotation();
+                Elevated = CurrentRotation - PrevRotation;
+                PrevRotation = CurrentRotation;
+                if (DTrackData.param1 > 0)
+                    Elevated *= -1;
 
                 foreach (Polyline pl in lodItem.Polylines)
                 {
@@ -672,7 +701,7 @@ namespace Orts.Viewer3D
                     }
                 }
                 OldRadius = radius; // Get ready for next segment
-                offSet++;
+                Offset++;
             }
 
             // Create and populate a new ShapePrimitive
@@ -702,7 +731,8 @@ namespace Orts.Viewer3D
         {
             // Define the number of track cross sections in addition to the base.
             NumSections = (int)(Math.Abs(MathHelper.ToDegrees(DTrackData.param1)) / TrProfile.ChordSpan);
-            if (NumSections == 0) NumSections = 2; // Very small radius track - zero avoidance
+            if (NumSections == 0)
+                NumSections = 2; // Very small radius track - zero avoidance
 
             // Use pitch control methods
             switch (TrProfile.PitchControl)
@@ -730,7 +760,8 @@ namespace Orts.Viewer3D
                     }
                     break;
             }
-            if (NumSections % 2 == 1) NumSections++; //make it even number
+            if (NumSections % 2 == 1)
+                NumSections++; // make it even number
 
             SegmentLength = DTrackData.param1 / NumSections; // Length of each mesh segment (radians)
             DDY = new Vector3(0, DTrackData.deltaY / NumSections, 0); // Incremental elevation change
@@ -780,13 +811,13 @@ namespace Orts.Viewer3D
 
             Vector3 copy = new Vector3(OldV.X, OldV.Y, OldV.Z);
 
-            copy = Vector3.Transform(copy, Matrix.CreateRotationZ(elevated));
+            copy = Vector3.Transform(copy, Matrix.CreateRotationZ(Elevated));
 
-            //if (NumSections > 1) p = DDY + center + radius + Vector3.Transform(OldV, Matrix.CreateRotationZ(elevated) * sectionRotation);
+            //if (NumSections > 1) p = DDY + center + radius + Vector3.Transform(OldV, Matrix.CreateRotationZ(Elevated) * sectionRotation);
             //else 
 
-            p = DDY + center + radius + Vector3.Transform(OldV, Matrix.CreateRotationZ(elevated) * sectionRotation);
-            //if (offSet == NumSections - 1 && (whichCase == 2 || whichCase == 4)) p.Y = OldV.Y;
+            p = DDY + center + radius + Vector3.Transform(OldV, Matrix.CreateRotationZ(Elevated) * sectionRotation);
+            //if (Offset == NumSections - 1 && (whichCase == 2 || whichCase == 4)) p.Y = OldV.Y;
             Vector3 n = VertexList[VertexIndex - stride].Normal;
             Vector2 uv = VertexList[VertexIndex - stride].TextureCoordinate + uvDisplacement;
 
@@ -795,31 +826,21 @@ namespace Orts.Viewer3D
             VertexList[VertexIndex].TextureCoordinate = new Vector2(uv.X, uv.Y);
         }
 
-        public float prevRotation;
-        public float currentRotation;
-        public float determineRotation(float Angle)
+        public float PrevRotation;
+        public float CurrentRotation;
+        public float DetermineRotation()
         {
-            float desiredZ = 1f;
-            float to = (offSet + 1f) / NumSections;
+            float desiredZ;
+            float to = (Offset + 1f) / NumSections;
 
-            float maxv = MaxElev;
-            switch (whichCase)
-            {
-                case 0: desiredZ = 0f; break;
-                case 3: desiredZ *= maxv; break;
-                case 1:
-                    if (offSet < NumSections / 2) desiredZ *= (2 * to * maxv);//increase to max in the first half
-                    else desiredZ *= maxv;
-                    break;
-                case 2:
-                    if (offSet >= NumSections / 2) desiredZ *= (2 * (1 - to) * maxv);//decrease to 0 in the second half
-                    else desiredZ *= maxv;
-                    break;
-                case 4:
-                    if (offSet < NumSections / 2) desiredZ *= (2 * to * maxv);
-                    else desiredZ *= (2 * (1 - to) * maxv);
-                    break;
-            }
+            if (Offset < 0.0f)
+                desiredZ = StartElev;
+            else if (Offset < NumSections / 2)
+                desiredZ = MathHelper.Lerp(StartElev, MidElev, to * 2.0f);
+            else if (Offset < NumSections)
+                desiredZ = MathHelper.Lerp(MidElev, EndElev, (to - 0.5f) * 2.0f);
+            else
+                desiredZ = EndElev;
 
             return desiredZ;
         }

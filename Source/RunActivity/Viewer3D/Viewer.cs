@@ -203,7 +203,10 @@ namespace Orts.Viewer3D
 
         public bool SoundDebugFormEnabled { get; set; }
 
-        public TRPFile TRP; // Track profile file
+        public List<TRPFile> TRPs; // Track profile file(s)
+        // Dictionary associating a specific shape file path (string) with the track profile index to be used for that shape
+        // Shape file locations are to be matched ignoring case for simplicity
+        public Dictionary<string, int> TrackProfileIndicies = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
 
         enum VisibilityState
         {
@@ -615,8 +618,6 @@ namespace Orts.Viewer3D
         {
             SharedSMSFileManager.AutoTrackSound = false;
             SharedSMSFileManager.SwitchSMSNumber = Simulator.TRK.Tr_RouteFile.SwitchSMSNumber;
-            SharedSMSFileManager.PlayDefaultTrackSoundsContinuous = Simulator.TRK.Tr_RouteFile.TrackSoundDefaultContinuousPlay;
-            SharedSMSFileManager.DistanceBetweenTrackJointsM = Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
 
             if (SharedSMSFileManager.SwitchSMSNumber < -1 || SharedSMSFileManager.SwitchSMSNumber >= TrackTypes.Count)
             {

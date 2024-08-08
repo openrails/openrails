@@ -608,7 +608,7 @@ namespace Orts.Viewer3D.Popups
 
                 foreach (var axle in car.WheelAxles)
                 {
-                    if (!axle.Part.bogie) // if not a bogie then check for the number of axles.
+                    if (!axle.Part.Bogie) // if not a bogie then check for the number of axles.
                     {
                         if (currentBogie != axle.BogieIndex && currentCount != 0)
                         {
@@ -632,7 +632,7 @@ namespace Orts.Viewer3D.Popups
                             }
                         }
                     }
-                    else if (axle.Part.bogie) // this is a bogie
+                    else if (axle.Part.Bogie) // this is a bogie
                     {
                         if ( PreviousAxlePart)
                         {
@@ -648,7 +648,7 @@ namespace Orts.Viewer3D.Popups
                         currentCount += 2;
                     }
 
-                    if (axle.Part.bogie)
+                    if (axle.Part.Bogie)
                     {
                         PreviousAxlePart = true;
                     }
@@ -1177,8 +1177,7 @@ namespace Orts.Viewer3D.Popups
                             table.CurrentRow = row0;
                             var axle = mstsLocomotive.LocomotiveAxles[i];
                             TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0:F0}% ({1})", axle.SlipSpeedPercent, FormatStrings.FormatVeryLowSpeedDisplay((float)axle.WheelSlipThresholdMpS, mstsLocomotive.IsMetric));
-                            if (mstsLocomotive.RackGogWheelEngaged) TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, Viewer.Catalog.GetString("Rack"));
-                            else TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0:F0}%", mstsLocomotive.AdhesionConditions * 100.0f);
+                            TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0:F0}%", mstsLocomotive.AdhesionConditions * 100.0f);
                             TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0} ({1})", FormatStrings.FormatForce(axle.DriveForceN, mstsLocomotive.IsMetric), FormatStrings.FormatPower(axle.DriveForceN * mstsLocomotive.AbsTractionSpeedMpS, mstsLocomotive.IsMetric, false, false));
                             TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0}", FormatStrings.FormatForce(axle.BrakeRetardForceN, mstsLocomotive.IsMetric));
                             TableSetCell(table, table.CurrentRow++, table.CurrentValueColumn + 2 * i, "{0:F0}", axle.NumOfSubstepsPS);
@@ -1238,8 +1237,7 @@ namespace Orts.Viewer3D.Popups
                 Viewer.Catalog.GetString("Brk Slide"),
                 Viewer.Catalog.GetString("Bear Temp"),
                 Viewer.Catalog.GetString(" "),
-                Viewer.Catalog.GetString("DrailCof"),
-                Viewer.Catalog.GetString("AoA")
+                Viewer.Catalog.GetString("DerailCoeff")
                 
                 );
             TableAddLine(table);
@@ -1269,7 +1267,6 @@ namespace Orts.Viewer3D.Popups
                 TableSetCell(table, 17, "{0} {1}", FormatStrings.FormatTemperature(car.WheelBearingTemperatureDegC, car.IsMetric, false), car.DisplayWheelBearingTemperatureStatus);
                 TableSetCell(table, 18, car.Flipped ? Viewer.Catalog.GetString("Flipped") : "");
                 TableSetCell(table, 19, "{0:F2}{1}", car.DerailmentCoefficient, car.DerailExpected ? "!!!" : car.DerailPossible ? "???" : "");
-                TableSetCell(table, 20, "{0:F2}", car.AngleOfAttackmRad);
                 TableAddLine(table);
 
             }
