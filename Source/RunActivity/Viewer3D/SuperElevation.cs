@@ -24,7 +24,7 @@ using Orts.Simulation;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics;
 
 namespace Orts.Viewer3D
 {
@@ -84,11 +84,6 @@ namespace Orts.Viewer3D
                         continue;
                     }
                     sectionsinShape.Add(tmp);
-
-                    // Determine the track profile to use for this section
-                    // It's possible that the tsection ID used by the track section points to the wrong shape
-                    // Instead, send the shape file path to ensure the correct shape is used in calculations
-                    DynamicTrackViewer.GetBestTrackProfile(viewer, tmp, shapeFilePath);
 
                     drawn++;
                 }
@@ -160,13 +155,12 @@ namespace Orts.Viewer3D
             sv = ev = mv = 0f; dir = 1f;
             sv = ts.StartElev; ev = ts.EndElev; mv = ts.MaxElev;
 
-            int trpIndex = ts.TRPIndex < 0 ? DynamicTrackViewer.GetBestTrackProfile(viewer, ts) : ts.TRPIndex;
-
             //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-            dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, tss.SectionCurve.Radius, tss.SectionCurve.Angle * 3.14f / 180, sv, ev, mv, dir, trpIndex));
+            dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, tss.SectionCurve.Radius, tss.SectionCurve.Angle * 3.14f / 180, sv, ev, mv, dir));
             return 1;
         }
 
+        //no use anymore
         public static int DecomposeStaticSuperElevation(Viewer viewer, List<DynamicTrackViewer> dTrackList, int TileX, int TileZ)
         {
             var key = (int)(Math.Abs(TileX) + Math.Abs(TileZ));
@@ -209,10 +203,8 @@ namespace Orts.Viewer3D
                 dir = 1f;
                 sv = ts.StartElev; ev = ts.EndElev; mv = ts.MaxElev;
 
-                int trpIndex = ts.TRPIndex < 0 ? DynamicTrackViewer.GetBestTrackProfile(viewer, ts) : ts.TRPIndex;
-
                 //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, tss.SectionCurve.Radius, tss.SectionCurve.Angle * 3.14f / 180, sv, ev, mv, dir, trpIndex));
+                dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, tss.SectionCurve.Radius, tss.SectionCurve.Angle * 3.14f / 180, sv, ev, mv, dir));
             }
             return 1;
         }
@@ -493,11 +485,11 @@ namespace Orts.Viewer3D
     public class SuperElevationViewer : DynamicTrackViewer
     {
         public SuperElevationViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition, float radius, float angle,
-            float s, float e, float m, float dir, int trpIndex = 0)//values for start, end and max elevation
+            float s, float e, float m, float dir)//values for start, end and max elevation
             : base(viewer, position, endPosition)
         {
             // Instantiate classes
-            Primitive = new SuperElevationPrimitive(viewer, position, endPosition, radius, angle, s, e, m, dir, trpIndex);
+            Primitive = new SuperElevationPrimitive(viewer, position, endPosition, radius, angle, s, e, m, dir);
         }
     }
 
@@ -505,7 +497,7 @@ namespace Orts.Viewer3D
     {
         float StartElev, MaxElev, EndElv;
         public SuperElevationPrimitive(Viewer viewer, WorldPosition worldPosition,
-        WorldPosition endPosition, float radius, float angle, float s, float e, float m, float dir, int trpIndex = 0)
+        WorldPosition endPosition, float radius, float angle, float s, float e, float m, float dir)
             : base()
         {
             StartElev = s; EndElv = e; MaxElev = m;
@@ -535,7 +527,14 @@ namespace Orts.Viewer3D
             }
             DTrackData.deltaY = 0;
 
-            TrProfile = viewer.TRPs[trpIndex].TrackProfile;
+            if (viewer.TRP == null)
+            {
+                // First to need a track profile creates it
+                Trace.Write(" TRP");
+                // Creates profile and loads materials into SceneryMaterials
+                TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.TRP);
+            }
+            TrProfile = viewer.TRP.TrackProfile;
 
             XNAEnd = endPosition.XNAMatrix.Translation;
 

@@ -1966,7 +1966,6 @@ namespace Orts.Viewer3D
 
         // This data is common to all instances of the shape
         public List<string> MatrixNames = new List<string>();
-        public List<string> ImageNames; // Names of textures without paths or file extensions
         public Matrix[] Matrices = new Matrix[0];  // the original natural pose for this shape - shared by all instances
         public animations Animations;
         public LodControl[] LodControls;
@@ -2050,8 +2049,6 @@ namespace Orts.Viewer3D
                 Matrices[i] = XNAMatrixFromMSTS(sFile.shape.matrices[i]);
             }
             Animations = sFile.shape.animations;
-
-            ImageNames = new List<string>(sFile.shape.images.ConvertAll(img => Path.GetFileNameWithoutExtension(img)));
 
 #if DEBUG_SHAPE_HIERARCHY
             var debugShapeHierarchy = new StringBuilder();

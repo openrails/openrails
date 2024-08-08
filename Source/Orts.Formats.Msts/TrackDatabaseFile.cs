@@ -794,8 +794,6 @@ namespace Orts.Formats.Msts
 
         /// <summary>??? (needed for ActivityEditor, but not used here, so why is it defined here?)</summary>
         public bool Reduced { get; set; }
-        /// <summary>The index of the track profile suitable for this section</summary>
-        public int TRPIndex { get; set; } = -1;
 
         /// <summary>
         /// Default constructor used during file parsing.

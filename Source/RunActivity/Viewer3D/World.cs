@@ -116,8 +116,7 @@ namespace Orts.Viewer3D
                     Precipitation.Mark();
                     Terrain.Mark();
                     Scenery.Mark();
-                    foreach (TRPFile trp in Viewer.TRPs)
-                        trp.TrackProfile?.Mark();
+                    Viewer.TRP?.TrackProfile?.Mark();
                     Trains.Mark();
                     RoadCars.Mark();
                     Containers.Mark();
