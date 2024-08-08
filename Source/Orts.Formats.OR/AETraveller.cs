@@ -1141,7 +1141,7 @@ namespace Orts.Formats.OR
             }
             else if (ts.SectionCurve != null)
             {
-                float maxv = tvs.MaxElev;
+                float maxv = tvs.MidElevM;
                 maxv = 0.14f * speed / 40f;//max 8 degree
                 //maxv *= speed / 40f;
                 //if (maxv.AlmostEqual(0f, 0.001f)) maxv = 0.02f; //short curve, add some effect anyway
