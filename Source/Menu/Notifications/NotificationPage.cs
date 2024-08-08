@@ -104,6 +104,8 @@ namespace ORTS
         public class NDetail
         {
             public Label Control;
+
+            // Values chosen to work where System > Display > Scale = 125% as well as the usual 100%
             public const int TopPadding = 20;
             public const int VerticalSpacing = 10;
             public const int LeftPadding = 10;
@@ -112,7 +114,7 @@ namespace ORTS
             public const int HeadingHeight = 30;
             public const int TextHeight = 18;
             public const int ButtonHeight = 30;
-            public const int RecordHeight = 15;
+            public const int RecordHeight = 18;
             public const int ScrollBarWidth = 20;
         }
 
