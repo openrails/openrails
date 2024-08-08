@@ -15,13 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using Orts.Parsers.Msts;
 using System.IO;
+using ORTS.Common;
 
 namespace Orts.Formats.Msts
 {
@@ -107,6 +105,7 @@ namespace Orts.Formats.Msts
 				new STFReader.TokenProcessor("ortsuserpreferenceremoveforesttreesfromroads", ()=>{ RemoveForestTreesFromRoads = stf.ReadBoolBlock(false); }),
                 // values for superelevation
                 new STFReader.TokenProcessor("ortstracksuperelevation", ()=>{ SuperElevationHgtpRadiusM = new Interpolator(stf); }),
+                new STFReader.TokenProcessor("ortssuperelevation", ()=>{ SuperElevationHgtpRadiusM = null; SuperElevation = new SuperElevationStandard(stf); }),
                 // images
                 new STFReader.TokenProcessor("graphic", ()=>{ Thumbnail = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("loadingscreen", ()=>{ LoadingScreen = stf.ReadStringBlock(null); }),
@@ -131,6 +130,7 @@ namespace Orts.Formats.Msts
             if (Description == null) throw new STFException(stf, "Missing Description");
             if (RouteStart == null) throw new STFException(stf, "Missing RouteStart");
             if (ForestClearDistance == 0 && RemoveForestTreesFromRoads) Trace.TraceWarning("You must define also ORTSUserPreferenceForestClearDistance to avoid trees on roads");
+            if (SuperElevation == null) SuperElevation = new SuperElevationStandard();
         }
 
         public string RouteID;  // ie JAPAN1  - used for TRK file and route folder name
@@ -150,7 +150,8 @@ namespace Orts.Formats.Msts
         public string DefaultWaterTowerSMS;
         public string DefaultSignalSMS;
 		public float TempRestrictedSpeed = -1f;
-        public Interpolator SuperElevationHgtpRadiusM; // Superelevation of tracks
+        public Interpolator SuperElevationHgtpRadiusM; // Superelevation of tracks as a function of radius, deprecated
+        public SuperElevationStandard SuperElevation;
 
         // Values for calculating Tunnel Resistance - will override default values.
         public float SingleTunnelAreaM2; 
@@ -203,12 +204,12 @@ namespace Orts.Formats.Msts
         public TRKEnvironment(STFReader stf)
         {
             stf.MustMatch("(");
-            for( int i = 0; i < 12; ++i )
+            for (int i = 0; i < 12; ++i)
             {
                 var envfilekey = stf.ReadString();
                 var envfile = stf.ReadStringBlock(null);
                 ENVFileNames.Add(envfilekey, envfile);
-//                Trace.TraceInformation("Environments array key {0} equals file name {1}", envfilekey, envfile);
+                //                Trace.TraceInformation("Environments array key {0} equals file name {1}", envfilekey, envfile);
             }
             stf.SkipRestOfBlock();
         }
@@ -219,8 +220,40 @@ namespace Orts.Formats.Msts
             //return ENVFileNames[index];
             var envfilekey = seasonType.ToString() + weatherType.ToString();
             var envfile = ENVFileNames[envfilekey];
-//            Trace.TraceInformation("Selected Environment file is {1}", envfilekey, envfile);
+            //            Trace.TraceInformation("Selected Environment file is {1}", envfilekey, envfile);
             return envfile;
+        }
+    }
+
+    public class SuperElevationStandard
+    {
+        public float SuperElevationMaxFreightUnderbalanceM = 0.05f; // Default 5 cm ~ 2 inches
+        public float SuperElevationMaxPaxUnderbalanceM = 0.075f; // Default 7.5 cm ~ 3 inches
+        public float SuperElevationMinCantM = 0.0125f; // Default 1.25 cm ~ 0.5 inches
+        public float SuperElevationMaxCantM; // Specified by user settings by default
+        public float SuperElevationMinSpeedMpS = MpS.FromKpH(25.0f); // Default 25 kmh ~ 15 mph
+        public float SuperElevationPrecisionM = 0.005f; // Default 5 mm ~ 0.2 inches
+        public float SuperElevationRunoffSlope = 0.003f; // Maximum rate of change of superelevation per track length, default 0.3%
+        public float SuperElevationRunoffSpeedMpS = 0.04f; // Maximum rate of change of superelevation per second, default 4 cm / sec ~ 1.5 inches / sec
+
+        public SuperElevationStandard()
+        {
+            // Initialize new instance with default values
+        }
+        public SuperElevationStandard(STFReader stf)
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("maxfreightunderbalance", () => { SuperElevationMaxFreightUnderbalanceM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("maxpassengerunderbalance", () => { SuperElevationMaxPaxUnderbalanceM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("minimumcant", () => { SuperElevationMinCantM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("maximumcant", () => { SuperElevationMaxCantM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("minimumspeed", () => { SuperElevationMinSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); }),
+                new STFReader.TokenProcessor("precision", () => { SuperElevationPrecisionM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("maxrunoffslope", () => { SuperElevationRunoffSlope = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("maxrunoffspeed", () => { SuperElevationRunoffSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); }),
+            });
+            stf.SkipRestOfBlock();
         }
     }
 

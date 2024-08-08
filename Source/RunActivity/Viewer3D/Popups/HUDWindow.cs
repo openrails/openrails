@@ -608,7 +608,7 @@ namespace Orts.Viewer3D.Popups
 
                 foreach (var axle in car.WheelAxles)
                 {
-                    if (!axle.Part.bogie) // if not a bogie then check for the number of axles.
+                    if (!axle.Part.Bogie) // if not a bogie then check for the number of axles.
                     {
                         if (currentBogie != axle.BogieIndex && currentCount != 0)
                         {
@@ -632,7 +632,7 @@ namespace Orts.Viewer3D.Popups
                             }
                         }
                     }
-                    else if (axle.Part.bogie) // this is a bogie
+                    else if (axle.Part.Bogie) // this is a bogie
                     {
                         if ( PreviousAxlePart)
                         {
@@ -648,7 +648,7 @@ namespace Orts.Viewer3D.Popups
                         currentCount += 2;
                     }
 
-                    if (axle.Part.bogie)
+                    if (axle.Part.Bogie)
                     {
                         PreviousAxlePart = true;
                     }

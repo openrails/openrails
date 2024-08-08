@@ -785,17 +785,31 @@ namespace Orts.Formats.Msts
         public int WFNameX { get; set; }
         /// <summary>The TileZ in the WorldFile</summary>
         public int WFNameZ { get; set; }
-        /// <summary>The (super)elevation at the start</summary>
-        public float StartElev { get; set; }
-        /// <summary>The (super)elevation at the end</summary>
-        public float EndElev { get; set; }
-        /// <summary>The maximum (super) elevation</summary>
-        public float MaxElev { get; set; }
+        /// <summary>The superelevation at the start,
+        /// negative number will apply no visual superelevation but retains physics superelevation</summary>
+        public float StartElevM { get; set; }
+        /// <summary>The superelevation at the midpoint,
+        /// negative number will apply no visual superelevation but retains physics superelevation</summary>
+        public float MidElevM { get; set; }
+        /// <summary>The superelevation at the end,
+        /// negative number will apply no visual superelevation but retains physics superelevation</summary>
+        public float EndElevM { get; set; }
+        /// <summary>Nominal amount of superelevation based on speed and radius.
+        /// Actual superelevation used will depend on adjacent curves and superelevation settings.</summary>
+        public float NomElevM { get; set; } = -1.0f;
+        /// <summary>The index of the superelevation track profile suitable for this section</summary>
+        public int TRPIndex { get; set; } = -1;
+
+        /// <summary>The freight speed limit of this track section.
+        /// NOTE: Do not use for determining max train speed, this does not respect speed limit direction.</summary>
+        public float FreightSpeedMpS = float.NegativeInfinity;
+
+        /// <summary>The passenger speed limit of this track section.
+        /// NOTE: Do not use for determining max train speed, this does not respect speed limit direction.</summary>
+        public float PassSpeedMpS = float.NegativeInfinity;
 
         /// <summary>??? (needed for ActivityEditor, but not used here, so why is it defined here?)</summary>
         public bool Reduced { get; set; }
-        /// <summary>The index of the track profile suitable for this section</summary>
-        public int TRPIndex { get; set; } = -1;
 
         /// <summary>
         /// Default constructor used during file parsing.

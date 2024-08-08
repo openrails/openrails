@@ -843,16 +843,37 @@ namespace Orts.Viewer3D.RollingStock
 #endif
 
             // truck angle animation
+            Matrix inverseLocation = Matrix.Invert(Car.WorldPosition.XNAMatrix);
+
             foreach (var p in Car.Parts)
             {
                 if (p.iMatrix <= 0)
                     continue;
+
+                // Determine orientation of bogie in absolute space
                 Matrix m = Matrix.Identity;
+                Vector3 fwd = new Vector3(p.Dir[0], p.Dir[1], -p.Dir[2]);
+                // Only do this calculation if the bogie position has been calculated
+                if (!(fwd.X == 0 && fwd.Y == 0 && fwd.Z == 0))
+                {
+                    fwd.Normalize();
+                    Vector3 side = Vector3.Cross(Vector3.Up, fwd);
+                    if (!(side.X == 0 && side.Y == 0 && side.Z == 0))
+                        side.Normalize();
+                    Vector3 up = Vector3.Cross(fwd, side);
+                    m.Right = side;
+                    m.Up = up;
+                    m.Backward = fwd;
+
+                    // Add in roll due to superelevation
+                    m = p.Rotation * m;
+
+                    // Convert absolute rotation into rotation relative to train car
+                    m = m * inverseLocation;
+                }
+
+                // Insert correct translation (previous step likely introduced garbage data)
                 m.Translation = TrainCarShape.SharedShape.Matrices[p.iMatrix].Translation;
-                m.M11 = p.Cos;
-                m.M13 = p.Sin;
-                m.M31 = -p.Sin;
-                m.M33 = p.Cos;
 
                 // To cancel out any vibration, apply the inverse here. If no vibration is present, this matrix will be Matrix.Identity.
                 TrainCarShape.XNAMatrices[p.iMatrix] = Car.VibrationInverseMatrix * m;

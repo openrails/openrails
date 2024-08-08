@@ -64,12 +64,16 @@ Volumetric Flow         m^3/s           air flow    m^3/s
 \                                                   L/min
 \                                                   L/s
 Speed                   m/s             other       m/s         m/s             meter per second
+\                                                   cm/s                        centimeters per second
+\                                                   mm/s                        millimeters per second
 \                                                   km/h
 \                                                   kph         kph             kilometer per hour
-\                                                   kmh         kmh             misspelling accepted by MSTS
-\                                       kmph
-\                       mph             dynamic     mph         mph             miles per hour 
-                                        brake
+\                                                   kmh         kmh,            misspelling accepted by MSTS
+                                                                kmph
+\                       mph             dynamic     mph         mph             miles per hour, 
+                                        brake                                   legacy dynamic brake parameters use mph default
+\                                                   ft/s                        feet per second
+\                                                   in/s                        inches per second
 Frequency               Hz                          Hz                          Hertz
 \                                                   rps                         revolutions per second
 \                                                   rpm
