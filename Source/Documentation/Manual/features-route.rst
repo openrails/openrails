@@ -867,6 +867,7 @@ Defining Curve Superelevation
    single: MaxRunOffSlope
    single: MaxRunOffSpeed
    single: MinimumSpeed
+   single: MaximumSpeed
 
 This feature allows curves within the route to be assigned a value for superelevation. It
 is inserted either in the route's root .trk file or in the "Include" .trk file.
@@ -879,7 +880,8 @@ To define a superelevation standard, add a ``ORTSSuperElevation`` block to the r
 file and add some (or all) of the following parameters inside the ``ORTSSuperElevation`` block:
 
 - ``MaxFreightUnderbalance`` -- The maximum amount (using units of length) of cant deficiency/underbalance
-  that should be allowed for trains travelling at the freight speed limit. (Default 5 cm ~ 2 inches.)
+  that should be allowed for trains travelling at the freight speed limit. Larger allowed underbalance
+  results in less extreme superelevation. (Default 5 cm ~ 2 inches.)
 - ``MaxPassengerUnderbalance`` -- The maximum amount (using units of length) of cant deficiency/underbalance
   that should be allowed for trains travelling at the passenger speed limit. (Default 7.5 cm ~ 3 inches.)
   For comfort reasons, the underbalance values should be equal to or less than the
@@ -889,7 +891,8 @@ file and add some (or all) of the following parameters inside the ``ORTSSuperEle
 - ``MinimumCant`` -- If a curve needs superelevation, the amount of superelevation will be no lower than
   this value (given in units of length). (Default 1.25 cm ~ 0.5 inches.)
 - ``MaximumCant`` -- Sets the maximum amount of superelevation (units of length) that any curve is allowed
-  to have, regardless of other factors. Usually curves should be designed to avoid reaching this limit.
+  to have, regardless of other factors. Usually curves should be designed to avoid reaching this limit, as
+  exceeding the limit could result in excessive curve force or even trains toppling over at low speeds.
   (Default is determined by the superelevation setting in the options menu. Level 0 = 7 cm, level 10 = 17 cm.)
 - ``Precision`` -- Determines the accuracy (in length) to which the superelevation is maintained. If
   the superelevation required by a curve is not a nice number, it will be rounded up to the nearest
@@ -902,6 +905,9 @@ file and add some (or all) of the following parameters inside the ``ORTSSuperEle
   track at high speeds. (Default 4 cm/sec ~ 1.5 inches/sec.)
 - ``MinimumSpeed`` -- The minimum speed limit required for superelevation to be added to a curve. Useful for
   preventing superelevation from being generated in yards. (Default 25 kmh ~ 15 mph.)
+- ``MaximumSpeed`` -- The maximum speed limit allowed for superelevation to be added to a curve. This
+  is only useful if a route needs multiple sets of superelevation settings. See section below for a
+  description on use of multiple superelevation standards. (Default unlimited.)
 
 Any parameters not specified will use the default values, which are suitable for most medium-speed routes.
 Upon route loading, the given parameters will be used to calculate the appropriate amount of superelevation
@@ -918,6 +924,33 @@ defines the superelevation standard used by Union Pacific is given below::
 		MaxRunOffSpeed ( 1.25in/s )
 		MinimumSpeed ( 15mph )
     )
+
+More than one ``ORTSSuperElevation`` block can be added to the .trk file to facilitate routes that require
+different superelevation standards for different track speeds (for example, a route with both standard speed
+160 kmh tracks and dedicated 300 kmh high speed tracks). If a track has a speed limit below ``MinimumSpeed``
+or above ``MaximumSpeed``, the track will skip the superelevation standard defined and check the next standard in
+the .trk file to see if the speed limit is in between the min and max of that standard. Only if the track
+speed is out of bounds for every superelevation standard will no superelevation be applied at all. For
+example, to have 3 different types of superelevation on one route, one from 25-60 kmh, another from 60-160 kmh,
+and a third standard for 160 kph and up, the required Minimum/MaximumSpeed settings would look like this::
+
+    ORTSSuperElevation(
+        ...
+		MinimumSpeed ( 25km/h )
+		MaximumSpeed ( 60km/h )
+    )
+    ORTSSuperElevation(
+        ...
+		MinimumSpeed ( 60km/h )
+		MaximumSpeed ( 160km/h )
+    )
+    ORTSSuperElevation(
+        ...
+		MinimumSpeed ( 160km/h )
+    )
+
+Note that the order of the ``ORTSSuperElevation`` blocks is important; they are read from top down
+so the slowest superelevation standard should be on top of all faster superelevation standards.
 
 Open Rails also supports a simpler but less accurate way to define superelevation. It is
 recommended to not use this system as it does not follow the principles of real superelevation
