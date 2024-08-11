@@ -21,7 +21,7 @@ If not, then the next ``Download Content`` form is shown where you can download 
 Content
 =======
 
-Clicking on the ``Content`` button makes the ``Download Content`` form popup (if not already there for an new empty Open Rails installation):
+Clicking on the ``Content`` button makes the ``Download Content`` form popup (if not already there for a new empty Open Rails installation):
 
 .. image:: images/download-content-form.png
 
