@@ -28,7 +28,7 @@ Clicking on the ``Content`` button makes the ``Download Content`` form popup (if
 Select the route to be installed. This list will be enlarged by the OR team when suitable routes become available.
 However it is still possible to install routes manually as described in the next chapter.
 
-* ``Install path`` and ``Browse``: Fill in or Browse to the path where the route is to be installed. Each route will be installed in it's own subdirectory.
+* ``Install path`` and ``Browse``: Fill in or Browse to the path where the route is to be installed. Each route will be installed in its own subdirectory.
 * ``Info``: Gives more information of the selected route. The default web browser will be started with the information page.
 * ``Install``: Installs the selected route. A popup mentions the directory where the route is to be installed before starting the actual install. Installation profile gets added also.
 * ``Start``: Some routes have default start parameters and can be started via this button with these parameters.
