@@ -349,9 +349,12 @@ namespace Orts.Viewer3D
                     }
                 }
 
-                if (shapeFilePath != null && File.Exists(shapeFilePath + "d"))
+                var shapeDescriptorPath = shapeFilePath + "d";
+                if (shapeFilePath != null)
                 {
-                    var shape = new ShapeDescriptorFile(shapeFilePath + "d");
+                    var shape = new ShapeDescriptorFile(shapeDescriptorPath);
+                    if (shape != null)
+                {
                     if (shape.shape.ESD_Bounding_Box != null)
                     {
                         var min = shape.shape.ESD_Bounding_Box.Min;
@@ -363,6 +366,7 @@ namespace Orts.Viewer3D
                         //transform.M43 += (max.Z + min.Z) / 2;
                         BoundingBoxes.Add(new BoundingBox(transform, new Vector3((max.X - min.X) / 2, (max.Y - min.Y) / 2, (max.Z - min.Z) / 2), worldMatrix.XNAMatrix.Translation.Y));
                     }
+                }
                 }
 
                 try
