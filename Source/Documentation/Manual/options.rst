@@ -83,20 +83,22 @@ The player can select the unit of measure of brake pressure in the
 When set to *automatic* the unit of measure is the same as that used in
 the cabview of the locomotive.
 
-Other units
------------
+Other units of measure
+----------------------
 
 This selects the units displayed for length, mass, pressure, etc. in the
 :ref:`F5 Train Driving Info Window and also the Alt+F5 HUD <driving-hud>` of the simulation.
 
+These windows use the abbreviations *t-us* for short tons (2000 lb),
+*t-uk* for long tons (2240 lb) and *t* for metric tons (1000 kg).
+
+The option *Route* sets the units based on the data in the route files. The route's TRK file may contain ``MilepostUnitsMiles ()`` or 
+``MilepostUnitsKilometers ()`` to specify the units of distance for this route.
+
 The option *Player's Location* sets the units according to the Windows
 *Language and Region* settings on the player's computer.
 
-The option *Route* sets the units based on the data in the route files.
-The other options are self-explanatory.
-
-These windows use the abbreviations *t-us* for short tons (2000 lb),
-*t-uk* for long tons (2240 lb) and *t* for metric tons (1000 kg).
+The other choices for units of measure are straightforward.
 
 Note: The units displayed by the :ref:`F4 Track Monitor <driving-track-monitor>` (e.g. velocity and
 distance) are always based on data read from the route files.
