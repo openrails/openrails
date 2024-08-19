@@ -16,8 +16,6 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
@@ -31,26 +29,16 @@ namespace Orts.Formats.Msts
             shape = new SDShape();
         }
 
-        public static Dictionary<string, SDShape> Cache = new Dictionary<string, SDShape>();
-
         public ShapeDescriptorFile(string filename)
         {
-            var shapeDescriptorPath = filename.ToLowerInvariant();
-            if (Cache.ContainsKey(shapeDescriptorPath))
+            using (STFReader stf = new STFReader(filename, false))
             {
-                shape = Cache[shapeDescriptorPath];
-            }
-            else
-            {
-                using (STFReader stf = new STFReader(filename, false))
-                {
-                    stf.ParseFile(new STFReader.TokenProcessor[] {
-                        new STFReader.TokenProcessor("shape", ()=>{ shape = new SDShape(stf); }),
-                    });
-                    //TODO This should be changed to STFException.TraceError() with defaults values created
-                    if (shape == null) throw new STFException(stf, "Missing shape statement");
-                }
-                Cache.Add(shapeDescriptorPath, shape);
+                stf.ParseFile(new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("shape", ()=>{ shape = new SDShape(stf); }),
+                });
+                //TODO This should be changed to STFException.TraceError() with defaults values created
+                if (shape == null)
+                    throw new STFException(stf, "Missing shape statement");
             }
         }
 
