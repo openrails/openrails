@@ -345,19 +345,16 @@ namespace Orts.Viewer3D
                 if (shapeFilePath != null)
                 {
                     var shape = new ShapeDescriptorFile(shapeDescriptorPath);
-                    if (shape != null)
+                    if (shape.shape?.ESD_Bounding_Box != null)
                     {
-                        if (shape.shape.ESD_Bounding_Box != null)
-                        {
-                            var min = shape.shape.ESD_Bounding_Box.Min;
-                            var max = shape.shape.ESD_Bounding_Box.Max;
-                            var transform = Matrix.Invert(worldMatrix.XNAMatrix);
-                            // Not sure if this is needed, but it is to correct for center-of-gravity being not the center of the box.
-                            //transform.M41 += (max.X + min.X) / 2;
-                            //transform.M42 += (max.Y + min.Y) / 2;
-                            //transform.M43 += (max.Z + min.Z) / 2;
-                            BoundingBoxes.Add(new BoundingBox(transform, new Vector3((max.X - min.X) / 2, (max.Y - min.Y) / 2, (max.Z - min.Z) / 2), worldMatrix.XNAMatrix.Translation.Y));
-                        }
+                        var min = shape.shape.ESD_Bounding_Box.Min;
+                        var max = shape.shape.ESD_Bounding_Box.Max;
+                        var transform = Matrix.Invert(worldMatrix.XNAMatrix);
+                        // Not sure if this is needed, but it is to correct for center-of-gravity being not the center of the box.
+                        //transform.M41 += (max.X + min.X) / 2;
+                        //transform.M42 += (max.Y + min.Y) / 2;
+                        //transform.M43 += (max.Z + min.Z) / 2;
+                        BoundingBoxes.Add(new BoundingBox(transform, new Vector3((max.X - min.X) / 2, (max.Y - min.Y) / 2, (max.Z - min.Z) / 2), worldMatrix.XNAMatrix.Translation.Y));
                     }
                 }
 

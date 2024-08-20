@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
@@ -36,12 +35,19 @@ namespace Orts.Formats.Msts
         public ShapeDescriptorFile(string filename)
         {
             var shapeDescriptorPath = filename.ToLowerInvariant();
+
             if (Cache.ContainsKey(shapeDescriptorPath))
             {
                 shape = Cache[shapeDescriptorPath];
             }
             else
             {
+                if (!System.IO.File.Exists(filename)) // If not found, skip
+                {
+                    shape = null;
+                    return;
+                }
+
                 using (STFReader stf = new STFReader(filename, false))
                 {
                     stf.ParseFile(new STFReader.TokenProcessor[] {
