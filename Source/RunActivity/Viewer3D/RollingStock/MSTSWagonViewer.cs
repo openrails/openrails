@@ -890,7 +890,7 @@ namespace Orts.Viewer3D.RollingStock
                     m.Backward = fwd;
 
                     // Add in roll due to superelevation
-                    m = p.Rotation * m;
+                    m = Matrix.CreateRotationZ(p.Roll) * m;
 
                     // Convert absolute rotation into rotation relative to train car
                     m = m * inverseLocation;

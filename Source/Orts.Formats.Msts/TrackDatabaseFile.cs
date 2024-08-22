@@ -785,18 +785,21 @@ namespace Orts.Formats.Msts
         public int WFNameX { get; set; }
         /// <summary>The TileZ in the WorldFile</summary>
         public int WFNameZ { get; set; }
-        /// <summary>The superelevation at the start,
-        /// negative number will apply no visual superelevation but retains physics superelevation</summary>
-        public float StartElevM { get; set; }
-        /// <summary>The superelevation at the midpoint,
-        /// negative number will apply no visual superelevation but retains physics superelevation</summary>
-        public float MidElevM { get; set; }
-        /// <summary>The superelevation at the end,
-        /// negative number will apply no visual superelevation but retains physics superelevation</summary>
-        public float EndElevM { get; set; }
+
+        /// <summary>Interpolator storing the amount of physics superelevation in meters vs distance along
+        /// the track section normalized from 0 to 1.</summary>
+        public Interpolator PhysElevTable;
+
+        /// <summary>Interpolator storing the angle of visual superelevation in radians vs distance along
+        /// the track section normalized from 0 to 1.</summary>
+        public Interpolator VisElevTable;
         /// <summary>Nominal amount of superelevation based on speed and radius.
         /// Actual superelevation used will depend on adjacent curves and superelevation settings.</summary>
         public float NomElevM { get; set; } = -1.0f;
+        /// <summary>Inward/outward offset from the centerline of the track about which this track section
+        /// is rotated during superelevation.
+        /// 0 = centered, positive = centerline moves to inside of curve, negative = centerline moves to outside of curve</summary>
+        public float ElevOffsetM { get; set; } = 0.0f;
         /// <summary>The index of the superelevation track profile suitable for this section</summary>
         public int TRPIndex { get; set; } = -1;
 

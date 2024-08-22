@@ -528,7 +528,9 @@ namespace Orts.Viewer3D
                 DTrackData.param1 = angle;
                 DTrackData.param2 = radius;
             }
-            DTrackData.deltaY = 0;
+            DTrackData.deltaY = 0; // No change in height-we construct the track level and then rotate the entire model into position later
+            // TODO: Change track generation to actually respect the change in height
+            //DTrackData.deltaY = endPosition.Location.Y - worldPosition.Location.Y;
 
             if (WireProfile == null)
             {

@@ -144,7 +144,25 @@ namespace Orts.Viewer3D
         public DynamicTrackViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition)
         {
             Viewer = viewer;
+
             worldPosition = position;
+
+            // Section below will remove the pitch and roll rotation from the dynamic track object, allowing it to
+            // figure out its own pitch and roll. Temporarily disabled while I figure out specifics of such an implementation
+            //if (worldPosition.XNAMatrix.Decompose(out Vector3 scale, out Quaternion rotation, out Vector3 translation))
+            //{
+            //    // Remove X and Z components of rotation to isolate for yaw angle (compass heading) only
+            //    rotation.X = 0.0f;
+            //    rotation.Z = 0.0f;
+            //    // Renormalize the quaternion after deleting X and Y to get the Y component of rotation
+            //    rotation.Normalize();
+
+            //    Matrix adjusted = Matrix.CreateFromQuaternion(rotation);
+
+            //    adjusted.Translation = translation;
+
+            //    worldPosition.XNAMatrix = adjusted;
+            //}
         }
 
         /// <summary>
@@ -601,6 +619,34 @@ namespace Orts.Viewer3D
         public List<Regex> ExcludeShapes;
         public List<Regex> IncludeImages;
         public List<Regex> ExcludeImages;
+        // The gauge of track represented by this track profile
+        public float TrackGaugeM;
+        /// <summary>
+        /// The type of superelevation used (ie: which rail is superelevated)
+        /// </summary>
+        public enum SuperelevationMethod
+        {
+            /// <summary>
+            /// No superelevation - graphical superelevation disabled
+            /// </summary>
+            None,
+
+            /// <summary>
+            /// Both rails are elevated; inside rail is elevated down, outside rail is elevated up
+            /// </summary>
+            Both,
+
+            /// <summary>
+            /// Inside rail is unchanged, outside rail is elevated up
+            /// </summary>
+            Outside,
+
+            /// <summary>
+            /// Inside rail is elevated down, outside rail is unchanged
+            /// </summary>
+            Inside,
+        }
+        public SuperelevationMethod ElevationType = SuperelevationMethod.Outside;
 
         /// <summary>
         /// Enumeration of LOD control methods
@@ -660,6 +706,8 @@ namespace Orts.Viewer3D
             PitchControlScalar = 10.0f;                     // Hold to no more than 10 meters
             //PitchControl = PitchControls.ChordDisplacement; // Target chord displacement from arc
             //PitchControlScalar = 0.034f;                    // Hold to no more than 34 mm (half rail width)
+            TrackGaugeM = 1.435f; // Kuju track profile depicts standard gauge track
+            ElevationType = SuperelevationMethod.Outside; // Superelevate the outside rail only to reduce clipping
 
             LOD lod;            // Local LOD instance
             LODItem lodItem;    // Local LODItem instance
@@ -794,6 +842,8 @@ namespace Orts.Viewer3D
                 new STFReader.TokenProcessor("excludedshapes", ()=>{ ExcludeShapes = ConvertToRegex(stf.ReadStringBlock(null)); }),
                 new STFReader.TokenProcessor("includedtextures", ()=>{ IncludeImages = ConvertToRegex(stf.ReadStringBlock(null)); }),
                 new STFReader.TokenProcessor("excludedtextures", ()=>{ ExcludeImages = ConvertToRegex(stf.ReadStringBlock(null)); }),
+                new STFReader.TokenProcessor("trackgauge", ()=>{ TrackGaugeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("superelevationmethod", ()=> { ElevationType = GetElevMethod(stf.ReadStringBlock(null)); }),
                 new STFReader.TokenProcessor("lod", ()=> { LODs.Add(new LOD(viewer, stf)); }),
             });
 
@@ -811,6 +861,9 @@ namespace Orts.Viewer3D
                     }
                 }
             }
+
+            if (TrackGaugeM <= 0)
+                TrackGaugeM = viewer.Simulator.SuperElevationGauge;
         }
 
         /// <summary>
@@ -832,6 +885,8 @@ namespace Orts.Viewer3D
                     ExcludeShapes = ConvertToRegex(reader.GetAttribute("ExcludedShapes"));
                     IncludeImages = ConvertToRegex(reader.GetAttribute("IncludedTextures"));
                     ExcludeImages = ConvertToRegex(reader.GetAttribute("ExcludedTextures"));
+                    TrackGaugeM = float.Parse(reader.GetAttribute("TrackGauge"));
+                    ElevationType = GetElevMethod(reader.GetAttribute("SuperElevationMethod"));
                 }
                 else
                 {
@@ -906,6 +961,9 @@ namespace Orts.Viewer3D
                     }
                 }
             }
+
+            if (TrackGaugeM <= 0)
+                TrackGaugeM = viewer.Simulator.SuperElevationGauge;
         }
 
         /// <summary>
@@ -938,6 +996,28 @@ namespace Orts.Viewer3D
                 case "componentadditive":
                 default:
                     return LODMethods.ComponentAdditive;
+            }
+        }
+
+        /// <summary>
+        /// Gets a member of the SuperelevationMethod enumeration that corresponds to sElevMethod.
+        /// </summary>
+        /// <param name="sElevMethod">String that identifies desired SuperelevationMethod.</param>
+        /// <returns>SuperelevationMethod</returns>
+        public static SuperelevationMethod GetElevMethod(string sElevMethod)
+        {
+            string s = sElevMethod.ToLower();
+            switch (s)
+            {
+                case "none":
+                    return SuperelevationMethod.None;
+                case "both":
+                    return SuperelevationMethod.Both;
+                case "inside":
+                    return SuperelevationMethod.Inside;
+                case "outside":
+                default:
+                    return SuperelevationMethod.Outside;
             }
         }
 

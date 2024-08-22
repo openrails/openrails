@@ -228,8 +228,8 @@ namespace Orts.Formats.Msts
 
     public class SuperElevationStandard
     {
-        public float MaxFreightUnderbalanceM = 0.05f; // Default 5 cm ~ 2 inches
-        public float MaxPaxUnderbalanceM = 0.075f; // Default 7.5 cm ~ 3 inches
+        public float MaxFreightUnderbalanceM = float.PositiveInfinity;
+        public float MaxPaxUnderbalanceM = float.PositiveInfinity;
         public float MinCantM = 0.0125f; // Default 1.25 cm ~ 0.5 inches
         public float MaxCantM = -1.0f; // Specified by user settings by default
         public float MinSpeedMpS = MpS.FromKpH(25.0f); // Default 25 kmh ~ 15 mph
@@ -241,6 +241,8 @@ namespace Orts.Formats.Msts
         public SuperElevationStandard()
         {
             // Initialize new instance with default values
+            MaxFreightUnderbalanceM = 0.05f; // Default 5 cm ~ 2 inches
+            MaxPaxUnderbalanceM = 0.075f; // Default 7.5 cm ~ 3 inches
         }
         public SuperElevationStandard(STFReader stf)
         {
@@ -256,6 +258,21 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("maxrunoffslope", () => { RunoffSlope = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("maxrunoffspeed", () => { RunoffSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); }),
             });
+
+            // Sanity check values of underbalance
+            if (MaxFreightUnderbalanceM > 10.0f)
+            {
+                if (MaxPaxUnderbalanceM > 10.0f)
+                {
+                    // Neither underbalance has been defined
+                    MaxFreightUnderbalanceM = 0.05f; // Default 5 cm ~ 2 inches
+                    MaxPaxUnderbalanceM = 0.075f; // Default 7.5 cm ~ 3 inches
+                }
+                else // Only passenger was defined
+                    MaxFreightUnderbalanceM = MaxPaxUnderbalanceM;
+            }
+            else if (MaxPaxUnderbalanceM > 10.0f) // Only freight was defined
+                MaxPaxUnderbalanceM = MaxFreightUnderbalanceM;
         }
     }
 
