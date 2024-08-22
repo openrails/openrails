@@ -977,76 +977,99 @@ namespace Orts.Simulation
         /// Outputs the superelevation for the physics system and curve radius at the current location.
         /// </summary>
         /// <returns>Returns the visual superelevation at the current location.</returns>
-        public float GetSuperElevation(bool useVisualElev, out float physicsElev, out float curveRadius)
+        public void GetCurveData(out float physicsElev, out float curveRadius)
         {
             physicsElev = 0;
-            float visualElev = 0;
             curveRadius = 0;
 
-            if (trackSection == null || trackSection.SectionCurve == null || trackVectorSection == null)
-                return visualElev;
+            if (trackSection == null || trackVectorSection == null)
+                return;
 
-            float to = trackOffset / Math.Abs(MathHelper.ToRadians(trackSection.SectionCurve.Angle));
-            int sign = Math.Sign(trackSection.SectionCurve.Angle) > 0 ^ direction == TravellerDirection.Backward ? -1 : 1;
-            curveRadius = trackSection.SectionCurve.Radius;
+            // Track offset along the track section, normalized from 0 to 1
+            float to;
 
-            // Superelevation values may be negative to indicate the visual superelevation effect shouldn't match the physics effect
-            bool visualOverride = useVisualElev && (trackVectorSection.MidElevM < 0 || trackVectorSection.StartElevM < 0 || trackVectorSection.EndElevM < 0);
-
-            if (to < 0.0f)
+            if (trackSection.SectionCurve == null)
             {
-                physicsElev = Math.Abs(trackVectorSection.StartElevM);
-                if (visualOverride)
-                    visualElev = Math.Max(trackVectorSection.StartElevM, 0);
-            }
-            else if (to < 0.5f)
-            {
-                physicsElev = MathHelper.Lerp(Math.Abs(trackVectorSection.StartElevM), Math.Abs(trackVectorSection.MidElevM), to * 2.0f);
-                if (visualOverride)
-                    visualElev = MathHelper.Lerp(Math.Max(trackVectorSection.StartElevM, 0), Math.Max(trackVectorSection.MidElevM, 0), to * 2.0f);
-            }
-            else if (to < 1.0f)
-            {
-                physicsElev = MathHelper.Lerp(Math.Abs(trackVectorSection.MidElevM), Math.Abs(trackVectorSection.EndElevM), (to - 0.5f) * 2.0f);
-                if (visualOverride)
-                    visualElev = MathHelper.Lerp(Math.Max(trackVectorSection.MidElevM, 0), Math.Max(trackVectorSection.EndElevM, 0), (to - 0.5f) * 2.0f);
+                to = trackOffset / trackSection.SectionSize.Length;
             }
             else
             {
-                physicsElev = Math.Abs(trackVectorSection.EndElevM);
-                if (visualOverride)
-                    visualElev = Math.Max(trackVectorSection.EndElevM, 0);
+                curveRadius = trackSection.SectionCurve.Radius;
+                to = trackOffset / Math.Abs(MathHelper.ToRadians(trackSection.SectionCurve.Angle));
             }
 
-            // Return 0 visual superelevation if superelevation is disabled in settings
-            if (!useVisualElev)
-                visualElev = 0;
-            else if (!visualOverride)
-                visualElev = physicsElev;
-
-            visualElev *= sign; // Correct the direction of tilt for the direction of travel
-
-            return visualElev;
+            if (trackVectorSection.PhysElevTable != null)
+                physicsElev = trackVectorSection.PhysElevTable[to];
         }
 
         /// <summary>
         /// Determines the superelevations and curve radii at multiple locations by moving the
         /// traveller through an array of given offsets. 
         /// </summary>
-        /// <returns>Returns the array of visual superelevations at each processed location.</returns>
-        public float[] GetSuperElevation(bool useVisualElev, float[] smoothingOffset, out float[] physicsElev, out float[] curveRadius)
+        public void GetCurveData(float[] smoothingOffset, out float[] physicsElev, out float[] curveRadius)
         {
             physicsElev = new float[smoothingOffset.Length];
-            float[] visualElev = new float[smoothingOffset.Length];
             curveRadius = new float[smoothingOffset.Length];
 
             for (int i = 0; i < smoothingOffset.Length; i++)
             {
                 Move(smoothingOffset[i]); // Move the traveller to the next component
-                visualElev[i] = GetSuperElevation(useVisualElev, out physicsElev[i], out curveRadius[i]);
+                GetCurveData(out physicsElev[i], out curveRadius[i]);
             }
+        }
+        /// <summary>
+        /// Determines the visual superelevation at the current location of the traveller.
+        /// </summary>
+        /// <returns>Returns the visual superelevation angle at the current location.</returns>
+        public float GetVisualElevation(bool useVisualElev = true)
+        {
+            float visualElev = 0;
+
+            // Return 0 visual superelevation if superelevation is disabled in settings or track section is missing
+            if (!useVisualElev || trackSection == null || trackVectorSection == null)
+                return visualElev;
+
+            // Track offset along the track section, normalized from 0 to 1
+            float to;
+
+            if (trackSection.SectionCurve == null)
+                to = trackOffset / trackSection.SectionSize.Length;
+            else
+                to = trackOffset / Math.Abs(MathHelper.ToRadians(trackSection.SectionCurve.Angle));
+
+            if (trackVectorSection.VisElevTable != null)
+            {
+                visualElev = trackVectorSection.VisElevTable[to];
+                // Correct the direction of tilt for the direction of travel
+                visualElev *= Math.Sign(trackSection.SectionCurve.Angle) > 0 ^ direction == TravellerDirection.Backward ? -1 : 1;
+            }
+            else
+                visualElev = 0;
 
             return visualElev;
+        }
+        /// <summary>
+        /// Determines the offset in the visual position of the track caused by superelevation.
+        /// Requires a bool to determine if superelevation should be used at all, and a reference to the list of track profiles.
+        /// Also outputs the angle of visual superelevation at the current location.
+        /// </summary>
+        /// <returns>Returns a Vector3 containing the positional offset.</returns>
+        public Vector3 CalcElevationPositionOffset(bool useVisualElev, out float roll)
+        {
+            roll = GetVisualElevation(useVisualElev);
+
+            if (roll == 0)
+                return Vector3.Zero;
+
+            float rollOffset = trackVectorSection.ElevOffsetM;
+
+            Vector3 trackRot = directionVector;
+            Matrix rotation = Matrix.CreateFromYawPitchRoll(trackRot.Y, trackRot.X, trackRot.Z);
+
+            Vector3 offset = rotation.Up * ((float)Math.Sin(Math.Abs(roll)) * rollOffset) +
+                rotation.Left * ((1.0f - (float)Math.Cos(roll)) * rollOffset * Math.Sign(roll));
+
+            return offset;
         }
 
         public float FindTiltedZ(float speed) //will test 1 second ahead, computed will return desired elev. only
@@ -1063,8 +1086,7 @@ namespace Orts.Simulation
             }
             else if (ts.SectionCurve != null)
             {
-                float maxv = tvs.MidElevM;
-                maxv = 0.14f * speed / 40f;//max 8 degree
+                float maxv = 0.14f * speed / 40f;//max 8 degree
                 //maxv *= speed / 40f;
                 //if (maxv.AlmostEqual(0f, 0.001f)) maxv = 0.02f; //short curve, add some effect anyway
                 var sign = -Math.Sign(ts.SectionCurve.Angle);

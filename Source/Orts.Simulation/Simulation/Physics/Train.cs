@@ -4507,8 +4507,10 @@ namespace Orts.Simulation.Physics
                     var z = traveller.Z;
 
                     // Update car's curve radius and superelevation based on bogie position and move traveller to front bogie
-                    // Outputs rotation angle for superelevation, used below
-                    car.UpdateCurveData(traveller, new[] { 0, car.CarBogieCentreLengthM }, out float roll);
+                    // Also determine roll angle for superelevation by averaging both bogies
+                    float roll = traveller.GetVisualElevation();
+                    car.UpdateCurvePhys(traveller, new[] { 0, car.CarBogieCentreLengthM });
+                    roll = (roll + traveller.GetVisualElevation()) / 2.0f;
 
                     // normalize across tile boundaries
                     while (tileX > traveller.TileX)
@@ -4639,7 +4641,9 @@ namespace Orts.Simulation.Physics
 
                     // Update car's curve radius and superelevation based on bogie position and move traveller to front bogie
                     // Outputs rotation angle for superelevation, used below
-                    car.UpdateCurveData(traveller, new[] {0, car.CarBogieCentreLengthM}, out float roll);
+                    float roll = traveller.GetVisualElevation();
+                    car.UpdateCurvePhys(traveller, new[] { 0, car.CarBogieCentreLengthM });
+                    roll = (roll + traveller.GetVisualElevation()) / 2.0f;
 
                     // normalize across tile boundaries
                     while (tileX > traveller.TileX)
@@ -4730,7 +4734,9 @@ namespace Orts.Simulation.Physics
 
                 // Update car's curve radius and superelevation based on bogie position and move traveller to front bogie
                 // Outputs rotation angle for superelevation, used below
-                car.UpdateCurveData(traveller, new[] { 0, car.CarBogieCentreLengthM }, out float roll);
+                float roll = traveller.GetVisualElevation();
+                car.UpdateCurvePhys(traveller, new[] { 0, car.CarBogieCentreLengthM });
+                roll = (roll + traveller.GetVisualElevation()) / 2.0f;
 
                 // normalize across tile boundaries
                 while (tileX > traveller.TileX)

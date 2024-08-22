@@ -2744,9 +2744,7 @@ namespace Orts.Simulation.RollingStocks
 
         public void ComputePosition(Traveller traveler, bool backToFront, float elapsedTimeS, float distance, float speed)
         {
-            // Superelevation visual roll angle, will be determined during parts update
-            float rollAngle;
-            float[] bogieRoll;
+            // Position of bogies relative to model center, used for determining curve physics
             float[] bogieOffsets = new float[Parts.Count - 1];
 
             for (var j = 0; j < Parts.Count; j++)
@@ -2764,7 +2762,7 @@ namespace Orts.Simulation.RollingStocks
                     l++;
                 }
 
-                bogieRoll = UpdateCurveData(new Traveller(traveler), bogieOffsets, out rollAngle);
+                UpdateCurvePhys(new Traveller(traveler), bogieOffsets);
 
                 o = -CarLengthM / 2 - CentreOfGravityM.Z;
                 for (var k = 0; k < WheelAxles.Count; k++)
@@ -2775,7 +2773,12 @@ namespace Orts.Simulation.RollingStocks
                     var x = traveler.X + 2048 * (traveler.TileX - tileX);
                     var y = traveler.Y;
                     var z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
-                    WheelAxles[k].Part.AddWheelSetLocation(1, o, x, y, z);
+
+                    Vector3 location = new Vector3(x, y, z) + traveler.CalcElevationPositionOffset(Simulator.Settings.UseSuperElevation > 0, out float r);
+                    // This car is flipped, so flip roll direction.
+                    r *= -1;
+
+                    WheelAxles[k].Part.AddWheelSetLocation(1, o, location.X, location.Y, location.Z, r);
                 }
                 o = CarLengthM / 2 - CentreOfGravityM.Z - o;
                 traveler.Move(o);
@@ -2791,7 +2794,7 @@ namespace Orts.Simulation.RollingStocks
                     l++;
                 }
 
-                bogieRoll = UpdateCurveData(new Traveller(traveler), bogieOffsets, out rollAngle);
+                UpdateCurvePhys(new Traveller(traveler), bogieOffsets);
 
                 o = CarLengthM / 2 - CentreOfGravityM.Z;
                 for (var k = WheelAxles.Count - 1; k >= 0; k--)
@@ -2802,7 +2805,10 @@ namespace Orts.Simulation.RollingStocks
                     var x = traveler.X + 2048 * (traveler.TileX - tileX);
                     var y = traveler.Y;
                     var z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
-                    WheelAxles[k].Part.AddWheelSetLocation(1, o, x, y, z);
+
+                    Vector3 location = new Vector3(x, y, z) + traveler.CalcElevationPositionOffset(Simulator.Settings.UseSuperElevation > 0, out float r);
+
+                    WheelAxles[k].Part.AddWheelSetLocation(1, o, location.X, location.Y, location.Z, r);
                 }
                 o = CarLengthM / 2 + CentreOfGravityM.Z + o;
                 traveler.Move(o);
@@ -2812,9 +2818,21 @@ namespace Orts.Simulation.RollingStocks
             for (int i = 1; i < Parts.Count; i++)
             {
                 TrainCarPart p = Parts[i];
-                p.FindCenterLine();
-                if (p.SumWgt > 1.5)
+                
+                if (p.SumWgt > 1.5f)
+                {
+                    p.FindCenterLine();
                     p0.AddPartLocation(1, p);
+                }
+                else if (p.SumWgt > 0.5f) // Handle edge case of single axle pony trucks
+                {
+                    double d = p.OffsetM - p.SumOffset / p.SumWgt;
+                    if (-.2 < d && d < .2)
+                        continue;
+                    // Add a fake "wheel" to serve as a pivot point
+                    p.AddWheelSetLocation(1, p.OffsetM, p0.Pos[0] + p.OffsetM * p0.Dir[0], p0.Pos[1] + p.OffsetM * p0.Dir[1], p0.Pos[2] + p.OffsetM * p0.Dir[2], 0);
+                    p.FindCenterLine();
+                }
             }
             p0.FindCenterLine();
             Vector3 fwd = new Vector3(p0.Dir[0], p0.Dir[1], -p0.Dir[2]);
@@ -2832,11 +2850,11 @@ namespace Orts.Simulation.RollingStocks
             m.Backward = fwd;
 
             // Roll the car for superelevation
-            Matrix superelevationRoll = Matrix.CreateRotationZ(rollAngle);
-            m = superelevationRoll * m;
+            m = Matrix.CreateRotationZ(p0.Roll) * m;
 
             // Rolling stock seems to always sit 0.275 meters above the track height
             float railOffset = 0.275f;
+
             Vector3 pos = new Vector3(p0.Pos[0], p0.Pos[1], -p0.Pos[2]);
             m.Translation = pos + m.Up * railOffset;
 
@@ -2845,29 +2863,6 @@ namespace Orts.Simulation.RollingStocks
             WorldPosition.TileZ = tileZ;
 
             UpdatedTraveler(traveler, elapsedTimeS, distance, speed);
-
-            // Determine superelevation angle for bogies
-            for (int i = 1; i < Parts.Count; i++)
-            {
-                TrainCarPart p = Parts[i];
-                if (p.SumWgt < .5) // No wheels on this bogie, skip it
-                    continue;
-                if (p.SumWgt < 1.5)
-                {   // single axle pony trunk
-                    double d = p.OffsetM - p.SumOffset / p.SumWgt;
-                    if (-.2 < d && d < .2)
-                        continue;
-                    // Add a fake "wheel" to serve as a pivot point
-                    p.AddWheelSetLocation(1, p.OffsetM, p0.Pos[0] + p.OffsetM * p0.Dir[0], p0.Pos[1] + p.OffsetM * p0.Dir[1], p0.Pos[2] + p.OffsetM * p0.Dir[2]);
-                    p.FindCenterLine();
-                }
-
-                // Generate superelevation rotation matrix for the bogie
-                if (Flipped == backToFront)
-                    p.Rotation = Matrix.CreateRotationZ(bogieRoll[i - 1]);
-                else
-                    p.Rotation = Matrix.CreateRotationZ(bogieRoll[(Parts.Count - 1) - i]);
-            }
         }
 
         #region Traveller-based updates
@@ -2890,20 +2885,14 @@ namespace Orts.Simulation.RollingStocks
         /// This WILL move the traveller by the total amount of all the offsets.
         /// Directly sets the superelevation and curve radius for car physics.
         /// </summary>
-        /// <returns>Returns an array giving the angle of visual superelevation at each calculated point.</returns>
-        public float[] UpdateCurveData(Traveller traveller, float[] offsets, out float roll)
+        public void UpdateCurvePhys(Traveller traveller, float[] offsets)
         {
-            roll = 0;
-            bool visualElevationEnabled = Simulator.Settings.UseSuperElevation > 0;
-
             // Ensure at least one offset is given
             if (offsets == null || offsets.Length <= 0)
                 offsets = new[] { 0.0f };
 
             // Need to get superelevation at both ends of the car by offsetting the traveller
-            float[] visualElevation = traveller.GetSuperElevation(visualElevationEnabled, offsets, out float[] physicsElevation, out float[] curveRadii);
-
-            float[] angles = new float[visualElevation.Length];
+            traveller.GetCurveData(offsets, out float[] physicsElevation, out float[] curveRadii);
 
             // Superelevation MUST be limited to track gauge to avoid NaN errors
             SuperelevationM = Math.Min(physicsElevation.Average(), TrackGaugeM);
@@ -2911,26 +2900,6 @@ namespace Orts.Simulation.RollingStocks
             SuperElevationAngleRad = (float)Math.Asin(SuperelevationM / TrackGaugeM);
 
             CurrentCurveRadiusM = curveRadii.Min();
-            float z = visualElevation.Average();
-
-            // Determine superelevation angle for animation, assuming there is any visual elevation
-            if (z != 0)
-            {
-                roll = (float)Math.Asin(z / TrackGaugeM);
-
-                if (Flipped)
-                    roll *= -1;
-
-                for (int v = 0; v < visualElevation.Length; v++)
-                {
-                    angles[v] = (float)Math.Asin(visualElevation[v] / TrackGaugeM);
-
-                    if (Flipped)
-                        angles[v] *= -1;
-                }
-            }
-
-            return angles;
         }
         #endregion
 
@@ -3559,7 +3528,6 @@ namespace Orts.Simulation.RollingStocks
     {
         public float OffsetM; // distance from center of model, positive forward
         public int iMatrix; // matrix index in shape that needs to be moved
-        public Matrix Rotation = Matrix.Identity; // Matrix giving the roll angle of the bogie in absolute terms
         // line fitting variables
         public double SumWgt; // Sum of component weights
         public double SumOffset; // Sum of component weights times offsets
@@ -3568,6 +3536,8 @@ namespace Orts.Simulation.RollingStocks
         public double[] SumPosOffset = new double[3]; // Sum of component locations [x, y, z] times offsets
         public float[] Pos = new float[3]; // Position [x, y, z] of this part, calculated with y-intercept of linear regression
         public float[] Dir = new float[3]; // Oritentation [x, y, z] of this part, calculated with slope of linear regression
+        public float SumRoll; // Sum of all roll angles of components
+        public float Roll; // Roll angle of this part
         public bool Bogie; // True if this is a bogie
         public TrainCarPart(float offset, int i)
         {
@@ -3583,13 +3553,14 @@ namespace Orts.Simulation.RollingStocks
             SumWgt = SumOffset = SumOffsetSq = 0;
             for (int i = 0; i < 3; i++)
                 SumPos[i] = SumPosOffset[i] = 0;
+            SumRoll = 0;
         }
 
         /// <summary>
         /// Directly adds the 3D position values of a sub part to this part. The position
         /// of sub parts will be used to derive the position of this part.
         /// </summary>
-        public void AddWheelSetLocation(float weight, float offset, float x, float y, float z)
+        public void AddWheelSetLocation(float weight, float offset, float x, float y, float z, float roll)
         {
             SumWgt += weight;
             SumOffset += weight * offset;
@@ -3600,6 +3571,7 @@ namespace Orts.Simulation.RollingStocks
             SumPosOffset[1] += weight * y * offset;
             SumPos[2] += weight * z;
             SumPosOffset[2] += weight * z * offset;
+            SumRoll += weight * roll;
         }
 
         /// <summary>
@@ -3616,6 +3588,7 @@ namespace Orts.Simulation.RollingStocks
                 SumPos[i] += weight * position;
                 SumPosOffset[i] += weight * position * part.OffsetM;
             }
+            SumRoll += weight * part.Roll;
         }
 
         /// <summary>
@@ -3655,6 +3628,8 @@ namespace Orts.Simulation.RollingStocks
                     Dir[i] = 0;
                 }
             }
+
+            Roll = SumRoll / (float)SumWgt;
         }
     }
 }

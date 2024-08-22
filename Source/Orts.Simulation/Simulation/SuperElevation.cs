@@ -17,6 +17,7 @@
 
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
 using System;
@@ -115,10 +116,13 @@ namespace Orts.Simulation
 
                     float nodeOffset = nodeTotalLength - sectionLength / 2.0f;
 
-                    // Get speed limits for this section of track
-                    float[] speeds = DetermineTrackSpeeds(signalRef, node, nodeOffset);
-                    section.FreightSpeedMpS = Math.Min(speeds[0], routeMaxSpeed);
-                    section.PassSpeedMpS = Math.Min(speeds[1], routeMaxSpeed);
+                    // Get speed limits for this section of track if they aren't known
+                    if (section.PassSpeedMpS < 0.0f || section.FreightSpeedMpS < 0.0f)
+                    {
+                        float[] speeds = DetermineTrackSpeeds(signalRef, node, nodeOffset);
+                        section.FreightSpeedMpS = Math.Min(speeds[0], routeMaxSpeed);
+                        section.PassSpeedMpS = Math.Min(speeds[1], routeMaxSpeed);
+                    }
                 }
                 if (startCurve == true) // we are in a curve after looking at every section
                 {
@@ -128,145 +132,202 @@ namespace Orts.Simulation
             }
         }
 
-        void MarkSections(Simulator simulator, List<TrVectorSection> SectionList, float Len, List<float> lengths)
+        void MarkSections(Simulator simulator, List<TrVectorSection> SectionList, float totLen, List<float> lengths)
         {
-            if (Len < simulator.SuperElevationMinLen || SectionList.Count == 0)
+            if (totLen < simulator.SuperElevationMinLen || SectionList.Count == 0)
                 return; // Ignore curves too short or invalid data
 
             // The superelevation standard we will use. null means no superelevation
             SuperElevationStandard standard = null;
             // Get the maximum speed limit along the curve to determine which superelevation standard to use
             float maxCurveSpeedMpS = SectionList.Max(sec => Math.Max(sec.PassSpeedMpS, sec.FreightSpeedMpS));
+            // Also determine the superelevation limits for this curve
+            float effectiveRunoffSlope = 0;
+            float maxElev = 0;
 
             for (int s = 0; s < simulator.TRK.Tr_RouteFile.SuperElevation.Count; s++)
             {
                 SuperElevationStandard checkStandard = simulator.TRK.Tr_RouteFile.SuperElevation[s];
-                // If curve speed is within the speeds appropriate speed range for the superelevation standard, use it
+                // If curve speed is within the appropriate speed range for the superelevation standard, use it
                 // Otherwise, check the next one
-                if (maxCurveSpeedMpS < checkStandard.MaxSpeedMpS
-                    && maxCurveSpeedMpS > checkStandard.MinSpeedMpS)
+                if (maxCurveSpeedMpS < checkStandard.MaxSpeedMpS && maxCurveSpeedMpS > checkStandard.MinSpeedMpS)
                 {
                     standard = checkStandard;
+
+                    // Calculate the allowed change in superelevation per distance along curve, may change with speed
+                    effectiveRunoffSlope = Math.Min(standard.RunoffSlope, standard.RunoffSpeedMpS / maxCurveSpeedMpS);
+
+                    // If max cant hasn't been entered, use default maximum superelevation
+                    if (standard.MaxCantM < 0.0f)
+                        maxElev = MaximumAllowedM;
+                    else
+                        maxElev = standard.MaxCantM;
+
+                    // Ensure superelevation is limited to the track gauge no matter what to avoid NaN errors
+                    maxElev = MathHelper.Clamp(maxElev, 0.0f, simulator.SuperElevationGauge);
+
                     break;
                 }
             }
 
-            // Determine the superelevation limits for this curve
-            float effectiveRunoffSlope = 0;
-            float maxElev = 0;
-            if (standard != null)
-            {
-                // Calculate the allowed change in superelevation per distance along curve, may change with speed
-                effectiveRunoffSlope = Math.Min(standard.RunoffSlope, standard.RunoffSpeedMpS / maxCurveSpeedMpS);
-
-                // If max cant hasn't been entered, use default maximum superelevation
-                if (standard.MaxCantM < 0.0f)
-                    maxElev = MaximumAllowedM;
-                else
-                    maxElev = standard.MaxCantM;
-            }
-            else // null standard means no superelevation
-                return;
-
-            // Ensure superelevation is limited to the track gauge no matter what to avoid NaN errors
-            maxElev = MathHelper.Clamp(maxElev, 0.0f, simulator.SuperElevationGauge);
+            if (standard == null)
+                return; // No superelevation needed, stop processing here
 
             // Determine proper level of superelevation for every section
             for (int i = 0; i < SectionList.Count; i++)
             {
-                var sectionData = simulator.TSectionDat.TrackSections.Get(SectionList[i].SectionIndex);
-
-                if (sectionData == null || sectionData.SectionCurve == null)
-                {
-                    SectionList[i].NomElevM = 0.0f;
-                    continue;
-                }
-
-                lengths[i] = sectionData.SectionCurve.Radius * (float)Math.Abs(sectionData.SectionCurve.Angle * (Math.PI / 180.0f));
-
-                // Calculate nominal superelevation amount only if it hasn't been set yet
+                // Superelevation has not been calculated for this section yet
                 if (SectionList[i].NomElevM < 0.0f)
                 {
-                    // Support for old system with superelevation set in Route (TRK) file
-                    if (simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM != null)
+                    var sectionData = simulator.TSectionDat.TrackSections.Get(SectionList[i].SectionIndex);
+
+                    if (sectionData == null || sectionData.SectionCurve == null)
                     {
-                        SectionList[i].NomElevM = simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM[sectionData.SectionCurve.Radius];
-                    }
-                    else if (standard != null) // Newer standard for calculating superelevation
-                    {
-                        float paxSpeed = SectionList[i].PassSpeedMpS;
-                        float freightSpeed = SectionList[i].FreightSpeedMpS;
-
-                        // Approximate ideal level of superelevation determined using E = (G*V^2) / (g*R), then subtract off cant deficiency
-                        // For different speeds on the same curve, we can factor out speed and get a constant c = G / (g*R)
-                        float elevationFactor = simulator.SuperElevationGauge / (9.81f * sectionData.SectionCurve.Radius);
-                        // Calculate required superelevation for passenger and freight separately
-                        float paxElevation = elevationFactor * (paxSpeed * paxSpeed) - standard.MaxPaxUnderbalanceM;
-                        float freightElevation = elevationFactor * (freightSpeed * freightSpeed) - standard.MaxFreightUnderbalanceM;
-
-                        SectionList[i].NomElevM = Math.Max(paxElevation, freightElevation); // Choose the highest required superelevation
-
-                        SectionList[i].NomElevM = (float)Math.Round(SectionList[i].NomElevM / standard.PrecisionM, MidpointRounding.AwayFromZero)
-                            * standard.PrecisionM; // Round superelevation amount to next higher increment of precision
-
-                        SectionList[i].NomElevM = MathHelper.Clamp(SectionList[i].NomElevM, standard.MinCantM, maxElev);
+                        SectionList[i].NomElevM = 0.0f;
+                        continue;
                     }
                     else
-                        SectionList[i].NomElevM = 0.0f;
+                    {
+                        float superElevation;
+
+                        // Support for old system with superelevation set in Route (TRK) file
+                        if (simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM != null)
+                        {
+                            superElevation = simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM[sectionData.SectionCurve.Radius];
+                        }
+                        else // Newer standard for calculating superelevation
+                        {
+                            if (standard != null)
+                            {
+                                float paxSpeed = SectionList[i].PassSpeedMpS;
+                                float freightSpeed = SectionList[i].FreightSpeedMpS;
+
+                                // Approximate ideal level of superelevation determined using E = (G*V^2) / (g*R), then subtract off cant deficiency
+                                // For different speeds on the same curve, we can factor out speed and get a constant c = G / (g*R)
+                                float elevationFactor = simulator.SuperElevationGauge / (9.81f * sectionData.SectionCurve.Radius);
+                                // Calculate required superelevation for passenger and freight separately
+                                float paxElevation = elevationFactor * (paxSpeed * paxSpeed) - standard.MaxPaxUnderbalanceM;
+                                float freightElevation = elevationFactor * (freightSpeed * freightSpeed) - standard.MaxFreightUnderbalanceM;
+
+                                superElevation = Math.Max(paxElevation, freightElevation); // Choose the highest required superelevation
+
+                                superElevation = (float)Math.Round(superElevation / standard.PrecisionM, MidpointRounding.AwayFromZero)
+                                    * standard.PrecisionM; // Round superelevation amount to next higher increment of precision
+
+                                superElevation = MathHelper.Clamp(superElevation, standard.MinCantM, maxElev);
+                            }
+                            else // No superelevation needed (shouldn't reach this point, this is a failsafe)
+                                superElevation = 0.0f;
+
+                            SectionList[i].NomElevM = superElevation;
+                        }
+                    }
                 }
             }
 
             Curves.Add(new List<TrVectorSection>(SectionList)); // add the curve
-            MapWFiles2Sections(SectionList); // map these sections to tiles, so we can compute it quicker later
-            if (SectionList.Count == 1) // only one section in the curve
-            {
-                SectionList[0].StartElevM = SectionList[0].EndElevM = 0f;
-                // Limit rate of change of superelevation to the runoff rate value
-                SectionList[0].MidElevM = Math.Min(SectionList[0].NomElevM, (lengths[0] / 2.0f) * effectiveRunoffSlope);
-            }
-            else // more than one section in the curve
-            {
-                int count = 0;
-                float accumulatedLength = 0;
+            MapWFiles2Sections(SectionList); // map these sections to tiles, so we can find them quicker later
 
-                foreach (var section in SectionList)
+            // Calculate the amount of superelevation as a function of curve length for all curve segments
+            int count = 0;
+            float accumulatedLength = 0;
+
+            float[] startElevs = new float[SectionList.Count];
+            float[] endElevs = new float[SectionList.Count];
+
+            foreach (var section in SectionList)
+            {
+                // Determine target starting and ending superelevation of this section
+                if (count <= 0)
+                    startElevs[count] = 0;
+                else
+                    startElevs[count] = endElevs[count - 1];
+
+                // Limit rate of change of superelevation across entire curve to the value of the runoff rate
+                float maxEnd = Math.Min(accumulatedLength + lengths[count], totLen - (accumulatedLength + lengths[count]))
+                    * effectiveRunoffSlope;
+
+                if (count >= SectionList.Count - 1)
+                    endElevs[count] = 0;
+                else
+                    endElevs[count] = Math.Min((SectionList[count].NomElevM + SectionList[count + 1].NomElevM) / 2.0f,
+                        maxEnd);
+
+                // Initialize superelevation profile with linear change in superelevation as fallback
+                float[] elevations = new float[] { startElevs[count], endElevs[count] };
+                float[] positions = new float[] { 0, 1.0f };
+
+                // Curve length required to change superelevation
+                float startRunoffLengthM = Math.Abs(SectionList[count].NomElevM - startElevs[count]) / effectiveRunoffSlope;
+                float endRunoffLengthM = Math.Abs(endElevs[count] - SectionList[count].NomElevM) / effectiveRunoffSlope;
+                float totalRunoffLengthM = Math.Abs(endElevs[count] - startElevs[count]) / effectiveRunoffSlope;
+
+                // Section is too short for ideal superelevation profile
+                if (startRunoffLengthM + endRunoffLengthM >= lengths[count]) 
                 {
-                    if (count == 0)
+                    // Section isn't purely increasing or decreasing (the fallback case works otherwise)
+                    if (totalRunoffLengthM < (lengths[count] * 0.75f))
                     {
-                        section.StartElevM = 0f;
-                        section.MidElevM = section.NomElevM;
-                        section.EndElevM = Math.Max(section.NomElevM, SectionList[count + 1].NomElevM);
-                    }
-                    else if (count == SectionList.Count - 1)
-                    {
-                        section.StartElevM = SectionList[count - 1].EndElevM;
-                        section.MidElevM = section.NomElevM;
-                        section.EndElevM = 0f;
-                    }
-                    else
-                    {
-                        section.StartElevM = SectionList[count - 1].EndElevM;
-                        // Attempt to limit rate of change of superelevation in middle curve segments
-                        float maxChange = (lengths[count] / 2.0f) * effectiveRunoffSlope;
-                        section.MidElevM = MathHelper.Clamp(section.NomElevM, section.StartElevM - maxChange, section.StartElevM + maxChange);
-                        section.EndElevM = MathHelper.Clamp(Math.Max(section.NomElevM, SectionList[count + 1].NomElevM), section.MidElevM - maxChange, section.MidElevM + maxChange);
-                        // Rate of change at the start and end is controlled by the next section
-                    }
-                    // Limit rate of change of superelevation across entire curve to the value of the runoff rate
-                    float maxStart = Math.Min(accumulatedLength, Len - accumulatedLength)
-                        * effectiveRunoffSlope;
-                    float maxMid = Math.Min(accumulatedLength + lengths[count] / 2.0f, Len - (accumulatedLength + lengths[count] / 2.0f))
-                        * effectiveRunoffSlope;
-                    float maxEnd = Math.Min(accumulatedLength + lengths[count], Len - (accumulatedLength + lengths[count]))
-                        * effectiveRunoffSlope;
+                        float midLength;
+                        float midElev;
+                        if (SectionList[count].NomElevM > startElevs[count] && SectionList[count].NomElevM > endElevs[count])
+                        {
+                            // Nominal elevation is the largest - need upward cusp
+                            // Calculate the size and location of the cusp based on theoretical vs actual change in elevation
+                            float maxEndElev = startElevs[count] + effectiveRunoffSlope * lengths[count];
 
-                    section.StartElevM = MathHelper.Clamp(section.StartElevM, 0, maxStart);
-                    section.MidElevM = MathHelper.Clamp(section.MidElevM, 0, maxMid);
-                    section.EndElevM = MathHelper.Clamp(section.EndElevM, 0, maxEnd);
+                            midLength = lengths[count] - ((maxEndElev - endElevs[count]) / effectiveRunoffSlope) / 2.0f;
+                            midElev = startElevs[count] + effectiveRunoffSlope * midLength;
+                        }
+                        else
+                        {
+                            // Need downward cusp
+                            // Calculate the size and location of the cusp based on theoretical vs actual change in elevation
+                            float minEndElev = startElevs[count] - effectiveRunoffSlope * lengths[count];
 
-                    accumulatedLength += lengths[count];
-                    count++;
+                            midLength = lengths[count] - ((endElevs[count] - minEndElev) / effectiveRunoffSlope) / 2.0f;
+                            midElev = startElevs[count] + effectiveRunoffSlope * midLength;
+                        }
+
+                        midElev = Math.Max(0, midElev);
+
+                        elevations = new float[] { startElevs[count], midElev, endElevs[count] };
+                        positions = new float[] { 0.0f, midLength / lengths[count], 1.0f };
+                    }
                 }
+                else // We can use the ideal superelevation profile
+                {
+                    // Ideal profile gradually changes from start elevation to the nominal elevation,
+                    // then holds the nominal elevation before changing from the nominal elevation to the end elevation.
+
+                    // Extra calculations only needed if superelevation is not constant across whole section
+                    if (!(startElevs[count] == SectionList[count].NomElevM && SectionList[count].NomElevM == endElevs[count]))
+                    {
+                        if (startElevs[count] != SectionList[count].NomElevM && endElevs[count] != SectionList[count].NomElevM)
+                        {
+                            // Most complex case: Superelevation is different all over the section
+                            elevations = new float[] { startElevs[count], SectionList[count].NomElevM, SectionList[count].NomElevM, endElevs[count] };
+                            positions = new float[] { 0.0f, (startRunoffLengthM) / lengths[count], (lengths[count] - endRunoffLengthM) / lengths[count], 1.0f };
+                        }
+                        else
+                        {
+                            // Nominal superelevation is the same as the start or end superelevation
+                            float midLength = startElevs[count] == SectionList[count].NomElevM ? lengths[count] - endRunoffLengthM : startRunoffLengthM;
+
+                            elevations = new float[] { startElevs[count], SectionList[count].NomElevM, endElevs[count] };
+                            positions = new float[] { 0.0f, midLength / lengths[count], 1.0f };
+                        }
+                    }
+                }
+
+                SectionList[count].PhysElevTable = new Interpolator(positions, elevations);
+
+                // Visual superelevation is stored in terms of angle in radians rather than meters
+                float[] angles = elevations.Select(e => (float)Math.Asin(e / simulator.SuperElevationGauge)).ToArray();
+                SectionList[count].VisElevTable = new Interpolator(SectionList[count].PhysElevTable.X, angles);
+
+                accumulatedLength += lengths[count];
+                count++;
             }
         }
 
