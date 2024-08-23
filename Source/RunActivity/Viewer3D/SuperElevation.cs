@@ -646,9 +646,9 @@ namespace Orts.Viewer3D
 
             Matrix PreRotation = Matrix.Identity;
             Elevated = ElevAngles[0];
-            if (Elevated > 0.0f) // Section starts in a curve; first cross section needs to be rotated
+            if (Math.Abs(Elevated) > 0.0f) // Section starts in a curve; first cross section needs to be rotated
             {
-                PreRotation = Matrix.CreateRotationZ(-Elevated * Math.Sign(DTrackData.param1));
+                PreRotation = Matrix.CreateRotationZ(Elevated);
                 PrevRotation = Elevated;
             }
 
@@ -660,7 +660,7 @@ namespace Orts.Viewer3D
                 {
                     tmp = new Vector3(v.Position.X, v.Position.Y, v.Position.Z);
 
-                    if (Elevated > 0.0f)
+                    if (Math.Abs(Elevated) > 0.0f)
                     {
                         tmp -= RollOffset;
                         tmp = Vector3.Transform(tmp, PreRotation);
@@ -684,8 +684,6 @@ namespace Orts.Viewer3D
                 CurrentRotation = DetermineRotation();
                 Elevated = CurrentRotation - PrevRotation;
                 PrevRotation = CurrentRotation;
-                if (DTrackData.param1 > 0)
-                    Elevated *= -1;
 
                 foreach (Polyline pl in lodItem.Polylines)
                 {
@@ -837,7 +835,7 @@ namespace Orts.Viewer3D
         public float DetermineRotation()
         {
             float to = (Offset + 1f) / NumSections;
-
+            
             return ElevAngles[to];
         }
     }
