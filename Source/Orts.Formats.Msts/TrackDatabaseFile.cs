@@ -788,11 +788,11 @@ namespace Orts.Formats.Msts
 
         /// <summary>Interpolator storing the amount of physics superelevation in meters vs distance along
         /// the track section normalized from 0 to 1.</summary>
-        public Interpolator PhysElevTable;
+        public Interpolator PhysElevTable = new Interpolator(new float[] { 0, 1 }, new float[] { 0, 0 });
 
         /// <summary>Interpolator storing the angle of visual superelevation in radians vs distance along
         /// the track section normalized from 0 to 1.</summary>
-        public Interpolator VisElevTable;
+        public Interpolator VisElevTable = new Interpolator(new float[] { 0, 1 }, new float[] { 0, 0 });
         /// <summary>Nominal amount of superelevation based on speed and radius.
         /// Actual superelevation used will depend on adjacent curves and superelevation settings.</summary>
         public float NomElevM { get; set; } = -1.0f;

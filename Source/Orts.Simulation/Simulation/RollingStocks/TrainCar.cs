@@ -2830,7 +2830,7 @@ namespace Orts.Simulation.RollingStocks
                     if (-.2 < d && d < .2)
                         continue;
                     // Add a fake "wheel" to serve as a pivot point
-                    p.AddWheelSetLocation(1, p.OffsetM, p0.Pos[0] + p.OffsetM * p0.Dir[0], p0.Pos[1] + p.OffsetM * p0.Dir[1], p0.Pos[2] + p.OffsetM * p0.Dir[2], 0);
+                    p.AddWheelSetLocation(1, p.OffsetM, p0.Pos[0] + p.OffsetM * p0.Dir[0], p0.Pos[1] + p.OffsetM * p0.Dir[1], p0.Pos[2] + p.OffsetM * p0.Dir[2], p.Roll);
                     p.FindCenterLine();
                 }
             }

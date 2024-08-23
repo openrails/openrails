@@ -1041,7 +1041,7 @@ namespace Orts.Simulation
             {
                 visualElev = trackVectorSection.VisElevTable[to];
                 // Correct the direction of tilt for the direction of travel
-                visualElev *= Math.Sign(trackSection.SectionCurve.Angle) > 0 ^ direction == TravellerDirection.Backward ? -1 : 1;
+                visualElev *= direction == TravellerDirection.Backward ? -1 : 1;
             }
             else
                 visualElev = 0;

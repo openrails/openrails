@@ -90,7 +90,7 @@ namespace Orts.Simulation
                         }
                         else if (curveDir != Math.Sign(sec.SectionCurve.Angle)) // we are in curve, but bending different dir
                         {
-                            MarkSections(simulator, sectionList, curveLen, sectionLengths); // treat the sections encountered so far, then restart with other dir
+                            MarkSections(simulator, sectionList, curveLen, sectionLengths, curveDir); // treat the sections encountered so far, then restart with other dir
                             curveDir = Math.Sign(sec.SectionCurve.Angle);
                             sectionList.Clear();
                             sectionLengths.Clear();
@@ -104,7 +104,7 @@ namespace Orts.Simulation
                     {
                         if (startCurve == true) // we are in a curve, need to finish
                         {
-                            MarkSections(simulator, sectionList, curveLen, sectionLengths);
+                            MarkSections(simulator, sectionList, curveLen, sectionLengths, curveDir);
                             curveLen = 0f;
                             sectionList.Clear();
                             sectionLengths.Clear();
@@ -126,16 +126,23 @@ namespace Orts.Simulation
                 }
                 if (startCurve == true) // we are in a curve after looking at every section
                 {
-                    MarkSections(simulator, sectionList, curveLen, sectionLengths);
+                    MarkSections(simulator, sectionList, curveLen, sectionLengths, curveDir);
                 }
                 sectionList.Clear();
             }
         }
 
-        void MarkSections(Simulator simulator, List<TrVectorSection> SectionList, float totLen, List<float> lengths)
+        void MarkSections(Simulator simulator, List<TrVectorSection> SectionList, float totLen, List<float> lengths, int direction)
         {
-            if (totLen < simulator.SuperElevationMinLen || SectionList.Count == 0)
-                return; // Ignore curves too short or invalid data
+            if (SectionList.Count <= 0)
+                return; // Avoid errors with invalid section lists
+            else if (totLen < simulator.SuperElevationMinLen)
+            {
+                // Zero out any curves that are too short
+                foreach (TrVectorSection s in SectionList)
+                    s.NomElevM = 0;
+                return;
+            }
 
             // The superelevation standard we will use. null means no superelevation
             SuperElevationStandard standard = null;
@@ -218,9 +225,8 @@ namespace Orts.Simulation
                             }
                             else // No superelevation needed (shouldn't reach this point, this is a failsafe)
                                 superElevation = 0.0f;
-
-                            SectionList[i].NomElevM = superElevation;
                         }
+                        SectionList[i].NomElevM = superElevation;
                     }
                 }
             }
@@ -325,6 +331,9 @@ namespace Orts.Simulation
                 // Visual superelevation is stored in terms of angle in radians rather than meters
                 float[] angles = elevations.Select(e => (float)Math.Asin(e / simulator.SuperElevationGauge)).ToArray();
                 SectionList[count].VisElevTable = new Interpolator(SectionList[count].PhysElevTable.X, angles);
+                // Invert visual elevation values based on curve direction
+                // direction is negated for consistency of direction sense in other places
+                SectionList[count].VisElevTable.ScaleY(-direction);
 
                 accumulatedLength += lengths[count];
                 count++;
