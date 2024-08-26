@@ -636,7 +636,7 @@ namespace Orts.Simulation.RollingStocks
         protected float TrackGaugeM = 1.435f;  // Track gauge - read in MSTSWagon
         protected Vector3 InitialCentreOfGravityM = new Vector3(0, 1.8f, 0); // get centre of gravity - read in MSTSWagon
         protected Vector3 CentreOfGravityM = new Vector3(0, 1.8f, 0); // get centre of gravity after adjusted for freight animation
-        protected float SuperelevationM; // Super elevation on the curve
+        public float SuperelevationM; // Super elevation on the curve
         protected float MaxUnbalancedSuperElevationM;  // Maximum comfortable cant deficiency, read from MSTS Wagon File
         public float SuperElevationAngleRad;
         protected bool IsMaxSafeCurveSpeed = false; // Has equal loading speed around the curve been exceeded, ie are all the wheesl still on the track?
