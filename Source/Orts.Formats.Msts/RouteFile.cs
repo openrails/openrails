@@ -106,7 +106,7 @@ namespace Orts.Formats.Msts
                 // values for superelevation
                 new STFReader.TokenProcessor("ortstracksuperelevation", ()=>{ SuperElevationHgtpRadiusM = new Interpolator(stf); }),
                 // New superelevation standard, will overwrite ORTSTrackSuperElevation
-                new STFReader.TokenProcessor("ortssuperelevation", ()=>{ SuperElevationHgtpRadiusM = null; SuperElevation.Add(new SuperElevationStandard(stf)); }),
+                new STFReader.TokenProcessor("ortssuperelevation", ()=>{ SuperElevation.Add(new SuperElevationStandard(stf)); }),
                 // images
                 new STFReader.TokenProcessor("graphic", ()=>{ Thumbnail = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("loadingscreen", ()=>{ LoadingScreen = stf.ReadStringBlock(null); }),
@@ -132,6 +132,7 @@ namespace Orts.Formats.Msts
             if (RouteStart == null) throw new STFException(stf, "Missing RouteStart");
             if (ForestClearDistance == 0 && RemoveForestTreesFromRoads) Trace.TraceWarning("You must define also ORTSUserPreferenceForestClearDistance to avoid trees on roads");
             if (SuperElevation.Count <= 0) SuperElevation.Add(new SuperElevationStandard());
+            else SuperElevationHgtpRadiusM = null; // Disable legacy superelevation system if newer system is defined
         }
 
         public string RouteID;  // ie JAPAN1  - used for TRK file and route folder name

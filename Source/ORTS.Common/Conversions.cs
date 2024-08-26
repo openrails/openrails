@@ -682,6 +682,13 @@ namespace ORTS.Common
             return String.Format(CultureInfo.CurrentCulture, "{0:N3} {1}", Me.ToFt(distanceM), ft);
         }
 
+        public static string FormatMillimeterDistanceDisplay(float distanceM, bool isMetric)
+        {
+            if (isMetric)
+                return String.Format(CultureInfo.CurrentCulture, "{0:N0} {1}", distanceM * 1000.0f, mm);
+            return String.Format(CultureInfo.CurrentCulture, "{0:N1} {1}", Me.ToIn(distanceM), "in");
+        }
+
         /// <summary>
         /// format localized mass string, as displayed in in-game windows.
         /// </summary>
