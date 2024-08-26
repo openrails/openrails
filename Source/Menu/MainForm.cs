@@ -771,7 +771,7 @@ namespace ORTS
             });
         }
 
-        public void LoadFolderListWhithoutTask()
+        public void LoadFolderListWithoutTask()
         {
             Folders = Folder.GetFolders(Settings).OrderBy(f => f.Name).ToList();
             ShowFolderList();
