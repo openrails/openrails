@@ -16,7 +16,23 @@ installation profile.
 
 .. image:: images/start-activity.png
 
-If not, then you must download some content and add it as an Installation Profile.
+If not, then the next ``Download Content`` form is shown where you can download content. This form is described in the next `Content` chapter.
+
+Content
+=======
+
+Clicking on the ``Content`` button makes the ``Download Content`` form popup (if not already there for a new empty Open Rails installation):
+
+.. image:: images/download-content-form.png
+
+Select the route to be installed. This list will be enlarged by the OR team when suitable routes become available.
+However it is still possible to install routes manually as described in the next chapter.
+
+* ``Install path`` and ``Browse``: Fill in or Browse to the path where the route is to be installed. Each route will be installed in its own subdirectory.
+* ``Info``: Gives more information of the selected route. The default web browser will be started with the information page.
+* ``Install``: Installs the selected route. A popup mentions the directory where the route is to be installed before starting the actual install. Installation profile gets added also.
+* ``Delete``: Delete route with this button. Take care: whole directory including any added and changed files gets deleted.
+* ``Update``: GitHub-based routes can get updated after the install by means of this button. A check for updates is made when clicking this button and updates may be reported at the end of the information webpage. Also GitHub has a watch feature which notifies you of changes by email.
 
 Installation Profiles
 =====================
