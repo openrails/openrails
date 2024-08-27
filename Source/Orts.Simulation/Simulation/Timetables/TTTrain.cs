@@ -4490,7 +4490,7 @@ namespace Orts.Simulation.Timetables
                 }            
                 else if (nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.REVERSAL)
                 {
-					// Check if approaching reversal point
+                    // Check if approaching reversal point
                     if (Math.Abs(SpeedMpS) < 0.05f)
                     {
                         SpeedMpS = 0;
@@ -13722,13 +13722,13 @@ namespace Orts.Simulation.Timetables
                         }
                         else
                         {
-                        if (!ReverseDetachedTrain.HasValue)
-                        {
-                            ReverseDetachedTrain = GetDetachReversalInfo(train, newTrain);
-                        }
+                            if (!ReverseDetachedTrain.HasValue)
+                            {
+                                ReverseDetachedTrain = GetDetachReversalInfo(train, newTrain);
+                            }
 
-                        bool newIsPlayer = newTrain.TrainType == Train.TRAINTYPE.INTENDED_PLAYER;
-                        newTrain.LeadLocomotiveIndex = train.TTUncoupleBehind(newTrain, ReverseDetachedTrain.Value, -1, newIsPlayer);
+                            bool newIsPlayer = newTrain.TrainType == Train.TRAINTYPE.INTENDED_PLAYER;
+                            newTrain.LeadLocomotiveIndex = train.TTUncoupleBehind(newTrain, ReverseDetachedTrain.Value, -1, newIsPlayer);
 
 
                         }
