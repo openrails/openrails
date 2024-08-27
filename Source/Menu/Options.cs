@@ -347,7 +347,6 @@ namespace ORTS
 
             // Experimental tab
             numericUseSuperElevation.Value = Settings.UseSuperElevation;
-            numericSuperElevationMinLen.Value = Settings.SuperElevationMinLen;
             numericSuperElevationGauge.Value = Settings.SuperElevationGauge;
             trackLODBias.Value = Settings.LODBias;
             trackLODBias_ValueChanged(null, null);
@@ -540,7 +539,6 @@ namespace ORTS
 
             // Experimental tab
             Settings.UseSuperElevation = (int)numericUseSuperElevation.Value;
-            Settings.SuperElevationMinLen = (int)numericSuperElevationMinLen.Value;
             Settings.SuperElevationGauge = (int)numericSuperElevationGauge.Value;
             Settings.LODBias = trackLODBias.Value;
             Settings.SignalLightGlow = checkSignalLightGlow.Checked;
