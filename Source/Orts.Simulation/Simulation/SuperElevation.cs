@@ -136,13 +136,6 @@ namespace Orts.Simulation
         {
             if (SectionList.Count <= 0)
                 return; // Avoid errors with invalid section lists
-            else if (totLen < simulator.SuperElevationMinLen)
-            {
-                // Zero out any curves that are too short
-                foreach (TrVectorSection s in SectionList)
-                    s.NomElevM = 0;
-                return;
-            }
 
             // The superelevation standard we will use. null means no superelevation
             SuperElevationStandard standard = null;
@@ -178,7 +171,17 @@ namespace Orts.Simulation
             }
 
             if (standard == null)
+            {
+                foreach (TrVectorSection s in SectionList)
+                    s.NomElevM = 0;
                 return; // No superelevation needed, stop processing here
+            }
+            if ((standard.MinCantM / effectiveRunoffSlope) * 2.0f > totLen * 0.75f)
+            {
+                foreach (TrVectorSection s in SectionList)
+                    s.NomElevM = 0;
+                return; // Curve is so short that no meaningful superelevation can be applied
+            }
 
             // Determine proper level of superelevation for every section
             for (int i = 0; i < SectionList.Count; i++)

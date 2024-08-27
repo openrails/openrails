@@ -130,7 +130,6 @@ namespace Orts.Simulation
         public int CarVibrating;
         public int UseSuperElevation; //amount of superelevation
         public SuperElevation SuperElevation;
-        public int SuperElevationMinLen = 50;
         public float SuperElevationGauge = 1.435f;//1.435 guage
         public LoadStationsPopulationFile LoadStationsPopulationFile;
 
@@ -274,7 +273,6 @@ namespace Orts.Simulation
             BreakCouplers = Settings.BreakCouplers;
             CarVibrating = Settings.CarVibratingLevel; //0 no vib, 1-2 mid vib, 3 max vib
             UseSuperElevation = Settings.UseSuperElevation;
-            SuperElevationMinLen = Settings.SuperElevationMinLen;
             SuperElevationGauge = (float)Settings.SuperElevationGauge / 1000f;//gauge transfer from mm to m
             RoutePath = Path.GetDirectoryName(Path.GetDirectoryName(activityPath));
             if (useOpenRailsDirectory) RoutePath = Path.GetDirectoryName(RoutePath); // starting one level deeper!

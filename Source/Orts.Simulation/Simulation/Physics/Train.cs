@@ -4537,7 +4537,7 @@ namespace Orts.Simulation.Physics
 
                     // Position car based on MSTS position, and rotate based on superelevation
                     car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y, traveller.Z, x, y, z);
-                    car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ(roll) * car.WorldPosition.XNAMatrix;
+                    car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
 
                     // note the railcar sits 0.275meters above the track database path  TODO - is this always consistent?
                     float railOffset = 0.275f;
@@ -4670,7 +4670,7 @@ namespace Orts.Simulation.Physics
 
                     // Position car based on MSTS position, and rotate based on superelevation
                     car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y, traveller.Z, x, y, z);
-                    car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ(roll) * car.WorldPosition.XNAMatrix;
+                    car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
 
                     // note the railcar sits 0.275meters above the track database path  TODO - is this always consistent?
                     float railOffset = 0.275f;
@@ -4763,7 +4763,7 @@ namespace Orts.Simulation.Physics
 
                 // Position car based on MSTS position, and rotate based on superelevation
                 car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y, traveller.Z, x, y, z);
-                car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ(roll) * car.WorldPosition.XNAMatrix;
+                car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
 
                 // note the railcar sits 0.275meters above the track database path  TODO - is this always consistent?
                 float railOffset = 0.275f;
