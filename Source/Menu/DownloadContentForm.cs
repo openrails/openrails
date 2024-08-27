@@ -55,6 +55,9 @@ namespace ORTS
         {
             InitializeComponent();
 
+            this.FormBorderStyle = FormBorderStyle.FixedSingle; // remove resize control
+            this.MaximizeBox = false; // disable maximize button
+
             Catalog = new GettextResourceManager("Menu");
             Settings = settings;
 
