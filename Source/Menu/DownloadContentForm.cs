@@ -55,6 +55,9 @@ namespace ORTS
         {
             InitializeComponent();
 
+            this.FormBorderStyle = FormBorderStyle.FixedSingle; // remove resize control
+            this.MaximizeBox = false; // disable maximize button
+
             Catalog = new GettextResourceManager("Menu");
             Settings = settings;
 
@@ -304,7 +307,7 @@ namespace ORTS
             Settings.Content.Save();
 
             MainForm mainForm = ((MainForm)Owner);
-            mainForm.LoadFolderListWhithoutTask();
+            mainForm.LoadFolderListWithoutTask();
             mainForm.comboBoxFolder.SelectedIndex = determineSelectedIndex(mainForm.comboBoxFolder, RouteName);
 
             MessageBox.Show(Catalog.GetString("Route installed."),
@@ -904,7 +907,7 @@ namespace ORTS
             dataGridViewDownloadContent.CurrentRow.Cells[1].Value = "";
 
             MainForm mainForm = ((MainForm)Owner);
-            mainForm.LoadFolderListWhithoutTask();
+            mainForm.LoadFolderListWithoutTask();
 
             Refresh();
 
