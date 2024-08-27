@@ -575,7 +575,7 @@ namespace ORTS
                 }
             }
         }
-
+        
         void buttonDownloadContent_Click(object sender, EventArgs e)
         {
             using (var form = new DownloadContentForm(Settings))
@@ -1356,9 +1356,9 @@ namespace ORTS
                 if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
                 {
                     comboBox.Text = Settings.Menu_Selection[(int)index];
-            }
-            else
-            {
+                }
+                else
+                {
                     SelectComboBoxItem<T>(comboBox, item => map(item) == Settings.Menu_Selection[(int)index]);
                 }
             }
@@ -1405,7 +1405,7 @@ namespace ORTS
                     if ((index != UserSettings.Menu_SelectionIndex.Path) ||
                         (SelectedActivity == null) || (!(SelectedActivity is ExploreActivity)))
                     {
-                if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
+                        if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
                         {
                             comboBox.Text = valueComboboxToSetTo;
                             found = true;
@@ -1424,9 +1424,9 @@ namespace ORTS
                     {
                         if (comboBox.Items.Count > 0)
                         {
-                    comboBox.SelectedIndex = 0;
-            }
-        }
+                            comboBox.SelectedIndex = 0;
+                        }
+                    }
                 }
                 else
                 {
