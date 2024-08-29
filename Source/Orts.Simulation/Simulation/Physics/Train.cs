@@ -4163,6 +4163,7 @@ namespace Orts.Simulation.Physics
             for (var i = 0; i < Cars.Count; i++)
             {
                 Cars[i].BrakeSystem.FrontBrakeHoseConnected = i > 0;
+                Cars[i].BrakeSystem.RearBrakeHoseConnected = i < Cars.Count - 1;
                 Cars[i].BrakeSystem.AngleCockAOpen = i > 0;
                 Cars[i].BrakeSystem.AngleCockBOpen = i < Cars.Count - 1;
                 // If end of train is not reached yet, then test the attached following car. If it is a manual braked car then set the brake cock on this car to closed.
