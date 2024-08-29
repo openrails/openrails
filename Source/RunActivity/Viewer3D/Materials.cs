@@ -203,7 +203,7 @@ namespace Orts.Viewer3D
         {
             if (path == null || path == "")
                 return SharedMaterialManager.MissingTexture;
-        
+
             path = path.ToLowerInvariant();
             var ext = Path.GetExtension(path);
 
