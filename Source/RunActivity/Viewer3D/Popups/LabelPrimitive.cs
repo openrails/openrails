@@ -34,7 +34,7 @@ namespace Orts.Viewer3D.Popups
 
         readonly Viewer Viewer;
         readonly float OffsetY;
-
+        public bool InsideBox { set; get; }
         public LabelPrimitive(Label3DMaterial material, Color color, Color outline, float offsetY)
         {
             Material = material;
@@ -42,6 +42,15 @@ namespace Orts.Viewer3D.Popups
             Color = color;
             Outline = outline;
             OffsetY = offsetY;
+        }
+        public LabelPrimitive(Label3DMaterial material, Color color, Color outline, float offsetY, bool insideBox)
+        {
+            Material = material;
+            Viewer = material.Viewer;
+            Color = color;
+            Outline = outline;
+            OffsetY = offsetY;
+            InsideBox = insideBox;
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
@@ -55,13 +64,17 @@ namespace Orts.Viewer3D.Popups
             if (lineLocation2DStart.Z > 1 || lineLocation2DStart.Z < 0)
                 return; // Out of range or behind the camera
 
-            lineLocation3D.Y += 10;
+            lineLocation3D.Y += InsideBox ? 0 : 10;
             var lineLocation2DEndY = Viewer.GraphicsDevice.Viewport.Project(lineLocation3D, Viewer.Camera.XnaProjection, Viewer.Camera.XnaView, Matrix.Identity).Y;
 
             var labelLocation2D = Material.GetTextLocation((int)lineLocation2DStart.X, (int)lineLocation2DEndY - Material.Font.Height, Text);
             lineLocation2DEndY = labelLocation2D.Y + Material.Font.Height;
 
-            Material.Font.Draw(Material.SpriteBatch, labelLocation2D, Text, Color, Outline);
+            if (InsideBox)
+                Material.BigFont.Draw(Material.SpriteBatch, labelLocation2D, Text, Color, Outline);
+            else
+                Material.Font.Draw(Material.SpriteBatch, labelLocation2D, Text, Color, Outline);
+
             Material.SpriteBatch.Draw(Material.Texture, new Vector2(lineLocation2DStart.X - 1, lineLocation2DEndY), null, Outline, 0, Vector2.Zero, new Vector2(4, lineLocation2DStart.Y - lineLocation2DEndY), SpriteEffects.None, lineLocation2DStart.Z);
             Material.SpriteBatch.Draw(Material.Texture, new Vector2(lineLocation2DStart.X, lineLocation2DEndY), null, Color, 0, Vector2.Zero, new Vector2(2, lineLocation2DStart.Y - lineLocation2DEndY), SpriteEffects.None, lineLocation2DStart.Z);
         }

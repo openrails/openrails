@@ -406,6 +406,10 @@ namespace ORTS.Settings
         [Default(new[] { 50, 50 })]
         public int[] WindowPosition_TrainOperations { get; set; }
         [Default(new[] { 50, 50 })]
+        public int[] WindowPosition_TrainCarOperations { get; set; }
+        [Default(new[] { 50, 50 })]
+        public int[] WindowPosition_TrainCarOperationsViewer { get; set; }
+        [Default(new[] { 50, 50 })]
         public int[] WindowPosition_TrainDpu { get; set; }
         [Default(new[] { 50, 50 })]
         public int[] WindowPosition_CarOperations { get; set; }
@@ -480,11 +484,16 @@ namespace ORTS.Settings
         [Default(0)] // TrackMonitor.DisplayMode.All
         public int TrackMonitorDisplayMode { get; set; }
 
+        // Content form settings
+        [Default("")]
+        public string ContentInstallPath { get; set; }
+
         #endregion
 
         public FolderSettings Folders { get; private set; }
         public InputSettings Input { get; private set; }
         public RailDriverSettings RailDriver { get; private set; }
+        public ContentSettings Content { get; private set; }   
 
         public UserSettings(IEnumerable<string> options)
             : base(SettingsStore.GetSettingStore(SettingsFilePath, RegistryKey, null))
@@ -496,6 +505,7 @@ namespace ORTS.Settings
             Folders = new FolderSettings(options);
             Input = new InputSettings(options);
             RailDriver = new RailDriverSettings(options);
+            Content = new ContentSettings(options);
         }
 
         /// <summary>
@@ -544,7 +554,10 @@ namespace ORTS.Settings
 
         PropertyInfo[] GetProperties()
         {
-            return GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).Where(pi => pi.Name != "Folders" && pi.Name != "Input" && pi.Name != "RailDriver").ToArray();
+            return GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).
+                // leave out the properties based on own, non System classes (f.i. RailDriver property)
+                Where(pi => pi.PropertyType.FullName.Split('.')[0] == "System").
+                    ToArray();
         }
 
         protected override object GetValue(string name)
@@ -575,6 +588,7 @@ namespace ORTS.Settings
             Folders.Save();
             Input.Save();
             RailDriver.Save();
+            Content.Save();
         }
 
         public override void Save(string name)

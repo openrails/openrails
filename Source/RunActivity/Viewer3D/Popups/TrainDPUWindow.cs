@@ -340,17 +340,6 @@ namespace Orts.Viewer3D.Popups
             UpdateWindowSize();
         }
 
-        public override void TabAction() => CycleMode();
-
-        /// <summary>
-        /// Change between full and abbreviated text mode.
-        /// </summary>
-        public void CycleMode()
-        {
-            normalTextMode = !normalTextMode;
-            UpdateWindowSize();
-        }
-
         private void UpdateWindowSize()
         {
             labels = TrainDPUWindowList(Owner.Viewer, normalTextMode).ToList();
@@ -542,7 +531,7 @@ namespace Orts.Viewer3D.Popups
                 if (Visible)
                 {
                     // Detect Autopilot is on to avoid flickering when slim window is displayed
-                    var AutopilotOn = Owner.Viewer.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING ? true : false;
+                    var AutopilotOn = (Owner.Viewer.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || Owner.Viewer.PlayerLocomotive.Train.Autopilot) ? true : false;
 
                     //ResizeWindow, when the string spans over the right boundary of the window
                     maxFirstColWidth = labels.Max(x => x.FirstColWidth);

@@ -16,7 +16,23 @@ installation profile.
 
 .. image:: images/start-activity.png
 
-If not, then you must download some content and add it as an Installation Profile.
+If not, then the next ``Download Content`` form is shown where you can download content. This form is described in the next `Content` chapter.
+
+Content
+=======
+
+Clicking on the ``Content`` button makes the ``Download Content`` form popup (if not already there for a new empty Open Rails installation):
+
+.. image:: images/download-content-form.png
+
+Select the route to be installed. This list will be enlarged by the OR team when suitable routes become available.
+However it is still possible to install routes manually as described in the next chapter.
+
+* ``Install path`` and ``Browse``: Fill in or Browse to the path where the route is to be installed. Each route will be installed in its own subdirectory.
+* ``Info``: Gives more information of the selected route. The default web browser will be started with the information page.
+* ``Install``: Installs the selected route. A popup mentions the directory where the route is to be installed before starting the actual install. Installation profile gets added also.
+* ``Delete``: Delete route with this button. Take care: whole directory including any added and changed files gets deleted.
+* ``Update``: GitHub-based routes can get updated after the install by means of this button. A check for updates is made when clicking this button and updates may be reported at the end of the information webpage. Also GitHub has a watch feature which notifies you of changes by email.
 
 Installation Profiles
 =====================
@@ -149,6 +165,22 @@ Publishing Notifications
 
 The Notifications document explains how to publish notifications and is included in the :ref:`Documents drop-down<documents>`.
 
+=======
+When a new release of OR is available and your computer is online, a link 
+``Update to xnnnn`` appears in the upper right corner. The string ``xnnnn`` is 
+the release number of the newest release that matches your selected level 
+of update. Various level of updates called Update Channels are available. 
+You may choose the desired level in the ``Options-Update`` window, described 
+:ref:`below <options-updater-options>`.
+
+When you click on the update link OR will download and install the new 
+release. In this way your version of Open Rails is always up to date. 
+Note, however, that previously saved games may not be compatible with 
+newer versions, as described :ref:`here <driving-saveresume>`.
+
+Clicking the link ``What's new?`` in the upper centre part of the main menu 
+window will connect to a website that summarizes the most recent changes 
+to the OR program.
 
 Further General Buttons
 =======================
@@ -221,7 +253,7 @@ If you instead select a specific activity, you won't have to perform any
 further selections.
 
 Activity Evaluation
-''''''''''''''''''
+'''''''''''''''''''
 
 During the activity session, data about performance is stored and may be viewed as the activity progresses.
 At the end of the activity a report file is generated which provides a summary of 

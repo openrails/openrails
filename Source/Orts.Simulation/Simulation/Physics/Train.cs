@@ -315,6 +315,7 @@ namespace Orts.Simulation.Physics
             }
         }
 
+        public bool Autopilot;                              // true if autopiloted
         public bool IsPlayable = false;
         public bool IsPathless = false;
 
@@ -574,7 +575,7 @@ namespace Orts.Simulation.Physics
         {
             Init(simulator);
 
-            if (Simulator.IsAutopilotMode && TotalNumber == 1 && Simulator.TrainDictionary.Count == 0) TotalNumber = 0; //The autopiloted train has number 0
+            if (Simulator.IsAutopilotMode && TotalNumber == 1 && Simulator.TrainDictionary.Count == 0 && !Simulator.TimetableMode) TotalNumber = 0; //The autopiloted train has number 0
             Number = TotalNumber;
             TotalNumber++;
             SignalObjectItems = new List<ObjectItemInfo>();
@@ -893,6 +894,7 @@ namespace Orts.Simulation.Physics
                 PreviousPosition[0] = new TCPosition();
                 PreviousPosition[0].RestorePreviousPositionDummy(inf);
             }
+            Autopilot = inf.ReadBoolean();
             travelled = DistanceTravelledM;
             int activeActions = inf.ReadInt32();
             for (int iAction = 0; iAction < activeActions; iAction++)
@@ -1200,6 +1202,7 @@ namespace Orts.Simulation.Physics
             PresentPosition[0].Save(outf);
             PresentPosition[1].Save(outf);
             PreviousPosition[0].Save(outf);
+            outf.Write(Autopilot);
             //  Save requiredAction, the original actions
             outf.Write(requiredActions.Count);
             foreach (DistanceTravelledItem thisAction in requiredActions)
@@ -1291,9 +1294,6 @@ namespace Orts.Simulation.Physics
             // negative numbers used if rear cab selected
             // because '0' has no negative, all indices are shifted by 1!!!!
 
-            int presentIndex = LeadLocomotiveIndex + 1;
-            if (((MSTSLocomotive)LeadLocomotive).UsingRearCab) presentIndex = -presentIndex;
-
             List<int> cabList = new List<int>();
 
             for (int i = 0; i < Cars.Count; i++)
@@ -1312,7 +1312,12 @@ namespace Orts.Simulation.Physics
                     if (hasFrontCab) cabList.Add(i + 1);
                     if (hasRearCab) cabList.Add(-(i + 1));
                 }
+                if (LeadLocomotiveIndex == -1 && Simulator.PlayerLocomotive == Cars[i])
+                    LeadLocomotiveIndex = i;
             }
+
+            int presentIndex = LeadLocomotiveIndex + 1;
+            if (((MSTSLocomotive)LeadLocomotive).UsingRearCab) presentIndex = -presentIndex;
 
             int lastIndex = cabList.IndexOf(presentIndex);
             if (lastIndex >= cabList.Count - 1) lastIndex = -1;
@@ -1339,6 +1344,8 @@ namespace Orts.Simulation.Physics
             if (Simulator.PlayerLocomotive != null && Simulator.PlayerLocomotive.Train == this)
 
                 Simulator.PlayerLocomotive = newLead;
+            if (Autopilot || TrainType == TRAINTYPE.AI_PLAYERHOSTING)
+                LeadLocomotiveIndex = -1;
 
             return newLead;
         }
@@ -4156,6 +4163,7 @@ namespace Orts.Simulation.Physics
             for (var i = 0; i < Cars.Count; i++)
             {
                 Cars[i].BrakeSystem.FrontBrakeHoseConnected = i > 0;
+                Cars[i].BrakeSystem.RearBrakeHoseConnected = i < Cars.Count - 1;
                 Cars[i].BrakeSystem.AngleCockAOpen = i > 0;
                 Cars[i].BrakeSystem.AngleCockBOpen = i < Cars.Count - 1;
                 // If end of train is not reached yet, then test the attached following car. If it is a manual braked car then set the brake cock on this car to closed.
@@ -10373,7 +10381,7 @@ namespace Orts.Simulation.Physics
 
         public void RequestToggleManualMode()
         {
-            if (TrainType == TRAINTYPE.AI_PLAYERHOSTING)
+            if (TrainType == TRAINTYPE.AI_PLAYERHOSTING || Autopilot)
             {
                 if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You cannot enter manual mode when autopiloted"));
@@ -21201,7 +21209,7 @@ namespace Orts.Simulation.Physics
                 if (passengerCarsWithinPlatform > 0)
                 {
                     var actualNumPassengersWaiting = PlatformItem.NumPassengersWaiting;
-                    if (stopTrain.TrainType != TRAINTYPE.AI_PLAYERHOSTING) RandomizePassengersWaiting(ref actualNumPassengersWaiting, stopTrain);
+                    if (stopTrain.TrainType != TRAINTYPE.AI_PLAYERHOSTING && !stopTrain.Autopilot) RandomizePassengersWaiting(ref actualNumPassengersWaiting, stopTrain);
                     stopTime = Math.Max(NumSecPerPass * actualNumPassengersWaiting / passengerCarsWithinPlatform, DefaultFreightStopTime);
                 }
                 else stopTime = 0; // no passenger car stopped within platform: sorry, no countdown starts
