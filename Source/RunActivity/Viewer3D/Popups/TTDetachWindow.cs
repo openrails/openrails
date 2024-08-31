@@ -85,7 +85,7 @@ namespace Orts.Viewer3D.Popups
                 {
                     List<DetachInfo> thisDetachList = reqTrain.DetachDetails[reqTrain.DetachActive[0]];
                     reqDetach = thisDetachList[reqTrain.DetachActive[1]];
-                    string formedTrain = String.Copy(reqDetach.DetachFormedTrainName);
+                    string formedTrain = reqDetach.DetachFormedTrainName;
                     if (reqDetach.DetachFormedStatic)
                     {
                         if (String.IsNullOrEmpty(reqDetach.DetachFormedTrainName))
@@ -99,12 +99,12 @@ namespace Orts.Viewer3D.Popups
                         }
                     }
 
-                    string formedPortion = String.Copy(Viewer.Catalog.GetString("Rear"));
-                    string otherPortion = String.Copy(Viewer.Catalog.GetString("Front"));
+                    string formedPortion = Viewer.Catalog.GetString("Rear");
+                    string otherPortion = Viewer.Catalog.GetString("Front");
                     if (reqTrain.DetachPosition)
                     {
-                        formedPortion = String.Copy(Viewer.Catalog.GetString("Front"));
-                        otherPortion = String.Copy(Viewer.Catalog.GetString("Rear"));
+                        formedPortion = Viewer.Catalog.GetString("Front");
+                        otherPortion = Viewer.Catalog.GetString("Rear");
                     }
 
                     if (reqDetach.CheckPlayerPowerPortion(reqTrain))

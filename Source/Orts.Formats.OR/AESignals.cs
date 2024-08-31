@@ -2021,7 +2021,7 @@ namespace Orts.Formats.OR
 
         public AESignalWorldObject(AESignalWorldObject copy)
         {
-            SFileName = String.Copy(copy.SFileName);
+            SFileName = copy.SFileName;
             Backfacing = copy.Backfacing;
 
             HeadsSet = new bool[copy.HeadsSet.Length];

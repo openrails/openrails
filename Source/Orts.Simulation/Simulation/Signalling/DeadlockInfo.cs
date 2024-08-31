@@ -497,7 +497,7 @@ namespace Orts.Simulation.Signalling
                             }
                         }
 
-                        if (!groupfound) existPathInfo.Groups.Add(String.Copy(thisGroupName));
+                        if (!groupfound) existPathInfo.Groups.Add(thisGroupName);
                     }
 
                     // check if path referenced from correct start position, else add reference
@@ -524,8 +524,8 @@ namespace Orts.Simulation.Signalling
 
             int newPathIndex = AvailablePathList.Count;
             DeadlockPathInfo newPathInfo = new DeadlockPathInfo(thisPath, newPathIndex);
-            newPathInfo.Name = String.Copy(thisName);
-            if (!String.IsNullOrEmpty(thisGroupName)) newPathInfo.Groups.Add(String.Copy(thisGroupName));
+            newPathInfo.Name = thisName;
+            if (!String.IsNullOrEmpty(thisGroupName)) newPathInfo.Groups.Add(thisGroupName);
 
             AvailablePathList.Add(newPathInfo);
 

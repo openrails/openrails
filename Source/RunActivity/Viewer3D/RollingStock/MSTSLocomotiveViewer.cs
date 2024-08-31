@@ -1700,6 +1700,8 @@ namespace Orts.Viewer3D.RollingStock
         void HandleUserInput();
         string GetControlName();
         string ControlLabel { get; }
+        Rectangle DestinationRectangleGet();
+        bool isMouseControl();
     }
 
     /// <summary>
@@ -2855,6 +2857,16 @@ namespace Orts.Viewer3D.RollingStock
             }
 
             return index;
+        }
+
+        public Rectangle DestinationRectangleGet()
+        {
+            return DestinationRectangle;
+        }
+
+        public bool isMouseControl()
+        {
+            return ControlDiscrete.MouseControl;
         }
     }
 
@@ -4210,7 +4222,7 @@ namespace Orts.Viewer3D.RollingStock
 
             if (locoViewer.ThreeDimentionCabRenderer.ControlMap.TryGetValue(Key, out CabViewControlRenderer cvfr))
             {
-                float index = cvfr is CabViewDiscreteRenderer renderer ? renderer.GetDrawIndex() : cvfr.GetRangeFraction() * FrameCount;
+                float index = cvfr is CabViewDiscreteRenderer renderer ? renderer.GetDrawIndex() : cvfr.GetRangeFraction() * MaxFrame;
                 SetFrameClamp(index);
             }
         }

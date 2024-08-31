@@ -493,7 +493,7 @@ namespace Orts.Simulation
             ContainerManager = new ContainerManager(this);
             Trains = new TrainList(this);
             PoolHolder = new Poolholder(this, arguments, cancellation);
-            PathName = String.Copy(arguments[1]);
+            PathName = arguments[1];
 
             TimetableInfo TTinfo = new TimetableInfo(this);
 
@@ -509,7 +509,7 @@ namespace Orts.Simulation
             // check for user defined weather file
             if (arguments.Length == 6)
             {
-                UserWeatherFile = String.Copy(arguments[5]);
+                UserWeatherFile = arguments[5];
             }
 
             if (playerTTTrain != null)
@@ -1309,11 +1309,26 @@ namespace Orts.Simulation
                     if (Activity != null && mstsDieselLocomotive != null)
                         mstsDieselLocomotive.DieselLevelL = mstsDieselLocomotive.MaxDieselLevelL * Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100.0f;
 
+                    
+
                     var mstsSteamLocomotive = car as MSTSSteamLocomotive;
                     if (Activity != null && mstsSteamLocomotive != null)
                     {
                         mstsSteamLocomotive.CombinedTenderWaterVolumeUKG = (Kg.ToLb(mstsSteamLocomotive.MaxLocoTenderWaterMassKG) / 10.0f) * Activity.Tr_Activity.Tr_Activity_Header.FuelWater / 100.0f;
-                        mstsSteamLocomotive.TenderCoalMassKG = mstsSteamLocomotive.MaxTenderCoalMassKG * Activity.Tr_Activity.Tr_Activity_Header.FuelCoal / 100.0f;
+
+                        // Adjust fuel stocks depending upon fuel used - in Explore mode
+                        if (mstsSteamLocomotive.SteamLocomotiveFuelType == MSTSSteamLocomotive.SteamLocomotiveFuelTypes.Wood)
+                        {
+                            mstsSteamLocomotive.TenderFuelMassKG = mstsSteamLocomotive.MaxTenderFuelMassKG * Activity.Tr_Activity.Tr_Activity_Header.FuelWood / 100.0f;
+                        }
+                        else if (mstsSteamLocomotive.SteamLocomotiveFuelType == MSTSSteamLocomotive.SteamLocomotiveFuelTypes.Oil)
+                        {
+                            mstsSteamLocomotive.TenderFuelMassKG = mstsSteamLocomotive.MaxTenderFuelMassKG * Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100.0f;
+                        }
+                        else // defaults to coal fired
+                        {
+                            mstsSteamLocomotive.TenderFuelMassKG = mstsSteamLocomotive.MaxTenderFuelMassKG * Activity.Tr_Activity.Tr_Activity_Header.FuelCoal / 100.0f;
+                        }
                     }
                 }
                 catch (Exception error)
@@ -1809,9 +1824,13 @@ namespace Orts.Simulation
                 train2.InitializeBrakes();
             else
             {
-                train2.Cars[0].BrakeSystem.PropagateBrakePressure(5);
+                train2.Cars[0].BrakeSystem.PropagateBrakePressure(30);
                 foreach (MSTSWagon wagon in train2.Cars)
-                    wagon.MSTSBrakeSystem.Update(5);
+                {
+                    // Update twice to ensure steady state conditions
+                    wagon.MSTSBrakeSystem.Update(30);
+                    wagon.MSTSBrakeSystem.Update(30);
+                }
             }
             bool inPath;
 
@@ -1967,9 +1986,13 @@ namespace Orts.Simulation
                     selectedAsPlayer.MUDirection = Direction.Forward;
 
                     selectedAsPlayer.LeadLocomotive = null;
-                    selectedAsPlayer.Cars[0].BrakeSystem.PropagateBrakePressure(5);
+                    selectedAsPlayer.Cars[0].BrakeSystem.PropagateBrakePressure(30);
                     foreach (MSTSWagon wagon in selectedAsPlayer.Cars)
-                        wagon.MSTSBrakeSystem.Update(5);
+                    {
+                        // Update twice to ensure steady state conditions
+                        wagon.MSTSBrakeSystem.Update(30);
+                        wagon.MSTSBrakeSystem.Update(30);
+                    }
 
                     // and now let the former static train die
 
@@ -2137,12 +2160,12 @@ namespace Orts.Simulation
 
             if (!String.IsNullOrEmpty(ActivityFileName))
             {
-                logfilebase = String.Copy(UserSettings.UserDataFolder);
+                logfilebase = UserSettings.UserDataFolder;
                 logfilebase = String.Concat(logfilebase, "_", ActivityFileName);
             }
             else
             {
-                logfilebase = String.Copy(UserSettings.UserDataFolder);
+                logfilebase = UserSettings.UserDataFolder;
                 logfilebase = String.Concat(logfilebase, "_explorer");
             }
 
