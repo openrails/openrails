@@ -168,6 +168,10 @@ namespace ORTS.Settings
         public String Units { get; set; }
         [Default(false)]
         public bool DisableTCSScripts { get; set; }
+        [Default(false)]
+        public bool AutoSaveActive { get; set; }
+        [Default (15)]
+        public int AutoSaveInterval { get; set; }
 
         // Audio settings:
         [Default(100)]
@@ -312,12 +316,6 @@ namespace ORTS.Settings
         public bool AdhesionProportionalToWeather { get; set; }
         [Default(false)]
         public bool NoForcedRedAtStationStops { get; set; }
-        [Default(100)]
-        public int PrecipitationBoxHeight { get; set; }
-        [Default(500)]
-        public int PrecipitationBoxWidth { get; set; }
-        [Default(500)]
-        public int PrecipitationBoxLength { get; set; }
         [Default(false)]
         public bool CorrectQuestionableBrakingParams { get; set; }
         [Default(false)]
