@@ -55,7 +55,7 @@ namespace ORTS.Updater
         readonly string ProductName;
         readonly string ProductVersion;
         readonly UpdateSettings Settings;
-        readonly UpdateState State;
+        public readonly UpdateState State;
         UpdateSettings Channel;
         bool Force;
 
@@ -467,12 +467,12 @@ namespace ORTS.Updater
                         ProceedWithUpdateCheck(this, args);
                         if (args.Proceed)
                         {
-                            foreach (var cert in certificates)
-                                expectedCertificates.Add(cert);
+                                foreach (var cert in certificates)
+                                    expectedCertificates.Add(cert);
                         }
                         else
                         {
-                            throw new InvalidDataException("Cryptographic certificates don't match.\n\nCurrent certificates:\n\n" + FormatCertificateSubjectList(expectedCertificates) + "\n\nUpdate certificates:\n\n" + FormatCertificateSubjectList(certificates) + "\n");
+                                throw new InvalidDataException("Cryptographic certificates don't match.\n\nCurrent certificates:\n\n" + FormatCertificateSubjectList(expectedCertificates) + "\n\nUpdate certificates:\n\n" + FormatCertificateSubjectList(certificates) + "\n");
                         }
                     }
                 }
