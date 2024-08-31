@@ -29,7 +29,7 @@ namespace Orts.Viewer3D
         public int Step1;
         public int Step2;
 
-        static float DaylightOffsetS => (float)Program.Viewer.World.WeatherControl.DaylightOffset * 60 * 60;
+        static float DaylightOffsetS => (float)Program.Simulator.Weather.DaylightOffset * 60 * 60;
 
         public void SetSunAndMoonDirection(ref Vector3 solarDirection, ref Vector3 lunarDirection, Vector3[] solarPosArray, Vector3[] lunarPosArray, double clockTime)
         {

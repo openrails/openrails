@@ -39,11 +39,6 @@
             this.checkAlerter = new System.Windows.Forms.CheckBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
-            this.labelAutoSaveInterval = new System.Windows.Forms.Label();
-            this.ButtonAutoSave60 = new System.Windows.Forms.RadioButton();
-            this.ButtonAutoSave30 = new System.Windows.Forms.RadioButton();
-            this.ButtonAutoSave15 = new System.Windows.Forms.RadioButton();
-            this.checkAutoSaveActive = new System.Windows.Forms.CheckBox();
             this.pbOverspeedMonitor = new System.Windows.Forms.PictureBox();
             this.pbEnableTcsScripts = new System.Windows.Forms.PictureBox();
             this.pbOtherUnits = new System.Windows.Forms.PictureBox();
@@ -182,8 +177,8 @@
             this.labelWebServerPort = new System.Windows.Forms.Label();
             this.numericWebServerPort = new System.Windows.Forms.NumericUpDown();
             this.pbControlConfirmations = new System.Windows.Forms.PictureBox();
-            this.comboControlConfirmations = new System.Windows.Forms.ComboBox();
             this.labelControlConfirmations = new System.Windows.Forms.Label();
+            this.comboControlConfirmations = new System.Windows.Forms.ComboBox();
             this.pbWindowGlass = new System.Windows.Forms.PictureBox();
             this.checkWindowGlass = new System.Windows.Forms.CheckBox();
             this.comboWindowSize = new System.Windows.Forms.ComboBox();
@@ -406,11 +401,6 @@
             // 
             // tabPageGeneral
             // 
-            this.tabPageGeneral.Controls.Add(this.labelAutoSaveInterval);
-            this.tabPageGeneral.Controls.Add(this.ButtonAutoSave60);
-            this.tabPageGeneral.Controls.Add(this.ButtonAutoSave30);
-            this.tabPageGeneral.Controls.Add(this.ButtonAutoSave15);
-            this.tabPageGeneral.Controls.Add(this.checkAutoSaveActive);
             this.tabPageGeneral.Controls.Add(this.pbOverspeedMonitor);
             this.tabPageGeneral.Controls.Add(this.pbEnableTcsScripts);
             this.tabPageGeneral.Controls.Add(this.pbOtherUnits);
@@ -438,62 +428,6 @@
             this.tabPageGeneral.TabIndex = 0;
             this.tabPageGeneral.Text = "General";
             this.tabPageGeneral.UseVisualStyleBackColor = true;
-            // 
-            // labelAutoSaveInterval
-            // 
-            this.labelAutoSaveInterval.AutoSize = true;
-            this.labelAutoSaveInterval.Location = new System.Drawing.Point(111, 299);
-            this.labelAutoSaveInterval.Name = "labelAutoSaveInterval";
-            this.labelAutoSaveInterval.Size = new System.Drawing.Size(48, 13);
-            this.labelAutoSaveInterval.TabIndex = 35;
-            this.labelAutoSaveInterval.Text = "Interval :";
-            // 
-            // ButtonAutoSave60
-            // 
-            this.ButtonAutoSave60.AutoSize = true;
-            this.ButtonAutoSave60.Location = new System.Drawing.Point(159, 331);
-            this.ButtonAutoSave60.Name = "ButtonAutoSave60";
-            this.ButtonAutoSave60.Size = new System.Drawing.Size(61, 17);
-            this.ButtonAutoSave60.TabIndex = 34;
-            this.ButtonAutoSave60.TabStop = true;
-            this.ButtonAutoSave60.Text = "60 mins";
-            this.ButtonAutoSave60.UseVisualStyleBackColor = true;
-            this.ButtonAutoSave60.CheckedChanged += new System.EventHandler(this.buttonAutoSaveInterval_checkchanged);
-            // 
-            // ButtonAutoSave30
-            // 
-            this.ButtonAutoSave30.AutoSize = true;
-            this.ButtonAutoSave30.Location = new System.Drawing.Point(159, 314);
-            this.ButtonAutoSave30.Name = "ButtonAutoSave30";
-            this.ButtonAutoSave30.Size = new System.Drawing.Size(61, 17);
-            this.ButtonAutoSave30.TabIndex = 33;
-            this.ButtonAutoSave30.TabStop = true;
-            this.ButtonAutoSave30.Text = "30 mins";
-            this.ButtonAutoSave30.UseVisualStyleBackColor = true;
-            this.ButtonAutoSave30.CheckedChanged += new System.EventHandler(this.buttonAutoSaveInterval_checkchanged);
-            // 
-            // ButtonAutoSave15
-            // 
-            this.ButtonAutoSave15.AutoSize = true;
-            this.ButtonAutoSave15.Location = new System.Drawing.Point(159, 297);
-            this.ButtonAutoSave15.Name = "ButtonAutoSave15";
-            this.ButtonAutoSave15.Size = new System.Drawing.Size(61, 17);
-            this.ButtonAutoSave15.TabIndex = 32;
-            this.ButtonAutoSave15.TabStop = true;
-            this.ButtonAutoSave15.Text = "15 mins";
-            this.ButtonAutoSave15.UseVisualStyleBackColor = true;
-            this.ButtonAutoSave15.CheckedChanged += new System.EventHandler(this.buttonAutoSaveInterval_checkchanged);
-            // 
-            // checkAutoSaveActive
-            // 
-            this.checkAutoSaveActive.AutoSize = true;
-            this.checkAutoSaveActive.Location = new System.Drawing.Point(32, 298);
-            this.checkAutoSaveActive.Name = "checkAutoSaveActive";
-            this.checkAutoSaveActive.Size = new System.Drawing.Size(73, 17);
-            this.checkAutoSaveActive.TabIndex = 31;
-            this.checkAutoSaveActive.Text = "AutoSave";
-            this.checkAutoSaveActive.UseVisualStyleBackColor = true;
-            this.checkAutoSaveActive.CheckedChanged += new System.EventHandler(this.checkAutoSave_checkchanged);
             // 
             // pbOverspeedMonitor
             // 
@@ -2312,7 +2246,7 @@
             // 
             this.labelControlConfirmations.Location = new System.Drawing.Point(161, 265);
             this.labelControlConfirmations.Margin = new System.Windows.Forms.Padding(3);
-            this.labelControlConfirmations.Name = "labelControlConfirmations";
+            this.labelControlConfirmations.Name = "labelControlConfirmation";
             this.labelControlConfirmations.Size = new System.Drawing.Size(200, 21);
             this.labelControlConfirmations.TabIndex = 37;
             this.labelControlConfirmations.Text = "Messages suppressed       ";
@@ -3051,11 +2985,6 @@
         private System.Windows.Forms.CheckBox checkShapeWarnings;
         private System.Windows.Forms.Label labelDayAmbientLight;
         private System.Windows.Forms.CheckBox checkEnableTCSScripts;
-        private System.Windows.Forms.CheckBox checkAutoSaveActive;
-        private System.Windows.Forms.Label labelAutoSaveInterval;
-        private System.Windows.Forms.RadioButton ButtonAutoSave60;
-        private System.Windows.Forms.RadioButton ButtonAutoSave30;
-        private System.Windows.Forms.RadioButton ButtonAutoSave15;
         private System.Windows.Forms.CheckBox checkCorrectQuestionableBrakingParams;
         private System.Windows.Forms.CheckBox checkOverspeedMonitor;
         private System.Windows.Forms.NumericUpDown numericExternalSoundPassThruPercent;

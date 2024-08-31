@@ -31,6 +31,8 @@ namespace Orts.Viewer3D
     public class SkyViewer
     {
         internal readonly SkyPrimitive Primitive;
+        internal readonly float WindSpeed;
+        internal readonly float WindDirection;
         internal int MoonPhase;
         internal Vector3 SolarDirection;
         internal Vector3 LunarDirection;
@@ -52,6 +54,11 @@ namespace Orts.Viewer3D
 
             // Instantiate classes
             Primitive = new SkyPrimitive(Viewer.RenderProcess);
+
+            // Default wind speed and direction
+            // TODO: We should be using Viewer.Simulator.Weather instead of our own local weather fields
+            WindSpeed = 5.0f; // m/s (approx 11 mph)
+            WindDirection = 4.7f; // radians (approx 270 deg, i.e. westerly)
         }
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -371,7 +378,7 @@ namespace Orts.Viewer3D
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             // Adjust Fog color for day-night conditions and overcast
-            FogDay2Night(Viewer.World.Sky.SolarDirection.Y, Viewer.Simulator.Weather.CloudCoverFactor);
+            FogDay2Night(Viewer.World.Sky.SolarDirection.Y, Viewer.Simulator.Weather.OvercastFactor);
 
             // TODO: Use a dirty flag to determine if it is necessary to set the texture again
             SkyShader.StarMapTexture = Viewer.World.Sky.Latitude > 0 ? StarTextureN : StarTextureS;
@@ -380,9 +387,10 @@ namespace Orts.Viewer3D
             SkyShader.LightVector = Viewer.World.Sky.SolarDirection;
             SkyShader.Time = (float)Viewer.Simulator.ClockTime / 100000;
             SkyShader.MoonScale = SkyPrimitive.RadiusM / 20;
-            SkyShader.Overcast = Viewer.Simulator.Weather.CloudCoverFactor;
-            SkyShader.SetFog(Viewer.Simulator.Weather.VisibilityM, ref SharedMaterialManager.FogColor);
-            SkyShader.CloudScalePosition = Viewer.World.WeatherControl.CloudScalePosition;
+            SkyShader.Overcast = Viewer.Simulator.Weather.OvercastFactor;
+            SkyShader.SetFog(Viewer.Simulator.Weather.FogDistance, ref SharedMaterialManager.FogColor);
+            SkyShader.WindSpeed = Viewer.World.Sky.WindSpeed;
+            SkyShader.WindDirection = Viewer.World.Sky.WindDirection; // Keep setting this after Time and Windspeed. Calculating displacement here.
 
             for (var i = 0; i < 5; i++)
             {
