@@ -6,6 +6,9 @@
     <RootNamespace>Orts.SimulatorTester</RootNamespace>
     <AssemblyName>Contrib.SimulatorTester</AssemblyName>
     <ApplicationIcon>..\..\ORTS.ico</ApplicationIcon>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <OutputPath>..\..\..\Program\</OutputPath>
     <IsPublishable>False</IsPublishable>
     <AssemblyTitle>Open Rails Simulator Tester (Contributed)</AssemblyTitle>
     <Description>Open Rails Transport Simulator</Description>

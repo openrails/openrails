@@ -20,13 +20,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Windows.Forms;
 using ORTS.Common;
 
 namespace ORTS.Settings
 {
     public class UpdateSettings : SettingsBase
     {
-        public static readonly string SettingsFilePath = Path.Combine(ApplicationInfo.ProcessDirectory, "Updater.ini");
+        public static readonly string SettingsFilePath = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Updater.ini");
 
         #region User Settings
 

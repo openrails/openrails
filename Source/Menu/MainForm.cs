@@ -78,7 +78,7 @@ namespace ORTS
         {
             get
             {
-                return System.IO.Path.Combine(ApplicationInfo.ProcessDirectory, "RunActivity.exe");
+                return System.IO.Path.Combine(Application.StartupPath, "RunActivity.exe");
             }
         }
 
@@ -128,7 +128,7 @@ namespace ORTS
             panelModeTimetable.Location = panelModeActivity.Location;
             ShowDetails();
             UpdateEnabled();
-            UpdateManager = new UpdateManager(ApplicationInfo.ProcessDirectory, Application.ProductName, VersionInfo.VersionOrBuild);
+            UpdateManager = new UpdateManager(System.IO.Path.GetDirectoryName(Application.ExecutablePath), Application.ProductName, VersionInfo.VersionOrBuild);
             ElevationIcon = new Icon(SystemIcons.Shield, SystemInformation.SmallIconSize).ToBitmap();
         }
 
@@ -186,7 +186,7 @@ namespace ORTS
                     "Updater.exe",
                 };
                 var tools = new List<ToolStripItem>();
-                foreach (var executable in Directory.GetFiles(ApplicationInfo.ProcessDirectory, "*.exe"))
+                foreach (var executable in Directory.GetFiles(System.IO.Path.GetDirectoryName(Application.ExecutablePath), "*.exe"))
                 {
                     // Don't show any of the core parts of the application.
                     if (coreExecutables.Contains(System.IO.Path.GetFileName(executable)))
@@ -348,7 +348,7 @@ namespace ORTS
 
         void RestartMenu()
         {
-            Process.Start(ApplicationInfo.ProcessFile);
+            Process.Start(Application.ExecutablePath);
             Close();
         }
         #endregion

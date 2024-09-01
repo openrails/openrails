@@ -30,6 +30,7 @@ using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Settings;
+using Orts.Viewer3D.Processes;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -612,7 +613,7 @@ namespace Orts.Viewer3D.Popups
             if (Program.EvaluationFilename.Length > 0)
                 consolewltext("Debrief file = " + Program.EvaluationFilename);
 
-            consolewltext("Executable   = " + Path.GetFileName(ApplicationInfo.ProcessFile));
+            consolewltext("Executable   = " + Path.GetFileName(Application.ExecutablePath));
             LogSeparator(80);
             line.AddHorizontalSeparator();
 
