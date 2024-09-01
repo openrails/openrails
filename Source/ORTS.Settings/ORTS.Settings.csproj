@@ -3,7 +3,6 @@
     <TargetFrameworks Condition="'$(BuildDotNet)' == 'true'">net6-windows</TargetFrameworks>
     <TargetFrameworks Condition="'$(TargetFrameworks)' == ''">net472</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <UseWindowsForms>true</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <IsPublishable>False</IsPublishable>
