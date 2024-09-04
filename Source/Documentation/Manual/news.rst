@@ -16,6 +16,7 @@ What's been added
 
 - detailed map which tracks player train
 - self-installing content
+- new rolling stock lighting controls, including horn-activated flashing lights
 - partial turntables
 - cab controls operated remotely from a tablet or control desk
 - animations for cab windows
