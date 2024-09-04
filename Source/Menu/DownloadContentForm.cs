@@ -55,6 +55,11 @@ namespace ORTS
         {
             InitializeComponent();
 
+            // Windows 2000 and XP should use 8.25pt Tahoma, while Windows
+            // Vista and later should use 9pt "Segoe UI". We'll use the
+            // Message Box font to allow for user-customizations, though.
+            Font = SystemFonts.MessageBoxFont;
+
             this.FormBorderStyle = FormBorderStyle.FixedSingle; // remove resize control
             this.MaximizeBox = false; // disable maximize button
 
@@ -1035,11 +1040,11 @@ namespace ORTS
             dataGridViewDownloadContent.Enabled = false;
             InstallPathTextBox.Enabled = false;
             InstallPathBrowseButton.Enabled = false;
-            infoButton.Enabled = false;
-            downloadContentButton.Enabled = false;
-            updateButton.Enabled = false;
-            deleteButton.Enabled = false;
-            okButton.Enabled = false;
+            buttonInfo.Enabled = false;
+            buttonInstall.Enabled = false;
+            buttonUpdate.Enabled = false;
+            buttonDelete.Enabled = false;
+            buttonOK.Enabled = false;
         }
 
         private void setCursorToWaitCursor()
@@ -1057,11 +1062,11 @@ namespace ORTS
             dataGridViewDownloadContent.Enabled = true;
             InstallPathTextBox.Enabled = true;
             InstallPathBrowseButton.Enabled = true;
-            infoButton.Enabled = true;
-            downloadContentButton.Enabled = !route.Installed;
-            updateButton.Enabled = route.Installed && (route.getDownloadType() == ContentRouteSettings.DownloadType.github);
-            deleteButton.Enabled = route.Installed;
-            okButton.Enabled = true;
+            buttonInfo.Enabled = true;
+            buttonInstall.Enabled = !route.Installed;
+            buttonUpdate.Enabled = route.Installed && (route.getDownloadType() == ContentRouteSettings.DownloadType.github);
+            buttonDelete.Enabled = route.Installed;
+            buttonOK.Enabled = true;
 
             setCursorToDefaultCursor();
         }
