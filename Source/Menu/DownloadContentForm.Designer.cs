@@ -55,15 +55,20 @@ namespace ORTS
             this.InstallPathTextBox = new System.Windows.Forms.TextBox();
             this.InstallPathBrowseButton = new System.Windows.Forms.Button();
             this.InstallPathDirectoryEntry = new System.DirectoryServices.DirectoryEntry();
-            this.downloadContentButton = new System.Windows.Forms.Button();
+            this.buttonInstall = new System.Windows.Forms.Button();
             this.pictureBoxRoute = new System.Windows.Forms.PictureBox();
             this.textBoxRoute = new System.Windows.Forms.RichTextBox();
-            this.infoButton = new System.Windows.Forms.Button();
-            this.deleteButton = new System.Windows.Forms.Button();
-            this.updateButton = new System.Windows.Forms.Button();
-            this.okButton = new System.Windows.Forms.Button();
+            this.buttonInfo = new System.Windows.Forms.Button();
+            this.buttonDelete = new System.Windows.Forms.Button();
+            this.buttonUpdate = new System.Windows.Forms.Button();
+            this.buttonOK = new System.Windows.Forms.Button();
+            this.tabContent = new System.Windows.Forms.TabControl();
+            this.tabPageAutoInstalled = new System.Windows.Forms.TabPage();
+            this.tabPageManuallyInstalled = new System.Windows.Forms.TabPage();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewDownloadContent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxRoute)).BeginInit();
+            this.tabContent.SuspendLayout();
+            this.tabPageAutoInstalled.SuspendLayout();
             this.SuspendLayout();
             // 
             // dataGridViewDownloadContent
@@ -79,13 +84,14 @@ namespace ORTS
             this.Installed,
             this.Url});
             this.dataGridViewDownloadContent.GridColor = System.Drawing.SystemColors.Control;
-            this.dataGridViewDownloadContent.Location = new System.Drawing.Point(3, 9);
+            this.dataGridViewDownloadContent.Location = new System.Drawing.Point(6, 6);
             this.dataGridViewDownloadContent.MultiSelect = false;
             this.dataGridViewDownloadContent.Name = "dataGridViewDownloadContent";
             this.dataGridViewDownloadContent.ReadOnly = true;
             this.dataGridViewDownloadContent.RowHeadersVisible = false;
+            this.dataGridViewDownloadContent.ScrollBars = System.Windows.Forms.ScrollBars.None;
             this.dataGridViewDownloadContent.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridViewDownloadContent.Size = new System.Drawing.Size(394, 335);
+            this.dataGridViewDownloadContent.Size = new System.Drawing.Size(588, 222);
             this.dataGridViewDownloadContent.TabIndex = 0;
             this.dataGridViewDownloadContent.SelectionChanged += new System.EventHandler(this.dataGridViewDownloadContent_SelectionChanged);
             // 
@@ -115,7 +121,7 @@ namespace ORTS
             // InstallPathLabel
             // 
             this.InstallPathLabel.AutoSize = true;
-            this.InstallPathLabel.Location = new System.Drawing.Point(3, 478);
+            this.InstallPathLabel.Location = new System.Drawing.Point(6, 345);
             this.InstallPathLabel.Name = "InstallPathLabel";
             this.InstallPathLabel.Size = new System.Drawing.Size(62, 13);
             this.InstallPathLabel.TabIndex = 1;
@@ -123,7 +129,7 @@ namespace ORTS
             // 
             // InstallPathTextBox
             // 
-            this.InstallPathTextBox.Location = new System.Drawing.Point(84, 475);
+            this.InstallPathTextBox.Location = new System.Drawing.Point(74, 342);
             this.InstallPathTextBox.Name = "InstallPathTextBox";
             this.InstallPathTextBox.Size = new System.Drawing.Size(445, 20);
             this.InstallPathTextBox.TabIndex = 2;
@@ -131,7 +137,7 @@ namespace ORTS
             // 
             // InstallPathBrowseButton
             // 
-            this.InstallPathBrowseButton.Location = new System.Drawing.Point(551, 473);
+            this.InstallPathBrowseButton.Location = new System.Drawing.Point(521, 340);
             this.InstallPathBrowseButton.Name = "InstallPathBrowseButton";
             this.InstallPathBrowseButton.Size = new System.Drawing.Size(75, 23);
             this.InstallPathBrowseButton.TabIndex = 3;
@@ -139,22 +145,22 @@ namespace ORTS
             this.InstallPathBrowseButton.UseVisualStyleBackColor = true;
             this.InstallPathBrowseButton.Click += new System.EventHandler(this.InstallPathBrowseButton_Click);
             // 
-            // downloadContentButton
+            // buttonInstall
             // 
-            this.downloadContentButton.Enabled = false;
-            this.downloadContentButton.Location = new System.Drawing.Point(84, 507);
-            this.downloadContentButton.Name = "downloadContentButton";
-            this.downloadContentButton.Size = new System.Drawing.Size(75, 23);
-            this.downloadContentButton.TabIndex = 5;
-            this.downloadContentButton.Text = "Install";
-            this.downloadContentButton.UseVisualStyleBackColor = true;
-            this.downloadContentButton.Click += new System.EventHandler(this.DownloadContentButton_Click);
+            this.buttonInstall.Enabled = false;
+            this.buttonInstall.Location = new System.Drawing.Point(89, 371);
+            this.buttonInstall.Name = "buttonInstall";
+            this.buttonInstall.Size = new System.Drawing.Size(75, 23);
+            this.buttonInstall.TabIndex = 5;
+            this.buttonInstall.Text = "Install";
+            this.buttonInstall.UseVisualStyleBackColor = true;
+            this.buttonInstall.Click += new System.EventHandler(this.DownloadContentButton_Click);
             // 
             // pictureBoxRoute
             // 
-            this.pictureBoxRoute.Location = new System.Drawing.Point(403, 9);
+            this.pictureBoxRoute.Location = new System.Drawing.Point(492, 234);
             this.pictureBoxRoute.Name = "pictureBoxRoute";
-            this.pictureBoxRoute.Size = new System.Drawing.Size(417, 335);
+            this.pictureBoxRoute.Size = new System.Drawing.Size(102, 98);
             this.pictureBoxRoute.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBoxRoute.TabIndex = 5;
             this.pictureBoxRoute.TabStop = false;
@@ -162,79 +168,117 @@ namespace ORTS
             // textBoxRoute
             // 
             this.textBoxRoute.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxRoute.Location = new System.Drawing.Point(3, 359);
+            this.textBoxRoute.Location = new System.Drawing.Point(6, 234);
             this.textBoxRoute.Name = "textBoxRoute";
             this.textBoxRoute.ReadOnly = true;
-            this.textBoxRoute.Size = new System.Drawing.Size(817, 99);
+            this.textBoxRoute.Size = new System.Drawing.Size(480, 98);
             this.textBoxRoute.TabIndex = 9;
             this.textBoxRoute.Text = "";
             // 
-            // infoButton
+            // buttonInfo
             // 
-            this.infoButton.Location = new System.Drawing.Point(3, 507);
-            this.infoButton.Name = "infoButton";
-            this.infoButton.Size = new System.Drawing.Size(75, 23);
-            this.infoButton.TabIndex = 4;
-            this.infoButton.Text = "Info";
-            this.infoButton.UseVisualStyleBackColor = true;
-            this.infoButton.Click += new System.EventHandler(this.InfoButton_Click);
+            this.buttonInfo.Location = new System.Drawing.Point(8, 371);
+            this.buttonInfo.Name = "buttonInfo";
+            this.buttonInfo.Size = new System.Drawing.Size(75, 23);
+            this.buttonInfo.TabIndex = 4;
+            this.buttonInfo.Text = "Info";
+            this.buttonInfo.UseVisualStyleBackColor = true;
+            this.buttonInfo.Click += new System.EventHandler(this.InfoButton_Click);
             // 
-            // deleteButton
+            // buttonDelete
             // 
-            this.deleteButton.Enabled = false;
-            this.deleteButton.Location = new System.Drawing.Point(246, 507);
-            this.deleteButton.Name = "deleteButton";
-            this.deleteButton.Size = new System.Drawing.Size(75, 23);
-            this.deleteButton.TabIndex = 7;
-            this.deleteButton.Text = "Delete";
-            this.deleteButton.UseVisualStyleBackColor = true;
-            this.deleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
+            this.buttonDelete.Enabled = false;
+            this.buttonDelete.Location = new System.Drawing.Point(251, 371);
+            this.buttonDelete.Name = "buttonDelete";
+            this.buttonDelete.Size = new System.Drawing.Size(75, 23);
+            this.buttonDelete.TabIndex = 7;
+            this.buttonDelete.Text = "Delete";
+            this.buttonDelete.UseVisualStyleBackColor = true;
+            this.buttonDelete.Click += new System.EventHandler(this.DeleteButton_Click);
             // 
-            // updateButton
+            // buttonUpdate
             // 
-            this.updateButton.Location = new System.Drawing.Point(165, 507);
-            this.updateButton.Name = "updateButton";
-            this.updateButton.Size = new System.Drawing.Size(75, 23);
-            this.updateButton.TabIndex = 6;
-            this.updateButton.Text = "Update";
-            this.updateButton.UseVisualStyleBackColor = true;
-            this.updateButton.Click += new System.EventHandler(this.updateButton_Click);
+            this.buttonUpdate.Location = new System.Drawing.Point(170, 371);
+            this.buttonUpdate.Name = "buttonUpdate";
+            this.buttonUpdate.Size = new System.Drawing.Size(75, 23);
+            this.buttonUpdate.TabIndex = 6;
+            this.buttonUpdate.Text = "Update";
+            this.buttonUpdate.UseVisualStyleBackColor = true;
+            this.buttonUpdate.Click += new System.EventHandler(this.updateButton_Click);
             // 
             // buttonOK
             // 
-            this.okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.okButton.Location = new System.Drawing.Point(745, 507);
-            this.okButton.Name = "okButton";
-            this.okButton.Size = new System.Drawing.Size(75, 23);
-            this.okButton.TabIndex = 8;
-            this.okButton.Text = "OK";
-            this.okButton.UseVisualStyleBackColor = true;
-            this.okButton.Click += new System.EventHandler(this.okButton_Click);
+            this.buttonOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonOK.Location = new System.Drawing.Point(544, 442);
+            this.buttonOK.Name = "buttonOK";
+            this.buttonOK.Size = new System.Drawing.Size(75, 23);
+            this.buttonOK.TabIndex = 8;
+            this.buttonOK.Text = "OK";
+            this.buttonOK.UseVisualStyleBackColor = true;
+            this.buttonOK.Click += new System.EventHandler(this.okButton_Click);
+            // 
+            // tabContent
+            // 
+            this.tabContent.Controls.Add(this.tabPageAutoInstalled);
+            this.tabContent.Controls.Add(this.tabPageManuallyInstalled);
+            this.tabContent.Location = new System.Drawing.Point(13, 12);
+            this.tabContent.Name = "tabContent";
+            this.tabContent.SelectedIndex = 0;
+            this.tabContent.Size = new System.Drawing.Size(610, 428);
+            this.tabContent.TabIndex = 10;
+            // 
+            // tabPageAutoInstalled
+            // 
+            this.tabPageAutoInstalled.Controls.Add(this.buttonInfo);
+            this.tabPageAutoInstalled.Controls.Add(this.buttonInstall);
+            this.tabPageAutoInstalled.Controls.Add(this.InstallPathBrowseButton);
+            this.tabPageAutoInstalled.Controls.Add(this.pictureBoxRoute);
+            this.tabPageAutoInstalled.Controls.Add(this.textBoxRoute);
+            this.tabPageAutoInstalled.Controls.Add(this.buttonDelete);
+            this.tabPageAutoInstalled.Controls.Add(this.InstallPathTextBox);
+            this.tabPageAutoInstalled.Controls.Add(this.buttonUpdate);
+            this.tabPageAutoInstalled.Controls.Add(this.InstallPathLabel);
+            this.tabPageAutoInstalled.Controls.Add(this.dataGridViewDownloadContent);
+            this.tabPageAutoInstalled.Location = new System.Drawing.Point(4, 22);
+            this.tabPageAutoInstalled.Name = "tabPageAutoInstalled";
+            this.tabPageAutoInstalled.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageAutoInstalled.Size = new System.Drawing.Size(602, 402);
+            this.tabPageAutoInstalled.TabIndex = 0;
+            this.tabPageAutoInstalled.Text = "Auto Installed";
+            this.tabPageAutoInstalled.UseVisualStyleBackColor = true;
+            // 
+            // tabPageManuallyInstalled
+            // 
+            this.tabPageManuallyInstalled.Location = new System.Drawing.Point(4, 22);
+            this.tabPageManuallyInstalled.Name = "tabPageManuallyInstalled";
+            this.tabPageManuallyInstalled.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPageManuallyInstalled.Size = new System.Drawing.Size(602, 402);
+            this.tabPageManuallyInstalled.TabIndex = 1;
+            this.tabPageManuallyInstalled.Text = "Manually Installed";
+            this.tabPageManuallyInstalled.UseVisualStyleBackColor = true;
             // 
             // DownloadContentForm
             // 
+            this.AcceptButton = this.buttonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(824, 542);
-            this.Controls.Add(this.okButton);
-            this.Controls.Add(this.updateButton);
-            this.Controls.Add(this.deleteButton);
-            this.Controls.Add(this.infoButton);
-            this.Controls.Add(this.textBoxRoute);
-            this.Controls.Add(this.pictureBoxRoute);
-            this.Controls.Add(this.downloadContentButton);
-            this.Controls.Add(this.InstallPathBrowseButton);
-            this.Controls.Add(this.InstallPathTextBox);
-            this.Controls.Add(this.InstallPathLabel);
-            this.Controls.Add(this.dataGridViewDownloadContent);
+            this.ClientSize = new System.Drawing.Size(634, 481);
+            this.Controls.Add(this.tabContent);
+            this.Controls.Add(this.buttonOK);
+            this.Location = new System.Drawing.Point(13, 12);
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "DownloadContentForm";
+            this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Download Content";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DownloadContentForm_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewDownloadContent)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxRoute)).EndInit();
+            this.tabContent.ResumeLayout(false);
+            this.tabPageAutoInstalled.ResumeLayout(false);
+            this.tabPageAutoInstalled.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -245,15 +289,18 @@ namespace ORTS
         private TextBox InstallPathTextBox;
         private Button InstallPathBrowseButton;
         private System.DirectoryServices.DirectoryEntry InstallPathDirectoryEntry;
-        private Button downloadContentButton;
+        private Button buttonInstall;
         private DataGridViewTextBoxColumn Route;
         private DataGridViewTextBoxColumn Installed;
         private DataGridViewTextBoxColumn Url;
         private PictureBox pictureBoxRoute;
         private RichTextBox textBoxRoute;
-        private Button infoButton;
-        private Button deleteButton;
-        private Button updateButton;
-        private Button okButton;
+        private Button buttonInfo;
+        private Button buttonDelete;
+        private Button buttonUpdate;
+        private Button buttonOK;
+        private TabControl tabContent;
+        private TabPage tabPageAutoInstalled;
+        private TabPage tabPageManuallyInstalled;
     }
 }
