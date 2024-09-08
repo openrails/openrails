@@ -340,6 +340,12 @@ namespace Orts.Viewer3D.Popups
             UpdateWindowSize();
         }
 
+        public void UpdateWindowSize()
+        {
+            labels = TrainDPUWindowList(Owner.Viewer, normalTextMode).ToList();
+            ModifyWindowSize();
+        }
+
         public override void TabAction() => CycleMode();
 
         /// <summary>
@@ -349,12 +355,6 @@ namespace Orts.Viewer3D.Popups
         {
             normalTextMode = !normalTextMode;
             UpdateWindowSize();
-        }
-
-        public void UpdateWindowSize()
-        {
-            labels = TrainDPUWindowList(Owner.Viewer, normalTextMode).ToList();
-            ModifyWindowSize();
         }
 
         /// <summary>
