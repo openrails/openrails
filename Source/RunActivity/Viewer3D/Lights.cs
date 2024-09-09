@@ -36,6 +36,7 @@ using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace Orts.Viewer3D
@@ -89,8 +90,8 @@ namespace Orts.Viewer3D
             Viewer = viewer;
             Car = car;
             CarViewer = carViewer;
-
-            LightGlowMaterial = viewer.MaterialManager.Load("LightGlow");
+            
+            LightGlowMaterial = viewer.MaterialManager.Load("LightGlow", DefineFullTexturePath(Car.Lights.GeneralLightGlowGraphic));
             LightConeMaterial = viewer.MaterialManager.Load("LightCone");
 
             UpdateState();
@@ -102,6 +103,8 @@ namespace Orts.Viewer3D
                     {
                         case LightType.Glow:
                             LightPrimitives.Add(new LightGlowPrimitive(this, Viewer.RenderProcess, light));
+                            if (light.Graphic != null)
+                                (LightPrimitives.Last() as LightGlowPrimitive).SpecificGlowMaterial = viewer.MaterialManager.Load("LightGlow", DefineFullTexturePath(light.Graphic));
                             break;
                         case LightType.Cone:
                             LightPrimitives.Add(new LightConePrimitive(this, Viewer.RenderProcess, light));
@@ -147,6 +150,15 @@ namespace Orts.Viewer3D
 #endif
 
             UpdateActiveLightCone();
+        }
+
+        string DefineFullTexturePath(string textureName)
+        {
+            if (File.Exists(Path.Combine(Path.GetDirectoryName(Car.WagFilePath), textureName)))
+                return Path.Combine(Path.GetDirectoryName(Car.WagFilePath), textureName);
+            if (File.Exists(Path.Combine(Viewer.ContentPath, textureName)))
+                return Path.Combine(Viewer.ContentPath, textureName);
+            return Path.Combine(Viewer.ContentPath, "LightGlow.png");
         }
 
         void UpdateActiveLightCone()
@@ -220,9 +232,9 @@ namespace Orts.Viewer3D
                     if ((lightPrimitive.Enabled || lightPrimitive.FadeOut) && lightPrimitive is LightGlowPrimitive)
                     {
                         if (ShapeXNATranslations.TryGetValue(lightPrimitive.Light.ShapeIndex, out Matrix lightMatrix))
-                            frame.AddPrimitive(LightGlowMaterial, lightPrimitive, RenderPrimitiveGroup.Lights, ref lightMatrix);
+                            frame.AddPrimitive(lightPrimitive.Light.Graphic != null ? (lightPrimitive as LightGlowPrimitive).SpecificGlowMaterial : LightGlowMaterial, lightPrimitive, RenderPrimitiveGroup.Lights, ref lightMatrix);
                         else
-                            frame.AddPrimitive(LightGlowMaterial, lightPrimitive, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
+                            frame.AddPrimitive(lightPrimitive.Light.Graphic != null ? (lightPrimitive as LightGlowPrimitive).SpecificGlowMaterial : LightGlowMaterial, lightPrimitive, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
                     }
 
 #if DEBUG_LIGHT_CONE
@@ -252,6 +264,11 @@ namespace Orts.Viewer3D
         {
             LightGlowMaterial.Mark();
             LightConeMaterial.Mark();
+            foreach (var lightPrimitive in LightPrimitives)
+                if (lightPrimitive is LightGlowPrimitive && lightPrimitive.Light.Graphic != null)
+                {
+                    (lightPrimitive as LightGlowPrimitive).SpecificGlowMaterial.Mark();
+                 }
         }
 
         public static void CalculateLightCone(LightState lightState, out Vector3 position, out Vector3 direction, out float angle, out float radius, out float distance, out Vector4 color)
@@ -680,6 +697,7 @@ namespace Orts.Viewer3D
         static VertexDeclaration VertexDeclaration;
         VertexBuffer VertexBuffer;
         static IndexBuffer IndexBuffer;
+        public Material SpecificGlowMaterial;
 
         public LightGlowPrimitive(LightViewer lightViewer, RenderProcess renderProcess, Light light)
             : base(light)
@@ -932,11 +950,11 @@ namespace Orts.Viewer3D
     {
         readonly Texture2D LightGlowTexture;
 
-        public LightGlowMaterial(Viewer viewer)
-            : base(viewer, null)
+        public LightGlowMaterial(Viewer viewer, string textureName)
+            : base(viewer, textureName)
         {
             // TODO: This should happen on the loader thread.
-            LightGlowTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "Lightglow.png"));
+            LightGlowTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, textureName);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
