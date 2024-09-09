@@ -375,14 +375,14 @@ namespace Orts.Viewer3D
                         // We might not have found the junction node; if so, fall back to the static track shape.
                         if (trJunctionNode != null)
                         {
-                            if (viewer.Simulator.UseSuperElevation > 0)
+                            if (viewer.Simulator.UseSuperElevation)
                                 SuperElevationManager.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ, shapeFilePath);
                             sceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, trJunctionNode));
                         }
                         else
                         {
                             //if want to use super elevation, we will generate tracks using dynamic tracks
-                            if (viewer.Simulator.UseSuperElevation > 0
+                            if (viewer.Simulator.UseSuperElevation
                                 && SuperElevationManager.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ, shapeFilePath))
                             {
                                 // No need to add shapes for this segment of track
@@ -439,7 +439,7 @@ namespace Orts.Viewer3D
                         if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
                             Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
                         // Add DyntrackDrawers for individual subsections
-                        if (viewer.Simulator.UseSuperElevation > 0 && SuperElevationManager.UseSuperElevationDyn(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix))
+                        if (viewer.Simulator.UseSuperElevation && SuperElevationManager.UseSuperElevationDyn(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix))
                             SuperElevationManager.DecomposeDynamicSuperElevation(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
                         else DynamicTrack.Decompose(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
 
@@ -592,7 +592,7 @@ namespace Orts.Viewer3D
                 }
             }
 
-            if (viewer.Simulator.UseSuperElevation > 0) SuperElevationManager.DecomposeStaticSuperElevation(Viewer, dTrackList, TileX, TileZ);
+            if (viewer.Simulator.UseSuperElevation) SuperElevationManager.DecomposeStaticSuperElevation(Viewer, dTrackList, TileX, TileZ);
             if (Viewer.World.Sounds != null) Viewer.World.Sounds.AddByTile(TileX, TileZ);
         }
 

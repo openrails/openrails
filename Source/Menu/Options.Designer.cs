@@ -219,9 +219,8 @@
             this.checkUseMSTSEnv = new System.Windows.Forms.CheckBox();
             this.label8 = new System.Windows.Forms.Label();
             this.numericSuperElevationGauge = new System.Windows.Forms.NumericUpDown();
-            this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.numericUseSuperElevation = new System.Windows.Forms.NumericUpDown();
+            this.checkUseSuperElevation = new System.Windows.Forms.CheckBox();
             this.ElevationText = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
@@ -296,7 +295,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactorChange)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -2417,9 +2415,8 @@
             this.tabPageExperimental.Controls.Add(this.checkUseMSTSEnv);
             this.tabPageExperimental.Controls.Add(this.label8);
             this.tabPageExperimental.Controls.Add(this.numericSuperElevationGauge);
-            this.tabPageExperimental.Controls.Add(this.label6);
             this.tabPageExperimental.Controls.Add(this.label5);
-            this.tabPageExperimental.Controls.Add(this.numericUseSuperElevation);
+            this.tabPageExperimental.Controls.Add(this.checkUseSuperElevation);
             this.tabPageExperimental.Controls.Add(this.ElevationText);
             this.tabPageExperimental.Location = new System.Drawing.Point(4, 22);
             this.tabPageExperimental.Name = "tabPageExperimental";
@@ -2714,6 +2711,7 @@
             0,
             0});
             this.numericSuperElevationGauge.Name = "numericSuperElevationGauge";
+            this.toolTip1.SetToolTip(this.numericSuperElevationGauge, "The gauge (distance between rails) used by the superelevation system in millimeters. Set to the most common track gauge used on your route.");
             this.numericSuperElevationGauge.Size = new System.Drawing.Size(54, 20);
             this.numericSuperElevationGauge.TabIndex = 6;
             this.numericSuperElevationGauge.Value = new decimal(new int[] {
@@ -2721,16 +2719,6 @@
             0,
             0,
             0});
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(86, 44);
-            this.label6.Margin = new System.Windows.Forms.Padding(3);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(33, 13);
-            this.label6.TabIndex = 3;
-            this.label6.Text = "Level";
             // 
             // label5
             // 
@@ -2744,19 +2732,16 @@
             this.label5.TabIndex = 0;
             this.label5.Text = "Experimental features that may slow down the game, use at your own risk.";
             // 
-            // numericUseSuperElevation
+            // checkUseSuperElevation
             // 
-            this.numericUseSuperElevation.Location = new System.Drawing.Point(26, 42);
-            this.numericUseSuperElevation.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
-            this.numericUseSuperElevation.Maximum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this.numericUseSuperElevation.Name = "numericUseSuperElevation";
-            this.numericUseSuperElevation.Size = new System.Drawing.Size(54, 20);
-            this.numericUseSuperElevation.TabIndex = 2;
-            this.toolTip1.SetToolTip(this.numericUseSuperElevation, "0: no elevation, 1: 8cm max; 10: 17cm max");
+            this.checkUseSuperElevation.AutoSize = true;
+            this.checkUseSuperElevation.Location = new System.Drawing.Point(26, 42);
+            this.checkUseSuperElevation.Name = "checkUseSuperElevation";
+            this.checkUseSuperElevation.Size = new System.Drawing.Size(122, 17);
+            this.checkUseSuperElevation.TabIndex = 2;
+            this.checkUseSuperElevation.Text = "Use Visual Superelevation";
+            this.toolTip1.SetToolTip(this.checkUseSuperElevation, "Enables or disables visual elements of superelevation (physics superelevation is unaffected).");
+            this.checkUseSuperElevation.UseVisualStyleBackColor = true;
             // 
             // ElevationText
             // 
@@ -2766,7 +2751,7 @@
             this.ElevationText.Name = "ElevationText";
             this.ElevationText.Size = new System.Drawing.Size(81, 13);
             this.ElevationText.TabIndex = 1;
-            this.ElevationText.Text = "Super-elevation";
+            this.ElevationText.Text = "Super-Elevation";
             // 
             // OptionsForm
             // 
@@ -2864,7 +2849,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactorChange)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2889,7 +2873,7 @@
         private System.Windows.Forms.CheckBox checkUseAdvancedAdhesion;
         private System.Windows.Forms.CheckBox checkBreakCouplers;
         private System.Windows.Forms.TabPage tabPageExperimental;
-        private System.Windows.Forms.NumericUpDown numericUseSuperElevation;
+        private System.Windows.Forms.CheckBox checkUseSuperElevation;
         private System.Windows.Forms.Label ElevationText;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TabPage tabPageAudio;

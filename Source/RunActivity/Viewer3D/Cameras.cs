@@ -2077,7 +2077,7 @@ namespace Orts.Viewer3D
             // Cab camera is only possible on the player locomotive.
             SetCameraCar(GetCameraCars().First());
             tiltingLand = false;
-            if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0) tiltingLand = true;
+            if (Viewer.Simulator.UseSuperElevation || Viewer.Simulator.CarVibrating > 0) tiltingLand = true;
             var car = attachedCar;
             if (car != null && car.Train != null && car.Train.IsTilting == true) tiltingLand = true;
             base.OnActivate(sameCamera);

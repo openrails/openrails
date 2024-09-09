@@ -325,7 +325,7 @@ namespace ORTS
             numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
 
             // Experimental tab
-            numericUseSuperElevation.Value = Settings.UseSuperElevation;
+            checkUseSuperElevation.Checked = Settings.UseSuperElevation;
             numericSuperElevationGauge.Value = Settings.SuperElevationGauge;
             trackLODBias.Value = Settings.LODBias;
             trackLODBias_ValueChanged(null, null);
@@ -515,7 +515,7 @@ namespace ORTS
             Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
 
             // Experimental tab
-            Settings.UseSuperElevation = (int)numericUseSuperElevation.Value;
+            Settings.UseSuperElevation = checkUseSuperElevation.Checked;
             Settings.SuperElevationGauge = (int)numericSuperElevationGauge.Value;
             Settings.LODBias = trackLODBias.Value;
             Settings.SignalLightGlow = checkSignalLightGlow.Checked;

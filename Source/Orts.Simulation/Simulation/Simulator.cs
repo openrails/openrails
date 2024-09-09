@@ -128,7 +128,7 @@ namespace Orts.Simulation
         public bool BreakCouplers;
         public int DayAmbientLight;
         public int CarVibrating;
-        public int UseSuperElevation; //amount of superelevation
+        public bool UseSuperElevation; // Whether or not visual superelevation is enabled
         public SuperElevation SuperElevation;
         public float SuperElevationGauge = 1.435f;//1.435 guage
         public LoadStationsPopulationFile LoadStationsPopulationFile;

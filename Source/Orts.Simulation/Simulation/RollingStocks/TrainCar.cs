@@ -640,7 +640,7 @@ namespace Orts.Simulation.RollingStocks
         protected float MaxUnbalancedSuperElevationM;  // Maximum comfortable cant deficiency, read from MSTS Wagon File
         public float SuperElevationAngleRad;
         protected bool IsMaxSafeCurveSpeed = false; // Has equal loading speed around the curve been exceeded, ie are all the wheesl still on the track?
-        protected float ComfortTolerance = 100.0f; // Tolerance for discomfort due to excess curve speed
+        protected float ComfortTolerance = 1.0f; // Tolerance for discomfort due to excess curve speed
         public bool IsCriticalMaxSpeed = false; // Has the critical maximum speed around the curve been reached, is the wagon about to overturn?
         public bool IsCriticalMinSpeed = false; // Is the speed less then the minimum required for the wagon to travel around the curve
         protected float StartCurveResistanceFactor = 2.0f; // Set curve friction at Start = 200%
@@ -1912,9 +1912,8 @@ namespace Orts.Simulation.RollingStocks
                 if (s > MaxSafeCurveSpeedMps)
                 {
                     // Consider a tolerance so passengers won't immediately complain, should reduce overkill notifications on routes with jerky track laying
-                    // Tolerance rapidly dies as speed excess increases, though lasts longer with consist durability set higher
                     // Can go negative to punish continuous speeding
-                    ComfortTolerance -= 2.5f * (s / MaxSafeCurveSpeedMps - 1.0f) * elapsedClockSeconds;
+                    ComfortTolerance -= 0.25f * (s / MaxSafeCurveSpeedMps - 1.0f) * elapsedClockSeconds;
 
                     if (!IsMaxSafeCurveSpeed && ComfortTolerance <= 0.0f)
                     {
@@ -1945,10 +1944,9 @@ namespace Orts.Simulation.RollingStocks
                         IsMaxSafeCurveSpeed = false; // reset flag for IsMaxSafeCurveSpeed reached - if speed on curve decreases
                     }
                     // Restore passenger tolerance gradually (100 seconds)
-                    // Consist durability affects how large tolerance can grow (min 25, max 100)
-                    ComfortTolerance += (Simulator.CurveDurability + 0.25f) * elapsedClockSeconds;
-                    if (ComfortTolerance > 75.0f * Simulator.CurveDurability + 25.0f)
-                        ComfortTolerance = 75.0f * Simulator.CurveDurability + 25.0f;
+                    ComfortTolerance += elapsedClockSeconds / 100.0f;
+                    if (ComfortTolerance > 1.0f)
+                        ComfortTolerance = 1.0f;
                 }
 
                 // If speed exceeds the overturning speed, then indicated that an error condition has been reached.
@@ -2025,10 +2023,9 @@ namespace Orts.Simulation.RollingStocks
                 IsMaxSafeCurveSpeed = false; // reset flag for IsMaxEqualLoadSpeed reached
 
                 // Restore passenger tolerance gradually (100 seconds)
-                // Consist durability affects how large tolerance can grow
-                ComfortTolerance += (Simulator.CurveDurability + 0.25f) * elapsedClockSeconds;
-                if (ComfortTolerance > 75.0f * Simulator.CurveDurability + 25.0f)
-                    ComfortTolerance = 75.0f * Simulator.CurveDurability + 25.0f;
+                ComfortTolerance += elapsedClockSeconds / 100.0f;
+                if (ComfortTolerance > 1.0f)
+                    ComfortTolerance = 1.0f;
             }
 
         }
@@ -2774,7 +2771,7 @@ namespace Orts.Simulation.RollingStocks
                     var y = traveler.Y;
                     var z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
 
-                    Vector3 location = new Vector3(x, y, z) + traveler.CalcElevationPositionOffset(Simulator.Settings.UseSuperElevation > 0, out float r);
+                    Vector3 location = new Vector3(x, y, z) + traveler.CalcElevationPositionOffset(Simulator.Settings.UseSuperElevation, out float r);
                     // This car is flipped, so flip roll direction.
                     r *= -1;
 
@@ -2806,7 +2803,7 @@ namespace Orts.Simulation.RollingStocks
                     var y = traveler.Y;
                     var z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
 
-                    Vector3 location = new Vector3(x, y, z) + traveler.CalcElevationPositionOffset(Simulator.Settings.UseSuperElevation > 0, out float r);
+                    Vector3 location = new Vector3(x, y, z) + traveler.CalcElevationPositionOffset(Simulator.Settings.UseSuperElevation, out float r);
 
                     WheelAxles[k].Part.AddWheelSetLocation(1, o, location.X, location.Y, location.Z, r);
                 }
