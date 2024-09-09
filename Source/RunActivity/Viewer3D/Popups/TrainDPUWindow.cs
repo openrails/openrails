@@ -340,7 +340,7 @@ namespace Orts.Viewer3D.Popups
             UpdateWindowSize();
         }
 
-        private void UpdateWindowSize()
+        public void UpdateWindowSize()
         {
             labels = TrainDPUWindowList(Owner.Viewer, normalTextMode).ToList();
             ModifyWindowSize();
