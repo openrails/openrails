@@ -140,7 +140,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             SwitchesOnPanelArray[3, 2].InitDefinition(UserCommand.DisplayTrainDrivingWindow);
             SwitchesOnPanelArray[3, 3].InitDefinition(UserCommand.DisplayNextStationWindow);
             SwitchesOnPanelArray[3, 4].InitDefinition(UserCommand.DisplaySwitchWindow);
-            SwitchesOnPanelArray[3, 5].InitDefinition(UserCommand.DisplayTrainOperationsWindow);
+            SwitchesOnPanelArray[3, 5].InitDefinition(UserCommand.DisplayTrainCarOperationsWindow);
             SwitchesOnPanelArray[3, 6].InitDefinition(UserCommand.DisplayTrainDpuWindow);
             SwitchesOnPanelArray[3, 7].InitDefinition(UserCommand.DisplayTrainListWindow);
             SwitchesOnPanelArray[3, 8].InitDefinition(UserCommand.DisplayEOTListWindow);

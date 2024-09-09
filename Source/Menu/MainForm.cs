@@ -136,6 +136,8 @@ namespace ORTS
             var options = Environment.GetCommandLineArgs().Where(a => (a.StartsWith("-") || a.StartsWith("/"))).Select(a => a.Substring(1));
             Settings = new UserSettings(options);
 
+            Cursor = Cursors.Default;
+
             LoadOptions();
             LoadLanguage();
 
@@ -573,7 +575,15 @@ namespace ORTS
                 }
             }
         }
-
+        
+        void buttonDownloadContent_Click(object sender, EventArgs e)
+        {
+            using (var form = new DownloadContentForm(Settings))
+            {
+                form.ShowDialog(this);
+            }
+        }
+        
         void buttonStart_Click(object sender, EventArgs e)
         {
             SaveOptions();
@@ -732,7 +742,7 @@ namespace ORTS
         #endregion
 
         #region Folder list
-        void LoadFolderList()
+        public void LoadFolderList()
         {
             var initialized = Initialized;
             Folders.Clear();
@@ -747,12 +757,11 @@ namespace ORTS
 
                 if (!initialized && Folders.Count == 0)
                 {
-                    using (var form = new OptionsForm(Settings, UpdateManager, true))
+                    using (var form = new DownloadContentForm(Settings))
                     {
                         switch (form.ShowDialog(this))
                         {
                             case DialogResult.OK:
-                                LoadFolderList();
                                 break;
                             case DialogResult.Retry:
                                 RestartMenu();
@@ -761,6 +770,12 @@ namespace ORTS
                     }
                 }
             });
+        }
+
+        public void LoadFolderListWithoutTask()
+        {
+            Folders = Folder.GetFolders(Settings).OrderBy(f => f.Name).ToList();
+            ShowFolderList();
         }
 
         void ShowFolderList()
@@ -774,7 +789,7 @@ namespace ORTS
         #endregion
 
         #region Route list
-        void LoadRouteList()
+        public void LoadRouteList()
         {
             if (RouteLoader != null)
                 RouteLoader.Cancel();
@@ -815,7 +830,7 @@ namespace ORTS
         #endregion
 
         #region Activity list
-        void LoadActivityList()
+        public void LoadActivityList()
         {
             if (ActivityLoader != null)
                 ActivityLoader.Cancel();
@@ -856,7 +871,7 @@ namespace ORTS
         #endregion
 
         #region Consist lists
-        void LoadLocomotiveList()
+        public void LoadLocomotiveList()
         {
             if (ConsistLoader != null)
                 ConsistLoader.Cancel();
@@ -913,7 +928,7 @@ namespace ORTS
         #endregion
 
         #region Path lists
-        void LoadStartAtList()
+        public void LoadStartAtList()
         {
             if (PathLoader != null)
                 PathLoader.Cancel();
@@ -938,6 +953,10 @@ namespace ORTS
                 comboBoxStartAt.Items.Clear();
                 foreach (var place in Paths.Select(p => p.Start).Distinct().OrderBy(s => s.ToString()))
                     comboBoxStartAt.Items.Add(place);
+                if (comboBoxStartAt.Items.Count > 0)
+                {
+                    comboBoxStartAt.SelectedIndex = 0;
+                }
                 // Because this list is unique names, we have to do some extra work to select it.
                 if (Settings.Menu_Selection.Length >= (int)UserSettings.Menu_SelectionIndex.Path)
                 {
@@ -1008,7 +1027,7 @@ namespace ORTS
         #endregion
 
         #region Timetable Set list
-        void LoadTimetableSetList()
+        public void LoadTimetableSetList()
         {
             if (TimetableSetLoader != null)
                 TimetableSetLoader.Cancel();
@@ -1017,6 +1036,7 @@ namespace ORTS
 
             TimetableSets.Clear();
             ShowTimetableSetList();
+
             var selectedFolder = SelectedFolder;
             var selectedRoute = SelectedRoute;
             TimetableSetLoader = new Task<List<TimetableInfo>>(this, () => TimetableInfo.GetTimetableInfo(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableSets) =>
@@ -1069,7 +1089,7 @@ namespace ORTS
         #endregion
 
         #region Timetable list
-        void ShowTimetableList()
+        public void ShowTimetableList()
         {
             comboBoxTimetable.Items.Clear();
             if (SelectedTimetableSet != null)
@@ -1083,7 +1103,7 @@ namespace ORTS
         #endregion
 
         #region Timetable Train list
-        void ShowTimetableTrainList()
+        public void ShowTimetableTrainList()
         {
             comboBoxTimetableTrain.Items.Clear();
             if (SelectedTimetable != null)
@@ -1326,21 +1346,127 @@ namespace ORTS
 
         void UpdateFromMenuSelection<T>(ComboBox comboBox, UserSettings.Menu_SelectionIndex index, Func<T, string> map, T defaultValue)
         {
-            if (Settings.Menu_Selection.Length > (int)index && Settings.Menu_Selection[(int)index] != "")
+            if (((index == UserSettings.Menu_SelectionIndex.Folder) ||
+                 ((comboBoxFolder.Items.Count > 0) && (SelectedFolder != null) &&
+                  (Settings.Menu_Selection.Count() > 0) &&
+                  (SelectedFolder.Path == Settings.Menu_Selection[(int)UserSettings.Menu_SelectionIndex.Folder]))) &&
+                (Settings.Menu_Selection.Length > (int)index) && 
+                (Settings.Menu_Selection[(int)index] != ""))
             {
                 if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
+                {
                     comboBox.Text = Settings.Menu_Selection[(int)index];
+                }
                 else
+                {
                     SelectComboBoxItem<T>(comboBox, item => map(item) == Settings.Menu_Selection[(int)index]);
+                }
             }
             else
             {
-                if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
-                    comboBox.Text = map(defaultValue);
-                else if (defaultValue != null)
+                var routes = Settings.Content.ContentRouteSettings.Routes;
+                if ((SelectedFolder != null) &&
+                    routes.ContainsKey(SelectedFolder.Name) &&
+                    routes[SelectedFolder.Name].Installed &&
+                    !string.IsNullOrEmpty(routes[SelectedFolder.Name].Start.Route))
+                {
+                    var route = routes[SelectedFolder.Name];
+                    string valueComboboxToSetTo = "";
+                    switch (index)
+                    {
+                        case UserSettings.Menu_SelectionIndex.Route:
+                            valueComboboxToSetTo = route.Start.Route;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Activity:
+                            valueComboboxToSetTo = route.Start.Activity;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Locomotive:
+                            valueComboboxToSetTo = route.Start.Locomotive;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Consist:
+                            valueComboboxToSetTo = route.Start.Consist;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Path:
+                            valueComboboxToSetTo = route.Start.StartingAt;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Time:
+                            valueComboboxToSetTo = route.Start.Time;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Season:
+                            valueComboboxToSetTo = route.Start.Season;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Weather:
+                            valueComboboxToSetTo = route.Start.Weather;
+                            break;
+                        default:
+                            break;
+                    }
+                    bool found = false;
+                    if ((index != UserSettings.Menu_SelectionIndex.Path) ||
+                        (SelectedActivity == null) || (!(SelectedActivity is ExploreActivity)))
+                    {
+                        if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
+                        {
+                            comboBox.Text = valueComboboxToSetTo;
+                            found = true;
+                        } 
+                        else
+                        {
+                            found = searchInComboBox(comboBox,  valueComboboxToSetTo);
+                        }
+                    }
+                    else
+                    {
+                        found = searchInComboBox(comboBoxStartAt, valueComboboxToSetTo);
+                        found = searchInComboBox(comboBoxHeadTo, valueComboboxToSetTo);
+                    }
+                    if (!found)
+                    {
+                        if (comboBox.Items.Count > 0)
+                        {
+                            comboBox.SelectedIndex = 0;
+                        }
+                    }
+                }
+                else
+                {
+                    SetToDefault(comboBox, index, map, defaultValue);
+                }
+            }
+        }
+
+        bool searchInComboBox(ComboBox comboBox, string valueComboboxToSetTo)
+        {
+            for (var i = 0; i < comboBox.Items.Count; i++)
+            {
+                if ((string)comboBox.Items[i].ToString() == valueComboboxToSetTo)
+                {
+                    comboBox.SelectedIndex = i;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        void SetToDefault<T>(ComboBox comboBox, UserSettings.Menu_SelectionIndex index, Func<T, string> map, T defaultValue)
+        {
+            if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
+            {
+                comboBox.Text = map(defaultValue);
+            }
+            else
+            {
+                if (defaultValue != null)
+                {
                     SelectComboBoxItem<T>(comboBox, item => map(item) == map(defaultValue));
-                else if (comboBox.Items.Count > 0)
-                    comboBox.SelectedIndex = 0;
+                }
+                else
+                {
+                    if (comboBox.Items.Count > 0)
+                    {
+                        comboBox.SelectedIndex = 0;
+                    }
+                }
             }
         }
 
@@ -1361,7 +1487,7 @@ namespace ORTS
             comboBox.SelectedIndex = 0;
         }
 
-        private class KeyedComboBoxItem
+        public class KeyedComboBoxItem
         {
             public readonly int Key;
             public readonly string Value;

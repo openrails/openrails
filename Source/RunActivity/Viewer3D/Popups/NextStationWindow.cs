@@ -141,7 +141,7 @@ namespace Orts.Viewer3D.Popups
                 ActivityTaskPassengerStopAt Current = null;
 
                 // timetable information
-                if (playerTrain.CheckStations)
+                if (playerTrain.CheckStations || playerTrain.Autopilot)
                 {
                     TTTrain playerTimetableTrain = playerTrain as TTTrain;
 

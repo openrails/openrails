@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(BuildDotNet)' == 'true'">net6-windows</TargetFrameworks>
-    <TargetFrameworks Condition="'$(TargetFrameworks)' == ''">net472</TargetFrameworks>
+    <TargetFramework Condition="'$(BuildDotNet)' == 'true'">net6-windows</TargetFramework>
+    <TargetFramework Condition="'$(TargetFramework)' == ''">net472</TargetFramework>
     <OutputType>WinExe</OutputType>
     <RootNamespace>ORTS</RootNamespace>
     <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
@@ -31,6 +31,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\GNU.Gettext.WinForms.dll</HintPath>
     </Reference>
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -61,6 +63,7 @@
   </ItemGroup>
   <PropertyGroup />
   <ItemGroup>
+    <PackageReference Include="LibGit2Sharp" Version="0.29.0" />
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.355802">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

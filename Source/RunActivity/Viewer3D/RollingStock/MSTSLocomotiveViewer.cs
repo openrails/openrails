@@ -35,7 +35,6 @@ using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
 using Orts.Viewer3D.RollingStock.SubSystems;
 using Orts.Viewer3D.RollingStock.Subsystems.ETCS;
-using Orts.Viewer3D.WebServices.SwitchPanel;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Scripting.Api;
@@ -2145,7 +2144,7 @@ namespace Orts.Viewer3D.RollingStock
                     break;
                 case CABViewControlTypes.DYNAMIC_BRAKE:
                 case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
-                    var dynBrakePercent = Locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING ?
+                    var dynBrakePercent = (Locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || Locomotive.Train.Autopilot) ?
                         Locomotive.DynamicBrakePercent : Locomotive.LocalDynamicBrakePercent;
                     if (dynBrakePercent <= 0)
                         index = 0;

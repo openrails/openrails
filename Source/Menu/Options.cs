@@ -56,6 +56,22 @@ namespace ORTS
                 Name = "";
                 Path = "";
             }
+
+            public static bool isWrongPath(string path, GettextResourceManager catalog)
+            {
+                if (path.ToLower().Contains(Application.StartupPath.ToLower()))
+                {
+                    // check added because a succesful Update operation will empty the Open Rails folder and lose any content stored within it.
+                    MessageBox.Show(catalog.GetString
+                        ($"Cannot use content from any folder which lies inside the Open Rails program folder {Application.StartupPath}\n\n")
+                        , "Invalid content location"
+                        , MessageBoxButtons.OK
+                        , MessageBoxIcon.Error);
+                    return true;
+        }
+
+                return false;
+            }
         }
 
         public OptionsForm(UserSettings settings, UpdateManager updateManager, bool initialContentSetup)

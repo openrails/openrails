@@ -287,7 +287,7 @@ namespace Orts.Simulation.RollingStocks
         // instance variables set by train physics when it creates the traincar
         public Train Train;  // the car is connected to this train
                              //        public bool IsPlayerTrain { get { return Train.TrainType == ORTS.Train.TRAINTYPE.PLAYER ? true : false; } set { } }
-        public bool IsPlayerTrain { get { return Train.IsPlayerDriven; } set { } }
+        public bool IsPlayerTrain { get { return Train != null && Train.IsPlayerDriven; } set { } }
         public bool Flipped; // the car is reversed in the consist
         public int UiD;
         public string CarID = "AI"; //CarID = "0 - UID" if player train, "ActivityID - UID" if loose consist, "AI" if AI train
