@@ -132,7 +132,6 @@ namespace Orts.Formats.Msts
             if (RouteStart == null) throw new STFException(stf, "Missing RouteStart");
             if (ForestClearDistance == 0 && RemoveForestTreesFromRoads) Trace.TraceWarning("You must define also ORTSUserPreferenceForestClearDistance to avoid trees on roads");
             if (SuperElevation.Count <= 0) SuperElevation.Add(new SuperElevationStandard());
-            else SuperElevationHgtpRadiusM = null; // Disable legacy superelevation system if newer system is defined
         }
 
         public string RouteID;  // ie JAPAN1  - used for TRK file and route folder name
@@ -232,12 +231,13 @@ namespace Orts.Formats.Msts
         public float MaxFreightUnderbalanceM = float.PositiveInfinity;
         public float MaxPaxUnderbalanceM = float.PositiveInfinity;
         public float MinCantM = 0.0125f; // Default 1.25 cm ~ 0.5 inches
-        public float MaxCantM = -1.0f; // Specified by user settings by default
+        public float MaxCantM = 0.15f; // Default limit on superelevation is 15 cm ~ 6 inches
         public float MinSpeedMpS = MpS.FromKpH(25.0f); // Default 25 kmh ~ 15 mph
         public float MaxSpeedMpS = float.PositiveInfinity; // Default unlimited
         public float PrecisionM = 0.005f; // Default 5 mm ~ 0.2 inches
         public float RunoffSlope = 0.003f; // Maximum rate of change of superelevation per track length, default 0.3%
         public float RunoffSpeedMpS = 0.04f; // Maximum rate of change of superelevation per second, default 4 cm / sec ~ 1.5 inches / sec
+        public bool UseLegacyCalculation = true; // Should ORTSTrackSuperElevation be used for superelevation calculations?
 
         public SuperElevationStandard()
         {
@@ -260,6 +260,9 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("maxrunoffspeed", () => { RunoffSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); }),
             });
 
+            // Disable legacy superelevation calculations if sufficient data is given
+            if (MaxFreightUnderbalanceM <= 10.0f || MaxPaxUnderbalanceM <= 10.0f)
+                UseLegacyCalculation = false;
             // Sanity check values of underbalance
             if (MaxFreightUnderbalanceM > 10.0f)
             {

@@ -952,20 +952,32 @@ and a third standard for 160 kph and up, the required Minimum/MaximumSpeed setti
 Note that the order of the ``ORTSSuperElevation`` blocks is important; they are read from top down
 so the slowest superelevation standard should be on top of all faster superelevation standards.
 
-Open Rails also supports a simpler but less accurate way to define superelevation. It is
-recommended to not use this system as it does not follow the principles of real superelevation
-design, producing less accurate results. However, it has been retained to support prior routes.
+Open Rails also supports a simpler but less modern way to define superelevation based on curve
+radius only, without consideration for underbalance. This method may be appropriate for railroads
+built long in the past and will not produce the best results for modern routes.
 The parameter ``ORTSTrackSuperElevation`` can be added to the .trk file to define a table
 of superelevation values::
 
-   ORTSTrackSuperElevation ( x y .......... )
+    ORTSTrackSuperElevation (
+        x1 y1
+        x2 y2
+        ........
+    )
    
-where x and y are a series of paired parameters specifying the curve radius in metres (x value),
-and the amount of superelevation in metres (y value). The statement will take as many paired 
-values as desired. Each paired set of values must have an x and y value present. If it is desired
+where x and y are a series of paired parameters specifying the curve radius (default meters)
+(x value), and the amount of superelevation (default meters) (y value). The statement will take
+as many paired values as desired, as long as the radius values are in increasing order.
+Each paired set of values must have an x and y value present. If it is desired
 to 'hold' a certain value of SuperElevation for a number of different radii curves, then the same 
 y value needs to be used for succeeding values of curve radius. Where the y value changes between 
-curve radii, then Open Rails will extrapolate the y value between the two points. 
+curve radii, then Open Rails will interpolate the y value between the two points.
+
+Superelevation calculated using ``ORTSSuperElevation`` will generally override any values
+entered in ``ORTSTrackSuperElevation`` unless the ``ORTSSuperElevation`` block did not specify
+a value for ``MaxFreightUnderbalance`` or ``MaxPassengerUnderbalance``. If neither is given,
+superelevation will be replaced with the value given by ``ORTSTrackSuperElevation``, but will
+be adjusted to match the given values of minimum and maximum cant, precision, and runoff. This
+way, it is possible to represent a wide variety of superelevation configurations.
 
 
 Overhead (catenary) wire

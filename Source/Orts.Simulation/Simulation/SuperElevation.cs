@@ -30,7 +30,6 @@ namespace Orts.Simulation
     {
         public List<List<TrVectorSection>> Curves;
         public Dictionary<int, List<TrVectorSection>> Sections;
-        public float MaximumAllowedM;
         public Signals signalRef { get; protected set; }
 
         //check TDB for long curves and determine each section's position/elev in the curve
@@ -39,10 +38,6 @@ namespace Orts.Simulation
             Curves = new List<List<TrVectorSection>>();
             Sections = new Dictionary<int, List<TrVectorSection>>();
             signalRef = simulator.Signals;
-
-            // Superelevation limit from the simulator settings. Min 7 cm, max 17 cm
-            // If sim setting is 0 (visual superelevation is disabled), set max elevation to 13 cm for physics calculation
-            MaximumAllowedM = 0.07f + (simulator.UseSuperElevation == 0 ? 0.06f : simulator.UseSuperElevation / 100f);
 
             float routeMaxSpeed = (float)simulator.TRK.Tr_RouteFile.SpeedLimit;
 
@@ -150,18 +145,12 @@ namespace Orts.Simulation
                 SuperElevationStandard checkStandard = simulator.TRK.Tr_RouteFile.SuperElevation[s];
                 // If curve speed is within the appropriate speed range for the superelevation standard, use it
                 // Otherwise, check the next one
-                if (maxCurveSpeedMpS < checkStandard.MaxSpeedMpS && maxCurveSpeedMpS > checkStandard.MinSpeedMpS)
+                if (maxCurveSpeedMpS < checkStandard.MaxSpeedMpS + 0.05f && maxCurveSpeedMpS > checkStandard.MinSpeedMpS - 0.05f)
                 {
                     standard = checkStandard;
 
                     // Calculate the allowed change in superelevation per distance along curve, may change with speed
                     effectiveRunoffSlope = Math.Min(standard.RunoffSlope, standard.RunoffSpeedMpS / maxCurveSpeedMpS);
-
-                    // If max cant hasn't been entered, use default maximum superelevation
-                    if (standard.MaxCantM < 0.0f)
-                        maxElev = MaximumAllowedM;
-                    else
-                        maxElev = standard.MaxCantM;
 
                     // Ensure superelevation is limited to the track gauge no matter what to avoid NaN errors
                     maxElev = MathHelper.Clamp(maxElev, 0.0f, simulator.SuperElevationGauge);
@@ -200,8 +189,8 @@ namespace Orts.Simulation
                     {
                         float superElevation;
 
-                        // Support for old system with superelevation set in Route (TRK) file
-                        if (simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM != null)
+                        // Support for old system with superelevation set directly in Route (TRK) file
+                        if (standard.UseLegacyCalculation && simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM != null)
                         {
                             superElevation = simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM[sectionData.SectionCurve.Radius];
                         }
@@ -220,15 +209,15 @@ namespace Orts.Simulation
                                 float freightElevation = elevationFactor * (freightSpeed * freightSpeed) - standard.MaxFreightUnderbalanceM;
 
                                 superElevation = Math.Max(paxElevation, freightElevation); // Choose the highest required superelevation
-
-                                superElevation = (float)Math.Round(superElevation / standard.PrecisionM, MidpointRounding.AwayFromZero)
-                                    * standard.PrecisionM; // Round superelevation amount to next higher increment of precision
-
-                                superElevation = MathHelper.Clamp(superElevation, standard.MinCantM, maxElev);
                             }
                             else // No superelevation needed (shouldn't reach this point, this is a failsafe)
                                 superElevation = 0.0f;
                         }
+                        superElevation = (float)Math.Round(superElevation / standard.PrecisionM, MidpointRounding.AwayFromZero)
+                            * standard.PrecisionM; // Round superelevation amount to next higher increment of precision
+
+                        superElevation = MathHelper.Clamp(superElevation, standard.MinCantM, maxElev);
+
                         SectionList[i].NomElevM = superElevation;
                     }
                 }
