@@ -2135,6 +2135,8 @@ namespace Orts.Simulation
                 }
                 if (!TimetableMode)
                 (PlayerLocomotive.Train as AITrain).SwitchToPlayerControl();
+                else
+                    PlayerLocomotive.Train.DisplayMessage = "";
             }
             else
             {
