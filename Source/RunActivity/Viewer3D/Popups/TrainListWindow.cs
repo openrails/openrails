@@ -91,7 +91,7 @@ namespace Orts.Viewer3D.Popups
                             line.Add(viewed = new TrainLabel(Owner.TextFontDefault.Height, line.RemainingHeight, Owner.Viewer, thisTrain, "*", LabelAlignment.Right));
                             viewed.Color = Color.Red;
                         }
-                        if (Owner.Viewer.Simulator.IsAutopilotMode && !Owner.Viewer.Simulator.TimetableMode)
+                        if (Owner.Viewer.Simulator.IsAutopilotMode)
                         {
                             number.Color = thisTrain.IsPlayable ? Color.LightGreen : Color.White;
                             name.Color = thisTrain.IsPlayable ? Color.LightGreen : Color.White;
@@ -110,7 +110,7 @@ namespace Orts.Viewer3D.Popups
                 }
 
                 // Now list static trains with loco and cab
-                if (Owner.Viewer.Simulator.IsAutopilotMode && !Owner.Viewer.Simulator.TimetableMode)
+                if (Owner.Viewer.Simulator.IsAutopilotMode)
                 {
                     foreach (var thisTrain in Owner.Viewer.Simulator.Trains)
                     {
@@ -181,7 +181,7 @@ namespace Orts.Viewer3D.Popups
             }
             if (PickedTrainFromList != null && (PickedTrainFromList == Viewer.SelectedTrain || (PickedTrainFromList.TrainType == Train.TRAINTYPE.AI_INCORPORATED && 
                 (PickedTrainFromList as AITrain).IncorporatingTrain.IsPathless && (PickedTrainFromList as AITrain).IncorporatingTrain == Viewer.SelectedTrain)) && !PickedTrainFromList.IsActualPlayerTrain &&
-                Viewer.Simulator.IsAutopilotMode && PickedTrainFromList.IsPlayable && (Viewer.PlayerTrain as AITrain).MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC)
+                Viewer.Simulator.IsAutopilotMode && PickedTrainFromList.IsPlayable && !(Viewer.Simulator.TimetableMode && (Viewer.PlayerTrain as AITrain).MovementState == AITrain.AI_MOVEMENT_STATE.AI_STATIC))
             {
                 if (UserInput.IsDown(UserCommand.GameSuspendOldPlayer) && !Viewer.Simulator.TimetableMode)
                     Viewer.Simulator.TrainSwitcher.SuspendOldPlayer = true;
