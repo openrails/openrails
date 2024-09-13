@@ -105,6 +105,8 @@ namespace Orts.Viewer3D
                             LightPrimitives.Add(new LightGlowPrimitive(this, Viewer.RenderProcess, light));
                             if (light.Graphic != null)
                                 (LightPrimitives.Last() as LightGlowPrimitive).SpecificGlowMaterial = viewer.MaterialManager.Load("LightGlow", DefineFullTexturePath(light.Graphic));
+                            else
+                                (LightPrimitives.Last() as LightGlowPrimitive).SpecificGlowMaterial = LightGlowMaterial;
                             break;
                         case LightType.Cone:
                             LightPrimitives.Add(new LightConePrimitive(this, Viewer.RenderProcess, light));
