@@ -153,7 +153,7 @@ namespace Orts.Simulation
                     effectiveRunoffSlope = Math.Min(standard.RunoffSlope, standard.RunoffSpeedMpS / maxCurveSpeedMpS);
 
                     // Ensure superelevation is limited to the track gauge no matter what to avoid NaN errors
-                    maxElev = MathHelper.Clamp(maxElev, 0.0f, simulator.SuperElevationGauge);
+                    maxElev = MathHelper.Clamp(standard.MaxCantM, 0.0f, simulator.SuperElevationGauge);
 
                     break;
                 }
