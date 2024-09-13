@@ -952,11 +952,11 @@ and a third standard for 160 kph and up, the required Minimum/MaximumSpeed setti
 Note that the order of the ``ORTSSuperElevation`` blocks is important; they are read from top down
 so the slowest superelevation standard should be on top of all faster superelevation standards.
 
-Open Rails also supports a simpler but less modern way to define superelevation based on curve
-radius only, without consideration for underbalance. This method may be appropriate for railroads
-built long in the past and will not produce the best results for modern routes.
-The parameter ``ORTSTrackSuperElevation`` can be added to the .trk file to define a table
-of superelevation values::
+Open Rails also supports a simpler way to define superelevation based on curve radius only, resulting
+in the same superelevation regardless of track speed. If a railroad uses this simplified method, they
+would provide a table of track curve radii and the superelevation used at that radius (usually also
+including a maximum speed for the curve). This table can then be provided to OR using the
+``ORTSTrackSuperElevation`` parameter in the .trk file::
 
     ORTSTrackSuperElevation (
         x1 y1
@@ -964,7 +964,7 @@ of superelevation values::
         ........
     )
    
-where x and y are a series of paired parameters specifying the curve radius (default meters)
+Where x and y are a series of paired parameters specifying the curve radius (default meters)
 (x value), and the amount of superelevation (default meters) (y value). The statement will take
 as many paired values as desired, as long as the radius values are in increasing order.
 Each paired set of values must have an x and y value present. If it is desired
