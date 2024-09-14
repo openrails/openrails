@@ -3505,14 +3505,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 if (((Train.TrainType == Train.TRAINTYPE.PLAYER && !Train.Autopilot) || Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN) && (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics))
                 {
-                    if (SteamEngines[i].AttachedAxle.IsWheelSlip)
-                    {
-                        variable[i] = Math.Abs(SteamEngines[i].AttachedAxle.SlipSpeedMpS / SteamEngines[i].AttachedAxle.WheelRadiusM / MathHelper.Pi * 5);
-                    }
-                    else
-                    {
                         variable[i] = Math.Abs((float)SteamEngines[i].AttachedAxle.AxleSpeedMpS / SteamEngines[i].AttachedAxle.WheelRadiusM / MathHelper.Pi * 5);
-                    }
                 }
                 else 
                 // Axle code is not executed if it is an AI train, on Autopilot, or Simple adhesion or simple physics is selected. Hence must use wheelspeed in these instances
