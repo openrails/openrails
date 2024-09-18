@@ -20,6 +20,7 @@ using System.Diagnostics;
 using Orts.Parsers.Msts;
 using System.IO;
 using ORTS.Common;
+using System.Linq;
 
 namespace Orts.Formats.Msts
 {
@@ -131,7 +132,14 @@ namespace Orts.Formats.Msts
             if (Description == null) throw new STFException(stf, "Missing Description");
             if (RouteStart == null) throw new STFException(stf, "Missing RouteStart");
             if (ForestClearDistance == 0 && RemoveForestTreesFromRoads) Trace.TraceWarning("You must define also ORTSUserPreferenceForestClearDistance to avoid trees on roads");
-            if (SuperElevation.Count <= 0) SuperElevation.Add(new SuperElevationStandard());
+            if (SuperElevation.Count <= 0)
+            {
+                // No superelevation standard defined, create the default one
+                if (SuperElevationHgtpRadiusM != null)
+                    SuperElevation.Add(new SuperElevationStandard(SuperElevationHgtpRadiusM, MilepostUnitsMetric));
+                else
+                    SuperElevation.Add(new SuperElevationStandard(MilepostUnitsMetric));
+            }
         }
 
         public string RouteID;  // ie JAPAN1  - used for TRK file and route folder name
@@ -228,23 +236,57 @@ namespace Orts.Formats.Msts
 
     public class SuperElevationStandard
     {
-        public float MaxFreightUnderbalanceM = float.PositiveInfinity;
-        public float MaxPaxUnderbalanceM = float.PositiveInfinity;
-        public float MinCantM = 0.0125f; // Default 1.25 cm ~ 0.5 inches
-        public float MaxCantM = 0.15f; // Default limit on superelevation is 15 cm ~ 6 inches
-        public float MinSpeedMpS = MpS.FromKpH(25.0f); // Default 25 kmh ~ 15 mph
+        public float MaxFreightUnderbalanceM = float.PositiveInfinity; // Limit to be set elsewhere
+        public float MaxPaxUnderbalanceM = float.PositiveInfinity; // Limit to be set elsewhere
+        public float MinCantM = 0.010f; // Default 10 mm (0.5 inches on imperial routes)
+        public float MaxCantM = 0.180f; // Default limit on superelevation is 180 mm (5 inches on imperial routes)
+        public float MinSpeedMpS = MpS.FromKpH(25.0f); // Default 25 kmh (15 mph on imperial routes)
         public float MaxSpeedMpS = float.PositiveInfinity; // Default unlimited
-        public float PrecisionM = 0.005f; // Default 5 mm ~ 0.2 inches
+        public float PrecisionM = 0.005f; // Default 5 mm (0.25 inches on imperial routes)
         public float RunoffSlope = 0.003f; // Maximum rate of change of superelevation per track length, default 0.3%
-        public float RunoffSpeedMpS = 0.04f; // Maximum rate of change of superelevation per second, default 4 cm / sec ~ 1.5 inches / sec
+        public float RunoffSpeedMpS = 0.055f; // Maximum rate of change of superelevation per second, default 55 mm / sec (1.5 inches / sec on imperial routes)
         public bool UseLegacyCalculation = true; // Should ORTSTrackSuperElevation be used for superelevation calculations?
 
-        public SuperElevationStandard()
+        // Initialize new instance with default values (default metric values)
+        public SuperElevationStandard(bool metric = true)
         {
-            // Initialize new instance with default values
-            MaxFreightUnderbalanceM = 0.05f; // Default 5 cm ~ 2 inches
-            MaxPaxUnderbalanceM = 0.075f; // Default 7.5 cm ~ 3 inches
+            if (metric)
+            {
+                // Set underbalance to millimeter values for metric routes
+                MaxFreightUnderbalanceM = 0.100f; // Default 100 mm
+                MaxPaxUnderbalanceM = 0.150f; // Default 150 mm
+                // Other parameters are already metric by default
+            }
+            else
+            {
+                // Set values in imperial units
+                MaxFreightUnderbalanceM = Me.FromIn(2.0f); // Default 2 inches
+                MaxPaxUnderbalanceM = Me.FromIn(3.0f); // Default 3 inches
+                MinCantM = Me.FromIn(0.5f);
+                MaxCantM = Me.FromIn(6.0f);
+                MinSpeedMpS = MpS.FromMpH(15.0f);
+                PrecisionM = Me.FromIn(0.25f);
+                RunoffSpeedMpS = MpS.FromMpH(0.0852f); // 1.5 inches per second
+            }
         }
+
+        // Initialize new instance from superelevation interpolator
+        // Interpolator X values should be curve radius, Y values amount of superelevation in meters
+        public SuperElevationStandard(Interpolator elevTable, bool metric = true)
+        {
+            MinCantM = elevTable.Y.Min();
+            MaxCantM = elevTable.Y.Max();
+
+            if (!metric)
+            {
+                // Some extra data still required, use imperial units if the route uses it
+                MinSpeedMpS = MpS.FromMpH(15.0f);
+                PrecisionM = Me.FromIn(0.25f);
+                RunoffSpeedMpS = MpS.FromMpH(0.0852f); // 1.5 inches per second
+            }
+        }
+
+        // Read data for new instance using STF format
         public SuperElevationStandard(STFReader stf)
         {
             stf.MustMatch("(");
@@ -268,7 +310,7 @@ namespace Orts.Formats.Msts
             {
                 if (MaxPaxUnderbalanceM > 10.0f)
                 {
-                    // Neither underbalance has been defined
+                    // Neither underbalance has been defined, assume some defaults
                     MaxFreightUnderbalanceM = 0.05f; // Default 5 cm ~ 2 inches
                     MaxPaxUnderbalanceM = 0.075f; // Default 7.5 cm ~ 3 inches
                 }
