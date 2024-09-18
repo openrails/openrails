@@ -881,30 +881,30 @@ file and add some (or all) of the following parameters inside the ``ORTSSuperEle
 
 - ``MaxFreightUnderbalance`` -- The maximum amount (using units of length) of cant deficiency/underbalance
   that should be allowed for trains travelling at the freight speed limit. Larger allowed underbalance
-  results in less extreme superelevation. (Default 5 cm ~ 2 inches.)
+  results in less extreme superelevation. (Default 100 mm for metric routes, 2 in for imperial routes.)
 - ``MaxPassengerUnderbalance`` -- The maximum amount (using units of length) of cant deficiency/underbalance
-  that should be allowed for trains travelling at the passenger speed limit. (Default 7.5 cm ~ 3 inches.)
+  that should be allowed for trains travelling at the passenger speed limit. (Default 150 mm / 3 in.)
   For comfort reasons, the underbalance values should be equal to or less than the
   ``ORTSUnbalancedSuperElevation`` value used by the rolling stock on the route. If the superelevation
   required to achieve the max passenger underbalance is different from that required for freight, the
   curve will use whichever superelevation is larger (the actual amount of underbalance may be lower).
 - ``MinimumCant`` -- If a curve needs superelevation, the amount of superelevation will be no lower than
-  this value (given in units of length). (Default 1.25 cm ~ 0.5 inches.)
+  this value (given in units of length). (Default 10 mm / 0.5 in.)
 - ``MaximumCant`` -- Sets the maximum amount of superelevation (units of length) that any curve is allowed
   to have, regardless of other factors. Usually curves should be designed to avoid reaching this limit, as
   exceeding the limit could result in excessive curve force or even trains toppling over at low speeds.
-  (Default is determined by the superelevation setting in the options menu. Level 0 = 7 cm, level 10 = 17 cm.)
+  (Default 180 mm / 6 in.)
 - ``Precision`` -- Determines the accuracy (in length) to which the superelevation is maintained. If
   the superelevation required by a curve is not a nice number, it will be rounded up to the nearest
-  multiple of ``Precision``. (Default 0.5 cm ~ 0.2 inches.)
+  multiple of ``Precision``. (Default 5 mm / 0.25 in.)
 - ``MaxRunOffSlope`` -- Sets a limit on the amount of change in superelevation per unit length along a curve
   (quantity is unitless). This allows for smooth transition between flat and superelevated track at low speeds.
   (Default 0.003.)
 - ``MaxRunOffSpeed`` -- Sets a limit on the amount of change in superelevation per second (units of speed) when
   travelling at the max speed for the curve. This allows for smooth transition between flat and superelevated
-  track at high speeds. (Default 4 cm/sec ~ 1.5 inches/sec.)
+  track at high speeds. (Default 55 mm/sec / 1.5 in/sec.)
 - ``MinimumSpeed`` -- The minimum speed limit required for superelevation to be added to a curve. Useful for
-  preventing superelevation from being generated in yards. (Default 25 kmh ~ 15 mph.)
+  preventing superelevation from being generated in yards. (Default 25 kmh / 15 mph.)
 - ``MaximumSpeed`` -- The maximum speed limit allowed for superelevation to be added to a curve. This
   is only useful if a route needs multiple sets of superelevation settings. See section below for a
   description on use of multiple superelevation standards. (Default unlimited.)
