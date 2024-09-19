@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2024 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -22,7 +22,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Resources;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 using ORTS.Common;
@@ -75,6 +77,8 @@ namespace ORTS
         public Image FirstImage { get; private set; }
         public Image LastImage { get; private set; }
         public PageTracking NewPages { get; private set; }
+        public double ScreenScaling { get; private set; }
+        public bool ScreenAdjusted { get; set; }
 
         public NotificationManager(MainForm mainForm, ResourceManager resources, UpdateManager updateManager, UserSettings settings, Panel panel)
         {
@@ -83,14 +87,20 @@ namespace ORTS
             this.Settings = settings;
             Panel = panel;
             NewPages = new PageTracking();
-            
+            ScreenScaling = GetScalingFactor();
+
             // Load images of arrows
             PreviousImage = (Image)resources.GetObject("Notification_previous");
             NextImage = (Image)resources.GetObject("Notification_next");
             FirstImage = (Image)resources.GetObject("Notification_first");
             LastImage = (Image)resources.GetObject("Notification_last");
         }
-        
+
+        public double GetScalingFactor()
+        {
+            return Screen.PrimaryScreen.Bounds.Width / SystemParameters.PrimaryScreenWidth;
+        }
+
         public void CheckNotifications()
         {
             try
@@ -100,8 +110,8 @@ namespace ORTS
                 CurrentPageIndex = 0;
                 Notifications = GetNotifications();
                 ParameterDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                
-                // To support testing, add any overriding values to the ValueDictionary
+
+                // To support testing, add any overriding values to the ParameterDictionary
                 GetOverrideParameters()?.ParameterValueList.ForEach(i => ParameterDictionary.Add(i.Parameter, i.Value));
                 LogOverrideParameters();
 
@@ -220,7 +230,7 @@ namespace ORTS
 
                 Page.NDetailList.Add(new NTitleControl(Panel, CurrentPageIndex + 1, list.Count, n.Date, n.Title));
 
-                // Check constraints foPageNoem
+                // Check criteria for each item and add the successful items to the current page
                 foreach (var item in n.ItemList)
                 {
                     if (AreItemChecksMet(item)) AddItemToPage(Page, item);
@@ -280,6 +290,11 @@ namespace ORTS
             return true;
         }
 
+        /// <summary>
+        ///  For the checks in the item, compares parameter values with criteria values
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
         private bool AreItemChecksMet(Item item)
         {
             if (item.IncludeIf != null || item.IncludeIfNot != null)

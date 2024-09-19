@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2024 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -73,51 +73,29 @@ namespace ORTS
         public string Color { get; set; } = "black";
         public int Indent { get; set; } = 140;
     }
-    //public class Met
-    //{
-    //    public List<Item> ItemList { get; set; }
-    //    public List<CheckId> CheckIdList { get; set; }
-    //}
-    //public class CheckId
-    //{
-    //    public string Id { get; set; }
-    //}
 
     public class Check
     {
         public string Id { get; set; }
         public List<AnyOf> AnyOfList { get; set; }
-        //public List<Item> UnmetItemList { get; set; }
     }
 
-    //public class CheckAllOf
-    //{
-    //    public List<Criteria> AllOfList { get; set; }
-    //}
     public class AnyOf
     {
         public List<Criteria> AllOfList { get; set; }
     }
 
-    //public class Excludes : CheckAllOf
-    //{
-    //}
-
-    //public class Includes : CheckAllOf
-    //{
-    //}
-
     class Contains : Criteria { }
     class NotContains : Criteria { }
 
-    // Not implemented yet
+    // Not implemented as not needed yet
     // String comparison, not numerical
     class NoLessThan : Criteria { }
     class NoMoreThan : Criteria { }
     
     public class Criteria
     {
-        // System Information "examples"
+                                                // System Information "examples"
         public string Property { get; set; }    // installed_version, direct3d, runtime, system, memory, cpu, gpu
         public string Value { get; set; }       // {{new_version}}, {{10_0}}
     }
