@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2024 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -100,8 +100,8 @@ namespace ORTS
                 CurrentPageIndex = 0;
                 Notifications = GetNotifications();
                 ParameterDictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                
-                // To support testing, add any overriding values to the ValueDictionary
+
+                // To support testing, add any overriding values to the ParameterDictionary
                 GetOverrideParameters()?.ParameterValueList.ForEach(i => ParameterDictionary.Add(i.Parameter, i.Value));
                 LogOverrideParameters();
 
@@ -220,7 +220,7 @@ namespace ORTS
 
                 Page.NDetailList.Add(new NTitleControl(Panel, CurrentPageIndex + 1, list.Count, n.Date, n.Title));
 
-                // Check constraints foPageNoem
+                // Check criteria for each item and add the successful items to the current page
                 foreach (var item in n.ItemList)
                 {
                     if (AreItemChecksMet(item)) AddItemToPage(Page, item);
@@ -280,6 +280,11 @@ namespace ORTS
             return true;
         }
 
+        /// <summary>
+        ///  For the checks in the item, compares parameter values with criteria values
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
         private bool AreItemChecksMet(Item item)
         {
             if (item.IncludeIf != null || item.IncludeIfNot != null)
