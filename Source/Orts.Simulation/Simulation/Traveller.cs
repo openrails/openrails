@@ -980,7 +980,7 @@ namespace Orts.Simulation
         public void GetCurveData(out float physicsElev, out float curveRadius)
         {
             physicsElev = 0;
-            curveRadius = 0;
+            curveRadius = float.PositiveInfinity;
 
             if (trackSection == null || trackVectorSection == null)
                 return;

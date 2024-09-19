@@ -162,63 +162,64 @@ namespace Orts.Simulation
             if (standard == null)
             {
                 foreach (TrVectorSection s in SectionList)
-                    s.NomElevM = 0;
-                return; // No superelevation needed, stop processing here
+                    s.NomElevM = 0; // No superelevation needed
             }
-            if ((standard.MinCantM / effectiveRunoffSlope) * 2.0f > totLen * 0.75f)
+            else if ((standard.MinCantM / effectiveRunoffSlope) * 2.0f > totLen * 0.75f)
             {
                 foreach (TrVectorSection s in SectionList)
-                    s.NomElevM = 0;
-                return; // Curve is so short that no meaningful superelevation can be applied
+                    s.NomElevM = 0; // Curve is so short that no meaningful superelevation can be applied
             }
-
-            // Determine proper level of superelevation for every section
-            for (int i = 0; i < SectionList.Count; i++)
+            else
             {
-                // Superelevation has not been calculated for this section yet
-                if (SectionList[i].NomElevM < 0.0f)
+                // Superelevation can be applied, run calculations
+                foreach (TrVectorSection s in SectionList)
                 {
-                    var sectionData = simulator.TSectionDat.TrackSections.Get(SectionList[i].SectionIndex);
-
-                    if (sectionData == null || sectionData.SectionCurve == null)
+                    // Superelevation has not been calculated for this section yet
+                    // FUTURE: Superelevation NomElevM may be specified externally, eg: by a route editor
+                    if (s.NomElevM < 0.0f)
                     {
-                        SectionList[i].NomElevM = 0.0f;
-                        continue;
-                    }
-                    else
-                    {
-                        float superElevation;
+                        var sectionData = simulator.TSectionDat.TrackSections.Get(s.SectionIndex);
 
-                        // Support for old system with superelevation set directly in Route (TRK) file
-                        if (standard.UseLegacyCalculation && simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM != null)
+                        if (sectionData == null || sectionData.SectionCurve == null)
                         {
-                            superElevation = simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM[sectionData.SectionCurve.Radius];
+                            s.NomElevM = 0.0f;
+                            continue;
                         }
-                        else // Newer standard for calculating superelevation
+                        else
                         {
-                            if (standard != null)
+                            float superElevation;
+
+                            // Support for old system with superelevation set directly in Route (TRK) file
+                            if (standard.UseLegacyCalculation && simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM != null)
                             {
-                                float paxSpeed = SectionList[i].PassSpeedMpS;
-                                float freightSpeed = SectionList[i].FreightSpeedMpS;
-
-                                // Approximate ideal level of superelevation determined using E = (G*V^2) / (g*R), then subtract off cant deficiency
-                                // For different speeds on the same curve, we can factor out speed and get a constant c = G / (g*R)
-                                float elevationFactor = simulator.SuperElevationGauge / (9.81f * sectionData.SectionCurve.Radius);
-                                // Calculate required superelevation for passenger and freight separately
-                                float paxElevation = elevationFactor * (paxSpeed * paxSpeed) - standard.MaxPaxUnderbalanceM;
-                                float freightElevation = elevationFactor * (freightSpeed * freightSpeed) - standard.MaxFreightUnderbalanceM;
-
-                                superElevation = Math.Max(paxElevation, freightElevation); // Choose the highest required superelevation
+                                superElevation = simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM[sectionData.SectionCurve.Radius];
                             }
-                            else // No superelevation needed (shouldn't reach this point, this is a failsafe)
-                                superElevation = 0.0f;
+                            else // Newer standard for calculating superelevation
+                            {
+                                if (standard != null)
+                                {
+                                    float paxSpeed = s.PassSpeedMpS;
+                                    float freightSpeed = s.FreightSpeedMpS;
+
+                                    // Approximate ideal level of superelevation determined using E = (G*V^2) / (g*R), then subtract off cant deficiency
+                                    // For different speeds on the same curve, we can factor out speed and get a constant c = G / (g*R)
+                                    float elevationFactor = simulator.SuperElevationGauge / (9.81f * sectionData.SectionCurve.Radius);
+                                    // Calculate required superelevation for passenger and freight separately
+                                    float paxElevation = elevationFactor * (paxSpeed * paxSpeed) - standard.MaxPaxUnderbalanceM;
+                                    float freightElevation = elevationFactor * (freightSpeed * freightSpeed) - standard.MaxFreightUnderbalanceM;
+
+                                    superElevation = Math.Max(paxElevation, freightElevation); // Choose the highest required superelevation
+                                }
+                                else // No superelevation needed (shouldn't reach this point, this is a failsafe)
+                                    superElevation = 0.0f;
+                            }
+                            superElevation = (float)Math.Round(superElevation / standard.PrecisionM, MidpointRounding.AwayFromZero)
+                                * standard.PrecisionM; // Round superelevation amount to next higher increment of precision
+
+                            superElevation = MathHelper.Clamp(superElevation, standard.MinCantM, maxElev);
+
+                            s.NomElevM = superElevation;
                         }
-                        superElevation = (float)Math.Round(superElevation / standard.PrecisionM, MidpointRounding.AwayFromZero)
-                            * standard.PrecisionM; // Round superelevation amount to next higher increment of precision
-
-                        superElevation = MathHelper.Clamp(superElevation, standard.MinCantM, maxElev);
-
-                        SectionList[i].NomElevM = superElevation;
                     }
                 }
             }

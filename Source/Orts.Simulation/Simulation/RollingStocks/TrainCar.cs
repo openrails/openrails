@@ -1952,7 +1952,11 @@ namespace Orts.Simulation.RollingStocks
                 // If speed exceeds the overturning speed, then indicated that an error condition has been reached.
                 if (s > CriticalMaxSpeedMpS)
                 {
-                    if (!IsCriticalMaxSpeed)
+                    // Consider a tolerance so error isn't immediately thrown, should reduce overkill notifications on routes with jerky track laying
+                    // Will be reduced faster if simultaneously above the max safe speed
+                    ComfortTolerance -= 0.25f * (s / MaxSafeCurveSpeedMps - 1.0f) * elapsedClockSeconds;
+
+                    if (!IsCriticalMaxSpeed && ComfortTolerance <= 0.0f)
                     {
                         IsCriticalMaxSpeed = true; // set flag for IsCriticalSpeed reached
 
@@ -2896,7 +2900,10 @@ namespace Orts.Simulation.RollingStocks
             // Set superelevation angle used by physics system
             SuperElevationAngleRad = (float)Math.Asin(SuperelevationM / TrackGaugeM);
 
-            CurrentCurveRadiusM = curveRadii.Min();
+            CurrentCurveRadiusM = curveRadii.Average();
+            // Straight track has a "radius" of infinity, but rest of code expects straight to have a "radius" of 0
+            if (CurrentCurveRadiusM == float.PositiveInfinity)
+                CurrentCurveRadiusM = 0;
         }
         #endregion
 
