@@ -376,20 +376,22 @@ namespace Orts.Viewer3D
                         // We might not have found the junction node; if so, fall back to the static track shape.
                         if (trJunctionNode != null)
                         {
+                            // Handle superelevation on junctions (usually this means disabling it)
                             if (viewer.Simulator.UseSuperElevation)
-                                SuperElevationManager.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ, shapeFilePath);
+                                SuperElevationManager.PrepareStaticSuperElevation(viewer, trackObj, TileX, TileZ, shapeFilePath);
                             sceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, trJunctionNode));
                         }
                         else
                         {
-                            //if want to use super elevation, we will generate tracks using dynamic tracks
+                            // See if superelevation should be used on this piece of track
                             if (viewer.Simulator.UseSuperElevation
-                                && SuperElevationManager.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ, shapeFilePath))
+                                && SuperElevationManager.PrepareStaticSuperElevation(viewer, trackObj, TileX, TileZ, shapeFilePath))
                             {
-                                // No need to add shapes for this segment of track
+                                // Don't add scenery for this section of track, dynamic superelevated track will be created instead
                             }
-                            //otherwise, use shapes
-                            else if (!containsMovingTable) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
+                            // No superelevation, use shapes
+                            else if (!containsMovingTable)
+                                sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
                             else
                             {
                                 var found = false;
@@ -429,22 +431,24 @@ namespace Orts.Viewer3D
                     }
                     else if (worldObject.GetType() == typeof(DyntrackObj))
                     {
+                        // Dynamic track will require track profiles, set up track profiles if not yet set
                         if (viewer.TRPs == null)
                         {
-                            // First to need a track profile creates it
                             Trace.Write(" TRP");
-                            // Creates profile and loads materials into SceneryMaterials
+                            // Creates profile(s) and loads materials into SceneryMaterials
                             TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.TRPs);
                         }
 
                         if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
                             Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
                         // Add DyntrackDrawers for individual subsections
-                        if (viewer.Simulator.UseSuperElevation && SuperElevationManager.UseSuperElevationDyn(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix))
+                        if (viewer.Simulator.UseSuperElevation && SuperElevationManager.UseSuperElevationDyn((DyntrackObj)worldObject))
                             SuperElevationManager.DecomposeDynamicSuperElevation(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
-                        else DynamicTrack.Decompose(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+                        else
+                            DynamicTrack.Decompose(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
 
-                    } // end else if DyntrackObj
+                    }
+                    // Objects other than tracks
                     else if (worldObject.GetType() == typeof(ForestObj))
                     {
                         if (!(worldObject as ForestObj).IsYard)
@@ -593,8 +597,9 @@ namespace Orts.Viewer3D
                 }
             }
 
-            if (viewer.Simulator.UseSuperElevation) SuperElevationManager.DecomposeStaticSuperElevation(Viewer, dTrackList, TileX, TileZ);
-            if (Viewer.World.Sounds != null) Viewer.World.Sounds.AddByTile(TileX, TileZ);
+            if (viewer.Simulator.UseSuperElevation)
+                SuperElevationManager.DecomposeTileSuperElevation(Viewer, dTrackList, TileX, TileZ);
+            Viewer.World.Sounds?.AddByTile(TileX, TileZ);
         }
 
         /// <summary>
