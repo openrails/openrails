@@ -1613,6 +1613,15 @@ namespace ORTS
                 pbNotificationsSome.Visible = true;
                 lblNotificationCount.Visible = true;
                 lblNotificationCount.Text = $"{NotificationManager.NewPages.Count - NotificationManager.NewPages.Viewed}";
+
+                // If screen scaling != 100%, then the count doesn't lie on top of the red circle, so adjust its position.
+                if (NotificationManager.ScreenScaling != 1.0 & NotificationManager.ScreenAdjusted == false)
+                {
+                    var adjustment = (int)((NotificationManager.ScreenScaling - 1.0) * 20); // 20 to adjust 125% by 5 pixels
+                    lblNotificationCount.Top -= adjustment;
+                    lblNotificationCount.Left -= adjustment;
+                    NotificationManager.ScreenAdjusted = true;
+                }
             }
             else
             {

@@ -22,7 +22,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Resources;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 using ORTS.Common;
@@ -75,6 +77,8 @@ namespace ORTS
         public Image FirstImage { get; private set; }
         public Image LastImage { get; private set; }
         public PageTracking NewPages { get; private set; }
+        public double ScreenScaling { get; private set; }
+        public bool ScreenAdjusted { get; set; }
 
         public NotificationManager(MainForm mainForm, ResourceManager resources, UpdateManager updateManager, UserSettings settings, Panel panel)
         {
@@ -83,14 +87,20 @@ namespace ORTS
             this.Settings = settings;
             Panel = panel;
             NewPages = new PageTracking();
-            
+            ScreenScaling = GetScalingFactor();
+
             // Load images of arrows
             PreviousImage = (Image)resources.GetObject("Notification_previous");
             NextImage = (Image)resources.GetObject("Notification_next");
             FirstImage = (Image)resources.GetObject("Notification_first");
             LastImage = (Image)resources.GetObject("Notification_last");
         }
-        
+
+        public double GetScalingFactor()
+        {
+            return Screen.PrimaryScreen.Bounds.Width / SystemParameters.PrimaryScreenWidth;
+        }
+
         public void CheckNotifications()
         {
             try
