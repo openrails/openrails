@@ -3153,7 +3153,7 @@ namespace Orts.Simulation.RollingStocks
         private void UpdateWindForce()
         {
             // Calculate compensation for  wind
-            // There are two components due to wind - 
+            // There are two components due to wind -
             // Drag, impact of wind on train, will increase resistance when head on, will decrease resistance when acting as a tailwind.
             // Lateral resistance - due to wheel flange being pushed against rail due to side wind.
             // Calculation based upon information provided in AREA 1942 Proceedings - https://archive.org/details/proceedingsofann431942amer - pg 56
@@ -3165,7 +3165,7 @@ namespace Orts.Simulation.RollingStocks
                 var directionRad = (float)Math.Atan2(WorldPosition.XNAMatrix.M13, WorldPosition.XNAMatrix.M11);
                 var directionDeg = MathHelper.ToDegrees(directionRad);
 
-                // If car is flipped, then the car's direction will be reversed by 180 compared to the rest of the train, and thus for calculation purposes only, 
+                // If car is flipped, then the car's direction will be reversed by 180 compared to the rest of the train, and thus for calculation purposes only,
                 // it is necessary to reverse the "assumed" direction of the car back again. This shouldn't impact the visual appearance of the car.
                 if (Flipped)
                 {
@@ -3175,12 +3175,12 @@ namespace Orts.Simulation.RollingStocks
                     // If this results in an angle greater then 360, then convert it back to an angle between 0 & 360.
                     if (directionDeg > 360)
                         directionDeg -= 360;
-                }                   
+                }
 
                 // If a westerly direction (ie -ve) convert to an angle between 0 and 360
                 if (directionDeg < 0)
                     directionDeg += 360;
-                
+
                 // Find angle between wind and direction of train
                 var resultantWindComponentDeg = 0.0f;
                 if (Train.PhysicsWindDirectionDeg > directionDeg)
@@ -3202,7 +3202,7 @@ namespace Orts.Simulation.RollingStocks
                 var windResultantSpeedMpS = (float)Math.Sqrt(AbsSpeedMpS * AbsSpeedMpS + Train.PhysicsWindSpeedMpS * Train.PhysicsWindSpeedMpS + 2.0f * AbsSpeedMpS * Train.PhysicsWindSpeedMpS * (float)Math.Cos(resultantWindComponentRad));
 
                 // Calculate Drag Resistance
-                // The drag resistance will be the difference between the STILL firction calculated using the standard Davies equation, 
+                // The drag resistance will be the difference between the STILL firction calculated using the standard Davies equation,
                 // and that produced using the wind resultant speed (combination of wind speed and train speed)
                 var tempStillDragResistanceForceN = AbsSpeedMpS * AbsSpeedMpS * DavisCNSSpMM;
                 var tempCombinedDragResistanceForceN = windResultantSpeedMpS * windResultantSpeedMpS * DavisCNSSpMM; // R3 of Davis formula taking into account wind
@@ -3212,7 +3212,7 @@ namespace Orts.Simulation.RollingStocks
                 // This difference will be added or subtracted from the overall friction force depending upon the estimated wind direction.
                 if (tempCombinedDragResistanceForceN > tempStillDragResistanceForceN)
                 {
-                // Wind typically headon to train - increase resistance - +ve differential
+                    // Wind typically headon to train - increase resistance - +ve differential
                     windDragResistanceForceN = tempCombinedDragResistanceForceN - tempStillDragResistanceForceN;
                 }
                 else

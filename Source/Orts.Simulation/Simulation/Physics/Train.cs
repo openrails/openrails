@@ -2208,38 +2208,38 @@ namespace Orts.Simulation.Physics
             // These will be representative of the train whilst it is on a straight track, but each wagon will vary when going around a curve.
             // Note both train and wind direction will be positive between 0 (north) and 180 (south) through east, and negative between 0 (north) and 180 (south) through west
             // Wind and train direction to be converted to an angle between 0 and 360 deg.
-                // Calculate Wind speed and direction, and train direction
-                // Update the value of the Wind Speed and Direction for the train
+            // Calculate Wind speed and direction, and train direction
+            // Update the value of the Wind Speed and Direction for the train
             PhysicsWindDirectionDeg = MathHelper.ToDegrees(Simulator.Weather.WindInstantaneousDirectionRad);
             PhysicsWindSpeedMpS = Simulator.Weather.WindInstantaneousSpeedMpS;
             var speedMpS = Math.Abs(SpeedMpS);
 
-                // If a westerly direction (ie -ve) convert to an angle between 0 and 360
-                if (PhysicsWindDirectionDeg < 0)
-                    PhysicsWindDirectionDeg += 360;
+            // If a westerly direction (ie -ve) convert to an angle between 0 and 360
+            if (PhysicsWindDirectionDeg < 0)
+                PhysicsWindDirectionDeg += 360;
 
-                if (PhysicsTrainLocoDirectionDeg < 0)
-                    PhysicsTrainLocoDirectionDeg += 360;
+            if (PhysicsTrainLocoDirectionDeg < 0)
+                PhysicsTrainLocoDirectionDeg += 360;
 
             // Calculate angle between train and wind direction
-                if (PhysicsWindDirectionDeg > PhysicsTrainLocoDirectionDeg)
-                    ResultantWindComponentDeg = PhysicsWindDirectionDeg - PhysicsTrainLocoDirectionDeg;
-                else if (PhysicsTrainLocoDirectionDeg > PhysicsWindDirectionDeg)
-                    ResultantWindComponentDeg = PhysicsTrainLocoDirectionDeg - PhysicsWindDirectionDeg;
-                else
-                    ResultantWindComponentDeg = 0.0f;
+            if (PhysicsWindDirectionDeg > PhysicsTrainLocoDirectionDeg)
+                ResultantWindComponentDeg = PhysicsWindDirectionDeg - PhysicsTrainLocoDirectionDeg;
+            else if (PhysicsTrainLocoDirectionDeg > PhysicsWindDirectionDeg)
+                ResultantWindComponentDeg = PhysicsTrainLocoDirectionDeg - PhysicsWindDirectionDeg;
+            else
+                ResultantWindComponentDeg = 0.0f;
 
-                // Correct wind direction if it is greater then 360 deg, then correct to a value less then 360
-                if (Math.Abs(ResultantWindComponentDeg) > 360)
-                    ResultantWindComponentDeg = ResultantWindComponentDeg - 360.0f;
+            // Correct wind direction if it is greater then 360 deg, then correct to a value less then 360
+            if (Math.Abs(ResultantWindComponentDeg) > 360)
+                ResultantWindComponentDeg = ResultantWindComponentDeg - 360.0f;
 
-                // Wind angle should be kept between 0 and 180 the formulas do not cope with angles > 180. If angle > 180, denotes wind of "other" side of train
-                if (ResultantWindComponentDeg > 180)
-                    ResultantWindComponentDeg = 360 - ResultantWindComponentDeg;
+            // Wind angle should be kept between 0 and 180 the formulas do not cope with angles > 180. If angle > 180, denotes wind of "other" side of train
+            if (ResultantWindComponentDeg > 180)
+                ResultantWindComponentDeg = 360 - ResultantWindComponentDeg;
 
             var windAngleRad = MathHelper.ToRadians(ResultantWindComponentDeg);
             WindResultantSpeedMpS = (float)Math.Sqrt(speedMpS * speedMpS + PhysicsWindSpeedMpS * PhysicsWindSpeedMpS + 2.0f * speedMpS * PhysicsWindSpeedMpS * (float)Math.Cos(windAngleRad));
-            }
+        }
 
 
         //================================================================================================//
