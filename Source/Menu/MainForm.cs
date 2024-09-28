@@ -550,7 +550,7 @@ namespace ORTS
         
         void buttonDownloadContent_Click(object sender, EventArgs e)
         {
-            using (var form = new DownloadContentForm(Settings))
+            using (var form = new ContentForm(Settings))
             {
                 form.ShowDialog(this);
             }
@@ -729,7 +729,7 @@ namespace ORTS
 
                 if (!initialized && Folders.Count == 0)
                 {
-                    using (var form = new DownloadContentForm(Settings))
+                    using (var form = new ContentForm(Settings))
                     {
                         switch (form.ShowDialog(this))
                         {
