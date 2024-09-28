@@ -52,6 +52,8 @@ namespace ORTS
         //attribute used to refresh UI
         private readonly SynchronizationContext AutoInstallSynchronizationContext;
 
+        public bool AutoInstallDoingTheSumOfTheFileBytes = false;
+
         private readonly string ManualInstallBrouwseDir;
 
         private bool In_dataGridViewManualInstall_SelectionChanged = false;
@@ -952,15 +954,17 @@ namespace ORTS
         {
             Thread deleteThread = new Thread(() =>
             {
-                ContentRouteSettings.directoryDelete(directoryInstalledIn);
+                ContentRouteSettings.directoryDelete(directoryInstalledIn, ref AutoInstallDoingTheSumOfTheFileBytes);
             });
             // start delete in thread to be able to show the progress in the main thread
             deleteThread.Start();
 
             while (deleteThread.IsAlive)
             {
-                Stopwatch sw = Stopwatch.StartNew();
+                // this will stop the delete until the sum is done
+                AutoInstallDoingTheSumOfTheFileBytes = true;
 
+                Stopwatch sw = Stopwatch.StartNew();
                 TotalBytes = 0;
                 if (sumMB(directoryInstalledIn))
                 {
@@ -970,6 +974,9 @@ namespace ORTS
                             string.Format("Left: {0} kB", (string)o);
                     }), (TotalBytes / 1024).ToString("N0"));
                 }
+
+                AutoInstallDoingTheSumOfTheFileBytes = false;
+
                 while (deleteThread.IsAlive && (sw.ElapsedMilliseconds <= 1000)) { }
             }
         }
