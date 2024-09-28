@@ -1380,7 +1380,11 @@ namespace ORTS
         {
             In_buttonManualInstallAdd_Click = true;
 
-            int currentIndex = dataGridViewManualInstall.CurrentCell.RowIndex;
+            int currentIndex = -1;
+            if (dataGridViewManualInstall.CurrentCell != null)
+            {
+                currentIndex = dataGridViewManualInstall.CurrentCell.RowIndex;
+            }
             int addedIndex = dataGridViewManualInstall.Rows.Add();
             dataGridViewManualInstall.Rows[addedIndex].Selected = true;
             dataGridViewManualInstall.FirstDisplayedScrollingRowIndex = addedIndex;
@@ -1400,10 +1404,13 @@ namespace ORTS
                 }
                 else
                 {
-                    // Cancel, set focus back to where is was and remove the empty row
-                    dataGridViewManualInstall.CurrentCell = dataGridViewManualInstall.Rows[currentIndex].Cells[0];
-                    dataGridViewManualInstall.Rows[currentIndex].Selected = true;
-                    dataGridViewManualInstall.FirstDisplayedScrollingRowIndex = currentIndex;
+                    if (currentIndex > -1)
+                    {
+                        // Cancel, set focus back to where is was and remove the empty row
+                        dataGridViewManualInstall.CurrentCell = dataGridViewManualInstall.Rows[currentIndex].Cells[0];
+                        dataGridViewManualInstall.Rows[currentIndex].Selected = true;
+                        dataGridViewManualInstall.FirstDisplayedScrollingRowIndex = currentIndex;
+                    }
 
                     dataGridViewManualInstall.Rows.Remove(dataGridViewManualInstall.Rows[addedIndex]);
                 }
@@ -1424,27 +1431,30 @@ namespace ORTS
 
         private void setTextBoxesManualInstall()
         {
-            string route = dataGridViewManualInstall.CurrentRow.Cells[0].Value.ToString();
-            string path = dataGridViewManualInstall.CurrentRow.Cells[1].Value.ToString();
+            if (dataGridViewManualInstall.CurrentRow != null)
+            {
+                string route = dataGridViewManualInstall.CurrentRow.Cells[0].Value.ToString();
+                string path = dataGridViewManualInstall.CurrentRow.Cells[1].Value.ToString();
 
-            if (!AutoInstallRoutes.ContainsKey(route))
-            {
-                // route not automatically installed
-                textBoxManualInstallRoute.Text = route;
-                textBoxManualInstallPath.Text = path;
-                textBoxManualInstallRoute.Enabled = true;
-                textBoxManualInstallPath.Enabled = true;
-                buttonManualInstallBrowse.Enabled = true;
-                buttonManualInstallDelete.Enabled = true;
-            }
-            else
-            {
-                textBoxManualInstallRoute.Text = "";
-                textBoxManualInstallPath.Text = "";
-                textBoxManualInstallRoute.Enabled = false;
-                textBoxManualInstallPath.Enabled = false;
-                buttonManualInstallBrowse.Enabled = false;
-                buttonManualInstallDelete.Enabled = false;
+                if (!AutoInstallRoutes.ContainsKey(route))
+                {
+                    // route not automatically installed
+                    textBoxManualInstallRoute.Text = route;
+                    textBoxManualInstallPath.Text = path;
+                    textBoxManualInstallRoute.Enabled = true;
+                    textBoxManualInstallPath.Enabled = true;
+                    buttonManualInstallBrowse.Enabled = true;
+                    buttonManualInstallDelete.Enabled = true;
+                }
+                else
+                {
+                    textBoxManualInstallRoute.Text = "";
+                    textBoxManualInstallPath.Text = "";
+                    textBoxManualInstallRoute.Enabled = false;
+                    textBoxManualInstallPath.Enabled = false;
+                    buttonManualInstallBrowse.Enabled = false;
+                    buttonManualInstallDelete.Enabled = false;
+                }
             }
         }
 
