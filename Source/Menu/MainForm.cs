@@ -533,7 +533,7 @@ namespace ORTS
         {
             SaveOptions();
 
-            using (var form = new OptionsForm(Settings, UpdateManager, false))
+            using (var form = new OptionsForm(Settings, UpdateManager))
             {
                 switch (form.ShowDialog(this))
                 {

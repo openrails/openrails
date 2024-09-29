@@ -29,8 +29,6 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.lBrakePipeChargingRate = new System.Windows.Forms.Label();
@@ -131,6 +129,21 @@
             this.buttonDefaultKeys = new System.Windows.Forms.Button();
             this.buttonCheckKeys = new System.Windows.Forms.Button();
             this.panelKeys = new System.Windows.Forms.Panel();
+            this.tabPageRailDriver = new System.Windows.Forms.TabPage();
+            this.btnRDSettingsExport = new System.Windows.Forms.Button();
+            this.btnCheck = new System.Windows.Forms.Button();
+            this.btnRDReset = new System.Windows.Forms.Button();
+            this.btnStartRDCalibration = new System.Windows.Forms.Button();
+            this.btnShowRDLegend = new System.Windows.Forms.Button();
+            this.panelRDSettings = new System.Windows.Forms.Panel();
+            this.panelRDOptions = new System.Windows.Forms.Panel();
+            this.groupBoxReverseRDLevers = new System.Windows.Forms.GroupBox();
+            this.checkFullRangeThrottle = new System.Windows.Forms.CheckBox();
+            this.checkReverseIndependentBrake = new System.Windows.Forms.CheckBox();
+            this.checkReverseAutoBrake = new System.Windows.Forms.CheckBox();
+            this.checkReverseThrottle = new System.Windows.Forms.CheckBox();
+            this.checkReverseReverser = new System.Windows.Forms.CheckBox();
+            this.panelRDButtons = new System.Windows.Forms.Panel();
             this.tabPageDataLogger = new System.Windows.Forms.TabPage();
             this.comboDataLogSpeedUnits = new System.Windows.Forms.ComboBox();
             this.comboDataLoggerSeparator = new System.Windows.Forms.ComboBox();
@@ -143,35 +156,12 @@
             this.checkDataLogPhysics = new System.Windows.Forms.CheckBox();
             this.checkDataLogSteamPerformance = new System.Windows.Forms.CheckBox();
             this.checkVerboseConfigurationMessages = new System.Windows.Forms.CheckBox();
-            this.tabPageRailDriver = new System.Windows.Forms.TabPage();
-            this.panelRDSettings = new System.Windows.Forms.Panel();
-            this.panelRDOptions = new System.Windows.Forms.Panel();
-            this.groupBoxReverseRDLevers = new System.Windows.Forms.GroupBox();
-            this.checkReverseIndependentBrake = new System.Windows.Forms.CheckBox();
-            this.checkReverseAutoBrake = new System.Windows.Forms.CheckBox();
-            this.checkReverseThrottle = new System.Windows.Forms.CheckBox();
-            this.checkReverseReverser = new System.Windows.Forms.CheckBox();
-            this.panelRDButtons = new System.Windows.Forms.Panel();
             this.tabPageEvaluate = new System.Windows.Forms.TabPage();
             this.checkListDataLogTSContents = new System.Windows.Forms.CheckedListBox();
             this.labelDataLogTSInterval = new System.Windows.Forms.Label();
             this.checkDataLogStationStops = new System.Windows.Forms.CheckBox();
             this.numericDataLogTSInterval = new System.Windows.Forms.NumericUpDown();
             this.checkDataLogTrainSpeed = new System.Windows.Forms.CheckBox();
-            this.tabPageContent = new System.Windows.Forms.TabPage();
-            this.labelContent = new System.Windows.Forms.Label();
-            this.buttonContentDelete = new System.Windows.Forms.Button();
-            this.groupBoxContent = new System.Windows.Forms.GroupBox();
-            this.buttonContentBrowse = new System.Windows.Forms.Button();
-            this.textBoxContentPath = new System.Windows.Forms.TextBox();
-            this.label20 = new System.Windows.Forms.Label();
-            this.label22 = new System.Windows.Forms.Label();
-            this.textBoxContentName = new System.Windows.Forms.TextBox();
-            this.buttonContentAdd = new System.Windows.Forms.Button();
-            this.panelContent = new System.Windows.Forms.Panel();
-            this.dataGridViewContent = new System.Windows.Forms.DataGridView();
-            this.nameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.pathDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.bindingSourceContent = new System.Windows.Forms.BindingSource(this.components);
             this.tabPageSystem = new System.Windows.Forms.TabPage();
             this.pbPerformanceTuner = new System.Windows.Forms.PictureBox();
@@ -202,12 +192,6 @@
             this.label13 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.numericActRandomizationLevel = new System.Windows.Forms.NumericUpDown();
-            this.checkFullRangeThrottle = new System.Windows.Forms.CheckBox();
-            this.btnShowRDLegend = new System.Windows.Forms.Button();
-            this.btnStartRDCalibration = new System.Windows.Forms.Button();
-            this.btnRDReset = new System.Windows.Forms.Button();
-            this.btnCheck = new System.Windows.Forms.Button();
-            this.btnRDSettingsExport = new System.Windows.Forms.Button();
             this.checkCorrectQuestionableBrakingParams = new System.Windows.Forms.CheckBox();
             this.label16 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
@@ -269,17 +253,13 @@
             this.tabPageSimulation.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tabPageKeyboard.SuspendLayout();
-            this.tabPageDataLogger.SuspendLayout();
             this.tabPageRailDriver.SuspendLayout();
             this.panelRDSettings.SuspendLayout();
             this.panelRDOptions.SuspendLayout();
             this.groupBoxReverseRDLevers.SuspendLayout();
+            this.tabPageDataLogger.SuspendLayout();
             this.tabPageEvaluate.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericDataLogTSInterval)).BeginInit();
-            this.tabPageContent.SuspendLayout();
-            this.groupBoxContent.SuspendLayout();
-            this.panelContent.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewContent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).BeginInit();
             this.tabPageSystem.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbPerformanceTuner)).BeginInit();
@@ -393,7 +373,6 @@
             this.tabOptions.Controls.Add(this.tabPageRailDriver);
             this.tabOptions.Controls.Add(this.tabPageDataLogger);
             this.tabOptions.Controls.Add(this.tabPageEvaluate);
-            this.tabOptions.Controls.Add(this.tabPageContent);
             this.tabOptions.Controls.Add(this.tabPageSystem);
             this.tabOptions.Controls.Add(this.tabPageExperimental);
             this.tabOptions.Location = new System.Drawing.Point(13, 12);
@@ -1635,6 +1614,183 @@
             this.panelKeys.Size = new System.Drawing.Size(590, 361);
             this.panelKeys.TabIndex = 0;
             // 
+            // tabPageRailDriver
+            // 
+            this.tabPageRailDriver.Controls.Add(this.btnRDSettingsExport);
+            this.tabPageRailDriver.Controls.Add(this.btnCheck);
+            this.tabPageRailDriver.Controls.Add(this.btnRDReset);
+            this.tabPageRailDriver.Controls.Add(this.btnStartRDCalibration);
+            this.tabPageRailDriver.Controls.Add(this.btnShowRDLegend);
+            this.tabPageRailDriver.Controls.Add(this.panelRDSettings);
+            this.tabPageRailDriver.Location = new System.Drawing.Point(4, 22);
+            this.tabPageRailDriver.Name = "tabPageRailDriver";
+            this.tabPageRailDriver.Size = new System.Drawing.Size(602, 402);
+            this.tabPageRailDriver.TabIndex = 10;
+            this.tabPageRailDriver.Text = "RailDriver";
+            this.tabPageRailDriver.UseVisualStyleBackColor = true;
+            // 
+            // btnRDSettingsExport
+            // 
+            this.btnRDSettingsExport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnRDSettingsExport.Location = new System.Drawing.Point(521, 373);
+            this.btnRDSettingsExport.Name = "btnRDSettingsExport";
+            this.btnRDSettingsExport.Size = new System.Drawing.Size(75, 23);
+            this.btnRDSettingsExport.TabIndex = 5;
+            this.btnRDSettingsExport.Text = "Export";
+            this.toolTip1.SetToolTip(this.btnRDSettingsExport, "Generate a listing of your keyboard assignments.  \r\nThe output is placed on your " +
+        "desktop.");
+            this.btnRDSettingsExport.UseVisualStyleBackColor = true;
+            this.btnRDSettingsExport.Click += new System.EventHandler(this.BtnRDSettingsExport_Click);
+            // 
+            // btnCheck
+            // 
+            this.btnCheck.Location = new System.Drawing.Point(247, 372);
+            this.btnCheck.Name = "btnCheck";
+            this.btnCheck.Size = new System.Drawing.Size(75, 23);
+            this.btnCheck.TabIndex = 4;
+            this.btnCheck.Text = "Check";
+            this.toolTip1.SetToolTip(this.btnCheck, "Load the factory default button assignments.");
+            this.btnCheck.UseVisualStyleBackColor = true;
+            this.btnCheck.Click += new System.EventHandler(this.BtnCheck_Click);
+            // 
+            // btnRDReset
+            // 
+            this.btnRDReset.Location = new System.Drawing.Point(166, 372);
+            this.btnRDReset.Name = "btnRDReset";
+            this.btnRDReset.Size = new System.Drawing.Size(75, 23);
+            this.btnRDReset.TabIndex = 2;
+            this.btnRDReset.Text = "Defaults";
+            this.toolTip1.SetToolTip(this.btnRDReset, "Load the factory default button assignments.");
+            this.btnRDReset.UseVisualStyleBackColor = true;
+            this.btnRDReset.Click += new System.EventHandler(this.BtnRDReset_Click);
+            // 
+            // btnStartRDCalibration
+            // 
+            this.btnStartRDCalibration.Location = new System.Drawing.Point(86, 372);
+            this.btnStartRDCalibration.Margin = new System.Windows.Forms.Padding(2);
+            this.btnStartRDCalibration.Name = "btnStartRDCalibration";
+            this.btnStartRDCalibration.Size = new System.Drawing.Size(75, 23);
+            this.btnStartRDCalibration.TabIndex = 3;
+            this.btnStartRDCalibration.Text = "Calibration";
+            this.toolTip1.SetToolTip(this.btnStartRDCalibration, "Calibrate the lever position reading");
+            this.btnStartRDCalibration.UseVisualStyleBackColor = true;
+            this.btnStartRDCalibration.Click += new System.EventHandler(this.StartRDCalibration_Click);
+            // 
+            // btnShowRDLegend
+            // 
+            this.btnShowRDLegend.Location = new System.Drawing.Point(6, 372);
+            this.btnShowRDLegend.Name = "btnShowRDLegend";
+            this.btnShowRDLegend.Size = new System.Drawing.Size(75, 23);
+            this.btnShowRDLegend.TabIndex = 1;
+            this.btnShowRDLegend.Text = "Legend";
+            this.toolTip1.SetToolTip(this.btnShowRDLegend, "Show a legend of RailDriver board with button and lever description. Press cancel" +
+        " to close again.");
+            this.btnShowRDLegend.UseVisualStyleBackColor = true;
+            this.btnShowRDLegend.Click += new System.EventHandler(this.BtnShowRDLegend_Click);
+            // 
+            // panelRDSettings
+            // 
+            this.panelRDSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelRDSettings.AutoScroll = true;
+            this.panelRDSettings.BackColor = System.Drawing.Color.Transparent;
+            this.panelRDSettings.Controls.Add(this.panelRDOptions);
+            this.panelRDSettings.Controls.Add(this.panelRDButtons);
+            this.panelRDSettings.Location = new System.Drawing.Point(6, 6);
+            this.panelRDSettings.Name = "panelRDSettings";
+            this.panelRDSettings.Size = new System.Drawing.Size(590, 361);
+            this.panelRDSettings.TabIndex = 0;
+            // 
+            // panelRDOptions
+            // 
+            this.panelRDOptions.Controls.Add(this.groupBoxReverseRDLevers);
+            this.panelRDOptions.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelRDOptions.Location = new System.Drawing.Point(283, 0);
+            this.panelRDOptions.Name = "panelRDOptions";
+            this.panelRDOptions.Size = new System.Drawing.Size(307, 361);
+            this.panelRDOptions.TabIndex = 2;
+            // 
+            // groupBoxReverseRDLevers
+            // 
+            this.groupBoxReverseRDLevers.Controls.Add(this.checkFullRangeThrottle);
+            this.groupBoxReverseRDLevers.Controls.Add(this.checkReverseIndependentBrake);
+            this.groupBoxReverseRDLevers.Controls.Add(this.checkReverseAutoBrake);
+            this.groupBoxReverseRDLevers.Controls.Add(this.checkReverseThrottle);
+            this.groupBoxReverseRDLevers.Controls.Add(this.checkReverseReverser);
+            this.groupBoxReverseRDLevers.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.groupBoxReverseRDLevers.Location = new System.Drawing.Point(18, 18);
+            this.groupBoxReverseRDLevers.Name = "groupBoxReverseRDLevers";
+            this.groupBoxReverseRDLevers.Size = new System.Drawing.Size(275, 153);
+            this.groupBoxReverseRDLevers.TabIndex = 2;
+            this.groupBoxReverseRDLevers.TabStop = false;
+            this.groupBoxReverseRDLevers.Text = "Reverse Levers";
+            // 
+            // checkFullRangeThrottle
+            // 
+            this.checkFullRangeThrottle.AutoSize = true;
+            this.checkFullRangeThrottle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkFullRangeThrottle.Location = new System.Drawing.Point(7, 121);
+            this.checkFullRangeThrottle.Name = "checkFullRangeThrottle";
+            this.checkFullRangeThrottle.Size = new System.Drawing.Size(116, 17);
+            this.checkFullRangeThrottle.TabIndex = 4;
+            this.checkFullRangeThrottle.Text = "Full Range Throttle";
+            this.toolTip1.SetToolTip(this.checkFullRangeThrottle, "Use the full range of the Throttle Lever. There will be no Auto Brake!");
+            this.checkFullRangeThrottle.UseVisualStyleBackColor = true;
+            // 
+            // checkReverseIndependentBrake
+            // 
+            this.checkReverseIndependentBrake.AutoSize = true;
+            this.checkReverseIndependentBrake.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkReverseIndependentBrake.Location = new System.Drawing.Point(7, 89);
+            this.checkReverseIndependentBrake.Name = "checkReverseIndependentBrake";
+            this.checkReverseIndependentBrake.Size = new System.Drawing.Size(205, 17);
+            this.checkReverseIndependentBrake.TabIndex = 3;
+            this.checkReverseIndependentBrake.Text = "Reverse Independent Brake Direction";
+            this.checkReverseIndependentBrake.UseVisualStyleBackColor = true;
+            // 
+            // checkReverseAutoBrake
+            // 
+            this.checkReverseAutoBrake.AutoSize = true;
+            this.checkReverseAutoBrake.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkReverseAutoBrake.Location = new System.Drawing.Point(7, 66);
+            this.checkReverseAutoBrake.Name = "checkReverseAutoBrake";
+            this.checkReverseAutoBrake.Size = new System.Drawing.Size(167, 17);
+            this.checkReverseAutoBrake.TabIndex = 2;
+            this.checkReverseAutoBrake.Text = "Reverse Auto Brake Direction";
+            this.checkReverseAutoBrake.UseVisualStyleBackColor = true;
+            // 
+            // checkReverseThrottle
+            // 
+            this.checkReverseThrottle.AutoSize = true;
+            this.checkReverseThrottle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkReverseThrottle.Location = new System.Drawing.Point(7, 43);
+            this.checkReverseThrottle.Name = "checkReverseThrottle";
+            this.checkReverseThrottle.Size = new System.Drawing.Size(150, 17);
+            this.checkReverseThrottle.TabIndex = 1;
+            this.checkReverseThrottle.Text = "Reverse Throttle Direction";
+            this.checkReverseThrottle.UseVisualStyleBackColor = true;
+            // 
+            // checkReverseReverser
+            // 
+            this.checkReverseReverser.AutoSize = true;
+            this.checkReverseReverser.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkReverseReverser.Location = new System.Drawing.Point(7, 20);
+            this.checkReverseReverser.Name = "checkReverseReverser";
+            this.checkReverseReverser.Size = new System.Drawing.Size(157, 17);
+            this.checkReverseReverser.TabIndex = 0;
+            this.checkReverseReverser.Text = "Reverse Reverser Direction";
+            this.checkReverseReverser.UseVisualStyleBackColor = true;
+            // 
+            // panelRDButtons
+            // 
+            this.panelRDButtons.BackColor = System.Drawing.Color.Transparent;
+            this.panelRDButtons.Dock = System.Windows.Forms.DockStyle.Left;
+            this.panelRDButtons.Location = new System.Drawing.Point(0, 0);
+            this.panelRDButtons.Name = "panelRDButtons";
+            this.panelRDButtons.Size = new System.Drawing.Size(283, 361);
+            this.panelRDButtons.TabIndex = 3;
+            // 
             // tabPageDataLogger
             // 
             this.tabPageDataLogger.Controls.Add(this.comboDataLogSpeedUnits);
@@ -1769,112 +1925,6 @@
             this.checkVerboseConfigurationMessages.Text = "Verbose ENG/WAG configuration messages";
             this.checkVerboseConfigurationMessages.UseVisualStyleBackColor = true;
             // 
-            // tabPageRailDriver
-            // 
-            this.tabPageRailDriver.Controls.Add(this.btnRDSettingsExport);
-            this.tabPageRailDriver.Controls.Add(this.btnCheck);
-            this.tabPageRailDriver.Controls.Add(this.btnRDReset);
-            this.tabPageRailDriver.Controls.Add(this.btnStartRDCalibration);
-            this.tabPageRailDriver.Controls.Add(this.btnShowRDLegend);
-            this.tabPageRailDriver.Controls.Add(this.panelRDSettings);
-            this.tabPageRailDriver.Location = new System.Drawing.Point(4, 22);
-            this.tabPageRailDriver.Name = "tabPageRailDriver";
-            this.tabPageRailDriver.Size = new System.Drawing.Size(602, 402);
-            this.tabPageRailDriver.TabIndex = 10;
-            this.tabPageRailDriver.Text = "RailDriver";
-            this.tabPageRailDriver.UseVisualStyleBackColor = true;
-            // 
-            // panelRDSettings
-            // 
-            this.panelRDSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.panelRDSettings.AutoScroll = true;
-            this.panelRDSettings.BackColor = System.Drawing.Color.Transparent;
-            this.panelRDSettings.Controls.Add(this.panelRDOptions);
-            this.panelRDSettings.Controls.Add(this.panelRDButtons);
-            this.panelRDSettings.Location = new System.Drawing.Point(6, 6);
-            this.panelRDSettings.Name = "panelRDSettings";
-            this.panelRDSettings.Size = new System.Drawing.Size(590, 361);
-            this.panelRDSettings.TabIndex = 0;
-            // 
-            // panelRDOptions
-            // 
-            this.panelRDOptions.Controls.Add(this.groupBoxReverseRDLevers);
-            this.panelRDOptions.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panelRDOptions.Location = new System.Drawing.Point(283, 0);
-            this.panelRDOptions.Name = "panelRDOptions";
-            this.panelRDOptions.Size = new System.Drawing.Size(307, 361);
-            this.panelRDOptions.TabIndex = 2;
-            // 
-            // groupBoxReverseRDLevers
-            // 
-            this.groupBoxReverseRDLevers.Controls.Add(this.checkFullRangeThrottle);
-            this.groupBoxReverseRDLevers.Controls.Add(this.checkReverseIndependentBrake);
-            this.groupBoxReverseRDLevers.Controls.Add(this.checkReverseAutoBrake);
-            this.groupBoxReverseRDLevers.Controls.Add(this.checkReverseThrottle);
-            this.groupBoxReverseRDLevers.Controls.Add(this.checkReverseReverser);
-            this.groupBoxReverseRDLevers.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBoxReverseRDLevers.Location = new System.Drawing.Point(18, 18);
-            this.groupBoxReverseRDLevers.Name = "groupBoxReverseRDLevers";
-            this.groupBoxReverseRDLevers.Size = new System.Drawing.Size(275, 153);
-            this.groupBoxReverseRDLevers.TabIndex = 2;
-            this.groupBoxReverseRDLevers.TabStop = false;
-            this.groupBoxReverseRDLevers.Text = "Reverse Levers";
-            // 
-            // checkReverseIndependentBrake
-            // 
-            this.checkReverseIndependentBrake.AutoSize = true;
-            this.checkReverseIndependentBrake.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkReverseIndependentBrake.Location = new System.Drawing.Point(7, 89);
-            this.checkReverseIndependentBrake.Name = "checkReverseIndependentBrake";
-            this.checkReverseIndependentBrake.Size = new System.Drawing.Size(205, 17);
-            this.checkReverseIndependentBrake.TabIndex = 3;
-            this.checkReverseIndependentBrake.Text = "Reverse Independent Brake Direction";
-            this.checkReverseIndependentBrake.UseVisualStyleBackColor = true;
-            // 
-            // checkReverseAutoBrake
-            // 
-            this.checkReverseAutoBrake.AutoSize = true;
-            this.checkReverseAutoBrake.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkReverseAutoBrake.Location = new System.Drawing.Point(7, 66);
-            this.checkReverseAutoBrake.Name = "checkReverseAutoBrake";
-            this.checkReverseAutoBrake.Size = new System.Drawing.Size(167, 17);
-            this.checkReverseAutoBrake.TabIndex = 2;
-            this.checkReverseAutoBrake.Text = "Reverse Auto Brake Direction";
-            this.checkReverseAutoBrake.UseVisualStyleBackColor = true;
-            // 
-            // checkReverseThrottle
-            // 
-            this.checkReverseThrottle.AutoSize = true;
-            this.checkReverseThrottle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkReverseThrottle.Location = new System.Drawing.Point(7, 43);
-            this.checkReverseThrottle.Name = "checkReverseThrottle";
-            this.checkReverseThrottle.Size = new System.Drawing.Size(150, 17);
-            this.checkReverseThrottle.TabIndex = 1;
-            this.checkReverseThrottle.Text = "Reverse Throttle Direction";
-            this.checkReverseThrottle.UseVisualStyleBackColor = true;
-            // 
-            // checkReverseReverser
-            // 
-            this.checkReverseReverser.AutoSize = true;
-            this.checkReverseReverser.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkReverseReverser.Location = new System.Drawing.Point(7, 20);
-            this.checkReverseReverser.Name = "checkReverseReverser";
-            this.checkReverseReverser.Size = new System.Drawing.Size(157, 17);
-            this.checkReverseReverser.TabIndex = 0;
-            this.checkReverseReverser.Text = "Reverse Reverser Direction";
-            this.checkReverseReverser.UseVisualStyleBackColor = true;
-            // 
-            // panelRDButtons
-            // 
-            this.panelRDButtons.BackColor = System.Drawing.Color.Transparent;
-            this.panelRDButtons.Dock = System.Windows.Forms.DockStyle.Left;
-            this.panelRDButtons.Location = new System.Drawing.Point(0, 0);
-            this.panelRDButtons.Name = "panelRDButtons";
-            this.panelRDButtons.Size = new System.Drawing.Size(283, 361);
-            this.panelRDButtons.TabIndex = 3;
-            // 
             // tabPageEvaluate
             // 
             this.tabPageEvaluate.Controls.Add(this.checkListDataLogTSContents);
@@ -1952,197 +2002,7 @@
             this.checkDataLogTrainSpeed.Text = "Log train speed";
             this.checkDataLogTrainSpeed.UseVisualStyleBackColor = true;
             this.checkDataLogTrainSpeed.Click += new System.EventHandler(this.checkDataLogTrainSpeed_Click);
-            // 
-            // tabPageContent
-            // 
-            this.tabPageContent.Controls.Add(this.labelContent);
-            this.tabPageContent.Controls.Add(this.buttonContentDelete);
-            this.tabPageContent.Controls.Add(this.groupBoxContent);
-            this.tabPageContent.Controls.Add(this.buttonContentAdd);
-            this.tabPageContent.Controls.Add(this.panelContent);
-            this.tabPageContent.Location = new System.Drawing.Point(4, 22);
-            this.tabPageContent.Name = "tabPageContent";
-            this.tabPageContent.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageContent.Size = new System.Drawing.Size(602, 402);
-            this.tabPageContent.TabIndex = 9;
-            this.tabPageContent.Text = "Content";
-            this.tabPageContent.UseVisualStyleBackColor = true;
-            // 
-            // labelContent
-            // 
-            this.labelContent.AutoSize = true;
-            this.labelContent.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.labelContent.Location = new System.Drawing.Point(6, 6);
-            this.labelContent.Margin = new System.Windows.Forms.Padding(3);
-            this.labelContent.MaximumSize = new System.Drawing.Size(590, 0);
-            this.labelContent.Name = "labelContent";
-            this.labelContent.Size = new System.Drawing.Size(539, 13);
-            this.labelContent.TabIndex = 3;
-            this.labelContent.Text = "Installation profiles tell Open Rails where to look for game content. Add each fu" +
-    "ll and mini-route MSTS installation.";
-            // 
-            // buttonContentDelete
-            // 
-            this.buttonContentDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonContentDelete.Location = new System.Drawing.Point(6, 364);
-            this.buttonContentDelete.Name = "buttonContentDelete";
-            this.buttonContentDelete.Size = new System.Drawing.Size(75, 23);
-            this.buttonContentDelete.TabIndex = 1;
-            this.buttonContentDelete.Text = "Delete";
-            this.buttonContentDelete.UseVisualStyleBackColor = true;
-            this.buttonContentDelete.Click += new System.EventHandler(this.buttonContentDelete_Click);
-            // 
-            // groupBoxContent
-            // 
-            this.groupBoxContent.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBoxContent.Controls.Add(this.buttonContentBrowse);
-            this.groupBoxContent.Controls.Add(this.textBoxContentPath);
-            this.groupBoxContent.Controls.Add(this.label20);
-            this.groupBoxContent.Controls.Add(this.label22);
-            this.groupBoxContent.Controls.Add(this.textBoxContentName);
-            this.groupBoxContent.Location = new System.Drawing.Point(87, 317);
-            this.groupBoxContent.Name = "groupBoxContent";
-            this.groupBoxContent.Size = new System.Drawing.Size(509, 79);
-            this.groupBoxContent.TabIndex = 2;
-            this.groupBoxContent.TabStop = false;
-            this.groupBoxContent.Text = "Installation profile";
-            // 
-            // buttonContentBrowse
-            // 
-            this.buttonContentBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonContentBrowse.Location = new System.Drawing.Point(428, 19);
-            this.buttonContentBrowse.Name = "buttonContentBrowse";
-            this.buttonContentBrowse.Size = new System.Drawing.Size(75, 23);
-            this.buttonContentBrowse.TabIndex = 2;
-            this.buttonContentBrowse.Text = "Change...";
-            this.buttonContentBrowse.UseVisualStyleBackColor = true;
-            this.buttonContentBrowse.Click += new System.EventHandler(this.buttonContentBrowse_Click);
-            // 
-            // textBoxContentPath
-            // 
-            this.textBoxContentPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxContentPath.Location = new System.Drawing.Point(50, 21);
-            this.textBoxContentPath.Name = "textBoxContentPath";
-            this.textBoxContentPath.ReadOnly = true;
-            this.textBoxContentPath.Size = new System.Drawing.Size(372, 20);
-            this.textBoxContentPath.TabIndex = 1;
-            // 
-            // label20
-            // 
-            this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(6, 52);
-            this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(38, 13);
-            this.label20.TabIndex = 3;
-            this.label20.Text = "Name:";
-            // 
-            // label22
-            // 
-            this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(6, 24);
-            this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(32, 13);
-            this.label22.TabIndex = 0;
-            this.label22.Text = "Path:";
-            // 
-            // textBoxContentName
-            // 
-            this.textBoxContentName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxContentName.Location = new System.Drawing.Point(50, 49);
-            this.textBoxContentName.Name = "textBoxContentName";
-            this.textBoxContentName.Size = new System.Drawing.Size(453, 20);
-            this.textBoxContentName.TabIndex = 4;
-            this.textBoxContentName.TextChanged += new System.EventHandler(this.textBoxContentName_TextChanged);
-            // 
-            // buttonContentAdd
-            // 
-            this.buttonContentAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonContentAdd.Location = new System.Drawing.Point(6, 336);
-            this.buttonContentAdd.Name = "buttonContentAdd";
-            this.buttonContentAdd.Size = new System.Drawing.Size(75, 23);
-            this.buttonContentAdd.TabIndex = 0;
-            this.buttonContentAdd.Text = "Add...";
-            this.buttonContentAdd.UseVisualStyleBackColor = true;
-            this.buttonContentAdd.Click += new System.EventHandler(this.buttonContentAdd_Click);
-            // 
-            // panelContent
-            // 
-            this.panelContent.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.panelContent.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelContent.Controls.Add(this.dataGridViewContent);
-            this.panelContent.Location = new System.Drawing.Point(6, 38);
-            this.panelContent.Name = "panelContent";
-            this.panelContent.Size = new System.Drawing.Size(590, 273);
-            this.panelContent.TabIndex = 2;
-            // 
-            // dataGridViewContent
-            // 
-            this.dataGridViewContent.AllowUserToAddRows = false;
-            this.dataGridViewContent.AllowUserToDeleteRows = false;
-            this.dataGridViewContent.AutoGenerateColumns = false;
-            this.dataGridViewContent.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
-            this.dataGridViewContent.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
-            this.dataGridViewContent.BackgroundColor = System.Drawing.SystemColors.Window;
-            this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
-            this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-            this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.nameDataGridViewTextBoxColumn,
-            this.pathDataGridViewTextBoxColumn});
-            this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
-            this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
-            this.dataGridViewContent.MultiSelect = false;
-            this.dataGridViewContent.Name = "dataGridViewContent";
-            this.dataGridViewContent.ReadOnly = true;
-            this.dataGridViewContent.RowHeadersVisible = false;
-            this.dataGridViewContent.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridViewContent.Size = new System.Drawing.Size(588, 271);
-            this.dataGridViewContent.TabIndex = 0;
-            this.dataGridViewContent.SelectionChanged += new System.EventHandler(this.dataGridViewContent_SelectionChanged);
-            // 
-            // nameDataGridViewTextBoxColumn
-            // 
-            this.nameDataGridViewTextBoxColumn.DataPropertyName = "Name";
-            this.nameDataGridViewTextBoxColumn.HeaderText = "Name";
-            this.nameDataGridViewTextBoxColumn.Name = "nameDataGridViewTextBoxColumn";
-            this.nameDataGridViewTextBoxColumn.ReadOnly = true;
-            this.nameDataGridViewTextBoxColumn.Width = 60;
-            // 
-            // pathDataGridViewTextBoxColumn
-            // 
-            this.pathDataGridViewTextBoxColumn.DataPropertyName = "Path";
-            this.pathDataGridViewTextBoxColumn.HeaderText = "Path";
-            this.pathDataGridViewTextBoxColumn.Name = "pathDataGridViewTextBoxColumn";
-            this.pathDataGridViewTextBoxColumn.ReadOnly = true;
-            this.pathDataGridViewTextBoxColumn.Width = 54;
-            // 
-            // bindingSourceContent
-            // 
-            this.bindingSourceContent.DataSource = typeof(ORTS.OptionsForm.ContentFolder);
+
             // 
             // tabPageSystem
             // 
@@ -2513,77 +2373,6 @@
             this.numericActWeatherRandomizationLevel.TabIndex = 50;
             this.toolTip1.SetToolTip(this.numericActWeatherRandomizationLevel, "0: no randomization, 1: moderate, 2: significant; 3: high (may be unrealistic)");
             // 
-            // checkFullRangeThrottle
-            // 
-            this.checkFullRangeThrottle.AutoSize = true;
-            this.checkFullRangeThrottle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkFullRangeThrottle.Location = new System.Drawing.Point(7, 121);
-            this.checkFullRangeThrottle.Name = "checkFullRangeThrottle";
-            this.checkFullRangeThrottle.Size = new System.Drawing.Size(116, 17);
-            this.checkFullRangeThrottle.TabIndex = 4;
-            this.checkFullRangeThrottle.Text = "Full Range Throttle";
-            this.toolTip1.SetToolTip(this.checkFullRangeThrottle, "Use the full range of the Throttle Lever. There will be no Auto Brake!");
-            this.checkFullRangeThrottle.UseVisualStyleBackColor = true;
-            // 
-            // btnShowRDLegend
-            // 
-            this.btnShowRDLegend.Location = new System.Drawing.Point(6, 372);
-            this.btnShowRDLegend.Name = "btnShowRDLegend";
-            this.btnShowRDLegend.Size = new System.Drawing.Size(75, 23);
-            this.btnShowRDLegend.TabIndex = 1;
-            this.btnShowRDLegend.Text = "Legend";
-            this.toolTip1.SetToolTip(this.btnShowRDLegend, "Show a legend of RailDriver board with button and lever description. Press cancel" +
-        " to close again.");
-            this.btnShowRDLegend.UseVisualStyleBackColor = true;
-            this.btnShowRDLegend.Click += new System.EventHandler(this.BtnShowRDLegend_Click);
-            // 
-            // btnStartRDCalibration
-            // 
-            this.btnStartRDCalibration.Location = new System.Drawing.Point(86, 372);
-            this.btnStartRDCalibration.Margin = new System.Windows.Forms.Padding(2);
-            this.btnStartRDCalibration.Name = "btnStartRDCalibration";
-            this.btnStartRDCalibration.Size = new System.Drawing.Size(75, 23);
-            this.btnStartRDCalibration.TabIndex = 3;
-            this.btnStartRDCalibration.Text = "Calibration";
-            this.toolTip1.SetToolTip(this.btnStartRDCalibration, "Calibrate the lever position reading");
-            this.btnStartRDCalibration.UseVisualStyleBackColor = true;
-            this.btnStartRDCalibration.Click += new System.EventHandler(this.StartRDCalibration_Click);
-            // 
-            // btnRDReset
-            // 
-            this.btnRDReset.Location = new System.Drawing.Point(166, 372);
-            this.btnRDReset.Name = "btnRDReset";
-            this.btnRDReset.Size = new System.Drawing.Size(75, 23);
-            this.btnRDReset.TabIndex = 2;
-            this.btnRDReset.Text = "Defaults";
-            this.toolTip1.SetToolTip(this.btnRDReset, "Load the factory default button assignments.");
-            this.btnRDReset.UseVisualStyleBackColor = true;
-            this.btnRDReset.Click += new System.EventHandler(this.BtnRDReset_Click);
-            // 
-            // btnCheck
-            // 
-            this.btnCheck.Location = new System.Drawing.Point(247, 372);
-            this.btnCheck.Name = "btnCheck";
-            this.btnCheck.Size = new System.Drawing.Size(75, 23);
-            this.btnCheck.TabIndex = 4;
-            this.btnCheck.Text = "Check";
-            this.toolTip1.SetToolTip(this.btnCheck, "Load the factory default button assignments.");
-            this.btnCheck.UseVisualStyleBackColor = true;
-            this.btnCheck.Click += new System.EventHandler(this.BtnCheck_Click);
-            // 
-            // btnRDSettingsExport
-            // 
-            this.btnRDSettingsExport.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnRDSettingsExport.Location = new System.Drawing.Point(521, 373);
-            this.btnRDSettingsExport.Name = "btnRDSettingsExport";
-            this.btnRDSettingsExport.Size = new System.Drawing.Size(75, 23);
-            this.btnRDSettingsExport.TabIndex = 5;
-            this.btnRDSettingsExport.Text = "Export";
-            this.toolTip1.SetToolTip(this.btnRDSettingsExport, "Generate a listing of your keyboard assignments.  \r\nThe output is placed on your " +
-        "desktop.");
-            this.btnRDSettingsExport.UseVisualStyleBackColor = true;
-            this.btnRDSettingsExport.Click += new System.EventHandler(this.BtnRDSettingsExport_Click);
-            // 
             // label26
             // 
             this.label26.AutoSize = true;
@@ -2880,20 +2669,16 @@
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.tabPageKeyboard.ResumeLayout(false);
-            this.tabPageDataLogger.ResumeLayout(false);
-            this.tabPageDataLogger.PerformLayout();
             this.tabPageRailDriver.ResumeLayout(false);
             this.panelRDSettings.ResumeLayout(false);
             this.panelRDOptions.ResumeLayout(false);
+            this.groupBoxReverseRDLevers.ResumeLayout(false);
+            this.groupBoxReverseRDLevers.PerformLayout();
+            this.tabPageDataLogger.ResumeLayout(false);
+            this.tabPageDataLogger.PerformLayout();
             this.tabPageEvaluate.ResumeLayout(false);
             this.tabPageEvaluate.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericDataLogTSInterval)).EndInit();
-            this.tabPageContent.ResumeLayout(false);
-            this.tabPageContent.PerformLayout();
-            this.groupBoxContent.ResumeLayout(false);
-            this.groupBoxContent.PerformLayout();
-            this.panelContent.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewContent)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).EndInit();
             this.tabPageSystem.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pbPerformanceTuner)).EndInit();
@@ -3017,21 +2802,7 @@
         private System.Windows.Forms.CheckBox checkRetainers;
         private System.Windows.Forms.Label labelOtherUnits;
         private System.Windows.Forms.ComboBox comboOtherUnits;
-        private System.Windows.Forms.TabPage tabPageContent;
-        private System.Windows.Forms.Panel panelContent;
-        private System.Windows.Forms.DataGridView dataGridViewContent;
         private System.Windows.Forms.BindingSource bindingSourceContent;
-        private System.Windows.Forms.DataGridViewTextBoxColumn nameDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn pathDataGridViewTextBoxColumn;
-        private System.Windows.Forms.GroupBox groupBoxContent;
-        private System.Windows.Forms.TextBox textBoxContentPath;
-        private System.Windows.Forms.Label label20;
-        private System.Windows.Forms.Label label22;
-        public System.Windows.Forms.TextBox textBoxContentName;
-        private System.Windows.Forms.Button buttonContentDelete;
-        private System.Windows.Forms.Button buttonContentBrowse;
-        private System.Windows.Forms.Button buttonContentAdd;
-        private System.Windows.Forms.Label labelContent;
         private System.Windows.Forms.CheckBox checkShapeWarnings;
         private System.Windows.Forms.Label labelDayAmbientLight;
         private System.Windows.Forms.CheckBox checkEnableTCSScripts;
