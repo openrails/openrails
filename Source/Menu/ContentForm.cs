@@ -31,6 +31,7 @@ using System.Net;
 using System.IO.Compression;
 using System.Drawing;
 using System.Threading.Tasks;
+using GNU.Gettext.WinForms;
 
 namespace ORTS
 {
@@ -72,6 +73,8 @@ namespace ORTS
             this.MaximizeBox = false; // disable maximize button
 
             Catalog = new GettextResourceManager("Menu");
+            Localizer.Localize(this, Catalog);
+
             Settings = settings;
 
             //
@@ -281,7 +284,7 @@ namespace ORTS
                 if (route.getDownloadType() == ContentRouteSettings.DownloadType.github)
                 {
                     outputFile.WriteLine("<p>" + Catalog.GetString("Downloadable: GitHub format") + "<br>");
-                    outputFile.WriteLine(string.Format("- " + Catalog.GetString("From:") + "{0}<br>", route.Url));
+                    outputFile.WriteLine(Catalog.GetStringFmt("- " + Catalog.GetString("From:") + "{0}<br>", route.Url));
                     if (route.InstallSize > 0)
                     {
                         outputFile.WriteLine("- " + Catalog.GetStringFmt("Install size: {0} GB",
@@ -290,8 +293,8 @@ namespace ORTS
                 }
                 if (route.getDownloadType() == ContentRouteSettings.DownloadType.zip)
                 {
-                    outputFile.WriteLine(string.Format("<p>Downloadable: zip format<br>"));
-                    outputFile.WriteLine(string.Format("- From: {0}<br>", route.Url));
+                    outputFile.WriteLine(Catalog.GetString("<p>Downloadable: zip format<br>")); // qqq
+                    outputFile.WriteLine(Catalog.GetStringFmt("- From: {0}<br>", route.Url));
                     if (route.InstallSize > 0)
                     {
                         outputFile.WriteLine("- " + Catalog.GetStringFmt("Install size: {0} GB",
@@ -307,10 +310,10 @@ namespace ORTS
                 if (route.Installed)
                 {
                     outputFile.WriteLine("<p>" + Catalog.GetString("Installed") + ":<br>");
-                    outputFile.WriteLine(string.Format("- " + Catalog.GetString("At") + ": {0}<br>", route.DateInstalled.ToString(CultureInfo.CurrentCulture.DateTimeFormat)));
-                    outputFile.WriteLine(string.Format("- " + Catalog.GetString("In") + ": \"{0}\"<br>", route.DirectoryInstalledIn));
-                    outputFile.WriteLine(string.Format("- " + Catalog.GetString("Content name") + ": \"{0}\"<br>", route.ContentName));
-                    outputFile.WriteLine(string.Format("- " + Catalog.GetString("Content Directory") + ": \"{0}\"<br></p>", route.ContentDirectory));
+                    outputFile.WriteLine(Catalog.GetStringFmt("- " + Catalog.GetString("At") + ": {0}<br>", route.DateInstalled.ToString(CultureInfo.CurrentCulture.DateTimeFormat)));
+                    outputFile.WriteLine(Catalog.GetStringFmt("- " + Catalog.GetString("In") + ": \"{0}\"<br>", route.DirectoryInstalledIn));
+                    outputFile.WriteLine(Catalog.GetStringFmt("- " + Catalog.GetString("Content name") + ": \"{0}\"<br>", route.ContentName));
+                    outputFile.WriteLine(Catalog.GetStringFmt("- " + Catalog.GetString("Content Directory") + ": \"{0}\"<br></p>", route.ContentDirectory));
                 }
 
                 outputFile.WriteLine("<p>" + Catalog.GetString("Start options") + ":<br>");
@@ -353,7 +356,10 @@ namespace ORTS
                 }
                 else
                 {
-                    outputFile.WriteLine("<p>" + Catalog.GetStringFmt("Directory {0} does not exist", route.DirectoryInstalledIn) + "</b><br></p>");
+                    if (!string.IsNullOrEmpty(route.DirectoryInstalledIn))
+                    {
+                        outputFile.WriteLine("<p>" + Catalog.GetStringFmt("Directory {0} does not exist", route.DirectoryInstalledIn) + "</b><br></p>");
+                    }
                 }
             }
             try
