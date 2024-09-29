@@ -293,7 +293,7 @@ namespace ORTS
                 }
                 if (route.getDownloadType() == ContentRouteSettings.DownloadType.zip)
                 {
-                    outputFile.WriteLine(Catalog.GetString("<p>Downloadable: zip format<br>")); // qqq
+                    outputFile.WriteLine(Catalog.GetString("<p>Downloadable: zip format<br>"));
                     outputFile.WriteLine(Catalog.GetStringFmt("- From: {0}<br>", route.Url));
                     if (route.InstallSize > 0)
                     {
@@ -1477,7 +1477,7 @@ namespace ORTS
                 {
                     if (dataGridViewManualInstall.Rows[i].Cells[0].Value.ToString() == route)
                     {
-                        route = route + " copy";
+                        route += " copy";
                         found = false;
                     }
                 }
