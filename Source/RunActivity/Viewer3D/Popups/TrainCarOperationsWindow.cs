@@ -495,6 +495,10 @@ namespace Orts.Viewer3D.Popups
                     Client = ControlLayoutScrollboxVertical.NewClient;
                     RowsCount = Client.Controls.Where(c => c is ControlLayoutHorizontal).Count();
                     SeparatorCount = Client.Controls.Where(c => c is Separator).Count();
+
+                    // Allows to resize the window according to the carPosition value.
+                    if (RowsCount > carPosition) RowsCount = carPosition;
+                    if (SeparatorCount > carPosition -1) SeparatorCount = carPosition - 1;
                 }
             }
             return Vbox;
