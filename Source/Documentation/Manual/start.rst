@@ -16,14 +16,14 @@ installation profile.
 
 .. image:: images/start-activity.png
 
-If not, then the next ``Download Content`` form is shown where you can download content. This form is described in the next `Content` chapter.
+If not, then the next ``Content`` form is shown where you can download content. This form is described in the next `Content` chapter.
 
 Content
 =======
 
-Clicking on the ``Content`` button makes the ``Download Content`` form popup (if not already there for a new empty Open Rails installation):
+Clicking on the ``Content`` button makes the ``Content`` form popup with the tab ``Auto Installed`` open:
 
-.. image:: images/download-content-form.png
+.. image:: images/content-form-auto-installed.png
 
 Select the route to be installed. This list will be enlarged by the OR team when suitable routes become available.
 However it is still possible to install routes manually as described in the next chapter.
@@ -49,8 +49,36 @@ name of one of the MSTS routes in your MSTS installation.
 
 You can easily add, remove or move other content profiles and select 
 among them (e.g. if you have any so-called ``mini-routes`` installed.). 
-Click on the ``Options`` button and select the ``Content`` tab. See the 
-:ref:`Content Options <options-Content>` discussed below for more instructions.
+
+For this select the ``Manually Installed`` tab on the ``Content`` form:
+
+.. image:: images/content-form-manually-installed.png
+
+This window allows you to add, remove or modify access to content.
+Each profile may be a folder containing one or more routes, or an MSTS
+installation. 
+Profiles located on other drives, or on a USB key, can be added even if they are
+not always available.
+
+Click on the *Add* button, and locate the desired installation. ORTS will
+automatically enter a proposed name in the *Route:* window that will
+appear in the *Installation set:* window on the main menu form. Modify
+the name if desired, then click *OK* to add the new path and name to
+Open Rails.
+
+Please do not store content or any files within the folder containing the Open Rails software.
+This is because the Updater operates by wiping out the contents of that folder before replacing it
+with a new updated version. 
+It would be unfriendly for users to lose content that they have stored there, so
+attempts to add a profile folder stored there are blocked and lead to an error message. 
+
+To remove an entry (note that this does not remove the installation
+itself!) select the entry in the window, and click *Delete*, then *OK*
+to close the window. 
+
+To modify an entry, select the route to be changed. Make the necessary changes in the ``Route`` and/or ``Path`` fields.
+The *Browse...* button can be used to chnage the Path by browsing. Click *OK*
+to close the window and save the changes to OR. 
 
 .. _updating-or:
 

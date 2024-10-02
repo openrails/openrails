@@ -37,6 +37,7 @@ namespace ORTS
     {
         readonly UserSettings Settings;
         readonly UpdateManager UpdateManager;
+        readonly string BaseDocumentationUrl;
 
         private GettextResourceManager Catalog = new GettextResourceManager("Menu");
 
@@ -46,7 +47,7 @@ namespace ORTS
             public string Name { get; set; }
         }
 
-        public OptionsForm(UserSettings settings, UpdateManager updateManager)
+        public OptionsForm(UserSettings settings, UpdateManager updateManager, string baseDocumentationUrl)
         {
             InitializeComponent();
 
@@ -54,6 +55,7 @@ namespace ORTS
 
             Settings = settings;
             UpdateManager = updateManager;
+            BaseDocumentationUrl = baseDocumentationUrl;
 
             InitializeHelpIcons();
 
@@ -777,146 +779,145 @@ namespace ORTS
         /// <param name="e"></param>
         private void HelpIcon_Click(object sender, EventArgs _)
         {
-            const string baseUrl = "https://open-rails.readthedocs.io/en/latest";
             var urls = new Dictionary<object, string>
             {
                 {
                     pbAlerter,
-                    baseUrl + "/options.html#alerter-in-cab"
+                    BaseDocumentationUrl + "/options.html#alerter-in-cab"
                 },
                 {
                     pbRetainers,
-                    baseUrl + "/options.html#retainer-valve-on-all-cars"
+                    BaseDocumentationUrl + "/options.html#retainer-valve-on-all-cars"
                 },
                 {
                     pbGraduatedRelease,
-                    baseUrl + "/options.html#graduated-release-air-brakes"
+                    BaseDocumentationUrl + "/options.html#graduated-release-air-brakes"
                 },
                 {
                     pbBrakePipeChargingRate,
-                    baseUrl + "/options.html#brake-pipe-charging-rate"
+                    BaseDocumentationUrl + "/options.html#brake-pipe-charging-rate"
                 },
                 {
                     pbPressureUnit,
-                    baseUrl + "/options.html#pressure-unit"
+                    BaseDocumentationUrl + "/options.html#pressure-unit"
                 },
                 {
                     pbOtherUnits,
-                    baseUrl + "/options.html#other-units"
+                    BaseDocumentationUrl + "/options.html#other-units"
                 },
                 {
                     pbEnableTcsScripts,
-                    baseUrl + "/options.html#disable-tcs-scripts"
+                    BaseDocumentationUrl + "/options.html#disable-tcs-scripts"
                 },
                 {
                     pbOverspeedMonitor,
-                    baseUrl + "/options.html#overspeed-monitor"
+                    BaseDocumentationUrl + "/options.html#overspeed-monitor"
                 },
 
                 // Audio tab
                 {
                     pbSoundVolumePercent,
-                    baseUrl + "/options.html#audio-options"
+                    BaseDocumentationUrl + "/options.html#audio-options"
                 },
                 {
                     pbSoundDetailLevel,
-                    baseUrl + "/options.html#audio-options"
+                    BaseDocumentationUrl + "/options.html#audio-options"
                 },
                 {
                     pbExternalSoundPassThruPercent,
-                    baseUrl + "/options.html#audio-options"
+                    BaseDocumentationUrl + "/options.html#audio-options"
                 },
 
                 // Video tab
                 {
                     pbViewingDistance,
-                    baseUrl + "/options.html#viewing-distance"
+                    BaseDocumentationUrl + "/options.html#viewing-distance"
                 },
                 {
                     pbDistantMountains,
-                    baseUrl + "/options.html#distant-mountains"
+                    BaseDocumentationUrl + "/options.html#distant-mountains"
                 },
                 {
                     pbLODViewingExtension,
-                    baseUrl + "/options.html#extend-object-maximum-viewing-distance-to-horizon"
+                    BaseDocumentationUrl + "/options.html#extend-object-maximum-viewing-distance-to-horizon"
                 },
                 {
                     pbDynamicShadows,
-                    baseUrl + "/options.html#dynamic-shadows"
+                    BaseDocumentationUrl + "/options.html#dynamic-shadows"
                 },
                 {
                     pbShadowAllShapes,
-                    baseUrl + "/options.html#shadow-for-all-shapes"
+                    BaseDocumentationUrl + "/options.html#shadow-for-all-shapes"
                 },
                 {
                     pbWire,
-                    baseUrl + "/options.html#overhead-wire"
+                    BaseDocumentationUrl + "/options.html#overhead-wire"
                 },
                 {
                     pbDoubleWire,
-                    baseUrl + "/options.html#double-overhead-wires"
+                    BaseDocumentationUrl + "/options.html#double-overhead-wires"
                 },
                 {
                     pbSignalLightGlow,
-                    baseUrl + "/options.html#signal-light-glow"
+                    BaseDocumentationUrl + "/options.html#signal-light-glow"
                 },
                 {
                     pbDayAmbientLight,
-                    baseUrl + "/options.html#ambient-daylight-brightness"
+                    BaseDocumentationUrl + "/options.html#ambient-daylight-brightness"
                 },
                 {
                     pbModelInstancing,
-                    baseUrl + "/options.html#model-instancing"
+                    BaseDocumentationUrl + "/options.html#model-instancing"
                 },
                 {
                     pbVerticalSync,
-                    baseUrl + "/options.html#vertical-sync"
+                    BaseDocumentationUrl + "/options.html#vertical-sync"
                 },
                 {
                     pbAntiAliasing,
-                    baseUrl + "/options.html#anti-aliasing"
+                    BaseDocumentationUrl + "/options.html#anti-aliasing"
                 },
                 {
                     pbWorldObjectDensity,
-                    baseUrl + "/options.html#world-object-density"
+                    BaseDocumentationUrl + "/options.html#world-object-density"
                 },
                 {
                     pbLODBias,
-                    baseUrl + "/options.html#level-of-detail-bias"
+                    BaseDocumentationUrl + "/options.html#level-of-detail-bias"
                 },
                 {
                     pbViewingFOV,
-                    baseUrl + "/options.html#viewing-vertical-fov"
+                    BaseDocumentationUrl + "/options.html#viewing-vertical-fov"
                 },
 
                 // System tab
                 {
                     pbLanguage,
-                    baseUrl + "/options.html#language"
+                    BaseDocumentationUrl + "/options.html#language"
                 },
                 {
                     pbUpdateMode,
-                    baseUrl + "/options.html#updater-options"
+                    BaseDocumentationUrl + "/options.html#updater-options"
                 },
                 {
                     pbWindowed,
-                    baseUrl + "/options.html#windowed"
+                    BaseDocumentationUrl + "/options.html#windowed"
                 },
                 {
                     pbWindowGlass,
-                    baseUrl + "/options.html#window-glass"
+                    BaseDocumentationUrl + "/options.html#window-glass"
                 },
                 {
                     pbControlConfirmations,
-                    baseUrl + "/options.html#control-confirmations"
+                    BaseDocumentationUrl + "/options.html#control-confirmations"
                 },
                 {
                     pbWebServerPort,
-                    baseUrl + "/options.html#web-server-port"
+                    BaseDocumentationUrl + "/options.html#web-server-port"
                 },
                 {
                     pbPerformanceTuner,
-                    baseUrl + "/options.html#performance-tuner"
+                    BaseDocumentationUrl + "/options.html#performance-tuner"
                 },
             };
             if (urls.TryGetValue(sender, out var url))

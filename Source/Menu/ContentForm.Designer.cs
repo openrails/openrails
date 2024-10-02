@@ -63,7 +63,6 @@ namespace ORTS
             this.tabControlContent = new System.Windows.Forms.TabControl();
             this.tabPageAutoInstall = new System.Windows.Forms.TabPage();
             this.tabPageManuallyInstall = new System.Windows.Forms.TabPage();
-            this.labelManualInstallContent = new System.Windows.Forms.Label();
             this.buttonManualInstallDelete = new System.Windows.Forms.Button();
             this.groupBoxManualInstall = new System.Windows.Forms.GroupBox();
             this.buttonManualInstallBrowse = new System.Windows.Forms.Button();
@@ -77,6 +76,7 @@ namespace ORTS
             this.dgvTextBoxColumnManualInstallPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.buttonCancel = new System.Windows.Forms.Button();
             this.buttonOK = new System.Windows.Forms.Button();
+            this.pbContent = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewAutoInstall)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxAutoInstallRoute)).BeginInit();
             this.tabControlContent.SuspendLayout();
@@ -84,6 +84,7 @@ namespace ORTS
             this.tabPageManuallyInstall.SuspendLayout();
             this.groupBoxManualInstall.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewManualInstall)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbContent)).BeginInit();
             this.SuspendLayout();
             // 
             // dataGridViewAutoInstall
@@ -256,7 +257,6 @@ namespace ORTS
             // 
             // tabPageManuallyInstall
             // 
-            this.tabPageManuallyInstall.Controls.Add(this.labelManualInstallContent);
             this.tabPageManuallyInstall.Controls.Add(this.buttonManualInstallDelete);
             this.tabPageManuallyInstall.Controls.Add(this.groupBoxManualInstall);
             this.tabPageManuallyInstall.Controls.Add(this.buttonManualInstallAdd);
@@ -268,19 +268,6 @@ namespace ORTS
             this.tabPageManuallyInstall.TabIndex = 10;
             this.tabPageManuallyInstall.Text = "Manually Installed";
             this.tabPageManuallyInstall.UseVisualStyleBackColor = true;
-            // 
-            // labelManualInstallContent
-            // 
-            this.labelManualInstallContent.AutoSize = true;
-            this.labelManualInstallContent.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.labelManualInstallContent.Location = new System.Drawing.Point(6, 6);
-            this.labelManualInstallContent.Margin = new System.Windows.Forms.Padding(3);
-            this.labelManualInstallContent.MaximumSize = new System.Drawing.Size(590, 0);
-            this.labelManualInstallContent.Name = "labelManualInstallContent";
-            this.labelManualInstallContent.Size = new System.Drawing.Size(539, 13);
-            this.labelManualInstallContent.TabIndex = 3;
-            this.labelManualInstallContent.Text = "Installation profiles tell Open Rails where to look for game content. Add each fu" +
-    "ll and mini-route MSTS installation.";
             // 
             // buttonManualInstallDelete
             // 
@@ -382,13 +369,13 @@ namespace ORTS
             this.dgvTextBoxColumnManualInstallRoute,
             this.dgvTextBoxColumnManualInstallPath});
             this.dataGridViewManualInstall.GridColor = System.Drawing.SystemColors.Control;
-            this.dataGridViewManualInstall.Location = new System.Drawing.Point(6, 38);
+            this.dataGridViewManualInstall.Location = new System.Drawing.Point(6, 6);
             this.dataGridViewManualInstall.MultiSelect = false;
             this.dataGridViewManualInstall.Name = "dataGridViewManualInstall";
             this.dataGridViewManualInstall.ReadOnly = true;
             this.dataGridViewManualInstall.RowHeadersVisible = false;
             this.dataGridViewManualInstall.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridViewManualInstall.Size = new System.Drawing.Size(588, 271);
+            this.dataGridViewManualInstall.Size = new System.Drawing.Size(588, 305);
             this.dataGridViewManualInstall.TabIndex = 0;
             this.dataGridViewManualInstall.SelectionChanged += new System.EventHandler(this.dataGridViewManualInstall_SelectionChanged);
             this.dataGridViewManualInstall.KeyDown += new System.Windows.Forms.KeyEventHandler(this.dataGridViewManualInstall_KeyDown);
@@ -429,12 +416,23 @@ namespace ORTS
             this.buttonOK.UseVisualStyleBackColor = true;
             this.buttonOK.Click += new System.EventHandler(this.buttonOK_Click);
             // 
+            // pbContent
+            // 
+            this.pbContent.Image = global::ORTS.Properties.Resources.info_18_hover;
+            this.pbContent.Location = new System.Drawing.Point(598, 12);
+            this.pbContent.Name = "pbContent";
+            this.pbContent.Size = new System.Drawing.Size(18, 18);
+            this.pbContent.TabIndex = 21;
+            this.pbContent.TabStop = false;
+            this.pbContent.Click += new System.EventHandler(this.pbContent_Click);
+            // 
             // ContentForm
             // 
             this.AcceptButton = this.buttonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(634, 481);
+            this.Controls.Add(this.pbContent);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOK);
             this.Controls.Add(this.tabControlContent);
@@ -452,10 +450,10 @@ namespace ORTS
             this.tabPageAutoInstall.ResumeLayout(false);
             this.tabPageAutoInstall.PerformLayout();
             this.tabPageManuallyInstall.ResumeLayout(false);
-            this.tabPageManuallyInstall.PerformLayout();
             this.groupBoxManualInstall.ResumeLayout(false);
             this.groupBoxManualInstall.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewManualInstall)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbContent)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -475,7 +473,6 @@ namespace ORTS
         private TabControl tabControlContent;
         private TabPage tabPageAutoInstall;
         private TabPage tabPageManuallyInstall;
-        private Label labelManualInstallContent;
         private Button buttonManualInstallDelete;
         private GroupBox groupBoxManualInstall;
         private Button buttonManualInstallBrowse;
@@ -492,5 +489,6 @@ namespace ORTS
         private DataGridViewTextBoxColumn dgvTextBoxColumnManualInstallPath;
         private Button buttonCancel;
         private Button buttonOK;
+        private PictureBox pbContent;
     }
 }

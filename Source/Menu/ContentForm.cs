@@ -39,6 +39,7 @@ namespace ORTS
     {
         private readonly GettextResourceManager Catalog;
         private readonly UserSettings Settings;
+        private readonly string BaseDocumentationUrl;
 
         private readonly IDictionary<string, ContentRouteSettings.Route> AutoInstallRoutes;
 
@@ -60,7 +61,7 @@ namespace ORTS
         private bool In_dataGridViewManualInstall_SelectionChanged = false;
         private bool In_buttonManualInstallAdd_Click = false;
 
-        public ContentForm(UserSettings settings)
+        public ContentForm(UserSettings settings, string baseDocumentationUrl)
         {
             InitializeComponent();
 
@@ -76,6 +77,7 @@ namespace ORTS
             Localizer.Localize(this, Catalog);
 
             Settings = settings;
+            BaseDocumentationUrl = baseDocumentationUrl;
 
             //
             // "Auto Installed" tab
@@ -141,6 +143,25 @@ namespace ORTS
                     dataGridViewManualInstall.Select();
                     break;
             }
+        }
+
+        private void pbContent_Click(object sender, EventArgs e)
+        {
+            string fileName = "";
+            if (tabControlContent.SelectedTab == tabControlContent.TabPages["tabPageAutoInstall"])
+            {
+                fileName = BaseDocumentationUrl + "/start.html#content";
+            }
+            if (tabControlContent.SelectedTab == tabControlContent.TabPages["tabPageManuallyInstall"])
+            {
+                fileName = BaseDocumentationUrl + "/start.html#installation-profiles";
+            }
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = fileName,
+                UseShellExecute = true
+            });
         }
 
         #region Auto Installed
