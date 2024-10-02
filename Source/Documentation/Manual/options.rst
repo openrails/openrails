@@ -403,7 +403,7 @@ The default setting is checked.
 
 
 At game start, Electric - power connected
------------------------------------
+-----------------------------------------
 
 When this option is checked, stationary electric locos start the simulation with power available.
 Uncheck this option for a more detailed behaviour in which the player has to switch on electrical equipment.
@@ -593,36 +593,6 @@ By selecting the option *Start logging with the simulation start* or by
 pressing ``<F12>`` a file with the name dump.csv is generated in the
 configured Open Rails logging folder (placed on the Desktop by default).
 This file can be used for later analysis.
-
-.. _options-Content:
-
-Content Options
-===============
-
-.. image:: images/options-content.png
-
-This window allows you to add, remove or modify access to content.
-Each profile may be a folder containing one or more routes, or an MSTS
-installation. 
-Profiles located on other drives, or on a USB key, can be added even if they are
-not always available.
-
-Click on the *Add* button, and locate the desired installation. ORTS will
-automatically enter a proposed name in the *Name:* window that will
-appear in the *Installation set:* window on the main menu form. Modify
-the name if desired, then click *OK* to add the new path and name to
-Open Rails.
-
-Please do not store content or any files within the folder containing the Open Rails software.
-This is because the Updater operates by wiping out the contents of that folder before replacing it
-with a new updated version. 
-It would be unfriendly for users to lose content that they have stored there, so
-attempts to add a profile folder stored there are blocked and lead to an error message. 
-
-To remove an entry (note that this does not remove the installation
-itself!) select the entry in the window, and click *Delete*, then *OK*
-to close the window. To modify an entry, use the *Change...* button to
-access the location and make the necessary changes.
 
 .. _options-system:
 
