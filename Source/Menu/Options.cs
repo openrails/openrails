@@ -37,8 +37,9 @@ namespace ORTS
     {
         readonly UserSettings Settings;
         readonly UpdateManager UpdateManager;
+        readonly string BaseDocumentationUrl;
 
-        private GettextResourceManager catalog = new GettextResourceManager("Menu");
+        private GettextResourceManager Catalog = new GettextResourceManager("Menu");
 
         public class ComboBoxMember
         {
@@ -46,42 +47,15 @@ namespace ORTS
             public string Name { get; set; }
         }
 
-        public class ContentFolder
-        {
-            public string Name { get; set; }
-            public string Path { get; set; }
-
-            public ContentFolder()
-            {
-                Name = "";
-                Path = "";
-            }
-
-            public static bool isWrongPath(string path, GettextResourceManager catalog)
-            {
-                if (path.ToLower().Contains(Application.StartupPath.ToLower()))
-                {
-                    // check added because a succesful Update operation will empty the Open Rails folder and lose any content stored within it.
-                    MessageBox.Show(catalog.GetString
-                        ($"Cannot use content from any folder which lies inside the Open Rails program folder {Application.StartupPath}\n\n")
-                        , "Invalid content location"
-                        , MessageBoxButtons.OK
-                        , MessageBoxIcon.Error);
-                    return true;
-        }
-
-                return false;
-            }
-        }
-
-        public OptionsForm(UserSettings settings, UpdateManager updateManager, bool initialContentSetup)
+        public OptionsForm(UserSettings settings, UpdateManager updateManager, string baseDocumentationUrl)
         {
             InitializeComponent();
 
-            Localizer.Localize(this, catalog);
+            Localizer.Localize(this, Catalog);
 
             Settings = settings;
             UpdateManager = updateManager;
+            BaseDocumentationUrl = baseDocumentationUrl;
 
             InitializeHelpIcons();
 
@@ -117,22 +91,22 @@ namespace ORTS
             if (comboLanguage.SelectedValue == null) comboLanguage.SelectedIndex = 0;
 
             comboOtherUnits.DataSource = new[] {
-                new ComboBoxMember { Code = "Route", Name = catalog.GetString("Route") },
-                new ComboBoxMember { Code = "Automatic", Name = catalog.GetString("Player's location") },
-                new ComboBoxMember { Code = "Metric", Name = catalog.GetString("Metric") },
-                new ComboBoxMember { Code = "US", Name = catalog.GetString("Imperial US") },
-                new ComboBoxMember { Code = "UK", Name = catalog.GetString("Imperial UK") },
+                new ComboBoxMember { Code = "Route", Name = Catalog.GetString("Route") },
+                new ComboBoxMember { Code = "Automatic", Name = Catalog.GetString("Player's location") },
+                new ComboBoxMember { Code = "Metric", Name = Catalog.GetString("Metric") },
+                new ComboBoxMember { Code = "US", Name = Catalog.GetString("Imperial US") },
+                new ComboBoxMember { Code = "UK", Name = Catalog.GetString("Imperial UK") },
             }.ToList();
             comboOtherUnits.DisplayMember = "Name";
             comboOtherUnits.ValueMember = "Code";
             comboOtherUnits.SelectedValue = Settings.Units;
 
             comboPressureUnit.DataSource = new[] {
-                new ComboBoxMember { Code = "Automatic", Name = catalog.GetString("Automatic") },
-                new ComboBoxMember { Code = "bar", Name = catalog.GetString("bar") },
-                new ComboBoxMember { Code = "PSI", Name = catalog.GetString("psi") },
-                new ComboBoxMember { Code = "inHg", Name = catalog.GetString("inHg") },
-                new ComboBoxMember { Code = "kgf/cm^2", Name = catalog.GetString("kgf/cm²") },
+                new ComboBoxMember { Code = "Automatic", Name = Catalog.GetString("Automatic") },
+                new ComboBoxMember { Code = "bar", Name = Catalog.GetString("bar") },
+                new ComboBoxMember { Code = "PSI", Name = Catalog.GetString("psi") },
+                new ComboBoxMember { Code = "inHg", Name = Catalog.GetString("inHg") },
+                new ComboBoxMember { Code = "kgf/cm^2", Name = Catalog.GetString("kgf/cm²") },
             }.ToList();
             comboPressureUnit.DisplayMember = "Name";
             comboPressureUnit.ValueMember = "Code";
@@ -214,23 +188,23 @@ namespace ORTS
 
             // DataLogger tab
             var dictionaryDataLoggerSeparator = new Dictionary<string, string>();
-            dictionaryDataLoggerSeparator.Add("comma", catalog.GetString("comma"));
-            dictionaryDataLoggerSeparator.Add("semicolon", catalog.GetString("semicolon"));
-            dictionaryDataLoggerSeparator.Add("tab", catalog.GetString("tab"));
-            dictionaryDataLoggerSeparator.Add("space", catalog.GetString("space"));
+            dictionaryDataLoggerSeparator.Add("comma", Catalog.GetString("comma"));
+            dictionaryDataLoggerSeparator.Add("semicolon", Catalog.GetString("semicolon"));
+            dictionaryDataLoggerSeparator.Add("tab", Catalog.GetString("tab"));
+            dictionaryDataLoggerSeparator.Add("space", Catalog.GetString("space"));
             comboDataLoggerSeparator.DataSource = new BindingSource(dictionaryDataLoggerSeparator, null);
             comboDataLoggerSeparator.DisplayMember = "Value";
             comboDataLoggerSeparator.ValueMember = "Key";
-            comboDataLoggerSeparator.Text = catalog.GetString(Settings.DataLoggerSeparator);
+            comboDataLoggerSeparator.Text = Catalog.GetString(Settings.DataLoggerSeparator);
             var dictionaryDataLogSpeedUnits = new Dictionary<string, string>();
-            dictionaryDataLogSpeedUnits.Add("route", catalog.GetString("route"));
-            dictionaryDataLogSpeedUnits.Add("mps", catalog.GetString("m/s"));
-            dictionaryDataLogSpeedUnits.Add("kmph", catalog.GetString("km/h"));
-            dictionaryDataLogSpeedUnits.Add("mph", catalog.GetString("mph"));
+            dictionaryDataLogSpeedUnits.Add("route", Catalog.GetString("route"));
+            dictionaryDataLogSpeedUnits.Add("mps", Catalog.GetString("m/s"));
+            dictionaryDataLogSpeedUnits.Add("kmph", Catalog.GetString("km/h"));
+            dictionaryDataLogSpeedUnits.Add("mph", Catalog.GetString("mph"));
             comboDataLogSpeedUnits.DataSource = new BindingSource(dictionaryDataLogSpeedUnits, null);
             comboDataLogSpeedUnits.DisplayMember = "Value";
             comboDataLogSpeedUnits.ValueMember = "Key";
-            comboDataLogSpeedUnits.Text = catalog.GetString(Settings.DataLogSpeedUnits);
+            comboDataLogSpeedUnits.Text = Catalog.GetString(Settings.DataLogSpeedUnits);
             checkDataLogger.Checked = Settings.DataLogger;
             checkDataLogPerformance.Checked = Settings.DataLogPerformance;
             checkDataLogPhysics.Checked = Settings.DataLogPhysics;
@@ -245,52 +219,37 @@ namespace ORTS
             checkListDataLogTSContents.Enabled = checkDataLogTrainSpeed.Checked;  
             numericDataLogTSInterval.Value = Settings.DataLogTSInterval;
             checkListDataLogTSContents.Items.AddRange(new object[] {
-                catalog.GetString("Time"),
-                catalog.GetString("Train Speed"),
-                catalog.GetString("Max. Speed"),
-                catalog.GetString("Signal State"),
-                catalog.GetString("Track Elevation"),
-                catalog.GetString("Direction"),
-                catalog.GetString("Control Mode"),
-                catalog.GetString("Distance Travelled"),
-                catalog.GetString("Throttle %"),
-                catalog.GetString("Brake Cyl Press"),
-                catalog.GetString("Dyn Brake %"),
-                catalog.GetString("Gear Setting")
+                Catalog.GetString("Time"),
+                Catalog.GetString("Train Speed"),
+                Catalog.GetString("Max. Speed"),
+                Catalog.GetString("Signal State"),
+                Catalog.GetString("Track Elevation"),
+                Catalog.GetString("Direction"),
+                Catalog.GetString("Control Mode"),
+                Catalog.GetString("Distance Travelled"),
+                Catalog.GetString("Throttle %"),
+                Catalog.GetString("Brake Cyl Press"),
+                Catalog.GetString("Dyn Brake %"),
+                Catalog.GetString("Gear Setting")
             });
             for (var i = 0; i < checkListDataLogTSContents.Items.Count; i++)
                 checkListDataLogTSContents.SetItemChecked(i, Settings.DataLogTSContents[i] == 1);
             checkDataLogStationStops.Checked = Settings.DataLogStationStops;
 
-            // Content tab
-            bindingSourceContent.DataSource = (from folder in Settings.Folders.Folders
-                                               orderby folder.Key
-                                               select new ContentFolder() { Name = folder.Key, Path = folder.Value }).ToList();
-            if (initialContentSetup)
-            {
-                tabOptions.SelectedTab = tabPageContent;
-                buttonContentBrowse.Enabled = false; // Initial state because browsing a null path leads to an exception
-                try
-                {
-                    bindingSourceContent.Add(new ContentFolder() { Name = "Train Simulator", Path = MSTSPath.Base() });
-                }
-                catch { }
-            }
-
             // System tab
             comboLanguage.Text = Settings.Language;
 
             var updateChannelNames = new Dictionary<string, string> {
-                { "stable", catalog.GetString("Stable (recommended)") },
-                { "testing", catalog.GetString("Testing") },
-                { "unstable", catalog.GetString("Unstable") },
-                { "", catalog.GetString("None") },
+                { "stable", Catalog.GetString("Stable (recommended)") },
+                { "testing", Catalog.GetString("Testing") },
+                { "unstable", Catalog.GetString("Unstable") },
+                { "", Catalog.GetString("None") },
             };
             var updateChannelDescriptions = new Dictionary<string, string> {
-                { "stable", catalog.GetString("Infrequent updates to official, hand-picked versions. Recommended for most users.") },
-                { "testing", catalog.GetString("Weekly updates which may contain noticable defects. For project supporters.") },
-                { "unstable", catalog.GetString("Daily updates which may contain serious defects. For developers only.") },
-                { "", catalog.GetString("No updates.") },
+                { "stable", Catalog.GetString("Infrequent updates to official, hand-picked versions. Recommended for most users.") },
+                { "testing", Catalog.GetString("Weekly updates which may contain noticable defects. For project supporters.") },
+                { "unstable", Catalog.GetString("Daily updates which may contain serious defects. For developers only.") },
+                { "", Catalog.GetString("No updates.") },
             };
             var spacing = labelUpdateMode.Margin.Size;
             var indent = 180;
@@ -329,10 +288,10 @@ namespace ORTS
             // see also function Message(CabControl control, ConfirmLevel level, string message)
             // in Source\Orts.Simulation\Simulation\Confirmer.cs
             comboControlConfirmations.DataSource = new[] {
-                new ComboBoxMember { Code = "None", Name = catalog.GetString("None") },
-                new ComboBoxMember { Code = "Information", Name = catalog.GetString("Information") },
-                new ComboBoxMember { Code = "Warning", Name = catalog.GetString("Warning") },
-                new ComboBoxMember { Code = "Error", Name = catalog.GetString("Error") },
+                new ComboBoxMember { Code = "None", Name = Catalog.GetString("None") },
+                new ComboBoxMember { Code = "Information", Name = Catalog.GetString("Information") },
+                new ComboBoxMember { Code = "Warning", Name = Catalog.GetString("Warning") },
+                new ComboBoxMember { Code = "Error", Name = Catalog.GetString("Error") },
             }.ToList();
             comboControlConfirmations.DisplayMember = "Name";
             comboControlConfirmations.ValueMember = "Code";
@@ -426,7 +385,7 @@ namespace ORTS
                 keyInputControl.ReadOnly = true;
                 keyInputControl.Tag = command;
                 panelKeys.Controls.Add(keyInputControl);
-                toolTip1.SetToolTip(keyInputControl, catalog.GetString("Click to change this key"));
+                toolTip1.SetToolTip(keyInputControl, Catalog.GetString("Click to change this key"));
 
                 ++i;
             }
@@ -442,7 +401,7 @@ namespace ORTS
         void buttonOK_Click(object sender, EventArgs e)
         {
             var result = Settings.Input.CheckForErrors();
-            if (result != "" && DialogResult.Yes != MessageBox.Show(catalog.GetString("Continue with conflicting key assignments?\n\n") + result, Application.ProductName, MessageBoxButtons.YesNo))
+            if (result != "" && DialogResult.Yes != MessageBox.Show(Catalog.GetString("Continue with conflicting key assignments?\n\n") + result, Application.ProductName, MessageBoxButtons.YesNo))
                 return;
 
             DialogResult = DialogResult.OK;
@@ -518,11 +477,6 @@ namespace ORTS
                 Settings.DataLogTSContents[i] = checkListDataLogTSContents.GetItemChecked(i) ? 1 : 0;
             Settings.DataLogStationStops = checkDataLogStationStops.Checked;
 
-            // Content tab
-            Settings.Folders.Folders.Clear();
-            foreach (var folder in bindingSourceContent.DataSource as List<ContentFolder>)
-                Settings.Folders.Folders.Add(folder.Name, folder.Path);
-
             // System tab
             Settings.Language = comboLanguage.SelectedValue.ToString();
             foreach (Control control in tabPageSystem.Controls)
@@ -568,7 +522,7 @@ namespace ORTS
 
         void buttonDefaultKeys_Click(object sender, EventArgs e)
         {
-            if (DialogResult.Yes == MessageBox.Show(catalog.GetString("Remove all custom key assignments?"), Application.ProductName, MessageBoxButtons.YesNo))
+            if (DialogResult.Yes == MessageBox.Show(Catalog.GetString("Remove all custom key assignments?"), Application.ProductName, MessageBoxButtons.YesNo))
             {
                 Settings.Input.Reset();
                 InitializeKeyboardSettings();
@@ -579,7 +533,7 @@ namespace ORTS
         {
             var outputPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Open Rails Keyboard.txt");
             Settings.Input.DumpToText(outputPath);
-            MessageBox.Show(catalog.GetString("A listing of all keyboard commands and keys has been placed here:\n\n") + outputPath, Application.ProductName);
+            MessageBox.Show(Catalog.GetString("A listing of all keyboard commands and keys has been placed here:\n\n") + outputPath, Application.ProductName);
         }
 
         void buttonCheckKeys_Click(object sender, EventArgs e)
@@ -588,12 +542,12 @@ namespace ORTS
             if (errors != "")
                 MessageBox.Show(errors, Application.ProductName);
             else
-                MessageBox.Show(catalog.GetString("No errors found."), Application.ProductName);
+                MessageBox.Show(Catalog.GetString("No errors found."), Application.ProductName);
         }
 
         private void numericUpDownFOV_ValueChanged(object sender, EventArgs e)
         {
-            labelFOVHelp.Text = catalog.GetStringFmt("{0:F0}° vertical FOV is the same as:\n{1:F0}° horizontal FOV on 4:3\n{2:F0}° horizontal FOV on 16:9", numericViewingFOV.Value, numericViewingFOV.Value * 4 / 3, numericViewingFOV.Value * 16 / 9);
+            labelFOVHelp.Text = Catalog.GetStringFmt("{0:F0}° vertical FOV is the same as:\n{1:F0}° horizontal FOV on 4:3\n{2:F0}° horizontal FOV on 16:9", numericViewingFOV.Value, numericViewingFOV.Value * 4 / 3, numericViewingFOV.Value * 16 / 9);
         }
 
         private void trackBarDayAmbientLight_Scroll(object sender, EventArgs e)
@@ -613,19 +567,19 @@ namespace ORTS
             int level = trackAdhesionFactor.Value - trackAdhesionFactorChange.Value;
 
             if (level > 159)
-                AdhesionLevelValue.Text = catalog.GetString("Very easy");
+                AdhesionLevelValue.Text = Catalog.GetString("Very easy");
             else if (level > 139)
-                AdhesionLevelValue.Text = catalog.GetString("Easy");
+                AdhesionLevelValue.Text = Catalog.GetString("Easy");
             else if (level > 119)
-                AdhesionLevelValue.Text = catalog.GetString("MSTS Compatible");
+                AdhesionLevelValue.Text = Catalog.GetString("MSTS Compatible");
             else if (level > 89)
-                AdhesionLevelValue.Text = catalog.GetString("Normal");
+                AdhesionLevelValue.Text = Catalog.GetString("Normal");
             else if (level > 69)
-                AdhesionLevelValue.Text = catalog.GetString("Hard");
+                AdhesionLevelValue.Text = Catalog.GetString("Hard");
             else if (level > 59)
-                AdhesionLevelValue.Text = catalog.GetString("Very Hard");
+                AdhesionLevelValue.Text = Catalog.GetString("Very Hard");
             else
-                AdhesionLevelValue.Text = catalog.GetString("Good luck!");
+                AdhesionLevelValue.Text = Catalog.GetString("Good luck!");
         }
 
         private void AdhesionPropToWeatherCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -635,7 +589,7 @@ namespace ORTS
 
         private void trackDayAmbientLight_ValueChanged(object sender, EventArgs e)
         {
-            labelDayAmbientLight.Text = catalog.GetStringFmt("{0}%", trackDayAmbientLight.Value * 5);
+            labelDayAmbientLight.Text = Catalog.GetStringFmt("{0}%", trackDayAmbientLight.Value * 5);
         }
 
         private void trackAntiAliasing_ValueChanged(object sender, EventArgs e)
@@ -671,113 +625,17 @@ namespace ORTS
         private void trackLODBias_ValueChanged(object sender, EventArgs e)
         {
             if (trackLODBias.Value == -100)
-                labelLODBias.Text = catalog.GetStringFmt("No detail (-{0}%)", -trackLODBias.Value);
+                labelLODBias.Text = Catalog.GetStringFmt("No detail (-{0}%)", -trackLODBias.Value);
             else if (trackLODBias.Value < 0)
-                labelLODBias.Text = catalog.GetStringFmt("Less detail (-{0}%)", -trackLODBias.Value);
+                labelLODBias.Text = Catalog.GetStringFmt("Less detail (-{0}%)", -trackLODBias.Value);
             else if (trackLODBias.Value == 0)
-                labelLODBias.Text = catalog.GetStringFmt("Default detail (+{0}%)", trackLODBias.Value);
+                labelLODBias.Text = Catalog.GetStringFmt("Default detail (+{0}%)", trackLODBias.Value);
             else if (trackLODBias.Value < 100)
-                labelLODBias.Text = catalog.GetStringFmt("More detail (+{0}%)", trackLODBias.Value);
+                labelLODBias.Text = Catalog.GetStringFmt("More detail (+{0}%)", trackLODBias.Value);
             else
-                labelLODBias.Text = catalog.GetStringFmt("All detail (+{0}%)", trackLODBias.Value);
+                labelLODBias.Text = Catalog.GetStringFmt("All detail (+{0}%)", trackLODBias.Value);
         }
 
-        private void dataGridViewContent_SelectionChanged(object sender, EventArgs e)
-        {
-            var current = bindingSourceContent.Current as ContentFolder;
-            textBoxContentName.Enabled = buttonContentBrowse.Enabled = current != null;
-            if (current == null)
-            {
-                textBoxContentName.Text = textBoxContentPath.Text = "";
-            }
-            else
-            {
-                textBoxContentName.Text = current.Name;
-                textBoxContentPath.Text = current.Path;
-            }
-        }
-
-        private void buttonContentAdd_Click(object sender, EventArgs e)
-        {
-            bindingSourceContent.AddNew();
-            buttonContentBrowse_Click(sender, e);
-        }
-
-        private void buttonContentDelete_Click(object sender, EventArgs e)
-        {
-            DeleteContent();
-        }
-
-        private void DeleteContent()
-        {
-            bindingSourceContent.RemoveCurrent();
-            // ResetBindings() is to work around a bug in the binding and/or data grid where by deleting the bottom item doesn't show the selection moving to the new bottom item.
-            bindingSourceContent.ResetBindings(false);
-        }
-
-        private void buttonContentBrowse_Click(object sender, EventArgs e)
-        {
-            using (var folderBrowser = new FolderBrowserDialog())
-            {
-                folderBrowser.SelectedPath = textBoxContentPath.Text;
-                folderBrowser.Description = catalog.GetString("Select an installation profile (MSTS folder) to add:");
-                folderBrowser.ShowNewFolderButton = false;
-                if (folderBrowser.ShowDialog(this) == DialogResult.OK)
-                {
-                    var current = bindingSourceContent.Current as ContentFolder;
-                    System.Diagnostics.Debug.Assert(current != null, "List should not be empty");
-                    textBoxContentPath.Text = current.Path = folderBrowser.SelectedPath;
-                    if (String.IsNullOrEmpty(current.Name))
-                        // Don't need to set current.Name here as next statement triggers event textBoxContentName_TextChanged()
-                        // which does that and also checks for duplicate names 
-                        textBoxContentName.Text = Path.GetFileName(textBoxContentPath.Text);
-                    bindingSourceContent.ResetCurrentItem();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Edits to the input field are copied back to the list of content.
-        /// They are also checked for duplicate names which would lead to an exception when saving.
-        /// if duplicate, then " copy" is silently appended to the entry in list of content.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void textBoxContentName_TextChanged(object sender, EventArgs e)
-        {
-            var current = bindingSourceContent.Current as ContentFolder;
-            if (current != null && current.Name != textBoxContentName.Text)
-            {
-                if (current.Path.ToLower().Contains(Application.StartupPath.ToLower()))
-                {
-                    // Block added because a succesful Update operation will empty the Open Rails folder and lose any content stored within it.
-                    MessageBox.Show(catalog.GetString
-                        ($"Cannot use content from any folder which lies inside the Open Rails folder {Application.StartupPath}\n\n")
-                        , "Invalid content location"
-                        , MessageBoxButtons.OK
-                        , MessageBoxIcon.Error);
-                    DeleteContent();
-                    return;
-                }
-
-                // Duplicate names lead to an exception, so append " copy" repeatedly until no longer unique
-                var suffix = "";
-                var isNameUnique = true;
-                while (isNameUnique)
-                {
-                    isNameUnique = false; // to exit after a single pass
-                    foreach (var item in bindingSourceContent)
-                        if (((ContentFolder)item).Name == textBoxContentName.Text + suffix)
-                        {
-                            suffix += " copy"; // To ensure uniqueness
-                            isNameUnique = true; // to force another pass
-                            break;
-                        }
-                }
-                current.Name = textBoxContentName.Text + suffix;
-                bindingSourceContent.ResetCurrentItem();
-            }
-        }
 
         private void checkAlerter_CheckedChanged(object sender, EventArgs e)
         {
@@ -969,146 +827,145 @@ namespace ORTS
         /// <param name="e"></param>
         private void HelpIcon_Click(object sender, EventArgs _)
         {
-            const string baseUrl = "https://open-rails.readthedocs.io/en/latest";
             var urls = new Dictionary<object, string>
             {
                 {
                     pbAlerter,
-                    baseUrl + "/options.html#alerter-in-cab"
+                    BaseDocumentationUrl + "/options.html#alerter-in-cab"
                 },
                 {
                     pbRetainers,
-                    baseUrl + "/options.html#retainer-valve-on-all-cars"
+                    BaseDocumentationUrl + "/options.html#retainer-valve-on-all-cars"
                 },
                 {
                     pbGraduatedRelease,
-                    baseUrl + "/options.html#graduated-release-air-brakes"
+                    BaseDocumentationUrl + "/options.html#graduated-release-air-brakes"
                 },
                 {
                     pbBrakePipeChargingRate,
-                    baseUrl + "/options.html#brake-pipe-charging-rate"
+                    BaseDocumentationUrl + "/options.html#brake-pipe-charging-rate"
                 },
                 {
                     pbPressureUnit,
-                    baseUrl + "/options.html#pressure-unit"
+                    BaseDocumentationUrl + "/options.html#pressure-unit"
                 },
                 {
                     pbOtherUnits,
-                    baseUrl + "/options.html#other-units"
+                    BaseDocumentationUrl + "/options.html#other-units"
                 },
                 {
                     pbEnableTcsScripts,
-                    baseUrl + "/options.html#disable-tcs-scripts"
+                    BaseDocumentationUrl + "/options.html#disable-tcs-scripts"
                 },
                 {
                     pbOverspeedMonitor,
-                    baseUrl + "/options.html#overspeed-monitor"
+                    BaseDocumentationUrl + "/options.html#overspeed-monitor"
                 },
 
                 // Audio tab
                 {
                     pbSoundVolumePercent,
-                    baseUrl + "/options.html#audio-options"
+                    BaseDocumentationUrl + "/options.html#audio-options"
                 },
                 {
                     pbSoundDetailLevel,
-                    baseUrl + "/options.html#audio-options"
+                    BaseDocumentationUrl + "/options.html#audio-options"
                 },
                 {
                     pbExternalSoundPassThruPercent,
-                    baseUrl + "/options.html#audio-options"
+                    BaseDocumentationUrl + "/options.html#audio-options"
                 },
 
                 // Video tab
                 {
                     pbViewingDistance,
-                    baseUrl + "/options.html#viewing-distance"
+                    BaseDocumentationUrl + "/options.html#viewing-distance"
                 },
                 {
                     pbDistantMountains,
-                    baseUrl + "/options.html#distant-mountains"
+                    BaseDocumentationUrl + "/options.html#distant-mountains"
                 },
                 {
                     pbLODViewingExtension,
-                    baseUrl + "/options.html#extend-object-maximum-viewing-distance-to-horizon"
+                    BaseDocumentationUrl + "/options.html#extend-object-maximum-viewing-distance-to-horizon"
                 },
                 {
                     pbDynamicShadows,
-                    baseUrl + "/options.html#dynamic-shadows"
+                    BaseDocumentationUrl + "/options.html#dynamic-shadows"
                 },
                 {
                     pbShadowAllShapes,
-                    baseUrl + "/options.html#shadow-for-all-shapes"
+                    BaseDocumentationUrl + "/options.html#shadow-for-all-shapes"
                 },
                 {
                     pbWire,
-                    baseUrl + "/options.html#overhead-wire"
+                    BaseDocumentationUrl + "/options.html#overhead-wire"
                 },
                 {
                     pbDoubleWire,
-                    baseUrl + "/options.html#double-overhead-wires"
+                    BaseDocumentationUrl + "/options.html#double-overhead-wires"
                 },
                 {
                     pbSignalLightGlow,
-                    baseUrl + "/options.html#signal-light-glow"
+                    BaseDocumentationUrl + "/options.html#signal-light-glow"
                 },
                 {
                     pbDayAmbientLight,
-                    baseUrl + "/options.html#ambient-daylight-brightness"
+                    BaseDocumentationUrl + "/options.html#ambient-daylight-brightness"
                 },
                 {
                     pbModelInstancing,
-                    baseUrl + "/options.html#model-instancing"
+                    BaseDocumentationUrl + "/options.html#model-instancing"
                 },
                 {
                     pbVerticalSync,
-                    baseUrl + "/options.html#vertical-sync"
+                    BaseDocumentationUrl + "/options.html#vertical-sync"
                 },
                 {
                     pbAntiAliasing,
-                    baseUrl + "/options.html#anti-aliasing"
+                    BaseDocumentationUrl + "/options.html#anti-aliasing"
                 },
                 {
                     pbWorldObjectDensity,
-                    baseUrl + "/options.html#world-object-density"
+                    BaseDocumentationUrl + "/options.html#world-object-density"
                 },
                 {
                     pbLODBias,
-                    baseUrl + "/options.html#level-of-detail-bias"
+                    BaseDocumentationUrl + "/options.html#level-of-detail-bias"
                 },
                 {
                     pbViewingFOV,
-                    baseUrl + "/options.html#viewing-vertical-fov"
+                    BaseDocumentationUrl + "/options.html#viewing-vertical-fov"
                 },
 
                 // System tab
                 {
                     pbLanguage,
-                    baseUrl + "/options.html#language"
+                    BaseDocumentationUrl + "/options.html#language"
                 },
                 {
                     pbUpdateMode,
-                    baseUrl + "/options.html#updater-options"
+                    BaseDocumentationUrl + "/options.html#updater-options"
                 },
                 {
                     pbWindowed,
-                    baseUrl + "/options.html#windowed"
+                    BaseDocumentationUrl + "/options.html#windowed"
                 },
                 {
                     pbWindowGlass,
-                    baseUrl + "/options.html#window-glass"
+                    BaseDocumentationUrl + "/options.html#window-glass"
                 },
                 {
                     pbControlConfirmations,
-                    baseUrl + "/options.html#control-confirmations"
+                    BaseDocumentationUrl + "/options.html#control-confirmations"
                 },
                 {
                     pbWebServerPort,
-                    baseUrl + "/options.html#web-server-port"
+                    BaseDocumentationUrl + "/options.html#web-server-port"
                 },
                 {
                     pbPerformanceTuner,
-                    baseUrl + "/options.html#performance-tuner"
+                    BaseDocumentationUrl + "/options.html#performance-tuner"
                 },
             };
             if (urls.TryGetValue(sender, out var url))
