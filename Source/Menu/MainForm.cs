@@ -533,7 +533,7 @@ namespace ORTS
         {
             SaveOptions();
 
-            using (var form = new OptionsForm(Settings, UpdateManager))
+            using (var form = new OptionsForm(Settings, UpdateManager, false))
             {
                 switch (form.ShowDialog(this))
                 {
@@ -550,7 +550,7 @@ namespace ORTS
         
         void buttonDownloadContent_Click(object sender, EventArgs e)
         {
-            using (var form = new ContentForm(Settings))
+            using (var form = new DownloadContentForm(Settings))
             {
                 form.ShowDialog(this);
             }
@@ -729,7 +729,7 @@ namespace ORTS
 
                 if (!initialized && Folders.Count == 0)
                 {
-                    using (var form = new ContentForm(Settings))
+                    using (var form = new DownloadContentForm(Settings))
                     {
                         switch (form.ShowDialog(this))
                         {
