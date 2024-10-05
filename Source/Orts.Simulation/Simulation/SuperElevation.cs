@@ -19,7 +19,6 @@ using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Signalling;
-using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,81 +41,135 @@ namespace Orts.Simulation
             float routeMaxSpeed = (float)simulator.TRK.Tr_RouteFile.SpeedLimit;
 
             var sectionList = new List<TrVectorSection>();
+            // Check all track nodes
             foreach (var node in simulator.TDB.TrackDB.TrackNodes)
             {
                 if (node == null || node.TrJunctionNode != null || node.TrEndNode == true)
                     continue;
+
+                // Run through the vector section once to get the total length
+                float nodeTotLength = 0;
+                foreach (TrVectorSection vectorSec in node.TrVectorNode.TrVectorSections)
+                {
+                    TrackSection sec = simulator.TSectionDat.TrackSections.Get(vectorSec.SectionIndex);
+                    if (sec == null)
+                        continue;
+                    SectionCurve theCurve = sec.SectionCurve;
+
+                    if (theCurve != null) // Curved section
+                        nodeTotLength += theCurve.Radius * (float)Math.Abs(MathHelper.ToRadians(theCurve.Angle));
+                    else // Straight section
+                        nodeTotLength += sec.SectionSize.Length;
+                }
+
                 bool startCurve = false;
                 int curveDir = 0;
                 float curveLen = 0.0f;
                 List<float> sectionLengths = new List<float>();
-                float nodeTotalLength = 0.0f;
+                float nodeCumLength = 0.0f;
                 sectionList.Clear();
-                SectionCurve theCurve;
-                int i = 0;
                 int count = node.TrVectorNode.TrVectorSections.Length;
 
-                foreach (var section in node.TrVectorNode.TrVectorSections) // loop all curves
+                // Check all sections in vector nodes
+                for (int i = 0; i < count; i++)
                 {
-                    i++;
                     float sectionLength = 0.0f;
-                    var sec = simulator.TSectionDat.TrackSections.Get(section.SectionIndex);
+                    TrackSection sec = simulator.TSectionDat.TrackSections.Get(node.TrVectorNode.TrVectorSections[i].SectionIndex);
                     if (sec == null)
                         continue;
-                    theCurve = sec.SectionCurve;
-                    if (sec.SectionSize != null && Math.Abs(sec.SectionSize.Width - simulator.SuperElevationGauge) > 0.2f)
-                        continue; // the main route has a gauge different than mine
+                    SectionCurve theCurve = sec.SectionCurve;
 
-                    if (theCurve != null && !theCurve.Angle.AlmostEqual(0f, 0.01f)) // Check for valid curves
+                    TrackSection nextSec = null;
+                    SectionCurve nextCurve = null;
+
+                    if (i < count - 1)
                     {
-                        sectionLength = theCurve.Radius * (float)Math.Abs(theCurve.Angle * (Math.PI / 180.0f));
-                        if (i == 1 || i == count)
-                        {
-                            // First and last curves in a series are connected to junctions or buffers
-                            // If these sections are short, undesirable superelevation can occur, so exclude these
-                            if (sectionLength < 15f)
-                                continue; 
-                        } 
-                        if (startCurve == false) // we are beginning a curve
-                        {
-                            startCurve = true;
-                            curveDir = Math.Sign(sec.SectionCurve.Angle);
-                            curveLen = 0f;
-                        }
-                        else if (curveDir != Math.Sign(sec.SectionCurve.Angle)) // we are in curve, but bending different dir
-                        {
-                            MarkSections(simulator, sectionList, curveLen, sectionLengths, curveDir); // treat the sections encountered so far, then restart with other dir
-                            curveDir = Math.Sign(sec.SectionCurve.Angle);
-                            sectionList.Clear();
-                            sectionLengths.Clear();
-                            curveLen = 0f; // startCurve remains true as we are still in a curve
-                        }
-                        curveLen += sectionLength;
-                        sectionLengths.Add(sectionLength);
-                        sectionList.Add(section);
+                        nextSec = simulator.TSectionDat.TrackSections.Get(node.TrVectorNode.TrVectorSections[i + 1].SectionIndex);
+                        if (nextSec != null)
+                            nextCurve = nextSec.SectionCurve;
                     }
-                    else // meet a straight line
+
+                    // This section is a curve
+                    if (theCurve != null)
                     {
-                        if (startCurve == true) // we are in a curve, need to finish
+                        sectionLength = theCurve.Radius * (float)Math.Abs(MathHelper.ToRadians(theCurve.Angle));
+
+                        // First and last sections in a node are connected to junctions or buffers
+                        // Don't add superelevation too close to the beginning or end
+                        if (!(nodeCumLength + sectionLength < 20f || nodeTotLength - nodeCumLength < 20f))
                         {
-                            MarkSections(simulator, sectionList, curveLen, sectionLengths, curveDir);
-                            curveLen = 0f;
-                            sectionList.Clear();
-                            sectionLengths.Clear();
+                            // Weren't in a curve but now are
+                            if (startCurve == false)
+                            {
+                                startCurve = true;
+                                curveDir = Math.Sign(theCurve.Angle);
+                                curveLen = 0f;
+                            }
+                            else if (curveDir != Math.Sign(theCurve.Angle)) // we are in curve, but bending different dir
+                            {
+                                MarkSections(simulator, sectionList, curveLen, sectionLengths, curveDir); // treat the sections encountered so far, then restart with other dir
+                                curveDir = Math.Sign(theCurve.Angle);
+                                sectionList.Clear();
+                                sectionLengths.Clear();
+                                curveLen = 0f; // startCurve remains true as we are still in a curve
+                            }
+                            curveLen += sectionLength;
+                            sectionLengths.Add(sectionLength);
+                            sectionList.Add(node.TrVectorNode.TrVectorSections[i]);
                         }
+                    }
+                    else // This section is straight
+                    {
+                        // NOTE: We may add superelevation to straight sections in order to smooth out transition to/from curve superelevation
                         sectionLength = sec.SectionSize.Length;
-                        startCurve = false;
-                    }
-                    nodeTotalLength += sectionLength;
 
-                    float nodeOffset = nodeTotalLength - sectionLength / 2.0f;
+                        // First and last sections in a node are connected to junctions or buffers
+                        // Don't add superelevation too close to the beginning or end
+                        if (!(nodeCumLength + sectionLength < 20f || nodeTotLength - nodeCumLength < 20f))
+                        {
+                            // Previous section was in a curve, may need to end curve
+                            if (startCurve == true)
+                            {
+                                // Include this straight section in the curve so long as the next section
+                                // doesn't curve in the opposite direction (or is straight)
+                                if (nextSec != null && !(nextCurve != null && curveDir != Math.Sign(nextCurve.Angle)))
+                                {
+                                    curveLen += sectionLength;
+                                    sectionLengths.Add(sectionLength);
+                                    sectionList.Add(node.TrVectorNode.TrVectorSections[i]);
+                                }
+                                // End curve if the next section isn't a continuation of this curve
+                                if (!(nextCurve != null && curveDir == Math.Sign(nextCurve.Angle)))
+                                {
+                                    MarkSections(simulator, sectionList, curveLen, sectionLengths, curveDir);
+                                    curveLen = 0f;
+                                    sectionList.Clear();
+                                    sectionLengths.Clear();
+                                    startCurve = false;
+                                }
+                            }
+                            else if (nextSec != null && nextCurve != null) // Not in a curve, but next section is a curve, start superelevation on this section
+                            {
+                                startCurve = true;
+                                curveDir = Math.Sign(nextCurve.Angle);
+                                curveLen = 0;
+
+                                curveLen += sectionLength;
+                                sectionLengths.Add(sectionLength);
+                                sectionList.Add(node.TrVectorNode.TrVectorSections[i]);
+                            }
+                        }
+                    }
+                    nodeCumLength += sectionLength;
+
+                    float nodeOffset = nodeCumLength - sectionLength / 2.0f;
 
                     // Get speed limits for this section of track if they aren't known
-                    if (section.PassSpeedMpS < 0.0f || section.FreightSpeedMpS < 0.0f)
+                    if (node.TrVectorNode.TrVectorSections[i].PassSpeedMpS < 0.0f || node.TrVectorNode.TrVectorSections[i].FreightSpeedMpS < 0.0f)
                     {
                         float[] speeds = DetermineTrackSpeeds(signalRef, node, nodeOffset);
-                        section.FreightSpeedMpS = Math.Min(speeds[0], routeMaxSpeed);
-                        section.PassSpeedMpS = Math.Min(speeds[1], routeMaxSpeed);
+                        node.TrVectorNode.TrVectorSections[i].FreightSpeedMpS = Math.Min(speeds[0], routeMaxSpeed);
+                        node.TrVectorNode.TrVectorSections[i].PassSpeedMpS = Math.Min(speeds[1], routeMaxSpeed);
                     }
                 }
                 if (startCurve == true) // we are in a curve after looking at every section
@@ -140,9 +193,8 @@ namespace Orts.Simulation
             float effectiveRunoffSlope = 0;
             float maxElev = 0;
 
-            for (int s = 0; s < simulator.TRK.Tr_RouteFile.SuperElevation.Count; s++)
+            foreach (SuperElevationStandard checkStandard in simulator.TRK.Tr_RouteFile.SuperElevation)
             {
-                SuperElevationStandard checkStandard = simulator.TRK.Tr_RouteFile.SuperElevation[s];
                 // If curve speed is within the appropriate speed range for the superelevation standard, use it
                 // Otherwise, check the next one
                 if (maxCurveSpeedMpS < checkStandard.MaxSpeedMpS + 0.05f && maxCurveSpeedMpS > checkStandard.MinSpeedMpS - 0.05f)
@@ -154,20 +206,19 @@ namespace Orts.Simulation
 
                     // Ensure superelevation is limited to the track gauge no matter what to avoid NaN errors
                     maxElev = MathHelper.Clamp(standard.MaxCantM, 0.0f, simulator.SuperElevationGauge);
+                    // Futher limit superelevation to something that can be achieved by the curve
+                    // This limit gives enough distance for superelevation to smoothly build up
+                    maxElev = Math.Min(totLen / (2.0f * 1.3f) * effectiveRunoffSlope, maxElev);
+                    // NOTE: If maxElev is less than the minimum cant, that indicates the curve is too short for superelevation to fit
 
                     break;
                 }
             }
 
-            if (standard == null)
+            if (standard == null || maxElev < standard.MinCantM)
             {
                 foreach (TrVectorSection s in SectionList)
-                    s.NomElevM = 0; // No superelevation needed
-            }
-            else if ((standard.MinCantM / effectiveRunoffSlope) * 2.0f > totLen * 0.75f)
-            {
-                foreach (TrVectorSection s in SectionList)
-                    s.NomElevM = 0; // Curve is so short that no meaningful superelevation can be applied
+                    s.NomElevM = 0; // No superelevation needed, or curve is so short that no meaningful superelevation can be applied
             }
             else
             {
@@ -182,36 +233,32 @@ namespace Orts.Simulation
 
                         if (sectionData == null || sectionData.SectionCurve == null)
                         {
+                            // Invalid data, or this is a segment of straight track
                             s.NomElevM = 0.0f;
                             continue;
                         }
                         else
                         {
-                            float superElevation;
+                            float superElevation = 0.0f;
 
                             // Support for old system with superelevation set directly in Route (TRK) file
                             if (standard.UseLegacyCalculation && simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM != null)
                             {
                                 superElevation = simulator.TRK.Tr_RouteFile.SuperElevationHgtpRadiusM[sectionData.SectionCurve.Radius];
                             }
-                            else // Newer standard for calculating superelevation
+                            else if (standard != null) // Newer standard for calculating superelevation
                             {
-                                if (standard != null)
-                                {
-                                    float paxSpeed = s.PassSpeedMpS;
-                                    float freightSpeed = s.FreightSpeedMpS;
+                                float paxSpeed = s.PassSpeedMpS;
+                                float freightSpeed = s.FreightSpeedMpS;
 
-                                    // Approximate ideal level of superelevation determined using E = (G*V^2) / (g*R), then subtract off cant deficiency
-                                    // For different speeds on the same curve, we can factor out speed and get a constant c = G / (g*R)
-                                    float elevationFactor = simulator.SuperElevationGauge / (9.81f * sectionData.SectionCurve.Radius);
-                                    // Calculate required superelevation for passenger and freight separately
-                                    float paxElevation = elevationFactor * (paxSpeed * paxSpeed) - standard.MaxPaxUnderbalanceM;
-                                    float freightElevation = elevationFactor * (freightSpeed * freightSpeed) - standard.MaxFreightUnderbalanceM;
+                                // Approximate ideal level of superelevation determined using E = (G*V^2) / (g*R), then subtract off cant deficiency
+                                // For different speeds on the same curve, we can factor out speed and get a constant c = G / (g*R)
+                                float elevationFactor = simulator.SuperElevationGauge / (9.81f * sectionData.SectionCurve.Radius);
+                                // Calculate required superelevation for passenger and freight separately
+                                float paxElevation = elevationFactor * (paxSpeed * paxSpeed) - standard.MaxPaxUnderbalanceM;
+                                float freightElevation = elevationFactor * (freightSpeed * freightSpeed) - standard.MaxFreightUnderbalanceM;
 
-                                    superElevation = Math.Max(paxElevation, freightElevation); // Choose the highest required superelevation
-                                }
-                                else // No superelevation needed (shouldn't reach this point, this is a failsafe)
-                                    superElevation = 0.0f;
+                                superElevation = Math.Max(paxElevation, freightElevation); // Choose the highest required superelevation
                             }
                             superElevation = (float)Math.Round(superElevation / standard.PrecisionM, MidpointRounding.AwayFromZero)
                                 * standard.PrecisionM; // Round superelevation amount to next higher increment of precision
@@ -224,8 +271,8 @@ namespace Orts.Simulation
                 }
             }
 
-            Curves.Add(new List<TrVectorSection>(SectionList)); // add the curve
-            MapWFiles2Sections(SectionList); // map these sections to tiles, so we can find them quicker later
+            Curves.Add(new List<TrVectorSection>(SectionList)); // Add this curve to the global list of superelevation curves
+            MapWFiles2Sections(SectionList); // Add all superelevation sections to the tile dictionary for checking later
 
             // Calculate the amount of superelevation as a function of curve length for all curve segments
             int count = 0;
@@ -249,8 +296,16 @@ namespace Orts.Simulation
                 if (count >= SectionList.Count - 1)
                     endElevs[count] = 0;
                 else
+                {
+                    // Special case: Next section is a short straight, but isn't the end of the curve
+                    // In this case, we force the straight section to maintain nonzero superelevation
+                    if (count < SectionList.Count - 2 && SectionList[count + 1].NomElevM == 0.0f
+                        && lengths[count + 1] < (SectionList[count].NomElevM / effectiveRunoffSlope) * 2.0f)
+                        SectionList[count + 1].NomElevM = (SectionList[count].NomElevM + SectionList[count + 2].NomElevM) / 2.0f;
+
                     endElevs[count] = Math.Min((SectionList[count].NomElevM + SectionList[count + 1].NomElevM) / 2.0f,
                         maxEnd);
+                }
 
                 // Initialize superelevation profile with linear change in superelevation as fallback
                 float[] elevations = new float[] { startElevs[count], endElevs[count] };
@@ -277,6 +332,13 @@ namespace Orts.Simulation
 
                             midLength = lengths[count] - ((maxEndElev - endElevs[count]) / effectiveRunoffSlope) / 2.0f;
                             midElev = startElevs[count] + effectiveRunoffSlope * midLength;
+                        }
+                        else if (SectionList[count].NomElevM == 0.0f)
+                        {
+                            // Special case: Downward cusp required on a section with zero design superelevation (straight track)
+                            // In this case, avoid the cusp entirely
+                            midLength = lengths[count] / 2.0f;
+                            midElev = (startElevs[count] + endElevs[count]) / 2.0f;
                         }
                         else
                         {
@@ -333,18 +395,28 @@ namespace Orts.Simulation
             }
         }
 
-        //find all sections in a tile, save the info to a look-up table
+        // Add sections to a dictionary separated by the tiles in which those sections are contained
         void MapWFiles2Sections(List<TrVectorSection> sections)
         {
             foreach (var section in sections)
             {
-                var key = (int)(Math.Abs(section.WFNameX) + Math.Abs(section.WFNameZ));
-                if (Sections.ContainsKey(key)) Sections[key].Add(section);
+                // Need to consider both the WFName tile and the 'actual' tile
+                // These may differ if a section crosses a tile boundary, in which case it should be added to both tiles
+                // NOTE: The WFName seems to indicate where the start of the section is, while the Tile indicates the end(?)
+                int key = (int)(Math.Abs(section.TileX) + Math.Abs(section.TileZ));
+                int wfKey = (int)(Math.Abs(section.WFNameX) + Math.Abs(section.WFNameZ));
+
+                if (Sections.ContainsKey(key))
+                    Sections[key].Add(section);
                 else
+                    Sections.Add(key, new List<TrVectorSection> { section });
+                // Section crosses a tile boundary, add it to the other tile as well
+                if (wfKey != key)
                 {
-                    List<TrVectorSection> tmpSections = new List<TrVectorSection>();
-                    tmpSections.Add(section);
-                    Sections.Add(key, tmpSections);
+                    if (Sections.ContainsKey(wfKey))
+                        Sections[wfKey].Add(section);
+                    else
+                        Sections.Add(wfKey, new List<TrVectorSection> { section });
                 }
             }
         }

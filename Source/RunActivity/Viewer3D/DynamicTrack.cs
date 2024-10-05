@@ -21,7 +21,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
-using Orts.Simulation;
 using Orts.Viewer3D.Common;
 using ORTS.Common;
 using System;
@@ -36,133 +35,35 @@ using System.Text.RegularExpressions;
 
 namespace Orts.Viewer3D
 {
-    public class DynamicTrack
-    {
-        /// <summary>
-        /// Decompose an MSTS multi-subsection dynamic track section into multiple single-subsection sections.
-        /// </summary>
-        /// <param name="viewer">Viewer reference.</param>
-        /// <param name="trackList">DynamicTrackViewer list.</param>
-        /// <param name="trackObj">Dynamic track section to decompose.</param>
-        /// <param name="worldMatrix">Position matrix.</param>
-        public static void Decompose(Viewer viewer, List<DynamicTrackViewer> trackList, DyntrackObj trackObj, WorldPosition worldMatrix)
-        {
-            // DYNAMIC TRACK
-            // =============
-            // Objectives:
-            // 1-Decompose multi-subsection DT into individual sections.  
-            // 2-Create updated transformation objects (instances of WorldPosition) to reflect 
-            //   root of next subsection.
-            // 3-Distribute elevation change for total section through subsections. (ABANDONED)
-            // 4-For each meaningful subsection of dtrack, build a separate DynamicTrackPrimitive.
-            //
-            // Method: Iterate through each subsection, updating WorldPosition for the root of
-            // each subsection.  The rotation component changes only in heading.  The translation 
-            // component steps along the path to reflect the root of each subsection.
-
-            // The following vectors represent local positioning relative to root of original (5-part) section:
-            Vector3 localV = Vector3.Zero; // Local position (in x-z plane)
-            Vector3 localProjectedV; // Local next position (in x-z plane)
-            Vector3 displacement;  // Local displacement (from y=0 plane)
-            Vector3 heading = Vector3.Forward; // Local heading (unit vector)
-
-            WorldPosition nextRoot = new WorldPosition(worldMatrix); // Will become initial root
-            Vector3 sectionOrigin = worldMatrix.XNAMatrix.Translation; // Save root position
-            worldMatrix.XNAMatrix.Translation = Vector3.Zero; // worldMatrix now rotation-only
-
-            // Iterate through all subsections
-            for (int iTkSection = 0; iTkSection < trackObj.trackSections.Count; iTkSection++)
-            {
-                float length = trackObj.trackSections[iTkSection].param1; // meters if straight; radians if curved
-                if (length == 0.0 || trackObj.trackSections[iTkSection].UiD == UInt32.MaxValue) continue; // Consider zero-length subsections vacuous
-
-                // Create new DT object copy; has only one meaningful subsection
-                DyntrackObj subsection = new DyntrackObj(trackObj, iTkSection);
-
-                //uint uid = subsection.trackSections[0].UiD; // for testing
-
-                // Create a new WorldPosition for this subsection, initialized to nextRoot,
-                // which is the WorldPosition for the end of the last subsection.
-                // In other words, beginning of present subsection is end of previous subsection.
-                WorldPosition root = new WorldPosition(nextRoot);
-
-                // Now we need to compute the position of the end (nextRoot) of this subsection,
-                // which will become root for the next subsection.
-
-                // Clear nextRoot's translation vector so that nextRoot matrix contains rotation only
-                nextRoot.XNAMatrix.Translation = Vector3.Zero;
-
-                // Straight or curved subsection?
-                if (subsection.trackSections[0].isCurved == 0) // Straight section
-                {   // Heading stays the same; translation changes in the direction oriented
-                    // Rotate Vector3.Forward to orient the displacement vector
-                    localProjectedV = localV + length * heading;
-                    displacement = Traveller.MSTSInterpolateAlongStraight(localV, heading, length,
-                                                            worldMatrix.XNAMatrix, out localProjectedV);
-                }
-                else // Curved section
-                {   // Both heading and translation change 
-                    // nextRoot is found by moving from Point-of-Curve (PC) to
-                    // center (O)to Point-of-Tangent (PT).
-                    float radius = subsection.trackSections[0].param2*Math.Sign(-subsection.trackSections[0].param1); // meters
-                    Vector3 left = radius * Vector3.Cross(Vector3.Up, heading); // Vector from PC to O
-                    Matrix rot = Matrix.CreateRotationY(-length); // Heading change (rotation about O)
-                    // Shared method returns displacement from present world position and, by reference,
-                    // local position in x-z plane of end of this section
-                    displacement = Traveller.MSTSInterpolateAlongCurve(localV, left, rot,
-                                            worldMatrix.XNAMatrix, out localProjectedV);
-
-                    heading = Vector3.Transform(heading, rot); // Heading change
-                    nextRoot.XNAMatrix = rot * nextRoot.XNAMatrix; // Store heading change
-                }
-
-                // Update nextRoot with new translation component
-                nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
-
-                // Create a new DynamicTrackViewer for the subsection
-                trackList.Add(new DynamicTrackViewer(viewer, subsection, root, nextRoot));
-                localV = localProjectedV; // Next subsection
-            }
-        }
-    }
-
     public class DynamicTrackViewer
     {
-        Viewer Viewer;
-        WorldPosition worldPosition;
+        public Viewer Viewer;
+        public WorldPosition WorldPosition;
         public DynamicTrackPrimitive Primitive;
 
-        public DynamicTrackViewer(Viewer viewer, DyntrackObj dtrack, WorldPosition position, WorldPosition endPosition, int trpIndex = 0)
+        public DynamicTrackViewer(Viewer viewer)
         {
             Viewer = viewer;
-            worldPosition = position;
-
-            // Instantiate classes
-            Primitive = new DynamicTrackPrimitive(Viewer, dtrack, worldPosition, endPosition, trpIndex);
         }
 
-        public DynamicTrackViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition)
+        public DynamicTrackViewer(Viewer viewer, WorldPosition position)
         {
             Viewer = viewer;
 
-            worldPosition = position;
+            WorldPosition = new WorldPosition(position);
 
-            // Section below will remove the pitch and roll rotation from the dynamic track object, allowing it to
-            // figure out its own pitch and roll. Temporarily disabled while I figure out specifics of such an implementation
-            //if (worldPosition.XNAMatrix.Decompose(out Vector3 scale, out Quaternion rotation, out Vector3 translation))
-            //{
-            //    // Remove X and Z components of rotation to isolate for yaw angle (compass heading) only
-            //    rotation.X = 0.0f;
-            //    rotation.Z = 0.0f;
-            //    // Renormalize the quaternion after deleting X and Y to get the Y component of rotation
-            //    rotation.Normalize();
+            Quaternion rotation = Quaternion.CreateFromRotationMatrix(WorldPosition.XNAMatrix);
 
-            //    Matrix adjusted = Matrix.CreateFromQuaternion(rotation);
+            // Remove X and Z components of rotation to isolate for yaw angle (compass heading) only
+            rotation.X = 0.0f;
+            rotation.Z = 0.0f;
+            // Renormalize the quaternion after deleting X and Z to get the Y component of rotation
+            rotation.Normalize();
 
-            //    adjusted.Translation = translation;
+            Matrix adjusted = Matrix.CreateFromQuaternion(rotation);
+            adjusted.Translation = WorldPosition.XNAMatrix.Translation;
 
-            //    worldPosition.XNAMatrix = adjusted;
-            //}
+            WorldPosition.XNAMatrix = adjusted;
         }
 
         /// <summary>
@@ -174,13 +75,13 @@ namespace Orts.Viewer3D
             var lodBias = ((float)Viewer.Settings.LODBias / 100 + 1);
 
             // Offset relative to the camera-tile origin
-            int dTileX = worldPosition.TileX - Viewer.Camera.TileX;
-            int dTileZ = worldPosition.TileZ - Viewer.Camera.TileZ;
+            int dTileX = WorldPosition.TileX - Viewer.Camera.TileX;
+            int dTileZ = WorldPosition.TileZ - Viewer.Camera.TileZ;
             Vector3 tileOffsetWrtCamera = new Vector3(dTileX * 2048, 0, -dTileZ * 2048);
 
             // Find midpoint between track section end and track section root.
             // (Section center for straight; section chord center for arc.)
-            Vector3 xnaLODCenter = 0.5f * (Primitive.XNAEnd + worldPosition.XNAMatrix.Translation +
+            Vector3 xnaLODCenter = 0.5f * (Primitive.XNAEnd + WorldPosition.XNAMatrix.Translation +
                                             2 * tileOffsetWrtCamera);
             Primitive.MSTSLODCenter = new Vector3(xnaLODCenter.X, xnaLODCenter.Y, -xnaLODCenter.Z);
 
@@ -201,7 +102,7 @@ namespace Orts.Viewer3D
 
             // Initialize xnaXfmWrtCamTile to object-tile to camera-tile translation:
             Matrix xnaXfmWrtCamTile = Matrix.CreateTranslation(tileOffsetWrtCamera);
-            xnaXfmWrtCamTile = worldPosition.XNAMatrix * xnaXfmWrtCamTile; // Catenate to world transformation
+            xnaXfmWrtCamTile = WorldPosition.XNAMatrix * xnaXfmWrtCamTile; // Catenate to world transformation
             // (Transformation is now with respect to camera-tile origin)
 
             int lastIndex;
@@ -237,10 +138,10 @@ namespace Orts.Viewer3D
 
         /// <summary>
         /// Returns the index of the track profile that best suits the given Viewer and TrVectorSection object,
-        /// with an optional shape file name to use as reference.
+        /// with an optional shape file path to use as reference.
         /// The result is cached in the vector section object for future use
         /// </summary>
-        /// <returns>Index of viewer.TRPs</returns>
+        /// <returns>Integer index of a track profile in viewer.TRPs</returns>
         public static int GetBestTrackProfile(Viewer viewer, TrVectorSection trSection, string shapePath = "")
         {
             int trpIndex;
@@ -252,7 +153,7 @@ namespace Orts.Viewer3D
             else if (shapePath != "") // Haven't checked this track shape yet
             {
                 // Need to load the shape file if not already loaded
-                var trackShape = viewer.ShapeManager.Get(shapePath);
+                SharedShape trackShape = viewer.ShapeManager.Get(shapePath);
                 trpIndex = GetBestTrackProfile(viewer, trackShape);
                 viewer.TrackProfileIndicies.Add(shapePath, trpIndex);
             }
@@ -265,6 +166,30 @@ namespace Orts.Viewer3D
         // Note: Dynamic track objects will ALWAYS use TRPIndex = 0
         // This is because dynamic tracks don't have shapes, and as such lack the information needed
         // to select a specific track profile.
+
+        /// <summary>
+        /// Returns the index of the track profile that best suits a track shape
+        /// given a reference to the viewer and the shape file path.
+        /// </summary>
+        /// <returns>Integer index of a track profile in viewer.TRPs</returns>
+        public static int GetBestTrackProfile(Viewer viewer, string shapePath)
+        {
+            int trpIndex;
+
+            if (viewer.TrackProfileIndicies.ContainsKey(shapePath))
+                viewer.TrackProfileIndicies.TryGetValue(shapePath, out trpIndex);
+            else if (shapePath != "")
+            {
+                // Need to load the shape file if not already loaded
+                SharedShape trackShape = viewer.ShapeManager.Get(shapePath);
+                trpIndex = GetBestTrackProfile(viewer, trackShape);
+                viewer.TrackProfileIndicies.Add(shapePath, trpIndex);
+            }
+            else // Not enough info-use default track profile
+                trpIndex = 0;
+
+            return trpIndex;
+        }
 
         /// <summary>
         /// Determines the index of the track profile that would be the most suitable replacement
@@ -1312,14 +1237,16 @@ namespace Orts.Viewer3D
         // Geometry member variables:
         public int NumSections;            // Number of cross sections needed to make up a track section.
         public float SegmentLength;        // meters if straight; radians if circular arc
+        public int Offset;                 // Counter to indicate which cross section is currently in processing
         public Vector3 DDY;                // Elevation (y) change from one cross section to next
         public Vector3 OldV;               // Deviation from centerline for previous cross section
         public Vector3 OldRadius;          // Radius vector to centerline for previous cross section
+        public Matrix Orientation;         // Rotation matrix giving the orientation of the section in local coordinates
 
         //TODO: Candidates for re-packaging:
-        public Matrix sectionRotation;     // Rotates previous profile into next profile position on curve.
-        public Vector3 center;             // Center coordinates of curve radius
-        public Vector3 radius;             // Radius vector to cross section on curve centerline
+        public Matrix SectionRotation;     // Rotates previous profile into next profile position on curve.
+        public Vector3 Center;             // Center coordinates of curve radius
+        public Vector3 Radius;             // Radius vector to cross section on curve centerline
 
         // This structure holds the basic geometric parameters of a DT section.
         public struct DtrackData
@@ -1331,8 +1258,6 @@ namespace Orts.Viewer3D
         }
         public DtrackData DTrackData;      // Was: DtrackData[] dtrackData;
 
-        public uint UiD; // Used for debugging only
-
         public TrProfile TrProfile;
 
         /// <summary>
@@ -1343,37 +1268,11 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
-        /// Constructor.
+        /// Generates the ShapePrimitives for this dynamic track section, must
+        /// be called in order for any graphics to be rendered.
         /// </summary>
-        public DynamicTrackPrimitive(Viewer viewer, DyntrackObj track, WorldPosition worldPosition,
-                                WorldPosition endPosition, int trpIndex = 0)
+        public void PreparePrimitives(Viewer viewer)
         {
-            // DynamicTrackPrimitive is responsible for creating a mesh for a section with a single subsection.
-            // It also must update worldPosition to reflect the end of this subsection, subsequently to
-            // serve as the beginning of the next subsection.
-
-            UiD = track.trackSections[0].UiD; // Used for debugging only
-
-            // The track cross section (profile) vertex coordinates are hard coded.
-            // The coordinates listed here are those of default MSTS "A1t" track.
-            // TODO: Read this stuff from a file. Provide the ability to use alternative profiles.
-
-            // In this implementation dtrack has only 1 DT subsection.
-            if (track.trackSections.Count != 1)
-            {
-                throw new ApplicationException(
-                    "DynamicTrackPrimitive Constructor detected a multiple-subsection dynamic track section. " +
-                    "(SectionIdx = " + track.SectionIdx + ")");
-            }
-            // Populate member DTrackData (a DtrackData struct)
-            DTrackData.IsCurved = (int)track.trackSections[0].isCurved;
-            DTrackData.param1 = track.trackSections[0].param1;
-            DTrackData.param2 = track.trackSections[0].param2;
-            DTrackData.deltaY = track.trackSections[0].deltaY;
-
-            XNAEnd = endPosition.XNAMatrix.Translation;
-
-            TrProfile = viewer.TRPs[trpIndex].TrackProfile;
             // Count all of the LODItems in all the LODs
             int count = 0;
             for (int i = 0; i < TrProfile.LODs.Count; i++)
@@ -1393,14 +1292,11 @@ namespace Orts.Viewer3D
                 for (int iLODItem = 0; iLODItem < lod.LODItems.Count; iLODItem++)
                 {
                     // Build vertexList and triangleListIndices
-                    ShapePrimitives[primIndex] = BuildPrimitive(viewer, worldPosition, iLOD, iLODItem);
+                    ShapePrimitives[primIndex] = BuildPrimitive(viewer, iLOD, iLODItem);
                     primIndex++;
                 }
                 lod.PrimIndexStop = primIndex; // 1 above last index for this LOD
             }
-
-            if (DTrackData.IsCurved == 0) ObjectRadius = 0.5f * DTrackData.param1; // half-length
-            else ObjectRadius = DTrackData.param2 * (float)Math.Sin(0.5 * Math.Abs(DTrackData.param1)); // half chord length
         }
 
         public override void Mark()
@@ -1416,21 +1312,25 @@ namespace Orts.Viewer3D
         /// (Polylines (Vertices)).  All vertices and indices are built contiguously for an LOD.
         /// </summary>
         /// <param name="viewer">Viewer.</param>
-        /// <param name="worldPosition">WorldPosition.</param>
-        /// <param name="lodIndex">Index of LOD mesh to be generated from profile.</param>
-        /// <param name="lodItemIndex">Index of LOD mesh following LODs[iLOD]</param>
-        public ShapePrimitive BuildPrimitive(Viewer viewer, WorldPosition worldPosition, int lodIndex, int lodItemIndex)
+        /// <param name="iLOD">Index of LOD mesh to be generated from profile.</param>
+        /// <param name="iLODItem">Index of LOD mesh to be generated from profile.</param>
+        public virtual ShapePrimitive BuildPrimitive(Viewer viewer, int iLOD, int iLODItem)
         {
             // Call for track section to initialize itself
-            if (DTrackData.IsCurved == 0) LinearGen();
-            else CircArcGen();
+            if (DTrackData.IsCurved == 0)
+                LinearGen();
+            else
+                CircArcGen();
 
             // Count vertices and indices
-            LOD lod = (LOD)TrProfile.LODs[lodIndex];
-            LODItem lodItem = (LODItem)lod.LODItems[lodItemIndex];
+            LOD lod = (LOD)TrProfile.LODs[iLOD];
+            LODItem lodItem = (LODItem)lod.LODItems[iLODItem];
             NumVertices = (int)(lodItem.NumVertices * (NumSections + 1));
             NumIndices = (short)(lodItem.NumSegments * NumSections * 6);
             // (Cells x 2 triangles/cell x 3 indices/triangle)
+
+            // stride is the number of vertices per section, used to connect equivalent verticies between segments
+            uint stride = lodItem.NumVertices;
 
             // Allocate memory for vertices and indices
             VertexList = new VertexPositionNormalTexture[NumVertices]; // numVertices is now aggregate
@@ -1439,33 +1339,37 @@ namespace Orts.Viewer3D
             // Build the mesh for lod
             VertexIndex = 0;
             IndexIndex = 0;
-            // Initial load of baseline cross section polylines for this LOD only:
-            foreach (Polyline pl in lodItem.Polylines)
-            {
-                foreach (Vertex v in pl.Vertices)
-                {
-                    VertexList[VertexIndex].Position = v.Position;
-                    VertexList[VertexIndex].Normal = v.Normal;
-                    VertexList[VertexIndex].TextureCoordinate = v.TexCoord;
-                    VertexIndex++;
-                }
-            }
-            // Initial load of base cross section complete
+            Offset = 0;
 
-            // Now generate and load subsequent cross sections
-            OldRadius = -center;
-            uint stride = VertexIndex;
-            for (uint i = 0; i < NumSections; i++)
+            for (uint i = 0; i <= NumSections; i++)
             {
+                Matrix displacement;
+                float totLength;
+
+                if (DTrackData.IsCurved == 0)
+                    displacement = LinearGen(out totLength);
+                else
+                    displacement = CircArcGen(out totLength);
+
                 foreach (Polyline pl in lodItem.Polylines)
                 {
                     uint plv = 0; // Polyline vertex index
                     foreach (Vertex v in pl.Vertices)
                     {
-                        if (DTrackData.IsCurved == 0) LinearGen(stride, pl); // Generation call
-                        else CircArcGen(stride, pl);
+                        // Generate vertex positions
+                        Vector3 p = v.Position;
 
-                        if (plv > 0)
+                        // In some extreme cases, track may have been rotated so much it's upside down
+                        // Rotate 180 degrees to restore right side up
+                        if (displacement.Up.Y < 0.0f)
+                            p = Vector3.Transform(p, Matrix.CreateRotationZ((float)Math.PI));
+
+                        // Move vertex to proper location in 3D space
+                        VertexList[VertexIndex].Position = Vector3.Transform(p, displacement);
+                        VertexList[VertexIndex].TextureCoordinate = v.TexCoord + pl.DeltaTexCoord * totLength;
+                        VertexList[VertexIndex].Normal = v.Normal;
+
+                        if (plv > 0 && VertexIndex > stride)
                         {
                             // Sense for triangles is clockwise
                             // First triangle:
@@ -1481,7 +1385,7 @@ namespace Orts.Viewer3D
                         plv++;
                     }
                 }
-                OldRadius = radius; // Get ready for next segment
+                Offset++;
             }
 
             // Create and populate a new ShapePrimitive
@@ -1493,25 +1397,25 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Initializes member variables for straight track sections.
         /// </summary>
-        void LinearGen()
+        public virtual void LinearGen()
         {
             // Define the number of track cross sections in addition to the base.
+            // Straight sections can be generated as a single section, no benefits to more sections
             NumSections = 1;
-            //numSections = 10; //TESTING
-            // TODO: Generalize count to profile file specification
 
             SegmentLength = DTrackData.param1 / NumSections; // Length of each mesh segment (meters)
-            DDY = new Vector3(0, DTrackData.deltaY / NumSections, 0); // Incremental elevation change
         }
 
         /// <summary>
         /// Initializes member variables for circular arc track sections.
         /// </summary>
-        void CircArcGen()
+        public virtual void CircArcGen()
         {
             // Define the number of track cross sections in addition to the base.
             NumSections = (int)(Math.Abs(MathHelper.ToDegrees(DTrackData.param1)) / TrProfile.ChordSpan);
-            if (NumSections == 0) NumSections++; // Very small radius track - zero avoidance
+            // Very small radius track, use minimum of two sections
+            if (NumSections == 0)
+                NumSections = 2;
 
             // Use pitch control methods
             switch (TrProfile.PitchControl)
@@ -1539,59 +1443,72 @@ namespace Orts.Viewer3D
                     }
                     break;
             }
+            // Ensure an even number of sections
+            if (NumSections % 2 == 1)
+                NumSections++;
 
-            SegmentLength = DTrackData.param1 / NumSections; // Length of each mesh segment (radians)
-            DDY = new Vector3(0, DTrackData.deltaY / NumSections, 0); // Incremental elevation change
+            // Length of each mesh segment (radians)
+            SegmentLength = DTrackData.param1 / NumSections;
 
-            // The approach here is to replicate the previous cross section, 
-            // rotated into its position on the curve and vertically displaced if on grade.
-            // The local center for the curve lies to the left or right of the local origin and ON THE BASE PLANE
-            center = DTrackData.param2 * (DTrackData.param1 < 0 ? Vector3.Left : Vector3.Right);
-            sectionRotation = Matrix.CreateRotationY(-SegmentLength); // Rotation per iteration (constant)
+            // Get the vector pointing from the origin of the curve to the center in the X-Z plane
+            Center = DTrackData.param2 * (DTrackData.param1 < 0 ? Vector3.Left : Vector3.Right);
         }
 
         /// <summary>
-        /// Generates vertices for a succeeding cross section (straight track).
+        /// Determines the transform matrix to give the current position and orientation on a straight
+        /// section, relative to the local origin of the section.
         /// </summary>
-        /// <param name="stride">Index increment between section-to-section vertices.</param>
-        /// <param name="pl">Polyline.</param>
-        public void LinearGen(uint stride, Polyline pl)
+        /// <param name="totLength">Output reference giving the total length along the section in meters.</param>
+        /// <returns>Transform matrix used to move vertex from its original position to the appropriate position
+        /// along the profile.</returns>
+        public virtual Matrix LinearGen(out float totLength)
         {
-            Vector3 displacement = new Vector3(0, 0, -SegmentLength) + DDY;
-            float wrapLength = displacement.Length();
-            Vector2 uvDisplacement = pl.DeltaTexCoord * wrapLength;
+            Matrix displacement = Matrix.Identity;
 
-            Vector3 p = VertexList[VertexIndex - stride].Position + displacement;
-            Vector3 n = VertexList[VertexIndex - stride].Normal;
-            Vector2 uv = VertexList[VertexIndex - stride].TextureCoordinate + uvDisplacement;
+            totLength = SegmentLength * Offset;
 
-            VertexList[VertexIndex].Position = new Vector3(p.X, p.Y, p.Z);
-            VertexList[VertexIndex].Normal = new Vector3(n.X, n.Y, n.Z);
-            VertexList[VertexIndex].TextureCoordinate = new Vector2(uv.X, uv.Y);
+            // Locate the new center point along the segment
+            displacement.Translation = new Vector3(0.0f, 0.0f, -totLength);
+
+            // Rotate the point into 3D space based on segment orientation
+            displacement *= Orientation;
+
+            // Remove roll rotation by redefining the left vector to be perpendicular to the global up vector
+            displacement.Left = Vector3.Normalize(Vector3.Cross(Vector3.Up, displacement.Forward));
+            displacement.Up = Vector3.Cross(displacement.Forward, displacement.Left);
+
+            return displacement;
         }
 
         /// <summary>
-        /// /// Generates vertices for a succeeding cross section (circular arc track).
+        /// Determines the transform matrix to give the current position and orientation on a circular
+        /// section, relative to the local origin of the section.
         /// </summary>
-        /// <param name="stride">Index increment between section-to-section vertices.</param>
-        /// <param name="pl">Polyline.</param>
-        public void CircArcGen(uint stride, Polyline pl)
+        /// <param name="totLength">Output reference giving the total length along the section in meters.</param>
+        /// <returns>Transform matrix used to move vertex from its original position to the appropriate position
+        /// along the profile.</returns>
+        public virtual Matrix CircArcGen(out float totLength)
         {
-            // Get the previous vertex about the local coordinate system
-            OldV = VertexList[VertexIndex - stride].Position - center - OldRadius;
-            // Rotate the old radius vector to become the new radius vector
-            radius = Vector3.Transform(OldRadius, sectionRotation);
-            float wrapLength = (radius - OldRadius).Length(); // Wrap length is centerline chord
-            Vector2 uvDisplacement = pl.DeltaTexCoord * wrapLength;
+            Matrix displacement = Matrix.Identity;
 
-            // Rotate the point about local origin and reposition it (including elevation change)
-            Vector3 p = DDY + center + radius + Vector3.Transform(OldV, sectionRotation);
-            Vector3 n = VertexList[VertexIndex - stride].Normal;
-            Vector2 uv = VertexList[VertexIndex - stride].TextureCoordinate + uvDisplacement;
+            totLength = Math.Abs(SegmentLength) * DTrackData.param2 * Offset;
 
-            VertexList[VertexIndex].Position = new Vector3(p.X, p.Y, p.Z);
-            VertexList[VertexIndex].Normal = new Vector3(n.X, n.Y, n.Z);
-            VertexList[VertexIndex].TextureCoordinate = new Vector2(uv.X, uv.Y);
+            // Determine rotation in the X-Z plane alone
+            Matrix curveRotation = Matrix.CreateRotationY(-SegmentLength * Offset);
+
+            // Locate the new center point along the curve
+            displacement.Translation = -Center;
+            displacement *= curveRotation;
+            displacement.Translation += Center;
+
+            // Rotate the point into 3D space based on segment orientation
+            displacement *= Orientation;
+
+            // Remove roll rotation by redefining the left vector to be perpendicular to the global up vector
+            displacement.Left = Vector3.Normalize(Vector3.Cross(Vector3.Up, displacement.Forward));
+            displacement.Up = Vector3.Cross(displacement.Forward, displacement.Left);
+
+            return displacement;
         }
     }
 }

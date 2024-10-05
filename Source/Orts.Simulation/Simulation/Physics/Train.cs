@@ -1860,7 +1860,11 @@ namespace Orts.Simulation.Physics
             {
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
                 if (lead is MSTSSteamLocomotive) MUReverserPercent = 25;
-                lead.CurrentElevationPercent = 100f * lead.WorldPosition.XNAMatrix.M32;
+
+                // Percent slope = rise / run -> the Y position of the forward vector gives us the 'rise'
+                // Derive the 'run' by assuming a hypotenuse length of 1, so run = sqrt(1 - rise^2)
+                float rise = lead.WorldPosition.XNAMatrix.M32;
+                lead.CurrentElevationPercent = 100f * (rise / (float)Math.Sqrt(1 - rise * rise));
 
                 //TODO: next if block has been inserted to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                 // To achieve the same result with other means, without flipping trainset physics, the block should be deleted
