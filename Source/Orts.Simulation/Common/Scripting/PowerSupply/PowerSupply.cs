@@ -95,6 +95,7 @@ namespace ORTS.Scripting.Api
         public virtual void HandleEventFromLeadLocomotive(PowerSupplyEvent evt)
         {
             // By default, send the event to every component
+            SignalEventToPantographs(evt);
             SignalEventToBatterySwitch(evt);
         }
 

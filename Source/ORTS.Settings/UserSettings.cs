@@ -207,7 +207,6 @@ namespace ORTS.Settings
         public int AntiAliasing { get; set; }
 
         // Simulation settings:
-
         [Default(false)]
         public bool SimpleControlPhysics { get; set; }
         [Default(true)]
@@ -255,7 +254,6 @@ namespace ORTS.Settings
         public int[] DataLogTSContents { get; set; }
         [Default(false)]
         public bool DataLogStationStops { get; set; }
-
 
         // Timetable settings:
         [Default(true)]
@@ -313,12 +311,6 @@ namespace ORTS.Settings
         public bool AdhesionProportionalToWeather { get; set; }
         [Default(false)]
         public bool NoForcedRedAtStationStops { get; set; }
-        [Default(100)]
-        public int PrecipitationBoxHeight { get; set; }
-        [Default(500)]
-        public int PrecipitationBoxWidth { get; set; }
-        [Default(500)]
-        public int PrecipitationBoxLength { get; set; }
         [Default(false)]
         public bool CorrectQuestionableBrakingParams { get; set; }
         [Default(false)]
@@ -417,6 +409,8 @@ namespace ORTS.Settings
         public int[] WindowPosition_ComposeMessage { get; set; }
         [Default(new[] { 100, 0 })]
         public int[] WindowPosition_TrainList { get; set; }
+        [Default("")]
+        public string LastViewNotificationDate { get; set; }
 
         // Menu-game communication settings:
         [Default(false)]
