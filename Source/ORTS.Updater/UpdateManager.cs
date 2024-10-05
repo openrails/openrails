@@ -33,7 +33,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
-using System.Windows.Forms;
 
 namespace ORTS.Updater
 {
@@ -50,6 +49,7 @@ namespace ORTS.Updater
         const string TemporaryDirectoryName = "Open Rails Updater Temporary Files";
 
         public event EventHandler<ProgressChangedEventArgs> ApplyProgressChanged;
+        public event EventHandler<ProceedWithUpdateCheckEventArgs> ProceedWithUpdateCheck;
 
         readonly string BasePath;
         readonly string ProductName;
@@ -463,14 +463,16 @@ namespace ORTS.Updater
                     var certificates = GetCertificatesFromFile(files[i]);
                     if (!certificates.Any(c => IsMatchingCertificate(expectedCertificates, c)))
                     {
-                        switch (MessageBox.Show("The downloaded update has no matching cryptographic certificates; proceed with update?\n\nCurrent version's certificates:\n\n" + FormatCertificateSubjectList(expectedCertificates) + "\n\nUpdate version's certificates:\n\n" + FormatCertificateSubjectList(certificates) + "\n\nProceed with update?", Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.YesNo))
+                        var args = new ProceedWithUpdateCheckEventArgs("The downloaded update has no matching cryptographic certificates; proceed with update?\n\nCurrent version's certificates:\n\n" + FormatCertificateSubjectList(expectedCertificates) + "\n\nUpdate version's certificates:\n\n" + FormatCertificateSubjectList(certificates) + "\n\nProceed with update?");
+                        ProceedWithUpdateCheck(this, args);
+                        if (args.Proceed)
                         {
-                            case DialogResult.Yes:
-                                foreach (var cert in certificates)
-                                    expectedCertificates.Add(cert);
-                                break;
-                            case DialogResult.No:
-                                throw new InvalidDataException("Cryptographic certificates don't match.\n\nCurrent certificates:\n\n" + FormatCertificateSubjectList(expectedCertificates) + "\n\nUpdate certificates:\n\n" + FormatCertificateSubjectList(certificates) + "\n");
+                            foreach (var cert in certificates)
+                                expectedCertificates.Add(cert);
+                        }
+                        else
+                        {
+                            throw new InvalidDataException("Cryptographic certificates don't match.\n\nCurrent certificates:\n\n" + FormatCertificateSubjectList(expectedCertificates) + "\n\nUpdate certificates:\n\n" + FormatCertificateSubjectList(certificates) + "\n");
                         }
                     }
                 }
@@ -639,5 +641,16 @@ namespace ORTS.Updater
 
         [JsonProperty]
         public string Version { get; private set; }
+    }
+
+    public class ProceedWithUpdateCheckEventArgs
+    {
+        public string Message;
+        public bool Proceed;
+
+        public ProceedWithUpdateCheckEventArgs(string message)
+        {
+            Message = message;
+        }
     }
 }

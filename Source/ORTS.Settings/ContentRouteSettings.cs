@@ -196,8 +196,7 @@ namespace ORTS.Settings
                         }
                     }
 
-                    bool doingTheSumOfTheFileBytes = false;
-                    directoryDelete(definedContentJsonDirectoryName, ref doingTheSumOfTheFileBytes);
+                    directoryDelete(definedContentJsonDirectoryName);
                 }
                 catch (Exception error)
                 {
@@ -251,37 +250,29 @@ namespace ORTS.Settings
             }
         }
 
-        public static void directoryDelete(string directoryName, ref bool doingTheSumOfTheFileBytes)
+        public static void directoryDelete(string directoryName)
         {
             if (Directory.Exists(directoryName))
             {
                 // remove the read only flags,
                 // otherwise the Directory.delete does not work in case read only files exists
-                directoryRemoveReadOnlyFlagsAndDeleteFile(directoryName, ref doingTheSumOfTheFileBytes);
+                directoryRemoveReadOnlyFlags(directoryName);
                 Directory.Delete(directoryName, true);
             }
         }
 
-        private static void directoryRemoveReadOnlyFlagsAndDeleteFile(string directoryName, ref bool doingTheSumOfTheFileBytes)
+        private static void directoryRemoveReadOnlyFlags(string directoryName)
         {
             foreach (string filename in Directory.GetFiles(directoryName))
             {
-                while (doingTheSumOfTheFileBytes)
-                {
-                    // stop deleteing file while summing in progress,
-                    // sum is for feedback to the user
-                    System.Threading.Thread.Sleep(10); 
-                }
-
                 _ = new FileInfo(filename)
                 {
                     IsReadOnly = false
                 };
-                File.Delete(filename);
             }
             foreach (string subDirectoryName in Directory.GetDirectories(directoryName))
             {
-                directoryRemoveReadOnlyFlagsAndDeleteFile(subDirectoryName, ref doingTheSumOfTheFileBytes);
+                directoryRemoveReadOnlyFlags(subDirectoryName);
             }
         }
     }

@@ -3,8 +3,6 @@
     <TargetFramework Condition="'$(BuildDotNet)' == 'true'">net6-windows</TargetFramework>
     <TargetFramework Condition="'$(TargetFramework)' == ''">net472</TargetFramework>
     <OutputType>Exe</OutputType>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <IsPublishable>False</IsPublishable>
     <AssemblyTitle>Open Rails Content Checker</AssemblyTitle>
     <Description>Open Rails Transport Simulator</Description>
