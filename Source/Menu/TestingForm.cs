@@ -25,7 +25,6 @@ using System.Linq;
 using System.Windows.Forms;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
-using ORTS.Common;
 using ORTS.Menu;
 using ORTS.Settings;
 using Activity = ORTS.Menu.Activity;
@@ -187,7 +186,7 @@ namespace ORTS
                 var processStartInfo = new ProcessStartInfo();
                 processStartInfo.FileName = MainForm.RunActivityProgram;
                 processStartInfo.WindowStyle = ProcessWindowStyle.Normal;
-                processStartInfo.WorkingDirectory = ApplicationInfo.ProcessDirectory;
+                processStartInfo.WorkingDirectory = Application.StartupPath;
 
                 if (!ClearedLogs)
                 {

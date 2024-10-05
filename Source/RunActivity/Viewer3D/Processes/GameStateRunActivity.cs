@@ -820,7 +820,7 @@ namespace Orts.Viewer3D.Processes
                 Console.WriteLine("Build      = {0}", VersionInfo.Build);
                 if (logFileName.Length > 0)
                     Console.WriteLine("Logfile    = {0}", logFileName);
-                Console.WriteLine("Executable = {0}", Path.GetFileName(ApplicationInfo.ProcessFile));
+                Console.WriteLine("Executable = {0}", Path.GetFileName(Application.ExecutablePath));
                 foreach (var arg in args)
                     Console.WriteLine("Argument   = {0}", arg);
 

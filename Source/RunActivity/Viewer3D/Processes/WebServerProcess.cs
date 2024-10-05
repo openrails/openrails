@@ -24,6 +24,7 @@ using Orts.Viewer3D.WebServices;
 using ORTS.Common;
 using Orts.Processes;
 using System.IO;
+using System.Windows.Forms;
 using CancellationTokenSource = System.Threading.CancellationTokenSource;
 using System.Net.Sockets;
 using System.Diagnostics;
@@ -84,7 +85,7 @@ namespace Orts.Viewer3D.Processes
 
         private string myWebContentPath()
         {
-            string exePath = ApplicationInfo.ProcessDirectory;
+            string exePath = Path.GetDirectoryName(Application.ExecutablePath);
             if (!System.Diagnostics.Debugger.IsAttached)
             {
                 // no debugger attached, not developing

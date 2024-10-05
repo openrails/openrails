@@ -39,10 +39,11 @@ namespace DataValidator
 
         static void ShowHelp()
         {
-            Console.WriteLine("{0} {1}", ApplicationInfo.ApplicationName, VersionInfo.VersionOrBuild);
+            var version = FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location);
+            Console.WriteLine("{0} {1}", version.FileDescription, VersionInfo.VersionOrBuild);
             Console.WriteLine();
             Console.WriteLine("Usage:");
-            Console.WriteLine("  {0} [options] <FILE> [...]", Path.GetFileNameWithoutExtension(ApplicationInfo.ProcessFile));
+            Console.WriteLine("  {0} [options] <FILE> [...]", Path.GetFileNameWithoutExtension(version.FileName));
             Console.WriteLine();
             Console.WriteLine("Arguments:");
             Console.WriteLine("  <FILE>    Data files to validate; may contain wildcards");
