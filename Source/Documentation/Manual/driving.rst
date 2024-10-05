@@ -38,7 +38,7 @@ can select different views using the keyboard, as described in
 :ref:`Changing the View <driving-changing-view>`.
 
 Cab Letter-Boxing
-----------------
+-----------------
 
 OR manages not only cab interiors using 2D images in a MSTS-compatible
 way, but also supports 3D models. Most 2D cab images follow MSTS practice,
@@ -576,6 +576,97 @@ appears on the car's display line until the air pressure has fallen to zero.
 More information about manipulating the brakes during coupling and 
 uncoupling can also be found :ref:`here <driving-hud-brake>`.
 
+.. _train-operations-monitor:
+
+Ctrl-Alt-F9 Train Operations Monitor
+------------------------------------
+
+This Open Rails Train Operations window has a vertical view of the entire train:
+
+.. image:: images/TrainCarOperations-01.png
+  :align: center
+  :scale: 100%
+
+|
+
+This window shows the whole train in vertical mode. Any car can be selected by clicking on the Car ID. 
+Two arrows will then appear pointing to the selected car.
+
+By clicking on the selected CarId the "Train Operations Viewer" window will be displayed:
+
+.. image:: images/TrainOperationsViewer-02.png
+  :align: center
+  :scale: 100%
+
+|
+
+From the "Train Operations Viewer" window, we can set all the available systems, as in the “Car Operation menu”:
+
+- FrontBrakeHose
+- FrontAngleCock
+- CouplerFront
+- CouplerRear
+- RearAngleCock
+- RearBrakeHose
+- HandBrake
+- BleedOffValve
+- ToggleElectricTrainSupplyCable
+- ToggleMU
+- TogglePower
+- ToggleBatterySwitch
+
+This is where all the symbols are placed:
+
+.. image:: images/TrainOperationsViewer.png
+  :align: center
+  :scale: 100%
+
+|
+
+The red cross on the handbrake symbol (or another), indicates that it is not available.
+
+Any changes made in this window will also appear in the "Train Car Operations" window:
+
+.. image:: images/TrainOperationsViewer-03.png
+  :align: center
+  :scale: 100%
+
+|
+
+After a change in the braking system that keeps the train stopped, the CarID changes to a cyan colour. 
+In this way, it is easy for the user, to find out which car is stopping the train.
+
+A click on the right arrow hides all non-system brake symbols, inside the "Train Car Operations" window:
+
+.. image:: images/TrainCarOperations-04.png
+  :align: center
+  :scale: 100%
+
+|
+
+To make the text bold, click the left arrow:
+
+.. image:: images/TrainCarOperations-05.png
+  :align: center
+  :scale: 100%
+
+|
+
+While the "Train Operations Viewer" window is visible, we can modify the "Train Car Operations" window, 
+but if we open the "Train Operations" window <F9> and click on any CarID, the "Car Operation Menu" will 
+appear and it will point to the previously selected CarID in the "Train Operations Viewer" window.
+The "Car Operations Menu" is updated from the "Train Operations Viewer" window.
+A click on the CarID in the “Train Operations Viewer” will close the window.
+
+If the train is very long and not all the cars are displayed in the "Train Car Operations" window, we can scroll by clicking on the white down arrow (vertical scroll bar) at the bottom right.
+Once the required car has been selected, it will remain visible on the last row:
+
+.. image:: images/TrainCarOperations-06.png
+  :align: center
+  :scale: 100%
+
+|
+
 .. _driving-activity:
 
 F10 Activity Monitor
@@ -637,7 +728,7 @@ within the cabview, see :ref:`here <cabs-odometer>`.
 
 
 Activity Evaluation
-------------------
+-------------------
 
 ``Description``
 '''''''''''''''
@@ -709,8 +800,6 @@ This report is made up of several sections.
 .. image:: images/dbfeval-report.png
    :scale: 80%
    :align: center
-
-.. raw:: latex
 
 The report file OpenRailsEvaluation.txt is saved alongside the log file OpenRailsLog.txt and
 the default location for this is the Windows Desktop.
@@ -1262,8 +1351,7 @@ or unloading operation is ongoing.
 Autopilot Mode
 ==============
 
-When in activity mode or in Explore in activity mode, through this feature 
-it is possible to stay
+Through this feature it is possible to stay
 in the cab of the player train, but to let Open Rails move the train,
 respecting path, signals, speeds and station stops.
 
@@ -1276,8 +1364,8 @@ but it can also be used to run an activity (or part of it, as it is
 possible to turn autopilot mode on or off at runtime) as a trainspotter or 
 a visitor within the cab.
 
-Autopilot mode is active only in activity mode (i.e. not in explorer or 
-timetable modes).
+Autopilot mode is available in activity, timetable and explore in activity 
+mode (i.e. not in explorer mode).
 
 When starting the game with any activity, you are in player driving mode. 
 If you press Alt+A, you enter the autopilot mode: you are in the loco's 
@@ -1300,7 +1388,7 @@ auto mode.
 Station stops, waiting points and reverse points are synchronized as far as 
 possible in the two modes.
 
-Cars can also be uncoupled in autopilot mode (but check that the train will 
+In activity mode cars can also be uncoupled in autopilot mode (but check that the train will 
 stop in enough time, otherwise it is better to change to player driven 
 mode). A static consist can also be coupled in autopilot mode.
 

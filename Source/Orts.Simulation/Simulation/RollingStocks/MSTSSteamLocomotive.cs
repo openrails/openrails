@@ -3503,13 +3503,19 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 // Variable is proportional to angular speed, value of 10 means 1 rotation/second.
                 // If wheel is not slipping then use normal wheel speed, this reduces oscillations in variable1 which causes issues with sounds.
 
-                if (SteamEngines[i].AttachedAxle.IsWheelSlip)
+                if (((Train.TrainType == Train.TRAINTYPE.PLAYER && !Train.Autopilot) || Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN) && (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics))
                 {
-                    variable[i] = Math.Abs(SteamEngines[i].AttachedAxle.SlipSpeedMpS / SteamEngines[i].AttachedAxle.WheelRadiusM / MathHelper.Pi * 5);
+                        variable[i] = Math.Abs((float)SteamEngines[i].AttachedAxle.AxleSpeedMpS / SteamEngines[i].AttachedAxle.WheelRadiusM / MathHelper.Pi * 5);
                 }
-                else
+                else 
+                // Axle code is not executed if it is an AI train, on Autopilot, or Simple adhesion or simple physics is selected. Hence must use wheelspeed in these instances
                 {
-                    variable[i] = Math.Abs((float)SteamEngines[i].AttachedAxle.AxleSpeedMpS / SteamEngines[i].AttachedAxle.WheelRadiusM / MathHelper.Pi * 5);
+                    if (WheelSlip)
+                        variable[i] = Math.Abs(WheelSpeedSlipMpS / SteamEngines[0].AttachedAxle.WheelRadiusM / MathHelper.Pi * 5);
+                    else
+                    {
+                        variable[i] = Math.Abs(WheelSpeedMpS / SteamEngines[0].AttachedAxle.WheelRadiusM / MathHelper.Pi * 5);
+                    }
                 }
 
                 variable[i] = ThrottlePercent == 0 ? 0 : variable[i];
@@ -6013,7 +6019,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // Typically tangential force will be greater at starting then when the locomotive is at speed, as interia and reduce steam pressure will decrease the value. 
             // By default this model uses information based upon a "NYC 4-4-2 locomotive", for smaller locomotives this data is changed in the OR initialisation phase.
 
-            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain && this.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot)
             // only set advanced wheel slip when advanced adhesion, and simplecontrols/physics is not set and is in the the player train, AI locomotive will not work to this model. 
             // Don't use slip model when train is in auto pilot
             {

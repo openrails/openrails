@@ -341,10 +341,11 @@ namespace Orts.Viewer3D
                     }
                 }
 
-                if (shapeFilePath != null && File.Exists(shapeFilePath + "d"))
+                var shapeDescriptorPath = shapeFilePath + "d";
+                if (shapeFilePath != null)
                 {
-                    var shape = new ShapeDescriptorFile(shapeFilePath + "d");
-                    if (shape.shape.ESD_Bounding_Box != null)
+                    var shape = new ShapeDescriptorFile(shapeDescriptorPath);
+                    if (shape.shape?.ESD_Bounding_Box != null)
                     {
                         var min = shape.shape.ESD_Bounding_Box.Min;
                         var max = shape.shape.ESD_Bounding_Box.Max;

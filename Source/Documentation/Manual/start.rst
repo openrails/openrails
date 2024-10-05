@@ -16,7 +16,23 @@ installation profile.
 
 .. image:: images/start-activity.png
 
-If not, then you must download some content and add it as an Installation Profile.
+If not, then the next ``Download Content`` form is shown where you can download content. This form is described in the next `Content` chapter.
+
+Content
+=======
+
+Clicking on the ``Content`` button makes the ``Download Content`` form popup (if not already there for a new empty Open Rails installation):
+
+.. image:: images/download-content-form.png
+
+Select the route to be installed. This list will be enlarged by the OR team when suitable routes become available.
+However it is still possible to install routes manually as described in the next chapter.
+
+* ``Install path`` and ``Browse``: Fill in or Browse to the path where the route is to be installed. Each route will be installed in its own subdirectory.
+* ``Info``: Gives more information of the selected route. The default web browser will be started with the information page.
+* ``Install``: Installs the selected route. A popup mentions the directory where the route is to be installed before starting the actual install. Installation profile gets added also.
+* ``Delete``: Delete route with this button. Take care: whole directory including any added and changed files gets deleted.
+* ``Update``: GitHub-based routes can get updated after the install by means of this button. A check for updates is made when clicking this button and updates may be reported at the end of the information webpage. Also GitHub has a watch feature which notifies you of changes by email.
 
 Installation Profiles
 =====================
@@ -41,12 +57,121 @@ Click on the ``Options`` button and select the ``Content`` tab. See the
 Updating OR
 ===========
 
+Four update modes are provided and you can update Open Rails with a single click of a button.
+
+"Stable" is the default and recommended mode.
+
+"Testing" is updated more frequently than the "Stable" mode.
+
+If you follow the Open Rails project on the forums, then you will hear about bug-fixes and new features. 
+These are included in the "Unstable" version for developers and testers to try out. 
+Once they have been checked and approved, they are published (on Fridays) as the latest "Testing" version. 
+Any user can easily update to the current weekly "Testing" version and benefit from these improvements.
+
+New versions are advertised and installed using the :ref:`Notifications <notifications>` feature.
+
+You can change your current mode using Options > System > Update mode. 
+The fourth mode is "none", which does not search for a new version.
+
+
+.. _notifications:
+
+Notifications
+=============
+
+Notifications are brief messages sent to Open Rails when you launch Open Rails. 
+You can view these by clicking on the notifications icon and stop viewing by toggling the icon again.
+
+.. image:: images/notification-icon.png
+
+Old notifications persist, but when new ones are available, the icon is overlaid with a red indicator showing the number of new notifications. 
+The icons are presented in date order with the latest one first. Step through them by clicking on the arrows:
+
+.. image:: images/notification-red-indicator.png
+
+Static Notifications
+--------------------
+
+A simple notification may be shown in the same way to all users, such as:
+
+.. image:: images/notification-static.png
+
+Pressing the “Archive” button will launch your default browser to provide extra detail.
+
+Responsive Notifications
+------------------------
+
+Many notifications show differently depending on the user’s installation. 
+
+Responsive notifications are used to advise that a new version is available. 
+If a new version is available, then the notification might be shown as:
+
+.. image:: images/notification-update-available.png
+
+As before, the button “What’s new” will launch your default browser to provide extra detail. 
+The “Install” button is special and launches a seamless process to download the latest version available and use it to replace the active version.
+
+Once the user has upgraded, the previous message is no longer appropriate and the notification responds to the changes by showing as:
+
+.. image:: images/notification-update-installed.png
+
+Privacy Note
+------------
+
+No information is returned to the Open Rails web server.
+
+Update Mode
+-----------
+
+There are 4 update modes – Stable, Testing, Unstable and None. More details are available :ref:`here <updating-or>`.
+Note, however, that previously saved games may not be compatible with newer versions, as described :ref:`here <driving-saveresume>`.
+
+Checking Compatibility
+----------------------
+
+Responsive notifications are also used to check that an update is compatible with your system. For example, you might see useful warnings such as:
+
+.. image:: images/notification-update-incompatible.png
+
+Responding to Routes
+--------------------
+
+These notifications can respond to the routes you have installed, so you can be advised of updates to routes you have already installed. For example, you might see:
+
+.. image:: images/notification-routes.png
+
+But this notification would be missing if you don’t already have the route installed.
+
+Responding to Settings
+----------------------
+
+The notifications can also respond to the settings you are using - see :ref:`Open Rails Options<options>`.
+
+In this fictional example, you might see a message encouraging you to try an improved feature:
+
+.. image:: images/notification-settings.png
+
+However, if you have the option turned on already, then the notification is not shown.
+
+Communication Error
+-------------------
+
+If there is a problem with the Internet then the Notifications are replaced by a single prepared notification which gives a reason for the error and a chance to re-try:
+
+.. image:: images/notification-error.png
+
+Publishing Notifications
+------------------------
+
+The Notifications document explains how to publish notifications and is included in the :ref:`Documents drop-down<documents>`.
+
+=======
 When a new release of OR is available and your computer is online, a link 
 ``Update to xnnnn`` appears in the upper right corner. The string ``xnnnn`` is 
 the release number of the newest release that matches your selected level 
 of update. Various level of updates called Update Channels are available. 
 You may choose the desired level in the ``Options-Update`` window, described 
-:ref:`below <options-updater>`.
+:ref:`below <options-updater-options>`.
 
 When you click on the update link OR will download and install the new 
 release. In this way your version of Open Rails is always up to date. 
@@ -65,6 +190,8 @@ Tools
 
 By clicking this button you get access to the ancillary tools (see :ref:`here 
 <intro-reality>`).
+
+.. _documents:
 
 Documents
 ---------
@@ -126,7 +253,7 @@ If you instead select a specific activity, you won't have to perform any
 further selections.
 
 Activity Evaluation
-''''''''''''''''''
+'''''''''''''''''''
 
 During the activity session, data about performance is stored and may be viewed as the activity progresses.
 At the end of the activity a report file is generated which provides a summary of 

@@ -61,6 +61,7 @@ namespace ORTS.Common.Input
         [GetString("Display Station Labels")] DisplayStationLabels,
         [GetString("Display Switch Window")] DisplaySwitchWindow,
         [GetString("Display Train Operations Window")] DisplayTrainOperationsWindow,
+        [GetString("Display Train Car Operations Window")] DisplayTrainCarOperationsWindow,
         [GetString("Display Train Dpu Window")] DisplayTrainDpuWindow,
         [GetString("Display Next Station Window")] DisplayNextStationWindow,
         [GetString("Display Compass Window")] DisplayCompassWindow,

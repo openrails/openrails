@@ -486,8 +486,14 @@ namespace ORTS.TrackViewer.Drawing
             float camHeight = width / device.Viewport.AspectRatio / 2;
             Vector3 cameraPosition = cameraTarget;
             cameraPosition.Y = -camHeight;
+            float nearPlaneDistance = camHeight / 2;
+            if (nearPlaneDistance <= 0)
+            {
+                // distance is too close for CreatePerspectiveFieldOfView
+                return;
+            }
             basicEffect.View = Matrix.CreateLookAt(cameraPosition, cameraTarget, new Vector3(0, 0, 1));
-            basicEffect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver2, device.Viewport.AspectRatio, camHeight / 2, camHeight * 2);
+            basicEffect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver2, device.Viewport.AspectRatio, nearPlaneDistance, camHeight * 2);
 
         }
         #endregion

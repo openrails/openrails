@@ -199,7 +199,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                 case ORTS.Common.Input.UserCommand.DisplaySwitchWindow:
                     description = Viewer.Catalog.GetParticularString("SwitchPanel", "Switch");
                     break;
-                case ORTS.Common.Input.UserCommand.DisplayTrainOperationsWindow:
+                case ORTS.Common.Input.UserCommand.DisplayTrainCarOperationsWindow:
                     description = Viewer.Catalog.GetParticularString("SwitchPanel", "Train Operations");
                     break;
                 case ORTS.Common.Input.UserCommand.DisplayTrainDpuWindow:
