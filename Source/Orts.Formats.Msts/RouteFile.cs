@@ -136,9 +136,9 @@ namespace Orts.Formats.Msts
             {
                 // No superelevation standard defined, create the default one
                 if (SuperElevationHgtpRadiusM != null)
-                    SuperElevation.Add(new SuperElevationStandard(SuperElevationHgtpRadiusM, MilepostUnitsMetric));
+                    SuperElevation.Add(new SuperElevationStandard(SuperElevationHgtpRadiusM, MilepostUnitsMetric, SpeedLimit > 45.0f));
                 else
-                    SuperElevation.Add(new SuperElevationStandard(MilepostUnitsMetric));
+                    SuperElevation.Add(new SuperElevationStandard(MilepostUnitsMetric, SpeedLimit > 45.0f));
             }
         }
 
@@ -248,41 +248,70 @@ namespace Orts.Formats.Msts
         public bool UseLegacyCalculation = true; // Should ORTSTrackSuperElevation be used for superelevation calculations?
 
         // Initialize new instance with default values (default metric values)
-        public SuperElevationStandard(bool metric = true)
+        public SuperElevationStandard(bool metric = true, bool highSpeed = false)
         {
             if (metric)
             {
                 // Set underbalance to millimeter values for metric routes
-                MaxFreightUnderbalanceM = 0.100f; // Default 100 mm
-                MaxPaxUnderbalanceM = 0.150f; // Default 150 mm
+                if (highSpeed)
+                {
+                    RunoffSpeedMpS = 0.080f; // 80 mm / sec for higher speed routes
+                    MaxFreightUnderbalanceM = 0.110f; // 110 mm for higher speed routes
+                    MaxPaxUnderbalanceM = 0.150f; // 150 mm for higher speed routes
+                }
+                else
+                {
+                    MaxFreightUnderbalanceM = 0.100f; // Default 100 mm
+                    MaxPaxUnderbalanceM = 0.130f; // Default 130 mm
+                }
                 // Other parameters are already metric by default
+
             }
             else
             {
                 // Set values in imperial units
-                MaxFreightUnderbalanceM = Me.FromIn(2.0f); // Default 2 inches
-                MaxPaxUnderbalanceM = Me.FromIn(3.0f); // Default 3 inches
                 MinCantM = Me.FromIn(0.5f);
                 MaxCantM = Me.FromIn(6.0f);
                 MinSpeedMpS = MpS.FromMpH(15.0f);
                 PrecisionM = Me.FromIn(0.25f);
-                RunoffSpeedMpS = MpS.FromMpH(0.0852f); // 1.5 inches per second
+
+                if (highSpeed)
+                {
+                    RunoffSpeedMpS = MpS.FromMpH(0.1136f); // 2.0 inches for higher speed routes
+                    MaxFreightUnderbalanceM = Me.FromIn(3.0f); // 3 inches for higher speed routes
+                    MaxPaxUnderbalanceM = Me.FromIn(5.0f); // 5 inches for higher speed routes
+                }
+                else
+                {
+                    RunoffSpeedMpS = MpS.FromMpH(0.0852f); // Default 1.5 inches per second
+                    MaxFreightUnderbalanceM = Me.FromIn(2.0f); // Default 2 inches
+                    MaxPaxUnderbalanceM = Me.FromIn(3.0f); // Default 3 inches
+                }
             }
         }
 
         // Initialize new instance from superelevation interpolator
         // Interpolator X values should be curve radius, Y values amount of superelevation in meters
-        public SuperElevationStandard(Interpolator elevTable, bool metric = true)
+        public SuperElevationStandard(Interpolator elevTable, bool metric = true, bool highSpeed = false)
         {
             MinCantM = elevTable.Y.Min();
             MaxCantM = elevTable.Y.Max();
 
-            if (!metric)
+            MinSpeedMpS = 0.0f;
+
+            if (metric)
+            {
+                if (highSpeed)
+                    RunoffSpeedMpS = 0.080f; // 80 mm / sec of runoff allows for shorter build up on high speed routes
+            }
+            else
             {
                 // Some extra data still required, use imperial units if the route uses it
-                MinSpeedMpS = MpS.FromMpH(15.0f);
                 PrecisionM = Me.FromIn(0.25f);
-                RunoffSpeedMpS = MpS.FromMpH(0.0852f); // 1.5 inches per second
+                if (highSpeed)
+                    RunoffSpeedMpS = MpS.FromMpH(0.1136f); // 2.0 inches per second of runoff allows for shorter build up on high speed routes
+                else
+                    RunoffSpeedMpS = MpS.FromMpH(0.0852f); // 1.5 inches per second normal
             }
         }
 

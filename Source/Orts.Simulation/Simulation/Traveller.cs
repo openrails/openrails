@@ -59,6 +59,7 @@ namespace Orts.Simulation
         bool locationSet;
         WorldLocation location = new WorldLocation();
         Vector3 directionVector;
+        Matrix displacement;
 
         // Length and offset only valid if lengthSet = true.
         bool lengthSet;
@@ -610,6 +611,7 @@ namespace Orts.Simulation
             location.Location.Z = copy.location.Location.Z;
             direction = copy.direction;
             directionVector = copy.directionVector;
+            displacement = copy.displacement;
             trackOffset = copy.trackOffset;
             TrackNodeIndex = copy.TrackNodeIndex;
             trackNode = copy.trackNode;
@@ -632,7 +634,7 @@ namespace Orts.Simulation
             Direction = Direction == TravellerDirection.Forward ? TravellerDirection.Backward : TravellerDirection.Forward;
         }
         /// <summary>
-        /// Returns the distance from the traveller's current lcation, in its current direction, to the location specified
+        /// Returns the distance from the traveller's current location, in its current direction, to the location specified
         /// </summary>
         /// <param name="location">Target world location</param>
         /// <returns>f the target is found, the distance from the traveller's current location, along the track nodes, to the specified location. If the target is not found, <c>-1</c>.</returns>
@@ -881,30 +883,43 @@ namespace Orts.Simulation
             directionVector.Y = tvs.AY;
             directionVector.Z = tvs.AZ;
 
+            displacement = Matrix.Identity;
+            Matrix orientation = Matrix.CreateFromYawPitchRoll(tvs.AY, tvs.AX, tvs.AZ);
+
             if (ts.SectionCurve != null)
             {
                 // "Handedness" Convention: A right-hand curve (TS.SectionCurve.Angle > 0) curves 
                 // to the right when moving forward.
-                var sign = -Math.Sign(ts.SectionCurve.Angle);
-                var vectorCurveStartToCenter = Vector3.Left * ts.SectionCurve.Radius * sign;
-                var curveRotation = Matrix.CreateRotationY(to * sign);
-                var XNAMatrix = Matrix.CreateFromYawPitchRoll(-tvs.AY, -tvs.AX, tvs.AZ);
-                Vector3 dummy;
-                var displacement = MSTSInterpolateAlongCurve(Vector3.Zero, vectorCurveStartToCenter, curveRotation, XNAMatrix, out dummy);
-                location.Location.X += displacement.X;
-                location.Location.Y += displacement.Y;
-                location.Location.Z -= displacement.Z;
-                directionVector.Y -= to * sign;
+                int sign = Math.Sign(ts.SectionCurve.Angle);
+                Vector3 vectorCurveStartToCenter = Vector3.Right * ts.SectionCurve.Radius * sign;
+                Matrix curveRotation = Matrix.CreateRotationY(to * sign);
+
+                // Locate the new center point along the curve
+                displacement.Translation = -vectorCurveStartToCenter;
+                displacement *= curveRotation;
+                displacement.Translation += vectorCurveStartToCenter;
+
+                // Rotate the point into 3D space based on segment orientation
+                displacement *= orientation;
+
+                directionVector.Y += to * Math.Sign(ts.SectionCurve.Angle);
             }
             else
             {
-                var XNAMatrix = Matrix.CreateFromYawPitchRoll(tvs.AY, tvs.AX, tvs.AZ);
-                Vector3 dummy;
-                var displacement = MSTSInterpolateAlongStraight(Vector3.Zero, Vector3.UnitZ, to, XNAMatrix, out dummy);
-                location.Location.X += displacement.X;
-                location.Location.Y += displacement.Y;
-                location.Location.Z += displacement.Z;
+                // Locate the new center point along the segment
+                displacement.Translation = new Vector3(0.0f, 0.0f, to);
+
+                // Rotate the point into 3D space based on segment orientation
+                displacement *= orientation;
             }
+            // Adjust actual location based on displacement
+            location.Location += displacement.Translation;
+
+            // Remove roll rotation from the displacement matrix by redefining the left vector to be perpendicular to the global up vector
+            displacement.Left = Vector3.Normalize(Vector3.Cross(Vector3.Up, displacement.Forward));
+            displacement.Up = Vector3.Cross(displacement.Forward, displacement.Left);
+            // Remove translation from displacement so it is now rotation only (use location.Location to get translation)
+            displacement.Translation = Vector3.Zero;
 
             if (direction == TravellerDirection.Backward)
             {
@@ -998,8 +1013,7 @@ namespace Orts.Simulation
                 to = trackOffset / Math.Abs(MathHelper.ToRadians(trackSection.SectionCurve.Angle));
             }
 
-            if (trackVectorSection.PhysElevTable != null)
-                physicsElev = trackVectorSection.PhysElevTable[to];
+            physicsElev = trackVectorSection.PhysElevTable[to];
         }
 
         /// <summary>
@@ -1049,27 +1063,54 @@ namespace Orts.Simulation
             return visualElev;
         }
         /// <summary>
-        /// Determines the offset in the visual position of the track caused by superelevation.
-        /// Requires a bool to determine if superelevation should be used at all, and a reference to the list of track profiles.
+        /// Determines the offset in the visual position of the track caused by superelevation,
+        /// given the height of the bogie pivot point.
+        /// Requires a bool to determine if superelevation should be used at all.
         /// Also outputs the angle of visual superelevation at the current location.
         /// </summary>
         /// <returns>Returns a Vector3 containing the positional offset.</returns>
-        public Vector3 CalcElevationPositionOffset(bool useVisualElev, out float roll)
+        public Vector3 CalcElevationPositionOffset(float bogieOffsetHeight, bool useVisualElev, out float roll)
         {
+            if (!locationSet)
+                SetLocation();
+
+            // Rolling stock seems to always sit 0.275 meters above the track height
+            Vector3 point = new Vector3(0.0f, 0.275f, 0.0f);
+
             roll = GetVisualElevation(useVisualElev);
 
-            if (roll == 0)
-                return Vector3.Zero;
+            if (roll != 0)
+            {
+                // GetVisualElevation flips the roll value for backwards travellers
+                // This is useful elsewhere, but not here, cancel out that effect
+                float rollEff = direction == TravellerDirection.Forward ? roll : -roll;
 
-            float rollOffset = trackVectorSection.ElevOffsetM;
+                // Determine the offset for the axis of superelevation rotation
+                Vector3 rollOffset = new Vector3(trackVectorSection.ElevOffsetM * -Math.Sign(rollEff), 0.275f - bogieOffsetHeight, 0.0f);
 
-            Vector3 trackRot = directionVector;
-            Matrix rotation = Matrix.CreateFromYawPitchRoll(trackRot.Y, trackRot.X, trackRot.Z);
+                // Rotate the wheel position based on superelevation
+                point -= rollOffset;
+                point = Vector3.Transform(point, Matrix.CreateRotationZ(rollEff));
+                point += rollOffset;
+            }
 
-            Vector3 offset = rotation.Up * ((float)Math.Sin(Math.Abs(roll)) * rollOffset) +
-                rotation.Left * ((1.0f - (float)Math.Cos(roll)) * rollOffset * Math.Sign(roll));
+            // In some extreme cases, track may have been rotated so much it's upside down
+            // Rotate 180 degrees to restore right side up
+            if (displacement.Up.Y < 0.0f)
+            {
+                point = Vector3.Transform (point, Matrix.CreateRotationZ((float)Math.PI));
+                roll += (float)Math.PI;
+            }
 
-            return offset;
+            // Rotate point based on track geometry
+            point = Vector3.Transform(point, displacement);
+
+            return point;
+        }
+
+        public Vector3 GetTrackDirection()
+        {
+            return directionVector;
         }
 
         public float FindTiltedZ(float speed) //will test 1 second ahead, computed will return desired elev. only

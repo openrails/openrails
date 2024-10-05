@@ -626,6 +626,8 @@ namespace Orts.Simulation.RollingStocks
         public List<WheelAxle> WheelAxles = new List<WheelAxle>();
         public bool WheelAxlesLoaded;
         public List<TrainCarPart> Parts = new List<TrainCarPart>();
+        public float[] BogieZOffsets;
+        public float BogiePivotHeightM;
 
         // For use by cameras, initialized in MSTSWagon class and its derived classes
         public List<PassengerViewPoint> PassengerViewpoints = new List<PassengerViewPoint>();
@@ -635,7 +637,7 @@ namespace Orts.Simulation.RollingStocks
         // Used by Curve Speed Method
         protected float TrackGaugeM = 1.435f;  // Track gauge - read in MSTSWagon
         protected Vector3 InitialCentreOfGravityM = new Vector3(0, 1.8f, 0); // get centre of gravity - read in MSTSWagon
-        protected Vector3 CentreOfGravityM = new Vector3(0, 1.8f, 0); // get centre of gravity after adjusted for freight animation
+        public Vector3 CentreOfGravityM = new Vector3(0, 1.8f, 0); // get centre of gravity after adjusted for freight animation
         public float SuperelevationM; // Super elevation on the curve
         protected float MaxUnbalancedSuperElevationM;  // Maximum comfortable cant deficiency, read from MSTS Wagon File
         public float SuperElevationAngleRad;
@@ -971,8 +973,11 @@ namespace Orts.Simulation.RollingStocks
             CarOutsideTempC = InitialCarOutsideTempC - TemperatureHeightVariationDegC;
 
             // gravity force, M32 is up component of forward vector
-            GravityForceN = MassKG * GravitationalAccelerationMpS2 * WorldPosition.XNAMatrix.M32;
-            CurrentElevationPercent = 100f * WorldPosition.XNAMatrix.M32;
+            // Percent slope = rise / run -> the Y position of the forward vector gives us the 'rise'
+            // Derive the 'run' by assuming a hypotenuse length of 1, so run = sqrt(1 - rise^2)
+            float rise = WorldPosition.XNAMatrix.M32;
+            GravityForceN = MassKG * GravitationalAccelerationMpS2 * rise;
+            CurrentElevationPercent = 100f * (rise / (float)Math.Sqrt(1 - rise * rise));
             AbsSpeedMpS = Math.Abs(_SpeedMpS);
 
             //TODO: next if block has been inserted to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
@@ -1961,7 +1966,8 @@ namespace Orts.Simulation.RollingStocks
                         IsCriticalMaxSpeed = true; // set flag for IsCriticalSpeed reached
 
                         BrakeSystem.FrontBrakeHoseConnected = false; // break the brake hose connection between cars if the speed is too fast
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You were travelling too fast for this curve, and have snapped a brake hose on Car " + CarID + ". You will need to repair the hose and restart."));
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You were travelling too fast for this curve, and have snapped a brake hose on Car " + CarID + ". The maximum speed for this curve is "
+                            + FormatStrings.FormatSpeedDisplay(CriticalMaxSpeedMpS, IsMetric) + ". You will need to repair the hose and restart."));
 
                         dbfEvalsnappedbrakehose = true;//Debrief eval
 
@@ -2446,7 +2452,7 @@ namespace Orts.Simulation.RollingStocks
             Headlight = other.Headlight;
         }
 
-        public void AddWheelSet(float offset, int bogieID, int parentMatrix, string wheels, int bogie1Axles, int bogie2Axles)
+        public void AddWheelSet(Vector3 offset, int bogieID, int parentMatrix, string wheels, int bogie1Axles, int bogie2Axles)
         {
             if (WheelAxlesLoaded || WheelHasBeenSet)
                 return;
@@ -2476,7 +2482,7 @@ namespace Orts.Simulation.RollingStocks
             //some old stocks have only two wheels, but defined to have four, two share the same offset, thus all computing of rotations will have problem
             //will check, if so, make the offset different a bit.
             foreach (var axles in WheelAxles)
-                if (offset.AlmostEqual(axles.OffsetM, 0.05f)) { offset = axles.OffsetM + 0.7f; break; }
+                if (offset.Z.AlmostEqual(axles.OffsetM.Z, 0.05f)) { offset.Z = axles.OffsetM.Z + 0.7f; break; }
 
             // Came across a model where the axle offset that is part of a bogie would become 0 during the initial process.  This is something we must test for.
             if (wheels.Length == 8 && Parts.Count > 0)
@@ -2502,15 +2508,15 @@ namespace Orts.Simulation.RollingStocks
 
         } // end AddWheelSet()
 
-        public void AddBogie(float offset, int matrix, int id, string bogie, int numBogie1, int numBogie2)
+        public void AddBogie(Vector3 offset, int matrix, int id, string bogie, int numBogie1, int numBogie2)
         {
             if (WheelAxlesLoaded || WheelHasBeenSet)
                 return;
-            foreach (var p in Parts) if (p.Bogie && offset.AlmostEqual(p.OffsetM, 0.05f)) { offset = p.OffsetM + 0.1f; break; }
+            foreach (var p in Parts) if (p.Bogie && offset.Z.AlmostEqual(p.OffsetM.Z, 0.05f)) { offset.Z = p.OffsetM.Z + 0.1f; break; }
             if (bogie == "BOGIE1")
             {
                 while (Parts.Count <= id)
-                    Parts.Add(new TrainCarPart(0, 0));
+                    Parts.Add(new TrainCarPart(Vector3.Zero, 0));
                 Parts[id].OffsetM = offset;
                 Parts[id].iMatrix = matrix;
                 Parts[id].Bogie = true;//identify this is a bogie, will be used for hold rails on track
@@ -2525,7 +2531,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     id -= 1;
                     while (Parts.Count <= id)
-                        Parts.Add(new TrainCarPart(0, 0));
+                        Parts.Add(new TrainCarPart(Vector3.Zero, 0));
                     Parts[id].OffsetM = offset;
                     Parts[id].iMatrix = matrix;
                     Parts[id].Bogie = true;//identify this is a bogie, will be used for hold rails on track
@@ -2533,7 +2539,7 @@ namespace Orts.Simulation.RollingStocks
                 else
                 {
                     while (Parts.Count <= id)
-                        Parts.Add(new TrainCarPart(0, 0));
+                        Parts.Add(new TrainCarPart(Vector3.Zero, 0));
                     Parts[id].OffsetM = offset;
                     Parts[id].iMatrix = matrix;
                     Parts[id].Bogie = true;//identify this is a bogie, will be used for hold rails on track
@@ -2542,7 +2548,7 @@ namespace Orts.Simulation.RollingStocks
             else if (bogie == "BOGIE3")
             {
                 while (Parts.Count <= id)
-                    Parts.Add(new TrainCarPart(0, 0));
+                    Parts.Add(new TrainCarPart(Vector3.Zero, 0));
                 Parts[id].OffsetM = offset;
                 Parts[id].iMatrix = matrix;
                 Parts[id].Bogie = true;//identify this is a bogie, will be used for hold rails on track
@@ -2550,7 +2556,7 @@ namespace Orts.Simulation.RollingStocks
             else if (bogie == "BOGIE4")
             {
                 while (Parts.Count <= id)
-                    Parts.Add(new TrainCarPart(0, 0));
+                    Parts.Add(new TrainCarPart(Vector3.Zero, 0));
                 Parts[id].OffsetM = offset;
                 Parts[id].iMatrix = matrix;
                 Parts[id].Bogie = true;//identify this is a bogie, will be used for hold rails on track
@@ -2558,7 +2564,7 @@ namespace Orts.Simulation.RollingStocks
             else if (bogie == "BOGIE")
             {
                 while (Parts.Count <= id)
-                    Parts.Add(new TrainCarPart(0, 0));
+                    Parts.Add(new TrainCarPart(Vector3.Zero, 0));
                 Parts[id].OffsetM = offset;
                 Parts[id].iMatrix = matrix;
                 Parts[id].Bogie = true;//identify this is a bogie, will be used for hold rails on track
@@ -2567,7 +2573,7 @@ namespace Orts.Simulation.RollingStocks
             else
             {
                 while (Parts.Count <= id)
-                    Parts.Add(new TrainCarPart(0, 0));
+                    Parts.Add(new TrainCarPart(Vector3.Zero, 0));
                 Parts[id].OffsetM = offset;
                 Parts[id].iMatrix = matrix;
                 Parts[id].Bogie = true;//identify this is a bogie, will be used for hold rails on track
@@ -2591,7 +2597,7 @@ namespace Orts.Simulation.RollingStocks
             WheelHasBeenSet = true;
             // No parts means no bogies (always?), so make sure we've got Parts[0] for the car itself.
             if (Parts.Count == 0)
-                Parts.Add(new TrainCarPart(0, 0));
+                Parts.Add(new TrainCarPart(Vector3.Zero, 0));
             // No axles but we have bogies.
             if (WheelAxles.Count == 0 && Parts.Count > 1)
             {
@@ -2600,8 +2606,8 @@ namespace Orts.Simulation.RollingStocks
                     WheelAxles.Add(new WheelAxle(part.OffsetM, part.iMatrix, 0));
                 Trace.TraceInformation("Wheel axle data faked based on {1} bogies for {0}", WagFilePath, Parts.Count - 1);
             }
-            bool articFront = !WheelAxles.Any(a => a.OffsetM < 0);
-            bool articRear = !WheelAxles.Any(a => a.OffsetM > 0);
+            bool articFront = !WheelAxles.Any(a => a.OffsetM.Z < 0);
+            bool articRear = !WheelAxles.Any(a => a.OffsetM.Z > 0);
             // Validate the axles' assigned bogies and count up the axles on each bogie.
             if (WheelAxles.Count > 0)
             {
@@ -2642,13 +2648,13 @@ namespace Orts.Simulation.RollingStocks
                     {
                         if (w.BogieMatrix == Parts[i].iMatrix)
                         {
-                            if (w.OffsetM.AlmostEqual(Parts[i].OffsetM, 0.6f))
+                            if (w.OffsetM.Z.AlmostEqual(Parts[i].OffsetM.Z, 0.6f))
                             {
-                                var w1 = new WheelAxle(w.OffsetM - 0.5f, w.BogieIndex, i);
+                                var w1 = new WheelAxle(new Vector3(w.OffsetM.X, w.OffsetM.Y, w.OffsetM.Z - 0.5f), w.BogieIndex, i);
                                 w1.Part = Parts[w1.BogieIndex]; //create virtual wheel
                                 w1.Part.SumWgt++;
                                 WheelAxles.Add(w1);
-                                w.OffsetM += 0.5f; //move the original bogie forward, so we have two bogies to make the future calculation happy
+                                w.OffsetM.Z += 0.5f; //move the original bogie forward, so we have two bogies to make the future calculation happy
                                 Trace.TraceInformation("A virtual wheel axle was added for bogie {1} of {0}", WagFilePath, i);
                                 break;
                             }
@@ -2698,8 +2704,8 @@ namespace Orts.Simulation.RollingStocks
             // Decided to control what is sent to SetUpWheelsArticulation()by using
             // WheelAxlesLoaded as a flag.  This way, wagons that have to be processed are included
             // and the rest left out.
-            bool articulatedFront = !WheelAxles.Any(a => a.OffsetM < 0);
-            bool articulatedRear = !WheelAxles.Any(a => a.OffsetM > 0);
+            bool articulatedFront = !WheelAxles.Any(a => a.OffsetM.Z < 0);
+            bool articulatedRear = !WheelAxles.Any(a => a.OffsetM.Z > 0);
             var carIndex = Train.Cars.IndexOf(this);
             //Certain locomotives are testing as articulated wagons for some reason.
             if (WagonType != WagonTypes.Engine)
@@ -2714,8 +2720,8 @@ namespace Orts.Simulation.RollingStocks
         {
             // If there are no forward wheels, this car is articulated (joined
             // to the car in front) at the front. Likewise for the rear.
-            bool articulatedFront = !WheelAxles.Any(a => a.OffsetM < 0);
-            bool articulatedRear = !WheelAxles.Any(a => a.OffsetM > 0);
+            bool articulatedFront = !WheelAxles.Any(a => a.OffsetM.Z < 0);
+            bool articulatedRear = !WheelAxles.Any(a => a.OffsetM.Z > 0);
             // Original process originally used caused too many issues.
             // The original process did include the below process of just using WheelAxles.Add
             //  if the initial test did not work.  Since the below process is working without issues the
@@ -2723,10 +2729,10 @@ namespace Orts.Simulation.RollingStocks
             if (articulatedFront || articulatedRear)
             {
                 if (articulatedFront && WheelAxles.Count <= 3)
-                    WheelAxles.Add(new WheelAxle(-CarLengthM / 2, 0, 0) { Part = Parts[0] });
+                    WheelAxles.Add(new WheelAxle(new Vector3(0.0f, BogiePivotHeightM, -CarLengthM / 2.0f), 0, 0) { Part = Parts[0] });
 
                 if (articulatedRear && WheelAxles.Count <= 3)
-                    WheelAxles.Add(new WheelAxle(CarLengthM / 2, 0, 0) { Part = Parts[0] });
+                    WheelAxles.Add(new WheelAxle(new Vector3(0.0f, BogiePivotHeightM, CarLengthM / 2.0f), 0, 0) { Part = Parts[0] });
 
                 WheelAxles.Sort(WheelAxles[0]);
             }
@@ -2745,71 +2751,52 @@ namespace Orts.Simulation.RollingStocks
 
         public void ComputePosition(Traveller traveler, bool backToFront, float elapsedTimeS, float distance, float speed)
         {
-            // Position of bogies relative to model center, used for determining curve physics
-            float[] bogieOffsets = new float[Parts.Count - 1];
-
-            for (var j = 0; j < Parts.Count; j++)
+            for (int j = 0; j < Parts.Count; j++)
                 Parts[j].InitLineFit();
-            var tileX = traveler.TileX;
-            var tileZ = traveler.TileZ;
+            int tileX = traveler.TileX;
+            int tileZ = traveler.TileZ;
+
+            UpdateCurvePhys(new Traveller(traveler), BogieZOffsets);
+
             if (Flipped == backToFront)
             {
-                var o = -CarLengthM / 2 - CentreOfGravityM.Z;
-                int l = 0;
-                for (int p = 1; p < Parts.Count; p++)
+                float o = -CarLengthM / 2 - CentreOfGravityM.Z;
+                for (int k = 0; k < WheelAxles.Count; k++)
                 {
-                    bogieOffsets[l] = Parts[p].OffsetM - o;
-                    o = Parts[p].OffsetM;
-                    l++;
-                }
-
-                UpdateCurvePhys(new Traveller(traveler), bogieOffsets);
-
-                o = -CarLengthM / 2 - CentreOfGravityM.Z;
-                for (var k = 0; k < WheelAxles.Count; k++)
-                {
-                    var d = WheelAxles[k].OffsetM - o;
-                    o = WheelAxles[k].OffsetM;
+                    float d = WheelAxles[k].OffsetM.Z - o;
+                    o = WheelAxles[k].OffsetM.Z;
                     traveler.Move(d);
-                    var x = traveler.X + 2048 * (traveler.TileX - tileX);
-                    var y = traveler.Y;
-                    var z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
 
-                    Vector3 location = new Vector3(x, y, z) + traveler.CalcElevationPositionOffset(Simulator.Settings.UseSuperElevation, out float r);
+                    Vector3 location = traveler.CalcElevationPositionOffset(BogiePivotHeightM, Simulator.Settings.UseSuperElevation, out float r);
+                    location += traveler.Location;
+
+                    location.X += 2048 * (traveler.TileX - tileX);
+                    location.Z += 2048 * (traveler.TileZ - tileZ);
+
                     // This car is flipped, so flip roll direction.
                     r *= -1;
 
-                    WheelAxles[k].Part.AddWheelSetLocation(1, o, location.X, location.Y, location.Z, r);
+                    WheelAxles[k].Part.AddWheelSetLocation(1, o, location, r);
                 }
                 o = CarLengthM / 2 - CentreOfGravityM.Z - o;
                 traveler.Move(o);
             }
             else
             {
-                var o = CarLengthM / 2 - CentreOfGravityM.Z;
-                int l = 0;
-                for (int p = Parts.Count - 1; p >= 1; p--)
+                float o = CarLengthM / 2 - CentreOfGravityM.Z;
+                for (int k = WheelAxles.Count - 1; k >= 0; k--)
                 {
-                    bogieOffsets[l] = o - Parts[p].OffsetM;
-                    o = Parts[p].OffsetM;
-                    l++;
-                }
-
-                UpdateCurvePhys(new Traveller(traveler), bogieOffsets);
-
-                o = CarLengthM / 2 - CentreOfGravityM.Z;
-                for (var k = WheelAxles.Count - 1; k >= 0; k--)
-                {
-                    var d = o - WheelAxles[k].OffsetM;
-                    o = WheelAxles[k].OffsetM;
+                    float d = o - WheelAxles[k].OffsetM.Z;
+                    o = WheelAxles[k].OffsetM.Z;
                     traveler.Move(d);
-                    var x = traveler.X + 2048 * (traveler.TileX - tileX);
-                    var y = traveler.Y;
-                    var z = traveler.Z + 2048 * (traveler.TileZ - tileZ);
 
-                    Vector3 location = new Vector3(x, y, z) + traveler.CalcElevationPositionOffset(Simulator.Settings.UseSuperElevation, out float r);
+                    Vector3 location = traveler.CalcElevationPositionOffset(BogiePivotHeightM, Simulator.Settings.UseSuperElevation, out float r);
+                    location += traveler.Location;
 
-                    WheelAxles[k].Part.AddWheelSetLocation(1, o, location.X, location.Y, location.Z, r);
+                    location.X += 2048 * (traveler.TileX - tileX);
+                    location.Z += 2048 * (traveler.TileZ - tileZ);
+
+                    WheelAxles[k].Part.AddWheelSetLocation(1, o, location, r);
                 }
                 o = CarLengthM / 2 + CentreOfGravityM.Z + o;
                 traveler.Move(o);
@@ -2827,14 +2814,16 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else if (p.SumWgt > 0.5f) // Handle edge case of single axle pony trucks
                 {
-                    double d = p.OffsetM - p.SumOffset / p.SumWgt;
+                    double d = p.OffsetM.Z - p.SumZOffset / p.SumWgt;
                     if (-.2 < d && d < .2)
                         continue;
                     // Add a fake "wheel" to serve as a pivot point
-                    p.AddWheelSetLocation(1, p.OffsetM, p0.Pos[0] + p.OffsetM * p0.Dir[0], p0.Pos[1] + p.OffsetM * p0.Dir[1], p0.Pos[2] + p.OffsetM * p0.Dir[2], p.Roll);
+                    Vector3 pos = new Vector3(p0.Pos[0] + p.OffsetM.Z * p0.Dir[0], p0.Pos[1] + p.OffsetM.Z * p0.Dir[1], p0.Pos[2] + p.OffsetM.Z * p0.Dir[2]);
+                    p.AddWheelSetLocation(1, p.OffsetM.Z, pos, p.Roll);
                     p.FindCenterLine();
                 }
             }
+            // Determine facing direction of train car
             p0.FindCenterLine();
             Vector3 fwd = new Vector3(p0.Dir[0], p0.Dir[1], -p0.Dir[2]);
             // Check if null (0-length) vector
@@ -2850,14 +2839,25 @@ namespace Orts.Simulation.RollingStocks
             m.Up = up;
             m.Backward = fwd;
 
-            // Roll the car for superelevation
-            m = Matrix.CreateRotationZ(p0.Roll) * m;
+            Matrix rollMat = Matrix.Identity;
 
-            // Rolling stock seems to always sit 0.275 meters above the track height
-            float railOffset = 0.275f;
+            if (p0.Roll != 0.0f)
+            {
+                // For correct bogie positioning, need to offset rotation axis
+                Vector3 offset = new Vector3(0.0f, BogiePivotHeightM, 0.0f);
 
-            Vector3 pos = new Vector3(p0.Pos[0], p0.Pos[1], -p0.Pos[2]);
-            m.Translation = pos + m.Up * railOffset;
+                // Roll the car for superelevation about the offset axis of rotation
+                rollMat.Translation -= offset;
+                rollMat *= Matrix.CreateRotationZ(p0.Roll);
+                rollMat.Translation += offset;
+
+                m = rollMat * m;
+            }
+
+            SuperelevationInverseMatrix = Matrix.Invert(rollMat);
+
+            // Set position of train car
+            m.Translation += new Vector3(p0.Pos[0], p0.Pos[1], -p0.Pos[2]);
 
             WorldPosition.XNAMatrix = m;
             WorldPosition.TileX = tileX;
@@ -2909,6 +2909,7 @@ namespace Orts.Simulation.RollingStocks
 
         #region Vibration and tilting
         public Matrix VibrationInverseMatrix = Matrix.Identity;
+        public Matrix SuperelevationInverseMatrix = Matrix.Identity;
 
         // https://en.wikipedia.org/wiki/Newton%27s_laws_of_motion#Newton.27s_2nd_Law
         //   Let F be the force in N
@@ -3509,11 +3510,11 @@ namespace Orts.Simulation.RollingStocks
 
     public class WheelAxle : IComparer<WheelAxle>
     {
-        public float OffsetM;   // distance from center of model, positive forward
+        public Vector3 OffsetM;   // Offset from the bogie center
         public int BogieIndex;
         public int BogieMatrix;
         public TrainCarPart Part;
-        public WheelAxle(float offset, int bogie, int parentMatrix)
+        public WheelAxle(Vector3 offset, int bogie, int parentMatrix)
         {
             OffsetM = offset;
             BogieIndex = bogie;
@@ -3521,8 +3522,10 @@ namespace Orts.Simulation.RollingStocks
         }
         public int Compare(WheelAxle a, WheelAxle b)
         {
-            if (a.OffsetM > b.OffsetM) return 1;
-            if (a.OffsetM < b.OffsetM) return -1;
+            if (a.OffsetM.Z > b.OffsetM.Z)
+                return 1;
+            if (a.OffsetM.Z < b.OffsetM.Z)
+                return -1;
             return 0;
         }
     }
@@ -3530,20 +3533,20 @@ namespace Orts.Simulation.RollingStocks
     // data and methods used to align trucks and models to track
     public class TrainCarPart
     {
-        public float OffsetM; // distance from center of model, positive forward
+        public Vector3 OffsetM; // Position offset for this part relative to parent
         public int iMatrix; // matrix index in shape that needs to be moved
         // line fitting variables
         public double SumWgt; // Sum of component weights
-        public double SumOffset; // Sum of component weights times offsets
-        public double SumOffsetSq; // Sum of component weights times offsets squared
+        public double SumZOffset; // Sum of component weights times Z-offsets
+        public double SumZOffsetSq; // Sum of component weights times Z-offsets squared
         public double[] SumPos = new double[3]; // Sum of component locations [x, y, z]
-        public double[] SumPosOffset = new double[3]; // Sum of component locations [x, y, z] times offsets
+        public double[] SumPosZOffset = new double[3]; // Sum of component locations [x, y, z] times Z-offsets
         public float[] Pos = new float[3]; // Position [x, y, z] of this part, calculated with y-intercept of linear regression
         public float[] Dir = new float[3]; // Oritentation [x, y, z] of this part, calculated with slope of linear regression
         public float SumRoll; // Sum of all roll angles of components
         public float Roll; // Roll angle of this part
         public bool Bogie; // True if this is a bogie
-        public TrainCarPart(float offset, int i)
+        public TrainCarPart(Vector3 offset, int i)
         {
             OffsetM = offset;
             iMatrix = i;
@@ -3554,9 +3557,9 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public void InitLineFit()
         {
-            SumWgt = SumOffset = SumOffsetSq = 0;
+            SumWgt = SumZOffset = SumZOffsetSq = 0;
             for (int i = 0; i < 3; i++)
-                SumPos[i] = SumPosOffset[i] = 0;
+                SumPos[i] = SumPosZOffset[i] = 0;
             SumRoll = 0;
         }
 
@@ -3564,17 +3567,17 @@ namespace Orts.Simulation.RollingStocks
         /// Directly adds the 3D position values of a sub part to this part. The position
         /// of sub parts will be used to derive the position of this part.
         /// </summary>
-        public void AddWheelSetLocation(float weight, float offset, float x, float y, float z, float roll)
+        public void AddWheelSetLocation(float weight, float zOffset, Vector3 position, float roll)
         {
             SumWgt += weight;
-            SumOffset += weight * offset;
-            SumOffsetSq += weight * offset * offset;
-            SumPos[0] += weight * x;
-            SumPosOffset[0] += weight * x * offset;
-            SumPos[1] += weight * y;
-            SumPosOffset[1] += weight * y * offset;
-            SumPos[2] += weight * z;
-            SumPosOffset[2] += weight * z * offset;
+            SumZOffset += weight * zOffset;
+            SumZOffsetSq += weight * zOffset * zOffset;
+            SumPos[0] += weight * position.X;
+            SumPosZOffset[0] += weight * position.X * zOffset;
+            SumPos[1] += weight * position.Y;
+            SumPosZOffset[1] += weight * position.Y * zOffset;
+            SumPos[2] += weight * position.Z;
+            SumPosZOffset[2] += weight * position.Z * zOffset;
             SumRoll += weight * roll;
         }
 
@@ -3584,13 +3587,13 @@ namespace Orts.Simulation.RollingStocks
         public void AddPartLocation(float weight, TrainCarPart part)
         {
             SumWgt += weight;
-            SumOffset += weight * part.OffsetM;
-            SumOffsetSq += weight * part.OffsetM * part.OffsetM;
+            SumZOffset += weight * part.OffsetM.Z;
+            SumZOffsetSq += weight * part.OffsetM.Z * part.OffsetM.Z;
             for (int i = 0; i < 3; i++)
             {
-                float position = part.Pos[i] + part.OffsetM * part.Dir[i];
+                float position = part.Pos[i] + part.OffsetM.Z * part.Dir[i];
                 SumPos[i] += weight * position;
-                SumPosOffset[i] += weight * position * part.OffsetM;
+                SumPosZOffset[i] += weight * position * part.OffsetM.Z;
             }
             SumRoll += weight * part.Roll;
         }
@@ -3609,19 +3612,19 @@ namespace Orts.Simulation.RollingStocks
             // position of this part) and M (the 3D orientation of this part) using the offsets and positions added previously.
 
             // Denominator for regression calculation. N * sum(x^2) - (sum(x))^2 where N is the total weight and x is the offset.
-            double denominator = SumWgt * SumOffsetSq - SumOffset * SumOffset;
+            double denominator = SumWgt * SumZOffsetSq - SumZOffset * SumZOffset;
             if (denominator > 1e-20)
             {
                 for (int i = 0; i < 3; i++)
                 {
                     // The direction (M) is defined as 'M = [N * sum(x * y) - sum(x) * sum (y)] / denominator'
                     // where N is the total weight, x is the offset, and y is the 3D position
-                    Dir[i] = (float)((SumWgt * SumPosOffset[i] - SumOffset * SumPos[i]) / denominator);
+                    Dir[i] = (float)((SumWgt * SumPosZOffset[i] - SumZOffset * SumPos[i]) / denominator);
                     // The position (B) is defined as 'B = [sum(y) - M * sum(x)] / N', where N is the total
                     // weight, x is the offset, y is the 3D position, and M is the direction value from earlier.
                     // This uses an equivalent form that doesn't use the result of the above calulcation to avoid
                     // precision errors from the value being converted to a float.
-                    Pos[i] = (float)((SumOffsetSq * SumPos[i] - SumOffset * SumPosOffset[i]) / denominator);
+                    Pos[i] = (float)((SumZOffsetSq * SumPos[i] - SumZOffset * SumPosZOffset[i]) / denominator);
                 }
             }
             else
