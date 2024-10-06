@@ -268,7 +268,7 @@ namespace ORTS.Settings
             {
                 while (doingTheSumOfTheFileBytes)
                 {
-                    // stop deleteing file while summing in progress,
+                    // stop deleting file while summing in progress,
                     // sum is for feedback to the user
                     System.Threading.Thread.Sleep(10); 
                 }

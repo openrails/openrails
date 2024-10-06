@@ -644,16 +644,18 @@ namespace ORTS
 
             while (downloadThread.IsAlive)
             {
-                Stopwatch sw = Stopwatch.StartNew();
-
                 TotalBytes = 0;
+
                 sumMB(installPathRoute);
                 AutoInstallSynchronizationContext.Post(new SendOrPostCallback(o =>
                 {
+                    ((MainForm)Owner).Cursor = Cursors.WaitCursor;
+
                     dataGridViewAutoInstall.CurrentRow.Cells[1].Value = 
                         string.Format("Downloaded: {0} kB", (string)o);
                 }), (TotalBytes / 1024).ToString("N0"));
 
+                Stopwatch sw = Stopwatch.StartNew();
                 while ((downloadThread.IsAlive) && (sw.ElapsedMilliseconds <= 1000)) { }
             }
 
@@ -671,16 +673,17 @@ namespace ORTS
 
                     while (installThread.IsAlive)
                     {
-                        Stopwatch sw = Stopwatch.StartNew();
-
                         TotalBytes = -bytesZipfile;
                         sumMB(installPathRoute);
                         AutoInstallSynchronizationContext.Post(new SendOrPostCallback(o =>
                         {
+                            ((MainForm)Owner).Cursor = Cursors.WaitCursor;
+
                             dataGridViewAutoInstall.CurrentRow.Cells[1].Value = 
                                 string.Format("Installed: {0} kB", (string)o);
                         }), (TotalBytes / 1024).ToString("N0"));
 
+                        Stopwatch sw = Stopwatch.StartNew();
                         while ((installThread.IsAlive) && (sw.ElapsedMilliseconds <= 1000)) { }
                     }
                 }
@@ -838,6 +841,15 @@ namespace ORTS
             AutoInstallRoutes[AutoInstallRouteName].ContentName = routeName;
             AutoInstallRoutes[AutoInstallRouteName].ContentDirectory = installPathRouteReal;
 
+            // insert into Manually Installed data grid
+            int indexAdded = dataGridViewManualInstall.Rows.Add(new string[] {
+                routeName,
+                installPathRouteReal
+            });
+            dataGridViewManualInstall.Rows[indexAdded].Cells[1].ToolTipText = installPathRouteReal;
+            dataGridViewManualInstall.Rows[indexAdded].DefaultCellStyle.ForeColor = Color.Gray;
+            dataGridViewManualInstall.Sort(dataGridViewManualInstall.Columns[0], ListSortDirection.Ascending);
+
             return true;
         }
 
@@ -954,6 +966,11 @@ namespace ORTS
                 if (Settings.Folders.Folders[route.ContentName] == route.ContentDirectory)
                 {
                     Settings.Folders.Folders.Remove(route.ContentName);
+                    int index = findIndexDgvManualInstall(route.ContentName);
+                    if (index > -1)
+                    {
+                        dataGridViewManualInstall.Rows.RemoveAt(index);
+                    }
                 }
                 Settings.Folders.Save();
             }
@@ -991,12 +1008,13 @@ namespace ORTS
                 // this will stop the delete until the sum is done
                 AutoInstallDoingTheSumOfTheFileBytes = true;
 
-                Stopwatch sw = Stopwatch.StartNew();
                 TotalBytes = 0;
                 if (sumMB(directoryInstalledIn))
                 {
                     AutoInstallSynchronizationContext.Post(new SendOrPostCallback(o =>
                     {
+                        ((MainForm)Owner).Cursor = Cursors.WaitCursor;
+
                         dataGridViewAutoInstall.CurrentRow.Cells[1].Value =
                             string.Format("Left: {0} kB", (string)o);
                     }), (TotalBytes / 1024).ToString("N0"));
@@ -1004,6 +1022,7 @@ namespace ORTS
 
                 AutoInstallDoingTheSumOfTheFileBytes = false;
 
+                Stopwatch sw = Stopwatch.StartNew();
                 while (deleteThread.IsAlive && (sw.ElapsedMilliseconds <= 1000)) { }
             }
         }
@@ -1032,8 +1051,7 @@ namespace ORTS
         {
             AutoInstallClosingBlocked = true;
 
-            MainForm mainForm = (MainForm)Owner;
-            mainForm.Cursor = Cursors.WaitCursor;
+            ((MainForm)Owner).Cursor = Cursors.WaitCursor;
         }
 
         private void EnableAutoInstalButtons()
@@ -1055,8 +1073,7 @@ namespace ORTS
 
         private void setCursorToDefaultCursor()
         {
-            MainForm mainForm = (MainForm)Owner;
-            mainForm.Cursor = Cursors.Default;
+            ((MainForm)Owner).Cursor = Cursors.Default;
 
             AutoInstallClosingBlocked = false;
         }
@@ -1630,6 +1647,18 @@ namespace ORTS
             }
 
             return "";
+        }
+
+        private int findIndexDgvManualInstall(string route)
+        {
+            for (int i = 0; i < dataGridViewManualInstall.Rows.Count; i++)
+            {
+                if (dataGridViewManualInstall.Rows[i].Cells[0].Value.ToString().Equals(route)) 
+                {
+                    return i;
+                }
+            }
+            return - 1;
         }
 
         private void DownloadContentForm_FormClosing(object sender, FormClosingEventArgs formClosingEventArgs)
