@@ -743,9 +743,9 @@ namespace Orts.Viewer3D
                             // Check if this vertex should be translated by superelevation
                             bool reposition = v.PositionControl != Vertex.VertexPositionControl.None;
 
-                            if (Math.Sign(p.X) == Direction && v.PositionControl == Vertex.VertexPositionControl.Inside)
+                            if (Math.Sign(p.X) == Direction && v.PositionControl == Vertex.VertexPositionControl.Outside)
                                 reposition = false;
-                            else if (Math.Sign(p.X) == -Direction && v.PositionControl == Vertex.VertexPositionControl.Outside)
+                            else if (Math.Sign(p.X) == -Direction && v.PositionControl == Vertex.VertexPositionControl.Inside)
                                 reposition = false;
 
                             if (reposition)
