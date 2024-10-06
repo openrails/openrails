@@ -863,6 +863,7 @@ namespace Orts.Viewer3D
                             v.Normal = new Vector3(float.Parse(s[0]), float.Parse(s[1]), float.Parse(s[2]));
                             s = reader.GetAttribute("TexCoord").Split(sep, StringSplitOptions.RemoveEmptyEntries);
                             v.TexCoord = new Vector2(float.Parse(s[0]), float.Parse(s[1]));
+                            v.PositionControl = Vertex.GetPositionControl(reader.GetAttribute("PositionControl"));
                             pl.Vertices.Add(v);
                             lodItem.NumVertices++; // Bump vertex count
                             if (pl.Vertices.Count > 1) lodItem.NumSegments++;
@@ -1171,21 +1172,54 @@ namespace Orts.Viewer3D
         public Vector3 Normal;                             // Normal vector (nx, ny, nz)
         public Vector2 TexCoord;                           // Texture coordinate (u, v)
 
+        /// <summary>
+        /// Enumeration of controls for vertex displacement
+        /// </summary>
+        public enum VertexPositionControl
+        {
+            /// <summary>
+            /// None -- The vertex position won't be adjusted by superelevation.
+            /// </summary>
+            None = 0,
+
+            /// <summary>
+            /// All -- The vertex position will be adjusted by superelevation.
+            /// </summary>
+            All,
+
+            /// <summary>
+            /// Inside -- The vertex position will only be adjusted when on the inside of the curve.
+            /// </summary>
+            Inside,
+
+            /// <summary>
+            /// Outside -- The vertex position will only be adjusted when on the outside of the curve.
+            /// </summary>
+            Outside
+        }
+
+        public VertexPositionControl PositionControl;
+
         // Vertex constructor (default)
-        public Vertex(float x, float y, float z, float nx, float ny, float nz, float u, float v)
+        public Vertex(float x, float y, float z, float nx, float ny, float nz, float u, float v,
+            VertexPositionControl control = VertexPositionControl.All)
         {
             Position = new Vector3(x, y, z);
             Normal = new Vector3(nx, ny, nz);
             TexCoord = new Vector2(u, v);
+            PositionControl = control;
         }
 
         // Vertex constructor (DAT)
         public Vertex(STFReader stf)
         {
-            Vertex v = new Vertex(); // Temp variable used to construct the struct in ParseBlock
-            v.Position = new Vector3();
-            v.Normal = new Vector3();
-            v.TexCoord = new Vector2();
+            Vertex v = new Vertex
+            {
+                Position = new Vector3(),
+                Normal = new Vector3(),
+                TexCoord = new Vector2(),
+                PositionControl = VertexPositionControl.All
+            }; // Temp variable used to construct the struct in ParseBlock
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("position", ()=>{
@@ -1208,12 +1242,41 @@ namespace Orts.Viewer3D
                     v.TexCoord.Y = stf.ReadFloat(STFReader.UNITS.None, null);
                     stf.SkipRestOfBlock();
                 }),
+                new STFReader.TokenProcessor("positioncontrol", ()=>{
+                    v.PositionControl = GetPositionControl(stf.ReadStringBlock(null));
+                }),
             });
             this = v;
             // Checks for required member variables
             // No way to check for missing Position.
             if (Normal == Vector3.Zero) throw new Exception("improper Normal");
             // No way to check for missing TexCoord
+        }
+
+        /// <summary>
+        /// Gets a member of the VertexPositionControl enumeration that corresponds to sPositionControl.
+        /// </summary>
+        /// <param name="sPositionControl">String that identifies desired PositionControl.</param>
+        /// <returns></returns>
+        public static VertexPositionControl GetPositionControl(string sPositionControl)
+        {
+            string s = sPositionControl.ToLower();
+            switch (s)
+            {
+                case "none":
+                    return VertexPositionControl.None;
+
+                case "inside":
+                    return VertexPositionControl.Inside;
+
+                case "outside":
+                    return VertexPositionControl.Outside;
+
+                case "all":
+                default:
+                    return VertexPositionControl.All;
+
+            }
         }
     }
 

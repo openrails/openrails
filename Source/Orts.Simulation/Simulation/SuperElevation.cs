@@ -300,7 +300,7 @@ namespace Orts.Simulation
                     // Special case: Next section is a short straight, but isn't the end of the curve
                     // In this case, we force the straight section to maintain nonzero superelevation
                     if (count < SectionList.Count - 2 && SectionList[count + 1].NomElevM == 0.0f
-                        && lengths[count + 1] < (SectionList[count].NomElevM / effectiveRunoffSlope) * 2.0f)
+                        && lengths[count + 1] < (SectionList[count].NomElevM / effectiveRunoffSlope) * 1.5f)
                         SectionList[count + 1].NomElevM = (SectionList[count].NomElevM + SectionList[count + 2].NomElevM) / 2.0f;
 
                     endElevs[count] = Math.Min((SectionList[count].NomElevM + SectionList[count + 1].NomElevM) / 2.0f,
