@@ -78,7 +78,7 @@ namespace ORTS
         {
             get
             {
-                return System.IO.Path.Combine(Application.StartupPath, "RunActivity.exe");
+                return System.IO.Path.Combine(ApplicationInfo.ProcessDirectory, "RunActivity.exe");
             }
         }
 
@@ -110,8 +110,6 @@ namespace ORTS
 
         GettextResourceManager catalog = new GettextResourceManager("Menu");
 
-        public string BaseDocumentationUrl;
-
         #region Main Form
         public MainForm()
         {
@@ -130,18 +128,8 @@ namespace ORTS
             panelModeTimetable.Location = panelModeActivity.Location;
             ShowDetails();
             UpdateEnabled();
-            UpdateManager = new UpdateManager(System.IO.Path.GetDirectoryName(Application.ExecutablePath), Application.ProductName, VersionInfo.VersionOrBuild);
+            UpdateManager = new UpdateManager(ApplicationInfo.ProcessDirectory, Application.ProductName, VersionInfo.VersionOrBuild);
             ElevationIcon = new Icon(SystemIcons.Shield, SystemInformation.SmallIconSize).ToBitmap();
-
-            BaseDocumentationUrl = "https://open-rails.readthedocs.io/en/latest";
-            if (VersionInfo.Version.Length > 0)
-            {
-                if (VersionInfo.Version.StartsWith("T") || VersionInfo.Version.StartsWith("U"))
-                {
-                    BaseDocumentationUrl = "https://open-rails.readthedocs.io/en/unstable";
-                }
-            }
- 
         }
 
         void MainForm_Shown(object sender, EventArgs e)
@@ -198,7 +186,7 @@ namespace ORTS
                     "Updater.exe",
                 };
                 var tools = new List<ToolStripItem>();
-                foreach (var executable in Directory.GetFiles(System.IO.Path.GetDirectoryName(Application.ExecutablePath), "*.exe"))
+                foreach (var executable in Directory.GetFiles(ApplicationInfo.ProcessDirectory, "*.exe"))
                 {
                     // Don't show any of the core parts of the application.
                     if (coreExecutables.Contains(System.IO.Path.GetFileName(executable)))
@@ -360,7 +348,7 @@ namespace ORTS
 
         void RestartMenu()
         {
-            Process.Start(Application.ExecutablePath);
+            Process.Start(ApplicationInfo.ProcessFile);
             Close();
         }
         #endregion
@@ -545,7 +533,7 @@ namespace ORTS
         {
             SaveOptions();
 
-            using (var form = new OptionsForm(Settings, UpdateManager, BaseDocumentationUrl))
+            using (var form = new OptionsForm(Settings, UpdateManager, false))
             {
                 switch (form.ShowDialog(this))
                 {
@@ -562,7 +550,7 @@ namespace ORTS
         
         void buttonDownloadContent_Click(object sender, EventArgs e)
         {
-            using (var form = new ContentForm(Settings, BaseDocumentationUrl))
+            using (var form = new DownloadContentForm(Settings))
             {
                 form.ShowDialog(this);
             }
@@ -741,7 +729,7 @@ namespace ORTS
 
                 if (!initialized && Folders.Count == 0)
                 {
-                    using (var form = new ContentForm(Settings, BaseDocumentationUrl))
+                    using (var form = new DownloadContentForm(Settings))
                     {
                         switch (form.ShowDialog(this))
                         {

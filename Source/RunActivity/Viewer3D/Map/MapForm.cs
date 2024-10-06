@@ -156,7 +156,7 @@ namespace Orts.Viewer3D.Debugging
                 AddNewMessage(e.Time, e.Message);
             };
 
-            GameForm = (Form)System.Windows.Forms.Control.FromHandle(Viewer.Game.Window.Handle);
+            GameForm = (Form)System.Windows.Forms.Control.FromHandle(Viewer.Game.Window.Handle); // qqq
 
             // Initialise the timer used to handle user input
             UITimer = new Timer();
