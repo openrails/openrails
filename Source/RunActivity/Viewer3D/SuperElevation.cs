@@ -740,9 +740,20 @@ namespace Orts.Viewer3D
                         // Rotate the vertex position based on superelevation
                         if (Direction != 0)
                         {
-                            p -= RollOffset;
-                            p = Vector3.Transform(p, SuperElevationRoll);
-                            p += RollOffset;
+                            // Check if this vertex should be translated by superelevation
+                            bool reposition = v.PositionControl != Vertex.VertexPositionControl.None;
+
+                            if (Math.Sign(p.X) == Direction && v.PositionControl == Vertex.VertexPositionControl.Inside)
+                                reposition = false;
+                            else if (Math.Sign(p.X) == -Direction && v.PositionControl == Vertex.VertexPositionControl.Outside)
+                                reposition = false;
+
+                            if (reposition)
+                            {
+                                p -= RollOffset;
+                                p = Vector3.Transform(p, SuperElevationRoll);
+                                p += RollOffset;
+                            }
                         }
 
                         // In some extreme cases, track may have been rotated so much it's upside down
