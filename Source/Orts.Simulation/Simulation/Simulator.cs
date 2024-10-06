@@ -2126,7 +2126,7 @@ namespace Orts.Simulation
             if (PlayerLocomotive.Train.TrainType != Train.TRAINTYPE.STATIC)
             {
                 if (!TimetableMode)
-                    AI.AITrains.Remove(PlayerLocomotive.Train as AITrain);
+                AI.AITrains.Remove(PlayerLocomotive.Train as AITrain);
                 if ((PlayerLocomotive.Train as AITrain).MovementState == AITrain.AI_MOVEMENT_STATE.SUSPENDED)
                 {
                     PlayerLocomotive.Train.Reinitialize();
@@ -2134,7 +2134,7 @@ namespace Orts.Simulation
                         AITrain.AI_MOVEMENT_STATE.INIT : AITrain.AI_MOVEMENT_STATE.BRAKING;
                 }
                 if (!TimetableMode)
-                    (PlayerLocomotive.Train as AITrain).SwitchToPlayerControl();
+                (PlayerLocomotive.Train as AITrain).SwitchToPlayerControl();
                 else
                     PlayerLocomotive.Train.DisplayMessage = "";
             }
