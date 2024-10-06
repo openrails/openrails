@@ -168,10 +168,6 @@ namespace ORTS.Settings
         public String Units { get; set; }
         [Default(false)]
         public bool DisableTCSScripts { get; set; }
-        [Default(false)]
-        public bool AutoSaveActive { get; set; }
-        [Default (15)]
-        public int AutoSaveInterval { get; set; }
 
         // Audio settings:
         [Default(100)]
