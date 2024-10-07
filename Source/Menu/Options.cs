@@ -632,7 +632,6 @@ namespace ORTS
                 labelLODBias.Text = catalog.GetStringFmt("All detail (+{0}%)", trackLODBias.Value);
         }
 
-
         private void checkAlerter_CheckedChanged(object sender, EventArgs e)
         {
             //Disable checkAlerterExternal when checkAlerter is not checked
