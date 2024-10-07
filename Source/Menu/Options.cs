@@ -39,7 +39,7 @@ namespace ORTS
         readonly UpdateManager UpdateManager;
         readonly string BaseDocumentationUrl;
 
-        private GettextResourceManager Catalog = new GettextResourceManager("Menu");
+        private GettextResourceManager catalog = new GettextResourceManager("Menu");
 
         public class ComboBoxMember
         {
@@ -51,7 +51,7 @@ namespace ORTS
         {
             InitializeComponent();
 
-            Localizer.Localize(this, Catalog);
+            Localizer.Localize(this, catalog);
 
             Settings = settings;
             UpdateManager = updateManager;
@@ -91,22 +91,22 @@ namespace ORTS
             if (comboLanguage.SelectedValue == null) comboLanguage.SelectedIndex = 0;
 
             comboOtherUnits.DataSource = new[] {
-                new ComboBoxMember { Code = "Route", Name = Catalog.GetString("Route") },
-                new ComboBoxMember { Code = "Automatic", Name = Catalog.GetString("Player's location") },
-                new ComboBoxMember { Code = "Metric", Name = Catalog.GetString("Metric") },
-                new ComboBoxMember { Code = "US", Name = Catalog.GetString("Imperial US") },
-                new ComboBoxMember { Code = "UK", Name = Catalog.GetString("Imperial UK") },
+                new ComboBoxMember { Code = "Route", Name = catalog.GetString("Route") },
+                new ComboBoxMember { Code = "Automatic", Name = catalog.GetString("Player's location") },
+                new ComboBoxMember { Code = "Metric", Name = catalog.GetString("Metric") },
+                new ComboBoxMember { Code = "US", Name = catalog.GetString("Imperial US") },
+                new ComboBoxMember { Code = "UK", Name = catalog.GetString("Imperial UK") },
             }.ToList();
             comboOtherUnits.DisplayMember = "Name";
             comboOtherUnits.ValueMember = "Code";
             comboOtherUnits.SelectedValue = Settings.Units;
 
             comboPressureUnit.DataSource = new[] {
-                new ComboBoxMember { Code = "Automatic", Name = Catalog.GetString("Automatic") },
-                new ComboBoxMember { Code = "bar", Name = Catalog.GetString("bar") },
-                new ComboBoxMember { Code = "PSI", Name = Catalog.GetString("psi") },
-                new ComboBoxMember { Code = "inHg", Name = Catalog.GetString("inHg") },
-                new ComboBoxMember { Code = "kgf/cm^2", Name = Catalog.GetString("kgf/cm²") },
+                new ComboBoxMember { Code = "Automatic", Name = catalog.GetString("Automatic") },
+                new ComboBoxMember { Code = "bar", Name = catalog.GetString("bar") },
+                new ComboBoxMember { Code = "PSI", Name = catalog.GetString("psi") },
+                new ComboBoxMember { Code = "inHg", Name = catalog.GetString("inHg") },
+                new ComboBoxMember { Code = "kgf/cm^2", Name = catalog.GetString("kgf/cm²") },
             }.ToList();
             comboPressureUnit.DisplayMember = "Name";
             comboPressureUnit.ValueMember = "Code";
@@ -184,23 +184,23 @@ namespace ORTS
 
             // DataLogger tab
             var dictionaryDataLoggerSeparator = new Dictionary<string, string>();
-            dictionaryDataLoggerSeparator.Add("comma", Catalog.GetString("comma"));
-            dictionaryDataLoggerSeparator.Add("semicolon", Catalog.GetString("semicolon"));
-            dictionaryDataLoggerSeparator.Add("tab", Catalog.GetString("tab"));
-            dictionaryDataLoggerSeparator.Add("space", Catalog.GetString("space"));
+            dictionaryDataLoggerSeparator.Add("comma", catalog.GetString("comma"));
+            dictionaryDataLoggerSeparator.Add("semicolon", catalog.GetString("semicolon"));
+            dictionaryDataLoggerSeparator.Add("tab", catalog.GetString("tab"));
+            dictionaryDataLoggerSeparator.Add("space", catalog.GetString("space"));
             comboDataLoggerSeparator.DataSource = new BindingSource(dictionaryDataLoggerSeparator, null);
             comboDataLoggerSeparator.DisplayMember = "Value";
             comboDataLoggerSeparator.ValueMember = "Key";
-            comboDataLoggerSeparator.Text = Catalog.GetString(Settings.DataLoggerSeparator);
+            comboDataLoggerSeparator.Text = catalog.GetString(Settings.DataLoggerSeparator);
             var dictionaryDataLogSpeedUnits = new Dictionary<string, string>();
-            dictionaryDataLogSpeedUnits.Add("route", Catalog.GetString("route"));
-            dictionaryDataLogSpeedUnits.Add("mps", Catalog.GetString("m/s"));
-            dictionaryDataLogSpeedUnits.Add("kmph", Catalog.GetString("km/h"));
-            dictionaryDataLogSpeedUnits.Add("mph", Catalog.GetString("mph"));
+            dictionaryDataLogSpeedUnits.Add("route", catalog.GetString("route"));
+            dictionaryDataLogSpeedUnits.Add("mps", catalog.GetString("m/s"));
+            dictionaryDataLogSpeedUnits.Add("kmph", catalog.GetString("km/h"));
+            dictionaryDataLogSpeedUnits.Add("mph", catalog.GetString("mph"));
             comboDataLogSpeedUnits.DataSource = new BindingSource(dictionaryDataLogSpeedUnits, null);
             comboDataLogSpeedUnits.DisplayMember = "Value";
             comboDataLogSpeedUnits.ValueMember = "Key";
-            comboDataLogSpeedUnits.Text = Catalog.GetString(Settings.DataLogSpeedUnits);
+            comboDataLogSpeedUnits.Text = catalog.GetString(Settings.DataLogSpeedUnits);
             checkDataLogger.Checked = Settings.DataLogger;
             checkDataLogPerformance.Checked = Settings.DataLogPerformance;
             checkDataLogPhysics.Checked = Settings.DataLogPhysics;
@@ -215,18 +215,18 @@ namespace ORTS
             checkListDataLogTSContents.Enabled = checkDataLogTrainSpeed.Checked;  
             numericDataLogTSInterval.Value = Settings.DataLogTSInterval;
             checkListDataLogTSContents.Items.AddRange(new object[] {
-                Catalog.GetString("Time"),
-                Catalog.GetString("Train Speed"),
-                Catalog.GetString("Max. Speed"),
-                Catalog.GetString("Signal State"),
-                Catalog.GetString("Track Elevation"),
-                Catalog.GetString("Direction"),
-                Catalog.GetString("Control Mode"),
-                Catalog.GetString("Distance Travelled"),
-                Catalog.GetString("Throttle %"),
-                Catalog.GetString("Brake Cyl Press"),
-                Catalog.GetString("Dyn Brake %"),
-                Catalog.GetString("Gear Setting")
+                catalog.GetString("Time"),
+                catalog.GetString("Train Speed"),
+                catalog.GetString("Max. Speed"),
+                catalog.GetString("Signal State"),
+                catalog.GetString("Track Elevation"),
+                catalog.GetString("Direction"),
+                catalog.GetString("Control Mode"),
+                catalog.GetString("Distance Travelled"),
+                catalog.GetString("Throttle %"),
+                catalog.GetString("Brake Cyl Press"),
+                catalog.GetString("Dyn Brake %"),
+                catalog.GetString("Gear Setting")
             });
             for (var i = 0; i < checkListDataLogTSContents.Items.Count; i++)
                 checkListDataLogTSContents.SetItemChecked(i, Settings.DataLogTSContents[i] == 1);
@@ -236,16 +236,16 @@ namespace ORTS
             comboLanguage.Text = Settings.Language;
 
             var updateChannelNames = new Dictionary<string, string> {
-                { "stable", Catalog.GetString("Stable (recommended)") },
-                { "testing", Catalog.GetString("Testing") },
-                { "unstable", Catalog.GetString("Unstable") },
-                { "", Catalog.GetString("None") },
+                { "stable", catalog.GetString("Stable (recommended)") },
+                { "testing", catalog.GetString("Testing") },
+                { "unstable", catalog.GetString("Unstable") },
+                { "", catalog.GetString("None") },
             };
             var updateChannelDescriptions = new Dictionary<string, string> {
-                { "stable", Catalog.GetString("Infrequent updates to official, hand-picked versions. Recommended for most users.") },
-                { "testing", Catalog.GetString("Weekly updates which may contain noticable defects. For project supporters.") },
-                { "unstable", Catalog.GetString("Daily updates which may contain serious defects. For developers only.") },
-                { "", Catalog.GetString("No updates.") },
+                { "stable", catalog.GetString("Infrequent updates to official, hand-picked versions. Recommended for most users.") },
+                { "testing", catalog.GetString("Weekly updates which may contain noticable defects. For project supporters.") },
+                { "unstable", catalog.GetString("Daily updates which may contain serious defects. For developers only.") },
+                { "", catalog.GetString("No updates.") },
             };
             var spacing = labelUpdateMode.Margin.Size;
             var indent = 180;
@@ -284,10 +284,10 @@ namespace ORTS
             // see also function Message(CabControl control, ConfirmLevel level, string message)
             // in Source\Orts.Simulation\Simulation\Confirmer.cs
             comboControlConfirmations.DataSource = new[] {
-                new ComboBoxMember { Code = "None", Name = Catalog.GetString("None") },
-                new ComboBoxMember { Code = "Information", Name = Catalog.GetString("Information") },
-                new ComboBoxMember { Code = "Warning", Name = Catalog.GetString("Warning") },
-                new ComboBoxMember { Code = "Error", Name = Catalog.GetString("Error") },
+                new ComboBoxMember { Code = "None", Name = catalog.GetString("None") },
+                new ComboBoxMember { Code = "Information", Name = catalog.GetString("Information") },
+                new ComboBoxMember { Code = "Warning", Name = catalog.GetString("Warning") },
+                new ComboBoxMember { Code = "Error", Name = catalog.GetString("Error") },
             }.ToList();
             comboControlConfirmations.DisplayMember = "Name";
             comboControlConfirmations.ValueMember = "Code";
@@ -382,7 +382,7 @@ namespace ORTS
                 keyInputControl.ReadOnly = true;
                 keyInputControl.Tag = command;
                 panelKeys.Controls.Add(keyInputControl);
-                toolTip1.SetToolTip(keyInputControl, Catalog.GetString("Click to change this key"));
+                toolTip1.SetToolTip(keyInputControl, catalog.GetString("Click to change this key"));
 
                 ++i;
             }
@@ -398,7 +398,7 @@ namespace ORTS
         void buttonOK_Click(object sender, EventArgs e)
         {
             var result = Settings.Input.CheckForErrors();
-            if (result != "" && DialogResult.Yes != MessageBox.Show(Catalog.GetString("Continue with conflicting key assignments?\n\n") + result, Application.ProductName, MessageBoxButtons.YesNo))
+            if (result != "" && DialogResult.Yes != MessageBox.Show(catalog.GetString("Continue with conflicting key assignments?\n\n") + result, Application.ProductName, MessageBoxButtons.YesNo))
                 return;
 
             DialogResult = DialogResult.OK;
@@ -518,7 +518,7 @@ namespace ORTS
 
         void buttonDefaultKeys_Click(object sender, EventArgs e)
         {
-            if (DialogResult.Yes == MessageBox.Show(Catalog.GetString("Remove all custom key assignments?"), Application.ProductName, MessageBoxButtons.YesNo))
+            if (DialogResult.Yes == MessageBox.Show(catalog.GetString("Remove all custom key assignments?"), Application.ProductName, MessageBoxButtons.YesNo))
             {
                 Settings.Input.Reset();
                 InitializeKeyboardSettings();
@@ -529,7 +529,7 @@ namespace ORTS
         {
             var outputPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Open Rails Keyboard.txt");
             Settings.Input.DumpToText(outputPath);
-            MessageBox.Show(Catalog.GetString("A listing of all keyboard commands and keys has been placed here:\n\n") + outputPath, Application.ProductName);
+            MessageBox.Show(catalog.GetString("A listing of all keyboard commands and keys has been placed here:\n\n") + outputPath, Application.ProductName);
         }
 
         void buttonCheckKeys_Click(object sender, EventArgs e)
@@ -538,12 +538,12 @@ namespace ORTS
             if (errors != "")
                 MessageBox.Show(errors, Application.ProductName);
             else
-                MessageBox.Show(Catalog.GetString("No errors found."), Application.ProductName);
+                MessageBox.Show(catalog.GetString("No errors found."), Application.ProductName);
         }
 
         private void numericUpDownFOV_ValueChanged(object sender, EventArgs e)
         {
-            labelFOVHelp.Text = Catalog.GetStringFmt("{0:F0}° vertical FOV is the same as:\n{1:F0}° horizontal FOV on 4:3\n{2:F0}° horizontal FOV on 16:9", numericViewingFOV.Value, numericViewingFOV.Value * 4 / 3, numericViewingFOV.Value * 16 / 9);
+            labelFOVHelp.Text = catalog.GetStringFmt("{0:F0}° vertical FOV is the same as:\n{1:F0}° horizontal FOV on 4:3\n{2:F0}° horizontal FOV on 16:9", numericViewingFOV.Value, numericViewingFOV.Value * 4 / 3, numericViewingFOV.Value * 16 / 9);
         }
 
         private void trackBarDayAmbientLight_Scroll(object sender, EventArgs e)
@@ -563,19 +563,19 @@ namespace ORTS
             int level = trackAdhesionFactor.Value - trackAdhesionFactorChange.Value;
 
             if (level > 159)
-                AdhesionLevelValue.Text = Catalog.GetString("Very easy");
+                AdhesionLevelValue.Text = catalog.GetString("Very easy");
             else if (level > 139)
-                AdhesionLevelValue.Text = Catalog.GetString("Easy");
+                AdhesionLevelValue.Text = catalog.GetString("Easy");
             else if (level > 119)
-                AdhesionLevelValue.Text = Catalog.GetString("MSTS Compatible");
+                AdhesionLevelValue.Text = catalog.GetString("MSTS Compatible");
             else if (level > 89)
-                AdhesionLevelValue.Text = Catalog.GetString("Normal");
+                AdhesionLevelValue.Text = catalog.GetString("Normal");
             else if (level > 69)
-                AdhesionLevelValue.Text = Catalog.GetString("Hard");
+                AdhesionLevelValue.Text = catalog.GetString("Hard");
             else if (level > 59)
-                AdhesionLevelValue.Text = Catalog.GetString("Very Hard");
+                AdhesionLevelValue.Text = catalog.GetString("Very Hard");
             else
-                AdhesionLevelValue.Text = Catalog.GetString("Good luck!");
+                AdhesionLevelValue.Text = catalog.GetString("Good luck!");
         }
 
         private void AdhesionPropToWeatherCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -585,7 +585,7 @@ namespace ORTS
 
         private void trackDayAmbientLight_ValueChanged(object sender, EventArgs e)
         {
-            labelDayAmbientLight.Text = Catalog.GetStringFmt("{0}%", trackDayAmbientLight.Value * 5);
+            labelDayAmbientLight.Text = catalog.GetStringFmt("{0}%", trackDayAmbientLight.Value * 5);
         }
 
         private void trackAntiAliasing_ValueChanged(object sender, EventArgs e)
@@ -621,15 +621,15 @@ namespace ORTS
         private void trackLODBias_ValueChanged(object sender, EventArgs e)
         {
             if (trackLODBias.Value == -100)
-                labelLODBias.Text = Catalog.GetStringFmt("No detail (-{0}%)", -trackLODBias.Value);
+                labelLODBias.Text = catalog.GetStringFmt("No detail (-{0}%)", -trackLODBias.Value);
             else if (trackLODBias.Value < 0)
-                labelLODBias.Text = Catalog.GetStringFmt("Less detail (-{0}%)", -trackLODBias.Value);
+                labelLODBias.Text = catalog.GetStringFmt("Less detail (-{0}%)", -trackLODBias.Value);
             else if (trackLODBias.Value == 0)
-                labelLODBias.Text = Catalog.GetStringFmt("Default detail (+{0}%)", trackLODBias.Value);
+                labelLODBias.Text = catalog.GetStringFmt("Default detail (+{0}%)", trackLODBias.Value);
             else if (trackLODBias.Value < 100)
-                labelLODBias.Text = Catalog.GetStringFmt("More detail (+{0}%)", trackLODBias.Value);
+                labelLODBias.Text = catalog.GetStringFmt("More detail (+{0}%)", trackLODBias.Value);
             else
-                labelLODBias.Text = Catalog.GetStringFmt("All detail (+{0}%)", trackLODBias.Value);
+                labelLODBias.Text = catalog.GetStringFmt("All detail (+{0}%)", trackLODBias.Value);
         }
 
 

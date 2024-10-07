@@ -75,7 +75,7 @@ namespace ORTS
                     {
                         e.Graphics.DrawRectangle(penLine, startingPoints[(int)currentCalibrationStep, 0], startingPoints[(int)currentCalibrationStep, 1], 60, 40);
                         e.Graphics.DrawLine(penArrow, 10, 10, startingPoints[(int)currentCalibrationStep, 0] - 5, startingPoints[(int)currentCalibrationStep, 1] + 20);
-                        e.Graphics.DrawString(Catalog.GetString(GetStringAttribute.GetPrettyName(currentCalibrationStep)), new Font("Arial", 14), new SolidBrush(Color.Red), 80, 225);
+                        e.Graphics.DrawString(catalog.GetString(GetStringAttribute.GetPrettyName(currentCalibrationStep)), new Font("Arial", 14), new SolidBrush(Color.Red), 80, 225);
                     }
                 };
             }
@@ -183,7 +183,7 @@ namespace ORTS
             panelRDButtons.Controls.Add(controls);
             foreach(Control control in controls.Controls)
                 if (control is RDButtonInputControl)
-                    toolTip1.SetToolTip(control, Catalog.GetString("Click to change this button"));
+                    toolTip1.SetToolTip(control, catalog.GetString("Click to change this button"));
         }
 
         private void RunCalibration()
@@ -196,7 +196,7 @@ namespace ORTS
             {
                 currentCalibrationStep = nextStep;
                 railDriverLegend.Invalidate(true);  //enforce redraw legend to show guidance
-                result = MessageBox.Show(railDriverLegend, $"Now calibrating \"{Catalog.GetString(GetStringAttribute.GetPrettyName(currentCalibrationStep))}\". Move the Lever as indicated through guidance. \r\n\r\nClick OK to read the position and continue. Click Cancel anytime to abort the calibration process.", "RailDriver Calibration", MessageBoxButtons.OKCancel);
+                result = MessageBox.Show(railDriverLegend, $"Now calibrating \"{catalog.GetString(GetStringAttribute.GetPrettyName(currentCalibrationStep))}\". Move the Lever as indicated through guidance. \r\n\r\nClick OK to read the position and continue. Click Cancel anytime to abort the calibration process.", "RailDriver Calibration", MessageBoxButtons.OKCancel);
                 // Read Setting
                 if (result == DialogResult.OK)
                 {
@@ -241,7 +241,7 @@ namespace ORTS
 
         private void BtnRDReset_Click(object sender, EventArgs e)
         {
-            if (DialogResult.Yes == MessageBox.Show(Catalog.GetString("Remove all custom button assignments?"), Application.ProductName, MessageBoxButtons.YesNo))
+            if (DialogResult.Yes == MessageBox.Show(catalog.GetString("Remove all custom button assignments?"), Application.ProductName, MessageBoxButtons.YesNo))
             {
                 Settings.RailDriver.Reset();
                 InitializeRailDriverSettings();
@@ -259,14 +259,14 @@ namespace ORTS
             if (!string.IsNullOrEmpty(result))
                 MessageBox.Show(result, Application.ProductName);
             else
-                MessageBox.Show(Catalog.GetString("No errors found."), Application.ProductName);
+                MessageBox.Show(catalog.GetString("No errors found."), Application.ProductName);
         }
 
         private void BtnRDSettingsExport_Click(object sender, EventArgs e)
         {
             string outputPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Open Rails RailDriver.txt");
             Settings.RailDriver.DumpToText(outputPath);
-            MessageBox.Show(Catalog.GetString("A listing of all Raildriver button assignments has been placed here:\n\n") + outputPath, Application.ProductName);
+            MessageBox.Show(catalog.GetString("A listing of all Raildriver button assignments has been placed here:\n\n") + outputPath, Application.ProductName);
         }
 
         private string CheckButtonAssignments()
