@@ -722,12 +722,16 @@ namespace Orts.Viewer3D
                 SuperElevationRoll = DetermineRotation();
 
                 Matrix displacement;
+                Matrix rotation;
                 float totLength;
 
                 if (DTrackData.IsCurved == 0)
                     displacement = LinearGen(out totLength);
                 else
                     displacement = CircArcGen(out totLength);
+
+                rotation = displacement;
+                rotation.Translation = Vector3.Zero;
 
                 foreach (Polyline pl in lodItem.Polylines)
                 {
@@ -764,7 +768,7 @@ namespace Orts.Viewer3D
                         // Move vertex to proper location in 3D space
                         VertexList[VertexIndex].Position = Vector3.Transform(p, displacement);
                         VertexList[VertexIndex].TextureCoordinate = v.TexCoord + pl.DeltaTexCoord * totLength;
-                        VertexList[VertexIndex].Normal = v.Normal;
+                        VertexList[VertexIndex].Normal = Vector3.Transform(v.Normal, rotation);
 
                         if (plv > 0 && VertexIndex > stride)
                         {
