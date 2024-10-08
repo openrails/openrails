@@ -176,6 +176,12 @@ namespace Orts.Formats.Msts
         public float Volume = 1.0f;
         public List<VolumeCurve> VolumeCurves = new List<VolumeCurve>();
         public FrequencyCurve FrequencyCurve;
+        public bool[] Season;
+        public bool[] Weather;
+        public int[] TimeInterval;
+        public List<int[]> TimeIntervals;
+
+
 
         public SMSStream(STFReader stf)
         {
@@ -186,6 +192,42 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("volumecurve", ()=>{ VolumeCurves.Add(new VolumeCurve(stf)); }),
                 new STFReader.TokenProcessor("frequencycurve", ()=>{ FrequencyCurve = new FrequencyCurve(stf); }),
                 new STFReader.TokenProcessor("volume", ()=>{ Volume = stf.ReadFloatBlock(STFReader.UNITS.None, Volume); }),
+                new STFReader.TokenProcessor("ortstimeofday", ()=>{
+                    if (TimeIntervals == null)
+                        TimeIntervals = new List<int[]>();
+                    var timeInterval = new int[2];
+                    stf.MustMatch("(");
+                    timeInterval[0] = stf.ReadInt(null);
+                    timeInterval[1] = stf.ReadInt(null);
+                    TimeIntervals.Add(timeInterval);
+                    stf.SkipRestOfBlock();
+                }),
+                new STFReader.TokenProcessor("ortsseason", ()=>{ 
+                    Season = new bool[4];
+                    stf.MustMatch("(");
+                    stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("spring", ()=>{ if(stf.ReadBoolBlock(true))
+                                Season[(int)SeasonType.Spring] = true; }),
+                        new STFReader.TokenProcessor("summer", ()=>{ if(stf.ReadBoolBlock(true))
+                                Season[(int)SeasonType.Summer] = true; }),
+                        new STFReader.TokenProcessor("autumn", ()=>{ if(stf.ReadBoolBlock(true))
+                                Season[(int)SeasonType.Autumn] = true; }),
+                        new STFReader.TokenProcessor("winter", ()=>{ if(stf.ReadBoolBlock(true))
+                                Season[(int)SeasonType.Winter] = true; }),
+                    });
+                }),
+                new STFReader.TokenProcessor("ortsweather", ()=>{
+                    Weather = new bool[3];
+                    stf.MustMatch("(");
+                    stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("clear", ()=>{ if(stf.ReadBoolBlock(true))
+                                Weather[(int)WeatherType.Clear] = true; }),
+                        new STFReader.TokenProcessor("snow", ()=>{ if(stf.ReadBoolBlock(true))
+                                Weather[(int)WeatherType.Snow] = true; }),
+                        new STFReader.TokenProcessor("rain", ()=>{ if(stf.ReadBoolBlock(true))
+                                Weather[(int)WeatherType.Rain] = true; }),
+                    });
+                }),
             });
             //if (Volume > 1)  Volume /= 100f;
         }
