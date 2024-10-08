@@ -40,7 +40,7 @@ namespace ORTS.Common
         {
             Application = new Platform
             {
-                Name = System.Windows.Forms.Application.ProductName,
+                Name = ApplicationInfo.ProductName,
                 Version = VersionInfo.VersionOrBuild,
                 Architecture = RuntimeInformation.ProcessArchitecture.ToString(),
             };
@@ -67,6 +67,8 @@ namespace ORTS.Common
             }
             catch (ManagementException error)
             {
+                // Likely to catch multiple exceptions like:
+                // Exception thrown: 'System.IO.InvalidDataException' in ORTS.Menu.dll
                 Trace.WriteLine(error);
             }
 
