@@ -241,55 +241,6 @@ namespace Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies
 
     }
 
-    public class SteamEnum : IEnumerator
-    {
-        public SteamEngine[] seList;
-
-        // Enumerators are positioned before the first element
-        // until the first MoveNext() call.
-        int position = -1;
-
-        public SteamEnum(SteamEngine[] list)
-        {
-            seList = list;
-        }
-
-        public bool MoveNext()
-        {
-            position++;
-            return (position < seList.Length);
-        }
-
-        public void Reset()
-        {
-            position = -1;
-        }
-
-        object IEnumerator.Current
-        {
-            get
-            {
-                return Current;
-            }
-        }
-
-        public SteamEngine Current
-        {
-            get
-            {
-                try
-                {
-                    return seList[position];
-                }
-                catch (IndexOutOfRangeException)
-                {
-                    throw new InvalidOperationException();
-                }
-            }
-        }
-    }
-
-
     public class SteamEngine : ISubSystem<SteamEngine>
     {
 

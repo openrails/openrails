@@ -114,8 +114,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool Activated = false;
         public bool CustomTCSScript = false;
 
-        readonly MSTSLocomotive Locomotive;
-        readonly Simulator Simulator;
+        public readonly MSTSLocomotive Locomotive;
+        public readonly Simulator Simulator;
 
         float ItemSpeedLimit;
         Aspect ItemAspect;
@@ -432,7 +432,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 {
                     if (Locomotive.Pantographs.State == PantographState.Up)
                     {
-                        Locomotive.Train.SignalEvent(PowerSupplyEvent.LowerPantograph);
+                        Locomotive.LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.LowerPantograph);
                     }
                 };
                 Script.SetPantographUp = (pantoID) =>
@@ -442,7 +442,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         Trace.TraceError($"TCS script used bad pantograph ID {pantoID}");
                         return;
                     }
-                    Locomotive.Train.SignalEvent(PowerSupplyEvent.RaisePantograph, pantoID);
+                    Locomotive.LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.RaisePantograph, pantoID);
                 };               
                 Script.SetPantographDown = (pantoID) =>
                 {
@@ -451,7 +451,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         Trace.TraceError($"TCS script used bad pantograph ID {pantoID}");
                         return;
                     }
-                    Locomotive.Train.SignalEvent(PowerSupplyEvent.LowerPantograph, pantoID);
+                    Locomotive.LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.LowerPantograph, pantoID);
                 };
                 Script.SetPowerAuthorization = (value) => PowerAuthorization = value;
                 Script.SetCircuitBreakerClosingOrder = (value) => CircuitBreakerClosingOrder = value;
@@ -552,6 +552,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.GetFloatParameter = (arg1, arg2, arg3) => LoadParameter<float>(arg1, arg2, arg3);
                 Script.GetStringParameter = (arg1, arg2, arg3) => LoadParameter<string>(arg1, arg2, arg3);
 
+                Script.AttachToHost(this);
                 Script.Initialize();
                 Activated = true;
             }
@@ -897,12 +898,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             HandleEvent(evt, message);
         }
 
-        public void HandleEvent(PowerSupplyEvent evt)
-        {
-            HandleEvent(evt, String.Empty);
-        }
-
-        public void HandleEvent(PowerSupplyEvent evt, string message)
+        public void HandleEvent(PowerSupplyEvent evt, string message="")
         {
             Script?.HandleEvent(evt, message);
         }
