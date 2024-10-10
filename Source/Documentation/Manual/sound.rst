@@ -652,3 +652,50 @@ to 100 (internal track sound reproduced at volume as defined in .sms file).
 
 If the parameter is not present, the internal track sound is 
 reproduced at the volume as defined in .sms file.
+
+Conditional sound
+=================
+
+In the real world some sounds are present only at a specific time (season and/or 
+time of day) and/or with a specific weather.
+
+OR provides the parameters to actuate that for any set of sound streams. Consider the 
+sound stream here below::
+
+  			Stream (
+				Priority ( 6 )
+				ORTSSeason ( Spring () winter () )
+				ORTSWeather ( rain () )
+				ORTSTimeOfDay ( 7 12 )
+				ORTSTimeOfDay ( 13 20 )
+				Triggers ( 2
+					Variable_Trigger ( Distance_Dec_Past 400.0
+						StartLoop ( 1
+							File ( "Somma_annunci_loud.wav" -1 )
+							SelectionMethod ( SequentialSelection )
+						)
+					)
+					Variable_Trigger ( Distance_Inc_Past 400.0 ReleaseLoopRelease ())
+				)
+
+				VolumeCurve(
+					DistanceControlled
+					CurvePoints ( 4
+	  					 0.0	1.0
+						230.0	1.0
+	  					260.0	0.0
+						2000.0  0.0
+					)
+					Granularity (0.01)
+				)
+			)
+
+
+As can be seen, there are three keywords, that are ORTSSeason, ORTSWeather and 
+ORTSTimeOfDay. If one or more of the three keywords is not present in the stream, 
+the sound does not depend from that keyword.
+
+In the example shown, the sound is played if all conditions are met, that is season 
+is spring or winter and weather is rain and time of day is within one of the two 
+intervals 7-12 or 13-20. There may be as many TimeOfDay lines as wanted, 
+but the granularity is one hour.
