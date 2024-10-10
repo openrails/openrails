@@ -3217,3 +3217,28 @@ msgstr "Naběrač vody je poškozen, nelze ji doplnit"
 #~ msgctxt "Labels"
 #~ msgid "none"
 #~ msgstr "není"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Engine"
+msgstr "Lokomotiva"
+
+#. Context: PowerSupply
+msgctxt "PowerSupply"
+msgid "On"
+msgstr "Zap"
+
+#. Context: PowerSupply
+msgctxt "PowerSupply"
+msgid "Power"
+msgstr "Výkon"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Running"
+msgstr "Motor běží"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Stopped"
+msgstr "Motor zastaven"
