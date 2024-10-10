@@ -1029,12 +1029,12 @@ namespace Orts.Viewer3D.Popups
                 string[] parts = data.Split(new string[] { " = " }, 2, StringSplitOptions.None);
                 string keyPart = parts[0];
                 string valuePart = parts?[1];
-                if (keyPart.Contains(Viewer.Catalog.GetString("Engine")))
+                if (Viewer.PlayerTrain.Cars[CarPosition] is MSTSDieselLocomotive && keyPart.Contains(Viewer.Catalog.GetParticularString("DieselEngine", "Engine")))
                 {
                     TrainCarOperations.PowerSupplyStatus = locomotiveStatus;
 
-                    Texture = valuePart.Contains(Viewer.Catalog.GetString("Running")) ? PowerOn
-                       : valuePart.Contains(Viewer.Catalog.GetString("Stopped")) ? PowerOff
+                    Texture = valuePart.Contains(Viewer.Catalog.GetParticularString("DieselEngine", "Running")) ? PowerOn
+                       : valuePart.Contains(Viewer.Catalog.GetParticularString("DieselEngine", "Stopped")) ? PowerOff
                        : PowerChanging;
 
                     if (CarPosition == TrainCarViewer.CarPosition)
@@ -1043,10 +1043,10 @@ namespace Orts.Viewer3D.Popups
                     }
                     break;
                 }
-                else if (keyPart.Contains(Viewer.Catalog.GetString("Power")))
+                else if (keyPart.Contains(Viewer.Catalog.GetParticularString("PowerSupply", "Power")))
                 {
                     TrainCarViewer.PowerSupplyStatus = locomotiveStatus;
-                    var powerStatus = valuePart.Contains(Viewer.Catalog.GetString("On"));
+                    var powerStatus = valuePart.Contains(Viewer.Catalog.GetParticularString("PowerSupply", "On"));
                     Texture = powerStatus ? PowerOn : PowerOff;
                     if (CarPosition == TrainCarViewer.CarPosition)
                         TrainCarOperations.SupplyStatusChanged = TrainCarOperations.MainPowerSupplyOn != powerStatus;
