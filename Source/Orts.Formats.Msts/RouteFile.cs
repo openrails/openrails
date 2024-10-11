@@ -240,7 +240,7 @@ namespace Orts.Formats.Msts
         public float MaxPaxUnderbalanceM = float.PositiveInfinity; // Limit to be set elsewhere
         public float MinCantM = 0.010f; // Default 10 mm (0.5 inches on imperial routes)
         public float MaxCantM = 0.180f; // Default limit on superelevation is 180 mm (5 inches on imperial routes)
-        public float MinSpeedMpS = MpS.FromKpH(25.0f); // Default 25 kmh (15 mph on imperial routes)
+        public float MinSpeedMpS = MpS.FromKpH(25.5f); // Default 25 kmh (15 mph on imperial routes)
         public float MaxSpeedMpS = float.PositiveInfinity; // Default unlimited
         public float PrecisionM = 0.005f; // Default 5 mm (0.25 inches on imperial routes)
         public float RunoffSlope = 0.003f; // Maximum rate of change of superelevation per track length, default 0.3%
@@ -272,7 +272,7 @@ namespace Orts.Formats.Msts
                 // Set values in imperial units
                 MinCantM = Me.FromIn(0.5f);
                 MaxCantM = Me.FromIn(6.0f);
-                MinSpeedMpS = MpS.FromMpH(15.0f);
+                MinSpeedMpS = MpS.FromMpH(15.5f);
                 PrecisionM = Me.FromIn(0.25f);
 
                 if (highSpeed)

@@ -132,6 +132,10 @@ namespace Orts.Simulation
         /// </summary>
         public bool IsTrackCurved { get { return IsTrack && trackSection != null && trackSection.SectionCurve != null; } }
         /// <summary>
+        /// Returns the direction of curvature based on track section angle. Returns 0 if not on a curve.
+        /// </summary>
+        public int CurveDirection { get { return (trackSection != null && trackSection.SectionCurve != null) ? Math.Sign(trackSection.SectionCurve.Angle) : 0; } }
+        /// <summary>
         /// Returns whether this traveller is currently on a section of track which is straight.
         /// </summary>
         public bool IsTrackStraight { get { return IsTrack && (trackSection == null || trackSection.SectionCurve == null); } }
@@ -1111,32 +1115,6 @@ namespace Orts.Simulation
         public Vector3 GetTrackDirection()
         {
             return directionVector;
-        }
-
-        public float FindTiltedZ(float speed) //will test 1 second ahead, computed will return desired elev. only
-        {
-            if (speed < 12) return 0;//no tilt if speed too low (<50km/h)
-            var tn = trackNode;
-            if (tn.TrVectorNode == null) return 0f;
-            var tvs = trackVectorSection;
-            var ts = trackSection;
-            var desiredZ = 0f;
-            if (tvs == null)
-            {
-                desiredZ = 0f;
-            }
-            else if (ts.SectionCurve != null)
-            {
-                float maxv = 0.14f * speed / 40f;//max 8 degree
-                //maxv *= speed / 40f;
-                //if (maxv.AlmostEqual(0f, 0.001f)) maxv = 0.02f; //short curve, add some effect anyway
-                var sign = -Math.Sign(ts.SectionCurve.Angle);
-                if ((this.direction == TravellerDirection.Forward ? 1 : -1) * sign > 0) desiredZ = 1f;
-                else desiredZ = -1f;
-                desiredZ *= maxv;//max elevation
-            }
-            else desiredZ = 0f;
-            return desiredZ;
         }
 
         /// <summary>
