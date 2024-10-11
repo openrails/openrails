@@ -360,7 +360,7 @@ namespace Orts.Viewer3D
                         Materials[materialKey] = new LightConeMaterial(Viewer);
                         break;
                     case "LightGlow":
-                        Materials[materialKey] = new LightGlowMaterial(Viewer);
+                        Materials[materialKey] = new LightGlowMaterial(Viewer, textureName);
                         break;
                     case "PopupWindow":
                         Materials[materialKey] = new PopupWindowMaterial(Viewer);
