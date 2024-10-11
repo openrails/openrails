@@ -2,15 +2,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2015-10-25 09:21+0100\n"
-"PO-Revision-Date: 2015-10-25 10:36+0100\n"
+"PO-Revision-Date: 2024-10-11 16:39+0200\n"
 "Last-Translator: Howky\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.4\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"X-Generator: Poedit 3.1.1\n"
 
 #: ../../RunActivity/AI/AITrain.cs:6100
 #: ../../RunActivity/Simulator/Activity.cs:891
@@ -615,8 +615,7 @@ msgstr "Ohniště vyhasíná. Topič musí přikládat rychleji, ale neunav ho."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1737
 msgid "FireMass is back within limits. Your fireman will shovel as per normal."
-msgstr ""
-"Ohniště je opět v pořádku. Tvůj topič může přikládat běžným způsobem."
+msgstr "Ohniště je opět v pořádku. Tvůj topič může přikládat běžným způsobem."
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:2105
 msgid "Grate limit exceeded - boiler heat rate cannot increase."
@@ -1265,16 +1264,16 @@ msgid ""
 "You are travelling too fast for this curve. Slow down, your freight may be "
 "damaged and your train may derail."
 msgstr ""
-"Do obloukou jedeš moc rychle. Zpomalte, váš náklad se může poškodit a "
-"váš vlak může vykolejit."
+"Do obloukou jedeš moc rychle. Zpomalte, váš náklad se může poškodit a váš "
+"vlak může vykolejit."
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:697
 msgid ""
 "You are travelling too fast for this curve. Slow down, your passengers are "
 "feeling uncomfortable and your train may derail."
 msgstr ""
-"Do obloukou jedeš moc rychle. Zpomalte, cestující se necítí příjemně a "
-"váš vlak může vykolejit."
+"Do obloukou jedeš moc rychle. Zpomalte, cestující se necítí příjemně a váš "
+"vlak může vykolejit."
 
 #: ../../RunActivity/RollingStock/TrainCar.cs:731
 msgid "Your train has overturned."
@@ -1390,8 +1389,7 @@ msgstr "Vpřed"
 #: ../../RunActivity/Simulator/Confirmation.cs:145
 #: ../../RunActivity/Simulator/Confirmation.cs:157
 msgid "locked. Close throttle, stop train then re-try."
-msgstr ""
-"zablokován. Kontrolér dej do nulové polohy, zastav vlak a opakuj."
+msgstr "zablokován. Kontrolér dej do nulové polohy, zastav vlak a opakuj."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:146
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:125
@@ -1766,8 +1764,8 @@ msgid ""
 "changing disabled. Close throttle, set reverser to neutral, stop train then "
 "re-try."
 msgstr ""
-"- změna je zablokována. Kontrolér dej do nulové polohy, nastav páku směru "
-"na neutrál, zastavte vlak a opakujte."
+"- změna je zablokována. Kontrolér dej do nulové polohy, nastav páku směru na "
+"neutrál, zastavte vlak a opakujte."
 
 #: ../../RunActivity/Simulator/Confirmation.cs:192
 msgid "Odometer"
@@ -3098,12 +3096,22 @@ msgstr "Tato lokomotiva nemá naběrač vody"
 msgid "Scoop is broken, can't refill"
 msgstr "Naběrač vody je poškozen, nelze ji doplnit"
 
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "EOT"
+msgstr ""
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "Flow"
+msgstr "Spotř."
+
 #~ msgid ""
 #~ "You are traveling too fast for this curve. Slow down, your freight may be "
 #~ "damaged and your train may derail."
 #~ msgstr ""
-#~ "Jedete do oblouku moc rychle. Zpomalte, váš náklad může být poškozen "
-#~ "a váš vlak může vykolejit."
+#~ "Jedete do oblouku moc rychle. Zpomalte, váš náklad může být poškozen a "
+#~ "váš vlak může vykolejit."
 
 #~ msgid "SupFact"
 #~ msgstr "PřdhFakt"
@@ -3217,14 +3225,3 @@ msgstr "Naběrač vody je poškozen, nelze ji doplnit"
 #~ msgctxt "Labels"
 #~ msgid "none"
 #~ msgstr "není"
-
-#. Context: BrakeStatus
-msgctxt "BrakeStatus"
-msgid "EOT"
-msgstr ""
-
-#. Context: BrakeStatus
-msgctxt "BrakeStatus"
-msgid "Flow"
-msgstr "Spotř."
-

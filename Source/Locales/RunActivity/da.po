@@ -2,15 +2,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2015-04-08 11:02:18+0200\n"
-"PO-Revision-Date: 2015-04-08 11:25+0100\n"
+"PO-Revision-Date: 2024-10-11 16:41+0200\n"
 "Last-Translator: Zepder <admin@tog-sim.dk>\n"
 "Language-Team: \n"
 "Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.1.1\n"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:217
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/MSTS/AirSinglePipe.cs:55
@@ -2830,6 +2830,16 @@ msgid_plural "{0} meters"
 msgstr[0] "{0} meter"
 msgstr[1] "{0} meter"
 
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "EOT"
+msgstr ""
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "Flow"
+msgstr ""
+
 #~ msgid "Odometer"
 #~ msgstr "Kilometertæller"
 
@@ -2886,13 +2896,3 @@ msgstr[1] "{0} meter"
 #~ msgctxt "Labels"
 #~ msgid "none"
 #~ msgstr "ingen"
-
-#. Context: BrakeStatus
-msgctxt "BrakeStatus"
-msgid "EOT"
-msgstr ""
-
-#. Context: BrakeStatus
-msgctxt "BrakeStatus"
-msgid "Flow"
-msgstr ""

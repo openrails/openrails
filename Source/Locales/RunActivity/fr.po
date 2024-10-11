@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2022-08-17 02:43:31+0200\n"
-"PO-Revision-Date: 2022-08-17 03:37+0200\n"
+"PO-Revision-Date: 2024-10-11 16:42+0200\n"
 "Last-Translator: GNIEWEK Cédric <gniewek.cedric@free.fr>\n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -3203,6 +3203,16 @@ msgstr "PK"
 msgid "Dist"
 msgstr "Dist"
 
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "EOT"
+msgstr ""
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "Flow"
+msgstr "Débit"
+
 #~ msgid "  The Debrief evaluation report is disabled."
 #~ msgstr " La case Debriefing n'est pas cochée."
 
@@ -3215,13 +3225,3 @@ msgstr "Dist"
 #, csharp-format
 #~ msgid "filtered by {0:F0}"
 #~ msgstr "filtré par {0:F0}"
-
-#. Context: BrakeStatus
-msgctxt "BrakeStatus"
-msgid "EOT"
-msgstr ""
-
-#. Context: BrakeStatus
-msgctxt "BrakeStatus"
-msgid "Flow"
-msgstr "Débit"
