@@ -2886,3 +2886,13 @@ msgstr[1] "{0} meter"
 #~ msgctxt "Labels"
 #~ msgid "none"
 #~ msgstr "ingen"
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "EOT"
+msgstr ""
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "Flow"
+msgstr ""

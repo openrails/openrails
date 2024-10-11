@@ -2826,3 +2826,13 @@ msgstr[1] "{0}米"
 
 #~ msgid "successfully"
 #~ msgstr "成功"
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "EOT"
+msgstr ""
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "Flow"
+msgstr "流动"

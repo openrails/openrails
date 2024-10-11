@@ -3217,3 +3217,13 @@ msgstr "Naběrač vody je poškozen, nelze ji doplnit"
 #~ msgctxt "Labels"
 #~ msgid "none"
 #~ msgstr "není"
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "EOT"
+msgstr ""
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "Flow"
+msgstr "Spotř."

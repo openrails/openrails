@@ -3215,3 +3215,13 @@ msgstr "Dist"
 #, csharp-format
 #~ msgid "filtered by {0:F0}"
 #~ msgstr "filtré par {0:F0}"
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "EOT"
+msgstr ""
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "Flow"
+msgstr "Débit"

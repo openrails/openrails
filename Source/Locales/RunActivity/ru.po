@@ -3799,3 +3799,18 @@ msgstr "Соединено"
 #~ msgctxt "Coupler"
 #~ msgid "Push"
 #~ msgstr "Растян"
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "EOT"
+msgstr "ХВ"
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "Flow"
+msgstr "Расх"
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "V"
+msgstr "Bak."

@@ -4983,3 +4983,13 @@ msgstr "csatl."
 
 #~ msgid "Coupler overloaded"
 #~ msgstr "Vonókészülék túlterhelve"
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "EOT"
+msgstr ""
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "Flow"
+msgstr "Fogyaszt."

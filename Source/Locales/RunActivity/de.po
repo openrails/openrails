@@ -4108,3 +4108,13 @@ msgstr ""
 #~ msgctxt "Switch"
 #~ msgid "change"
 #~ msgstr "stellen"
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "EOT"
+msgstr ""
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "Flow"
+msgstr "Fluss"
