@@ -972,12 +972,6 @@ namespace Orts.Simulation.RollingStocks
             
             CarOutsideTempC = InitialCarOutsideTempC - TemperatureHeightVariationDegC;
 
-            // gravity force, M32 is up component of forward vector
-            // Percent slope = rise / run -> the Y position of the forward vector gives us the 'rise'
-            // Derive the 'run' by assuming a hypotenuse length of 1, so run = sqrt(1 - rise^2)
-            float rise = WorldPosition.XNAMatrix.M32;
-            GravityForceN = MassKG * GravitationalAccelerationMpS2 * rise;
-            CurrentElevationPercent = 100f * (rise / (float)Math.Sqrt(1 - rise * rise));
             AbsSpeedMpS = Math.Abs(_SpeedMpS);
 
             //TODO: next if block has been inserted to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
@@ -2172,7 +2166,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(CouplerSlackM);
             outf.Write(Headlight);
             outf.Write(OrgConsist);
-            outf.Write(PrevTiltingZRot);
+            outf.Write(TiltingZRot);
             outf.Write(BrakesStuck);
             outf.Write(IsCarHeatingInitialized);
             outf.Write(SteamHoseLeakRateRandom);
@@ -2195,7 +2189,7 @@ namespace Orts.Simulation.RollingStocks
             CouplerSlackM = inf.ReadSingle();
             Headlight = inf.ReadInt32();
             OrgConsist = inf.ReadString();
-            PrevTiltingZRot = inf.ReadSingle();
+            TiltingZRot = inf.ReadSingle();
             BrakesStuck = inf.ReadBoolean();
             IsCarHeatingInitialized = inf.ReadBoolean();
             SteamHoseLeakRateRandom = inf.ReadSingle();
@@ -2758,6 +2752,8 @@ namespace Orts.Simulation.RollingStocks
 
             UpdateCurvePhys(new Traveller(traveler), BogieZOffsets);
 
+            int direction = traveler.Direction == Traveller.TravellerDirection.Forward ? -1 : 1;
+
             if (Flipped == backToFront)
             {
                 float o = -CarLengthM / 2 - CentreOfGravityM.Z;
@@ -2773,13 +2769,12 @@ namespace Orts.Simulation.RollingStocks
                     location.X += 2048 * (traveler.TileX - tileX);
                     location.Z += 2048 * (traveler.TileZ - tileZ);
 
-                    // This car is flipped, so flip roll direction.
-                    r *= -1;
-
-                    WheelAxles[k].Part.AddWheelSetLocation(1, o, location, r);
+                    // This car is flipped, so flip roll direction in part
+                    WheelAxles[k].Part.AddWheelSetLocation(1, o, location, -r);
                 }
                 o = CarLengthM / 2 - CentreOfGravityM.Z - o;
                 traveler.Move(o);
+                direction *= -1;
             }
             else
             {
@@ -2823,7 +2818,7 @@ namespace Orts.Simulation.RollingStocks
                     p.FindCenterLine();
                 }
             }
-            // Determine facing direction of train car
+            // Determine facing direction and position of train car
             p0.FindCenterLine();
             Vector3 fwd = new Vector3(p0.Dir[0], p0.Dir[1], -p0.Dir[2]);
             // Check if null (0-length) vector
@@ -2839,16 +2834,23 @@ namespace Orts.Simulation.RollingStocks
             m.Up = up;
             m.Backward = fwd;
 
-            Matrix rollMat = Matrix.Identity;
+            // Update gravity force when position is updated, but before any secondary motion is added
+            GravityForceN = MassKG * GravitationalAccelerationMpS2 * fwd.Y;
+            CurrentElevationPercent = 100f * (fwd.Y / (float)Math.Sqrt(1 - fwd.Y * fwd.Y));
 
-            if (p0.Roll != 0.0f)
+            // Consider body roll from superelevation and from tilting.
+            UpdateTilting(traveler, elapsedTimeS, speed, direction);
+            Matrix rollMat = Matrix.Identity;
+            float rollAngle = p0.Roll + TiltingZRot;
+
+            if (rollAngle != 0.0f)
             {
                 // For correct bogie positioning, need to offset rotation axis
                 Vector3 offset = new Vector3(0.0f, BogiePivotHeightM, 0.0f);
 
                 // Roll the car for superelevation about the offset axis of rotation
                 rollMat.Translation -= offset;
-                rollMat *= Matrix.CreateRotationZ(p0.Roll);
+                rollMat *= Matrix.CreateRotationZ(rollAngle);
                 rollMat.Translation += offset;
 
                 m = rollMat * m;
@@ -2863,19 +2865,36 @@ namespace Orts.Simulation.RollingStocks
             WorldPosition.TileX = tileX;
             WorldPosition.TileZ = tileZ;
 
-            UpdatedTraveler(traveler, elapsedTimeS, distance, speed);
+            UpdateVibration(traveler, elapsedTimeS, distance, speed);
         }
 
         #region Traveller-based updates
         public float CurrentCurveRadiusM;
 
-        internal void UpdatedTraveler(Traveller traveler, float elapsedTimeS, float distanceM, float speedMpS)
+        internal void UpdateTilting(Traveller traveller,  float elapsedTimeS, float speedMpS, int direction)
         {
-            // We need to avoid introducing any unbounded effects, so cap the elapsed time to 0.25 seconds (4FPS).
-            if (elapsedTimeS > 0.25f)
+            // If not a tilting train, skip processing this
+            // Future: Rework tilting to be per train car, instead of per consist
+            if (!Train.IsTilting)
                 return;
 
-            UpdateVibrationAndTilting(traveler, elapsedTimeS, distanceM, speedMpS);
+            float tiltDemand = 0.0f;
+
+            // No tilt needed if going too slow, or not on a curve
+            if (speedMpS > MinTiltSpeedMpS && CurrentCurveRadiusM != 0.0f)
+            {
+                // Compare actual superelevation to ideal, tilt makes up the difference
+                // Sine of superelevation angle is v^2 / (g * r)
+                float idealElevAngle = (speedMpS * speedMpS) / (GravitationalAccelerationMpS2 * CurrentCurveRadiusM);
+                idealElevAngle = (float)Math.Asin(Math.Min(idealElevAngle, 0.99f));
+
+                tiltDemand = MathHelper.Clamp(idealElevAngle - SuperElevationAngleRad, 0.0f, MaxTiltAngleRad);
+
+                tiltDemand *= direction * traveller.CurveDirection;
+            }
+
+            // Smooth rotation
+            TiltingZRot += (tiltDemand - TiltingZRot) * elapsedTimeS; 
         }
         #endregion
 
@@ -2953,16 +2972,21 @@ namespace Orts.Simulation.RollingStocks
         int VibrationTrackVectorSection;
         float VibrationTrackCurvaturepM;
 
-        float PrevTiltingZRot; // previous tilting angle
-        float TiltingZRot; // actual tilting angle
+        float TiltingZRot; // Actual tilting angle
+        float MinTiltSpeedMpS = MpS.FromKpH(50.0f); // Minimum speed for tilting to be activated
+        float MaxTiltAngleRad = MathHelper.ToRadians(8.0f); // Maximum angle of tilting allowed
 
-        internal void UpdateVibrationAndTilting(Traveller traveler, float elapsedTimeS, float distanceM, float speedMpS)
+        internal void UpdateVibration(Traveller traveler, float elapsedTimeS, float distanceM, float speedMpS)
         {
+            // We need to avoid introducing any unbounded effects, so cap the elapsed time to 0.25 seconds (4FPS).
+            if (elapsedTimeS > 0.25f)
+                return;
             // NOTE: Traveller is at the FRONT of the TrainCar!
 
             // Don't add vibrations to train cars less than 2.5 meter in length; they're unsuitable for these calculations.
             // Don't let vibrate car before EOT to avoid EOT not moving together with that car
-            if (CarLengthM < 2.5f || Train.EOT != null && Train.Cars.Count > 1 && Train.Cars[Train.Cars.Count - 2] == this) return;
+            if (CarLengthM < 2.5f || Train.EOT != null && Train.Cars.Count > 1 && Train.Cars[Train.Cars.Count - 2] == this)
+                return;
             if (Simulator.Settings.CarVibratingLevel != 0)
             {
 
@@ -3031,18 +3055,9 @@ namespace Orts.Simulation.RollingStocks
                     AddVibrations(VibrationFactorTrackNode);
                     VibrationTrackNode = traveler.TrackNodeIndex;
                 }
-            }
-            if (Train != null && Train.IsTilting)
-            {
-                TiltingZRot = traveler.FindTiltedZ(speedMpS);//rotation if tilted, an indication of centrifugal force
-                TiltingZRot = PrevTiltingZRot + (TiltingZRot - PrevTiltingZRot) * elapsedTimeS;//smooth rotation
-                PrevTiltingZRot = TiltingZRot;
-                if (this.Flipped) TiltingZRot *= -1f;
-            }
-            if (Simulator.Settings.CarVibratingLevel != 0 || Train.IsTilting)
-            {
-                var rotation = Matrix.CreateFromYawPitchRoll(VibrationRotationRad.Y, VibrationRotationRad.X, VibrationRotationRad.Z + TiltingZRot);
-                var translation = Matrix.CreateTranslation(VibrationTranslationM.X, VibrationTranslationM.Y, 0);
+
+                Matrix rotation = Matrix.CreateFromYawPitchRoll(VibrationRotationRad.Y, VibrationRotationRad.X, VibrationRotationRad.Z);
+                Matrix translation = Matrix.CreateTranslation(VibrationTranslationM.X, VibrationTranslationM.Y, 0);
                 WorldPosition.XNAMatrix = rotation * translation * WorldPosition.XNAMatrix;
                 VibrationInverseMatrix = Matrix.Invert(rotation * translation);
             }

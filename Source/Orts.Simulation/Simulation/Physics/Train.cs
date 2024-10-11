@@ -4692,7 +4692,7 @@ namespace Orts.Simulation.Physics
 
                     traveller.Move((car.CarLengthM - car.CarBogieCentreLengthM) / 2.0f);  // Move to the front of the car 
 
-                    car.UpdatedTraveler(traveller, elapsedTime, distance, SpeedMpS);
+                    car.UpdateVibration(traveller, elapsedTime, distance, SpeedMpS);
                 }
                 length += car.CarLengthM;
                 // update position of container in discrete freight animations
@@ -4785,7 +4785,7 @@ namespace Orts.Simulation.Physics
 
                 traveller.Move((car.CarLengthM - car.CarBogieCentreLengthM) / 2.0f);  // Move to the front of the car 
 
-                car.UpdatedTraveler(traveller, elapsedTime, distance, SpeedMpS);
+                car.UpdateVibration(traveller, elapsedTime, distance, SpeedMpS);
                 length += car.CarLengthM;
             }
             traveller = new Traveller(traveller, Traveller.TravellerDirection.Backward);
@@ -4821,7 +4821,7 @@ namespace Orts.Simulation.Physics
                 // advance to the front of the car 
                 traveller.Move(car.CarLengthM);
 
-                car.UpdatedTraveler(traveller, elapsedTime, distance, SpeedMpS);
+                car.UpdateVibration(traveller, elapsedTime, distance, SpeedMpS);
                 length += car.CarLengthM;
             }
             RearTDBTraveller = new Traveller(traveller);
