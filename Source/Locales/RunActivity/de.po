@@ -2,15 +2,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2021-07-28 20:23:40+0200\n"
-"PO-Revision-Date: 2021-07-29 00:59+0200\n"
+"PO-Revision-Date: 2024-10-11 16:42+0200\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.1.1\n"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:601
 msgid "Free"
@@ -3111,6 +3111,16 @@ msgstr "Entferng"
 #: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:607
 msgid "SprtrDarkGray"
 msgstr ""
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "EOT"
+msgstr ""
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "Flow"
+msgstr "Fluss"
 
 #~ msgid "3D Cab view not available"
 #~ msgstr "3D-Führerstandsansicht existiert leider nicht"
