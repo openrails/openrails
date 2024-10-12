@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.3.2\n"
+"X-Generator: Poedit 3.1.1\n"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:601
 msgid "Free"
@@ -3905,6 +3905,16 @@ msgstr ""
 #| msgid "connected"
 msgid "Connected"
 msgstr "csatl."
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "EOT"
+msgstr ""
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "Flow"
+msgstr "Fogyaszt."
 
 #~ msgid "Confirmations visible"
 #~ msgstr "Visszajelzések láthatóak"
