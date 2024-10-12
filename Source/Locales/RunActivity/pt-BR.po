@@ -1506,5 +1506,3 @@ msgstr "O furo está quebrado, não é possível reabastecer"
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:230
 msgid "Scoop broken because activated outside through"
 msgstr "Scoop quebrado porque ativado do lado de fora"
-
-
