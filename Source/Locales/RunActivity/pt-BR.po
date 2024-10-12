@@ -1485,6 +1485,16 @@ msgid_plural "{0} meters"
 msgstr[0] "{0} metro"
 msgstr[1] "{0} metros"
 
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "EOT"
+msgstr ""
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "Flow"
+msgstr "Fluxo"
+
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:219
 msgid "No scoop in this loco"
 msgstr "Nenhuma informação neste loco"
@@ -1497,12 +1507,4 @@ msgstr "O furo está quebrado, não é possível reabastecer"
 msgid "Scoop broken because activated outside through"
 msgstr "Scoop quebrado porque ativado do lado de fora"
 
-#. Context: BrakeStatus
-msgctxt "BrakeStatus"
-msgid "EOT"
-msgstr ""
 
-#. Context: BrakeStatus
-msgctxt "BrakeStatus"
-msgid "Flow"
-msgstr "Fluxo"
