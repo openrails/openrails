@@ -571,6 +571,18 @@ namespace Orts.Viewer3D.Popups
                 var carOperations = Owner.Viewer.CarOperationsWindow;
                 var trainCarWebpage = Owner.Viewer.TrainCarOperationsWebpage;
 
+                // Allows interaction with <Alt>+<PageDown> and <Alt>+<PageUP>.
+                if (Owner.Viewer.Camera.AttachedCar != null && !(Owner.Viewer.Camera is CabCamera) && (trainCarViewer.Visible || Visible))
+                {
+                    var currentCameraCarID = Owner.Viewer.Camera.AttachedCar.CarID;
+                    if (PlayerTrain != null && (currentCameraCarID != trainCarViewer.CurrentCarID || CarPosition != trainCarViewer.CarPosition))
+                    {
+                        trainCarViewer.CurrentCarID = currentCameraCarID;
+                        trainCarViewer.CarPosition = CarPosition = PlayerTrain.Cars.TakeWhile(x => x.CarID != currentCameraCarID).Count();
+                        CarPositionChanged = true;
+                    }
+                }
+
                 trainCarViewer.TrainCarOperationsChanged = !trainCarViewer.Visible && trainCarViewer.TrainCarOperationsChanged ? false : trainCarViewer.TrainCarOperationsChanged;
 
                 CurrentDisplaySizeY = DisplaySizeY;
