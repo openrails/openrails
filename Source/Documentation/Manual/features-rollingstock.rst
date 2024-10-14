@@ -1706,7 +1706,7 @@ needed in the .cvf file (same applies also for wipers, doors and so on as seen f
   ORTS_EXTERNALLEFTWINDOWREAR
   ORTS_EXTERNALRIGHTWINDOWREAR
 
-LEFTWINDOW and RIGHTWINDOW are the names of the controls that can be inserted in the 
+ORTS_LEFTWINDOW and ORTS_RIGHTWINDOW are the names of the controls that can be inserted in the 
 .cvf file and in the 3Dcab .s file to command the state change with the mouse.
 
 Here is an example of the animation of the left window in a 2D cab::
