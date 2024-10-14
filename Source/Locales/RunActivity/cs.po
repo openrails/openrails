@@ -133,12 +133,6 @@ msgctxt "PowerSupply"
 msgid "On ongoing"
 msgstr "Běží"
 
-#. Context: PowerSupply
-#: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:81
-msgctxt "PowerSupply"
-msgid "On"
-msgstr "Zap"
-
 #. Context: Pantograph
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:86
 msgctxt "Pantograph"
@@ -583,12 +577,6 @@ msgstr "Strojvedoucí"
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:334
 msgid "Auxiliary power"
 msgstr "Pomocný výkon"
-
-#. Context: PowerSupply
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:322
-msgctxt "PowerSupply"
-msgid "Power"
-msgstr "Výkon"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1573
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:203
