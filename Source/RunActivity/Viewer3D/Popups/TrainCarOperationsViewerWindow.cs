@@ -498,7 +498,7 @@ namespace Orts.Viewer3D.Popups
 
                 for (var position = 0 ; position < Owner.Viewer.PlayerTrain.Cars.Count; position++)
                 {
-                    if (trainCarOperations.WarningCarPosition[position])
+                    if (trainCarOperations.WarningCarPosition.Count > position && trainCarOperations.WarningCarPosition[position])
                     {
                         var carAngleCockAOpenAmount = Owner.Viewer.PlayerTrain.Cars[position].BrakeSystem.AngleCockAOpenAmount;
                         var carAngleCockBOpenAmount = Owner.Viewer.PlayerTrain.Cars[position].BrakeSystem.AngleCockBOpenAmount;
