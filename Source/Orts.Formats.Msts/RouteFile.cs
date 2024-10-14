@@ -15,13 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using Orts.Parsers.Msts;
 using System.IO;
+using ORTS.Common;
+using System.Linq;
 
 namespace Orts.Formats.Msts
 {
@@ -107,6 +106,8 @@ namespace Orts.Formats.Msts
 				new STFReader.TokenProcessor("ortsuserpreferenceremoveforesttreesfromroads", ()=>{ RemoveForestTreesFromRoads = stf.ReadBoolBlock(false); }),
                 // values for superelevation
                 new STFReader.TokenProcessor("ortstracksuperelevation", ()=>{ SuperElevationHgtpRadiusM = new Interpolator(stf); }),
+                // New superelevation standard, will overwrite ORTSTrackSuperElevation
+                new STFReader.TokenProcessor("ortssuperelevation", ()=>{ SuperElevation.Add(new SuperElevationStandard(stf)); }),
                 // images
                 new STFReader.TokenProcessor("graphic", ()=>{ Thumbnail = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("loadingscreen", ()=>{ LoadingScreen = stf.ReadStringBlock(null); }),
@@ -131,6 +132,14 @@ namespace Orts.Formats.Msts
             if (Description == null) throw new STFException(stf, "Missing Description");
             if (RouteStart == null) throw new STFException(stf, "Missing RouteStart");
             if (ForestClearDistance == 0 && RemoveForestTreesFromRoads) Trace.TraceWarning("You must define also ORTSUserPreferenceForestClearDistance to avoid trees on roads");
+            if (SuperElevation.Count <= 0)
+            {
+                // No superelevation standard defined, create the default one
+                if (SuperElevationHgtpRadiusM != null)
+                    SuperElevation.Add(new SuperElevationStandard(SuperElevationHgtpRadiusM, MilepostUnitsMetric, SpeedLimit > 45.0f));
+                else
+                    SuperElevation.Add(new SuperElevationStandard(MilepostUnitsMetric, SpeedLimit > 45.0f));
+            }
         }
 
         public string RouteID;  // ie JAPAN1  - used for TRK file and route folder name
@@ -150,7 +159,8 @@ namespace Orts.Formats.Msts
         public string DefaultWaterTowerSMS;
         public string DefaultSignalSMS;
 		public float TempRestrictedSpeed = -1f;
-        public Interpolator SuperElevationHgtpRadiusM; // Superelevation of tracks
+        public Interpolator SuperElevationHgtpRadiusM; // Superelevation of tracks as a function of radius, deprecated
+        public List<SuperElevationStandard> SuperElevation = new List<SuperElevationStandard>();
 
         // Values for calculating Tunnel Resistance - will override default values.
         public float SingleTunnelAreaM2; 
@@ -203,12 +213,12 @@ namespace Orts.Formats.Msts
         public TRKEnvironment(STFReader stf)
         {
             stf.MustMatch("(");
-            for( int i = 0; i < 12; ++i )
+            for (int i = 0; i < 12; ++i)
             {
                 var envfilekey = stf.ReadString();
                 var envfile = stf.ReadStringBlock(null);
                 ENVFileNames.Add(envfilekey, envfile);
-//                Trace.TraceInformation("Environments array key {0} equals file name {1}", envfilekey, envfile);
+                //                Trace.TraceInformation("Environments array key {0} equals file name {1}", envfilekey, envfile);
             }
             stf.SkipRestOfBlock();
         }
@@ -219,8 +229,125 @@ namespace Orts.Formats.Msts
             //return ENVFileNames[index];
             var envfilekey = seasonType.ToString() + weatherType.ToString();
             var envfile = ENVFileNames[envfilekey];
-//            Trace.TraceInformation("Selected Environment file is {1}", envfilekey, envfile);
+            //            Trace.TraceInformation("Selected Environment file is {1}", envfilekey, envfile);
             return envfile;
+        }
+    }
+
+    public class SuperElevationStandard
+    {
+        public float MaxFreightUnderbalanceM = float.PositiveInfinity; // Limit to be set elsewhere
+        public float MaxPaxUnderbalanceM = float.PositiveInfinity; // Limit to be set elsewhere
+        public float MinCantM = 0.010f; // Default 10 mm (0.5 inches on imperial routes)
+        public float MaxCantM = 0.180f; // Default limit on superelevation is 180 mm (5 inches on imperial routes)
+        public float MinSpeedMpS = MpS.FromKpH(25.5f); // Default 25 kmh (15 mph on imperial routes)
+        public float MaxSpeedMpS = float.PositiveInfinity; // Default unlimited
+        public float PrecisionM = 0.005f; // Default 5 mm (0.25 inches on imperial routes)
+        public float RunoffSlope = 0.003f; // Maximum rate of change of superelevation per track length, default 0.3%
+        public float RunoffSpeedMpS = 0.055f; // Maximum rate of change of superelevation per second, default 55 mm / sec (1.5 inches / sec on imperial routes)
+        public bool UseLegacyCalculation = true; // Should ORTSTrackSuperElevation be used for superelevation calculations?
+
+        // Initialize new instance with default values (default metric values)
+        public SuperElevationStandard(bool metric = true, bool highSpeed = false)
+        {
+            if (metric)
+            {
+                // Set underbalance to millimeter values for metric routes
+                if (highSpeed)
+                {
+                    RunoffSpeedMpS = 0.080f; // 80 mm / sec for higher speed routes
+                    MaxFreightUnderbalanceM = 0.110f; // 110 mm for higher speed routes
+                    MaxPaxUnderbalanceM = 0.150f; // 150 mm for higher speed routes
+                }
+                else
+                {
+                    MaxFreightUnderbalanceM = 0.100f; // Default 100 mm
+                    MaxPaxUnderbalanceM = 0.130f; // Default 130 mm
+                }
+                // Other parameters are already metric by default
+
+            }
+            else
+            {
+                // Set values in imperial units
+                MinCantM = Me.FromIn(0.5f);
+                MaxCantM = Me.FromIn(6.0f);
+                MinSpeedMpS = MpS.FromMpH(15.5f);
+                PrecisionM = Me.FromIn(0.25f);
+
+                if (highSpeed)
+                {
+                    RunoffSpeedMpS = MpS.FromMpH(0.1136f); // 2.0 inches for higher speed routes
+                    MaxFreightUnderbalanceM = Me.FromIn(3.0f); // 3 inches for higher speed routes
+                    MaxPaxUnderbalanceM = Me.FromIn(5.0f); // 5 inches for higher speed routes
+                }
+                else
+                {
+                    RunoffSpeedMpS = MpS.FromMpH(0.0852f); // Default 1.5 inches per second
+                    MaxFreightUnderbalanceM = Me.FromIn(2.0f); // Default 2 inches
+                    MaxPaxUnderbalanceM = Me.FromIn(3.0f); // Default 3 inches
+                }
+            }
+        }
+
+        // Initialize new instance from superelevation interpolator
+        // Interpolator X values should be curve radius, Y values amount of superelevation in meters
+        public SuperElevationStandard(Interpolator elevTable, bool metric = true, bool highSpeed = false)
+        {
+            MinCantM = elevTable.Y.Min();
+            MaxCantM = elevTable.Y.Max();
+
+            MinSpeedMpS = 0.0f;
+
+            if (metric)
+            {
+                if (highSpeed)
+                    RunoffSpeedMpS = 0.080f; // 80 mm / sec of runoff allows for shorter build up on high speed routes
+            }
+            else
+            {
+                // Some extra data still required, use imperial units if the route uses it
+                PrecisionM = Me.FromIn(0.25f);
+                if (highSpeed)
+                    RunoffSpeedMpS = MpS.FromMpH(0.1136f); // 2.0 inches per second of runoff allows for shorter build up on high speed routes
+                else
+                    RunoffSpeedMpS = MpS.FromMpH(0.0852f); // 1.5 inches per second normal
+            }
+        }
+
+        // Read data for new instance using STF format
+        public SuperElevationStandard(STFReader stf)
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("maxfreightunderbalance", () => { MaxFreightUnderbalanceM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("maxpassengerunderbalance", () => { MaxPaxUnderbalanceM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("minimumcant", () => { MinCantM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("maximumcant", () => { MaxCantM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("minimumspeed", () => { MinSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); }),
+                new STFReader.TokenProcessor("maximumspeed", () => { MaxSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); }),
+                new STFReader.TokenProcessor("precision", () => { PrecisionM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("maxrunoffslope", () => { RunoffSlope = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("maxrunoffspeed", () => { RunoffSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); }),
+            });
+
+            // Disable legacy superelevation calculations if sufficient data is given
+            if (MaxFreightUnderbalanceM <= 10.0f || MaxPaxUnderbalanceM <= 10.0f)
+                UseLegacyCalculation = false;
+            // Sanity check values of underbalance
+            if (MaxFreightUnderbalanceM > 10.0f)
+            {
+                if (MaxPaxUnderbalanceM > 10.0f)
+                {
+                    // Neither underbalance has been defined, assume some defaults
+                    MaxFreightUnderbalanceM = 0.05f; // Default 5 cm ~ 2 inches
+                    MaxPaxUnderbalanceM = 0.075f; // Default 7.5 cm ~ 3 inches
+                }
+                else // Only passenger was defined
+                    MaxFreightUnderbalanceM = MaxPaxUnderbalanceM;
+            }
+            else if (MaxPaxUnderbalanceM > 10.0f) // Only freight was defined
+                MaxPaxUnderbalanceM = MaxFreightUnderbalanceM;
         }
     }
 

@@ -26,13 +26,11 @@ using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
-using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.Signalling;
 using Orts.Simulation.Timetables;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using ORTS.Settings;
-using SharpDX.MediaFoundation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -130,9 +128,8 @@ namespace Orts.Simulation
         public bool BreakCouplers;
         public int DayAmbientLight;
         public int CarVibrating;
-        public int UseSuperElevation; //amount of superelevation
+        public bool UseSuperElevation; // Whether or not visual superelevation is enabled
         public SuperElevation SuperElevation;
-        public int SuperElevationMinLen = 50;
         public float SuperElevationGauge = 1.435f;//1.435 guage
         public LoadStationsPopulationFile LoadStationsPopulationFile;
 
@@ -276,7 +273,6 @@ namespace Orts.Simulation
             BreakCouplers = Settings.BreakCouplers;
             CarVibrating = Settings.CarVibratingLevel; //0 no vib, 1-2 mid vib, 3 max vib
             UseSuperElevation = Settings.UseSuperElevation;
-            SuperElevationMinLen = Settings.SuperElevationMinLen;
             SuperElevationGauge = (float)Settings.SuperElevationGauge / 1000f;//gauge transfer from mm to m
             RoutePath = Path.GetDirectoryName(Path.GetDirectoryName(activityPath));
             if (useOpenRailsDirectory) RoutePath = Path.GetDirectoryName(RoutePath); // starting one level deeper!
@@ -319,8 +315,6 @@ namespace Orts.Simulation
                 TSectionDat = new TrackSectionsFile(BasePath + @"\GLOBAL\TSECTION.DAT");
             if (File.Exists(RoutePath + @"\TSECTION.DAT"))
                 TSectionDat.AddRouteTSectionDatFile(RoutePath + @"\TSECTION.DAT");
-
-            SuperElevation = new SuperElevation(this);
 
 #if ACTIVITY_EDITOR
             //  Where we try to load OR's specific data description (Station, connectors, etc...)
@@ -450,6 +444,7 @@ namespace Orts.Simulation
                 LoadStationsPopulationFile = new LoadStationsPopulationFile(populationFilePath);
             }
             Signals = new Signals(this, SIGCFG, cancellation);
+            SuperElevation = new SuperElevation(this);
             TurntableFile = new TurntableFile(RoutePath + @"\openrails\turntables.dat", RoutePath + @"\shapes\", MovingTables, this);
             LevelCrossings = new LevelCrossings(this);
             FuelManager = new FuelManager(this);
@@ -487,6 +482,7 @@ namespace Orts.Simulation
         {
             TimetableMode = true;
             Signals = new Signals(this, SIGCFG, cancellation);
+            SuperElevation = new SuperElevation(this);
             TurntableFile = new TurntableFile(RoutePath + @"\openrails\turntables.dat", RoutePath + @"\shapes\", MovingTables, this);
             LevelCrossings = new LevelCrossings(this);
             FuelManager = new FuelManager(this);
@@ -541,6 +537,7 @@ namespace Orts.Simulation
             PoolHolder = new Poolholder(inf, this);
             ContainerManager = new ContainerManager(this);
             Signals = new Signals(this, SIGCFG, inf, cancellation);
+            SuperElevation = new SuperElevation(this);
             RestoreTrains(inf);
             LevelCrossings = new LevelCrossings(this);
             AI = new AI(this, inf);
@@ -1402,6 +1399,8 @@ namespace Orts.Simulation
             }
             conFileName = BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
+            ConsistFile conFile = new ConsistFile(conFileName);
+            CurveDurability = conFile.Train.TrainCfg.Durability;   // Finds curve durability of consist based upon the value in consist file
             Player_Traffic_Definition player_Traffic_Definition = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition;
             Traffic_Service_Definition aPPlayer_Traffic_Definition = new Traffic_Service_Definition(playerServiceFileName, player_Traffic_Definition);
             Service_Definition aPPlayer_Service_Definition = new Service_Definition(playerServiceFileName, player_Traffic_Definition);
