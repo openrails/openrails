@@ -800,8 +800,6 @@ namespace Orts.Formats.Msts
         /// is rotated during superelevation.
         /// 0 = centered, positive = centerline moves to inside of curve, negative = centerline moves to outside of curve</summary>
         public float ElevOffsetM { get; set; } = 0.0f;
-        /// <summary>The index of the superelevation track profile suitable for this section</summary>
-        public int TRPIndex { get; set; } = -1;
 
         /// <summary>The freight speed limit of this track section.
         /// NOTE: Do not use for determining max train speed, this does not respect speed limit direction.</summary>

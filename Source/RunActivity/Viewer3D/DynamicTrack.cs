@@ -160,7 +160,6 @@ namespace Orts.Viewer3D
             else // Not enough info-use default track profile
                 trpIndex = 0;
 
-            trSection.TRPIndex = trpIndex;
             return trpIndex;
         }
         // Note: Dynamic track objects will ALWAYS use TRPIndex = 0
@@ -197,8 +196,8 @@ namespace Orts.Viewer3D
         /// </summary>
         public static int GetBestTrackProfile(Viewer viewer, SharedShape shape)
         {
-            float score = float.NegativeInfinity;
-            int bestIndex = -1;
+            float score = 0.0f;
+            int bestIndex = -1; // If best index -1 is returned, that means none of the track profiles are a good fit
 
             for (int i = 0; i < viewer.TRPs.Count; i++)
             {
@@ -318,8 +317,6 @@ namespace Orts.Viewer3D
                     score = bestScore;
             }
 
-            if (bestIndex < 0)
-                bestIndex = 0;
             return bestIndex;
         }
     }
