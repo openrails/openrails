@@ -572,7 +572,7 @@ namespace Orts.Viewer3D.Popups
                 var trainCarWebpage = Owner.Viewer.TrainCarOperationsWebpage;
 
                 // Allows interaction with <Alt>+<PageDown> and <Alt>+<PageUP>.
-                if (Owner.Viewer.Camera.AttachedCar != null && !(Owner.Viewer.Camera is CabCamera) && (trainCarViewer.Visible || Visible))
+                if (Owner.Viewer.Camera.AttachedCar != null && !(Owner.Viewer.Camera is CabCamera) && Owner.Viewer.Camera != Owner.Viewer.ThreeDimCabCamera && (trainCarViewer.Visible || Visible))
                 {
                     var currentCameraCarID = Owner.Viewer.Camera.AttachedCar.CarID;
                     if (PlayerTrain != null && (currentCameraCarID != trainCarViewer.CurrentCarID || CarPosition != trainCarViewer.CarPosition))
