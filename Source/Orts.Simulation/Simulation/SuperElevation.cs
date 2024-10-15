@@ -215,10 +215,13 @@ namespace Orts.Simulation
                 }
             }
 
-            if (standard == null || maxElev < standard.MinCantM)
+            if ((standard == null || maxElev < standard.MinCantM) && !SectionList.Any(s => s.NomElevM > 0.0f))
             {
                 foreach (TrVectorSection s in SectionList)
+                {
                     s.NomElevM = 0; // No superelevation needed, or curve is so short that no meaningful superelevation can be applied
+                    return;
+                }
             }
             else
             {
@@ -383,12 +386,17 @@ namespace Orts.Simulation
 
                 SectionList[count].PhysElevTable = new Interpolator(positions, elevations);
 
-                // Visual superelevation is stored in terms of angle in radians rather than meters
-                float[] angles = elevations.Select(e => (float)Math.Asin(e / simulator.SuperElevationGauge)).ToArray();
-                SectionList[count].VisElevTable = new Interpolator(SectionList[count].PhysElevTable.X, angles);
-                // Invert visual elevation values based on curve direction
-                // direction is negated for consistency of direction sense in other places
-                SectionList[count].VisElevTable.ScaleY(-direction);
+                // Only generate visual superelevation if option is enabled
+                if (simulator.UseSuperElevation)
+                {
+                    // Visual superelevation is stored in terms of angle in radians rather than meters
+                    float[] angles = elevations.Select(e => (float)Math.Asin(e / simulator.SuperElevationGauge)).ToArray();
+
+                    SectionList[count].VisElevTable = new Interpolator(SectionList[count].PhysElevTable.X, angles);
+                    // Invert visual elevation values based on curve direction
+                    // direction is negated for consistency of direction sense in other places
+                    SectionList[count].VisElevTable.ScaleY(-direction);
+                }
 
                 accumulatedLength += lengths[count];
                 count++;
