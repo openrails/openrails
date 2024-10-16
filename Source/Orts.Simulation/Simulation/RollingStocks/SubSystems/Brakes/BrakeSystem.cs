@@ -29,7 +29,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         EmergencyReservoir,
         MainPipe,
         BrakePipe,
-        BrakeCylinder
+        BrakeCylinder,
+        SupplyReservoir
     }
 
     public abstract class BrakeSystem
@@ -46,6 +47,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         /// Front brake hoses connection status
         /// </summary>
         public bool FrontBrakeHoseConnected;
+
+        /// <summary>
+        /// Rear brake hoses connection status
+        /// </summary>
+        public bool RearBrakeHoseConnected;
+
         /// <summary>
         /// Front angle cock opened/closed status
         /// </summary>
@@ -74,6 +81,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         public abstract string[] GetDebugStatus(Dictionary<BrakeSystemComponent, PressureUnit> units);
         public abstract float GetCylPressurePSI();
         public abstract float GetCylVolumeM3();
+        public abstract float GetTotalCylVolumeM3();
+        public abstract float GetNormalizedCylTravel();
         public abstract float GetVacResPressurePSI();
         public abstract float GetVacResVolume();
         public abstract float GetVacBrakeCylNumber();

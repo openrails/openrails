@@ -30,7 +30,6 @@ using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Settings;
-using Orts.Viewer3D.Processes;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -585,7 +584,8 @@ namespace Orts.Viewer3D.Popups
             dbfevalActivityEnded = true;
 
             //If Autopilot control then update recorded time
-            if (!ldbfevalupdateautopilottime && owner.Viewer.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+            if (!ldbfevalupdateautopilottime && 
+                (owner.Viewer.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || owner.Viewer.PlayerLocomotive.Train.Autopilot))
             {
                 Viewer.DbfEvalAutoPilotTimeS = Viewer.DbfEvalAutoPilotTimeS + (owner.Viewer.Simulator.ClockTime - Viewer.DbfEvalIniAutoPilotTimeS);
                 ldbfevalupdateautopilottime = true;
@@ -612,7 +612,7 @@ namespace Orts.Viewer3D.Popups
             if (Program.EvaluationFilename.Length > 0)
                 consolewltext("Debrief file = " + Program.EvaluationFilename);
 
-            consolewltext("Executable   = " + Path.GetFileName(Application.ExecutablePath));
+            consolewltext("Executable   = " + Path.GetFileName(ApplicationInfo.ProcessFile));
             LogSeparator(80);
             line.AddHorizontalSeparator();
 
@@ -696,10 +696,10 @@ namespace Orts.Viewer3D.Popups
 
                 if (item.EngineType == TrainCar.EngineTypes.Steam && item.AuxWagonType == "Engine")
                 {//Fuel Steam
-                    nCoalvolume = nCoalvolume + (item as MSTSSteamLocomotive).MaxTenderCoalMassKG;
-                    nCoallevel = nCoallevel + (item as MSTSSteamLocomotive).TenderCoalMassKG;
+                    nCoalvolume = nCoalvolume + (item as MSTSSteamLocomotive).MaxTenderFuelMassKG;
+                    nCoallevel = nCoallevel + (item as MSTSSteamLocomotive).TenderFuelMassKG;
                     nCoalburned = nCoalvolume - nCoallevel;
-                    nCoalBurnedPerc = 1 - ((item as MSTSSteamLocomotive).TenderCoalMassKG / (item as MSTSSteamLocomotive).MaxTenderCoalMassKG);
+                    nCoalBurnedPerc = 1 - ((item as MSTSSteamLocomotive).TenderFuelMassKG / (item as MSTSSteamLocomotive).MaxTenderFuelMassKG);
                     cEnginetype.Add("Steam");
 
                     nWaterBurnedPerc = 1 - ((item as MSTSSteamLocomotive).CombinedTenderWaterVolumeUKG / (item as MSTSSteamLocomotive).MaxTotalCombinedWaterVolumeUKG);

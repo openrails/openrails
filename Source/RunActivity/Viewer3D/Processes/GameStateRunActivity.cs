@@ -420,6 +420,8 @@ namespace Orts.Viewer3D.Processes
                 if (MPManager.IsMultiPlayer() && MPManager.IsServer())
                     MPManager.OnlineTrains.Save (outf);
 
+                Viewer.TrainCarOperationsWebpage.Save(outf);
+
                 SaveEvaluation(outf);
 
                 // Write out position within file so we can check when restoring.
@@ -499,6 +501,8 @@ namespace Orts.Viewer3D.Processes
 
                     if (MPManager.IsMultiPlayer() && MPManager.IsServer())
                         MPManager.OnlineTrains.Restore(inf);
+
+                    WebServices.TrainCarOperationsWebpage.Restore(inf);
 
                     ResumeEvaluation(inf);
 
@@ -816,7 +820,7 @@ namespace Orts.Viewer3D.Processes
                 Console.WriteLine("Build      = {0}", VersionInfo.Build);
                 if (logFileName.Length > 0)
                     Console.WriteLine("Logfile    = {0}", logFileName);
-                Console.WriteLine("Executable = {0}", Path.GetFileName(Application.ExecutablePath));
+                Console.WriteLine("Executable = {0}", Path.GetFileName(ApplicationInfo.ProcessFile));
                 foreach (var arg in args)
                     Console.WriteLine("Argument   = {0}", arg);
 
@@ -1124,7 +1128,7 @@ namespace Orts.Viewer3D.Processes
                     {
                         // for resume and replay : set timetable file and selected train info
                         Simulator.TimetableFileName = System.IO.Path.GetFileNameWithoutExtension(args[0]);
-                        Simulator.PathName = String.Copy(args[1]);
+                        Simulator.PathName = args[1];
                     }
                     break;
             }

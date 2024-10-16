@@ -36,10 +36,12 @@ using Orts.Simulation;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.Timetables;
 using Orts.Viewer3D.Popups;
 using Orts.Viewer3D.Processes;
 using Orts.Viewer3D.RollingStock;
 using Orts.Viewer3D.WebServices.SwitchPanel;
+using Orts.Viewer3D.WebServices;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Scripting.Api;
@@ -93,6 +95,9 @@ namespace Orts.Viewer3D
         public OSDCars OSDCars { get; private set; } // F7 cars OSD
         public SwitchWindow SwitchWindow { get; private set; } // F8 window
         public TrainOperationsWindow TrainOperationsWindow { get; private set; } // F9 window
+        public TrainCarOperationsWindow TrainCarOperationsWindow { get; private set; } // Alt-F9 window
+        public TrainCarOperationsViewerWindow TrainCarOperationsViewerWindow { get; private set; } // From TrainCarOperationWindow
+        public TrainCarOperationsWebpage TrainCarOperationsWebpage { get; set; }
         public CarOperationsWindow CarOperationsWindow { get; private set; } // F9 sub-window for car operations
         public TrainDpuWindow TrainDpuWindow { get; private set; } // Shift + F9 train distributed power window
         public NextStationWindow NextStationWindow { get; private set; } // F10 window
@@ -103,6 +108,7 @@ namespace Orts.Viewer3D
         public TrainListWindow TrainListWindow { get; private set; } // for switching driven train
         public TTDetachWindow TTDetachWindow { get; private set; } // for detaching player train in timetable mode
         public EOTListWindow EOTListWindow { get; private set; } // to select EOT
+        public ControlRectangle ControlRectangle { get; private set; } // to display the control rectangles
         private OutOfFocusWindow OutOfFocusWindow; // to show colored rectangle around the main window when not in focus
 
         // Route Information
@@ -191,7 +197,9 @@ namespace Orts.Viewer3D
         public Vector3 NearPoint { get; private set; }
         public Vector3 FarPoint { get; private set; }
 
-        public bool MapViewerEnabled { get; set; }
+        public bool MapViewerEnabled { get; set; } = false;
+        public bool MapViewerEnabledSetToTrue {  get; set; } = false;
+
         public bool SoundDebugFormEnabled { get; set; }
 
         public TRPFile TRP; // Track profile file
@@ -375,6 +383,7 @@ namespace Orts.Viewer3D
             outf.Write(Simulator.Trains.IndexOf(SelectedTrain));
 
             WindowManager.Save(outf);
+            outf.Write(MapViewerEnabled);
 
             outf.Write(WellKnownCameras.IndexOf(Camera));
             foreach (var camera in WellKnownCameras)
@@ -419,6 +428,11 @@ namespace Orts.Viewer3D
             }
 
             WindowManager.Restore(inf);
+            MapViewerEnabled = inf.ReadBoolean();
+            if (MapViewerEnabled)
+            {
+                MapViewerEnabledSetToTrue = true;
+            }
 
             var cameraToRestore = inf.ReadInt32();
             foreach (var camera in WellKnownCameras)
@@ -460,7 +474,7 @@ namespace Orts.Viewer3D
             if (PlayerLocomotive == null) PlayerLocomotive = Simulator.InitialPlayerLocomotive();
             SelectedTrain = PlayerTrain;
             PlayerTrain.InitializePlayerTrainData();
-            if (PlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+            if (PlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING  || PlayerTrain.Autopilot)
             {
                 Simulator.Trains[0].LeadLocomotive = null;
                 Simulator.Trains[0].LeadLocomotiveIndex = -1;
@@ -490,6 +504,8 @@ namespace Orts.Viewer3D
             OSDCars = new OSDCars(WindowManager);
             SwitchWindow = new SwitchWindow(WindowManager);
             TrainOperationsWindow = new TrainOperationsWindow(WindowManager);
+            TrainCarOperationsWindow = new TrainCarOperationsWindow(WindowManager);
+            TrainCarOperationsViewerWindow = new TrainCarOperationsViewerWindow(WindowManager);
             MultiPlayerWindow = new MultiPlayerWindow(WindowManager);
             CarOperationsWindow = new CarOperationsWindow(WindowManager);
             TrainDpuWindow = new TrainDpuWindow(WindowManager);
@@ -501,6 +517,7 @@ namespace Orts.Viewer3D
             TrainListWindow = new TrainListWindow(WindowManager);
             TTDetachWindow = new TTDetachWindow(WindowManager);
             EOTListWindow = new EOTListWindow(WindowManager);
+            ControlRectangle = new ControlRectangle(WindowManager, this);
             if (Settings.SuppressConfirmations < (int)ConfirmLevel.Error)
                 // confirm level Error might be set to suppressed when taking a movie
                 // do not show the out of focus red square in that case
@@ -866,6 +883,20 @@ namespace Orts.Viewer3D
             WindowManager.PrepareFrame(frame, elapsedTime);
 
             SwitchPanelModule.SendSwitchPanelIfChanged();
+            
+            try
+            {
+                if ((PlayerTrain != null) && (TrainCarOperationsWebpage != null))
+                {
+                    TrainCarOperationsWebpage.handleReceiveAndSend();
+                }
+            }
+            catch (Exception error)
+            {
+                // some timing error causes an exception sometimes
+                // just silently ignore but log the exception
+                Trace.TraceWarning(error.ToString());
+            }
         }
 
         private void LoadDefectCarSound(TrainCar car, string filename)
@@ -992,20 +1023,33 @@ namespace Orts.Viewer3D
             }
             if (UserInput.IsPressed(UserCommand.DisplaySwitchWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) SwitchWindow.TabAction(); else SwitchWindow.Visible = !SwitchWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayTrainOperationsWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrainOperationsWindow.TabAction(); else { TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible; if (!TrainOperationsWindow.Visible) CarOperationsWindow.Visible = false; }
-            if (UserInput.IsPressed(UserCommand.DisplayTrainDpuWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrainDpuWindow.Visible = !TrainDpuWindow.Visible ; else TrainDpuWindow.TabAction();
+
+            if (UserInput.IsPressed(UserCommand.DisplayTrainCarOperationsWindow))
+            {
+                TrainCarOperationsWindow.Visible = !TrainCarOperationsWindow.Visible;
+                if (!TrainCarOperationsWindow.Visible)
+                {
+                    TrainCarOperationsViewerWindow.Visible = false;
+                    CarOperationsWindow.Visible = false;
+                }
+            }
+
+            if (UserInput.IsPressed(UserCommand.DisplayTrainDpuWindow)) TrainDpuWindow.Visible = !TrainDpuWindow.Visible;
+
             if (UserInput.IsPressed(UserCommand.DisplayNextStationWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) NextStationWindow.TabAction(); else NextStationWindow.Visible = !NextStationWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayCompassWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) CompassWindow.TabAction(); else CompassWindow.Visible = !CompassWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DebugTracks)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TracksDebugWindow.TabAction(); else TracksDebugWindow.Visible = !TracksDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DebugSignalling)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayTrainListWindow)) TrainListWindow.Visible = !TrainListWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayEOTListWindow)) EOTListWindow.Visible = !EOTListWindow.Visible;
+            if (UserInput.IsPressed(UserCommand.DisplayControlRectangle)) ControlRectangle.Visible = !ControlRectangle.Visible;
 
 
             if (UserInput.IsPressed(UserCommand.GameChangeCab))
             {
                 if (PlayerLocomotive.ThrottlePercent >= 1
                     || Math.Abs(PlayerLocomotive.SpeedMpS) > 1
-                    || !IsReverserInNeutral(PlayerLocomotive))
+                    || !IsReverserInNeutral(PlayerLocomotive) && !((PlayerLocomotive.Train.Autopilot) || PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING))
                 {
                     Simulator.Confirmer.Warning(CabControl.ChangeCab, CabSetting.Warn2);
                 }
@@ -1169,7 +1213,15 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommand.GameSwitchManualMode)) PlayerTrain.RequestToggleManualMode();
             if (UserInput.IsPressed(UserCommand.GameResetOutOfControlMode)) new ResetOutOfControlModeCommand(Log);
 
-            if (UserInput.IsPressed(UserCommand.GameMultiPlayerDispatcher)) { MapViewerEnabled = !MapViewerEnabled; return; }
+            if (UserInput.IsPressed(UserCommand.GameMultiPlayerDispatcher)) 
+            { 
+                MapViewerEnabled = !MapViewerEnabled; 
+                if (MapViewerEnabled)
+                {
+                    MapViewerEnabledSetToTrue = true;
+                }
+                return; 
+            }
             if (UserInput.IsPressed(UserCommand.DebugSoundForm)) { SoundDebugFormEnabled = !SoundDebugFormEnabled; return; }
 
             if (UserInput.IsPressed(UserCommand.CameraJumpSeeSwitch))
@@ -1234,22 +1286,23 @@ namespace Orts.Viewer3D
 
             if (UserInput.IsPressed(UserCommand.GameAutopilotMode))
             {
-                if (PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+                var playerTrain = PlayerLocomotive.Train;
+                if (playerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || playerTrain is TTTrain && playerTrain.Autopilot)
                 {
-                    var success = ((AITrain)PlayerLocomotive.Train).SwitchToPlayerControl();
+                    var success = ((AITrain)playerTrain).SwitchToPlayerControl();
                     if (success)
                     {   
                         Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Switched to player control"));
                         DbfEvalAutoPilot = false;//Debrief eval
                     }
                 }
-                else if (PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN)
+                else if (playerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || playerTrain is TTTrain && !playerTrain.Autopilot)
                 {
-                    if (PlayerLocomotive.Train.ControlMode == Train.TRAIN_CONTROL.MANUAL)
+                    if (playerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL)
                         Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("You can't switch from manual to autopilot mode"));
                     else
                     {
-                        var success = ((AITrain)PlayerLocomotive.Train).SwitchToAutopilotControl();
+                        var success = ((AITrain)playerTrain).SwitchToAutopilotControl();
                         if (success)
                         {
                             Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Switched to autopilot"));
@@ -1691,9 +1744,11 @@ namespace Orts.Viewer3D
             ThreeDimCabCamera.ChangeCab(Simulator.PlayerLocomotive);
             HeadOutForwardCamera.ChangeCab(Simulator.PlayerLocomotive);
             HeadOutBackCamera.ChangeCab(Simulator.PlayerLocomotive);
-            if (!Simulator.PlayerLocomotive.HasFront3DCab && !Simulator.PlayerLocomotive.HasRear3DCab)
+            if (!Simulator.PlayerLocomotive.HasFront3DCab && !Simulator.PlayerLocomotive.HasRear3DCab &&
+                (Simulator.PlayerLocomotive.HasFrontCab || Simulator.PlayerLocomotive.HasRearCab))
                 CabCamera.Activate(); // If you need anything else here the cameras should check for it.
-            else ThreeDimCabCamera.Activate();
+            else if (Simulator.PlayerLocomotive.HasFront3DCab || Simulator.PlayerLocomotive.HasRear3DCab)
+                ThreeDimCabCamera.Activate();
             SetCommandReceivers();
         }
 

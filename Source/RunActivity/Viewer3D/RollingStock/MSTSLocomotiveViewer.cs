@@ -35,7 +35,6 @@ using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
 using Orts.Viewer3D.RollingStock.SubSystems;
 using Orts.Viewer3D.RollingStock.Subsystems.ETCS;
-using Orts.Viewer3D.WebServices.SwitchPanel;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Scripting.Api;
@@ -118,7 +117,7 @@ namespace Orts.Viewer3D.RollingStock
         {
             if (Locomotive.Direction != Direction.Forward
             && (Locomotive.ThrottlePercent >= 1
-            || Math.Abs(Locomotive.SpeedMpS) > 1 || Locomotive.DynamicBrakeIntervention >= 0))
+            || Math.Abs(Locomotive.SpeedMpS) > 1 || Locomotive.DynamicBrakeController?.CurrentValue > 0))
             {
                 Viewer.Simulator.Confirmer.Warning(CabControl.Reverser, CabSetting.Warn1);
                 return;
@@ -130,7 +129,7 @@ namespace Orts.Viewer3D.RollingStock
         {
             if (Locomotive.Direction != Direction.Reverse
             && (Locomotive.ThrottlePercent >= 1
-            || Math.Abs(Locomotive.SpeedMpS) > 1 || Locomotive.DynamicBrakeIntervention >= 0))
+            || Math.Abs(Locomotive.SpeedMpS) > 1 || Locomotive.DynamicBrakeController?.CurrentValue > 0))
             {
                 Viewer.Simulator.Confirmer.Warning(CabControl.Reverser, CabSetting.Warn1);
                 return;
@@ -1532,7 +1531,7 @@ namespace Orts.Viewer3D.RollingStock
             if (_Shader != null)
             {
                 // TODO: Readd ability to control night time lighting.
-                float overcast = _Viewer.Settings.UseMSTSEnv ? _Viewer.World.MSTSSky.mstsskyovercastFactor : _Viewer.Simulator.Weather.OvercastFactor;
+                float overcast = _Viewer.Settings.UseMSTSEnv ? _Viewer.World.MSTSSky.mstsskyovercastFactor : _Viewer.Simulator.Weather.CloudCoverFactor;
                 _Shader.SetData(_Viewer.MaterialManager.sunDirection, _isNightTexture, false, overcast);
                 _Shader.SetTextureData(cabRect.Left, cabRect.Top, cabRect.Width, cabRect.Height);
                 _Shader.CurrentTechnique.Passes[0].Apply();
@@ -1700,6 +1699,8 @@ namespace Orts.Viewer3D.RollingStock
         void HandleUserInput();
         string GetControlName();
         string ControlLabel { get; }
+        Rectangle DestinationRectangleGet();
+        bool isMouseControl();
     }
 
     /// <summary>
@@ -2005,6 +2006,7 @@ namespace Orts.Viewer3D.RollingStock
         float Scale = 1;
         int OldFrameIndex = 0;
         public bool ButtonState = false;
+        int SplitIndex = -1;
 
         /// <summary>
         /// Accumulated mouse movement. Used for controls with no assigned notch controllers, e.g. headlight and reverser.
@@ -2040,6 +2042,18 @@ namespace Orts.Viewer3D.RollingStock
                     break;
                 default: ChangedValue = (value) => value + NormalizedMouseMovement(); break;
             }
+            // Determine the cab view control index shown when combined control is at the split position
+            // Find the index of the next value LARGER than the split value
+            int splitIndex = ControlDiscrete.Values.BinarySearch(Locomotive.CombinedControlSplitPosition);
+            // Account for any edge cases
+            if (splitIndex < 0)
+                splitIndex = ~splitIndex;
+            if (splitIndex > ControlDiscrete.Values.Count - 1)
+                splitIndex = ControlDiscrete.Values.Count - 1;
+            if (ControlDiscrete.Reversed)
+                splitIndex = (ControlDiscrete.Values.Count - 1) - splitIndex;
+
+            SplitIndex = splitIndex;
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -2130,55 +2144,34 @@ namespace Orts.Viewer3D.RollingStock
                     break;
                 case CABViewControlTypes.DYNAMIC_BRAKE:
                 case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
-                    var dynBrakePercent = Locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING ?
+                    var dynBrakePercent = (Locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || Locomotive.Train.Autopilot) ?
                         Locomotive.DynamicBrakePercent : Locomotive.LocalDynamicBrakePercent;
-                    if (Locomotive.DynamicBrakeController != null)
+                    if (dynBrakePercent <= 0)
+                        index = 0;
+                    else if (Locomotive.DynamicBrakeController != null)
                     {
-                        if (dynBrakePercent == -1)
-                        {
-                            index = 0;
-                            break;
-                        }
                         if (!Locomotive.HasSmoothStruc)
-                        {
-                            index = Locomotive.DynamicBrakeController != null ? Locomotive.DynamicBrakeController.CurrentNotch : 0;
-                        }
+                            index = Locomotive.DynamicBrakeController.CurrentNotch;
                         else
-                        {
-                            if (Locomotive.CruiseControl != null)
-                            {
-                                if ((Locomotive.CruiseControl.SpeedRegMode == Simulation.RollingStocks.SubSystems.CruiseControl.SpeedRegulatorMode.Auto && !Locomotive.CruiseControl.DynamicBrakePriority) || Locomotive.DynamicBrakeIntervention > 0)
-                                {
-                                    index = 0;
-                                }
-                                else
-                                    index = PercentToIndex(dynBrakePercent);
-                            }
-                            else
-                                index = PercentToIndex(dynBrakePercent);
-                        }
+                            index = PercentToIndex(Locomotive.DynamicBrakeController.CurrentValue);
                     }
                     else
-                    {
                         index = PercentToIndex(dynBrakePercent);
-                    }
                     break;
                 case CABViewControlTypes.CPH_DISPLAY:
-                    if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && Locomotive.DynamicBrakePercent >= 0)
-                        // TODO <CSComment> This is a sort of hack to allow MSTS-compliant operation of Dynamic brake indications in the standard USA case with 8 steps (e.g. Dash9)
-                        // This hack returns to code of previous OR versions (e.g. release 1.0).
-                        // The clean solution for MSTS compliance would be not to increment the percentage of the dynamic brake at first dynamic brake key pression, so that
-                        // subsequent steps become of 12.5% as in MSTS instead of 11.11% as in OR. This requires changes in the physics logic </CSComment>
-                        index = (int)((ControlDiscrete.FramesCount) * Locomotive.GetCombinedHandleValue(false));
-                    else
-                        index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
-                    break;
                 case CABViewControlTypes.CP_HANDLE:
-                    if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && Locomotive.DynamicBrakePercent >= 0
-                            || Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleAir && Locomotive.TrainBrakeController.CurrentValue > 0)
-                            index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
+                    var combinedHandlePosition = Locomotive.GetCombinedHandleValue(false);
+                    // Make sure any deviation from the split position gives a different index
+                    int handleRelativePos = combinedHandlePosition.CompareTo(Locomotive.CombinedControlSplitPosition);
+                    if (handleRelativePos != 0)
+                    {
+                        if (handleRelativePos == (ControlDiscrete.Reversed ? - 1 : 1))
+                            index = Math.Max(PercentToIndex(combinedHandlePosition), SplitIndex + 1);
                         else
-                            index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
+                            index = Math.Min(PercentToIndex(combinedHandlePosition), SplitIndex - 1);
+                    }
+                    else
+                        index = SplitIndex;
                     break;
                 case CABViewControlTypes.ORTS_SELECTED_SPEED_DISPLAY:
                     if (Locomotive.CruiseControl == null)
@@ -2835,14 +2828,26 @@ namespace Orts.Viewer3D.RollingStock
             {
                 try
                 {
-                    var val = ControlDiscrete.Values[0] <= ControlDiscrete.Values[ControlDiscrete.Values.Count - 1] ?
-                        ControlDiscrete.Values.Where(v => (float)v <= percent + 0.00001).Last() : ControlDiscrete.Values.Where(v => (float)v <= percent + 0.00001).First();
-                    index = ControlDiscrete.Values.IndexOf(val);
+                    // Binary search process to find the control value closest to percent
+                    // Returns index of first val LARGER than percent, or bitwise compliment of this index if percent isn't in the list
+                    int checkIndex = ControlDiscrete.Values.BinarySearch(percent);
+
+                    if (checkIndex < 0)
+                        checkIndex = ~checkIndex;
+                    if (checkIndex > ControlDiscrete.Values.Count - 1)
+                        checkIndex = ControlDiscrete.Values.Count - 1;
+                    // Choose lower index if it is closer to percent
+                    if (checkIndex > 0 && Math.Abs(ControlDiscrete.Values[checkIndex - 1] - percent) < Math.Abs(ControlDiscrete.Values[checkIndex] - percent))
+                        checkIndex--;
+                    // If values were originally defined in reverse, correct index to account for the reversing
+                    if (ControlDiscrete.Reversed)
+                        checkIndex = (ControlDiscrete.Values.Count - 1) - checkIndex;
+
+                    index = checkIndex;
                 }
                 catch
                 {
-                    var val = ControlDiscrete.Values.Min();
-                    index = ControlDiscrete.Values.IndexOf(val);
+                    index = ControlDiscrete.Reversed ? ControlDiscrete.Values.Count - 1 : 0;
                 }
             }
             else if (ControlDiscrete.MaxValue != ControlDiscrete.MinValue)
@@ -2851,6 +2856,16 @@ namespace Orts.Viewer3D.RollingStock
             }
 
             return index;
+        }
+
+        public Rectangle DestinationRectangleGet()
+        {
+            return DestinationRectangle;
+        }
+
+        public bool isMouseControl()
+        {
+            return ControlDiscrete.MouseControl;
         }
     }
 
@@ -4206,7 +4221,7 @@ namespace Orts.Viewer3D.RollingStock
 
             if (locoViewer.ThreeDimentionCabRenderer.ControlMap.TryGetValue(Key, out CabViewControlRenderer cvfr))
             {
-                float index = cvfr is CabViewDiscreteRenderer renderer ? renderer.GetDrawIndex() : cvfr.GetRangeFraction() * FrameCount;
+                float index = cvfr is CabViewDiscreteRenderer renderer ? renderer.GetDrawIndex() : cvfr.GetRangeFraction() * MaxFrame;
                 SetFrameClamp(index);
             }
         }

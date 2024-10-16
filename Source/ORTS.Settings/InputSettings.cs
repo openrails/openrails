@@ -147,7 +147,7 @@ namespace ORTS.Settings
         static extern int MapVirtualKey(int code, MapVirtualKeyType type);
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        static extern int GetKeyNameText(int scanCode, [Out] string name, int nameLength);
+        static extern int GetKeyNameText(int scanCode, [Out] char[] name, int nameLength);
         #endregion
 
         // Keyboard scancodes are basically constant; some keyboards have extra buttons (e.g. UK ones tend to have an
@@ -507,14 +507,16 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.DisplayHelpWindow] = new UserCommandModifiableKeyInput(0x3B, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplayHUD] = new UserCommandModifiableKeyInput(0x3F, KeyModifiers.Alt, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplayTrainDrivingWindow] = new UserCommandModifiableKeyInput(0x3F, Commands[(int)UserCommand.DisplayNextWindowTab]);
+            Commands[(int)UserCommand.DisplayTrainCarOperationsWindow] = new UserCommandKeyInput(0x43);
             Commands[(int)UserCommand.DisplayMultiPlayerWindow] = new UserCommandKeyInput(0x0A, KeyModifiers.Shift);
             Commands[(int)UserCommand.DisplayNextStationWindow] = new UserCommandKeyInput(0x44);
             Commands[(int)UserCommand.DisplayStationLabels] = new UserCommandModifiableKeyInput(0x40, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplaySwitchWindow] = new UserCommandKeyInput(0x42);
             Commands[(int)UserCommand.DisplayTrackMonitorWindow] = new UserCommandModifiableKeyInput(0x3E, Commands[(int)UserCommand.DisplayNextWindowTab]);
-            Commands[(int)UserCommand.DisplayTrainOperationsWindow] = new UserCommandKeyInput(0x43);
+            Commands[(int)UserCommand.DisplayTrainOperationsWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommand.DisplayTrainDpuWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Shift);
             Commands[(int)UserCommand.DisplayEOTListWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Control);
+            Commands[(int)UserCommand.DisplayControlRectangle] = new UserCommandKeyInput(0x3F, KeyModifiers.Control);
 
             Commands[(int)UserCommand.GameAutopilotMode] = new UserCommandKeyInput(0x1E, KeyModifiers.Alt);
             Commands[(int)UserCommand.GameChangeCab] = new UserCommandKeyInput(0x12, KeyModifiers.Control);
@@ -652,9 +654,9 @@ namespace ORTS.Settings
         public static string GetScanCodeKeyName(int scanCode)
         {
             var xnaName = Enum.GetName(typeof(Keys), GetScanCodeKeys(scanCode));
-            var keyName = new String('\0', 32);
-            var keyNameLength = GetKeyNameText(scanCode << 16, keyName, keyName.Length);
-            keyName = keyName.Substring(0, keyNameLength);
+            var keyNameBuffer = new char[32];
+            var keyNameLength = GetKeyNameText(scanCode << 16, keyNameBuffer, keyNameBuffer.Length);
+            var keyName = new string(keyNameBuffer, 0, keyNameLength);
 
             if (keyName.Length > 0)
             {

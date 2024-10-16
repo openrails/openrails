@@ -663,6 +663,8 @@ and the state of these parameters when the wagon or locomotive is full.
    single: EmptyORTSWagonFrontalArea
    single: EmptyORTSDavisDragConstant
    single: EmptyCentreOfGravity_Y
+   single: EmptyBrakeRelayValveRatio
+   single: EmptyBrakeRelayValveInshot
    single: IsGondola
    single: UnloadingStartDelay
    single: FreightAnimContinuous
@@ -680,11 +682,13 @@ and the state of these parameters when the wagon or locomotive is full.
    single: FullORTSWagonFrontalArea
    single: FullORTSDavisDragConstant
    single: FullCentreOfGravity_Y
+   single: FullBrakeRelayValveRatio
+   single: FullBrakeRelayValveInshot
 
 To configure the stock correctly the following empty and full parameters need to be 
 included in the ORTSFreightAnims file. Empty values are included in the first block, 
 and full values are included in the second code block. A sample code block is shown 
-below.::
+below::
 
     ORTSFreightAnims
     (
@@ -719,6 +723,58 @@ below.::
       FullCentreOfGravity_Y ( 1.8 ) 
      )
   )
+
+For some rolling stock, it may be more realistic to handle variations in load/empty
+brake force by changing the brake cylinder pressure developed, rather than changing
+the brake force directly. In such cases, the empty/load relay valve parameters work
+best. Unlike other freight physics parameters, the relay valve ratio will not change
+continuously as freight is loaded. Instead, when the freight load is above 25% capacity,
+the loaded relay valve ratio is used, otherwise the empty ratio (or the ratio defined
+in the main .wag file) is used. The level of brake cylinder in-shot can also be changed
+depending on the load level as is often the case on load proportioning equipment. The
+standard behavior of these parameters is defined in more detail in the 
+:ref:`air brakes physics <physics-braking-parameters>` section.
+
+Here is an example of a gondola with a 50% load/empty valve::
+
+    ORTSMaxBrakeShoeForce ( 31300lb )
+    MaxHandbrakeForce ( 32000lb )
+
+    ORTSFreightAnims (
+        MSTSFreightAnimEnabled ( 0 )
+        WagonEmptyWeight( 28.9t-us )
+
+        EmptyBrakeRelayValveRatio ( 0.5 )
+        EmptyBrakeRelayValveInshot ( -15psi )
+
+        ORTSDavis_A ( 87.35lbf )
+        ORTSDavis_B ( 0.289lbf/mph )
+        ORTSDavis_C ( 0.144lbf/mph^2 )
+        ORTSWagonFrontalArea ( 120ft^2 )
+        ORTSDavisDragConstant ( 0.0012 )
+        EmptyCentreOfGravity_Y ( 1.377 )
+        IsGondola( 1 )
+        UnloadingStartDelay ( 5 )
+
+        FreightAnimContinuous (
+            IntakePoint ( 0.0 6.0 FreightCoal )
+            Shape ( COAL_LOAD.s )
+            MaxHeight ( 0.0 )
+            MinHeight ( -2.2 )
+            FreightWeightWhenFull ( 114.1t-us )
+            FullAtStart ( 0 )
+
+            FullBrakeRelayValveRatio ( 1.0 )
+            FullBrakeRelayValveInshot ( 0psi )
+
+            FullORTSDavis_A ( 258.5lbf )
+            FullORTSDavis_B ( 1.43lbf/mph )
+            FullORTSDavis_C ( 0.0504lbf/mph^2 )
+            ORTSWagonFrontalArea ( 120ft^2 )
+            ORTSDavisDragConstant ( 0.00042 )
+            FullCentreOfGravity_Y ( 2.251 ) 
+        )
+    ) 
 
 .. index::
    single: Shape
@@ -1487,6 +1543,56 @@ to the oscillation from center point to an oscillation end point. The file shoul
 one cue point at its beginning and one after the time interval of a complete bell swing 
 forward and backward, and should have a final fadeoff for best result. 
 
+Brake Equipment Animations
+==========================
+
+Open Rails now supports animation of brake rigging components driven by the brake system
+simulation.
+
+Brake Cylinder Animation
+------------------------
+
+On engines and wagons with :ref:`advanced brake cylinder parameters <physics-braking-parameters>`
+`ORTSBrakeCylinderDiameter` and `ORTSBrakeCylinderPistonTravel` defined, Open Rails will
+simulate the motion of the brake cylinders and brake rigging. This simulation can be used
+to drive animations of brake cylinders using animation matricies with names that
+start with `ORTSBRAKECYLINDER`. This animation type should NOT be used for any brake equipment
+that can be actuated by the brake cylinder and the handbrakes. See the section on brake rigging
+animation for details.
+
+Unlike other animation types, the keyframes for brake cylinders do not represent time, and cannot
+be set to arbitrary values. Instead, the key value represents the level of brake cylinder
+extension. A keyframe value of 8 represents the state where the brake cylinder has taken up the
+slack in the brake rigging, 10 represents the level of brake cylinder extension at 50 psi/3.5
+bar, and the maximum value of cylinder extension is 16, which should not be possible in normal
+operation. These values are the same regardless of the settings used in the engine or wagon file.
+NOTE: Brake animations should at minimum have 2 animation frames, one at keyframe 0 and the
+second at keyframe 8. Other keyframes are optional and may be included to fine-tune the animation.
+
+Note that the advanced brake cylinder calculations are only run on air brake systems on the
+player train to save computing power. As such, brake cylinder animations on AI trains
+or brake systems other than air brakes behave in a simplified manner.
+
+Handbrake Animation
+-------------------
+
+Handbrake wheels and levers can also be animated using the same process as two-state animations
+such as mirrors, and the keyframe values will represent time in seconds like other animations.
+The matrix name for animated handbrakes must begin with `ORTSHANDBRAKE`.
+
+Brake Rigging and Brake Shoe Animation
+--------------------------------------
+
+For any brake equipment that is actuated by both the handbrake and the brake cylinders (typically,
+this includes brake rigging and brake shoes, but sometimes also includes brake cylinders themselves),
+use animations with a matrix name starting with `ORTSBRAKERIGGING`. For this type of animation, the
+animation state will respond to the brake cylinder travel or the handbrake, whichever input is greater.
+
+The same keyframe rules as brake cylinder animations apply here. A key value of 8 should represent the state
+where the brake shoes have made contact with the friction surface, and no further motion of brake shoes
+should occur after 8, though the brake levers may still animate beyond this point. Applying the
+handbrake will also drive the animation to keyframe 10 (ie: same as 50 psi/3.5 bar application).
+
 Coupler and Airhose Animation
 =============================
 
@@ -1912,8 +2018,18 @@ Use the following .eng parameter to load a circuit breaker script::
   )
 
 ``ORTSCircuitBreaker`` refers to the circuit breaker script in the engine's ``Script`` 
-subfolder. For this field, the .cs extension is optional. "Automatic" and "Manual" load the generic OR 
-circuit breaker implementation, so do `not` use these names for your own script.
+subfolder. For this field, the .cs extension is optional. Alternatively, there are several
+built-in OR circuit breaker implementations:
+
+- "Automatic": no driver intervention required, circuit breaker is closed when conditions are met.
+- "Manual": a circuit breaker switch with open and closed positions.
+- "PushButtons": a circuit breaker with dedicated open and close buttons.
+- "TwoStage": circuit breaker closing is authorized by a switch. If the switch is off, 
+  the circuit breaker is kept open. Once the switch is activated, it is required to use
+  a second button to order the closing.
+
+Please do `not` use these names for your own script, since the generic implementation will
+be loaded instead.
 
 ``ORTSCircuitBreakerClosingDelay`` refers to the delay between the closing command of the circuit breaker
 and the effective closing of the circuit breaker.

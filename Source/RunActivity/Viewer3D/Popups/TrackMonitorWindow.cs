@@ -148,7 +148,7 @@ namespace Orts.Viewer3D.Popups
                 {
                     ControlText = String.Concat(ControlText, OutOfControlLabels[thisInfo.ObjectInfoForward[0].OutOfControlReason]);
                 }
-                ControlMode.Text = String.Copy(ControlText);
+                ControlMode.Text = ControlText;
                 if (-thisInfo.currentElevationPercent < -0.00015)
                 {
                     var c = '\u2198';

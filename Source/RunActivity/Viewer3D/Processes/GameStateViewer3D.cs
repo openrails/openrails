@@ -53,7 +53,6 @@ namespace Orts.Viewer3D.Processes
                 // We must create these forms on the main thread (Render) or they won't pump events correctly.
                 Program.MapForm = new MapViewer(Viewer.Simulator, Viewer);
                 Program.MapForm.Hide();
-                Viewer.MapViewerEnabled = false;
 
                 Program.SoundDebugForm = new SoundDebugForm(Viewer);
                 Program.SoundDebugForm.Hide();

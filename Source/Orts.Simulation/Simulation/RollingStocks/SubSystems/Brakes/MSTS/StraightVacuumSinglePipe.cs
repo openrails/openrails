@@ -94,7 +94,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         if (BrakeLine1PressurePSI < CylPressurePSIA && lead.BrakeFlagIncrease) // Increase BP pressure, hence vacuum brakes are being released
                         {
                             float dp = elapsedClockSeconds * MaxReleaseRatePSIpS;
-                            var vr = NumBrakeCylinders * BrakeCylVolM3 / BrakePipeVolumeM3;
+                            var vr = TotalCylVolumeM3 / BrakePipeVolumeM3;
                             if (CylPressurePSIA - dp < BrakeLine1PressurePSI + dp * vr)
                                 dp = (CylPressurePSIA - BrakeLine1PressurePSI) / (1 + vr);
                             CylPressurePSIA -= dp;
@@ -103,7 +103,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         else if (BrakeLine1PressurePSI > CylPressurePSIA && lead.BrakeFlagDecrease)  // Decrease BP pressure, hence vacuum brakes are being applied
                         {
                             float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
-                            var vr = NumBrakeCylinders * BrakeCylVolM3 / BrakePipeVolumeM3;
+                            var vr = TotalCylVolumeM3 / BrakePipeVolumeM3;
                             if (CylPressurePSIA + dp > BrakeLine1PressurePSI - dp * vr)
                                 dp = (BrakeLine1PressurePSI - CylPressurePSIA) / (1 + vr);
                             CylPressurePSIA += dp;
