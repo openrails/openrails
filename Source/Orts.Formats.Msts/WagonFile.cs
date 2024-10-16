@@ -27,7 +27,32 @@ namespace Orts.Formats.Msts
     /// </summary>
     public class WagonFile
     {
+        public class CarSize
+        {
+            public float WidthM;
+            public float HeightM;
+            public float LengthM;
+
+            public CarSize(STFReader stf)
+            {
+                stf.MustMatch("(");
+                WidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                HeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                LengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                stf.MustMatch(")");
+            }
+
+            public override string ToString()
+            {
+                return WidthM.ToString() + "x" + HeightM.ToString() + "x" + LengthM.ToString();
+            }
+        }
+
         public string Name;
+        public string WagonType;
+        public float MassKG;
+        public CarSize WagonSize;
+        public float MaxBrakeForceN;
 
         public WagonFile(string filePath)
         {
@@ -38,6 +63,10 @@ namespace Orts.Formats.Msts
                         stf.ReadString();
                         stf.ParseBlock(new STFReader.TokenProcessor[] {
                             new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
+                            new STFReader.TokenProcessor("type", ()=>{ WagonType = stf.ReadStringBlock(null); }),
+                            new STFReader.TokenProcessor("mass", ()=>{ MassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); }),
+                            new STFReader.TokenProcessor("size", ()=>{ WagonSize = new CarSize( stf); }),
+                            new STFReader.TokenProcessor("maxbrakeforce", ()=>{ MaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); }),
                         });
                     }),
                 });
