@@ -473,6 +473,7 @@ namespace ORTS.Settings
         public InputSettings Input { get; private set; }
         public RailDriverSettings RailDriver { get; private set; }
         public ContentSettings Content { get; private set; }
+        public TelemetrySettings Telemetry { get; private set; }
 
         public UserSettings(IEnumerable<string> options)
             : base(SettingsStore.GetSettingStore(SettingsFilePath, RegistryKey, null))
@@ -485,6 +486,7 @@ namespace ORTS.Settings
             Input = new InputSettings(options);
             RailDriver = new RailDriverSettings(options);
             Content = new ContentSettings(options);
+            Telemetry = new TelemetrySettings();
         }
 
         public override object GetDefaultValue(string name)
@@ -516,6 +518,7 @@ namespace ORTS.Settings
             Input.Save();
             RailDriver.Save();
             Content.Save();
+            Telemetry.Save();
         }
     }
 }

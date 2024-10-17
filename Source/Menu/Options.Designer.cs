@@ -44,6 +44,8 @@
             this.ButtonAutoSave30 = new System.Windows.Forms.RadioButton();
             this.ButtonAutoSave15 = new System.Windows.Forms.RadioButton();
             this.checkAutoSaveActive = new System.Windows.Forms.CheckBox();
+            this.pbTelemetry = new System.Windows.Forms.PictureBox();
+            this.buttonTelemetry = new System.Windows.Forms.Button();
             this.pbOverspeedMonitor = new System.Windows.Forms.PictureBox();
             this.pbEnableTcsScripts = new System.Windows.Forms.PictureBox();
             this.pbOtherUnits = new System.Windows.Forms.PictureBox();
@@ -215,6 +217,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbTelemetry)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOverspeedMonitor)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbEnableTcsScripts)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).BeginInit();
@@ -393,6 +396,8 @@
             this.tabPageGeneral.Controls.Add(this.ButtonAutoSave30);
             this.tabPageGeneral.Controls.Add(this.ButtonAutoSave15);
             this.tabPageGeneral.Controls.Add(this.checkAutoSaveActive);
+            this.tabPageGeneral.Controls.Add(this.pbTelemetry);
+            this.tabPageGeneral.Controls.Add(this.buttonTelemetry);
             this.tabPageGeneral.Controls.Add(this.pbOverspeedMonitor);
             this.tabPageGeneral.Controls.Add(this.pbEnableTcsScripts);
             this.tabPageGeneral.Controls.Add(this.pbOtherUnits);
@@ -476,6 +481,30 @@
             this.checkAutoSaveActive.Text = "Auto save";
             this.checkAutoSaveActive.UseVisualStyleBackColor = true;
             this.checkAutoSaveActive.CheckedChanged += new System.EventHandler(this.checkAutoSave_checkchanged);
+            // 
+            // pbTelemetry
+            // 
+            this.pbTelemetry.Image = global::Menu.Properties.Resources.info_18;
+            this.pbTelemetry.Location = new System.Drawing.Point(6, 288);
+            this.pbTelemetry.Name = "pbTelemetry";
+            this.pbTelemetry.Size = new System.Drawing.Size(18, 18);
+            this.pbTelemetry.TabIndex = 32;
+            this.pbTelemetry.TabStop = false;
+            this.pbTelemetry.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbTelemetry.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbTelemetry.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // buttonTelemetry
+            // 
+            this.buttonTelemetry.Location = new System.Drawing.Point(32, 285);
+            this.buttonTelemetry.Name = "buttonTelemetry";
+            this.buttonTelemetry.Size = new System.Drawing.Size(150, 23);
+            this.buttonTelemetry.TabIndex = 31;
+            this.buttonTelemetry.Text = "Telemetry Options";
+            this.buttonTelemetry.UseVisualStyleBackColor = true;
+            this.buttonTelemetry.Click += new System.EventHandler(this.buttonTelemetry_Click);
+            this.buttonTelemetry.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.buttonTelemetry.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbOverspeedMonitor
             // 
@@ -2656,6 +2685,7 @@
             this.tabOptions.ResumeLayout(false);
             this.tabPageGeneral.ResumeLayout(false);
             this.tabPageGeneral.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbTelemetry)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOverspeedMonitor)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbEnableTcsScripts)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).EndInit();
@@ -2913,5 +2943,7 @@
         private System.Windows.Forms.Label labelDefaultDetail;
         private System.Windows.Forms.PictureBox pbViewingFOV;
         private System.Windows.Forms.PictureBox pbAutoSave;
+        private System.Windows.Forms.PictureBox pbTelemetry;
+        private System.Windows.Forms.Button buttonTelemetry;
     }
 }
