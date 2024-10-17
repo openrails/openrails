@@ -599,12 +599,19 @@ namespace Menu.Notifications
         /// <returns></returns>
         string GetSetting(string settingText)
         {
-            var nameArray = settingText.Split('.'); // 2 elements: "Settings.<property>", e.g. "SimpleControlPhysics" 
-            if (nameArray[0] == "Settings" && nameArray.Length == 2)
+            // 2 elements: "Settings.<property>", e.g. "SimpleControlPhysics" 
+            // 3 elements: "Settings.<group>.<property>", e.g. "Telemetry.RandomNumber1000"
+            var nameArray = settingText.Split('.');
+            if (nameArray.Length < 2 || nameArray[0] != "Settings") return "";
+
+            var value = (object)Settings;
+            for (var i = 1; i < nameArray.Length; i++)
             {
-                return Settings.GetType().GetProperty(nameArray[1])?.GetValue(Settings).ToString() ?? "";
+                var prop = value.GetType().GetProperty(nameArray[i]);
+                if (prop == null) return "";
+                value = prop.GetValue(value);
             }
-            return "";
+            return value?.ToString() ?? "";
         }
 
         private string GetInstalledRoutes()
