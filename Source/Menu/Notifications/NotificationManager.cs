@@ -369,34 +369,11 @@ namespace ORTS
         {
             foreach (var c in criteriaList)
             {
-                if (c is Contains) // other criteria might be added such as NoLessThan and NoMoreThan.
-                {
-                    if (CheckContains(c, true) == false) return false;
-                }
-                if (c is NotContains)
-                {
-                    if (CheckContains(c, false) == false) return false;
-                }
+                var result = c.IsMatch();
+                AppendToLog($"Check: {result}: '{c.Property}' {c.GetType().Name} '{c.Value}'");
+                if (!result) return false;
             }
             return true;
-        }
-
-        /// <summary>
-        /// Returns true if a match is found and sense = true. For NotContains, use sense = false.
-        /// </summary>
-        /// <param name="criteria"></param>
-        /// <param name="sense"></param>
-        /// <returns></returns>
-        private bool CheckContains(Criteria criteria, bool sense)
-        {
-            // If Property was a parameter, then use the expansion
-            var content = ParameterDictionary.ContainsKey(criteria.Property)
-                ? ParameterDictionary[criteria.Property]
-                : criteria.Property;
-
-            var result = content.IndexOf(criteria.Value, StringComparison.OrdinalIgnoreCase) > -1 == sense;
-            LogCheckContains(criteria.Value, sense, content, result);
-            return result;
         }
         #endregion
 
@@ -668,7 +645,7 @@ namespace ORTS
         }
 
         #region Logging
-        public void LogOverrideParameters()
+        void LogOverrideParameters()
         {
             if (Log == false) return;
 
@@ -680,7 +657,7 @@ namespace ORTS
             }
         }
 
-        public void LogParameters()
+        void LogParameters()
         {
             if (Log == false) return;
 
@@ -692,18 +669,12 @@ namespace ORTS
             }
         }
 
-        public void LogNotification(Notification n)
+        void LogNotification(Notification n)
         {
             AppendToLog($"\r\nNotification: {n.Title}");
         }
 
-        public void LogCheckContains(string value, bool sense, string content, bool result)
-        {
-            var negation = sense ? "" : "NOT ";
-            AppendToLog($"Check: {result} = '{value}' {negation}contained in '{content}'");
-        }
-
-        public void AppendToLog(string record)
+        void AppendToLog(string record)
         {
             if (Log == false) return;
 
