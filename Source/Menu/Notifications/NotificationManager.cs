@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009 - 2024 by the Open Rails project.
+// COPYRIGHT 2009 - 2024 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -224,6 +224,10 @@ namespace Menu.Notifications
             {
                 PopulateRetryPage();
             }
+            else if (Notifications.NotificationList.Count == 0)
+            {
+                PopulateEmptyPage();
+            }
             else
             {
                 Settings.LastViewNotificationDate = $"{DateTime.Today:yyyy-MM-dd}";
@@ -266,6 +270,15 @@ namespace Menu.Notifications
             Page.NDetailList.Add(new NTextControl(Panel, "Is your Internet connected?"));
 
             Page.NDetailList.Add(new NRetryControl(Page, "Retry", 140, "Try again to fetch notifications", MainForm));
+        }
+
+        private void PopulateEmptyPage()
+        {
+            NewPages.Count = 0;
+
+            // Reports no notifications.
+            var today = DateTime.Now.Date;
+            Page.NDetailList.Add(new NTitleControl(Panel, 1, 1, $"{today:dd-MMM-yy}", "No notifications"));
         }
 
         #region Process Criteria
