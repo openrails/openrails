@@ -92,7 +92,7 @@ namespace Orts.Viewer3D.Popups
         public int WindowHeightMax;
         public int WindowWidthMin;
         public int WindowWidthMax;
-        public bool SavedCabCamera;
+        public bool CabCameraEnabled;
         public int windowHeight { get; set; } //required by TrainCarWindow
         public int CarPosition
         {
@@ -160,9 +160,6 @@ namespace Orts.Viewer3D.Popups
 
             outf.Write(CarPosition);
             outf.Write(ResetAllSymbols);
-
-            var saveCabCamera = Owner.Viewer.Camera is CabCamera || Owner.Viewer.Camera == Owner.Viewer.ThreeDimCabCamera;
-            outf.Write(saveCabCamera);
         }
         protected internal override void Restore(BinaryReader inf)
         {
@@ -175,7 +172,8 @@ namespace Orts.Viewer3D.Popups
 
             CarPosition = inf.ReadInt32();
             ResetAllSymbols = inf.ReadBoolean();
-            SavedCabCamera = inf.ReadBoolean();
+
+            CabCameraEnabled = Owner.Viewer.Camera is CabCamera || Owner.Viewer.Camera == Owner.Viewer.ThreeDimCabCamera;
 
             // Display window
             SizeTo(LocationRestore.Width, LocationRestore.Height);
@@ -478,9 +476,9 @@ namespace Orts.Viewer3D.Popups
                     // Updates CarPosition
                     CarPosition = CouplerChanged ? NewCarPosition : CarPosition;
 
-                    if (SavedCabCamera)
+                    if (CabCameraEnabled)// Displays camera 1
                     {
-                        SavedCabCamera = false;
+                        CabCameraEnabled = false;
                     }
                     else if (OldCarPosition != CarPosition || (trainCarOperations.CarIdClicked && CarPosition == 0))
                     {
