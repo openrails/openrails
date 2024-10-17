@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2024 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -55,6 +55,7 @@ namespace ORTS
 
         bool Initialized;
         UserSettings Settings;
+        TelemetryManager TelemetryManager;
         List<Folder> Folders = new List<Folder>();
         public List<Route> Routes = new List<Route>();
         List<Activity> Activities = new List<Activity>();
@@ -148,6 +149,7 @@ namespace ORTS
         {
             var options = Environment.GetCommandLineArgs().Where(a => (a.StartsWith("-") || a.StartsWith("/"))).Select(a => a.Substring(1));
             Settings = new UserSettings(options);
+            TelemetryManager = new TelemetryManager(Settings.Telemetry);
 
             Cursor = Cursors.Default;
 
@@ -545,7 +547,7 @@ namespace ORTS
         {
             SaveOptions();
 
-            using (var form = new OptionsForm(Settings, UpdateManager, BaseDocumentationUrl))
+            using (var form = new OptionsForm(Settings, UpdateManager, TelemetryManager, BaseDocumentationUrl))
             {
                 switch (form.ShowDialog(this))
                 {
