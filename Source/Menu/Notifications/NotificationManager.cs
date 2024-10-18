@@ -589,6 +589,7 @@ namespace ORTS
                 if (prop == null) return "";
                 value = prop.GetValue(value);
             }
+            if (value is DateTime dateTime) return dateTime.ToString("yyyy-MM-dd");
             return value?.ToString() ?? "";
         }
 
