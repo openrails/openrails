@@ -60,6 +60,11 @@ namespace ORTS
         public string TestingUrl { get; set; }
         public string UnstableUrl { get; set; }
     }
+    class Dialog : Item
+    {
+        public string Value { get; set; }
+        public string Form { get; set; }
+    }
     class Update : Item
     {
         public string Value { get; set; }
