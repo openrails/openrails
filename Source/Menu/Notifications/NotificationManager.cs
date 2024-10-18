@@ -126,8 +126,9 @@ namespace Menu.Notifications
                 Notifications.NotificationList = IncludeValid(Notifications.NotificationList);
                 Notifications.NotificationList = SortByDate(Notifications.NotificationList);
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
+                AppendToLog(ex.ToString());
                 Error = ex;
             }
         }
