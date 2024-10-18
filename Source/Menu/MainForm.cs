@@ -546,6 +546,11 @@ namespace Menu
 
         void buttonOptions_Click(object sender, EventArgs e)
         {
+            ShowOptionsDialog();
+        }
+
+        public void ShowOptionsDialog()
+        {
             SaveOptions();
 
             using (var form = new OptionsForm(Settings, UpdateManager, TelemetryManager, BaseDocumentationUrl))
@@ -562,7 +567,15 @@ namespace Menu
                 }
             }
         }
-        
+
+        public void ShowTelemetryDialog()
+        {
+            using (var telemetryForm = new TelemetryForm(TelemetryManager))
+            {
+                telemetryForm.ShowDialog(this);
+            }
+        }
+
         void buttonDownloadContent_Click(object sender, EventArgs e)
         {
             using (var form = new ContentForm(Settings, BaseDocumentationUrl))

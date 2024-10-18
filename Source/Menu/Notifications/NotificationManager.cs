@@ -392,6 +392,10 @@ namespace Menu.Notifications
                     Page.NDetailList.Add(new NLinkControl(Page, item.Label, item.Indent, link.Value, MainForm, url));
                 }
             }
+            else if (item is Dialog dialog)
+            {
+                Page.NDetailList.Add(new NDialogControl(Page, item.Label, item.Indent, dialog.Value, MainForm, dialog.Form));
+            }
             else if (item is Update update)
             {
                 Page.NDetailList.Add(new NUpdateControl(Page, item.Label, item.Indent, update.Value, MainForm));
