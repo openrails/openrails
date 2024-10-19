@@ -98,7 +98,12 @@ namespace ORTS
 
         public double GetScalingFactor()
         {
+#if NET5_0_OR_GREATER
+#warning GetScalingFactor() not implemented for NET5+
+            return 1;
+#else
             return Screen.PrimaryScreen.Bounds.Width / SystemParameters.PrimaryScreenWidth;
+#endif
         }
 
         public void CheckNotifications()
