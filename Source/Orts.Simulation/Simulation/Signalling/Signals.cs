@@ -568,6 +568,7 @@ namespace Orts.Simulation.Signalling
             if (foundSignals > 0)
             {
                 // loop through all signals
+```            // loop through all the signals, but only one batch of signals with every call to this method.
                 // update required part
                 var updates = 0;
                 var updateStep = 0;
