@@ -1482,7 +1482,8 @@ containers of same length).
 Multiple passenger viewpoints
 =============================
 
-Additional passenger viewpoints may be added within a carriage that 
+Additional passenger viewpoints may be added within a carriage or 
+locomotive that 
 is provided with passenger viewpoint.
 
 .. index::
@@ -1492,7 +1493,7 @@ is provided with passenger viewpoint.
    single: RotationLimit
    single: StartDirection
 
-Such additional passenger viewpoints are defined within an include file 
+Such additional passenger viewpoints may be defined within an include file 
 with the format shown in 
 following example for the legacy oebarcar.wag (located in the 380 folder) 
 MSTS wagon::
@@ -1518,6 +1519,9 @@ MSTS wagon::
                 ) 				
         )
   )
+
+If the passenger viewpoints are defined in the base .wag or .eng file, they 
+must be defined below the Inside () block.
 
 At runtime, when in passenger view, the player may pass from one viewpoint to 
 the other by pressing Shift-5.
