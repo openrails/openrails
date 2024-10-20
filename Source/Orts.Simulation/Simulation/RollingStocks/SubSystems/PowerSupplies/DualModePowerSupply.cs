@@ -19,6 +19,7 @@ using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System.IO;
+using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
@@ -26,11 +27,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     public class ScriptedDualModePowerSupply : ScriptedLocomotivePowerSupply
     {
         public MSTSElectricLocomotive DualModeLocomotive => Locomotive as MSTSElectricLocomotive;
-        public Pantographs Pantographs => Locomotive.Pantographs;
+        public DieselEngines DieselEngines => null; // TODO : Add diesel engines when ORTSDualModeLocomotive is created
         public ScriptedCircuitBreaker CircuitBreaker { get; protected set; }
         public ScriptedTractionCutOffRelay TractionCutOffRelay { get; protected set; }
+        public ScriptedVoltageSelector VoltageSelector { get; protected set; }
+        public ScriptedPantographSelector PantographSelector { get; protected set; }
+        public ScriptedPowerLimitationSelector PowerLimitationSelector { get; protected set; }
 
-        public override PowerSupplyType Type => PowerSupplyType.Electric;
+        public override PowerSupplyType Type => PowerSupplyType.DualMode;
         public bool Activated = false;
         private DualModePowerSupply Script => AbstractScript as DualModePowerSupply;
 
@@ -38,20 +42,42 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float PantographVoltageV { get; set; }
         public float FilterVoltageV { get; set; } = 0;
 
+        public PowerSupplyMode Mode { get; set; } = PowerSupplyMode.None;
+
         public ScriptedDualModePowerSupply(MSTSElectricLocomotive locomotive) :
             base(locomotive)
         {
             CircuitBreaker = new ScriptedCircuitBreaker(this);
             TractionCutOffRelay = new ScriptedTractionCutOffRelay(this);
+            VoltageSelector = new ScriptedVoltageSelector(this);
+            PantographSelector = new ScriptedPantographSelector(this);
+            PowerLimitationSelector = new ScriptedPowerLimitationSelector(this);
         }
 
         public override void Parse(string lowercasetoken, STFReader stf)
         {
             switch (lowercasetoken)
             {
+                case "engine(ortscircuitbreaker":
+                case "engine(ortscircuitbreakerclosingdelay":
+                    CircuitBreaker.Parse(lowercasetoken, stf);
+                    break;
+
                 case "engine(ortstractioncutoffrelay":
                 case "engine(ortstractioncutoffrelayclosingdelay":
                     TractionCutOffRelay.Parse(lowercasetoken, stf);
+                    break;
+
+                case "engine(ortsvoltageselector":
+                    VoltageSelector.Parse(stf);
+                    break;
+
+                case "engine(ortspantographselector":
+                    PantographSelector.Parse(stf);
+                    break;
+
+                case "engine(ortspowerlimitationselector":
+                    PowerLimitationSelector.Parse(stf);
                     break;
 
                 default:
@@ -68,6 +94,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 CircuitBreaker.Copy(scriptedOther.CircuitBreaker);
                 TractionCutOffRelay.Copy(scriptedOther.TractionCutOffRelay);
+                VoltageSelector.Copy(scriptedOther.VoltageSelector);
+                PantographSelector.Copy(scriptedOther.PantographSelector);
+                PowerLimitationSelector.Copy(scriptedOther.PowerLimitationSelector);
             }
         }
 
@@ -82,6 +111,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     var pathArray = new string[] { Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script") };
                     AbstractScript = Simulator.ScriptManager.Load(pathArray, ScriptName) as DualModePowerSupply;
                 }
+
+                if (ParametersFileName != null)
+                {
+                    ParametersFileName = Path.Combine(Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script"), ParametersFileName);
+                }
+
                 if (Script == null)
                 {
                     AbstractScript = new DefaultDualModePowerSupply();
@@ -89,25 +124,30 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 AssignScriptFunctions();
 
+                Script.AttachToHost(this);
                 Script.Initialize();
                 Activated = true;
             }
 
             CircuitBreaker.Initialize();
             TractionCutOffRelay.Initialize();
+            VoltageSelector.Initialize();
+            PantographSelector.Initialize();
+            PowerLimitationSelector.Initialize();
         }
 
-
-        //================================================================================================//
         /// <summary>
         /// Initialization when simulation starts with moving train
-        /// <\summary>
+        /// </summary>
         public override void InitializeMoving()
         {
             base.InitializeMoving();
 
             CircuitBreaker.InitializeMoving();
             TractionCutOffRelay.InitializeMoving();
+            VoltageSelector.InitializeMoving();
+            PantographSelector.InitializeMoving();
+            PowerLimitationSelector.InitializeMoving();
         }
 
         public override void Save(BinaryWriter outf)
@@ -115,6 +155,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             base.Save(outf);
             CircuitBreaker.Save(outf);
             TractionCutOffRelay.Save(outf);
+            VoltageSelector.Save(outf);
+            PantographSelector.Save(outf);
+            PowerLimitationSelector.Save(outf);
         }
 
         public override void Restore(BinaryReader inf)
@@ -122,6 +165,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             base.Restore(inf);
             CircuitBreaker.Restore(inf);
             TractionCutOffRelay.Restore(inf);
+            VoltageSelector.Restore(inf);
+            PantographSelector.Restore(inf);
+            PowerLimitationSelector.Restore(inf);
         }
 
         public override void Update(float elapsedClockSeconds)
@@ -130,23 +176,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             CircuitBreaker.Update(elapsedClockSeconds);
             TractionCutOffRelay.Update(elapsedClockSeconds);
+            VoltageSelector.Update(elapsedClockSeconds);
+            PantographSelector.Update( elapsedClockSeconds);
+            PowerLimitationSelector.Update(elapsedClockSeconds);
 
             Script?.Update(elapsedClockSeconds);
-        }
-
-        protected override void AssignScriptFunctions()
-        {
-            base.AssignScriptFunctions();
-
-            // DualModePowerSupply getters
-            Script.CurrentDieselEngineState = () => (Locomotive as MSTSDieselLocomotive).DieselEngines.State;
-            Script.CurrentTractionCutOffRelayState = () => TractionCutOffRelay.State;
-            Script.TractionCutOffRelayDriverClosingOrder = () => TractionCutOffRelay.DriverClosingOrder;
-            Script.TractionCutOffRelayDriverOpeningOrder = () => TractionCutOffRelay.DriverOpeningOrder;
-            Script.TractionCutOffRelayDriverClosingAuthorization = () => TractionCutOffRelay.DriverClosingAuthorization;
-
-            // DualModePowerSupply setters
-            Script.SignalEventToTractionCutOffRelay = (evt) => TractionCutOffRelay.HandleEvent(evt);
         }
     }
 
@@ -156,6 +190,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         private IIRFilter VoltageFilter;
         private Timer PowerOnTimer;
         private Timer AuxPowerOnTimer;
+
+        private bool QuickPowerOn = false;
 
         public override void Initialize()
         {
@@ -171,10 +207,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public override void Update(float elapsedClockSeconds)
         {
+            SetCurrentBatteryState(BatterySwitchOn() ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
             SetCurrentLowVoltagePowerSupplyState(BatterySwitchOn() ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
             SetCurrentCabPowerSupplyState(BatterySwitchOn() && MasterKeyOn() ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
 
-            switch (CurrentPantographState())
+            switch (PantographState)
             {
                 case PantographState.Down:
                 case PantographState.Lowering:
@@ -186,14 +223,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                     SetCurrentMainPowerSupplyState(PowerSupplyState.PowerOff);
                     SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
-                    SetPantographVoltageV(PantographFilter.Filter(0.0f, elapsedClockSeconds));
-                    SetFilterVoltageV(VoltageFilter.Filter(0.0f, elapsedClockSeconds));
+                    PantographVoltageV = PantographFilter.Filter(0.0f, elapsedClockSeconds);
+                    FilterVoltageV = VoltageFilter.Filter(0.0f, elapsedClockSeconds);
                     break;
 
                 case PantographState.Up:
-                    SetPantographVoltageV(PantographFilter.Filter(LineVoltageV(), elapsedClockSeconds));
+                    PantographVoltageV = PantographFilter.Filter(LineVoltageV, elapsedClockSeconds);
 
-                    switch (CurrentCircuitBreakerState())
+                    switch (CircuitBreakerState)
                     {
                         case CircuitBreakerState.Open:
                             if (PowerOnTimer.Started)
@@ -203,7 +240,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                             SetCurrentMainPowerSupplyState(PowerSupplyState.PowerOff);
                             SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
-                            SetFilterVoltageV(VoltageFilter.Filter(0.0f, elapsedClockSeconds));
+                            FilterVoltageV = VoltageFilter.Filter(0.0f, elapsedClockSeconds);
                             break;
 
                         case CircuitBreakerState.Closed:
@@ -214,9 +251,52 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                             SetCurrentMainPowerSupplyState(PowerOnTimer.Triggered ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
                             SetCurrentAuxiliaryPowerSupplyState(AuxPowerOnTimer.Triggered ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
-                            SetFilterVoltageV(VoltageFilter.Filter(PantographVoltageV(), elapsedClockSeconds));
+                            FilterVoltageV = VoltageFilter.Filter(PantographVoltageV, elapsedClockSeconds);
                             break;
                     }
+                    break;
+            }
+
+            if (ElectricTrainSupplyUnfitted())
+            {
+                SetCurrentElectricTrainSupplyState(PowerSupplyState.Unavailable);
+            }
+            else if (CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn
+                     && ElectricTrainSupplySwitchOn())
+            {
+                SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOn);
+            }
+            else
+            {
+                SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOff);
+            }
+        }
+
+        public override void HandleEvent(PowerSupplyEvent evt)
+        {
+            switch (evt)
+            {
+                case PowerSupplyEvent.QuickPowerOn:
+                    QuickPowerOn = true;
+                    SignalEventToBatterySwitch(PowerSupplyEvent.CloseBatterySwitch);
+                    SignalEventToMasterKey(PowerSupplyEvent.TurnOnMasterKey);
+                    SignalEventToPantograph(PowerSupplyEvent.RaisePantograph, 1);
+                    SignalEventToOtherTrainVehiclesWithId(PowerSupplyEvent.RaisePantograph, 1);
+                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.SwitchOnElectricTrainSupply);
+                    break;
+
+                case PowerSupplyEvent.QuickPowerOff:
+                    QuickPowerOn = false;
+                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.SwitchOffElectricTrainSupply);
+                    SignalEventToCircuitBreaker(PowerSupplyEvent.OpenCircuitBreaker);
+                    SignalEventToPantographs(PowerSupplyEvent.LowerPantograph);
+                    SignalEventToOtherTrainVehicles(PowerSupplyEvent.LowerPantograph);
+                    SignalEventToMasterKey(PowerSupplyEvent.TurnOffMasterKey);
+                    SignalEventToBatterySwitch(PowerSupplyEvent.OpenBatterySwitch);
+                    break;
+
+                default:
+                    base.HandleEvent(evt);
                     break;
             }
         }
