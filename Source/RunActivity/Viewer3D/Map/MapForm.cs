@@ -1624,6 +1624,7 @@ namespace Orts.Viewer3D.Debugging
                     break;
             }
 
+            mapCanvas.Invalidate(); // Triggers a re-paint
             UnHandleItemPick();
         }
 
@@ -1668,6 +1669,7 @@ namespace Orts.Viewer3D.Debugging
                         break;
                 }
             }
+            mapCanvas.Invalidate(); // Triggers a re-paint
             UnHandleItemPick();
         }
 
