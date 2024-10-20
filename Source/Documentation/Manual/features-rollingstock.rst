@@ -318,6 +318,79 @@ for the purposes of calculation.
 - ``MU ( 3 )`` Locomotive must be in a different group to the lead locomotive
 
 
+Multiple type locomotive light glows
+------------------------------------
+
+Introduction
+''''''''''''
+
+As a default all OR (and MSTS) locomotives use the same texture to reproduce 
+the glow of their lights. This however doesn't allow to easily implement non-round 
+or LED array lights, neither to provide special glowing effects.
+
+This feature allows to specifiy customized light glow textures for the locomotives. 
+If nothing is specified, the standard light glow texture is used. Moreover in the ``Content`` 
+folder, two light glow textures are present: the "historical" one, and a new one, 
+more realistic. As a default the "historical" light glow texture is used, for backwards 
+compatibility; however adding a line to the Lights block in the .eng file the "new" light 
+glow texture is taken. Customized light glow textures can be either used for all lights 
+of a loco, or only for a subset of them. Different lights in the same locomotive 
+may have different customized light glow textures.
+
+Detailed spec
+'''''''''''''
+
+
+1) In the ``Content`` folder there is the default ``LightGlow.png``, which is displayed if 
+   no changes are done to the .eng file.
+2) In such folder there is also an ``ORTSLightGlow.png``, which is maybe more realistic.
+3) adding a line within the .eng file it is possible to select either ORTSLightGlow.png or any other .png. 
+   Here an example for the legacy Acela loco::
+
+    	Lights	( 17
+	        ORTSGraphic ( "ORTSLightGlow.png")
+		      Light	(
+			      comment( Sphere of light )
+			      Type	( 1 )
+			      Conditions	(...
+
+  The code first searches for the .png file by building its directory starting from the directory of 
+  the .eng file; in this case the line could be e.g.::
+
+           ORTSGraphic ( "ORTSAcelaLightGlow.png")
+
+4) The ``ORTSGraphic`` line can be added also for one or more ``Light()`` blocks. In that case the 
+   .png file is used only for the related Light block. Here an example::
+
+    Light	(
+			comment( Head light outer right bright )
+			Type		( 0 )
+			Conditions	(
+				Headlight ( 3 )
+				Unit ( 2 )
+				)
+			FadeIn	( 0.5 )
+			FadeOut	( 0.5 )
+			Cycle	( 0 )
+			States	(	1
+				State	(
+					Duration ( 0.0 )
+					LightColour ( ffffffff )
+					Position ( -0.5922 2.4037 9.63208 )
+					Azimuth ( 0.0 0.0 0.0 )
+					Transition ( 0 )
+					Radius ( 0.60 )
+					Elevation ( -50 -50 -50 )
+					)
+				)
+			ORTSGraphic (BigLightGlow.png)
+    )
+
+  OR searches for the file as it does for the general file for all lights, as explained above.
+  If the ``ORTSGraphic`` line is present both at the top of the ``Lights()`` and also in some 
+  ``Light()`` subblock, the line present in the subblock prevails. So it is possible to have an 
+  .eng-specific graphic for all the lights, except the ones that have an own ``ORTSGraphic`` line.
+
 
 Tilting trains
 ==============
