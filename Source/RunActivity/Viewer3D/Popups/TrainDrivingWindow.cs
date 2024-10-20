@@ -53,7 +53,7 @@ namespace Orts.Viewer3D.Popups
         {
             Viewer.Catalog.GetString("BP"),
             Viewer.Catalog.GetString("EQ"),
-            Viewer.Catalog.GetString("V")
+            Viewer.Catalog.GetParticularString("BrakeStatus","V")
         };
 
         /// <summary>
@@ -298,7 +298,7 @@ namespace Orts.Viewer3D.Popups
             var vbox = base.Layout(layout).AddLayoutVertical();
             if (labels.Count > 0)
             {
-                var colWidth = labels.Max(x => x.FirstColWidth) + (normalTextMode? 15: 20);
+                var colWidth = labels.Max(x => x.FirstColWidth) + (normalTextMode ? 15 : 20);
                 var TimeHboxPositionY = 0;
 
                 // search wider
@@ -306,7 +306,9 @@ namespace Orts.Viewer3D.Popups
                 var tokenWidth = 0;
                 foreach (var data in tokens.Where((string d) => !string.IsNullOrWhiteSpace(d)))
                 {
-                    tokenWidth = Owner.TextFontDefault.MeasureString(data);
+                    // Allows alignment of columns
+                    var dataFormated = data.Length > 3 ? data.Substring(0, 3) : data;
+                    tokenWidth = Owner.TextFontDefault.MeasureString(dataFormated);
                     tokenOffset = tokenWidth > tokenOffset ? tokenWidth : tokenOffset;
                 }
 
@@ -536,7 +538,7 @@ namespace Orts.Viewer3D.Popups
                     {
                         var tempFirstCol = firstCol.Substring(0, firstCol.Length - 3);
                         firstColWidth = FontToBold ? Owner.TextFontDefaultBold.MeasureString(tempFirstCol.TrimEnd())
-                            : !normalTextMode? Owner.TextFontMonoSpacedBold.MeasureString(tempFirstCol.TrimEnd())
+                            : !normalTextMode ? Owner.TextFontMonoSpacedBold.MeasureString(tempFirstCol.TrimEnd())
                             : Owner.TextFontDefault.MeasureString(tempFirstCol.TrimEnd());
                     }
                     else
@@ -791,7 +793,7 @@ namespace Orts.Viewer3D.Popups
             // Booster engine label
             if (locomotive is MSTSSteamLocomotive steamLocomotive4)
             {
-                string boosterEngineIndicator = "", boosterEngineKey="";
+                string boosterEngineIndicator = "", boosterEngineKey = "";
                 if (BoosterLocked)
                 {
                     boosterLabelVisible = true;
@@ -882,8 +884,8 @@ namespace Orts.Viewer3D.Popups
                 });
 
                 index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EQ"));
-                if (trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index) > 0)
-                    brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index) - index).TrimEnd();
+                if (trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "V"), index) > 0)
+                    brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "V"), index) - index).TrimEnd();
                 else
                     brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC")) - index).TrimEnd();
 
@@ -893,21 +895,21 @@ namespace Orts.Viewer3D.Popups
                 });
 
                 int endIndex;
-                if (trainBrakeStatus.Contains(Viewer.Catalog.GetString("Flow")))
+                if (trainBrakeStatus.Contains(Viewer.Catalog.GetParticularString("BrakeStatus", "Flow")))
                 {
-                    endIndex = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("Flow"));
+                    endIndex = trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "Flow"));
                 }
-                else if (trainBrakeStatus.Contains(Viewer.Catalog.GetString("EOT")))
+                else if (trainBrakeStatus.Contains(Viewer.Catalog.GetParticularString("BrakeStatus", "EOT")))
                 {
-                    endIndex = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT"));
+                    endIndex = trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "EOT"));
                 }
                 else
                 {
                     endIndex = trainBrakeStatus.Length;
                 }
 
-                if (trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index) > 0)
-                    index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index);
+                if (trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "V"), index) > 0)
+                    index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "V"), index);
                 else
                     index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC"));
 
@@ -916,13 +918,13 @@ namespace Orts.Viewer3D.Popups
                 {
                     LastCol = brakeInfoValue,
                 });
-                
-                if (trainBrakeStatus.Contains(Viewer.Catalog.GetString("Flow")))
+
+                if (trainBrakeStatus.Contains(Viewer.Catalog.GetParticularString("BrakeStatus", "Flow")))
                 {
                     index = endIndex;
 
-                    if (trainBrakeStatus.Contains(Viewer.Catalog.GetString("EOT")))
-                        endIndex = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT"));
+                    if (trainBrakeStatus.Contains(Viewer.Catalog.GetParticularString("BrakeStatus", "EOT")))
+                        endIndex = trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "EOT"));
                     else
                         endIndex = trainBrakeStatus.Length;
 
@@ -933,11 +935,11 @@ namespace Orts.Viewer3D.Popups
                     });
                 }
 
-                if (trainBrakeStatus.Contains(Viewer.Catalog.GetString("EOT")))
+                if (trainBrakeStatus.Contains(Viewer.Catalog.GetParticularString("BrakeStatus", "EOT")))
                 {
-                    int indexOffset = Viewer.Catalog.GetString("EOT").Length + 1;
+                    int indexOffset = Viewer.Catalog.GetParticularString("BrakeStatus", "EOT").Length + 1;
 
-                    index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT")) + indexOffset;
+                    index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "EOT")) + indexOffset;
                     brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.Length - index).TrimStart();
                     AddLabel(new ListLabel
                     {
@@ -956,15 +958,15 @@ namespace Orts.Viewer3D.Popups
                 });
 
                 index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("Lead")) + indexOffset;
-                if (trainBrakeStatus.Contains(Viewer.Catalog.GetString("EOT")))
+                if (trainBrakeStatus.Contains(Viewer.Catalog.GetParticularString("BrakeStatus", "EOT")))
                 {
-                    brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT")) - index).TrimEnd();
+                    brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "EOT")) - index).TrimEnd();
                     AddLabel(new ListLabel
                     {
                         LastCol = brakeInfoValue,
                     });
 
-                    index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT")) + indexOffset;
+                    index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "EOT")) + indexOffset;
                     brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.Length - index).TrimEnd();
                     AddLabel(new ListLabel
                     {
@@ -1292,7 +1294,7 @@ namespace Orts.Viewer3D.Popups
                         boosterIdleValveKey = Symbols.ArrowToRight + ColorCode[Color.Yellow];
                     }
                     // When shut off the booster system and the air open valve is closed, we set the idle valve from the run position to idle.
-                    if (steamLocomotive6.SteamBoosterIdle && !steamLocomotive6.SteamBoosterAirOpen )
+                    if (steamLocomotive6.SteamBoosterIdle && !steamLocomotive6.SteamBoosterAirOpen)
                     {
                         steamLocomotive6.ToggleSteamBoosterIdle();// set to idle
                         boosterIdleValveIndicator = Viewer.Catalog.GetString("Idle") + ColorCode[Color.White];
@@ -1326,7 +1328,7 @@ namespace Orts.Viewer3D.Popups
                         KeyPressed = boosterLatchOnKey,
                         SymbolCol = ""
                     });
-                AddSeparator();
+                    AddSeparator();
                 }
             }
 
@@ -1363,7 +1365,7 @@ namespace Orts.Viewer3D.Popups
             {
                 AddLabel(new ListLabel
                 {
-                    FirstCol = Viewer.Catalog.GetString("EOT"),
+                    FirstCol = Viewer.Catalog.GetParticularString("BrakeStatus", "EOT"),
                     LastCol = $"{locomotive.Train.EOT?.EOTState.ToString()}"
                 });
                 AddSeparator();
