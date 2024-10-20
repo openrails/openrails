@@ -103,7 +103,7 @@ namespace Orts.Viewer3D.Popups
             set;
             get;
         }
-    public int NewCarPosition
+        public int NewCarPosition
         {
             set;
             get;
@@ -311,7 +311,14 @@ namespace Orts.Viewer3D.Popups
 
                 // Display window
                 SizeTo(newWidth, newHeight);
-                MoveTo(Location.X, newTop);
+                var locationX = Location.X;
+                var locationY = newTop;
+                if (Owner.Viewer.TrainCarOperationsWindow.LayoutMoved)
+                {
+                    CkeckCollision(newWidth, newHeight, newTop, ref locationX, ref locationY);
+                    Owner.Viewer.TrainCarOperationsWindow.LayoutMoved = false;
+                }
+                MoveTo(locationX, locationY);
             }
         }
         public ControlLayoutVertical Vbox;
@@ -445,6 +452,11 @@ namespace Orts.Viewer3D.Popups
             else if (UserInput.IsPressed(UserCommand.CameraCarLast))
                 CarPosition = Owner.Viewer.PlayerTrain.Cars.Count - 1;
 
+            if (Owner.Viewer.TrainCarOperationsWindow.LayoutMoved)
+            {
+                UpdateWindowSize();
+            }
+
             if (updateFull)
             {
                 var carOperations = Owner.Viewer.CarOperationsWindow;
@@ -457,22 +469,22 @@ namespace Orts.Viewer3D.Popups
                     PlayerTrain = Owner.Viewer.PlayerTrain;
 
                     LastPlayerTrainCars = Owner.Viewer.PlayerTrain.Cars.Count;
-                    CarPosition = CarPosition >= LastPlayerTrainCars? LastPlayerTrainCars - 1: CarPosition;
+                    CarPosition = CarPosition >= LastPlayerTrainCars ? LastPlayerTrainCars - 1 : CarPosition;
                     if (Owner.Viewer.PlayerLocomotive != null) LastPlayerLocomotiveFlippedState = Owner.Viewer.PlayerLocomotive.Flipped;
- 
+
                     Layout();
                     UpdateWindowSize();
                 }
 
                 TrainCar trainCar = Owner.Viewer.PlayerTrain.Cars[CarPosition];
                 bool isElectricDieselLocomotive = (trainCar is MSTSElectricLocomotive) || (trainCar is MSTSDieselLocomotive);
-                
+
                 if (OldCarPosition != CarPosition || TrainCarOperationsChanged || carOperations.CarOperationChanged
                     || trainCarOperations.CarIdClicked || carOperations.RearBrakeHoseChanged || carOperations.FrontBrakeHoseChanged)
                 {
                     // Updates CarPosition
                     CarPosition = CouplerChanged ? NewCarPosition : CarPosition;
-                    
+
                     if (OldCarPosition != CarPosition || (trainCarOperations.CarIdClicked && CarPosition == 0))
                     {
                         Owner.Viewer.FrontCamera.Activate();
@@ -496,7 +508,7 @@ namespace Orts.Viewer3D.Popups
                     TrainCarOperationsChanged = true;
                 }
 
-                for (var position = 0 ; position < Owner.Viewer.PlayerTrain.Cars.Count; position++)
+                for (var position = 0; position < Owner.Viewer.PlayerTrain.Cars.Count; position++)
                 {
                     if (trainCarOperations.WarningCarPosition[position])
                     {
@@ -523,7 +535,7 @@ namespace Orts.Viewer3D.Popups
                 windowHeight = Vbox != null ? Vbox.Position.Height : 0;
             }
         }
-        
+
         class buttonLoco : Image
         {
             readonly Viewer Viewer;
@@ -883,8 +895,8 @@ namespace Orts.Viewer3D.Popups
                 if (Last) return;
 
                 new ToggleAngleCockBCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockBOpen);
-                var carAngleCockBOpenAmount = (Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockBOpenAmount; 
-                
+                var carAngleCockBOpenAmount = (Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockBOpenAmount;
+
                 if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockBOpen && carAngleCockBOpenAmount >= 1)
                 {
                     Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Rear angle cock opened"));
@@ -1011,7 +1023,7 @@ namespace Orts.Viewer3D.Popups
                 var multipleUnitsConfiguration = Viewer.PlayerLocomotive.GetMultipleUnitsConfiguration();
                 if (Viewer.PlayerTrain.Cars[CarPosition] is MSTSDieselLocomotive && multipleUnitsConfiguration != null)
                 {
-                    Texture = Viewer.TrainCarOperationsWindow.ModifiedSetting || ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).RemoteControlGroup == 0 && multipleUnitsConfiguration != "1")? MUconnected : MUdisconnected;
+                    Texture = Viewer.TrainCarOperationsWindow.ModifiedSetting || ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).RemoteControlGroup == 0 && multipleUnitsConfiguration != "1") ? MUconnected : MUdisconnected;
                 }
                 else
                 {
@@ -1190,6 +1202,62 @@ namespace Orts.Viewer3D.Popups
                 }
                 return Texture;
             }
+        }
+        public void CkeckCollision(int newWidth, int newHeight, int newTop, ref int locationX, ref int locationY)
+        {
+            var trainCarOperations = Owner.Viewer.TrainCarOperationsWindow;
+            var trainOperationsViewer = Owner.Viewer.TrainCarOperationsViewerWindow;
+            var tcoX = trainCarOperations.Location.X;
+            var tcoY = trainCarOperations.Location.Y;
+            var tcoWidth = trainCarOperations.Location.Width;
+            var tcoHeight = trainCarOperations.Location.Height;
+            var tcoLocation = new Rectangle(tcoX, tcoY, tcoWidth, tcoHeight);
+            var tovLocation = new Rectangle(trainOperationsViewer.Location.X, trainOperationsViewer.Location.Y, newWidth, newHeight);
+            var newX = trainOperationsViewer.Location.X;
+            var newY = trainOperationsViewer.Location.Y;
+
+            // logic to apply
+            var displaySizeX = Owner.Viewer.DisplaySize.X;
+            var halfDisplaySizeX = displaySizeX / 2;
+            var DisplaySizeY = Owner.Viewer.DisplaySize.Y;
+            var halfDisplaySizeY = DisplaySizeY / 2;
+            var topMarging = tcoLocation.Y;
+            var bottomMarging = DisplaySizeY - (tcoLocation.Y + tcoLocation.Height);
+            var leftMarging = tcoLocation.X;
+            var rightMarging = displaySizeX - tcoLocation.X - tcoLocation.Width;
+
+            if (topMarging >= tovLocation.Height && halfDisplaySizeY > tcoLocation.Y)// Top marging available
+            {
+                //StepCode = "Left00";
+                newY = tcoLocation.Y - tovLocation.Height;
+                newX = tcoLocation.X;
+            }
+            else if (bottomMarging >= tovLocation.Height && halfDisplaySizeY < tcoLocation.Y)// Bottom marging available
+            {
+                //StepCode = "Left01";
+                newY = tcoLocation.Y + tcoLocation.Height;
+                newX = tcoLocation.X;
+            }
+            else if (leftMarging > rightMarging && leftMarging >= tovLocation.Width)
+            {
+                //StepCode = "Right02";
+                newX = tcoLocation.X - tovLocation.Width;
+                newY = halfDisplaySizeY > tcoLocation.Y ? tcoLocation.Y : tcoLocation.Y + tcoLocation.Height - tovLocation.Height;
+            }
+            else if (leftMarging < rightMarging && rightMarging >= tovLocation.Width)
+            {
+                //StepCode = "Left03";
+                newX = tcoLocation.X + tcoLocation.Width;
+                newY = halfDisplaySizeY < tcoLocation.Y ? tcoLocation.Y + tcoLocation.Height - tovLocation.Height : tcoLocation.Y;
+            }
+            else if (leftMarging <= tovLocation.Width && rightMarging <= tovLocation.Width)
+            {
+                //StepCode = "NoEspace00";
+                newX = tcoLocation.X;
+                newY = halfDisplaySizeY > tcoLocation.Y ? tcoLocation.Y + tcoLocation.Height : tcoLocation.Y - tovLocation.Height;
+            }
+            locationX = newX;
+            locationY = newY;
         }
     }
 }

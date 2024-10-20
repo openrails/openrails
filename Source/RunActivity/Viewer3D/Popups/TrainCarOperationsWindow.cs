@@ -98,6 +98,9 @@ namespace Orts.Viewer3D.Popups
         public bool IsFullScreen;
         public int OldPositionHeight;
         public int RowHeight;
+        public Rectangle LayoutLocation;
+        public Rectangle OldLocation;
+        public bool LayoutMoved;
         public bool UpdateTrainCarOperation;
         public int WindowHeightMax;
         public int WindowHeightMin;
@@ -564,6 +567,12 @@ namespace Orts.Viewer3D.Popups
 
             if (UserInput.IsPressed(UserCommand.CameraCarNext) || UserInput.IsPressed(UserCommand.CameraCarPrevious) || UserInput.IsPressed(UserCommand.CameraCarFirst) || UserInput.IsPressed(UserCommand.CameraCarLast))
                 CarPositionChanged = true;
+
+            if (OldLocation != Location)
+            {
+                OldLocation = Location;
+                LayoutMoved = true;
+            }
 
             if (updateFull)
             {
