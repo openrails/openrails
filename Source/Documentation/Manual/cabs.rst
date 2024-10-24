@@ -166,6 +166,24 @@ The following controls are available for the cabview:
 - ``ORTS_ELECTRIC_TRAIN_SUPPLY_COMMAND_SWITCH`` can be used to control the electric train supply switch
 - ``ORTS_ELECTRIC_TRAIN_SUPPLY_ON`` can be used to indicate that the electric train supply line is powered on
 
+.. _cabs-voltmeters:
+
+Voltmeters
+----------
+
+.. index::
+   single: LINE_VOLTAGE
+   single: ORTS_PANTOGRAPH_VOLTAGE_AC
+   single: ORTS_PANTOGRAPH_VOLTAGE_DC
+   single: ORTS_BATTERY_VOLTAGE
+
+The following voltmeters are available for the cabview:
+
+- ``LINE_VOLTAGE`` indicates the line voltage
+- ``ORTS_PANTOGRAPH_VOLTAGE_AC`` indicates the line voltage when operating on AC lines
+- ``ORTS_PANTOGRAPH_VOLTAGE_DC`` indicates the line voltage when operating on DC lines
+- ``ORTS_BATTERY_VOLTAGE`` indicates the vehicle's battery voltage
+
 .. _cabs-dieselenginesonoff:
 
 Controls to switch on and off diesel engines

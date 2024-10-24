@@ -203,10 +203,7 @@ namespace Orts.Viewer3D
 
         public bool SoundDebugFormEnabled { get; set; }
 
-        public List<TRPFile> TRPs; // Track profile file(s)
-        // Dictionary associating a specific shape file path (string) with the track profile index to be used for that shape
-        // Shape file locations are to be matched ignoring case for simplicity
-        public Dictionary<string, int> TrackProfileIndicies = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+        public TRPFile TRP; // Track profile file
 
         enum VisibilityState
         {

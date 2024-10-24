@@ -138,7 +138,7 @@ namespace ORTS.Common
         /// </summary>
         public void Normalize()
         {
-            var TileLocation = Location;
+            var TileLocation = XNAMatrix.Translation;
             int xTileDistance = (int)Math.Round((int)(TileLocation.X / 1024) / 2.0, MidpointRounding.AwayFromZero);
             int zTileDistance = (int)Math.Round((int)(TileLocation.Z / 1024) / 2.0, MidpointRounding.AwayFromZero);
             if (xTileDistance == 0 && zTileDistance == 0) return;
@@ -148,7 +148,7 @@ namespace ORTS.Common
                 TileZ += zTileDistance;
                 TileLocation.X = (float)(TileLocation.X - (xTileDistance * TileSize));
                 TileLocation.Z = (float)(TileLocation.Z - (zTileDistance * TileSize));
-                Location = TileLocation;
+                XNAMatrix.Translation = TileLocation;
             }
         }
 

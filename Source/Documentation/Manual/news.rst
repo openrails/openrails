@@ -39,7 +39,6 @@ What's been improved
 - controls for electric locos
 - air brake features for both European and American brake systems 
 - accurate friction simulation for 4 types of brake shoes
-- superelevation system rewritten to be smoother and more configurable
 
 
 Other changes

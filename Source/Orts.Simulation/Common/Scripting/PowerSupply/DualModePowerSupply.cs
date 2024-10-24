@@ -15,60 +15,207 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
+using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems.Controllers;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 
 namespace ORTS.Scripting.Api
 {
     /// <summary>
     /// Power supply for dual mode locomotives
     /// </summary>
-    public abstract class DualModePowerSupply : ElectricPowerSupply
+    public abstract class DualModePowerSupply : LocomotivePowerSupply
     {
+        // Internal members and methods (inaccessible from script)
+        internal ScriptedDualModePowerSupply DmpsHost => LpsHost as ScriptedDualModePowerSupply;
+        // TODO : Replace ElectricLocomotive and DieselLocomotive with DualModeLoco
+        internal MSTSElectricLocomotive ElectricLocomotive => Locomotive as MSTSElectricLocomotive;
+        internal MSTSDieselLocomotive DieselLocomotive => Locomotive as MSTSDieselLocomotive;
+        internal Pantographs Pantographs => ElectricLocomotive.Pantographs;
+        internal DieselEngines DieselEngines => DieselLocomotive.DieselEngines;
+        internal ScriptedCircuitBreaker CircuitBreaker => DmpsHost.CircuitBreaker;
+        internal ScriptedTractionCutOffRelay TractionCutOffRelay => DmpsHost.TractionCutOffRelay;
+        internal ScriptedVoltageSelector VoltageSelector => DmpsHost.VoltageSelector;
+        internal ScriptedPantographSelector PantographSelector => DmpsHost.PantographSelector;
+        internal ScriptedPowerLimitationSelector PowerLimitationSelector => DmpsHost.PowerLimitationSelector;
+
         /// <summary>
-        /// Current state of the diesel engine
+        /// Current position of the voltage selector
         /// </summary>
-        public Func<DieselEngineState> CurrentDieselEngineState;
+        protected VoltageSelectorPosition VoltageSelectorPosition => VoltageSelector.Position;
+
+        /// <summary>
+        /// Current position of the pantograph selector
+        /// </summary>
+        protected PantographSelectorPosition PantographSelectorPosition => PantographSelector.Position;
+
+        /// <summary>
+        /// Current position of the power limitation selector
+        /// </summary>
+        protected PowerLimitationSelectorPosition PowerLimitationSelectorPosition => PowerLimitationSelector.Position;
+
+        /// <summary>
+        /// Current state of the pantograph
+        /// </summary>
+        protected PantographState PantographState => Pantographs.State;
+
         /// <summary>
         /// Current state of the circuit breaker
         /// </summary>
-        public Func<TractionCutOffRelayState> CurrentTractionCutOffRelayState;
+        protected CircuitBreakerState CircuitBreakerState => CircuitBreaker.State;
+
+        /// <summary>
+        /// Driver's closing order of the circuit breaker
+        /// </summary>
+        protected bool CircuitBreakerDriverClosingOrder => CircuitBreaker.DriverClosingOrder;
+
+        /// <summary>
+        /// Driver's opening order of the circuit breaker
+        /// </summary>
+        protected bool CircuitBreakerDriverOpeningOrder => CircuitBreaker.DriverOpeningOrder;
+
+        /// <summary>
+        /// Driver's closing authorization of the circuit breaker
+        /// </summary>
+        protected bool CircuitBreakerDriverClosingAuthorization => CircuitBreaker.DriverClosingAuthorization;
+
+        /// <summary>
+        /// Closing authorization of the circuit breaker
+        /// </summary>
+        protected bool CircuitBreakerClosingAuthorization => CircuitBreaker.ClosingAuthorization;
+
+        /// <summary>
+        /// Voltage of the pantograph
+        /// </summary>
+        protected float PantographVoltageV
+        {
+            get => DmpsHost.PantographVoltageV;
+            set => DmpsHost.PantographVoltageV = value;
+        }
+
+        /// <summary>
+        /// Voltage of the filter
+        /// </summary>
+        protected float FilterVoltageV
+        {
+            get => DmpsHost.FilterVoltageV;
+            set => DmpsHost.FilterVoltageV = value;
+        }
+
+        /// <summary>
+        /// Line voltage
+        /// </summary>
+        protected float LineVoltageV => DmpsHost.LineVoltageV;
+
+        /// <summary>
+        /// Current state of the diesel engine
+        /// </summary>
+        protected DieselEngineState DieselEngineState => DieselEngines.State;
+
+        /// <summary>
+        /// Current state of the circuit breaker
+        /// </summary>
+        protected TractionCutOffRelayState TractionCutOffRelayState => TractionCutOffRelay.State;
+
         /// <summary>
         /// Driver's closing order of the traction cut-off relay
         /// </summary>
-        public Func<bool> TractionCutOffRelayDriverClosingOrder;
+        protected bool TractionCutOffRelayDriverClosingOrder => TractionCutOffRelay.DriverClosingOrder;
+
         /// <summary>
         /// Driver's opening order of the traction cut-off relay
         /// </summary>
-        public Func<bool> TractionCutOffRelayDriverOpeningOrder;
+        protected bool TractionCutOffRelayDriverOpeningOrder => TractionCutOffRelay.DriverOpeningOrder;
+
         /// <summary>
         /// Driver's closing authorization of the traction cut-off relay
         /// </summary>
-        public Func<bool> TractionCutOffRelayDriverClosingAuthorization;
+        protected bool TractionCutOffRelayDriverClosingAuthorization => TractionCutOffRelay.DriverClosingAuthorization;
+
+        /// <summary>
+        /// Closing authorization of the traction cut-off relay
+        /// </summary>
+        protected bool TractionCutOffRelayClosingAuthorization() => TractionCutOffRelay.ClosingAuthorization;
+
         /// <summary>
         /// Current mode of the power supply
         /// </summary>
-        public Func<PowerSupplyMode> CurrentPowerSupplyMode;
+        protected PowerSupplyMode PowerSupplyMode
+        {
+            get => DmpsHost.Mode;
+            set => DmpsHost.Mode = value;
+        }
 
         /// <summary>
-        /// Sets current mode of the power supply
+        /// Sends an event to the circuit breaker
         /// </summary>
-        public Action<PowerSupplyMode> SetCurrentPowerSupplyMode;
+        protected void SignalEventToCircuitBreaker(PowerSupplyEvent evt) => DmpsHost.CircuitBreaker.HandleEvent(evt);
+        protected void SignalEventToCircuitBreaker(PowerSupplyEvent evt, int id) => DmpsHost.CircuitBreaker.HandleEvent(evt, id);
+
         /// <summary>
         /// Sends an event to the traction cut-off relay
         /// </summary>
-        public Action<PowerSupplyEvent> SignalEventToTractionCutOffRelay;
+        protected void SignalEventToTractionCutOffRelay(PowerSupplyEvent evt) => DmpsHost.TractionCutOffRelay.HandleEvent(evt);
+        protected void SignalEventToTractionCutOffRelay(PowerSupplyEvent evt, int id) => DmpsHost.TractionCutOffRelay.HandleEvent(evt, id);
+
+        /// <summary>
+        /// Sends an event to the voltage selector
+        /// </summary>
+        protected void SignalEventToVoltageSelector(PowerSupplyEvent evt) => DmpsHost.VoltageSelector.HandleEvent(evt);
+
+        /// <summary>
+        /// Sends an event to the voltage selector
+        /// </summary>
+        protected void SignalEventToVoltageSelector(PowerSupplyEvent evt, int id) => DmpsHost.VoltageSelector.HandleEvent(evt, id);
+
+        /// <summary>
+        /// Sends an event to the pantograph selector
+        /// </summary>
+        protected void SignalEventToPantographSelector(PowerSupplyEvent evt) => DmpsHost.PantographSelector.HandleEvent(evt);
+
+        /// <summary>
+        /// Sends an event to the pantograph selector
+        /// </summary>
+        protected void SignalEventToPantographSelector(PowerSupplyEvent evt, int id) => DmpsHost.PantographSelector.HandleEvent(evt, id);
+
+        /// <summary>
+        /// Sends an event to the power limitation selector
+        /// </summary>
+        protected void SignalEventToPowerLimitationSelector(PowerSupplyEvent evt) => DmpsHost.PowerLimitationSelector.HandleEvent(evt);
+
+        /// <summary>
+        /// Sends an event to the power limitation selector
+        /// </summary>
+        protected void SignalEventToPowerLimitationSelector(PowerSupplyEvent evt, int id) => DmpsHost.PowerLimitationSelector.HandleEvent(evt, id);
 
         public override void HandleEvent(PowerSupplyEvent evt)
         {
             base.HandleEvent(evt);
 
             // By default, send the event to every component
+            SignalEventToCircuitBreaker(evt);
             SignalEventToTractionCutOffRelay(evt);
+            SignalEventToVoltageSelector(evt);
+            SignalEventToPantographSelector(evt);
+            SignalEventToPowerLimitationSelector(evt);
+        }
+
+        public override void HandleEvent(PowerSupplyEvent evt, int id)
+        {
+            base.HandleEvent(evt, id);
+
+            // By default, send the event to every component
+            SignalEventToCircuitBreaker(evt, id);
+            SignalEventToTractionCutOffRelay(evt, id);
+            SignalEventToVoltageSelector(evt, id);
+            SignalEventToPantographSelector(evt, id);
+            SignalEventToPowerLimitationSelector(evt, id);
         }
     }
 
     public enum PowerSupplyMode
     {
+        None,
         Diesel,
         Pantograph,
     }

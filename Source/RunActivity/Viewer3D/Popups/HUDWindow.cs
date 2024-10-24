@@ -608,7 +608,7 @@ namespace Orts.Viewer3D.Popups
 
                 foreach (var axle in car.WheelAxles)
                 {
-                    if (!axle.Part.Bogie) // if not a bogie then check for the number of axles.
+                    if (!axle.Part.bogie) // if not a bogie then check for the number of axles.
                     {
                         if (currentBogie != axle.BogieIndex && currentCount != 0)
                         {
@@ -632,7 +632,7 @@ namespace Orts.Viewer3D.Popups
                             }
                         }
                     }
-                    else if (axle.Part.Bogie) // this is a bogie
+                    else if (axle.Part.bogie) // this is a bogie
                     {
                         if ( PreviousAxlePart)
                         {
@@ -648,7 +648,7 @@ namespace Orts.Viewer3D.Popups
                         currentCount += 2;
                     }
 
-                    if (axle.Part.Bogie)
+                    if (axle.Part.bogie)
                     {
                         PreviousAxlePart = true;
                     }
@@ -1233,13 +1233,12 @@ namespace Orts.Viewer3D.Popups
                 Viewer.Catalog.GetString("Mass"),
                 Viewer.Catalog.GetString("Gradient"),
                 Viewer.Catalog.GetString("Curve"),
-                Viewer.Catalog.GetString("SuperElev"),
                 Viewer.Catalog.GetString("Brk Frict."),
                 Viewer.Catalog.GetString("Brk Slide"),
                 Viewer.Catalog.GetString("Bear Temp"),
                 Viewer.Catalog.GetString(" "),
-                Viewer.Catalog.GetString("DerailCoeff"),
-                Viewer.Catalog.GetString(" ")
+                Viewer.Catalog.GetString("DerailCoeff")
+                
                 );
             TableAddLine(table);
 
@@ -1263,13 +1262,11 @@ namespace Orts.Viewer3D.Popups
                 TableSetCell(table, 12, "{0}", FormatStrings.FormatLargeMass(car.MassKG, car.IsMetric, car.IsUK));
                 TableSetCell(table, 13, "{0:F2}%", -car.CurrentElevationPercent);
                 TableSetCell(table, 14, "{0}", FormatStrings.FormatDistance(car.CurrentCurveRadiusM, car.IsMetric));
-                TableSetCell(table, 15, "{0}", FormatStrings.FormatMillimeterDistanceDisplay(car.SuperelevationM, car.IsMetric));
-                TableSetCell(table, 16, "{0:F0}%", car.HuDBrakeShoeFriction * 100.0f);
-                TableSetCell(table, 17, car.HUDBrakeSkid ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"));
-                TableSetCell(table, 18, "{0} {1}", FormatStrings.FormatTemperature(car.WheelBearingTemperatureDegC, car.IsMetric, false), car.DisplayWheelBearingTemperatureStatus);
-                TableSetCell(table, 19, " ");
-                TableSetCell(table, 20, "{0:F2}{1}", car.DerailmentCoefficient, car.DerailExpected ? "!!!" : car.DerailPossible ? "???" : "");
-                TableSetCell(table, 21, car.Flipped ? Viewer.Catalog.GetString("Flipped") : "");
+                TableSetCell(table, 15, "{0:F0}%", car.HuDBrakeShoeFriction * 100.0f);
+                TableSetCell(table, 16, car.HUDBrakeSkid ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"));
+                TableSetCell(table, 17, "{0} {1}", FormatStrings.FormatTemperature(car.WheelBearingTemperatureDegC, car.IsMetric, false), car.DisplayWheelBearingTemperatureStatus);
+                TableSetCell(table, 18, car.Flipped ? Viewer.Catalog.GetString("Flipped") : "");
+                TableSetCell(table, 19, "{0:F2}{1}", car.DerailmentCoefficient, car.DerailExpected ? "!!!" : car.DerailPossible ? "???" : "");
                 TableAddLine(table);
 
             }

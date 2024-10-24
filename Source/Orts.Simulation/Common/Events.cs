@@ -123,8 +123,12 @@ namespace Orts.Common
         PermissionDenied,
         PermissionGranted,
         PermissionToDepart,
-        PowerKeyOff,
-        PowerKeyOn,
+        VoltageSelectorDecrease,
+        VoltageSelectorIncrease,
+        PantographSelectorDecrease,
+        PantographSelectorIncrease,
+        PowerLimitationSelectorDecrease,
+        PowerLimitationSelectorIncrease,
         ReverserChange,
         ReverserToForwardBackward,
         ReverserToNeutral,
@@ -541,6 +545,13 @@ namespace Orts.Common
                         case 250: return Event.OverchargeBrakingOn;
                         case 251: return Event.OverchargeBrakingOff;
                         case 252: return Event.EmergencyVentValveOn;
+
+                        case 253: return Event.VoltageSelectorDecrease;
+                        case 254: return Event.VoltageSelectorIncrease;
+                        case 255: return Event.PantographSelectorDecrease;
+                        case 256: return Event.PantographSelectorIncrease;
+                        case 257: return Event.PowerLimitationSelectorDecrease;
+                        case 258: return Event.PowerLimitationSelectorIncrease;
 
                         case 260: return Event.WindowClosing;
                         case 261: return Event.WindowOpening;

@@ -1283,9 +1283,6 @@ namespace Orts.Viewer3D
             else if (attachedCar != null)
             {
                 LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
-
-                // Cancel out unwanted effects on camera motion caused by vibration and superelevation
-                LookedAtPosition.XNAMatrix = attachedCar.SuperelevationInverseMatrix * attachedCar.VibrationInverseMatrix * LookedAtPosition.XNAMatrix;
             }
             UpdateLocation(LookedAtPosition);
             UpdateListener();
@@ -2121,7 +2118,7 @@ namespace Orts.Viewer3D
             // Cab camera is only possible on the player locomotive.
             SetCameraCar(GetCameraCars().First());
             tiltingLand = false;
-            if (Viewer.Simulator.UseSuperElevation || Viewer.Simulator.CarVibrating > 0) tiltingLand = true;
+            if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0) tiltingLand = true;
             var car = attachedCar;
             if (car != null && car.Train != null && car.Train.IsTilting == true) tiltingLand = true;
             base.OnActivate(sameCamera);
