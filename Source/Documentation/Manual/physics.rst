@@ -947,6 +947,132 @@ for Pantograph 2 (replacing 2 with 3 and 4).
 The third panto is moved with Ctrl-P, while the fourth panto is moved with Ctrl-Shift-P.
 The cabview controls must be named ORTS_PANTOGRAPH3 and ORTS_PANTOGRAPH4.
 
+.. _physics-pantograph-selector:
+
+Pantograph selector
+'''''''''''''''''''
+
+.. index::
+  single: ORTSPantographSelector
+  single: SelectorPositions
+  single: SelectorPosition
+
+When using customized :ref:`power supply scripts:<features-scripting-powersupply>`,
+it is possible to implement a pantograph selector that selects a specific pantograph
+combination direcly, without operating every pantograph control individually.
+
+Example::
+
+  Engine (
+    ORTSPowerSupply ( "YourEPSScript.cs" )
+    ORTSPantographSelector ( 
+      Script ( Default )
+      SelectorPositions (
+        SelectorPosition (
+          Name ( "Zero" )
+          Default ()
+        )
+        SelectorPosition (
+          Name ( "Local" )
+        )
+        SelectorPosition (
+          Name ( "Rear" )
+        )
+        SelectorPosition (
+          Name ( "Front" )
+        )
+        SelectorPosition (
+          Name ( "All" )
+        )
+      )
+    )
+  )
+
+In combination with a customized power supply script, you can use the pantograph selector
+to achieve different pantograph combinations, for example:
+
+- Position "Zero" would keep all pantographs down
+- Position "Local" would only raise the pantograph from the lead locomotive
+- Position "Rear" would raise the pantograph only of rear-facing locomotives (this is the usually
+the standard position for EMUs, with only the rear pantograph being raised, and the front power head
+is powered through the roof line)
+- Position "Front" would raise the pantograph only of front-facing locomotives
+- Position "All" would raise all pantographs
+
+Please note that this only works with custom scripts.
+
+.. _physics-voltage-selector:
+
+Voltage selector
+''''''''''''''''
+
+.. index::
+  single: ORTSVoltageSelector
+  single: SelectorPositions
+  single: SelectorPosition
+
+When using customized :ref:`power supply scripts:<features-scripting-powersupply>`,
+it is possible to implement a voltage selector that automatically raises the pantograph
+associated to the selected voltage.
+
+Example::
+
+  Engine (
+    ORTSPowerSupply ( "YourEPSScript.cs" )
+    ORTSVoltageSelector ( 
+      Script ( Default )
+      SelectorPositions (
+        SelectorPosition (
+          Name ( "AC" )
+          Voltage ( 25000 )
+        )
+        SelectorPosition (
+          Name ( "DC" )
+          Voltage ( 1500 )
+        )
+      )
+    )
+  )
+
+Please note that this only works with custom scripts.
+
+.. _physics-power-limitation-selector:
+
+Power limitation selector
+'''''''''''''''''''''''''
+
+.. index::
+  single: ORTSPowerLimitationSelector
+  single: SelectorPositions
+  single: SelectorPosition
+
+The power limitation selector allows limiting the total current drawn from
+the overhead wire.
+
+Example::
+
+  Engine (
+    ORTSPowerLimitationSelector ( 
+      Script ( Default )
+      SelectorPositions (
+        SelectorPosition (
+          Name ( "Conventional line" )
+          MaxPower ( 1200kW )
+          Default()
+        )
+        SelectorPosition (
+          Name ( "High speed line" )
+          MaxPower ( 1800kW )
+        )
+      )
+    )
+  )
+
+Depending on the controller position, the power consumption of every locomotive will be limited.
+
+In combination with customized :ref:`power supply scripts:<features-scripting-powersupply>`, more
+advanced power limits can be imposed, e.g. depending on the number of locomotives in the trainset.
+
 .. _physics-circuit-breaker:
 
 Circuit breaker

@@ -1056,9 +1056,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     IsSelectGeared = String.Compare(typeString2, "Select") == 0;
                     break;
 
-                case "engine(ortsbattery(mode":
-                case "engine(ortsbattery(delay":
-                case "engine(ortsbattery(defaulton":
+                case "engine(ortsbattery":
                 case "engine(ortsmasterkey(mode":
                 case "engine(ortsmasterkey(delayoff":
                 case "engine(ortsmasterkey(headlightcontrol":
