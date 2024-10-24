@@ -963,30 +963,30 @@ combination direcly, without operating every pantograph control individually.
 
 Example::
 
-Engine (
-  ORTSPowerSupply ( "YourEPSScript.cs" )
-  ORTSPantographSelector ( 
-    Script ( Default )
-    SelectorPositions (
-      SelectorPosition (
-        Name ( "Zero" )
-        Default ()
-      )
-      SelectorPosition (
-        Name ( "Local" )
-      )
-      SelectorPosition (
-        Name ( "Rear" )
-      )
-      SelectorPosition (
-        Name ( "Front" )
-      )
-      SelectorPosition (
-        Name ( "All" )
+  Engine (
+    ORTSPowerSupply ( "YourEPSScript.cs" )
+    ORTSPantographSelector ( 
+      Script ( Default )
+      SelectorPositions (
+        SelectorPosition (
+          Name ( "Zero" )
+          Default ()
+        )
+        SelectorPosition (
+          Name ( "Local" )
+        )
+        SelectorPosition (
+          Name ( "Rear" )
+        )
+        SelectorPosition (
+          Name ( "Front" )
+        )
+        SelectorPosition (
+          Name ( "All" )
+        )
       )
     )
   )
-)
 
 In combination with a customized power supply script, you can use the pantograph selector
 to achieve different pantograph combinations, for example:
@@ -1017,22 +1017,22 @@ associated to the selected voltage.
 
 Example::
 
-Engine (
-  ORTSPowerSupply ( "YourEPSScript.cs" )
-  ORTSVoltageSelector ( 
-    Script ( Default )
-    SelectorPositions (
-      SelectorPosition (
-        Name ( "AC" )
-        Voltage ( 25000 )
-      )
-      SelectorPosition (
-        Name ( "DC" )
-        Voltage ( 1500 )
+  Engine (
+    ORTSPowerSupply ( "YourEPSScript.cs" )
+    ORTSVoltageSelector ( 
+      Script ( Default )
+      SelectorPositions (
+        SelectorPosition (
+          Name ( "AC" )
+          Voltage ( 25000 )
+        )
+        SelectorPosition (
+          Name ( "DC" )
+          Voltage ( 1500 )
+        )
       )
     )
   )
-)
 
 Please note that this only works with custom scripts.
 
@@ -1051,22 +1051,22 @@ the overhead wire.
 
 Example::
 
-Engine (
-  ORTSPowerLimitationSelector ( 
-    Script ( Default )
-    SelectorPositions (
-      SelectorPosition (
-        Name ( "Conventional line" )
-        MaxPower ( 1200kW )
-        Default()
-      )
-      SelectorPosition (
-        Name ( "High speed line" )
-        MaxPower ( 1800kW )
+  Engine (
+    ORTSPowerLimitationSelector ( 
+      Script ( Default )
+      SelectorPositions (
+        SelectorPosition (
+          Name ( "Conventional line" )
+          MaxPower ( 1200kW )
+          Default()
+        )
+        SelectorPosition (
+          Name ( "High speed line" )
+          MaxPower ( 1800kW )
+        )
       )
     )
   )
-)
 
 Depending on the controller position, the power consumption of every locomotive will be limited.
 
