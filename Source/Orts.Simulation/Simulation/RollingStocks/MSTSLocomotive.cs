@@ -405,6 +405,7 @@ namespace Orts.Simulation.RollingStocks
         public float DynamicBrakeDelayS;
         public bool DynamicBrakeAutoBailOff;
         public bool DynamicBrakePartialBailOff;
+        public bool DynamicBrakeEngineBrakeReplacement;
         public bool UsingRearCab;
         public bool BrakeOverchargeSoundOn = false;
         protected bool DynamicBrakeBlendingEnabled; // dynamic brake blending is configured
@@ -1081,6 +1082,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dynamicbrakehasautobailoff":
                 case "engine(ortsdynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
                 case "engine(ortsdynamicbrakeshaspartialbailoff": DynamicBrakePartialBailOff = stf.ReadBoolBlock(false); break;
+                case "engine(ortsdynamicbrakereplacementwithenginebrake ": DynamicBrakeEngineBrakeReplacement = stf.ReadBoolBlock(false); break;
                 case "engine(dynamicbrakesdelaytimebeforeengaging": DynamicBrakeDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(dynamicbrakesresistorcurrentlimit": DynamicBrakeMaxCurrentA = stf.ReadFloatBlock(STFReader.UNITS.Current, null); break;
                 case "engine(numwheels": MSTSLocoNumDrvWheels = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (MSTSLocoNumDrvWheels < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
@@ -1235,6 +1237,7 @@ namespace Orts.Simulation.RollingStocks
             DynamicBrakeForceCurves = locoCopy.DynamicBrakeForceCurves;
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
             DynamicBrakePartialBailOff = locoCopy.DynamicBrakePartialBailOff;
+            DynamicBrakeEngineBrakeReplacement = locoCopy.DynamicBrakeEngineBrakeReplacement;
             DynamicBrakeMaxCurrentA = locoCopy.DynamicBrakeMaxCurrentA;
             DynamicBrakeSpeed1MpS = locoCopy.DynamicBrakeSpeed1MpS;
             DynamicBrakeSpeed2MpS = locoCopy.DynamicBrakeSpeed2MpS;
