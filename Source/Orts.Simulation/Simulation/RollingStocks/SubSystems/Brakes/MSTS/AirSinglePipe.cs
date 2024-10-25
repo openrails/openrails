@@ -1714,6 +1714,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                     }
                                 }
                             }
+                            if (loco.DynamicBrakeEngineBrakeReplacement && loco.RemoteControlGroup == 0 && loco.AbsTractionSpeedMpS < loco.DynamicBrakeSpeed2MpS && loco.Train.LeadLocomotive is MSTSLocomotive lead && lead.TrainBrakeController.TrainDynamicBrakeIntervention > 0)
+                            {
+                                var requiredBrakeForceN = loco.MaxDynamicBrakeForceN * lead.TrainBrakeController.TrainDynamicBrakeIntervention;
+                                var reverseBlendingPressurePSI = Math.Min(Math.Max((requiredBrakeForceN - loco.DynamicBrakeForceN) / Car.FrictionBrakeBlendingMaxForceN * ReferencePressurePSI
+                                + BrakeCylinderSpringPressurePSI, 0), MaxCylPressurePSI);
+                                reverseBlendingPressurePSI /= RelayValveRatio;
+                                if (demandedPressurePSI < reverseBlendingPressurePSI) demandedPressurePSI = reverseBlendingPressurePSI;
+                            }
                         }
                     }
                 }
