@@ -447,7 +447,7 @@ namespace Orts.Simulation.RollingStocks
         public bool DPSyncTrainApplication { get; private set; }
         public bool DPSyncTrainRelease { get; private set; }
         public bool DPSyncEmergency { get; private set; }
-        public bool DPSyncIndependent { get; private set; } = true;
+        public bool DPSyncIndependent { get; private set; }
 
         protected const float DefaultCompressorRestartToMaxSysPressureDiff = 35;    // Used to check if difference between these two .eng parameters is correct, and to correct it
         protected const float DefaultMaxMainResToCompressorRestartPressureDiff = 10; // Used to check if difference between these two .eng parameters is correct, and to correct it
@@ -1160,8 +1160,6 @@ namespace Orts.Simulation.RollingStocks
                         DPSyncEmergency = true;
                     if (dpSyncModes.Contains("independent"))
                         DPSyncIndependent = true;
-                    else // Independent synchronization is assumed to be enabled unless explicitly not enabled
-                        DPSyncIndependent = false;
                     break;
                 case "engine(ortsdynamicblendingoverride": DynamicBrakeBlendingOverride = stf.ReadBoolBlock(false); break;
                 case "engine(ortsdynamicblendingforcematch": DynamicBrakeBlendingForceMatch = stf.ReadBoolBlock(false); break;
