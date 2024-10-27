@@ -1680,6 +1680,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 }
                             }
                         }
+                    }
+                    if (loco.LocomotivePowerSupply.DynamicBrakeAvailable)
+                    {
                         if (loco.DynamicBrakePercent > 0 && Car.FrictionBrakeBlendingMaxForceN > 0)
                         {
                             if (loco.DynamicBrakePartialBailOff)
