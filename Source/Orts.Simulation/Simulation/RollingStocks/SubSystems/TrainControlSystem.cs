@@ -264,6 +264,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 }
 
                 // AbstractScriptClass
+                Script.Car = Locomotive;
                 Script.ClockTime = () => (float)Simulator.ClockTime;
                 Script.GameTime = () => (float)Simulator.GameTime;
                 Script.PreUpdate = () => Simulator.PreUpdate;
@@ -330,7 +331,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     return new MilepostInfo(list[value].DistanceToTrainM, float.Parse(list[value].ThisMile));
                 };
                 Script.EOADistanceM = (value) => Locomotive.Train.DistanceToEndNodeAuthorityM[value];
-                Script.TrainLengthM = () => Locomotive.Train != null ? Locomotive.Train.Length : 0f;
                 Script.SpeedMpS = () => Math.Abs(Locomotive.SpeedMpS);
                 Script.CurrentDirection = () => Locomotive.Direction; // Direction of locomotive, may be different from direction of train
                 Script.IsDirectionForward = () => Locomotive.Direction == Direction.Forward;

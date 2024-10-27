@@ -38,6 +38,7 @@ namespace ORTS.Scripting.Api
         internal void AttachToHost(ScriptedBrakeController host)
         {
             Host = host;
+            Car = Locomotive;
         }
 
         /// <summary>
@@ -188,7 +189,7 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Fraction of train brake demanded by cruise control
         /// </summary>
-        public float CruiseControlBrakeDemand() => Locomotive.CruiseControl != null ? Locomotive.CruiseControl.TrainBrakePercent/100 : 0;
+        public float CruiseControlBrakeDemand() => Locomotive.CruiseControl != null ? Locomotive.CruiseControl.TrainBrakePercent / 100 : 0;
 
         /// <summary>
         /// Current notch of the brake controller
@@ -229,6 +230,22 @@ namespace ORTS.Scripting.Api
             if (value <= 0)
                 Host.TrainDynamicBrakeIntervention = -1;
             else Host.TrainDynamicBrakeIntervention = Math.Min(value, 1);
+        }
+
+        /// <summary>
+        /// Gets the total dynamic brake force applied by all locomotives
+        /// </summary>
+        public float TotalDynamicBrakeForceN
+        {
+            get
+            {
+                float totalN = 0;
+                foreach (var car in Train.Cars)
+                {
+                    if (car is MSTSLocomotive loco) totalN += Car.DynamicBrakeForceN;
+                }
+                return totalN;
+            }
         }
 
         /// <summary>
