@@ -31,6 +31,7 @@ namespace ORTS.Scripting.Api
         internal void AttachToHost(IPowerSupply host)
         {
             Host = host;
+            Car = host.Car;
         }
 
         /// <summary>
