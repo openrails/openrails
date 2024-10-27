@@ -37,6 +37,7 @@ namespace ORTS.Scripting.Api
         internal void AttachToHost(ITractionCutOffSubsystem host)
         {
             Host = host;
+            Car = Locomotive;
         }
 
         /// <summary>
