@@ -77,7 +77,10 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Train's length
         /// </summary>
-        public float TrainLengthM => Car.Train?.Length ?? 0.0f;
+        public float TrainLengthM()
+        {
+            return Car.Train?.Length ?? 0.0f;
+        }
         /// <summary>
         /// Returns the number of locomotives in the train
         /// </summary>
