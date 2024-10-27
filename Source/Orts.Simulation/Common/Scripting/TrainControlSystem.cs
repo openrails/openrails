@@ -168,10 +168,6 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<int, float> EOADistanceM;
         /// <summary>
-        /// Train's length
-        /// </summary>
-        public Func<float> TrainLengthM;
-        /// <summary>
         /// Locomotive direction.
         /// </summary>
         public Func<Direction> CurrentDirection;
