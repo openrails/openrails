@@ -31,7 +31,6 @@ namespace ORTS.Scripting.Api
         // Internal members and methods (inaccessible from script)
         internal ScriptedLocomotivePowerSupply LpsHost => Host as ScriptedLocomotivePowerSupply;
         internal MSTSLocomotive Locomotive => LpsHost.Locomotive;
-        internal Train Train => Locomotive.Train;
         internal Simulator Simulator => Locomotive.Simulator;
 
         /// <summary>
@@ -187,19 +186,6 @@ namespace ORTS.Scripting.Api
         /// Power demanded by electric train supply
         /// </summary>
         protected float ElectricTrainSupplyPowerW => LpsHost.ElectricTrainSupplyPowerW;
-
-        /// <summary>
-        /// Returns the number of locomotives in the train
-        /// </summary>
-        public int NumberOfLocomotives()
-        {
-            int count=0;
-            for (int i=0; i<Train.Cars.Count; i++)
-            {
-                if (Train.Cars[i] is MSTSLocomotive) count++;
-            }
-            return count;
-        }
 
         /// <summary>
         /// Returns the index of the current locomotive in the train (taking into account only locomotives)

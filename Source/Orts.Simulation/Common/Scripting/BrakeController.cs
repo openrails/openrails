@@ -38,6 +38,7 @@ namespace ORTS.Scripting.Api
         internal void AttachToHost(ScriptedBrakeController host)
         {
             Host = host;
+            Car = Locomotive;
         }
 
         /// <summary>
@@ -188,7 +189,7 @@ namespace ORTS.Scripting.Api
         /// <summary>
         /// Fraction of train brake demanded by cruise control
         /// </summary>
-        public float CruiseControlBrakeDemand() => Locomotive.CruiseControl != null ? Locomotive.CruiseControl.TrainBrakePercent/100 : 0;
+        public float CruiseControlBrakeDemand() => Locomotive.CruiseControl != null ? Locomotive.CruiseControl.TrainBrakePercent / 100 : 0;
 
         /// <summary>
         /// Current notch of the brake controller
