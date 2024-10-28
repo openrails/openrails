@@ -149,11 +149,11 @@ block!
 .. index::
    single: Conditions(ORTSBattery
 
-Battery Switch
-''''''''''''''
+Battery
+'''''''
 
 The light condition ``ORTSBattery`` allows a light to respond to the state of
-the :ref:`battery switch subsystem <physics-battery-switch>`. The valid settings
+the :ref:`battery subsystem <physics-battery>`. The valid settings
 and associated conditions for the light to turn *on* are as follows:
 
 - ``ORTSBattery ( 0 )`` Battery state is ignored (default)

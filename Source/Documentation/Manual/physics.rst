@@ -4985,16 +4985,16 @@ outside the usual MSTS folders; e.g. brake parameters.
 Common locomotive subsystems
 ============================
 
-.. _physics-battery-switch:
+.. _physics-battery:
 
-Battery switch
---------------
+Battery
+-------
 
-The battery switch controls the low voltage power supply of the locomotive.
+The battery provides a low voltage power supply of the train car. It is activated via the battery switch.
 If the low voltage power supply is disabled, all of the systems of the locomotive are disabled
 (for example, the circuit breaker opens and the pantograph falls down).
 
-The battery switch of all locomotives in a consist can be controlled by
+The battery switch of all vehicles in a consist can be controlled by
 *Control Battery Switch Close* and *Control Battery Switch Open* commands
 ( ``<Insert>`` and ``<Ctrl+Insert>`` by default ). The status of the battery switch
 is indicated by the *Battery switch* value in the HUD view.
@@ -5020,6 +5020,10 @@ you have to keep pressing the button until the battery is (dis)connected.
 It is possible for the battery switch to be switched on at the start of the simulation.
 To activate this behaviour, you can add the optional parameter ``ORTSBattery( DefaultOn ( 1 ) )``
 
+The voltage and energetic capacity of the battery can be indicated using the ``Voltage`` and ``MaxCapacity``
+parameters. Optionally, it is possible to define a realistic capacity-voltage curve such that voltage becomes
+lower when the battery is discharged, using ``ChargeVoltageCurve``.
+
 Example::
 
     Engine (
@@ -5027,6 +5031,14 @@ Example::
         Mode ( PushButtons )
         Delay ( 2s )
         DefaultOn ( 1 )
+        Voltage ( 72V )
+        MaxCapacity ( 50kWh )
+        ChargeVoltageCurve (
+          0       0
+          5kWh    50V
+          30kWh   72V
+          50kWh   80V
+        )
       )
     )
 
