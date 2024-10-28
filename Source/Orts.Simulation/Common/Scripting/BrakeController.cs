@@ -233,22 +233,6 @@ namespace ORTS.Scripting.Api
         }
 
         /// <summary>
-        /// Gets the total dynamic brake force applied by all locomotives
-        /// </summary>
-        public float TotalDynamicBrakeForceN
-        {
-            get
-            {
-                float totalN = 0;
-                foreach (var car in Train.Cars)
-                {
-                    if (car is MSTSLocomotive loco) totalN += Car.DynamicBrakeForceN;
-                }
-                return totalN;
-            }
-        }
-
-        /// <summary>
         /// Called once at initialization time.
         /// </summary>
         public abstract void Initialize();
