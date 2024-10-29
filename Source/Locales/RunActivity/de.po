@@ -4118,3 +4118,28 @@ msgstr "Fluss"
 #~ msgctxt "Switch"
 #~ msgid "change"
 #~ msgstr "stellen"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Engine"
+msgstr "Motor"
+
+#. Context: PowerSupply
+msgctxt "PowerSupply"
+msgid "On"
+msgstr "An"
+
+#. Context: PowerSupply
+msgctxt "PowerSupply"
+msgid "Power"
+msgstr "Strom"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Running"
+msgstr "An"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Stopped"
+msgstr "Aus"

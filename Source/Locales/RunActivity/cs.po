@@ -133,12 +133,6 @@ msgctxt "PowerSupply"
 msgid "On ongoing"
 msgstr "Běží"
 
-#. Context: PowerSupply
-#: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:81
-msgctxt "PowerSupply"
-msgid "On"
-msgstr "Zap"
-
 #. Context: Pantograph
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:86
 msgctxt "Pantograph"
@@ -583,12 +577,6 @@ msgstr "Strojvedoucí"
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:334
 msgid "Auxiliary power"
 msgstr "Pomocný výkon"
-
-#. Context: PowerSupply
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:322
-msgctxt "PowerSupply"
-msgid "Power"
-msgstr "Výkon"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1573
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:203
@@ -3225,3 +3213,28 @@ msgstr "Spotř."
 #~ msgctxt "Labels"
 #~ msgid "none"
 #~ msgstr "není"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Engine"
+msgstr "Lokomotiva"
+
+#. Context: PowerSupply
+msgctxt "PowerSupply"
+msgid "On"
+msgstr "Zap"
+
+#. Context: PowerSupply
+msgctxt "PowerSupply"
+msgid "Power"
+msgstr "Výkon"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Running"
+msgstr "Motor běží"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Stopped"
+msgstr "Motor zastaven"

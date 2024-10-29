@@ -3225,3 +3225,28 @@ msgstr "Débit"
 #, csharp-format
 #~ msgid "filtered by {0:F0}"
 #~ msgstr "filtré par {0:F0}"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Engine"
+msgstr "Moteur"
+
+#. Context: PowerSupply
+msgctxt "PowerSupply"
+msgid "On"
+msgstr "Actif"
+
+#. Context: PowerSupply
+msgctxt "PowerSupply"
+msgid "Power"
+msgstr "Puissance"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Running"
+msgstr "En marche"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Stopped"
+msgstr "Arrêté"

@@ -97,12 +97,6 @@ msgctxt "PowerSupply"
 msgid "On ongoing"
 msgstr "正在进行"
 
-#. Context: PowerSupply
-#: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:81
-msgctxt "PowerSupply"
-msgid "On"
-msgstr "打开"
-
 #. Context: Pantograph
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:86
 msgctxt "Pantograph"
@@ -545,12 +539,6 @@ msgstr "司机"
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:334
 msgid "Auxiliary power"
 msgstr "辅助动力"
-
-#. Context: PowerSupply
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:322
-msgctxt "PowerSupply"
-msgid "Power"
-msgstr "电力"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1411
 msgid "Tender coal supply is empty. Your loco will fail."
@@ -2835,3 +2823,28 @@ msgstr "流动"
 
 #~ msgid "successfully"
 #~ msgstr "成功"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Engine"
+msgstr "柴油机"
+
+#. Context: PowerSupply
+msgctxt "PowerSupply"
+msgid "On"
+msgstr "打开"
+
+#. Context: PowerSupply
+msgctxt "PowerSupply"
+msgid "Power"
+msgstr "电力"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Running"
+msgstr "运行"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Stopped"
+msgstr "停机"

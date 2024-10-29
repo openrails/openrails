@@ -96,12 +96,6 @@ msgctxt "PowerSupply"
 msgid "On ongoing"
 msgstr "Starter op"
 
-#. Context: PowerSupply
-#: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:81
-msgctxt "PowerSupply"
-msgid "On"
-msgstr "Til"
-
 #. Context: Pantograph
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:86
 msgctxt "Pantograph"
@@ -548,12 +542,6 @@ msgstr "Fører"
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:334
 msgid "Auxiliary power"
 msgstr "Ekstra effekt"
-
-#. Context: PowerSupply
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:322
-msgctxt "PowerSupply"
-msgid "Power"
-msgstr "Effekt"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1366
 msgid "Tender coal supply is empty. Your loco will fail."
@@ -2896,3 +2884,28 @@ msgstr ""
 #~ msgctxt "Labels"
 #~ msgid "none"
 #~ msgstr "ingen"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Engine"
+msgstr "Motor"
+
+#. Context: PowerSupply
+msgctxt "PowerSupply"
+msgid "On"
+msgstr "Til"
+
+#. Context: PowerSupply
+msgctxt "PowerSupply"
+msgid "Power"
+msgstr "Effekt"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Running"
+msgstr "Kører"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Stopped"
+msgstr "Stoppet"
