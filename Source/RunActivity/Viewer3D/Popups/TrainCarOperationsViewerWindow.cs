@@ -494,7 +494,11 @@ namespace Orts.Viewer3D.Popups
                     }
                     else if (OldCarPosition != CarPosition || (trainCarOperations.CarIdClicked && CarPosition == 0))
                     {
+                        if (Owner.Viewer.FrontCamera.AttachedCar != null && Owner.Viewer.FrontCamera.IsCameraFront)
                         Owner.Viewer.FrontCamera.Activate();
+
+                        if (Owner.Viewer.BackCamera.AttachedCar != null && !Owner.Viewer.FrontCamera.IsCameraFront)
+                            Owner.Viewer.BackCamera.Activate();
                     }
                     OldCarPosition = CarPosition;
                     Layout();
