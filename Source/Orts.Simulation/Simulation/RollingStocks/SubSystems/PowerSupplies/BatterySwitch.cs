@@ -57,7 +57,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             switch (lowercasetoken)
             {
-                case "mode":
+                case "engine(ortsbattery(mode":
+                case "wagon(ortsbattery(mode":
                     string text = stf.ReadStringBlock("").ToLower();
                     if (text == "alwayson")
                     {
@@ -77,11 +78,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                     break;
 
-                case "delay":
+                case "engine(ortsbattery(delay":
+                case "wagon(ortsbattery(delay":
                     DelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, 0f);
                     break;
 
-                case "defaulton":
+                case "engine(ortsbattery(defaulton":
+                case "wagon(ortsbattery(defaulton":
                     DefaultOn = stf.ReadBoolBlock(false);
                     break;
             }
@@ -348,14 +351,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             QuickPowerOn = false;
                             QuickPowerOff = true;
                             break;
-                    }
-                    break;
-                case PowerSupplyEvent.OpenBatterySwitchRequestedByPowerSupply:
-                    if (Mode == ModeType.PushButtons)
-                    {
-                        On = false;
-                        Wagon.SignalEvent(Event.BatterySwitchOff);
-                        Timer.Stop();
                     }
                     break;
             }

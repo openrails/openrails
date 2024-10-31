@@ -25,50 +25,35 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
     public class ScriptedControlCarPowerSupply : ScriptedLocomotivePowerSupply, ISubSystem<ScriptedControlCarPowerSupply>
     {
-        public MSTSControlTrailerCar ControlTrailer => Locomotive as MSTSControlTrailerCar;
+        public MSTSControlTrailerCar ContolTrailer => Locomotive as MSTSControlTrailerCar;
 
         public override PowerSupplyType Type => PowerSupplyType.ControlCar;
 
+        public bool Activated = false;
         private ControlCarPowerSupply Script => AbstractScript as ControlCarPowerSupply;
+
+//        public ScriptedTractionCutOffRelay TractionCutOffRelay { get; protected set; }
+
         public ScriptedControlCarPowerSupply(MSTSControlTrailerCar controlcar) :
         base(controlcar)
         {
-
+ //           ControlTrailer = controlcar;
+  //          TractionCutOffRelay = new ScriptedTractionCutOffRelay(this);
         }
 
 
         public void Copy(ScriptedControlCarPowerSupply other)
         {
             base.Copy(other);
+
+
         }
 
         public override void Initialize()
         {
             base.Initialize();
 
-            if (Script == null)
-            {
-                if (ScriptName != null && ScriptName != "Default")
-                {
-                    string[] pathArray = { Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script") };
-                    AbstractScript = Simulator.ScriptManager.Load(pathArray, ScriptName) as ControlCarPowerSupply;
-                }
 
-                if (ParametersFileName != null)
-                {
-                    ParametersFileName = Path.Combine(Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script"), ParametersFileName);
-                }
-
-                if (Script == null)
-                {
-                    AbstractScript = new DefaultControlCarPowerSupply();
-                }
-
-                AssignScriptFunctions();
-
-                Script.AttachToHost(this);
-                Script.Initialize();
-            }
         }
 
         //================================================================================================//
@@ -79,52 +64,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             base.InitializeMoving();
 
-            Script?.InitializeMoving();
+
         }
 
         public override void Update(float elapsedClockSeconds)
         {
             base.Update(elapsedClockSeconds);
 
-            Script?.Update(elapsedClockSeconds);
+            // Script?.Update(elapsedClockSeconds);
         }
-    }
-    public class DefaultControlCarPowerSupply : ControlCarPowerSupply
-    {
-        public override void Initialize()
-        {
 
-        }
-        public override void Update(float elapsedClockSeconds)
-        {
-            SetCurrentBatteryState(BatterySwitchOn() ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
-            SetCurrentLowVoltagePowerSupplyState(BatterySwitchOn() ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
-            SetCurrentCabPowerSupplyState(BatterySwitchOn() && MasterKeyOn() ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
-        }
-        public override void HandleEvent(PowerSupplyEvent evt)
-        {
-            switch (evt)
-            {
-                case PowerSupplyEvent.QuickPowerOn:
-                    SignalEventToBatterySwitch(PowerSupplyEvent.QuickPowerOn);
-                    SignalEventToMasterKey(PowerSupplyEvent.TurnOnMasterKey);
-                    SignalEventToControlActiveLocomotive(evt);
-                    break;
-
-                case PowerSupplyEvent.QuickPowerOff:
-                    SignalEventToBatterySwitch(PowerSupplyEvent.QuickPowerOff);
-                    SignalEventToMasterKey(PowerSupplyEvent.TurnOffMasterKey);
-                    SignalEventToControlActiveLocomotive(evt);
-                    break;
-
-                case PowerSupplyEvent.TogglePlayerEngine:
-                    SignalEventToControlActiveLocomotive(evt);
-                    break;
-
-                default:
-                    base.HandleEvent(evt);
-                    break;
-            }
-        }
     }
 }

@@ -29,27 +29,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         MasterKey MasterKey { get; }
         ElectricTrainSupplySwitch ElectricTrainSupplySwitch { get; }
 
-        PowerSupplyState MainPowerSupplyState { get; set; }
+        PowerSupplyState MainPowerSupplyState { get; }
         bool MainPowerSupplyOn { get; }
-        bool DynamicBrakeAvailable { get; set; }
-        float PowerSupplyDynamicBrakePercent { get; set; }
-        float MaximumDynamicBrakePowerW { get; set; }
-        float MaxThrottlePercent { get; set; }
+        bool DynamicBrakeAvailable { get; }
 
-        PowerSupplyState AuxiliaryPowerSupplyState { get; set; }
+        PowerSupplyState AuxiliaryPowerSupplyState { get; }
         bool AuxiliaryPowerSupplyOn { get; }
 
-        PowerSupplyState CabPowerSupplyState { get; set; }
+        PowerSupplyState CabPowerSupplyState { get; }
         bool CabPowerSupplyOn { get; }
 
-        bool ServiceRetentionButton { get; set; }
-        bool ServiceRetentionCancellationButton { get; set; }
-        bool ServiceRetentionActive { get; set; }
-
-        void HandleEventFromTcs(PowerSupplyEvent evt);
-        void HandleEventFromTcs(PowerSupplyEvent evt, int id);
-        void HandleEventFromTcs(PowerSupplyEvent evt, string message);
-        void HandleEventFromOtherLocomotive(int locoIndex, PowerSupplyEvent evt);
-        void HandleEventFromOtherLocomotive(int locoIndex, PowerSupplyEvent evt, int id);
+        bool ServiceRetentionButton { get; }
+        bool ServiceRetentionCancellationButton { get; }
     }
 }

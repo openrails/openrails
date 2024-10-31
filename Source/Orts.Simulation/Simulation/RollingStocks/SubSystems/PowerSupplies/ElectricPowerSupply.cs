@@ -20,7 +20,6 @@ using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System.IO;
-using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
@@ -28,27 +27,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     public class ScriptedElectricPowerSupply : ScriptedLocomotivePowerSupply
     {
         public MSTSElectricLocomotive ElectricLocomotive => Locomotive as MSTSElectricLocomotive;
+        public Pantographs Pantographs => Locomotive.Pantographs;
         public ScriptedCircuitBreaker CircuitBreaker { get; protected set; }
-        public ScriptedVoltageSelector VoltageSelector { get; protected set; }
-        public ScriptedPantographSelector PantographSelector { get; protected set; }
-        public ScriptedPowerLimitationSelector PowerLimitationSelector { get; protected set; }
 
         public override PowerSupplyType Type => PowerSupplyType.Electric;
+        public bool Activated = false;
         private ElectricPowerSupply Script => AbstractScript as ElectricPowerSupply;
 
         public float LineVoltageV => (float)Simulator.TRK.Tr_RouteFile.MaxLineVoltage;
         public float PantographVoltageV { get; set; }
-        public float PantographVoltageVAC { get; set; }
-        public float PantographVoltageVDC { get; set; }
         public float FilterVoltageV { get; set; } = 0;
 
         public ScriptedElectricPowerSupply(MSTSLocomotive locomotive) :
             base(locomotive)
         {
             CircuitBreaker = new ScriptedCircuitBreaker(this);
-            VoltageSelector = new ScriptedVoltageSelector(this);
-            PantographSelector = new ScriptedPantographSelector(this);
-            PowerLimitationSelector = new ScriptedPowerLimitationSelector(this);
         }
 
         public override void Parse(string lowercasetoken, STFReader stf)
@@ -58,18 +51,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 case "engine(ortscircuitbreaker":
                 case "engine(ortscircuitbreakerclosingdelay":
                     CircuitBreaker.Parse(lowercasetoken, stf);
-                    break;
-
-                case "engine(ortsvoltageselector":
-                    VoltageSelector.Parse(stf);
-                    break;
-
-                case "engine(ortspantographselector":
-                    PantographSelector.Parse(stf);
-                    break;
-
-                case "engine(ortspowerlimitationselector":
-                    PowerLimitationSelector.Parse(stf);
                     break;
 
                 default:
@@ -85,9 +66,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             if (other is ScriptedElectricPowerSupply scriptedOther)
             {
                 CircuitBreaker.Copy(scriptedOther.CircuitBreaker);
-                VoltageSelector.Copy(scriptedOther.VoltageSelector);
-                PantographSelector.Copy(scriptedOther.PantographSelector);
-                PowerLimitationSelector.Copy(scriptedOther.PowerLimitationSelector);
             }
         }
 
@@ -95,19 +73,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             base.Initialize();
 
-            if (Script == null)
+            if (!Activated)
             {
                 if (ScriptName != null && ScriptName != "Default")
                 {
-                    string[] pathArray = { Path.Combine(Path.GetDirectoryName(ElectricLocomotive.WagFilePath), "Script") };
+                    var pathArray = new string[] { Path.Combine(Path.GetDirectoryName(ElectricLocomotive.WagFilePath), "Script") };
                     AbstractScript = Simulator.ScriptManager.Load(pathArray, ScriptName) as ElectricPowerSupply;
                 }
-
-                if (ParametersFileName != null)
-                {
-                    ParametersFileName = Path.Combine(Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script"), ParametersFileName);
-                }
-
                 if (Script == null)
                 {
                     AbstractScript = new DefaultElectricPowerSupply();
@@ -115,45 +87,35 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 AssignScriptFunctions();
 
-                Script.AttachToHost(this);
                 Script.Initialize();
+                Activated = true;
             }
 
             CircuitBreaker.Initialize();
-            VoltageSelector.Initialize();
-            PantographSelector.Initialize();
-            PowerLimitationSelector.Initialize();
         }
 
+
+        //================================================================================================//
         /// <summary>
         /// Initialization when simulation starts with moving train
-        /// </summary>
+        /// <\summary>
         public override void InitializeMoving()
         {
             base.InitializeMoving();
 
             CircuitBreaker.InitializeMoving();
-            VoltageSelector.InitializeMoving();
-            PantographSelector.InitializeMoving();
-            PowerLimitationSelector.InitializeMoving();
         }
 
         public override void Save(BinaryWriter outf)
         {
             base.Save(outf);
             CircuitBreaker.Save(outf);
-            VoltageSelector.Save(outf);
-            PantographSelector.Save(outf);
-            PowerLimitationSelector.Save(outf);
         }
 
         public override void Restore(BinaryReader inf)
         {
             base.Restore(inf);
             CircuitBreaker.Restore(inf);
-            VoltageSelector.Restore(inf);
-            PantographSelector.Restore(inf);
-            PowerLimitationSelector.Restore(inf);
         }
 
         public override void Update(float elapsedClockSeconds)
@@ -161,11 +123,28 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             base.Update(elapsedClockSeconds);
 
             CircuitBreaker.Update(elapsedClockSeconds);
-            VoltageSelector.Update(elapsedClockSeconds);
-            PantographSelector.Update(elapsedClockSeconds);
-            PowerLimitationSelector.Update(elapsedClockSeconds);
 
             Script?.Update(elapsedClockSeconds);
+        }
+
+        protected override void AssignScriptFunctions()
+        {
+            base.AssignScriptFunctions();
+
+            // ElectricPowerSupply getters
+            Script.CurrentPantographState = () => Pantographs.State;
+            Script.CurrentCircuitBreakerState = () => CircuitBreaker.State;
+            Script.CircuitBreakerDriverClosingOrder = () => CircuitBreaker.DriverClosingOrder;
+            Script.CircuitBreakerDriverOpeningOrder = () => CircuitBreaker.DriverOpeningOrder;
+            Script.CircuitBreakerDriverClosingAuthorization = () => CircuitBreaker.DriverClosingAuthorization;
+            Script.PantographVoltageV = () => PantographVoltageV;
+            Script.FilterVoltageV = () => FilterVoltageV;
+            Script.LineVoltageV = () => LineVoltageV;
+
+            // ElectricPowerSupply setters
+            Script.SetPantographVoltageV = (value) => PantographVoltageV = value;
+            Script.SetFilterVoltageV = (value) => FilterVoltageV = value;
+            Script.SignalEventToCircuitBreaker = (evt) => CircuitBreaker.HandleEvent(evt);
         }
     }
 
@@ -211,11 +190,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         SignalEvent(Event.EnginePowerOff);
                         SetCurrentMainPowerSupplyState(PowerSupplyState.PowerOff);
                     }
-                    if (CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn)
-                    {
-                        SignalEvent(Event.PowerConverterOff);
-                        SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
-                    }
+                    SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
                     SetPantographVoltageV(PantographFilter.Filter(0.0f, elapsedClockSeconds));
                     SetFilterVoltageV(VoltageFilter.Filter(0.0f, elapsedClockSeconds));
                     break;
@@ -243,11 +218,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                                 SignalEvent(Event.EnginePowerOff);
                                 SetCurrentMainPowerSupplyState(PowerSupplyState.PowerOff);
                             }
-                            if (CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn)
-                            {
-                                SignalEvent(Event.PowerConverterOff);
-                                SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
-                            }
+                            SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
                             SetFilterVoltageV(VoltageFilter.Filter(0.0f, elapsedClockSeconds));
                             break;
 
@@ -265,20 +236,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                                 SignalEvent(Event.EnginePowerOn);
                                 SetCurrentMainPowerSupplyState(PowerSupplyState.PowerOn);
                             }
-                            if (AuxPowerOnTimer.Triggered && CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOff)
-                            {
-                                SignalEvent(Event.PowerConverterOn);
-                                SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOn);
-                            }
+                            SetCurrentAuxiliaryPowerSupplyState(AuxPowerOnTimer.Triggered ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
                             SetFilterVoltageV(VoltageFilter.Filter(PantographVoltageV(), elapsedClockSeconds));
                             break;
                     }
                     break;
-            }
-
-            if (PowerLimitationSelector.Position != null)
-            {
-                MaximumPowerW = PowerLimitationSelector.Position.PowerW;
             }
 
             // By default, on electric locomotives, dynamic brake is always available (rheostatic brake is always available).

@@ -134,15 +134,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void HandleEvent(PowerSupplyEvent evt, int id)
         {
-            switch (evt)
+            if (id <= List.Count)
             {
-                case PowerSupplyEvent.LowerPantograph:
-                case PowerSupplyEvent.RaisePantograph:
-                    if (id <= List.Count)
-                    {
-                        List[id - 1].HandleEvent(evt);
-                    }
-                    break;
+                List[id - 1].HandleEvent(evt);
             }
         }
 

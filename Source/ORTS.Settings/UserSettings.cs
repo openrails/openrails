@@ -289,9 +289,7 @@ namespace ORTS.Settings
 
         // Experimental settings:
         [Default(0)]
-        public int UseSuperElevation { get; set; }
-        [Default(50)]
-        public int SuperElevationMinLen { get; set; }
+        public bool UseSuperElevation { get; set; }
         [Default(1435)]
         public int SuperElevationGauge { get; set; }
         [Default(0)]

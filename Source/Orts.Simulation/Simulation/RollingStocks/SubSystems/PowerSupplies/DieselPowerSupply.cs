@@ -34,7 +34,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         private DieselPowerSupply Script => AbstractScript as DieselPowerSupply;
 
         public float DieselEngineMinRpmForElectricTrainSupply { get; protected set; } = 0f;
-        public float DieselEngineMinRpm;
+        public float DieselEngineMinRpm { get => ElectricTrainSupplyOn ? DieselEngineMinRpmForElectricTrainSupply : 0f; }
 
         public ScriptedDieselPowerSupply(MSTSDieselLocomotive locomotive) :
             base(locomotive)
@@ -82,12 +82,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     var pathArray = new string[] { Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script") };
                     AbstractScript = Simulator.ScriptManager.Load(pathArray, ScriptName) as DieselPowerSupply;
                 }
-
-                if (ParametersFileName != null)
-                {
-                    ParametersFileName = Path.Combine(Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script"), ParametersFileName);
-                }
-
                 if (Script == null)
                 {
                     AbstractScript = new DefaultDieselPowerSupply();
@@ -95,7 +89,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 AssignScriptFunctions();
 
-                Script.AttachToHost(this);
                 Script.Initialize();
                 Activated = true;
             }
@@ -103,9 +96,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             TractionCutOffRelay.Initialize();
         }
 
+
+        //================================================================================================//
         /// <summary>
         /// Initialization when simulation starts with moving train
-        /// </summary>
+        /// <\summary>
         public override void InitializeMoving()
         {
             base.InitializeMoving();
@@ -132,6 +127,34 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             TractionCutOffRelay.Update(elapsedClockSeconds);
 
             Script?.Update(elapsedClockSeconds);
+        }
+
+        protected override void AssignScriptFunctions()
+        {
+            base.AssignScriptFunctions();
+
+            // DieselPowerSupply getters
+            Script.CurrentDieselEnginesState = () => DieselLocomotive.DieselEngines.State;
+            Script.CurrentDieselEngineState = (id) =>
+            {
+                if (id >= 0 && id < DieselEngines.Count)
+                {
+                    return DieselEngines[id].State;
+                }
+                else
+                {
+                    return DieselEngineState.Unavailable;
+                }
+            };
+            Script.CurrentTractionCutOffRelayState = () => TractionCutOffRelay.State;
+            Script.TractionCutOffRelayDriverClosingOrder = () => TractionCutOffRelay.DriverClosingOrder;
+            Script.TractionCutOffRelayDriverOpeningOrder = () => TractionCutOffRelay.DriverOpeningOrder;
+            Script.TractionCutOffRelayDriverClosingAuthorization = () => TractionCutOffRelay.DriverClosingAuthorization;
+
+            // DieselPowerSupply setters
+            Script.SignalEventToDieselEngines = (evt) => DieselEngines.HandleEvent(evt);
+            Script.SignalEventToDieselEngine = (evt, id) => DieselEngines.HandleEvent(evt, id);
+            Script.SignalEventToTractionCutOffRelay = (evt) => TractionCutOffRelay.HandleEvent(evt);
         }
     }
 
@@ -184,11 +207,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         SignalEvent(Event.EnginePowerOff);
                         SetCurrentMainPowerSupplyState(PowerSupplyState.PowerOff);
                     }
-                    if (CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn)
-                    {
-                        SignalEvent(Event.PowerConverterOff);
-                        SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
-                    }
+                    SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
                     break;
 
                 case DieselEngineState.Running:
@@ -230,11 +249,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     if (!AuxPowerOnTimer.Started)
                         AuxPowerOnTimer.Start();
 
-                    if (AuxPowerOnTimer.Triggered && CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOff)
-                    {
-                        SignalEvent(Event.PowerConverterOn);
-                        SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOn);
-                    }
+                    SetCurrentAuxiliaryPowerSupplyState(AuxPowerOnTimer.Triggered ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
                     break;
             }
 
@@ -244,18 +259,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             if (ElectricTrainSupplyUnfitted())
             {
                 SetCurrentElectricTrainSupplyState(PowerSupplyState.Unavailable);
-                DieselEngineMinRpm = 0;
             }
             else if (CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn
                     && ElectricTrainSupplySwitchOn())
             {
                 SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOn);
-                DieselEngineMinRpm = DieselEngineMinRpmForElectricTrainSupply;
             }
             else
             {
                 SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOff);
-                DieselEngineMinRpm = 0;
             }
 
             UpdateSounds();

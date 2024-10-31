@@ -20,352 +20,475 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
 using Orts.Simulation;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 
 namespace Orts.Viewer3D
 {
     public class SuperElevationManager
     {
         /// <summary>
-        /// Decompose and add a SuperElevation on top of MSTS track section
+        /// Generate SuperElevationViewers for a static track object
         /// </summary>
         /// <param name="viewer">Viewer reference.</param>
-        /// <param name="trackList">DynamicTrackViewer list.</param>
         /// <param name="trackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        /// <param name="TileX">TileX coordinates.</param>
-        /// <param name="TileZ">TileZ coordinates.</param>
+        /// <param name="dTrackList">DynamicTrackViewer list.</param>
         /// <param name="shapeFilePath">Path to the shape file.</param>
-        public static bool DecomposeStaticSuperElevation(Viewer viewer, List<DynamicTrackViewer> trackList, TrackObj trackObj, WorldPosition worldMatrixInput, int TileX, int TileZ, string shapeFilePath)
+        /// <returns>Bool value indicating true if the given track object
+        /// should be rendered as dynamic track rather than a static shape.</returns>
+        public static bool DecomposeStaticSuperElevation(Viewer viewer, TrackObj trackObj, WorldPosition worldMatrixInput, List<DynamicTrackViewer> dTrackList, string shapeFilePath)
         {
-            TrackShape shape = null;
+            // STATIC TRACK
+            // =============
+            // Objectives:
+            // 1-Decompose multi-subsection track shape into individual sections.  
+            // 2-Create updated transformation objects (instances of WorldPosition) to reflect 
+            //   root of next subsection.
+            // 3-Identify which subsections should and shouldn't have superelevation.
+            // 4-Generate viewers for all subsections, making sure to respect presence or lack
+            //   of superelevation.
+            // 5-If no sections have superelevation, return false to inform WorldFile that
+            //   this section should be generated the traditional way.
+            //
+            // Method: Iterate through each subsection, updating WorldPosition for the root of
+            // each subsection.  The rotation component changes only in heading.  The translation 
+            // component steps along the path to reflect the root of each subsection.
+
+            TrackShape shape;
+
             try
             {
                 shape = viewer.Simulator.TSectionDat.TrackShapes.Get(trackObj.SectionIdx);
 
-                if (shape.RoadShape == true) return false;
+                if (shape.RoadShape == true)
+                    return false; // Roads don't use superelevation, no use in processing them.
             }
             catch (Exception)
             {
-                return false;
+                return false; // Won't be able to render with superelevation
             }
+
             SectionIdx[] SectionIdxs = shape.SectionIdxs;
 
-            int count = -1;
-            int drawn = 0;
-            bool isTunnel = shape.TunnelShape;
+            // Can't render superelevation on tunnel shapes
+            // NOTE: Even if we don't render superelevation, we still need to run through processing to remove superelevation from track sections
+            bool dontRender = shape.TunnelShape;
+            // Sometimes junctions get caught here, physics superelevation should be removed for those as well
+            bool removePhys = false;
+            // 0 = centered, positive = rotation axis moves to inside of curve, negative = moves to outside of curve
+            float rollOffsetM = 0.0f;
 
-            List<TrVectorSection> sectionsinShape = new List<TrVectorSection>();
-            //List<DynamicTrackViewer> tmpTrackList = new List<DynamicTrackViewer>();
+            // Determine the track profile to use for this section based on the shape file
+            int trpIndex = DynamicTrackViewer.GetBestTrackProfile(viewer, shapeFilePath);
+
+            TrProfile trProfile = null;
+            // If a track profile is found (index exists), continue processing
+            if (trpIndex >= 0 && trpIndex < viewer.TRPs.Count)
+            {
+                trProfile = viewer.TRPs[trpIndex].TrackProfile;
+
+                // If this track profile has superelevation disabled, don't bother rendering anything
+                if (trProfile.ElevationType == TrProfile.SuperelevationMethod.None)
+                    dontRender = true;
+                else // Superelevation enabled, check the roll offset
+                {
+                    switch (trProfile.ElevationType)
+                    {
+                        case TrProfile.SuperelevationMethod.Outside: // Only outside rail should elevate
+                            rollOffsetM = trProfile.TrackGaugeM / 2.0f;
+                            break;
+                        case TrProfile.SuperelevationMethod.Inside: // Only inside rail should elevate
+                            rollOffsetM = -trProfile.TrackGaugeM / 2.0f;
+                            break;
+                        case TrProfile.SuperelevationMethod.Both: // Both rails should elevate
+                        default:
+                            rollOffsetM = 0.0f;
+                            break;
+                    }
+                }
+            }
+            else // No track profile suitable, don't render with superelevation
+                dontRender = true;
+
+            // Right now it's not confirmed if superelevation viewers are actually needed, so they are added to a temporary list
+            List<DynamicTrackViewer> tempViewers = new List<DynamicTrackViewer>();
+            // Also keep track of which sections are superelevated
+            List<TrVectorSection> superElevationSections = new List<TrVectorSection>();
+
+            // Iterate through all subsections
             foreach (SectionIdx id in SectionIdxs)
             {
-                uint[] sections = id.TrackSections;
-
-                for (int i = 0; i < sections.Length; i++)
+                // If section angle offset is not zero, that means we have a complicated track shape (eg: junction)
+                // If any sections have identical starting conditions, that means we have a junction
+                // These should not be rendered using superelevation
+                if (!dontRender && id.A != 0.0f)
+                    dontRender = true;
+                if (!dontRender && !removePhys
+                    && SectionIdxs.Any(idx => idx != id && idx.X == id.X && idx.Y == id.Y && idx.Z == id.Z))
                 {
-                    count++;
-                    uint sid = id.TrackSections[i];
+                    dontRender = true;
+                    removePhys = true;
+                }
+
+                // The following vectors represent local positioning relative to root of original section:
+                Vector3 offset = new Vector3((float)id.X, (float)id.Y, (float)id.Z); // Offset from section origin for this series of sections
+                Vector3 localV = Vector3.Zero; // Local position of subsection (in x-z plane)
+                Vector3 heading = Vector3.Forward; // Local heading (unit vector)
+
+                WorldPosition worldMatrix = new WorldPosition(worldMatrixInput); // Copy origin location
+
+                worldMatrix.XNAMatrix.Translation = Vector3.Transform(offset, worldMatrix.XNAMatrix);
+
+                WorldPosition nextRoot = new WorldPosition(worldMatrix); // Will become initial root
+                Vector3 sectionOrigin = worldMatrix.XNAMatrix.Translation; // Original position for entire section
+                worldMatrix.XNAMatrix.Translation = Vector3.Zero; // worldMatrix now rotation-only
+
+                foreach (uint sid in id.TrackSections)
+                {
                     TrackSection section = viewer.Simulator.TSectionDat.TrackSections.Get(sid);
-                    if (Math.Abs(section.SectionSize.Width - viewer.Simulator.SuperElevationGauge) > 0.2) continue;//the main route has a gauge different than mine
-                    if (section.SectionCurve == null)
-                    {
-                        continue;
-                        //with strait track, will remove all related sections later
-                    }
-                    TrVectorSection tmp = null;
-                    if (section.SectionCurve != null) tmp = FindSectionValue(shape, viewer.Simulator, section, TileX, TileZ, trackObj.UID);
 
-                    if (tmp == null) //cannot find the track for super elevation, will return 0;
-                    {
-                        continue;
-                    }
-                    sectionsinShape.Add(tmp);
+                    // Set the start of this section to the end of the previous section
+                    WorldPosition root = new WorldPosition(nextRoot);
 
-                    drawn++;
+                    nextRoot = CalculateNextRoot(section, worldMatrix, sectionOrigin, nextRoot, localV,
+                        ref heading, out Vector3 localProjectedV, out float length, out float radius);
+
+                    localV = localProjectedV; // Move position to next subsection
+
+                    // To determine if this section needs superelevation, search for it in the global superelevation dictionary
+                    TrVectorSection tmp = FindSuperElevationSection(viewer, section, trackObj.UID, root, nextRoot, out bool reversed);
+
+                    if (tmp != null) // Section does have superelevation, prepare to generate it with superelevation
+                    {
+                        superElevationSections.Add(tmp);
+
+                        if (!dontRender)
+                        {
+                            tmp.ElevOffsetM = rollOffsetM;
+
+                            // Processing done, prepare to generate section with superelevation
+                            tempViewers.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, trProfile, tmp.VisElevTable, tmp.ElevOffsetM, reversed));
+                        }
+                    }
+                    else if (!dontRender) // Section doesn't have superelevation, prepare to generate it without superelevation
+                        tempViewers.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, trProfile));
                 }
             }
 
-            if (drawn <= count || isTunnel)//tunnel or not every section is in SE, will remove all sections in the shape out
+            // If we shouldn't render superelevation for whatever reason,
+            // remove sections from the superelevation dictionary and render with static shapes instead
+            if (dontRender)
             {
-                if (sectionsinShape.Count > 0) RemoveTracks(viewer.Simulator, sectionsinShape);
+                if (superElevationSections.Count > 0)
+                    RemoveSuperElevation(viewer.Simulator, superElevationSections, removePhys);
                 return false;
             }
-            return true;
+            // We are rendering superelevation, add all superelevation viewers to the global list to be rendered
+            else if (superElevationSections.Count > 0 && tempViewers.Count > 0)
+                dTrackList.AddRange(tempViewers);
+
+            // If no sections with superelevation were found, WorldFile should render with static shapes
+            return superElevationSections.Count > 0;
         }
 
-        //remove sections from future consideration
-        static void RemoveTracks(Simulator simulator, List<TrVectorSection> sectionsinShape)
+        /// <summary>
+        /// Removes superelevation from sections associated with a particular junction TrackObj
+        /// </summary>
+        /// <param name="viewer">Viewer reference.</param>
+        /// <param name="trackObj">Dynamic track section to decompose.</param>
+        /// <param name="worldMatrixInput">Position matrix.</param>
+        public static void ClearJunctionSuperElevation(Viewer viewer, TrackObj trackObj, WorldPosition worldMatrixInput)
+        {
+            TrackShape shape;
+            try
+            {
+                shape = viewer.Simulator.TSectionDat.TrackShapes.Get(trackObj.SectionIdx);
+
+                if (shape.RoadShape == true)
+                    return;
+            }
+            catch (Exception)
+            {
+                return;
+            }
+            SectionIdx[] SectionIdxs = shape.SectionIdxs;
+
+            List<TrVectorSection> sectionsInShape = new List<TrVectorSection>();
+
+            foreach (SectionIdx id in SectionIdxs)
+            {
+                // The following vectors represent local positioning relative to root of original section:
+                Vector3 offset = new Vector3((float)id.X, (float)id.Y, (float)id.Z); // Offset from section origin for this series of sections
+                Vector3 localV = Vector3.Zero; // Local position of subsection (in x-z plane)
+                Vector3 heading = Vector3.Forward; // Local heading (unit vector)
+
+                WorldPosition worldMatrix = new WorldPosition(worldMatrixInput); // Copy origin location
+
+                worldMatrix.XNAMatrix.Translation = Vector3.Transform(offset, worldMatrix.XNAMatrix);
+
+                WorldPosition nextRoot = new WorldPosition(worldMatrix); // Will become initial root
+                Vector3 sectionOrigin = worldMatrix.XNAMatrix.Translation; // Original position for entire section
+                worldMatrix.XNAMatrix.Translation = Vector3.Zero; // worldMatrix now rotation-only
+
+                foreach (uint sid in id.TrackSections)
+                {
+                    TrackSection section = viewer.Simulator.TSectionDat.TrackSections.Get(sid);
+
+                    // Set the start of this section to the end of the previous section
+                    WorldPosition root = new WorldPosition(nextRoot);
+
+                    nextRoot = CalculateNextRoot(section, worldMatrix, sectionOrigin, nextRoot, localV,
+                        ref heading, out Vector3 localProjectedV, out float length, out float radius);
+
+                    localV = localProjectedV; // Move position to next subsection
+
+                    // To determine if this section needs superelevation, search for it in the global superelevation dictionary
+                    TrVectorSection tmp = FindSuperElevationSection(viewer, section, trackObj.UID, root, nextRoot, out bool reversed);
+
+                    if (tmp != null) // Section does have superelevation, add it to be removed
+                        sectionsInShape.Add(tmp);
+                }
+            }
+
+            if (sectionsInShape.Count > 0)
+                RemoveSuperElevation(viewer.Simulator, sectionsInShape, true);
+        }
+
+        /// <summary>
+        /// Returns the TrVectorSection in the SuperElevation dictionary associated with a particular TrackSection
+        /// </summary>
+        /// <param name="viewer">Viewer reference.</param>
+        /// <param name="section">Track section to match against.</param>
+        /// <param name="UID">UID of the track object containing section.</param>
+        /// <param name="startPos">WorldPosition for the beginning of the track section.</param>
+        /// <param name="endPos">WorldPosition for the end of the track section.</param>
+        /// <param name="reversed">Output bool indicating if the track section faces the opposite direction to the TrVectorSection.</param>
+        /// <returns>Superelevated TrVectorSection which matches the given track section, or null if none found.</returns>
+        public static TrVectorSection FindSuperElevationSection(Viewer viewer, TrackSection section, uint UID,
+            WorldPosition startPos, WorldPosition endPos, out bool reversed)
+        {
+            reversed = false; // Is the track shape reversed relative to the vector section?
+
+            // Duplicate world positions to avoid modifying originals, normalize to get correct tiles
+            WorldPosition shapeStart = new WorldPosition(startPos);
+            shapeStart.Normalize();
+            WorldPosition shapeEnd = new WorldPosition(endPos);
+            shapeEnd.Normalize();
+
+            int key = (int)(Math.Abs(shapeStart.TileX) + Math.Abs(shapeStart.TileZ));
+            if (!viewer.Simulator.SuperElevation.Sections.ContainsKey(key))
+                return null; // No superelevation sections present on the given tile, skip searching
+            var tileSections = viewer.Simulator.SuperElevation.Sections[key];
+
+            // Search for section with the same section index
+            foreach (var s in tileSections)
+            {
+                // Gradually get more specific with section matching to find corresponding section
+                // Note: Both the WFNameX/Z and TileX/Z are checked to handle sections which cross a tile boundary
+                if (((s.WFNameX == shapeStart.TileX && s.WFNameZ == shapeStart.TileZ)
+                    || (s.TileX == shapeStart.TileX && s.TileZ == shapeStart.TileZ))
+                    && s.WorldFileUiD == UID)
+                {
+                    // Vector section is in the same tile and has the same object UiD, check against track object
+                    // If the track sections corresponding to each aren't the same, then skip to the next vector section
+                    TrackSection elevSec = viewer.Simulator.TSectionDat.TrackSections.Get(s.SectionIndex);
+
+                    if (elevSec.SectionCurve == null && section.SectionCurve == null && elevSec.SectionSize.Length == section.SectionSize.Length)
+                    {
+                        // Both sections are straight with the same size, compare direction
+                        Vector3 sDir = Matrix.CreateFromYawPitchRoll(-s.AY, -s.AX, s.AZ).Forward;
+
+                        if (Vector3.Dot(shapeStart.XNAMatrix.Forward, sDir) < 0.0f)
+                            reversed = true; // Dot product is negative, sections are facing opposite directions
+                        else
+                            reversed = false;
+                    }
+                    else if (elevSec.SectionCurve != null && section.SectionCurve != null
+                        && elevSec.SectionCurve.Radius == section.SectionCurve.Radius)
+                    {
+                        // Both sections are curves with the same radius
+                        if (Math.Abs(elevSec.SectionCurve.Angle) == Math.Abs(section.SectionCurve.Angle))
+                        {
+                            if (Math.Sign(elevSec.SectionCurve.Angle) != Math.Sign(section.SectionCurve.Angle))
+                                reversed = true; // Curves have same angle, but opposite direction
+                            else
+                                reversed = false;
+                        }
+                        else
+                            continue; // Curves have different angles
+                    }
+                    else // Sections aren't equivalent for some other reason
+                        continue;
+
+                    // We now have a vector section with an equivalent track section,
+                    // but it may not be in the same position, so check positions
+                    Vector3 sPos = new Vector3(s.X, s.Y, s.Z);
+                    // If the section is reversed, the vector section start position should align with the section end
+                    if (reversed)
+                    {
+                        if (Vector3.DistanceSquared(sPos, shapeEnd.Location) < 0.25f)
+                            return s;
+                    }
+                    else // If the section is forwards, the vector section start position should align with the section start
+                    {
+                        if (Vector3.DistanceSquared(sPos, shapeStart.Location) < 0.25f)
+                            return s;
+                    }
+                }
+            }
+            // Couldn't find a matching section
+            return null;
+        }
+
+        /// <summary>
+        /// Removes visual superelevation (optionally physics superelevation as well) from track vector sections,
+        /// also removing those sections from future consideration in superelevation calculations.
+        /// </summary>
+        /// <param name="simulator">Simulator reference.</param>
+        /// <param name="sectionsinShape">List of TrVectorSections to remove superelevation from.</param>
+        /// <param name="removePhys">Bool to indicate if physics superelevation should be removed as well.</param>
+        static void RemoveSuperElevation(Simulator simulator, List<TrVectorSection> sectionsinShape, bool removePhys = false)
         {
             foreach (var tmpSec in sectionsinShape)
             {
                 List<TrVectorSection> curve = null;
-                var pos = -1;
-                foreach (var c in simulator.SuperElevation.Curves) { if (c.Contains(tmpSec)) { curve = c; break; } }//find which curve has the section
+                int pos;
+                // Find which curve has the section
+                foreach (var c in simulator.SuperElevation.Curves)
+                {
+                    if (c.Contains(tmpSec))
+                    {
+                        curve = c;
+                        break;
+                    }
+                }
+                // If curve was found, clean up superelevation
                 if (curve != null)
                 {
+                    // Disable visual (optionally physical) superelevation on affected sections to prevent graphical issues
                     pos = curve.IndexOf(tmpSec);
-                    if (pos >= 1) curve[pos - 1].EndElev = 0; if (pos < curve.Count - 1) curve[pos + 1].StartElev = 0;
-                    RemoveSectionsFromMap(simulator, tmpSec);//remove all sections in the curve from future consideration
+                    if (pos > 0) // Adjust superelevation of previous section as well
+                    {
+                        curve[pos - 1].VisElevTable.Y[curve[pos - 1].VisElevTable.GetSize() - 1] = 0.0f;
+                        if (removePhys)
+                            curve[pos - 1].PhysElevTable.Y[curve[pos - 1].PhysElevTable.GetSize() - 1] = 0.0f;
+                    }
+                    if (pos < curve.Count - 1) // Adjust superelevation of next section as well
+                    {
+                        curve[pos + 1].VisElevTable.Y[0] = 0.0f;
+                        if (removePhys)
+                            curve[pos + 1].PhysElevTable.Y[0] = 0.0f;
+                    }
+
+                    curve[pos].VisElevTable.ScaleY(0.0f);
+                    if (removePhys)
+                    {
+                        curve[pos].PhysElevTable.ScaleY(0.0f);
+                        curve[pos].NomElevM = 0.0f;
+                    }
+
+                    // Remove affected section from superelevation system
+                    RemoveSectionsFromMap(simulator, tmpSec);
                     curve.Remove(tmpSec);
                 }
             }
 
         }
 
-        //no use anymore
-        public static int DecomposeStaticSuperElevationOneSection(Viewer viewer, List<DynamicTrackViewer> dTrackList, int TileX, int TileZ, TrVectorSection ts)
-        {
-            if (ts == null) return 0;
-
-            WorldLocation location = new WorldLocation();
-            Vector3 directionVector = new Vector3();
-
-            var tss = viewer.Simulator.TSectionDat.TrackSections.Get(ts.SectionIndex);
-
-            if (tss == null || tss.SectionCurve == null)
-                return 0;
-            location.TileX = ts.TileX;
-            location.TileZ = ts.TileZ;
-            location.Location.X = ts.X;
-            location.Location.Y = ts.Y;
-            location.Location.Z = ts.Z;
-            directionVector.X = ts.AX;
-            directionVector.Y = ts.AY;
-            directionVector.Z = ts.AZ;
-            Vector3 trackLoc = new Vector3(ts.X, ts.Y, -ts.Z);
-            WorldPosition root = new WorldPosition(); root.TileX = ts.TileX; root.TileZ = ts.TileZ;
-            root.XNAMatrix = Matrix.CreateFromYawPitchRoll(-ts.AY, -ts.AX, ts.AZ);// CreateRotationX(-ts.AY) * Matrix.CreateRotationY(-ts.AX) * Matrix.CreateRotationZ(ts.AZ);
-
-            root.XNAMatrix.Translation = Vector3.Zero;
-            root.XNAMatrix.Translation += Vector3.Transform(trackLoc, Matrix.Identity);
-
-            var sign = -Math.Sign(tss.SectionCurve.Angle); var to = Math.Abs(tss.SectionCurve.Angle * 0.0174f);
-            var vectorCurveStartToCenter = Vector3.Left * tss.SectionCurve.Radius * sign;
-            var curveRotation = Matrix.CreateRotationY(to * sign);
-            Vector3 dummy;
-            var displacement = Traveller.MSTSInterpolateAlongCurve(Vector3.Zero, vectorCurveStartToCenter, curveRotation, root.XNAMatrix, out dummy);
-
-            WorldPosition nextRoot = new WorldPosition(root);
-            nextRoot.XNAMatrix.Translation = displacement;
-
-            sv = ev = mv = 0f; dir = 1f;
-            sv = ts.StartElev; ev = ts.EndElev; mv = ts.MaxElev;
-
-            //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-            dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, tss.SectionCurve.Radius, tss.SectionCurve.Angle * 3.14f / 180, sv, ev, mv, dir));
-            return 1;
-        }
-
-        //no use anymore
-        public static int DecomposeStaticSuperElevation(Viewer viewer, List<DynamicTrackViewer> dTrackList, int TileX, int TileZ)
-        {
-            var key = (int)(Math.Abs(TileX) + Math.Abs(TileZ));
-            if (!viewer.Simulator.SuperElevation.Sections.ContainsKey(key)) return 0;//cannot find sections associated with this tile
-            var sections = viewer.Simulator.SuperElevation.Sections[key];
-            if (sections == null) return 0;
-
-            WorldLocation location = new WorldLocation();
-            Vector3 directionVector = new Vector3();
-
-            foreach (var ts in sections)
-            {
-                var tss = viewer.Simulator.TSectionDat.TrackSections.Get(ts.SectionIndex);
-                if (tss == null || tss.SectionCurve == null || ts.WFNameX != TileX || ts.WFNameZ != TileZ)
-                    continue;
-                location.TileX = ts.TileX;
-                location.TileZ = ts.TileZ;
-                location.Location.X = ts.X;
-                location.Location.Y = ts.Y;
-                location.Location.Z = ts.Z;
-                directionVector.X = ts.AX;
-                directionVector.Y = ts.AY;
-                directionVector.Z = ts.AZ;
-                Vector3 trackLoc = new Vector3(ts.X, ts.Y, -ts.Z);
-                WorldPosition root = new WorldPosition(); root.TileX = ts.TileX; root.TileZ = ts.TileZ;
-                root.XNAMatrix = Matrix.CreateFromYawPitchRoll(-ts.AY, -ts.AX, ts.AZ);// CreateRotationX(-ts.AY) * Matrix.CreateRotationY(-ts.AX) * Matrix.CreateRotationZ(ts.AZ);
-
-                root.XNAMatrix.Translation = Vector3.Zero;
-                root.XNAMatrix.Translation += Vector3.Transform(trackLoc, Matrix.Identity);
-
-                var sign = -Math.Sign(tss.SectionCurve.Angle); var to = Math.Abs(tss.SectionCurve.Angle * 0.0174f);
-                var vectorCurveStartToCenter = Vector3.Left * tss.SectionCurve.Radius * sign;
-                var curveRotation = Matrix.CreateRotationY(to * sign);
-                Vector3 dummy;
-                var displacement = Traveller.MSTSInterpolateAlongCurve(Vector3.Zero, vectorCurveStartToCenter, curveRotation, root.XNAMatrix, out dummy);
-
-                WorldPosition nextRoot = new WorldPosition(root);
-                nextRoot.XNAMatrix.Translation = displacement;
-
-                dir = 1f;
-                sv = ts.StartElev; ev = ts.EndElev; mv = ts.MaxElev;
-
-                //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, tss.SectionCurve.Radius, tss.SectionCurve.Angle * 3.14f / 180, sv, ev, mv, dir));
-            }
-            return 1;
-        }
-
-        static float sv, ev, mv, dir;
-        //a function to find the elevation of a section ,by searching the TDB database
-        public static TrVectorSection FindSectionValue(TrackShape shape, Simulator simulator, TrackSection section, int TileX, int TileZ, uint UID)
-        {
-            if (section.SectionCurve == null) return null;
-            sv = ev = mv = 0f; dir = 1f;
-            var key = (int)(Math.Abs(TileX) + Math.Abs(TileZ));
-            if (!simulator.SuperElevation.Sections.ContainsKey(key)) return null;//we do not have the maps of sections on the given tile, will not bother to search
-            var tileSections = simulator.SuperElevation.Sections[key];
-            foreach (var s in tileSections)
-            {
-                if (s.WFNameX == TileX && s.WFNameZ == TileZ && s.WorldFileUiD == UID && section.SectionIndex == s.SectionIndex)
-                {
-                    return s;
-                }
-            }
-
-            //not found, will do again to find reversed
-            foreach (var s in tileSections)
-            {
-                var sec = simulator.TSectionDat.TrackSections.Get(s.SectionIndex);
-                if (s.WFNameX == TileX && s.WFNameZ == TileZ && s.WorldFileUiD == UID && section.SectionCurve.Radius == sec.SectionCurve.Radius
-                    && section.SectionCurve.Angle == -sec.SectionCurve.Angle)
-                {
-                    return s;
-                }
-            }
-            return null;
-        }
-
-        //remove a section from the tile-section map
+        /// <summary>
+        /// Removes a track vector section from the global list of sections with superelevation,
+        /// preventing the section from being considered for superelevation in the future.
+        /// </summary>
+        /// <param name="simulator">Simulator reference.</param>
+        /// <param name="section">The TrVectorSections to remove from the superelevation list.</param>
         public static void RemoveSectionsFromMap(Simulator simulator, TrVectorSection section)
         {
-            var key = (int)(Math.Abs(section.WFNameX) + Math.Abs(section.WFNameZ));
-            if (simulator.SuperElevation.Sections.ContainsKey(key)) simulator.SuperElevation.Sections[key].Remove(section);
-        }
+            // Need to consider both the WFName tile and the 'actual' tile
+            // These may differ if a section crosses a tile boundary, in which case it should be removed from both tiles
+            // NOTE: The WFName seems to indicate where the start of the section is, while the Tile indicates the end(?)
+            int key = (int)(Math.Abs(section.TileX) + Math.Abs(section.TileZ));
+            int wfKey = (int)(Math.Abs(section.WFNameX) + Math.Abs(section.WFNameZ));
 
-        //get how much elevation is needed, starting at 8cm of max, but actual max will be 8mm+Simulator.UseSuperElevation
-        public static float ElevationNumber(Simulator simulator, float degree, float radius)
-        {
-            var len = degree * 0.0174 * radius;
-            double Curvature = degree * 33 / len;//average radius in degree/100feet
-            var Max = (float)(Math.Pow(simulator.TRK.Tr_RouteFile.SpeedLimit * 2.25, 2) * 0.0007 * Math.Abs(Curvature) - 3); //in inch
-            Max = Max * 2.5f;//change to cm
-            Max = (float)Math.Round(Max * 2, MidpointRounding.AwayFromZero) / 200f;//closest to 5 mm increase;
-            if (Max < 0.01f) return 0f;
-            if (Max > simulator.SuperElevation.MaximumAllowedM) Max = simulator.SuperElevation.MaximumAllowedM;//max 16 cm
-            Max /= 1.44f; //now change to rotation in radius by quick estimation as the angle is small
+            if (simulator.SuperElevation.Sections.ContainsKey(wfKey))
+                simulator.SuperElevation.Sections[wfKey].Remove(section);
 
-            return Max;
+            if (key != wfKey)
+            {
+                if (simulator.SuperElevation.Sections.ContainsKey(key))
+                    simulator.SuperElevation.Sections[key].Remove(section);
+            }
         }
 
         /// <summary>
-        /// Decompose and add a SuperElevation on top of MSTS track section converted from dynamic tracks
+        /// Determines the location of the end of a track section when given information
+        /// about the track section and the starting position of the track section.
+        /// </summary>
+        /// <param name="section">The TrackSection we are travelling along.</param>
+        /// <param name="orientation">Rotation matrix giving the rotation of the origin in world space.</param>
+        /// <param name="origin">Vector giving the position of the origin in world space.</param>
+        /// <param name="root">WorldPosition for the starting point of this track section.</param>
+        /// <param name="localStart">The location of the starting point of this track section in local coordinates.</param>
+        /// <param name="heading">Reference value giving the rotation at the beginning of this track section in local coordinates.</param>
+        /// <param name="localEnd">Output giving the ending point of this track section in local coordinates.</param>
+        /// <param name="length">Output for the length of this track section (or angle if a curved section).</param>
+        /// <param name="radius">Output giving the radius of this track section (or -1 if the section is straight).</param>
+        /// <returns>WorldPosition object giving the position of the end of this track section.</returns>
+        public static WorldPosition CalculateNextRoot(TrackSection section, WorldPosition orientation, Vector3 origin,
+            WorldPosition root, Vector3 localStart, ref Vector3 heading, out Vector3 localEnd, out float length, out float radius)
+        {
+            radius = -1;
+            Vector3 displacement;  // Local displacement to next subsection (from y=0 plane)
+
+            // Set the start of this section to the end of the previous section
+            WorldPosition nextRoot = new WorldPosition(root);
+
+            // Now we need to compute the position of the end (nextRoot) of this subsection,
+            // which will become root for the next subsection.
+
+            // Clear nextRoot's translation vector so that nextRoot matrix contains rotation only
+            nextRoot.XNAMatrix.Translation = Vector3.Zero;
+
+            if (section.SectionCurve == null) // Straight section
+            {
+                // No change to heading, displacement is linear
+                length = section.SectionSize.Length;
+                displacement = Traveller.MSTSInterpolateAlongStraight(localStart, heading, length, orientation.XNAMatrix, out localEnd);
+            }
+            else // Curved section
+            {
+                radius = section.SectionCurve.Radius;
+                length = MathHelper.ToRadians(section.SectionCurve.Angle);
+                // Vector pointing from the curve position to the curve center point
+                Vector3 left = Vector3.Cross(Vector3.Up, heading) * radius * Math.Sign(-length);
+                // Consider rotation caused by the curve
+                Matrix rot = Matrix.CreateRotationY(-length);
+
+                displacement = Traveller.MSTSInterpolateAlongCurve(localStart, left, rot, orientation.XNAMatrix, out localEnd);
+
+                // Handle change in rotation
+                heading = Vector3.Transform(heading, rot);
+                nextRoot.XNAMatrix = rot * nextRoot.XNAMatrix;
+            }
+
+            // Update nextRoot with new translation component
+            nextRoot.XNAMatrix.Translation = origin + displacement;
+
+            return nextRoot;
+        }
+
+        /// <summary>
+        /// Generate superelevation viewers for a given dynamic track section
         /// </summary>
         /// <param name="viewer">Viewer reference.</param>
         /// <param name="dTrackList">DynamicTrackViewer list.</param>
         /// <param name="dTrackObj">Dynamic track section to decompose.</param>
         /// <param name="worldMatrixInput">Position matrix.</param>
-        public static void DecomposeConvertedDynamicSuperElevation(Viewer viewer, List<DynamicTrackViewer> dTrackList, TrackObj dTrackObj,
-            WorldPosition worldMatrixInput)
-        {
-            // The following vectors represent local positioning relative to root of original (5-part) section:
-            Vector3 localV = Vector3.Zero; // Local position (in x-z plane)
-            Vector3 localProjectedV; // Local next position (in x-z plane)
-            Vector3 displacement;  // Local displacement (from y=0 plane)
-            Vector3 heading = Vector3.Forward; // Local heading (unit vector)
-
-            WorldPosition worldMatrix = new WorldPosition(worldMatrixInput); // Make a copy so it will not be messed
-
-            WorldPosition nextRoot = new WorldPosition(worldMatrix); // Will become initial root
-
-            WorldPosition wcopy = new WorldPosition(nextRoot);
-            Vector3 sectionOrigin = worldMatrix.XNAMatrix.Translation; // Save root position
-            worldMatrix.XNAMatrix.Translation = Vector3.Zero; // worldMatrix now rotation-only
-
-            TrackPath path;
-
-            try
-            {
-                path = viewer.Simulator.TSectionDat.TSectionIdx.TrackPaths[dTrackObj.SectionIdx];
-            }
-            catch (Exception)
-            {
-                return; //cannot find the path for the dynamic track
-            }
-
-            nextRoot = new WorldPosition(wcopy); // Will become initial root
-            sectionOrigin = nextRoot.XNAMatrix.Translation;
-
-            heading = Vector3.Forward; // Local heading (unit vector)
-            localV = Vector3.Zero; // Local position (in x-z plane)
-
-
-            Vector3 trackLoc = new Vector3(0, 0, 0);// +new Vector3(3, 0, 0);
-            Matrix trackRot = Matrix.CreateRotationY(0);
-
-            //heading = Vector3.Transform(heading, trackRot); // Heading change
-            nextRoot.XNAMatrix = trackRot * nextRoot.XNAMatrix;
-            uint[] sections = path.TrackSections;
-
-            int count = -1;
-            for (int i = 0; i < sections.Length; i++)
-            {
-                count++;
-                float length, radius;
-                uint sid = path.TrackSections[i];
-                TrackSection section = viewer.Simulator.TSectionDat.TrackSections[sid];
-                WorldPosition root = new WorldPosition(nextRoot);
-                nextRoot.XNAMatrix.Translation = Vector3.Zero;
-
-                if (section.SectionCurve == null)
-                {
-                    length = section.SectionSize.Length;
-                    radius = -1;
-                    localProjectedV = localV + length * heading;
-                    displacement = Traveller.MSTSInterpolateAlongStraight(localV, heading, length,
-                                                            worldMatrix.XNAMatrix, out localProjectedV);
-                }
-                else
-                {
-                    length = section.SectionCurve.Angle * 3.14f / 180;
-                    radius = section.SectionCurve.Radius; // meters
-
-                    Vector3 left;
-                    if (section.SectionCurve.Angle > 0) left = radius * Vector3.Cross(Vector3.Down, heading); // Vector from PC to O
-                    else left = radius * Vector3.Cross(Vector3.Up, heading); // Vector from PC to O
-                    Matrix rot = Matrix.CreateRotationY(-section.SectionCurve.Angle * 3.14f / 180); // Heading change (rotation about O)
-
-                    displacement = Traveller.MSTSInterpolateAlongCurve(localV, left, rot,
-                                            worldMatrix.XNAMatrix, out localProjectedV);
-
-                    heading = Vector3.Transform(heading, rot); // Heading change
-                    nextRoot.XNAMatrix = trackRot * rot * nextRoot.XNAMatrix; // Store heading change
-
-                }
-                nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
-                root.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                sv = ev = mv = 0f; dir = 1f;
-                //if (section.SectionCurve != null) FindSectionValue(shape, root, nextRoot, viewer.Simulator, section, TileX, TileZ, dTrackObj.UID);
-
-                //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir));
-                localV = localProjectedV; // Next subsection
-            }
-        }
-
-        /// <summary>
-        /// Decompose and add a SuperElevation on top of MSTS track section
-        /// </summary>
-        /// <param name="viewer">Viewer reference.</param>
-        /// <param name="dTrackList">DynamicTrackViewer list.</param>
-        /// <param name="dTrackObj">Dynamic track section to decompose.</param>
-        /// <param name="worldMatrixInput">Position matrix.</param>
-        public static void DecomposeDynamicSuperElevation(Viewer viewer, List<DynamicTrackViewer> dTrackList, DyntrackObj dTrackObj,
-            WorldPosition worldMatrixInput)
+        public static void DecomposeDynamicSuperElevation(Viewer viewer, List<DynamicTrackViewer> dTrackList, DyntrackObj dTrackObj, WorldPosition worldMatrixInput)
         {
             // DYNAMIC TRACK
             // =============
@@ -373,142 +496,166 @@ namespace Orts.Viewer3D
             // 1-Decompose multi-subsection DT into individual sections.  
             // 2-Create updated transformation objects (instances of WorldPosition) to reflect 
             //   root of next subsection.
-            // 3-Distribute elevation change for total section through subsections. (ABANDONED)
-            // 4-For each meaningful subsection of dtrack, build a separate SuperElevationPrimitive.
+            // 3-Identify which subsections should and shouldn't have superelevation.
+            // 4-Generate viewers for all subsections, making sure to respect presence or lack
+            //   of superelevation.
+            // 5-If no sections have superelevation, return false to inform WorldFile that
+            //   this section should be generated the traditional way.
             //
             // Method: Iterate through each subsection, updating WorldPosition for the root of
             // each subsection.  The rotation component changes only in heading.  The translation 
             // component steps along the path to reflect the root of each subsection.
 
-            // The following vectors represent local positioning relative to root of original (5-part) section:
-            Vector3 localV = Vector3.Zero; // Local position (in x-z plane)
-            Vector3 localProjectedV; // Local next position (in x-z plane)
-            Vector3 displacement;  // Local displacement (from y=0 plane)
+            // The following vectors represent local positioning relative to root of original section:
+            Vector3 localV = Vector3.Zero; // Local position of subsection (in x-z plane)
             Vector3 heading = Vector3.Forward; // Local heading (unit vector)
 
-            WorldPosition worldMatrix = new WorldPosition(worldMatrixInput); // Make a copy so it will not be messed
+            WorldPosition worldMatrix = new WorldPosition(worldMatrixInput); // Copy origin location
 
             WorldPosition nextRoot = new WorldPosition(worldMatrix); // Will become initial root
-            Vector3 sectionOrigin = worldMatrix.XNAMatrix.Translation; // Save root position
+            Vector3 sectionOrigin = worldMatrix.XNAMatrix.Translation; // Original position for entire section
             worldMatrix.XNAMatrix.Translation = Vector3.Zero; // worldMatrix now rotation-only
 
+            // Right now it's not confirmed if superelevation viewers are actually needed, so they are added to a temporary list
+            List<DynamicTrackViewer> tempViewers = new List<DynamicTrackViewer>();
+
             // Iterate through all subsections
-            int count = -1;
-            for (int iTkSection = 0; iTkSection < dTrackObj.trackSections.Count; iTkSection++)
+            foreach (DyntrackObj.TrackSection dSection in dTrackObj.trackSections)
             {
-                count++;
-                float length = 0, radius = -1;
+                if (dSection.param1 == 0.0f || dSection.UiD == UInt32.MaxValue)
+                    continue; // dTrackObj will contain unused sections sometimes, skip these
 
-                length = dTrackObj.trackSections[iTkSection].param1; // meters if straight; radians if curved
-                if (length == 0.0 || dTrackObj.trackSections[iTkSection].UiD == UInt32.MaxValue) continue; // Consider zero-length subsections vacuous
+                // Convert dynamic track section into regular track section for compatibility with other methods
+                TrackSection section = new TrackSection();
+                // Only adds the bare minimum data needed, this TrackSection won't be fully defined
+                if (dSection.isCurved == 1)
+                {
+                    section.SectionCurve = new SectionCurve
+                    {
+                        Radius = dSection.param2,
+                        Angle = MathHelper.ToDegrees(dSection.param1)
+                    };
+                }
+                else
+                {
+                    section.SectionSize = new SectionSize
+                    {
+                        Length = dSection.param1
+                    };
+                }
 
-                // Create new DT object copy; has only one meaningful subsection
-                DyntrackObj subsection = new DyntrackObj(dTrackObj, iTkSection);
-
-                // Create a new WorldPosition for this subsection, initialized to nextRoot,
-                // which is the WorldPosition for the end of the last subsection.
-                // In other words, beginning of present subsection is end of previous subsection.
+                // Set the start of this section to the end of the previous section
                 WorldPosition root = new WorldPosition(nextRoot);
 
-                // Now we need to compute the position of the end (nextRoot) of this subsection,
-                // which will become root for the next subsection.
+                nextRoot = CalculateNextRoot(section, worldMatrix, sectionOrigin, nextRoot, localV,
+                    ref heading, out Vector3 localProjectedV, out float length, out float radius);
 
-                // Clear nextRoot's translation vector so that nextRoot matrix contains rotation only
-                nextRoot.XNAMatrix.Translation = Vector3.Zero;
+                localV = localProjectedV; // Move position to next subsection
 
-                // Straight or curved subsection?
-                if (subsection.trackSections[0].isCurved == 0) // Straight section
-                {   // Heading stays the same; translation changes in the direction oriented
-                    // Rotate Vector3.Forward to orient the displacement vector
-                    localProjectedV = localV + length * heading;
-                    displacement = Traveller.MSTSInterpolateAlongStraight(localV, heading, length,
-                                                            worldMatrix.XNAMatrix, out localProjectedV);
+                // To determine if this section needs superelevation, search for it in the global superelevation dictionary
+                TrVectorSection tmp = FindSuperElevationSection(viewer, section, dTrackObj.UID, root, nextRoot, out bool reversed);
+
+                if (tmp != null) // Section does have superelevation
+                {
+                    // FUTURE: Allow dynamic track to use track profiles other than the 0th one
+                    TrProfile trProfile = viewer.TRPs[0].TrackProfile;
+                    
+                    // Superelevation is enabled, generate track section with superelevation
+                    if (viewer.Simulator.UseSuperElevation)
+                    {
+                        // Determine the centerline offset for superelevation roll
+                        // 0 = centered, positive = centerline moves to inside of curve, negative = centerline moves to outside of curve
+
+                        switch (trProfile.ElevationType)
+                        {
+                            case TrProfile.SuperelevationMethod.Outside: // Only outside rail should elevate
+                                tmp.ElevOffsetM = trProfile.TrackGaugeM / 2.0f;
+                                break;
+                            case TrProfile.SuperelevationMethod.Inside: // Only inside rail should elevate
+                                tmp.ElevOffsetM = -trProfile.TrackGaugeM / 2.0f;
+                                break;
+                            case TrProfile.SuperelevationMethod.Both: // Both rails should elevate
+                            default:
+                                tmp.ElevOffsetM = 0.0f;
+                                break;
+                        }
+
+                        // If track profile is set to have no superelevation, set visual superelevation to 0
+                        if (trProfile.ElevationType == TrProfile.SuperelevationMethod.None)
+                            tmp.VisElevTable.ScaleY(0.0f);
+
+                        // Processing done, prepare to generate section with superelevation
+                        tempViewers.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, trProfile, tmp.VisElevTable, tmp.ElevOffsetM, reversed));
+                    }
+                    else // Superelevation disabled, generate without superelevation
+                        tempViewers.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, trProfile));
                 }
-                else // Curved section
-                {   // Both heading and translation change 
-                    // nextRoot is found by moving from Point-of-Curve (PC) to
-                    // center (O)to Point-of-Tangent (PT).
-                    radius = subsection.trackSections[0].param2; // meters
-                    Vector3 left = radius * Vector3.Cross(Vector3.Up, heading) * Math.Sign(-subsection.trackSections[0].param1); // Vector from PC to O
-                    Matrix rot = Matrix.CreateRotationY(-length); // Heading change (rotation about O)
-                    // Shared method returns displacement from present world position and, by reference,
-                    // local position in x-z plane of end of this section
-                    displacement = Traveller.MSTSInterpolateAlongCurve(localV, left, rot,
-                                            worldMatrix.XNAMatrix, out localProjectedV);
-
-                    heading = Vector3.Transform(heading, rot); // Heading change
-                    nextRoot.XNAMatrix = rot * nextRoot.XNAMatrix; // Store heading change
-                }
-
-                // Update nextRoot with new translation component
-                nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
-
-                sv = ev = mv = 0f;
-                //                if (section.SectionCurve != null) FindSectionValue(shape, root, nextRoot, viewer.Simulator, section, TileX, TileZ, dTrackObj.UID);
-
-                //nextRoot.XNAMatrix.Translation += Vector3.Transform(trackLoc, worldMatrix.XNAMatrix);
-                dTrackList.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length, sv, ev, mv, dir));
-
-                localV = localProjectedV; // Next subsection
+                else // Section doesn't have superelevation, prepare to generate it without superelevation
+                    tempViewers.Add(new SuperElevationViewer(viewer, root, nextRoot, radius, length));
             }
-        }
 
-        public static bool UseSuperElevationDyn(Viewer viewer, List<DynamicTrackViewer> dTrackList, DyntrackObj dTrackObj,
-    WorldPosition worldMatrixInput)
-        {
-            bool withCurves = false;
-            for (int iTkSection = 0; iTkSection < dTrackObj.trackSections.Count; iTkSection++)
-            {
-                float length = 0;
-
-                length = dTrackObj.trackSections[iTkSection].param1; // meters if straight; radians if curved
-                if (length == 0.0 || dTrackObj.trackSections[iTkSection].UiD == UInt32.MaxValue) continue; // Consider zero-length subsections vacuous
-
-                // Create new DT object copy; has only one meaningful subsection
-                DyntrackObj subsection = new DyntrackObj(dTrackObj, iTkSection);
-
-                // Straight or curved subsection?
-                if (subsection.trackSections[0].isCurved == 0) // Straight section
-                {   // Heading stays the same; translation changes in the direction oriented
-                }
-                else // Curved section
-                {   // Both heading and translation change 
-                    //if (Math.Abs(radius * length) < Program.Simulator.SuperElevationMinLen) return false;
-                    withCurves = true;
-                }
-
-            }
-            return withCurves; //if no curve, will not draw using super elevation
+            // Add all the generated sections to the main list
+            dTrackList.AddRange(tempViewers);
         }
     }
 
     public class SuperElevationViewer : DynamicTrackViewer
     {
         public SuperElevationViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition, float radius, float angle,
-            float s, float e, float m, float dir)//values for start, end and max elevation
-            : base(viewer, position, endPosition)
+            TrProfile trProfile = null, Interpolator elevs = null, float rollOffset = 0, bool reversed = false)
+            : base(viewer, position)
         {
             // Instantiate classes
-            Primitive = new SuperElevationPrimitive(viewer, position, endPosition, radius, angle, s, e, m, dir);
+            Primitive = new SuperElevationPrimitive(viewer, position, endPosition, radius, angle, trProfile, elevs, rollOffset, reversed);
         }
     }
 
     public class SuperElevationPrimitive : DynamicTrackPrimitive
     {
-        float StartElev, MaxElev, EndElv;
-        public SuperElevationPrimitive(Viewer viewer, WorldPosition worldPosition,
-        WorldPosition endPosition, float radius, float angle, float s, float e, float m, float dir)
+        // Direction of applied superelevation
+        readonly int Direction = 1;
+        // Table giving superelevation angle in radians (Y) vs distance along track section from 0-1 (X)
+        readonly Interpolator ElevAngles;
+        // Offset from centerline for superelevation rotation
+        Vector3 RollOffset;
+        // Rotation matrix describing the current amount of superelevation roll
+        Matrix SuperElevationRoll;
+        // Is this section being generated in the opposite direction to that implied by the track vector section?
+        readonly bool Reversed;
+
+        public SuperElevationPrimitive(Viewer viewer, WorldPosition worldPosition, WorldPosition endPosition, float radius,
+            float angle, TrProfile trProfile = null, Interpolator elevs = null, float rollOffset = 0, bool reversed = false)
             : base()
-        {
-            StartElev = s; EndElv = e; MaxElev = m;
+        {Reversed = reversed;
+
+            // Set up orientation matrix, which describes the initial heading of the section in local coordinates
+            Orientation = worldPosition.XNAMatrix;
+
+            // Convert to local coordinates by setting position to 0 and removing yaw angle from rotation
+            Orientation.Translation = Vector3.Zero;
+
+            Quaternion rotation = Quaternion.CreateFromRotationMatrix(Orientation);
+            // Remove X and Z components of rotation to isolate for yaw angle (compass heading) only
+            rotation.X = 0.0f;
+            rotation.Z = 0.0f;
+            // Renormalize the quaternion after deleting X and Z to get the Y component of rotation
+            rotation.Normalize();
+            // Cancel out the Y rotation of the orientation matrix to translate it to local coordinates
+            Orientation = Orientation * Matrix.Invert(Matrix.CreateFromQuaternion(rotation));
+
+            // Use the given angles of superelevation, or zero if none was given
+            ElevAngles = elevs ?? new Interpolator(new float[] { 0, 1 }, new float[] { 0, 0 });
+
+            // Direction of curvature inferred from the direction of roll, will be 0 if superelevation is 0
+            // This works for both straight sections and curved sections
+            Direction = Math.Sign(ElevAngles.Y.Max() + ElevAngles.Y.Min()) * (reversed ? 1 : -1);
+
+            // Use default (0th) track profile if none was given
+            TrProfile = trProfile ?? viewer.TRPs[0].TrackProfile;
+
             // SuperElevationPrimitive is responsible for creating a mesh for a section with a single subsection.
             // It also must update worldPosition to reflect the end of this subsection, subsequently to
             // serve as the beginning of the next subsection.
-
-
-            // The track cross section (profile) vertex coordinates are hard coded.
-            // The coordinates listed here are those of default MSTS "A1t" track.
-            // TODO: Read this stuff from a file. Provide the ability to use alternative profiles.
 
             // Initialize a scalar DtrackData object
             DTrackData = new DtrackData();
@@ -517,7 +664,6 @@ namespace Orts.Viewer3D
                 DTrackData.IsCurved = 0;
                 DTrackData.param1 = angle;
                 DTrackData.param2 = 0;
-
             }
             else
             {
@@ -525,66 +671,36 @@ namespace Orts.Viewer3D
                 DTrackData.param1 = angle;
                 DTrackData.param2 = radius;
             }
-            DTrackData.deltaY = 0;
+            DTrackData.deltaY = 0; // Not used, change in height determined from the Orientation matrix
 
-            if (viewer.TRP == null)
-            {
-                // First to need a track profile creates it
-                Trace.Write(" TRP");
-                // Creates profile and loads materials into SceneryMaterials
-                TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.TRP);
-            }
-            TrProfile = viewer.TRP.TrackProfile;
+            if (DTrackData.IsCurved == 0)
+                ObjectRadius = 0.5f * DTrackData.param1; // half-length
+            else
+                ObjectRadius = DTrackData.param2 * (float)Math.Sin(0.5 * Math.Abs(DTrackData.param1)); // half chord length
+
+            // Correct offset for direction of curvature
+            // Rail height is assumed to be 275 mm above the origin of a track section
+            RollOffset = new Vector3(rollOffset * Direction, 0.275f, 0);
 
             XNAEnd = endPosition.XNAMatrix.Translation;
-
-            // Count all of the LODItems in all the LODs
-            int count = 0;
-            for (int i = 0; i < TrProfile.LODs.Count; i++)
-            {
-                LOD lod = (LOD)TrProfile.LODs[i];
-                count += lod.LODItems.Count;
-            }
-            // Allocate ShapePrimitives array for the LOD count
-            ShapePrimitives = new ShapePrimitive[count];
-
-            // Build the meshes for all the LODs, filling the vertex and triangle index buffers.
-            int primIndex = 0;
-            for (int iLOD = 0; iLOD < TrProfile.LODs.Count; iLOD++)
-            {
-                LOD lod = (LOD)TrProfile.LODs[iLOD];
-                lod.PrimIndexStart = primIndex; // Store start index for this LOD
-                for (int iLODItem = 0; iLODItem < lod.LODItems.Count; iLODItem++)
-                {
-                    // Build vertexList and triangleListIndices
-                    ShapePrimitives[primIndex] = BuildPrimitive(viewer, worldPosition, iLOD, iLODItem);
-                    primIndex++;
-                }
-                lod.PrimIndexStop = primIndex; // 1 above last index for this LOD
-            }
-
-
-            if (DTrackData.IsCurved == 0) ObjectRadius = 0.5f * DTrackData.param1; // half-length
-            else ObjectRadius = DTrackData.param2 * (float)Math.Sin(0.5 * Math.Abs(DTrackData.param1)); // half chord length
         }
 
-        int offSet = 0;
-        int whichCase = 0;
-        float elevated;
         /// <summary>
         /// Builds a SuperElevation LOD to SuperElevationProfile specifications as one vertex buffer and one index buffer.
         /// The order in which the buffers are built reflects the nesting in the TrProfile.  The nesting order is:
         /// (Polylines (Vertices)).  All vertices and indices are built contiguously for an LOD.
         /// </summary>
         /// <param name="viewer">Viewer.</param>
-        /// <param name="worldPosition">WorldPosition.</param>
         /// <param name="iLOD">Index of LOD mesh to be generated from profile.</param>
         /// <param name="iLODItem">Index of LOD mesh to be generated from profile.</param>
-        public new ShapePrimitive BuildPrimitive(Viewer viewer, WorldPosition worldPosition, int iLOD, int iLODItem)
+        /// <returns>The ShapePrimitive generated fro this LOD.</returns>
+        public override ShapePrimitive BuildPrimitive(Viewer viewer, int iLOD, int iLODItem)
         {
             // Call for track section to initialize itself
-            if (DTrackData.IsCurved == 0) LinearGen();
-            else CircArcGen();
+            if (DTrackData.IsCurved == 0)
+                LinearGen();
+            else
+                CircArcGen();
 
             // Count vertices and indices
             LOD lod = (LOD)TrProfile.LODs[iLOD];
@@ -593,6 +709,9 @@ namespace Orts.Viewer3D
             NumIndices = (short)(lodItem.NumSegments * NumSections * 6);
             // (Cells x 2 triangles/cell x 3 indices/triangle)
 
+            // stride is the number of vertices per section, used to connect equivalent verticies between segments
+            uint stride = lodItem.NumVertices;
+
             // Allocate memory for vertices and indices
             VertexList = new VertexPositionNormalTexture[NumVertices]; // numVertices is now aggregate
             TriangleListIndices = new short[NumIndices]; // as is NumIndices
@@ -600,62 +719,62 @@ namespace Orts.Viewer3D
             // Build the mesh for lod
             VertexIndex = 0;
             IndexIndex = 0;
-            whichCase = 0; //0: no elevation (MaxElev=0), 1: start (startE = 0, Max!=end), 
-            //2: end (end=0, max!=start), 3: middle (start>0, end>0), 4: start and finish in one
+            Offset = 0;
 
-            if (StartElev.AlmostEqual(0f, 0.001f) && MaxElev.AlmostEqual(0f, 0.001f) && EndElv.AlmostEqual(0f, 0.001f)) whichCase = 0;//no elev
-            else if (StartElev.AlmostEqual(0f, 0.001f) && EndElv.AlmostEqual(0f, 0.001f)) whichCase = 4;//finish/start in one
-            else if (StartElev.AlmostEqual(0f, 0.001f) && !EndElv.AlmostEqual(0f, 0.001f)) whichCase = 1;//start
-            else if (EndElv.AlmostEqual(0f, 0.001f) && !StartElev.AlmostEqual(0f, 0.001f)) whichCase = 2;//finish
-            else whichCase = 3;//in middle
-            Matrix PreRotation = Matrix.Identity;
-            elevated = MaxElev;
-            if (whichCase == 3 || whichCase == 2) PreRotation = Matrix.CreateRotationZ(-elevated * Math.Sign(DTrackData.param1));
-            //if section is in the middle of curve, will only rotate the first set of vertex, others will follow the same rotation
-            prevRotation = 0f;
-
-            Vector3 tmp;
-            // Initial load of baseline cross section polylines for this LOD only:
-            foreach (Polyline pl in lodItem.Polylines)
+            for (uint i = 0; i <= NumSections; i++)
             {
-                foreach (Vertex v in pl.Vertices)
-                {
-                    tmp = new Vector3(v.Position.X, v.Position.Y, v.Position.Z);
+                SuperElevationRoll = DetermineRotation();
 
-                    if (whichCase == 3 || whichCase == 2)
-                    {
-                        tmp = Vector3.Transform(tmp, PreRotation);
-                        prevRotation = MaxElev;
-                    }
-                    VertexList[VertexIndex].Position = tmp;
-                    VertexList[VertexIndex].Normal = v.Normal;
-                    VertexList[VertexIndex].TextureCoordinate = v.TexCoord;
-                    VertexIndex++;
-                }
-            }
-            // Initial load of base cross section complete
+                Matrix displacement;
+                Matrix rotation;
+                float totLength;
 
-            // Now generate and load subsequent cross sections
-            OldRadius = -center;
-            uint stride = VertexIndex;
-            offSet = 0;
+                if (DTrackData.IsCurved == 0)
+                    displacement = LinearGen(out totLength);
+                else
+                    displacement = CircArcGen(out totLength);
 
-            for (uint i = 0; i < NumSections; i++)
-            {
-                currentRotation = determineRotation(DTrackData.param1);
-                elevated = currentRotation - prevRotation;
-                prevRotation = currentRotation;
-                if (DTrackData.param1 > 0) elevated *= -1;
+                rotation = displacement;
+                rotation.Translation = Vector3.Zero;
 
                 foreach (Polyline pl in lodItem.Polylines)
                 {
                     uint plv = 0; // Polyline vertex index
                     foreach (Vertex v in pl.Vertices)
                     {
-                        if (DTrackData.IsCurved == 0) LinearGen(stride, pl); // Generation call
-                        else CircArcGen(stride, pl);
+                        // Generate vertex positions
+                        Vector3 p = v.Position;
 
-                        if (plv > 0)
+                        // Rotate the vertex position based on superelevation
+                        if (Direction != 0)
+                        {
+                            // Check if this vertex should be translated by superelevation
+                            bool reposition = v.PositionControl != Vertex.VertexPositionControl.None;
+
+                            if (Math.Sign(p.X) == Direction && v.PositionControl == Vertex.VertexPositionControl.Outside)
+                                reposition = false;
+                            else if (Math.Sign(p.X) == -Direction && v.PositionControl == Vertex.VertexPositionControl.Inside)
+                                reposition = false;
+
+                            if (reposition)
+                            {
+                                p -= RollOffset;
+                                p = Vector3.Transform(p, SuperElevationRoll);
+                                p += RollOffset;
+                            }
+                        }
+
+                        // In some extreme cases, track may have been rotated so much it's upside down
+                        // Rotate 180 degrees to restore right side up
+                        if (displacement.Up.Y < 0.0f)
+                            p = Vector3.Transform(p, Matrix.CreateRotationZ((float)Math.PI));
+
+                        // Move vertex to proper location in 3D space
+                        VertexList[VertexIndex].Position = Vector3.Transform(p, displacement);
+                        VertexList[VertexIndex].TextureCoordinate = v.TexCoord + pl.DeltaTexCoord * totLength;
+                        VertexList[VertexIndex].Normal = Vector3.Transform(v.Normal, rotation);
+
+                        if (plv > 0 && VertexIndex > stride)
                         {
                             // Sense for triangles is clockwise
                             // First triangle:
@@ -671,8 +790,7 @@ namespace Orts.Viewer3D
                         plv++;
                     }
                 }
-                OldRadius = radius; // Get ready for next segment
-                offSet++;
+                Offset++;
             }
 
             // Create and populate a new ShapePrimitive
@@ -684,144 +802,52 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Initializes member variables for straight track sections.
         /// </summary>
-        void LinearGen()
+        // Overwrites the default method as superelevation may mean straight sections
+        // require more than one section.
+        public override void LinearGen()
         {
             // Define the number of track cross sections in addition to the base.
-            NumSections = 1;
-            //numSections = 10; //TESTING
-            // TODO: Generalize count to profile file specification
+            // Track profile parameters are intended for curved sections, estimate their effect on straight sections
+            if (Direction == 0)
+            {
+                NumSections = 1; // If there's no superelevation, we only need one section
+            }
+            else
+            {
+                NumSections = (int)(Math.Abs(DTrackData.param1 / (TrProfile.ChordSpan * 10.0f)));
+
+                if (TrProfile.PitchControl == TrProfile.PitchControls.ChordLength)
+                {
+                    // Use chord length as segment length if it is more precise than initial estimate
+                    if (TrProfile.PitchControlScalar < TrProfile.ChordSpan * 10.0f)
+                        NumSections = (int)(Math.Abs(DTrackData.param1 / (TrProfile.PitchControlScalar)));
+                }
+
+                // Very short length track, use minimum of two sections
+                if (NumSections == 0)
+                    NumSections = 2;
+                // Ensure an even number of sections
+                if (NumSections % 2 == 1)
+                    NumSections++;
+            }
 
             SegmentLength = DTrackData.param1 / NumSections; // Length of each mesh segment (meters)
-            DDY = new Vector3(0, DTrackData.deltaY / NumSections, 0); // Incremental elevation change
         }
 
         /// <summary>
-        /// Initializes member variables for circular arc track sections.
+        /// Determines the appropriate superelevation rotation matrix at the current position.
         /// </summary>
-        void CircArcGen()
+        Matrix DetermineRotation()
         {
-            // Define the number of track cross sections in addition to the base.
-            NumSections = (int)(Math.Abs(MathHelper.ToDegrees(DTrackData.param1)) / TrProfile.ChordSpan);
-            if (NumSections == 0) NumSections = 2; // Very small radius track - zero avoidance
+            float to = (float)Offset / NumSections;
+            float angle;
 
-            // Use pitch control methods
-            switch (TrProfile.PitchControl)
-            {
-                case TrProfile.PitchControls.None:
-                    break; // Good enough
-                case TrProfile.PitchControls.ChordLength:
-                    // Calculate chord length for NumSections
-                    float l = 2.0f * DTrackData.param2 * (float)Math.Sin(0.5f * Math.Abs(DTrackData.param1) / NumSections);
-                    if (l > TrProfile.PitchControlScalar)
-                    {
-                        // Number of sections determined by chord length of PitchControlScalar meters
-                        float chordAngle = 2.0f * (float)Math.Asin(0.5f * TrProfile.PitchControlScalar / DTrackData.param2);
-                        NumSections = (int)Math.Abs((DTrackData.param1 / chordAngle));
-                    }
-                    break;
-                case TrProfile.PitchControls.ChordDisplacement:
-                    // Calculate chord displacement for NumSections
-                    float d = DTrackData.param2 * (float)(1.0f - Math.Cos(0.5f * Math.Abs(DTrackData.param1) / NumSections));
-                    if (d > TrProfile.PitchControlScalar)
-                    {
-                        // Number of sections determined by chord displacement of PitchControlScalar meters
-                        float chordAngle = 2.0f * (float)Math.Acos(1.0f - TrProfile.PitchControlScalar / DTrackData.param2);
-                        NumSections = (int)Math.Abs((DTrackData.param1 / chordAngle));
-                    }
-                    break;
-            }
-            if (NumSections % 2 == 1) NumSections++; //make it even number
-
-            SegmentLength = DTrackData.param1 / NumSections; // Length of each mesh segment (radians)
-            DDY = new Vector3(0, DTrackData.deltaY / NumSections, 0); // Incremental elevation change
-
-            // The approach here is to replicate the previous cross section, 
-            // rotated into its position on the curve and vertically displaced if on grade.
-            // The local center for the curve lies to the left or right of the local origin and ON THE BASE PLANE
-            center = DTrackData.param2 * (DTrackData.param1 < 0 ? Vector3.Left : Vector3.Right);
-            sectionRotation = Matrix.CreateRotationY(-SegmentLength); // Rotation per iteration (constant)
-        }
-
-        /// <summary>
-        /// Generates vertices for a succeeding cross section (straight track).
-        /// </summary>
-        /// <param name="stride">Index increment between section-to-section vertices.</param>
-        /// <param name="pl">Polyline.</param>
-        public new void LinearGen(uint stride, Polyline pl)
-        {
-            Vector3 displacement = new Vector3(0, 0, -SegmentLength) + DDY;
-            float wrapLength = displacement.Length();
-            Vector2 uvDisplacement = pl.DeltaTexCoord * wrapLength;
-
-            Vector3 p = VertexList[VertexIndex - stride].Position + displacement;
-            Vector3 n = VertexList[VertexIndex - stride].Normal;
-            Vector2 uv = VertexList[VertexIndex - stride].TextureCoordinate + uvDisplacement;
-
-            VertexList[VertexIndex].Position = new Vector3(p.X, p.Y, p.Z);
-            VertexList[VertexIndex].Normal = new Vector3(n.X, n.Y, n.Z);
-            VertexList[VertexIndex].TextureCoordinate = new Vector2(uv.X, uv.Y);
-        }
-
-        /// <summary>
-        /// /// Generates vertices for a succeeding cross section (circular arc track).
-        /// </summary>
-        /// <param name="stride">Index increment between section-to-section vertices.</param>
-        /// <param name="pl">Polyline.</param>
-        public new void CircArcGen(uint stride, Polyline pl)
-        {
-            // Get the previous vertex about the local coordinate system
-            OldV = VertexList[VertexIndex - stride].Position - center - OldRadius;
-            // Rotate the old radius vector to become the new radius vector
-            radius = Vector3.Transform(OldRadius, sectionRotation);
-            float wrapLength = (radius - OldRadius).Length(); // Wrap length is centerline chord
-            Vector2 uvDisplacement = pl.DeltaTexCoord * wrapLength;
-
-            Vector3 p;
-
-            Vector3 copy = new Vector3(OldV.X, OldV.Y, OldV.Z);
-
-            copy = Vector3.Transform(copy, Matrix.CreateRotationZ(elevated));
-
-            //if (NumSections > 1) p = DDY + center + radius + Vector3.Transform(OldV, Matrix.CreateRotationZ(elevated) * sectionRotation);
-            //else 
-
-            p = DDY + center + radius + Vector3.Transform(OldV, Matrix.CreateRotationZ(elevated) * sectionRotation);
-            //if (offSet == NumSections - 1 && (whichCase == 2 || whichCase == 4)) p.Y = OldV.Y;
-            Vector3 n = VertexList[VertexIndex - stride].Normal;
-            Vector2 uv = VertexList[VertexIndex - stride].TextureCoordinate + uvDisplacement;
-
-            VertexList[VertexIndex].Position = new Vector3(p.X, p.Y, p.Z);
-            VertexList[VertexIndex].Normal = new Vector3(n.X, n.Y, n.Z);
-            VertexList[VertexIndex].TextureCoordinate = new Vector2(uv.X, uv.Y);
-        }
-
-        public float prevRotation;
-        public float currentRotation;
-        public float determineRotation(float Angle)
-        {
-            float desiredZ = 1f;
-            float to = (offSet + 1f) / NumSections;
-
-            float maxv = MaxElev;
-            switch (whichCase)
-            {
-                case 0: desiredZ = 0f; break;
-                case 3: desiredZ *= maxv; break;
-                case 1:
-                    if (offSet < NumSections / 2) desiredZ *= (2 * to * maxv);//increase to max in the first half
-                    else desiredZ *= maxv;
-                    break;
-                case 2:
-                    if (offSet >= NumSections / 2) desiredZ *= (2 * (1 - to) * maxv);//decrease to 0 in the second half
-                    else desiredZ *= maxv;
-                    break;
-                case 4:
-                    if (offSet < NumSections / 2) desiredZ *= (2 * to * maxv);
-                    else desiredZ *= (2 * (1 - to) * maxv);
-                    break;
-            }
-
-            return desiredZ;
+            if (Reversed)
+                angle = -ElevAngles[1 - to];
+            else
+                angle = ElevAngles[to];
+            
+            return Matrix.CreateRotationZ(angle);
         }
     }
 }

@@ -17,7 +17,6 @@
 
 using Orts.Common;
 using Orts.Simulation;
-using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
 using System;
@@ -48,8 +47,6 @@ namespace ORTS.Scripting.Api
     /// </summary>
     public abstract class AbstractTrainScriptClass : AbstractScriptClass
     {
-        internal TrainCar Car;
-        internal Train Train => Car.Train;
         /// <summary>
         /// Running total of distance travelled - always positive, updated by train physics.
         /// </summary>
@@ -74,25 +71,6 @@ namespace ORTS.Scripting.Api
         /// Sends an event to the train.
         /// </summary>
         public Action<Event> SignalEventToTrain;
-        /// <summary>
-        /// Train's length
-        /// </summary>
-        public float TrainLengthM()
-        {
-            return Car.Train?.Length ?? 0.0f;
-        }
-        /// <summary>
-        /// Returns the number of locomotives in the train
-        /// </summary>
-        public int NumberOfLocomotives()
-        {
-            int count = 0;
-            for (int i = 0; i < Train.Cars.Count; i++)
-            {
-                if (Train.Cars[i] is MSTSLocomotive) count++;
-            }
-            return count;
-        }
     }
 
     /// <summary>

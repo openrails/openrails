@@ -16,7 +16,6 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using Orts.Simulation.RollingStocks;
 
 namespace ORTS.Scripting.Api
 {
@@ -25,37 +24,12 @@ namespace ORTS.Scripting.Api
     /// </summary>
     public abstract class ControlCarPowerSupply : LocomotivePowerSupply
     {
-        MSTSLocomotive ControlActiveLocomotive => Locomotive.ControlActiveLocomotive;
-        /// <summary>
-        /// Index of the control active locomotive in the train (taking into account only locomotives)
-        /// </summary>
-        public int IndexOfControlActiveLocomotive
-        {
-            get
-            {
-                int count=0;
-                for (int i=0; i<Train.Cars.Count; i++)
-                {
-                    if (Train.Cars[i] is MSTSLocomotive)
-                    {
-                        if (Train.Cars[i] == ControlActiveLocomotive) return count;
-                        count++;
-                    }
-                }
-                return -1;
-            }
-        }
-        protected override void SetCurrentMainPowerSupplyState(PowerSupplyState state) {}
-        protected override void SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState state) {}
-        protected override void SetCurrentElectricTrainSupplyState(PowerSupplyState state) {}
-        protected override void SetCurrentDynamicBrakeAvailability(bool avail) {}
-        public void SignalEventToControlActiveLocomotive(PowerSupplyEvent evt)
-        {
-            ControlActiveLocomotive.LocomotivePowerSupply.HandleEvent(evt);
-        }
-        public void SignalEventToControlActiveLocomotive(PowerSupplyEvent evt, int id)
-        {
-            ControlActiveLocomotive.LocomotivePowerSupply.HandleEvent(evt, id);
-        }
+
+
+
+
+
+
     }
+
 }

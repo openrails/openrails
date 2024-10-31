@@ -567,8 +567,6 @@ namespace ORTS.Common
         public static string kW = Catalog.GetString("kW");
         public static string hp = Catalog.GetString("hp"); // mechanical (or brake) horsepower
         public static string bhp = Catalog.GetString("bhp"); // boiler horsepower
-        public static string V = Catalog.GetString("V");
-        public static string kV = Catalog.GetString("kV");
         public static string kJ = Catalog.GetString("kJ");
         public static string MJ = Catalog.GetString("MJ");
         public static string btu = Catalog.GetString("BTU");
@@ -685,6 +683,13 @@ namespace ORTS.Common
             return String.Format(CultureInfo.CurrentCulture, "{0:N3} {1}", Me.ToFt(distanceM), ft);
         }
 
+        public static string FormatMillimeterDistanceDisplay(float distanceM, bool isMetric)
+        {
+            if (isMetric)
+                return String.Format(CultureInfo.CurrentCulture, "{0:N0} {1}", distanceM * 1000.0f, mm);
+            return String.Format(CultureInfo.CurrentCulture, "{0:N1} {1}", Me.ToIn(distanceM), "in");
+        }
+
         /// <summary>
         /// format localized mass string, as displayed in in-game windows.
         /// </summary>
@@ -751,19 +756,6 @@ namespace ORTS.Common
         {
             var power = isMetric ? W.ToKW(powerW) : isImperialBHP ? W.ToBhp(powerW) : isImperialBTUpS ? W.ToBTUpS(powerW) : W.ToHp(powerW);
             return String.Format(CultureInfo.CurrentCulture, "{0:F0} {1}", power, isMetric ? kW : isImperialBHP ? bhp : isImperialBTUpS ? String.Format("{0}/{1}", btu, s) : hp);
-        }
-
-        public static string FormatVoltage(float voltageV)
-        {
-            bool kilo = false;
-            var voltage = voltageV;
-            if (Math.Abs(voltage) > 1e4f)
-            {
-                voltage *= 1e-3f;
-                kilo = true;
-            }
-            var unit = kilo ? kV : V;
-            return String.Format(CultureInfo.CurrentCulture, kilo ? "{0:F1} {1}" : "{0:F0} {1}", voltage, unit);
         }
 
         public static string FormatForce(float forceN, bool isMetric)

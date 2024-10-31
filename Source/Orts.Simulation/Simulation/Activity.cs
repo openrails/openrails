@@ -629,9 +629,7 @@ namespace Orts.Simulation
             var speedPostTablePosition = new Vector3(2.2f, 0, 0);
             Vector3.Transform(ref speedPostTablePosition, ref restrSpeedPost.WorldPosition.XNAMatrix, out speedPostTablePosition);
             restrSpeedPost.WorldPosition.XNAMatrix.Translation = speedPostTablePosition;
-            restrSpeedPost.WorldPosition.XNAMatrix.M43 *= -1;
             restrSpeedPost.WorldPosition.Normalize();
-            restrSpeedPost.WorldPosition.XNAMatrix.M43 *= -1;
         }
 
 
