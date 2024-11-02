@@ -35,6 +35,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         float PowerSupplyDynamicBrakePercent { get; set; }
         float MaximumDynamicBrakePowerW { get; set; }
         float MaxThrottlePercent { get; set; }
+        float ThrottleReductionPercent { get; set; }
 
         PowerSupplyState AuxiliaryPowerSupplyState { get; set; }
         bool AuxiliaryPowerSupplyOn { get; }

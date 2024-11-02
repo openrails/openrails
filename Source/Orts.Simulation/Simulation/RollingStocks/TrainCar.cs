@@ -458,6 +458,7 @@ namespace Orts.Simulation.RollingStocks
                 }
                 if (this is MSTSLocomotive loco)
                 {
+                    if (loco.LocomotivePowerSupply.ThrottleReductionPercent > 0) percent *= 1-loco.LocomotivePowerSupply.ThrottleReductionPercent/100;
                     if (loco.LocomotivePowerSupply.MaxThrottlePercent < percent) percent = Math.Max(loco.LocomotivePowerSupply.MaxThrottlePercent, 0);
                 }
                 return percent;

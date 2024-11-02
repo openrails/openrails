@@ -152,6 +152,21 @@ namespace ORTS.Scripting.Api
         }
 
         /// <summary>
+        /// Reduction of throttle percent enforced by power supply
+        /// </summary>
+        protected float ThrottleReductionPercent
+        {
+            get
+            {
+                return LpsHost.ThrottleReductionPercent;
+            }
+            set
+            {
+                LpsHost.ThrottleReductionPercent = Math.Max(Math.Min(value, 100), 0);
+            }
+        }
+
+        /// <summary>
         /// Current throttle percentage
         /// </summary>
         protected float ThrottlePercent() => Locomotive.ThrottlePercent;
