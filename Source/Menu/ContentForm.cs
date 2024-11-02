@@ -346,15 +346,22 @@ namespace ORTS
                 else
                 {
                     outputFile.WriteLine("- " + Catalog.GetString("Installation profile") + ": " + AutoInstallRouteName + "<br>");
-                    outputFile.WriteLine("- " + Catalog.GetString("Activity") + ": " + route.Start.Activity + "<br>");
                     outputFile.WriteLine("- " + Catalog.GetString("Route") + ": " + route.Start.Route + "<br>");
-                    outputFile.WriteLine("- " + Catalog.GetString("Locomotive") + ": " + route.Start.Locomotive + "<br>");
-                    outputFile.WriteLine("- " + Catalog.GetString("Consist") + ": " + route.Start.Consist + "<br>");
-                    outputFile.WriteLine("- " + Catalog.GetString("Starting at") + ": " + route.Start.StartingAt + "<br>");
-                    outputFile.WriteLine("- " + Catalog.GetString("Heading to") + ": " + route.Start.HeadingTo + "<br>");
-                    outputFile.WriteLine("- " + Catalog.GetString("Time") + ": " + route.Start.Time + "<br>");
-                    outputFile.WriteLine("- " + Catalog.GetString("Season") + ": " + route.Start.Season + "<br>");
-                    outputFile.WriteLine("- " + Catalog.GetString("Weather") + ": " + route.Start.Weather + "<br></p>");
+                    outputFile.WriteLine("- " + Catalog.GetString("Activity") + ": " + route.Start.Activity + "<br>");
+                    if (!string.IsNullOrEmpty(route.Start.Locomotive))
+                        outputFile.WriteLine("- " + Catalog.GetString("Locomotive") + ": " + route.Start.Locomotive + "<br>");
+                    if (!string.IsNullOrEmpty(route.Start.Consist))
+                        outputFile.WriteLine("- " + Catalog.GetString("Consist") + ": " + route.Start.Consist + "<br>");
+                    if (!string.IsNullOrEmpty(route.Start.StartingAt))
+                        outputFile.WriteLine("- " + Catalog.GetString("Starting at") + ": " + route.Start.StartingAt + "<br>");
+                    if (!string.IsNullOrEmpty(route.Start.HeadingTo))
+                        outputFile.WriteLine("- " + Catalog.GetString("Heading to") + ": " + route.Start.HeadingTo + "<br>");
+                    if (!string.IsNullOrEmpty(route.Start.Time))
+                        outputFile.WriteLine("- " + Catalog.GetString("Time") + ": " + route.Start.Time + "<br>");
+                    if (!string.IsNullOrEmpty(route.Start.Season))
+                        outputFile.WriteLine("- " + Catalog.GetString("Season") + ": " + route.Start.Season + "<br>");
+                    if (!string.IsNullOrEmpty(route.Start.Weather))
+                        outputFile.WriteLine("- " + Catalog.GetString("Weather") + ": " + route.Start.Weather + "<br></p>");
                 }
 
                 if (Directory.Exists(route.DirectoryInstalledIn))
