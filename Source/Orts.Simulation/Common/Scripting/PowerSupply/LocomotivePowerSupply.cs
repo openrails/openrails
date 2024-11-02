@@ -157,6 +157,11 @@ namespace ORTS.Scripting.Api
         protected float ThrottlePercent() => Locomotive.ThrottlePercent;
 
         /// <summary>
+        /// Locomotive direction.
+        /// </summary>
+        protected Direction CurrentDirection() => Locomotive.Direction;
+
+        /// <summary>
         /// Main supply power on delay
         /// </summary>
         protected float PowerOnDelayS() => LpsHost.PowerOnDelayS;
