@@ -148,13 +148,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
         public void Save(BinaryWriter outf)
         {
-            outf.Write(Position?.Name);
+            outf.Write(Position?.Name ?? string.Empty);
         }
 
         public void Restore(BinaryReader inf)
         {
             string name = inf.ReadString();
-            Position = Positions.FirstOrDefault(x => x.Name == name) ?? Positions.FirstOrDefault();
+            Position = Positions.FirstOrDefault(x => x.Name == name);
         }
 
         public void Update(float elapsedClockSeconds)
