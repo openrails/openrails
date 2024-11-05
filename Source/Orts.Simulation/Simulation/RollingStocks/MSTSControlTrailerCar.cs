@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -15,19 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-/* DIESEL LOCOMOTIVE CLASSES
- * 
- * The Locomotive is represented by two classes:
- *  MSTSDieselLocomotiveSimulator - defines the behaviour, ie physics, motion, power generated etc
- *  MSTSDieselLocomotiveViewer - defines the appearance in a 3D viewer.  The viewer doesn't
- *  get attached to the car until it comes into viewing range.
- *  
- * Both these classes derive from corresponding classes for a basic locomotive
- *  LocomotiveSimulator - provides for movement, basic controls etc
- *  LocomotiveViewer - provides basic animation for running gear, wipers, etc
- * 
- */
-
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -37,6 +24,7 @@ using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
+using ORTS.Common;
 
 namespace Orts.Simulation.RollingStocks
 {
@@ -234,7 +222,12 @@ namespace Orts.Simulation.RollingStocks
                 status.AppendFormat("{0} = {1}\n", Simulator.Catalog.GetString("Gear"),
                 ControlGearIndex < 0 ? Simulator.Catalog.GetParticularString("Gear", "N") : (ControlGearIndication).ToString());
             status.AppendLine();
-
+            status.AppendFormat("{0} = {1}\n",
+                Simulator.Catalog.GetString("Battery switch"),
+                LocomotivePowerSupply.BatterySwitch.On ? Simulator.Catalog.GetString("On") : Simulator.Catalog.GetString("Off"));
+            status.AppendFormat("{0} = {1}\n",
+                Simulator.Catalog.GetString("Master key"),
+                LocomotivePowerSupply.MasterKey.On ? Simulator.Catalog.GetString("On") : Simulator.Catalog.GetString("Off"));
             return status.ToString();
         }
 
@@ -318,14 +311,22 @@ namespace Orts.Simulation.RollingStocks
             float data;
             switch (cvc.ControlType.Type)
             {
+                // Locomotive controls
                 case CABViewControlTypes.AMMETER:
                 case CABViewControlTypes.AMMETER_ABS:
                 case CABViewControlTypes.DYNAMIC_BRAKE_FORCE:
                 case CABViewControlTypes.LOAD_METER:
-                case CABViewControlTypes.ORTS_DIESEL_TEMPERATURE:
-                case CABViewControlTypes.ORTS_OIL_PRESSURE:
                 case CABViewControlTypes.ORTS_SIGNED_TRACTION_BRAKING:
                 case CABViewControlTypes.ORTS_SIGNED_TRACTION_TOTAL_BRAKING:
+                case CABViewControlTypes.TRACTION_BRAKING:
+                case CABViewControlTypes.WHEELSLIP:
+                    data = ControlActiveLocomotive?.GetDataOf(cvc) ?? 0;
+                    break;
+                // Diesel locomotive controls
+                case CABViewControlTypes.FUEL_GAUGE:
+                case CABViewControlTypes.ORTS_DIESEL_TEMPERATURE:
+                case CABViewControlTypes.ORTS_OIL_PRESSURE:
+                case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE:
                 case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_AUTHORIZED:
                 case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_CLOSED:
                 case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_DRIVER_CLOSING_AUTHORIZATION:
@@ -336,9 +337,32 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_STATE:
                 case CABViewControlTypes.RPM:
                 case CABViewControlTypes.RPM_2:
-                case CABViewControlTypes.TRACTION_BRAKING:
-                case CABViewControlTypes.WHEELSLIP:
-                    data = ControlActiveLocomotive?.GetDataOf(cvc) ?? 0;
+                    data = (ControlActiveLocomotive as MSTSDieselLocomotive)?.GetDataOf(cvc) ?? 0;
+                    break;
+                // Electric locomotive controls
+                case CABViewControlTypes.LINE_VOLTAGE:
+                case CABViewControlTypes.ORTS_PANTOGRAPH_VOLTAGE_AC:
+                case CABViewControlTypes.ORTS_PANTOGRAPH_VOLTAGE_DC:
+                case CABViewControlTypes.PANTO_DISPLAY:
+                case CABViewControlTypes.PANTOGRAPH:
+                case CABViewControlTypes.PANTOGRAPH2:
+                case CABViewControlTypes.ORTS_PANTOGRAPH3:
+                case CABViewControlTypes.ORTS_PANTOGRAPH4:
+                case CABViewControlTypes.PANTOGRAPHS_4:
+                case CABViewControlTypes.PANTOGRAPHS_4C:
+                case CABViewControlTypes.PANTOGRAPHS_5:
+                case CABViewControlTypes.ORTS_VOLTAGE_SELECTOR:
+                case CABViewControlTypes.ORTS_PANTOGRAPH_SELECTOR:
+                case CABViewControlTypes.ORTS_POWER_LIMITATION_SELECTOR:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_OPENING_ORDER:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_AUTHORIZATION:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_STATE:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_CLOSED:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_OPEN:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_AUTHORIZED:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_OPEN_AND_AUTHORIZED:
+                    data = (ControlActiveLocomotive as MSTSElectricLocomotive)?.GetDataOf(cvc) ?? 0;
                     break;
                 default:
                     data = base.GetDataOf(cvc);

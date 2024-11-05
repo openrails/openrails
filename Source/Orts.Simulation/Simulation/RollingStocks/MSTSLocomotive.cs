@@ -2820,10 +2820,8 @@ namespace Orts.Simulation.RollingStocks
                 {
                     FindControlActiveLocomotive();
 
-                    if (ControlActiveLocomotive != null)
+                    if (ControlActiveLocomotive is MSTSDieselLocomotive activeloco)
                     {
-                        var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
-
                         // Set charging rate depending upon compressor rpm
                         reservoirChargingRate = (activeloco.DieselEngines[0].RealRPM / activeloco.DieselEngines[0].MaxRPM) * MainResChargingRatePSIpS;
                     }
