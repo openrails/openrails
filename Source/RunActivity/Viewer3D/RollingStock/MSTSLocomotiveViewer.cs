@@ -31,6 +31,7 @@ using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
 using Orts.Viewer3D.RollingStock.SubSystems;
@@ -39,7 +40,6 @@ using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Scripting.Api;
 using Event = Orts.Common.Event;
-using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 
 namespace Orts.Viewer3D.RollingStock
 {
