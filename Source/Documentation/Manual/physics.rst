@@ -3859,10 +3859,10 @@ hence were favoured for routes with tight curves.
 
 The value used for the rigid wheelbase is shown as W in figure
 
-Impact of Super Elevation
--------------------------
+Impact of Superelevation
+------------------------
 
-On any curve whose outer rail is super-elevated there is, for any car, one
+On any curve whose outer rail is superelevated there is, for any car, one
 speed of operation at which the car trucks have no more tendency to run
 toward either rail than they have on straight track, where both rail-heads
 are at the same level (known as the equilibrium speed). At lower speeds the
@@ -3893,7 +3893,7 @@ the track curvature. This excess being a variable element of curve
 resistance, we may expect to find that curve resistance reaches a minimum
 value when this excess reduces to zero, that is, when the car speed reaches
 the critical value referred to. This critical speed depends only on the
-super-elevation, the track gauge, and the radius of the track curvature.
+superelevation, the track gauge, and the radius of the track curvature.
 The resulting variation of curve resistance with speed is indicated in
 diagram below.
 
@@ -4262,8 +4262,8 @@ Typical Super Elevation Values & Speed Impact -- High Speed Passenger Routes
 
 +-------------------------------+-------------------+-----------------------+
 |                               |Cant D             |Cant deficiency        |
-|                               |(SuperElevation)   |(Unbalanced            |
-|                               |(mm)               |SuperElevation) I (mm) |
+|                               |(Superelevation)   |(Unbalanced            |
+|                               |(mm)               |Superelevation) I (mm) |
 +===============================+===================+=======================+
 |CEN (draft) -- Tilting trains  |180--200           |300                    |
 +-------------------------------+-------------------+-----------------------+
@@ -4329,7 +4329,7 @@ above classifications.
 
 Track gauge will default to the standard value of 4' 8.5" (1435mm).
 
-Unbalancedsuperelevation (Cant Deficiency) will be determined from the
+Unbalanced superelevation (Cant Deficiency) will be determined from the
 value entered by the user, or will default to the following values:
 
 - Conventional Freight -- 0" (0mm)
@@ -4337,7 +4337,7 @@ value entered by the user, or will default to the following values:
 - Engines & tenders -- 6" (150mm)
 
 Tilting trains require the addition of the relevant
-unbalancedsuperelevation information to the relevant rolling stock files.
+unbalanced superelevation information to the relevant rolling stock files.
 
 .. _physics-tunnel-friction:
 

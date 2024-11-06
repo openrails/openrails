@@ -93,19 +93,19 @@ namespace Orts.Viewer3D
                 trProfile = viewer.TRPs[trpIndex].TrackProfile;
 
                 // If this track profile has superelevation disabled, don't bother rendering anything
-                if (trProfile.ElevationType == TrProfile.SuperelevationMethod.None)
+                if (trProfile.ElevationType == TrProfile.SuperElevationMethod.None)
                     dontRender = true;
                 else // Superelevation enabled, check the roll offset
                 {
                     switch (trProfile.ElevationType)
                     {
-                        case TrProfile.SuperelevationMethod.Outside: // Only outside rail should elevate
+                        case TrProfile.SuperElevationMethod.Outside: // Only outside rail should elevate
                             rollOffsetM = trProfile.TrackGaugeM / 2.0f;
                             break;
-                        case TrProfile.SuperelevationMethod.Inside: // Only inside rail should elevate
+                        case TrProfile.SuperElevationMethod.Inside: // Only inside rail should elevate
                             rollOffsetM = -trProfile.TrackGaugeM / 2.0f;
                             break;
-                        case TrProfile.SuperelevationMethod.Both: // Both rails should elevate
+                        case TrProfile.SuperElevationMethod.Both: // Both rails should elevate
                         default:
                             rollOffsetM = 0.0f;
                             break;
@@ -568,20 +568,20 @@ namespace Orts.Viewer3D
 
                         switch (trProfile.ElevationType)
                         {
-                            case TrProfile.SuperelevationMethod.Outside: // Only outside rail should elevate
+                            case TrProfile.SuperElevationMethod.Outside: // Only outside rail should elevate
                                 tmp.ElevOffsetM = trProfile.TrackGaugeM / 2.0f;
                                 break;
-                            case TrProfile.SuperelevationMethod.Inside: // Only inside rail should elevate
+                            case TrProfile.SuperElevationMethod.Inside: // Only inside rail should elevate
                                 tmp.ElevOffsetM = -trProfile.TrackGaugeM / 2.0f;
                                 break;
-                            case TrProfile.SuperelevationMethod.Both: // Both rails should elevate
+                            case TrProfile.SuperElevationMethod.Both: // Both rails should elevate
                             default:
                                 tmp.ElevOffsetM = 0.0f;
                                 break;
                         }
 
                         // If track profile is set to have no superelevation, set visual superelevation to 0
-                        if (trProfile.ElevationType == TrProfile.SuperelevationMethod.None)
+                        if (trProfile.ElevationType == TrProfile.SuperElevationMethod.None)
                             tmp.VisElevTable.ScaleY(0.0f);
 
                         // Processing done, prepare to generate section with superelevation

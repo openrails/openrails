@@ -546,7 +546,7 @@ namespace Orts.Viewer3D
         /// <summary>
         /// The type of superelevation used (ie: which rail is superelevated)
         /// </summary>
-        public enum SuperelevationMethod
+        public enum SuperElevationMethod
         {
             /// <summary>
             /// No superelevation - graphical superelevation disabled
@@ -568,7 +568,7 @@ namespace Orts.Viewer3D
             /// </summary>
             Inside,
         }
-        public SuperelevationMethod ElevationType = SuperelevationMethod.Outside;
+        public SuperElevationMethod ElevationType = SuperElevationMethod.Outside;
 
         /// <summary>
         /// Enumeration of LOD control methods
@@ -629,7 +629,7 @@ namespace Orts.Viewer3D
             //PitchControl = PitchControls.ChordDisplacement; // Target chord displacement from arc
             //PitchControlScalar = 0.034f;                    // Hold to no more than 34 mm (half rail width)
             TrackGaugeM = 1.435f; // Kuju track profile depicts standard gauge track
-            ElevationType = SuperelevationMethod.Outside; // Superelevate the outside rail only to reduce clipping
+            ElevationType = SuperElevationMethod.Outside; // Superelevate the outside rail only to reduce clipping
 
             LOD lod;            // Local LOD instance
             LODItem lodItem;    // Local LODItem instance
@@ -923,24 +923,24 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
-        /// Gets a member of the SuperelevationMethod enumeration that corresponds to sElevMethod.
+        /// Gets a member of the SuperElevationMethod enumeration that corresponds to sElevMethod.
         /// </summary>
-        /// <param name="sElevMethod">String that identifies desired SuperelevationMethod.</param>
-        /// <returns>SuperelevationMethod</returns>
-        public static SuperelevationMethod GetElevMethod(string sElevMethod)
+        /// <param name="sElevMethod">String that identifies desired SuperElevationMethod.</param>
+        /// <returns>SuperElevationMethod</returns>
+        public static SuperElevationMethod GetElevMethod(string sElevMethod)
         {
             string s = sElevMethod.ToLower();
             switch (s)
             {
                 case "none":
-                    return SuperelevationMethod.None;
+                    return SuperElevationMethod.None;
                 case "both":
-                    return SuperelevationMethod.Both;
+                    return SuperElevationMethod.Both;
                 case "inside":
-                    return SuperelevationMethod.Inside;
+                    return SuperElevationMethod.Inside;
                 case "outside":
                 default:
-                    return SuperelevationMethod.Outside;
+                    return SuperElevationMethod.Outside;
             }
         }
 

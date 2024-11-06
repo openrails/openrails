@@ -2748,7 +2748,7 @@
             this.ElevationText.Name = "ElevationText";
             this.ElevationText.Size = new System.Drawing.Size(81, 13);
             this.ElevationText.TabIndex = 1;
-            this.ElevationText.Text = "Super-Elevation";
+            this.ElevationText.Text = "Superelevation";
             // 
             // OptionsForm
             // 

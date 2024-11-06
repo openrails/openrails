@@ -968,7 +968,7 @@ Where x and y are a series of paired parameters specifying the curve radius (def
 (x value), and the amount of superelevation (default meters) (y value). The statement will take
 as many paired values as desired, as long as the radius values are in increasing order.
 Each paired set of values must have an x and y value present. If it is desired
-to 'hold' a certain value of SuperElevation for a number of different radii curves, then the same 
+to 'hold' a certain value of superelevation for a number of different radii curves, then the same 
 y value needs to be used for succeeding values of curve radius. Where the y value changes between 
 curve radii, then Open Rails will interpolate the y value between the two points.
 

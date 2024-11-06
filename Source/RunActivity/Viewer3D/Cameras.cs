@@ -1285,7 +1285,7 @@ namespace Orts.Viewer3D
                 LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
 
                 // Cancel out unwanted effects on camera motion caused by vibration and superelevation
-                LookedAtPosition.XNAMatrix = attachedCar.SuperelevationInverseMatrix * attachedCar.VibrationInverseMatrix * LookedAtPosition.XNAMatrix;
+                LookedAtPosition.XNAMatrix = attachedCar.SuperElevationInverseMatrix * attachedCar.VibrationInverseMatrix * LookedAtPosition.XNAMatrix;
             }
             UpdateLocation(LookedAtPosition);
             UpdateListener();
