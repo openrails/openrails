@@ -736,16 +736,16 @@ Some experimental features being introduced in Open Rails may be turned on
 and off through the *Experimental* tab of the Options window, as
 described below.
 
-Super-elevation
+Superelevation
 ---------------
 
-If the value set for *Level* is greater than zero, ORTS supports super-elevation 
-for long curved tracks. The value *Minimum Length* determines
-the length of the shortest curve to have super-elevation. You need to
-choose the correct gauge for your route, otherwise some tracks may not be
-properly shown.
+If "Use Visual Superelevation" is enabled, ORTS applies superelevation graphics
+to curves on every route. For the best results, you need to enter
+the correct gauge for your route, otherwise the resulting superelevation
+may not be accurate. Note that the physics system will always consider the
+physical effects of superelevation regardless of this setting.
 
-When super-elevation is selected, two viewing effects occur at runtime:
+When visual superelevation is selected, two viewing effects occur at runtime:
 
 1. If an external camera view is selected, the tracks and the running
    train will be shown inclined towards the inside of the curve.
@@ -755,9 +755,12 @@ When super-elevation is selected, two viewing effects occur at runtime:
 .. image:: images/options-superelevation_1.png
 .. image:: images/options-superelevation_2.png
 
-OR implements super-elevated tracks using Dynamic Tracks. You can change
-the appearance of tracks by creating a ``<route folder>/TrackProfiles/
-TrProfile.stf`` file. The document ``How to Provide Track Profiles for
+The amount of superelevation applied can be customized
+:ref:`from within the route's .trk file <features-route-curve-superelevation>`.
+
+OR implements superelevated tracks using Dynamic Tracks. You can change
+the appearance of tracks by creating one (or more) ``<route folder>/TrackProfiles/
+TrProfile.stf`` files. The document ``How to Provide Track Profiles for
 Open Rails Dynamic Track.pdf`` describing the creation of track profiles
 can be found in the *Menu > Documents* drop-down or the 
 Open Rails ``/Source/Documentation/`` folder. Forum

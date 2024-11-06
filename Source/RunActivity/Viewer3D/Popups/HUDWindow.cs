@@ -1,4 +1,4 @@
-// COPYRIGHT 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2011, 2012, 2013 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -1233,7 +1233,7 @@ namespace Orts.Viewer3D.Popups
                 Viewer.Catalog.GetString("Mass"),
                 Viewer.Catalog.GetString("Gradient"),
                 Viewer.Catalog.GetString("Curve"),
-                Viewer.Catalog.GetString("SuperElev"),
+                Viewer.Catalog.GetString("Superelev"),
                 Viewer.Catalog.GetString("Brk Frict."),
                 Viewer.Catalog.GetString("Brk Slide"),
                 Viewer.Catalog.GetString("Bear Temp"),
@@ -1263,7 +1263,7 @@ namespace Orts.Viewer3D.Popups
                 TableSetCell(table, 12, "{0}", FormatStrings.FormatLargeMass(car.MassKG, car.IsMetric, car.IsUK));
                 TableSetCell(table, 13, "{0:F2}%", -car.CurrentElevationPercent);
                 TableSetCell(table, 14, "{0}", FormatStrings.FormatDistance(car.CurrentCurveRadiusM, car.IsMetric));
-                TableSetCell(table, 15, "{0}", FormatStrings.FormatMillimeterDistanceDisplay(car.SuperelevationM, car.IsMetric));
+                TableSetCell(table, 15, "{0}", FormatStrings.FormatMillimeterDistanceDisplay(car.SuperElevationM, car.IsMetric));
                 TableSetCell(table, 16, "{0:F0}%", car.HuDBrakeShoeFriction * 100.0f);
                 TableSetCell(table, 17, car.HUDBrakeSkid ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"));
                 TableSetCell(table, 18, "{0} {1}", FormatStrings.FormatTemperature(car.WheelBearingTemperatureDegC, car.IsMetric, false), car.DisplayWheelBearingTemperatureStatus);

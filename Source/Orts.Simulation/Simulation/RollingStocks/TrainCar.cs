@@ -638,7 +638,7 @@ namespace Orts.Simulation.RollingStocks
         protected float TrackGaugeM = 1.435f;  // Track gauge - read in MSTSWagon
         protected Vector3 InitialCentreOfGravityM = new Vector3(0, 1.8f, 0); // get centre of gravity - read in MSTSWagon
         public Vector3 CentreOfGravityM = new Vector3(0, 1.8f, 0); // get centre of gravity after adjusted for freight animation
-        public float SuperelevationM; // Super elevation on the curve
+        public float SuperElevationM; // Super elevation on the curve
         protected float MaxUnbalancedSuperElevationM;  // Maximum comfortable cant deficiency, read from MSTS Wagon File
         public float SuperElevationAngleRad;
         protected bool IsMaxSafeCurveSpeed = false; // Has equal loading speed around the curve been exceeded, ie are all the wheesl still on the track?
@@ -1879,24 +1879,24 @@ namespace Orts.Simulation.RollingStocks
             {
 #if DEBUG_USER_SUPERELEVATION
                        Trace.TraceInformation(" ============================================= User SuperElevation (TrainCar.cs) ========================================");
-                        Trace.TraceInformation("CarID {0} TrackSuperElevation {1} Curve Radius {2}",  CarID, SuperelevationM, CurrentCurveRadius);
+                        Trace.TraceInformation("CarID {0} TrackSuperElevation {1} Curve Radius {2}",  CarID, SuperElevationM, CurrentCurveRadius);
 #endif
                 float s = AbsSpeedMpS; // speed of train
 
                 // Calulate equal wheel loading speed for current curve and superelevation - this was considered the "safe" speed to travel around a curve . In this instance the load on the both railes is evenly distributed.
                 // max equal load speed = SQRT ( (superelevation x gravity x curve radius) / track gauge)
-                // SuperElevation is made up of two components = rail superelevation + the amount of sideways force that a passenger will be comfortable with. This is expressed as a figure similar to superelevation.
+                // Superelevation is made up of two components = rail superelevation + the amount of sideways force that a passenger will be comfortable with. This is expressed as a figure similar to superelevation.
 
                 float SpeedToleranceMpS = Me.FromMi(pS.FrompH(2.5f));  // Set bandwidth tolerance for resetting notifications
 
                 // Railway companies often allow the vehicle to exceed the equal loading speed, provided that the passengers didn't feel uncomfortable, and that the car was not likely to excced the maximum critical speed
-                float MaxSafeCurveSpeedMps = (float)Math.Sqrt(((SuperelevationM + MaxUnbalancedSuperElevationM) * GravitationalAccelerationMpS2 * CurrentCurveRadiusM) / TrackGaugeM);
+                float MaxSafeCurveSpeedMps = (float)Math.Sqrt(((SuperElevationM + MaxUnbalancedSuperElevationM) * GravitationalAccelerationMpS2 * CurrentCurveRadiusM) / TrackGaugeM);
 
                 // Calculate critical speed - indicates the speed above which stock will overturn - sum of the moments of centrifrugal force and the vertical weight of the vehicle around the CoG
                 // critical speed = SQRT ( (centrifrugal force x gravity x curve radius) / Vehicle weight)
                 // centrifrugal force = Stock Weight x factor for movement of resultant force due to superelevation.
 
-                float SinTheta = SuperelevationM / TrackGaugeM; // Definition of sine: opposite / hypotenuse = superelevation / gauge
+                float SinTheta = SuperElevationM / TrackGaugeM; // Definition of sine: opposite / hypotenuse = superelevation / gauge
                 float CosTheta = (float)Math.Cos(SuperElevationAngleRad);
                 float HalfTrackGaugeM = TrackGaugeM / 2.0f;
 
@@ -2013,7 +2013,7 @@ namespace Orts.Simulation.RollingStocks
 
 #if DEBUG_CURVE_SPEED
                 Trace.TraceInformation("================================== TrainCar.cs - DEBUG_CURVE_SPEED ==============================================================");
-                Trace.TraceInformation("CarID {0} Curve Radius {1} Super {2} Unbalanced {3} Durability {4}", CarID, CurrentCurveRadius, SuperelevationM, UnbalancedSuperElevationM, Simulator.CurveDurability);
+                Trace.TraceInformation("CarID {0} Curve Radius {1} Super {2} Unbalanced {3} Durability {4}", CarID, CurrentCurveRadius, SuperElevationM, UnbalancedSuperElevationM, Simulator.CurveDurability);
                 Trace.TraceInformation("CoG {0}", CentreOfGravityM);
                 Trace.TraceInformation("Current Speed {0} Equal Load Speed {1} Max Safe Speed {2} Critical Max Speed {3} Critical Min Speed {4}", MpS.ToMpH(s), MpS.ToMpH(MaxCurveEqualLoadSpeedMps), MpS.ToMpH(MaxSafeCurveSpeedMps), MpS.ToMpH(CriticalMaxSpeedMpS), MpS.ToMpH(CriticalMinSpeedMpS));
                 Trace.TraceInformation("IsMaxSafeSpeed {0} IsCriticalSpeed {1}", IsMaxSafeCurveSpeed, IsCriticalSpeed);
@@ -2066,7 +2066,7 @@ namespace Orts.Simulation.RollingStocks
 
                 var speedConstant = 1.5f;
                 var MToMM = 1000;
-                var rspeedKgpTonne = speedConstant * Math.Abs((SpeedMpS * SpeedMpS / CurrentCurveRadiusM) - ((MToMM * SuperelevationM / MToMM * TrackGaugeM) * GravitationalAccelerationMpS2));
+                var rspeedKgpTonne = speedConstant * Math.Abs((SpeedMpS * SpeedMpS / CurrentCurveRadiusM) - ((MToMM * SuperElevationM / MToMM * TrackGaugeM) * GravitationalAccelerationMpS2));
                 var rSpeedWagonN = GravitationalAccelerationMpS2 * (Kg.ToTonne(MassKG) * rspeedKgpTonne);
 
                 CurveForceN = rBaseWagonN + rSpeedWagonN;
@@ -2801,22 +2801,10 @@ namespace Orts.Simulation.RollingStocks
             for (int i = 1; i < Parts.Count; i++)
             {
                 TrainCarPart p = Parts[i];
-                
+                p.FindCenterLine();
+
                 if (p.SumWgt > 1.5f)
-                {
-                    p.FindCenterLine();
                     p0.AddPartLocation(1, p);
-                }
-                else if (p.SumWgt > 0.5f) // Handle edge case of single axle pony trucks
-                {
-                    double d = p.OffsetM.Z - p.SumZOffset / p.SumWgt;
-                    if (-.2 < d && d < .2)
-                        continue;
-                    // Add a fake "wheel" to serve as a pivot point
-                    Vector3 pos = new Vector3(p0.Pos[0] + p.OffsetM.Z * p0.Dir[0], p0.Pos[1] + p.OffsetM.Z * p0.Dir[1], p0.Pos[2] + p.OffsetM.Z * p0.Dir[2]);
-                    p.AddWheelSetLocation(1, p.OffsetM.Z, pos, p.Roll);
-                    p.FindCenterLine();
-                }
             }
             // Determine facing direction and position of train car
             p0.FindCenterLine();
@@ -2856,7 +2844,7 @@ namespace Orts.Simulation.RollingStocks
                 m = rollMat * m;
             }
 
-            SuperelevationInverseMatrix = Matrix.Invert(rollMat);
+            SuperElevationInverseMatrix = Matrix.Invert(rollMat);
 
             // Set position of train car
             m.Translation += new Vector3(p0.Pos[0], p0.Pos[1], -p0.Pos[2]);
@@ -2866,6 +2854,23 @@ namespace Orts.Simulation.RollingStocks
             WorldPosition.TileZ = tileZ;
 
             UpdateVibration(traveler, elapsedTimeS, distance, speed);
+
+            // Check bogies for any corrections needed
+            for (int i = 1; i < Parts.Count; i++)
+            {
+                TrainCarPart p = Parts[i];
+
+                if (p.SumWgt < 1.5f && p.SumWgt > 0.5f) // Handle edge case of single axle pony trucks
+                {
+                    double d = p.OffsetM.Z - p.SumZOffset / p.SumWgt;
+                    if (-.2 < d && d < .2)
+                        continue;
+                    // Add a fake "wheel" to serve as a pivot point
+                    Vector3 pos = new Vector3(p0.Pos[0] + p.OffsetM.Z * p0.Dir[0], p0.Pos[1] + p.OffsetM.Z * p0.Dir[1], p0.Pos[2] + p.OffsetM.Z * p0.Dir[2]);
+                    p.AddWheelSetLocation(1, p.OffsetM.Z, pos, p.Roll);
+                    p.FindCenterLine();
+                }
+            }
         }
 
         #region Traveller-based updates
@@ -2898,7 +2903,7 @@ namespace Orts.Simulation.RollingStocks
         }
         #endregion
 
-        #region Super-elevation
+        #region SuperElevation
         /// <summary>
         /// Determines the curve situation (superelevation and radius) of the train car, given a
         /// traveller to move over an array of offsets to average out the curve across.
@@ -2915,9 +2920,9 @@ namespace Orts.Simulation.RollingStocks
             traveller.GetCurveData(offsets, out float[] physicsElevation, out float[] curveRadii);
 
             // Superelevation MUST be limited to track gauge to avoid NaN errors
-            SuperelevationM = Math.Min(physicsElevation.Average(), TrackGaugeM);
+            SuperElevationM = Math.Min(physicsElevation.Average(), TrackGaugeM);
             // Set superelevation angle used by physics system
-            SuperElevationAngleRad = (float)Math.Asin(SuperelevationM / TrackGaugeM);
+            SuperElevationAngleRad = (float)Math.Asin(SuperElevationM / TrackGaugeM);
 
             CurrentCurveRadiusM = curveRadii.Average();
             // Straight track has a "radius" of infinity, but rest of code expects straight to have a "radius" of 0
@@ -2928,7 +2933,7 @@ namespace Orts.Simulation.RollingStocks
 
         #region Vibration and tilting
         public Matrix VibrationInverseMatrix = Matrix.Identity;
-        public Matrix SuperelevationInverseMatrix = Matrix.Identity;
+        public Matrix SuperElevationInverseMatrix = Matrix.Identity;
 
         // https://en.wikipedia.org/wiki/Newton%27s_laws_of_motion#Newton.27s_2nd_Law
         //   Let F be the force in N
