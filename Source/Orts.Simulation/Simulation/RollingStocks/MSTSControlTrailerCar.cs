@@ -218,16 +218,45 @@ namespace Orts.Simulation.RollingStocks
         public override string GetStatus()
         {
             var status = new StringBuilder();
-            if (HasGearController)
-                status.AppendFormat("{0} = {1}\n", Simulator.Catalog.GetString("Gear"),
-                ControlGearIndex < 0 ? Simulator.Catalog.GetParticularString("Gear", "N") : (ControlGearIndication).ToString());
-            status.AppendLine();
             status.AppendFormat("{0} = {1}\n",
                 Simulator.Catalog.GetString("Battery switch"),
                 LocomotivePowerSupply.BatterySwitch.On ? Simulator.Catalog.GetString("On") : Simulator.Catalog.GetString("Off"));
             status.AppendFormat("{0} = {1}\n",
                 Simulator.Catalog.GetString("Master key"),
                 LocomotivePowerSupply.MasterKey.On ? Simulator.Catalog.GetString("On") : Simulator.Catalog.GetString("Off"));
+            if (ControlActiveLocomotive != null)
+            {
+                status.AppendLine();
+                if (ControlActiveLocomotive is MSTSElectricLocomotive electric)
+                {
+                    status.AppendFormat("{0} = ", Simulator.Catalog.GetString("Pantographs"));
+                    foreach (var pantograph in electric.Pantographs.List)
+                        status.AppendFormat("{0} ", Simulator.Catalog.GetParticularString("Pantograph", GetStringAttribute.GetPrettyName(pantograph.State)));
+                    status.AppendLine();
+                    status.AppendFormat("{0} = {1}\n",
+                        Simulator.Catalog.GetString("Circuit breaker"),
+                        Simulator.Catalog.GetParticularString("CircuitBreaker", GetStringAttribute.GetPrettyName(electric.ElectricPowerSupply.CircuitBreaker.State)));
+                }
+                else if (ControlActiveLocomotive is MSTSDieselLocomotive diesel)
+                {
+                    status.AppendLine();
+                    status.AppendFormat("{0} = {1}\n", Simulator.Catalog.GetString("Engine"),
+                        Simulator.Catalog.GetParticularString("Engine", GetStringAttribute.GetPrettyName(diesel.DieselEngines[0].State)));
+                    if (HasGearController)
+                        status.AppendFormat("{0} = {1}\n", Simulator.Catalog.GetString("Gear"),
+                        ControlGearIndex < 0 ? Simulator.Catalog.GetParticularString("Gear", "N") : (ControlGearIndication).ToString());
+                    status.AppendFormat("{0} = {1}\n",
+                        Simulator.Catalog.GetString("Traction cut-off relay"),
+                        Simulator.Catalog.GetParticularString("TractionCutOffRelay", GetStringAttribute.GetPrettyName(diesel.DieselPowerSupply.TractionCutOffRelay.State)));
+                }
+                status.AppendFormat("{0} = {1}\n",
+                    Simulator.Catalog.GetString("Electric train supply"),
+                    ControlActiveLocomotive.LocomotivePowerSupply.ElectricTrainSupplySwitch.On ? Simulator.Catalog.GetString("On") : Simulator.Catalog.GetString("Off"));
+                status.AppendLine();
+                status.AppendFormat("{0} = {1}",
+                    Simulator.Catalog.GetParticularString("PowerSupply", "Power"),
+                    Simulator.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(ControlActiveLocomotive.LocomotivePowerSupply.MainPowerSupplyState)));
+            }
             return status.ToString();
         }
 
