@@ -2149,7 +2149,7 @@ namespace Orts.Simulation.RollingStocks
                     if (RemoteControlGroup != -1)
                     {
                         if (!LocomotivePowerSupply.MainPowerSupplyOn)
-                            Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
+                            Train.SignalEvent(PowerSupplyEvent.QuickPowerOn);
 
                         if (this is MSTSDieselLocomotive dieselLocomotive)
                         {
