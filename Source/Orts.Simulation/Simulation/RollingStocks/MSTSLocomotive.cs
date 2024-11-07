@@ -59,6 +59,7 @@ using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using ORTS.Common;
 using ORTS.Scripting.Api;
+using SharpDX.Direct3D9;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -2499,18 +2500,6 @@ namespace Orts.Simulation.RollingStocks
 			}
 #endif
         }
-        public void CalculateForcePowerLimit(ref float targetForceN, ref float maxForceN, float targetPowerW, float maxPowerW)
-        {
-            if (targetForceN * AbsTractionSpeedMpS > targetPowerW)
-            {
-                targetForceN = targetPowerW / AbsTractionSpeedMpS;
-            }
-            if (targetForceN > maxForceN) targetForceN = maxForceN;
-            if (targetForceN * AbsTractionSpeedMpS > maxPowerW)
-            {
-                targetForceN = maxForceN = maxPowerW / AbsTractionSpeedMpS;
-            }
-        }
         public void UpdateForceWithRamp(ref float forceN, float elapsedClockSeconds, float targetForceN, float maxForceN, float targetPowerW, float maxPowerW, float rampUpNpS=0, float rampDownNpS=0, float rampZeroNpS=0)
         {
             if (targetForceN > maxForceN) targetForceN = maxForceN;
@@ -2528,6 +2517,40 @@ namespace Orts.Simulation.RollingStocks
                 else forceN = targetForceN;
             }
         }
+        public virtual float GetAvailableTractionForceN(float t)
+        {
+            if (t <= 0) return 0;
+            float powerW = float.MaxValue;
+            float forceN;
+            if (this is MSTSElectricLocomotive electric && electric.ElectricPowerSupply.MaximumPowerW > 0)
+                powerW = electric.ElectricPowerSupply.MaximumPowerW * t * (1-PowerReduction);
+            if (TractiveForceCurves == null)
+            {
+                powerW = Math.Min(powerW, MaxPowerW * t * t * (1 - PowerReduction));
+
+                if (AbsTractionSpeedMpS > MaxSpeedMpS - 0.05f)
+                {
+                    forceN = 20 * (MaxSpeedMpS - AbsTractionSpeedMpS) * MaxForceN * (1 - PowerReduction);
+                }
+                else if (AbsTractionSpeedMpS > MaxSpeedMpS)
+                {
+                    forceN = 0;
+                }
+                else
+                {
+                    forceN = MaxForceN * (1 - PowerReduction);
+                }
+                forceN *= t;
+            }
+            else
+            {
+                forceN = TractiveForceCurves.Get(t, AbsTractionSpeedMpS) * (1 - PowerReduction);
+                if (forceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
+                    forceN = 0;
+            }
+            if (forceN * AbsSpeedMpS > powerW) forceN = powerW / AbsSpeedMpS;
+            return forceN;
+        }
         protected virtual void UpdateTractionForce(float elapsedClockSeconds)
         {
             float t = ThrottlePercent / 100;
@@ -2536,61 +2559,39 @@ namespace Orts.Simulation.RollingStocks
             if (t > maxthrottle) t = maxthrottle;
             t = MathHelper.Clamp(t, 0, 1);
 
-            if (maxthrottle > 0 && Direction != Direction.N)
+            if (maxthrottle > 0 && Direction != Direction.N && LocomotivePowerSupply.MainPowerSupplyOn)
             {
-                float maxPowerW = float.MaxValue;
-                float targetPowerW = float.MaxValue;
+                float targetForceN = GetAvailableTractionForceN(t);
+                float limitForceN = GetAvailableTractionForceN(maxthrottle);
                 float maxForceN = float.MaxValue;
-                float targetForceN;
+                if (limitForceN >= targetForceN)
+                    maxForceN = limitForceN;
                 if (this is MSTSElectricLocomotive electric)
                 {
-                    maxPowerW = electric.ElectricPowerSupply.AvailableTractionPowerW;
-                    if (electric.ElectricPowerSupply.MaximumPowerW > 0)
-                    {
-                        maxPowerW = Math.Min(maxPowerW, electric.ElectricPowerSupply.MaximumPowerW * maxthrottle);
-                        targetPowerW = electric.ElectricPowerSupply.MaximumPowerW * t;
-                    }
+                    float maxPowerW = electric.ElectricPowerSupply.AvailableTractionPowerW;
+                    if (targetForceN * AbsTractionSpeedMpS > maxPowerW) maxForceN = maxPowerW / AbsTractionSpeedMpS;
                 }
-                if (TractiveForceCurves == null)
-                {
-                    maxPowerW = Math.Min(maxPowerW, MaxPowerW * maxthrottle * maxthrottle * (1 - PowerReduction));
-                    targetPowerW = Math.Min(targetPowerW, MaxPowerW * t * t * (1 - PowerReduction));
-
-                    if (AbsTractionSpeedMpS > MaxSpeedMpS - 0.05f)
-                    {
-                        maxForceN = 20 * (MaxSpeedMpS - AbsTractionSpeedMpS) * MaxForceN * (1 - PowerReduction);
-                    }
-                    else if (AbsTractionSpeedMpS > MaxSpeedMpS)
-                    {
-                        maxForceN = 0;
-                    }
-                    else
-                    {
-                        maxForceN = MaxForceN * (1 - PowerReduction);
-                    }
-                    targetForceN = maxForceN * t;
-                    maxForceN *= maxthrottle;
-                }
-                else
-                {
-                    targetForceN = TractiveForceCurves.Get(t, AbsTractionSpeedMpS) * (1 - PowerReduction);
-                    float limitForceN = TractiveForceCurves.Get(maxthrottle, AbsTractionSpeedMpS) * (1 - PowerReduction);
-                    if (targetForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
-                        targetForceN = 0;
-                    if (limitForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
-                        limitForceN = 0;
-                    if (limitForceN >= targetForceN)
-                        maxForceN = limitForceN;
-                }
-                CalculateForcePowerLimit(ref targetForceN, ref maxForceN, targetPowerW, maxPowerW);
-                CurrentMaxTractionForceN = maxForceN;
                 UpdateForceWithRamp(ref TractionForceN, elapsedClockSeconds, targetForceN, maxForceN, TractionForceRampUpNpS, TractionForceRampDownNpS, TractionForceRampDownToZeroNpS);
             }
             else
             {
-                CurrentMaxTractionForceN = TractionForceN = 0f;
+                TractionForceN = 0f;
             }
             TractiveForceN = TractionForceN;
+        }
+        public float GetAvailableDynamicBrakeForceN(float d)
+        {
+            float forceN = 0;
+            if (d > 0 && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
+            {
+                forceN = DynamicBrakeForceCurves.Get(d, AbsSpeedMpS) * (1 - PowerReduction);
+                if (LocomotivePowerSupply.MaximumDynamicBrakePowerW > 0)
+                {
+                    float powerW = LocomotivePowerSupply.MaximumDynamicBrakePowerW * (1 - PowerReduction);
+                    if (forceN * AbsSpeedMpS > powerW) forceN = powerW / AbsSpeedMpS;
+                }
+            }
+            return forceN;
         }
         protected virtual void UpdateDynamicBrakeForce(float elapsedClockSeconds)
         {
@@ -2624,26 +2625,16 @@ namespace Orts.Simulation.RollingStocks
             if (dynamicLimited) d = maxdynamic;
             d = MathHelper.Clamp(d, 0, 1);
 
-            if (maxdynamic > 0 && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
+            if (maxdynamic > 0 && AbsSpeedMpS > 0)
             {
-                float maxPowerW = float.MaxValue;
-                float targetPowerW = float.MaxValue;
-                float targetForceN = DynamicBrakeForceCurves.Get(d, AbsTractionSpeedMpS) * (1 - PowerReduction);
-                float limitForceN = DynamicBrakeForceCurves.Get(maxdynamic, AbsTractionSpeedMpS) * (1 - PowerReduction);
+                float limitForceN = GetAvailableDynamicBrakeForceN(maxdynamic);
+                float targetForceN = GetAvailableDynamicBrakeForceN(d);
                 float maxForceN = limitForceN >= targetForceN ? limitForceN : float.MaxValue;
-                if (LocomotivePowerSupply.MaximumDynamicBrakePowerW > 0)
-                {
-                    maxPowerW = LocomotivePowerSupply.MaximumDynamicBrakePowerW * (1 - PowerReduction);
-                    targetPowerW = maxPowerW * d;
-                    maxPowerW *= maxdynamic;
-                }
-                CalculateForcePowerLimit(ref targetForceN, ref maxForceN, targetPowerW, maxPowerW);
-                CurrentMaxDynamicBrakeForceN = maxForceN;
                 UpdateForceWithRamp(ref DynamicBrakeForceN, elapsedClockSeconds, targetForceN, maxForceN, DynamicBrakeForceRampUpNpS, DynamicBrakeForceRampDownNpS, DynamicBrakeForceRampDownToZeroNpS);
             }
             else
             {
-                CurrentMaxDynamicBrakeForceN = DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0 position
+                DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0 position
             }
             TractiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * DynamicBrakeForceN;
         }
