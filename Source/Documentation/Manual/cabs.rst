@@ -61,23 +61,25 @@ The following DMI size variants are available: FullSize (displays the whole DMI)
 The information displayed in the DMI is controlled via the TCS script. For more details,
 see :ref:`C# engine scripting - Train Control System <features-scripting-tcs>`.
 
-.. _cabs-battery-switch:
+.. _cabs-battery:
 
-Battery switch
---------------
+Battery
+-------
 
 .. index::
    single: ORTS_BATTERY_SWITCH_COMMAND_SWITCH
    single: ORTS_BATTERY_SWITCH_COMMAND_BUTTON_CLOSE
    single: ORTS_BATTERY_SWITCH_ON
+   single: ORTS_BATTERY_VOLTAGE
 
-The :ref:`battery switch <physics-battery-switch>` controls the low voltage power supply of the locomotive.
+The :ref:`battery subsystem <physics-battery>` controls the low voltage power supply of the locomotive.
 
 The following controls are available for the cabview:
 
-- ``ORTS_BATTERY_SWITCH_COMMAND_SWITCH`` can be used if the switch is directly controlled from the cab
+- ``ORTS_BATTERY_SWITCH_COMMAND_SWITCH`` can be used if the battery switch is directly controlled from the cab
 - ``ORTS_BATTERY_SWITCH_COMMAND_BUTTON_CLOSE`` and ``ORTS_BATTERY_SWITCH_COMMAND_BUTTON_OPEN`` can be used if the switch is controlled with two pushbuttons (one to close the switch and the other to open it)
 - ``ORTS_BATTERY_SWITCH_ON`` can be used to control a light on the cab showing the state of the battery switch
+- ``ORTS_BATTERY_VOLTAGE`` monitors the battery voltage
 
 Other controls can be disabled if the low voltage power supply is not available using the following parameter::
 
@@ -165,6 +167,24 @@ The following controls are available for the cabview:
 
 - ``ORTS_ELECTRIC_TRAIN_SUPPLY_COMMAND_SWITCH`` can be used to control the electric train supply switch
 - ``ORTS_ELECTRIC_TRAIN_SUPPLY_ON`` can be used to indicate that the electric train supply line is powered on
+
+.. _cabs-voltmeters:
+
+Voltmeters
+----------
+
+.. index::
+   single: LINE_VOLTAGE
+   single: ORTS_PANTOGRAPH_VOLTAGE_AC
+   single: ORTS_PANTOGRAPH_VOLTAGE_DC
+   single: ORTS_BATTERY_VOLTAGE
+
+The following voltmeters are available for the cabview:
+
+- ``LINE_VOLTAGE`` indicates the line voltage
+- ``ORTS_PANTOGRAPH_VOLTAGE_AC`` indicates the line voltage when operating on AC lines
+- ``ORTS_PANTOGRAPH_VOLTAGE_DC`` indicates the line voltage when operating on DC lines
+- ``ORTS_BATTERY_VOLTAGE`` indicates the vehicle's battery voltage
 
 .. _cabs-dieselenginesonoff:
 
