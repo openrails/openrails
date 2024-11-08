@@ -296,11 +296,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         DecreasePressure(ref pressureBar, x, ReleaseRateBarpS(), elapsedClockSeconds);
                         break;
                 }
-                if (pressureBar > MaxPressureBar())
-                    pressureBar = MaxPressureBar();
-                if (pressureBar < 0)
-                    pressureBar = 0;
             }
+
+            float ccdemand = CruiseControlBrakeDemand();
+            if (ccdemand > 0)
+            {
+                pressureBar = Math.Max((MaxPressureBar() - FullServReductionBar()) * ccdemand, pressureBar);
+            }
+
+            if (pressureBar > MaxPressureBar())
+                pressureBar = MaxPressureBar();
+            if (pressureBar < 0)
+                pressureBar = 0;
         }
 
         public override void HandleEvent(BrakeControllerEvent evt)

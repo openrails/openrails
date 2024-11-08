@@ -103,7 +103,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float DynamicBrakeMaxForceAtSelectorStep = 0;
         public float? ThrottlePercent { get; private set;}
         public float? DynamicBrakePercent { get; private set;}
-        public float TrainBrakePercent { get; private set;}
+        public float TrainBrakePercent { get; private set; }
+        public float EngineBrakePercent { get; private set; }
         protected float trainLength = 0;
         public int TrainLengthMeters = 0;
         public float CurrentSelectedSpeedMpS = 0;
@@ -447,6 +448,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 ThrottlePercent = null;
                 DynamicBrakePercent = null;
                 TrainBrakePercent = 0;
+                EngineBrakePercent = 0;
                 return;
             }
 
@@ -477,6 +479,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 ThrottlePercent = null;
                 DynamicBrakePercent = null;
                 TrainBrakePercent = 0;
+                EngineBrakePercent = 0;
             }
             else if (SpeedRegMode == SpeedRegulatorMode.Auto)
             {
@@ -500,12 +503,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     timeFromEngineMoved = 0;
                     reducingForce = true;
                 }
-                if (SpeedRegulatorOptions.Contains("engageforceonnonzerospeed") && SelectedSpeedMpS > 0)
+                if (SpeedRegulatorOptions.Contains("engageforceonnonzerospeed") && SelectedSpeedMpS > 0 && (SpeedSelMode != SpeedSelectorMode.Parking || !ForceResetRequiredAfterBraking || (WasForceReset && SelectedMaxAccelerationPercent > 0)))
                 {
                     SpeedSelMode = SpeedSelectorMode.On;
                     SpeedRegMode = SpeedRegulatorMode.Auto;
                     SkipThrottleDisplay = true;
                     reducingForce = false;
+                }
+                else if (SpeedRegulatorOptions.Contains("engageparkingonzerospeed") && SelectedSpeedMpS == 0 && Locomotive.AbsWheelSpeedMpS <= (SpeedIsMph ? MpS.FromMpH(ParkingBrakeEngageSpeed) : MpS.FromKpH(ParkingBrakeEngageSpeed)) && SpeedSelMode != SpeedSelectorMode.Parking)
+                {
+                    SpeedSelMode = SpeedSelectorMode.Parking;
+                    WasForceReset = false;
                 }
                 if (Locomotive.TrainBrakeController.MaxPressurePSI - Locomotive.BrakeSystem.BrakeLine1PressurePSI < 1 && Locomotive.Train.BrakeLine4 <= 0)
                 {
@@ -542,9 +550,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     (ForceResetRequiredAfterBraking && (TrainBrakeCommandHasPriorityOverAcceleratingCruiseControl && (CCThrottleOrDynBrakePercent > 0 || TrainBrakeCommandHasPriorityOverCruiseControl)) &&
                         (!WasForceReset || (WasBraking && SelectedMaxAccelerationPercent > 0))))
                 {
-                    if (SpeedSelMode == SpeedSelectorMode.Parking)
-                        if (Locomotive.AbsWheelSpeedMpS < (SpeedIsMph ? MpS.FromMpH(ParkingBrakeEngageSpeed) : MpS.FromKpH(ParkingBrakeEngageSpeed)))
-                            Locomotive.SetEngineBrakePercent(ParkingBrakePercent);
                     CCThrottleOrDynBrakePercent = 0;
                     TrainBrakePercent = 0;
                 }
@@ -567,6 +572,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 }
                 else if (CCThrottleOrDynBrakePercent < 0) DynamicBrakePercent = -CCThrottleOrDynBrakePercent;
                 else DynamicBrakePercent = -1;
+                if (SpeedSelMode == SpeedSelectorMode.Parking && !EngineBrakePriority)
+                {
+                    if (Locomotive.AbsWheelSpeedMpS <= (SpeedIsMph ? MpS.FromMpH(ParkingBrakeEngageSpeed) : MpS.FromKpH(ParkingBrakeEngageSpeed)))
+                        EngineBrakePercent = ParkingBrakePercent;
+                }
+                else
+                {
+                    EngineBrakePercent = 0;
+                }
                 if (!IsActive && wasActive)
                 {
                     CCIsUsingTrainBrake = false;
@@ -724,7 +738,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             while (!test)
             {
                 SpeedSelMode++;
-                if (SpeedSelMode != SpeedSelectorMode.Parking && !EngineBrakePriority) Locomotive.SetEngineBrakePercent(0);
                 switch (SpeedSelMode)
                 {
                     case SpeedSelectorMode.Neutral: if (SpeedRegulatorOptions.Contains("selectorneutral")) test = true; break;
@@ -1194,9 +1207,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 {
                     CCThrottleOrDynBrakePercent = 0;
                 }
-
-                if (AbsWheelSpeedMpS < (SpeedIsMph ? MpS.FromMpH(ParkingBrakeEngageSpeed) : MpS.FromKpH(ParkingBrakeEngageSpeed)))
-                    Locomotive.SetEngineBrakePercent(ParkingBrakePercent);
             }
             else if (SpeedSelMode == SpeedSelectorMode.Neutral || SpeedSelMode < SpeedSelectorMode.Start && !SpeedRegulatorOptions.Contains("startfromzero") && AbsWheelSpeedMpS < SafeSpeedForAutomaticOperationMpS)
             {
