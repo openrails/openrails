@@ -18,8 +18,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net;
-using Newtonsoft.Json.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
 using ORTS.Common;
 
 namespace ORTS.Settings
@@ -43,6 +44,7 @@ namespace ORTS.Settings
         internal static readonly DateTime StateDisabled = new DateTime(1899, 1, 2);
         internal static readonly DateTime StateEnabledMin = new DateTime(1900, 1, 1);
 
+        static readonly HttpClient HttpClient = new HttpClient();
         static readonly Dictionary<TelemetryType, TimeSpan> Frequency = new Dictionary<TelemetryType, TimeSpan>
         {
             { TelemetryType.System, TimeSpan.FromDays(7) },
@@ -67,6 +69,8 @@ namespace ORTS.Settings
             {
                 RandomNumber1000.Value = new Random().Next(1, 1001);
             }
+
+            HttpClient.DefaultRequestHeaders.Add("User-Agent", $"{ApplicationInfo.ProductName}/{VersionInfo.VersionOrBuild}");
         }
 
         /// <summary>
@@ -94,6 +98,54 @@ namespace ORTS.Settings
             {
                 State[type].Value = state == TelemetryState.Enabled ? StateEnabledMin : state == TelemetryState.Disabled ? StateDisabled : StateUndecided;
             }
+        }
+
+        /// <summary>
+        /// Returns true if the specified telemetry type is enabled and due to be sent.
+        /// </summary>
+        /// <param name="type">Which telemetry type to check</param>
+        /// <returns>Whether to send the telemetry</returns>
+        public bool IsDue(TelemetryType type)
+        {
+            Debug.Assert(State.ContainsKey(type), "Telemetry type is not valid");
+            if (GetState(type) != TelemetryState.Enabled) return false;
+            // If the frequency is not set, it is always due (i.e. not rate limited)
+            if (!Frequency.ContainsKey(type)) return true;
+            var lastPeriod = State[type].Value.Ticks / Frequency[type].Ticks;
+            var thisPeriod = DateTime.Now.Ticks / Frequency[type].Ticks;
+            return lastPeriod != thisPeriod;
+        }
+
+        /// <summary>
+        /// Submits the specified telemetry type if it is enabled and due to be sent.
+        /// </summary>
+        /// <param name="type">Which telemetry type to submit</param>
+        /// <param name="generator">Function to generate the telemetry data</param>
+        public async Task SubmitIfDue(TelemetryType type, Func<object> generator)
+        {
+            Debug.Assert(State.ContainsKey(type), "Telemetry type is not valid");
+            if (!IsDue(type)) return;
+            var url = $"{Settings.ServerURL}/api/collect/{type.ToString().ToLowerInvariant()}";
+            var data = JsonConvert.SerializeObject(generator());
+            try
+            {
+                await HttpClient.PostAsync(url, new StringContent(data, System.Text.Encoding.UTF8, "application/json"));
+                SetSent(type);
+            }
+            catch (Exception)
+            {
+                // FIXME:
+            }
+        }
+
+        /// <summary>
+        /// Sets the specified telemetry type as sent, recording the current date/time.
+        /// </summary>
+        /// <param name="type">Which telemetry type to set</param>
+        public void SetSent(TelemetryType type)
+        {
+            Debug.Assert(State.ContainsKey(type), "Telemetry type is not valid");
+            State[type].Value = DateTime.Now;
         }
     }
 }

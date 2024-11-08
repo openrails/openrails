@@ -1,4 +1,4 @@
-// COPYRIGHT 2009 - 2024 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2024 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -24,6 +24,8 @@ namespace ORTS.Settings
     {
         [Default(0)]
         public int RandomNumber1000 { get; set; }
+        [Default("https://telemetry.openrails.org")]
+        public string ServerURL { get; set; }
         public DateTime StateSystem { get; set; }
 
         public TelemetrySettings()

@@ -267,6 +267,7 @@ namespace ORTS
             ShowTimetableEnvironment();
 
             CheckForUpdate();
+            CheckForTelemetry();
 
             if (!Initialized)
             {
@@ -344,6 +345,21 @@ namespace ORTS
         public virtual void OnCheckUpdatesAgain(EventArgs e)
         {
             CheckForUpdate();
+        }
+
+        void CheckForTelemetry()
+        {
+            // DO NOT await this call as we want it to run in the background
+            _ = TelemetryManager.SubmitIfDue(TelemetryType.System, () => new
+            {
+                SystemInfo.Application,
+                SystemInfo.Runtime,
+                SystemInfo.OperatingSystem,
+                SystemInfo.InstalledMemoryMB,
+                SystemInfo.CPUs,
+                SystemInfo.GPUs,
+                SystemInfo.Direct3DFeatureLevels
+            });
         }
 
         void LoadLanguage()
