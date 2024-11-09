@@ -24,6 +24,7 @@ What's been added
 - more accurate wheelslip using Polach adhesion
 - duplex and booster steam engines (e.g. T1 class) 
 - cloud-free skies
+- sounds conditional on season, weather and time of day
 - more air and dynamic brake options for locos
 - mouse control for scripted brake controllers
 
