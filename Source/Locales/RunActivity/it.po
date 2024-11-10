@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2024-11-09 17:45:36+0100\n"
-"PO-Revision-Date: 2024-11-10 18:57+0100\n"
+"PO-Revision-Date: 2024-11-10 21:17+0100\n"
 "Last-Translator: Strawberryfield <strawberry.field@libero.it>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: it\n"
@@ -130,10 +130,8 @@ msgid "messages suppressed"
 msgstr "messaggi soppressi"
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:1130
-#, fuzzy
-#| msgid "Car labels visible."
 msgid "All messages visible"
-msgstr "Nomi carri visibili."
+msgstr "Tutti i messaggi visibili."
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:1295
 msgid "Switched to player control"
@@ -307,10 +305,8 @@ msgstr "Messaggio al giocatore selezionato"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.cs:177
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:822
-#, fuzzy
-#| msgid "Reply to Selected"
 msgid "Reply to the selected player"
-msgstr "Risp. a lista"
+msgstr "Rispondi al giocatore selezionato"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.cs:179
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:842
@@ -321,10 +317,8 @@ msgstr "Giocatore"
 #: ../../RunActivity/Viewer3D/Map/MapForm.cs:180
 #: ../../RunActivity/Viewer3D/Map/MapForm.cs:1881
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:849
-#, fuzzy
-#| msgid "You are no longer an assistant."
 msgid "Make this player an assistant"
-msgstr "Non sei più un assistente."
+msgstr "Fai diventare questo giocatore un assistente."
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.cs:181
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:856
@@ -348,17 +342,13 @@ msgstr "Imposta lo scambio a..."
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.cs:186
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:897
-#, fuzzy
-#| msgid "main route"
 msgid "Main route"
-msgstr "itinerario principale"
+msgstr "Itinerario principale"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.cs:187
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:905
-#, fuzzy
-#| msgid "side route"
 msgid "Side route"
-msgstr "itinerario secondario"
+msgstr "Itinerario secondario"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.cs:189
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:927
@@ -372,11 +362,8 @@ msgstr "Controllato dal sistema"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.cs:191
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:943
-#, fuzzy
-#| msgctxt "DieselEngine"
-#| msgid "Stopped"
 msgid "Stop"
-msgstr "Spento"
+msgstr ""
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.cs:192
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:951
@@ -385,10 +372,8 @@ msgstr "Avvicinamento"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.cs:193
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:960
-#, fuzzy
-#| msgid "Procedures"
 msgid "Proceed"
-msgstr "Procedure"
+msgstr "Procedi"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.cs:195
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:989
@@ -411,10 +396,8 @@ msgid "Helper"
 msgstr "Assistente"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.cs:451
-#, fuzzy
-#| msgid "disconnected"
 msgid "Disconnected"
-msgstr "disconnesso"
+msgstr "Disconnesso"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.cs:1656
 msgid "Switching Request Sent to the Server"
@@ -441,14 +424,10 @@ msgid ">"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:298
-#, fuzzy
-#| msgid "Usage:"
 msgid "Messages:"
-msgstr "Usato:"
+msgstr "Messaggi:"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:325
-#, fuzzy
-#| msgid "Simulation Time"
 msgid "Simulation time"
 msgstr "Tempo di Simulazione"
 
@@ -461,16 +440,12 @@ msgid "All trains"
 msgstr "Tutti i treni"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:385
-#, fuzzy
-#| msgid "Inactive sounds"
 msgid "Only active trains"
-msgstr "Suoni inattivi"
+msgstr "Solo treni attivi"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:395
-#, fuzzy
-#| msgid "Train static."
 msgid "Train state"
-msgstr "Treno statico."
+msgstr "Stato del treno"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:405
 msgid "Train labels"
@@ -509,10 +484,8 @@ msgid "Rotate between themes"
 msgstr "Ruotare tra i temi"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:498
-#, fuzzy
-#| msgid "Simulation Time"
 msgid "Show simulation time"
-msgstr "Tempo di Simulazione"
+msgstr "Mostra il tempo di simulazione"
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:508
 msgid "Use anti-aliasing"
@@ -575,10 +548,8 @@ msgid "Allow call on"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Map/MapForm.Designer.cs:1006
-#, fuzzy
-#| msgid "Close window"
 msgid "Map window"
-msgstr "Chiudi finestra"
+msgstr "Finestra della mappa"
 
 #: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:45
 msgid "Activity Events"
@@ -662,41 +633,29 @@ msgid "Car ID"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:91
-#, fuzzy
-#| msgid "Handbrake"
 msgid "Unset Handbrake"
-msgstr "Freno a mano"
+msgstr "Rimuovi freno a mano"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:93
-#, fuzzy
-#| msgid "Handbrake"
 msgid "Set Handbrake"
-msgstr "Freno a mano"
+msgstr "Inserisci freno a mano"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:100
-#, fuzzy
-#| msgid "Power"
 msgid "Power Off"
-msgstr "Alimentazione"
+msgstr "Spento"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:102
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:104
-#, fuzzy
-#| msgid "Power"
 msgid "Power On"
-msgstr "Alimentazione"
+msgstr "Acceso"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:109
-#, fuzzy
-#| msgid "Toggle MU Connection"
 msgid "Disconnect MU Connection"
-msgstr "Inverti connessione MU"
+msgstr "Disconnetti connessione MU"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:111
-#, fuzzy
-#| msgid "Toggle MU Connection"
 msgid "Connect MU Connection"
-msgstr "Inverti connessione MU"
+msgstr "Connetti connessione MU"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:116
 msgid "Battery Switch Off"
@@ -707,16 +666,12 @@ msgid "Battery Switch On"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:123
-#, fuzzy
-#| msgid "Toggle Electric Train Supply Connection"
 msgid "Disonnect Electric Train Supply"
-msgstr "Attiva / Disattiva connessione alimentazione elettrica"
+msgstr "Disconnetti alimentazione elettrica"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:125
-#, fuzzy
-#| msgid "Toggle Electric Train Supply Connection"
 msgid "Connect Electric Train Supply"
-msgstr "Attiva / Disattiva connessione alimentazione elettrica"
+msgstr "Connetti alimentazione elettrica"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:131
 msgid "Disconnect Front Brake Hose"
@@ -731,10 +686,8 @@ msgid "Disconnect Rear Brake Hose"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:142
-#, fuzzy
-#| msgid "Brake Hose"
 msgid "Connect Rear Brake Hose"
-msgstr "Condotta freno"
+msgstr "Connettere la condotta freno posteriore"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:149
 #, fuzzy
@@ -761,16 +714,12 @@ msgid "Open Rear Angle Cock"
 msgstr "Apri / Chiudi rubinetto posteriore"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:167
-#, fuzzy
-#| msgid "Open/Close Bleed Off Valve"
 msgid "Close Bleed Off Valve"
-msgstr "Apri / Chiudi valvola spurgo"
+msgstr "Chiudi valvola spurgo"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:169
-#, fuzzy
-#| msgid "Open/Close Bleed Off Valve"
 msgid "Open Bleed Off Valve"
-msgstr "Apri / Chiudi valvola spurgo"
+msgstr "Apri valvola spurgo"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:174
 msgid "Close window"
@@ -866,18 +815,14 @@ msgstr "Condotta freni anteriore disconnessa"
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:352
 #: ../../RunActivity/Viewer3D/Popups/TrainCarOperationsViewerWindow.cs:800
 #: ../../RunActivity/Viewer3D/WebServices/TrainCarOperationsWebpage.cs:833
-#, fuzzy
-#| msgid "Front brake hose connected"
 msgid "Rear brake hose connected"
-msgstr "Condotta freni anteriore connessa"
+msgstr "Condotta freni posteriore connessa"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:354
 #: ../../RunActivity/Viewer3D/Popups/TrainCarOperationsViewerWindow.cs:805
 #: ../../RunActivity/Viewer3D/WebServices/TrainCarOperationsWebpage.cs:837
-#, fuzzy
-#| msgid "Front brake hose disconnected"
 msgid "Rear brake hose disconnected"
-msgstr "Condotta freni anteriore disconnessa"
+msgstr "Condotta freni posteriore disconnessa"
 
 #: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:364
 #: ../../RunActivity/Viewer3D/Popups/TrainCarOperationsViewerWindow.cs:845
@@ -2379,10 +2324,8 @@ msgid " Milepost   Limit     Dist"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainCarOperationsViewerWindow.cs:144
-#, fuzzy
-#| msgid "Train Operations"
 msgid "Train Operations Viewer"
-msgstr "Operazioni Treno"
+msgstr "Visualizzatore Operazioni Treno"
 
 #: ../../RunActivity/Viewer3D/Popups/TrainCarOperationsViewerWindow.cs:566
 #: ../../RunActivity/Viewer3D/Popups/TrainCarOperationsViewerWindow.cs:600
@@ -3240,17 +3183,13 @@ msgstr "Chiuso"
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:802
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:356
-#, fuzzy
-#| msgid "engage"
 msgid "Engaged"
-msgstr "ripristinata"
+msgstr "Ripristinata"
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:812
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:366
-#, fuzzy
-#| msgid "disengage"
 msgid "Disengaged"
-msgstr "azzerata"
+msgstr "Azzerata"
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:837
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:391
@@ -3485,6 +3424,8 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Processes/GameStateRunActivity.cs:379
 msgid "Game save is not allowed during container load/unload"
 msgstr ""
+"Il salvataggio del gioco non è consentito durante il caricamento/"
+"scaricamento del container"
 
 #: ../../RunActivity/Viewer3D/Processes/GameStateRunActivity.cs:1305
 #, csharp-format
@@ -3541,10 +3482,8 @@ msgid "mail"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:457
-#, fuzzy
-#| msgid "Retainers"
 msgid "container"
-msgstr "Fermi"
+msgstr ""
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:605
 msgid "Refill: Immediate refill process selected, refilling immediately."
@@ -3567,10 +3506,9 @@ msgid "Starting refill"
 msgstr "Inizio rifornimento"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:636
-#, fuzzy, csharp-format
-#| msgid "Refill: Distance to {0} supply is {1}."
+#, csharp-format
 msgid "Container crane: Distance to {0} supply is {1}."
-msgstr "Rifornimento: La distanza dal rifornimento {0} è {1}."
+msgstr "Gru per container: La distanza dalla fornitura {0} è {1}."
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:647
 #, csharp-format
@@ -3605,17 +3543,17 @@ msgstr "Scarico: {0} carburante o merce scaricati."
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:733
 msgid "wag file not equipped for containers"
-msgstr ""
+msgstr "file wag non configurato per i container"
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:738
 #, csharp-format
 msgid "{0} now loaded."
-msgstr ""
+msgstr "{0} ora caricato."
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:744
 #, csharp-format
 msgid "{0} now unloaded."
-msgstr ""
+msgstr "{0} ora scaricato."
 
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:637
 #: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:648
@@ -3628,7 +3566,7 @@ msgstr[1] "{0} metri"
 #: ../../RunActivity/Viewer3D/RollingStock/SubSystems/ETCS/DataEntry.cs:502
 #: ../../RunActivity/Viewer3D/RollingStock/SubSystems/ETCS/DataEntry.cs:512
 msgid "Next"
-msgstr ""
+msgstr "Successivo"
 
 #: ../../RunActivity/Viewer3D/RollingStock/SubSystems/ETCS/DriverMachineInterface.cs:572
 msgid "Close"
@@ -3701,36 +3639,27 @@ msgstr ""
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:168
-#, fuzzy
-#| msgid "Switch Ahead"
 msgctxt "SwitchPanel"
 msgid "Switch Ahead"
 msgstr "Scambio Davanti"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:171
-#, fuzzy
-#| msgid "Switch Behind"
 msgctxt "SwitchPanel"
 msgid "Switch Behind"
 msgstr "Scambio Dietro"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:174
-#, fuzzy
-#| msgctxt "Cab"
-#| msgid "change"
 msgctxt "SwitchPanel"
 msgid "Change Cab"
-msgstr "cambia"
+msgstr "Cambia cabina"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:177
-#, fuzzy
-#| msgid "Lap"
 msgctxt "SwitchPanel"
 msgid "Map"
-msgstr "Leggero"
+msgstr "Mappa"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:180
@@ -3770,11 +3699,9 @@ msgstr ""
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:195
-#, fuzzy
-#| msgid "Train Operations"
 msgctxt "SwitchPanel"
 msgid "Train Driving"
-msgstr "Operazioni Treno"
+msgstr "Guida treno"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:198
@@ -3786,8 +3713,6 @@ msgstr "Scambi"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:201
-#, fuzzy
-#| msgid "Train Operations"
 msgctxt "SwitchPanel"
 msgid "Train Operations"
 msgstr "Operazioni Treno"
@@ -3802,8 +3727,6 @@ msgstr "Condotta Treno"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:207
-#, fuzzy
-#| msgid "Next Station"
 msgctxt "SwitchPanel"
 msgid "Next Station"
 msgstr "Prossima stazione"
@@ -3826,115 +3749,87 @@ msgstr "Lista treni"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:216
-#, fuzzy
-#| msgid "Direction"
 msgctxt "SwitchPanel"
 msgid "Direction"
 msgstr "Direzione"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:219
-#, fuzzy
-#| msgid "Gear"
 msgctxt "SwitchPanel"
 msgid "Gear"
-msgstr "Cambio"
+msgstr "Marcia"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:222
-#, fuzzy
-#| msgid "Handbrake"
 msgctxt "SwitchPanel"
 msgid "Handbrake"
 msgstr "Freno a mano"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:225
-#, fuzzy
-#| msgid "Brake Hose"
 msgctxt "SwitchPanel"
 msgid "Brake hose"
 msgstr "Condotta freno"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:228
-#, fuzzy
-#| msgid "Alerter"
 msgctxt "SwitchPanel"
 msgid "Alerter"
 msgstr "Allertatore"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:231
-#, fuzzy
-#| msgid "Emergency"
 msgctxt "SwitchPanel"
 msgid "Emergency"
 msgstr "Emergenza"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:234
-#, fuzzy
-#| msgid "Sander"
 msgctxt "SwitchPanel"
 msgid "Sander"
 msgstr "Sabbiera"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:237
-#, fuzzy
-#| msgid "Wipers"
 msgctxt "SwitchPanel"
 msgid "Wiper"
 msgstr "Tergicristalli"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:240
-#, fuzzy
-#| msgid "Doors Left"
 msgctxt "SwitchPanel"
 msgid "Door Left"
 msgstr "Porte a Sinistra"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:243
-#, fuzzy
-#| msgid "Doors Right"
 msgctxt "SwitchPanel"
 msgid "Door Right"
 msgstr "Porte a Destra"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:246
-#, fuzzy
-#| msgid "Right"
 msgctxt "SwitchPanel"
 msgid "Light"
-msgstr "Destra"
+msgstr "Luci"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:249
-#, fuzzy
-#| msgid "Pantograph 1"
 msgctxt "SwitchPanel"
 msgid "Pantograph 1"
 msgstr "Pantografo 1"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:252
-#, fuzzy
-#| msgid "Pantograph 2"
 msgctxt "SwitchPanel"
 msgid "Pantograph 2"
 msgstr "Pantografo 2"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:255
-#, fuzzy
-#| msgid "Auto Switch"
 msgctxt "SwitchPanel"
 msgid "Battery Switch"
-msgstr "Scambio automatico"
+msgstr "Interruttore batteria"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:258
@@ -3972,11 +3867,9 @@ msgstr "Assistente"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:273
-#, fuzzy
-#| msgid "Freight"
 msgctxt "SwitchPanel"
 msgid "Front light"
-msgstr "Carico"
+msgstr "Luce frontale"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:276
@@ -3988,23 +3881,17 @@ msgstr "Sfogo Cil"
 
 #. Context: SwitchPanel
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelDefinition.cs:279
-#, fuzzy
-#| msgid "Retainers"
 msgctxt "SwitchPanel"
 msgid "Retainers"
 msgstr "Fermi"
 
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelStatus.cs:111
-#, fuzzy
-#| msgid "dim"
 msgid "Dim"
-msgstr "a mezza luce"
+msgstr "A mezza luce"
 
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelStatus.cs:115
-#, fuzzy
-#| msgid "bright"
 msgid "Bright"
-msgstr "accesi"
+msgstr "Piena luce"
 
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelStatus.cs:243
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelStatus.cs:266
@@ -4012,10 +3899,8 @@ msgid "Always On"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelStatus.cs:293
-#, fuzzy
-#| msgid "Static"
 msgid "Automatic"
-msgstr "Statico"
+msgstr "Automatico"
 
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelStatus.cs:322
 msgid "Always on"
@@ -4026,10 +3911,8 @@ msgid "Full"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/WebServices/SwitchPanel/SwitchOnPanelStatus.cs:447
-#, fuzzy
-#| msgid "connected"
 msgid "Connected"
-msgstr "connesso"
+msgstr "Connesso"
 
 #~ msgid "MSG to Server"
 #~ msgstr "MSG al Server"
