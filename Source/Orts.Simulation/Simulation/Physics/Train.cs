@@ -4516,27 +4516,9 @@ namespace Orts.Simulation.Physics
                     car.UpdateCurvePhys(traveller, new[] { 0, car.CarBogieCentreLengthM });
                     roll = (roll + traveller.GetVisualElevation()) / 2.0f;
 
-                    // normalize across tile boundaries
-                    while (tileX > traveller.TileX)
-                    {
-                        x += 2048;
-                        --tileX;
-                    }
-                    while (tileX < traveller.TileX)
-                    {
-                        x -= 2048;
-                        ++tileX;
-                    }
-                    while (tileZ > traveller.TileZ)
-                    {
-                        z += 2048;
-                        --tileZ;
-                    }
-                    while (tileZ < traveller.TileZ)
-                    {
-                        z -= 2048;
-                        ++tileZ;
-                    }
+                    // Normalize across tile boundaries
+                    x += 2048 * (tileX - traveller.TileX);
+                    z += 2048 * (tileZ - traveller.TileZ);
 
                     car.WorldPosition.XNAMatrix = Matrix.Identity;
                     if (!car.Flipped)
@@ -4546,13 +4528,19 @@ namespace Orts.Simulation.Physics
                         car.WorldPosition.XNAMatrix.M33 = -1;
                     }
 
-                    // Position car based on MSTS position, and rotate based on superelevation
+                    // Position car based on position of the front and rear of the car
                     car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y, traveller.Z, x, y, z);
+
+                    // Update gravity force when position is updated, but before any secondary motion is added
+                    Vector3 fwd = car.WorldPosition.XNAMatrix.Backward;
+                    car.GravityForceN = car.MassKG * TrainCar.GravitationalAccelerationMpS2 * fwd.Y;
+                    car.CurrentElevationPercent = 100f * (fwd.Y / (float)Math.Sqrt(1 - fwd.Y * fwd.Y));
+
+                    // Apply superelevation to car
                     car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
 
                     // note the railcar sits 0.275meters above the track database path  TODO - is this always consistent?
-                    float railOffset = 0.275f;
-                    car.WorldPosition.XNAMatrix.Translation += car.WorldPosition.XNAMatrix.Up * railOffset;
+                    car.WorldPosition.XNAMatrix.Translation += car.WorldPosition.XNAMatrix.Up * 0.275f;
 
                     car.WorldPosition.TileX = traveller.TileX;
                     car.WorldPosition.TileZ = traveller.TileZ;
@@ -4649,27 +4637,9 @@ namespace Orts.Simulation.Physics
                     car.UpdateCurvePhys(traveller, new[] { 0, car.CarBogieCentreLengthM });
                     roll = (roll + traveller.GetVisualElevation()) / 2.0f;
 
-                    // normalize across tile boundaries
-                    while (tileX > traveller.TileX)
-                    {
-                        x += 2048;
-                        --tileX;
-                    }
-                    while (tileX < traveller.TileX)
-                    {
-                        x -= 2048;
-                        ++tileX;
-                    }
-                    while (tileZ > traveller.TileZ)
-                    {
-                        z += 2048;
-                        --tileZ;
-                    }
-                    while (tileZ < traveller.TileZ)
-                    {
-                        z -= 2048;
-                        ++tileZ;
-                    }
+                    // Normalize across tile boundaries
+                    x += 2048 * (tileX - traveller.TileX);
+                    z += 2048 * (tileZ - traveller.TileZ);
 
                     car.WorldPosition.XNAMatrix = Matrix.Identity;
                     if (car.Flipped)
@@ -4679,20 +4649,26 @@ namespace Orts.Simulation.Physics
                         car.WorldPosition.XNAMatrix.M33 = -1;
                     }
 
-                    // Position car based on MSTS position, and rotate based on superelevation
+                    // Position car based on position of the front and rear of the car
                     car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y, traveller.Z, x, y, z);
+
+                    // Update gravity force when position is updated, but before any secondary motion is added
+                    Vector3 fwd = car.WorldPosition.XNAMatrix.Backward;
+                    car.GravityForceN = car.MassKG * TrainCar.GravitationalAccelerationMpS2 * fwd.Y;
+                    car.CurrentElevationPercent = 100f * (fwd.Y / (float)Math.Sqrt(1 - fwd.Y * fwd.Y));
+
+                    // Apply superelevation to car
                     car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
 
                     // note the railcar sits 0.275meters above the track database path  TODO - is this always consistent?
-                    float railOffset = 0.275f;
-                    car.WorldPosition.XNAMatrix.Translation += car.WorldPosition.XNAMatrix.Up * railOffset;
+                    car.WorldPosition.XNAMatrix.Translation += car.WorldPosition.XNAMatrix.Up * 0.275f;
 
                     car.WorldPosition.TileX = traveller.TileX;
                     car.WorldPosition.TileZ = traveller.TileZ;
 
                     traveller.Move((car.CarLengthM - car.CarBogieCentreLengthM) / 2.0f);  // Move to the front of the car 
 
-                    car.UpdateVibration(traveller, elapsedTime, distance, SpeedMpS);
+                    car.UpdateVibration(traveller, elapsedTime, distance);
                 }
                 length += car.CarLengthM;
                 // update position of container in discrete freight animations
@@ -4742,27 +4718,9 @@ namespace Orts.Simulation.Physics
                 car.UpdateCurvePhys(traveller, new[] { 0, car.CarBogieCentreLengthM });
                 roll = (roll + traveller.GetVisualElevation()) / 2.0f;
 
-                // normalize across tile boundaries
-                while (tileX > traveller.TileX)
-                {
-                    x += 2048;
-                    --tileX;
-                }
-                while (tileX < traveller.TileX)
-                {
-                    x -= 2048;
-                    ++tileX;
-                }
-                while (tileZ > traveller.TileZ)
-                {
-                    z += 2048;
-                    --tileZ;
-                }
-                while (tileZ < traveller.TileZ)
-                {
-                    z -= 2048;
-                    ++tileZ;
-                }
+                // Normalize across tile boundaries
+                x += 2048 * (tileX - traveller.TileX);
+                z += 2048 * (tileZ - traveller.TileZ);
 
                 car.WorldPosition.XNAMatrix = Matrix.Identity;
                 if (car.Flipped)
@@ -4772,20 +4730,26 @@ namespace Orts.Simulation.Physics
                     car.WorldPosition.XNAMatrix.M33 = -1;
                 }
 
-                // Position car based on MSTS position, and rotate based on superelevation
+                // Position car based on position of the front and rear of the car
                 car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y, traveller.Z, x, y, z);
+
+                // Update gravity force when position is updated, but before any secondary motion is added
+                Vector3 fwd = car.WorldPosition.XNAMatrix.Backward;
+                car.GravityForceN = car.MassKG * TrainCar.GravitationalAccelerationMpS2 * fwd.Y;
+                car.CurrentElevationPercent = 100f * (fwd.Y / (float)Math.Sqrt(1 - fwd.Y * fwd.Y));
+
+                // Apply superelevation to car
                 car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
 
                 // note the railcar sits 0.275meters above the track database path  TODO - is this always consistent?
-                float railOffset = 0.275f;
-                car.WorldPosition.XNAMatrix.Translation += car.WorldPosition.XNAMatrix.Up * railOffset;
+                car.WorldPosition.XNAMatrix.Translation += car.WorldPosition.XNAMatrix.Up * 0.275f;
 
                 car.WorldPosition.TileX = traveller.TileX;
                 car.WorldPosition.TileZ = traveller.TileZ;
 
                 traveller.Move((car.CarLengthM - car.CarBogieCentreLengthM) / 2.0f);  // Move to the front of the car 
 
-                car.UpdateVibration(traveller, elapsedTime, distance, SpeedMpS);
+                car.UpdateVibration(traveller, elapsedTime, distance);
                 length += car.CarLengthM;
             }
             traveller = new Traveller(traveller, Traveller.TravellerDirection.Backward);
@@ -4821,7 +4785,7 @@ namespace Orts.Simulation.Physics
                 // advance to the front of the car 
                 traveller.Move(car.CarLengthM);
 
-                car.UpdateVibration(traveller, elapsedTime, distance, SpeedMpS);
+                car.UpdateVibration(traveller, elapsedTime, distance);
                 length += car.CarLengthM;
             }
             RearTDBTraveller = new Traveller(traveller);
