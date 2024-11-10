@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2023-12-03 15:16:32+0100\n"
-"PO-Revision-Date: 2023-12-03 15:16:33+0100\n"
+"POT-Creation-Date: 2024-11-09 17:45:26+0100\n"
+"PO-Revision-Date: 2024-11-09 17:45:30+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -817,12 +817,12 @@ msgstr ""
 msgid "Select other-paths color"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:625
+#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:631
 #, csharp-format
 msgid "Loading terrain ace-files {0}-{1} (scaled down with a factor {2})"
 msgstr ""
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:651
+#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:657
 msgid "Rescaling previously loaded ace-files"
 msgstr ""
 
