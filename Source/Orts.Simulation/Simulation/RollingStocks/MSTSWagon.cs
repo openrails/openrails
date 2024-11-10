@@ -514,7 +514,11 @@ namespace Orts.Simulation.RollingStocks
 
             if (CarBogieCentreLengthM == 0)
             {
-                CarBogieCentreLengthM = (CarCouplerFaceLengthM - 4.3f);
+                CarBogieCentreLengthM = CarCouplerFaceLengthM - 4.3f;
+
+                // Prevent negative values on very short train cars
+                if (CarBogieCentreLengthM < 0)
+                    CarBogieCentreLengthM = CarLengthM * 0.65f;
             }
 
             if (CarAirHoseLengthM == 0)

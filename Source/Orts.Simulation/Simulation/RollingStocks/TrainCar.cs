@@ -647,7 +647,7 @@ namespace Orts.Simulation.RollingStocks
         public bool IsCriticalMinSpeed = false; // Is the speed less then the minimum required for the wagon to travel around the curve
         protected float StartCurveResistanceFactor = 2.0f; // Set curve friction at Start = 200%
         protected float RouteSpeedMpS; // Max Route Speed Limit
-        protected const float GravitationalAccelerationMpS2 = 9.80665f; // Acceleration due to gravity 9.80665 m/s2
+        public const float GravitationalAccelerationMpS2 = 9.80665f; // Acceleration due to gravity 9.80665 m/s2
         protected int WagonNumAxles; // Number of axles on a wagon
         protected int InitWagonNumAxles; // Initial read of number of axles on a wagon
         protected float MSTSWagonNumWheels; // Number of axles on a wagon - used to read MSTS value as default
@@ -2853,7 +2853,7 @@ namespace Orts.Simulation.RollingStocks
             WorldPosition.TileX = tileX;
             WorldPosition.TileZ = tileZ;
 
-            UpdateVibration(traveler, elapsedTimeS, distance, speed);
+            UpdateVibration(traveler, elapsedTimeS, distance);
 
             // Check bogies for any corrections needed
             for (int i = 1; i < Parts.Count; i++)
@@ -2981,7 +2981,7 @@ namespace Orts.Simulation.RollingStocks
         float MinTiltSpeedMpS = MpS.FromKpH(50.0f); // Minimum speed for tilting to be activated
         float MaxTiltAngleRad = MathHelper.ToRadians(8.0f); // Maximum angle of tilting allowed
 
-        internal void UpdateVibration(Traveller traveler, float elapsedTimeS, float distanceM, float speedMpS)
+        internal void UpdateVibration(Traveller traveler, float elapsedTimeS, float distanceM)
         {
             // We need to avoid introducing any unbounded effects, so cap the elapsed time to 0.25 seconds (4FPS).
             if (elapsedTimeS > 0.25f)
@@ -2990,7 +2990,8 @@ namespace Orts.Simulation.RollingStocks
 
             // Don't add vibrations to train cars less than 2.5 meter in length; they're unsuitable for these calculations.
             // Don't let vibrate car before EOT to avoid EOT not moving together with that car
-            if (CarLengthM < 2.5f || Train.EOT != null && Train.Cars.Count > 1 && Train.Cars[Train.Cars.Count - 2] == this)
+            // Don't add vibrations to train cars with no bogies to prevent wheels vibrating around
+            if (CarLengthM < 2.5f || (Train.EOT != null && Train.Cars.Count > 1 && Train.Cars[Train.Cars.Count - 2] == this) || Parts.Count <= 1)
                 return;
             if (Simulator.Settings.CarVibratingLevel != 0)
             {
