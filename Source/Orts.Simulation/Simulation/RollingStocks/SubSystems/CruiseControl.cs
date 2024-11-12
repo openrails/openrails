@@ -63,6 +63,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public SpeedRegulatorMode SpeedRegMode = SpeedRegulatorMode.Manual;
         public SpeedSelectorMode SpeedSelMode = SpeedSelectorMode.Neutral;
         public ControllerCruiseControlLogic CruiseControlLogic = new ControllerCruiseControlLogic();
+        public float? ATOSetSpeedMpS;
+        public float? ATOSetAccelerationMpSS;
         private float selectedSpeedMpS;
         public float SelectedSpeedMpS
         {
@@ -82,8 +84,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             get
             {
                 if (!RestrictedRegionOdometer.Started && TimeSinceLastSelectedSpeedChangeS >= DelayBeforeSelectedSpeedUpdatingS)
+                {
                     CurrentSelectedSpeedMpS = SelectedSpeedMpS;
-                return CurrentSelectedSpeedMpS;
+                }
+                float setSpeedMpS = CurrentSelectedSpeedMpS;
+                if (ATOSetSpeedMpS < setSpeedMpS) setSpeedMpS = ATOSetSpeedMpS.Value;
+                return setSpeedMpS;
             }
         }
 		public float SetSpeedKpHOrMpH
@@ -96,8 +102,42 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public int SelectedNumberOfAxles = 0;
         public float SpeedRegulatorNominalSpeedStepMpS = 0;
         public float SpeedRegulatorNominalSpeedStepKpHOrMpH = 0;
-        public float MaxAccelerationMpSS = 2;
-        public float MaxDecelerationMpSS = 0.5f;
+        public float maxAccelerationMpSS = 2;
+        public float MaxAccelerationMpSS
+        {
+            get
+            {
+                if (ATOSetAccelerationMpSS > 0)
+                {
+                    return Math.Min(ATOSetAccelerationMpSS.Value, maxAccelerationMpSS);
+                }
+                return maxAccelerationMpSS;
+            }
+            set
+            {
+                maxAccelerationMpSS = value;
+            }
+        }
+        private float maxDecelerationMpSS = 0.5f;
+        public float MaxDecelerationMpSS
+        {
+            get
+            {
+                if (ATOSetAccelerationMpSS < 0)
+                {
+                    float atoDecelMpSS = -ATOSetAccelerationMpSS.Value;
+                    if (ATOSetAccelerationMpSS < -maxDecelerationMpSS && ATOSetSpeedMpS <= Math.Max(AbsWheelSpeedMpS, CurrentSelectedSpeedMpS))
+                        return atoDecelMpSS;
+                    if (ATOSetAccelerationMpSS > -maxDecelerationMpSS && Math.Max(AbsWheelSpeedMpS, ATOSetSpeedMpS.Value) < CurrentSelectedSpeedMpS)
+                        return atoDecelMpSS;
+                }
+                return maxDecelerationMpSS;
+            }
+            set
+            {
+                maxDecelerationMpSS = value;
+            }
+        }
         public bool UseThrottleInCombinedControl = false;
         public bool AntiWheelSpinEquipped = false;
         public float AntiWheelSpinSpeedDiffThreshold = 0.5f;
@@ -513,14 +553,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     timeFromEngineMoved = 0;
                     reducingForce = true;
                 }
-                if (SpeedRegulatorOptions.Contains("engageforceonnonzerospeed") && SelectedSpeedMpS > 0 && (SpeedSelMode != SpeedSelectorMode.Parking || !ForceResetRequiredAfterBraking || (WasForceReset && SelectedMaxAccelerationPercent > 0)))
+                if (SpeedRegulatorOptions.Contains("engageforceonnonzerospeed") && SetSpeedMpS > 0 && (SpeedSelMode != SpeedSelectorMode.Parking || !ForceResetRequiredAfterBraking || (WasForceReset && SelectedMaxAccelerationPercent > 0)))
                 {
                     SpeedSelMode = SpeedSelectorMode.On;
                     SpeedRegMode = SpeedRegulatorMode.Auto;
                     SkipThrottleDisplay = true;
                     reducingForce = false;
                 }
-                else if (SpeedRegulatorOptions.Contains("engageparkingonzerospeed") && SelectedSpeedMpS == 0 && AbsWheelSpeedMpS <= (SpeedIsMph ? MpS.FromMpH(ParkingBrakeEngageSpeed) : MpS.FromKpH(ParkingBrakeEngageSpeed)) && SpeedSelMode != SpeedSelectorMode.Parking)
+                else if (SpeedRegulatorOptions.Contains("engageparkingonzerospeed") && SetSpeedMpS == 0 && AbsWheelSpeedMpS <= (SpeedIsMph ? MpS.FromMpH(ParkingBrakeEngageSpeed) : MpS.FromKpH(ParkingBrakeEngageSpeed)) && SpeedSelMode != SpeedSelectorMode.Parking)
                 {
                     SpeedSelMode = SpeedSelectorMode.Parking;
                     WasForceReset = false;
@@ -602,14 +642,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     {
                         ThrottlePID.SetCoefficients(
                             100 * StartReducingSpeedDelta, 1 / StartReducingSpeedDelta / 5, 0,
-                            100 / MaxThrottleAccelerationMpSS, 100 / MaxThrottleAccelerationMpSS / ThrottleFullRangeIncreaseTimeSeconds, 0
+                            100 / MaxThrottleAccelerationMpSS, 100 / MaxThrottleAccelerationMpSS / ThrottleFullRangeIncreaseTimeSeconds
                         );
                     }
                     if (MaxDynamicBrakeDecelerationMpSS > 0.1f)
                     {
                         DynamicBrakePID.SetCoefficients(
                             100 * StartReducingSpeedDeltaDownwards, 1 / StartReducingSpeedDeltaDownwards / 5, 0,
-                            100 / MaxDynamicBrakeDecelerationMpSS, 100 / MaxDynamicBrakeDecelerationMpSS / DynamicBrakeFullRangeIncreaseTimeSeconds, 0
+                            100 / MaxDynamicBrakeDecelerationMpSS, 100 / MaxDynamicBrakeDecelerationMpSS / DynamicBrakeFullRangeIncreaseTimeSeconds
                         );
                     }
                     if (MaxTrainBrakeDecelerationMpSS > 0.1f)
@@ -1301,6 +1341,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         {
             public readonly PIDController Speed;
             public readonly PIDController Acceleration;
+            public float PAccelerationCoefficient;
             public bool Active
             {
                 get
@@ -1319,19 +1360,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Speed = speed;
                 Acceleration = accel;
             }
-            public void SetCoefficients(float pSpd, float iSpd, float dSpd, float pAccel, float iAccel, float dAccel)
+            public void SetCoefficients(float pSpd, float iSpd, float dSpd, float pAccel, float iAccel)
             {
                 Speed.SetCoefficients(pSpd, iSpd, dSpd);
-                Acceleration.SetCoefficients(pAccel, iAccel, dAccel);
+                PAccelerationCoefficient = pAccel;
+                Acceleration.SetCoefficients(0, iAccel, 0);
             }
-            public void Update(float elapsedClockSeconds, float deltaSpeed, float deltaAccel, float minPercent=0, float maxPercent=100)
+            public void Update(float elapsedClockSeconds, float deltaSpeed, float demandedAccel, float realAccel, float minPercent=0, float maxPercent=100)
             {
                 Speed.MinValue = minPercent;
                 Speed.MaxValue = maxPercent;
                 Acceleration.MinValue = minPercent;
                 Acceleration.MaxValue = maxPercent;
                 Speed.Update(elapsedClockSeconds, deltaSpeed);
-                Acceleration.Update(elapsedClockSeconds, deltaAccel);
+                Acceleration.Update(elapsedClockSeconds, demandedAccel - realAccel, PAccelerationCoefficient * demandedAccel);
                 if (Speed.Value < Acceleration.Value)
                 {
                     // Maintain speed region
@@ -1463,7 +1505,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     float a = AccelerationTable[(int)selectedMaxAccelerationStep - 1];
                     if (a > 0) maxAccelerationMpSS = Math.Min(maxAccelerationMpSS, a);
                 }
-                ThrottlePID.Update(elapsedClockSeconds, deltaSpeedMpS, maxAccelerationMpSS - RelativeAccelerationMpSS, 0, maxPercent);
+                ThrottlePID.Update(elapsedClockSeconds, deltaSpeedMpS, maxAccelerationMpSS, RelativeAccelerationMpSS, 0, maxPercent);
                 targetThrottle = ThrottlePID.Value;
             }
             else
@@ -1474,7 +1516,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             {
                 float minPercent = TrainBrakePercent > 0 ? 50 : 0;
                 float maxPercent = DynamicBrakeIsSelectedForceDependant ? SelectedMaxAccelerationPercent : 100;
-                DynamicBrakePID.Update(elapsedClockSeconds, -deltaSpeedMpS, maxDecelerationMpSS + RelativeAccelerationMpSS, minPercent, maxPercent);
+                DynamicBrakePID.Update(elapsedClockSeconds, -deltaSpeedMpS, maxDecelerationMpSS, -RelativeAccelerationMpSS, minPercent, maxPercent);
                 targetDynamic = DynamicBrakePID.Value;
             }
             else
@@ -1518,10 +1560,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 {
                     target = Math.Max((MaxDecelerationMpSS - MaxDynamicBrakeDecelerationMpSS) / MaxTrainBrakeDecelerationMpSS * 100, 0);
                     float accelerationDemandMpSS = (0.85f + Math.Min(CCThrottleOrDynBrakePercent / 100, 0)) * MaxDynamicBrakeDecelerationMpSS - MaxDecelerationMpSS;
-                    TrainBrakePID.MinValue = -target;
-                    TrainBrakePID.MaxValue = TrainBrakeMaxPercentValue-target;
-                    TrainBrakePID.Update(elapsedClockSeconds, RelativeAccelerationMpSS - accelerationDemandMpSS);
-                    target += TrainBrakePID.Value;
+                    TrainBrakePID.MinValue = 0;
+                    TrainBrakePID.MaxValue = TrainBrakeMaxPercentValue;
+                    TrainBrakePID.Update(elapsedClockSeconds, RelativeAccelerationMpSS - accelerationDemandMpSS, target);
+                    target = TrainBrakePID.Value;
                 }
                 if (target <= TrainBrakeMinPercentValue) TrainBrakePercent = 0;
                 else if (Math.Abs(TrainBrakePercent - target) > 5)

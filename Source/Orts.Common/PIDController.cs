@@ -51,7 +51,7 @@ namespace ORTS.Common
             I = i;
             D = d;
         }
-        public void Update(float elapsedClockSeconds, float error)
+        public void Update(float elapsedClockSeconds, float error, float offset=0)
         {
             if (!Active)
             {
@@ -69,7 +69,7 @@ namespace ORTS.Common
             float i_out = I * TotalError;
             float d_out = D * d_error;
 
-            Value = d_out + p_out + i_out;
+            Value = d_out + p_out + i_out + offset;
             if (Value < MinValue) Value = MinValue;
             if (Value > MaxValue) Value = MaxValue;
 

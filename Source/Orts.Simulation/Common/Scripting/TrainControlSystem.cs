@@ -356,6 +356,28 @@ namespace ORTS.Scripting.Api
         /// Set dynamic brake controller to position in range [0-1].
         /// </summary>
         public Action<float> SetDynamicBrakeController;
+        public float? ATOSetSpeedMpS
+        {
+            get
+            {
+                return Locomotive.CruiseControl?.ATOSetSpeedMpS;
+            }
+            set
+            {
+                if (Locomotive.CruiseControl != null) Locomotive.CruiseControl.ATOSetSpeedMpS = value;
+            }
+        }
+        public float? ATOSetAccelerationMpSS
+        {
+            get
+            {
+                return Locomotive.CruiseControl?.ATOSetAccelerationMpSS;
+            }
+            set
+            {
+                if (Locomotive.CruiseControl != null) Locomotive.CruiseControl.ATOSetAccelerationMpSS = value;
+            }
+        }
         /// <summary>
         /// Cut power by pull all pantographs down.
         /// </summary>
