@@ -95,7 +95,8 @@ rigid wheel base, track gauge and super elevation. The curve resistance
 has its lowest value at the curve's optimal speed. Running at higher or
 lower speed causes higher curve resistance. The worst situation is
 starting a train from zero speed. The track gauge value can be set by
-``ORTSTrackGauge`` parameter, otherwise 1435 mm is used. The rigid wheel base
+``ORTSTrackGauge`` parameter, otherwise the gauge is assumed to be the
+gauge specified in the route's .trk file. The rigid wheel base
 can be also set by ``ORTSRigidWheelBase``, otherwise the value is estimated.
 Further details are discussed later.
 

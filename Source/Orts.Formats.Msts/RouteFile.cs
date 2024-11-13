@@ -108,6 +108,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortstracksuperelevation", ()=>{ SuperElevationHgtpRadiusM = new Interpolator(stf); }),
                 // New superelevation standard, will overwrite ORTSTrackSuperElevation
                 new STFReader.TokenProcessor("ortssuperelevation", ()=>{ SuperElevation.Add(new SuperElevationStandard(stf)); }),
+                new STFReader.TokenProcessor("trackgauge", ()=>{ RouteGaugeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("ortsforcesuperelevation", ()=>{ SuperElevationMode = stf.ReadBoolBlock(false) ? 1 : 0; }),
                 // images
                 new STFReader.TokenProcessor("graphic", ()=>{ Thumbnail = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("loadingscreen", ()=>{ LoadingScreen = stf.ReadStringBlock(null); }),
@@ -159,6 +161,8 @@ namespace Orts.Formats.Msts
         public string DefaultWaterTowerSMS;
         public string DefaultSignalSMS;
 		public float TempRestrictedSpeed = -1f;
+        public float RouteGaugeM; // Track gauge used by this route in meters. FUTURE: Better handling of track gauge to support routes with mixed gauges
+        public int SuperElevationMode = -1; // -1: use simulator setting, 0: force disable visual superelevation, 1: force enable visual superelevation
         public Interpolator SuperElevationHgtpRadiusM; // Superelevation of tracks as a function of radius, deprecated
         public List<SuperElevationStandard> SuperElevation = new List<SuperElevationStandard>();
 
@@ -246,6 +250,7 @@ namespace Orts.Formats.Msts
         public float RunoffSlope = 0.003f; // Maximum rate of change of superelevation per track length, default 0.3%
         public float RunoffSpeedMpS = 0.055f; // Maximum rate of change of superelevation per second, default 55 mm / sec (1.5 inches / sec on imperial routes)
         public bool UseLegacyCalculation = true; // Should ORTSTrackSuperElevation be used for superelevation calculations?
+        public bool DefaultStandard = true; // Is this standard a default (auto-generated) one?
 
         // Initialize new instance with default values (default metric values)
         public SuperElevationStandard(bool metric = true, bool highSpeed = false)
@@ -330,6 +335,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("maxrunoffslope", () => { RunoffSlope = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("maxrunoffspeed", () => { RunoffSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); }),
             });
+
+            DefaultStandard = false;
 
             // Disable legacy superelevation calculations if sufficient data is given
             if (MaxFreightUnderbalanceM <= 10.0f || MaxPaxUnderbalanceM <= 10.0f)

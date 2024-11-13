@@ -205,7 +205,7 @@ namespace Orts.Simulation
                     effectiveRunoffSlope = Math.Min(standard.RunoffSlope, standard.RunoffSpeedMpS / maxCurveSpeedMpS);
 
                     // Ensure superelevation is limited to the track gauge no matter what to avoid NaN errors
-                    maxElev = MathHelper.Clamp(standard.MaxCantM, 0.0f, simulator.SuperElevationGauge);
+                    maxElev = MathHelper.Clamp(standard.MaxCantM, 0.0f, simulator.RouteTrackGaugeM);
                     // Futher limit superelevation to something that can be achieved by the curve
                     // This limit gives enough distance for superelevation to smoothly build up
                     maxElev = Math.Min(totLen / (2.0f * 1.3f) * effectiveRunoffSlope, maxElev);
@@ -256,7 +256,7 @@ namespace Orts.Simulation
 
                                 // Approximate ideal level of superelevation determined using E = (G*V^2) / (g*R), then subtract off cant deficiency
                                 // For different speeds on the same curve, we can factor out speed and get a constant c = G / (g*R)
-                                float elevationFactor = simulator.SuperElevationGauge / (9.81f * sectionData.SectionCurve.Radius);
+                                float elevationFactor = simulator.RouteTrackGaugeM / (9.81f * sectionData.SectionCurve.Radius);
                                 // Calculate required superelevation for passenger and freight separately
                                 float paxElevation = elevationFactor * (paxSpeed * paxSpeed) - standard.MaxPaxUnderbalanceM;
                                 float freightElevation = elevationFactor * (freightSpeed * freightSpeed) - standard.MaxFreightUnderbalanceM;
@@ -386,17 +386,13 @@ namespace Orts.Simulation
 
                 SectionList[count].PhysElevTable = new Interpolator(positions, elevations);
 
-                // Only generate visual superelevation if option is enabled
-                if (simulator.UseSuperElevation)
-                {
-                    // Visual superelevation is stored in terms of angle in radians rather than meters
-                    float[] angles = elevations.Select(e => (float)Math.Asin(e / simulator.SuperElevationGauge)).ToArray();
+                // Visual superelevation is stored in terms of angle in radians rather than meters
+                float[] angles = elevations.Select(e => (float)Math.Asin(e / simulator.RouteTrackGaugeM)).ToArray();
 
-                    SectionList[count].VisElevTable = new Interpolator(SectionList[count].PhysElevTable.X, angles);
-                    // Invert visual elevation values based on curve direction
-                    // direction is negated for consistency of direction sense in other places
-                    SectionList[count].VisElevTable.ScaleY(-direction);
-                }
+                SectionList[count].VisElevTable = new Interpolator(SectionList[count].PhysElevTable.X, angles);
+                // Invert visual elevation values based on curve direction
+                // direction is negated for consistency of direction sense in other places
+                SectionList[count].VisElevTable.ScaleY(-direction);
 
                 accumulatedLength += lengths[count];
                 count++;

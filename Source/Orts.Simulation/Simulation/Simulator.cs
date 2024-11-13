@@ -130,7 +130,7 @@ namespace Orts.Simulation
         public int CarVibrating;
         public bool UseSuperElevation; // Whether or not visual superelevation is enabled
         public SuperElevation SuperElevation;
-        public float SuperElevationGauge = 1.435f;//1.435 guage
+        public float RouteTrackGaugeM = 1.435f; // Standard gauge as a fallback
         public LoadStationsPopulationFile LoadStationsPopulationFile;
 
         // Used in save and restore form
@@ -273,7 +273,7 @@ namespace Orts.Simulation
             BreakCouplers = Settings.BreakCouplers;
             CarVibrating = Settings.CarVibratingLevel; //0 no vib, 1-2 mid vib, 3 max vib
             UseSuperElevation = Settings.UseSuperElevation;
-            SuperElevationGauge = (float)Settings.SuperElevationGauge / 1000f;//gauge transfer from mm to m
+            RouteTrackGaugeM = (float)Settings.SuperElevationGauge / 1000f; // Gauge in settings is given in mm, convert to m
             RoutePath = Path.GetDirectoryName(Path.GetDirectoryName(activityPath));
             if (useOpenRailsDirectory) RoutePath = Path.GetDirectoryName(RoutePath); // starting one level deeper!
             RoutePathName = Path.GetFileName(RoutePath);
@@ -291,6 +291,21 @@ namespace Orts.Simulation
             RouteName = TRK.Tr_RouteFile.Name;
             MilepostUnitsMetric = TRK.Tr_RouteFile.MilepostUnitsMetric;
             OpenDoorsInAITrains = TRK.Tr_RouteFile.OpenDoorsInAITrains == null ? Settings.OpenDoorsInAITrains : (bool)TRK.Tr_RouteFile.OpenDoorsInAITrains;
+
+            // Override superelevation settings given in options with settings given in TRK
+            if (TRK.Tr_RouteFile.RouteGaugeM > 0)
+                RouteTrackGaugeM = TRK.Tr_RouteFile.RouteGaugeM; // Prefer route gauge in TRK over the one in settings
+            else
+                Trace.TraceInformation("No route track gauge given in TRK, using default setting: {0}", FormatStrings.FormatVeryShortDistanceDisplay(RouteTrackGaugeM, MilepostUnitsMetric));
+            if (TRK.Tr_RouteFile.SuperElevationMode >= 0)
+            {
+                UseSuperElevation = TRK.Tr_RouteFile.SuperElevationMode == 1; // Perfer superelevation mode in TRK over the one in settings
+                if (UseSuperElevation != Settings.UseSuperElevation)
+                    Trace.TraceInformation("Superelevation graphics have been forced " + (UseSuperElevation ? "ENABLED" : "DISABLED") +
+                        " by setting of ORTSForceSuperElevation in TRK file.");
+            }
+            else if (TRK.Tr_RouteFile.SuperElevation.Count > 0 && !TRK.Tr_RouteFile.SuperElevation[0].DefaultStandard)
+                UseSuperElevation = true; // Custom superelevation standard entered, force enable superelevation
 
             Trace.Write(" TDB");
             TDB = new TrackDatabaseFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
