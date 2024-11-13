@@ -1129,6 +1129,9 @@ namespace Orts.Simulation.RollingStocks
 
             if (BrakeSystem == null)
                 BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
+
+            if (TrackGaugeM <= 0) // Use gauge of route/sim settings if gauge wasn't defined
+                TrackGaugeM = Simulator.RouteTrackGaugeM;
         }
 
         // Compute total mass of wagon including freight animations and variable loads like containers

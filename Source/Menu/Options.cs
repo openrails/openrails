@@ -810,6 +810,9 @@ namespace ORTS
                 (pbControlConfirmations, new Control[] { labelControlConfirmations, comboControlConfirmations }),
                 (pbWebServerPort, new Control[] { labelWebServerPort }),
                 (pbPerformanceTuner, new Control[] { checkPerformanceTuner, labelPerformanceTunerTarget }),
+
+                // Experimental tab
+                (pbSuperElevation, new[] { ElevationText }),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
             {
@@ -966,6 +969,12 @@ namespace ORTS
                 {
                     pbPerformanceTuner,
                     BaseDocumentationUrl + "/options.html#performance-tuner"
+                },
+
+                // Experimental tab
+                {
+                    pbSuperElevation,
+                    baseUrl + "/options.html#super-elevation"
                 },
             };
             if (urls.TryGetValue(sender, out var url))

@@ -2657,9 +2657,9 @@ namespace Orts.Viewer3D
                                     LastCheckCar = FirstUpdateLoop ^ trainForwards ? train.Cars.First() : train.Cars.Last();
                                     shortTrav.Move(distanceToViewingPoint1);
                                     // moving newLocation to platform at side of track
-                                    newLocation.Location.X += (PlatformOffsetM + Viewer.Simulator.SuperElevationGauge / 2) * (float)Math.Cos(shortTrav.RotY) *
+                                    newLocation.Location.X += (PlatformOffsetM + Viewer.Simulator.RouteTrackGaugeM / 2) * (float)Math.Cos(shortTrav.RotY) *
                                         (thisPlatform.PlatformSide[1] ? 1 : -1);
-                                    newLocation.Location.Z += -(PlatformOffsetM + Viewer.Simulator.SuperElevationGauge / 2) * (float)Math.Sin(shortTrav.RotY) *
+                                    newLocation.Location.Z += -(PlatformOffsetM + Viewer.Simulator.RouteTrackGaugeM / 2) * (float)Math.Sin(shortTrav.RotY) *
                                         (thisPlatform.PlatformSide[1] ? 1 : -1);
                                     TrackCameraLocation = new WorldLocation(newLocation);
                                     break;

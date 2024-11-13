@@ -646,7 +646,7 @@ namespace Orts.Simulation.RollingStocks
         public List<ViewPoint> HeadOutViewpoints = new List<ViewPoint>();
 
         // Used by Curve Speed Method
-        protected float TrackGaugeM = 1.435f;  // Track gauge - read in MSTSWagon
+        protected float TrackGaugeM;  // Track gauge - read in MSTSWagon, otherwise uses value given by the route
         protected Vector3 InitialCentreOfGravityM = new Vector3(0, 1.8f, 0); // get centre of gravity - read in MSTSWagon
         public Vector3 CentreOfGravityM = new Vector3(0, 1.8f, 0); // get centre of gravity after adjusted for freight animation
         public float SuperElevationM; // Super elevation on the curve
@@ -2774,7 +2774,7 @@ namespace Orts.Simulation.RollingStocks
                     o = WheelAxles[k].OffsetM.Z;
                     traveler.Move(d);
 
-                    Vector3 location = traveler.CalcElevationPositionOffset(BogiePivotHeightM, Simulator.Settings.UseSuperElevation, out float r);
+                    Vector3 location = traveler.CalcElevationPositionOffset(BogiePivotHeightM, Simulator.UseSuperElevation, out float r);
                     location += traveler.Location;
 
                     location.X += 2048 * (traveler.TileX - tileX);
@@ -2796,7 +2796,7 @@ namespace Orts.Simulation.RollingStocks
                     o = WheelAxles[k].OffsetM.Z;
                     traveler.Move(d);
 
-                    Vector3 location = traveler.CalcElevationPositionOffset(BogiePivotHeightM, Simulator.Settings.UseSuperElevation, out float r);
+                    Vector3 location = traveler.CalcElevationPositionOffset(BogiePivotHeightM, Simulator.UseSuperElevation, out float r);
                     location += traveler.Location;
 
                     location.X += 2048 * (traveler.TileX - tileX);

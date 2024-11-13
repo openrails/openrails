@@ -274,14 +274,6 @@ namespace Orts.Viewer3D
                 return;
             }
 
-            // Will need track profiles for track objects. Load them if they aren't loaded yet
-            if (viewer.TRPs == null)
-            {
-                Trace.Write(" TRP");
-                // Creates profile(s) and loads materials into SceneryMaterials
-                TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.TRPs);
-            }
-
             // read the world file 
             var WFile = new Orts.Formats.Msts.WorldFile(WFilePath);
 
@@ -306,14 +298,6 @@ namespace Orts.Viewer3D
                         containsMovingTable = true;
                         break;
                     }
-            }
-
-            // Generate track profiles if none have been set up yet
-            if (viewer.TRPs == null)
-            {
-                Trace.Write(" TRP");
-                // Creates profile and loads materials into SceneryMaterials
-                TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.TRPs);
             }
 
             // create all the individual scenery objects specified in the WFile

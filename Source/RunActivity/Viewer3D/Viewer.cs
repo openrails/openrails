@@ -532,6 +532,21 @@ namespace Orts.Viewer3D
 
             InfoDisplay = new InfoDisplay(this);
 
+            // Load track profiles before considering the world/scenery
+            Trace.Write(" TRP");
+            // Creates profile(s) and loads materials into SceneryMaterials
+            if (TRPFile.CreateTrackProfile(this, Simulator.RoutePath, out TRPs))
+            {
+                if (Simulator.TRK.Tr_RouteFile.SuperElevationMode < 0 && !Simulator.UseSuperElevation)
+                {
+                    Simulator.UseSuperElevation = true; // We found custom track profile(s), enable superelevation in order to use the track profile(s)
+                    Trace.TraceInformation("Custom track profile installed, superelevation graphics will be enabled." +
+                        "If superelevation should be disabled, add ORTSForceSuperElevation ( 0 ) to the TRK file.");
+                }
+            }
+            else // Using default track profile
+                Trace.TraceInformation("No track profiles found in TrackProfiles folder, using default track profile.");
+
             World = new World(this, Simulator.ClockTime);
 
             ViewerSounds = new SoundSource(this, soundSource => new[]

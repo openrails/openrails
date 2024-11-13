@@ -343,7 +343,8 @@ namespace Orts.Viewer3D
         /// <param name="viewer">Viewer.</param>
         /// <param name="routePath">Path to route.</param>
         /// <param name="trpFiles">List of TRPFile(s) created (out).</param>
-        public static void CreateTrackProfile(Viewer viewer, string routePath, out List<TRPFile> trpFiles)
+        /// <returns>Bool indicating if custom track profiles were found (returns FALSE if the only profile is the default profile)</returns>
+        public static bool CreateTrackProfile(Viewer viewer, string routePath, out List<TRPFile> trpFiles)
         {
             string path = routePath + @"\TrackProfiles";
             List<string> profileNames = new List<string>();
@@ -396,7 +397,12 @@ namespace Orts.Viewer3D
 
             // Add canned profile if no profiles were found
             if (trpFiles.Count <= 0)
+            {
                 trpFiles.Add(new TRPFile(viewer, ""));
+                return false;
+            }
+            else
+                return true;
 
             // FOR DEBUGGING: Writes XML file from current TRP
             //TRP.TrackProfile.SaveAsXML(@"C:/Users/Walt/Desktop/TrProfile.xml");
@@ -628,7 +634,7 @@ namespace Orts.Viewer3D
             PitchControlScalar = 10.0f;                     // Hold to no more than 10 meters
             //PitchControl = PitchControls.ChordDisplacement; // Target chord displacement from arc
             //PitchControlScalar = 0.034f;                    // Hold to no more than 34 mm (half rail width)
-            TrackGaugeM = 1.435f; // Kuju track profile depicts standard gauge track
+            TrackGaugeM = viewer.Simulator.RouteTrackGaugeM; // Kuju track profile can be adapted to any gauge of track
             ElevationType = SuperElevationMethod.Outside; // Superelevate the outside rail only to reduce clipping
 
             LOD lod;            // Local LOD instance
@@ -646,9 +652,8 @@ namespace Orts.Viewer3D
             lodItem.ESD_Alternative_Texture = 0;
             lodItem.MipMapLevelOfDetailBias = 0;
             LODItem.LoadMaterial(viewer, lodItem);
-            var gauge = viewer.Simulator.SuperElevationGauge;
-            var inner = gauge / 2f;
-            var outer = inner + 0.15f * gauge / 1.435f;
+            var inner = TrackGaugeM / 2f;
+            var outer = inner + 0.15f * TrackGaugeM / 1.435f;
 
             pl = new Polyline(this, "left_outer", 2);
             pl.DeltaTexCoord = new Vector2(.1673372f, 0f);
@@ -726,8 +731,8 @@ namespace Orts.Viewer3D
 
             pl = new Polyline(this, "ballast", 2);
             pl.DeltaTexCoord = new Vector2(0.0f, 0.2088545f);
-            pl.Vertices.Add(new Vertex(-2.5f * gauge / 1.435f, 0.2f, 0.0f, 0f, 1f, 0f, -.153916f, -.280582f));
-            pl.Vertices.Add(new Vertex(2.5f * gauge / 1.435f, 0.2f, 0.0f, 0f, 1f, 0f, .862105f, -.280582f));
+            pl.Vertices.Add(new Vertex(-2.5f * TrackGaugeM / 1.435f, 0.2f, 0.0f, 0f, 1f, 0f, -.153916f, -.280582f));
+            pl.Vertices.Add(new Vertex(2.5f * TrackGaugeM / 1.435f, 0.2f, 0.0f, 0f, 1f, 0f, .862105f, -.280582f));
             lodItem.Polylines.Add(pl);
             lodItem.Accum(pl.Vertices.Count);
 
@@ -785,7 +790,7 @@ namespace Orts.Viewer3D
             }
 
             if (TrackGaugeM <= 0)
-                TrackGaugeM = viewer.Simulator.SuperElevationGauge;
+                TrackGaugeM = viewer.Simulator.RouteTrackGaugeM;
         }
 
         /// <summary>
@@ -886,7 +891,7 @@ namespace Orts.Viewer3D
             }
 
             if (TrackGaugeM <= 0)
-                TrackGaugeM = viewer.Simulator.SuperElevationGauge;
+                TrackGaugeM = viewer.Simulator.RouteTrackGaugeM;
         }
 
         /// <summary>
