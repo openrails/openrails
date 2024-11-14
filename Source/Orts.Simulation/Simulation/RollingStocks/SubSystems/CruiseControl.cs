@@ -107,9 +107,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         {
             get
             {
-                if (ATOSetAccelerationMpSS > 0)
+                if (ATOSetAccelerationMpSS > maxAccelerationMpSS && (ATOSetSpeedMpS >= CurrentSelectedSpeedMpS || CurrentSelectedSpeedMpS >= AbsWheelSpeedMpS))
                 {
-                    return Math.Min(ATOSetAccelerationMpSS.Value, maxAccelerationMpSS);
+                    return ATOSetAccelerationMpSS.Value;
                 }
                 return maxAccelerationMpSS;
             }
@@ -123,13 +123,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         {
             get
             {
-                if (ATOSetAccelerationMpSS < 0)
+                if (ATOSetAccelerationMpSS < -maxDecelerationMpSS && (ATOSetSpeedMpS <= CurrentSelectedSpeedMpS || CurrentSelectedSpeedMpS <= AbsWheelSpeedMpS))
                 {
-                    float atoDecelMpSS = -ATOSetAccelerationMpSS.Value;
-                    if (ATOSetAccelerationMpSS < -maxDecelerationMpSS && ATOSetSpeedMpS <= Math.Max(AbsWheelSpeedMpS, CurrentSelectedSpeedMpS))
-                        return atoDecelMpSS;
-                    if (ATOSetAccelerationMpSS > -maxDecelerationMpSS && Math.Max(AbsWheelSpeedMpS, ATOSetSpeedMpS.Value) < CurrentSelectedSpeedMpS)
-                        return atoDecelMpSS;
+                    return -ATOSetAccelerationMpSS.Value;
                 }
                 return maxDecelerationMpSS;
             }
@@ -206,12 +202,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool UseDynBrake = true;
         protected float SpeedDeltaToEnableTrainBrake = 5;
         protected float SpeedDeltaToEnableFullTrainBrake = 10;
+        protected float MinDynamicBrakePercentToEnableTrainBrake = 80;
+        protected float MinDynamicBrakePercentWhileUsingTrainBrake = 20;
         public float MinimumSpeedForCCEffectMpS = 0;
         protected float speedRegulatorIntermediateValue = 0;
         protected float StepSize = 20;
         protected float RelativeAccelerationMpSS => Locomotive.Direction == Direction.Reverse ? -Locomotive.AccelerationMpSS : Locomotive.AccelerationMpSS; // Acceleration relative to state of reverser
         public bool CCIsUsingTrainBrake = false; // Cruise control is using (also) train brake to brake
-        protected float TrainBrakeMinPercentValue = 30f; // Minimum train brake settable percent Value
+        protected float TrainBrakeMinPercentValue = 10f; // Minimum train brake settable percent Value
         protected float TrainBrakeMaxPercentValue = 85f; // Maximum train brake settable percent Value
         public bool StartInAutoMode = false; // at startup cruise control is in auto mode
         public bool ThrottleNeutralPosition = false; // when UseThrottleAsSpeedSelector is true and this is true
@@ -231,9 +229,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         protected string CruiseControlAlgorithm = "Legacy";
 
-        SpeedAccelerationController ThrottlePID = new SpeedAccelerationController(new PIDController(100.0f, 0.1f, 40.0f), new PIDController(200.0f, 100.0f, 0));
-        SpeedAccelerationController DynamicBrakePID = new SpeedAccelerationController(new PIDController(100.0f, 0.1f, 40.0f), new PIDController(200.0f, 100.0f, 0));
-        PIDController TrainBrakePID = new PIDController(10.0f, 10.0f, 0);
+        AccelerationController ThrottlePID = new AccelerationController(1.5f, 1);
+        AccelerationController DynamicBrakePID = new AccelerationController(1.5f, 1);
+        AccelerationController TrainBrakePID = new AccelerationController(1.5f, 2);
         protected float MaxThrottleAccelerationMpSS;
         protected float MaxDynamicBrakeDecelerationMpSS;
         protected float MaxTrainBrakeDecelerationMpSS;
@@ -472,6 +470,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 DynamicBrakeFullRangeDecreaseTimeSeconds = 6;
             
             ComputeNumberOfAxles();
+            if (StartReducingSpeedDelta == 0)
+            {
+                StartReducingSpeedDelta = 1 / ThrottleFullRangeDecreaseTimeSeconds;
+                if (StartReducingSpeedDeltaDownwards == 0) StartReducingSpeedDeltaDownwards = 1 / DynamicBrakeFullRangeDecreaseTimeSeconds;
+            }
             if (StartReducingSpeedDeltaDownwards == 0) StartReducingSpeedDeltaDownwards = StartReducingSpeedDelta;
             if (StartInAutoMode) SpeedRegMode = SpeedRegulatorMode.Auto;
         }
@@ -616,59 +619,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
                         firstIteration = false;
                     }
-
                     float deltaSpeedMpS = SetSpeedMpS - AbsWheelSpeedMpS;
-                    bool tractionAllowed = (AbsWheelSpeedMpS > SafeSpeedForAutomaticOperationMpS || SpeedSelMode == SpeedSelectorMode.Start || SpeedRegulatorOptions.Contains("startfromzero")) && SpeedSelMode != SpeedSelectorMode.Neutral;
-                    tractionAllowed &= Locomotive.Direction != Direction.N;
+                    UpdateRequiredForce(elapsedClockSeconds, deltaSpeedMpS);
 
-                    float totalTractionN = 0;
-                    float totalDynamicBrakeN = 0;
-                    float totalTrainBrakeN = 0;
-                    float totalMassKg = 0;
-                    foreach (var car in Locomotive.Train.Cars)
+                    /*if (CruiseControlAlgorithm == "PID")
                     {
-                        if (car is MSTSLocomotive locomotive)
-                        {
-                            totalTractionN += locomotive.GetAvailableTractionForceN(1);
-                            totalDynamicBrakeN += locomotive.GetAvailableDynamicBrakeForceN(1);
-                        }
-                        totalTrainBrakeN += car.FrictionBrakeBlendingMaxForceN; // TODO: consider two-stage braking
-                        totalMassKg += car.MassKG;
-                    }
-                    MaxThrottleAccelerationMpSS = totalTractionN / totalMassKg;
-                    MaxDynamicBrakeDecelerationMpSS = totalDynamicBrakeN / totalMassKg;
-                    MaxTrainBrakeDecelerationMpSS = totalTrainBrakeN / totalMassKg;
-                    if (MaxThrottleAccelerationMpSS > 0.1f)
-                    {
-                        ThrottlePID.SetCoefficients(
-                            100 * StartReducingSpeedDelta, 1 / StartReducingSpeedDelta / 5, 0,
-                            100 / MaxThrottleAccelerationMpSS, 100 / MaxThrottleAccelerationMpSS / ThrottleFullRangeIncreaseTimeSeconds
-                        );
-                    }
-                    if (MaxDynamicBrakeDecelerationMpSS > 0.1f)
-                    {
-                        DynamicBrakePID.SetCoefficients(
-                            100 * StartReducingSpeedDeltaDownwards, 1 / StartReducingSpeedDeltaDownwards / 5, 0,
-                            100 / MaxDynamicBrakeDecelerationMpSS, 100 / MaxDynamicBrakeDecelerationMpSS / DynamicBrakeFullRangeIncreaseTimeSeconds
-                        );
-                    }
-                    if (MaxTrainBrakeDecelerationMpSS > 0.1f)
-                    {
-                        TrainBrakePID.SetCoefficients(
-                            0, 100 / MaxTrainBrakeDecelerationMpSS / TrainBrakeFullRangeIncreaseTimeSeconds, 0
-                        );
-                    }
-
-                    if (CruiseControlAlgorithm == "PID")
-                    {
-                        UpdateForcePID(elapsedClockSeconds, deltaSpeedMpS, tractionAllowed);
+                        UpdateForcePID(elapsedClockSeconds, targetAccelerationMpSS, tractionAllowed);
                     }
                     else
                     {
-                        UpdateForceLegacyAlgorithm(elapsedClockSeconds, deltaSpeedMpS, tractionAllowed);
-                    }
-
-                    UpdateTrainBrakePercent(elapsedClockSeconds, deltaSpeedMpS);
+                        UpdateForceLegacyAlgorithm(elapsedClockSeconds, targetAccelerationMpSS, tractionAllowed);
+                    }*/
 
                     if (TrainBrakePercent > 0) CCIsUsingTrainBrake = true;
 
@@ -728,6 +689,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 }
                 if (!IsActive && wasActive)
                 {
+                    ThrottlePID.Active = false;
+                    DynamicBrakePID.Active = false;
+                    TrainBrakePID.Active = false;
                     CCIsUsingTrainBrake = false;
                     Locomotive.ThrottleController.SetPercent(0);
                 }
@@ -1332,249 +1296,191 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 SelectedSpeedMpS = Locomotive.MaxSpeedMpS;
             Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Selected speed set to ") + Speed.ToString() + (SpeedIsMph ? "mph" : "kmh"));
         }
-        // Implements two PID controllers using speed and acceleration deltas respectively
-        // The output value is the minimum from both PID controllers
-        // When train speed is close to the setpoint, the speed based PID is used to maintain speed
-        // When braking or accelerating to the target, the acceleration based PID is used to keep target acceleration
-        // When a PID controller is used, the other remains in standby until its value becomes more restrictive
-        public class SpeedAccelerationController
+        public class AccelerationController
         {
-            public readonly PIDController Speed;
-            public readonly PIDController Acceleration;
-            public float PAccelerationCoefficient;
+            public float Percent { get; private set; }
+            private float TotalError;
+            private float LastError;
+            private bool active;
+            private float ProportionalCoefficient;
+            private float IntegralCoefficient;
             public bool Active
             {
-                get
-                {
-                    return Speed.Active && Acceleration.Active;
-                }
                 set
                 {
-                    Speed.Active = value;
-                    Acceleration.Active = value;
+                    if (active != value)
+                    {
+                        LastError = 0;
+                        TotalError = 0;
+                        Percent = 0;
+                        active = value;
+                    }
                 }
-            }
-            public float Value { get; private set; }
-            public SpeedAccelerationController(PIDController speed, PIDController accel)
-            {
-                Speed = speed;
-                Acceleration = accel;
-            }
-            public void SetCoefficients(float pSpd, float iSpd, float dSpd, float pAccel, float iAccel)
-            {
-                Speed.SetCoefficients(pSpd, iSpd, dSpd);
-                PAccelerationCoefficient = pAccel;
-                Acceleration.SetCoefficients(0, iAccel, 0);
-            }
-            public void Update(float elapsedClockSeconds, float deltaSpeed, float demandedAccel, float realAccel, float minPercent=0, float maxPercent=100)
-            {
-                Speed.MinValue = minPercent;
-                Speed.MaxValue = maxPercent;
-                Acceleration.MinValue = minPercent;
-                Acceleration.MaxValue = maxPercent;
-                Speed.Update(elapsedClockSeconds, deltaSpeed);
-                Acceleration.Update(elapsedClockSeconds, demandedAccel - realAccel, PAccelerationCoefficient * demandedAccel);
-                if (Speed.Value < Acceleration.Value)
+                get
                 {
-                    // Maintain speed region
-                    Value = Speed.Value;
-                    Speed.MaxIntegralValue = float.MaxValue;
-                    // Acceleration PID is in standby. Disable its integral component
-                    Acceleration.MaxIntegralValue = Value;
+                    return active;
                 }
-                else
+            }
+            public AccelerationController(float maxAccelerationMpSS=1, float integralTimeS=1)
+            {
+                SetCoefficients(maxAccelerationMpSS, integralTimeS);
+            }
+            public void SetCoefficients(float maxAccelerationMpSS, float integralTimeS)
+            {
+                ProportionalCoefficient = 100 / maxAccelerationMpSS;
+                IntegralCoefficient = 100 / (maxAccelerationMpSS * integralTimeS);
+            }
+            public void Update(float elapsedClockSeconds, float targetAccelerationMpSS, float currentAccelerationMpSS, float minPercent=0, float maxPercent=100)
+            {
+                if (!Active) Active = true;
+                float error = targetAccelerationMpSS - currentAccelerationMpSS;
+                TotalError += (error + LastError) * elapsedClockSeconds / 2;
+                float pPercent = ProportionalCoefficient * targetAccelerationMpSS;
+                float iPercent = IntegralCoefficient * TotalError;
+                Percent = pPercent + iPercent;
+                if (Percent <= minPercent)
                 {
-                    // Acceleration limited region
-                    Value = Acceleration.Value;
-                    // Speed PID is in standby. Disable its integral component
-                    Speed.MaxIntegralValue = Value;
-                    Acceleration.MaxIntegralValue = float.MaxValue;
+                    if (pPercent > minPercent) TotalError = (minPercent - pPercent) / IntegralCoefficient;
+                    else if (TotalError < 0) TotalError = 0;
+                    Percent = minPercent;
                 }
+                if (Percent >= maxPercent)
+                {
+                    if (pPercent < maxPercent) TotalError = (maxPercent - pPercent) / IntegralCoefficient;
+                    else if (TotalError > 0) TotalError = 0;
+                    Percent = maxPercent;
+                }
+                LastError = error;
             }
         }
-        public void UpdateForceLegacyAlgorithm(float elapsedClockSeconds, float deltaSpeedMpS, bool tractionAllowed)
+        public void UpdateRequiredForce(float elapsedClockSeconds, float deltaSpeedMpS)
         {
-            float coeff = Math.Max(MpS.FromMpS(Locomotive.WheelSpeedMpS, !SpeedIsMph) / 100 * 1.2f, 1);
-            float target = 0;
-            if (deltaSpeedMpS >= 0)
+            bool tractionAllowed = (AbsWheelSpeedMpS > SafeSpeedForAutomaticOperationMpS || SpeedSelMode == SpeedSelectorMode.Start || SpeedRegulatorOptions.Contains("startfromzero")) && SpeedSelMode != SpeedSelectorMode.Neutral;
+            tractionAllowed &= Locomotive.Direction != Direction.N;
+
+            float totalTractionN = 0;
+            float totalDynamicBrakeN = 0;
+            float totalTrainBrakeN = 0;
+            float totalMassKg = 0;
+            foreach (var car in Locomotive.Train.Cars)
             {
-                if (tractionAllowed && CCThrottleOrDynBrakePercent >= 0)
+                if (car is MSTSLocomotive locomotive)
                 {
-                    float accelerationDemandMpSS = (float)Math.Sqrt(StartReducingSpeedDelta * coeff * deltaSpeedMpS);
-                    float a = 0;
-                    float demandedPercent = 0;
-                    if (RelativeAccelerationMpSS < accelerationDemandMpSS)
-                    {
-                        float newThrottle = 0;
-                        // calculate new max force if MaxPowerThreshold is set
-                        if (MaxPowerThreshold > 0)
-                        {
-                            float currentSpeed = MpS.FromMpS(AbsWheelSpeedMpS, !SpeedIsMph);
-                            float percentComplete = (int)Math.Round((double)(100 * currentSpeed) / MaxPowerThreshold);
-                            if (percentComplete > 100)
-                                percentComplete = 100;
-                            newThrottle = percentComplete;
-                        }
-                        if (ForceStepsThrottleTable.Count > 0 && !SpeedRegulatorMaxForcePercentUnits)
-                        {
-                            demandedPercent = ForceStepsThrottleTable[(int)selectedMaxAccelerationStep - 1];
-                            if (AccelerationTable.Count > 0)
-                                a = AccelerationTable[(int)selectedMaxAccelerationStep - 1];
-                        }
-                        else
-                            demandedPercent = SelectedMaxAccelerationPercent;
-                        if (demandedPercent < newThrottle)
-                            demandedPercent = newThrottle;
-                    }
-                    if (reducingForce)
-                    {
-                        if (demandedPercent > PowerReductionValue)
-                            demandedPercent = PowerReductionValue;
-                    }
-                    if (a > 0 && MpS.FromMpS(Locomotive.WheelSpeedMpS, !SpeedIsMph) > 5)
-                    {
-                        if (Locomotive.AccelerationMpSS < a - 0.02 && deltaSpeedMpS > 0.8f)
-                        {
-                            target = 100;
-                        }
-                        else if ((Locomotive.AccelerationMpSS < a - 0.02 && CCThrottleOrDynBrakePercent < demandedPercent) ||
-                                (CCThrottleOrDynBrakePercent > demandedPercent && (deltaSpeedMpS < 0.8f || Locomotive.AccelerationMpSS > a + 0.02)))
-                        {
-                            target = demandedPercent;
-                        }
-                        else
-                        {
-                            target = CCThrottleOrDynBrakePercent;
-                        }
-                    }
-                    else
-                    {
-                        if (CCThrottleOrDynBrakePercent < demandedPercent)
-                        {
-                            float accelDiff = accelerationDemandMpSS - Locomotive.AccelerationMpSS;
-                            target = Math.Min(CCThrottleOrDynBrakePercent + accelDiff * 10, demandedPercent);
-                        }
-                        else
-                        {
-                            target = demandedPercent;
-                        }
-                    }
+                    totalTractionN += locomotive.GetAvailableTractionForceN(1);
+                    totalDynamicBrakeN += locomotive.GetAvailableDynamicBrakeForceN(1);
                 }
+                totalTrainBrakeN += car.FrictionBrakeBlendingMaxForceN; // TODO: consider changes with speed
+                totalMassKg += car.MassKG;
             }
-            else if (Locomotive.DynamicBrakeAvailable && UseDynBrake && CCThrottleOrDynBrakePercent <= 0)
+            MaxThrottleAccelerationMpSS = totalTractionN / totalMassKg;
+            MaxDynamicBrakeDecelerationMpSS = totalDynamicBrakeN / totalMassKg;
+            MaxTrainBrakeDecelerationMpSS = totalTrainBrakeN / totalMassKg;
+
+            float demandedAccelerationMpSS;
+            if (deltaSpeedMpS > 0)
             {
-                float val = (float)Math.Abs(StartReducingSpeedDeltaDownwards * coeff * ((deltaSpeedMpS + 0.5f) / 3));
-                float accelerationDemandMpSS = -(float)Math.Sqrt(val);
-                if (RelativeAccelerationMpSS > accelerationDemandMpSS)
-                {
-                    float maxStep = (RelativeAccelerationMpSS - accelerationDemandMpSS) * 2;
-                    target = CCThrottleOrDynBrakePercent - maxStep;
-                }
-                else if (RelativeAccelerationMpSS + 0.01f < accelerationDemandMpSS)
-                {
-                    float maxStep = (accelerationDemandMpSS - RelativeAccelerationMpSS) * 2;
-                    target = CCThrottleOrDynBrakePercent + maxStep;
-                }
-                target = MathHelper.Clamp(target, DynamicBrakeIsSelectedForceDependant ? -SelectedMaxAccelerationPercent : -100, 0);
+                demandedAccelerationMpSS = deltaSpeedMpS * StartReducingSpeedDelta;
             }
-            if (target > CCThrottleOrDynBrakePercent)
-                IncreaseForce(ref CCThrottleOrDynBrakePercent, elapsedClockSeconds, target);
-            else if (target < CCThrottleOrDynBrakePercent)
-                DecreaseForce(ref CCThrottleOrDynBrakePercent, elapsedClockSeconds, target);
-        }
-        public void UpdateForcePID(float elapsedClockSeconds, float deltaSpeedMpS, bool tractionAllowed)
-        {
-            float maxAccelerationMpSS = MaxAccelerationMpSS;
-            float maxDecelerationMpSS = MaxDecelerationMpSS;
-            float targetThrottle = 0;
-            float targetDynamic = 0;
-            if (tractionAllowed)
+            else
+            {
+                demandedAccelerationMpSS = deltaSpeedMpS * StartReducingSpeedDeltaDownwards;
+            }
+            if (ATOSetSpeedMpS == SetSpeedMpS && ATOSetAccelerationMpSS.HasValue)
+            {
+                demandedAccelerationMpSS += ATOSetAccelerationMpSS.Value;
+            }
+            demandedAccelerationMpSS = MathHelper.Clamp(demandedAccelerationMpSS, -MaxDecelerationMpSS, MaxAccelerationMpSS);
+
+            float maxThrottleAccelerationMpSS = MaxThrottleAccelerationMpSS;
+            if (maxThrottleAccelerationMpSS < 0.01f)
+            {
+                float coeff = Math.Max(MpS.FromMpS(Locomotive.WheelSpeedMpS, !SpeedIsMph) / 100 * 1.2f, 1);
+                maxThrottleAccelerationMpSS = 1.5f / coeff;
+            }
+            float maxDynamicBrakeDecelerationMpSS = MaxDynamicBrakeDecelerationMpSS;
+            if (maxDynamicBrakeDecelerationMpSS < 0.01f)
+            {
+                float coeff = Math.Max(MpS.FromMpS(Locomotive.WheelSpeedMpS, !SpeedIsMph) / 100 * 1.2f, 1);
+                maxDynamicBrakeDecelerationMpSS = 1.5f / coeff;
+            }
+            float maxTrainBrakeDecelerationMpSS = MaxTrainBrakeDecelerationMpSS;
+            if (MaxTrainBrakeDecelerationMpSS < 0.01f)
+            {
+                maxTrainBrakeDecelerationMpSS = 1.5f;
+            }
+            ThrottlePID.SetCoefficients(maxThrottleAccelerationMpSS, ThrottleFullRangeIncreaseTimeSeconds);
+            DynamicBrakePID.SetCoefficients(maxDynamicBrakeDecelerationMpSS, DynamicBrakeFullRangeIncreaseTimeSeconds);
+            TrainBrakePID.SetCoefficients(maxTrainBrakeDecelerationMpSS, TrainBrakeFullRangeIncreaseTimeSeconds);
+
+            float targetThrottleAccelerationMpSS = demandedAccelerationMpSS;
+            if (AccelerationTable.Count > 0 && MpS.FromMpS(AbsWheelSpeedMpS, !SpeedIsMph) > 5)
+            {
+                float a = AccelerationTable[(int)selectedMaxAccelerationStep - 1];
+                if (a > 0 && a < targetThrottleAccelerationMpSS) targetThrottleAccelerationMpSS = a;
+            }
+            float maxThrottlePercent = 0;
+            if (tractionAllowed && DynamicBrakePID.Percent <= 0 && TrainBrakePID.Percent <= 0)
             {
                 // Max throttle percent is determined by the force selector
-                float maxPercent = ForceStepsThrottleTable.Count > 0 && !SpeedRegulatorMaxForcePercentUnits ? ForceStepsThrottleTable[(int)selectedMaxAccelerationStep - 1] : SelectedMaxAccelerationPercent;
+                maxThrottlePercent = ForceStepsThrottleTable.Count > 0 && !SpeedRegulatorMaxForcePercentUnits ? ForceStepsThrottleTable[(int)selectedMaxAccelerationStep - 1] : SelectedMaxAccelerationPercent;
                 if (MaxPowerThreshold > 0)
                 {
                     // Linearly increase max throttle percent until max force is available when speed reaches MaxPowerThreshold
                     float currentSpeed = MpS.FromMpS(AbsWheelSpeedMpS, !SpeedIsMph);
                     float overridePercent = (100 * currentSpeed) / MaxPowerThreshold;
-                    maxPercent = Math.Max(Math.Min(overridePercent, 100), maxPercent);
+                    maxThrottlePercent = Math.Max(Math.Min(overridePercent, 100), maxThrottlePercent);
                 }
-                if (reducingForce) maxPercent = Math.Min(maxPercent, PowerReductionValue);
-                if (AccelerationTable.Count > 0 && MpS.FromMpS(AbsWheelSpeedMpS, !SpeedIsMph) > 5 && deltaSpeedMpS >= 0)
-                {
-                    float a = AccelerationTable[(int)selectedMaxAccelerationStep - 1];
-                    if (a > 0) maxAccelerationMpSS = Math.Min(maxAccelerationMpSS, a);
-                }
-                ThrottlePID.Update(elapsedClockSeconds, deltaSpeedMpS, maxAccelerationMpSS, RelativeAccelerationMpSS, 0, maxPercent);
-                targetThrottle = ThrottlePID.Value;
+                if (reducingForce) maxThrottlePercent = Math.Min(maxThrottlePercent, PowerReductionValue);
             }
-            else
+            ThrottlePID.Update(elapsedClockSeconds, targetThrottleAccelerationMpSS, RelativeAccelerationMpSS, 0, maxThrottlePercent);
+
+            float minDynamicBrakePercent = 0;
+            float maxDynamicBrakePercent = 0;
+            if (Locomotive.DynamicBrakeAvailable && UseDynBrake && ThrottlePID.Percent <= 0)
             {
-                ThrottlePID.Active = false;
+                // If train brake is active, we force dynamic brakes to stay active to give preference to brake release
+                minDynamicBrakePercent = TrainBrakePercent > 0 ? MinDynamicBrakePercentWhileUsingTrainBrake : 0;
+                maxDynamicBrakePercent = DynamicBrakeIsSelectedForceDependant ? SelectedMaxAccelerationPercent : 100;
             }
-            if (Locomotive.DynamicBrakeAvailable && UseDynBrake)
-            {
-                float minPercent = TrainBrakePercent > 0 ? 50 : 0;
-                float maxPercent = DynamicBrakeIsSelectedForceDependant ? SelectedMaxAccelerationPercent : 100;
-                DynamicBrakePID.Update(elapsedClockSeconds, -deltaSpeedMpS, maxDecelerationMpSS, -RelativeAccelerationMpSS, minPercent, maxPercent);
-                targetDynamic = DynamicBrakePID.Value;
-            }
-            else
-            {
-                DynamicBrakePID.Active = false;
-            }
-            float target = targetThrottle - targetDynamic;
+            DynamicBrakePID.Update(elapsedClockSeconds, -demandedAccelerationMpSS, -RelativeAccelerationMpSS, minDynamicBrakePercent, maxDynamicBrakePercent);
+        
+            float target = ThrottlePID.Percent - DynamicBrakePID.Percent;
             if (target > CCThrottleOrDynBrakePercent)
                 IncreaseForce(ref CCThrottleOrDynBrakePercent, elapsedClockSeconds, target);
             else if (target < CCThrottleOrDynBrakePercent)
                 DecreaseForce(ref CCThrottleOrDynBrakePercent, elapsedClockSeconds, target);
+            UpdateTrainBrakePercent(elapsedClockSeconds, deltaSpeedMpS, demandedAccelerationMpSS);
         }
-        void UpdateTrainBrakePercent(float elapsedClockSeconds, float deltaSpeedMpS)
+        void UpdateTrainBrakePercent(float elapsedClockSeconds, float deltaSpeedMpS, float demandedAccelerationMpSS)
         {
+            float dynamicBrakeDecelerationMpSS = MaxDynamicBrakeDecelerationMpSS;
             bool enabled = false;
-            if (deltaSpeedMpS < 0 && (UseTrainBrakeAndDynBrake || !Locomotive.DynamicBrakeAvailable))
+            if (ThrottlePID.Percent <= 0 && (UseTrainBrakeAndDynBrake || !Locomotive.DynamicBrakeAvailable))
             {
                 bool dynamicBrakeAvailable = Locomotive.DynamicBrakeAvailable && Locomotive.LocomotivePowerSupply.DynamicBrakeAvailable && UseDynBrake;
-                if (!dynamicBrakeAvailable || MaxDynamicBrakeDecelerationMpSS * 0.1f < MaxDecelerationMpSS)
+                if (!dynamicBrakeAvailable || MaxDynamicBrakeDecelerationMpSS < MaxDecelerationMpSS * 0.1f)
                 {
-                    // Always enable train brake application if dynamic brake is not available
                     enabled = true;
+                    dynamicBrakeDecelerationMpSS = 0;
                 }
-                else if (deltaSpeedMpS < -SpeedDeltaToEnableTrainBrake)
+                else if (deltaSpeedMpS <= -SpeedDeltaToEnableTrainBrake)
                 {
                     // Otherwise, only enabled if dynamic brake cannot provide enough force
-                    enabled = CCThrottleOrDynBrakePercent < -85 || MaxDynamicBrakeDecelerationMpSS * 0.85f < MaxDecelerationMpSS;
+                    enabled = CCThrottleOrDynBrakePercent < -MinDynamicBrakePercentToEnableTrainBrake/* || MaxDynamicBrakeDecelerationMpSS * MinDynamicBrakePercentToEnableTrainBrake / 100 < -demandedAccelerationMpSS*/ || TrainBrakePercent > 0;
                 }
             }
-            if (enabled)
+
+            float decelerationDemandMpSS = -demandedAccelerationMpSS - dynamicBrakeDecelerationMpSS;
+            // Since part of the demand is achieved with the dynamic brake, we substract from the real deceleration
+            // the contribution which comes from dynamic brakes
+            float correctedCurrentDecelerationMpSS = -RelativeAccelerationMpSS - dynamicBrakeDecelerationMpSS;
+            TrainBrakePID.Update(elapsedClockSeconds, decelerationDemandMpSS, correctedCurrentDecelerationMpSS, 0, enabled ? TrainBrakeMaxPercentValue : 0);
+
+            float target = TrainBrakePID.Percent;
+            if (target <= TrainBrakeMinPercentValue) TrainBrakePercent = 0;
+            else if (Math.Abs(TrainBrakePercent - target) > 5)
             {
-                float target;
-                if (deltaSpeedMpS > -SpeedDeltaToEnableFullTrainBrake)
-                {
-                    TrainBrakePID.Active = false;
-                    target = Math.Max((MaxDecelerationMpSS - MaxDynamicBrakeDecelerationMpSS) / MaxTrainBrakeDecelerationMpSS * 100, 0);
-                    if (SetSpeedMpS <= 0) target = TrainBrakeMinPercentValue + target * Math.Max(-deltaSpeedMpS / Math.Max(SpeedDeltaToEnableFullTrainBrake, SpeedDeltaToEnableTrainBrake), 0.3f);
-                    else target = TrainBrakeMinPercentValue - 3.0f + target * -deltaSpeedMpS / Math.Max(SpeedDeltaToEnableFullTrainBrake, SpeedDeltaToEnableTrainBrake);
-                }
-                else
-                {
-                    target = Math.Max((MaxDecelerationMpSS - MaxDynamicBrakeDecelerationMpSS) / MaxTrainBrakeDecelerationMpSS * 100, 0);
-                    float accelerationDemandMpSS = (0.85f + Math.Min(CCThrottleOrDynBrakePercent / 100, 0)) * MaxDynamicBrakeDecelerationMpSS - MaxDecelerationMpSS;
-                    TrainBrakePID.MinValue = 0;
-                    TrainBrakePID.MaxValue = TrainBrakeMaxPercentValue;
-                    TrainBrakePID.Update(elapsedClockSeconds, RelativeAccelerationMpSS - accelerationDemandMpSS, target);
-                    target = TrainBrakePID.Value;
-                }
-                if (target <= TrainBrakeMinPercentValue) TrainBrakePercent = 0;
-                else if (Math.Abs(TrainBrakePercent - target) > 5)
-                {
-                    TrainBrakePercent = MathHelper.Clamp(target, TrainBrakeMinPercentValue, TrainBrakeMaxPercentValue);
-                }
-            }
-            else
-            {
-                TrainBrakePID.Active = false;
-                TrainBrakePercent = 0;
+                TrainBrakePercent = MathHelper.Clamp(target, TrainBrakeMinPercentValue, TrainBrakeMaxPercentValue);
             }
         }
         void IncreaseForce(ref float throttleOrDynPercent, float elapsedClockSeconds, float maxPercent)
