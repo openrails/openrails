@@ -2002,6 +2002,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
 
+                // DISABLED: Critical minimum speed calculation appears to be incorrect and is calculating unreasonable values and causing erronious errors. Refactoring required in the future.
                 // if speed doesn't reach minimum speed required around the curve then set notification
                 // Breaking of brake hose will not apply to TT mode or AI trains or if on a curve less then 150m to cover operation in shunting yards, where track would mostly have no superelevation
                 //if (s < CriticalMinSpeedMpS && CurrentCurveRadiusM > 150)

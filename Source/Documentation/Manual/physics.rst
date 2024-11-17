@@ -91,7 +91,7 @@ Alternatively the low-speed friction force can be manually specified by the user
 When running on a curve and if the
 :ref:`Curve dependent resistance <options-curve-resistance>` option is
 enabled, additional resistance is calculated, based on the curve radius,
-rigid wheel base, track gauge and super elevation. The curve resistance
+rigid wheel base, track gauge and superelevation. The curve resistance
 has its lowest value at the curve's optimal speed. Running at higher or
 lower speed causes higher curve resistance. The worst situation is
 starting a train from zero speed. The track gauge value can be set by
@@ -4161,8 +4161,8 @@ up grade) per ton per degree of curve.
 
 .. _physics-curve-speed-limit:
 
-Super Elevation (Curve Speed Limit) -- Theory
-=============================================
+Superelevation (Curve Speed Limit) -- Theory
+============================================
 
 Introduction
 ------------
@@ -4229,8 +4229,8 @@ following drawing, illustrates the basic concept described. Lateral
 displacement of the centre of gravity permitted by the suspension system of
 the rolling stock is not illustrated.
 
-Use of Super Elevation
-----------------------
+Use of Superelevation
+---------------------
 
 .. figure:: images/physics-superelevation-forces-with.png
     :align: right
@@ -4241,22 +4241,22 @@ In order to counteract the effect of centrifugal force Fc the outside rail
 of the curve may be elevated above the inside rail, effectively moving the
 centre of gravity of the rolling stock laterally toward the inside rail.
 
-This procedure is generally referred to as super elevation. If the
+This procedure is generally referred to as superelevation. If the
 combination of lateral displacement of the centre of gravity provided by
-the super elevation, velocity of the rolling stock and radius of curve is
+the superelevation, velocity of the rolling stock and radius of curve is
 such that resulting force Fr becomes centred between and perpendicular to a
 line across the running rails the downward pressure on the outside and
-inside rails of the curve will be the same. The super elevation that
+inside rails of the curve will be the same. The superelevation that
 produces this condition for a given velocity and radius of curve is known
 as the balanced or equilibrium elevation.
 
-Limitation of Super Elevation in Mixed Passenger & Freight Routes
------------------------------------------------------------------
+Limitation of Superelevation in Mixed Passenger & Freight Routes
+----------------------------------------------------------------
 
 Typical early railway operation resulted in rolling stock being operated at
 less than equilibrium velocity (all wheels equally sharing the rolling
 stock weight ), or coming to a complete stop on curves. Under such
-circumstances excess super elevation may lead to a downward force
+circumstances excess superelevation may lead to a downward force
 sufficient to damage the inside rail of the curve, or cause derailment of
 rolling stock toward the centre of the curve when draft force is applied to
 a train. Routine operation of loaded freight trains at low velocity on a
@@ -4264,15 +4264,15 @@ curve superelevated to permit operation of higher velocity passenger trains
 will result in excess wear of the inside rail of the curve by the freight
 trains.
 
-Thus on these types of routes, super elevation is generally limited to no
+Thus on these types of routes, superelevation is generally limited to no
 more than 6 inches.
 
-Limitation of Super Elevation in High Speed Passenger Routes
-------------------------------------------------------------
+Limitation of Superelevation in High Speed Passenger Routes
+-----------------------------------------------------------
 
 Modern high speed passenger routes do not carry slower speed trains, nor
 expect trains to stop on curves, so it is possible to operate these routes
-with higher track super elevation values. Curves on these types of route
+with higher track superelevation values. Curves on these types of route
 are also designed with a relatively gentle radius, and are typically in
 excess of 2000m (2km) or 7000m (7km) depending on the speed limit of the
 route.
@@ -4285,7 +4285,7 @@ route.
 |Horizontal curve radius|10000  |7000   |7000   |7000   |4000   |
 |(m)                    |(10km) |(7km)  |(7km)  |(7km)  |(4km)  |
 +-----------------------+-------+-------+-------+-------+-------+
-|Super elevation (mm)   |180    |170    |150    |130    |180    |
+|Superelevation (mm)    |180    |170    |150    |130    |180    |
 +-----------------------+-------+-------+-------+-------+-------+
 |Max Grade (mm/m)       |35     |40     |12.5   |25     |15     |
 +-----------------------+-------+-------+-------+-------+-------+
@@ -4315,19 +4315,19 @@ as maximum comfortable velocity or comfortable speed. Operating experience
 with conventional passenger cars has led to the generally accepted
 practice, circa 1980, of designating the maximum velocity for a given curve
 to be equal to the result for the calculation of equilibrium velocity with
-an extra amount added to the actual super elevation that will be applied to
-the curve. This is often referred to as unbalanced super elevation or cant
+an extra amount added to the actual superelevation that will be applied to
+the curve. This is often referred to as unbalanced superelevation or cant
 deficiency. Tilt trains have been introduced to allow faster train
 operation on tracks not originally designed for *high speed* operation, as
 well as high speed railway operation. The tilting of the passenger cab
-allows greater values of unbalanced super elevation to be used.
+allows greater values of unbalanced superelevation to be used.
 
 Limitation of Velocity on Curved Track at Zero Cross Level
 ----------------------------------------------------------
 
 The concept of maximum comfortable velocity may also be used to determine
 the maximum velocity at which rolling stock is permitted to round curved
-track without super elevation and maintained at zero cross level. The lead
+track without superelevation and maintained at zero cross level. The lead
 curve of a turnout located between the heel of the switch and the toe of
 the frog is an example of curved track that is generally not super
 elevated. Other similar locations would include yard tracks and industrial
@@ -4367,26 +4367,26 @@ follows:
 
 Where:
 
-- E = Ea (track super elevation) + Ec (unbalanced super elevation)
+- E = Ea (track superelevation) + Ec (unbalanced superelevation)
 - g = acceleration due to gravity
 - r = radius of curve
 - G = track gauge
 
-Typical Super Elevation Values & Speed Impact -- Mixed Passenger & Freight Routes
+Typical Superelevation Values & Speed Impact -- Mixed Passenger & Freight Routes
 ---------------------------------------------------------------------------------
 
 The values quoted below are "typical" but may vary from country to country.
 
-Track super elevation typically will not be more than 6 inches (150mm).
+Track superelevation typically will not be more than 6 inches (150mm).
 Naturally, depending upon the radius of the curve, speed restrictions may
 apply.
 
-Normally unbalanced super elevation is typically restricted to 3 inches
+Normally unbalanced superelevation is typically restricted to 3 inches
 (75mm), and is usually only allowed for passenger stock.
 
 Tilt trains may have values of up to 12 inches (305mm).
 
-Typical Super Elevation Values & Speed Impact -- High Speed Passenger Routes
+Typical Superelevation Values & Speed Impact -- High Speed Passenger Routes
 ----------------------------------------------------------------------------
 
 +-------------------------------+-------------------+-----------------------+
@@ -4414,21 +4414,21 @@ Typical Super Elevation Values & Speed Impact -- High Speed Passenger Routes
 |UK -- Tilting trains           |180                |300                    |
 +-------------------------------+-------------------+-----------------------+
 
-**Table: Super Elevation limits (source - Tracks for tilting trains - A
+**Table: Superelevation limits (source - Tracks for tilting trains - A
 study within the Fast And Comfortable Trains (FACT) project by B. Kufver,
 R. Persson)**
 
 .. _physics-curve-speed-limit-application:
 
-Super Elevation (Curve Speed Limit) Application in OR
-=====================================================
+Superelevation (Curve Speed Limit) Application in OR
+====================================================
 
 Open Rails implements this function, and has *standard* default values
 applied. The user may elect to specify some of the standard parameters used
 in the above formula.
 
-OR Super Elevation Parameters
------------------------------
+OR Superelevation Parameters
+----------------------------
 
 .. index::
    single: ORTSUnbalancedSuperElevation
@@ -4440,8 +4440,8 @@ Typical OR parameters can be entered in the Wagon section of the .wag or
     ORTSUnbalancedSuperElevation ( 3in )
     ORTSTrackGauge( 4ft 8.5in)
 
-OR Super Elevation Default Values
----------------------------------
+OR Superelevation Default Values
+--------------------------------
 
 The above values can be entered into the relevant files, or alternatively
 OR will default to the following functionality.
