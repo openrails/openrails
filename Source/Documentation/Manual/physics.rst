@@ -2416,9 +2416,9 @@ present for simplicity.
    single: ORTSDPBrakeSynchronization
 
 By default, Open Rails will treat remote groups as manned helpers who typically
-would not assist in train brake operations, so only independent brakes will synchronize.
-To enable train brake synchronization, the token ``engine(ORTSDPBrakeSynchronization(``
-should be used. The valid settings for ``ORTSDPBrakeSynchronization`` are as follows:
+would not assist in train brake operations. To enable brake synchronization,
+the token ``engine(ORTSDPBrakeSynchronization(`` should be used.
+The valid settings for ``ORTSDPBrakeSynchronization`` are as follows:
 
 - ``"Apply"``: DP units will reduce the brake pipe pressure locally to match the
   equalizing reservoir pressure of the controlling locomotive. (The controlling
@@ -2433,10 +2433,6 @@ should be used. The valid settings for ``ORTSDPBrakeSynchronization`` are as fol
   controlling locomotive, and will automatically bail-off automatic brake
   applications if needed. (The controlling locomotive must also have the
   ``"Independent"`` setting.)
-                - NOTE: Although ``"Independent"`` is enabled by default,
-                  if ``ORTSDPBrakeSynchronization`` is present in the .eng
-                  file but ``"Independent"`` is not specified as an option,
-                  independent brakes will NOT be synchronized.
 
 All settings can be combined as needed, simply place a comma between each setting
 in the string: ``ORTSDPBrakeSynchronization("Apply, Release, Emergency, Independent")``

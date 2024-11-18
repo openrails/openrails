@@ -1935,6 +1935,13 @@ namespace Orts.Simulation
                     var playerTrain = PlayerLocomotive.Train as AITrain;
                     if (playerTrain != null)
                     {
+                        if (TimetableMode && playerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL)
+                        {
+                            Confirmer.Message(ConfirmLevel.Warning, Catalog.GetString("Train can't be switched if in manual mode"));
+                            TrainSwitcher.SuspendOldPlayer = false;
+                            TrainSwitcher.ClickedSelectedAsPlayer = false;
+                            return;
+                        }
                         if (playerTrain.ControlMode == Train.TRAIN_CONTROL.MANUAL) TrainSwitcher.SuspendOldPlayer = true; // force suspend state to avoid disappearing of train;
                         if (TrainSwitcher.SuspendOldPlayer &&
                             (playerTrain.SpeedMpS < -0.025 || playerTrain.SpeedMpS > 0.025 || playerTrain.PresentPosition[0].TCOffset != playerTrain.PreviousPosition[0].TCOffset))
@@ -1944,14 +1951,14 @@ namespace Orts.Simulation
                             TrainSwitcher.ClickedSelectedAsPlayer = false;
                             return;
                         }
-                        if (playerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN)
+                        if (playerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || !playerTrain.Autopilot)
                         {
                             // it must be autopiloted first
                             playerTrain.SwitchToAutopilotControl();
                         }
                         // and now switch!
                         playerTrain.TrainType = Train.TRAINTYPE.AI;
-                        AI.AITrains.Add(playerTrain);
+                        playerTrain.Autopilot = false;
                         if (TrainSwitcher.SuspendOldPlayer)
                         {
                             playerTrain.MovementState = AITrain.AI_MOVEMENT_STATE.SUSPENDED;
@@ -2103,6 +2110,18 @@ namespace Orts.Simulation
                     PlayerLocomotive = SetPlayerLocomotive(pathlessPlayerTrain);
                     if (oldPlayerTrain != null) oldPlayerTrain.LeadLocomotiveIndex = -1;
                 }
+                if (TimetableMode)
+                {
+                    // In timetable mode player train must have number 0
+                    (PlayerLocomotive.Train.Number, oldPlayerTrain.Number) = (oldPlayerTrain.Number, PlayerLocomotive.Train.Number);
+                    var oldPlayerTrainIndex = Trains.IndexOf(oldPlayerTrain);
+                    var playerTrainIndex = Trains.IndexOf(PlayerLocomotive.Train);
+                    (Trains[oldPlayerTrainIndex], Trains[playerTrainIndex]) = (Trains[playerTrainIndex], Trains[oldPlayerTrainIndex]);
+                    var index = AI.AITrains.IndexOf(PlayerLocomotive.Train as AITrain);
+                    (AI.AITrains[0], AI.AITrains[index]) = (AI.AITrains[index], AI.AITrains[0]);
+                    AI.aiListChanged = true;
+                    PlayerLocomotive.Train.Autopilot = true;
+                }
                 playerSwitchOngoing = true;
                 if (MPManager.IsMultiPlayer())
                 {
@@ -2121,19 +2140,25 @@ namespace Orts.Simulation
         {
             if (PlayerLocomotive.Train.TrainType != Train.TRAINTYPE.STATIC)
             {
-                AI.AITrains.Remove(PlayerLocomotive.Train as AITrain);
+                if (!TimetableMode)
+                    AI.AITrains.Remove(PlayerLocomotive.Train as AITrain);
                 if ((PlayerLocomotive.Train as AITrain).MovementState == AITrain.AI_MOVEMENT_STATE.SUSPENDED)
                 {
                     PlayerLocomotive.Train.Reinitialize();
                     (PlayerLocomotive.Train as AITrain).MovementState = Math.Abs(PlayerLocomotive.Train.SpeedMpS) <= MaxStoppedMpS ?
                         AITrain.AI_MOVEMENT_STATE.INIT : AITrain.AI_MOVEMENT_STATE.BRAKING;
                 }
-                (PlayerLocomotive.Train as AITrain).SwitchToPlayerControl();
+                if (!TimetableMode)
+                    (PlayerLocomotive.Train as AITrain).SwitchToPlayerControl();
+                else
+                    PlayerLocomotive.Train.DisplayMessage = "";
             }
             else
             {
                 PlayerLocomotive.Train.CreatePathlessPlayerTrain();
             }
+            var playerLocomotive = PlayerLocomotive as MSTSLocomotive;
+            playerLocomotive.UsingRearCab = (PlayerLocomotive.Flipped ^ PlayerLocomotive.Train.MUDirection == Direction.Reverse) && (playerLocomotive.HasRearCab || playerLocomotive.HasRear3DCab);
             OnPlayerLocomotiveChanged();
             playerSwitchOngoing = false;
             TrainSwitcher.ClickedSelectedAsPlayer = false;
