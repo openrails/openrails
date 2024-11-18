@@ -279,9 +279,9 @@ namespace Orts.Viewer3D
         {
             if (SharedShape.Matrices.Length > 0)
             {
-                XNAMatrices = new Matrix[SharedShape.Matrices.Length];
-                for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
-                    XNAMatrices[iMatrix] = SharedShape.Matrices[iMatrix];
+            XNAMatrices = new Matrix[SharedShape.Matrices.Length];
+            for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
+                XNAMatrices[iMatrix] = SharedShape.Matrices[iMatrix];
             }
             else // If the shape file is missing or fails to load, we need some default data to prevent crashes
             {
