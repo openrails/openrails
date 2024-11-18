@@ -974,7 +974,7 @@ namespace ORTS
                 // Experimental tab
                 {
                     pbSuperElevation,
-                    baseUrl + "/options.html#super-elevation"
+                    BaseDocumentationUrl + "/options.html#super-elevation"
                 },
             };
             if (urls.TryGetValue(sender, out var url))
