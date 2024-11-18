@@ -301,8 +301,7 @@ namespace ORTS
             numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
 
             // Experimental tab
-            numericUseSuperElevation.Value = Settings.UseSuperElevation;
-            numericSuperElevationMinLen.Value = Settings.SuperElevationMinLen;
+            checkUseSuperElevation.Checked = Settings.UseSuperElevation;
             numericSuperElevationGauge.Value = Settings.SuperElevationGauge;
             trackLODBias.Value = Settings.LODBias;
             trackLODBias_ValueChanged(null, null);
@@ -487,8 +486,7 @@ namespace ORTS
             Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
 
             // Experimental tab
-            Settings.UseSuperElevation = (int)numericUseSuperElevation.Value;
-            Settings.SuperElevationMinLen = (int)numericSuperElevationMinLen.Value;
+            Settings.UseSuperElevation = checkUseSuperElevation.Checked;
             Settings.SuperElevationGauge = (int)numericSuperElevationGauge.Value;
             Settings.LODBias = trackLODBias.Value;
             Settings.SignalLightGlow = checkSignalLightGlow.Checked;
@@ -762,6 +760,9 @@ namespace ORTS
                 (pbControlConfirmations, new Control[] { labelControlConfirmations, comboControlConfirmations }),
                 (pbWebServerPort, new Control[] { labelWebServerPort }),
                 (pbPerformanceTuner, new Control[] { checkPerformanceTuner, labelPerformanceTunerTarget }),
+
+                // Experimental tab
+                (pbSuperElevation, new[] { ElevationText }),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
             {
@@ -918,6 +919,12 @@ namespace ORTS
                 {
                     pbPerformanceTuner,
                     BaseDocumentationUrl + "/options.html#performance-tuner"
+                },
+
+                // Experimental tab
+                {
+                    pbSuperElevation,
+                    BaseDocumentationUrl + "/options.html#super-elevation"
                 },
             };
             if (urls.TryGetValue(sender, out var url))

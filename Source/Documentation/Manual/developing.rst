@@ -22,7 +22,7 @@ Rolling Stock
 - 3D cabs add realism.
 - OR graphics renders the results of the rolling stock developers at higher 
   resolution.
-- Rolling stock running on super-elevated track improves gaming experience.
+- Rolling stock running on superelevated track improves gaming experience.
 
 Routes
 ======

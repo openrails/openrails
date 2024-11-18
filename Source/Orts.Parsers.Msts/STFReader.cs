@@ -996,7 +996,11 @@ namespace Orts.Parsers.Msts
                 {
                     case "": return 1.0;
                     case "m/s": return 1.0;
+                    case "cm/s": return 0.01;
+                    case "mm/s": return 0.001;
                     case "mph": return 0.44704;
+                    case "ft/s": return 0.3048;
+                    case "in/s": return 0.0254;
                     case "kph": return 0.27777778;
                     case "km/h": return 0.27777778;
                     case "kmph": return 0.27777778;
@@ -1008,7 +1012,11 @@ namespace Orts.Parsers.Msts
                 {
                     case "": return 0.44704;
                     case "m/s": return 1.0;
+                    case "cm/s": return 0.01;
+                    case "mm/s": return 0.001;
                     case "mph": return 0.44704;
+                    case "ft/s": return 0.3048;
+                    case "in/s": return 0.0254;
                     case "kph": return 0.27777778;
                     case "km/h": return 0.27777778;
                     case "kmph": return 0.27777778;
