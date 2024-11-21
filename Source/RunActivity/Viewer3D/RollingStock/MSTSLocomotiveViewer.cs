@@ -2642,12 +2642,12 @@ namespace Orts.Viewer3D.RollingStock
                 // Train Control System controls
                 case CABViewControlTypes.ORTS_TCS:
                     {
-                    int commandIndex = Control.ControlType.Id - 1;
-                    Locomotive.TrainControlSystem.TCSCommandButtonDown.TryGetValue(commandIndex, out bool currentValue);
-                    if (ChangedValue(1) > 0 ^ currentValue)
-                        new TCSButtonCommand(Viewer.Log, !currentValue, commandIndex);
-                    Locomotive.TrainControlSystem.TCSCommandSwitchOn.TryGetValue(commandIndex, out bool currentSwitchValue);
-                    new TCSSwitchCommand(Viewer.Log, ChangedValue(currentSwitchValue ? 1 : 0) > 0, commandIndex);
+                        int commandIndex = Control.ControlType.Id - 1;
+                        Locomotive.TrainControlSystem.TCSCommandButtonDown.TryGetValue(commandIndex, out bool currentValue);
+                        if (ChangedValue(1) > 0 ^ currentValue)
+                            new TCSButtonCommand(Viewer.Log, !currentValue, commandIndex);
+                        Locomotive.TrainControlSystem.TCSCommandSwitchOn.TryGetValue(commandIndex, out bool currentSwitchValue);
+                        new TCSSwitchCommand(Viewer.Log, ChangedValue(currentSwitchValue ? 1 : 0) > 0, commandIndex);
                     }
                     break;
 
