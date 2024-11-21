@@ -603,6 +603,14 @@ namespace Orts.Viewer3D.Popups
                     PlayerTrain = Owner.Viewer.PlayerTrain;
                     if (LastPlayerTrainCars != Owner.Viewer.PlayerTrain.Cars.Count || !LayoutUpdated)
                     {
+                        // Updates BrakeHoses
+                        if (LastPlayerTrainCars > 0 && PlayerTrain.Cars.Count > LastPlayerTrainCars && ((PlayerTrain.Cars[LastPlayerTrainCars] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected != (PlayerTrain.Cars[LastPlayerTrainCars - 1] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected))
+                        {
+                            // When coupling cars. The front brake hose of the new car is unconnected, the brake hose of the previous car must also be unconnected.
+                            new WagonBrakeHoseRearConnectCommand(Owner.Viewer.Log, (PlayerTrain.Cars[LastPlayerTrainCars - 1] as MSTSWagon), !(PlayerTrain.Cars[LastPlayerTrainCars - 1] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected);
+                            new WagonBrakeHoseRearConnectCommand(Owner.Viewer.Log, (PlayerTrain.Cars[LastPlayerTrainCars] as MSTSWagon), !(PlayerTrain.Cars[LastPlayerTrainCars] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected);
+                        }
+
                         LayoutUpdated = true;
                         Layout();
                         localScrollLayout(SelectedCarPosition);
