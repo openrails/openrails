@@ -38,6 +38,7 @@ namespace ORTS.ContentManager.Models
         public readonly float MaxTractiveForceN = 0F;
         public readonly float MaxBrakeForce = 0F;
         public readonly int NumOperativeBrakes = 0;
+        public readonly float MinCouplerStrengthN = 9.999e8f;  // impossible high force
 
         public readonly IEnumerable<Car> Cars;
 
@@ -71,6 +72,7 @@ namespace ORTS.ContentManager.Models
                         MassKG += wagonFile.MassKG;
                         wagonMassKG = wagonFile.MassKG;
                         MaxBrakeForce += wagonFile.MaxBrakeForceN;
+                        MinCouplerStrengthN = Math.Min(MinCouplerStrengthN, wagonFile.MinCouplerStrengthN);
                         if (wagonFile.MaxBrakeForceN > 0) { NumOperativeBrakes++; }
 
                         if (wag.IsEngine && engFile.MaxForceN > 25000)  // exclude legacy driving trailers / cab-cars

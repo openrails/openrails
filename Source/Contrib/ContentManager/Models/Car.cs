@@ -42,6 +42,7 @@ namespace ORTS.ContentManager.Models
         public readonly float MaxPowerW;
         public readonly float MaxForceN;
         public readonly float MaxSpeedMps;
+        public readonly float MinCouplerStrengthN;
 
         public Car(Content content)
         {
@@ -55,6 +56,7 @@ namespace ORTS.ContentManager.Models
             MassKG = wagFile.MassKG;
             LengthM = wagFile.WagonSize.LengthM;
             MaxBarkeForceN = wagFile.MaxBrakeForceN;
+            MinCouplerStrengthN = wagFile.MinCouplerStrengthN;
 
             if (System.IO.Path.GetExtension(content.PathName).Equals(".eng", StringComparison.OrdinalIgnoreCase))
             {
