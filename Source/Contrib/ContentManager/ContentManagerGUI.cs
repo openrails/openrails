@@ -76,8 +76,15 @@ namespace ORTS.ContentManager
             ContentManager = new ContentManager(Settings.Folders);
 
             // add unit settings to ContentInfo static class; only considering explict setting or system setting
-            ContentInfo.IsMetric = Settings.Units == "Metric" || (Settings.Units == "Automatic" && System.Globalization.RegionInfo.CurrentRegion.IsMetric) || (Settings.Units == "Route" && System.Globalization.RegionInfo.CurrentRegion.IsMetric);
-            ContentInfo.IsUK = Settings.Units == "UK";
+            if (Settings.Units == "Metric") { ContentInfo.IsMetric = true; }
+            else if (Settings.Units == "UK") { ContentInfo.IsUK = true; }
+            else // setting is Automatic or Route
+            {
+                ContentInfo.IsMetric = System.Globalization.RegionInfo.CurrentRegion.IsMetric;
+                // special cases
+                if (System.Globalization.RegionInfo.CurrentRegion.Name == "UK") { ContentInfo.IsUK = true; }
+                else if (System.Globalization.RegionInfo.CurrentRegion.Name == "CA") { ContentInfo.IsMetric = false; } // Canada is metric, but RRs use imperial US
+            }
 
             // Start off the tree with the Content Manager itself at the root and expand to show packages.
             treeViewContent.Nodes.Add(CreateContentNode(ContentManager));
