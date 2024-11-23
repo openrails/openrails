@@ -527,7 +527,6 @@ namespace Orts.Viewer3D
             InfoDisplay = new InfoDisplay(this);
 
             // Load track profiles before considering the world/scenery
-            Trace.Write(" TRP");
             // Creates profile(s) and loads materials into SceneryMaterials
             if (TRPFile.CreateTrackProfile(this, Simulator.RoutePath, out TRPs))
             {
