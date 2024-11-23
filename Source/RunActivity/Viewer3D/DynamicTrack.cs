@@ -420,14 +420,12 @@ namespace Orts.Viewer3D
             {
                 // No track profile provided, use default
                 TrackProfile = new TrProfile(viewer);
-                Trace.Write("(default)");
                 return;
             }
             FileInfo fileInfo = new FileInfo(filespec);
             if (!fileInfo.Exists)
             {
                 TrackProfile = new TrProfile(viewer); // Default profile if no file
-                Trace.Write("(default)");
             }
             else
             {
@@ -465,7 +463,6 @@ namespace Orts.Viewer3D
                                     }
                                 }
                         }
-                        Trace.Write("(.STF)");
                         break;
 
                     case ".XML": // XML-style
@@ -498,13 +495,11 @@ namespace Orts.Viewer3D
                         {
                             TrackProfile = new TrProfile(viewer, reader);
                         }
-                        Trace.Write("(.XML)");
                         break;
 
                     default:
                         // File extension not supported; create a default track profile
                         TrackProfile = new TrProfile(viewer);
-                        Trace.Write("(default)");
                         break;
                 }
             }
