@@ -75,6 +75,7 @@ namespace Orts.Viewer3D.Popups
         internal static Texture2D RearAngleCockPartial;
         internal static Texture2D ResetBrakesOff;
         internal static Texture2D ResetBrakesOn;
+        internal static Texture2D ResetBrakesWarning;
 
         public List<bool> AngleCockAPartiallyOpened = new List<bool>();
         public List<bool> AngleCockBPartiallyOpened = new List<bool>();
@@ -85,6 +86,8 @@ namespace Orts.Viewer3D.Popups
         public int RowsCount;
         public int SpacerRowCount;
         public int SymbolsRowCount;
+        public bool BrakeHoseCarCoupling;
+
         const int SymbolWidth = 32;
         public static bool FontChanged;
         public static bool FontToBold;
@@ -231,6 +234,7 @@ namespace Orts.Viewer3D.Popups
 
                 Rectangle ResetBrakesOffRect = new Rectangle(64, 256, 32, 32);
                 Rectangle ResetBrakesOnRect = new Rectangle(96, 256, 32, 32);
+                Rectangle ResetBrakesWarningRect = new Rectangle(96, 32, 32, 32);
 
                 var GraphicsDeviceRender = Owner.Viewer.RenderProcess.GraphicsDevice;
                 var TrainOperationsPath = System.IO.Path.Combine(Owner.Viewer.ContentPath, "TrainOperations\\TrainOperationsMap32.png");
@@ -280,6 +284,7 @@ namespace Orts.Viewer3D.Popups
 
                 ResetBrakesOff = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, ResetBrakesOffRect);
                 ResetBrakesOn = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, ResetBrakesOnRect);
+                ResetBrakesWarning = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, ResetBrakesWarningRect);
 
                 PowerOn = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, PowerOnRect);
                 PowerOff = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, PowerOffRect);
@@ -638,7 +643,7 @@ namespace Orts.Viewer3D.Popups
                 Viewer = viewer;
                 TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
                 WarningCars = warningCars;
-                Texture = WarningCars > 2 ? ResetBrakesOn : ResetBrakesOff;
+                Texture = WarningCars > 2 ? ResetBrakesOn : WarningCars > 0 && WarningCars < 3 ? ResetBrakesWarning : ResetBrakesOff;
                 Source = new Rectangle(0, 0, size, size);
                 Click += new Action<Control, Point>(buttonInitializeBrakes_Click);
             }
@@ -815,7 +820,6 @@ namespace Orts.Viewer3D.Popups
             readonly TrainCarOperationsViewerWindow TrainCarViewer;
             readonly int CarPosition;
             readonly bool First;
-            readonly float carAngleCockAOpenAmount;
             public buttonFrontAngleCock(int x, int y, int size, Viewer viewer, TrainCar car, int carPosition)
                 : base(x, y, size, size)
             {

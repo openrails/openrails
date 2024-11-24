@@ -83,6 +83,7 @@ namespace Orts.Viewer3D.Popups
         public int SeparatorCount;
         public int SpacerRowCount;
         public int SymbolsRowCount;
+        public bool BrakeHoseCarCoupling;
 
         public ControlLayout Client;
         public bool CarPositionChanged;
@@ -499,6 +500,8 @@ namespace Orts.Viewer3D.Popups
                     // Allows to resize the window according to the carPosition value.
                     if (RowsCount > carPosition) RowsCount = carPosition;
                     if (SeparatorCount > carPosition -1) SeparatorCount = carPosition - 1;
+
+                    BrakeHoseCarCoupling = false;// All brake hoses checked
                 }
             }
             return Vbox;
@@ -603,14 +606,11 @@ namespace Orts.Viewer3D.Popups
                     PlayerTrain = Owner.Viewer.PlayerTrain;
                     if (LastPlayerTrainCars != Owner.Viewer.PlayerTrain.Cars.Count || !LayoutUpdated)
                     {
-                        // Updates BrakeHoses
+                        // Updates brake hoses
                         if (LastPlayerTrainCars > 0 && PlayerTrain.Cars.Count > LastPlayerTrainCars && ((PlayerTrain.Cars[LastPlayerTrainCars] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected != (PlayerTrain.Cars[LastPlayerTrainCars - 1] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected))
                         {
-                            // When coupling cars. The front brake hose of the new car is unconnected, the brake hose of the previous car must also be unconnected.
-                            new WagonBrakeHoseRearConnectCommand(Owner.Viewer.Log, (PlayerTrain.Cars[LastPlayerTrainCars - 1] as MSTSWagon), !(PlayerTrain.Cars[LastPlayerTrainCars - 1] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected);
-                            new WagonBrakeHoseRearConnectCommand(Owner.Viewer.Log, (PlayerTrain.Cars[LastPlayerTrainCars] as MSTSWagon), !(PlayerTrain.Cars[LastPlayerTrainCars] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected);
+                            BrakeHoseCarCoupling = true;// Enable to check all brake hoses when coupling cars
                         }
-
                         LayoutUpdated = true;
                         Layout();
                         localScrollLayout(SelectedCarPosition);
@@ -837,6 +837,7 @@ namespace Orts.Viewer3D.Popups
     {
         readonly Viewer Viewer;
         readonly TrainCarOperationsViewerWindow TrainCarViewer;
+        readonly TrainCarOperationsWindow TrainCarOperations;
         readonly CarOperationsWindow CarOperations;
         readonly int CarPosition;
         readonly bool First;
@@ -845,10 +846,25 @@ namespace Orts.Viewer3D.Popups
         {
             Viewer = viewer;
             TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
+            TrainCarOperations = Viewer.TrainCarOperationsWindow;
             CarOperations = Viewer.CarOperationsWindow;
+            var PlayerTrain = Viewer.PlayerTrain;
 
             CarPosition = carPosition;
             First = car == viewer.PlayerTrain.Cars.First();
+            if (CarPosition > 0 && TrainCarOperations.BrakeHoseCarCoupling)
+            {   // Sometimes when coupling cars. The front brake hose of the new car and the brake hose of the previous car are not synchronised.
+                var frontBrakeHoseCurrentCar = (PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected;
+                var rearBrakeHosePreviousCar = (PlayerTrain.Cars[CarPosition - 1] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected;
+                if (frontBrakeHoseCurrentCar && !rearBrakeHosePreviousCar)
+                {
+                    new WagonBrakeHoseConnectCommand(Viewer.Log, (PlayerTrain.Cars[CarPosition] as MSTSWagon), !(PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected);
+                }
+                else if (!frontBrakeHoseCurrentCar && rearBrakeHosePreviousCar)
+                {
+                    new WagonBrakeHoseRearConnectCommand(Viewer.Log, (PlayerTrain.Cars[CarPosition - 1] as MSTSWagon), !(PlayerTrain.Cars[CarPosition - 1] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected);
+                }
+            }
             Texture = First ? BrakeHoseFirstDis : (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected ? BrakeHoseCon : BrakeHoseDis;
 
             // Allows compatibility with CarOperationWindow
