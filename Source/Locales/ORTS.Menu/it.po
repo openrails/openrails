@@ -1,16 +1,16 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Menu\n"
-"POT-Creation-Date: 2022-04-12 14:33:09-0300\n"
-"PO-Revision-Date: 2022-08-16 16:35+0200\n"
-"Last-Translator: Roberto Ceccarelli\n"
+"POT-Creation-Date: 2024-11-09 17:45:32+0100\n"
+"PO-Revision-Date: 2024-11-10 18:31+0100\n"
+"Last-Translator: Strawberryfield <strawberry.field@libero.it>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.1.1\n"
+"X-Generator: Poedit 3.5\n"
 
 #: ../../ORTS.Menu/Activities.cs:47
 msgid "- Explore Route -"
@@ -22,7 +22,7 @@ msgstr "+ Esplorazione in modalità Activity +"
 
 #: ../../ORTS.Menu/Activities.cs:81
 msgid "Not same route:"
-msgstr "Non è lo stesso scenario"
+msgstr "Non è lo stesso scenario:"
 
 #: ../../ORTS.Menu/Activities.cs:85 ../../ORTS.Menu/Consists.cs:47
 #: ../../ORTS.Menu/Consists.cs:71 ../../ORTS.Menu/Consists.cs:196

@@ -1091,11 +1091,11 @@ namespace Orts.Viewer3D.Popups
                     string[] parts = data.Split(new string[] { " = " }, 2, StringSplitOptions.None);
                     string keyPart = parts[0];
                     string valuePart = parts?[1];
-                    if (keyPart.Contains(Viewer.Catalog.GetString("Engine")))
+                    if (keyPart.Contains(Viewer.Catalog.GetParticularString("DieselEngine","Engine")))
                     {
                         TrainCarViewer.PowerSupplyStatus = locomotiveStatus;
-                        Texture = valuePart.Contains(Viewer.Catalog.GetString("Running")) ? PowerOn
-                           : valuePart.Contains(Viewer.Catalog.GetString("Stopped")) ? PowerOff
+                        Texture = valuePart.Contains(Viewer.Catalog.GetParticularString("DieselEngine", "Running")) ? PowerOn
+                           : valuePart.Contains(Viewer.Catalog.GetParticularString("DieselEngine", "Stopped")) ? PowerOff
                            : PowerChanging;
                         break;
                     }

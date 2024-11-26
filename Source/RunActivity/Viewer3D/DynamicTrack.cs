@@ -21,7 +21,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
-using Orts.Simulation;
 using Orts.Viewer3D.Common;
 using ORTS.Common;
 using System;
@@ -29,128 +28,42 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using System.Xml.Schema;
+using System.Text.RegularExpressions;
 
 namespace Orts.Viewer3D
 {
-    public class DynamicTrack
-    {
-        /// <summary>
-        /// Decompose an MSTS multi-subsection dynamic track section into multiple single-subsection sections.
-        /// </summary>
-        /// <param name="viewer">Viewer reference.</param>
-        /// <param name="trackList">DynamicTrackViewer list.</param>
-        /// <param name="trackObj">Dynamic track section to decompose.</param>
-        /// <param name="worldMatrix">Position matrix.</param>
-        public static void Decompose(Viewer viewer, List<DynamicTrackViewer> trackList, DyntrackObj trackObj, WorldPosition worldMatrix)
-        {
-            // DYNAMIC TRACK
-            // =============
-            // Objectives:
-            // 1-Decompose multi-subsection DT into individual sections.  
-            // 2-Create updated transformation objects (instances of WorldPosition) to reflect 
-            //   root of next subsection.
-            // 3-Distribute elevation change for total section through subsections. (ABANDONED)
-            // 4-For each meaningful subsection of dtrack, build a separate DynamicTrackPrimitive.
-            //
-            // Method: Iterate through each subsection, updating WorldPosition for the root of
-            // each subsection.  The rotation component changes only in heading.  The translation 
-            // component steps along the path to reflect the root of each subsection.
-
-            // The following vectors represent local positioning relative to root of original (5-part) section:
-            Vector3 localV = Vector3.Zero; // Local position (in x-z plane)
-            Vector3 localProjectedV; // Local next position (in x-z plane)
-            Vector3 displacement;  // Local displacement (from y=0 plane)
-            Vector3 heading = Vector3.Forward; // Local heading (unit vector)
-
-            WorldPosition nextRoot = new WorldPosition(worldMatrix); // Will become initial root
-            Vector3 sectionOrigin = worldMatrix.XNAMatrix.Translation; // Save root position
-            worldMatrix.XNAMatrix.Translation = Vector3.Zero; // worldMatrix now rotation-only
-
-            // Iterate through all subsections
-            for (int iTkSection = 0; iTkSection < trackObj.trackSections.Count; iTkSection++)
-            {
-                float length = trackObj.trackSections[iTkSection].param1; // meters if straight; radians if curved
-                if (length == 0.0 || trackObj.trackSections[iTkSection].UiD == UInt32.MaxValue) continue; // Consider zero-length subsections vacuous
-
-                // Create new DT object copy; has only one meaningful subsection
-                DyntrackObj subsection = new DyntrackObj(trackObj, iTkSection);
-
-                //uint uid = subsection.trackSections[0].UiD; // for testing
-
-                // Create a new WorldPosition for this subsection, initialized to nextRoot,
-                // which is the WorldPosition for the end of the last subsection.
-                // In other words, beginning of present subsection is end of previous subsection.
-                WorldPosition root = new WorldPosition(nextRoot);
-
-                // Now we need to compute the position of the end (nextRoot) of this subsection,
-                // which will become root for the next subsection.
-
-                // Clear nextRoot's translation vector so that nextRoot matrix contains rotation only
-                nextRoot.XNAMatrix.Translation = Vector3.Zero;
-
-                // Straight or curved subsection?
-                if (subsection.trackSections[0].isCurved == 0) // Straight section
-                {   // Heading stays the same; translation changes in the direction oriented
-                    // Rotate Vector3.Forward to orient the displacement vector
-                    localProjectedV = localV + length * heading;
-                    displacement = Traveller.MSTSInterpolateAlongStraight(localV, heading, length,
-                                                            worldMatrix.XNAMatrix, out localProjectedV);
-                }
-                else // Curved section
-                {   // Both heading and translation change 
-                    // nextRoot is found by moving from Point-of-Curve (PC) to
-                    // center (O)to Point-of-Tangent (PT).
-                    float radius = subsection.trackSections[0].param2*Math.Sign(-subsection.trackSections[0].param1); // meters
-                    Vector3 left = radius * Vector3.Cross(Vector3.Up, heading); // Vector from PC to O
-                    Matrix rot = Matrix.CreateRotationY(-length); // Heading change (rotation about O)
-                    // Shared method returns displacement from present world position and, by reference,
-                    // local position in x-z plane of end of this section
-                    displacement = Traveller.MSTSInterpolateAlongCurve(localV, left, rot,
-                                            worldMatrix.XNAMatrix, out localProjectedV);
-
-                    heading = Vector3.Transform(heading, rot); // Heading change
-                    nextRoot.XNAMatrix = rot * nextRoot.XNAMatrix; // Store heading change
-                }
-
-                // Update nextRoot with new translation component
-                nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
-
-                // Create a new DynamicTrackViewer for the subsection
-                trackList.Add(new DynamicTrackViewer(viewer, subsection, root, nextRoot));
-                localV = localProjectedV; // Next subsection
-            }
-        }
-    }
-
     public class DynamicTrackViewer
     {
-        Viewer Viewer;
-        WorldPosition worldPosition;
+        public Viewer Viewer;
+        public WorldPosition WorldPosition;
         public DynamicTrackPrimitive Primitive;
 
-        public DynamicTrackViewer(Viewer viewer, DyntrackObj dtrack, WorldPosition position, WorldPosition endPosition)
+        public DynamicTrackViewer(Viewer viewer)
         {
             Viewer = viewer;
-            worldPosition = position;
-
-            if (viewer.TRP == null)
-            {
-                // First to need a track profile creates it
-                Trace.Write(" TRP");
-                // Creates profile and loads materials into SceneryMaterials
-                TRPFile.CreateTrackProfile(viewer, viewer.Simulator.RoutePath, out viewer.TRP);
-            }
-
-            // Instantiate classes
-            Primitive = new DynamicTrackPrimitive(Viewer, dtrack, worldPosition, endPosition);
         }
 
-        public DynamicTrackViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition)
+        public DynamicTrackViewer(Viewer viewer, WorldPosition position)
         {
             Viewer = viewer;
-            worldPosition = position;
+
+            WorldPosition = new WorldPosition(position);
+
+            Quaternion rotation = Quaternion.CreateFromRotationMatrix(WorldPosition.XNAMatrix);
+
+            // Remove X and Z components of rotation to isolate for yaw angle (compass heading) only
+            rotation.X = 0.0f;
+            rotation.Z = 0.0f;
+            // Renormalize the quaternion after deleting X and Z to get the Y component of rotation
+            rotation.Normalize();
+
+            Matrix adjusted = Matrix.CreateFromQuaternion(rotation);
+            adjusted.Translation = WorldPosition.XNAMatrix.Translation;
+
+            WorldPosition.XNAMatrix = adjusted;
         }
 
         /// <summary>
@@ -159,14 +72,16 @@ namespace Orts.Viewer3D
         /// </summary>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            var lodBias = ((float)Viewer.Settings.LODBias / 100 + 1);
+
             // Offset relative to the camera-tile origin
-            int dTileX = worldPosition.TileX - Viewer.Camera.TileX;
-            int dTileZ = worldPosition.TileZ - Viewer.Camera.TileZ;
+            int dTileX = WorldPosition.TileX - Viewer.Camera.TileX;
+            int dTileZ = WorldPosition.TileZ - Viewer.Camera.TileZ;
             Vector3 tileOffsetWrtCamera = new Vector3(dTileX * 2048, 0, -dTileZ * 2048);
 
             // Find midpoint between track section end and track section root.
             // (Section center for straight; section chord center for arc.)
-            Vector3 xnaLODCenter = 0.5f * (Primitive.XNAEnd + worldPosition.XNAMatrix.Translation +
+            Vector3 xnaLODCenter = 0.5f * (Primitive.XNAEnd + WorldPosition.XNAMatrix.Translation +
                                             2 * tileOffsetWrtCamera);
             Primitive.MSTSLODCenter = new Vector3(xnaLODCenter.X, xnaLODCenter.Y, -xnaLODCenter.Z);
 
@@ -174,19 +89,20 @@ namespace Orts.Viewer3D
             if (!Viewer.Camera.InFov(Primitive.MSTSLODCenter, Primitive.ObjectRadius)) return;
 
             // Scan LODs in forward order, and find first LOD in-range
+            // lodIndex marks first in-range LOD
             LOD lod;
             int lodIndex;
             for (lodIndex = 0; lodIndex < Primitive.TrProfile.LODs.Count; lodIndex++)
             {
                 lod = (LOD)Primitive.TrProfile.LODs[lodIndex];
-                if (Viewer.Camera.InRange(Primitive.MSTSLODCenter, 0, lod.CutoffRadius)) break;
+                if (Viewer.Camera.InRange(Primitive.MSTSLODCenter, 0, lod.CutoffRadius * lodBias)) break;
             }
+            // Ignore any mesh too far away for the furthest LOD
             if (lodIndex == Primitive.TrProfile.LODs.Count) return;
-            // lodIndex marks first in-range LOD
 
             // Initialize xnaXfmWrtCamTile to object-tile to camera-tile translation:
             Matrix xnaXfmWrtCamTile = Matrix.CreateTranslation(tileOffsetWrtCamera);
-            xnaXfmWrtCamTile = worldPosition.XNAMatrix * xnaXfmWrtCamTile; // Catenate to world transformation
+            xnaXfmWrtCamTile = WorldPosition.XNAMatrix * xnaXfmWrtCamTile; // Catenate to world transformation
             // (Transformation is now with respect to camera-tile origin)
 
             int lastIndex;
@@ -207,7 +123,7 @@ namespace Orts.Viewer3D
                 lod = (LOD)Primitive.TrProfile.LODs[lodIndex];
                 for (int j = lod.PrimIndexStart; j < lod.PrimIndexStop; j++)
                 {
-                    frame.AddPrimitive(Primitive.ShapePrimitives[j].Material, Primitive.ShapePrimitives[j], RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.AutoZBias);
+                    frame.AddPrimitive(Primitive.ShapePrimitives[j].Material, Primitive.ShapePrimitives[j], RenderPrimitiveGroup.World, ref xnaXfmWrtCamTile, ShapeFlags.None);
                 }
                 lodIndex++;
             }
@@ -218,6 +134,190 @@ namespace Orts.Viewer3D
         {
             foreach (LOD lod in Primitive.TrProfile.LODs)
                 lod.Mark();
+        }
+
+        /// <summary>
+        /// Returns the index of the track profile that best suits the given Viewer and TrVectorSection object,
+        /// with an optional shape file path to use as reference.
+        /// The result is cached in the vector section object for future use
+        /// </summary>
+        /// <returns>Integer index of a track profile in viewer.TRPs</returns>
+        public static int GetBestTrackProfile(Viewer viewer, TrVectorSection trSection, string shapePath = "")
+        {
+            int trpIndex;
+            if (shapePath == "" && viewer.Simulator.TSectionDat.TrackShapes.ContainsKey(trSection.ShapeIndex))
+                shapePath = String.Concat(viewer.Simulator.BasePath, @"\Global\Shapes\", viewer.Simulator.TSectionDat.TrackShapes.Get(trSection.ShapeIndex).FileName);
+
+            if (viewer.TrackProfileIndicies.ContainsKey(shapePath))
+                viewer.TrackProfileIndicies.TryGetValue(shapePath, out trpIndex);
+            else if (shapePath != "") // Haven't checked this track shape yet
+            {
+                // Need to load the shape file if not already loaded
+                SharedShape trackShape = viewer.ShapeManager.Get(shapePath);
+                trpIndex = GetBestTrackProfile(viewer, trackShape);
+                viewer.TrackProfileIndicies.Add(shapePath, trpIndex);
+            }
+            else // Not enough info-use default track profile
+                trpIndex = 0;
+
+            return trpIndex;
+        }
+        // Note: Dynamic track objects will ALWAYS use TRPIndex = 0
+        // This is because dynamic tracks don't have shapes, and as such lack the information needed
+        // to select a specific track profile.
+
+        /// <summary>
+        /// Returns the index of the track profile that best suits a track shape
+        /// given a reference to the viewer and the shape file path.
+        /// </summary>
+        /// <returns>Integer index of a track profile in viewer.TRPs</returns>
+        public static int GetBestTrackProfile(Viewer viewer, string shapePath)
+        {
+            int trpIndex;
+
+            if (viewer.TrackProfileIndicies.ContainsKey(shapePath))
+                viewer.TrackProfileIndicies.TryGetValue(shapePath, out trpIndex);
+            else if (shapePath != "")
+            {
+                // Need to load the shape file if not already loaded
+                SharedShape trackShape = viewer.ShapeManager.Get(shapePath);
+                trpIndex = GetBestTrackProfile(viewer, trackShape);
+                viewer.TrackProfileIndicies.Add(shapePath, trpIndex);
+            }
+            else // Not enough info-use default track profile
+                trpIndex = 0;
+
+            return trpIndex;
+        }
+
+        /// <summary>
+        /// Determines the index of the track profile that would be the most suitable replacement
+        /// for the given shared shape object.
+        /// </summary>
+        public static int GetBestTrackProfile(Viewer viewer, SharedShape shape)
+        {
+            float score = 0.0f;
+            int bestIndex = -1; // If best index -1 is returned, that means none of the track profiles are a good fit
+
+            for (int i = 0; i < viewer.TRPs.Count; i++)
+            {
+                float bestScore = score;
+                score = 0;
+                if (viewer.TRPs[i].TrackProfile.IncludeImages == null && viewer.TRPs[i].TrackProfile.ExcludeImages == null
+                    && viewer.TRPs[i].TrackProfile.IncludeShapes == null && viewer.TRPs[i].TrackProfile.ExcludeShapes == null)
+                {
+                    // Default behavior: Attempt to match track shape to track profile using texture names alone
+                    // If shape file is missing any textures, we can't use this method
+                    if (shape.ImageNames == null)
+                    {
+                        score = float.NegativeInfinity;
+                        continue;
+                    }
+                    foreach (string image in viewer.TRPs[i].TrackProfile.Images)
+                    {
+                        if (shape.ImageNames.Contains(image, StringComparer.InvariantCultureIgnoreCase))
+                            score++;
+                        else // Slight bias against track profiles with extra textures defined
+                            score -= 0.05f;
+                    }
+                    if (score > bestScore && score > 0) // Only continue checking if current profile might be the best one
+                    {
+                        foreach (string image in shape.ImageNames)
+                        {
+                            // Strong bias against track profiles that are missing textures
+                            if (!viewer.TRPs[i].TrackProfile.Images.Contains(image, StringComparer.InvariantCultureIgnoreCase))
+                                score -= 0.25f;
+                        }
+                    }
+                }
+                else // Manual override: Match track shape to track profile using user-defined filters
+                {
+                    // Check if the track shape is excluded by the track profile
+                    // If it is excluded, skip processing
+                    if (viewer.TRPs[i].TrackProfile.ExcludeShapes != null)
+                    {
+                        foreach (Regex filter in viewer.TRPs[i].TrackProfile.ExcludeShapes)
+                        {
+                            if (filter.IsMatch(Path.GetFileNameWithoutExtension(shape.FilePath)))
+                            {
+                                score = float.NegativeInfinity;
+                                break;
+                            }
+                        }
+                    }
+                    if (score > float.NegativeInfinity && shape.ImageNames != null
+                        && viewer.TRPs[i].TrackProfile.ExcludeImages != null)
+                    {
+                        foreach (Regex filter in viewer.TRPs[i].TrackProfile.ExcludeImages)
+                        {
+                            foreach (string image in shape.ImageNames)
+                            {
+                                if (filter.IsMatch(image))
+                                {
+                                    score = float.NegativeInfinity;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    // If no exclusions are found, check for inclusions instead
+                    if (score > float.NegativeInfinity)
+                    {
+                        // Still need to consider that this shape may need to be excluded if the track profile doesn't include its shape or textures
+                        // If the track profile doesn't specify any shapes or textures to include, assume the profile can be used
+                        bool shapeIncluded = false;
+                        bool imageIncluded = false;
+                        if (viewer.TRPs[i].TrackProfile.IncludeShapes != null)
+                        {
+                            foreach (Regex filter in viewer.TRPs[i].TrackProfile.IncludeShapes)
+                            {
+                                if (filter.IsMatch(Path.GetFileNameWithoutExtension(shape.FilePath)))
+                                {
+                                    shapeIncluded = true;
+                                    score += 10.0f / viewer.TRPs[i].TrackProfile.IncludeShapes.Count;
+                                }
+                            }
+                        }
+                        else // No include filter set for shapes, assume this shape is included
+                        {
+                            shapeIncluded = true;
+                            score += 5.0f;
+                        }
+                        if (shapeIncluded)
+                        {
+                            if (viewer.TRPs[i].TrackProfile.IncludeImages != null && shape.ImageNames != null)
+                            {
+                                foreach (Regex filter in viewer.TRPs[i].TrackProfile.IncludeImages)
+                                {
+                                    foreach (string image in shape.ImageNames)
+                                    {
+                                        if (filter.IsMatch(image))
+                                        {
+                                            imageIncluded = true;
+                                            score += 10.0f / viewer.TRPs[i].TrackProfile.IncludeImages.Count;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            else // No include filter set for textures, assume this shape is included
+                            {
+                                imageIncluded = true;
+                                score += 5.0f;
+                            }
+                        }
+                        // If the shape wasn't included or the textures weren't included, this track profile shouldn't be used
+                        if (shapeIncluded == false ||  imageIncluded == false)
+                            score = float.NegativeInfinity;
+                    }
+                }
+                if (score > bestScore)
+                    bestIndex = i;
+                else
+                    score = bestScore;
+            }
+
+            return bestIndex;
         }
     }
 
@@ -237,31 +337,73 @@ namespace Orts.Viewer3D
         //public RenderProcess RenderProcess; // TODO: Pass this along in function calls
 
         /// <summary>
-        /// Creates a TRPFile instance from a track profile file (XML or STF) or canned.
-        /// (Precedence is XML [.XML], STF [.DAT], default [canned]).
+        /// Creates a List<TRPFile></TRPFile> instance from a set of track profile file(s)
+        /// (XML or STF) or canned. (Precedence is XML [.XML], STF [.STF], default [canned]).
         /// </summary>
         /// <param name="viewer">Viewer.</param>
         /// <param name="routePath">Path to route.</param>
-        /// <param name="trpFile">TRPFile created (out).</param>
-        public static void CreateTrackProfile(Viewer viewer, string routePath, out TRPFile trpFile)
+        /// <param name="trpFiles">List of TRPFile(s) created (out).</param>
+        /// <returns>Bool indicating if custom track profiles were found (returns FALSE if the only profile is the default profile)</returns>
+        public static bool CreateTrackProfile(Viewer viewer, string routePath, out List<TRPFile> trpFiles)
         {
             string path = routePath + @"\TrackProfiles";
-            //Establish default track profile
-            if (Directory.Exists(path) && File.Exists(path + @"\TrProfile.xml"))
+            List<string> profileNames = new List<string>();
+            trpFiles = new List<TRPFile>();
+
+            if (Directory.Exists(path))
             {
-                // XML-style
-                trpFile = new TRPFile(viewer, path + @"\TrProfile.xml");
+                // The file called "TrProfile" should be used as the default track profile, if present
+                string xmlDefault = path + @"\TrProfile.xml";
+                string stfDefault = path + @"\TrProfile.stf";
+
+                if (File.Exists(xmlDefault))
+                {
+                    trpFiles.Add(new TRPFile(viewer, xmlDefault));
+                    profileNames.Add(Path.GetFileNameWithoutExtension(xmlDefault));
+                }
+                else if (File.Exists(stfDefault))
+                {
+                    trpFiles.Add(new TRPFile(viewer, stfDefault));
+                    profileNames.Add(Path.GetFileNameWithoutExtension(stfDefault));
+                }
+                else // Add the canned (Kuju) track profile if no default is given
+                    trpFiles.Add(new TRPFile(viewer, ""));
+
+                // Get all .xml/.stf files that start with "TrProfile"
+                string[] xmlProfiles = Directory.GetFiles(path, "TrProfile*.xml");
+                string[] stfProfiles = Directory.GetFiles(path, "TrProfile*.stf");
+
+                foreach (string xmlProfile in xmlProfiles)
+                {
+                    string xmlName = Path.GetFileNameWithoutExtension(xmlProfile);
+                    // Don't try to add the default track profile twice
+                    if (!profileNames.Contains(xmlName))
+                    {
+                        trpFiles.Add(new TRPFile(viewer, xmlProfile));
+                        profileNames.Add(xmlName);
+                    }
+                }
+                foreach (string stfProfile in stfProfiles)
+                {
+                    string stfName = Path.GetFileNameWithoutExtension(stfProfile);
+                    // If an .stf profile and .xml profile have the same name, prefer the xml profile
+                    if (!profileNames.Contains(stfName))
+                    {
+                        trpFiles.Add(new TRPFile(viewer, stfProfile));
+                        profileNames.Add(stfName);
+                    }
+                }
             }
-            else if (Directory.Exists(path) && File.Exists(path + @"\TrProfile.stf"))
+
+            // Add canned profile if no profiles were found
+            if (trpFiles.Count <= 0)
             {
-                // MSTS-style
-                trpFile = new TRPFile(viewer, path + @"\TrProfile.stf");
+                trpFiles.Add(new TRPFile(viewer, ""));
+                return false;
             }
             else
-            {
-                // default
-                trpFile = new TRPFile(viewer, "");
-            }
+                return true;
+
             // FOR DEBUGGING: Writes XML file from current TRP
             //TRP.TrackProfile.SaveAsXML(@"C:/Users/Walt/Desktop/TrProfile.xml");
         }
@@ -340,7 +482,16 @@ namespace Orts.Viewer3D
                         settings.ValidationEventHandler += new ValidationEventHandler(ValidationCallback);
                         settings.ValidationFlags |= XmlSchemaValidationFlags.ReportValidationWarnings;
                         settings.ValidationType = ValidationType.Schema; // Independent external file
-                        settings.Schemas.Add("TrProfile.xsd", XmlReader.Create(xsdFilespec)); // Add schema from file
+                        try
+                        {
+                            settings.Schemas.Add("TrProfile.xsd", XmlReader.Create(xsdFilespec)); // Add schema from file
+                        }
+                        catch
+                        {
+                            Trace.TraceWarning("Track profile XML constructor failed, could not create XML schema " + xsdFilespec);
+                            TrackProfile = new TrProfile(viewer);
+                            break;
+                        }
 
                         // Create an XML reader for the .xml file
                         using (XmlReader reader = XmlReader.Create(filespec, settings))
@@ -390,6 +541,40 @@ namespace Orts.Viewer3D
         public PitchControls PitchControl = PitchControls.None; // Method of control for profile replication pitch
         public float PitchControlScalar; // Scalar parameter for PitchControls
         public ArrayList LODs = new ArrayList(); // Array of Levels-Of-Detail
+        public List<string> Images = new List<string>();
+        // Manual overrides for matching track shapes/textures to track profiles
+        public List<Regex> IncludeShapes;
+        public List<Regex> ExcludeShapes;
+        public List<Regex> IncludeImages;
+        public List<Regex> ExcludeImages;
+        // The gauge of track represented by this track profile
+        public float TrackGaugeM;
+        /// <summary>
+        /// The type of superelevation used (ie: which rail is superelevated)
+        /// </summary>
+        public enum SuperElevationMethod
+        {
+            /// <summary>
+            /// No superelevation - graphical superelevation disabled
+            /// </summary>
+            None,
+
+            /// <summary>
+            /// Both rails are elevated; inside rail is elevated down, outside rail is elevated up
+            /// </summary>
+            Both,
+
+            /// <summary>
+            /// Inside rail is unchanged, outside rail is elevated up
+            /// </summary>
+            Outside,
+
+            /// <summary>
+            /// Inside rail is elevated down, outside rail is unchanged
+            /// </summary>
+            Inside,
+        }
+        public SuperElevationMethod ElevationType = SuperElevationMethod.Outside;
 
         /// <summary>
         /// Enumeration of LOD control methods
@@ -449,6 +634,8 @@ namespace Orts.Viewer3D
             PitchControlScalar = 10.0f;                     // Hold to no more than 10 meters
             //PitchControl = PitchControls.ChordDisplacement; // Target chord displacement from arc
             //PitchControlScalar = 0.034f;                    // Hold to no more than 34 mm (half rail width)
+            TrackGaugeM = viewer.Simulator.RouteTrackGaugeM; // Kuju track profile can be adapted to any gauge of track
+            ElevationType = SuperElevationMethod.Outside; // Superelevate the outside rail only to reduce clipping
 
             LOD lod;            // Local LOD instance
             LODItem lodItem;    // Local LODItem instance
@@ -465,9 +652,8 @@ namespace Orts.Viewer3D
             lodItem.ESD_Alternative_Texture = 0;
             lodItem.MipMapLevelOfDetailBias = 0;
             LODItem.LoadMaterial(viewer, lodItem);
-            var gauge = viewer.Simulator.SuperElevationGauge;
-            var inner = gauge / 2f;
-            var outer = inner + 0.15f * gauge / 1.435f;
+            var inner = TrackGaugeM / 2f;
+            var outer = inner + 0.15f * TrackGaugeM / 1.435f;
 
             pl = new Polyline(this, "left_outer", 2);
             pl.DeltaTexCoord = new Vector2(.1673372f, 0f);
@@ -545,13 +731,24 @@ namespace Orts.Viewer3D
 
             pl = new Polyline(this, "ballast", 2);
             pl.DeltaTexCoord = new Vector2(0.0f, 0.2088545f);
-            pl.Vertices.Add(new Vertex(-2.5f * gauge / 1.435f, 0.2f, 0.0f, 0f, 1f, 0f, -.153916f, -.280582f));
-            pl.Vertices.Add(new Vertex(2.5f * gauge / 1.435f, 0.2f, 0.0f, 0f, 1f, 0f, .862105f, -.280582f));
+            pl.Vertices.Add(new Vertex(-2.5f * TrackGaugeM / 1.435f, 0.2f, 0.0f, 0f, 1f, 0f, -.153916f, -.280582f));
+            pl.Vertices.Add(new Vertex(2.5f * TrackGaugeM / 1.435f, 0.2f, 0.0f, 0f, 1f, 0f, .862105f, -.280582f));
             lodItem.Polylines.Add(pl);
             lodItem.Accum(pl.Vertices.Count);
 
             lod.LODItems.Add(lodItem); // Append this LODItem to LODItems array
             LODs.Add(lod); // Append this LOD to LODs array
+
+            // Add textures
+            foreach (LOD level in LODs)
+            {
+                foreach (LODItem item in level.LODItems)
+                {
+                    string texFileName = Path.GetFileNameWithoutExtension(item.TexName);
+                    if (!Images.Contains(texFileName))
+                        Images.Add(texFileName);
+                }
+            }
         }
 
         /// <summary>
@@ -568,10 +765,32 @@ namespace Orts.Viewer3D
                 new STFReader.TokenProcessor("chordspan", ()=>{ ChordSpan = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 new STFReader.TokenProcessor("pitchcontrol", ()=> { PitchControl = GetPitchControl(stf.ReadStringBlock(null)); }),
                 new STFReader.TokenProcessor("pitchcontrolscalar", ()=>{ PitchControlScalar = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("includedshapes", ()=>{ IncludeShapes = ConvertToRegex(stf.ReadStringBlock(null)); }),
+                new STFReader.TokenProcessor("excludedshapes", ()=>{ ExcludeShapes = ConvertToRegex(stf.ReadStringBlock(null)); }),
+                new STFReader.TokenProcessor("includedtextures", ()=>{ IncludeImages = ConvertToRegex(stf.ReadStringBlock(null)); }),
+                new STFReader.TokenProcessor("excludedtextures", ()=>{ ExcludeImages = ConvertToRegex(stf.ReadStringBlock(null)); }),
+                new STFReader.TokenProcessor("trackgauge", ()=>{ TrackGaugeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("superelevationmethod", ()=> { ElevationType = GetElevMethod(stf.ReadStringBlock(null)); }),
                 new STFReader.TokenProcessor("lod", ()=> { LODs.Add(new LOD(viewer, stf)); }),
             });
 
-            if (LODs.Count == 0) throw new Exception("missing LODs");
+            if (LODs.Count == 0)
+                throw new Exception("missing LODs");
+            else // Add textures
+            {
+                foreach (LOD level in LODs)
+                {
+                    foreach (LODItem item in level.LODItems)
+                    {
+                        string texFileName = Path.GetFileNameWithoutExtension(item.TexName);
+                        if (!Images.Contains(texFileName))
+                            Images.Add(texFileName);
+                    }
+                }
+            }
+
+            if (TrackGaugeM <= 0)
+                TrackGaugeM = viewer.Simulator.RouteTrackGaugeM;
         }
 
         /// <summary>
@@ -589,6 +808,12 @@ namespace Orts.Viewer3D
                     ChordSpan = float.Parse(reader.GetAttribute("ChordSpan"));
                     PitchControl = GetPitchControl(reader.GetAttribute("PitchControl"));
                     PitchControlScalar = float.Parse(reader.GetAttribute("PitchControlScalar"));
+                    IncludeShapes = ConvertToRegex(reader.GetAttribute("IncludedShapes"));
+                    ExcludeShapes = ConvertToRegex(reader.GetAttribute("ExcludedShapes"));
+                    IncludeImages = ConvertToRegex(reader.GetAttribute("IncludedTextures"));
+                    ExcludeImages = ConvertToRegex(reader.GetAttribute("ExcludedTextures"));
+                    TrackGaugeM = float.Parse(reader.GetAttribute("TrackGauge"));
+                    ElevationType = GetElevMethod(reader.GetAttribute("SuperElevationMethod"));
                 }
                 else
                 {
@@ -640,6 +865,7 @@ namespace Orts.Viewer3D
                             v.Normal = new Vector3(float.Parse(s[0]), float.Parse(s[1]), float.Parse(s[2]));
                             s = reader.GetAttribute("TexCoord").Split(sep, StringSplitOptions.RemoveEmptyEntries);
                             v.TexCoord = new Vector2(float.Parse(s[0]), float.Parse(s[1]));
+                            v.PositionControl = Vertex.GetPositionControl(reader.GetAttribute("PositionControl"));
                             pl.Vertices.Add(v);
                             lodItem.NumVertices++; // Bump vertex count
                             if (pl.Vertices.Count > 1) lodItem.NumSegments++;
@@ -649,7 +875,23 @@ namespace Orts.Viewer3D
                     }
                 }
             }
-            if (LODs.Count == 0) throw new Exception("missing LODs");
+            if (LODs.Count == 0)
+                throw new Exception("missing LODs");
+            else // Add textures
+            {
+                foreach (LOD level in LODs)
+                {
+                    foreach (LODItem item in level.LODItems)
+                    {
+                        string texFileName = Path.GetFileNameWithoutExtension(item.TexName);
+                        if (!Images.Contains(texFileName))
+                            Images.Add(texFileName);
+                    }
+                }
+            }
+
+            if (TrackGaugeM <= 0)
+                TrackGaugeM = viewer.Simulator.RouteTrackGaugeM;
         }
 
         /// <summary>
@@ -686,6 +928,28 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
+        /// Gets a member of the SuperElevationMethod enumeration that corresponds to sElevMethod.
+        /// </summary>
+        /// <param name="sElevMethod">String that identifies desired SuperElevationMethod.</param>
+        /// <returns>SuperElevationMethod</returns>
+        public static SuperElevationMethod GetElevMethod(string sElevMethod)
+        {
+            string s = sElevMethod.ToLower();
+            switch (s)
+            {
+                case "none":
+                    return SuperElevationMethod.None;
+                case "both":
+                    return SuperElevationMethod.Both;
+                case "inside":
+                    return SuperElevationMethod.Inside;
+                case "outside":
+                default:
+                    return SuperElevationMethod.Outside;
+            }
+        }
+
+        /// <summary>
         /// Gets a member of the PitchControls enumeration that corresponds to sPitchControl.
         /// </summary>
         /// <param name="sPitchControl">String that identifies desired PitchControl.</param>
@@ -716,6 +980,30 @@ namespace Orts.Viewer3D
         {
             foreach (LOD lod in LODs)
                 lod.Mark();
+        }
+
+        /// <summary>
+        /// Converts given string into a list of regular expression objects by splitting
+        /// the string at each comma to get individual filter substrings, then replacing
+        /// any wildcards * or ? with their regex equivalent.
+        /// </summary>
+        public static List<Regex> ConvertToRegex(string filters)
+        {
+            List<Regex> regexFilters = null;
+
+            if (filters != null)
+            {
+                // Split the string of filters into an array of individual filters
+                string[] filterList = filters.Replace(" ", "").Replace("\"", "").Split(',');
+
+                regexFilters = new List<Regex>();
+
+                // Convert filters to regular expressions that will use * and ? as wildcards. Case is to be ignored in this instance.
+                for (int i = 0; i < filterList.Length; i++)
+                    regexFilters.Add(new Regex(string.Concat("^", Regex.Escape(filterList[i]).Replace("\\?", ".").Replace("\\*", ".*"), "$"), RegexOptions.IgnoreCase));
+            }
+
+            return regexFilters;
         }
     }
 
@@ -886,21 +1174,54 @@ namespace Orts.Viewer3D
         public Vector3 Normal;                             // Normal vector (nx, ny, nz)
         public Vector2 TexCoord;                           // Texture coordinate (u, v)
 
+        /// <summary>
+        /// Enumeration of controls for vertex displacement
+        /// </summary>
+        public enum VertexPositionControl
+        {
+            /// <summary>
+            /// None -- The vertex position won't be adjusted by superelevation.
+            /// </summary>
+            None = 0,
+
+            /// <summary>
+            /// All -- The vertex position will be adjusted by superelevation.
+            /// </summary>
+            All,
+
+            /// <summary>
+            /// Inside -- The vertex position will only be adjusted when on the inside of the curve.
+            /// </summary>
+            Inside,
+
+            /// <summary>
+            /// Outside -- The vertex position will only be adjusted when on the outside of the curve.
+            /// </summary>
+            Outside
+        }
+
+        public VertexPositionControl PositionControl;
+
         // Vertex constructor (default)
-        public Vertex(float x, float y, float z, float nx, float ny, float nz, float u, float v)
+        public Vertex(float x, float y, float z, float nx, float ny, float nz, float u, float v,
+            VertexPositionControl control = VertexPositionControl.All)
         {
             Position = new Vector3(x, y, z);
             Normal = new Vector3(nx, ny, nz);
             TexCoord = new Vector2(u, v);
+            PositionControl = control;
         }
 
         // Vertex constructor (DAT)
         public Vertex(STFReader stf)
         {
-            Vertex v = new Vertex(); // Temp variable used to construct the struct in ParseBlock
-            v.Position = new Vector3();
-            v.Normal = new Vector3();
-            v.TexCoord = new Vector2();
+            Vertex v = new Vertex
+            {
+                Position = new Vector3(),
+                Normal = new Vector3(),
+                TexCoord = new Vector2(),
+                PositionControl = VertexPositionControl.All
+            }; // Temp variable used to construct the struct in ParseBlock
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("position", ()=>{
@@ -923,12 +1244,41 @@ namespace Orts.Viewer3D
                     v.TexCoord.Y = stf.ReadFloat(STFReader.UNITS.None, null);
                     stf.SkipRestOfBlock();
                 }),
+                new STFReader.TokenProcessor("positioncontrol", ()=>{
+                    v.PositionControl = GetPositionControl(stf.ReadStringBlock(null));
+                }),
             });
             this = v;
             // Checks for required member variables
             // No way to check for missing Position.
             if (Normal == Vector3.Zero) throw new Exception("improper Normal");
             // No way to check for missing TexCoord
+        }
+
+        /// <summary>
+        /// Gets a member of the VertexPositionControl enumeration that corresponds to sPositionControl.
+        /// </summary>
+        /// <param name="sPositionControl">String that identifies desired PositionControl.</param>
+        /// <returns></returns>
+        public static VertexPositionControl GetPositionControl(string sPositionControl)
+        {
+            string s = sPositionControl.ToLower();
+            switch (s)
+            {
+                case "none":
+                    return VertexPositionControl.None;
+
+                case "inside":
+                    return VertexPositionControl.Inside;
+
+                case "outside":
+                    return VertexPositionControl.Outside;
+
+                case "all":
+                default:
+                    return VertexPositionControl.All;
+
+            }
         }
     }
 
@@ -952,14 +1302,16 @@ namespace Orts.Viewer3D
         // Geometry member variables:
         public int NumSections;            // Number of cross sections needed to make up a track section.
         public float SegmentLength;        // meters if straight; radians if circular arc
+        public int Offset;                 // Counter to indicate which cross section is currently in processing
         public Vector3 DDY;                // Elevation (y) change from one cross section to next
         public Vector3 OldV;               // Deviation from centerline for previous cross section
         public Vector3 OldRadius;          // Radius vector to centerline for previous cross section
+        public Matrix Orientation;         // Rotation matrix giving the orientation of the section in local coordinates
 
         //TODO: Candidates for re-packaging:
-        public Matrix sectionRotation;     // Rotates previous profile into next profile position on curve.
-        public Vector3 center;             // Center coordinates of curve radius
-        public Vector3 radius;             // Radius vector to cross section on curve centerline
+        public Matrix SectionRotation;     // Rotates previous profile into next profile position on curve.
+        public Vector3 Center;             // Center coordinates of curve radius
+        public Vector3 Radius;             // Radius vector to cross section on curve centerline
 
         // This structure holds the basic geometric parameters of a DT section.
         public struct DtrackData
@@ -971,8 +1323,6 @@ namespace Orts.Viewer3D
         }
         public DtrackData DTrackData;      // Was: DtrackData[] dtrackData;
 
-        public uint UiD; // Used for debugging only
-
         public TrProfile TrProfile;
 
         /// <summary>
@@ -983,37 +1333,11 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
-        /// Constructor.
+        /// Generates the ShapePrimitives for this dynamic track section, must
+        /// be called in order for any graphics to be rendered.
         /// </summary>
-        public DynamicTrackPrimitive(Viewer viewer, DyntrackObj track, WorldPosition worldPosition,
-                                WorldPosition endPosition)
+        public void PreparePrimitives(Viewer viewer)
         {
-            // DynamicTrackPrimitive is responsible for creating a mesh for a section with a single subsection.
-            // It also must update worldPosition to reflect the end of this subsection, subsequently to
-            // serve as the beginning of the next subsection.
-
-            UiD = track.trackSections[0].UiD; // Used for debugging only
-
-            // The track cross section (profile) vertex coordinates are hard coded.
-            // The coordinates listed here are those of default MSTS "A1t" track.
-            // TODO: Read this stuff from a file. Provide the ability to use alternative profiles.
-
-            // In this implementation dtrack has only 1 DT subsection.
-            if (track.trackSections.Count != 1)
-            {
-                throw new ApplicationException(
-                    "DynamicTrackPrimitive Constructor detected a multiple-subsection dynamic track section. " +
-                    "(SectionIdx = " + track.SectionIdx + ")");
-            }
-            // Populate member DTrackData (a DtrackData struct)
-            DTrackData.IsCurved = (int)track.trackSections[0].isCurved;
-            DTrackData.param1 = track.trackSections[0].param1;
-            DTrackData.param2 = track.trackSections[0].param2;
-            DTrackData.deltaY = track.trackSections[0].deltaY;
-
-            XNAEnd = endPosition.XNAMatrix.Translation;
-
-            TrProfile = viewer.TRP.TrackProfile;
             // Count all of the LODItems in all the LODs
             int count = 0;
             for (int i = 0; i < TrProfile.LODs.Count; i++)
@@ -1033,14 +1357,11 @@ namespace Orts.Viewer3D
                 for (int iLODItem = 0; iLODItem < lod.LODItems.Count; iLODItem++)
                 {
                     // Build vertexList and triangleListIndices
-                    ShapePrimitives[primIndex] = BuildPrimitive(viewer, worldPosition, iLOD, iLODItem);
+                    ShapePrimitives[primIndex] = BuildPrimitive(viewer, iLOD, iLODItem);
                     primIndex++;
                 }
                 lod.PrimIndexStop = primIndex; // 1 above last index for this LOD
             }
-
-            if (DTrackData.IsCurved == 0) ObjectRadius = 0.5f * DTrackData.param1; // half-length
-            else ObjectRadius = DTrackData.param2 * (float)Math.Sin(0.5 * Math.Abs(DTrackData.param1)); // half chord length
         }
 
         public override void Mark()
@@ -1056,21 +1377,25 @@ namespace Orts.Viewer3D
         /// (Polylines (Vertices)).  All vertices and indices are built contiguously for an LOD.
         /// </summary>
         /// <param name="viewer">Viewer.</param>
-        /// <param name="worldPosition">WorldPosition.</param>
-        /// <param name="lodIndex">Index of LOD mesh to be generated from profile.</param>
-        /// <param name="lodItemIndex">Index of LOD mesh following LODs[iLOD]</param>
-        public ShapePrimitive BuildPrimitive(Viewer viewer, WorldPosition worldPosition, int lodIndex, int lodItemIndex)
+        /// <param name="iLOD">Index of LOD mesh to be generated from profile.</param>
+        /// <param name="iLODItem">Index of LOD mesh to be generated from profile.</param>
+        public virtual ShapePrimitive BuildPrimitive(Viewer viewer, int iLOD, int iLODItem)
         {
             // Call for track section to initialize itself
-            if (DTrackData.IsCurved == 0) LinearGen();
-            else CircArcGen();
+            if (DTrackData.IsCurved == 0)
+                LinearGen();
+            else
+                CircArcGen();
 
             // Count vertices and indices
-            LOD lod = (LOD)TrProfile.LODs[lodIndex];
-            LODItem lodItem = (LODItem)lod.LODItems[lodItemIndex];
+            LOD lod = (LOD)TrProfile.LODs[iLOD];
+            LODItem lodItem = (LODItem)lod.LODItems[iLODItem];
             NumVertices = (int)(lodItem.NumVertices * (NumSections + 1));
             NumIndices = (short)(lodItem.NumSegments * NumSections * 6);
             // (Cells x 2 triangles/cell x 3 indices/triangle)
+
+            // stride is the number of vertices per section, used to connect equivalent verticies between segments
+            uint stride = lodItem.NumVertices;
 
             // Allocate memory for vertices and indices
             VertexList = new VertexPositionNormalTexture[NumVertices]; // numVertices is now aggregate
@@ -1079,33 +1404,37 @@ namespace Orts.Viewer3D
             // Build the mesh for lod
             VertexIndex = 0;
             IndexIndex = 0;
-            // Initial load of baseline cross section polylines for this LOD only:
-            foreach (Polyline pl in lodItem.Polylines)
-            {
-                foreach (Vertex v in pl.Vertices)
-                {
-                    VertexList[VertexIndex].Position = v.Position;
-                    VertexList[VertexIndex].Normal = v.Normal;
-                    VertexList[VertexIndex].TextureCoordinate = v.TexCoord;
-                    VertexIndex++;
-                }
-            }
-            // Initial load of base cross section complete
+            Offset = 0;
 
-            // Now generate and load subsequent cross sections
-            OldRadius = -center;
-            uint stride = VertexIndex;
-            for (uint i = 0; i < NumSections; i++)
+            for (uint i = 0; i <= NumSections; i++)
             {
+                Matrix displacement;
+                float totLength;
+
+                if (DTrackData.IsCurved == 0)
+                    displacement = LinearGen(out totLength);
+                else
+                    displacement = CircArcGen(out totLength);
+
                 foreach (Polyline pl in lodItem.Polylines)
                 {
                     uint plv = 0; // Polyline vertex index
                     foreach (Vertex v in pl.Vertices)
                     {
-                        if (DTrackData.IsCurved == 0) LinearGen(stride, pl); // Generation call
-                        else CircArcGen(stride, pl);
+                        // Generate vertex positions
+                        Vector3 p = v.Position;
 
-                        if (plv > 0)
+                        // In some extreme cases, track may have been rotated so much it's upside down
+                        // Rotate 180 degrees to restore right side up
+                        if (displacement.Up.Y < 0.0f)
+                            p = Vector3.Transform(p, Matrix.CreateRotationZ((float)Math.PI));
+
+                        // Move vertex to proper location in 3D space
+                        VertexList[VertexIndex].Position = Vector3.Transform(p, displacement);
+                        VertexList[VertexIndex].TextureCoordinate = v.TexCoord + pl.DeltaTexCoord * totLength;
+                        VertexList[VertexIndex].Normal = v.Normal;
+
+                        if (plv > 0 && VertexIndex > stride)
                         {
                             // Sense for triangles is clockwise
                             // First triangle:
@@ -1121,7 +1450,7 @@ namespace Orts.Viewer3D
                         plv++;
                     }
                 }
-                OldRadius = radius; // Get ready for next segment
+                Offset++;
             }
 
             // Create and populate a new ShapePrimitive
@@ -1133,25 +1462,25 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Initializes member variables for straight track sections.
         /// </summary>
-        void LinearGen()
+        public virtual void LinearGen()
         {
             // Define the number of track cross sections in addition to the base.
+            // Straight sections can be generated as a single section, no benefits to more sections
             NumSections = 1;
-            //numSections = 10; //TESTING
-            // TODO: Generalize count to profile file specification
 
             SegmentLength = DTrackData.param1 / NumSections; // Length of each mesh segment (meters)
-            DDY = new Vector3(0, DTrackData.deltaY / NumSections, 0); // Incremental elevation change
         }
 
         /// <summary>
         /// Initializes member variables for circular arc track sections.
         /// </summary>
-        void CircArcGen()
+        public virtual void CircArcGen()
         {
             // Define the number of track cross sections in addition to the base.
             NumSections = (int)(Math.Abs(MathHelper.ToDegrees(DTrackData.param1)) / TrProfile.ChordSpan);
-            if (NumSections == 0) NumSections++; // Very small radius track - zero avoidance
+            // Very small radius track, use minimum of two sections
+            if (NumSections == 0)
+                NumSections = 2;
 
             // Use pitch control methods
             switch (TrProfile.PitchControl)
@@ -1179,59 +1508,72 @@ namespace Orts.Viewer3D
                     }
                     break;
             }
+            // Ensure an even number of sections
+            if (NumSections % 2 == 1)
+                NumSections++;
 
-            SegmentLength = DTrackData.param1 / NumSections; // Length of each mesh segment (radians)
-            DDY = new Vector3(0, DTrackData.deltaY / NumSections, 0); // Incremental elevation change
+            // Length of each mesh segment (radians)
+            SegmentLength = DTrackData.param1 / NumSections;
 
-            // The approach here is to replicate the previous cross section, 
-            // rotated into its position on the curve and vertically displaced if on grade.
-            // The local center for the curve lies to the left or right of the local origin and ON THE BASE PLANE
-            center = DTrackData.param2 * (DTrackData.param1 < 0 ? Vector3.Left : Vector3.Right);
-            sectionRotation = Matrix.CreateRotationY(-SegmentLength); // Rotation per iteration (constant)
+            // Get the vector pointing from the origin of the curve to the center in the X-Z plane
+            Center = DTrackData.param2 * (DTrackData.param1 < 0 ? Vector3.Left : Vector3.Right);
         }
 
         /// <summary>
-        /// Generates vertices for a succeeding cross section (straight track).
+        /// Determines the transform matrix to give the current position and orientation on a straight
+        /// section, relative to the local origin of the section.
         /// </summary>
-        /// <param name="stride">Index increment between section-to-section vertices.</param>
-        /// <param name="pl">Polyline.</param>
-        public void LinearGen(uint stride, Polyline pl)
+        /// <param name="totLength">Output reference giving the total length along the section in meters.</param>
+        /// <returns>Transform matrix used to move vertex from its original position to the appropriate position
+        /// along the profile.</returns>
+        public virtual Matrix LinearGen(out float totLength)
         {
-            Vector3 displacement = new Vector3(0, 0, -SegmentLength) + DDY;
-            float wrapLength = displacement.Length();
-            Vector2 uvDisplacement = pl.DeltaTexCoord * wrapLength;
+            Matrix displacement = Matrix.Identity;
 
-            Vector3 p = VertexList[VertexIndex - stride].Position + displacement;
-            Vector3 n = VertexList[VertexIndex - stride].Normal;
-            Vector2 uv = VertexList[VertexIndex - stride].TextureCoordinate + uvDisplacement;
+            totLength = SegmentLength * Offset;
 
-            VertexList[VertexIndex].Position = new Vector3(p.X, p.Y, p.Z);
-            VertexList[VertexIndex].Normal = new Vector3(n.X, n.Y, n.Z);
-            VertexList[VertexIndex].TextureCoordinate = new Vector2(uv.X, uv.Y);
+            // Locate the new center point along the segment
+            displacement.Translation = new Vector3(0.0f, 0.0f, -totLength);
+
+            // Rotate the point into 3D space based on segment orientation
+            displacement *= Orientation;
+
+            // Remove roll rotation by redefining the left vector to be perpendicular to the global up vector
+            displacement.Left = Vector3.Normalize(Vector3.Cross(Vector3.Up, displacement.Forward));
+            displacement.Up = Vector3.Cross(displacement.Forward, displacement.Left);
+
+            return displacement;
         }
 
         /// <summary>
-        /// /// Generates vertices for a succeeding cross section (circular arc track).
+        /// Determines the transform matrix to give the current position and orientation on a circular
+        /// section, relative to the local origin of the section.
         /// </summary>
-        /// <param name="stride">Index increment between section-to-section vertices.</param>
-        /// <param name="pl">Polyline.</param>
-        public void CircArcGen(uint stride, Polyline pl)
+        /// <param name="totLength">Output reference giving the total length along the section in meters.</param>
+        /// <returns>Transform matrix used to move vertex from its original position to the appropriate position
+        /// along the profile.</returns>
+        public virtual Matrix CircArcGen(out float totLength)
         {
-            // Get the previous vertex about the local coordinate system
-            OldV = VertexList[VertexIndex - stride].Position - center - OldRadius;
-            // Rotate the old radius vector to become the new radius vector
-            radius = Vector3.Transform(OldRadius, sectionRotation);
-            float wrapLength = (radius - OldRadius).Length(); // Wrap length is centerline chord
-            Vector2 uvDisplacement = pl.DeltaTexCoord * wrapLength;
+            Matrix displacement = Matrix.Identity;
 
-            // Rotate the point about local origin and reposition it (including elevation change)
-            Vector3 p = DDY + center + radius + Vector3.Transform(OldV, sectionRotation);
-            Vector3 n = VertexList[VertexIndex - stride].Normal;
-            Vector2 uv = VertexList[VertexIndex - stride].TextureCoordinate + uvDisplacement;
+            totLength = Math.Abs(SegmentLength) * DTrackData.param2 * Offset;
 
-            VertexList[VertexIndex].Position = new Vector3(p.X, p.Y, p.Z);
-            VertexList[VertexIndex].Normal = new Vector3(n.X, n.Y, n.Z);
-            VertexList[VertexIndex].TextureCoordinate = new Vector2(uv.X, uv.Y);
+            // Determine rotation in the X-Z plane alone
+            Matrix curveRotation = Matrix.CreateRotationY(-SegmentLength * Offset);
+
+            // Locate the new center point along the curve
+            displacement.Translation = -Center;
+            displacement *= curveRotation;
+            displacement.Translation += Center;
+
+            // Rotate the point into 3D space based on segment orientation
+            displacement *= Orientation;
+
+            // Remove roll rotation by redefining the left vector to be perpendicular to the global up vector
+            displacement.Left = Vector3.Normalize(Vector3.Cross(Vector3.Up, displacement.Forward));
+            displacement.Up = Vector3.Cross(displacement.Forward, displacement.Left);
+
+            return displacement;
         }
     }
 }

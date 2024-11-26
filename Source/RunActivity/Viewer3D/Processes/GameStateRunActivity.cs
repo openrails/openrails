@@ -428,6 +428,8 @@ namespace Orts.Viewer3D.Processes
                 outf.Write(outf.BaseStream.Position);
             }
 
+            LogLocation();
+
             // Having written .save file, write other files: .replay, .txt, .evaluation.txt
 
             // The Save command is the only command that doesn't take any action. It just serves as a marker.
@@ -441,6 +443,20 @@ namespace Orts.Viewer3D.Processes
             if (File.Exists(Program.EvaluationFilename))
                 File.Copy(Program.EvaluationFilename, Path.Combine(UserSettings.UserDataFolder, saveSet.FileStem + ".evaluation.txt"), true); 
         }
+
+
+        /// <summary>
+        /// Append time and location to the log for potential use in an ACT file. E.g.:
+        /// "Location ( -6112 15146 78.15 -672.81 10 )"
+        /// </summary>
+        private static void LogLocation()
+        {
+            var t = Simulator.Trains[0].FrontTDBTraveller;
+            var location = $"Location ( {t.TileX} {t.TileZ} {t.X:F2} {t.Z:F2}";
+            location += $" 10 )"; // Matches location if within this 10 meter radius
+            var clockTime = FormatStrings.FormatTime(Simulator.ClockTime);
+            Console.WriteLine($"\nSave after {(int)Simulator.GameTime} secs at {clockTime}, EventCategoryLocation = {location}");
+        }        
 
         private static void SaveEvaluation(BinaryWriter outf)
         {
@@ -1129,6 +1145,7 @@ namespace Orts.Viewer3D.Processes
                         // for resume and replay : set timetable file and selected train info
                         Simulator.TimetableFileName = System.IO.Path.GetFileNameWithoutExtension(args[0]);
                         Simulator.PathName = args[1];
+                        Simulator.IsAutopilotMode = true;
                     }
                     break;
             }

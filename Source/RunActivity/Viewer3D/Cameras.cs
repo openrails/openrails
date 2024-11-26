@@ -1283,6 +1283,9 @@ namespace Orts.Viewer3D
             else if (attachedCar != null)
             {
                 LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
+
+                // Cancel out unwanted effects on camera motion caused by vibration and superelevation
+                LookedAtPosition.XNAMatrix = attachedCar.SuperElevationInverseMatrix * attachedCar.VibrationInverseMatrix * LookedAtPosition.XNAMatrix;
             }
             UpdateLocation(LookedAtPosition);
             UpdateListener();
@@ -2118,7 +2121,7 @@ namespace Orts.Viewer3D
             // Cab camera is only possible on the player locomotive.
             SetCameraCar(GetCameraCars().First());
             tiltingLand = false;
-            if (Viewer.Simulator.UseSuperElevation > 0 || Viewer.Simulator.CarVibrating > 0) tiltingLand = true;
+            if (Viewer.Simulator.UseSuperElevation || Viewer.Simulator.CarVibrating > 0) tiltingLand = true;
             var car = attachedCar;
             if (car != null && car.Train != null && car.Train.IsTilting == true) tiltingLand = true;
             base.OnActivate(sameCamera);
@@ -2653,9 +2656,9 @@ namespace Orts.Viewer3D
                                     LastCheckCar = FirstUpdateLoop ^ trainForwards ? train.Cars.First() : train.Cars.Last();
                                     shortTrav.Move(distanceToViewingPoint1);
                                     // moving newLocation to platform at side of track
-                                    newLocation.Location.X += (PlatformOffsetM + Viewer.Simulator.SuperElevationGauge / 2) * (float)Math.Cos(shortTrav.RotY) *
+                                    newLocation.Location.X += (PlatformOffsetM + Viewer.Simulator.RouteTrackGaugeM / 2) * (float)Math.Cos(shortTrav.RotY) *
                                         (thisPlatform.PlatformSide[1] ? 1 : -1);
-                                    newLocation.Location.Z += -(PlatformOffsetM + Viewer.Simulator.SuperElevationGauge / 2) * (float)Math.Sin(shortTrav.RotY) *
+                                    newLocation.Location.Z += -(PlatformOffsetM + Viewer.Simulator.RouteTrackGaugeM / 2) * (float)Math.Sin(shortTrav.RotY) *
                                         (thisPlatform.PlatformSide[1] ? 1 : -1);
                                     TrackCameraLocation = new WorldLocation(newLocation);
                                     break;
