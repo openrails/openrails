@@ -643,7 +643,7 @@ namespace Orts.Viewer3D.Popups
                 Viewer = viewer;
                 TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
                 WarningCars = warningCars;
-                Texture = WarningCars > 2 ? ResetBrakesOn : WarningCars > 0 && WarningCars < 3 ? ResetBrakesWarning : ResetBrakesOff;
+                Texture = WarningCars > 2 ? ResetBrakesOn : WarningCars == 0 ? ResetBrakesOff : ResetBrakesWarning;
                 Source = new Rectangle(0, 0, size, size);
                 Click += new Action<Control, Point>(buttonInitializeBrakes_Click);
             }
