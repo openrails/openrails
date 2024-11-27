@@ -987,6 +987,7 @@ namespace Orts.Viewer3D
         protected float LowWagonOffsetLimit;
         protected float HighWagonOffsetLimit;
         public int oldCarPosition;
+        public bool IsCameraFront;
         public override bool IsUnderground
         {
             get
@@ -1111,7 +1112,7 @@ namespace Orts.Viewer3D
                         SetCameraCar(GetCameraCars().Last());
                         oldCarPosition = 0;
                     }
-                    else if (isVisibleTrainCarViewerOrWebpage && carPosition >= 0)
+                    else if (carPosition < trainCars.Count && isVisibleTrainCarViewerOrWebpage && carPosition >= 0)
                     {
                         SetCameraCar(trainCars[carPosition]);
                         oldCarPosition = carPosition;

@@ -1105,11 +1105,13 @@ namespace Orts.Viewer3D
             }
             if (UserInput.IsPressed(UserCommand.CameraOutsideFront))
             {
+                FrontCamera.IsCameraFront = true;
                 CheckReplaying();
                 new UseFrontCameraCommand(Log);
             }
             if (UserInput.IsPressed(UserCommand.CameraOutsideRear))
             {
+                FrontCamera.IsCameraFront = false;
                 CheckReplaying();
                 new UseBackCameraCommand(Log);
             }
