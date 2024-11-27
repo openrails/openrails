@@ -492,7 +492,7 @@ namespace Orts.Viewer3D.Popups
                 {
                     // Updates CarPosition
                     CarPosition = CouplerChanged ? NewCarPosition : CarPosition;
-                    
+
                     if (CabCameraEnabled)// Displays camera 1
                     {
                         CabCameraEnabled = false;
@@ -500,7 +500,7 @@ namespace Orts.Viewer3D.Popups
                     else if (OldCarPosition != CarPosition || (trainCarOperations.CarIdClicked && CarPosition == 0))
                     {
                         if (Owner.Viewer.FrontCamera.AttachedCar != null && Owner.Viewer.FrontCamera.IsCameraFront)
-                        Owner.Viewer.FrontCamera.Activate();
+                            Owner.Viewer.FrontCamera.Activate();
 
                         if (Owner.Viewer.BackCamera.AttachedCar != null && !Owner.Viewer.FrontCamera.IsCameraFront)
                             Owner.Viewer.BackCamera.Activate();
@@ -666,7 +666,7 @@ namespace Orts.Viewer3D.Popups
                 Viewer = viewer;
                 TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
                 WarningCars = warningCars;
-                Texture = WarningCars > 2 ? ResetBrakesOn : WarningCars > 0 && WarningCars < 3 ? ResetBrakesWarning : ResetBrakesOff;
+                Texture = WarningCars > 2 ? ResetBrakesOn : WarningCars == 0 ? ResetBrakesOff : ResetBrakesWarning;
                 Source = new Rectangle(0, 0, size, size);
                 Click += new Action<Control, Point>(buttonInitializeBrakes_Click);
             }
