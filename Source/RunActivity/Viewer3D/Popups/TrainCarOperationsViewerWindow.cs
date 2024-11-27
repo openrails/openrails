@@ -92,6 +92,7 @@ namespace Orts.Viewer3D.Popups
         public int WindowHeightMax;
         public int WindowWidthMin;
         public int WindowWidthMax;
+        public bool CabCameraEnabled;
         public int windowHeight { get; set; } //required by TrainCarWindow
         public int CarPosition
         {
@@ -171,6 +172,8 @@ namespace Orts.Viewer3D.Popups
 
             CarPosition = inf.ReadInt32();
             ResetAllSymbols = inf.ReadBoolean();
+
+            CabCameraEnabled = Owner.Viewer.Camera is CabCamera || Owner.Viewer.Camera == Owner.Viewer.ThreeDimCabCamera;
 
             // Display window
             SizeTo(LocationRestore.Width, LocationRestore.Height);
@@ -472,10 +475,18 @@ namespace Orts.Viewer3D.Popups
                 {
                     // Updates CarPosition
                     CarPosition = CouplerChanged ? NewCarPosition : CarPosition;
-                    
-                    if (OldCarPosition != CarPosition || (trainCarOperations.CarIdClicked && CarPosition == 0))
+
+                    if (CabCameraEnabled)// Displays camera 1
                     {
-                        Owner.Viewer.FrontCamera.Activate();
+                        CabCameraEnabled = false;
+                    }
+                    else if (OldCarPosition != CarPosition || (trainCarOperations.CarIdClicked && CarPosition == 0))
+                    {
+                        if (Owner.Viewer.FrontCamera.AttachedCar != null && Owner.Viewer.FrontCamera.IsCameraFront)
+                            Owner.Viewer.FrontCamera.Activate();
+
+                        if (Owner.Viewer.BackCamera.AttachedCar != null && !Owner.Viewer.FrontCamera.IsCameraFront)
+                            Owner.Viewer.BackCamera.Activate();
                     }
                     OldCarPosition = CarPosition;
                     Layout();
@@ -498,7 +509,7 @@ namespace Orts.Viewer3D.Popups
 
                 for (var position = 0 ; position < Owner.Viewer.PlayerTrain.Cars.Count; position++)
                 {
-                    if (trainCarOperations.WarningCarPosition[position])
+                    if (trainCarOperations.WarningCarPosition.Count > position && trainCarOperations.WarningCarPosition[position])
                     {
                         var carAngleCockAOpenAmount = Owner.Viewer.PlayerTrain.Cars[position].BrakeSystem.AngleCockAOpenAmount;
                         var carAngleCockBOpenAmount = Owner.Viewer.PlayerTrain.Cars[position].BrakeSystem.AngleCockBOpenAmount;
