@@ -33,41 +33,25 @@ namespace ORTS.ContentManager.Models
     public class Car
     {
         public readonly CarType Type;
-        public readonly string SubType;
         public readonly string Name;
         public readonly string Description;
-        public readonly float MassKG;
-        public readonly float LengthM;
-        public readonly float MaxBarkeForceN;
-        public readonly float MaxPowerW;
-        public readonly float MaxForceN;
-        public readonly float MaxSpeedMps;
-        public readonly float MinCouplerStrengthN;
 
         public Car(Content content)
         {
             Debug.Assert(content.Type == ContentType.Car);
-
-            // .eng files also have a wagon block
-            var wagFile = new WagonFile(content.PathName);
-            Type = CarType.Wagon;
-            SubType = wagFile.WagonType;
-            Name = wagFile.Name;
-            MassKG = wagFile.MassKG;
-            LengthM = wagFile.WagonSize.LengthM;
-            MaxBarkeForceN = wagFile.MaxBrakeForceN;
-            MinCouplerStrengthN = wagFile.MinCouplerStrengthN;
-
             if (System.IO.Path.GetExtension(content.PathName).Equals(".eng", StringComparison.OrdinalIgnoreCase))
             {
-                var engFile = new EngineFile(content.PathName);
+                var file = new EngineFile(content.PathName);
                 Type = CarType.Engine;
-                SubType = engFile.EngineType;
-                Name = engFile.Name;
-                MaxPowerW = engFile.MaxPowerW;
-                MaxForceN = engFile.MaxForceN;
-                MaxSpeedMps = engFile.MaxSpeedMps;
-                Description = engFile.Description;
+                Name = file.Name;
+                Description = file.Description;
+            }
+            else if (System.IO.Path.GetExtension(content.PathName).Equals(".wag", StringComparison.OrdinalIgnoreCase))
+            {
+                var file = new WagonFile(content.PathName);
+                Type = CarType.Wagon;
+                Name = file.Name;
+                Description = "";
             }
         }
     }
