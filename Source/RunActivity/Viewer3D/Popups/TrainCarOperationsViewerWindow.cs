@@ -107,7 +107,7 @@ namespace Orts.Viewer3D.Popups
             set;
             get;
         }
-    public int NewCarPosition
+        public int NewCarPosition
         {
             set;
             get;
@@ -479,14 +479,14 @@ namespace Orts.Viewer3D.Popups
                     LastPlayerTrainCars = Owner.Viewer.PlayerTrain.Cars.Count;
                     CarPosition = CarPosition >= LastPlayerTrainCars ? LastPlayerTrainCars - 1 : CarPosition;
                     if (Owner.Viewer.PlayerLocomotive != null) LastPlayerLocomotiveFlippedState = Owner.Viewer.PlayerLocomotive.Flipped;
- 
+
                     Layout();
                     UpdateWindowSize();
                 }
 
                 TrainCar trainCar = Owner.Viewer.PlayerTrain.Cars[CarPosition];
                 bool isElectricDieselLocomotive = (trainCar is MSTSElectricLocomotive) || (trainCar is MSTSDieselLocomotive);
-                
+
                 if (OldCarPosition != CarPosition || TrainCarOperationsChanged || carOperations.CarOperationChanged
                     || trainCarOperations.CarIdClicked || carOperations.RearBrakeHoseChanged || carOperations.FrontBrakeHoseChanged)
                 {
@@ -551,7 +551,7 @@ namespace Orts.Viewer3D.Popups
                 windowHeight = Vbox != null ? Vbox.Position.Height : 0;
             }
         }
-        
+
         class buttonLoco : Image
         {
             readonly Viewer Viewer;
@@ -910,8 +910,8 @@ namespace Orts.Viewer3D.Popups
                 if (Last) return;
 
                 new ToggleAngleCockBCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockBOpen);
-                var carAngleCockBOpenAmount = (Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockBOpenAmount; 
-                
+                var carAngleCockBOpenAmount = (Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockBOpenAmount;
+
                 if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).BrakeSystem.AngleCockBOpen && carAngleCockBOpenAmount >= 1)
                 {
                     Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Rear angle cock opened"));
