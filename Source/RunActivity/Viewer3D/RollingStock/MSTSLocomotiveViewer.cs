@@ -2393,20 +2393,6 @@ namespace Orts.Viewer3D.RollingStock
             {
                 case CABViewControlTypes.REGULATOR:
                 case CABViewControlTypes.THROTTLE:
-                    if ((Locomotive.CruiseControl?.SelectedMaxAccelerationPercent == 0 && Locomotive.CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
-                        && (Locomotive.CruiseControl.DisableCruiseControlOnThrottleAndZeroForce || Locomotive.CruiseControl.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed && Locomotive.CruiseControl.SelectedSpeedMpS == 0))
-                    {
-                        if (Locomotive.CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) Locomotive.CruiseControl.SetSpeed(0);
-                        if (Locomotive.ThrottleController.CurrentValue == 0)
-                        {
-                            Locomotive.CruiseControl.SpeedRegMode = CruiseControl.SpeedRegulatorMode.Manual;
-                            Locomotive.CruiseControl.DynamicBrakePriority = false;
-                        }
-                        Locomotive.CruiseControl.SkipThrottleDisplay = false;
-                    }
-                    if (Locomotive.CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto
-                        && Locomotive.CruiseControl.SelectedMaxAccelerationPercent != 0 && Locomotive.CruiseControl.HasIndependentThrottleDynamicBrakeLever)
-                        break;
                     Locomotive.SetThrottleValue(ChangedValue(Locomotive.ThrottleController.IntermediateValue));
                     break;
                 case CABViewControlTypes.ENGINE_BRAKE: Locomotive.SetEngineBrakeValue(ChangedValue(Locomotive.EngineBrakeController.IntermediateValue)); break;
@@ -2518,20 +2504,6 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_OVERCHARGE: new BrakeOverchargeCommand(Viewer.Log, ChangedValue(Locomotive.TrainBrakeController.OverchargeButtonPressed ? 1 : 0) > 0); break;
                 case CABViewControlTypes.RESET: new AlerterCommand(Viewer.Log, ChangedValue(Locomotive.TrainControlSystem.AlerterButtonPressed ? 1 : 0) > 0); break;
                 case CABViewControlTypes.CP_HANDLE:
-                    if ((Locomotive.CruiseControl?.SelectedMaxAccelerationPercent == 0 && Locomotive.CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
-                         && (Locomotive.CruiseControl.DisableCruiseControlOnThrottleAndZeroForce || Locomotive.CruiseControl.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed && Locomotive.CruiseControl.SelectedSpeedMpS == 0))
-                    {
-                        if (Locomotive.CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) Locomotive.CruiseControl.SetSpeed(0);
-                        if (Locomotive.ThrottleController.CurrentValue == 0)
-                        {
-                            Locomotive.CruiseControl.SpeedRegMode = CruiseControl.SpeedRegulatorMode.Manual;
-                            Locomotive.CruiseControl.DynamicBrakePriority = false;
-                        }
-                        Locomotive.CruiseControl.SkipThrottleDisplay = false;
-                    }
-                    if (Locomotive.CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto
-                        && Locomotive.CruiseControl.SelectedMaxAccelerationPercent != 0 && Locomotive.CruiseControl.HasIndependentThrottleDynamicBrakeLever)
-                        break;
                     Locomotive.SetCombinedHandleValue(ChangedValue(Locomotive.GetCombinedHandleValue(true)));
                     break;
 
@@ -2764,12 +2736,10 @@ namespace Orts.Viewer3D.RollingStock
                     }
                     break;
                 case CABViewControlTypes.ORTS_SELECTED_SPEED_SELECTOR:
-                    p = ChangedValue(0);
-                    Locomotive.CruiseControl.SpeedRegulatorSelectedSpeedChangeByMouse(p, Control.Units == CABViewControlUnits.KM_PER_HOUR, (float)Control.MaxValue);
+                    Locomotive.CruiseControl.SpeedRegulatorSelectedSpeedChangeByMouse(ChangedValue(Locomotive.CruiseControl.SpeedSelectorController.IntermediateValue));
                     break;
                 case CABViewControlTypes.ORTS_SELECTED_SPEED_MAXIMUM_ACCELERATION:
-                    p = ChangedValue(0);
-                    Locomotive.CruiseControl.SpeedRegulatorMaxForceChangeByMouse(p, (float)Control.MaxValue);
+                    Locomotive.CruiseControl.SpeedRegulatorMaxForceChangeByMouse(ChangedValue(Locomotive.CruiseControl.MaxForceSelectorController.IntermediateValue));
                     break;
                 case CABViewControlTypes.ORTS_MULTI_POSITION_CONTROLLER:
                     {

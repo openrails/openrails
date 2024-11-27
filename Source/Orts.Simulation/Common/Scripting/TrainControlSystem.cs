@@ -356,26 +356,16 @@ namespace ORTS.Scripting.Api
         /// Set dynamic brake controller to position in range [0-1].
         /// </summary>
         public Action<float> SetDynamicBrakeController;
-        public float? ATOSetSpeedMpS
+        public float? SetSpeedMpS
         {
             get
             {
-                return Locomotive.CruiseControl?.ATOSetSpeedMpS;
+                if (Locomotive?.CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto) return Locomotive.CruiseControl.SetSpeedMpS;
+                return null;
             }
             set
             {
                 if (Locomotive.CruiseControl != null) Locomotive.CruiseControl.ATOSetSpeedMpS = value;
-            }
-        }
-        public float? ATOSetAccelerationMpSS
-        {
-            get
-            {
-                return Locomotive.CruiseControl?.ATOSetAccelerationMpSS;
-            }
-            set
-            {
-                if (Locomotive.CruiseControl != null) Locomotive.CruiseControl.ATOSetAccelerationMpSS = value;
             }
         }
         /// <summary>
