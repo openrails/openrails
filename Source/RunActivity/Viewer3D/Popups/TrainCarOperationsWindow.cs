@@ -580,6 +580,18 @@ namespace Orts.Viewer3D.Popups
                 var carOperations = Owner.Viewer.CarOperationsWindow;
                 var trainCarWebpage = Owner.Viewer.TrainCarOperationsWebpage;
 
+                // Allows interaction with <Alt>+<PageDown> and <Alt>+<PageUP>.
+                if (Owner.Viewer.Camera.AttachedCar != null && !(Owner.Viewer.Camera is CabCamera) && Owner.Viewer.Camera != Owner.Viewer.ThreeDimCabCamera && (trainCarViewer.Visible || Visible))
+                {
+                    var currentCameraCarID = Owner.Viewer.Camera.AttachedCar.CarID;
+                    if (PlayerTrain != null && (currentCameraCarID != trainCarViewer.CurrentCarID || CarPosition != trainCarViewer.CarPosition))
+                    {
+                        trainCarViewer.CurrentCarID = currentCameraCarID;
+                        trainCarViewer.CarPosition = CarPosition = PlayerTrain.Cars.TakeWhile(x => x.CarID != currentCameraCarID).Count();
+                        CarPositionChanged = true;
+                    }
+                }
+
                 trainCarViewer.TrainCarOperationsChanged = !trainCarViewer.Visible && trainCarViewer.TrainCarOperationsChanged ? false : trainCarViewer.TrainCarOperationsChanged;
 
                 CurrentDisplaySizeY = DisplaySizeY;
@@ -1042,12 +1054,12 @@ namespace Orts.Viewer3D.Popups
                 string[] parts = data.Split(new string[] { " = " }, 2, StringSplitOptions.None);
                 string keyPart = parts[0];
                 string valuePart = parts?[1];
-                if (keyPart.Contains(Viewer.Catalog.GetString("Engine")))
+                if (Viewer.PlayerTrain.Cars[CarPosition] is MSTSDieselLocomotive && keyPart.Contains(Viewer.Catalog.GetParticularString("DieselEngine", "Engine")))
                 {
                     TrainCarOperations.PowerSupplyStatus = locomotiveStatus;
 
-                    Texture = valuePart.Contains(Viewer.Catalog.GetString("Running")) ? PowerOn
-                       : valuePart.Contains(Viewer.Catalog.GetString("Stopped")) ? PowerOff
+                    Texture = valuePart.Contains(Viewer.Catalog.GetParticularString("DieselEngine", "Running")) ? PowerOn
+                       : valuePart.Contains(Viewer.Catalog.GetParticularString("DieselEngine", "Stopped")) ? PowerOff
                        : PowerChanging;
 
                     if (CarPosition == TrainCarViewer.CarPosition)
@@ -1056,10 +1068,10 @@ namespace Orts.Viewer3D.Popups
                     }
                     break;
                 }
-                else if (keyPart.Contains(Viewer.Catalog.GetString("Power")))
+                else if (keyPart.Contains(Viewer.Catalog.GetParticularString("PowerSupply", "Power")))
                 {
                     TrainCarViewer.PowerSupplyStatus = locomotiveStatus;
-                    var powerStatus = valuePart.Contains(Viewer.Catalog.GetString("On"));
+                    var powerStatus = valuePart.Contains(Viewer.Catalog.GetParticularString("PowerSupply", "On"));
                     Texture = powerStatus ? PowerOn : PowerOff;
                     if (CarPosition == TrainCarViewer.CarPosition)
                         TrainCarOperations.SupplyStatusChanged = TrainCarOperations.MainPowerSupplyOn != powerStatus;

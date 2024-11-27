@@ -464,6 +464,19 @@ namespace Orts.Viewer3D.WebServices
                 TrainCarSelected = true;
                 TrainCarSelectedPosition = Viewer.TrainCarOperationsWindow.SelectedCarPosition;
             }
+            else
+            {
+                // select traincar on webpage when traincar operations window (F9) not visible
+                if (Viewer.Camera.AttachedCar != null && !(Viewer.Camera is CabCamera) && Viewer.Camera != Viewer.ThreeDimCabCamera)
+                {
+                    var currentCameraCarID = Viewer.Camera.AttachedCar.CarID;
+                    if (Viewer.PlayerTrain != null)
+                    {
+                        TrainCarSelected = true;
+                        TrainCarSelectedPosition = Viewer.PlayerTrain.Cars.TakeWhile(x => x.CarID != currentCameraCarID).Count();
+                    }
+                }
+            }
 
             if (TrainCarSelected && (carPosition == TrainCarSelectedPosition))
             {

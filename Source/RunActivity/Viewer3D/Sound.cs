@@ -1444,6 +1444,32 @@ namespace Orts.Viewer3D
                     volume *= ((MSTSWagon)SoundSource.Viewer.Camera.AttachedCar).TrackSoundPassThruPercent * 0.01f;
             }
 
+            // check if time of day, season and weather enable the sound; if not, set volume to zero
+            if (MSTSStream?.TimeIntervals != null)
+            {
+                var outOfInterval = true;
+                foreach (var timeInterval in MSTSStream.TimeIntervals)
+                {
+                    int hourOfDay = (int)SoundSource.Viewer.Simulator.ClockTime / 3600;
+                    if (hourOfDay >= timeInterval[0] && hourOfDay < timeInterval[1])
+                    {
+                        outOfInterval = false;
+                        break;
+                    }
+                }
+                if (outOfInterval)
+                    volume = 0;
+            }
+            if (MSTSStream?.Season != null )
+            {
+                if (!MSTSStream.Season[(int)(SoundSource.Viewer.Simulator.Season)])
+                    volume = 0;
+            }
+            if (MSTSStream?.Weather != null )
+            {
+                if (!MSTSStream.Weather[(int)(SoundSource.Viewer.Simulator.WeatherType)])
+                    volume = 0;
+            }
             ALSoundSource.Volume = volume;
         }
 

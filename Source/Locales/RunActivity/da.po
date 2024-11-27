@@ -2,15 +2,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
 "POT-Creation-Date: 2015-04-08 11:02:18+0200\n"
-"PO-Revision-Date: 2015-04-08 11:25+0100\n"
+"PO-Revision-Date: 2024-10-11 16:41+0200\n"
 "Last-Translator: Zepder <admin@tog-sim.dk>\n"
 "Language-Team: \n"
 "Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.1.1\n"
 
 #: ../../RunActivity/Common/Scripting/BrakeController.cs:217
 #: ../../RunActivity/RollingStock/SubSystems/Brakes/MSTS/AirSinglePipe.cs:55
@@ -95,12 +95,6 @@ msgstr "Fra"
 msgctxt "PowerSupply"
 msgid "On ongoing"
 msgstr "Starter op"
-
-#. Context: PowerSupply
-#: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:81
-msgctxt "PowerSupply"
-msgid "On"
-msgstr "Til"
 
 #. Context: Pantograph
 #: ../../RunActivity/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:86
@@ -548,12 +542,6 @@ msgstr "Fører"
 #: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:334
 msgid "Auxiliary power"
 msgstr "Ekstra effekt"
-
-#. Context: PowerSupply
-#: ../../RunActivity/RollingStock/MSTSElectricLocomotive.cs:322
-msgctxt "PowerSupply"
-msgid "Power"
-msgstr "Effekt"
 
 #: ../../RunActivity/RollingStock/MSTSSteamLocomotive.cs:1366
 msgid "Tender coal supply is empty. Your loco will fail."
@@ -2830,6 +2818,16 @@ msgid_plural "{0} meters"
 msgstr[0] "{0} meter"
 msgstr[1] "{0} meter"
 
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "EOT"
+msgstr ""
+
+#. Context: BrakeStatus
+msgctxt "BrakeStatus"
+msgid "Flow"
+msgstr ""
+
 #~ msgid "Odometer"
 #~ msgstr "Kilometertæller"
 
@@ -2886,3 +2884,28 @@ msgstr[1] "{0} meter"
 #~ msgctxt "Labels"
 #~ msgid "none"
 #~ msgstr "ingen"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Engine"
+msgstr "Motor"
+
+#. Context: PowerSupply
+msgctxt "PowerSupply"
+msgid "On"
+msgstr "Til"
+
+#. Context: PowerSupply
+msgctxt "PowerSupply"
+msgid "Power"
+msgstr "Effekt"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Running"
+msgstr "Kører"
+
+#. Context: DieselEngine
+msgctxt "DieselEngine"
+msgid "Stopped"
+msgstr "Stoppet"
