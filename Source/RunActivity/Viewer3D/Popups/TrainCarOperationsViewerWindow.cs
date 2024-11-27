@@ -318,7 +318,7 @@ namespace Orts.Viewer3D.Popups
                 var locationY = newTop;
                 if (Owner.Viewer.TrainCarOperationsWindow.LayoutMoved)
                 {
-                    CkeckCollision(newWidth, newHeight, newTop, ref locationX, ref locationY);
+                    CkeckCollision(newWidth, newHeight, ref locationX, ref locationY);
                     Owner.Viewer.TrainCarOperationsWindow.LayoutMoved = false;
                 }
                 MoveTo(locationX, locationY);
@@ -375,7 +375,7 @@ namespace Orts.Viewer3D.Popups
                     var car = PlayerTrain.Cars[CarPosition];
                     //Reset brakes
                     var warningCarPos = Owner.Viewer.TrainCarOperationsWindow.WarningCarPosition.Where(x => x == true).Count();
-                    line.Add(new buttonInitializeBrakes(0, 0, textHeight, Owner.Viewer, CarPosition, warningCarPos));
+                    line.Add(new buttonInitializeBrakes(0, 0, textHeight, Owner.Viewer, warningCarPos));
 
                     if (car != PlayerTrain.Cars.First())
                         AddSpace(false);
@@ -655,7 +655,7 @@ namespace Orts.Viewer3D.Popups
             readonly Viewer Viewer;
             readonly TrainCarOperationsViewerWindow TrainCarViewer;
             readonly int WarningCars;
-            public buttonInitializeBrakes(int x, int y, int size, Viewer viewer, int carPosition, int warningCars)
+            public buttonInitializeBrakes(int x, int y, int size, Viewer viewer, int warningCars)
                 : base(x, y, size, size)
             {
                 Viewer = viewer;
@@ -838,7 +838,6 @@ namespace Orts.Viewer3D.Popups
             readonly TrainCarOperationsViewerWindow TrainCarViewer;
             readonly int CarPosition;
             readonly bool First;
-            readonly float carAngleCockAOpenAmount;
             public buttonFrontAngleCock(int x, int y, int size, Viewer viewer, TrainCar car, int carPosition)
                 : base(x, y, size, size)
             {
@@ -1214,7 +1213,7 @@ namespace Orts.Viewer3D.Popups
                 return Texture;
             }
         }
-        public void CkeckCollision(int newWidth, int newHeight, int newTop, ref int locationX, ref int locationY)
+        public void CkeckCollision(int newWidth, int newHeight, ref int locationX, ref int locationY)
         {
             var trainCarOperations = Owner.Viewer.TrainCarOperationsWindow;
             var trainOperationsViewer = Owner.Viewer.TrainCarOperationsViewerWindow;
@@ -1229,7 +1228,6 @@ namespace Orts.Viewer3D.Popups
 
             // logic to apply
             var displaySizeX = Owner.Viewer.DisplaySize.X;
-            var halfDisplaySizeX = displaySizeX / 2;
             var DisplaySizeY = Owner.Viewer.DisplaySize.Y;
             var halfDisplaySizeY = DisplaySizeY / 2;
             var topMarging = tcoLocation.Y;
