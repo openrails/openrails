@@ -829,7 +829,6 @@ namespace Orts.Viewer3D.Popups
     {
         readonly Viewer Viewer;
         readonly TrainCarOperationsViewerWindow TrainCarViewer;
-        readonly TrainCarOperationsWindow TrainCarOperations;
         readonly CarOperationsWindow CarOperations;
         readonly int CarPosition;
         readonly bool First;
