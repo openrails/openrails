@@ -1813,8 +1813,12 @@ namespace Orts.Simulation
 
             train.UncoupledFrom = train2;
             train2.UncoupledFrom = train;
+            
             train2.SpeedMpS = train.SpeedMpS;
+
+            train.Cars[train.Cars.Count - 1].BrakeSystem.RearBrakeHoseConnected = false;
             train2.Cars[0].BrakeSystem.FrontBrakeHoseConnected = false;
+
             train2.AITrainDirectionForward = train.AITrainDirectionForward;
 
             // It is an action, not just a simple copy, thus don't do it if the train is driven by the player:
