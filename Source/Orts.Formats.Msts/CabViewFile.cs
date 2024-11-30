@@ -81,6 +81,9 @@ namespace Orts.Formats.Msts
         BRAKE_CYL,
         BRAKE_PIPE,
         LINE_VOLTAGE,
+        ORTS_PANTOGRAPH_VOLTAGE_AC,
+        ORTS_PANTOGRAPH_VOLTAGE_DC,
+        ORTS_BATTERY_VOLTAGE,
         AMMETER,
         AMMETER_ABS,
         LOAD_METER,
@@ -161,6 +164,10 @@ namespace Orts.Formats.Msts
         ORTS_CYL_COMP,
         GEARS_DISPLAY,
         DYNAMIC_BRAKE_FORCE,
+        ORTS_POWER_SUPPLY,
+        ORTS_VOLTAGE_SELECTOR,
+        ORTS_PANTOGRAPH_SELECTOR,
+        ORTS_POWER_LIMITATION_SELECTOR,
         ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER,
         ORTS_CIRCUIT_BREAKER_DRIVER_OPENING_ORDER,
         ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_AUTHORIZATION,
@@ -387,11 +394,18 @@ namespace Orts.Formats.Msts
                     Type = CABViewControlTypes.ORTS_TCS;
                 }
             }
+            else if (name != null && name.ToUpperInvariant().StartsWith("ORTS_POWER_SUPPLY"))
+            {
+                if (int.TryParse(name.Substring(17), out Id))
+                {
+                    Type = CABViewControlTypes.ORTS_POWER_SUPPLY;
+                }
+            }
             else Enum.TryParse(name, true, out Type);
         }
         public override string ToString()
         {
-            if (Type == CABViewControlTypes.ORTS_TCS) return Type.ToString() + Id;
+            if (Type == CABViewControlTypes.ORTS_TCS || Type == CABViewControlTypes.ORTS_POWER_SUPPLY) return Type.ToString() + Id;
             return Type.ToString();
         }
     }

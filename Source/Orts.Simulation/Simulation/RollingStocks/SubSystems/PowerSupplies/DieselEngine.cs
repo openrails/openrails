@@ -997,12 +997,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Initialize()
         {
-            if (!Simulator.Settings.NoDieselEngineStart)
-            {
-                RealRPM = IdleRPM;
-                State = DieselEngineState.Running;
-            }
-
             RPMRange = MaxRPM - IdleRPM;
             MagnitudeRange = MaxMagnitude - InitialMagnitude;
             ExhaustRange = MaxExhaust - InitialExhaust;
