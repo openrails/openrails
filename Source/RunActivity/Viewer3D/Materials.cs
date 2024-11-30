@@ -24,6 +24,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Viewer3D.Common;
@@ -179,6 +180,12 @@ namespace Orts.Viewer3D
 
             if (ext == ".ace")
                 return Orts.Formats.Msts.AceFile.Texture2DFromFile(graphicsDevice, path);
+            else if (ext == ".dds" && File.Exists(path))
+            {
+                Texture2D ddsTexture;
+                DDSLib.DDSFromFile(path, graphicsDevice, true, out ddsTexture);
+                return ddsTexture;
+            }
 
             using (var stream = File.OpenRead(path))
             {

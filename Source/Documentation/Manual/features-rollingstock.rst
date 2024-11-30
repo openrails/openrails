@@ -344,11 +344,14 @@ Detailed spec
 1) In the ``Content`` folder there is the default ``LightGlow.png``, which is displayed if 
    no changes are done to the .eng file.
 2) In such folder there is also an ``ORTSLightGlow.png``, which is maybe more realistic.
-3) adding a line within the .eng file it is possible to select either ORTSLightGlow.png or any other .png. 
+3) adding a line within the .eng file it is possible to select either ORTSLightGlow.png or any other picture
+   with extension ``.png, .jpg, bmp, .gif, .ace, or .dds``.
+   
+
    Here an example for the legacy Acela loco::
 
     	Lights	( 17
-	        ORTSGraphic ( "ORTSLightGlow.png")
+	        ORTSGraphic ( "ORTSLightGlow.png" )
 		      Light	(
 			      comment( Sphere of light )
 			      Type	( 1 )
@@ -357,7 +360,7 @@ Detailed spec
   The code first searches for the .png file by building its directory starting from the directory of 
   the .eng file; in this case the line could be e.g.::
 
-           ORTSGraphic ( "ORTSAcelaLightGlow.png")
+           ORTSGraphic ( "ORTSAcelaLightGlow.png" )
 
 4) The ``ORTSGraphic`` line can be added also for one or more ``Light()`` blocks. In that case the 
    .png file is used only for the related Light block. Here an example::
