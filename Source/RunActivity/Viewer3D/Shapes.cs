@@ -2015,7 +2015,6 @@ namespace Orts.Viewer3D
         /// </summary>
         void LoadContent()
         {
-            Trace.Write("S");
             var filePath = FilePath;
             // commented lines allow reading the animation block from an additional file in an Openrails subfolder
 //           string dir = Path.GetDirectoryName(filePath);
