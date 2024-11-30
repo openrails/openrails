@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009 - 2024 by the Open Rails project.
+// COPYRIGHT 2009 - 2024 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -126,8 +126,9 @@ namespace ORTS
                 Notifications.NotificationList = IncludeValid(Notifications.NotificationList);
                 Notifications.NotificationList = SortByDate(Notifications.NotificationList);
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
+                AppendToLog(ex.ToString());
                 Error = ex;
             }
         }
@@ -224,6 +225,10 @@ namespace ORTS
             {
                 PopulateRetryPage();
             }
+            else if (Notifications.NotificationList.Count == 0)
+            {
+                PopulateEmptyPage();
+            }
             else
             {
                 Settings.LastViewNotificationDate = $"{DateTime.Today:yyyy-MM-dd}";
@@ -266,6 +271,15 @@ namespace ORTS
             Page.NDetailList.Add(new NTextControl(Panel, "Is your Internet connected?"));
 
             Page.NDetailList.Add(new NRetryControl(Page, "Retry", 140, "Try again to fetch notifications", MainForm));
+        }
+
+        private void PopulateEmptyPage()
+        {
+            NewPages.Count = 0;
+
+            // Reports no notifications.
+            var today = DateTime.Now.Date;
+            Page.NDetailList.Add(new NTitleControl(Panel, 1, 1, $"{today:dd-MMM-yy}", "No notifications"));
         }
 
         #region Process Criteria
@@ -356,34 +370,11 @@ namespace ORTS
         {
             foreach (var c in criteriaList)
             {
-                if (c is Contains) // other criteria might be added such as NoLessThan and NoMoreThan.
-                {
-                    if (CheckContains(c, true) == false) return false;
-                }
-                if (c is NotContains)
-                {
-                    if (CheckContains(c, false) == false) return false;
-                }
+                var result = c.IsMatch();
+                AppendToLog($"Check: {result}: '{c.Property}' {c.GetType().Name} '{c.Value}'");
+                if (!result) return false;
             }
             return true;
-        }
-
-        /// <summary>
-        /// Returns true if a match is found and sense = true. For NotContains, use sense = false.
-        /// </summary>
-        /// <param name="criteria"></param>
-        /// <param name="sense"></param>
-        /// <returns></returns>
-        private bool CheckContains(Criteria criteria, bool sense)
-        {
-            // If Property was a parameter, then use the expansion
-            var content = ParameterDictionary.ContainsKey(criteria.Property)
-                ? ParameterDictionary[criteria.Property]
-                : criteria.Property;
-
-            var result = content.IndexOf(criteria.Value, StringComparison.OrdinalIgnoreCase) > -1 == sense;
-            LogCheckContains(criteria.Value, sense, content, result);
-            return result;
         }
         #endregion
 
@@ -400,6 +391,10 @@ namespace ORTS
                 {
                     Page.NDetailList.Add(new NLinkControl(Page, item.Label, item.Indent, link.Value, MainForm, url));
                 }
+            }
+            else if (item is Dialog dialog)
+            {
+                Page.NDetailList.Add(new NDialogControl(Page, item.Label, item.Indent, dialog.Value, MainForm, dialog.Form));
             }
             else if (item is Update update)
             {
@@ -586,12 +581,20 @@ namespace ORTS
         /// <returns></returns>
         string GetSetting(string settingText)
         {
-            var nameArray = settingText.Split('.'); // 2 elements: "Settings.<property>", e.g. "SimpleControlPhysics" 
-            if (nameArray[0] == "Settings" && nameArray.Length == 2)
+            // 2 elements: "Settings.<property>", e.g. "SimpleControlPhysics" 
+            // 3 elements: "Settings.<group>.<property>", e.g. "Telemetry.RandomNumber1000"
+            var nameArray = settingText.Split('.');
+            if (nameArray.Length < 2 || nameArray[0] != "Settings") return "";
+
+            var value = (object)Settings;
+            for (var i = 1; i < nameArray.Length; i++)
             {
-                return Settings.GetType().GetProperty(nameArray[1])?.GetValue(Settings).ToString() ?? "";
+                var prop = value.GetType().GetProperty(nameArray[i]);
+                if (prop == null) return "";
+                value = prop.GetValue(value);
             }
-            return "";
+            if (value is DateTime dateTime) return dateTime.ToString("yyyy-MM-dd");
+            return value?.ToString() ?? "";
         }
 
         private string GetInstalledRoutes()
@@ -648,7 +651,7 @@ namespace ORTS
         }
 
         #region Logging
-        public void LogOverrideParameters()
+        void LogOverrideParameters()
         {
             if (Log == false) return;
 
@@ -660,7 +663,7 @@ namespace ORTS
             }
         }
 
-        public void LogParameters()
+        void LogParameters()
         {
             if (Log == false) return;
 
@@ -672,18 +675,12 @@ namespace ORTS
             }
         }
 
-        public void LogNotification(Notification n)
+        void LogNotification(Notification n)
         {
             AppendToLog($"\r\nNotification: {n.Title}");
         }
 
-        public void LogCheckContains(string value, bool sense, string content, bool result)
-        {
-            var negation = sense ? "" : "NOT ";
-            AppendToLog($"Check: {result} = '{value}' {negation}contained in '{content}'");
-        }
-
-        public void AppendToLog(string record)
+        void AppendToLog(string record)
         {
             if (Log == false) return;
 
