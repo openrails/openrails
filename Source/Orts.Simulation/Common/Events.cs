@@ -27,6 +27,10 @@ namespace Orts.Common
     public enum Event
     {
         None,
+        AITrainApproachingStation,
+        AITrainHelperLoco,
+        AITrainLeadLoco,
+        AITrainLeavingStation,
         BatterySwitchOff,
         BatterySwitchOn,
         BatterySwitchCommandOff,
@@ -123,6 +127,8 @@ namespace Orts.Common
         PermissionDenied,
         PermissionGranted,
         PermissionToDepart,
+        PlayerTrainHelperLoco,
+        PlayerTrainLeadLoco,
         PowerKeyOff,
         PowerKeyOn,
         ReverserChange,
@@ -561,6 +567,14 @@ namespace Orts.Common
                         case 321: return Event.BoosterCylinderCocksOpen;
                         case 322: return Event.BoosterCylinderCocksClose;
 
+                        // AI train related events
+                        case 330: return Event.AITrainLeadLoco;
+                        case 331: return Event.AITrainHelperLoco;
+                        case 332: return Event.PlayerTrainLeadLoco;
+                        case 333: return Event.PlayerTrainHelperLoco;
+                        case 334: return Event.AITrainApproachingStation;
+                        case 335: return Event.AITrainLeavingStation;
+						
                         default: return 0;
                     }
                 case Source.MSTSCrossing:
