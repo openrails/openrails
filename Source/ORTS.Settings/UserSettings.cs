@@ -43,22 +43,12 @@ namespace ORTS.Settings
 
     public class UserSettings : SettingsBase
     {
-        public static readonly string RegistryKey;        // ie @"SOFTWARE\OpenRails\ORTS"
-        public static readonly string SettingsFilePath;   // ie @"C:\Program Files\Open Rails\OpenRails.ini"
         public static readonly string UserDataFolder;     // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
         public static readonly string DeletedSaveFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails\Deleted Saves"
         public static readonly string SavePackFolder;     // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails\Save Packs"
 
         static UserSettings()
         {
-            // Only one of these is allowed; if the INI file exists, we use that, otherwise we use the registry.
-            RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
-            SettingsFilePath = Path.Combine(ApplicationInfo.ProcessDirectory, "OpenRails.ini");
-            if (File.Exists(SettingsFilePath))
-                RegistryKey = null;
-            else
-                SettingsFilePath = null;
-
             UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationInfo.ProductName);
             // TODO: If using INI file, move these to application directory as well.
             if (!Directory.Exists(UserDataFolder)) Directory.CreateDirectory(UserDataFolder);

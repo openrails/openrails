@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -27,6 +28,20 @@ namespace ORTS.Common
     /// </summary>
 	public abstract class SettingsBase
 	{
+        public static string RegistryKey { get; protected set; }        // ie @"SOFTWARE\OpenRails\ORTS"
+        public static string SettingsFilePath { get; protected set; }   // ie @"C:\Program Files\Open Rails\OpenRails.ini"
+
+        static SettingsBase()
+        {
+            // Only one of these is allowed; if the INI file exists, we use that, otherwise we use the registry.
+            RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
+            SettingsFilePath = Path.Combine(ApplicationInfo.ProcessDirectory, "OpenRails.ini");
+            if (File.Exists(SettingsFilePath))
+                RegistryKey = null;
+            else
+                SettingsFilePath = null;
+        }
+
         /// <summary>
         /// Enumeration of the various sources for settings
         /// </summary>
@@ -42,6 +57,7 @@ namespace ORTS.Common
 
         /// <summary>The store of the settings</summary>
         protected SettingsStore SettingStore { get; private set; }
+
         /// <summary>Translates name of a setting to its source</summary>
         protected readonly Dictionary<string, Source> Sources = new Dictionary<string, Source>();
 
