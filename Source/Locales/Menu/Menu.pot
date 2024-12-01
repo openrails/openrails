@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-11-09 17:45:30+0100\n"
-"PO-Revision-Date: 2024-11-09 17:45:31+0100\n"
+"POT-Creation-Date: 2024-11-02 19:42:00+0300\n"
+"PO-Revision-Date: 2024-11-02 19:42:02+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -12,23 +12,29 @@ msgstr ""
 
 
 #: ../../Menu/ContentForm.cs:260
+#: ../../Menu/DownloadContentForm.cs:173
 msgid "Main Path where route is to be installed"
 msgstr ""
 
 #: ../../Menu/ContentForm.cs:290
 #: ../../Menu/ContentForm.cs:295
+#: ../../Menu/DownloadContentForm.cs:556
+#: ../../Menu/DownloadContentForm.cs:561
 msgid "created by"
 msgstr ""
 
 #: ../../Menu/ContentForm.cs:301
+#: ../../Menu/DownloadContentForm.cs:567
 msgid "screenshots"
 msgstr ""
 
 #: ../../Menu/ContentForm.cs:307
+#: ../../Menu/DownloadContentForm.cs:573
 msgid "Downloadable: GitHub format"
 msgstr ""
 
 #: ../../Menu/ContentForm.cs:308
+#: ../../Menu/DownloadContentForm.cs:574
 msgid "From:"
 msgstr ""
 
@@ -38,30 +44,38 @@ msgstr ""
 
 #: ../../Menu/ContentForm.cs:333
 #: ../../Menu/ContentForm.Designer.cs:126
+#: ../../Menu/DownloadContentForm.cs:599
+#: ../../Menu/DownloadContentForm.Designer.cs:103
 msgid "Installed"
 msgstr ""
 
 #: ../../Menu/ContentForm.cs:334
+#: ../../Menu/DownloadContentForm.cs:600
 msgid "At"
 msgstr ""
 
 #: ../../Menu/ContentForm.cs:335
+#: ../../Menu/DownloadContentForm.cs:601
 msgid "In"
 msgstr ""
 
 #: ../../Menu/ContentForm.cs:336
+#: ../../Menu/DownloadContentForm.cs:602
 msgid "Content name"
 msgstr ""
 
 #: ../../Menu/ContentForm.cs:337
+#: ../../Menu/DownloadContentForm.cs:603
 msgid "Content Directory"
 msgstr ""
 
 #: ../../Menu/ContentForm.cs:340
+#: ../../Menu/DownloadContentForm.cs:606
 msgid "Start options"
 msgstr ""
 
 #: ../../Menu/ContentForm.cs:344
+#: ../../Menu/DownloadContentForm.cs:610
 #: ../../Menu/Options.cs:243
 #: ../../Menu/Options.cs:288
 msgid "None"
@@ -69,159 +83,210 @@ msgstr ""
 
 #: ../../Menu/ContentForm.cs:348
 #: ../../Menu/ContentForm.Designer.cs:297
+#: ../../Menu/DownloadContentForm.cs:614
 msgid "Installation profile"
 msgstr ""
 
 #: ../../Menu/ContentForm.cs:349
-#: ../../Menu/ContentForm.Designer.cs:118
-#: ../../Menu/ContentForm.Designer.cs:385
-#: ../../Menu/Options.cs:95
-#: ../../Menu/TestingForm.Designer.cs:184
-msgid "Route"
-msgstr ""
-
-#: ../../Menu/ContentForm.cs:350
+#: ../../Menu/DownloadContentForm.cs:615
 #: ../../Menu/MainForm.Designer.cs:407
 #: ../../Menu/TestingForm.Designer.cs:192
 msgid "Activity"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:352
+#: ../../Menu/ContentForm.cs:350
+#: ../../Menu/ContentForm.Designer.cs:118
+#: ../../Menu/ContentForm.Designer.cs:385
+#: ../../Menu/DownloadContentForm.cs:616
+#: ../../Menu/DownloadContentForm.Designer.cs:95
+#: ../../Menu/Options.cs:95
+#: ../../Menu/TestingForm.Designer.cs:184
+msgid "Route"
+msgstr ""
+
+#: ../../Menu/ContentForm.cs:351
+#: ../../Menu/DownloadContentForm.cs:617
 msgid "Locomotive"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:354
+#: ../../Menu/ContentForm.cs:352
+#: ../../Menu/DownloadContentForm.cs:618
 msgid "Consist"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:356
+#: ../../Menu/ContentForm.cs:353
+#: ../../Menu/DownloadContentForm.cs:619
 msgid "Starting at"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:358
+#: ../../Menu/ContentForm.cs:354
+#: ../../Menu/DownloadContentForm.cs:620
 msgid "Heading to"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:360
+#: ../../Menu/ContentForm.cs:355
+#: ../../Menu/DownloadContentForm.cs:621
 #: ../../Menu/Options.cs:219
 #: ../../Menu/ResumeForm.Designer.cs:380
 msgid "Time"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:362
+#: ../../Menu/ContentForm.cs:356
+#: ../../Menu/DownloadContentForm.cs:622
 msgid "Season"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:364
+#: ../../Menu/ContentForm.cs:357
+#: ../../Menu/DownloadContentForm.cs:623
 msgid "Weather"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:378
+#: ../../Menu/ContentForm.cs:371
+#: ../../Menu/DownloadContentForm.cs:637
 msgid "ATTENTION: both local and remote updates found."
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:379
+#: ../../Menu/ContentForm.cs:372
+#: ../../Menu/DownloadContentForm.cs:638
 msgid ""
 "Update might fail if the update tries to overwrite a changed local file."
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:380
+#: ../../Menu/ContentForm.cs:373
+#: ../../Menu/DownloadContentForm.cs:639
 msgid "If that's the case you are on your own!"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:381
+#: ../../Menu/ContentForm.cs:374
+#: ../../Menu/DownloadContentForm.cs:640
 msgid ""
 "Get a git expert at your desk or just Delete and Install the route again."
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:401
-#: ../../Menu/ContentForm.cs:513
-#: ../../Menu/ContentForm.cs:547
-#: ../../Menu/ContentForm.cs:558
-#: ../../Menu/ContentForm.cs:574
-#: ../../Menu/ContentForm.cs:585
-#: ../../Menu/ContentForm.cs:718
-#: ../../Menu/ContentForm.cs:737
-#: ../../Menu/ContentForm.cs:756
-#: ../../Menu/ContentForm.cs:828
-#: ../../Menu/ContentForm.cs:874
-#: ../../Menu/ContentForm.cs:883
-#: ../../Menu/ContentForm.cs:893
-#: ../../Menu/ContentForm.cs:899
-#: ../../Menu/ContentForm.cs:933
-#: ../../Menu/ContentForm.cs:948
-#: ../../Menu/ContentForm.cs:960
-#: ../../Menu/ContentForm.cs:1355
+#: ../../Menu/ContentForm.cs:394
+#: ../../Menu/ContentForm.cs:506
+#: ../../Menu/ContentForm.cs:540
+#: ../../Menu/ContentForm.cs:551
+#: ../../Menu/ContentForm.cs:567
+#: ../../Menu/ContentForm.cs:578
+#: ../../Menu/ContentForm.cs:711
+#: ../../Menu/ContentForm.cs:730
+#: ../../Menu/ContentForm.cs:749
+#: ../../Menu/ContentForm.cs:821
+#: ../../Menu/ContentForm.cs:867
+#: ../../Menu/ContentForm.cs:876
+#: ../../Menu/ContentForm.cs:886
+#: ../../Menu/ContentForm.cs:892
+#: ../../Menu/ContentForm.cs:926
+#: ../../Menu/ContentForm.cs:941
+#: ../../Menu/ContentForm.cs:953
+#: ../../Menu/ContentForm.cs:1348
+#: ../../Menu/DownloadContentForm.cs:201
+#: ../../Menu/DownloadContentForm.cs:235
+#: ../../Menu/DownloadContentForm.cs:246
+#: ../../Menu/DownloadContentForm.cs:262
+#: ../../Menu/DownloadContentForm.cs:273
+#: ../../Menu/DownloadContentForm.cs:403
+#: ../../Menu/DownloadContentForm.cs:422
+#: ../../Menu/DownloadContentForm.cs:441
+#: ../../Menu/DownloadContentForm.cs:506
+#: ../../Menu/DownloadContentForm.cs:657
+#: ../../Menu/DownloadContentForm.cs:866
+#: ../../Menu/DownloadContentForm.cs:878
+#: ../../Menu/DownloadContentForm.cs:957
+#: ../../Menu/DownloadContentForm.cs:966
+#: ../../Menu/DownloadContentForm.cs:976
+#: ../../Menu/DownloadContentForm.cs:982
+#: ../../Menu/DownloadContentForm.cs:1016
+#: ../../Menu/DownloadContentForm.cs:1240
 msgid "Attention"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:408
+#: ../../Menu/ContentForm.cs:401
+#: ../../Menu/DownloadContentForm.cs:664
 msgid "Changed local file(s) after the install (timestamp check)"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:411
-#: ../../Menu/ContentForm.cs:446
+#: ../../Menu/ContentForm.cs:404
+#: ../../Menu/ContentForm.cs:439
+#: ../../Menu/DownloadContentForm.cs:667
+#: ../../Menu/DownloadContentForm.cs:702
 msgid "No changed files found"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:422
+#: ../../Menu/ContentForm.cs:415
+#: ../../Menu/DownloadContentForm.cs:678
 msgid "Added local file(s) after the install (timestamp check)"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:425
-#: ../../Menu/ContentForm.cs:461
+#: ../../Menu/ContentForm.cs:418
+#: ../../Menu/ContentForm.cs:454
+#: ../../Menu/DownloadContentForm.cs:681
+#: ../../Menu/DownloadContentForm.cs:717
 msgid "No added files found"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:443
+#: ../../Menu/ContentForm.cs:436
+#: ../../Menu/DownloadContentForm.cs:699
 msgid "Changed local file(s) after the install (git status)"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:458
+#: ../../Menu/ContentForm.cs:451
+#: ../../Menu/DownloadContentForm.cs:714
 msgid "Added local file(s) after the install (git status)"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:473
+#: ../../Menu/ContentForm.cs:466
+#: ../../Menu/DownloadContentForm.cs:729
 msgid "Remote GitHub Updates available:"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:490
-#: ../../Menu/ContentForm.cs:898
+#: ../../Menu/ContentForm.cs:483
+#: ../../Menu/ContentForm.cs:891
+#: ../../Menu/DownloadContentForm.cs:746
+#: ../../Menu/DownloadContentForm.cs:981
 msgid "No updates found"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:593
+#: ../../Menu/ContentForm.cs:586
+#: ../../Menu/DownloadContentForm.cs:281
 msgid "Installing..."
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:625
+#: ../../Menu/ContentForm.cs:618
+#: ../../Menu/DownloadContentForm.cs:313
 msgid "Route installed."
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:626
+#: ../../Menu/ContentForm.cs:619
+#: ../../Menu/DownloadContentForm.cs:314
 msgid "Done"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:827
+#: ../../Menu/ContentForm.cs:820
+#: ../../Menu/DownloadContentForm.cs:505
 msgid "Incorrect route, directory \"routes\" not found"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:873
+#: ../../Menu/ContentForm.cs:866
+#: ../../Menu/DownloadContentForm.cs:956
 msgid "Remote updates found. Do you want to continue?"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:882
+#: ../../Menu/ContentForm.cs:875
+#: ../../Menu/DownloadContentForm.cs:965
 msgid ""
 "Changed or added local files found, Update might fail. Do you want to "
 "continue?"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:892
+#: ../../Menu/ContentForm.cs:885
+#: ../../Menu/DownloadContentForm.cs:975
 msgid "Updates installed"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:1422
-#: ../../Menu/ContentForm.cs:1448
+#: ../../Menu/ContentForm.cs:1415
+#: ../../Menu/ContentForm.cs:1441
 msgid "Path where the route is installed"
 msgstr ""
 
@@ -235,6 +300,8 @@ msgstr ""
 
 #: ../../Menu/ContentForm.cs:311
 #: ../../Menu/ContentForm.cs:321
+#: ../../Menu/DownloadContentForm.cs:577
+#: ../../Menu/DownloadContentForm.cs:587
 #, csharp-format
 msgid "Install size: {0} GB"
 msgstr ""
@@ -245,112 +312,134 @@ msgid "- From: {0}<br>"
 msgstr ""
 
 #: ../../Menu/ContentForm.cs:326
+#: ../../Menu/DownloadContentForm.cs:592
 #, csharp-format
 msgid "Download size: {0} GB"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:389
+#: ../../Menu/ContentForm.cs:382
+#: ../../Menu/DownloadContentForm.cs:646
 #, csharp-format
 msgid "Directory {0} does not exist"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:400
+#: ../../Menu/ContentForm.cs:393
+#: ../../Menu/DownloadContentForm.cs:656
 #, csharp-format
 msgid "Error opening html page {0} in browser. Error: {1}"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:482
+#: ../../Menu/ContentForm.cs:475
+#: ../../Menu/DownloadContentForm.cs:738
 #, csharp-format
 msgid "On {0} by {1}"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:512
+#: ../../Menu/ContentForm.cs:505
+#: ../../Menu/DownloadContentForm.cs:200
 #, csharp-format
 msgid "Route to be installed in \"{0}\", are you sure?"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:541
+#: ../../Menu/ContentForm.cs:534
+#: ../../Menu/DownloadContentForm.cs:229
 #, csharp-format
 msgid ""
 "Not enough diskspace on drive {0} ({1}), available {2} kB, needed {3} kB, "
 "still continue?"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:557
+#: ../../Menu/ContentForm.cs:550
+#: ../../Menu/DownloadContentForm.cs:245
 msgid "Drive not available"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:572
+#: ../../Menu/ContentForm.cs:565
+#: ../../Menu/DownloadContentForm.cs:260
 #, csharp-format
 msgid "Directory \"{0}\" cannot be created: {1}"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:584
+#: ../../Menu/ContentForm.cs:577
+#: ../../Menu/DownloadContentForm.cs:272
 #, csharp-format
 msgid "Directory \"{0}\" exists and is not empty"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:717
+#: ../../Menu/ContentForm.cs:710
+#: ../../Menu/DownloadContentForm.cs:402
 #, csharp-format
 msgid "Error during github download: {0}"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:736
+#: ../../Menu/ContentForm.cs:729
+#: ../../Menu/DownloadContentForm.cs:421
 #, csharp-format
 msgid "Error during download zipfile {0}: {1}"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:755
+#: ../../Menu/ContentForm.cs:748
+#: ../../Menu/DownloadContentForm.cs:440
 #, csharp-format
 msgid "Error during unzip zipfile {0}: {1}"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:932
+#: ../../Menu/ContentForm.cs:925
+#: ../../Menu/DownloadContentForm.cs:1015
 #, csharp-format
 msgid "Error during github pull: {0}"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:947
+#: ../../Menu/ContentForm.cs:940
+#: ../../Menu/DownloadContentForm.cs:865
 #, csharp-format
 msgid "Directory \"{0}\" is to be deleted, are you really sure?"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:959
+#: ../../Menu/ContentForm.cs:952
+#: ../../Menu/DownloadContentForm.cs:877
 #, csharp-format
 msgid ""
 "Changed or added local files found in Directory \"{0}\". Do you want to "
 "continue?"
 msgstr ""
 
-#: ../../Menu/ContentForm.cs:1354
+#: ../../Menu/ContentForm.cs:1347
+#: ../../Menu/DownloadContentForm.cs:1239
 #, csharp-format
 msgid "Error during GitHub pull, updates might not be installed, error: {0}"
 msgstr ""
 
 #: ../../Menu/ContentForm.Designer.cs:145
+#: ../../Menu/DownloadContentForm.Designer.cs:122
 msgid "Install Path:"
 msgstr ""
 
 #: ../../Menu/ContentForm.Designer.cs:161
 #: ../../Menu/ContentForm.Designer.cs:306
+#: ../../Menu/DownloadContentForm.Designer.cs:138
 msgid "Browse..."
 msgstr ""
 
 #: ../../Menu/ContentForm.Designer.cs:172
+#: ../../Menu/DownloadContentForm.Designer.cs:149
 msgid "Install"
 msgstr ""
 
 #: ../../Menu/ContentForm.Designer.cs:202
+#: ../../Menu/DownloadContentForm.Designer.cs:178
 msgid "Info"
 msgstr ""
 
 #: ../../Menu/ContentForm.Designer.cs:213
 #: ../../Menu/ContentForm.Designer.cs:279
+#: ../../Menu/DownloadContentForm.Designer.cs:189
 #: ../../Menu/ResumeForm.Designer.cs:150
 msgid "Delete"
 msgstr ""
 
 #: ../../Menu/ContentForm.Designer.cs:223
+#: ../../Menu/DownloadContentForm.Designer.cs:199
 msgid "Update"
 msgstr ""
 
@@ -382,6 +471,7 @@ msgid "Cancel"
 msgstr ""
 
 #: ../../Menu/ContentForm.Designer.cs:415
+#: ../../Menu/DownloadContentForm.Designer.cs:210
 #: ../../Menu/Options.Designer.cs:289
 msgid "OK"
 msgstr ""
@@ -392,12 +482,17 @@ msgid "Content"
 msgstr ""
 
 #: ../../Menu/ContentForm.Designer.cs:133
+#: ../../Menu/DownloadContentForm.Designer.cs:110
 msgid "Url"
 msgstr ""
 
 #: ../../Menu/ContentForm.Designer.cs:392
 #: ../../Menu/ResumeForm.Designer.cs:372
 msgid "Path"
+msgstr ""
+
+#: ../../Menu/DownloadContentForm.Designer.cs:232
+msgid "Download Content"
 msgstr ""
 
 #: ../../Menu/ImportExportSaveForm.cs:52
