@@ -585,6 +585,7 @@ namespace Orts.Simulation.Timetables
             outf.Write(UncondAttach);
             outf.Write(DoorCloseTimer);
             outf.Write(DoorOpenTimer);
+            outf.Write(ApproachTriggerSet);
             // Dummy for level crossing horn pattern
             outf.Write(-1);
 
@@ -2247,6 +2248,7 @@ namespace Orts.Simulation.Timetables
                     AIActionItem newAction = new AIActionItem(null, AIActionItem.AI_ACTION_TYPE.STATION_STOP);
                     newAction.SetParam(distancesM[1], 0.0f, distancesM[0], DistanceTravelledM);
                     requiredActions.InsertAction(newAction);
+                    ApproachTriggerSet = false;
 
 #if DEBUG_REPORTS
                     if (StationStops[0].ActualStopType == StationStop.STOPTYPE.STATION_STOP)
@@ -3979,6 +3981,7 @@ namespace Orts.Simulation.Timetables
                     Delay = TimeSpan.FromSeconds((presentTime - thisStation.DepartTime) % (24 * 3600));
                 }
             }
+            if (Cars[0] is MSTSLocomotive) Cars[0].SignalEvent(Event.AITrainLeavingStation);
 
 #if DEBUG_REPORTS
             DateTime baseDTd = new DateTime();
@@ -4500,7 +4503,7 @@ namespace Orts.Simulation.Timetables
                 }               
                 else if (nextActionInfo.RequiredSpeedMpS == 0)
                 {
-					// Check if stopped at signal
+                    // Check if stopped at signal
                     NextStopDistanceM = distanceToGoM;
                     float stopDistanceM = signalApproachDistanceM;
 
@@ -4568,6 +4571,13 @@ namespace Orts.Simulation.Timetables
                         }
                     }
                 }
+            }
+
+            if (nextActionInfo != null && nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.STATION_STOP &&
+                distanceToGoM < 150 + StationStops[0].PlatformItem.Length && !ApproachTriggerSet)
+            {
+                if (Cars[0] is MSTSLocomotive) Cars[0].SignalEvent(Event.AITrainApproachingStation);
+                ApproachTriggerSet = true;
             }
 
             // Keep speed within required speed band
