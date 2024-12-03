@@ -6616,6 +6616,22 @@ namespace Orts.Simulation.AIs
             }
         }
 
+        //================================================================================================//
+        /// <summary>
+        /// Redefine sound triggers for Player Train
+        /// </summary>
+        public void RedefinePlayerTrainTriggers(AITrain train)
+        {
+            Simulator.PlayerLocomotive.SignalEvent(Event.PlayerTrainLeadLoco);
+            foreach (var car in train.Cars)
+            {
+                if (car is MSTSLocomotive && car != Simulator.PlayerLocomotive)
+                {
+                    car.SignalEvent(Event.PlayerTrainHelperLoco);
+                }
+            }
+        }
+
     }
 
 
