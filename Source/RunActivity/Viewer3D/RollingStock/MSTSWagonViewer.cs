@@ -1470,7 +1470,7 @@ namespace Orts.Viewer3D.RollingStock
                 }
                 else if (MSTSWagon == Viewer.PlayerLocomotive)
                     MSTSWagon.SignalEvent(Event.PlayerTrainLeadLoco);
-                else if (MSTSWagon.Train != null && (MSTSWagon.Train.TrainType == Train.TRAINTYPE.PLAYER ||
+                else if (MSTSWagon is MSTSLocomotive && MSTSWagon.Train != null && (MSTSWagon.Train.TrainType == Train.TRAINTYPE.PLAYER ||
                     MSTSWagon.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || MSTSWagon.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING))
                     MSTSWagon.SignalEvent(Event.PlayerTrainHelperLoco);
             }
