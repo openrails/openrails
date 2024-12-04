@@ -2936,6 +2936,7 @@ namespace Orts.Simulation.Timetables
                     }
 
                     TrainType = TRAINTYPE.PLAYER;
+                    RedefinePlayerTrainTriggers();
                 }
 
                 PostInit(true);
@@ -3874,6 +3875,12 @@ namespace Orts.Simulation.Timetables
 
                         // Reverse formation
                         ReverseFormation(false);
+                        if (TrainType == TRAINTYPE.PLAYER)
+                            RedefinePlayerTrainTriggers();
+                        else if (TrainType == TRAINTYPE.AI)
+                            RedefineAITriggers();
+
+
 
                         // Get new route list indices from new route
                         DistanceTravelledM = 0;
