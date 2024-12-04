@@ -1539,7 +1539,7 @@ namespace Orts.Simulation.Physics
             for (var i = 0; i < Cars.Count; i++)
                 Cars[i].Flipped = !Cars[i].Flipped;
             // if AI train redefine first loco for sound
-            if (TrainType == TRAINTYPE.AI) (this as AITrain).RedefineAITriggers(this as AITrain);
+            if (TrainType == TRAINTYPE.AI) RedefineAITriggers();
         }
 
         /// <summary>
@@ -13831,6 +13831,43 @@ namespace Orts.Simulation.Physics
             int location = ID.LastIndexOf('-');
             if (location < 0) return ID;
             return ID.Substring(0, location - 1);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Redefine sound triggers for AI trains
+        /// </summary>
+        public void RedefineAITriggers()
+        {
+            var leadFound = false;
+            foreach (var car in Cars)
+            {
+                if (car is MSTSLocomotive)
+                {
+                    if (!leadFound)
+                    {
+                        car.SignalEvent(Event.AITrainLeadLoco);
+                        leadFound = true;
+                    }
+                    else car.SignalEvent(Event.AITrainHelperLoco);
+                }
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Redefine sound triggers for Player Train
+        /// </summary>
+        public void RedefinePlayerTrainTriggers()
+        {
+            Simulator.PlayerLocomotive.SignalEvent(Event.PlayerTrainLeadLoco);
+            foreach (var car in Cars)
+            {
+                if (car is MSTSLocomotive && car != Simulator.PlayerLocomotive)
+                {
+                    car.SignalEvent(Event.PlayerTrainHelperLoco);
+                }
+            }
         }
 
         //================================================================================================//

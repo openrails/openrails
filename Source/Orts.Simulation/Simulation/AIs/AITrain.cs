@@ -4381,7 +4381,7 @@ namespace Orts.Simulation.AIs
                     AI.AITrains.Add(this);
                     AI.aiListChanged = true;
                 }
-                else if (attachTrain is AITrain) RedefineAITriggers(attachTrain as AITrain);
+                else if (attachTrain is AITrain) attachTrain.RedefineAITriggers();
                 if (!UncondAttach)
                 {
                     RemoveTrain();
@@ -4490,7 +4490,7 @@ namespace Orts.Simulation.AIs
             AddTrackSections();
             ResetActions(true);
             physicsUpdate(0);
-            RedefineAITriggers(this);
+            RedefineAITriggers();
         }
 
         //================================================================================================//
@@ -4732,8 +4732,8 @@ namespace Orts.Simulation.AIs
             // Move WP, if any, just under the loco;
             AuxActionsContain.MoveAuxActionAfterReversal(this);
             ResetActions(true);
-            RedefineAITriggers(this);
-            if (attachTrain is AITrain) RedefineAITriggers(attachTrain as AITrain);
+            RedefineAITriggers();
+            if (attachTrain is AITrain) attachTrain.RedefineAITriggers();
             physicsUpdate(0);// Stop the wheels from moving etc
 
         }
@@ -6591,43 +6591,6 @@ namespace Orts.Simulation.AIs
                     }
                     if (AuxActionsContain.SpecAuxActions.Count > 1 && AuxActionsContain.SpecAuxActions[1] is AIActSigDelegateRef)
                         (AuxActionsContain.SpecAuxActions[1] as AIActSigDelegateRef).Delay = delay;
-                }
-            }
-        }
-
-        //================================================================================================//
-        /// <summary>
-        /// Redefine sound triggers for AI trains
-        /// </summary>
-        public void RedefineAITriggers(AITrain train)
-        {
-            var leadFound = false;
-            foreach (var car in train.Cars)
-            {
-                if (car is MSTSLocomotive)
-                {
-                    if (!leadFound)
-                    {
-                        car.SignalEvent(Event.AITrainLeadLoco);
-                        leadFound = true;
-                    }
-                    else car.SignalEvent(Event.AITrainHelperLoco);
-                }
-            }
-        }
-
-        //================================================================================================//
-        /// <summary>
-        /// Redefine sound triggers for Player Train
-        /// </summary>
-        public void RedefinePlayerTrainTriggers(AITrain train)
-        {
-            Simulator.PlayerLocomotive.SignalEvent(Event.PlayerTrainLeadLoco);
-            foreach (var car in train.Cars)
-            {
-                if (car is MSTSLocomotive && car != Simulator.PlayerLocomotive)
-                {
-                    car.SignalEvent(Event.PlayerTrainHelperLoco);
                 }
             }
         }
