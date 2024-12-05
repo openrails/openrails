@@ -441,6 +441,7 @@ Trigger       Function
 333           PlayerTrainHelperLoco
 334           AITrainApproachingStation
 335           AITrainLeavingStation
+336           StaticTrainLoco
 =========     =====================================
 
 
