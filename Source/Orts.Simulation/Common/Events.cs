@@ -33,6 +33,7 @@ namespace Orts.Common
         AITrainLeavingStation,
         PlayerTrainHelperLoco,
         PlayerTrainLeadLoco,
+        StaticTrainLoco,
         BatterySwitchOff,
         BatterySwitchOn,
         BatterySwitchCommandOff,
@@ -585,6 +586,7 @@ namespace Orts.Common
                         case 333: return Event.PlayerTrainHelperLoco;
                         case 334: return Event.AITrainApproachingStation;
                         case 335: return Event.AITrainLeavingStation;
+                        case 336: return Event.StaticTrainLoco;
 						
                         default: return 0;
                     }

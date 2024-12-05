@@ -3875,10 +3875,7 @@ namespace Orts.Simulation.Timetables
 
                         // Reverse formation
                         ReverseFormation(false);
-                        if (TrainType == TRAINTYPE.PLAYER)
-                            RedefinePlayerTrainTriggers();
-                        else if (TrainType == TRAINTYPE.AI)
-                            RedefineAITriggers();
+                        RedefineSoundTriggers();
 
 
 
@@ -6429,6 +6426,7 @@ namespace Orts.Simulation.Timetables
             }
 
             PowerState = true;
+            RedefinePlayerTrainTriggers();
         }
 
         //================================================================================================//
@@ -9396,6 +9394,8 @@ namespace Orts.Simulation.Timetables
                     // Reinstate as to be started (note : train is not yet removed from reference)
                     AI.StartList.InsertTrain(formedTrain);
                 }
+
+                RedefineSoundTriggers();
             }
         }
 
@@ -11794,6 +11794,7 @@ namespace Orts.Simulation.Timetables
             {
                 attachTrain.InitializeBrakes();
             }
+            attachTrain.RedefineSoundTriggers();
 
             // Update route positions if required
             int trainRearPositionIndex = attachTrain.ValidRoute[0].GetRouteIndex(tempRoute.First().TCSectionIndex, 0);
@@ -12096,6 +12097,9 @@ namespace Orts.Simulation.Timetables
                 DelayedStart = true;
                 DelayedStartState = AI_START_MOVEMENT.PATH_ACTION;
             }
+
+            // redefine sound triggers
+            RedefineSoundTriggers();
 
             // Return new lead locomotive position
             return newLeadLocomotiveIndex;
@@ -12469,6 +12473,7 @@ namespace Orts.Simulation.Timetables
             formedTrain.AI = train.AI;
 
             trainList.Add(formedTrain);
+            formedTrain.RedefineStaticTrainTriggers();
             return formedTrain.Number;
         }
 
@@ -13815,6 +13820,8 @@ namespace Orts.Simulation.Timetables
                         }
                     }
                 }
+                train.RedefineSoundTriggers();
+                newTrain.RedefineSoundTriggers();
             }
 
             return true;
@@ -13910,6 +13917,9 @@ namespace Orts.Simulation.Timetables
                 train.Simulator.Confirmer?.Information("Player switched to train : " + newTrain.Name);
                 Trace.TraceInformation("Player switched to train : " + newTrain.Name);
             }
+
+            train.RedefineSoundTriggers();
+            newTrain.RedefineSoundTriggers();
 
             train.DetachPending = false; // Detach completed
         }
