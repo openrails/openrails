@@ -110,6 +110,17 @@ This option uses the train control system scripts for locomotives where
 these have been implemented.
 
 
+.. _auto-save:
+
+Auto Save
+--------
+
+This option will make saves automatically at regular intervals just as though you had pressed ``<F2>`` 
+for a  :ref:`manual save<driving-saveresume>`. This option is off by default, 
+
+When Auto Save is on, you can still make manual saves and doing so resets the automatic timer.
+
+
 Overspeed Monitor
 -----------------
 
