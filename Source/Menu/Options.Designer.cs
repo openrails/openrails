@@ -215,6 +215,7 @@
             this.numericUseSuperElevation = new System.Windows.Forms.NumericUpDown();
             this.ElevationText = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.pbAutoSave = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -286,6 +287,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAutoSave)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -392,6 +394,7 @@
             // 
             // tabPageGeneral
             // 
+            this.tabPageGeneral.Controls.Add(this.pbAutoSave);
             this.tabPageGeneral.Controls.Add(this.labelAutoSaveInterval);
             this.tabPageGeneral.Controls.Add(this.ButtonAutoSave60);
             this.tabPageGeneral.Controls.Add(this.ButtonAutoSave30);
@@ -475,9 +478,9 @@
             this.checkAutoSaveActive.AutoSize = true;
             this.checkAutoSaveActive.Location = new System.Drawing.Point(32, 298);
             this.checkAutoSaveActive.Name = "checkAutoSaveActive";
-            this.checkAutoSaveActive.Size = new System.Drawing.Size(73, 17);
+            this.checkAutoSaveActive.Size = new System.Drawing.Size(74, 17);
             this.checkAutoSaveActive.TabIndex = 31;
-            this.checkAutoSaveActive.Text = "AutoSave";
+            this.checkAutoSaveActive.Text = "Auto save";
             this.checkAutoSaveActive.UseVisualStyleBackColor = true;
             this.checkAutoSaveActive.CheckedChanged += new System.EventHandler(this.checkAutoSave_checkchanged);
             // 
@@ -2712,6 +2715,18 @@
             this.ElevationText.TabIndex = 1;
             this.ElevationText.Text = "Super-elevation";
             // 
+            // pbAutoSave
+            // 
+            this.pbAutoSave.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbAutoSave.Location = new System.Drawing.Point(6, 299);
+            this.pbAutoSave.Name = "pbAutoSave";
+            this.pbAutoSave.Size = new System.Drawing.Size(18, 18);
+            this.pbAutoSave.TabIndex = 36;
+            this.pbAutoSave.TabStop = false;
+            this.pbAutoSave.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbAutoSave.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbAutoSave.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -2808,6 +2823,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAutoSave)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2998,5 +3014,6 @@
         private System.Windows.Forms.PictureBox pbModelInstancing;
         private System.Windows.Forms.Label labelDefaultDetail;
         private System.Windows.Forms.PictureBox pbViewingFOV;
+        private System.Windows.Forms.PictureBox pbAutoSave;
     }
 }

@@ -912,6 +912,7 @@ namespace ORTS
                 (pbPressureUnit, new Control[] { labelPressureUnit, comboPressureUnit }),
                 (pbOtherUnits, new Control[] { labelOtherUnits, comboOtherUnits }),
                 (pbEnableTcsScripts, new[] { checkEnableTCSScripts }),
+                (pbAutoSave, new[] { checkAutoSaveActive }),
                 (pbOverspeedMonitor, new[] { checkOverspeedMonitor }),
 
                 // Audio tab
@@ -964,6 +965,7 @@ namespace ORTS
             const string baseUrl = "https://open-rails.readthedocs.io/en/latest";
             var urls = new Dictionary<object, string>
             {
+                // General tab
                 {
                     pbAlerter,
                     baseUrl + "/options.html#alerter-in-cab"
@@ -991,6 +993,10 @@ namespace ORTS
                 {
                     pbEnableTcsScripts,
                     baseUrl + "/options.html#disable-tcs-scripts"
+                },
+                {
+                    pbAutoSave,
+                    baseUrl + "/options.html#auto-save"
                 },
                 {
                     pbOverspeedMonitor,
