@@ -864,7 +864,7 @@ namespace ORTS
                 },
                 {
                     pbAutoSave,
-                    baseUrl + "/options.html#auto-save"
+                    BaseDocumentationUrl + "/options.html#auto-save"
                 },
                 {
                     pbOverspeedMonitor,
