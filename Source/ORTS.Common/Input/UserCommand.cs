@@ -1,4 +1,21 @@
-﻿namespace ORTS.Common.Input
+﻿// COPYRIGHT 2024 by the Open Rails project.
+//
+// This file is part of Open Rails.
+//
+// Open Rails is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Open Rails is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
+
+namespace ORTS.Common.Input
 {
     /// <summary>
     /// Specifies game commands.
@@ -14,6 +31,7 @@
         [GetString("Game Pause")] GamePause,
         [GetString("Game Screenshot")] GameScreenshot,
         [GetString("Game Fullscreen")] GameFullscreen,
+        [GetString("Game External Controller (RailDriver)")] GameExternalCabController,
         [GetString("Game Switch Ahead")] GameSwitchAhead,
         [GetString("Game Switch Behind")] GameSwitchBehind,
         [GetString("Game Switch Picked")] GameSwitchPicked,
@@ -43,11 +61,13 @@
         [GetString("Display Station Labels")] DisplayStationLabels,
         [GetString("Display Switch Window")] DisplaySwitchWindow,
         [GetString("Display Train Operations Window")] DisplayTrainOperationsWindow,
+        [GetString("Display Train Car Operations Window")] DisplayTrainCarOperationsWindow,
         [GetString("Display Train Dpu Window")] DisplayTrainDpuWindow,
         [GetString("Display Next Station Window")] DisplayNextStationWindow,
         [GetString("Display Compass Window")] DisplayCompassWindow,
         [GetString("Display Train List Window")] DisplayTrainListWindow,
         [GetString("Display EOT List Window")] DisplayEOTListWindow,
+        [GetString("Display Control Rectangles")] DisplayControlRectangle,
 
         [GetString("Debug Speed Up")] DebugSpeedUp,
         [GetString("Debug Speed Down")] DebugSpeedDown,
@@ -60,6 +80,8 @@
         [GetString("Debug Precipitation Decrease")] DebugPrecipitationDecrease,
         [GetString("Debug Precipitation Liquidity Increase")] DebugPrecipitationLiquidityIncrease,
         [GetString("Debug Precipitation Liquidity Decrease")] DebugPrecipitationLiquidityDecrease,
+        [GetString("Debug Daylight Offset Increase")] DebugDaylightOffsetIncrease,
+        [GetString("Debug Daylight Offset Decrease")] DebugDaylightOffsetDecrease,
         [GetString("Debug Weather Change")] DebugWeatherChange,
         [GetString("Debug Clock Forwards")] DebugClockForwards,
         [GetString("Debug Clock Backwards")] DebugClockBackwards,
@@ -77,6 +99,7 @@
 
         [GetString("Camera Cab")] CameraCab,
         [GetString("Camera Change Passenger Viewpoint")] CameraChangePassengerViewPoint,
+        [GetString("Camera Change 3DCab Viewpoint")] CameraChange3DCabViewPoint,
         [GetString("Camera Toggle 3D Cab")] CameraToggleThreeDimensionalCab,
         [GetString("Camera Toggle Show Cab")] CameraToggleShowCab,
         [GetString("Camera Toggle Letterbox Cab")] CameraToggleLetterboxCab,
@@ -162,6 +185,8 @@
         [GetString("Control Pantograph 2")] ControlPantograph2,
         [GetString("Control Pantograph 3")] ControlPantograph3,
         [GetString("Control Pantograph 4")] ControlPantograph4,
+        [GetString("Control Window Left")] ControlWindowLeft,
+        [GetString("Control Window Right")] ControlWindowRight,
         [GetString("Control Battery Close")] ControlBatterySwitchClose,
         [GetString("Control Battery Open")] ControlBatterySwitchOpen,
         [GetString("Control Master Key")] ControlMasterKey,
@@ -189,6 +214,9 @@
         [GetString("Control Blower Decrease")] ControlBlowerDecrease,
         [GetString("Control Steam Heat Increase")] ControlSteamHeatIncrease,
         [GetString("Control Steam Heat Decrease")] ControlSteamHeatDecrease,
+        [GetString("Control Steam Booster Air Valve")] ControlSteamBoosterAirValve,
+        [GetString("Control Steam Booster Idle Valve")] ControlSteamBoosterIdleValve,
+        [GetString("Control Steam Booster Latch")] ControlSteamBoosterLatch,
         [GetString("Control Damper Increase")] ControlDamperIncrease,
         [GetString("Control Damper Decrease")] ControlDamperDecrease,
         [GetString("Control Firebox Open")] ControlFireboxOpen,

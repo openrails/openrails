@@ -66,6 +66,9 @@ namespace Orts.Simulation
       , FiringIsManual
       , FireShovelfull
       , CylinderCocks
+      , SteamBoosterAir
+      , SteamBoosterIdle
+      , SteamBoosterLatch
       , CylinderCompound
       , LargeEjector
       , SmallEjector
@@ -107,6 +110,8 @@ namespace Orts.Simulation
       , DoorsLeft
       , DoorsRight
       , Mirror
+      , WindowLeft
+      , WindowRight
       // Track Devices
       , SwitchAhead
       , SwitchBehind
@@ -182,7 +187,7 @@ namespace Orts.Simulation
             ConfirmText = new string[][] {
                 new string [] { GetString("<none>") } 
                 // Power
-                , new string [] { GetParticularString("NonSteam", "Reverser"), GetString("reverse"), GetString("neutral"), GetString("forward"), null, null, GetString("locked. Close throttle, stop train then re-try.") } 
+                , new string [] { GetParticularString("NonSteam", "Reverser"), GetString("reverse"), GetString("neutral"), GetString("forward"), null, null, GetString("locked. Close throttle, release dynamic brake, stop train then re-try.") } 
                 , new string [] { GetString("Throttle"), null, null, null, GetString("close"), GetString("open"), GetString("locked. Release dynamic brake then re-try.") } 
                 , new string [] { GetString("Wheel-slip"), GetString("over"), null, GetString("occurring. Tractive power greatly reduced."), null, null, GetString("warning") } 
                 // Electric power
@@ -212,13 +217,16 @@ namespace Orts.Simulation
                 , new string [] { GetString("Firebox Door"), null, null, null, GetString("close"), GetString("open") }
                 , new string [] { GetString("Firing Rate"), null, null, null, GetString("decrease"), GetString("increase") } 
                 , new string [] { GetString("Manual Firing"), GetString("off"), null, GetString("on") } 
-                , new string [] { GetString("Fire"), null, null, GetString("add shovel-full") } 
-                , new string [] { GetString("Cylinder Cocks"), GetString("close"), null, GetString("open") } 
+                , new string [] { GetString("Fire"), null, null, GetString("add shovel-full") }
+                , new string [] { GetString("Cylinder Cocks"), GetString("close"), null, GetString("open") }
+                , new string [] { GetString("Steam Booster Air Valve"), GetString("close"), null, GetString("open") }
+                , new string [] { GetString("Steam Booster Idle Valve"), GetString("idle"), null, GetString("run") }
+                , new string [] { GetString("Steam Booster Latch"), GetString("opened"), null, GetString("locked") }
                 , new string [] { GetString("Cylinder Compound"), GetString("close"), null, GetString("open") }
                 , new string [] { GetString("LargeEjector"), null, null, null, GetString("decrease"), GetString("increase") }
                 , new string [] { GetString("SmallEjector"), null, null, null, GetString("decrease"), GetString("increase") }
                 , new string [] { GetString("VacuumExhauster"), GetString("normal"), null, GetString("fast") }
-                , new string [] { GetString("Tender"), null, null, GetString("Coal re-filled"), null, GetString("Coal level") } 
+                , new string [] { GetString("Tender"), null, null, GetString("Fuel re-filled"), null, GetString("Fuel level") } 
                 , new string [] { GetString("Tender"), null, null, GetString("Water re-filled"), null, GetString("Water level") }
                 // General
                 , new string [] { GetString("Water Scoop"), GetString("up"), null, GetString("down") }
@@ -226,7 +234,7 @@ namespace Orts.Simulation
                 , new string [] { GetString("Train Brake"), null, null, null, GetString("release"), GetString("apply") } 
                 , new string [] { GetString("Engine Brake"), null, null, null, GetString("release"), GetString("apply") }
                 , new string [] { GetString("Brakeman Brake"), null, null, null, GetString("release"), GetString("apply") }
-                , new string [] { GetString("Dynamic Brake"), GetString("off"), null, GetString("setup"), GetString("decrease"), GetString("increase") }
+                , new string [] { GetString("Dynamic Brake"), GetString("off"), null, GetString("setup"), GetString("decrease"), GetString("increase"), GetString("locked. Move reverser then retry.") }
                 , new string [] { GetString("Emergency Brake"), GetString("release"), null, GetString("apply") } 
                 , new string [] { GetString("Bail Off"), GetString("disengage"), null, GetString("engage") } 
                 , new string [] { GetString("Brakes"), GetString("initialize"), null, null, null, null, GetString("cannot initialize. Stop train then re-try.") } 
@@ -243,7 +251,7 @@ namespace Orts.Simulation
                 , new string [] { GetString("Bell"), GetString("off"), null, GetString("ring") } 
                 , new string [] { GetString("Headlight"), GetString("off"), GetString("dim"), GetString("bright") } 
                 , new string [] { GetString("Cab Light"), GetString("off"), null, GetString("on") } 
-                , new string [] { GetString("Wipers"), GetString("off"), null, GetString("on") } 
+                , new string [] { GetString("Wipers"), GetString("off"), null, GetString("on") }
                 , new string [] { GetString("Cab"), null, null, GetParticularString("Cab", "change"), null, null, GetString("changing is not available"), GetString("changing disabled. Close throttle, set reverser to neutral, stop train then re-try.") } 
                 , new string [] { GetString("Odometer"), null, null, GetParticularString("Odometer", "reset"), GetParticularString("Odometer", "counting down"), GetParticularString("Odometer", "counting up") }
                 , new string [] { GetString("Battery"), GetString("off"), null, GetString("on") }
@@ -254,7 +262,9 @@ namespace Orts.Simulation
                 // Train Devices
                 , new string [] { GetString("Doors Left"), GetString("close"), null, GetString("open") } 
                 , new string [] { GetString("Doors Right"), GetString("close"), null, GetString("open") } 
-                , new string [] { GetString("Mirror"), GetString("retract"), null, GetString("extend") } 
+                , new string [] { GetString("Mirror"), GetString("retract"), null, GetString("extend") }
+                , new string [] { GetString("Window Left"), GetString("closing"), null, GetString("opening") }
+                , new string [] { GetString("Window Right"), GetString("closing"), null, GetString("opening") }
                 // Track Devices
                 , new string [] { GetString("Switch Ahead"), null, null, GetParticularString("Switch", "change"), null, null, GetString("locked. Use Control+M to change signals to manual mode then re-try.") } 
                 , new string [] { GetString("Switch Behind"), null, null, GetParticularString("Switch", "change"), null, null, GetString("locked. Use Control+M to change signals to manual mode then re-try.") } 

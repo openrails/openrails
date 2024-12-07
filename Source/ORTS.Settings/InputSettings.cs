@@ -147,7 +147,7 @@ namespace ORTS.Settings
         static extern int MapVirtualKey(int code, MapVirtualKeyType type);
 
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        static extern int GetKeyNameText(int scanCode, [Out] string name, int nameLength);
+        static extern int GetKeyNameText(int scanCode, [Out] char[] name, int nameLength);
         #endregion
 
         // Keyboard scancodes are basically constant; some keyboards have extra buttons (e.g. UK ones tend to have an
@@ -332,6 +332,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.CameraScrollLeft] = new UserCommandModifiableKeyInput(0x4B, KeyModifiers.Alt);
             Commands[(int)UserCommand.CameraScrollRight] = new UserCommandModifiableKeyInput(0x4D, KeyModifiers.Alt);
             Commands[(int)UserCommand.CameraChangePassengerViewPoint] = new UserCommandKeyInput(0x06, KeyModifiers.Shift);
+            Commands[(int)UserCommand.CameraChange3DCabViewPoint] = new UserCommandKeyInput(0x02, KeyModifiers.Control | KeyModifiers.Shift);
             Commands[(int)UserCommand.CameraToggleLetterboxCab] = new UserCommandKeyInput(0x02, KeyModifiers.Control);
             Commands[(int)UserCommand.CameraToggleShowCab] = new UserCommandKeyInput(0x02, KeyModifiers.Shift);
             Commands[(int)UserCommand.CameraTrackside] = new UserCommandKeyInput(0x05);
@@ -355,6 +356,9 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.ControlBlowerIncrease] = new UserCommandKeyInput(0x31);
             Commands[(int)UserCommand.ControlSteamHeatDecrease] = new UserCommandKeyInput(0x20, KeyModifiers.Alt);
             Commands[(int)UserCommand.ControlSteamHeatIncrease] = new UserCommandKeyInput(0x16, KeyModifiers.Alt);
+            Commands[(int)UserCommand.ControlSteamBoosterAirValve] = new UserCommandKeyInput(0x20, KeyModifiers.Control);
+            Commands[(int)UserCommand.ControlSteamBoosterIdleValve] = new UserCommandKeyInput(0x30, KeyModifiers.Control);
+            Commands[(int)UserCommand.ControlSteamBoosterLatch] = new UserCommandKeyInput(0x25, KeyModifiers.Control);
             Commands[(int)UserCommand.ControlBrakeHoseConnect] = new UserCommandKeyInput(0x2B);
             Commands[(int)UserCommand.ControlBrakeHoseDisconnect] = new UserCommandKeyInput(0x2B, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlCabRadio] = new UserCommandKeyInput(0x13, KeyModifiers.Alt);
@@ -374,6 +378,8 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.ControlDieselPlayer] = new UserCommandKeyInput(0x15, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlDoorLeft] = new UserCommandKeyInput(0x10);
             Commands[(int)UserCommand.ControlDoorRight] = new UserCommandKeyInput(0x10, KeyModifiers.Shift);
+            Commands[(int)UserCommand.ControlWindowLeft] = new UserCommandKeyInput(0x10, KeyModifiers.Control);
+            Commands[(int)UserCommand.ControlWindowRight] = new UserCommandKeyInput(0x10, KeyModifiers.Control | KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlDynamicBrakeDecrease] = new UserCommandKeyInput(0x33);
             Commands[(int)UserCommand.ControlDynamicBrakeIncrease] = new UserCommandKeyInput(0x34);
             Commands[(int)UserCommand.ControlElectricTrainSupply] = new UserCommandKeyInput(0x30, KeyModifiers.Alt);
@@ -475,6 +481,8 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.DebugLockShadows] = new UserCommandKeyInput(0x1F, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommand.DebugLogger] = new UserCommandKeyInput(0x58);
             Commands[(int)UserCommand.DebugLogRenderFrame] = new UserCommandKeyInput(0x58, KeyModifiers.Alt);
+            Commands[(int)UserCommand.DebugDaylightOffsetDecrease] = new UserCommandKeyInput(0x0C, KeyModifiers.Shift |  KeyModifiers.Alt);
+            Commands[(int)UserCommand.DebugDaylightOffsetIncrease] = new UserCommandKeyInput(0x0D, KeyModifiers.Shift |  KeyModifiers.Alt);
             Commands[(int)UserCommand.DebugOvercastDecrease] = new UserCommandKeyInput(0x0C, KeyModifiers.Control);
             Commands[(int)UserCommand.DebugOvercastIncrease] = new UserCommandKeyInput(0x0D, KeyModifiers.Control);
             Commands[(int)UserCommand.DebugPhysicsForm] = new UserCommandKeyInput(0x3D, KeyModifiers.Alt);
@@ -499,19 +507,22 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.DisplayHelpWindow] = new UserCommandModifiableKeyInput(0x3B, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplayHUD] = new UserCommandModifiableKeyInput(0x3F, KeyModifiers.Alt, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplayTrainDrivingWindow] = new UserCommandModifiableKeyInput(0x3F, Commands[(int)UserCommand.DisplayNextWindowTab]);
+            Commands[(int)UserCommand.DisplayTrainCarOperationsWindow] = new UserCommandKeyInput(0x43);
             Commands[(int)UserCommand.DisplayMultiPlayerWindow] = new UserCommandKeyInput(0x0A, KeyModifiers.Shift);
             Commands[(int)UserCommand.DisplayNextStationWindow] = new UserCommandKeyInput(0x44);
             Commands[(int)UserCommand.DisplayStationLabels] = new UserCommandModifiableKeyInput(0x40, Commands[(int)UserCommand.DisplayNextWindowTab]);
             Commands[(int)UserCommand.DisplaySwitchWindow] = new UserCommandKeyInput(0x42);
             Commands[(int)UserCommand.DisplayTrackMonitorWindow] = new UserCommandModifiableKeyInput(0x3E, Commands[(int)UserCommand.DisplayNextWindowTab]);
-            Commands[(int)UserCommand.DisplayTrainOperationsWindow] = new UserCommandKeyInput(0x43);
+            Commands[(int)UserCommand.DisplayTrainOperationsWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommand.DisplayTrainDpuWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Shift);
             Commands[(int)UserCommand.DisplayEOTListWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Control);
+            Commands[(int)UserCommand.DisplayControlRectangle] = new UserCommandKeyInput(0x3F, KeyModifiers.Control);
 
             Commands[(int)UserCommand.GameAutopilotMode] = new UserCommandKeyInput(0x1E, KeyModifiers.Alt);
             Commands[(int)UserCommand.GameChangeCab] = new UserCommandKeyInput(0x12, KeyModifiers.Control);
             Commands[(int)UserCommand.GameClearSignalBackward] = new UserCommandKeyInput(0x0F, KeyModifiers.Shift);
             Commands[(int)UserCommand.GameClearSignalForward] = new UserCommandKeyInput(0x0F);
+            Commands[(int)UserCommand.GameExternalCabController] = new UserCommandKeyInput(0x29);
             Commands[(int)UserCommand.GameFullscreen] = new UserCommandKeyInput(0x1C, KeyModifiers.Alt);
             Commands[(int)UserCommand.GameMultiPlayerDispatcher] = new UserCommandKeyInput(0x0A, KeyModifiers.Control);
             Commands[(int)UserCommand.GameMultiPlayerTexting] = new UserCommandKeyInput(0x14, KeyModifiers.Alt);
@@ -643,9 +654,9 @@ namespace ORTS.Settings
         public static string GetScanCodeKeyName(int scanCode)
         {
             var xnaName = Enum.GetName(typeof(Keys), GetScanCodeKeys(scanCode));
-            var keyName = new String('\0', 32);
-            var keyNameLength = GetKeyNameText(scanCode << 16, keyName, keyName.Length);
-            keyName = keyName.Substring(0, keyNameLength);
+            var keyNameBuffer = new char[32];
+            var keyNameLength = GetKeyNameText(scanCode << 16, keyNameBuffer, keyNameBuffer.Length);
+            var keyName = new string(keyNameBuffer, 0, keyNameLength);
 
             if (keyName.Length > 0)
             {

@@ -163,7 +163,7 @@ IF "%Mode%" == "Stable" (
 REM Create binary and source zips.
 CALL :delete "OpenRails-%Mode%*.zip" || GOTO :error
 PUSHD "Program" && 7za.exe a -r -tzip -x^^!*.xml "..\OpenRails-%Mode%.zip" . && POPD || GOTO :error
-7za.exe a -r -tzip -x^^!.* -x^^!obj -x^^!lib -x^^!_build -x^^!*.bak -x^^!Website "OpenRails-%Mode%-Source.zip" "Source" || GOTO :error
+7za.exe a -r -tzip -x^^!.* -x^^!obj -x^^!lib -x^^!_build -x^^!*.bak "OpenRails-%Mode%-Source.zip" "Source" || GOTO :error
 
 ENDLOCAL
 GOTO :EOF

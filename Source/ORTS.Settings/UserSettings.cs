@@ -22,7 +22,6 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
-using System.Windows.Forms;
 using ORTS.Common;
 
 namespace ORTS.Settings
@@ -54,13 +53,13 @@ namespace ORTS.Settings
         {
             // Only one of these is allowed; if the INI file exists, we use that, otherwise we use the registry.
             RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
-            SettingsFilePath = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "OpenRails.ini");
+            SettingsFilePath = Path.Combine(ApplicationInfo.ProcessDirectory, "OpenRails.ini");
             if (File.Exists(SettingsFilePath))
                 RegistryKey = null;
             else
                 SettingsFilePath = null;
 
-            UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
+            UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationInfo.ProductName);
             // TODO: If using INI file, move these to application directory as well.
             if (!Directory.Exists(UserDataFolder)) Directory.CreateDirectory(UserDataFolder);
             DeletedSaveFolder = Path.Combine(UserDataFolder, "Deleted Saves");
@@ -211,13 +210,10 @@ namespace ORTS.Settings
         public int AntiAliasing { get; set; }
 
         // Simulation settings:
-
         [Default(false)]
         public bool SimpleControlPhysics { get; set; }
         [Default(true)]
         public bool UseAdvancedAdhesion { get; set; }
-        [Default(10)]
-        public int AdhesionMovingAverageFilterSize { get; set; }
         [Default(false)]
         public bool BreakCouplers { get; set; }
         [Default(false)]
@@ -262,7 +258,6 @@ namespace ORTS.Settings
         [Default(false)]
         public bool DataLogStationStops { get; set; }
 
-
         // Timetable settings:
         [Default(true)]
         public bool TTUseRestartDelays { get; set; }
@@ -294,9 +289,7 @@ namespace ORTS.Settings
 
         // Experimental settings:
         [Default(0)]
-        public int UseSuperElevation { get; set; }
-        [Default(50)]
-        public int SuperElevationMinLen { get; set; }
+        public bool UseSuperElevation { get; set; }
         [Default(1435)]
         public int SuperElevationGauge { get; set; }
         [Default(0)]
@@ -321,12 +314,6 @@ namespace ORTS.Settings
         public bool AdhesionProportionalToWeather { get; set; }
         [Default(false)]
         public bool NoForcedRedAtStationStops { get; set; }
-        [Default(100)]
-        public int PrecipitationBoxHeight { get; set; }
-        [Default(500)]
-        public int PrecipitationBoxWidth { get; set; }
-        [Default(500)]
-        public int PrecipitationBoxLength { get; set; }
         [Default(false)]
         public bool CorrectQuestionableBrakingParams { get; set; }
         [Default(false)]
@@ -414,6 +401,10 @@ namespace ORTS.Settings
         [Default(new[] { 50, 50 })]
         public int[] WindowPosition_TrainOperations { get; set; }
         [Default(new[] { 50, 50 })]
+        public int[] WindowPosition_TrainCarOperations { get; set; }
+        [Default(new[] { 50, 50 })]
+        public int[] WindowPosition_TrainCarOperationsViewer { get; set; }
+        [Default(new[] { 50, 50 })]
         public int[] WindowPosition_TrainDpu { get; set; }
         [Default(new[] { 50, 50 })]
         public int[] WindowPosition_CarOperations { get; set; }
@@ -421,6 +412,8 @@ namespace ORTS.Settings
         public int[] WindowPosition_ComposeMessage { get; set; }
         [Default(new[] { 100, 0 })]
         public int[] WindowPosition_TrainList { get; set; }
+        [Default("")]
+        public string LastViewNotificationDate { get; set; }
 
         // Menu-game communication settings:
         [Default(false)]
@@ -429,6 +422,50 @@ namespace ORTS.Settings
         [Default(false)]
         [DoNotSave]
         public bool MultiplayerServer { get; set; }
+
+        // map settings
+        [Default(false)]
+        public bool Map_showTrainStateCheckbox { get; set; }
+        [Default(false)]
+        public bool Map_showTrainLabelsCheckbox { get; set; }
+        [Default(false)]
+        public bool Map_showSignalStateCheckbox { get; set; }
+        [Default(false)]
+        public bool Map_showSignalsCheckbox { get; set; }
+        [Default(false)]
+        public bool Map_showSwitchesCheckbox { get; set; }
+        [Default(false)]
+        public bool Map_showSidingLabelsCheckbox { get; set; }
+        [Default(false)]
+        public bool Map_showPlatformLabelsCheckbox { get; set; }
+        [Default(false)]
+        public bool Map_showPlatformsCheckbox { get; set; }
+        [Default(true)]
+        public bool Map_showTimeCheckbox { get; set; }
+        [Default(false)]
+        public bool Map_useAntiAliasingCheckbox { get; set; }
+        [Default(true)]
+        public bool Map_penaltyCheckbox { get; set; }
+        [Default(true)]
+        public bool Map_preferGreenCheckbox { get; set; }
+        [Default(true)]
+        public bool Map_allowJoiningCheckbox { get; set; }
+        [Default(true)]
+        public bool Map_allowThrowingSwitchesCheckbox { get; set; }
+        [Default(true)]
+        public bool Map_allowChangingSignalsCheckbox { get; set; }
+        [Default(true)]
+        public bool Map_drawPathCheckbox { get; set; }
+        [Default(5000)]
+        public int Map_mapResolutionUpDown { get; set; }
+        [Default("light")]
+        public string Map_rotateThemesButton { get; set; }
+        [Default(true)]
+        public bool Map_showActiveTrainsRadio { get; set; }
+        [Default(false)]
+        public bool Map_showAllTrainsRadio { get; set; }
+        [Default(new[] { 104, 104, 800, 600 })]
+        public int[] Map_MapViewer { get; set; }
 
         // In-game settings:
         [Default(false)]
@@ -442,20 +479,28 @@ namespace ORTS.Settings
         [Default(0)] // TrackMonitor.DisplayMode.All
         public int TrackMonitorDisplayMode { get; set; }
 
+        // Content form settings
+        [Default("")]
+        public string ContentInstallPath { get; set; }
+
         #endregion
 
         public FolderSettings Folders { get; private set; }
         public InputSettings Input { get; private set; }
+        public RailDriverSettings RailDriver { get; private set; }
+        public ContentSettings Content { get; private set; }   
 
         public UserSettings(IEnumerable<string> options)
             : base(SettingsStore.GetSettingStore(SettingsFilePath, RegistryKey, null))
         {
             CustomDefaultValues["LoggingPath"] = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-            CustomDefaultValues["ScreenshotPath"] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), Application.ProductName);
+            CustomDefaultValues["ScreenshotPath"] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), ApplicationInfo.ProductName);
             CustomDefaultValues["Multiplayer_User"] = Environment.UserName;
             Load(options);
             Folders = new FolderSettings(options);
             Input = new InputSettings(options);
+            RailDriver = new RailDriverSettings(options);
+            Content = new ContentSettings(options);
         }
 
         /// <summary>
@@ -497,14 +542,17 @@ namespace ORTS.Settings
             return Path.Combine(directory, hash + ".cache-or");
         }
 
-        PropertyInfo GetProperty(string name)
+        public PropertyInfo GetProperty(string name)
         {
             return GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
         }
 
         PropertyInfo[] GetProperties()
         {
-            return GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).Where(pi => pi.Name != "Folders" && pi.Name != "Input").ToArray();
+            return GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).
+                // leave out the properties based on own, non System classes (f.i. RailDriver property)
+                Where(pi => pi.PropertyType.FullName.Split('.')[0] == "System").
+                    ToArray();
         }
 
         protected override object GetValue(string name)
@@ -534,6 +582,8 @@ namespace ORTS.Settings
 
             Folders.Save();
             Input.Save();
+            RailDriver.Save();
+            Content.Save();
         }
 
         public override void Save(string name)

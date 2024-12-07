@@ -31,8 +31,8 @@ namespace Orts.Viewer3D
         // Shape that we're animating.
         readonly PoseableShape PoseableShape;
 
-        // Number of animation key-frames that are used by this part. This is calculated from the matrices provided.
-        public int FrameCount;
+        // Maximum animation key-frame value used by this part. This is calculated from the matrices provided.
+        public int MaxFrame;
 
         // Current frame of the animation.
         float AnimationKey;
@@ -55,10 +55,10 @@ namespace Orts.Viewer3D
         {
             if (matrix < 0) return;
             MatrixIndexes.Add(matrix);
-            UpdateFrameCount(matrix);
+            UpdateMaxFrame(matrix);
         }
 
-        void UpdateFrameCount(int matrix)
+        void UpdateMaxFrame(int matrix)
         {
             if (PoseableShape.SharedShape.Animations != null
                 && PoseableShape.SharedShape.Animations.Count > 0
@@ -66,15 +66,15 @@ namespace Orts.Viewer3D
                 && PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers.Count > 0
                 && PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[0].Count > 0)
             {
-                FrameCount = Math.Max(FrameCount, PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[0].ToArray().Cast<KeyPosition>().Last().Frame);
+                MaxFrame = Math.Max(MaxFrame, PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[0].ToArray().Cast<KeyPosition>().Last().Frame);
                 // Sometimes there are more frames in the second controller than in the first
                 if (PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers.Count > 1
                 && PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[1].Count > 0)
-                    FrameCount = Math.Max(FrameCount, PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[1].ToArray().Cast<KeyPosition>().Last().Frame);
+                    MaxFrame = Math.Max(MaxFrame, PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[1].ToArray().Cast<KeyPosition>().Last().Frame);
             }
             for (var i = 0; i < PoseableShape.Hierarchy.Length; i++)
                 if (PoseableShape.Hierarchy[i] == matrix)
-                    UpdateFrameCount(i);
+                    UpdateMaxFrame(i);
         }
 
         /// <summary>
@@ -98,9 +98,21 @@ namespace Orts.Viewer3D
         /// </summary>
         public void SetFrameClamp(float frame)
         {
-            if (frame > FrameCount) frame = FrameCount;
+            if (frame > MaxFrame) frame = MaxFrame;
             if (frame < 0) frame = 0;
             SetFrame(frame);
+        }
+
+        /// <summary>
+        /// Smoothly changes the animation to a particular frame whilst clamping it to the frame count range,
+        /// with adjustable animation speed (default 1 animation frame/sec).
+        /// </summary>
+        public void UpdateFrameClamp(float frame, ElapsedTime elapsedTime, float fps = 1.0f)
+        {
+            if (Math.Abs(frame - AnimationKey) > elapsedTime.ClockSeconds * fps)
+                SetFrameClamp(AnimationKey + Math.Sign(frame - AnimationKey) * elapsedTime.ClockSeconds * fps);
+            else
+                SetFrameClamp(frame);
         }
 
         /// <summary>
@@ -108,8 +120,8 @@ namespace Orts.Viewer3D
         /// </summary>
         public void SetFrameCycle(float frame)
         {
-            // Animates from 0-FrameCount then FrameCount-0 for values of 0>=frame<=2*FrameCount.
-            SetFrameClamp(FrameCount - Math.Abs(frame - FrameCount));
+            // Animates from 0-MaxFrame then MaxFrame-0 for values of 0>=frame<=2*MaxFrame.
+            SetFrameClamp(MaxFrame - Math.Abs(frame - MaxFrame));
         }
 
         /// <summary>
@@ -117,10 +129,10 @@ namespace Orts.Viewer3D
         /// </summary>
         public void SetFrameWrap(float frame)
         {
-            // Wrap the frame around 0-FrameCount without hanging when FrameCount=0.
-            while (FrameCount > 0 && frame < 0) frame += FrameCount;
+            // Wrap the frame around 0-MaxFrame without hanging when MaxFrame=0.
+            while (MaxFrame > 0 && frame < 0) frame += MaxFrame;
             if (frame < 0) frame = 0;
-            frame %= FrameCount;
+            frame %= MaxFrame;
             SetFrame(frame);
         }
 
@@ -129,15 +141,34 @@ namespace Orts.Viewer3D
         /// </summary>
         public void SetState(bool state)
         {
-            SetFrame(state ? FrameCount : 0);
+            SetFrame(state ? MaxFrame : 0);
         }
 
         /// <summary>
-        /// Updates an animated part that toggles between two states (e.g. pantograph, doors, mirrors).
+        /// Updates an animated part that toggles between two states (e.g. pantograph, doors, mirrors),
+        /// with adjustable animation speed (default 1 animation frame/sec).
         /// </summary>
-        public void UpdateState(bool state, ElapsedTime elapsedTime)
+        public void UpdateState(bool state, ElapsedTime elapsedTime, float fps = 1.0f)
         {
-            SetFrameClamp(AnimationKey + (state ? 1 : -1) * elapsedTime.ClockSeconds);
+            SetFrameClamp(AnimationKey + (state ? 1 : -1) * elapsedTime.ClockSeconds * fps);
+        }
+
+        /// <summary>
+        /// Updates an animated part that toggles between two states with adjustable animation speed (default 1 animation frame/sec)
+        /// and returns relative value of animation key (between 0 and 1).
+        /// </summary>
+        public float UpdateAndReturnState(bool state, ElapsedTime elapsedTime, float fps = 1.0f)
+        {
+            SetFrameClamp(AnimationKey + (state ? 1 : -1) * elapsedTime.ClockSeconds * fps);
+            return AnimationKey / MaxFrame;
+        }
+
+        /// <summary>
+        /// Returns the animation key fraction (between 0 and 1)
+        /// </summary>
+        public float AnimationKeyFraction()
+        {
+            return AnimationKey / MaxFrame;
         }
 
         /// <summary>
@@ -145,7 +176,7 @@ namespace Orts.Viewer3D
         /// </summary>
         public void UpdateLoop(float change)
         {
-            if (PoseableShape.SharedShape.Animations == null || PoseableShape.SharedShape.Animations.Count == 0 || FrameCount == 0)
+            if (PoseableShape.SharedShape.Animations == null || PoseableShape.SharedShape.Animations.Count == 0 || MaxFrame == 0)
                 return;
 
             // The speed of rotation is set at 8 frames of animation per rotation at 30 FPS (so 16 frames = 60 FPS, etc.).
@@ -158,12 +189,12 @@ namespace Orts.Viewer3D
         /// </summary>
         public void UpdateLoop(bool running, ElapsedTime elapsedTime, float frameRateMultiplier = 1.5f)
         {
-            if (PoseableShape.SharedShape.Animations == null || PoseableShape.SharedShape.Animations.Count == 0 || FrameCount == 0)
+            if (PoseableShape.SharedShape.Animations == null || PoseableShape.SharedShape.Animations.Count == 0 || MaxFrame == 0)
                 return;
 
             // The speed of cycling is as default 1.5 frames of animation per second at 30 FPS.
             var frameRate = PoseableShape.SharedShape.Animations[0].FrameRate * frameRateMultiplier / 30f;
-            if (running || (AnimationKey > 0 && AnimationKey + elapsedTime.ClockSeconds * frameRate < FrameCount))
+            if (running || (AnimationKey > 0 && AnimationKey + elapsedTime.ClockSeconds * frameRate < MaxFrame))
                 SetFrameWrap(AnimationKey + elapsedTime.ClockSeconds * frameRate);
             else
                 SetFrame(0);

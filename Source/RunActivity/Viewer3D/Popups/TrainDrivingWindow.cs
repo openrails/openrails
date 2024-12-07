@@ -26,6 +26,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using static Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies.SteamEngine;
+using Orts.Common;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -50,7 +53,7 @@ namespace Orts.Viewer3D.Popups
         {
             Viewer.Catalog.GetString("BP"),
             Viewer.Catalog.GetString("EQ"),
-            Viewer.Catalog.GetString("V")
+            Viewer.Catalog.GetParticularString("BrakeStatus","V")
         };
 
         /// <summary>
@@ -116,9 +119,14 @@ namespace Orts.Viewer3D.Popups
             [Viewer.Catalog.GetString("AI Fireman")] = Viewer.Catalog.GetString("AIFR"),
             [Viewer.Catalog.GetString("Autopilot")] = Viewer.Catalog.GetString("AUTO"),
             [Viewer.Catalog.GetString("Battery switch")] = Viewer.Catalog.GetString("BATT"),
+            [Viewer.Catalog.GetString("Blowndown valve")] = Viewer.Catalog.GetString("BLWV"),
             [Viewer.Catalog.GetString("Boiler pressure")] = Viewer.Catalog.GetString("PRES"),
             [Viewer.Catalog.GetString("Boiler water glass")] = Viewer.Catalog.GetString("WATR"),
             [Viewer.Catalog.GetString("Boiler water level")] = Viewer.Catalog.GetString("LEVL"),
+            [Viewer.Catalog.GetString("Booster air valve")] = Viewer.Catalog.GetString("BAIR"),
+            [Viewer.Catalog.GetString("Booster idle valve")] = Viewer.Catalog.GetString("BIDL"),
+            [Viewer.Catalog.GetString("Booster latch")] = Viewer.Catalog.GetString("BLCH"),
+            [Viewer.Catalog.GetString("Booster")] = Viewer.Catalog.GetString("BOST"),
             [Viewer.Catalog.GetString("CCStatus")] = Viewer.Catalog.GetString("CCST"),
             [Viewer.Catalog.GetString("Circuit breaker")] = Viewer.Catalog.GetString("CIRC"),
             [Viewer.Catalog.GetString("Cylinder cocks")] = Viewer.Catalog.GetString("CCOK"),
@@ -152,6 +160,7 @@ namespace Orts.Viewer3D.Popups
             [Viewer.Catalog.GetString("Time")] = Viewer.Catalog.GetString("TIME"),
             [Viewer.Catalog.GetString("Traction cut-off relay")] = Viewer.Catalog.GetString("TRAC"),
             [Viewer.Catalog.GetString("Train brake")] = Viewer.Catalog.GetString("BTRN"),
+            [Viewer.Catalog.GetString("Water scoop")] = Viewer.Catalog.GetString("WSCO"),
             [Viewer.Catalog.GetString("Wheel")] = Viewer.Catalog.GetString("WHEL")
         };
 
@@ -191,6 +200,9 @@ namespace Orts.Viewer3D.Popups
         bool doorsLabelVisible = false; // Doors label visible
         double clockDoorsTime; // Doors hide timing
 
+        bool boosterLabelVisible = false; // Booster label visible
+        double clockBoosterTime; // Booster hide timing
+
         bool ResizeWindow = false;
         bool UpdateDataEnded = false;
         const int TextSize = 15;
@@ -205,6 +217,8 @@ namespace Orts.Viewer3D.Popups
         int WindowHeightMax = 0;
         int WindowWidthMin = 0;
         int WindowWidthMax = 0;
+        bool BoosterLocked = false;
+        bool EnabledIdleValve = false;
 
         Label indicator;
         LabelMono indicatorMono;
@@ -284,7 +298,7 @@ namespace Orts.Viewer3D.Popups
             var vbox = base.Layout(layout).AddLayoutVertical();
             if (labels.Count > 0)
             {
-                var colWidth = labels.Max(x => x.FirstColWidth) + (normalTextMode? 15: 20);
+                var colWidth = labels.Max(x => x.FirstColWidth) + (normalTextMode ? 15 : 20);
                 var TimeHboxPositionY = 0;
 
                 // search wider
@@ -292,7 +306,9 @@ namespace Orts.Viewer3D.Popups
                 var tokenWidth = 0;
                 foreach (var data in tokens.Where((string d) => !string.IsNullOrWhiteSpace(d)))
                 {
-                    tokenWidth = Owner.TextFontDefault.MeasureString(data);
+                    // Allows alignment of columns
+                    var dataFormated = data.Length > 3 ? data.Substring(0, 3) : data;
+                    tokenWidth = Owner.TextFontDefault.MeasureString(dataFormated);
                     tokenOffset = tokenWidth > tokenOffset ? tokenWidth : tokenOffset;
                 }
 
@@ -522,7 +538,7 @@ namespace Orts.Viewer3D.Popups
                     {
                         var tempFirstCol = firstCol.Substring(0, firstCol.Length - 3);
                         firstColWidth = FontToBold ? Owner.TextFontDefaultBold.MeasureString(tempFirstCol.TrimEnd())
-                            : !normalTextMode? Owner.TextFontMonoSpacedBold.MeasureString(tempFirstCol.TrimEnd())
+                            : !normalTextMode ? Owner.TextFontMonoSpacedBold.MeasureString(tempFirstCol.TrimEnd())
                             : Owner.TextFontDefault.MeasureString(tempFirstCol.TrimEnd());
                     }
                     else
@@ -575,7 +591,7 @@ namespace Orts.Viewer3D.Popups
                 if (this.Visible)
                 {
                     // Detect Autopilot is on to avoid flickering when slim window is displayed
-                    var AutopilotOn = Owner.Viewer.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING ? true : false;
+                    var AutopilotOn = (Owner.Viewer.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || Owner.Viewer.PlayerLocomotive.Train.Autopilot) ? true : false;
 
                     //ResizeWindow, when the string spans over the right boundary of the window
                     maxFirstColWidth = labels.Max(x => x.FirstColWidth);
@@ -636,6 +652,8 @@ namespace Orts.Viewer3D.Popups
                       .Replace(Viewer.Catalog.GetString("kgf/cm²"), string.Empty)
                       .Replace(Viewer.Catalog.GetString("kPa"), string.Empty)
                       .Replace(Viewer.Catalog.GetString("psi"), string.Empty)
+                      .Replace(Viewer.Catalog.GetString("cfm"), string.Empty)
+                      .Replace(Viewer.Catalog.GetString("L/s"), string.Empty)
                       .Replace(Viewer.Catalog.GetString("lib./pal."), string.Empty)//cs locales
                       .Replace(Viewer.Catalog.GetString("pal.rtuti"), string.Empty)
                       .ToString();
@@ -772,6 +790,42 @@ namespace Orts.Viewer3D.Popups
                 });
             }
 
+            // Booster engine label
+            if (locomotive is MSTSSteamLocomotive steamLocomotive4)
+            {
+                string boosterEngineIndicator = "", boosterEngineKey = "";
+                if (BoosterLocked)
+                {
+                    boosterLabelVisible = true;
+                    clockBoosterTime = Owner.Viewer.Simulator.ClockTime;
+
+                    boosterEngineIndicator = Viewer.Catalog.GetString("Engaged") + ColorCode[Color.Cyan];
+                    boosterEngineKey = Symbols.ArrowToRight + ColorCode[Color.Yellow];
+                }
+                else
+                {   // delay to hide the booster label
+                    if (boosterLabelVisible && clockBoosterTime + 3 < Owner.Viewer.Simulator.ClockTime)
+                        boosterLabelVisible = false;
+
+                    if (boosterLabelVisible)
+                    {
+                        boosterEngineIndicator = Viewer.Catalog.GetString("Disengaged") + ColorCode[Color.Orange];
+                        boosterEngineKey = "";
+                        BoosterLocked = false;
+                    }
+                }
+                if (boosterLabelVisible)
+                {
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString("Booster"),
+                        LastCol = boosterEngineIndicator,
+                        KeyPressed = boosterEngineKey,
+                        SymbolCol = ""
+                    });
+                }
+            }
+
             // Sander
             if (locomotive.GetSanderOn())
             {
@@ -830,8 +884,8 @@ namespace Orts.Viewer3D.Popups
                 });
 
                 index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EQ"));
-                if (trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index) > 0)
-                    brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index) - index).TrimEnd();
+                if (trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "V"), index) > 0)
+                    brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "V"), index) - index).TrimEnd();
                 else
                     brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC")) - index).TrimEnd();
 
@@ -840,34 +894,53 @@ namespace Orts.Viewer3D.Popups
                     LastCol = brakeInfoValue,
                 });
 
-                if (trainBrakeStatus.Contains(Viewer.Catalog.GetString("EOT")))
+                int endIndex;
+                if (trainBrakeStatus.Contains(Viewer.Catalog.GetParticularString("BrakeStatus", "Flow")))
                 {
-                    int indexOffset = Viewer.Catalog.GetString("EOT").Length + 1; 
-                    if (trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index) > 0)
-                        index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index);
-                    else
-                        index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC"));
+                    endIndex = trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "Flow"));
+                }
+                else if (trainBrakeStatus.Contains(Viewer.Catalog.GetParticularString("BrakeStatus", "EOT")))
+                {
+                    endIndex = trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "EOT"));
+                }
+                else
+                {
+                    endIndex = trainBrakeStatus.Length;
+                }
 
-                    brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT")) - index).TrimEnd();
-                    AddLabel(new ListLabel
-                    {
-                        LastCol = brakeInfoValue,
-                    });
-                    index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT")) + indexOffset;
-                    brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.Length - index).TrimStart();
+                if (trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "V"), index) > 0)
+                    index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "V"), index);
+                else
+                    index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC"));
+
+                brakeInfoValue = trainBrakeStatus.Substring(index, endIndex - index).TrimEnd();
+                AddLabel(new ListLabel
+                {
+                    LastCol = brakeInfoValue,
+                });
+
+                if (trainBrakeStatus.Contains(Viewer.Catalog.GetParticularString("BrakeStatus", "Flow")))
+                {
+                    index = endIndex;
+
+                    if (trainBrakeStatus.Contains(Viewer.Catalog.GetParticularString("BrakeStatus", "EOT")))
+                        endIndex = trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "EOT"));
+                    else
+                        endIndex = trainBrakeStatus.Length;
+
+                    brakeInfoValue = trainBrakeStatus.Substring(index, endIndex - index).TrimEnd();
                     AddLabel(new ListLabel
                     {
                         LastCol = brakeInfoValue,
                     });
                 }
-                else
-                {
-                    if (trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index) > 0)
-                        index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("V"), index);
-                    else
-                        index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC"));
 
-                    brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.Length - index).TrimEnd();
+                if (trainBrakeStatus.Contains(Viewer.Catalog.GetParticularString("BrakeStatus", "EOT")))
+                {
+                    int indexOffset = Viewer.Catalog.GetParticularString("BrakeStatus", "EOT").Length + 1;
+
+                    index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "EOT")) + indexOffset;
+                    brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.Length - index).TrimStart();
                     AddLabel(new ListLabel
                     {
                         LastCol = brakeInfoValue,
@@ -885,15 +958,15 @@ namespace Orts.Viewer3D.Popups
                 });
 
                 index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("Lead")) + indexOffset;
-                if (trainBrakeStatus.Contains(Viewer.Catalog.GetString("EOT")))
+                if (trainBrakeStatus.Contains(Viewer.Catalog.GetParticularString("BrakeStatus", "EOT")))
                 {
-                    brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT")) - index).TrimEnd();
+                    brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "EOT")) - index).TrimEnd();
                     AddLabel(new ListLabel
                     {
                         LastCol = brakeInfoValue,
                     });
 
-                    index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT")) + indexOffset;
+                    index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetParticularString("BrakeStatus", "EOT")) + indexOffset;
                     brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.Length - index).TrimEnd();
                     AddLabel(new ListLabel
                     {
@@ -1083,9 +1156,181 @@ namespace Orts.Viewer3D.Popups
                         });
                     }
                 }
+                AddSeparator();
             }
 
-            AddSeparator();
+            // Water scoop
+            if (locomotive.HasWaterScoop)
+            {
+                string waterScoopIndicator, waterScoopKey;
+                if (locomotive.ScoopIsBroken)
+                {
+                    if (locomotive.IsWaterScoopDown)
+                    {
+                        locomotive.ToggleWaterScoop();// Set water scoop up
+                    }
+                    waterScoopIndicator = Viewer.Catalog.GetString("Broken") + ColorCode[Color.Orange];
+                    waterScoopKey = "";
+                }
+                else if (locomotive.IsWaterScoopDown && !locomotive.ScoopIsBroken)
+                {
+                    waterScoopIndicator = Viewer.Catalog.GetString("Down") + (locomotive.IsOverTrough() ? ColorCode[Color.Cyan] : ColorCode[Color.Orange]);
+                    waterScoopKey = Symbols.ArrowToRight + ColorCode[Color.Yellow];
+                }
+                else
+                {
+                    waterScoopIndicator = Viewer.Catalog.GetString("Up") + ColorCode[Color.White];
+                    waterScoopKey = "";
+                }
+
+                AddLabel(new ListLabel
+                {
+                    FirstCol = Viewer.Catalog.GetString("Water scoop"),
+                    LastCol = waterScoopIndicator,
+                    KeyPressed = waterScoopKey,
+                    SymbolCol = ""
+                });
+            }
+
+            // Blowdown valve
+            if (locomotive is MSTSSteamLocomotive steamLocomotive5)
+            {
+                string blownDownValveIndicator, blownDownValveKey;
+                if (steamLocomotive5.BlowdownValveOpen)
+                {
+                    blownDownValveIndicator = Viewer.Catalog.GetString("Open") + ColorCode[Color.Orange];
+                    blownDownValveKey = Symbols.ArrowToRight + ColorCode[Color.Yellow];
+                }
+                else
+                {
+                    blownDownValveIndicator = Viewer.Catalog.GetString("Closed") + ColorCode[Color.White];
+                    blownDownValveKey = "";
+                }
+                AddLabel(new ListLabel
+                {
+                    FirstCol = Viewer.Catalog.GetString("Blowndown valve"),
+                    LastCol = blownDownValveIndicator,
+                    KeyPressed = blownDownValveKey,
+                    SymbolCol = ""
+                });
+                AddSeparator();
+            }
+
+            // Booster engine
+            if (locomotive is MSTSSteamLocomotive)
+            {
+                MSTSSteamLocomotive steamLocomotive6 = (MSTSSteamLocomotive)locomotive;
+                var HasBooster = false;
+                if (steamLocomotive6 != null && steamLocomotive6.SteamEngines.Count > 0)
+                {
+                    foreach (var engine in steamLocomotive6.SteamEngines)
+                    {
+                        if (engine.AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                            HasBooster = true;
+                    }
+                }
+                if (HasBooster)
+                {
+                    string boosterAirValveIndicator = "-", boosterAirValveKey = "";
+                    string boosterIdleValveIndicator = "-", boosterIdleValveKey = "";
+                    string boosterLatchOnIndicator = "-", boosterLatchOnKey = "";
+                    var cutOffLess65 = train.MUReverserPercent < 65.0f;
+                    bool movingTrain = Math.Abs(trainCar.SpeedMpS) > 0.0555556f;// 0.2 km/h
+                    var currentTrainInfo = train.GetTrainInfo();
+                    var trainStopping = currentTrainInfo.projectedSpeedMpS < 0.0277778f;// 0.1 km/h
+
+                    // Engages booster if train is moving forward less than 19 km/h and cutoff value more than 65%
+                    if (!steamLocomotive6.SteamBoosterLatchOn && !trainStopping && steamLocomotive6.SpeedMpS < 5.27778 && !cutOffLess65 && movingTrain && locomotive.Direction == Direction.Forward)
+                    {
+                        steamLocomotive6.ToggleSteamBoosterLatch();// Engages booster
+                    }
+                    // Disengages booster if speed is more than 34 km/h or cutOff less than 65%
+                    else if (steamLocomotive6.SteamBoosterLatchOn && (steamLocomotive6.SpeedMpS > 9.4444 || (cutOffLess65 && movingTrain) || locomotive.Direction == Direction.Reverse)
+                        || (steamLocomotive6.SteamBoosterLatchOn && trainStopping))// Disengages booster if projectedSpeedMpS < 0.1 km/h
+                    {
+                        steamLocomotive6.ToggleSteamBoosterLatch();// Disengages booster
+                    }
+
+                    // Booster warm up
+                    if (!EnabledIdleValve && steamLocomotive6.SteamBoosterAirOpen && steamLocomotive6.BoosterIdleHeatingTimerS >= 120 && steamLocomotive6.BoosterGearEngageTimePeriodS > 5.5 && steamLocomotive6.BoosterGearEngageTimePeriodS < 6)
+                    {
+                        EnabledIdleValve = true;
+                    }
+                    if (EnabledIdleValve && !steamLocomotive6.SteamBoosterAirOpen && !steamLocomotive6.SteamBoosterIdle && !steamLocomotive6.SteamBoosterLatchOn)
+                    {
+                        EnabledIdleValve = false;
+                    }
+
+                    // SteamBoosterAirValve   Ctrl+D...close/open
+                    if (!steamLocomotive6.SteamBoosterAirOpen)
+                    {
+                        boosterAirValveIndicator = Viewer.Catalog.GetString("Closed") + ColorCode[Color.White];
+                        boosterAirValveKey = "";
+                    }
+                    if (steamLocomotive6.SteamBoosterAirOpen)
+                    {
+                        // While warm up two red symbols are flashing in the Booster air valve label
+                        var smallDiamond = (int)steamLocomotive6.BoosterIdleHeatingTimerS % 2 == 0 ? $"{Symbols.SmallDiamond}{ColorCode[Color.OrangeRed]}" : $"{Symbols.SmallDiamond}{ColorCode[Color.Black]}";
+                        boosterAirValveIndicator = Viewer.Catalog.GetString("Open") + ColorCode[EnabledIdleValve ? Color.Cyan : Color.Orange];
+                        boosterAirValveKey = EnabledIdleValve ? Symbols.ArrowToRight + ColorCode[Color.Yellow] : smallDiamond;
+                    }
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString("Booster air valve"),
+                        LastCol = boosterAirValveIndicator,
+                        KeyPressed = boosterAirValveKey,
+                        SymbolCol = ""
+                    });
+
+                    // SteamBoosterIdleValve..Ctrl+B...idle/run
+                    if (!steamLocomotive6.SteamBoosterIdle)
+                    {
+                        boosterIdleValveIndicator = Viewer.Catalog.GetString("Idle") + ColorCode[EnabledIdleValve ? Color.White : Color.Orange];
+                        boosterIdleValveKey = "";
+                    }
+                    if (steamLocomotive6.SteamBoosterIdle && EnabledIdleValve)
+                    {
+                        boosterIdleValveIndicator = Viewer.Catalog.GetString("Run") + ColorCode[EnabledIdleValve ? Color.Cyan : Color.Orange];
+                        boosterIdleValveKey = Symbols.ArrowToRight + ColorCode[Color.Yellow];
+                    }
+                    // When shut off the booster system and the air open valve is closed, we set the idle valve from the run position to idle.
+                    if (steamLocomotive6.SteamBoosterIdle && !steamLocomotive6.SteamBoosterAirOpen)
+                    {
+                        steamLocomotive6.ToggleSteamBoosterIdle();// set to idle
+                        boosterIdleValveIndicator = Viewer.Catalog.GetString("Idle") + ColorCode[Color.White];
+                        boosterIdleValveKey = "";
+                    }
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString("Booster idle valve") + ColorCode[EnabledIdleValve ? Color.White : Color.Orange],
+                        LastCol = boosterIdleValveIndicator,
+                        KeyPressed = boosterIdleValveKey,
+                        SymbolCol = ""
+                    });
+
+                    // SteamBoosterLatchOnValve..Ctrl+K...opened/locked
+                    if (steamLocomotive6.SteamBoosterLatchOn && steamLocomotive6.SteamBoosterIdle && EnabledIdleValve)
+                    {
+                        boosterLatchOnIndicator = Viewer.Catalog.GetString("Locked") + ColorCode[EnabledIdleValve ? Color.Cyan : Color.Orange];
+                        boosterLatchOnKey = Symbols.ArrowToRight + ColorCode[Color.Yellow];
+                        BoosterLocked = true;
+                    }
+                    if (!steamLocomotive6.SteamBoosterLatchOn)
+                    {
+                        boosterLatchOnIndicator = Viewer.Catalog.GetString("Opened") + ColorCode[EnabledIdleValve ? Color.White : Color.Orange];
+                        boosterLatchOnKey = "";
+                        BoosterLocked = false;
+                    }
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString("Booster latch") + ColorCode[EnabledIdleValve ? Color.White : Color.Orange],
+                        LastCol = boosterLatchOnIndicator,
+                        KeyPressed = boosterLatchOnKey,
+                        SymbolCol = ""
+                    });
+                    AddSeparator();
+                }
+            }
 
             // Cruise Control
             if ((Owner.Viewer.PlayerLocomotive as MSTSLocomotive).CruiseControl != null)
@@ -1116,19 +1361,17 @@ namespace Orts.Viewer3D.Popups
             }
 
             // EOT
-
             if (locomotive.Train.EOT != null)
             {
                 AddLabel(new ListLabel
                 {
-                    FirstCol = Viewer.Catalog.GetString("EOT"),
+                    FirstCol = Viewer.Catalog.GetParticularString("BrakeStatus", "EOT"),
                     LastCol = $"{locomotive.Train.EOT?.EOTState.ToString()}"
                 });
                 AddSeparator();
             }
 
             // Distributed Power
-
             if (locomotive is MSTSDieselLocomotive && multipleUnitsConfiguration != null)
             {
                 AddLabel(new ListLabel
@@ -1151,7 +1394,7 @@ namespace Orts.Viewer3D.Popups
 
             // Messages
             // Autopilot
-            bool autopilot = locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING;
+            bool autopilot = locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || locomotive.Train.Autopilot;
             AddLabel(new ListLabel
             {
                 FirstCol = Viewer.Catalog.GetString("Autopilot"),
@@ -1229,15 +1472,14 @@ namespace Orts.Viewer3D.Popups
                 }
             }
 
-
             // Wheel
-            if (train.IsWheelSlip || train.IsWheelSlipWarninq || train.IsBrakeSkid)
+            if (train.HuDIsWheelSlip || train.HuDIsWheelSlipWarninq || train.IsBrakeSkid)
             {
                 wheelLabelVisible = true;
                 clockWheelTime = Owner.Viewer.Simulator.ClockTime;
             }
 
-            if (train.IsWheelSlip)
+            if (train.HuDIsWheelSlip)
             {
                 AddLabel(new ListLabel
                 {
@@ -1245,7 +1487,7 @@ namespace Orts.Viewer3D.Popups
                     LastCol = Viewer.Catalog.GetString("slip") + ColorCode[Color.OrangeRed],
                 });
             }
-            else if (train.IsWheelSlipWarninq)
+            else if (train.HuDIsWheelSlipWarninq)
             {
                 AddLabel(new ListLabel
                 {
@@ -1326,7 +1568,6 @@ namespace Orts.Viewer3D.Popups
                     LastCol = $"{Viewer.Catalog.GetString("Warning")} {carIDerailCoeff}" + ColorCode[Color.Yellow],
                 });
             }
-
             else
             {
                 // delay to hide the derailcoeff label if normal
@@ -1342,7 +1583,6 @@ namespace Orts.Viewer3D.Popups
                     });
                 }
             }
-
 
             // Doors
             var wagon = (MSTSWagon)locomotive;

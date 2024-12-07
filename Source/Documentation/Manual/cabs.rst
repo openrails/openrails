@@ -679,6 +679,41 @@ An example of implementation of the above controls in a .cvf file follows::
 		)
 
 
+Air Flow Meter
+--------------
+
+.. index::
+   single:  ORTS_AIR_FLOW_METER
+   single:  ORTS_TRAIN_AIR_FLOW_METER
+
+This cabview control is used on some locomotives, particularly in North America, to show the
+volumetric flow rate of air moving from the main res to the brake pipe during release/recharge.
+Such an indication can be used to determine when brake pipe charging is complete,
+measure the amount of brake pipe leakage, and so on.
+The control will only function on locomotives with air brakes.
+
+Here is an example implementation of ORTS_AIR_FLOW_METER as an analog dial (display types other
+than analog dials can be used)::
+
+
+		Dial (
+			Type ( ORTS_AIR_FLOW_METER DIAL )
+			Position ( 258 271 1 32 )
+			Graphic ( "white_needle.ace" )
+			Style ( NEEDLE )
+			ScaleRange ( 0 150 )
+			ScalePos ( 295 65 )
+			Units ( CUBIC_FT_MIN )
+			Pivot ( 24 )
+			DirIncrease ( 0 )
+		)
+
+Alternately, a control type of ORTS_TRAIN_AIR_FLOW_METER can be used to display the total
+air flow rate of all locomotives, useful for distributed power where multiple locomotives can
+charge the brake pipe simultaneously. Applicable user-defined units are CUBIC_FT_MIN, LITERS_S,
+LITERS_MIN, and CUBIC_M_S. Cubic meters per second will be used if no units are specified.
+
+
 Animated 2D Wipers
 ------------------
 
@@ -750,6 +785,33 @@ can be customized with following line, to be added within the control block in t
 .cvf file::
 
    ORTSLabel ( "string" )
+
+Custom Display Units
+--------------------
+
+Due to the wide variety of railroad equipment across the world, Open Rails may not
+provide the units of measure needed for a cabview control. In this case, the tokens
+`ORTSUnitsExponent`, `ORTSUnitsScaleFactor`, and `ORTSUnitsOffset` can be added
+to the control block in the .cvf file to create the units of measure required for
+the cab view.
+
+- ORTSUnitsExponent ( x ): Raises the value shown by the cab view control to the
+  power of x, which may be used to calibrate nonlinear gauges or complete nonlinear
+  conversions. Fractional and negative values are allowed. For example, an accelerometer
+  gauge with ORTSUnitsExponent ( 0.5 ) would change the accelerometer to be more sensitive
+  to small accelerations, but less sensitive to large acceleration. (However, the values
+  shown would not be in any meaningful units.)
+- ORTSUnitsScaleFactor ( y ): After accounting for any exponent, multiplies the value
+  shown by the cab view control by a factor of y, allowing for arbitrary conversion of
+  units of measure. For example, a cab view control displaying MILES_PER_HOUR with
+  ORTSUnitsScaleFactor ( 1.467 ) would instead display a value equivalent to feet per second.
+- ORTSUnitsOffset ( z ): After applying the scale factor, adds z to the value shown
+  by the cab view control. To subtract from the shown value, set z to a negative number.
+  For example, a cab view control with units of BAR and ORTSUnitsOffset ( 0.987 ) would show
+  pressure as absolute pressure, rather than gauge pressure.
+
+Note that while these tokens can be used to convert between many units, it is recommended
+to use built in Open Rails units wherever suitable.
    
 Multiple screen pages on displays
 ---------------------------------
@@ -818,6 +880,8 @@ and the mirrors.
 
 The control blocks are like the one shown for the cab light. The Type strings 
 are ORTS_LEFTDOOR, ORTS_RIGHTDOOR and ORTS_MIRRORS.
+
+Animation for 2D cab windows is described :ref:`here <features-windows>` .
 
 .. _cabs-generic-items:
 
@@ -1025,6 +1089,7 @@ Rotation may be applied, with the same syntax, also to DigitalClock cab controls
 
 Display and animation of cabview controls in side views of 2D cabs
 ------------------------------------------------------------------
+.. _cabs-side-views:
 
 This is possible adding after the CabViewControls ( ) compound block an 
 ORTSCabviewControls ( ) compound block, that has the same format as the 
@@ -1154,6 +1219,40 @@ Development Rules
         StartDirection ( 12 0 0 )
     )
 
+- If also a rear cab is present, a second ``ORTS3DCab`` has to be added, 
+  as follows::
+
+     ORTS3DCab(
+        ORTS3DCabFile ( Cab.s )
+        ORTS3DCabHeadPos ( 0.9 2.4 5.2 )
+        RotationLimit ( 40 60 0 )
+        StartDirection ( 12 180 0 )
+    )
+
+- Alternate 3D cab viewpoints may be added, as in the example here below::
+
+      ORTSAlternate3DCabViewPoints
+                         (
+        ORTSAlternate3DCabViewPoint(
+           ORTS3DCabFile ( Cab.s )
+           ORTS3DCabHeadPos ( 0.9 2.4 5.2 )
+           RotationLimit ( 40 60 0 )
+           StartDirection ( 12 0 0 )
+                        )
+        ORTSAlternate3DCabViewPoint(
+          ORTS3DCabFile ( Cab.s )
+          ORTS3DCabHeadPos ( -0.8 2.4 5.2 )
+          RotationLimit ( 40 60 0 )
+          StartDirection ( 12 30 0 )
+                        )
+                        )
+
+
+-  To switch between alternate cab viewpoints ``Ctrl-Shift-1`` must be pressed.
+   If there aren't alternate viewpoints defined, and if there is no rear cab, 
+   pressing ``Ctrl-Shift-1`` toggles between the base viewpoint and a symmetrical 
+   one on the longitudinal axis.
+
 .. index::
    single: EXTERNALWIPERS
    single: AMMETER
@@ -1177,6 +1276,7 @@ Development Rules
   font. If no ace is specified, the default will be used.
 - Mirrors and doors can be operated from 3D cabs. The names used are 
   ``LEFTDOOR``, ``RIGHTDOOR`` and ``MIRRORS``.
+- Animation for 3D cab windows is described :ref:`here <features-windows>` .  
 - like the 2D cabs, also 3D cabs can have a night version. Night textures, named like the 
   corresponding day textures, must be located within a ``NIGHT`` subfolder of the 
   ``CABVIEW3D`` folder. To enable night cabs an ``.sd`` file with the same name as the 

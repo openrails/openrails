@@ -147,6 +147,10 @@ trigger the above triggers.
 =========     ==============================================================================================================================================================
 Trigger       Function
 =========     ==============================================================================================================================================================
+ 90           WaterPump1ON - triggered whenever motion pump 1 turns on
+ 91           WaterPump1OFF - triggered whenever motion pump 1 turns off
+ 92           WaterPump2ON - triggered whenever motion pump 2 turns on
+ 93           WaterPump2OFF - triggered whenever motion pump 2 turns off
 101           GearUp : for gear-based engines, triggered by the ``<E>`` key, propagated to all gear-based diesel engines of a train and run also for AI trains
 102           GearDown : for gear-based engines, triggered by the ``<Shift+E>`` key, propagated to all gear-based diesel engines of a train and run also for AI trains
 103           ReverserToForwardBackward : reverser moved towards the forward or backward position
@@ -406,6 +410,26 @@ Trigger       Function
 Trigger 252 is activated when the braking system detects an
 emergency brake application and starts venting air from the Brake Pipe.
 
+Following triggers are related to windows animation:
+
+.. _sound-windows:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+260           WindowClosing
+261           WindowOpening
+=========     =====================================
+
+The following triggers are related to the steam booster engine:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+321           BoosterCylinderCocksOpen
+322           BoosterCylinderCocksClose
+=========     =====================================
+
 Variable Triggers
 -----------------
 
@@ -413,7 +437,7 @@ ORTS
 ^^^^
 
 The sound objects attached to a vehicle (wagon or loco) can respond in volume and frequency to changes in the vehicle's properties.
-There are 7 properties:
+There are a number of triggers as follows:
 
 - distance squared from a sound source (m\ :sup:`2`)
 
@@ -425,9 +449,11 @@ There are 7 properties:
 
 - 3 variables in range 0 - 1:
 
-  - Variable1 reflects the throttle
+  - Variable1 reflects the throttle. For steam locomotives it is possible to have multiple steam engines, thus this variable can be applied
+   to each engine, by using a sound trigger of the form ``Variable1_x_inc_past`` or ``Variable1_x_dec_past``, where x = steam engine number.
 
-  - Variable2 reflects the engine's RPM (diesel) or Tractive Force (electric) or cylinder pressure (steam)
+  - Variable2 reflects the engine's RPM (diesel) or Tractive Force (electric) or cylinder pressure (steam). Where a Booster Engine is fitted, 
+  then ``Variable2BoosterControlled`` can be used to control cylinder pressure for booster engines on steam locomotives.
 
   - Variable3 reflects the dynamic brake (diesel | electric) or fuel rate (steam)
 		
@@ -626,3 +652,50 @@ to 100 (internal track sound reproduced at volume as defined in .sms file).
 
 If the parameter is not present, the internal track sound is 
 reproduced at the volume as defined in .sms file.
+
+Conditional sound
+=================
+
+In the real world some sounds are present only at a specific time (season and/or 
+time of day) and/or with a specific weather.
+
+OR provides the parameters to actuate that for any set of sound streams. Consider the 
+sound stream here below::
+
+  			Stream (
+				Priority ( 6 )
+				ORTSSeason ( Spring () winter () )
+				ORTSWeather ( rain () )
+				ORTSTimeOfDay ( 7 12 )
+				ORTSTimeOfDay ( 13 20 )
+				Triggers ( 2
+					Variable_Trigger ( Distance_Dec_Past 400.0
+						StartLoop ( 1
+							File ( "Somma_annunci_loud.wav" -1 )
+							SelectionMethod ( SequentialSelection )
+						)
+					)
+					Variable_Trigger ( Distance_Inc_Past 400.0 ReleaseLoopRelease ())
+				)
+
+				VolumeCurve(
+					DistanceControlled
+					CurvePoints ( 4
+	  					 0.0	1.0
+						230.0	1.0
+	  					260.0	0.0
+						2000.0  0.0
+					)
+					Granularity (0.01)
+				)
+			)
+
+
+As can be seen, there are three keywords, that are ORTSSeason, ORTSWeather and 
+ORTSTimeOfDay. If one or more of the three keywords is not present in the stream, 
+the sound does not depend from that keyword.
+
+In the example shown, the sound is played if all conditions are met, that is season 
+is spring or winter and weather is rain and time of day is within one of the two 
+intervals 7-12 or 13-20. There may be as many TimeOfDay lines as wanted, 
+but the granularity is one hour.

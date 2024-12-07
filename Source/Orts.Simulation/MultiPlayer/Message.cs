@@ -2756,7 +2756,7 @@ namespace Orts.MultiPlayer
                 }
                 if (tmpcars2.Count == 0) return;
                 train2.Cars = tmpcars2;
-                train2.Name = String.Concat(String.Copy(train.Name), Train.TotalNumber.ToString());
+                train2.Name = String.Concat(train.Name, Train.TotalNumber.ToString());
                 train2.LeadLocomotive = null;
                 train2.LeadNextLocomotive();
                 train2.CheckFreight();
@@ -2840,7 +2840,7 @@ namespace Orts.MultiPlayer
                     train2.TrainType = Train.TRAINTYPE.STATIC;
                     this.oldTrainNumber = train.Number;
                     train2.LastReportedSpeed = 1;
-                    if (train2.Name.Length < 4) train2.Name = String.Concat("STATIC-", String.Copy(train2.Name));
+                    if (train2.Name.Length < 4) train2.Name = String.Concat("STATIC-", train2.Name);
                     MPManager.Simulator.AI.aiListChanged = true;
                     MPManager.Instance().AddOrRemoveLocomotives(user, train, true);
                     MPManager.Instance().AddOrRemoveLocomotives(user, train2, true);

@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using Orts.Parsers.Msts;
 using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
@@ -37,8 +38,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         public bool ForceControllerReleaseGraduated;
         bool BrakeControllerInitialised; // flag to allow PreviousNotchPosition to be initially set.
         MSTSNotch PreviousNotchPosition;
-
         bool EnforceMinimalReduction = false;
+
+        public InterpolatorDiesel2D DynamicBrakeBlendingTable;
 
         public MSTSBrakeController()
         {
@@ -70,6 +72,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             IntermediateValue = NotchController.IntermediateValue;
             SetUpdateValue(NotchController.UpdateValue);
             CurrentNotch = NotchController.CurrentNotch;
+            if (DynamicBrakeBlendingTable != null)
+            {
+                SetDynamicBrakeIntervention(DynamicBrakeBlendingTable.Get(CurrentValue(), SpeedMpS()));
+            }
             return value;
         }
 
@@ -376,6 +382,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 return ControllerState.Dummy;
         }
 
+        public override string GetStateName()
+        {
+            if (!EmergencyBrakingPushButton() && !TCSEmergencyBraking() && !TCSFullServiceBraking() &&
+                !OverchargeButtonPressed() && !QuickReleaseButtonPressed() &&
+                NotchController != null && NotchController.NotchCount() > 0)
+            {
+                var notch = NotchController.GetCurrentNotch();
+                if (!string.IsNullOrEmpty(notch.Name))
+                    return notch.Name;
+            }
+            return base.GetStateName();
+        }
+
         public override float? GetStateFraction()
         {
             if (EmergencyBrakingPushButton() || TCSEmergencyBraking() || TCSFullServiceBraking() || QuickReleaseButtonPressed() || OverchargeButtonPressed())
@@ -409,23 +428,29 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             }
         }
 
-        static void IncreasePressure(ref float pressurePSI, float targetPSI, float ratePSIpS, float elapsedSeconds)
+        static void IncreasePressure(ref float pressureBar, float targetBar, float rateBarpS, float elapsedSeconds)
         {
-            if (pressurePSI < targetPSI)
+            if (pressureBar < targetBar)
             {
-                pressurePSI += ratePSIpS * elapsedSeconds;
-                if (pressurePSI > targetPSI)
-                    pressurePSI = targetPSI;
+                float dp = rateBarpS * elapsedSeconds;
+                if (targetBar - pressureBar < 0.5f) // Slow down increase when nearing target to simulate chokes in brake valve
+                    dp *= Math.Min(((targetBar - pressureBar) / 0.5f) + 0.1f, 1.0f);
+                pressureBar += dp;
+                if (pressureBar > targetBar)
+                    pressureBar = targetBar;
             }
         }
 
-        static void DecreasePressure(ref float pressurePSI, float targetPSI, float ratePSIpS, float elapsedSeconds)
+        static void DecreasePressure(ref float pressureBar, float targetBar, float rateBarpS, float elapsedSeconds)
         {
-            if (pressurePSI > targetPSI)
+            if (pressureBar > targetBar)
             {
-                pressurePSI -= ratePSIpS * elapsedSeconds;
-                if (pressurePSI < targetPSI)
-                    pressurePSI = targetPSI;
+                float dp = rateBarpS * elapsedSeconds;
+                if (pressureBar - targetBar < 0.5f) // Slow down decrease when nearing target to simulate chokes in brake valve
+                    dp *= Math.Min(((pressureBar - targetBar) / 0.5f) + 0.1f, 1.0f);
+                pressureBar -= dp;
+                if (pressureBar < targetBar)
+                    pressureBar = targetBar;
             }
         }
     }

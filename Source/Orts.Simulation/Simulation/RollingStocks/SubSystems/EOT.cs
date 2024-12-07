@@ -123,9 +123,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (Train.Simulator.PlayerLocomotive.Train == Train && EOTState == EOTstate.ArmedTwoWay &&
                 (EOTEmergencyBrakingOn ||
                 (Train.Simulator.PlayerLocomotive as MSTSLocomotive).TrainBrakeController.GetStatus().ToLower().StartsWith("emergency")))
-                Train.Cars.Last().BrakeSystem.AngleCockBOpen = true;
+            {
+                // Simulate EOT opening brake pipe to atmosphere by instantly opening rear anglecock
+                this.BrakeSystem.AngleCockBOpen = true;
+                this.BrakeSystem.AngleCockBOpenAmount = 1;
+            }
             else
-                Train.Cars.Last().BrakeSystem.AngleCockBOpen = false;
+            {
+                this.BrakeSystem.AngleCockBOpen = false;
+            }
             base.Update(elapsedClockSeconds);
         }
 

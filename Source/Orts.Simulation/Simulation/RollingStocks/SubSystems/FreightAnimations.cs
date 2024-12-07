@@ -70,6 +70,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float EmptyMaxBrakeShoeForceN = -9999;
         public float EmptyMaxHandbrakeForceN = -9999;
         public float EmptyCentreOfGravityM_Y = -9999; // get centre of gravity after adjusted for freight animation
+        public float EmptyRelayValveRatio = -9999;
+        public float EmptyInshotPSI = 0; // Inshot can be positive or negative, set to 0 to indicate uninitialized
         public bool ContinuousFreightAnimationsPresent = false; // Flag to indicate that a continuous freight animation is present
         public bool StaticFreightAnimationsPresent = false; // Flag to indicate that a static freight animation is present
         public bool DiscreteFreightAnimationsPresent = false; // Flag to indicate that a discrete freight animation is present
@@ -108,6 +110,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 new STFReader.TokenProcessor("emptymaxbrakeshoeforce", ()=>{ EmptyMaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
                 new STFReader.TokenProcessor("emptymaxhandbrakeforce", ()=>{ EmptyMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
                 new STFReader.TokenProcessor("emptycentreofgravity_y", ()=>{ EmptyCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); }),
+                new STFReader.TokenProcessor("emptybrakerelayvalveratio", ()=>{ EmptyRelayValveRatio = stf.ReadFloatBlock(STFReader.UNITS.None, -1); }),
+                new STFReader.TokenProcessor("emptybrakerelayvalveinshot", ()=>{ EmptyInshotPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, -1); }),
                 new STFReader.TokenProcessor("freightanimcontinuous", ()=>
                 {
                     Animations.Add(new FreightAnimationContinuous(stf, wagon));
@@ -290,6 +294,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             EmptyMaxBrakeShoeForceN = copyFACollection.EmptyMaxBrakeShoeForceN;
             EmptyMaxHandbrakeForceN = copyFACollection.EmptyMaxHandbrakeForceN;
             EmptyCentreOfGravityM_Y = copyFACollection.EmptyCentreOfGravityM_Y;
+            EmptyRelayValveRatio = copyFACollection.EmptyRelayValveRatio;
+            EmptyInshotPSI = copyFACollection.EmptyInshotPSI;
             ContinuousFreightAnimationsPresent = copyFACollection.ContinuousFreightAnimationsPresent;
             StaticFreightAnimationsPresent = copyFACollection.StaticFreightAnimationsPresent;
             DiscreteFreightAnimationsPresent = copyFACollection.DiscreteFreightAnimationsPresent;
@@ -987,6 +993,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float FullMaxBrakeShoeForceN = -9999;
         public float FullMaxHandbrakeForceN = -9999;
         public float FullCentreOfGravityM_Y = -9999; // get centre of gravity after adjusted for freight animation
+        public float FullRelayValveRatio = -9999;
+        public float FullInshotPSI = 0; // Inshot can be positive or negative, set to 0 to indicate uninitialized
 
         public FreightAnimationContinuous(STFReader stf, MSTSWagon wagon)
         {
@@ -1013,7 +1021,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 new STFReader.TokenProcessor("fullmaxbrakeforce", ()=>{ FullMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
                 new STFReader.TokenProcessor("fullmaxbrakeshoeforce", ()=>{ FullMaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
                 new STFReader.TokenProcessor("fullmaxhandbrakeforce", ()=>{ FullMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
-                new STFReader.TokenProcessor("fullcentreofgravity_y", ()=>{ FullCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); })
+                new STFReader.TokenProcessor("fullcentreofgravity_y", ()=>{ FullCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); }),
+                new STFReader.TokenProcessor("fullbrakerelayvalveratio", ()=>{ FullRelayValveRatio = stf.ReadFloatBlock(STFReader.UNITS.None, -1); }),
+                new STFReader.TokenProcessor("fullbrakerelayvalveinshot", ()=>{ FullInshotPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, -1); })
             });
         }
 
@@ -1042,7 +1052,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             FullMaxBrakeForceN = freightAnimContin.FullMaxBrakeForceN;
             FullMaxBrakeShoeForceN = freightAnimContin.FullMaxBrakeShoeForceN;
             FullMaxHandbrakeForceN = freightAnimContin.FullMaxHandbrakeForceN;
-            FullCentreOfGravityM_Y = freightAnimContin.FullCentreOfGravityM_Y;          
+            FullCentreOfGravityM_Y = freightAnimContin.FullCentreOfGravityM_Y;
+            FullRelayValveRatio = freightAnimContin.FullRelayValveRatio;
+            FullInshotPSI = freightAnimContin.FullInshotPSI;
         }
     }
 
@@ -1078,6 +1090,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float FullStaticMaxBrakeShoeForceN = -9999;
         public float FullStaticMaxHandbrakeForceN = -9999;
         public float FullStaticCentreOfGravityM_Y = -9999; // get centre of gravity after adjusted for freight animation
+        public float FullStaticRelayValveRatio = -9999;
+        public float FullStaticInshotPSI = 0; // Inshot can be positive or negative, set to 0 to indicate uninitialized
 
         public FreightAnimationStatic(STFReader stf)
         {
@@ -1133,7 +1147,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             new STFReader.TokenProcessor("fullmaxbrakeforce", ()=>{ FullStaticMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
             new STFReader.TokenProcessor("fullmaxbrakeshoeforce", ()=>{ FullStaticMaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
             new STFReader.TokenProcessor("fullmaxhandbrakeforce", ()=>{ FullStaticMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
-            new STFReader.TokenProcessor("fullcentreofgravity_y", ()=>{ FullStaticCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); })
+            new STFReader.TokenProcessor("fullcentreofgravity_y", ()=>{ FullStaticCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); }),
+            new STFReader.TokenProcessor("fullbrakerelayvalveratio", ()=>{ FullStaticRelayValveRatio = stf.ReadFloatBlock(STFReader.UNITS.None, -1); }),
+            new STFReader.TokenProcessor("fullbrakerelayvalveinshot", ()=>{ FullStaticInshotPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, -1); })
             });
         }
 
@@ -1160,6 +1176,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             FullStaticMaxBrakeShoeForceN = freightAnimStatic.FullStaticMaxBrakeShoeForceN;
             FullStaticMaxHandbrakeForceN = freightAnimStatic.FullStaticMaxHandbrakeForceN;
             FullStaticCentreOfGravityM_Y = freightAnimStatic.FullStaticCentreOfGravityM_Y;
+            FullStaticRelayValveRatio = freightAnimStatic.FullStaticRelayValveRatio;
+            FullStaticInshotPSI = freightAnimStatic.FullStaticInshotPSI;
         }
     }
 

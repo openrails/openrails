@@ -751,9 +751,7 @@ public Gear NextGear
         public void Restore(BinaryReader inf)
         {
             currentGearIndex = inf.ReadInt32();
-            Locomotive.currentGearIndexRestore = currentGearIndex;
             nextGearIndex = inf.ReadInt32();
-            Locomotive.currentnextGearRestore = nextGearIndex;
             gearedUp = inf.ReadBoolean();
             gearedDown = inf.ReadBoolean();
             clutchOn = inf.ReadBoolean();

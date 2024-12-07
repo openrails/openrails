@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework Condition="'$(BuildDotNet)' == 'true'">net6-windows</TargetFramework>
+    <TargetFramework Condition="'$(TargetFramework)' == ''">net472</TargetFramework>
     <OutputType>WinExe</OutputType>
     <AssemblyName>Contrib.ActivityEditor</AssemblyName>
     <ApplicationIcon>..\..\..\ORTS.ico</ApplicationIcon>

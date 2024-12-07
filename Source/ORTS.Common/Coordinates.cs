@@ -21,8 +21,8 @@
  * whereas in MSTS it is the opposite.  As a result you will see the sign of all Z coordinates gets negated
  * and matrices are adjusted as they are loaded into XNA.  In addition the winding order of triangles is reversed in XNA.
  * Generally - X,Y,Z coordinates, vectors, quaternions, and angles will be expressed using MSTS coordinates 
- * unless otherwise noted with the prefix XNA.  Matrix's are usually constructed using XNA coordinates so they can be 
- * used directly in XNA draw routines.  So most matrix's will have XNA prepended to their name.
+ * unless otherwise noted with the prefix XNA.  Matrices are usually constructed using XNA coordinates so they can be 
+ * used directly in XNA draw routines.  So most matrices will have XNA prepended to their name.
  * 
  * WorldCoordinates
  * X increases to the east
@@ -138,7 +138,7 @@ namespace ORTS.Common
         /// </summary>
         public void Normalize()
         {
-            var TileLocation = XNAMatrix.Translation;
+            var TileLocation = Location;
             int xTileDistance = (int)Math.Round((int)(TileLocation.X / 1024) / 2.0, MidpointRounding.AwayFromZero);
             int zTileDistance = (int)Math.Round((int)(TileLocation.Z / 1024) / 2.0, MidpointRounding.AwayFromZero);
             if (xTileDistance == 0 && zTileDistance == 0) return;
@@ -148,7 +148,7 @@ namespace ORTS.Common
                 TileZ += zTileDistance;
                 TileLocation.X = (float)(TileLocation.X - (xTileDistance * TileSize));
                 TileLocation.Z = (float)(TileLocation.Z - (zTileDistance * TileSize));
-                XNAMatrix.Translation = TileLocation;
+                Location = TileLocation;
             }
         }
 

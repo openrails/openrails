@@ -59,6 +59,7 @@ namespace ORTS.Common
                 typeof(string),
                 typeof(int[]),
                 typeof(string[]),
+                typeof(byte),
             }.Contains(expectedType), String.Format("GetUserValue called with unexpected type {0}.", expectedType.FullName));
         }
 

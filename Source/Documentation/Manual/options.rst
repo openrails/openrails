@@ -83,20 +83,22 @@ The player can select the unit of measure of brake pressure in the
 When set to *automatic* the unit of measure is the same as that used in
 the cabview of the locomotive.
 
-Other units
------------
+Other units of measure
+----------------------
 
 This selects the units displayed for length, mass, pressure, etc. in the
 :ref:`F5 Train Driving Info Window and also the Alt+F5 HUD <driving-hud>` of the simulation.
 
+These windows use the abbreviations *t-us* for short tons (2000 lb),
+*t-uk* for long tons (2240 lb) and *t* for metric tons (1000 kg).
+
+The option *Route* sets the units based on the data in the route files. The route's TRK file may contain ``MilepostUnitsMiles ()`` or 
+``MilepostUnitsKilometers ()`` to specify the units of distance for this route.
+
 The option *Player's Location* sets the units according to the Windows
 *Language and Region* settings on the player's computer.
 
-The option *Route* sets the units based on the data in the route files.
-The other options are self-explanatory.
-
-These windows use the abbreviations *t-us* for short tons (2000 lb),
-*t-uk* for long tons (2240 lb) and *t* for metric tons (1000 kg).
+The other choices for units of measure are straightforward.
 
 Note: The units displayed by the :ref:`F4 Track Monitor <driving-track-monitor>` (e.g. velocity and
 distance) are always based on data read from the route files.
@@ -366,13 +368,6 @@ by MSTS, while the advanced one is based on a model more similar to reality.
 For more information read the section on :ref:`Adhesion Models <physics-adhesion>` later in this
 manual.
 
-Adhesion moving average filter size
------------------------------------
-
-The computations related to adhesion are passed through a moving average
-filter. Higher values cause smoother operation, but also less
-responsiveness. 10 is the default filter size.
-
 Break couplers
 --------------
 
@@ -419,7 +414,7 @@ The default setting is checked.
 
 
 At game start, Electric - power connected
------------------------------------
+-----------------------------------------
 
 When this option is checked, stationary electric locos start the simulation with power available.
 Uncheck this option for a more detailed behaviour in which the player has to switch on electrical equipment.
@@ -523,6 +518,83 @@ By clicking on *Export* a printable text file ``Open Rails
 Keyboard.txt`` is generated on the desktop, showing all links between
 commands and keys.
 
+
+RailDriver Options
+==================
+
+Open Rails has built-in support for the RailDriver controller from P.I.Engineering so
+you do not need any extra software for the RailDriver to work with Open Rails.
+
+If your RailDriver is connected, you should see a RailDriver tab in the options menu:
+
+.. image:: images/options-raildriver.png
+
+
+Use this tab to calibrate the 6 analog controls and assign operations to the
+44 switches on your RailDriver device.
+
+
+Calibrating RailDriver Levers
+-----------------------------
+RailDriver uses analog inputs that appear to vary from unit to unit.  
+In theory the range of each lever is 0-255 but, in practice, the actual range can be much narrower. 
+For this reason Open Rails uses a calibration routine to adjust to the actual range of each lever.
+
+You will need to calibrate the RailDriver, even if you’ve previously calibrated your RailDriver in other software.
+However, you will only need to perform a full calibration once as Open Rails will use that calibration from then on.
+
+Click the Callibration button and follow the prompts:
+
+.. image:: images/options-raildriver-calibration-message.png
+
+Note the image on screen will also visually guide you to the control being calibrated as in this example:
+
+.. image:: images/options-raildriver-calibration.png
+
+You will be prompted in sequence to calibrate all 6 of the RailDriver analog controls:
+
+- Reverser
+- Throttle
+- Automatic Brake
+- Independent Brake
+- Light/wiper switches
+
+If you make a mistake during calibration, simply restart the process again.
+
+
+Assigning RailDriver Switches
+-----------------------------
+
+You can modify the assignments by clicking on a field (e.g. "Pause") and pressing the
+RailDriver button you want for that operation.
+Three symbols will appear at the right of the field: use them to validate the change, 
+cancel it or restore the default value.
+
+.. image:: images/options-raildriver-assignment.png
+
+
+Other controls on this tab
+--------------------------
+
+Click on *Check* to verify that the changes made are compatible;
+that is, that no button is used for more than one command.
+
+Click on *Defaults* to reset all the assignments.
+
+Click on *Export* to generate a report file ``Open Rails
+RailDriver.txt`` on the desktop, listing all links between
+commands and switches.
+
+
+Using your RailDriver from within Open Rails
+--------------------------------------------
+
+To engage the RailDriver, use the Open Rails function named “Game External Controller (Raildriver)”.
+By default this is assigned to the backtick key (` )
+
+You can look up this function’s keybinding in-game by using the F1 help screen.
+
+
 Data Logger Options
 ===================
 
@@ -532,36 +604,6 @@ By selecting the option *Start logging with the simulation start* or by
 pressing ``<F12>`` a file with the name dump.csv is generated in the
 configured Open Rails logging folder (placed on the Desktop by default).
 This file can be used for later analysis.
-
-.. _options-Content:
-
-Content Options
-===============
-
-.. image:: images/options-content.png
-
-This window allows you to add, remove or modify access to content.
-Each profile may be a folder containing one or more routes, or an MSTS
-installation. 
-Profiles located on other drives, or on a USB key, can be added even if they are
-not always available.
-
-Click on the *Add* button, and locate the desired installation. ORTS will
-automatically enter a proposed name in the *Name:* window that will
-appear in the *Installation set:* window on the main menu form. Modify
-the name if desired, then click *OK* to add the new path and name to
-Open Rails.
-
-Please do not store content or any files within the folder containing the Open Rails software.
-This is because the Updater operates by wiping out the contents of that folder before replacing it
-with a new updated version. 
-It would be unfriendly for users to lose content that they have stored there, so
-attempts to add a profile folder stored there are blocked and lead to an error message. 
-
-To remove an entry (note that this does not remove the installation
-itself!) select the entry in the window, and click *Delete*, then *OK*
-to close the window. To modify an entry, use the *Change...* button to
-access the location and make the necessary changes.
 
 .. _options-system:
 
@@ -705,16 +747,46 @@ Some experimental features being introduced in Open Rails may be turned on
 and off through the *Experimental* tab of the Options window, as
 described below.
 
-Super-elevation
+.. _options-superelevation:
+
+Superelevation
 ---------------
 
-If the value set for *Level* is greater than zero, ORTS supports super-elevation 
-for long curved tracks. The value *Minimum Length* determines
-the length of the shortest curve to have super-elevation. You need to
-choose the correct gauge for your route, otherwise some tracks may not be
-properly shown.
+ORTS implements graphical superelevation (tilting) of tracks using Dynamic Tracks.
+For superelevation to appear, the route must have one (or more) ``<route folder>/TrackProfiles/
+TrProfile.stf`` files. A document describing the creation of track profiles, ``How to
+Provide Track Profiles for Open Rails Dynamic Track.pdf``, can be found in the
+*Menu > Documents* drop-down or the Open Rails ``/Source/Documentation/`` folder. Forum
+discussions about track profiles can also be found on `Elvas Tower
+<http://www.elvastower.com/forums/index.php?/topic/21119-superelevation/
+page__view__findpost__p__115247>`_.
 
-When super-elevation is selected, two viewing effects occur at runtime:
+However, superelevation will also appear if the route has a superelevation standard
+``ORTSSuperElevation`` :ref:`defined within the route's .trk file <features-route-curve-superelevation>`
+regardless of the use of track profiles. *It is recommended to combine* **both** *track profiles
+and ``ORTSSuperElevation`` for best results*, as dynamic track (ie: superelevation) is rendered
+as Kuju track without any track profiles installed, which may not appear correct.
+
+.. note::
+    
+    This behavior can be overwritten if ``ORTSForceSuperElevation ( 0/1 )`` is present in the .trk file.
+    A setting of 0 will always disable superelevation graphics, while 1 always enables it, regardless
+    of the criteria described here.
+
+To support routes without Track Profiles and without ``ORTSSuperElevation``, the
+"Legacy Superelevation" option can be enabled. This will activate superelevation visuals
+on routes regardless of missing data, which may be appropriate for original MSTS routes but
+will not be aesthetically pleasing for routes using more modern track shapes. Experimentation
+may be required to determine the correct setting, and *editing of routes* (to add data to the
+.trk file and/or to add track profiles) will be required for best results.
+
+.. note::
+    
+    The configuration described here only affects the visual depiction of superelevation.
+    Superelevation is still considered by train physics regardless of the state of the visual system.
+
+When visual superelevation is enabled (either through correct configuration of a route,
+or enabled with the "Legacy Superelevation" option), two viewing effects occur at runtime:
 
 1. If an external camera view is selected, the tracks and the running
    train will be shown inclined towards the inside of the curve.
@@ -724,15 +796,16 @@ When super-elevation is selected, two viewing effects occur at runtime:
 .. image:: images/options-superelevation_1.png
 .. image:: images/options-superelevation_2.png
 
-OR implements super-elevated tracks using Dynamic Tracks. You can change
-the appearance of tracks by creating a ``<route folder>/TrackProfiles/
-TrProfile.stf`` file. The document ``How to Provide Track Profiles for
-Open Rails Dynamic Track.pdf`` describing the creation of track profiles
-can be found in the *Menu > Documents* drop-down or the 
-Open Rails ``/Source/Documentation/`` folder. Forum
-discussions about track profiles can also be found on `Elvas Tower
-<http://www.elvastower.com/forums/index.php?/topic/21119-superelevation/
-page__view__findpost__p__115247>`_.
+Note that superelevation usually won't be this distinct. The amount of superelevation
+depends on the track speed limit and curve radius, where higher speeds and tighter curves
+lead to more intense superelevation.
+
+Additionally, the superelevation physics system requires knoweldge of the gauge of track used on
+the route. Normally, this should be defined with ``TrackGauge``
+:ref:`in the .trk file <features-route-curve-superelevation>`, but many routes have the gauge value
+set to 0, which is not useful. In such a case, the program must use the gauge (in millimeters)
+specified by the "Default Gauge" option. Note this assumes the entire route has the same gauge of track.
+Multi-gauge routes are not fully supported at the moment.
 
 
 .. _options-shape-warnings:

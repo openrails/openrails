@@ -73,7 +73,7 @@ namespace Orts.Viewer3D
                 MSTSSky = new MSTSSkyDrawer(viewer);
             else
                 Sky = new SkyViewer(viewer);
-            Precipitation = new PrecipitationViewer(viewer, WeatherControl);
+            Precipitation = new PrecipitationViewer(viewer);
             Terrain = new TerrainViewer(viewer);
             Scenery = new SceneryDrawer(viewer);
             Trains = new TrainDrawer(viewer);
@@ -116,6 +116,8 @@ namespace Orts.Viewer3D
                     Precipitation.Mark();
                     Terrain.Mark();
                     Scenery.Mark();
+                    foreach (TRPFile trp in Viewer.TRPs)
+                        trp.TrackProfile?.Mark();
                     Trains.Mark();
                     RoadCars.Mark();
                     Containers.Mark();

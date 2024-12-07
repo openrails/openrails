@@ -549,6 +549,9 @@ namespace ORTS.Common
         public static string psi = Catalog.GetString("psi");
         public static string inhg = Catalog.GetString("inHg");
         public static string kgfpcm2 = Catalog.GetString("kgf/cm²");
+        public static string lps = Catalog.GetString("L/s");
+        public static string lpm = Catalog.GetString("L/min");
+        public static string cfm = Catalog.GetString("cfm");
         public static string kg = Catalog.GetString("kg");
         public static string t = Catalog.GetString("t");
         public static string tonUK = Catalog.GetString("t-uk");
@@ -573,6 +576,7 @@ namespace ORTS.Common
         public static string kN = Catalog.GetString("kN");
         public static string lbf = Catalog.GetString("lbf");
         public static string klbf = Catalog.GetString("klbf");
+        public static string deg = Catalog.GetString("°");
 
         /// <summary>
         /// Formatted unlocalized speed string, used in reports and logs.
@@ -590,6 +594,15 @@ namespace ORTS.Common
         {
             return String.Format(CultureInfo.CurrentCulture,
                 "{0:F1} {1}", MpS.FromMpS(speed, isMetric), isMetric ? kmph : mph);
+        }
+
+        /// <summary>
+        /// Formatted localized speed string, used to display tracking speed, with 2 decimal precision
+        /// </summary>
+        public static string FormatVeryLowSpeedDisplay(float speed, bool isMetric)
+        {
+            return String.Format(CultureInfo.CurrentCulture,
+                "{0:F2} {1}", MpS.FromMpS(speed, isMetric), isMetric ? kmph : mph);
         }
 
         /// <summary>
@@ -670,6 +683,13 @@ namespace ORTS.Common
             return String.Format(CultureInfo.CurrentCulture, "{0:N3} {1}", Me.ToFt(distanceM), ft);
         }
 
+        public static string FormatMillimeterDistanceDisplay(float distanceM, bool isMetric)
+        {
+            if (isMetric)
+                return String.Format(CultureInfo.CurrentCulture, "{0:N0} {1}", distanceM * 1000.0f, mm);
+            return String.Format(CultureInfo.CurrentCulture, "{0:N1} {1}", Me.ToIn(distanceM), "in");
+        }
+
         /// <summary>
         /// format localized mass string, as displayed in in-game windows.
         /// </summary>
@@ -718,6 +738,12 @@ namespace ORTS.Common
         {
             var volume = isMetric ? volumeM3 : Me3.ToFt3(volumeM3);
             return String.Format(CultureInfo.CurrentCulture, "{0:F0} {1}", volume, isMetric ? m3 : ft3);
+        }
+
+        public static string FormatSmallVolume(float volumeM3, bool isMetric)
+        {
+            var volume = isMetric ? volumeM3 : Me3.ToFt3(volumeM3);
+            return String.Format(CultureInfo.CurrentCulture, "{0:N3} {1}", volume, isMetric ? m3 : ft3);
         }
 
         public static string FormatFuelVolume(float volumeL, bool isMetric, bool isUK)
@@ -812,6 +838,17 @@ namespace ORTS.Common
             }
 
             return String.Format(CultureInfo.CurrentCulture, format, pressureOut);
+        }
+
+        public static string FormatAirFlow(float flowM3pS, bool isMetric)
+        {
+            var flow = isMetric ? flowM3pS * 1000.0f : flowM3pS * 35.3147f * 60.0f;
+            return String.Format(CultureInfo.CurrentCulture, "{0:F0} {1}", flow, isMetric ? lps : cfm);
+        }
+
+        public static string FormatAngleDeg(float angleDeg)
+        {
+            return String.Format(CultureInfo.CurrentCulture, "{0:F0} {1}", angleDeg, deg);
         }
 
         /// <summary>
