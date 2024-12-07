@@ -39,8 +39,11 @@
             this.checkAlerter = new System.Windows.Forms.CheckBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
-            this.pbTelemetry = new System.Windows.Forms.PictureBox();
-            this.buttonTelemetry = new System.Windows.Forms.Button();
+            this.labelAutoSaveInterval = new System.Windows.Forms.Label();
+            this.ButtonAutoSave60 = new System.Windows.Forms.RadioButton();
+            this.ButtonAutoSave30 = new System.Windows.Forms.RadioButton();
+            this.ButtonAutoSave15 = new System.Windows.Forms.RadioButton();
+            this.checkAutoSaveActive = new System.Windows.Forms.CheckBox();
             this.pbOverspeedMonitor = new System.Windows.Forms.PictureBox();
             this.pbEnableTcsScripts = new System.Windows.Forms.PictureBox();
             this.pbOtherUnits = new System.Windows.Forms.PictureBox();
@@ -164,8 +167,8 @@
             this.labelWebServerPort = new System.Windows.Forms.Label();
             this.numericWebServerPort = new System.Windows.Forms.NumericUpDown();
             this.pbControlConfirmations = new System.Windows.Forms.PictureBox();
-            this.labelControlConfirmations = new System.Windows.Forms.Label();
             this.comboControlConfirmations = new System.Windows.Forms.ComboBox();
+            this.labelControlConfirmations = new System.Windows.Forms.Label();
             this.pbWindowGlass = new System.Windows.Forms.PictureBox();
             this.checkWindowGlass = new System.Windows.Forms.CheckBox();
             this.comboWindowSize = new System.Windows.Forms.ComboBox();
@@ -208,10 +211,10 @@
             this.checkUseSuperElevation = new System.Windows.Forms.CheckBox();
             this.ElevationText = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.pbAutoSave = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbTelemetry)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOverspeedMonitor)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbEnableTcsScripts)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).BeginInit();
@@ -277,6 +280,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbSuperElevation)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAutoSave)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -383,8 +387,12 @@
             // 
             // tabPageGeneral
             // 
-            this.tabPageGeneral.Controls.Add(this.pbTelemetry);
-            this.tabPageGeneral.Controls.Add(this.buttonTelemetry);
+            this.tabPageGeneral.Controls.Add(this.pbAutoSave);
+            this.tabPageGeneral.Controls.Add(this.labelAutoSaveInterval);
+            this.tabPageGeneral.Controls.Add(this.ButtonAutoSave60);
+            this.tabPageGeneral.Controls.Add(this.ButtonAutoSave30);
+            this.tabPageGeneral.Controls.Add(this.ButtonAutoSave15);
+            this.tabPageGeneral.Controls.Add(this.checkAutoSaveActive);
             this.tabPageGeneral.Controls.Add(this.pbOverspeedMonitor);
             this.tabPageGeneral.Controls.Add(this.pbEnableTcsScripts);
             this.tabPageGeneral.Controls.Add(this.pbOtherUnits);
@@ -413,29 +421,61 @@
             this.tabPageGeneral.Text = "General";
             this.tabPageGeneral.UseVisualStyleBackColor = true;
             // 
-            // pbTelemetry
+            // labelAutoSaveInterval
             // 
-            this.pbTelemetry.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbTelemetry.Location = new System.Drawing.Point(6, 288);
-            this.pbTelemetry.Name = "pbTelemetry";
-            this.pbTelemetry.Size = new System.Drawing.Size(18, 18);
-            this.pbTelemetry.TabIndex = 32;
-            this.pbTelemetry.TabStop = false;
-            this.pbTelemetry.Click += new System.EventHandler(this.HelpIcon_Click);
-            this.pbTelemetry.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.pbTelemetry.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            this.labelAutoSaveInterval.AutoSize = true;
+            this.labelAutoSaveInterval.Location = new System.Drawing.Point(111, 299);
+            this.labelAutoSaveInterval.Name = "labelAutoSaveInterval";
+            this.labelAutoSaveInterval.Size = new System.Drawing.Size(48, 13);
+            this.labelAutoSaveInterval.TabIndex = 35;
+            this.labelAutoSaveInterval.Text = "Interval :";
             // 
-            // buttonTelemetry
+            // ButtonAutoSave60
             // 
-            this.buttonTelemetry.Location = new System.Drawing.Point(32, 285);
-            this.buttonTelemetry.Name = "buttonTelemetry";
-            this.buttonTelemetry.Size = new System.Drawing.Size(150, 23);
-            this.buttonTelemetry.TabIndex = 31;
-            this.buttonTelemetry.Text = "Telemetry Options";
-            this.buttonTelemetry.UseVisualStyleBackColor = true;
-            this.buttonTelemetry.Click += new System.EventHandler(this.buttonTelemetry_Click);
-            this.buttonTelemetry.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.buttonTelemetry.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            this.ButtonAutoSave60.AutoSize = true;
+            this.ButtonAutoSave60.Location = new System.Drawing.Point(159, 331);
+            this.ButtonAutoSave60.Name = "ButtonAutoSave60";
+            this.ButtonAutoSave60.Size = new System.Drawing.Size(61, 17);
+            this.ButtonAutoSave60.TabIndex = 34;
+            this.ButtonAutoSave60.TabStop = true;
+            this.ButtonAutoSave60.Text = "60 mins";
+            this.ButtonAutoSave60.UseVisualStyleBackColor = true;
+            this.ButtonAutoSave60.CheckedChanged += new System.EventHandler(this.buttonAutoSaveInterval_checkchanged);
+            // 
+            // ButtonAutoSave30
+            // 
+            this.ButtonAutoSave30.AutoSize = true;
+            this.ButtonAutoSave30.Location = new System.Drawing.Point(159, 314);
+            this.ButtonAutoSave30.Name = "ButtonAutoSave30";
+            this.ButtonAutoSave30.Size = new System.Drawing.Size(61, 17);
+            this.ButtonAutoSave30.TabIndex = 33;
+            this.ButtonAutoSave30.TabStop = true;
+            this.ButtonAutoSave30.Text = "30 mins";
+            this.ButtonAutoSave30.UseVisualStyleBackColor = true;
+            this.ButtonAutoSave30.CheckedChanged += new System.EventHandler(this.buttonAutoSaveInterval_checkchanged);
+            // 
+            // ButtonAutoSave15
+            // 
+            this.ButtonAutoSave15.AutoSize = true;
+            this.ButtonAutoSave15.Location = new System.Drawing.Point(159, 297);
+            this.ButtonAutoSave15.Name = "ButtonAutoSave15";
+            this.ButtonAutoSave15.Size = new System.Drawing.Size(61, 17);
+            this.ButtonAutoSave15.TabIndex = 32;
+            this.ButtonAutoSave15.TabStop = true;
+            this.ButtonAutoSave15.Text = "15 mins";
+            this.ButtonAutoSave15.UseVisualStyleBackColor = true;
+            this.ButtonAutoSave15.CheckedChanged += new System.EventHandler(this.buttonAutoSaveInterval_checkchanged);
+            // 
+            // checkAutoSaveActive
+            // 
+            this.checkAutoSaveActive.AutoSize = true;
+            this.checkAutoSaveActive.Location = new System.Drawing.Point(32, 298);
+            this.checkAutoSaveActive.Name = "checkAutoSaveActive";
+            this.checkAutoSaveActive.Size = new System.Drawing.Size(74, 17);
+            this.checkAutoSaveActive.TabIndex = 31;
+            this.checkAutoSaveActive.Text = "Auto save";
+            this.checkAutoSaveActive.UseVisualStyleBackColor = true;
+            this.checkAutoSaveActive.CheckedChanged += new System.EventHandler(this.checkAutoSave_checkchanged);
             // 
             // pbOverspeedMonitor
             // 
@@ -2049,7 +2089,7 @@
             this.pbControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // comboControlConfirmations
-            //
+            // 
             this.comboControlConfirmations.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboControlConfirmations.FormattingEnabled = true;
             this.comboControlConfirmations.Location = new System.Drawing.Point(35, 265);
@@ -2063,7 +2103,7 @@
             // 
             this.labelControlConfirmations.Location = new System.Drawing.Point(161, 265);
             this.labelControlConfirmations.Margin = new System.Windows.Forms.Padding(3);
-            this.labelControlConfirmations.Name = "labelControlConfirmation";
+            this.labelControlConfirmations.Name = "labelControlConfirmations";
             this.labelControlConfirmations.Size = new System.Drawing.Size(200, 21);
             this.labelControlConfirmations.TabIndex = 37;
             this.labelControlConfirmations.Text = "Messages suppressed       ";
@@ -2584,6 +2624,18 @@
             this.pbSuperElevation.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.pbSuperElevation.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
+            // pbAutoSave
+            // 
+            this.pbAutoSave.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbAutoSave.Location = new System.Drawing.Point(6, 299);
+            this.pbAutoSave.Name = "pbAutoSave";
+            this.pbAutoSave.Size = new System.Drawing.Size(18, 18);
+            this.pbAutoSave.TabIndex = 36;
+            this.pbAutoSave.TabStop = false;
+            this.pbAutoSave.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbAutoSave.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbAutoSave.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -2604,7 +2656,6 @@
             this.tabOptions.ResumeLayout(false);
             this.tabPageGeneral.ResumeLayout(false);
             this.tabPageGeneral.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbTelemetry)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOverspeedMonitor)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbEnableTcsScripts)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).EndInit();
@@ -2674,8 +2725,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactorChange)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAutoSave)).EndInit();
             this.ResumeLayout(false);
-
         }
 
         #endregion
@@ -2783,6 +2834,11 @@
         private System.Windows.Forms.CheckBox checkShapeWarnings;
         private System.Windows.Forms.Label labelDayAmbientLight;
         private System.Windows.Forms.CheckBox checkEnableTCSScripts;
+        private System.Windows.Forms.CheckBox checkAutoSaveActive;
+        private System.Windows.Forms.Label labelAutoSaveInterval;
+        private System.Windows.Forms.RadioButton ButtonAutoSave60;
+        private System.Windows.Forms.RadioButton ButtonAutoSave30;
+        private System.Windows.Forms.RadioButton ButtonAutoSave15;
         private System.Windows.Forms.CheckBox checkCorrectQuestionableBrakingParams;
         private System.Windows.Forms.CheckBox checkOverspeedMonitor;
         private System.Windows.Forms.NumericUpDown numericExternalSoundPassThruPercent;
@@ -2856,7 +2912,6 @@
         private System.Windows.Forms.PictureBox pbModelInstancing;
         private System.Windows.Forms.Label labelDefaultDetail;
         private System.Windows.Forms.PictureBox pbViewingFOV;
-        private System.Windows.Forms.PictureBox pbTelemetry;
-        private System.Windows.Forms.Button buttonTelemetry;
+        private System.Windows.Forms.PictureBox pbAutoSave;
     }
 }
