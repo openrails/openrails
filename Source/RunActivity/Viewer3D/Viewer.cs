@@ -76,7 +76,7 @@ namespace Orts.Viewer3D
         /// Monotonically increasing time value (in seconds) for the game/viewer. Starts at 0 and only ever increases, at real-time.
         /// </summary>
         public double RealTime { get; private set; }
-        public double LastSave = -1;
+        public double AutoSaveDueAt { get; set; } = -1; // RealTime when next AutoSave is due
         InfoDisplay InfoDisplay;
         public WindowManager WindowManager { get; private set; }
         public MessagesWindow MessagesWindow { get; private set; } // Game message window (special, always visible)
@@ -297,7 +297,7 @@ namespace Orts.Viewer3D
             Settings = simulator.Settings;
             Use3DCabProperty = Settings.GetSavingProperty<bool>("Use3DCab");
 
-            LastSave = Simulator.Settings.AutoSaveInterval * 60;
+            AutoSaveDueAt = Simulator.Settings.AutoSaveInterval * 60;
 
             RenderProcess = game.RenderProcess;
             UpdaterProcess = game.UpdaterProcess;
@@ -740,10 +740,10 @@ namespace Orts.Viewer3D
             var elapsedTime = new ElapsedTime(Simulator.GetElapsedClockSeconds(elapsedRealTime), elapsedRealTime);
 
             // auto save
-            if (Simulator.Settings.AutoSaveActive && RealTime > LastSave && !Simulator.Paused)
+            if (Simulator.Settings.AutoSaveActive && RealTime > AutoSaveDueAt && !Simulator.Paused)
             {
                 GameStateRunActivity.Save();
-                LastSave = RealTime + Simulator.Settings.AutoSaveInterval * 60;
+                AutoSaveDueAt = RealTime + Simulator.Settings.AutoSaveInterval * 60;
             }
 
             // show message
@@ -944,7 +944,7 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommand.GameSave))
             {
                 GameStateRunActivity.Save();
-                LastSave = RealTime + 60 * Simulator.Settings.AutoSaveInterval;
+                AutoSaveDueAt = RealTime + 60 * Simulator.Settings.AutoSaveInterval;
             }
             if (UserInput.IsPressed(UserCommand.DisplayHelpWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) HelpWindow.TabAction(); else HelpWindow.Visible = !HelpWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayTrackMonitorWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrackMonitorWindow.TabAction(); else TrackMonitorWindow.Visible = !TrackMonitorWindow.Visible;
