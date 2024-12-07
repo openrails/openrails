@@ -70,7 +70,6 @@ namespace Orts.Viewer3D.Popups
         void buttonSave_Click(Control arg1, Point arg2)
         {
             GameStateRunActivity.Save();
-            Owner.Viewer.AutoSaveDueAt = Owner.Viewer.RealTime + 60 * Owner.Viewer.Simulator.Settings.AutoSaveInterval;
         }
 
         void buttonContinue_Click(Control arg1, Point arg2)
