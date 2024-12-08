@@ -356,16 +356,34 @@ namespace ORTS.Scripting.Api
         /// Set dynamic brake controller to position in range [0-1].
         /// </summary>
         public Action<float> SetDynamicBrakeController;
+        /// <summary>
+        /// Sets the target speed of the automatic traction/braking system
+        /// Gets the current speed enforced by the automatic traction/braking system
+        /// </summary>
         public float? SetSpeedMpS
         {
             get
             {
-                if (Locomotive?.CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto) return Locomotive.CruiseControl.SetSpeedMpS;
+                if (Locomotive.CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto) return Locomotive.CruiseControl.SetSpeedMpS;
                 return null;
             }
             set
             {
                 if (Locomotive.CruiseControl != null) Locomotive.CruiseControl.ATOSetSpeedMpS = value;
+            }
+        }
+        /// <summary>
+        /// Controls the target acceleration of the automatic traction/braking system when a braking curve is active
+        /// </summary>
+        public float SetSpeedAccelerationMpSS
+        {
+            get
+            {
+                return Locomotive?.CruiseControl.ATOAccelerationMpSS ?? 0;
+            }
+            set
+            {
+                if (Locomotive.CruiseControl != null) Locomotive.CruiseControl.ATOAccelerationMpSS = value;
             }
         }
         /// <summary>
