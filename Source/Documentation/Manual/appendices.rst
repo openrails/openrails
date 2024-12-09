@@ -716,3 +716,21 @@ The advantages of using “SPEED” signals over speedposts are :
 
 A “SPEED” signalhead can be part of a signal which also contains other heads, but for clarity of operation
 this is not advisable.
+
+
+
+.. _appendices-ini-file:
+
+INI File and User Settings
+==========================
+
+By default, Open Rails keeps the user's settings and options in the Window's Registry.
+
+If you want to have a set of alternative settings which bypass the settings kept in the Registry,
+then you can use an INI text file for this.
+
+Create an empty file OpenRails.ini in the same folder as OpenRails.exe and start Open Rails.
+The program will attempt to load settings from the file, using default values for settings that 
+cannot be found and populates the INI file with these settings.
+
+If you change the settings and options, then these will be saved automatically to the INI file.
