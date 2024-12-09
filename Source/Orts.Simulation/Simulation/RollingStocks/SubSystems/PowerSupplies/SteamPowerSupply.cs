@@ -31,39 +31,128 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public MSTSSteamLocomotive Locomotive => Car as MSTSSteamLocomotive;
         public PowerSupplyType Type => PowerSupplyType.Steam;
 
-        public BatterySwitch BatterySwitch { get; protected set; }
+        public Pantographs Pantographs => Locomotive.Pantographs;
+        public Battery Battery { get; protected set; }
+        public BatterySwitch BatterySwitch => Battery.BatterySwitch;
         public MasterKey MasterKey { get; protected set; }
         public ElectricTrainSupplySwitch ElectricTrainSupplySwitch => null;
 
-        public PowerSupplyState MainPowerSupplyState => PowerSupplyState.PowerOn;
-        public bool MainPowerSupplyOn => true;
-        public bool DynamicBrakeAvailable => false;
+        public PowerSupplyState MainPowerSupplyState
+        {
+            get
+            {
+                return PowerSupplyState.PowerOn;
+            }
+            set{}
+        }
 
-        public PowerSupplyState AuxiliaryPowerSupplyState => PowerSupplyState.PowerOn;
+        public bool MainPowerSupplyOn => true;
+        public bool DynamicBrakeAvailable
+        {
+            get
+            {
+                return false;
+            }
+            set{}
+        }
+        public float PowerSupplyDynamicBrakePercent { get; set; } = -1;
+        public float MaximumDynamicBrakePowerW { get; set; } = 0;
+        public float MaxThrottlePercent { get; set; } = 100;
+        public float ThrottleReductionPercent { get; set; } = 0;
+
+        public PowerSupplyState AuxiliaryPowerSupplyState
+        {
+            get
+            {
+                return PowerSupplyState.PowerOn;
+            }
+            set{}
+        }
+
         public bool AuxiliaryPowerSupplyOn => true;
 
-        public PowerSupplyState LowVoltagePowerSupplyState => BatterySwitch.On ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff;
+        public PowerSupplyState LowVoltagePowerSupplyState
+        {
+            get
+            {
+                return Battery.State == PowerSupplyState.PowerOn ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff;
+            }
+            set{}
+        }
+
         public bool LowVoltagePowerSupplyOn => LowVoltagePowerSupplyState == PowerSupplyState.PowerOn;
 
-        public PowerSupplyState BatteryState => BatterySwitch.On ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff;
-        public bool BatteryOn => BatteryState == PowerSupplyState.PowerOn;
+        public PowerSupplyState BatteryState
+        {
+            get
+            {
+                return Battery.State;
+            }
+            set
+            {
+                Battery.State = value;
+            }
+        }
 
-        public PowerSupplyState CabPowerSupplyState => MasterKey.On ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff;
+        public bool BatteryOn => BatteryState == PowerSupplyState.PowerOn;
+        public float BatteryVoltageV => BatteryOn ? Battery.VoltageV : 0;
+
+        public PowerSupplyState CabPowerSupplyState
+        {
+            get
+            {
+                return MasterKey.On ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff;
+            }
+            set{}
+        }
+
         public bool CabPowerSupplyOn => CabPowerSupplyState == PowerSupplyState.PowerOn;
 
-        public PowerSupplyState ElectricTrainSupplyState => PowerSupplyState.Unavailable;
+        public PowerSupplyState ElectricTrainSupplyState
+        {
+            get
+            {
+                return PowerSupplyState.Unavailable;
+            }
+            set{}
+        }
+
         public bool ElectricTrainSupplyOn => false;
         public bool FrontElectricTrainSupplyCableConnected { get => false; set { } }
         public float ElectricTrainSupplyPowerW => 0f;
 
-        public bool ServiceRetentionButton => false;
-        public bool ServiceRetentionCancellationButton => false;
+        public bool ServiceRetentionButton
+        {
+            get
+            {
+                return false;
+            }
+            set{}
+        }
+
+        public bool ServiceRetentionCancellationButton
+        {
+            get
+            {
+                return false;
+            }
+            set{}
+        }
+
+        public bool ServiceRetentionActive
+        {
+            get
+            {
+                return false;
+            }
+            set{}
+        }
 
         public SteamPowerSupply(MSTSSteamLocomotive locomotive)
         {
             Car = locomotive;
 
-            BatterySwitch = new BatterySwitch(Locomotive);
+            Battery = new Battery(Locomotive);
             MasterKey = new MasterKey(Locomotive);
         }
 
@@ -71,10 +160,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             switch (lowercasetoken)
             {
-                case "engine(ortsbattery(mode":
-                case "engine(ortsbattery(delay":
-                case "engine(ortsbattery(defaulton":
-                    BatterySwitch.Parse(lowercasetoken, stf);
+                case "engine(ortsbattery":
+                    Battery.Parse(lowercasetoken, stf);
                     break;
                 case "engine(ortsmasterkey(mode":
                 case "engine(ortsmasterkey(delayoff":
@@ -88,37 +175,38 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             if (other is SteamPowerSupply steamOther)
             {
-                BatterySwitch.Copy(steamOther.BatterySwitch);
+                Battery.Copy(steamOther.Battery);
                 MasterKey.Copy(steamOther.MasterKey);
             }
         }
 
         public void Initialize()
         {
-            BatterySwitch.Initialize();
+            Battery.Initialize();
             MasterKey.Initialize();
         }
 
         public virtual void InitializeMoving()
         {
-            BatterySwitch.InitializeMoving();
+            Battery.InitializeMoving();
             MasterKey.InitializeMoving();
         }
 
         public void Save(BinaryWriter outf)
         {
-            BatterySwitch.Save(outf);
+            Battery.Save(outf);
             MasterKey.Save(outf);
         }
 
         public void Restore(BinaryReader inf)
         {
-            BatterySwitch.Restore(inf);
+            Battery.Restore(inf);
             MasterKey.Restore(inf);
         }
 
         public void Update(float elapsedClockSeconds)
         {
+            Battery.State = BatterySwitch.On ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff;
         }
 
         public void HandleEvent(PowerSupplyEvent evt)
@@ -131,11 +219,31 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
         }
 
+        public void HandleEventFromTcs(PowerSupplyEvent evt)
+        {
+        }
+
+        public void HandleEventFromTcs(PowerSupplyEvent evt, int id)
+        {
+        }
+
+        public void HandleEventFromTcs(PowerSupplyEvent evt, string message)
+        {
+        }
+
         public void HandleEventFromLeadLocomotive(PowerSupplyEvent evt)
         {
         }
 
         public void HandleEventFromLeadLocomotive(PowerSupplyEvent evt, int id)
+        {
+        }
+
+        public void HandleEventFromOtherLocomotive(int locoIndex, PowerSupplyEvent evt)
+        {
+        }
+
+        public void HandleEventFromOtherLocomotive(int locoIndex, PowerSupplyEvent evt, int id)
         {
         }
     }
