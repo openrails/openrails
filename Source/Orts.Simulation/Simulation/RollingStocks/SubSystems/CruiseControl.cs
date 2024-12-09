@@ -60,8 +60,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public SpeedRegulatorMode SpeedRegMode = SpeedRegulatorMode.Manual;
         public SpeedSelectorMode SpeedSelMode = SpeedSelectorMode.Neutral;
         public ControllerCruiseControlLogic CruiseControlLogic = new ControllerCruiseControlLogic();
-        public float? ATOSetSpeedMpS;
-        public float ATOAccelerationMpSS;
+        public float? ASCSetSpeedMpS;
+        public float ASCAccelerationMpSS;
         protected IIRFilter AccelerationFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, 1.0f, 0.1f);
         public float SelectedSpeedMpS
         {
@@ -99,9 +99,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         {
             get
             {
-                if (ATOSpeedTakesPriorityOverSpeedSelector && ATOSetSpeedMpS.HasValue) return ATOSetSpeedMpS.Value;
+                if (ASCSpeedTakesPriorityOverSpeedSelector && ASCSetSpeedMpS.HasValue) return ASCSetSpeedMpS.Value;
                 float setSpeedMpS = CurrentSelectedSpeedMpS;
-                if (ATOSetSpeedMpS < setSpeedMpS) setSpeedMpS = ATOSetSpeedMpS.Value;
+                if (ASCSetSpeedMpS < setSpeedMpS) setSpeedMpS = ASCSetSpeedMpS.Value;
                 return setSpeedMpS;
             }
         }
@@ -165,7 +165,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool DynamicBrakeCommandHasPriorityOverCruiseControl = true;
         public bool TrainBrakeCommandHasPriorityOverCruiseControl = true;
         public bool TrainBrakeCommandHasPriorityOverAcceleratingCruiseControl = true;
-        public bool BrakeCommandHasPriorityOverATOBraking = false;
+        public bool BrakeCommandHasPriorityOverASCBraking = false;
         public bool HasIndependentThrottleDynamicBrakeLever = false;
         public bool HasProportionalSpeedSelector = false;
         public bool SpeedSelectorIsDiscrete = false;
@@ -175,7 +175,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool ModeSwitchAllowedWithThrottleNotAtZero = false;
         public bool UseTrainBrakeAndDynBrake = false;
         public bool UseDynBrake = true;
-        public bool ATOSpeedTakesPriorityOverSpeedSelector = false;
+        public bool ASCSpeedTakesPriorityOverSpeedSelector = false;
         protected float SpeedDeltaToEnableTrainBrake = 5;
         protected float MinDynamicBrakePercentToEnableTrainBrake = 80;
         protected float MinDynamicBrakePercentWhileUsingTrainBrake = 20;
@@ -289,8 +289,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             DynamicBrakeCommandHasPriorityOverCruiseControl = other.DynamicBrakeCommandHasPriorityOverCruiseControl;
             TrainBrakeCommandHasPriorityOverCruiseControl = other.TrainBrakeCommandHasPriorityOverCruiseControl;
             TrainBrakeCommandHasPriorityOverAcceleratingCruiseControl = other.TrainBrakeCommandHasPriorityOverAcceleratingCruiseControl;
-            BrakeCommandHasPriorityOverATOBraking = other.BrakeCommandHasPriorityOverATOBraking;
-            ATOSpeedTakesPriorityOverSpeedSelector = other.ATOSpeedTakesPriorityOverSpeedSelector;
+            BrakeCommandHasPriorityOverASCBraking = other.BrakeCommandHasPriorityOverASCBraking;
+            ASCSpeedTakesPriorityOverSpeedSelector = other.ASCSpeedTakesPriorityOverSpeedSelector;
             HasIndependentThrottleDynamicBrakeLever = other.HasIndependentThrottleDynamicBrakeLever;
             HasProportionalSpeedSelector = other.HasProportionalSpeedSelector;
             DisableManualSwitchToAutoWhenSetSpeedNotAtTop = other.DisableManualSwitchToAutoWhenSetSpeedNotAtTop;
@@ -382,8 +382,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     case "dynamicbrakecommandhaspriorityovercruisecontrol": DynamicBrakeCommandHasPriorityOverCruiseControl = stf.ReadBoolBlock(true); break;
                     case "trainbrakecommandhaspriorityovercruisecontrol": TrainBrakeCommandHasPriorityOverCruiseControl = stf.ReadBoolBlock(true); break;
                     case "trainbrakecommandhaspriorityoveracceleratingcruisecontrol": TrainBrakeCommandHasPriorityOverAcceleratingCruiseControl = stf.ReadBoolBlock(true); break;
-                    case "brakecommandhaspriorityoveratobraking": BrakeCommandHasPriorityOverATOBraking = stf.ReadBoolBlock(false); break;
-                    case "atospeedtakespriorityoverspeedselector": ATOSpeedTakesPriorityOverSpeedSelector = stf.ReadBoolBlock(false); break;
+                    case "brakecommandhaspriorityoverascbraking": BrakeCommandHasPriorityOverASCBraking = stf.ReadBoolBlock(false); break;
+                    case "ascspeedtakespriorityoverspeedselector": ASCSpeedTakesPriorityOverSpeedSelector = stf.ReadBoolBlock(false); break;
                     case "hasindependentthrottledynamicbrakelever": HasIndependentThrottleDynamicBrakeLever = stf.ReadBoolBlock(false); break;
                     case "hasproportionalspeedselector": HasProportionalSpeedSelector = stf.ReadBoolBlock(false); break;
                     case "speedselectorisdiscrete": SpeedSelectorIsDiscrete = stf.ReadBoolBlock(false); break;
@@ -694,26 +694,26 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 bool tractionAllowed = (AbsWheelSpeedMpS > SafeSpeedForAutomaticOperationMpS || SpeedSelMode == SpeedSelectorMode.Start || SpeedRegulatorOptions.Contains("startfromzero")) && SpeedSelMode != SpeedSelectorMode.Neutral;
                 tractionAllowed &= Locomotive.Direction != Direction.N;
                 bool brakingAllowed = true;
-                bool atoBrakingAllowed = !BrakeCommandHasPriorityOverATOBraking && ATOSetSpeedMpS == SetSpeedMpS;
+                bool ascBrakingAllowed = !BrakeCommandHasPriorityOverASCBraking && ASCSetSpeedMpS == SetSpeedMpS;
                 if (ForceResetRequiredAfterBraking && (!WasForceReset || WasBraking && SelectedMaxAccelerationPercent > 0))
                 {
                     tractionAllowed = false;
-                    if (TrainBrakeCommandHasPriorityOverCruiseControl) brakingAllowed = atoBrakingAllowed;
+                    if (TrainBrakeCommandHasPriorityOverCruiseControl) brakingAllowed = ascBrakingAllowed;
                 }
                 if (TrainBrakePriority)
                 {
                     tractionAllowed = false;
-                    if (TrainBrakeCommandHasPriorityOverCruiseControl) brakingAllowed = atoBrakingAllowed;
+                    if (TrainBrakeCommandHasPriorityOverCruiseControl) brakingAllowed = ascBrakingAllowed;
                 }
                 if (DynamicBrakePriority)
                 {
                     tractionAllowed = false;
-                    brakingAllowed = atoBrakingAllowed;
+                    brakingAllowed = ascBrakingAllowed;
                 }
                 if (SelectedMaxAccelerationPercent == 0)
                 {
                     tractionAllowed = false;
-                    brakingAllowed = atoBrakingAllowed;
+                    brakingAllowed = ascBrakingAllowed;
                 }
                 if (ThrottleNeutralPosition && SelectedSpeedMpS == 0)
                 {
@@ -827,7 +827,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
             if (ForceRegulatorAutoWhenNonZeroSpeedSelected)
             {
-                if (SelectedSpeedMpS == 0 && (!ATOSpeedTakesPriorityOverSpeedSelector || !ATOSetSpeedMpS.HasValue))
+                if (SelectedSpeedMpS == 0 && (!ASCSpeedTakesPriorityOverSpeedSelector || !ASCSetSpeedMpS.HasValue))
                 {
                     SpeedRegMode = SpeedRegulatorMode.Manual;
                 }
@@ -1244,10 +1244,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     demandedAccelerationMpSS = (float)Math.Pow(demandedAccelerationMpSS, DeltaAccelerationExponent);
             }
             prevDemandedAccelerationMpSS = demandedAccelerationMpSS;
-            if (ATOAccelerationMpSS > 0)
-                demandedAccelerationMpSS = MathHelper.Clamp(demandedAccelerationMpSS + ATOAccelerationMpSS, -MaxDecelerationMpSS, MaxAccelerationMpSS + ATOAccelerationMpSS);
+            if (ASCAccelerationMpSS > 0)
+                demandedAccelerationMpSS = MathHelper.Clamp(demandedAccelerationMpSS + ASCAccelerationMpSS, -MaxDecelerationMpSS, MaxAccelerationMpSS + ASCAccelerationMpSS);
             else
-                demandedAccelerationMpSS = MathHelper.Clamp(demandedAccelerationMpSS + ATOAccelerationMpSS, -MaxDecelerationMpSS + ATOAccelerationMpSS, MaxAccelerationMpSS);
+                demandedAccelerationMpSS = MathHelper.Clamp(demandedAccelerationMpSS + ASCAccelerationMpSS, -MaxDecelerationMpSS + ASCAccelerationMpSS, MaxAccelerationMpSS);
 
             float totalTractionN = 0;
             float totalDynamicBrakeN = 0;

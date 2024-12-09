@@ -369,7 +369,7 @@ namespace ORTS.Scripting.Api
             }
             set
             {
-                if (Locomotive.CruiseControl != null) Locomotive.CruiseControl.ATOSetSpeedMpS = value;
+                if (Locomotive.CruiseControl != null) Locomotive.CruiseControl.ASCSetSpeedMpS = value;
             }
         }
         /// <summary>
@@ -379,11 +379,11 @@ namespace ORTS.Scripting.Api
         {
             get
             {
-                return Locomotive?.CruiseControl.ATOAccelerationMpSS ?? 0;
+                return Locomotive?.CruiseControl.ASCAccelerationMpSS ?? 0;
             }
             set
             {
-                if (Locomotive.CruiseControl != null) Locomotive.CruiseControl.ATOAccelerationMpSS = value;
+                if (Locomotive.CruiseControl != null) Locomotive.CruiseControl.ASCAccelerationMpSS = value;
             }
         }
         /// <summary>
