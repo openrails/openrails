@@ -724,7 +724,7 @@ this is not advisable.
 INI File and User Settings
 ==========================
 
-By default, Open Rails keeps the user's settings and options in the Window's Registry.
+By default, Open Rails keeps the user's settings and options in the Windows Registry.
 
 If you want to have a set of alternative settings which bypass the settings kept in the Registry,
 then you can use an INI text file for this.
