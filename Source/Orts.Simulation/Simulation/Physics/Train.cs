@@ -13849,7 +13849,11 @@ namespace Orts.Simulation.Physics
                         car.SignalEvent(Event.AITrainLeadLoco);
                         leadFound = true;
                     }
-                    else car.SignalEvent(Event.AITrainHelperLoco);
+                    else
+                    {
+                        car.SignalEvent(Event.AITrainHelperLoco);
+                        car.SignalEvent(Event.EndAITrainLeadLoco);
+                    }
                 }
             }
         }
@@ -13863,9 +13867,13 @@ namespace Orts.Simulation.Physics
             Simulator.PlayerLocomotive.SignalEvent(Event.PlayerTrainLeadLoco);
             foreach (var car in Cars)
             {
-                if (car is MSTSLocomotive && car != Simulator.PlayerLocomotive)
+                if (car is MSTSLocomotive)
                 {
-                    car.SignalEvent(Event.PlayerTrainHelperLoco);
+                    if (car != Simulator.PlayerLocomotive)
+                    {
+                        car.SignalEvent(Event.PlayerTrainHelperLoco);
+                    }
+                    car.SignalEvent(Event.EndAITrainLeadLoco);
                 }
             }
         }
@@ -13879,7 +13887,10 @@ namespace Orts.Simulation.Physics
             foreach (var car in Cars)
             {
                 if (car is MSTSLocomotive)
+                {
                     car.SignalEvent(Event.StaticTrainLoco);
+                    car.SignalEvent(Event.EndAITrainLeadLoco);
+                }
             }
         }
 
