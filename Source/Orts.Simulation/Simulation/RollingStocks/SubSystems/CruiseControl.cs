@@ -145,6 +145,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float ParkingBrakeEngageSpeedMpS = 0;
         public float ParkingBrakePercent = 0;
         public bool DisableZeroForceStep = false;
+        public bool DisableZeroSelectedSpeedStep = false;
         public bool DynamicBrakeIsSelectedForceDependant = false;
         public bool UseThrottleAsSpeedSelector = false;
         public bool UseThrottleAsForceSelector = false;
@@ -212,10 +213,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public MSTSNotchController MaxForceSelectorController;
         public MSTSNotchController SpeedSelectorController;
 
-        public bool SelectedSpeedPressed = false;
         public bool EngineBrakePriority = false;
         public int AccelerationBits = 0;
-        public bool Speed0Pressed, SpeedDeltaPressed;
 
         public CruiseControl(MSTSLocomotive locomotive)
         {
@@ -269,6 +268,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             ParkingBrakeEngageSpeedMpS = other.ParkingBrakeEngageSpeedMpS;
             ParkingBrakePercent = other.ParkingBrakePercent;
             DisableZeroForceStep = other.DisableZeroForceStep;
+            DisableZeroSelectedSpeedStep = other.DisableZeroSelectedSpeedStep;
             DynamicBrakeIsSelectedForceDependant = other.DynamicBrakeIsSelectedForceDependant;
             UseThrottleAsSpeedSelector = other.UseThrottleAsSpeedSelector;
             UseThrottleAsForceSelector = other.UseThrottleAsForceSelector;
@@ -362,6 +362,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     case "powerreductiondelaycargotrain": PowerReductionDelayCargoTrain = stf.ReadFloatBlock(STFReader.UNITS.Any, 0.0f); break;
                     case "powerreductionvalue": PowerReductionValue = stf.ReadFloatBlock(STFReader.UNITS.Any, 100.0f); break;
                     case "disablezeroforcestep": DisableZeroForceStep = stf.ReadBoolBlock(false); break;
+                    case "disablezeroselectedspeedstep": DisableZeroSelectedSpeedStep = stf.ReadBoolBlock(false); break;
                     case "dynamicbrakeisselectedforcedependant": DynamicBrakeIsSelectedForceDependant = stf.ReadBoolBlock(false); break;
                     case "defaultforcestep": defaultMaxAccelerationStep = stf.ReadFloatBlock(STFReader.UNITS.Any, 1.0f); break;
                     case "startreducingspeeddelta": StartReducingSpeedDelta = (stf.ReadFloatBlock(STFReader.UNITS.Any, 1.0f) / 10); break;
@@ -525,8 +526,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 var notches = new List<MSTSNotch>();
                 if (SpeedSelectorIsDiscrete)
                 {
-                    float numNotches = (float)Math.Round(Locomotive.MaxSpeedMpS / SpeedRegulatorNominalSpeedStepMpS);
-                    for (int i=0; i<=numNotches; i++)
+                    if (!DisableZeroSelectedSpeedStep) notches.Add(new MSTSNotch(0, false, 0));
+                    if (MinimumSpeedForCCEffectMpS > 0) notches.Add(new MSTSNotch(float.Epsilon, false, 0));
+                    float numNotches = (float)Math.Round((Locomotive.MaxSpeedMpS - MinimumSpeedForCCEffectMpS) / SpeedRegulatorNominalSpeedStepMpS);
+                    for (int i = 1; i <= numNotches; i++)
                     {
                         notches.Add(new MSTSNotch(i / numNotches, false, 0));
                     }
@@ -804,6 +807,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             var prevMode = SpeedRegMode;
             float throttle = Locomotive.ThrottleController.CurrentValue;
             float dynamic = (Locomotive.DynamicBrakeController?.CurrentValue ?? 0);
+            bool zeroForce = MaxForceSelectorController.CurrentValue == 0 && MaxForceSelectorController.SavedValue == 0;
+            bool zeroSelectedSpeed = SpeedSelectorController.CurrentValue == 0 && SpeedSelectorController.SavedValue == 0;
             if (DisableCruiseControlOnThrottleAndZeroSpeed)
             {
                 if (throttle > 0 && Locomotive.AbsSpeedMpS == 0)
@@ -813,25 +818,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
             if (DisableCruiseControlOnThrottleAndZeroForce)
             {
-                if ((throttle > 0 || UseThrottleAsForceSelector) && SelectedMaxAccelerationPercent == 0)
+                if ((throttle > 0 || UseThrottleAsForceSelector) && zeroForce)
                 {
                     SpeedRegMode = SpeedRegulatorMode.Manual;
                 }
             }
             if (DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed)
             {
-                if ((throttle > 0 || UseThrottleAsForceSelector) && SelectedMaxAccelerationPercent == 0 && SelectedSpeedMpS == 0)
+                if ((throttle > 0 || UseThrottleAsForceSelector) && zeroForce && zeroSelectedSpeed)
                 {
                     SpeedRegMode = SpeedRegulatorMode.Manual;
                 }
             }
             if (ForceRegulatorAutoWhenNonZeroSpeedSelected)
             {
-                if (SelectedSpeedMpS == 0 && (!ASCSpeedTakesPriorityOverSpeedSelector || !ASCSetSpeedMpS.HasValue))
+                if (zeroSelectedSpeed && (!ASCSpeedTakesPriorityOverSpeedSelector || !ASCSetSpeedMpS.HasValue))
                 {
                     SpeedRegMode = SpeedRegulatorMode.Manual;
                 }
-                else
+                else if (SelectedSpeedMpS > 0)
                 {
                     SpeedRegMode = SpeedRegulatorMode.Auto;
                 }
@@ -839,7 +844,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (ForceRegulatorAutoWhenNonZeroSpeedSelectedAndThrottleAtZero)
             {
                 if (SelectedSpeedMpS > 0 && throttle == 0 && dynamic == 0 &&
-                    SelectedMaxAccelerationPercent == 0 && DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed)
+                    zeroForce && DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed)
                 {
                     SpeedRegMode = SpeedRegulatorMode.Auto;
                 }
@@ -1173,8 +1178,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
             if (SpeedSelectorController.CurrentValue > 0 || MinimumSpeedForCCEffectMpS == 0)
             {
-                float speed = (SpeedSelectorController.CurrentValue * (Locomotive.MaxSpeedMpS - MinimumSpeedForCCEffectMpS) + MinimumSpeedForCCEffectMpS) + SpeedRegulatorNominalSpeedStepMpS;
-                SelectedSpeedMpS = Math.Min((float)Math.Round(speed / SpeedRegulatorNominalSpeedStepMpS) * SpeedRegulatorNominalSpeedStepMpS, Locomotive.MaxSpeedMpS);
+                float speed = ControllerValueToSelectedSpeedMpS(SpeedSelectorController.CurrentValue) + SpeedRegulatorNominalSpeedStepMpS;
+                SelectedSpeedMpS = Math.Min(speed, Locomotive.MaxSpeedMpS);
             }
             else
             {
@@ -1189,26 +1194,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (time >= selectedSpeedLeverHoldTime && time < selectedSpeedLeverHoldTime + SpeedSelectorStepTimeSeconds) return;
             selectedSpeedLeverHoldTime = time;
 
-            float speed = SpeedSelectorController.CurrentValue * (Locomotive.MaxSpeedMpS - MinimumSpeedForCCEffectMpS) + MinimumSpeedForCCEffectMpS - SpeedRegulatorNominalSpeedStepMpS;
+            float speed = ControllerValueToSelectedSpeedMpS(SpeedSelectorController.CurrentValue) - SpeedRegulatorNominalSpeedStepMpS;
             if (speed < MinimumSpeedForCCEffectMpS)
             {
                 SelectedSpeedMpS = 0;
             }
             else
             {
-                SelectedSpeedMpS = Math.Max((float)Math.Round(speed / SpeedRegulatorNominalSpeedStepMpS) * SpeedRegulatorNominalSpeedStepMpS, MinimumSpeedForCCEffectMpS);
+                SelectedSpeedMpS = speed;
             }
             ConfirmSelectedSpeed();
         }
         public void ConfirmSelectedSpeed()
         {
-            float val = SpeedSelectorController.CurrentValue;
-            if (val > 0)
-            {
-                float min = MinimumSpeedForCCEffectMpS;
-                float max = Locomotive.MaxSpeedMpS;
-                val = val * (max - min) + min;
-            }
+            float val = ControllerValueToSelectedSpeedMpS(SpeedSelectorController.CurrentValue);
             if (SpeedIsMph)
                 Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetStringFmt("Selected speed changed to {0} mph", Math.Round(MpS.FromMpS(val, false), 0, MidpointRounding.AwayFromZero).ToString()));
             else
@@ -1499,19 +1498,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 case CABViewControlTypes.ORTS_ACCELERATION_IN_TIME:
                     {
                         data = AccelerationBits;
-                        break;
-                    }
-                case CABViewControlTypes.ORTS_CC_SELECTED_SPEED:
-                    data = SelectedSpeedPressed ? 1 : 0;
-                    break;
-                case CABViewControlTypes.ORTS_CC_SPEED_0:
-                    {
-                        data = Speed0Pressed ? 1 : 0;
-                        break;
-                    }
- 				case CABViewControlTypes.ORTS_CC_SPEED_DELTA:
-                    {
-                        data = SpeedDeltaPressed ? 1 : 0;
                         break;
                     }
                 default:
