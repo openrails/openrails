@@ -1955,14 +1955,14 @@ namespace Orts.Simulation
                             TrainSwitcher.ClickedSelectedAsPlayer = false;
                             return;
                         }
-                        if (playerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || !playerTrain.Autopilot)
+                        if (playerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || TimetableMode && !playerTrain.Autopilot)
                         {
                             // it must be autopiloted first
                             playerTrain.SwitchToAutopilotControl();
                         }
                         // and now switch!
                         playerTrain.TrainType = Train.TRAINTYPE.AI;
-                        playerTrain.Autopilot = false;
+                        if (!TimetableMode) AI.AITrains.Add(playerTrain);
                         if (TrainSwitcher.SuspendOldPlayer)
                         {
                             playerTrain.MovementState = AITrain.AI_MOVEMENT_STATE.SUSPENDED;
