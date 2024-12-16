@@ -7,14 +7,25 @@ using Orts.Formats.Msts;
 using Aspose.ThreeD;
 using Aspose.ThreeD.Entities;
 using Aspose.ThreeD.Utilities;
+using System.IO;
 
 namespace ShapeToObj
 {
     internal class Program
     {
+        static string path;
         static void Main(string[] args)
         {
-            string path = Console.ReadLine();
+            if (args.Length == 0)
+            {
+                Console.WriteLine("No arguments given. Put absolute path to shape file:");
+                string path = Console.ReadLine();
+            }
+            else
+            {
+                path = args[0];
+            }
+
             Console.WriteLine("Deserializing shape");
             ShapeFile sf = new ShapeFile(path, true);
 
