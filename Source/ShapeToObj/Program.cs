@@ -13,13 +13,14 @@ namespace ShapeToObj
 {
     internal class Program
     {
-        static string path;
+
         static void Main(string[] args)
         {
+            string path;
             if (args.Length == 0)
             {
                 Console.WriteLine("No arguments given. Put absolute path to shape file:");
-                string path = Console.ReadLine();
+                path = Console.ReadLine();
             }
             else
             {
@@ -47,11 +48,11 @@ namespace ShapeToObj
                 eUVs[i] = meshes[i].CreateElementUV(TextureMapping.Diffuse, MappingMode.PolygonVertex, ReferenceMode.IndexToDirect);
                 foreach (var point in sf.shape.points)
                 {
-                    meshes[i].ControlPoints.Add(new Vector4(point.X, point.Y, point.Z, 1));
+                    meshes[i].ControlPoints.Add(new Vector4(-point.X, point.Y, point.Z, 1));
                 }
                 foreach(var point in sf.shape.uv_points)
                 {
-                    eUVs[i].Data.Add(new Vector4(point.U, point.V, 0, 1));
+                    eUVs[i].Data.Add(new Vector4(point.U, -point.V, 0, 1));
                 }
             }
 
