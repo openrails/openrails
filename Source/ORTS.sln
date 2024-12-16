@@ -55,6 +55,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatorTester", "Contrib\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShapeToObj", "ShapeToObj\ShapeToObj.csproj", "{1235BB78-0C21-4A2E-8EA0-FE2F8BA43B8E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActToTga", "ActToTga\ActToTga.csproj", "{BB151A02-0A27-4C32-8483-A4E313C11342}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -271,6 +273,14 @@ Global
 		{1235BB78-0C21-4A2E-8EA0-FE2F8BA43B8E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1235BB78-0C21-4A2E-8EA0-FE2F8BA43B8E}.Release|x64.ActiveCfg = Release|x64
 		{1235BB78-0C21-4A2E-8EA0-FE2F8BA43B8E}.Release|x64.Build.0 = Release|x64
+		{BB151A02-0A27-4C32-8483-A4E313C11342}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB151A02-0A27-4C32-8483-A4E313C11342}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB151A02-0A27-4C32-8483-A4E313C11342}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BB151A02-0A27-4C32-8483-A4E313C11342}.Debug|x64.Build.0 = Debug|Any CPU
+		{BB151A02-0A27-4C32-8483-A4E313C11342}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB151A02-0A27-4C32-8483-A4E313C11342}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB151A02-0A27-4C32-8483-A4E313C11342}.Release|x64.ActiveCfg = Release|Any CPU
+		{BB151A02-0A27-4C32-8483-A4E313C11342}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
