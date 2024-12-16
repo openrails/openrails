@@ -1460,19 +1460,6 @@ namespace Orts.Viewer3D.RollingStock
             try
             {
                 Viewer.SoundProcess.AddSoundSource(this, new SoundSource(Viewer, MSTSWagon, smsFilePath));
-                if (MSTSWagon is MSTSLocomotive && MSTSWagon.Train != null && MSTSWagon.Train.TrainType == Train.TRAINTYPE.AI)
-                {
-                    if (MSTSWagon.CarID == MSTSWagon.Train.Cars[0].CarID)
-                    // Lead loco, enable AI train trigger
-                        MSTSWagon.SignalEvent(Event.AITrainLeadLoco);
-                    // AI train helper loco
-                    else MSTSWagon.SignalEvent(Event.AITrainHelperLoco);
-                }
-                else if (MSTSWagon == Viewer.PlayerLocomotive)
-                    MSTSWagon.SignalEvent(Event.PlayerTrainLeadLoco);
-                else if (MSTSWagon is MSTSLocomotive && MSTSWagon.Train != null && (MSTSWagon.Train.TrainType == Train.TRAINTYPE.PLAYER ||
-                    MSTSWagon.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || MSTSWagon.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING))
-                    MSTSWagon.SignalEvent(Event.PlayerTrainHelperLoco);
             }
             catch (Exception error)
             {

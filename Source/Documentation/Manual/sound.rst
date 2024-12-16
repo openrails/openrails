@@ -430,21 +430,6 @@ Trigger       Function
 322           BoosterCylinderCocksClose
 =========     =====================================
 
-Following triggers referring to locomotive and train type are available:
-
-=========     =====================================
-Trigger       Function
-=========     =====================================
-330           AITrainLeadLoco
-331           AITrainHelperLoco
-332           PlayerTrainLeadLoco
-333           PlayerTrainHelperLoco
-334           AITrainApproachingStation
-335           AITrainLeavingStation
-336           StaticTrainLoco
-=========     =====================================
-
-
 Variable Triggers
 -----------------
 
