@@ -18,12 +18,24 @@ namespace ShapeToObj
             {
                 Console.WriteLine("No arguments given. Put absolute path to shape file:");
                 path = Console.ReadLine();
+                Convert(path);
+            }
+            else if (args.Length == 1)
+            {
+                path = args[0];
+                Convert(path);
             }
             else
             {
-                path = args[0];
+                foreach (string arg in args)
+                {
+                    Convert(arg);
+                }
             }
+        }
 
+        static void Convert(string path)
+        {
             Console.WriteLine("Deserializing shape");
             ShapeFile sf = new ShapeFile(path, true);
 
@@ -32,7 +44,8 @@ namespace ShapeToObj
 
             Console.WriteLine("Initializing nodes");
             List<Node> nodes = new List<Node>(new Node[sf.shape.prim_states.Count]);
-            for (int i = 0; i < nodes.Count; i++) {
+            for (int i = 0; i < nodes.Count; i++)
+            {
                 nodes[i] = new Node(sf.shape.prim_states[i].Name);
             }
 
@@ -47,7 +60,7 @@ namespace ShapeToObj
                 {
                     meshes[i].ControlPoints.Add(new Vector4(-point.X, point.Y, point.Z, 1));
                 }
-                foreach(var point in sf.shape.uv_points)
+                foreach (var point in sf.shape.uv_points)
                 {
                     eUVs[i].Data.Add(new Vector4(point.U, -point.V, 0, 1));
                 }
@@ -101,6 +114,7 @@ namespace ShapeToObj
             scn.Save(exportPath, FileFormat.WavefrontOBJ);
 
             Console.WriteLine("Finished");
+
         }
     }
 }
