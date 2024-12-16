@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Orts.Formats.Msts;
 using Aspose.ThreeD;
 using Aspose.ThreeD.Entities;
@@ -76,19 +73,11 @@ namespace ShapeToObj
                                 sub_object.vertices[vtxSet.c].vertex_uvs[0],
                                 sub_object.vertices[vtxSet.b].vertex_uvs[0],
                                 sub_object.vertices[vtxSet.a].vertex_uvs[0]
-
                             }
                         );
                     }
                 }
             }
-
-            Console.WriteLine("Converting UVs");
-            for (int i = 0; i < meshes.Count; i++)
-            {
-
-            }
-
 
             Console.WriteLine("Merging meshes with nodes");
 
