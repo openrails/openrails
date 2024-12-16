@@ -19,11 +19,23 @@ namespace ActToTga
             {
                 Console.WriteLine("No arguments given. Put absolute path to ace file:");
                 path = Console.ReadLine();
+                Convert(path);
+            }
+            else if (args.Length == 1)
+            {
+                path = args[0];
+                Convert(path);
             }
             else
             {
-                path = args[0];
+                foreach (string arg in args)
+                {
+                    Convert(arg);
+                }
             }
+        }
+        static void Convert(string path)
+        {
             Console.WriteLine("Initializing");
             // Details probably do not matter too much
             PresentationParameters parameters = new PresentationParameters()
@@ -37,7 +49,7 @@ namespace ActToTga
             };
 
             var graphicsDevice = new GraphicsDevice(GraphicsAdapter.DefaultAdapter, GraphicsProfile.HiDef, parameters);
-            
+
             Console.WriteLine("Reading ace file");
             Texture2D af = AceFile.Texture2DFromFile(graphicsDevice, path);
 
@@ -79,8 +91,6 @@ namespace ActToTga
                 // Write the pixel data
                 fileStream.Write(imageData, 0, imageData.Length);
             }
-
-
         }
     }
 }
