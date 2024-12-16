@@ -66,16 +66,16 @@ namespace ShapeToObj
                     {
                         meshes[primitive.prim_state_idx].CreatePolygon(new int[]
                         {
-                            sub_object.vertices[vtxSet.a].ipoint,
+                            sub_object.vertices[vtxSet.c].ipoint,
                             sub_object.vertices[vtxSet.b].ipoint,
-                            sub_object.vertices[vtxSet.c].ipoint
+                            sub_object.vertices[vtxSet.a].ipoint
                         });
                         eUVs[primitive.prim_state_idx].Indices.AddRange(
                             new int[]
                             {
-                                sub_object.vertices[vtxSet.a].vertex_uvs[0],
+                                sub_object.vertices[vtxSet.c].vertex_uvs[0],
                                 sub_object.vertices[vtxSet.b].vertex_uvs[0],
-                                sub_object.vertices[vtxSet.c].vertex_uvs[0]
+                                sub_object.vertices[vtxSet.a].vertex_uvs[0]
 
                             }
                         );
