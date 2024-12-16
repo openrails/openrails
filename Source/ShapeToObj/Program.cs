@@ -107,9 +107,9 @@ namespace ShapeToObj
             */
 
 
-
-            Console.WriteLine("Saving file");
-            scn.Save("b.obj", FileFormat.WavefrontOBJ);
+            string exportPath = Path.ChangeExtension(path, ".obj");
+            Console.WriteLine("Saving file as: {0}", exportPath);
+            scn.Save(exportPath, FileFormat.WavefrontOBJ);
 
             Console.WriteLine("Finished");
         }
