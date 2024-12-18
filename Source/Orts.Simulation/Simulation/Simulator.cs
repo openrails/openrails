@@ -1963,6 +1963,7 @@ namespace Orts.Simulation
                         // and now switch!
                         playerTrain.TrainType = Train.TRAINTYPE.AI;
                         if (!TimetableMode) AI.AITrains.Add(playerTrain);
+                        playerTrain.Autopilot = false;
                         if (TrainSwitcher.SuspendOldPlayer)
                         {
                             playerTrain.MovementState = AITrain.AI_MOVEMENT_STATE.SUSPENDED;
