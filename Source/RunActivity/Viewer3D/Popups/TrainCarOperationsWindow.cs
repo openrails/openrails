@@ -164,6 +164,7 @@ namespace Orts.Viewer3D.Popups
             outf.Write(Location.Height);
 
             outf.Write(SelectedCarPosition);
+            outf.Write(Owner.Viewer.FrontCamera.IsCameraFront);
         }
         protected internal override void Restore(BinaryReader inf)
         {
@@ -175,6 +176,7 @@ namespace Orts.Viewer3D.Popups
             LocationRestore.Height = inf.ReadInt32();
 
             SelectedCarPosition = inf.ReadInt32();
+            Owner.Viewer.FrontCamera.IsCameraFront = inf.ReadBoolean();
 
             // Display window
             SizeTo(LocationRestore.Width, LocationRestore.Height);
@@ -581,7 +583,7 @@ namespace Orts.Viewer3D.Popups
                 var trainCarWebpage = Owner.Viewer.TrainCarOperationsWebpage;
 
                 // Allows interaction with <Alt>+<PageDown> and <Alt>+<PageUP>.
-                if (Owner.Viewer.Camera.AttachedCar != null && !(Owner.Viewer.Camera is CabCamera) && Owner.Viewer.Camera != Owner.Viewer.ThreeDimCabCamera && (trainCarViewer.Visible || Visible))
+                if (CarPositionChanged && Owner.Viewer.Camera.AttachedCar != null && !(Owner.Viewer.Camera is CabCamera) && Owner.Viewer.Camera != Owner.Viewer.ThreeDimCabCamera && (trainCarViewer.Visible || Visible))
                 {
                     var currentCameraCarID = Owner.Viewer.Camera.AttachedCar.CarID;
                     if (PlayerTrain != null && (currentCameraCarID != trainCarViewer.CurrentCarID || CarPosition != trainCarViewer.CarPosition))
