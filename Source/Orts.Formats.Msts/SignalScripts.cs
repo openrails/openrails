@@ -391,11 +391,6 @@ namespace Orts.Formats.Msts
                     {
                         readInfo.Scriptname = scriptname;
                         ScriptLines.Add(readInfo);
-
-                        if (readInfo.Linenumber % 1000 == 1)
-                        {
-                            Trace.Write("s");
-                        }
                     }
                 }
             }
