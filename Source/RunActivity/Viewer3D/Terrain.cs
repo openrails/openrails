@@ -139,7 +139,6 @@ namespace Orts.Viewer3D
 
         public TerrainTile(Viewer viewer, TileManager tileManager, Tile tile)
         {
-            Trace.Write(tile.Size > 2 ? "L" : "T");
             TileX = tile.TileX;
             TileZ = tile.TileZ;
             Size = tile.Size;

@@ -46,8 +46,6 @@ namespace Orts.Simulation
                 return;
             }
 
-            Trace.Write(" TURNTBL");
-
             using (STFReader stf = new STFReader(filePath, false))
             {
                 var count = stf.ReadInt(null);
