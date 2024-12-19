@@ -4042,7 +4042,7 @@ namespace Orts.Simulation.Physics
             if (Simulator.Settings.VerboseConfigurationMessages && LeadLocomotiveIndex >= 0) // Check incompatibilities between brake control valves
             {
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
-                if (Cars.Any(x => (x as MSTSWagon).BrakeValve != lead.BrakeValve))
+                if (lead.BrakeSystem is AirSinglePipe leadBrakes && Cars.Any(x => x.BrakeSystem is AirSinglePipe carBrakes && leadBrakes.BrakeValve != carBrakes.BrakeValve))
                 {
                     Trace.TraceInformation("Cars along the train have incompatible brake control valves");
                 }
@@ -4071,13 +4071,13 @@ namespace Orts.Simulation.Physics
                                 car.MSTSBrakeSystem = new VacuumSinglePipe(car);
                             else if (lead.BrakeSystem is AirTwinPipe)
                                 car.MSTSBrakeSystem = new AirTwinPipe(car);
-                            else if (lead.BrakeSystem is AirSinglePipe)
+                            else if (lead.BrakeSystem is AirSinglePipe leadAir)
                             {
                                 car.MSTSBrakeSystem = new AirSinglePipe(car);
                                 // if emergency reservoir has been set on lead locomotive then also set on trailing cars
-                                if (lead.EmergencyReservoirPresent)
+                                if (leadAir.EmergencyReservoirPresent)
                                 {
-                                    car.EmergencyReservoirPresent = lead.EmergencyReservoirPresent;
+                                    (car.BrakeSystem as AirSinglePipe).EmergencyReservoirPresent = leadAir.EmergencyReservoirPresent;
                                 }
                             }
                             else if (lead.BrakeSystem is EPBrakeSystem)

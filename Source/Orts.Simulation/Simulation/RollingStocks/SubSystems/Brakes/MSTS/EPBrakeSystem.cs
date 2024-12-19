@@ -27,6 +27,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
     public class EPBrakeSystem : AirTwinPipe
     {
         bool EPBrakeControlsBrakePipe;
+        bool EPBrakeActiveInhibitsTripleValve;
 
         public EPBrakeSystem(TrainCar car)
             : base(car)
@@ -43,11 +44,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (lead == null || !(lead.BrakeSystem is EPBrakeSystem) || Car.Train.BrakeLine4 == -1)
             {
                 HoldingValve = ValveState.Release;
+                IsolationValve = ValveState.Release;
                 base.Update(elapsedClockSeconds);
                 return;
             }
-
-            if (EPBrakeControlsBrakePipe)
+            else if (EPBrakeControlsBrakePipe)
             {
                 if (Car.Train.BrakeLine4 >= 0)
                 {
@@ -102,6 +103,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         demandedAutoCylPressurePSI = TwoStageLowPressurePSI;
                     HoldingValve = AutoCylPressurePSI <= demandedAutoCylPressurePSI ? ValveState.Lap : ValveState.Release;
                 }
+                if (EPBrakeActiveInhibitsTripleValve)
+                {
+                    HoldingValve = ValveState.Release;
+                    IsolationValve = ValveState.Lap;
+                }
                 
                 base.Update(elapsedClockSeconds); // Allow processing of other valid tokens
 
@@ -115,6 +121,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     BrakeLine2PressurePSI -= dp * CylBrakeLineVolumeRatio;
                     AutoCylPressurePSI += dp;
                 }
+                else if (EPBrakeActiveInhibitsTripleValve && AutoCylPressurePSI > demandedAutoCylPressurePSI)
+                {
+                    float dp = elapsedClockSeconds * ReleaseRatePSIpS;
+                    if (AutoCylPressurePSI - dp < demandedAutoCylPressurePSI)
+                        dp = AutoCylPressurePSI - demandedAutoCylPressurePSI;
+                    AutoCylPressurePSI -= dp;
+                }
             }
             
         }
@@ -126,6 +139,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 case "wagon(ortsepbrakecontrolsbrakepipe":
                     EPBrakeControlsBrakePipe = stf.ReadBoolBlock(false);
                     break;
+                case "wagon(ortsepbrakeinhibitstriplevalve":
+                    EPBrakeActiveInhibitsTripleValve = stf.ReadBoolBlock(false);
+                    break;
                 default:
                     base.Parse(lowercasetoken, stf);
                     break;
@@ -133,8 +149,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         }
         public override void InitializeFromCopy(BrakeSystem copy)
         {
+            base.InitializeFromCopy(copy);
             EPBrakeSystem thiscopy = (EPBrakeSystem)copy;
             EPBrakeControlsBrakePipe = thiscopy.EPBrakeControlsBrakePipe;
+            EPBrakeActiveInhibitsTripleValve = thiscopy.EPBrakeActiveInhibitsTripleValve;
             base.InitializeFromCopy(copy);
         }
 
