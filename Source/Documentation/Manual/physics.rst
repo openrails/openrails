@@ -3246,10 +3246,12 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
    single: ORTSBrakeEmergencyTimeFactor
    single: ORTSBrakePipeTimeFactor
    single: ORTSEPBrakeControlsBrakePipe
+   single: ORTSEPBrakeInhibitsTripleValve
    single: ORTSCompressorIsMuControlled
    single: Supply_Reservoir
    single: ORTSSupplyResCapacity
    single: ORTSSupplyResChargingRate
+   single: Emergency_Solenoid_Valve
 
 - ``Wagon(BrakePipeVolume`` -- Volume of car's brake pipe in cubic feet
   (default .5).
@@ -3322,6 +3324,8 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   by the brake system.
 - ``Wagon(ORTSEPBrakeControlsBrakePipe`` -- Set to 1 for UIC EP brake: brake pipe
   pressure is electrically controlled at every fitted car.
+- ``Wagon(ORTSEPBrakeInhibitsTripleValve`` -- Set to 1 if the car is fitted with a
+  selector valve that ignores brake pipe pressure when EP brakes are operational.
 - ``Wagon(ORTSBrakeRelayValveRatio`` -- Determines the proportionality constant
   between pressure as demanded by the triple valve and brake cylinder pressure.
   This is achieved via a relay valve which sets BC pressure proportionally.
@@ -3400,7 +3404,7 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 - ``Wagon(ORTSInitialApplicationThreshold`` -- The pressure difference between
   the brake pipe and auxiliary reservoir at which the triple valve will
   change from release to apply (default 1 psi).
-- ``BrakeEquipmentType(Supply_Reservoir`` -- Adds a supply reservoir to the
+- ``Wagon(BrakeEquipmentType(Supply_Reservoir`` -- Adds a supply reservoir to the
   loco or wagon, which will constantly charge to the brake pipe pressure
   or MR pipe (if equipped) pressure. If a supply reservoir is equipped,
   supply res air will be used to pressurize the brake cylinders thru the relay
@@ -3437,6 +3441,10 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   Pipe for twin pipe braking systems (default = Main Reservoir Pressure).
 - ``Engine(ORTSCompressorIsMuControlled`` -- Set to 1 if compressors from
   all locomotives are synchronized.
+- ``Wagon(BrakeEquipmentType(Emergency_Solenoid_Valve`` -- Adds an
+  electrically controlled valve that quickly applies maximum
+  brake cylinder pressure during an emergency braking. Only available if the
+  brake cylinder pressure is controlled using a relay valve.
 
 .. _physics-retainers:
 
