@@ -104,7 +104,7 @@ namespace Orts.Viewer3D
                         case LightType.Glow:
                             LightPrimitives.Add(new LightGlowPrimitive(this, Viewer.RenderProcess, light));
                             if (light.Graphic != null)
-                                (LightPrimitives.Last() as LightGlowPrimitive).SpecificGlowMaterial = viewer.MaterialManager.Load("LightGlow", DefineFullTexturePath(light.Graphic));
+                                (LightPrimitives.Last() as LightGlowPrimitive).SpecificGlowMaterial = viewer.MaterialManager.Load("LightGlow", DefineFullTexturePath(light.Graphic, true));
                             else
                                 (LightPrimitives.Last() as LightGlowPrimitive).SpecificGlowMaterial = LightGlowMaterial;
                             break;
@@ -154,11 +154,12 @@ namespace Orts.Viewer3D
             UpdateActiveLightCone();
         }
 
-        string DefineFullTexturePath(string textureName)
+        string DefineFullTexturePath(string textureName, bool searchSpecificTexture = false)
         {
             if (File.Exists(Path.Combine(Path.GetDirectoryName(Car.WagFilePath), textureName)))
                 return Path.Combine(Path.GetDirectoryName(Car.WagFilePath), textureName);
-            Trace.TraceWarning("Could not find light graphic {0} at {1}", textureName, Path.Combine(Path.GetDirectoryName(Car.WagFilePath), textureName));
+            if (searchSpecificTexture)
+                Trace.TraceWarning("Could not find light graphic {0} at {1}", textureName, Path.Combine(Path.GetDirectoryName(Car.WagFilePath), textureName));
             if (File.Exists(Path.Combine(Viewer.ContentPath, textureName)))
                 return Path.Combine(Viewer.ContentPath, textureName);
             return Path.Combine(Viewer.ContentPath, "LightGlow.png");
