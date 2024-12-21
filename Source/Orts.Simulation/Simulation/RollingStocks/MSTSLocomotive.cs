@@ -1719,7 +1719,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // MaximumMainReservoirPipePressurePSI is only used in twin pipe system, and should have a value
-            if ((BrakeSystem is AirTwinPipe))
+            if (BrakeSystem is AirSinglePipe air && air.TwoPipes)
             {
 
                 // for airtwinpipe system, make sure that a value is set for it

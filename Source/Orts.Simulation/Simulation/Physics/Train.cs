@@ -4082,8 +4082,8 @@ namespace Orts.Simulation.Physics
                                     (car.BrakeSystem as AirSinglePipe).EmergencyReservoirPresent = leadAir.EmergencyReservoirPresent;
                                 }
                             }
-                            else if (lead.BrakeSystem is EPBrakeSystem)
-                                car.MSTSBrakeSystem = new EPBrakeSystem(car);
+                            else if (lead.BrakeSystem is EPBrakeSystem ep)
+                                car.MSTSBrakeSystem = new EPBrakeSystem(car, ep.TwoPipes);
                             else if (lead.BrakeSystem is SingleTransferPipe)
                                 car.MSTSBrakeSystem = new SingleTransferPipe(car);
                             else

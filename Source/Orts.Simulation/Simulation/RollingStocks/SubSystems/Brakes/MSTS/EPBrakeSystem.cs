@@ -19,20 +19,21 @@ using System;
 using System.Collections.Generic;
 using ORTS.Common;
 using Orts.Parsers.Msts;
-using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
 
-    public class EPBrakeSystem : AirTwinPipe
+    public class EPBrakeSystem : AirSinglePipe
     {
         bool EPBrakeControlsBrakePipe;
         bool EPBrakeActiveInhibitsTripleValve;
 
-        public EPBrakeSystem(TrainCar car)
+        public EPBrakeSystem(TrainCar car, bool twoPipes = true)
             : base(car)
         {
             DebugType = "EP";
+            TwoPipes = twoPipes;
+            MRPAuxResCharging = TwoPipes;
         }
 
 
@@ -69,17 +70,45 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             dp = BrakeLine1PressurePSI - targetPressurePSI;
                         BrakeLine1PressurePSI -= dp;
                     }
-                    else if (targetPressurePSI > BrakeLine1PressurePSI + 1 && BrakeLine2PressurePSI > targetPressurePSI && Car.Train.BrakeLine4 < 1)
+                    else if (targetPressurePSI > BrakeLine1PressurePSI + 1 && Car.Train.BrakeLine4 < 1)
                     {
                         float dp = elapsedClockSeconds * MaxReleaseRatePSIpS / AuxCylVolumeRatio;
                         if (dp > targetPressurePSI - BrakeLine1PressurePSI)
                             dp = targetPressurePSI - BrakeLine1PressurePSI;
-                        BrakeLine1PressurePSI += dp;
-                        BrakeLine2PressurePSI -= dp;
+                        if (SupplyReservoirPresent)
+                        {
+                            float ratio = BrakePipeVolumeM3 / SupplyResVolumeM3;
+                            if (BrakeLine1PressurePSI + dp > SupplyResPressurePSI - dp * ratio)
+                                dp = (SupplyResPressurePSI - BrakeLine1PressurePSI) / (1 + ratio);
+                            if (dp < 0)
+                                dp = 0;
+                            SupplyResPressurePSI -= dp * ratio;
+                            BrakeLine1PressurePSI += dp;
+                        }
+                        else if (BrakeValve == BrakeValveType.Distributor && TwoPipes && MRPAuxResCharging)
+                        {
+                            float ratio = 1 / AuxBrakeLineVolumeRatio;
+                            if (BrakeLine1PressurePSI + dp > AuxResPressurePSI - dp * ratio)
+                                dp = (AuxResPressurePSI - BrakeLine1PressurePSI) / (1 + ratio);
+                            if (dp < 0)
+                                dp = 0;
+                            AuxResPressurePSI -= dp * ratio;
+                            BrakeLine1PressurePSI += dp;
+                        }
+                        else if (TwoPipes)
+                        {
+                            if (BrakeLine1PressurePSI + dp > BrakeLine2PressurePSI - dp)
+                                dp = (BrakeLine2PressurePSI - BrakeLine1PressurePSI) / 2;
+                            if (dp < 0)
+                                dp = 0;
+                            BrakeLine2PressurePSI -= dp;
+                            BrakeLine1PressurePSI += dp;
+                        }
                     }
                 }
                 base.Update(elapsedClockSeconds);
                 HoldingValve = ValveState.Release;
+                IsolationValve = ValveState.Release;
             }
             else
             {
@@ -114,12 +143,40 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 if (AutoCylPressurePSI < demandedAutoCylPressurePSI && !Car.WheelBrakeSlideProtectionActive)
                 {
                     float dp = elapsedClockSeconds * ServiceApplicationRatePSIpS;
-                    if (BrakeLine2PressurePSI - (dp * CylBrakeLineVolumeRatio) < AutoCylPressurePSI + dp)
-                        dp = (BrakeLine2PressurePSI - AutoCylPressurePSI) / (1 + CylBrakeLineVolumeRatio);
                     if (dp > demandedAutoCylPressurePSI - AutoCylPressurePSI)
                         dp = demandedAutoCylPressurePSI - AutoCylPressurePSI;
-                    BrakeLine2PressurePSI -= dp * CylBrakeLineVolumeRatio;
-                    AutoCylPressurePSI += dp;
+                    if (SupplyReservoirPresent)
+                    {
+                        float displacementSupplyVolumeRatio = AuxResVolumeM3 / AuxCylVolumeRatio / SupplyResVolumeM3;
+
+                        if (AutoCylPressurePSI + dp > SupplyResPressurePSI - (dp * displacementSupplyVolumeRatio))
+                            dp = (SupplyResPressurePSI - AutoCylPressurePSI) / (1 + displacementSupplyVolumeRatio);
+                        if (dp < 0)
+                            dp = 0;
+
+                        SupplyResPressurePSI -= dp * displacementSupplyVolumeRatio;
+                        AutoCylPressurePSI += dp;
+                    }
+                    else if (TwoPipes && !MRPAuxResCharging)
+                    {
+                        if (BrakeLine2PressurePSI - (dp * CylBrakeLineVolumeRatio) < AutoCylPressurePSI + dp)
+                            dp = (BrakeLine2PressurePSI - AutoCylPressurePSI) / (1 + CylBrakeLineVolumeRatio);
+                        if (dp < 0)
+                            dp = 0;
+
+                        BrakeLine2PressurePSI -= dp * CylBrakeLineVolumeRatio;
+                        AutoCylPressurePSI += dp;
+                    }
+                    else
+                    {
+                        if (AuxResPressurePSI - dp / AuxCylVolumeRatio < AutoCylPressurePSI + dp)
+                            dp = (AuxResPressurePSI - AutoCylPressurePSI) * AuxCylVolumeRatio / (1 + AuxCylVolumeRatio);
+                        if (dp < 0)
+                            dp = 0;
+
+                        AuxResPressurePSI -= dp / AuxCylVolumeRatio;
+                        AutoCylPressurePSI += dp;
+                    }
                 }
                 else if (EPBrakeActiveInhibitsTripleValve && AutoCylPressurePSI > demandedAutoCylPressurePSI)
                 {
@@ -129,7 +186,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     AutoCylPressurePSI -= dp;
                 }
             }
-            
         }
 
         public override void Parse(string lowercasetoken, STFReader stf)
@@ -158,7 +214,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
-            var s = $" {Simulator.Catalog.GetString("BC")} {FormatStrings.FormatPressure(Car.Train.HUDWagonBrakeCylinderPSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true)}";
+            string s = "";
+            if (EPBrakeControlsBrakePipe) s += $" {Simulator.Catalog.GetString("EQ")} {FormatStrings.FormatPressure(Car.Train.EqualReservoirPressurePSIorInHg, PressureUnit.PSI, units[BrakeSystemComponent.EqualizingReservoir], true)}";
+            s += $" {Simulator.Catalog.GetString("BC")} {FormatStrings.FormatPressure(Car.Train.HUDWagonBrakeCylinderPSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true)}";
             if (HandbrakePercent > 0)
                 s += $" {Simulator.Catalog.GetString("Handbrake")} {HandbrakePercent:F0}%";
             return s;
@@ -167,7 +225,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)
         {
             base.Initialize(handbrakeOn, maxPressurePSI, fullServPressurePSI, immediateRelease);
-            AutoCylPressurePSI = Math.Max(AutoCylPressurePSI, Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * MaxCylPressurePSI);
+            if (!EPBrakeControlsBrakePipe) AutoCylPressurePSI = Math.Max(AutoCylPressurePSI, Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * ServiceMaxCylPressurePSI);
             CylPressurePSI = ForceBrakeCylinderPressure(ref CylAirPSIM3, AutoCylPressurePSI);
         }
     }
