@@ -2590,6 +2590,10 @@ behave exactly the same way as player controlled ones.
 
 .. _physics-braking:
 
+.. index::
+   single: BrakeSystemType
+   single: BrakeEquipmentType
+
 Open Rails Braking
 ==================
 
@@ -2627,13 +2631,15 @@ graduated release. It will also force graduated release of brakes in triple
 valves. This option should be unchecked, except for compatibility problems
 with old MSTS stock.
 
-The following brake types are implemented in OR:
+The following brake types are implemented in OR. They can be selected using
+the ``Wagon(BrakeSystemType`` parameter:
 
-- Vacuum single
-- Air single-pipe
-- Air twin-pipe
-- EP (Electro-pneumatic)
-- Single-transfer-pipe (air and vacuum)
+- Vacuum single pipe: ``BrakeSystemType ("Vacuum_single_pipe")``
+- Air single-pipe: ``BrakeSystemType ("Air_single_pipe")``
+- Air twin-pipe: ``BrakeSystemType ("Air_twin_pipe")``
+- EP (Electro-pneumatic, twin-pipe): ``BrakeSystemType ("EP")``
+- EP single-pipe: ``BrakeSystemType ("EP_single_pipe")``
+- Single-transfer-pipe (air and vacuum): ``BrakeSystemType ("Air_piped")`` or ``BrakeSystemType ("Vacuum_piped")``
 
 The operation of air single-pipe brakes is described in general below.
 
@@ -2658,17 +2664,19 @@ brake features.
 For EP brakes, two variants are available:
 
 - If ``Wagon(ORTSEPBrakeControlsBrakePipe`` is set to 0 (default situation),
-an electrical wire (application wire) provides simultaneous fast brake application
-along the train. Release time will be fast if standard air brake haven't been applied,
-otherwise air brakes will determine release time. Typically this system is present
-with Train Brake Controllers having an EP-only application section, followed by an
-air application portion which serves as a fallback system.
+  an electrical wire (application wire) provides simultaneous fast brake application
+  along the train. Release time will be fast if standard air brake haven't been applied,
+  otherwise air brakes will determine release time. Typically this system is present
+  with Train Brake Controllers having an EP-only application section, followed by an
+  air application portion which serves as a fallback system, or in combination with a
+  solenoid valve that isolates the triple valve when EP brakes are operational.
+
 - If ``Wagon(ORTSEPBrakeControlsBrakePipe`` is set to 1, brake pipe is charged and discharged
-simultaneously at each car in the train, providing fast and uniform brake application and release.
-The locomotive instructs the cars to "charge" or "discharge" the brake pipe to reach
-a reference pressure. Standard triple valves or distributors will follow brake pipe variations
-actuating the cylinders. This system is sometimes called "UIC EP brake". It is typically the system
-used in high speed trains.
+  simultaneously at each car in the train, providing fast and uniform brake application and release.
+  The locomotive instructs the cars to "charge" or "discharge" the brake pipe to reach
+  a reference pressure. Standard triple valves or distributors will follow brake pipe variations
+  actuating the cylinders. This system is sometimes called "UIC EP brake". It is typically the system
+  used in high speed trains.
 
 .. _physics-brake-controller:
 
