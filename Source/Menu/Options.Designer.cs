@@ -495,7 +495,7 @@
             // pbTelemetry
             // 
             this.pbTelemetry.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbTelemetry.Location = new System.Drawing.Point(6, 288);
+            this.pbTelemetry.Location = new System.Drawing.Point(6, 357);
             this.pbTelemetry.Name = "pbTelemetry";
             this.pbTelemetry.Size = new System.Drawing.Size(18, 18);
             this.pbTelemetry.TabIndex = 32;
@@ -506,7 +506,7 @@
             // 
             // buttonTelemetry
             // 
-            this.buttonTelemetry.Location = new System.Drawing.Point(32, 285);
+            this.buttonTelemetry.Location = new System.Drawing.Point(32, 354);
             this.buttonTelemetry.Name = "buttonTelemetry";
             this.buttonTelemetry.Size = new System.Drawing.Size(150, 23);
             this.buttonTelemetry.TabIndex = 31;
