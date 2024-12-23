@@ -34,7 +34,6 @@ What's been added
 What's been improved
 --------------------
 
-- superelevation
 - sky, sunrise and sunset appearance
 - auto-pilot extended to timetables
 - wheelslip, exhaust and steam
