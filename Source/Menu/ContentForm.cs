@@ -1536,7 +1536,9 @@ namespace ORTS
             Dictionary<string, int> subDirs = new Dictionary<string, int>();
             foreach (var folder in Settings.Folders.Folders)
             {
-                string subDir = Directory.GetParent(folder.Value).ToString();
+                var parentDir = Directory.GetParent(folder.Value);
+                if (parentDir == null) { continue; }  // ignore content in top-level dir
+                string subDir = parentDir.ToString();
                 if (subDirs.ContainsKey(subDir))
                 {
                     subDirs[subDir] += 1;
@@ -1556,16 +1558,16 @@ namespace ORTS
                 }
             }
 
-            string brouwseDir = "";
+            string browseDir = "";
             foreach (var subDir in subDirs)
             {
                 if (subDir.Value == max)
                 {
-                    brouwseDir = subDir.Key;
+                    browseDir = subDir.Key;
                 }
             }
 
-            return brouwseDir;
+            return browseDir;
         }
 
         #endregion

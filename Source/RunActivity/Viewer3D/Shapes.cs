@@ -277,9 +277,26 @@ namespace Orts.Viewer3D
         public PoseableShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
             : base(viewer, path, initialPosition, flags)
         {
-            XNAMatrices = new Matrix[SharedShape.Matrices.Length];
-            for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
-                XNAMatrices[iMatrix] = SharedShape.Matrices[iMatrix];
+            if (SharedShape.Matrices.Length > 0)
+            {
+                XNAMatrices = new Matrix[SharedShape.Matrices.Length];
+                for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
+                    XNAMatrices[iMatrix] = SharedShape.Matrices[iMatrix];
+            }
+            else // If the shape file is missing or fails to load, we need some default data to prevent crashes
+            {
+                if (path != null && path != "Empty")
+                {
+                    string location = path;
+                    if (path != null && path.Contains('\0'))
+                        location = path.Split('\0')[0];
+
+                    Trace.TraceWarning("Couldn't load shape {0} file may be corrupt", location);
+                }
+                // The 0th matrix should always be the identity matrix
+                XNAMatrices = new Matrix[1];
+                XNAMatrices[0] = Matrix.Identity;
+            }
 
             if (SharedShape.LodControls.Length > 0 && SharedShape.LodControls[0].DistanceLevels.Length > 0 && SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length > 0 && SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0)
                 Hierarchy = SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy;
@@ -1949,6 +1966,7 @@ namespace Orts.Viewer3D
 
         // This data is common to all instances of the shape
         public List<string> MatrixNames = new List<string>();
+        public List<string> ImageNames; // Names of textures without paths or file extensions
         public Matrix[] Matrices = new Matrix[0];  // the original natural pose for this shape - shared by all instances
         public animations Animations;
         public LodControl[] LodControls;
@@ -2032,6 +2050,8 @@ namespace Orts.Viewer3D
                 Matrices[i] = XNAMatrixFromMSTS(sFile.shape.matrices[i]);
             }
             Animations = sFile.shape.animations;
+
+            ImageNames = new List<string>(sFile.shape.images.ConvertAll(img => Path.GetFileNameWithoutExtension(img)));
 
 #if DEBUG_SHAPE_HIERARCHY
             var debugShapeHierarchy = new StringBuilder();

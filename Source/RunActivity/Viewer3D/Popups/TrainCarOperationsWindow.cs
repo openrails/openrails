@@ -98,6 +98,9 @@ namespace Orts.Viewer3D.Popups
         public bool IsFullScreen;
         public int OldPositionHeight;
         public int RowHeight;
+        public Rectangle LayoutLocation;
+        public Rectangle OldLocation;
+        public bool LayoutMoved;
         public bool UpdateTrainCarOperation;
         public int WindowHeightMax;
         public int WindowHeightMin;
@@ -161,6 +164,7 @@ namespace Orts.Viewer3D.Popups
             outf.Write(Location.Height);
 
             outf.Write(SelectedCarPosition);
+            outf.Write(Owner.Viewer.FrontCamera.IsCameraFront);
         }
         protected internal override void Restore(BinaryReader inf)
         {
@@ -172,6 +176,7 @@ namespace Orts.Viewer3D.Popups
             LocationRestore.Height = inf.ReadInt32();
 
             SelectedCarPosition = inf.ReadInt32();
+            Owner.Viewer.FrontCamera.IsCameraFront = inf.ReadBoolean();
 
             // Display window
             SizeTo(LocationRestore.Width, LocationRestore.Height);
@@ -565,11 +570,29 @@ namespace Orts.Viewer3D.Popups
             if (UserInput.IsPressed(UserCommand.CameraCarNext) || UserInput.IsPressed(UserCommand.CameraCarPrevious) || UserInput.IsPressed(UserCommand.CameraCarFirst) || UserInput.IsPressed(UserCommand.CameraCarLast))
                 CarPositionChanged = true;
 
+            if (OldLocation != Location)
+            {
+                OldLocation = Location;
+                LayoutMoved = true;
+            }
+
             if (updateFull)
             {
                 var trainCarViewer = Owner.Viewer.TrainCarOperationsViewerWindow;
                 var carOperations = Owner.Viewer.CarOperationsWindow;
                 var trainCarWebpage = Owner.Viewer.TrainCarOperationsWebpage;
+
+                // Allows interaction with <Alt>+<PageDown> and <Alt>+<PageUP>.
+                if (CarPositionChanged && Owner.Viewer.Camera.AttachedCar != null && !(Owner.Viewer.Camera is CabCamera) && Owner.Viewer.Camera != Owner.Viewer.ThreeDimCabCamera && (trainCarViewer.Visible || Visible))
+                {
+                    var currentCameraCarID = Owner.Viewer.Camera.AttachedCar.CarID;
+                    if (PlayerTrain != null && (currentCameraCarID != trainCarViewer.CurrentCarID || CarPosition != trainCarViewer.CarPosition))
+                    {
+                        trainCarViewer.CurrentCarID = currentCameraCarID;
+                        trainCarViewer.CarPosition = CarPosition = PlayerTrain.Cars.TakeWhile(x => x.CarID != currentCameraCarID).Count();
+                        CarPositionChanged = true;
+                    }
+                }
 
                 trainCarViewer.TrainCarOperationsChanged = !trainCarViewer.Visible && trainCarViewer.TrainCarOperationsChanged ? false : trainCarViewer.TrainCarOperationsChanged;
 

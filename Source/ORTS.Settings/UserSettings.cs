@@ -152,6 +152,10 @@ namespace ORTS.Settings
         public String Units { get; set; }
         [Default(false)]
         public bool DisableTCSScripts { get; set; }
+        [Default(false)]
+        public bool AutoSaveActive { get; set; }
+        [Default (15)]
+        public int AutoSaveInterval { get; set; }
 
         // Audio settings:
         [Default(100)]
@@ -269,9 +273,7 @@ namespace ORTS.Settings
 
         // Experimental settings:
         [Default(0)]
-        public int UseSuperElevation { get; set; }
-        [Default(50)]
-        public int SuperElevationMinLen { get; set; }
+        public bool UseSuperElevation { get; set; }
         [Default(1435)]
         public int SuperElevationGauge { get; set; }
         [Default(0)]
