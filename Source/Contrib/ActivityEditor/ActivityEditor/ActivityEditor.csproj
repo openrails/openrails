@@ -78,8 +78,8 @@
     <ProjectReference Include="..\..\..\Orts.Formats.Msts\Orts.Formats.Msts.csproj" />
     <ProjectReference Include="..\..\..\Orts.Formats.OR\Orts.Formats.OR.csproj" />
     <ProjectReference Include="..\..\..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj" />
-    <ProjectReference Include="..\..\..\ORTS.Common\ORTS.Common.csproj" />
-    <ProjectReference Include="..\..\..\ORTS.Settings\ORTS.Settings.csproj" />
+    <ProjectReference Include="..\..\..\Orts.Common\Orts.Common.csproj" />
+    <ProjectReference Include="..\..\..\Orts.Settings\Orts.Settings.csproj" />
     <ProjectReference Include="..\LibAE\LibAE.csproj" />
   </ItemGroup>
   <ItemGroup>

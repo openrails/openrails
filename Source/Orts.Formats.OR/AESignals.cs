@@ -89,6 +89,7 @@ namespace Orts.Formats.OR
 
             // read SIGSCR files
 
+            Trace.Write(" SIGSCR ");
             //scrfile = new SIGSCRfile(data.RoutePath, sigcfg.ScriptFiles, sigcfg.SignalTypes);
 
             // build list of signal world file information
@@ -285,6 +286,7 @@ namespace Orts.Formats.OR
 
                 // read w-file, get SignalObjects only
 
+                Trace.Write("W");
                 WorldFile WFile;
                 try
                 {

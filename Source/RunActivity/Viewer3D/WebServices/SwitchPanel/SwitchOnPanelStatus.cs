@@ -565,7 +565,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     // exception not yet logged
                     ExceptionForCommand.Add(userCommand);
 
-                    Trace.WriteLine("Error in Switch Panel function \"getStatus\" getting status for " + userCommand + ":");
+                    Trace.Write("Error in Switch Panel function \"getStatus\" getting status for " + userCommand + ":");
                     Trace.WriteLine(ex);
                 }
             }

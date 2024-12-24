@@ -148,6 +148,7 @@ namespace Orts.Viewer3D
 
         TrainCarViewer LoadCar(TrainCar car)
         {
+            Trace.Write("C");
             TrainCarViewer carViewer =
                 car is MSTSDieselLocomotive ? new MSTSDieselLocomotiveViewer(Viewer, car as MSTSDieselLocomotive) :
                 car is MSTSElectricLocomotive ? new MSTSElectricLocomotiveViewer(Viewer, car as MSTSElectricLocomotive) :

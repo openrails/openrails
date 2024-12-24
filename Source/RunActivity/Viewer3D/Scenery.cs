@@ -210,6 +210,7 @@ namespace Orts.Viewer3D
 
         WorldFile LoadWorldFile(int tileX, int tileZ, bool visible)
         {
+            Trace.Write("W");
             try
             {
                 return new WorldFile(Viewer, tileX, tileZ, visible);

@@ -285,6 +285,9 @@ namespace Orts.Simulation
 
             string ORfilepath = System.IO.Path.Combine(RoutePath, "OpenRails");
 
+            Trace.Write("Loading ");
+
+            Trace.Write(" TRK");
             TRK = new RouteFile(MSTS.MSTSPath.GetTRKFileName(RoutePath));
             RouteName = TRK.Tr_RouteFile.Name;
             MilepostUnitsMetric = TRK.Tr_RouteFile.MilepostUnitsMetric;
@@ -305,17 +308,21 @@ namespace Orts.Simulation
             else if (TRK.Tr_RouteFile.SuperElevation.Count > 0 && !TRK.Tr_RouteFile.SuperElevation[0].DefaultStandard)
                 UseSuperElevation = true; // Custom superelevation standard entered, force enable superelevation
 
+            Trace.Write(" TDB");
             TDB = new TrackDatabaseFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
 
             if (File.Exists(ORfilepath + @"\sigcfg.dat"))
             {
+                Trace.Write(" SIGCFG_OR");
                 SIGCFG = new SignalConfigurationFile(ORfilepath + @"\sigcfg.dat", true);
             }
             else
             {
+                Trace.Write(" SIGCFG");
                 SIGCFG = new SignalConfigurationFile(RoutePath + @"\sigcfg.dat", false);
             }
 
+            Trace.Write(" DAT");
             if (Directory.Exists(RoutePath + @"\Openrails") && File.Exists(RoutePath + @"\Openrails\TSECTION.DAT"))
                 TSectionDat = new TrackSectionsFile(RoutePath + @"\Openrails\TSECTION.DAT");
             else if (Directory.Exists(RoutePath + @"\GLOBAL") && File.Exists(RoutePath + @"\GLOBAL\TSECTION.DAT"))
@@ -331,9 +338,12 @@ namespace Orts.Simulation
             orRouteConfig.SetTraveller(TSectionDat, TDB);
 #endif
 
+            Trace.Write(" ACT");
+
             var rdbFile = RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".rdb";
             if (File.Exists(rdbFile))
             {
+                Trace.Write(" RDB");
                 RDB = new RoadDatabaseFile(rdbFile);
             }
 
@@ -341,6 +351,7 @@ namespace Orts.Simulation
             if (File.Exists(carSpawnFile))
             {
                 CarSpawnerLists = new List<CarSpawnerList>();
+                Trace.Write(" CARSPAWN");
                 CarSpawnerFile = new CarSpawnerFile(RoutePath + @"\carspawn.dat", RoutePath + @"\shapes\", CarSpawnerLists);
             }
 
@@ -349,6 +360,7 @@ namespace Orts.Simulation
             if (File.Exists(extCarSpawnFile))
             {
                 if (CarSpawnerLists == null) CarSpawnerLists = new List<CarSpawnerList>();
+                Trace.Write(" EXTCARSPAWN");
                 ExtCarSpawnerFile = new ExtCarSpawnerFile(RoutePath + @"\openrails\carspawn.dat", RoutePath + @"\shapes\", CarSpawnerLists);
             }
 
@@ -356,12 +368,14 @@ namespace Orts.Simulation
             var clockFile = RoutePath + @"\animated.clocks-or";
             if (File.Exists(clockFile))
             {
+                Trace.Write(" CLOCKS");
                 new ClocksFile(clockFile, ClockShapeList, RoutePath + @"\shapes\");
             }
 
             // Generate a list of EOTs that may be used to attach at end of train
             if (Directory.Exists(EOTPath))
             {
+                Trace.Write(" EOT");
                 FullEOTPaths = new FullEOTPaths(EOTPath);
             }
 
