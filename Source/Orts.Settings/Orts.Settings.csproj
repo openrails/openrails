@@ -12,7 +12,7 @@
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <DocumentationFile>..\..\Program\ORTS.Settings.xml</DocumentationFile>
+    <DocumentationFile>..\..\Program\Orts.Settings.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="GNU.Gettext, Version=1.1.5151.39896, Culture=neutral, processorArchitecture=MSIL">
@@ -21,7 +21,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj" />
+    <ProjectReference Include="..\Orts.Common\Orts.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="LibGit2Sharp" Version="0.29.0" />
