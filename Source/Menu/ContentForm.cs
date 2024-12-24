@@ -33,7 +33,7 @@ using System.Drawing;
 using System.Threading.Tasks;
 using GNU.Gettext.WinForms;
 
-namespace ORTS
+namespace Menu
 {
     public partial class ContentForm : Form
     {
@@ -1120,25 +1120,25 @@ namespace ORTS
                 switch (classOfItem)
                 {
                     case "Folder":
-                        comboboxName = ((Menu.Folder)comboBox.Items[index]).Name;
+                        comboboxName = ((ORTS.Menu.Folder)comboBox.Items[index]).Name;
                         break;
                     case "Route":
-                        comboboxName = ((Menu.Route)comboBox.Items[index]).Name;
+                        comboboxName = ((ORTS.Menu.Route)comboBox.Items[index]).Name;
                         break;
                     case "DefaultExploreActivity":
-                        comboboxName = ((Menu.Activity)comboBox.Items[index]).Name;
+                        comboboxName = ((ORTS.Menu.Activity)comboBox.Items[index]).Name;
                         break;
                     case "Locomotive":
-                        comboboxName = ((Menu.Locomotive)comboBox.Items[index]).Name;
+                        comboboxName = ((ORTS.Menu.Locomotive)comboBox.Items[index]).Name;
                         break;
                     case "Consist":
-                        comboboxName = ((Menu.Consist)comboBox.Items[index]).Name;
+                        comboboxName = ((ORTS.Menu.Consist)comboBox.Items[index]).Name;
                         break;
                     case "String":
                         comboboxName = (string)comboBox.Items[index];
                         break;
                     case "Path":
-                        comboboxName = ((Menu.Path)comboBox.Items[index]).End;
+                        comboboxName = ((ORTS.Menu.Path)comboBox.Items[index]).End;
                         break;
                     case "KeyedComboBoxItem":
                         comboboxName = ((MainForm.KeyedComboBoxItem)comboBox.Items[index]).Value;
