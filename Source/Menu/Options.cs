@@ -32,13 +32,12 @@ using ORTS.Common.Input;
 using ORTS.Settings;
 using ORTS.Updater;
 
-namespace ORTS
+namespace Menu
 {
     public partial class OptionsForm : Form
     {
         readonly UserSettings Settings;
         readonly UpdateManager UpdateManager;
-        readonly TelemetryManager TelemetryManager;
         readonly string BaseDocumentationUrl;
 
         private GettextResourceManager catalog = new GettextResourceManager("Menu");
@@ -49,7 +48,7 @@ namespace ORTS
             public string Name { get; set; }
         }
 
-        public OptionsForm(UserSettings settings, UpdateManager updateManager, TelemetryManager telemetryManager, string baseDocumentationUrl)
+        public OptionsForm(UserSettings settings, UpdateManager updateManager, string baseDocumentationUrl)
         {
             InitializeComponent();
 
@@ -57,7 +56,6 @@ namespace ORTS
 
             Settings = settings;
             UpdateManager = updateManager;
-            TelemetryManager = telemetryManager;
             BaseDocumentationUrl = baseDocumentationUrl;
 
             InitializeHelpIcons();
@@ -782,7 +780,6 @@ namespace ORTS
                 (pbEnableTcsScripts, new[] { checkEnableTCSScripts }),
                 (pbAutoSave, new[] { checkAutoSaveActive }),
                 (pbOverspeedMonitor, new[] { checkOverspeedMonitor }),
-                (pbTelemetry, new[] { buttonTelemetry }),
 
                 // Audio tab
                 (pbSoundVolumePercent, new Control[] { labelSoundVolume, numericSoundVolumePercent }),
@@ -872,10 +869,6 @@ namespace ORTS
                 {
                     pbOverspeedMonitor,
                     BaseDocumentationUrl + "/options.html#overspeed-monitor"
-                },
-                {
-                    pbTelemetry,
-                    BaseDocumentationUrl + "/options.html#telemetry"
                 },
 
                 // Audio tab
@@ -1018,13 +1011,5 @@ namespace ORTS
                 hover.Leave();
         }
         #endregion
-
-        private void buttonTelemetry_Click(object sender, EventArgs e)
-        {
-            using (var telemetryForm = new TelemetryForm(TelemetryManager))
-            {
-                telemetryForm.ShowDialog(this);
-            }
-        }
     }
 }

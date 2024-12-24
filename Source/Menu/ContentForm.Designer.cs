@@ -17,7 +17,7 @@
 
 using System.Windows.Forms;
 
-namespace ORTS
+namespace Menu
 {
     partial class ContentForm : Form
     {
@@ -418,7 +418,7 @@ namespace ORTS
             // 
             // pbContent
             // 
-            this.pbContent.Image = global::ORTS.Properties.Resources.info_18_hover;
+            this.pbContent.Image = global::Menu.Properties.Resources.info_18_hover;
             this.pbContent.Location = new System.Drawing.Point(598, 12);
             this.pbContent.Name = "pbContent";
             this.pbContent.Size = new System.Drawing.Size(18, 18);
