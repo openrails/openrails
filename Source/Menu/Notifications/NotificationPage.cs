@@ -24,7 +24,7 @@ using ORTS.Updater;
 using Button = System.Windows.Forms.Button;
 using Image = System.Drawing.Image;
 
-namespace Menu
+namespace Menu.Notifications
 {
     /// <summary>
     /// Holds presentation details of the current notification displayed on the panel.
