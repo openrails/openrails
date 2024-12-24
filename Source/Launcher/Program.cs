@@ -33,7 +33,7 @@ using System.IO;
 using System.Text;
 using System.Windows.Forms;
 
-namespace ORTS
+namespace Launcher
 {
     internal struct DependencyHint
     {
