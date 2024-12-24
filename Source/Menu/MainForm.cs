@@ -27,6 +27,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
+using Menu.Notifications;
 using Orts.Formats.OR;
 using ORTS.Common;
 using ORTS.Menu;
