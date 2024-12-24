@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ORTS.Properties {
+namespace Menu.Properties {
     using System;
     
     
