@@ -18,7 +18,7 @@
 using System.Collections.Generic;
 
 
-namespace ORTS
+namespace Menu.Notifications
 {
     public class Notifications
     {
