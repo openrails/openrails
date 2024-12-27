@@ -113,6 +113,7 @@ namespace Orts.Simulation.Timetables
         public bool SetStop = false;                        // Indicates train must copy station stop from formed train
         public bool FormsAtStation = false;                 // Indicates train must form into next service at last station, route must be curtailed to that stop
         public bool leadLocoAntiSlip = false;               // Anti slip indication for original leading engine
+        public List<string> RequestStopMessages = null;     //list for request stop messages
 
         /* Detach details */
         public Dictionary<int, List<DetachInfo>> DetachDetails = new Dictionary<int, List<DetachInfo>>();
@@ -4353,6 +4354,35 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
+            // station stop : check for request stop
+            else if (nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.STATION_STOP)
+            {
+                // if request stop and no pickup and no setdown, when at visibility distance, clear stop
+                if (StationStops[0].ReqStopDetails != null)
+                {
+                    if (!StationStops[0].ReqStopDetails.setdownSet && !StationStops[0].ReqStopDetails.pickupSet)
+                    {
+                        if ((nextActionInfo.ActivateDistanceM - PresentPosition[0].DistanceTravelledM) < StationStops[0].ReqStopDetails.visDistance)
+                        {
+#if DEBUG_REPORTS
+                            File.AppendAllText(@"C:\temp\printproc.txt", "Train " + Name + " = " +
+                                      Number.ToString() + " : station : " + StationStops[0].PlatformItem.Name +
+                                      " : no pick-up or set-down required, station skipped \n");
+#endif
+                            if (CheckTrain)
+                            {
+                                File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Name + " = " +
+                                      Number.ToString() + " : station : " + StationStops[0].PlatformItem.Name +
+                                      " : no pick-up or set-down required, station skipped \n");
+                            }
+
+                            StationStops.RemoveAt(0);
+                            clearAction = true;
+                        }
+                    }
+                }
+            }
+
             // Action cleared - reset processed info for object items to determine next action
             // Clear list of pending action to create new list
             if (clearAction)
@@ -8042,6 +8072,10 @@ namespace Orts.Simulation.Timetables
 
                     break;
 
+                // request stop details - processed separately
+                case "rqs":
+                    break;
+
                 default:
                     Trace.TraceWarning("Invalid station stop command for train {0} : {1}", Name, thisCommand.CommandToken);
                     break;
@@ -10505,6 +10539,9 @@ namespace Orts.Simulation.Timetables
                                         {
                                             DisplayMessage = Simulator.Catalog.GetString("Passenger boarding completed. You may depart now.");
                                         }
+
+                                        // check station stops for request stop announcement
+                                        CheckRequestStops();
                                     }
                                 }
                             }
@@ -10596,33 +10633,136 @@ namespace Orts.Simulation.Timetables
                             nextActionInfo = null;   // Clear next action if still referring to station stop
                         }
 
-                        // Check if station missed : station must be at least 500m. behind us
-                        bool missedStation = false;
-
-                        int stationRouteIndex = ValidRoute[0].GetRouteIndex(StationStops[0].TCSectionIndex, 0);
-
-                        if (StationStops[0].SubrouteIndex == TCRoute.activeSubpath)
+                        // check if message for request stop is to be send
+                        if (StationStops[0].ReqStopDetails != null && StationStops[0].ReqStopDetails.setdownSet &&
+                            !StationStops[0].ReqStopDetails.stopannounced && StationStops[0].ReqStopDetails.announce == RequestStop.rqannounce.Approach)
                         {
-                            if (stationRouteIndex < 0)
+                            var distToStation = GetDistanceToTrain(StationStops[0].TCSectionIndex, StationStops[0].StopOffset);
+                            if (distToStation < (StationStops[0].ReqStopDetails.annDistance))
                             {
-                                missedStation = true;
-                            }
-                            else if (stationRouteIndex < PresentPosition[1].RouteListIndex)
-                            {
-                                missedStation = ValidRoute[0].GetDistanceAlongRoute(stationRouteIndex, StationStops[0].StopOffset, PresentPosition[1].RouteListIndex, PresentPosition[1].TCOffset, true, signalRef) > 500f;
+                                StationStops[0].ReqStopDetails.stopannounced = true;
+                                if (StationStops[0].ReqStopDetails.anntype == RequestStop.rqannoucetype.Message)
+                                {
+                                    RequestStopMessages.Add("Stop at " + StationStops[0].PlatformItem.Name + " requested to set down passengers");
+                                    Simulator.OnTTRequestStopMessageWindow();
+                                }
+                                else
+                                {
+                                    SignalEvent(Event.RequestStopAnnounce);
+                                }
                             }
                         }
 
-                        if (missedStation)
+                        // check if station missed : station must be at least 500m. behind us
+                        // also check if station was skipped as request stop
+                        bool missedStation = false;
+                        int stationRouteIndex = ValidRoute[0].GetRouteIndex(StationStops[0].TCSectionIndex, 0);
+
+                        if (StationStops[0].ReqStopDetails != null && !StationStops[0].ReqStopDetails.setdownSet && !StationStops[0].ReqStopDetails.pickupSet)
                         {
-                            PreviousStop = StationStops[0].CreateCopy();
-                            StationStops.RemoveAt(0);
+                            if (StationStops[0].SubrouteIndex == TCRoute.activeSubpath)
+                            {
+                                if (stationRouteIndex < 0)
+                                {
+                                    StationStops[0].ReqStopDetails.stopskipped = true;
+                                }
+                                else if (stationRouteIndex == PresentPosition[1].RouteListIndex)
+                                {
+                                    if ((PresentPosition[1].TCOffset - StationStops[0].StopOffset) > 50.0f)
+                                    {
+                                        StationStops[0].ReqStopDetails.stopskipped = true;
+                                    }
+                                }
+                                else if (stationRouteIndex < PresentPosition[1].RouteListIndex)
+                                {
+                                    StationStops[0].ReqStopDetails.stopskipped = true;
+                                }
 
-                            Simulator.Confirmer?.Information("Missed station stop : " + PreviousStop.PlatformItem.Name);
+                                if (StationStops[0].ReqStopDetails.stopskipped)
+                                {
+                                    PreviousStop = StationStops[0].CreateCopy();
+                                    StationStops.RemoveAt(0);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (StationStops[0].SubrouteIndex == TCRoute.activeSubpath)
+                            {
+                                if (stationRouteIndex < 0)
+                                {
+                                    missedStation = true;
+                                }
+                                else if (stationRouteIndex == PresentPosition[1].RouteListIndex)
+                                {
+                                    if ((PresentPosition[1].TCOffset - StationStops[0].StopOffset) > 500.0f)
+                                    {
+                                        missedStation = true;
+                                    }
+                                }
+                                else if (stationRouteIndex < PresentPosition[1].RouteListIndex)
+                                {
+                                    missedStation = true;
+                                }
+                            }
 
+                            if (missedStation)
+                            {
+                                PreviousStop = StationStops[0].CreateCopy();
+                                StationStops.RemoveAt(0);
+
+                                if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
+                                    Simulator.Confirmer.Information("Missed station stop : " + PreviousStop.PlatformItem.Name);
+
+                            }
                         }
                     }
                 }
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Check for request stop for player train. Send message to player or set distance for approach announcement
+        /// <\summary>
+        public void CheckRequestStops()
+        {
+            bool fixstop = false;
+            bool messreq = false;
+            RequestStopMessages = new List<string>();
+
+            // loop through next stations
+            for (int istat = 1; istat < StationStops.Count && !fixstop; istat++)
+            {
+                StationStop thisStop = StationStops[istat];
+                if (thisStop.ReqStopDetails == null)
+                {
+                    // no request stop, exit loop
+                    fixstop = true;
+                }
+                else if (!thisStop.ReqStopDetails.stopannounced)
+                {
+                    if (thisStop.ReqStopDetails.announce == RequestStop.rqannounce.LastStop)
+                    {
+                        // message required for this stop
+                        messreq = true;
+                        thisStop.ReqStopDetails.stopannounced = true;
+
+                        if (thisStop.ReqStopDetails.setdownSet)
+                        {
+                            RequestStopMessages.Add(Simulator.Catalog.GetStringFmt("Stop at {0} requested to set down passengers", thisStop.PlatformItem.Name));
+                        }
+                        else
+                        {
+                            RequestStopMessages.Add(Simulator.Catalog.GetStringFmt("Stop at {0} NOT requested to set down passengers", thisStop.PlatformItem.Name));
+                        }
+                    }
+                }
+            }
+
+            if (messreq)
+            {
+                Simulator.OnTTRequestStopMessageWindow();
             }
         }
 
@@ -15202,6 +15342,249 @@ namespace Orts.Simulation.Timetables
                         transferTrain.NeedTrainTransfer.Add(lastSectionIndex, 1);
                     }
                 }
+            }
+        }
+    }
+
+    //================================================================================================//
+    /// <summary>
+    /// Class for request stop info
+    /// </summary>
+
+    public class RequestStop
+    {
+        public float probPickUp;    // probability for passenger pick up
+        public float probSetDown;   // probability for passenger set down
+        public bool pickupSet;      // pick up required for this stop
+        public bool setdownSet;     // set down required for this stop
+        public float visDistance;   // visibility distance for pick up (taken from request stop signal variable)
+        public float annDistance;   // announce distance for set down (taken from request stop signal variable)
+
+        public enum rqannounce
+        {
+            LastStop,
+            Approach
+        }
+
+        public enum rqannoucetype
+        {
+            Message,
+            Sound
+        }
+
+        public rqannounce announce;     // required announcement location for player train (for set down)
+        public rqannoucetype anntype;   // required announcement type for player train (for set down)
+        public bool stopannounced;      // announcement has been done
+        public bool stopskipped;        // stop skipped for player train
+
+        //================================================================================================//
+        /// <summary>
+        /// Constructor - sets default values
+        /// Note : ref signals and approach visibility are set through the signal
+        /// <\summary>
+
+        public RequestStop()
+        {
+            // set defaults
+            probPickUp = 25;
+            probSetDown = 25;
+            pickupSet = false;
+            setdownSet = false;
+            announce = rqannounce.LastStop;
+            anntype = rqannoucetype.Message;
+            stopannounced = false;
+            stopskipped = false;
+            visDistance = 25;
+            annDistance = 500;
+        }
+
+        //================================================================================================//
+        //
+        // Restore
+        //
+        public RequestStop(BinaryReader inf, Signals signalRef)
+        {
+            probPickUp = inf.ReadSingle();
+            probSetDown = inf.ReadSingle();
+            pickupSet = inf.ReadBoolean();
+            setdownSet = inf.ReadBoolean();
+            announce = (rqannounce)inf.ReadInt32();
+            anntype = (rqannoucetype)inf.ReadInt32();
+            stopannounced = inf.ReadBoolean();
+            visDistance = inf.ReadSingle();
+            annDistance = inf.ReadSingle();
+            stopskipped = inf.ReadBoolean();
+        }
+
+        //================================================================================================//
+        //
+        // Save
+        //
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(probPickUp);
+            outf.Write(probSetDown);
+            outf.Write(pickupSet);
+            outf.Write(setdownSet);
+            outf.Write((int)announce);
+            outf.Write((int)anntype);
+            outf.Write(stopannounced);
+            outf.Write(visDistance);
+            outf.Write(annDistance);
+            outf.Write(stopskipped);
+        }
+
+        //================================================================================================//
+        //
+        // Copy
+        //
+        public RequestStop CreateCopy()
+        {
+            return ((RequestStop)this.MemberwiseClone());
+        }
+
+        //================================================================================================//
+        //
+        // Process commands
+        //
+        public void ProcessCommands(List<TTTrainCommands.TTTrainComQualifiers> commands, string infoString)
+        {
+            foreach (TTTrainCommands.TTTrainComQualifiers thisQual in commands)
+            {
+                var comname = thisQual.QualifierName.ToLower().Trim();
+                bool qvalid = true;
+
+                switch (comname)
+                {
+                    // pu : pick up probability, value 0 <= pu < 100
+                    case "pu":
+                        if (thisQual.QualifierValues == null || thisQual.QualifierValues.Count != 1)
+                        {
+                            qvalid = false;
+                            Trace.TraceInformation("{0} : request stop details : missing value for PU \n", infoString);
+                        }
+
+                        if (qvalid)
+                        {
+                            try
+                            {
+                                float puvalue = Convert.ToSingle(thisQual.QualifierValues[0].Trim());
+                                if (puvalue < 0 || puvalue > 99)
+                                {
+                                    qvalid = false;
+                                }
+                                else
+                                {
+                                    probPickUp = puvalue;
+                                }
+                            }
+                            catch
+                            {
+                                qvalid = false;
+                            }
+                        }
+
+                        if (!qvalid)
+                        {
+                            Trace.TraceInformation("{0} : request stop details : invalid value for PU : {1} \n", infoString, thisQual.QualifierValues[0]);
+                        }
+                        break;
+
+                    // pd : set down probability, value 0 <= pd < 100
+                    case "pd":
+                        if (thisQual.QualifierValues == null || thisQual.QualifierValues.Count != 1)
+                        {
+                            qvalid = false;
+                            Trace.TraceInformation("{0} : request stop details : missing value for PD \n", infoString);
+                        }
+
+                        if (qvalid)
+                        {
+                            try
+                            {
+                                float pdvalue = Convert.ToSingle(thisQual.QualifierValues[0].Trim());
+                                if (pdvalue < 0 || pdvalue > 99)
+                                {
+                                    qvalid = false;
+                                }
+                                else
+                                {
+                                    probSetDown = pdvalue;
+                                }
+                            }
+                            catch
+                            {
+                                qvalid = false;
+                            }
+                        }
+
+                        if (!qvalid)
+                        {
+                            Trace.TraceInformation("{0} : request stop details : invalid value for PD : {1} \n", infoString, thisQual.QualifierValues[0]);
+                        }
+                        break;
+
+                    // announce : "laststop" or "approach"
+                    // announce type : "message" or "sound" (ignored if annouce = laststop)
+                    case "laststop":
+                        announce = rqannounce.LastStop;
+                        break;
+
+                    case "approach":
+                        announce = rqannounce.Approach;
+                        break;
+
+                    case "message":
+                        anntype = rqannoucetype.Message;
+                        break;
+
+                    case "sound":
+                        anntype = rqannoucetype.Sound;
+                        break;
+
+
+                    default:
+                        Trace.TraceInformation("{0} : request stop details : invalid qualifier : {1} \n", infoString, comname);
+                        break;
+                }
+            }
+
+            // test and set defaults if required
+            if (announce == rqannounce.LastStop && anntype == rqannoucetype.Sound)
+            {
+                anntype = rqannoucetype.Message;
+                Trace.TraceInformation("{0} : request stop details : SOUND : invalid announcetype for LASTSTOP, announcetype set to MESSAGE \n", infoString);
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Work through details
+        // NB trainname and stationname are passed for debug options
+        //
+
+        public void SetStopDetails(string trainName, string stationName)
+        {
+            int probvalue;
+            if (probPickUp > 0)
+            {
+                probvalue = Simulator.Random.Next(100);
+                pickupSet = probvalue <= probPickUp;
+#if DEBUG_REPORTS
+                File.AppendAllText(@"C:\temp\printproc.txt", "Train " + trainName +
+                        " : request stop at " + stationName + " : pickup : probability : " + probPickUp + " ; number : " + probvalue + 
+                        " set : " + pickupSet + "\n");
+#endif
+            }
+            if (probSetDown > 0)
+            {
+                probvalue = Simulator.Random.Next(100);
+                setdownSet = probvalue <= probSetDown;
+#if DEBUG_REPORTS
+                File.AppendAllText(@"C:\temp\printproc.txt", "Train " + trainName +
+                        " : request stop at " + stationName + " : setdown : probability : " + probSetDown + " ; number : " + probvalue + 
+                        " set : " + setdownSet + "\n");
+#endif
             }
         }
     }

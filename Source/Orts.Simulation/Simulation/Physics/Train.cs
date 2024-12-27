@@ -20779,6 +20779,7 @@ namespace Orts.Simulation.Physics
             public List<int> ConnectionsWaiting = new List<int>();                                // List of trains waiting
             public Dictionary<int, int> ConnectionsAwaited = new Dictionary<int, int>();          // List of awaited trains : key = trainno., value = arr time
             public Dictionary<int, WaitInfo> ConnectionDetails = new Dictionary<int, WaitInfo>(); // Details of connection : key = trainno., value = wait info
+            public RequestStop ReqStopDetails = null;                                             // Request stop details
 
             //================================================================================================//
             //
@@ -20945,6 +20946,11 @@ namespace Orts.Simulation.Physics
                 ExtendPlatformToSignal = inf.ReadBoolean();
                 EndStop = inf.ReadBoolean();
                 AllowDepartEarly = inf.ReadBoolean();
+
+                if (inf.ReadBoolean())
+                {
+                    ReqStopDetails = new RequestStop(inf, signalRef);
+                }
             }
 
             //================================================================================================//
@@ -21069,6 +21075,16 @@ namespace Orts.Simulation.Physics
                 outf.Write(ExtendPlatformToSignal);
                 outf.Write(EndStop);
                 outf.Write(AllowDepartEarly);
+
+                if (ReqStopDetails != null)
+                {
+                    outf.Write(true);
+                    ReqStopDetails.Save(outf);
+                }
+                else
+                {
+                    outf.Write(false);
+                }
             }
 
             /// <summary>

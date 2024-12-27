@@ -262,30 +262,49 @@ namespace Orts.Viewer3D.Popups
                         else
                         {
                             StationPreviousName.Text = playerTimetableTrain.PreviousStop.PlatformItem.Name;
-                            StationPreviousArriveScheduled.Text = playerTimetableTrain.PreviousStop.arrivalDT.ToString("HH:mm:ss");
-                            if (playerTimetableTrain.PreviousStop.ActualArrival >= 0)
+                            StationPreviousDistance.Text = "";
+
+                            if (playerTimetableTrain.PreviousStop.ReqStopDetails != null && playerTimetableTrain.PreviousStop.ReqStopDetails.stopskipped)
                             {
-                                DateTime actArrDT = new DateTime((long)(Math.Pow(10, 7) * playerTimetableTrain.PreviousStop.ActualArrival));
-                                StationPreviousArriveActual.Text = actArrDT.ToString("HH:mm:ss");
-                                StationPreviousArriveActual.Color = actArrDT < playerTimetableTrain.PreviousStop.arrivalDT ? Color.LightGreen : Color.LightSalmon;
-                                DateTime actDepDT = new DateTime((long)(Math.Pow(10, 7) * playerTimetableTrain.PreviousStop.ActualDepart));
-                                StationPreviousDepartActual.Text = actDepDT.ToString("HH:mm:ss");
-                                if (playerTimetableTrain.PreviousStop.AllowDepartEarly)
-                                {
-                                    StationPreviousDepartActual.Text = actDepDT.ToString("HH*mm:ss");
-                                }
-                                StationPreviousDepartActual.Color = actDepDT > playerTimetableTrain.PreviousStop.arrivalDT ? Color.LightGreen : Color.LightSalmon;
+                                StationPreviousArriveScheduled.Text = playerTimetableTrain.PreviousStop.arrivalDT.ToString("HHxmm:ss");
+                                StationPreviousDepartScheduled.Text = playerTimetableTrain.PreviousStop.departureDT.ToString("HHxmm:ss");
+                                StationPreviousArriveActual.Text = "--:--:--";
+                                StationPreviousArriveActual.Color = Color.LightGreen;
+                                StationPreviousDepartActual.Text = " skipped";
+                                StationPreviousDepartActual.Color = Color.LightGreen;
                             }
                             else
                             {
-                                StationPreviousArriveActual.Text = Viewer.Catalog.GetString("(missed)");
-                                StationPreviousArriveActual.Color = Color.LightSalmon;
-                                StationPreviousDepartActual.Text = "";
+                                StationPreviousArriveScheduled.Text = playerTimetableTrain.PreviousStop.arrivalDT.ToString("HH:mm:ss");
+                                StationPreviousDepartScheduled.Text = playerTimetableTrain.PreviousStop.departureDT.ToString("HH:mm:ss");
+
+                                if (playerTimetableTrain.PreviousStop.ActualArrival >= 0)
+                                {
+                                    DateTime actArrDT = new DateTime((long)(Math.Pow(10, 7) * playerTimetableTrain.PreviousStop.ActualArrival));
+                                    StationPreviousArriveActual.Text = actArrDT.ToString("HH:mm:ss");
+                                    StationPreviousArriveActual.Color = actArrDT < playerTimetableTrain.PreviousStop.arrivalDT ? Color.LightGreen : Color.LightSalmon;
+                                    DateTime actDepDT = new DateTime((long)(Math.Pow(10, 7) * playerTimetableTrain.PreviousStop.ActualDepart));
+                                    StationPreviousDepartActual.Text = actDepDT.ToString("HH:mm:ss");
+                                    if (playerTimetableTrain.PreviousStop.AllowDepartEarly)
+                                    {
+                                        StationPreviousDepartActual.Text = actDepDT.ToString("HH*mm:ss");
+                                    }
+                                    else
+                                    {
+                                        StationPreviousDepartActual.Text = actDepDT.ToString("HH:mm:ss");
+                                    }
+                                    StationPreviousDepartActual.Color = actDepDT > playerTimetableTrain.PreviousStop.arrivalDT ? Color.LightGreen : Color.LightSalmon;
+                                }
+                                else
+                                {
+                                    StationPreviousArriveActual.Text = Viewer.Catalog.GetString("(missed)");
+                                    StationPreviousArriveActual.Color = Color.LightSalmon;
+                                    StationPreviousDepartActual.Text = "";
+                                }
                             }
-                            StationPreviousDepartScheduled.Text = playerTimetableTrain.PreviousStop.departureDT.ToString("HH:mm:ss");
-                            StationPreviousDistance.Text = "";
                         }
 
+                        // current stop
                         if (playerTimetableTrain.StationStops == null || playerTimetableTrain.StationStops.Count == 0)
                         {
                             StationCurrentName.Text = "";
@@ -305,36 +324,58 @@ namespace Orts.Viewer3D.Popups
                         else
                         {
                             StationCurrentName.Text = playerTimetableTrain.StationStops[0].PlatformItem.Name;
-                            StationCurrentArriveScheduled.Text = playerTimetableTrain.StationStops[0].arrivalDT.ToString("HH:mm:ss");
+
+                            if (playerTimetableTrain.StationStops[0].ReqStopDetails != null)
+                            {
+                                StationCurrentArriveScheduled.Text = playerTimetableTrain.StationStops[0].departureDT.ToString("HHxmm:ss");
+                                StationCurrentDepartScheduled.Text = playerTimetableTrain.StationStops[0].departureDT.ToString("HHxmm:ss");
+                            }
+                            else if (playerTimetableTrain.StationStops[0].AllowDepartEarly)
+                            {
+                                StationCurrentArriveScheduled.Text = playerTimetableTrain.StationStops[0].arrivalDT.ToString("HH:mm:ss");
+                                StationCurrentDepartScheduled.Text = playerTimetableTrain.StationStops[0].departureDT.ToString("HH*mm:ss");
+                            }
+                            else
+                            {
+                                StationCurrentArriveScheduled.Text = playerTimetableTrain.StationStops[0].arrivalDT.ToString("HH:mm:ss");
+                                StationCurrentDepartScheduled.Text = playerTimetableTrain.StationStops[0].departureDT.ToString("HH:mm:ss");
+                            }
+
                             if (playerTimetableTrain.StationStops[0].ActualArrival >= 0)
                             {
                                 DateTime actArrDT = new DateTime((long)(Math.Pow(10, 7) * playerTimetableTrain.StationStops[0].ActualArrival));
                                 StationCurrentArriveActual.Text = actArrDT.ToString("HH:mm:ss");
                                 StationCurrentArriveActual.Color = actArrDT < playerTimetableTrain.StationStops[0].arrivalDT ? Color.LightGreen : Color.LightSalmon;
-
                             }
                             else
                             {
                                 StationCurrentArriveActual.Text = "";
                             }
-                            StationCurrentDepartScheduled.Text = playerTimetableTrain.StationStops[0].departureDT.ToString("HH:mm:ss");
-                            if (playerTimetableTrain.StationStops[0].AllowDepartEarly)
-                            {
-                                StationCurrentDepartScheduled.Text = playerTimetableTrain.StationStops[0].departureDT.ToString("HH*mm:ss");
-                            }
+
                             StationCurrentDistance.Text = FormatStrings.FormatDistanceDisplay(playerTimetableTrain.StationStops[0].DistanceToTrainM, metric);
                             Message.Text = playerTimetableTrain.DisplayMessage;
                             Message.Color = playerTimetableTrain.DisplayColor;
 
+                            // next stop
                             if (playerTimetableTrain.StationStops.Count >= 2)
                             {
                                 StationNextName.Text = playerTimetableTrain.StationStops[1].PlatformItem.Name;
-                                StationNextArriveScheduled.Text = playerTimetableTrain.StationStops[1].arrivalDT.ToString("HH:mm:ss");
-                                StationNextDepartScheduled.Text = playerTimetableTrain.StationStops[1].departureDT.ToString("HH:mm:ss");
-                                if (playerTimetableTrain.StationStops[1].AllowDepartEarly)
+                                if (playerTimetableTrain.StationStops[1].ReqStopDetails != null)
                                 {
+                                    StationNextArriveScheduled.Text = playerTimetableTrain.StationStops[1].departureDT.ToString("HHxmm:ss");
+                                    StationNextDepartScheduled.Text = playerTimetableTrain.StationStops[1].departureDT.ToString("HHxmm:ss");
+                                }
+                                else if (playerTimetableTrain.StationStops[1].AllowDepartEarly)
+                                {
+                                    StationNextArriveScheduled.Text = playerTimetableTrain.StationStops[1].arrivalDT.ToString("HH:mm:ss");
                                     StationNextDepartScheduled.Text = playerTimetableTrain.StationStops[1].departureDT.ToString("HH*mm:ss");
                                 }
+                                else
+                                {
+                                    StationNextArriveScheduled.Text = playerTimetableTrain.StationStops[1].arrivalDT.ToString("HH:mm:ss");
+                                    StationNextDepartScheduled.Text = playerTimetableTrain.StationStops[1].departureDT.ToString("HH:mm:ss");
+                                }
+
                                 StationNextDistance.Text = "";
                             }
                             else

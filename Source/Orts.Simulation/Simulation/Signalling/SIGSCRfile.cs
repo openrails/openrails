@@ -1403,6 +1403,18 @@ namespace Orts.Simulation.Signalling
                     return_value = thisHead.id_sig_hasnormalsubtype(parameter1_value, parameter2_value);
                     break;
 
+                // request stop
+
+                case SignalScripts.SCRExternalFunctions.TRAIN_HAS_REQUEST_STOP:
+#if DEBUG_PRINT_PROCESS
+                    if (TDB_debug_ref.Contains(thisHead.TDBIndex) || OBJ_debug_ref.Contains(thisHead.mainSignal.thisRef))
+                    {
+                        dumpfile = String.Concat(dpr_fileLoc, "printproc.txt");
+                    }
+#endif
+                    return_value = thisHead.trainRequestStop(parameter1_value, parameter2_value, dumpfile);
+                    break;
+
                 // switchstand
 
                 case SignalScripts.SCRExternalFunctions.SWITCHSTAND:
