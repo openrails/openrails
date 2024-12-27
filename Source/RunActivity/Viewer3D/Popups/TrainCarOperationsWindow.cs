@@ -93,6 +93,7 @@ namespace Orts.Viewer3D.Popups
         public int LocalScrollPosition;
         public int SelectedCarPosition;
         const int SymbolSize = 16;
+        public bool UpdateFlipped;
 
         public int CurrentDisplaySizeY;
         public bool IsFullScreen;
@@ -424,11 +425,11 @@ namespace Orts.Viewer3D.Popups
                             AddSpace();
 
                             // Front coupler
-                            line.Add(new buttonCouplerFront(0, 0, SymbolSize, Owner.Viewer, car));
+                            line.Add(new buttonCouplerFront(0, 0, SymbolSize, Owner.Viewer, car, carPosition));
                             // Car label
                             line.Add(carLabel);
                             // Rear coupler
-                            line.Add(new buttonCouplerRear(0, 0, SymbolSize, Owner.Viewer, car));
+                            line.Add(new buttonCouplerRear(0, 0, SymbolSize, Owner.Viewer, car, carPosition));
                             AddSpace();
 
                             // Rear angle cock
@@ -635,6 +636,7 @@ namespace Orts.Viewer3D.Popups
 
                     LastPlayerTrainCars = Owner.Viewer.PlayerTrain.Cars.Count;
                     if (Owner.Viewer.PlayerLocomotive != null) LastPlayerLocomotiveFlippedState = Owner.Viewer.PlayerLocomotive.Flipped;
+                    UpdateFlipped = LastPlayerLocomotiveFlippedState;
                 }
                 // Updates power supply status
                 else if (SelectedCarPosition <= CarPositionVisible && SelectedCarPosition == CarPosition)
@@ -666,12 +668,19 @@ namespace Orts.Viewer3D.Popups
                     carOperations.CarOperationChanged = carOperations.Visible && carOperations.CarOperationChanged;
                 }
 
+                if (UpdateFlipped)
+                {
+                    UpdateFlipped = false;
+                    Owner.Viewer.FrontCamera.IsCameraFront = false;
+                    Layout();
+                }
+
                 if (CarPositionChanged || (trainCarWebpage != null && CarPosition != trainCarViewer.CarPosition && trainCarWebpage.Connections > 0))
                 {
                     // Required to scroll the main window from the web version
                     UpdateTrainCarOperation = true;
                     CarPosition = trainCarViewer.CarPosition;
-                    SelectedCarPosition = CarPositionChanged ? CarPosition : SelectedCarPosition;
+                    SelectedCarPosition = CarPositionChanged ? CarPosition : Owner.Viewer.PlayerTrain.Cars.Count > SelectedCarPosition ? SelectedCarPosition : CarPosition;
                     LabelTop = LabelPositionTop[SelectedCarPosition];
                     Layout();
                     localScrollLayout(SelectedCarPosition);
@@ -771,13 +780,21 @@ namespace Orts.Viewer3D.Popups
     {
         readonly Viewer Viewer;
         readonly bool First;
-        public buttonCouplerFront(int x, int y, int size, Viewer viewer, TrainCar car)
+        readonly bool DisableCouplers;
+        public buttonCouplerFront(int x, int y, int size, Viewer viewer, TrainCar car, int carPosition)
             : base(x, y, size, size)
         {
             Viewer = viewer;
             First = car == Viewer.PlayerTrain.Cars.First();
-            var isTender = car.WagonType == MSTSWagon.WagonTypes.Tender;
-            Texture = First ? CouplerFront : isTender ? CouplerNotAvailable : Coupler;
+            var isSteam = Viewer.PlayerTrain.Cars[carPosition] is MSTSSteamLocomotive;
+            var isTender = Viewer.PlayerTrain.Cars[carPosition].WagonType == MSTSWagon.WagonTypes.Tender;
+
+            if (isSteam || isTender)
+            {
+                var carFlipped = Viewer.PlayerTrain.Cars[carPosition].Flipped;
+                DisableCouplers = isSteam ? carFlipped : !carFlipped;
+            }
+            Texture = First ? CouplerFront : DisableCouplers ? CouplerNotAvailable : Coupler;
             Source = new Rectangle(0, 0, size, size);
         }
     }
@@ -785,12 +802,22 @@ namespace Orts.Viewer3D.Popups
     {
         readonly Viewer Viewer;
         readonly bool Last;
-        public buttonCouplerRear(int x, int y, int size, Viewer viewer, TrainCar car)
+        readonly bool DisableCouplers;
+        public buttonCouplerRear(int x, int y, int size, Viewer viewer, TrainCar car, int carPosition)
             : base(x, y, size, size)
         {
             Viewer = viewer;
             Last = car == Viewer.PlayerTrain.Cars.Last();
-            Texture = Last ? CouplerRear : Coupler;
+            var isSteamAndHasTender = (Viewer.PlayerTrain.Cars[carPosition] is MSTSSteamLocomotive) &&
+                (carPosition + 1 < Viewer.PlayerTrain.Cars.Count) && (Viewer.PlayerTrain.Cars[carPosition + 1].WagonType == MSTSWagon.WagonTypes.Tender);
+            var isTender = Viewer.PlayerTrain.Cars[carPosition].WagonType == MSTSWagon.WagonTypes.Tender;
+
+            if (isSteamAndHasTender || isTender)
+            {
+                var carFlipped = Viewer.PlayerTrain.Cars[carPosition].Flipped;
+                DisableCouplers = isSteamAndHasTender ? !carFlipped : carFlipped;
+            }
+            Texture = Last ? CouplerRear : DisableCouplers ? CouplerNotAvailable : Coupler;
             Source = new Rectangle(0, 0, size, size);
         }
     }

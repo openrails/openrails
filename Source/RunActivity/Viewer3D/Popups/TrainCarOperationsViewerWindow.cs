@@ -25,10 +25,8 @@ using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
-using Orts.Viewer3D.RollingStock;
 using ORTS.Common;
 using ORTS.Common.Input;
-using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -570,25 +568,33 @@ namespace Orts.Viewer3D.Popups
             readonly Viewer Viewer;
             readonly TrainCarOperationsViewerWindow TrainCarViewer;
             readonly int CarPosition;
-            readonly bool First;
-            readonly TrainCar Car;
             public buttonCouplerFront(int x, int y, int size, Viewer viewer, TrainCar car, int carPosition)
                 : base(x, y, size, size)
             {
                 Viewer = viewer;
                 TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
                 CarPosition = carPosition;
-                Car = car;
-                First = car == Viewer.PlayerTrain.Cars.First();
-                Texture = First ? CouplerFront : Car.WagonType == MSTSWagon.WagonTypes.Tender ? CouplerNotAvailable : Coupler;
+                bool disableCouplers = false;
+                bool first = car == Viewer.PlayerTrain.Cars.First();
+
+                var isSteam = Viewer.PlayerTrain.Cars[carPosition] is MSTSSteamLocomotive;
+                var isTender = Viewer.PlayerTrain.Cars[carPosition].WagonType == MSTSWagon.WagonTypes.Tender;
+                if (isSteam || isTender)
+                {
+                    var carFlipped = Viewer.PlayerTrain.Cars[carPosition].Flipped;
+                    disableCouplers = isSteam ? carFlipped : !carFlipped;
+                }
+                Texture = first ? CouplerFront : disableCouplers ? CouplerNotAvailable : Coupler;
                 Source = new Rectangle(0, 0, size, size);
-                Click += new Action<Control, Point>(TrainCarOperationsCouplerFront_Click);
+
+                if (!(first || disableCouplers))
+                {
+                    Click += new Action<Control, Point>(TrainCarOperationsCouplerFront_Click);
+                }
             }
 
             void TrainCarOperationsCouplerFront_Click(Control arg1, Point arg2)
             {
-                if (First || Car.WagonType == MSTSWagon.WagonTypes.Tender) return;
-
                 if (Viewer.Simulator.TimetableMode)
                 {
                     Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("In Timetable Mode uncoupling using this window is not allowed"));
@@ -607,22 +613,32 @@ namespace Orts.Viewer3D.Popups
         {
             readonly Viewer Viewer;
             readonly int CarPosition;
-            readonly bool Last;
             public buttonCouplerRear(int x, int y, int size, Viewer viewer, TrainCar car, int carPosition)
                 : base(x, y, size, size)
             {
                 Viewer = viewer;
                 CarPosition = carPosition;
-                Last = car == Viewer.PlayerTrain.Cars.Last();
-                Texture = Last ? CouplerRear : Coupler;
+                bool disableCouplers = false;
+                bool last = car == Viewer.PlayerTrain.Cars.Last();
+
+                var isSteamAndHasTender = (Viewer.PlayerTrain.Cars[carPosition] is MSTSSteamLocomotive) &&
+                    (carPosition + 1 < Viewer.PlayerTrain.Cars.Count) && (Viewer.PlayerTrain.Cars[carPosition + 1].WagonType == MSTSWagon.WagonTypes.Tender);
+                var isTender = Viewer.PlayerTrain.Cars[carPosition].WagonType == MSTSWagon.WagonTypes.Tender;
+                if (isSteamAndHasTender || isTender)
+                {
+                    var carFlipped = Viewer.PlayerTrain.Cars[carPosition].Flipped;
+                    disableCouplers = isSteamAndHasTender ? !carFlipped : carFlipped;
+                }
+                Texture = last ? CouplerRear : disableCouplers ? CouplerNotAvailable : Coupler;
                 Source = new Rectangle(0, 0, size, size);
-                Click += new Action<Control, Point>(TrainCarOperationsCouplerRear_Click);
+                if (!(last || disableCouplers))
+                {
+                    Click += new Action<Control, Point>(TrainCarOperationsCouplerRear_Click);
+                }
             }
 
             void TrainCarOperationsCouplerRear_Click(Control arg1, Point arg2)
             {
-                if (Last) return;
-
                 if (Viewer.Simulator.TimetableMode)
                 {
                     Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("In Timetable Mode uncoupling using this window is not allowed"));
