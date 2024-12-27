@@ -601,15 +601,6 @@ namespace Orts.Simulation.RollingStocks
 
         protected void CheckCoherence()
         {
-            if (!TrainBrakeController.IsValid())
-                TrainBrakeController = new ScriptedBrakeController(this); //create a blank one
-
-            if (!EngineBrakeController.IsValid())
-                EngineBrakeController = null;
-
-            if (!BrakemanBrakeController.IsValid())
-                BrakemanBrakeController = null;
-
             if (ThrottleController == null)
             {
                 //If no controller so far, we create a default one
@@ -1542,8 +1533,17 @@ namespace Orts.Simulation.RollingStocks
         public override void Initialize()
         {
             TrainBrakeController.Initialize();
+            if (!TrainBrakeController.IsValid())
+            {
+                TrainBrakeController = new ScriptedBrakeController(this); //create a blank one
+                TrainBrakeController.Initialize();
+            }
             EngineBrakeController.Initialize();
+            if (!EngineBrakeController.IsValid())
+                EngineBrakeController = null;
             BrakemanBrakeController.Initialize();
+            if (!BrakemanBrakeController.IsValid())
+                BrakemanBrakeController = null;
             LocomotivePowerSupply?.Initialize();
             TrainControlSystem.Initialize();
             CruiseControl?.Initialize();
