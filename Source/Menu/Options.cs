@@ -32,7 +32,7 @@ using ORTS.Common.Input;
 using ORTS.Settings;
 using ORTS.Updater;
 
-namespace Menu
+namespace ORTS
 {
     public partial class OptionsForm : Form
     {
