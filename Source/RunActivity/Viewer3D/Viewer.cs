@@ -1174,7 +1174,7 @@ namespace Orts.Viewer3D
             }
 
             //ALT-F10 : display request stop info for player train
-            if (UserInput.IsPressed(UserCommand.DebugToggleConfirmations))
+            if (UserInput.IsPressed(UserCommand.DebugRequestStopInformation))
             {
                 if (PlayerTrain != null)
                 {
