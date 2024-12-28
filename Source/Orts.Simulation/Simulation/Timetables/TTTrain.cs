@@ -15376,6 +15376,7 @@ namespace Orts.Simulation.Timetables
         public rqannoucetype anntype;   // required announcement type for player train (for set down)
         public bool stopannounced;      // announcement has been done
         public bool stopskipped;        // stop skipped for player train
+        public bool displayRQSInfo      // display request stop information in NextStationWindow (for player train)
 
         //================================================================================================//
         /// <summary>
@@ -15396,6 +15397,7 @@ namespace Orts.Simulation.Timetables
             stopskipped = false;
             visDistance = 25;
             annDistance = 500;
+            displayRQSInfo = false;
         }
 
         //================================================================================================//
@@ -15414,6 +15416,7 @@ namespace Orts.Simulation.Timetables
             visDistance = inf.ReadSingle();
             annDistance = inf.ReadSingle();
             stopskipped = inf.ReadBoolean();
+            displayRQSInfo = inf.ReadBoolean();
         }
 
         //================================================================================================//
@@ -15432,6 +15435,7 @@ namespace Orts.Simulation.Timetables
             outf.Write(visDistance);
             outf.Write(annDistance);
             outf.Write(stopskipped);
+            outf.Write(displayRQSInfo);
         }
 
         //================================================================================================//

@@ -96,6 +96,7 @@ namespace ORTS.Common.Input
         [GetString("Debug Sound Form")] DebugSoundForm,
         [GetString("Debug Physics Form")] DebugPhysicsForm,
         [GetString("Debug Toggle Confirmations")] DebugToggleConfirmations,
+        [GetString("Debug Request Stop Information")] DebugRequestStopInformation,
 
         [GetString("Camera Cab")] CameraCab,
         [GetString("Camera Change Passenger Viewpoint")] CameraChangePassengerViewPoint,

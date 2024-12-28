@@ -474,6 +474,28 @@ namespace Orts.Viewer3D.Popups
                             Message.Text = Viewer.Catalog.GetString("Transfer units with train ahead");
                             Message.Color = Color.Orange;
                         }
+                        else if (playerTimetableTrain.StationStops[0].ReqStopDetails != null && playerTimetableTrain.StationStops[0].ReqStopDetails.displayRQSInfo)
+                        {
+                            if (playerTimetableTrain.StationStops[0].ReqStopDetails.pickupSet && playerTimetableTrain.StationStops[0].ReqStopDetails.setdownSet)
+                            {
+                                Message.Text = Viewer.Catalog.GetString("Request stop : stop required to set down and pick up");
+                                Message.Color = Color.LightGreen;
+                            }
+                            else if (playerTimetableTrain.StationStops[0].ReqStopDetails.pickupSet)
+                                Message.Text = Viewer.Catalog.GetString("Request stop : stop required to pick up");
+                                Message.Color = Color.LightGreen;
+                            }
+                            else if (playerTimetableTrain.StationStops[0].ReqStopDetails.setdownSet)
+                            {
+                                Message.Text = Viewer.Catalog.GetString("Request stop : stop required to set down");
+                                Message.Color = Color.LightGreen;
+                            }
+                            else
+                            {
+                                Message.Text = Viewer.Catalog.GetString("Request stop : stop not required");
+                                Message.Color = Color.LightGreen;
+                            }
+                        }
                     }
                 }
 

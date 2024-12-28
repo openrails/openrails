@@ -1173,6 +1173,18 @@ namespace Orts.Viewer3D
                 Settings.Save();
             }
 
+            //ALT-F10 : display request stop info for player train
+            if (UserInput.IsPressed(UserCommand.DebugToggleConfirmations))
+            {
+                if (PlayerTrain != null)
+                {
+                    if (PlayerTrain.StationStops != null && PlayerTrain.StationStops.Count > 0 && PlayerTrain.StationStops[0].ReqStopDetails != null)
+                    {
+                        PlayerTrain.StationStops[0].ReqStopDetails.displayRQSInfo = true;
+                    }
+                }
+            }
+
             //hit 9 key, get back to player train
             if (UserInput.IsPressed(UserCommand.CameraJumpBackPlayer))
             {
