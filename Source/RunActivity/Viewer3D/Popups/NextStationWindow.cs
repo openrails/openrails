@@ -474,7 +474,8 @@ namespace Orts.Viewer3D.Popups
                             Message.Text = Viewer.Catalog.GetString("Transfer units with train ahead");
                             Message.Color = Color.Orange;
                         }
-                        else if (playerTimetableTrain.StationStops[0].ReqStopDetails != null && playerTimetableTrain.StationStops[0].ReqStopDetails.displayRQSInfo)
+                        else if (!playerTimetableTrain.AtStation && 
+                            playerTimetableTrain.StationStops[0].ReqStopDetails != null && playerTimetableTrain.StationStops[0].ReqStopDetails.displayRQSInfo)
                         {
                             if (playerTimetableTrain.StationStops[0].ReqStopDetails.pickupSet && playerTimetableTrain.StationStops[0].ReqStopDetails.setdownSet)
                             {
