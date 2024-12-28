@@ -482,6 +482,7 @@ namespace Orts.Viewer3D.Popups
                                 Message.Color = Color.LightGreen;
                             }
                             else if (playerTimetableTrain.StationStops[0].ReqStopDetails.pickupSet)
+                            { 
                                 Message.Text = Viewer.Catalog.GetString("Request stop : stop required to pick up");
                                 Message.Color = Color.LightGreen;
                             }

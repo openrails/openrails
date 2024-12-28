@@ -15376,7 +15376,7 @@ namespace Orts.Simulation.Timetables
         public rqannoucetype anntype;   // required announcement type for player train (for set down)
         public bool stopannounced;      // announcement has been done
         public bool stopskipped;        // stop skipped for player train
-        public bool displayRQSInfo      // display request stop information in NextStationWindow (for player train)
+        public bool displayRQSInfo;     // display request stop information in NextStationWindow (for player train)
 
         //================================================================================================//
         /// <summary>
