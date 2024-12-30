@@ -1719,7 +1719,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
                         if (loco.Train.LeadLocomotiveIndex >= 0)
                         { 
-                            if (loco.Train.DetermineDPLeadLocomotive(loco) is MSTSLocomotive lead && (lead.BailOff || lead.EngineBrakeController.TrainBrakeControllerState == ControllerState.BailOff))
+                            if (loco.Train.DetermineDPLeadLocomotive(loco) is MSTSLocomotive lead && (lead.BailOff || (lead.EngineBrakeController != null && lead.EngineBrakeController.TrainBrakeControllerState == ControllerState.BailOff)))
                             {
                                 if (BrakeValve == BrakeValveType.Distributor)
                                 {
