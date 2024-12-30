@@ -1538,14 +1538,20 @@ namespace Orts.Simulation.RollingStocks
             if (EngineBrakeController != null)
             {
                 EngineBrakeController.Initialize();
-                if (!EngineBrakeController.IsValid())
+                if (!EngineBrakeController.IsValid() && !SteamEngineBrakeFitted)
+                {
                     EngineBrakeController = null;
+                    EngineBrakeFitted = false;
+                }
             }
             if (BrakemanBrakeController != null)
             {
                 BrakemanBrakeController.Initialize();
                 if (!BrakemanBrakeController.IsValid())
+                {
                     BrakemanBrakeController = null;
+                    BrakemanBrakeFitted = false;
+                }
             }
             LocomotivePowerSupply?.Initialize();
             TrainControlSystem.Initialize();
