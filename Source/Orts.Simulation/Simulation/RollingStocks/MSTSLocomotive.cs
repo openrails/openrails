@@ -1535,12 +1535,18 @@ namespace Orts.Simulation.RollingStocks
                 TrainBrakeController = new ScriptedBrakeController(this); //create a blank one
                 TrainBrakeController.Initialize();
             }
-            EngineBrakeController.Initialize();
-            if (!EngineBrakeController.IsValid())
-                EngineBrakeController = null;
-            BrakemanBrakeController.Initialize();
-            if (!BrakemanBrakeController.IsValid())
-                BrakemanBrakeController = null;
+            if (EngineBrakeController != null)
+            {
+                EngineBrakeController.Initialize();
+                if (!EngineBrakeController.IsValid())
+                    EngineBrakeController = null;
+            }
+            if (BrakemanBrakeController != null)
+            {
+                BrakemanBrakeController.Initialize();
+                if (!BrakemanBrakeController.IsValid())
+                    BrakemanBrakeController = null;
+            }
             LocomotivePowerSupply?.Initialize();
             TrainControlSystem.Initialize();
             CruiseControl?.Initialize();
