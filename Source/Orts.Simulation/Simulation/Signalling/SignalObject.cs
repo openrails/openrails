@@ -368,6 +368,30 @@ namespace Orts.Simulation.Signalling
                     {
                         enabledTrain = thisSection.CircuitState.TrainReserved;
                     }
+                    else if (thisSection.CircuitState.HasTrainsOccupying())
+                    {
+                        List<Train.TrainRouted> trainList = thisSection.CircuitState.TrainsOccupying();
+                        float? offsetInSection = null;
+
+                        foreach (var thisRouted in trainList)
+                        {
+                            var thisTrain = thisRouted.Train;
+                            var thisOffset = thisTrain.PresentPosition[0].TCOffset;
+                            if (!offsetInSection.HasValue || thisOffset > offsetInSection)
+                            {
+                                offsetInSection = thisOffset;
+                                if (thisTrain.Number == number)
+                                {
+                                    enabledTrain = thisRouted;
+                                    thisTrain.NextSignalObject[0] = this;
+                                }
+                                else
+                                {
+                                    enabledTrain = null;
+                                }
+                            }
+                        }
+                    }
                     else
                     {
                         enabledTrain = null; // reset - train not found
