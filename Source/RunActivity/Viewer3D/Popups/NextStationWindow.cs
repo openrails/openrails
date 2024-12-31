@@ -270,7 +270,7 @@ namespace Orts.Viewer3D.Popups
                                 StationPreviousDepartScheduled.Text = playerTimetableTrain.PreviousStop.departureDT.ToString("HHxmm:ss");
                                 StationPreviousArriveActual.Text = "--:--:--";
                                 StationPreviousArriveActual.Color = Color.LightGreen;
-                                StationPreviousDepartActual.Text = " skipped";
+                                StationPreviousDepartActual.Text = Viewer.Catalog.GetString("skipped");
                                 StationPreviousDepartActual.Color = Color.LightGreen;
                             }
                             else
