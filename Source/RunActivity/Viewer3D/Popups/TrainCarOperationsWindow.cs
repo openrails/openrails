@@ -932,13 +932,13 @@ namespace Orts.Viewer3D.Popups
     {
         readonly Viewer Viewer;
         readonly TrainCarOperationsViewerWindow TrainCarViewer;
-        readonly bool Last;
+
         public buttonRearBrakeHose(int x, int y, int size, Viewer viewer, TrainCar car, int carPosition)
             : base(x, y, size, size)
         {
             Viewer = viewer;
             TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
-            Last = car == viewer.PlayerTrain.Cars.Last();
+            var Last = car == viewer.PlayerTrain.Cars.Last();
             Texture = Last ? BrakeHoseLastDis : (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected ? BrakeHoseCon : BrakeHoseDis;
 
             // Update from viewer
@@ -961,20 +961,19 @@ namespace Orts.Viewer3D.Popups
     {
         readonly Viewer Viewer;
         readonly TrainCarOperationsViewerWindow TrainCarViewer;
-        readonly bool First;
-        readonly float carAngleCockAOpenAmount;
         public buttonFrontAngleCock(int x, int y, int size, Viewer viewer, TrainCar car, int carPosition)
             : base(x, y, size, size)
         {
             Viewer = viewer;
             TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
-            First = car == viewer.PlayerTrain.Cars.First();
+            var First = car == viewer.PlayerTrain.Cars.First();
 
-            carAngleCockAOpenAmount = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.AngleCockAOpenAmount;
+            var carAngleCockAOpenAmount = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.AngleCockAOpenAmount;
+            var carAngleCockAOpen = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.AngleCockAOpen;
             Texture = !TrainCarViewer.TrainCarOperationsChanged && First ? FrontAngleCockClosed
-                : carAngleCockAOpenAmount >= 1 ? FrontAngleCockOpened
-                : carAngleCockAOpenAmount <= 0 ? FrontAngleCockClosed
-                : FrontAngleCockPartial;
+                : carAngleCockAOpenAmount > 0 && carAngleCockAOpenAmount < 1 ? FrontAngleCockPartial
+                : carAngleCockAOpen ? FrontAngleCockOpened
+                : FrontAngleCockClosed;
 
             Source = new Rectangle(0, 0, size, size);
 
@@ -989,19 +988,18 @@ namespace Orts.Viewer3D.Popups
     class buttonRearAngleCock : Image
     {
         readonly Viewer Viewer;
-        readonly bool Last;
-        readonly float carAngleCockBOpenAmount;
         public buttonRearAngleCock(int x, int y, int size, Viewer viewer, TrainCar car, int carPosition)
             : base(x, y, size, size)
         {
             Viewer = viewer;
-            Last = car == viewer.PlayerTrain.Cars.Last();
+            var Last = car == viewer.PlayerTrain.Cars.Last();
 
-            carAngleCockBOpenAmount = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.AngleCockBOpenAmount;
+            var carAngleCockBOpenAmount = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.AngleCockBOpenAmount;
+            var carAngleCockBOpen = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.AngleCockBOpen;
             Texture = Last ? RearAngleCockClosed
-                : carAngleCockBOpenAmount >= 1 ? RearAngleCockOpened
-                : carAngleCockBOpenAmount <= 0 ? RearAngleCockClosed
-                : RearAngleCockPartial;
+                : carAngleCockBOpenAmount > 0 && carAngleCockBOpenAmount < 1 ? RearAngleCockPartial
+                : carAngleCockBOpen ? RearAngleCockOpened
+                : RearAngleCockClosed;
 
             Source = new Rectangle(0, 0, size, size);
 

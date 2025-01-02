@@ -878,12 +878,14 @@ namespace Orts.Viewer3D.Popups
                 TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
                 CarPosition = carPosition;
                 First = car == Viewer.PlayerTrain.Cars.First();
-                var carAngleCockAOpenAmount = Viewer.PlayerTrain.Cars[CarPosition].BrakeSystem.AngleCockAOpenAmount;
 
-                Texture = First ? FrontAngleCockClosed
-                    : carAngleCockAOpenAmount >= 1 ? FrontAngleCockOpened
-                    : carAngleCockAOpenAmount <= 0 ? FrontAngleCockClosed
-                    : FrontAngleCockPartial;
+                var carAngleCockAOpenAmount = Viewer.PlayerTrain.Cars[CarPosition].BrakeSystem.AngleCockAOpenAmount;
+                var carAngleCockAOpen = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.AngleCockAOpen;
+                Texture = !TrainCarViewer.TrainCarOperationsChanged && First ? FrontAngleCockClosed
+                    : carAngleCockAOpenAmount > 0 && carAngleCockAOpenAmount < 1? FrontAngleCockPartial
+                    : carAngleCockAOpen ? FrontAngleCockOpened
+                    : FrontAngleCockClosed;
+
                 Source = new Rectangle(0, 0, size, size);
                 Click += new Action<Control, Point>(buttonFrontAngleCock_Click);
             }
@@ -921,12 +923,13 @@ namespace Orts.Viewer3D.Popups
                 TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
                 CarPosition = carPosition;
                 Last = car == Viewer.PlayerTrain.Cars.Last();
-                var carAngleCockBOpenAmount = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.AngleCockBOpenAmount;
 
+                var carAngleCockBOpenAmount = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.AngleCockBOpenAmount;
+                var carAngleCockBOpen = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.AngleCockBOpen;
                 Texture = Last ? RearAngleCockClosed
-                    : carAngleCockBOpenAmount >= 1 ? RearAngleCockOpened
-                    : carAngleCockBOpenAmount <= 0 ? RearAngleCockClosed
-                    : RearAngleCockPartial;
+                    : carAngleCockBOpenAmount > 0 && carAngleCockBOpenAmount < 1 ? RearAngleCockPartial
+                    : carAngleCockBOpen ? RearAngleCockOpened
+                    : RearAngleCockClosed;
 
                 Source = new Rectangle(0, 0, size, size);
 
