@@ -202,12 +202,29 @@ namespace Orts.Viewer3D.WebServices
             }
         }
 
+        double LastPrepareRealTime;
         public void handleReceiveAndSend()
         {
-            if (Connections > 0)
+            if ((Viewer.PlayerTrain != null))
             {
-                handleReceive();
-                handleSend();
+                if (Connections > 0)
+                {
+                    if (Viewer.RealTime - LastPrepareRealTime >= 0.25)
+                    {
+                        LastPrepareRealTime = Viewer.RealTime;
+                        try
+                        {
+                            handleReceive();
+                            handleSend();
+                        }
+                        catch (Exception error)
+                        {
+                            // some timing error causes an exception sometimes
+                            // just silently ignore but log the exception
+                            Trace.TraceWarning(error.ToString());
+                        }
+                    }
+                }
             }
         }
 
