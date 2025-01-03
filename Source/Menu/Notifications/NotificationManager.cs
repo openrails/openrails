@@ -218,9 +218,10 @@ namespace Menu.Notifications
         /// </summary>
         public void PopulatePage()
         {
-            Page = new NotificationPage(MainForm, Panel, this); 
+            Page = new NotificationPage(MainForm, Panel, this);
+            var list = Notifications?.NotificationList;
 
-            if (UpdateManager.LastCheckError != null || Error != null)
+            if (UpdateManager.LastCheckError != null || Error != null || list == null)
             {
                 PopulateRetryPage();
             }
@@ -229,7 +230,6 @@ namespace Menu.Notifications
                 Settings.LastViewNotificationDate = $"{DateTime.Today:yyyy-MM-dd}";
                 Settings.Save("LastViewNotificationDate");  // Saves the date on any viewing of notifications
 
-                var list = Notifications.NotificationList;
                 var n = list[CurrentPageIndex];
                 LogNotification(n);
 
