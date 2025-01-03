@@ -1755,7 +1755,7 @@ namespace Orts.Simulation.RollingStocks
                         IntakePointList.Add(new IntakePoint(copyIntakePoint));
                 }
             }
-
+            BrakeEquipment = new List<string>(BrakeEquipment);
             MSTSBrakeSystem.InitializeFromCopy(copy.BrakeSystem);
             if (copy.WeightLoadController != null) WeightLoadController = new MSTSNotchController(copy.WeightLoadController);
 
