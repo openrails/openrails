@@ -133,8 +133,7 @@ namespace Orts.MultiPlayer
 				}
 				catch (Exception e)
 				{
-					System.Console.WriteLine(e.Message + e.StackTrace);
-					Trace.TraceWarning(e.Message + e.StackTrace);
+					Trace.WriteLine(e);
 				}
 			}
 			if (MPManager.Simulator.Confirmer != null)
