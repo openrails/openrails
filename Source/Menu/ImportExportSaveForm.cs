@@ -19,7 +19,7 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.IO.Packaging;  // Needs Project > Add reference > .NET > Component name = WindowsBase
+using System.IO.Compression;
 using System.Windows.Forms;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
@@ -69,8 +69,6 @@ namespace Menu
             // Create a Zip-compatible file/compressed folder containing:
             // all files with the same stem (i.e. *.save, *.png, *.replay, *.txt)
 
-            // For Zip, see http://weblogs.asp.net/jgalloway/archive/2007/10/25/creating-zip-archives-in-net-without-an-external-library-like-sharpziplib.aspx
-
             // Copy files to new package in folder save_packs
 			var fullFilePath = Path.Combine(UserSettings.UserDataFolder, Save.File);
             var toFile = Path.GetFileNameWithoutExtension(Save.File) + "." + SavePackFileExtension;
@@ -117,56 +115,35 @@ namespace Menu
 
         static void AddFileToZip(string zipFilename, string fileToAdd)
         {
-            using (var zip = Package.Open(zipFilename, FileMode.OpenOrCreate))
+            using (var zip = ZipFile.Open(zipFilename, ZipArchiveMode.Update))
             {
-                var destFilename = @".\" + Path.GetFileName(fileToAdd);
-                var uri = PackUriHelper.CreatePartUri(new Uri(destFilename, UriKind.Relative));
-                if (zip.PartExists(uri))
-                {
-                    zip.DeletePart(uri);
-                }
-                var part = zip.CreatePart(uri, "", CompressionOption.Normal);
-                using (var source = new FileStream(fileToAdd, FileMode.Open, FileAccess.Read))
-                {
-                    using (var destination = part.GetStream())
-                    {
-                        CopyStream(source, destination);
-                    }
-                }
+                zip.CreateEntryFromFile(fileToAdd, Path.GetFileName(fileToAdd), CompressionLevel.Optimal);
             }
         }
 
-
         static void ExtractFilesFromZip(string zipFilename, string path)
         {
-            using (var zip = Package.Open(zipFilename, FileMode.Open, FileAccess.Read))
+            using (var zip = ZipFile.OpenRead(zipFilename))
             {
-                foreach (var part in zip.GetParts())
+                foreach (var part in zip.Entries)
                 {
-                    var fileName = Path.Combine(path, part.Uri.ToString().TrimStart('/').Replace("%20", " "));
-                    try
-                    {
-                        using (var destination = new FileStream(fileName, FileMode.Create))
+                    // Older save packs have an extra root file we don't need
+                    if (part.FullName == "[Content_Types].xml") continue;
+
+                    // Older save packs have percent-encoded paths
+                    var fileName = Path.GetFullPath(Path.Combine(path, part.FullName.Replace("%20", " ")));
+
+                    try {
+                        if (Path.GetFileName(fileName).Length > 0)
                         {
-                            using (var source = part.GetStream())
-                            {
-                                CopyStream(source, destination);
-                            }
+                            Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+                            part.ExtractToFile(fileName, true);
                         }
                     }
                     catch { } // Ignore attempts to copy to a destination file locked by another process as
                     // ResumeForm locks PNG of selected save.
                 }
             }
-        }
-
-        static void CopyStream(Stream source, Stream target)
-        {
-            const int bufferSize = 0x1000;
-            var buffer = new byte[bufferSize];
-            var bytesRead = 0;
-            while ((bytesRead = source.Read(buffer, 0, bufferSize)) > 0)
-                target.Write(buffer, 0, bytesRead);
         }
     }
 }

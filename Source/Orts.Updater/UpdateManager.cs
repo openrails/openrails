@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Ionic.Zip;
 using Newtonsoft.Json;
 using ORTS.Common;
 using ORTS.Settings;
@@ -24,6 +23,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
@@ -413,14 +413,22 @@ namespace ORTS.Updater
 
         void ExtractUpdate(int progressMin, int progressLength)
         {
-            using (var zip = ZipFile.Read(FileUpdateStage))
+            using (var zip = ZipFile.OpenRead(FileUpdateStage))
             {
-                zip.ExtractProgress += (object sender, ExtractProgressEventArgs e) =>
+                for (var index = 0; index < zip.Entries.Count; index++)
                 {
-                    if (e.EventType == ZipProgressEventType.Extracting_BeforeExtractEntry)
-                        TriggerApplyProgressChanged(progressMin + progressLength * e.EntriesExtracted / e.EntriesTotal);
-                };
-                zip.ExtractAll(PathUpdateStage, ExtractExistingFileAction.OverwriteSilently);
+                    TriggerApplyProgressChanged(progressMin + progressLength * index / zip.Entries.Count);
+
+                    var absolutePath = Path.GetFullPath(Path.Combine(PathUpdateStage, zip.Entries[index].FullName));
+                    if (!absolutePath.StartsWith(PathUpdateStage))
+                        throw new IOException("Invalid update: attempting to extract outside staging area");
+
+                    if (Path.GetFileName(absolutePath).Length > 0)
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(absolutePath));
+                        zip.Entries[index].ExtractToFile(absolutePath, true);
+                    }
+                }
             }
 
             File.Delete(FileUpdateStage);

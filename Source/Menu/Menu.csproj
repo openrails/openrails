@@ -32,8 +32,8 @@
     </Reference>
     <Reference Include="PresentationFramework" />
     <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="KeyInputControl.cs">
