@@ -228,8 +228,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             );
 
             DynamicBrakeBlendingTable = controller.DynamicBrakeBlendingTable;
-
-            Initialize();
         }
 
         public ScriptedBrakeController Clone(MSTSLocomotive locomotive)
