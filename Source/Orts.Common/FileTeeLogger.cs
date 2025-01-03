@@ -23,12 +23,12 @@ namespace ORTS.Common
 {
     public class FileTeeLogger : TextWriter
     {
-        public readonly string FileName;
+        public readonly TextWriter LogFile;
         public readonly TextWriter Console;
 
         public FileTeeLogger(string fileName, TextWriter console)
         {
-            FileName = fileName;
+            LogFile = new StreamWriter(fileName, true, Encoding);
             Console = console;
         }
 
@@ -54,15 +54,13 @@ namespace ORTS.Common
         public override void Write(string value)
         {
             Console.Write(value);
-            using (var writer = new StreamWriter(FileName, true, Encoding))
-            {
-                writer.Write(value);
-            }
+            LogFile.Write(value);
+            LogFile.Flush();
         }
 
         public override void Write(char[] buffer, int index, int count)
         {
-            Write(new String(buffer, index, count));
+            Write(new string(buffer, index, count));
         }
     }
 }
