@@ -236,7 +236,7 @@ namespace Orts.Simulation.RollingStocks
         public float BearingHotBoxSmokeDurationS;
         public float BearingHotBoxSmokeVelocityMpS = 15.0f;
         public Color BearingHotBoxSmokeSteadyColor = Color.Gray;
-        List<string> BrakeEquipment;
+        List<string> BrakeEquipment = new List<string>();
 
         /// <summary>
         /// Indicates whether a non auto (straight) brake is present or not when braking is selected.
@@ -1753,7 +1753,7 @@ namespace Orts.Simulation.RollingStocks
                         IntakePointList.Add(new IntakePoint(copyIntakePoint));
                 }
             }
-
+            BrakeEquipment = new List<string>(BrakeEquipment);
             MSTSBrakeSystem.InitializeFromCopy(copy.BrakeSystem);
             if (copy.WeightLoadController != null) WeightLoadController = new MSTSNotchController(copy.WeightLoadController);
 
