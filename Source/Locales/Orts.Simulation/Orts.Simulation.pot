@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2024-11-09 17:45:32+0100\n"
-"PO-Revision-Date: 2024-11-09 17:45:36+0100\n"
+"POT-Creation-Date: 2024-11-02 19:42:04+0300\n"
+"PO-Revision-Date: 2024-11-02 19:42:11+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -1549,8 +1549,8 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSControlTrailerCar.cs:238
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSControlTrailerCar.cs:269
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:4194
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:4256
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:4196
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:4258
 msgid "Throttle must be reduced to Idle before gear change can happen."
 msgstr ""
 
@@ -1815,37 +1815,37 @@ msgstr ""
 msgid "Auxiliary power"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3052
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3054
 msgid "No water scoop on this loco"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3059
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3061
 msgid "Scoop is broken, can't refill"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3066
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3068
 msgid "Scoop is broken by junction track"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3076
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3078
 msgid "Scoop is not over trough, can't refill"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3390
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3425
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3392
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3427
 msgid "Sand supply has been exhausted"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3087
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3089
 msgid "Refill: Loco must be moving forward."
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3096
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3098
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0} for water to enter tender."
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3106
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:3108
 msgid "Refill: Water supply now replenished."
 msgstr ""
 
