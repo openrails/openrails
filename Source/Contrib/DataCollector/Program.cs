@@ -29,7 +29,7 @@ namespace DataCollector
         static void Main(string[] args)
         {
             if (args.Contains("/system", StringComparer.OrdinalIgnoreCase))
-                SystemInfo.WriteSystemDetails(Console.Out);
+                CollectSystem();
             else if (args.Contains("/tile-terrtex", StringComparer.OrdinalIgnoreCase))
                 CollectTileTerrtex(args);
             else
@@ -51,6 +51,12 @@ namespace DataCollector
             Console.WriteLine("  /tile-terrtex  Scans the provided PATHs for MSTS tile files (.t) and");
             Console.WriteLine("                 produces a statistical summary of the terrtex used");
             Console.WriteLine("  /help          Show help and usage information");
+        }
+
+        static void CollectSystem()
+        {
+            Console.Error.WriteLine("Collecting information...");
+            SystemInfo.WriteSystemDetails(Console.Out);
         }
 
         struct TileTerrtexDirectory
