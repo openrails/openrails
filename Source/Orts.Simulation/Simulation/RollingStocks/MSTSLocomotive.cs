@@ -1540,7 +1540,7 @@ namespace Orts.Simulation.RollingStocks
             }
             if (EngineBrakeController != null)
             {
-                EngineBrakeController.Initialize();
+            EngineBrakeController.Initialize();
                 if (!EngineBrakeController.IsValid() && !SteamEngineBrakeFitted)
                 {
                     EngineBrakeController = null;
@@ -1549,7 +1549,7 @@ namespace Orts.Simulation.RollingStocks
             }
             if (BrakemanBrakeController != null)
             {
-                BrakemanBrakeController.Initialize();
+            BrakemanBrakeController.Initialize();
                 if (!BrakemanBrakeController.IsValid())
                 {
                     BrakemanBrakeController = null;
