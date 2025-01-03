@@ -95,9 +95,10 @@ namespace Orts.Viewer3D.Popups
                 foreach (UserCommand command in Enum.GetValues(typeof(UserCommand)))
                 {
                     var line = scrollbox.AddLayoutHorizontalLineOfText();
-                    var width = line.RemainingWidth / 2;
-                    line.Add(new Label(width, line.RemainingHeight, InputSettings.GetPrettyLocalizedName(command)));
-                    line.Add(new Label(width, line.RemainingHeight, Owner.Viewer.Settings.Input.Commands[(int)command].ToString()));
+                    var width = line.RemainingWidth / 2; // Split pane into 2 equal parts
+                    var offset = (int)(line.RemainingWidth * 0.10); // Offset pushes command keys 10% rightwards to allow for longer command descriptions.
+                    line.Add(new Label(width + offset, line.RemainingHeight, InputSettings.GetPrettyLocalizedName(command)));
+                    line.Add(new Label(width - offset, line.RemainingHeight, Owner.Viewer.Settings.Input.Commands[(int)command].ToString()));
                 }
             }));
             if (owner.Viewer.Simulator.Activity != null)
