@@ -1870,7 +1870,7 @@ Following activity features are randomized:
   will be shown in red in the train operations window and will squeal 
   if an .sms file named BrakesStuck.sms is present in the 
   ``<Train Simulator\Sound>`` directory. `Here 
-  <http://www.interazioni-educative.it/Varie/BrakesStuckSound.zip>`_ 
+  <https://static.openrails.org/files/BrakesStuckSound.zip>`_ 
   an example of such file. 
   Of course when this event occurs it is advisable to uncouple the 
   wagon as soon as possible from the train. No more than a car will 
