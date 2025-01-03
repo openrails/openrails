@@ -15,12 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Text;
 
 namespace Orts.Parsers.Msts
@@ -60,7 +60,9 @@ namespace Orts.Parsers.Msts
             // SIMISA@@  means uncompressed
             if (headerString.StartsWith("SIMISA@F"))
             {
-                fb = new InflaterInputStream(fb);
+                // Skip over the 2 byte zlib header and onto the DEFLATE stream itself
+                fb.Read(buffer, 16, 2);
+                fb = new DeflateStream(fb, CompressionMode.Decompress);
             }
             else if (headerString.StartsWith("\r\nSIMISA"))
             {
