@@ -1522,13 +1522,11 @@ namespace Orts.Simulation.Physics
             // Reverse brake hose connections and angle cocks
             for (var i = 0; i < Cars.Count; i++)
             {
-                var ac = Cars[i].BrakeSystem.AngleCockAOpen;
-                Cars[i].BrakeSystem.AngleCockAOpen = Cars[i].BrakeSystem.AngleCockBOpen;
-                Cars[i].BrakeSystem.AngleCockBOpen = ac;
-                if (i == Cars.Count - 1)
-                    Cars[i].BrakeSystem.FrontBrakeHoseConnected = false;
-                else
-                    Cars[i].BrakeSystem.FrontBrakeHoseConnected = Cars[i + 1].BrakeSystem.FrontBrakeHoseConnected;
+                var bs = Cars[i].BrakeSystem;
+                (bs.AngleCockBOpen, bs.AngleCockAOpen) = (bs.AngleCockAOpen, bs.AngleCockBOpen);
+                (bs.AngleCockBOpenAmount, bs.AngleCockAOpenAmount) = (bs.AngleCockAOpenAmount, bs.AngleCockBOpenAmount);
+                (bs.AngleCockBOpenTime, bs.AngleCockAOpenTime) = (bs.AngleCockAOpenTime, bs.AngleCockBOpenTime);
+                (bs.RearBrakeHoseConnected, bs.FrontBrakeHoseConnected) = (bs.FrontBrakeHoseConnected, bs.RearBrakeHoseConnected);
             }
             // Reverse the actual order of the cars in the train.
             Cars.Reverse();
