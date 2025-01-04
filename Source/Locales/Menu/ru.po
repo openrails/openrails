@@ -1,17 +1,17 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2024-12-01 14:05:08+0300\n"
-"PO-Revision-Date: 2024-12-01 14:29+0300\n"
+"POT-Creation-Date: 2025-01-02 01:26:58+0300\n"
+"PO-Revision-Date: 2025-01-04 11:28+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 3.2.2\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"X-Generator: Poedit 3.0\n"
 
 #: ../../Menu/ContentForm.cs:260 ../../Menu/DownloadContentForm.cs:173
 msgid "Main Path where route is to be installed"
@@ -65,9 +65,9 @@ msgid "Start options"
 msgstr "Начальные условия"
 
 #: ../../Menu/ContentForm.cs:344 ../../Menu/DownloadContentForm.cs:610
-#: ../../Menu/Options.cs:243 ../../Menu/Options.cs:288
+#: ../../Menu/Options.cs:247 ../../Menu/Options.cs:292
 msgid "None"
-msgstr "Не обновлять"
+msgstr "Не требуется"
 
 #: ../../Menu/ContentForm.cs:348 ../../Menu/ContentForm.Designer.cs:297
 #: ../../Menu/DownloadContentForm.cs:614
@@ -103,7 +103,7 @@ msgid "Heading to"
 msgstr "Прибытие в"
 
 #: ../../Menu/ContentForm.cs:360 ../../Menu/DownloadContentForm.cs:621
-#: ../../Menu/Options.cs:219 ../../Menu/ResumeForm.Designer.cs:380
+#: ../../Menu/Options.cs:223 ../../Menu/ResumeForm.Designer.cs:380
 msgid "Time"
 msgstr "Время"
 
@@ -366,11 +366,11 @@ msgstr "Обновить"
 
 #: ../../Menu/ContentForm.Designer.cs:255
 msgid "Auto Installed"
-msgstr "Установлено автоматически"
+msgstr "Автоматическая установка"
 
 #: ../../Menu/ContentForm.Designer.cs:269
 msgid "Manually Installed"
-msgstr "Установлено вручную"
+msgstr "Ручная установка"
 
 #: ../../Menu/ContentForm.Designer.cs:327 ../../Menu/MainForm.Designer.cs:218
 msgid "Route:"
@@ -384,14 +384,14 @@ msgstr "Путь:"
 msgid "Add..."
 msgstr "Добавить..."
 
-#: ../../Menu/ContentForm.Designer.cs:405 ../../Menu/Options.Designer.cs:344
+#: ../../Menu/ContentForm.Designer.cs:405 ../../Menu/Options.Designer.cs:351
 #: ../../Menu/TestingForm.Designer.cs:87
 msgid "Cancel"
 msgstr "Отказаться"
 
 #: ../../Menu/ContentForm.Designer.cs:415
 #: ../../Menu/DownloadContentForm.Designer.cs:210
-#: ../../Menu/Options.Designer.cs:286
+#: ../../Menu/Options.Designer.cs:293
 msgid "OK"
 msgstr "Принять"
 
@@ -492,75 +492,75 @@ msgstr "Нажмите любую клавишу"
 msgid "Reset to default"
 msgstr "Восстановить исходное значение"
 
-#: ../../Menu/MainForm.cs:160
+#: ../../Menu/MainForm.cs:161
 msgid "Spring"
 msgstr "Весна"
 
-#: ../../Menu/MainForm.cs:161
+#: ../../Menu/MainForm.cs:162
 msgid "Summer"
 msgstr "Лето"
 
-#: ../../Menu/MainForm.cs:162
+#: ../../Menu/MainForm.cs:163
 msgid "Autumn"
 msgstr "Осень"
 
-#: ../../Menu/MainForm.cs:163
+#: ../../Menu/MainForm.cs:164
 msgid "Winter"
 msgstr "Зима"
 
-#: ../../Menu/MainForm.cs:166
+#: ../../Menu/MainForm.cs:167
 msgid "Clear"
 msgstr "Ясно"
 
-#: ../../Menu/MainForm.cs:167
+#: ../../Menu/MainForm.cs:168
 msgid "Snow"
 msgstr "Снегопад"
 
-#: ../../Menu/MainForm.cs:168
+#: ../../Menu/MainForm.cs:169
 msgid "Rain"
 msgstr "Дождливо"
 
-#: ../../Menu/MainForm.cs:171 ../../Menu/Options.cs:567
+#: ../../Menu/MainForm.cs:172 ../../Menu/Options.cs:573
 msgid "Easy"
 msgstr "Легко"
 
-#: ../../Menu/MainForm.cs:172
+#: ../../Menu/MainForm.cs:173
 msgid "Medium"
 msgstr "Средне"
 
-#: ../../Menu/MainForm.cs:173 ../../Menu/Options.cs:573
+#: ../../Menu/MainForm.cs:174 ../../Menu/Options.cs:579
 msgid "Hard"
 msgstr "Трудно"
 
-#: ../../Menu/MainForm.cs:177
+#: ../../Menu/MainForm.cs:178
 msgid "Monday"
 msgstr "Понедельник"
 
-#: ../../Menu/MainForm.cs:178
+#: ../../Menu/MainForm.cs:179
 msgid "Tuesday"
 msgstr "Вторник"
 
-#: ../../Menu/MainForm.cs:179
+#: ../../Menu/MainForm.cs:180
 msgid "Wednesday"
 msgstr "Среда"
 
-#: ../../Menu/MainForm.cs:180
+#: ../../Menu/MainForm.cs:181
 msgid "Thursday"
 msgstr "Четверг"
 
-#: ../../Menu/MainForm.cs:181
+#: ../../Menu/MainForm.cs:182
 msgid "Friday"
 msgstr "Пятница"
 
-#: ../../Menu/MainForm.cs:182
+#: ../../Menu/MainForm.cs:183
 msgid "Saturday"
 msgstr "Суббота"
 
-#: ../../Menu/MainForm.cs:183
+#: ../../Menu/MainForm.cs:184
 msgid "Sunday"
 msgstr "Воскресенье"
 
-#: ../../Menu/MainForm.cs:516
+#: ../../Menu/MainForm.cs:517
 msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
@@ -568,56 +568,56 @@ msgstr ""
 "Имя должно содержать 4-10 символов, кроме пробела, апострофа, кавычек и "
 "дефиса и не должно начинаться с цифры."
 
-#: ../../Menu/MainForm.cs:1138
+#: ../../Menu/MainForm.cs:1139
 msgid "Activity Briefing"
 msgstr "Инструктаж"
 
-#: ../../Menu/MainForm.cs:1127
+#: ../../Menu/MainForm.cs:1128
 #, csharp-format
 msgid "Route: {0}"
 msgstr "Игровой полигон {0}"
 
-#: ../../Menu/MainForm.cs:1133 ../../Menu/MainForm.cs:1165
+#: ../../Menu/MainForm.cs:1134 ../../Menu/MainForm.cs:1166
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr "Локомотив: {0}"
 
-#: ../../Menu/MainForm.cs:1137
+#: ../../Menu/MainForm.cs:1138
 #, csharp-format
 msgid "Activity: {0}"
 msgstr "Сценарий: {0}"
 
-#: ../../Menu/MainForm.cs:1142 ../../Menu/MainForm.cs:1168
+#: ../../Menu/MainForm.cs:1143 ../../Menu/MainForm.cs:1169
 #, csharp-format
 msgid "Path: {0}"
 msgstr "Маршрут: {0}"
 
-#: ../../Menu/MainForm.cs:1143
+#: ../../Menu/MainForm.cs:1144
 #, csharp-format
 msgid "Starting at: {0}"
 msgstr "Отправление из: {0}"
 
-#: ../../Menu/MainForm.cs:1144
+#: ../../Menu/MainForm.cs:1145
 #, csharp-format
 msgid "Heading to: {0}"
 msgstr "Прибытие в: {0}"
 
-#: ../../Menu/MainForm.cs:1151
+#: ../../Menu/MainForm.cs:1152
 #, csharp-format
 msgid "Timetable set: {0}"
 msgstr "Расписание: {0}"
 
-#: ../../Menu/MainForm.cs:1155
+#: ../../Menu/MainForm.cs:1156
 #, csharp-format
 msgid "Timetable: {0}"
 msgstr "График: {0}"
 
-#: ../../Menu/MainForm.cs:1159
+#: ../../Menu/MainForm.cs:1160
 #, csharp-format
 msgid "Train: {0}"
 msgstr "Поезд: {0}"
 
-#: ../../Menu/MainForm.cs:1163
+#: ../../Menu/MainForm.cs:1164
 #, csharp-format
 msgid "Consist: {0}"
 msgstr "Состав: {0}"
@@ -634,7 +634,7 @@ msgstr "Свободная Колея"
 msgid "Logging"
 msgstr "Протокол"
 
-#: ../../Menu/MainForm.Designer.cs:164 ../../Menu/Options.Designer.cs:2573
+#: ../../Menu/MainForm.Designer.cs:164 ../../Menu/Options.Designer.cs:2654
 msgid "Options"
 msgstr "Настройки"
 
@@ -716,7 +716,7 @@ msgstr "Прибытие в:"
 
 #: ../../Menu/MainForm.Designer.cs:575
 msgid "Duration:"
-msgstr "Период:"
+msgstr "Длит-ность:"
 
 #: ../../Menu/MainForm.Designer.cs:585
 msgid "Time:"
@@ -754,7 +754,7 @@ msgstr "День:"
 msgid "Timetable set:"
 msgstr "Расписание:"
 
-#: ../../Menu/MainForm.Designer.cs:863 ../../Menu/Options.cs:241
+#: ../../Menu/MainForm.Designer.cs:863 ../../Menu/Options.cs:245
 #: ../../Menu/TestingForm.Designer.cs:314
 msgid "Testing"
 msgstr "Предварительная проверка"
@@ -803,132 +803,128 @@ msgstr "дюйм рт.ст"
 msgid "kgf/cm²"
 msgstr "кгс/см²"
 
-#: ../../Menu/Options.cs:188
+#: ../../Menu/Options.cs:192
 msgid "comma"
 msgstr "запятая"
 
-#: ../../Menu/Options.cs:189
+#: ../../Menu/Options.cs:193
 msgid "semicolon"
 msgstr "точка с запятой"
 
-#: ../../Menu/Options.cs:190
+#: ../../Menu/Options.cs:194
 msgid "tab"
 msgstr "табуляция"
 
-#: ../../Menu/Options.cs:191
+#: ../../Menu/Options.cs:195
 msgid "space"
 msgstr "пробел"
 
-#: ../../Menu/Options.cs:197
+#: ../../Menu/Options.cs:201
 msgid "route"
 msgstr "по описанию полигона"
 
-#: ../../Menu/Options.cs:198
+#: ../../Menu/Options.cs:202
 msgid "m/s"
 msgstr "м/с"
 
-#: ../../Menu/Options.cs:199
+#: ../../Menu/Options.cs:203
 msgid "km/h"
 msgstr "км/ч"
 
-#: ../../Menu/Options.cs:200
+#: ../../Menu/Options.cs:204
 msgid "mph"
 msgstr "мили/ч"
 
-#: ../../Menu/Options.cs:220
+#: ../../Menu/Options.cs:224
 msgid "Train Speed"
 msgstr "Скорость"
 
-#: ../../Menu/Options.cs:221
+#: ../../Menu/Options.cs:225
 msgid "Max. Speed"
 msgstr "Максимальная скорость"
 
-#: ../../Menu/Options.cs:222
+#: ../../Menu/Options.cs:226
 msgid "Signal State"
 msgstr "Показания сигналов"
 
-#: ../../Menu/Options.cs:223
+#: ../../Menu/Options.cs:227
 msgid "Track Elevation"
 msgstr "Уклон пути"
 
-#: ../../Menu/Options.cs:224
+#: ../../Menu/Options.cs:228
 msgid "Direction"
 msgstr "Направление движения"
 
-#: ../../Menu/Options.cs:225
+#: ../../Menu/Options.cs:229
 msgid "Control Mode"
 msgstr "Режим АЛС"
 
-#: ../../Menu/Options.cs:226
+#: ../../Menu/Options.cs:230
 msgid "Distance Travelled"
 msgstr "Пройденный путь"
 
-#: ../../Menu/Options.cs:227
+#: ../../Menu/Options.cs:231
 msgid "Throttle %"
 msgstr "Тяга %"
 
-#: ../../Menu/Options.cs:228
+#: ../../Menu/Options.cs:232
 msgid "Brake Cyl Press"
 msgstr "Давление в ТЦ"
 
-#: ../../Menu/Options.cs:229
+#: ../../Menu/Options.cs:233
 msgid "Dyn Brake %"
 msgstr "Динамич. торможение %"
 
-#: ../../Menu/Options.cs:230
+#: ../../Menu/Options.cs:234
 msgid "Gear Setting"
 msgstr "Текущая передача"
 
-#: ../../Menu/Options.cs:240
+#: ../../Menu/Options.cs:244
 msgid "Stable (recommended)"
-msgstr "Стабильная версия (рекомендовано)"
-
-#: ../../Menu/Options.cs:242
-msgid "Unstable"
-msgstr "Нестабильные версии"
+msgstr "Стабильная (рекоменд.)"
 
 #: ../../Menu/Options.cs:246
+msgid "Unstable"
+msgstr "Нестабильная"
+
+#: ../../Menu/Options.cs:250
 msgid ""
 "Infrequent updates to official, hand-picked versions. Recommended for most "
 "users."
 msgstr ""
-"Нечасто выходящие официальные, проверенные версии. Рекомендовано большинству "
-"пользователей."
+"Официальные, проверенные версии. Рекомендовано большинству пользователей."
 
-#: ../../Menu/Options.cs:247
+#: ../../Menu/Options.cs:251
 msgid ""
 "Weekly updates which may contain noticable defects. For project supporters."
 msgstr ""
-"Еженедельные обновления могут содержать существенные изъяны. Для энтузиастов "
-"проекта."
+"Еженедельно. Могут содержать существенные изъяны. Для энтузиастов проекта."
 
-#: ../../Menu/Options.cs:248
+#: ../../Menu/Options.cs:252
 msgid "Daily updates which may contain serious defects. For developers only."
-msgstr ""
-"Ежедневные обновления могут содержать серьёзные дефекты. Только для "
-"разработчиков."
+msgstr "Ежедневно. Могут иметь серьёзные дефекты. Только для разработчиков."
 
-#: ../../Menu/Options.cs:249
+#: ../../Menu/Options.cs:253
 msgid "No updates."
 msgstr "Не скачивать обновления."
 
-#: ../../Menu/Options.cs:289
+#: ../../Menu/Options.cs:293
 msgid "Information"
-msgstr "Сведения"
+msgstr "Уведомление"
 
-#: ../../Menu/Options.cs:290
+#: ../../Menu/Options.cs:294
 msgid "Warning"
-msgstr "Внимание"
+msgstr "Предупреждение"
 
-#: ../../Menu/Options.cs:291
+#: ../../Menu/Options.cs:295
 msgid "Error"
 msgstr "Ошибка"
 
-#: ../../Menu/Options.cs:385
+#: ../../Menu/Options.cs:389
 msgid "Click to change this key"
 msgstr "Нажмите, чтобы изменить клавишу"
 
-#: ../../Menu/Options.cs:401
+#: ../../Menu/Options.cs:405
 msgid ""
 "Continue with conflicting key assignments?\n"
 "\n"
@@ -936,11 +932,11 @@ msgstr ""
 "Продолжить несмотря на конфликтующе назначения клавиш?\n"
 "\n"
 
-#: ../../Menu/Options.cs:520
+#: ../../Menu/Options.cs:526
 msgid "Remove all custom key assignments?"
 msgstr "Отменить все пользовательские назначения клавиш?"
 
-#: ../../Menu/Options.cs:531
+#: ../../Menu/Options.cs:537
 msgid ""
 "A listing of all keyboard commands and keys has been placed here:\n"
 "\n"
@@ -948,31 +944,31 @@ msgstr ""
 "Список всех команд и назначенных клавиш был помещен здесь:\n"
 "\n"
 
-#: ../../Menu/Options.cs:540 ../../Menu/OptionsRailDriver.cs:262
+#: ../../Menu/Options.cs:546 ../../Menu/OptionsRailDriver.cs:261
 msgid "No errors found."
 msgstr "Ошибок не обнаружено."
 
-#: ../../Menu/Options.cs:565
+#: ../../Menu/Options.cs:571
 msgid "Very easy"
 msgstr "Очень легко"
 
-#: ../../Menu/Options.cs:569
+#: ../../Menu/Options.cs:575
 msgid "MSTS Compatible"
 msgstr "Совместимо с МСТС"
 
-#: ../../Menu/Options.cs:571
+#: ../../Menu/Options.cs:577
 msgid "Normal"
 msgstr "Обычно"
 
-#: ../../Menu/Options.cs:575
+#: ../../Menu/Options.cs:581
 msgid "Very Hard"
 msgstr "Очень сложно"
 
-#: ../../Menu/Options.cs:577
+#: ../../Menu/Options.cs:583
 msgid "Good luck!"
 msgstr "Удачи!"
 
-#: ../../Menu/Options.cs:545
+#: ../../Menu/Options.cs:551
 #, csharp-format
 msgid ""
 "{0:F0}° vertical FOV is the same as:\n"
@@ -983,437 +979,457 @@ msgstr ""
 "{1:F0}° по горизонтали при экране 4:3\n"
 "{2:F0}° по горизонтали при 16:9"
 
-#: ../../Menu/Options.cs:587
+#: ../../Menu/Options.cs:593
 #, csharp-format
 msgid "{0}%"
 msgstr "{0}%"
 
-#: ../../Menu/Options.cs:623
+#: ../../Menu/Options.cs:629
 #, csharp-format
 msgid "No detail (-{0}%)"
 msgstr "Без деталей (-{0}%)"
 
-#: ../../Menu/Options.cs:625
+#: ../../Menu/Options.cs:631
 #, csharp-format
 msgid "Less detail (-{0}%)"
 msgstr "Низкая детализация (-{0}%)"
 
-#: ../../Menu/Options.cs:627
+#: ../../Menu/Options.cs:633
 #, csharp-format
 msgid "Default detail (+{0}%)"
 msgstr "По умолчанию (+{0}%)"
 
-#: ../../Menu/Options.cs:629
+#: ../../Menu/Options.cs:635
 #, csharp-format
 msgid "More detail (+{0}%)"
 msgstr "Повышенная детализация (+{0}%)"
 
-#: ../../Menu/Options.cs:631
+#: ../../Menu/Options.cs:637
 #, csharp-format
 msgid "All detail (+{0}%)"
 msgstr "Полная детализация (+{0}%)"
 
-#: ../../Menu/Options.Designer.cs:320
+#: ../../Menu/Options.Designer.cs:327
 msgid "Brake pipe charging rate (PSI/s)             "
 msgstr "Темп зарядки Тормозной магистрали (PSI/s)             "
 
-#: ../../Menu/Options.Designer.cs:331
+#: ../../Menu/Options.Designer.cs:338
 msgid "Graduated release air brakes                                "
 msgstr ""
 "Пневматические тормоза со ступенчатым "
 "отпуском                                "
 
-#: ../../Menu/Options.Designer.cs:354
+#: ../../Menu/Options.Designer.cs:361
 msgid "Alerter in cab                                                        "
 msgstr ""
 "Проверка бдительности                                                        "
 
-#: ../../Menu/Options.Designer.cs:408
+#: ../../Menu/Options.Designer.cs:421
 msgid "General"
 msgstr "Общие"
 
-#: ../../Menu/Options.Designer.cs:514
+#: ../../Menu/Options.Designer.cs:431
+msgid "Interval :"
+msgstr "Каджые:"
+
+#: ../../Menu/Options.Designer.cs:441
+msgid "60 mins"
+msgstr "60 минут"
+
+#: ../../Menu/Options.Designer.cs:453
+msgid "30 mins"
+msgstr "30 минут"
+
+#: ../../Menu/Options.Designer.cs:465
+msgid "15 mins"
+msgstr "15 минут"
+
+#: ../../Menu/Options.Designer.cs:476
+msgid "Auto save"
+msgstr "Автосохрять"
+
+#: ../../Menu/Options.Designer.cs:583
 msgid "Overspeed monitor                                                     "
 msgstr "Контроль скорости                                                     "
 
-#: ../../Menu/Options.Designer.cs:526
+#: ../../Menu/Options.Designer.cs:595
 msgid "Use TCS scripts                                              "
 msgstr ""
 "Включить скрипты Систем безопасности "
 "движения                                              "
 
-#: ../../Menu/Options.Designer.cs:539
+#: ../../Menu/Options.Designer.cs:608
 msgid "Other units                        "
 msgstr "Прочие единицы измерения                        "
 
-#: ../../Menu/Options.Designer.cs:551
+#: ../../Menu/Options.Designer.cs:620
 msgid "Pressure unit                     "
 msgstr "Единицы измерения давления                     "
 
-#: ../../Menu/Options.Designer.cs:581
+#: ../../Menu/Options.Designer.cs:650
 msgid "Also in external views                                    "
 msgstr "Даже во время обзора снаружи                                    "
 
-#: ../../Menu/Options.Designer.cs:591
+#: ../../Menu/Options.Designer.cs:660
 msgid "Retainer valve on all cars                                     "
 msgstr ""
 "Моделировать тормозные ретейнеры на всех "
 "вагонах                                      "
 
-#: ../../Menu/Options.Designer.cs:612
+#: ../../Menu/Options.Designer.cs:681
 msgid "Audio"
 msgstr "Звук"
 
-#: ../../Menu/Options.Designer.cs:678
+#: ../../Menu/Options.Designer.cs:747
 msgid "% external sound heard internally"
 msgstr "% слышимости наружных звуков изнутри"
 
-#: ../../Menu/Options.Designer.cs:714
+#: ../../Menu/Options.Designer.cs:783
 msgid "% sound volume"
 msgstr "% громкости"
 
-#: ../../Menu/Options.Designer.cs:725
+#: ../../Menu/Options.Designer.cs:794
 msgid "Sound detail level"
 msgstr "Детализация звука"
 
-#: ../../Menu/Options.Designer.cs:792
+#: ../../Menu/Options.Designer.cs:861
 msgid "Video"
 msgstr "Вид"
 
-#: ../../Menu/Options.Designer.cs:814
+#: ../../Menu/Options.Designer.cs:883
 msgid "Default detail (+0%)"
 msgstr "Детализация по умолчанию (+0%)"
 
-#: ../../Menu/Options.Designer.cs:992
+#: ../../Menu/Options.Designer.cs:1061
 msgid "Level of detail bias:"
 msgstr "Сдвиг уровня детализации:"
 
-#: ../../Menu/Options.Designer.cs:1018
+#: ../../Menu/Options.Designer.cs:1087
 msgid "Signal light glow"
 msgstr "Ореол вокруг сигнальных огней"
 
-#: ../../Menu/Options.Designer.cs:1029
+#: ../../Menu/Options.Designer.cs:1098
 msgid "Extend object maximum viewing distance to horizon"
 msgstr "Увеличить видимость объектов до горизонта"
 
-#: ../../Menu/Options.Designer.cs:1042 ../../Menu/Options.Designer.cs:1261
+#: ../../Menu/Options.Designer.cs:1111 ../../Menu/Options.Designer.cs:1330
 msgid "XXX"
 msgstr "XXX"
 
-#: ../../Menu/Options.Designer.cs:1052
+#: ../../Menu/Options.Designer.cs:1121
 msgid "Anti-aliasing:"
 msgstr "Сглаживание:"
 
-#: ../../Menu/Options.Designer.cs:1081
+#: ../../Menu/Options.Designer.cs:1150
 msgid "Shadow for all shapes"
 msgstr "Тени у всех объектов"
 
-#: ../../Menu/Options.Designer.cs:1092
+#: ../../Menu/Options.Designer.cs:1161
 msgid "Double overhead wires"
 msgstr "Цепная контактная подвеска"
 
-#: ../../Menu/Options.Designer.cs:1104
+#: ../../Menu/Options.Designer.cs:1173
 msgid "Ambient daylight brightness:"
 msgstr "Яркость дневного света:"
 
-#: ../../Menu/Options.Designer.cs:1115
+#: ../../Menu/Options.Designer.cs:1184
 msgid "YYY"
 msgstr "YYY"
 
-#: ../../Menu/Options.Designer.cs:1124
+#: ../../Menu/Options.Designer.cs:1193
 msgid "Model instancing"
 msgstr "Создавать примеры моделей"
 
-#: ../../Menu/Options.Designer.cs:1154
+#: ../../Menu/Options.Designer.cs:1223
 msgid "Vertical sync"
 msgstr "Вертикальная синхронизация"
 
-#: ../../Menu/Options.Designer.cs:1166
+#: ../../Menu/Options.Designer.cs:1235
 msgid "Viewing distance (km)"
 msgstr "Дальность видимости (км)"
 
-#: ../../Menu/Options.Designer.cs:1207
+#: ../../Menu/Options.Designer.cs:1276
 msgid "Distant mountains"
 msgstr "Горы"
 
-#: ../../Menu/Options.Designer.cs:1220
+#: ../../Menu/Options.Designer.cs:1289
 msgid "Viewing distance (m)"
 msgstr "Дальность обзора (м)"
 
-#: ../../Menu/Options.Designer.cs:1295
+#: ../../Menu/Options.Designer.cs:1364
 msgid "Viewing vertical FOV"
 msgstr "Угол обзора по вертикали"
 
-#: ../../Menu/Options.Designer.cs:1306
+#: ../../Menu/Options.Designer.cs:1375
 msgid "World object density"
 msgstr "Густота объектов"
 
-#: ../../Menu/Options.Designer.cs:1330
+#: ../../Menu/Options.Designer.cs:1399
 msgid "Dynamic shadows"
 msgstr "Динамические тени"
 
-#: ../../Menu/Options.Designer.cs:1341
+#: ../../Menu/Options.Designer.cs:1410
 msgid "Overhead wire"
 msgstr "Контактный провод"
 
-#: ../../Menu/Options.Designer.cs:1362
+#: ../../Menu/Options.Designer.cs:1431
 msgid "Simulation"
 msgstr "Реализм"
 
-#: ../../Menu/Options.Designer.cs:1372
+#: ../../Menu/Options.Designer.cs:1441
 msgid "Electric - power connected"
 msgstr "Электровоз - включён"
 
-#: ../../Menu/Options.Designer.cs:1382
+#: ../../Menu/Options.Designer.cs:1451
 msgid "At game start, locomotives have:"
 msgstr "При старте симуляции:"
 
-#: ../../Menu/Options.Designer.cs:1391
+#: ../../Menu/Options.Designer.cs:1460
 msgid "Diesel - engine(s) started"
 msgstr "Тепловоз - ДВС заведен(ы)"
 
-#: ../../Menu/Options.Designer.cs:1405
+#: ../../Menu/Options.Designer.cs:1474
 msgid "Activity Options"
 msgstr "Дополнительные возможности в сценариях"
 
-#: ../../Menu/Options.Designer.cs:1415
+#: ../../Menu/Options.Designer.cs:1484
 msgid "Location-linked passing path processing"
 msgstr "Расчёт пути и места скрещения"
 
-#: ../../Menu/Options.Designer.cs:1426
+#: ../../Menu/Options.Designer.cs:1495
 msgid "Open/close doors in AI trains"
 msgstr "Управляемые компьютером двери"
 
-#: ../../Menu/Options.Designer.cs:1437
+#: ../../Menu/Options.Designer.cs:1506
 msgid "Forced red at station stops"
 msgstr "Запрещающий выходной со станций"
 
-#: ../../Menu/Options.Designer.cs:1447
+#: ../../Menu/Options.Designer.cs:1516
 msgid "Steam - boiler pre-heated"
 msgstr "Паровоз - под парами"
 
-#: ../../Menu/Options.Designer.cs:1457
+#: ../../Menu/Options.Designer.cs:1526
 msgid "Simple controls and physics"
 msgstr "Упрощённые управление и физическая модель"
 
-#: ../../Menu/Options.Designer.cs:1467
+#: ../../Menu/Options.Designer.cs:1536
 msgid "Curve dependent speed limit"
 msgstr "Безопасная скорость зависит от радиуса кривых"
 
-#: ../../Menu/Options.Designer.cs:1477
+#: ../../Menu/Options.Designer.cs:1546
 msgid "Break couplers"
 msgstr "Разрушение сцепок"
 
-#: ../../Menu/Options.Designer.cs:1487
+#: ../../Menu/Options.Designer.cs:1556
 msgid "Advanced adhesion model"
 msgstr "Усовершенствованная модель сил сцепления"
 
-#: ../../Menu/Options.Designer.cs:1502
+#: ../../Menu/Options.Designer.cs:1571
 msgid "Keyboard"
 msgstr "Клавиши"
 
-#: ../../Menu/Options.Designer.cs:1512 ../../Menu/Options.Designer.cs:2306
+#: ../../Menu/Options.Designer.cs:1581 ../../Menu/Options.Designer.cs:2375
 msgid "Export"
 msgstr "Экспорт"
 
-#: ../../Menu/Options.Designer.cs:1525 ../../Menu/Options.Designer.cs:2283
+#: ../../Menu/Options.Designer.cs:1594 ../../Menu/Options.Designer.cs:2352
 msgid "Defaults"
 msgstr "Умолчания"
 
-#: ../../Menu/Options.Designer.cs:1537 ../../Menu/Options.Designer.cs:2294
+#: ../../Menu/Options.Designer.cs:1606 ../../Menu/Options.Designer.cs:2363
 msgid "Check"
 msgstr "Проверить"
 
-#: ../../Menu/Options.Designer.cs:1571
+#: ../../Menu/Options.Designer.cs:1640
 msgid "Data logger"
 msgstr "Запись"
 
-#: ../../Menu/Options.Designer.cs:1602
+#: ../../Menu/Options.Designer.cs:1671
 msgid "Speed units"
 msgstr "Единицы измерения скорости"
 
-#: ../../Menu/Options.Designer.cs:1624
+#: ../../Menu/Options.Designer.cs:1693
 msgid "Log miscellaneous data"
 msgstr "Регистрировать прочие параметры"
 
-#: ../../Menu/Options.Designer.cs:1634
+#: ../../Menu/Options.Designer.cs:1703
 msgid "Log performance data"
 msgstr "Запись данных о производительности"
 
-#: ../../Menu/Options.Designer.cs:1644
+#: ../../Menu/Options.Designer.cs:1713
 msgid "Start logging with the simulation start"
 msgstr "Начать запись параметров при старте симуляции"
 
-#: ../../Menu/Options.Designer.cs:1655
+#: ../../Menu/Options.Designer.cs:1724
 msgid "Separator"
 msgstr "Разделитель"
 
-#: ../../Menu/Options.Designer.cs:1664
+#: ../../Menu/Options.Designer.cs:1733
 msgid "Log physics data"
 msgstr "Регистрировать физические параметры"
 
-#: ../../Menu/Options.Designer.cs:1674
+#: ../../Menu/Options.Designer.cs:1743
 msgid "Log Steam performance data"
 msgstr "Запись данных о производительности паровоза"
 
-#: ../../Menu/Options.Designer.cs:1684
+#: ../../Menu/Options.Designer.cs:1753
 msgid "Verbose ENG/WAG configuration messages"
 msgstr "Подробные сообщения конфигурации *eng и *wag файлов"
 
-#: ../../Menu/Options.Designer.cs:1699
+#: ../../Menu/Options.Designer.cs:1768
 msgid "RailDriver"
 msgstr "РэйлДрайвер"
 
-#: ../../Menu/Options.Designer.cs:1738
+#: ../../Menu/Options.Designer.cs:1807
 msgid "Reverse Levers"
 msgstr "Обратить рычаги"
 
-#: ../../Menu/Options.Designer.cs:1748
+#: ../../Menu/Options.Designer.cs:1817
 msgid "Reverse Independent Brake Direction"
 msgstr "Обратить кран локомотивного тормоза"
 
-#: ../../Menu/Options.Designer.cs:1759
+#: ../../Menu/Options.Designer.cs:1828
 msgid "Reverse Auto Brake Direction"
 msgstr "Обратить тормозной кран"
 
-#: ../../Menu/Options.Designer.cs:1770
+#: ../../Menu/Options.Designer.cs:1839
 msgid "Reverse Throttle Direction"
 msgstr "Обратить контроллер"
 
-#: ../../Menu/Options.Designer.cs:1781
+#: ../../Menu/Options.Designer.cs:1850
 msgid "Reverse Reverser Direction"
 msgstr "Обратить реверсор"
 
-#: ../../Menu/Options.Designer.cs:1805
+#: ../../Menu/Options.Designer.cs:1874
 msgid "Evaluation"
 msgstr "Протокол"
 
-#: ../../Menu/Options.Designer.cs:1825
+#: ../../Menu/Options.Designer.cs:1894
 msgid "Interval (sec)"
-msgstr "(секунд)"
+msgstr "Интервал (секунд)"
 
-#: ../../Menu/Options.Designer.cs:1834
+#: ../../Menu/Options.Designer.cs:1903
 msgid "Log station stops"
 msgstr "Фиксировать остановки"
 
-#: ../../Menu/Options.Designer.cs:1867
+#: ../../Menu/Options.Designer.cs:1936
 msgid "Log train speed"
 msgstr "Запись параметров каждые"
 
-#: ../../Menu/Options.Designer.cs:1899
+#: ../../Menu/Options.Designer.cs:1968
 msgid "System"
 msgstr "Системные"
 
-#: ../../Menu/Options.Designer.cs:1921
+#: ../../Menu/Options.Designer.cs:1990
 msgid "Target frame rate"
 msgstr "Предельная частота кадров"
 
-#: ../../Menu/Options.Designer.cs:1960
+#: ../../Menu/Options.Designer.cs:2029
 msgid "Automatically tune settings to keep performance level"
 msgstr "Автонастройка под требуемую производительность"
 
-#: ../../Menu/Options.Designer.cs:1984
+#: ../../Menu/Options.Designer.cs:2053
 msgid "Web server port"
 msgstr "Номер порта ВЭБ-сервера"
 
-#: ../../Menu/Options.Designer.cs:2040
+#: ../../Menu/Options.Designer.cs:2109
 msgid "Messages suppressed       "
 msgstr "Сообщения не выводятся       "
 
-#: ../../Menu/Options.Designer.cs:2062
+#: ../../Menu/Options.Designer.cs:2131
 msgid "Use glass for in-game windows"
 msgstr "Прозрачные вспомогательные окна"
 
-#: ../../Menu/Options.Designer.cs:2100
+#: ../../Menu/Options.Designer.cs:2169
 msgid "Window size (choose or specify WIDTHxHEIGHT)"
 msgstr ""
 "Размер окна\n"
 "(введите ширину и высоту для нестандартного размера)"
 
-#: ../../Menu/Options.Designer.cs:2122
+#: ../../Menu/Options.Designer.cs:2191
 msgid "Windowed"
 msgstr "В окне"
 
-#: ../../Menu/Options.Designer.cs:2158
+#: ../../Menu/Options.Designer.cs:2227
 msgid "Language                         "
 msgstr "Язык                         "
 
-#: ../../Menu/Options.Designer.cs:2180
+#: ../../Menu/Options.Designer.cs:2249
 msgid "Update mode:"
-msgstr "Цель обновления:"
+msgstr "Обновлять до версии:"
 
-#: ../../Menu/Options.Designer.cs:2214
+#: ../../Menu/Options.Designer.cs:2283
 msgid "Experimental"
 msgstr "Новые"
 
-#: ../../Menu/Options.Designer.cs:2225 ../../Menu/Options.Designer.cs:2340
+#: ../../Menu/Options.Designer.cs:2294 ../../Menu/Options.Designer.cs:2409
 msgid "Level"
 msgstr "Уровень"
 
-#: ../../Menu/Options.Designer.cs:2249
+#: ../../Menu/Options.Designer.cs:2318
 msgid "Full Range Throttle"
 msgstr "Контроллер на весь диапазон"
 
-#: ../../Menu/Options.Designer.cs:2259
+#: ../../Menu/Options.Designer.cs:2328
 msgid "Legend"
 msgstr "Легенда"
 
-#: ../../Menu/Options.Designer.cs:2272
+#: ../../Menu/Options.Designer.cs:2341
 msgid "Calibration"
 msgstr "Калибровка"
 
-#: ../../Menu/Options.Designer.cs:2320
+#: ../../Menu/Options.Designer.cs:2389
 msgid "Activity weather randomization"
 msgstr "Смена погоды в сценариях"
 
-#: ../../Menu/Options.Designer.cs:2330
+#: ../../Menu/Options.Designer.cs:2399
 msgid "Activity randomization"
 msgstr "Поломки в сценариях"
 
-#: ../../Menu/Options.Designer.cs:2363
+#: ../../Menu/Options.Designer.cs:2432
 msgid "Correct questionable braking parameters"
 msgstr "Исправлять ошибки описания тормозов"
 
-#: ../../Menu/Options.Designer.cs:2374
+#: ../../Menu/Options.Designer.cs:2443
 msgid "Adhesion factor random change:"
 msgstr "Случайное изменение коэффициента сцепления:"
 
-#: ../../Menu/Options.Designer.cs:2384
+#: ../../Menu/Options.Designer.cs:2453
 msgid "Adhesion factor correction:"
 msgstr "Коррекция коэффициента сцепления:"
 
-#: ../../Menu/Options.Designer.cs:2411
+#: ../../Menu/Options.Designer.cs:2480
 msgid "Show shape warnings"
 msgstr "Предупреждения об ошибках в 3D объектах"
 
-#: ../../Menu/Options.Designer.cs:2429
+#: ../../Menu/Options.Designer.cs:2498
 msgid "Level:"
 msgstr "Уровень:"
 
-#: ../../Menu/Options.Designer.cs:2469
+#: ../../Menu/Options.Designer.cs:2538
 msgid "MSTS environments"
 msgstr "Использовать окружающую среду из МСТС"
 
-#: ../../Menu/Options.Designer.cs:2480
+#: ../../Menu/Options.Designer.cs:2549
 msgid "Default Gauge (mm)"
 msgstr "Ширина колеи (мм)"
 
-#: ../../Menu/Options.Designer.cs:2522
+#: ../../Menu/Options.Designer.cs:2591
 msgid ""
 "Experimental features that may slow down the game, use at your own risk."
 msgstr ""
 "Экспериментальные возможности могут замедлять процесс - используйте на свой "
 "страх и риск."
 
-#: ../../Menu/Options.Designer.cs:2531
+#: ../../Menu/Options.Designer.cs:2600
 msgid "Legacy Superelevation"
 msgstr "Возвышение (старый вариант)"
 
-#: ../../Menu/Options.Designer.cs:2544
+#: ../../Menu/Options.Designer.cs:2613
 msgid "Superelevation"
 msgstr "Возвышение"
 
-#: ../../Menu/Options.Designer.cs:1614
+#: ../../Menu/Options.Designer.cs:1683
 msgid ""
 "Use data logger to record your simulation data (in-game command: F12).\r\n"
 "Please remember that the size of the dump file grows with the simulation "
@@ -1423,7 +1439,7 @@ msgstr ""
 "команда: F12).\r\n"
 "Пожалуйста, помните, что размер файла дампа растет входе поездки!"
 
-#: ../../Menu/Options.Designer.cs:662
+#: ../../Menu/Options.Designer.cs:731
 msgid ""
 "Min 0 Max 100. Higher: louder sound\r\n"
 "\r\n"
@@ -1431,35 +1447,35 @@ msgstr ""
 "От 0 до 100. Чем выше, тем больше громкость\r\n"
 "\r\n"
 
-#: ../../Menu/Options.Designer.cs:698
+#: ../../Menu/Options.Designer.cs:767
 msgid "Sound Volume 0-100"
 msgstr "Громкость 0-100"
 
-#: ../../Menu/Options.Designer.cs:1008
+#: ../../Menu/Options.Designer.cs:1077
 msgid "Default is 0%"
 msgstr "0% по умолчанию"
 
-#: ../../Menu/Options.Designer.cs:1069
+#: ../../Menu/Options.Designer.cs:1138
 msgid "Default is 2x MSAA"
 msgstr "По умолчанию 2x MSAA"
 
-#: ../../Menu/Options.Designer.cs:1142 ../../Menu/Options.Designer.cs:2458
+#: ../../Menu/Options.Designer.cs:1211 ../../Menu/Options.Designer.cs:2527
 msgid "Default is 100%"
 msgstr "100% по умолчанию"
 
-#: ../../Menu/Options.Designer.cs:1192 ../../Menu/Options.Designer.cs:1947
+#: ../../Menu/Options.Designer.cs:1261 ../../Menu/Options.Designer.cs:2016
 msgid "Distance to see mountains"
 msgstr "Расстояние, на котором видны горы"
 
-#: ../../Menu/Options.Designer.cs:1526
+#: ../../Menu/Options.Designer.cs:1595
 msgid "Load the factory default key assignments."
 msgstr "Восстановить изначальные назначения клавиш."
 
-#: ../../Menu/Options.Designer.cs:1538
+#: ../../Menu/Options.Designer.cs:1607
 msgid "Check for incorrect key assignments."
 msgstr "Поиск некорректных назначений клавиш."
 
-#: ../../Menu/Options.Designer.cs:2239 ../../Menu/Options.Designer.cs:2354
+#: ../../Menu/Options.Designer.cs:2308 ../../Menu/Options.Designer.cs:2423
 msgid ""
 "0: no randomization, 1: moderate, 2: significant; 3: high (may be "
 "unrealistic)"
@@ -1467,23 +1483,23 @@ msgstr ""
 "0: нет рандомизации, 1: умеренная, 2: значительная; 3: высокая (возможно, "
 "нереалистичная)"
 
-#: ../../Menu/Options.Designer.cs:2250
+#: ../../Menu/Options.Designer.cs:2319
 msgid "Use the full range of the Throttle Lever. There will be no Auto Brake!"
 msgstr "Весь диапазон - ходовые позиции. Не будет тормозных позиций!"
 
-#: ../../Menu/Options.Designer.cs:2273
+#: ../../Menu/Options.Designer.cs:2342
 msgid "Calibrate the lever position reading"
 msgstr "Калибровка рычага"
 
-#: ../../Menu/Options.Designer.cs:2284 ../../Menu/Options.Designer.cs:2295
+#: ../../Menu/Options.Designer.cs:2353 ../../Menu/Options.Designer.cs:2364
 msgid "Load the factory default button assignments."
 msgstr "Восстановить изначальные назначения клавиш."
 
-#: ../../Menu/Options.Designer.cs:2442
+#: ../../Menu/Options.Designer.cs:2511
 msgid "Default is 10%"
 msgstr "10% по умолчанию"
 
-#: ../../Menu/Options.Designer.cs:1513 ../../Menu/Options.Designer.cs:2307
+#: ../../Menu/Options.Designer.cs:1582 ../../Menu/Options.Designer.cs:2376
 msgid ""
 "Generate a listing of your keyboard assignments.  \r\n"
 "The output is placed on your desktop."
@@ -1491,7 +1507,7 @@ msgstr ""
 "Создать перечень назначений клавиш.  \r\n"
 "Таблица соответствий сохранится на рабочем столе."
 
-#: ../../Menu/Options.Designer.cs:2260
+#: ../../Menu/Options.Designer.cs:2329
 msgid ""
 "Show a legend of RailDriver board with button and lever description. Press "
 "cancel to close again."
@@ -1499,7 +1515,7 @@ msgstr ""
 "Отобразить текущие назначения кнопок и рычагов РД. Нажмите \"отмена\" для "
 "закрытия."
 
-#: ../../Menu/Options.Designer.cs:2502
+#: ../../Menu/Options.Designer.cs:2571
 msgid ""
 "The gauge (distance between rails) in millimeters used by the superelevation "
 "system when gauge data is missing from the route. Set to the most common "
@@ -1509,7 +1525,7 @@ msgstr ""
 "полигона нет данных о колее. Задайте наиболее типичную для этого полигона "
 "ширину колеи."
 
-#: ../../Menu/Options.Designer.cs:2532
+#: ../../Menu/Options.Designer.cs:2601
 msgid ""
 "Enables visual elements of superelevation on legacy routes. May lead to "
 "suboptimal track rendering."
@@ -1517,15 +1533,15 @@ msgstr ""
 "Визуализирует возвышение на старых полигонах. Может привести к ухудшению "
 "отрисовки путей."
 
-#: ../../Menu/OptionsRailDriver.cs:186
+#: ../../Menu/OptionsRailDriver.cs:185
 msgid "Click to change this button"
 msgstr "Нажмите, чтобы изменить клавишу"
 
-#: ../../Menu/OptionsRailDriver.cs:244
+#: ../../Menu/OptionsRailDriver.cs:243
 msgid "Remove all custom button assignments?"
 msgstr "Отменить все пользовательские назначения клавиш?"
 
-#: ../../Menu/OptionsRailDriver.cs:269
+#: ../../Menu/OptionsRailDriver.cs:268
 msgid ""
 "A listing of all Raildriver button assignments has been placed here:\n"
 "\n"
