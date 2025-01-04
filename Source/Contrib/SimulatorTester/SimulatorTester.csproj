@@ -15,8 +15,8 @@
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ORTS.Common\ORTS.Common.csproj" />
-    <ProjectReference Include="..\..\ORTS.Settings\ORTS.Settings.csproj" />
+    <ProjectReference Include="..\..\Orts.Common\Orts.Common.csproj" />
+    <ProjectReference Include="..\..\Orts.Settings\Orts.Settings.csproj" />
     <ProjectReference Include="..\..\Orts.Simulation\Orts.Simulation.csproj" />
   </ItemGroup>
   <ItemGroup>
