@@ -41,7 +41,7 @@ namespace ORTS.Settings
         #endregion
 
         public UpdateState()
-            : base(SettingsStore.GetSettingStore(UserSettings.SettingsFilePath, UserSettings.RegistryKey, "UpdateState"))
+            : base(SettingsStore.GetSettingStore(SettingsBase.SettingsFilePath, SettingsBase.RegistryKey, "UpdateState"))
         {
             Load(new string[0]);
         }

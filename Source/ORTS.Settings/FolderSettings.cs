@@ -29,7 +29,7 @@ namespace ORTS.Settings
         public readonly Dictionary<string, string> Folders;
 
         public FolderSettings(IEnumerable<string> options)
-            : base(SettingsStore.GetSettingStore(UserSettings.SettingsFilePath, UserSettings.RegistryKey, "Folders"))
+            : base(SettingsStore.GetSettingStore(SettingsBase.SettingsFilePath, SettingsBase.RegistryKey, "Folders"))
         {
             Folders = new Dictionary<string, string>();
             Load(options);

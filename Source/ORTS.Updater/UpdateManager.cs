@@ -205,7 +205,7 @@ namespace ORTS.Updater
         {
             if (Settings.Channel.Length > 0 && VersionInfo.Version.Length > 0)
             {
-                var store = SettingsStore.GetSettingStore(UserSettings.SettingsFilePath, UserSettings.RegistryKey, "Version");
+                var store = SettingsStore.GetSettingStore(SettingsBase.SettingsFilePath, SettingsBase.RegistryKey, "Version");
                 var oldVersion = (long)(store.GetUserValue(Settings.Channel, typeof(long)) ?? 0L);
                 var newVersion = VersionInfo.GetVersionLong(VersionInfo.ParseVersion(VersionInfo.Version));
                 if (newVersion > oldVersion)

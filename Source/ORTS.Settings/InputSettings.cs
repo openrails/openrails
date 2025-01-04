@@ -79,7 +79,7 @@ namespace ORTS.Settings
         /// </summary>
         /// <param name="options">The list of one-time options to override persisted settings, if any.</param>
         public InputSettings(IEnumerable<string> options)
-        : base(SettingsStore.GetSettingStore(UserSettings.SettingsFilePath, UserSettings.RegistryKey, "Keys"))
+        : base(SettingsStore.GetSettingStore(SettingsBase.SettingsFilePath, SettingsBase.RegistryKey, "Keys"))
         {
             InitializeCommands(Commands);
             Load(options);

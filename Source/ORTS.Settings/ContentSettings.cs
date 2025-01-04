@@ -29,7 +29,7 @@ namespace ORTS.Settings
         #endregion
 
         public ContentSettings(IEnumerable<string> options)
-        : base(SettingsStore.GetSettingStore(UserSettings.SettingsFilePath, UserSettings.RegistryKey, "ContentRoutes"))
+        : base(SettingsStore.GetSettingStore(SettingsBase.SettingsFilePath, SettingsBase.RegistryKey, "ContentRoutes"))
         {
             ContentRouteSettings = new ContentRouteSettings();
             Load(options);

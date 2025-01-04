@@ -119,7 +119,7 @@ namespace ORTS.Settings
         /// </summary>
         /// <param name="options">The list of one-time options to override persisted settings, if any.</param>
         public RailDriverSettings(IEnumerable<string> options)
-        : base(SettingsStore.GetSettingStore(UserSettings.SettingsFilePath, UserSettings.RegistryKey, "RailDriver"))
+        : base(SettingsStore.GetSettingStore(SettingsBase.SettingsFilePath, SettingsBase.RegistryKey, "RailDriver"))
         {
             CalibrationSettings = new byte[DefaultCalibrationSettings.Length];
 

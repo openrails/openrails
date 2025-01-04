@@ -477,7 +477,7 @@ namespace ORTS.Settings
         public ContentSettings Content { get; private set; }   
 
         public UserSettings(IEnumerable<string> options)
-            : base(SettingsStore.GetSettingStore(SettingsFilePath, RegistryKey, null))
+            : base(SettingsStore.GetSettingStore(SettingsBase.SettingsFilePath, SettingsBase.RegistryKey, null))
         {
             CustomDefaultValues["LoggingPath"] = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
             CustomDefaultValues["ScreenshotPath"] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), ApplicationInfo.ProductName);
