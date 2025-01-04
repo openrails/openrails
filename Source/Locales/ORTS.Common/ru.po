@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2024-11-02 19:42:02+0300\n"
-"PO-Revision-Date: 2024-11-02 20:05+0300\n"
+"PO-Revision-Date: 2025-01-04 12:14+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"X-Generator: Poedit 3.2.2\n"
+"X-Generator: Poedit 3.0\n"
 
 #: ../../ORTS.Common/Conversions.cs:535
 msgid "m"
@@ -1081,55 +1081,55 @@ msgstr "Автокочегар Сброс"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:251
 msgid "Control Speed Regulator Mode Increase"
-msgstr "КК Регулятор скорости +"
+msgstr "САУТ Регулятор скорости +"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:252
 msgid "Control Speed Regulator Mode Descrease"
-msgstr "КК Регулятор скорости -"
+msgstr "САУТ Регулятор скорости -"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:253
 msgid "Control Selected Speed Increase"
-msgstr "КК Целевая скорость +"
+msgstr "САУТ Целевая скорость +"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:254
 msgid "Control Selected Speed Decrease"
-msgstr "КК Целевая скорость -"
+msgstr "САУТ Целевая скорость -"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:255
 msgid "Control Speed Regulator Max Acceleration Increase"
-msgstr "КК Предельное ускорение +"
+msgstr "САУТ Предельное ускорение +"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:256
 msgid "Control Speed Regulator Max Acceleration Decrease"
-msgstr "КК Предельное ускорение -"
+msgstr "САУТ Предельное ускорение -"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:257
 msgid "Control Number Of Axles Increase"
-msgstr "КК Число осей +"
+msgstr "САУТ Число осей +"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:258
 msgid "Control Number Of Axles Decrease"
-msgstr "КК Число осей -"
+msgstr "САУТ Число осей -"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:259
 msgid "Control Restricted Speed Zone Active"
-msgstr "КК Участок с ограничением скорости"
+msgstr "САУТ Участок с ограничением скорости"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:260
 msgid "Control Cruise Control Mode Increase"
-msgstr "КК Режим +"
+msgstr "САУТ Режим +"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:261
 msgid "Control Cruise Control Mode Decrease"
-msgstr "КК Режим -"
+msgstr "САУТ Режим -"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:262
 msgid "Control Train Type Change (Passenger/Cargo)"
-msgstr "КК Режим (Пасс/Груз)"
+msgstr "САУТ Режим (Пасс/Груз)"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:263
 msgid "Control Selected Speed To Zero"
-msgstr "КК Целевая скорость в ноль"
+msgstr "САУТ Целевая скорость в ноль"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:265
 msgid "Control DP Move To Front"
