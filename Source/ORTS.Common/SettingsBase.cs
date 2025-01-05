@@ -117,6 +117,23 @@ namespace ORTS.Common
         public abstract void Reset();
 
         /// <summary>
+        /// Change the settings store. Creates a new SettingsStore based on the provided parameters.
+        /// See also SettingsStore.GetSettingStore().
+        /// </summary>
+        /// <param name="filePath">The path to the INI file, or NULL if using the registry.</param>
+        /// <param name="registryKey">The registry key (name), or NULL if using an INI file. </param>
+        /// <param name="section">Optional, the name of the section / subkey.</param>
+        public virtual void ChangeSettingsStore(string filePath, string registryKey, string section)
+        {
+            if (SettingStore != null)
+            {
+                SettingStore.Discard();
+                SettingStore = null;
+            }
+            SettingStore = SettingsStore.GetSettingStore(filePath, registryKey, section);
+        }
+
+        /// <summary>
         /// Load settings from the options
         /// </summary>
         /// <param name="options">???</param>

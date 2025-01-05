@@ -585,6 +585,22 @@ namespace ORTS.Settings
                 Reset(property.Name);
         }
 
+        /// <summary>
+        /// Change the settings store for the user settings and its sub-settings.
+        /// Creates a new SettingsStore based on the provided parameters.
+        /// </summary>
+        /// <param name="filePath">The path to the INI file, or NULL if using the registry.</param>
+        /// <param name="registryKey">The registry key (name), or NULL if using an INI file. </param>
+        /// <param name="section">Optional, the name of the section / subkey.</param>
+        public override void ChangeSettingsStore(string filePath, string registryKey, string section)
+        {
+            base.ChangeSettingsStore(filePath, registryKey, section);
+            Folders.ChangeSettingsStore(filePath, registryKey, section);
+            Input.ChangeSettingsStore(filePath, registryKey, section);
+            RailDriver.ChangeSettingsStore(filePath, registryKey, section);
+            Content.ChangeSettingsStore(filePath, registryKey, section);
+        }
+
         public void Log()
         {
             foreach (var property in GetProperties().OrderBy(p => p.Name))

@@ -139,6 +139,15 @@ namespace ORTS.Common
 		public abstract void DeleteUserValue(string name);
 
         /// <summary>
+        /// Discard the settings store.
+        /// Performs actions (if any) to close the settings store so that a new one can be used.
+        /// </summary>
+        public virtual void Discard()
+        {
+            // default action is to do nothing. Concrete classes may override.
+        }
+
+        /// <summary>
         /// Factory method to create a setting store (sub-class of SettingsStore)
         /// </summary>
         /// <param name="filePath">File patht o a .init file, if you want to use a .ini file</param>
@@ -308,6 +317,19 @@ namespace ORTS.Common
 		{
 			Key.DeleteValue(name, false);
 		}
+
+        /// <summary>
+        /// Discard the settings store.
+        /// Close the registry key.
+        /// </summary>
+        public override void Discard()
+        {
+            if (Key != null)
+            {
+                Key.Close();
+                // cannot set to null, as Key (and string version) are readonly
+            }
+        }
 	}
 
 	/// <summary>
