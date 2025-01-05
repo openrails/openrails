@@ -186,7 +186,7 @@ namespace Orts.Viewer3D
                 DDSLib.DDSFromFile(path, graphicsDevice, true, out ddsTexture);
                 return ddsTexture;
             }
-
+                    
             using (var stream = File.OpenRead(path))
             {
                 if (ext == ".gif" || ext == ".jpg" || ext == ".png")
