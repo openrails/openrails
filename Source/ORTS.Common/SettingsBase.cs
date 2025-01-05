@@ -28,14 +28,34 @@ namespace ORTS.Common
     /// </summary>
 	public abstract class SettingsBase
 	{
-        public static string RegistryKey { get; protected set; }        // ie @"SOFTWARE\OpenRails\ORTS"
-        public static string SettingsFilePath { get; protected set; }   // ie @"C:\Program Files\Open Rails\OpenRails.ini"
+        private const string DefaultRegistryKey = "SOFTWARE\\OpenRails\\ORTS";
+        private const string DefaultSettingsFileName = "OpenRails.ini";
+
+        public static string RegistryKey { get; private set; }        // ie @"SOFTWARE\OpenRails\ORTS"
+        public static string SettingsFilePath { get; private set; }   // ie @"C:\Program Files\Open Rails\OpenRails.ini"
 
         static SettingsBase()
         {
             // Only one of these is allowed; if the INI file exists, we use that, otherwise we use the registry.
-            RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
-            SettingsFilePath = Path.Combine(ApplicationInfo.ProcessDirectory, "OpenRails.ini");
+            RegistryKey = DefaultRegistryKey;
+            SettingsFilePath = Path.Combine(ApplicationInfo.ProcessDirectory, DefaultSettingsFileName);
+            if (File.Exists(SettingsFilePath))
+                RegistryKey = null;
+            else
+                SettingsFilePath = null;
+        }
+
+        /// <summary>
+        /// Override the location for the settings. This only changes the static names.
+        /// If settings objects already exist, they need to be changed using ChangeSettingsStore().
+        /// </summary>
+        /// <param name="filePath">The new ini file path, relative to the OpenRails base directory.</param>
+        /// <param name="registryKey">The new registry key, relative to the HKEY_CURRENT_USER. May be NULL.</param>
+        static public void OverrideSettingsLocations(string filePath, string registryKey)
+        {
+            // Only one of these is allowed; if the INI file exists, we use that, otherwise we use the registry.
+            RegistryKey = registryKey;
+            SettingsFilePath = Path.Combine(ApplicationInfo.ProcessDirectory, filePath);
             if (File.Exists(SettingsFilePath))
                 RegistryKey = null;
             else
