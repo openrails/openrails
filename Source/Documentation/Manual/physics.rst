@@ -3280,6 +3280,7 @@ the following parameters will adjust the behaviour of air brakes:
    single: ORTSDynamicBrakesHasPartialBailOff
    single: ORTSTrainDynamicBlendingTable
    single: ORTSDynamicBrakeReplacementWithEngineBrake 
+   single: ORTSDynamicBrakeReplacementWithEngineBrakeAtSpeed
    
 - ``Engine(DynamicBrakeHasAutoBailOff`` -- Set to 1 if brake cylinders are
   emptied while dynamic brake is active
@@ -3322,7 +3323,8 @@ notch of the train brake controller, where 0 means no dynamic brake and 1 means 
 Dynamic braking is not effective at low speeds. Thus, in some locomotives,
 dynamic brake application demanded by the train brake controller is replaced by
 `engine` air braking at low speeds. This effect can be activated setting
-``Engine(ORTSDynamicBrakeReplacementWithEngineBrake `` to 1.
+``Engine(ORTSDynamicBrakeReplacementWithEngineBrake`` to 1, provided that the locomotive
+speed is below ``Engine(ORTSDynamicBrakeReplacementWithEngineBrakeAtSpeed``.
 
 Native Open Rails Braking Parameters
 ------------------------------------

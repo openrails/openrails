@@ -406,6 +406,7 @@ namespace Orts.Simulation.RollingStocks
         public bool DynamicBrakeAutoBailOff;
         public bool DynamicBrakePartialBailOff;
         public bool DynamicBrakeEngineBrakeReplacement;
+        public float DynamicBrakeEngineBrakeReplacementSpeed;
         public bool UsingRearCab;
         public bool BrakeOverchargeSoundOn = false;
         protected bool DynamicBrakeBlendingEnabled; // dynamic brake blending is configured
@@ -1076,6 +1077,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsdynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
                 case "engine(ortsdynamicbrakeshaspartialbailoff": DynamicBrakePartialBailOff = stf.ReadBoolBlock(false); break;
                 case "engine(ortsdynamicbrakereplacementwithenginebrake": DynamicBrakeEngineBrakeReplacement = stf.ReadBoolBlock(false); break;
+                case "engine(ortsdynamicbrakereplacementwithenginebrakeatspeed": DynamicBrakeEngineBrakeReplacementSpeed = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesdelaytimebeforeengaging": DynamicBrakeDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(dynamicbrakesresistorcurrentlimit": DynamicBrakeMaxCurrentA = stf.ReadFloatBlock(STFReader.UNITS.Current, null); break;
                 case "engine(numwheels": MSTSLocoNumDrvWheels = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (MSTSLocoNumDrvWheels < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
@@ -1229,6 +1231,7 @@ namespace Orts.Simulation.RollingStocks
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
             DynamicBrakePartialBailOff = locoCopy.DynamicBrakePartialBailOff;
             DynamicBrakeEngineBrakeReplacement = locoCopy.DynamicBrakeEngineBrakeReplacement;
+            DynamicBrakeEngineBrakeReplacementSpeed = locoCopy.DynamicBrakeEngineBrakeReplacementSpeed;
             DynamicBrakeMaxCurrentA = locoCopy.DynamicBrakeMaxCurrentA;
             DynamicBrakeSpeed1MpS = locoCopy.DynamicBrakeSpeed1MpS;
             DynamicBrakeSpeed2MpS = locoCopy.DynamicBrakeSpeed2MpS;
@@ -1841,6 +1844,11 @@ namespace Orts.Simulation.RollingStocks
                 {
                     TrainBrakePipeLeakPSIorInHgpS = 0.0f; // Air brakes
                 }
+            }
+
+            if (DynamicBrakeEngineBrakeReplacement && DynamicBrakeEngineBrakeReplacementSpeed == 0)
+            {
+                DynamicBrakeEngineBrakeReplacementSpeed = DynamicBrakeSpeed2MpS;
             }
 
             // Initialise track sanding parameters
