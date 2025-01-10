@@ -157,7 +157,9 @@ namespace ORTS.Common
 
         /// <summary>
         /// Change the settings store. Creates a new SettingsStore based on the provided parameters.
-        /// See also SettingsStore.GetSettingStore().
+        /// Only one of filePath and registry key should be specified. If both are provided, filePath
+        /// prevails. Does not change the static locations (as that would affect other objects).
+        /// See also SettingsStore.GetSettingStore() and OverrideSettingsLocations().
         /// </summary>
         /// <param name="filePath">The path to the INI file, or NULL if using the registry.</param>
         /// <param name="registryKey">The registry key (name), or NULL if using an INI file. </param>
@@ -169,7 +171,8 @@ namespace ORTS.Common
                 SettingStore.Discard();
                 SettingStore = null;
             }
-            SettingStore = SettingsStore.GetSettingStore(filePath, registryKey, section);
+            var fullPath = String.IsNullOrEmpty(filePath) ? null : Path.Combine(ApplicationInfo.ProcessDirectory, filePath);
+            SettingStore = SettingsStore.GetSettingStore(fullPath, registryKey, section);
         }
 
         /// <summary>
