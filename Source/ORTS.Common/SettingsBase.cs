@@ -28,8 +28,8 @@ namespace ORTS.Common
     /// </summary>
 	public abstract class SettingsBase
 	{
-        private const string DefaultRegistryKey = "SOFTWARE\\OpenRails\\ORTS";
-        private const string DefaultSettingsFileName = "OpenRails.ini";
+        public const string DefaultRegistryKey = "SOFTWARE\\OpenRails\\ORTS";
+        public const string DefaultSettingsFileName = "OpenRails.ini";
 
         public static string RegistryKey { get; private set; }        // ie @"SOFTWARE\OpenRails\ORTS"
         public static string SettingsFilePath { get; private set; }   // ie @"C:\Program Files\Open Rails\OpenRails.ini"
@@ -47,19 +47,31 @@ namespace ORTS.Common
 
         /// <summary>
         /// Override the location for the settings. This only changes the static names.
+        /// Only one must be specified (see SettingsBase static constructor).
         /// If settings objects already exist, they need to be changed using ChangeSettingsStore().
         /// </summary>
-        /// <param name="filePath">The new ini file path, relative to the OpenRails base directory.</param>
-        /// <param name="registryKey">The new registry key, relative to the HKEY_CURRENT_USER. May be NULL.</param>
+        /// <param name="filePath">The new ini file path, relative to the OpenRails base directory, or NULL.</param>
+        /// <param name="registryKey">The new registry key, relative to the HKEY_CURRENT_USER, or NULL.</param>
         static public void OverrideSettingsLocations(string filePath, string registryKey)
         {
-            // Only one of these is allowed; if the INI file exists, we use that, otherwise we use the registry.
-            RegistryKey = registryKey;
-            SettingsFilePath = Path.Combine(ApplicationInfo.ProcessDirectory, filePath);
-            if (File.Exists(SettingsFilePath))
+            if (!String.IsNullOrEmpty(filePath) && !String.IsNullOrEmpty(registryKey))
+            {
+                throw new ArgumentException("Only one of filePath and registryKey may be provided.");
+            }
+            else if (!String.IsNullOrEmpty(filePath))
+            {
+                SettingsFilePath = Path.Combine(ApplicationInfo.ProcessDirectory, filePath);
                 RegistryKey = null;
-            else
+            }
+            else if (!String.IsNullOrEmpty(registryKey))
+            {
+                RegistryKey = registryKey;
                 SettingsFilePath = null;
+            }
+            else
+            {
+                throw new ArgumentException("One of filePath and registryKey must be provided.");
+            }
         }
 
         /// <summary>
@@ -135,6 +147,13 @@ namespace ORTS.Common
         /// Reset all values to their default
         /// </summary>
         public abstract void Reset();
+
+        public String GetSettingsStoreName()
+        {
+            string name = "none";
+            if (SettingStore != null) { name = SettingStore.GetStoreName(); }
+            return name;
+        }
 
         /// <summary>
         /// Change the settings store. Creates a new SettingsStore based on the provided parameters.

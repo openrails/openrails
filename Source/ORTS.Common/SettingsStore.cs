@@ -148,6 +148,12 @@ namespace ORTS.Common
         }
 
         /// <summary>
+        /// Get the name of the settings store.
+        /// </summary>
+        public abstract String GetStoreName();
+
+
+        /// <summary>
         /// Factory method to create a setting store (sub-class of SettingsStore)
         /// </summary>
         /// <param name="filePath">File patht o a .init file, if you want to use a .ini file</param>
@@ -329,6 +335,16 @@ namespace ORTS.Common
                 Key.Close();
                 // cannot set to null, as Key (and string version) are readonly
             }
+        }
+
+        /// <summary>
+        /// Get the name of the settings store, in this case the registry key.
+        /// </summary>
+        public override String GetStoreName()
+        {
+            string name = "None (registry)";
+            if (Key != null) { name = Key.Name; }
+            return name;
         }
 	}
 
@@ -552,7 +568,17 @@ namespace ORTS.Common
 		{
 			NativeMethods.WritePrivateProfileString(Section, name, null, FilePath);
 		}
-	}
+
+        /// <summary>
+        /// Get the name of the settings store, in this case the INI file path.
+        /// </summary>
+        public override String GetStoreName()
+        {
+            string name = "None (file)";
+            if (!String.IsNullOrEmpty(FilePath)) { name = FilePath; }
+            return name;
+        }
+    }
 
     // TODO: This class and its methods should be internal visibility.
     /// <summary>

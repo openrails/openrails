@@ -44,6 +44,8 @@ namespace ORTS.Settings
 
     public class RailDriverSettings : SettingsBase
     {
+        public static readonly string SectionName = "RailDriver";
+
         static readonly GettextResourceManager catalog = new GettextResourceManager("ORTS.Settings");
         private static readonly byte[] DefaultCalibrationSettings;
         private static readonly Dictionary<UserCommand, byte> DefaultUserCommands;
@@ -119,7 +121,7 @@ namespace ORTS.Settings
         /// </summary>
         /// <param name="options">The list of one-time options to override persisted settings, if any.</param>
         public RailDriverSettings(IEnumerable<string> options)
-        : base(SettingsStore.GetSettingStore(SettingsBase.SettingsFilePath, SettingsBase.RegistryKey, "RailDriver"))
+        : base(SettingsStore.GetSettingStore(SettingsBase.SettingsFilePath, SettingsBase.RegistryKey, SectionName))
         {
             CalibrationSettings = new byte[DefaultCalibrationSettings.Length];
 

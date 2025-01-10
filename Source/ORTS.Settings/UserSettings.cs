@@ -594,11 +594,11 @@ namespace ORTS.Settings
         /// <param name="section">Optional, the name of the section / subkey.</param>
         public override void ChangeSettingsStore(string filePath, string registryKey, string section)
         {
-            base.ChangeSettingsStore(filePath, registryKey, section);
-            Folders.ChangeSettingsStore(filePath, registryKey, section);
-            Input.ChangeSettingsStore(filePath, registryKey, section);
-            RailDriver.ChangeSettingsStore(filePath, registryKey, section);
-            Content.ChangeSettingsStore(filePath, registryKey, section);
+            base.ChangeSettingsStore(filePath, registryKey, section);  // section is defined in SettingsStoreLocalIni
+            Folders.ChangeSettingsStore(filePath, registryKey, FolderSettings.SectionName);
+            Input.ChangeSettingsStore(filePath, registryKey, InputSettings.SectionName);
+            RailDriver.ChangeSettingsStore(filePath, registryKey, RailDriverSettings.SectionName);
+            Content.ChangeSettingsStore(filePath, registryKey, ContentSettings.SectionName);
         }
 
         public void Log()
