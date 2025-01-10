@@ -53,6 +53,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentChecker", "ContentCh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimulatorTester", "Contrib\SimulatorTester\SimulatorTester.csproj", "{792B01A1-5C43-4FFA-A4C0-BBDC95A4A178}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SettingsExporter", "Contrib\SettingsExporter\SettingsExporter.csproj", "{FAD444CE-3EA7-47AC-A771-792E34BCE7DC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -159,6 +161,10 @@ Global
 		{792B01A1-5C43-4FFA-A4C0-BBDC95A4A178}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{792B01A1-5C43-4FFA-A4C0-BBDC95A4A178}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{792B01A1-5C43-4FFA-A4C0-BBDC95A4A178}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAD444CE-3EA7-47AC-A771-792E34BCE7DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAD444CE-3EA7-47AC-A771-792E34BCE7DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAD444CE-3EA7-47AC-A771-792E34BCE7DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAD444CE-3EA7-47AC-A771-792E34BCE7DC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
