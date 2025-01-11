@@ -45,7 +45,7 @@
             this.searchBox.Dock = System.Windows.Forms.DockStyle.Top;
             this.searchBox.Name = "searchBox";
             this.searchBox.ShowCueWhenFocused = true;
-            this.searchBox.Size = new System.Drawing.Size(516, 30);
+            this.searchBox.Size = new System.Drawing.Size(300, 30);
             this.searchBox.TabIndex = 1;
             this.searchBox.Text = "";
             this.searchBox.TextChanged += new System.EventHandler(this.searchBox_TextChanged);
@@ -54,7 +54,7 @@
             // 
             this.searchResults.Dock = System.Windows.Forms.DockStyle.Top;
             this.searchResults.Name = "searchResults";
-            this.searchResults.Size = new System.Drawing.Size(516, 200);
+            this.searchResults.Size = new System.Drawing.Size(300, 200);
             this.searchResults.TabIndex = 2;
             this.searchResults.Visible = false;
             this.searchResults.DoubleClick += new System.EventHandler(this.searchResults_DoubleClick);
@@ -78,6 +78,7 @@
             this.richTextBoxContent.Size = new System.Drawing.Size(516, 514);
             this.richTextBoxContent.TabIndex = 1;
             this.richTextBoxContent.Text = "";
+            this.richTextBoxContent.WordWrap = false;
             this.richTextBoxContent.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBoxContent_LinkClicked);
             // 
             // splitContainer

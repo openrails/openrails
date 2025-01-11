@@ -8,10 +8,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using ORTS.Common;
 using ORTS.Common.Input;
-using Orts.Menu;
 using ORTS.Settings;
 
-namespace ORTS
+namespace Menu
 {
     public partial class OptionsForm : Form
     {

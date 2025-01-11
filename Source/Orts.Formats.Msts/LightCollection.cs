@@ -346,6 +346,7 @@ namespace Orts.Formats.Msts
         public float FadeOut;
         public List<LightState> States = new List<LightState>();
         public List<LightCondition> Conditions = new List<LightCondition>();
+        public string Graphic;
 
         public Light(int index, STFReader stf)
         {
@@ -373,6 +374,7 @@ namespace Orts.Formats.Msts
                 }),
                 new STFReader.TokenProcessor("shapeindex", ()=>{ ShapeIndex = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("shapehierarchy", ()=>{ ShapeHierarchy = stf.ReadStringBlock(null).ToUpper(); }),
+                new STFReader.TokenProcessor("ortsgraphic", ()=>{ Graphic = stf.ReadStringBlock(null).ToUpper(); }),
             });
         }
 
@@ -401,6 +403,7 @@ namespace Orts.Formats.Msts
     public class LightCollection
     {
         public List<Light> Lights = new List<Light>();
+        public string GeneralLightGlowGraphic = "LightGlow.png";
 
         // Array of bools, one per type of condition in the same order as presented in the 'LightCondition' class
         // A 'true' indicates all lights in this set ignore the corresponding condition, so we don't need to waste time thinking about it
@@ -411,7 +414,8 @@ namespace Orts.Formats.Msts
         {
             stf.MustMatch("(");
             stf.ReadInt(null); // count; ignore this because its not always correct
-            stf.ParseBlock(new[] {
+            stf.ParseBlock(new[]{
+                new STFReader.TokenProcessor("ortsgraphic", ()=>{ GeneralLightGlowGraphic = stf.ReadStringBlock("Lightglow.png").ToUpper(); }),
                 new STFReader.TokenProcessor("light", ()=>{ Lights.Add(new Light(Lights.Count, stf)); }),
             });
             if (Lights.Count == 0)
