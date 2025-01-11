@@ -1,4 +1,4 @@
-﻿namespace ORTS
+﻿namespace Menu
 {
     partial class OptionsForm
     {
@@ -39,6 +39,11 @@
             this.checkAlerter = new System.Windows.Forms.CheckBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
+            this.labelAutoSaveInterval = new System.Windows.Forms.Label();
+            this.ButtonAutoSave60 = new System.Windows.Forms.RadioButton();
+            this.ButtonAutoSave30 = new System.Windows.Forms.RadioButton();
+            this.ButtonAutoSave15 = new System.Windows.Forms.RadioButton();
+            this.checkAutoSaveActive = new System.Windows.Forms.CheckBox();
             this.pbOverspeedMonitor = new System.Windows.Forms.PictureBox();
             this.pbEnableTcsScripts = new System.Windows.Forms.PictureBox();
             this.pbOtherUnits = new System.Windows.Forms.PictureBox();
@@ -162,8 +167,8 @@
             this.labelWebServerPort = new System.Windows.Forms.Label();
             this.numericWebServerPort = new System.Windows.Forms.NumericUpDown();
             this.pbControlConfirmations = new System.Windows.Forms.PictureBox();
-            this.labelControlConfirmations = new System.Windows.Forms.Label();
             this.comboControlConfirmations = new System.Windows.Forms.ComboBox();
+            this.labelControlConfirmations = new System.Windows.Forms.Label();
             this.pbWindowGlass = new System.Windows.Forms.PictureBox();
             this.checkWindowGlass = new System.Windows.Forms.CheckBox();
             this.comboWindowSize = new System.Windows.Forms.ComboBox();
@@ -206,6 +211,7 @@
             this.checkUseSuperElevation = new System.Windows.Forms.CheckBox();
             this.ElevationText = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.pbAutoSave = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -274,6 +280,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbSuperElevation)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAutoSave)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -380,6 +387,12 @@
             // 
             // tabPageGeneral
             // 
+            this.tabPageGeneral.Controls.Add(this.pbAutoSave);
+            this.tabPageGeneral.Controls.Add(this.labelAutoSaveInterval);
+            this.tabPageGeneral.Controls.Add(this.ButtonAutoSave60);
+            this.tabPageGeneral.Controls.Add(this.ButtonAutoSave30);
+            this.tabPageGeneral.Controls.Add(this.ButtonAutoSave15);
+            this.tabPageGeneral.Controls.Add(this.checkAutoSaveActive);
             this.tabPageGeneral.Controls.Add(this.pbOverspeedMonitor);
             this.tabPageGeneral.Controls.Add(this.pbEnableTcsScripts);
             this.tabPageGeneral.Controls.Add(this.pbOtherUnits);
@@ -408,9 +421,65 @@
             this.tabPageGeneral.Text = "General";
             this.tabPageGeneral.UseVisualStyleBackColor = true;
             // 
+            // labelAutoSaveInterval
+            // 
+            this.labelAutoSaveInterval.AutoSize = true;
+            this.labelAutoSaveInterval.Location = new System.Drawing.Point(111, 299);
+            this.labelAutoSaveInterval.Name = "labelAutoSaveInterval";
+            this.labelAutoSaveInterval.Size = new System.Drawing.Size(48, 13);
+            this.labelAutoSaveInterval.TabIndex = 35;
+            this.labelAutoSaveInterval.Text = "Interval :";
+            // 
+            // ButtonAutoSave60
+            // 
+            this.ButtonAutoSave60.AutoSize = true;
+            this.ButtonAutoSave60.Location = new System.Drawing.Point(159, 331);
+            this.ButtonAutoSave60.Name = "ButtonAutoSave60";
+            this.ButtonAutoSave60.Size = new System.Drawing.Size(61, 17);
+            this.ButtonAutoSave60.TabIndex = 34;
+            this.ButtonAutoSave60.TabStop = true;
+            this.ButtonAutoSave60.Text = "60 mins";
+            this.ButtonAutoSave60.UseVisualStyleBackColor = true;
+            this.ButtonAutoSave60.CheckedChanged += new System.EventHandler(this.buttonAutoSaveInterval_checkchanged);
+            // 
+            // ButtonAutoSave30
+            // 
+            this.ButtonAutoSave30.AutoSize = true;
+            this.ButtonAutoSave30.Location = new System.Drawing.Point(159, 314);
+            this.ButtonAutoSave30.Name = "ButtonAutoSave30";
+            this.ButtonAutoSave30.Size = new System.Drawing.Size(61, 17);
+            this.ButtonAutoSave30.TabIndex = 33;
+            this.ButtonAutoSave30.TabStop = true;
+            this.ButtonAutoSave30.Text = "30 mins";
+            this.ButtonAutoSave30.UseVisualStyleBackColor = true;
+            this.ButtonAutoSave30.CheckedChanged += new System.EventHandler(this.buttonAutoSaveInterval_checkchanged);
+            // 
+            // ButtonAutoSave15
+            // 
+            this.ButtonAutoSave15.AutoSize = true;
+            this.ButtonAutoSave15.Location = new System.Drawing.Point(159, 297);
+            this.ButtonAutoSave15.Name = "ButtonAutoSave15";
+            this.ButtonAutoSave15.Size = new System.Drawing.Size(61, 17);
+            this.ButtonAutoSave15.TabIndex = 32;
+            this.ButtonAutoSave15.TabStop = true;
+            this.ButtonAutoSave15.Text = "15 mins";
+            this.ButtonAutoSave15.UseVisualStyleBackColor = true;
+            this.ButtonAutoSave15.CheckedChanged += new System.EventHandler(this.buttonAutoSaveInterval_checkchanged);
+            // 
+            // checkAutoSaveActive
+            // 
+            this.checkAutoSaveActive.AutoSize = true;
+            this.checkAutoSaveActive.Location = new System.Drawing.Point(32, 298);
+            this.checkAutoSaveActive.Name = "checkAutoSaveActive";
+            this.checkAutoSaveActive.Size = new System.Drawing.Size(74, 17);
+            this.checkAutoSaveActive.TabIndex = 31;
+            this.checkAutoSaveActive.Text = "Auto save";
+            this.checkAutoSaveActive.UseVisualStyleBackColor = true;
+            this.checkAutoSaveActive.CheckedChanged += new System.EventHandler(this.checkAutoSave_checkchanged);
+            // 
             // pbOverspeedMonitor
             // 
-            this.pbOverspeedMonitor.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbOverspeedMonitor.Image = global::Menu.Properties.Resources.info_18;
             this.pbOverspeedMonitor.Location = new System.Drawing.Point(296, 7);
             this.pbOverspeedMonitor.Name = "pbOverspeedMonitor";
             this.pbOverspeedMonitor.Size = new System.Drawing.Size(18, 18);
@@ -422,7 +491,7 @@
             // 
             // pbEnableTcsScripts
             // 
-            this.pbEnableTcsScripts.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbEnableTcsScripts.Image = global::Menu.Properties.Resources.info_18;
             this.pbEnableTcsScripts.Location = new System.Drawing.Point(6, 263);
             this.pbEnableTcsScripts.Name = "pbEnableTcsScripts";
             this.pbEnableTcsScripts.Size = new System.Drawing.Size(18, 18);
@@ -434,7 +503,7 @@
             // 
             // pbOtherUnits
             // 
-            this.pbOtherUnits.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbOtherUnits.Image = global::Menu.Properties.Resources.info_18;
             this.pbOtherUnits.Location = new System.Drawing.Point(6, 234);
             this.pbOtherUnits.Name = "pbOtherUnits";
             this.pbOtherUnits.Size = new System.Drawing.Size(18, 18);
@@ -446,7 +515,7 @@
             // 
             // pbPressureUnit
             // 
-            this.pbPressureUnit.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbPressureUnit.Image = global::Menu.Properties.Resources.info_18;
             this.pbPressureUnit.Location = new System.Drawing.Point(6, 207);
             this.pbPressureUnit.Name = "pbPressureUnit";
             this.pbPressureUnit.Size = new System.Drawing.Size(18, 18);
@@ -458,7 +527,7 @@
             // 
             // pbBrakePipeChargingRate
             // 
-            this.pbBrakePipeChargingRate.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbBrakePipeChargingRate.Image = global::Menu.Properties.Resources.info_18;
             this.pbBrakePipeChargingRate.Location = new System.Drawing.Point(6, 145);
             this.pbBrakePipeChargingRate.Name = "pbBrakePipeChargingRate";
             this.pbBrakePipeChargingRate.Size = new System.Drawing.Size(18, 18);
@@ -470,7 +539,7 @@
             // 
             // pbGraduatedRelease
             // 
-            this.pbGraduatedRelease.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbGraduatedRelease.Image = global::Menu.Properties.Resources.info_18;
             this.pbGraduatedRelease.Location = new System.Drawing.Point(6, 122);
             this.pbGraduatedRelease.Name = "pbGraduatedRelease";
             this.pbGraduatedRelease.Size = new System.Drawing.Size(18, 18);
@@ -482,7 +551,7 @@
             // 
             // pbRetainers
             // 
-            this.pbRetainers.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbRetainers.Image = global::Menu.Properties.Resources.info_18;
             this.pbRetainers.Location = new System.Drawing.Point(6, 99);
             this.pbRetainers.Name = "pbRetainers";
             this.pbRetainers.Size = new System.Drawing.Size(18, 18);
@@ -494,7 +563,7 @@
             // 
             // pbAlerter
             // 
-            this.pbAlerter.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbAlerter.Image = global::Menu.Properties.Resources.info_18;
             this.pbAlerter.Location = new System.Drawing.Point(6, 7);
             this.pbAlerter.Name = "pbAlerter";
             this.pbAlerter.Size = new System.Drawing.Size(18, 18);
@@ -614,7 +683,7 @@
             // 
             // pbExternalSoundPassThruPercent
             // 
-            this.pbExternalSoundPassThruPercent.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbExternalSoundPassThruPercent.Image = global::Menu.Properties.Resources.info_18;
             this.pbExternalSoundPassThruPercent.Location = new System.Drawing.Point(11, 73);
             this.pbExternalSoundPassThruPercent.Name = "pbExternalSoundPassThruPercent";
             this.pbExternalSoundPassThruPercent.Size = new System.Drawing.Size(18, 18);
@@ -626,7 +695,7 @@
             // 
             // pbSoundDetailLevel
             // 
-            this.pbSoundDetailLevel.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbSoundDetailLevel.Image = global::Menu.Properties.Resources.info_18;
             this.pbSoundDetailLevel.Location = new System.Drawing.Point(11, 41);
             this.pbSoundDetailLevel.Name = "pbSoundDetailLevel";
             this.pbSoundDetailLevel.Size = new System.Drawing.Size(18, 18);
@@ -638,7 +707,7 @@
             // 
             // pbSoundVolumePercent
             // 
-            this.pbSoundVolumePercent.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbSoundVolumePercent.Image = global::Menu.Properties.Resources.info_18;
             this.pbSoundVolumePercent.Location = new System.Drawing.Point(11, 9);
             this.pbSoundVolumePercent.Name = "pbSoundVolumePercent";
             this.pbSoundVolumePercent.Size = new System.Drawing.Size(18, 18);
@@ -794,7 +863,7 @@
             // 
             // pbViewingFOV
             // 
-            this.pbViewingFOV.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbViewingFOV.Image = global::Menu.Properties.Resources.info_18;
             this.pbViewingFOV.Location = new System.Drawing.Point(312, 233);
             this.pbViewingFOV.Name = "pbViewingFOV";
             this.pbViewingFOV.Size = new System.Drawing.Size(18, 18);
@@ -816,7 +885,7 @@
             // 
             // pbLODBias
             // 
-            this.pbLODBias.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbLODBias.Image = global::Menu.Properties.Resources.info_18;
             this.pbLODBias.Location = new System.Drawing.Point(312, 169);
             this.pbLODBias.Name = "pbLODBias";
             this.pbLODBias.Size = new System.Drawing.Size(18, 18);
@@ -828,7 +897,7 @@
             // 
             // pbWorldObjectDensity
             // 
-            this.pbWorldObjectDensity.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbWorldObjectDensity.Image = global::Menu.Properties.Resources.info_18;
             this.pbWorldObjectDensity.Location = new System.Drawing.Point(312, 137);
             this.pbWorldObjectDensity.Name = "pbWorldObjectDensity";
             this.pbWorldObjectDensity.Size = new System.Drawing.Size(18, 18);
@@ -840,7 +909,7 @@
             // 
             // pbAntiAliasing
             // 
-            this.pbAntiAliasing.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbAntiAliasing.Image = global::Menu.Properties.Resources.info_18;
             this.pbAntiAliasing.Location = new System.Drawing.Point(312, 73);
             this.pbAntiAliasing.Name = "pbAntiAliasing";
             this.pbAntiAliasing.Size = new System.Drawing.Size(18, 18);
@@ -852,7 +921,7 @@
             // 
             // pbVerticalSync
             // 
-            this.pbVerticalSync.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbVerticalSync.Image = global::Menu.Properties.Resources.info_18;
             this.pbVerticalSync.Location = new System.Drawing.Point(312, 41);
             this.pbVerticalSync.Name = "pbVerticalSync";
             this.pbVerticalSync.Size = new System.Drawing.Size(18, 18);
@@ -864,7 +933,7 @@
             // 
             // pbModelInstancing
             // 
-            this.pbModelInstancing.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbModelInstancing.Image = global::Menu.Properties.Resources.info_18;
             this.pbModelInstancing.Location = new System.Drawing.Point(312, 9);
             this.pbModelInstancing.Name = "pbModelInstancing";
             this.pbModelInstancing.Size = new System.Drawing.Size(18, 18);
@@ -876,7 +945,7 @@
             // 
             // pbDayAmbientLight
             // 
-            this.pbDayAmbientLight.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbDayAmbientLight.Image = global::Menu.Properties.Resources.info_18;
             this.pbDayAmbientLight.Location = new System.Drawing.Point(11, 297);
             this.pbDayAmbientLight.Name = "pbDayAmbientLight";
             this.pbDayAmbientLight.Size = new System.Drawing.Size(18, 18);
@@ -888,7 +957,7 @@
             // 
             // pbSignalLightGlow
             // 
-            this.pbSignalLightGlow.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbSignalLightGlow.Image = global::Menu.Properties.Resources.info_18;
             this.pbSignalLightGlow.Location = new System.Drawing.Point(11, 265);
             this.pbSignalLightGlow.Name = "pbSignalLightGlow";
             this.pbSignalLightGlow.Size = new System.Drawing.Size(18, 18);
@@ -900,7 +969,7 @@
             // 
             // pbDoubleWire
             // 
-            this.pbDoubleWire.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbDoubleWire.Image = global::Menu.Properties.Resources.info_18;
             this.pbDoubleWire.Location = new System.Drawing.Point(11, 233);
             this.pbDoubleWire.Name = "pbDoubleWire";
             this.pbDoubleWire.Size = new System.Drawing.Size(18, 18);
@@ -912,7 +981,7 @@
             // 
             // pbWire
             // 
-            this.pbWire.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbWire.Image = global::Menu.Properties.Resources.info_18;
             this.pbWire.Location = new System.Drawing.Point(11, 201);
             this.pbWire.Name = "pbWire";
             this.pbWire.Size = new System.Drawing.Size(18, 18);
@@ -924,7 +993,7 @@
             // 
             // pbShadowAllShapes
             // 
-            this.pbShadowAllShapes.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbShadowAllShapes.Image = global::Menu.Properties.Resources.info_18;
             this.pbShadowAllShapes.Location = new System.Drawing.Point(11, 169);
             this.pbShadowAllShapes.Name = "pbShadowAllShapes";
             this.pbShadowAllShapes.Size = new System.Drawing.Size(18, 18);
@@ -936,7 +1005,7 @@
             // 
             // pbDynamicShadows
             // 
-            this.pbDynamicShadows.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbDynamicShadows.Image = global::Menu.Properties.Resources.info_18;
             this.pbDynamicShadows.Location = new System.Drawing.Point(11, 137);
             this.pbDynamicShadows.Name = "pbDynamicShadows";
             this.pbDynamicShadows.Size = new System.Drawing.Size(18, 18);
@@ -948,7 +1017,7 @@
             // 
             // pbLODViewingExtension
             // 
-            this.pbLODViewingExtension.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbLODViewingExtension.Image = global::Menu.Properties.Resources.info_18;
             this.pbLODViewingExtension.Location = new System.Drawing.Point(11, 105);
             this.pbLODViewingExtension.Name = "pbLODViewingExtension";
             this.pbLODViewingExtension.Size = new System.Drawing.Size(18, 18);
@@ -960,7 +1029,7 @@
             // 
             // pbDistantMountains
             // 
-            this.pbDistantMountains.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbDistantMountains.Image = global::Menu.Properties.Resources.info_18;
             this.pbDistantMountains.Location = new System.Drawing.Point(11, 41);
             this.pbDistantMountains.Name = "pbDistantMountains";
             this.pbDistantMountains.Size = new System.Drawing.Size(18, 18);
@@ -972,7 +1041,7 @@
             // 
             // pbViewingDistance
             // 
-            this.pbViewingDistance.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbViewingDistance.Image = global::Menu.Properties.Resources.info_18;
             this.pbViewingDistance.Location = new System.Drawing.Point(11, 9);
             this.pbViewingDistance.Name = "pbViewingDistance";
             this.pbViewingDistance.Size = new System.Drawing.Size(18, 18);
@@ -1901,7 +1970,7 @@
             // 
             // pbPerformanceTuner
             // 
-            this.pbPerformanceTuner.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbPerformanceTuner.Image = global::Menu.Properties.Resources.info_18;
             this.pbPerformanceTuner.Location = new System.Drawing.Point(11, 330);
             this.pbPerformanceTuner.Name = "pbPerformanceTuner";
             this.pbPerformanceTuner.Size = new System.Drawing.Size(18, 18);
@@ -1965,7 +2034,7 @@
             // 
             // pbWebServerPort
             // 
-            this.pbWebServerPort.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbWebServerPort.Image = global::Menu.Properties.Resources.info_18;
             this.pbWebServerPort.Location = new System.Drawing.Point(11, 298);
             this.pbWebServerPort.Name = "pbWebServerPort";
             this.pbWebServerPort.Size = new System.Drawing.Size(18, 18);
@@ -2009,7 +2078,7 @@
             // 
             // pbControlConfirmations
             // 
-            this.pbControlConfirmations.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbControlConfirmations.Image = global::Menu.Properties.Resources.info_18;
             this.pbControlConfirmations.Location = new System.Drawing.Point(11, 266);
             this.pbControlConfirmations.Name = "pbControlConfirmations";
             this.pbControlConfirmations.Size = new System.Drawing.Size(18, 18);
@@ -2020,7 +2089,7 @@
             this.pbControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // comboControlConfirmations
-            //
+            // 
             this.comboControlConfirmations.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboControlConfirmations.FormattingEnabled = true;
             this.comboControlConfirmations.Location = new System.Drawing.Point(35, 265);
@@ -2034,7 +2103,7 @@
             // 
             this.labelControlConfirmations.Location = new System.Drawing.Point(161, 265);
             this.labelControlConfirmations.Margin = new System.Windows.Forms.Padding(3);
-            this.labelControlConfirmations.Name = "labelControlConfirmation";
+            this.labelControlConfirmations.Name = "labelControlConfirmations";
             this.labelControlConfirmations.Size = new System.Drawing.Size(200, 21);
             this.labelControlConfirmations.TabIndex = 37;
             this.labelControlConfirmations.Text = "Messages suppressed       ";
@@ -2043,7 +2112,7 @@
             // 
             // pbWindowGlass
             // 
-            this.pbWindowGlass.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbWindowGlass.Image = global::Menu.Properties.Resources.info_18;
             this.pbWindowGlass.Location = new System.Drawing.Point(11, 234);
             this.pbWindowGlass.Name = "pbWindowGlass";
             this.pbWindowGlass.Size = new System.Drawing.Size(18, 18);
@@ -2103,7 +2172,7 @@
             // 
             // pbWindowed
             // 
-            this.pbWindowed.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbWindowed.Image = global::Menu.Properties.Resources.info_18;
             this.pbWindowed.Location = new System.Drawing.Point(11, 169);
             this.pbWindowed.Name = "pbWindowed";
             this.pbWindowed.Size = new System.Drawing.Size(18, 18);
@@ -2126,7 +2195,7 @@
             // 
             // pbUpdateMode
             // 
-            this.pbUpdateMode.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbUpdateMode.Image = global::Menu.Properties.Resources.info_18;
             this.pbUpdateMode.Location = new System.Drawing.Point(11, 52);
             this.pbUpdateMode.Name = "pbUpdateMode";
             this.pbUpdateMode.Size = new System.Drawing.Size(18, 18);
@@ -2138,7 +2207,7 @@
             // 
             // pbLanguage
             // 
-            this.pbLanguage.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbLanguage.Image = global::Menu.Properties.Resources.info_18;
             this.pbLanguage.Location = new System.Drawing.Point(11, 9);
             this.pbLanguage.Name = "pbLanguage";
             this.pbLanguage.Size = new System.Drawing.Size(18, 18);
@@ -2545,7 +2614,7 @@
             // 
             // pbSuperElevation
             // 
-            this.pbSuperElevation.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbSuperElevation.Image = global::Menu.Properties.Resources.info_18;
             this.pbSuperElevation.Location = new System.Drawing.Point(6, 23);
             this.pbSuperElevation.Name = "pbSuperElevation";
             this.pbSuperElevation.Size = new System.Drawing.Size(18, 18);
@@ -2554,6 +2623,18 @@
             this.pbSuperElevation.Click += new System.EventHandler(this.HelpIcon_Click);
             this.pbSuperElevation.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.pbSuperElevation.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbAutoSave
+            // 
+            this.pbAutoSave.Image = global::Menu.Properties.Resources.info_18;
+            this.pbAutoSave.Location = new System.Drawing.Point(6, 299);
+            this.pbAutoSave.Name = "pbAutoSave";
+            this.pbAutoSave.Size = new System.Drawing.Size(18, 18);
+            this.pbAutoSave.TabIndex = 36;
+            this.pbAutoSave.TabStop = false;
+            this.pbAutoSave.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbAutoSave.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbAutoSave.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // OptionsForm
             // 
@@ -2644,8 +2725,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactorChange)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAutoSave)).EndInit();
             this.ResumeLayout(false);
-
         }
 
         #endregion
@@ -2753,6 +2834,11 @@
         private System.Windows.Forms.CheckBox checkShapeWarnings;
         private System.Windows.Forms.Label labelDayAmbientLight;
         private System.Windows.Forms.CheckBox checkEnableTCSScripts;
+        private System.Windows.Forms.CheckBox checkAutoSaveActive;
+        private System.Windows.Forms.Label labelAutoSaveInterval;
+        private System.Windows.Forms.RadioButton ButtonAutoSave60;
+        private System.Windows.Forms.RadioButton ButtonAutoSave30;
+        private System.Windows.Forms.RadioButton ButtonAutoSave15;
         private System.Windows.Forms.CheckBox checkCorrectQuestionableBrakingParams;
         private System.Windows.Forms.CheckBox checkOverspeedMonitor;
         private System.Windows.Forms.NumericUpDown numericExternalSoundPassThruPercent;
@@ -2826,5 +2912,6 @@
         private System.Windows.Forms.PictureBox pbModelInstancing;
         private System.Windows.Forms.Label labelDefaultDetail;
         private System.Windows.Forms.PictureBox pbViewingFOV;
+        private System.Windows.Forms.PictureBox pbAutoSave;
     }
 }

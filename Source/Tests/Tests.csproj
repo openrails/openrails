@@ -19,16 +19,16 @@
       <Project>{8A84696C-3559-49B8-B27F-BB6932D8A1C6}</Project>
       <Name>Orts.Parsers.Msts</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
+    <ProjectReference Include="..\Orts.Common\Orts.Common.csproj">
       <Project>{DA94D876-7D35-46C3-AECE-AFACE72C686C}</Project>
-      <Name>ORTS.Common</Name>
+      <Name>Orts.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\Orts.Parsers.OR\Orts.Parsers.OR.csproj">
       <Project>{1cc3bd5c-06c5-4784-b067-f93945a7ca2c}</Project>
       <Name>Orts.Parsers.OR</Name>
     </ProjectReference>
     <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj" />
-    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj" />
+    <ProjectReference Include="..\Orts.Common\Orts.Common.csproj" />
     <ProjectReference Include="..\Orts.Parsers.OR\Orts.Parsers.OR.csproj" />
   </ItemGroup>
   <ItemGroup>

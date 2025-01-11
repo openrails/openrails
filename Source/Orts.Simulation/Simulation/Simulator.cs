@@ -1818,8 +1818,12 @@ namespace Orts.Simulation
 
             train.UncoupledFrom = train2;
             train2.UncoupledFrom = train;
+            
             train2.SpeedMpS = train.SpeedMpS;
+
+            train.Cars[train.Cars.Count - 1].BrakeSystem.RearBrakeHoseConnected = false;
             train2.Cars[0].BrakeSystem.FrontBrakeHoseConnected = false;
+
             train2.AITrainDirectionForward = train.AITrainDirectionForward;
 
             // It is an action, not just a simple copy, thus don't do it if the train is driven by the player:
@@ -1951,13 +1955,14 @@ namespace Orts.Simulation
                             TrainSwitcher.ClickedSelectedAsPlayer = false;
                             return;
                         }
-                        if (playerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || !playerTrain.Autopilot)
+                        if (playerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || TimetableMode && !playerTrain.Autopilot)
                         {
                             // it must be autopiloted first
                             playerTrain.SwitchToAutopilotControl();
                         }
                         // and now switch!
                         playerTrain.TrainType = Train.TRAINTYPE.AI;
+                        if (!TimetableMode) AI.AITrains.Add(playerTrain);
                         playerTrain.Autopilot = false;
                         if (TrainSwitcher.SuspendOldPlayer)
                         {

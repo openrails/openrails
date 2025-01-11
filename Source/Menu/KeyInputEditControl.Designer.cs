@@ -1,4 +1,4 @@
-﻿namespace ORTS
+﻿namespace Menu
 {
     partial class KeyInputEditControl
     {

@@ -273,6 +273,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             outf.Write(CylPressurePSIA);
             outf.Write(VacResPressurePSIA);
             outf.Write(FrontBrakeHoseConnected);
+            outf.Write(RearBrakeHoseConnected);
             outf.Write(AngleCockAOpen);
             outf.Write(AngleCockBOpen);
             outf.Write(BleedOffValveOpen);
@@ -286,6 +287,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             CylPressurePSIA = inf.ReadSingle();
             VacResPressurePSIA = inf.ReadSingle();
             FrontBrakeHoseConnected = inf.ReadBoolean();
+            RearBrakeHoseConnected = inf.ReadBoolean();
             AngleCockAOpen = inf.ReadBoolean();
             AngleCockBOpen = inf.ReadBoolean();
             BleedOffValveOpen = inf.ReadBoolean();
