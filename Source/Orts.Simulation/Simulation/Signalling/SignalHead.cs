@@ -242,10 +242,6 @@ namespace Orts.Simulation.Signalling
         {
             return mainSignal.opp_sig_id(function);
         }
-        public int opp_sig_id_trainpath(SignalFunction function)
-        {
-            return mainSignal.opp_sig_id_trainpath(function);
-        }
 
         public MstsSignalAspect id_sig_lr(int sigId, SignalFunction function)
         {

@@ -78,7 +78,6 @@ namespace Orts.Formats.Msts
             NEXT_SIG_ID,
             NEXT_NSIG_ID,
             OPP_SIG_ID,
-            OPP_SIG_ID_TRAINPATH,
             ID_SIG_ENABLED,
             ID_SIG_LR,
             SIG_FEATURE,
