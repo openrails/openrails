@@ -3466,7 +3466,7 @@ namespace Orts.Simulation.Timetables
                         actTrain.StationStops[actTrain.StationStops.Count - 1].ReqStopDetails = reqStopDetails.CreateCopy();
                         foreach (TTTrainCommands thisCommand in Commands)
                         {
-                            if (thisCommand.CommandToken == "rqs")
+                            if (thisCommand.CommandToken == "req")
                             {
                                 string infoString = String.Concat("Train : ", actTrain.Name, " , at Station : ",
                                     actTrain.StationStops[actTrain.StationStops.Count - 1].PlatformItem.Name);
@@ -3684,7 +3684,7 @@ namespace Orts.Simulation.Timetables
                             break;
 
                         // request stop details
-                        case "rqs":
+                        case "req":
                             if (thisCommand.CommandQualifiers != null && thisCommand.CommandQualifiers.Count > 0)
                             {
                                 ReqStopDetails = ProcessReqStopDetails(thisCommand.CommandQualifiers);

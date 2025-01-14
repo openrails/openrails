@@ -8073,7 +8073,7 @@ namespace Orts.Simulation.Timetables
                     break;
 
                 // request stop details - processed separately
-                case "rqs":
+                case "req":
                     break;
 
                 default:
