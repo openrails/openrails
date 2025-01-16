@@ -31,7 +31,7 @@ using ORTS.Common;
 using ORTS.Settings;
 using ORTS.Updater;
 using static ORTS.Common.SystemInfo;
-using static Menu.Notifications.NotificationPage;
+using static Menu.NotificationPage;
 
 // Behaviour
 // Notifications are read only once as a background task at start into Notifications.
@@ -40,7 +40,7 @@ using static Menu.Notifications.NotificationPage;
 // the visibility of each notification in NotificationList is re-assessed. Also its date.
 // Every time the user selects a different notification page, the panel is re-loaded with items for that page.
 
-namespace Menu.Notifications
+namespace Menu
 {
     public class NotificationManager
     {
