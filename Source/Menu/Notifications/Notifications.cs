@@ -18,7 +18,7 @@
 using System.Collections.Generic;
 
 
-namespace Menu.Notifications
+namespace ORTS
 {
     public class Notifications
     {
@@ -60,11 +60,6 @@ namespace Menu.Notifications
         public string TestingUrl { get; set; }
         public string UnstableUrl { get; set; }
     }
-    class Dialog : Item
-    {
-        public string Value { get; set; }
-        public string Form { get; set; }
-    }
     class Update : Item
     {
         public string Value { get; set; }
@@ -90,30 +85,19 @@ namespace Menu.Notifications
         public List<Criteria> AllOfList { get; set; }
     }
 
-    // These criteria are all doing an actual comparison
-    class Contains : Criteria { public override bool IsMatch() => Property.Contains(Value); }
-    class Equals : Criteria { public override bool IsMatch() => Property == Value; }
-    class LessThan : NumericCriteria { public override bool IsMatch() => PropertyAsInt < ValueAsInt; }
-    class MoreThan : NumericCriteria { public override bool IsMatch() => PropertyAsInt > ValueAsInt; }
+    class Contains : Criteria { }
+    class NotContains : Criteria { }
 
-    // These criteria are all negated versions of those above
-    class NotContains : Contains { public override bool IsMatch() => !base.IsMatch(); }
-    class NotEquals : Equals { public override bool IsMatch() => !base.IsMatch(); }
-    class MoreThanOrEquals : LessThan { public override bool IsMatch() => !base.IsMatch(); }
-    class LessThanOrEquals : MoreThan { public override bool IsMatch() => !base.IsMatch(); }
-
-    abstract class NumericCriteria : Criteria
+    // Not implemented as not needed yet
+    // String comparison, not numerical
+    class NoLessThan : Criteria { }
+    class NoMoreThan : Criteria { }
+    
+    public class Criteria
     {
-        public int? PropertyAsInt => int.TryParse(Property, out var value) ? value : (int?)null;
-        public int? ValueAsInt => int.TryParse(Value, out var value) ? value : (int?)null;
-    }
-
-    public abstract class Criteria
-    {
-        // System Information "examples"
+                                                // System Information "examples"
         public string Property { get; set; }    // installed_version, direct3d, runtime, system, memory, cpu, gpu
         public string Value { get; set; }       // {{new_version}}, {{10_0}}
-        public abstract bool IsMatch();
     }
 
     public class ParameterValue

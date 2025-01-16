@@ -24,7 +24,7 @@ using ORTS.Updater;
 using Button = System.Windows.Forms.Button;
 using Image = System.Drawing.Image;
 
-namespace Menu.Notifications
+namespace ORTS
 {
     /// <summary>
     /// Holds presentation details of the current notification displayed on the panel.
@@ -80,8 +80,7 @@ namespace Menu.Notifications
             Panel.Controls.Add(pageCountControl);
         }
 
-        public class Arrow : Button
-        {
+        public class Arrow : Button {
             public Arrow(Panel panel, Image image, bool visible, bool enabled, int indentRight)
             {
                 Margin = new Padding(0);
@@ -183,10 +182,8 @@ namespace Menu.Notifications
         {
             public static int ButtonCount = 0;
             public Button Button;
-            protected MainForm MainForm;
             public NButtonControl(Panel panel, string legend, int width, string description, MainForm mainForm)
             {
-                MainForm = mainForm;
                 var buttonLeft = LeftPaddingIndented;
                 Button = new Button
                 {
@@ -247,30 +244,6 @@ namespace Menu.Notifications
                 ButtonCount++;
             }
         }
-        public class NDialogControl : NButtonControl
-        {
-            public string Form;
-            public NDialogControl(NotificationPage page, string legend, int width, string description, MainForm mainForm, string form)
-            : base(page.Panel, legend, width, description, mainForm)
-            {
-                Form = form;
-                page.ButtonDictionary.Add(ButtonCount, this);
-                ButtonCount++;
-            }
-
-            public void Show()
-            {
-                switch (Form)
-                {
-                    case "OptionsForm":
-                        MainForm.ShowOptionsDialog();
-                        break;
-                    case "TelemetryForm":
-                        MainForm.ShowTelemetryDialog();
-                        break;
-                }
-            }
-        }
         public class NUpdateControl : NButtonControl
         {
             public NUpdateControl(NotificationPage page, string legend, int width, string description, MainForm mainForm)
@@ -294,8 +267,6 @@ namespace Menu.Notifications
             var button = ButtonDictionary[key];
             if (button is NLinkControl)
                 Process.Start(((NLinkControl)button).Url);
-            else if (button is NDialogControl dialogControl)
-                dialogControl.Show();
             else if (button is NUpdateControl)
                 updateManager.Update();
             else if (button is NRetryControl)
