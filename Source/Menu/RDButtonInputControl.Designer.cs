@@ -1,6 +1,6 @@
 ﻿
 
-namespace Menu
+namespace Orts.Menu
 {
     partial class RDButtonInputControl
     {

@@ -3,6 +3,7 @@
     <TargetFramework Condition="'$(BuildDotNet)' == 'true'">net6-windows</TargetFramework>
     <TargetFramework Condition="'$(TargetFramework)' == ''">net472</TargetFramework>
     <OutputType>WinExe</OutputType>
+    <RootNamespace>ORTS</RootNamespace>
     <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
     <UseWindowsForms>true</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>

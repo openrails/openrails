@@ -35,7 +35,7 @@ using ORTS.Updater;
 using Activity = ORTS.Menu.Activity;
 using Path = ORTS.Menu.Path;
 
-namespace Menu
+namespace ORTS
 {
     public partial class MainForm : Form
     {
@@ -69,7 +69,7 @@ namespace Menu
         Task<List<Path>> PathLoader;
         Task<List<TimetableInfo>> TimetableSetLoader;
         Task<List<WeatherFileInfo>> TimetableWeatherFileLoader;
-        readonly ResourceManager Resources = new ResourceManager("Menu.Properties.Resources", typeof(MainForm).Assembly);
+        readonly ResourceManager Resources = new ResourceManager("ORTS.Properties.Resources", typeof(MainForm).Assembly);
         readonly UpdateManager UpdateManager;
         readonly Image ElevationIcon;
         NotificationManager NotificationManager;

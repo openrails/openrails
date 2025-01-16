@@ -62,7 +62,7 @@ using ORTS.Menu;
 using ORTS.Settings;
 using Path = System.IO.Path;
 
-namespace Menu
+namespace ORTS
 {
     public partial class ResumeForm : Form
     {
