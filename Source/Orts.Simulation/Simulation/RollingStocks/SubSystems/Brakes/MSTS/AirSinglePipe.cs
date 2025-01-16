@@ -532,7 +532,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             BrakeLine1PressurePSI = Car.Train.EqualReservoirPressurePSIorInHg;
             BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
             if (Car is MSTSLocomotive && Car.Train.LeadLocomotive is MSTSLocomotive lead)
-                lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
+                lead.EngineBrakeController?.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
             if (maxPressurePSI > 0)
                 ControlResPressurePSI = maxPressurePSI;
 
@@ -1607,8 +1607,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 // For distributing valves, we use AutoCylPressurePSI as "Application Chamber/Pipe" pressure
                 // CylPressurePSI is the actual pressure applied to cylinders
-                var engineBrakeStatus = loco.EngineBrakeController.Notches[loco.EngineBrakeController.CurrentNotch].Type;
-                var trainBrakeStatus = loco.TrainBrakeController.Notches[loco.TrainBrakeController.CurrentNotch].Type;
+                var engineBrakeStatus = loco.EngineBrakeController?.TrainBrakeControllerState ?? ControllerState.Release;
+                var trainBrakeStatus = loco.TrainBrakeController.TrainBrakeControllerState;
                  // BailOff
                 if (engineBrakeStatus == ControllerState.BailOff)
                 {
@@ -1653,9 +1653,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
                         if (loco.Train.LeadLocomotiveIndex >= 0)
                         { 
-                            if (loco.Train.DetermineDPLeadLocomotive(loco) is MSTSLocomotive lead && (lead.BailOff || 
-                                (lead.EngineBrakeController != null && lead.EngineBrakeController.CurrentNotch >= 0
-                                && lead.EngineBrakeController.Notches[lead.EngineBrakeController.CurrentNotch].Type == ControllerState.BailOff)))
+                            if (loco.Train.DetermineDPLeadLocomotive(loco) is MSTSLocomotive lead && (lead.BailOff || (lead.EngineBrakeController != null && lead.EngineBrakeController.TrainBrakeControllerState == ControllerState.BailOff)))
                             {
                                 if (loco.BrakeValve == MSTSWagon.BrakeValveType.Distributor)
                                 {
