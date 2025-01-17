@@ -28,6 +28,7 @@
 // #define DEBUG_TRACEINFO
 // #define DEBUG_TTANALYSIS
 // #define DEBUG_DELAYS
+#define DEBUG_RQS
 // DEBUG flag for debug prints
 
 using System;
@@ -1328,7 +1329,7 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// Calculate actual station stop details
         /// <\summary>
-        public StationStop CalculateStationStop(int platformStartID, int arrivalTime, int departTime, DateTime arrivalDT, DateTime departureDT, float clearingDistanceM,
+        public StationStop CalculateStationStop(int platformStartID, int? arrivalTime, int? departTime, DateTime? arrivalDT, DateTime? departureDT, float clearingDistanceM,
             float minStopDistance, bool terminal, int? actMinStopTime, float? keepClearFront, float? keepClearRear, bool forcePosition, bool closeupSignal,
             bool closeup, bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop, bool allowdepartearly)
         {
@@ -1409,11 +1410,13 @@ namespace Orts.Simulation.Timetables
                         extendPlatformToSignal,
                         endStop,
                         allowdepartearly,
-                        StationStop.STOPTYPE.STATION_STOP)
+                        StationStop.STOPTYPE.STATION_STOP);
+
+                if (arrivalDT.HasValue)
                 {
-                    arrivalDT = arrivalDT,
-                    departureDT = departureDT
-                };
+                    thisStation.arrivalDT = arrivalDT.Value;
+                    thisStation.departureDT = departureDT.Value;
+                }
 
                 return thisStation;
             }
@@ -2000,7 +2003,7 @@ namespace Orts.Simulation.Timetables
         /// <param name="forcePosition"></param>
         /// <param name="endStop"></param>
         /// <returns></returns>
-        public bool CreateStationStop(int platformStartID, int arrivalTime, int departTime, DateTime arrivalDT, DateTime departureDT, float clearingDistanceM,
+        public bool CreateStationStop(int platformStartID, int? arrivalTime, int? departTime, DateTime? arrivalDT, DateTime? departureDT, float clearingDistanceM,
             float minStopDistanceM, bool terminal, int? actMinStopTime, float? keepClearFront, float? keepClearRear, bool forcePosition, bool closeupSignal,
             bool closeup, bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop, bool allowdepartearly)
         {
@@ -2766,7 +2769,7 @@ namespace Orts.Simulation.Timetables
 
             if (StationStops != null && StationStops.Count > 0 && !AtStation)
             {
-                if (presentTime > StationStops[0].ArrivalTime)
+                if (StationStops[0].ArrivalTime >= 0 && presentTime > StationStops[0].ArrivalTime)
                 {
                     TimeSpan tempDelay = TimeSpan.FromSeconds((presentTime - StationStops[0].ArrivalTime) % (24 * 3600));
                     // Skip when delay exceeds 12 hours - that's due to passing midnight
@@ -3976,7 +3979,7 @@ namespace Orts.Simulation.Timetables
                     }
                 }
 
-                if (thisStation.ActualStopType == StationStop.STOPTYPE.STATION_STOP)
+                if (thisStation.ActualStopType == StationStop.STOPTYPE.STATION_STOP && thisStation.ArrivalTime >= 0)
                 {
                     Delay = TimeSpan.FromSeconds((presentTime - thisStation.DepartTime) % (24 * 3600));
                 }
@@ -10225,7 +10228,10 @@ namespace Orts.Simulation.Timetables
                     AtStation = false;
                     MayDepart = false;
                     DisplayMessage = "";
-                    Delay = TimeSpan.FromSeconds((presentTime - StationStops[0].DepartTime) % (24 * 3600));
+                    if (StationStops[0].ArrivalTime >= 0)
+                    {
+                        Delay = TimeSpan.FromSeconds((presentTime - StationStops[0].DepartTime) % (24 * 3600));
+                    }
 
                     // Check for activation of other train
                     ActivateTriggeredTrain(TriggerActivationType.StationDepart, StationStops[0].PlatformReference);
@@ -12680,10 +12686,17 @@ namespace Orts.Simulation.Timetables
             DateTime presentDTA = baseDTA.AddSeconds(AI.clockTime);
             DateTime arrTimeA = baseDTA.AddSeconds(presentTime);
             DateTime depTimeA = baseDTA.AddSeconds(thisStation.ActualDepart);
+            string arrstring = "--:--:--";
+            string depstring = "--:--:--";
+            if (thisStation.ArrivalTime >= 0)
+            {
+                arrstring = thisStation.arrivalDT.ToString("HH:mm:ss");
+                depstring = thisStation.departureDT.ToString("HH:mm:ss");
+            }
 
             var sob = new StringBuilder();
             sob.AppendFormat("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};{11};{12}",
-                Number, presentDTA.ToString("HH:mm:ss"), Name, Delay, thisStation.PlatformItem.Name, thisStation.arrivalDT.ToString("HH:mm:ss"), thisStation.departureDT.ToString("HH:mm:ss"),
+                Number, presentDTA.ToString("HH:mm:ss"), Name, Delay, thisStation.PlatformItem.Name, arrstring, depstring,
                 arrTimeA.ToString("HH:mm:ss"), depTimeA.ToString("HH:mm:ss"), "", "", "", "");
             File.AppendAllText(@"C:\temp\TTAnalysis.csv", sob.ToString() + "\n");
         }
@@ -15574,20 +15587,20 @@ namespace Orts.Simulation.Timetables
             {
                 probvalue = Simulator.Random.Next(100);
                 pickupSet = probvalue <= probPickUp;
-#if DEBUG_REPORTS
-                File.AppendAllText(@"C:\temp\printproc.txt", "Train " + trainName +
+#if DEBUG_RQS
+                Trace.TraceInformation("Train " + trainName +
                         " : request stop at " + stationName + " : pickup : probability : " + probPickUp + " ; number : " + probvalue + 
-                        " set : " + pickupSet + "\n");
+                        " set : " + pickupSet);
 #endif
             }
             if (probSetDown > 0)
             {
                 probvalue = Simulator.Random.Next(100);
                 setdownSet = probvalue <= probSetDown;
-#if DEBUG_REPORTS
-                File.AppendAllText(@"C:\temp\printproc.txt", "Train " + trainName +
+#if DEBUG_RQS
+                Trace.TraceInformation("Train " + trainName +
                         " : request stop at " + stationName + " : setdown : probability : " + probSetDown + " ; number : " + probvalue + 
-                        " set : " + setdownSet + "\n");
+                        " set : " + setdownSet);
 #endif
             }
         }

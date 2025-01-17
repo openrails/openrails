@@ -2462,7 +2462,7 @@ namespace Orts.Simulation.Timetables
                 {
                     int commandseparator = stationInfo.IndexOf('$');
                     fullCommandString = stationInfo.Substring(commandseparator + 1);
-                    stationInfo = stationInfo.Substring(0, commandseparator);
+                    stationInfo = stationInfo.Substring(0, commandseparator).Trim();
                 }
 
                 if (!String.IsNullOrEmpty(stationInfo))
@@ -3166,11 +3166,11 @@ namespace Orts.Simulation.Timetables
             }
 
             public string StopName;
-            public int arrivalTime;
-            public int departureTime;
+            public int? arrivalTime;
+            public int? departureTime;
             public int passTime;
-            public DateTime arrivalDT;
-            public DateTime departureDT;
+            public DateTime? arrivalDT;
+            public DateTime? departureDT;
             public DateTime passDT;
             public bool arrdeppassvalid;
             public bool allowDepartEarly;
@@ -3208,7 +3208,24 @@ namespace Orts.Simulation.Timetables
                 bool validDepTime = false;
                 bool validPassTime = false;
 
-                if (arrTime.Contains("P"))
+                if (arrTime.Length == 1)
+                {
+                    if (arrTime == "*")
+                    {
+                        allowDepartEarly = true;
+                        validArrTime = true;
+                        departureTime = arrivalTime = null;
+                        departureDT = arrivalDT = null;
+                    }
+                    else if (arrTime == "x")
+                    {
+                        reqStop = true;
+                        allowDepartEarly = true;
+                        validArrTime = true;
+                        departureTime = arrivalTime = null;
+                    }
+                }
+                else if (arrTime.Contains("P"))
                 {
                     string passingTime = arrTime.Replace('P', ':');
                     validPassTime = TimeSpan.TryParse(passingTime, out atime);
@@ -3471,10 +3488,10 @@ namespace Orts.Simulation.Timetables
                                 string infoString = String.Concat("Train : ", actTrain.Name, " , at Station : ",
                                     actTrain.StationStops[actTrain.StationStops.Count - 1].PlatformItem.Name);
                                 actTrain.StationStops[actTrain.StationStops.Count - 1].ReqStopDetails.ProcessCommands(thisCommand.CommandQualifiers, infoString);
-                                actTrain.StationStops[actTrain.StationStops.Count - 1].ReqStopDetails.SetStopDetails(actTrain.Name, actTrain.StationStops[actTrain.StationStops.Count - 1].PlatformItem.Name);
                                 continue;
                             }
                         }
+                        actTrain.StationStops[actTrain.StationStops.Count - 1].ReqStopDetails.SetStopDetails(actTrain.Name, actTrain.StationStops[actTrain.StationStops.Count - 1].PlatformItem.Name);
                     }
 
                     // Check holdsignal list

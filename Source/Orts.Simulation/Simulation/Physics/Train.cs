@@ -20788,7 +20788,7 @@ namespace Orts.Simulation.Physics
 
             public StationStop(int platformReference, PlatformDetails platformItem, int subrouteIndex, int routeIndex,
                 int tcSectionIndex, int direction, int exitSignal, bool holdSignal, bool noWaitSignal, bool noClaimAllowed, float stopOffset,
-                int arrivalTime, int departTime, bool terminal, int? actualMinStopTime, float? keepClearFront, float? keepClearRear, 
+                int? arrivalTime, int? departTime, bool terminal, int? actualMinStopTime, float? keepClearFront, float? keepClearRear, 
                 bool forcePosition, bool closeupSignal, bool closeup,
                 bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop, bool allowdepartearly, STOPTYPE actualStopType)
             {
@@ -20806,14 +20806,21 @@ namespace Orts.Simulation.Physics
                 StopOffset = stopOffset;
                 if (actualStopType == STOPTYPE.STATION_STOP)
                 {
-                    ArrivalTime = Math.Max(0, arrivalTime);
-                    DepartTime = Math.Max(0, departTime);
+                    if (arrivalTime.HasValue)
+                    {
+                        ArrivalTime = Math.Max(0, arrivalTime.Value);
+                        DepartTime = Math.Max(0, departTime.Value);
+                    }
+                    else
+                    {
+                        ArrivalTime = DepartTime = -1;
+                    }
                 }
                 else
                 // times may be <0 for waiting point
                 {
-                    ArrivalTime = arrivalTime;
-                    DepartTime = departTime;
+                    ArrivalTime = arrivalTime.Value;
+                    DepartTime = departTime.Value;
                 }
                 ActualArrival = -1;
                 ActualDepart = -1;
@@ -21110,7 +21117,8 @@ namespace Orts.Simulation.Physics
                 int stopTime = 0;
 
                 // allow to depart early if set (timetable mode only, so no need to check for valid schedule)
-                if (AllowDepartEarly)
+                // also allow to depart after boarding time if arrival time is not set
+                if (AllowDepartEarly || ArrivalTime < 0)
                 {
                     stoppedTrain.ComputeTrainBoardingTime(this, ref stopTime);
                     ActualDepart = ActualArrival + stopTime;

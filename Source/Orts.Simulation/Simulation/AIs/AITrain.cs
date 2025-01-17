@@ -1992,7 +1992,10 @@ namespace Orts.Simulation.AIs
 
             // Depart
             thisStation.Passed = true;
-            Delay = TimeSpan.FromSeconds((presentTime - thisStation.DepartTime) % (24 * 3600));
+            if (thisStation.ArrivalTime >= 0)
+            {
+                Delay = TimeSpan.FromSeconds((presentTime - thisStation.DepartTime) % (24 * 3600));
+            }
             PreviousStop = thisStation.CreateCopy();
 
             if (thisStation.ActualStopType == StationStop.STOPTYPE.STATION_STOP
@@ -2059,7 +2062,10 @@ namespace Orts.Simulation.AIs
                     if (TrainType != TRAINTYPE.AI_PLAYERHOSTING) AtStation = false;
                 }
 
-                Delay = TimeSpan.FromSeconds((presentTime - thisStation.DepartTime) % (24 * 3600));
+                if (thisStation.ArrivalTime >= 0)
+                {
+                    Delay = TimeSpan.FromSeconds((presentTime - thisStation.DepartTime) % (24 * 3600));
+                }
             }
 
 #if DEBUG_REPORTS
