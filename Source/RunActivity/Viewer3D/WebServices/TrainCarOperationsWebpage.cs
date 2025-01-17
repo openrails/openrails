@@ -207,16 +207,16 @@ namespace Orts.Viewer3D.WebServices
         {
             if ((Viewer.PlayerTrain != null))
             {
-            if (Connections > 0)
-            {
+                if (Connections > 0)
+                {
                     if (Viewer.RealTime - LastPrepareRealTime >= 0.25)
                     {
                         LastPrepareRealTime = Viewer.RealTime;
                         try
                         {
-                handleReceive();
-                handleSend();
-            }
+                            handleReceive();
+                            handleSend();
+                        }
                         catch (Exception error)
                         {
                             // some timing error causes an exception sometimes
@@ -908,7 +908,7 @@ namespace Orts.Viewer3D.WebServices
             string filename;
             bool enabled = false;
 
-            if ((trainCar as MSTSWagon).MSTSBrakeSystem.HandBrakePresent)
+            if ((trainCar as MSTSWagon).HandBrakePresent)
             {
                 enabled = true;
                 if ((trainCar as MSTSWagon).GetTrainHandbrakeStatus())

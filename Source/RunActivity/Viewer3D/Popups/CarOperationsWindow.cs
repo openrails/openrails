@@ -176,7 +176,7 @@ protected override ControlLayout Layout(ControlLayout layout)
             // add click controls
 
             // Handbrake
-            if ((trainCar as MSTSWagon).MSTSBrakeSystem.HandBrakePresent)
+            if ((trainCar as MSTSWagon).HandBrakePresent)
                 buttonHandbrake.Click += new Action<Control, Point>(buttonHandbrake_Click);
             else
                 buttonHandbrake.Color = Color.Gray;

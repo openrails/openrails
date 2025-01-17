@@ -48,8 +48,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             base.Initialize(handbrakeOn, 0, 0, true);
             AuxResPressurePSI = 0;
             EmergResPressurePSI = 0;
-            RetainerPositions = 0;
-            EmergencyReservoirPresent = false;
+            (Car as MSTSWagon).RetainerPositions = 0;
+            (Car as MSTSWagon).EmergencyReservoirPresent = false;
             // Calculate brake pipe size depending upon whether vacuum or air braked
             if (Car.CarBrakeSystemType == "vacuum_piped")
             {
@@ -65,7 +65,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             SingleTransferPipe thiscopy = (SingleTransferPipe)copy;
             BrakePipeVolumeM3 = thiscopy.BrakePipeVolumeM3;
-            HandBrakePresent = thiscopy.HandBrakePresent;
         }
 
         public override string GetStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
@@ -138,7 +137,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 string.Empty,
                 string.Empty,
                 string.Empty, // Spacer because the state above needs 2 columns.
-                HandBrakePresent ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
+                (Car as MSTSWagon).HandBrakePresent ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
                 FrontBrakeHoseConnected ? "I" : "T",
                 string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
                 BleedOffValveOpen ? Simulator.Catalog.GetString("Open") : string.Empty,
