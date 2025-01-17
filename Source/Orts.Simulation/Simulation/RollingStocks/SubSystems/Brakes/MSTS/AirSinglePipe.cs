@@ -780,7 +780,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (TwoStageRelayValveRatio == 0)
                 TwoStageRelayValveRatio = RelayValveRatio;
 
-            RelayValveFitted |= (Car is MSTSLocomotive loco && (loco.DynamicBrakeAutoBailOff || loco.DynamicBrakePartialBailOff)) ||
+            RelayValveFitted |= (Car is MSTSLocomotive loco && (loco.DynamicBrakeAutoBailOff || loco.DynamicBrakePartialBailOff || loco.DynamicBrakeEngineBrakeReplacement)) ||
                 (Car as MSTSWagon).BrakeValve == MSTSWagon.BrakeValveType.DistributingValve || (Car as MSTSWagon).SupplyReservoirPresent ||
                 TwoStageRelayValveRatio != RelayValveRatio || RelayValveInshotPSI != 0 || EngineRelayValveInshotPSI != 0;
 
