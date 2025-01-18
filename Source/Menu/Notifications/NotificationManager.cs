@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009 - 2024 by the Open Rails project.
+// COPYRIGHT 2009 - 2024 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -126,7 +126,7 @@ namespace Menu.Notifications
                 Notifications.NotificationList = IncludeValid(Notifications.NotificationList);
                 Notifications.NotificationList = SortByDate(Notifications.NotificationList);
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
                 Error = ex;
             }
