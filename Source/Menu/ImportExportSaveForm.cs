@@ -25,7 +25,7 @@ using GNU.Gettext;
 using GNU.Gettext.WinForms;
 using ORTS.Settings;
 
-namespace ORTS
+namespace Menu
 {
     public partial class ImportExportSaveForm : Form
     {
