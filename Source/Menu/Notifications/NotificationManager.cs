@@ -1,4 +1,4 @@
-// COPYRIGHT 2009 - 2024 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2024 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -22,7 +22,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Resources;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Forms;
@@ -32,6 +31,7 @@ using ORTS.Settings;
 using ORTS.Updater;
 using static ORTS.Common.SystemInfo;
 using static Menu.Notifications.NotificationPage;
+using Newtonsoft.Json.Serialization;
 
 // Behaviour
 // Notifications are read only once as a background task at start into Notifications.
@@ -154,7 +154,7 @@ namespace Menu.Notifications
                 notificationsSerial = GetRemoteJson();
             }
 
-            var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
+            var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto, SerializationBinder = new NotificationSerializationBinder() };
             var jsonInput = JsonConvert.DeserializeObject<Notifications>(notificationsSerial, jsonSettings);
 
             NewPages.Count = 0;
@@ -626,7 +626,7 @@ namespace Menu.Notifications
                 // Input from local file into a string
                 var overrideParametersSerial = File.ReadAllText(filename);
 
-                var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
+                var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto, SerializationBinder = new NotificationSerializationBinder() };
                 var jsonInput = JsonConvert.DeserializeObject<OverrideParameterList>(overrideParametersSerial, jsonSettings);
 
                 return jsonInput;
@@ -690,5 +690,24 @@ namespace Menu.Notifications
             using (StreamWriter sw = File.AppendText(LogFile)) sw.WriteLine(record);
         }
         #endregion
+
+        class NotificationSerializationBinder : ISerializationBinder
+        {
+            public void BindToName(Type serializedType, out string assemblyName, out string typeName)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Type BindToType(string assemblyName, string typeName)
+            {
+                if (assemblyName == "Menu")
+                {
+                    var ns = typeof(Notifications).Namespace;
+                    var name = typeName.Split('.').Last();
+                    return typeof(Notifications).Assembly.GetType($"{ns}.{name}");
+                }
+                return null;
+            }
+        }
     }
 }
