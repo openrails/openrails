@@ -1176,7 +1176,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (time >= selectedSpeedLeverHoldTime && time < selectedSpeedLeverHoldTime + SpeedSelectorStepTimeSeconds) return;
             selectedSpeedLeverHoldTime = time;
 
-            if (SpeedSelectorController.CurrentValue > 0 || MinimumSpeedForCCEffectMpS == 0)
+            if (SpeedSelectorIsDiscrete)
+            {
+                SpeedSelectorController.StartIncrease();
+                SpeedSelectorController.StopIncrease();
+            }
+            else if (SpeedSelectorController.CurrentValue > 0 || MinimumSpeedForCCEffectMpS == 0)
             {
                 float speed = ControllerValueToSelectedSpeedMpS(SpeedSelectorController.CurrentValue) + SpeedRegulatorNominalSpeedStepMpS;
                 SelectedSpeedMpS = Math.Min(speed, Locomotive.MaxSpeedMpS);
@@ -1195,7 +1200,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             selectedSpeedLeverHoldTime = time;
 
             float speed = ControllerValueToSelectedSpeedMpS(SpeedSelectorController.CurrentValue) - SpeedRegulatorNominalSpeedStepMpS;
-            if (speed < MinimumSpeedForCCEffectMpS)
+            if (SpeedSelectorIsDiscrete)
+            {
+                SpeedSelectorController.StartDecrease();
+                SpeedSelectorController.StopDecrease();
+            }
+            else if (speed < MinimumSpeedForCCEffectMpS)
             {
                 SelectedSpeedMpS = 0;
             }
