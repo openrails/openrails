@@ -3068,13 +3068,6 @@ namespace Orts.Simulation.Physics
             if (IsActualPlayerTrain)
             {
                 SetTrainSpeedLoggingFlag();
-
-
-                // if debug, print out all passing paths
-
-#if DEBUG_DEADLOCK
-                Printout_PassingPaths();
-#endif
             }
 
             return (validPosition);

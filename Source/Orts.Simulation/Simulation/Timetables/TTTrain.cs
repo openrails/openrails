@@ -1315,11 +1315,6 @@ namespace Orts.Simulation.Timetables
                         CreateLogFile();
                     }
                 }
-
-                // If debug, print out all passing paths
-#if DEBUG_DEADLOCK
-                Printout_PassingPaths();
-#endif
             }
 
             return validPosition;
@@ -3986,8 +3981,8 @@ namespace Orts.Simulation.Timetables
             }
 
 #if DEBUG_REPORTS
-            DateTime baseDTd = new DateTime();
-            DateTime depTime = baseDTd.AddSeconds(presentTime);
+            baseDTd = new DateTime();
+            depTime = baseDTd.AddSeconds(presentTime);
 
             if (thisStation.ActualStopType == StationStop.STOPTYPE.STATION_STOP)
             {
@@ -9255,10 +9250,6 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-#if DEBUG_REPORTS
-                File.AppendAllText(@"C:\temp\printproc.txt", "Train " +
-                     Number.ToString() + " removed\n");
-#endif
             else if (AttachDetails != null && AttachDetails.Valid)
             {
                 if (CheckTrain)
