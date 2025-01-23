@@ -1,4 +1,4 @@
-// COPYRIGHT 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2011, 2012, 2013 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -847,7 +847,7 @@ namespace Orts.Viewer3D.Popups
                     tractionCutOffRelayState,
                     mainPowerSupplyState,
                     auxiliaryPowerSupplyState,
-                    Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.BatteryState)),
+                    String.Format("{0} {1}", Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.BatteryState)), FormatStrings.FormatVoltage(car.PowerSupply.BatteryVoltageV)),
                     Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.LowVoltagePowerSupplyState)),
                     locomotivePowerSupply != null ? Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.CabPowerSupplyState)) : string.Empty,
                     electricTrainSupplyState,
