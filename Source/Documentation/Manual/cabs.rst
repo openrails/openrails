@@ -186,6 +186,26 @@ The following voltmeters are available for the cabview:
 - ``ORTS_PANTOGRAPH_VOLTAGE_DC`` indicates the line voltage when operating on DC lines
 - ``ORTS_BATTERY_VOLTAGE`` indicates the vehicle's battery voltage
 
+.. _cabs-electricselectors:
+
+.. index::
+   single: ORTS_PANTOGRAPH_SELECTOR
+   single: ORTS_POWER_LIMITATION_SELECTOR
+   single: ORTS_VOLTAGE_SELECTOR
+
+There :ref:`pantograph selector <physics-pantograph-selector>`, 
+:ref:`voltage selector <physics-voltage-selector>` and 
+:ref:`power limitation selector <physics-power-limitation-selector>` can be used
+to switch the traction system for locomotives operating at different voltages.
+
+They can be included in the cabview as follows:
+
+- ``ORTS_PANTOGRAPH_SELECTOR`` allows selecting pre-defined pantograph arrangements
+  (requires a custom script).
+- ``ORTS_VOLTAGE_SELECTOR`` configures the power supply for the voltage of the line
+  (requires a custom script to raise the right pantograph).
+- ``ORTS_POWER_LIMITATION_SELECTOR`` limits the maximum power that the locomotive can draw.
+
 .. _cabs-dieselenginesonoff:
 
 Controls to switch on and off diesel engines

@@ -5026,8 +5026,11 @@ It is possible for the battery switch to be switched on at the start of the simu
 To activate this behaviour, you can add the optional parameter ``ORTSBattery( DefaultOn ( 1 ) )``
 
 The voltage and energetic capacity of the battery can be indicated using the ``Voltage`` and ``MaxCapacity``
-parameters. Optionally, it is possible to define a realistic capacity-voltage curve such that voltage becomes
-lower when the battery is discharged, using ``ChargeVoltageCurve``.
+parameters. The performance of the battery charger, which is powered by the power converters, can be
+adjusted using the ``ChargerPower`` and ``ChargerVoltage`` parameters.
+
+Optionally, it is possible to define a capacity-voltage curve such that voltage becomes
+lower when the battery is discharged, using ``ChargeVoltageCurve``. Battery discharge is not implemented yet.
 
 Example::
 
@@ -5044,6 +5047,8 @@ Example::
           30kWh   72V
           50kWh   80V
         )
+        ChargerVoltage ( 80V )
+        ChargerPower ( 10kW )
       )
     )
 
