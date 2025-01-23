@@ -202,29 +202,12 @@ namespace Orts.Viewer3D.WebServices
             }
         }
 
-        double LastPrepareRealTime;
         public void handleReceiveAndSend()
         {
-            if ((Viewer.PlayerTrain != null))
+            if (Connections > 0)
             {
-                if (Connections > 0)
-                {
-                    if (Viewer.RealTime - LastPrepareRealTime >= 0.25)
-                    {
-                        LastPrepareRealTime = Viewer.RealTime;
-                        try
-                        {
-                            handleReceive();
-                            handleSend();
-                        }
-                        catch (Exception error)
-                        {
-                            // some timing error causes an exception sometimes
-                            // just silently ignore but log the exception
-                            Trace.TraceWarning(error.ToString());
-                        }
-                    }
-                }
+                handleReceive();
+                handleSend();
             }
         }
 
@@ -366,13 +349,15 @@ namespace Orts.Viewer3D.WebServices
         private string getCarId(TrainCar trainCar, int carPosition)
         {
             MSTSLocomotive locomotive = trainCar as MSTSLocomotive;
-            MSTSWagon wagon = trainCar as MSTSWagon;
             var isDiesel = trainCar is MSTSDieselLocomotive;
             var isElectric = trainCar is MSTSElectricLocomotive;
             var isSteam = trainCar is MSTSSteamLocomotive;
             var isEngine = isDiesel || isElectric || isSteam;
-            var wagonType = isEngine ? $"  {Viewer.Catalog.GetString(locomotive.WagonType.ToString())}" + $": {Viewer.Catalog.GetString(locomotive.EngineType.ToString())}"
-                : $"  {Viewer.Catalog.GetString(wagon.WagonType.ToString())}: {wagon.MainShapeFileName.Replace(".s", "").ToLower()}";
+            // Required by OSDCar.cs
+            CurrentCarID = Viewer.PlayerTrain.Cars[TrainCarSelectedPosition].CarID;
+            var wagonType = isEngine ?
+                $"  {Viewer.Catalog.GetString(locomotive.WagonType.ToString())}" + $":{Viewer.Catalog.GetString(locomotive.EngineType.ToString())}" :
+                $"  {Viewer.Catalog.GetString(trainCar.WagonType.ToString())}";
             return ($"{Viewer.Catalog.GetString("Car ID")} {(carPosition >= Viewer.PlayerTrain.Cars.Count ? " " : Viewer.PlayerTrain.Cars[carPosition].CarID + wagonType)}");
         }
 
@@ -415,17 +400,6 @@ namespace Orts.Viewer3D.WebServices
                 if (statusCurrent.AmountOfCars != statusPrevious.AmountOfCars)
                 {
                     all = true;
-                }
-                else
-                {
-                    for (int i = 0; i < statusCurrent.AmountOfCars; i++)
-                    {
-                        if (!statusCurrent.CarId[0].Equals(statusPrevious.CarId[0]) || 
-                            !statusCurrent.CarIdColor[0].Equals(statusPrevious.CarIdColor[0]))
-                        {
-                            all = true;
-                        }
-                    }
                 }
             }
 
@@ -644,21 +618,12 @@ namespace Orts.Viewer3D.WebServices
             TrainCar trainCar = Viewer.PlayerTrain.Cars[carPosition];
 
             bool first = trainCar == Viewer.PlayerTrain.Cars.First();
-            bool disableCouplers = false;
-            bool isSteam = Viewer.PlayerTrain.Cars[carPosition] is MSTSSteamLocomotive;
-            bool isTender = Viewer.PlayerTrain.Cars[carPosition].WagonType == MSTSWagon.WagonTypes.Tender;
-
-            if (isSteam || isTender)
-            {
-                var carFlipped = Viewer.PlayerTrain.Cars[carPosition].Flipped;
-                disableCouplers = isSteam ? carFlipped : !carFlipped;
-            }
 
             StatusCurrent.Status[carPosition].Add(
                 new OperationsStatus.Operation
                 {
-                    Enabled = !(first || disableCouplers),
-                    Filename = first ? "TrainOperationsCouplerFront32.png" : disableCouplers ? "TrainOperationsCouplerNotAvailable32.png" : "TrainOperationsCoupler32.png",
+                    Enabled = !first,
+                    Filename = first ? "TrainOperationsCouplerFront32.png" : "TrainOperationsCoupler32.png",
                     Functionname = "buttonCouplerFrontClick",
                     CarPosition = carPosition
                 });
@@ -742,22 +707,12 @@ namespace Orts.Viewer3D.WebServices
             TrainCar trainCar = Viewer.PlayerTrain.Cars[carPosition];
 
             bool last = trainCar == Viewer.PlayerTrain.Cars.Last();
-            var DisableCouplers = false;
-            bool isSteamAndHasTender = (Viewer.PlayerTrain.Cars[carPosition] is MSTSSteamLocomotive) &&
-                (carPosition + 1 < Viewer.PlayerTrain.Cars.Count) && (Viewer.PlayerTrain.Cars[carPosition + 1].WagonType == MSTSWagon.WagonTypes.Tender);
-            var isTender = Viewer.PlayerTrain.Cars[carPosition].WagonType == MSTSWagon.WagonTypes.Tender;
-
-            if (isSteamAndHasTender || isTender)
-            {
-                var carFlipped = Viewer.PlayerTrain.Cars[carPosition].Flipped;
-                DisableCouplers = isSteamAndHasTender ? !carFlipped : carFlipped;
-            }
 
             StatusCurrent.Status[carPosition].Add(
                 new OperationsStatus.Operation
                 {
-                    Enabled = !(last || DisableCouplers),
-                    Filename = last ? "TrainOperationsCouplerRear32.png" : DisableCouplers ? "TrainOperationsCouplerNotAvailable32.png" : "TrainOperationsCoupler32.png",
+                    Enabled = !last,
+                    Filename = last ? "TrainOperationsCouplerRear32.png" : "TrainOperationsCoupler32.png",
                     Functionname = "buttonCouplerRearClick",
                     CarPosition = carPosition
                 });

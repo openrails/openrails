@@ -906,9 +906,18 @@ namespace Orts.Viewer3D
 
             SwitchPanelModule.SendSwitchPanelIfChanged();
             
-            if (TrainCarOperationsWebpage != null)
+            try
             {
-                TrainCarOperationsWebpage.handleReceiveAndSend();
+                if ((PlayerTrain != null) && (TrainCarOperationsWebpage != null))
+                {
+                    TrainCarOperationsWebpage.handleReceiveAndSend();
+                }
+            }
+            catch (Exception error)
+            {
+                // some timing error causes an exception sometimes
+                // just silently ignore but log the exception
+                Trace.TraceWarning(error.ToString());
             }
         }
 
