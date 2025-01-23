@@ -1019,6 +1019,8 @@ namespace Orts.Viewer3D.Popups
                 });
             }
 
+            if (engineBrakeStatus != null)
+            {
             if (engineBrakeStatus.Contains(Viewer.Catalog.GetString("BC")))
             {
                 AddLabel(new ListLabel
@@ -1041,6 +1043,7 @@ namespace Orts.Viewer3D.Popups
                     FirstCol = Viewer.Catalog.GetString("Engine brake"),
                     LastCol = $"{engineBrakeStatus}{ColorCode[Color.Cyan]}",
                 });
+            }
             }
 
             if (dynamicBrakeStatus != null && locomotive.IsLeadLocomotive())
