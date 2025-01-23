@@ -27,6 +27,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
+using Menu.Notifications;
 using Orts.Formats.OR;
 using ORTS.Common;
 using ORTS.Menu;
@@ -35,7 +36,7 @@ using ORTS.Updater;
 using Activity = ORTS.Menu.Activity;
 using Path = ORTS.Menu.Path;
 
-namespace ORTS
+namespace Menu
 {
     public partial class MainForm : Form
     {
@@ -69,7 +70,7 @@ namespace ORTS
         Task<List<Path>> PathLoader;
         Task<List<TimetableInfo>> TimetableSetLoader;
         Task<List<WeatherFileInfo>> TimetableWeatherFileLoader;
-        readonly ResourceManager Resources = new ResourceManager("ORTS.Properties.Resources", typeof(MainForm).Assembly);
+        readonly ResourceManager Resources = new ResourceManager("Menu.Properties.Resources", typeof(MainForm).Assembly);
         readonly UpdateManager UpdateManager;
         readonly Image ElevationIcon;
         NotificationManager NotificationManager;

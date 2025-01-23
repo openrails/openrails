@@ -15,17 +15,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Formats.Msts", "Orts.F
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Parsers.Msts", "Orts.Parsers.Msts\Orts.Parsers.Msts.csproj", "{8A84696C-3559-49B8-B27F-BB6932D8A1C6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Common", "ORTS.Common\ORTS.Common.csproj", "{DA94D876-7D35-46C3-AECE-AFACE72C686C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Common", "Orts.Common\Orts.Common.csproj", "{DA94D876-7D35-46C3-AECE-AFACE72C686C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Content", "ORTS.Content\ORTS.Content.csproj", "{812685A7-2683-4102-A3CA-2A5CED2E61EE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Content", "Orts.Content\Orts.Content.csproj", "{812685A7-2683-4102-A3CA-2A5CED2E61EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.IO", "ORTS.IO\ORTS.IO.csproj", "{6AB8B673-5775-4536-A58A-BA0A15899583}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.IO", "Orts.IO\Orts.IO.csproj", "{6AB8B673-5775-4536-A58A-BA0A15899583}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Menu", "ORTS.Menu\ORTS.Menu.csproj", "{1C5B0B41-2FE9-41C9-8B21-CCDCBEB3DDA5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Menu", "Orts.Menu\Orts.Menu.csproj", "{1C5B0B41-2FE9-41C9-8B21-CCDCBEB3DDA5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Settings", "ORTS.Settings\ORTS.Settings.csproj", "{67F84996-8769-4FD8-819B-464AF269037B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Settings", "Orts.Settings\Orts.Settings.csproj", "{67F84996-8769-4FD8-819B-464AF269037B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Updater", "ORTS.Updater\ORTS.Updater.csproj", "{88108A94-0389-43FF-A75C-C55BD202FC8D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Updater", "Orts.Updater\Orts.Updater.csproj", "{88108A94-0389-43FF-A75C-C55BD202FC8D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ActivityEditor", "Contrib\ActivityEditor\ActivityEditor\ActivityEditor.csproj", "{306C904F-BE41-4B39-A0C4-51068B7F205E}"
 EndProject

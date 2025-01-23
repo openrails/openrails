@@ -1,4 +1,4 @@
-﻿namespace ORTS {
+﻿namespace Menu {
     partial class ResumeForm {
         /// <summary>
         /// Required designer variable.
@@ -127,7 +127,7 @@
             // 
             // saveBindingSource
             // 
-            this.saveBindingSource.DataSource = typeof(ORTS.ResumeForm.Save);
+            this.saveBindingSource.DataSource = typeof(Menu.ResumeForm.Save);
             // 
             // buttonResume
             // 

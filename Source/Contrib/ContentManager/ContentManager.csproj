@@ -23,10 +23,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Orts.Formats.Msts\Orts.Formats.Msts.csproj" />
-    <ProjectReference Include="..\..\ORTS.Common\ORTS.Common.csproj" />
+    <ProjectReference Include="..\..\Orts.Common\Orts.Common.csproj" />
     <ProjectReference Include="..\..\Orts.Formats.OR\Orts.Formats.OR.csproj" />
     <ProjectReference Include="..\..\Orts.Parsers.OR\Orts.Parsers.OR.csproj" />
-    <ProjectReference Include="..\..\ORTS.Settings\ORTS.Settings.csproj" />
+    <ProjectReference Include="..\..\Orts.Settings\Orts.Settings.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.355802">
