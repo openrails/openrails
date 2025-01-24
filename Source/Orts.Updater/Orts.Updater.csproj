@@ -16,6 +16,7 @@
     <DocumentationFile>..\..\Program\Orts.Updater.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Security" />
   </ItemGroup>
   <ItemGroup>
@@ -23,7 +24,6 @@
     <ProjectReference Include="..\Orts.Settings\Orts.Settings.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DotNetZip" Version="1.16.0" />
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.355802">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
