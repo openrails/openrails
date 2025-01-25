@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2012, 2013 by the Open Rails project.
+// COPYRIGHT 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -473,7 +473,7 @@ namespace Orts.MultiPlayer
                 }
                 else
                 {
-                    System.Console.WriteLine("Wrong version of protocol, will play in single mode, please update to version " + MPManager.Instance().version);
+                    Trace.TraceWarning("Wrong version of protocol, will play in single mode, please update to version " + MPManager.Instance().version);
                     throw new MultiPlayerError();//client, close the connection
                 }
             }
@@ -1385,7 +1385,7 @@ namespace Orts.MultiPlayer
                 }
                 catch (Exception error)
                 {
-                    Console.WriteLine(wagonFilePath + " " + error);
+                    Trace.WriteLine(new FileLoadException(wagonFilePath, error));
                     car = MPManager.Instance().SubCar(train, wagonFilePath, lengths[i]);
                 }
 
@@ -1614,7 +1614,7 @@ namespace Orts.MultiPlayer
                     }
                     catch (Exception error)
                     {
-                        Console.WriteLine(wagonFilePath + " " + error);
+                        Trace.WriteLine(new FileLoadException(wagonFilePath, error));
                         car = MPManager.Instance().SubCar(train, wagonFilePath, lengths[i]);
                     }
 
@@ -1664,7 +1664,7 @@ namespace Orts.MultiPlayer
                     }
                     catch (Exception error)
                     {
-                        Console.WriteLine(wagonFilePath + " " + error);
+                        Trace.WriteLine(new FileLoadException(wagonFilePath, error));
                         car = MPManager.Instance().SubCar(train, wagonFilePath, lengths[i]);
                     }
 

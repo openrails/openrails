@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2021 by the Open Rails project.
+// COPYRIGHT 2021 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -1164,7 +1164,7 @@ namespace Orts.Viewer3D.Processes
                 catch (Exception error)
                 {
                     Trace.WriteLine(error);
-                    Console.WriteLine("Connection error - will play in single mode.");
+                    Trace.TraceWarning("Connection error - will play in single mode.");
                     Server = null;
                 }
             }
@@ -1183,7 +1183,7 @@ namespace Orts.Viewer3D.Processes
                 catch (Exception error)
                 {
                     Trace.WriteLine(error);
-                    Console.WriteLine("Connection error - will play in single mode.");
+                    Trace.TraceWarning("Connection error - will play in single mode.");
                     Client = null;
                 }
             }

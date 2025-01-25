@@ -344,7 +344,7 @@ namespace Orts.Formats.Msts
 			}
 			catch (Exception e)
 			{
-				System.Console.WriteLine("Warning: in route tsection.dat " + e.Message);
+				Trace.WriteLine(new FileLoadException("In route tsection.dat", e));
 			}
 		}
 		public uint NoSections;

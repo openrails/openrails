@@ -23,6 +23,7 @@ using Orts.Simulation.RollingStocks;
 using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -216,7 +217,7 @@ namespace Orts.MultiPlayer
                 }
                 catch (Exception error)
                 {
-                    Console.WriteLine(error.Message);
+                    Trace.WriteLine(error);
                     car = MPManager.Instance().SubCar(train, wagonFilePath, player.lengths[i]);
                 }
 
