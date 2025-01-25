@@ -1021,29 +1021,29 @@ namespace Orts.Viewer3D.Popups
 
             if (engineBrakeStatus != null)
             {
-            if (engineBrakeStatus.Contains(Viewer.Catalog.GetString("BC")))
-            {
-                AddLabel(new ListLabel
+                if (engineBrakeStatus.Contains(Viewer.Catalog.GetString("BC")))
                 {
-                    FirstCol = Viewer.Catalog.GetString("Engine brake"),
-                    LastCol = engineBrakeStatus.Substring(0, engineBrakeStatus.IndexOf("BC")) + ColorCode[Color.Cyan],
-                });
-                index = engineBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC"));
-                brakeInfoValue = engineBrakeStatus.Substring(index, engineBrakeStatus.Length - index).TrimEnd();
-                AddLabel(new ListLabel
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString("Engine brake"),
+                        LastCol = engineBrakeStatus.Substring(0, engineBrakeStatus.IndexOf("BC")) + ColorCode[Color.Cyan],
+                    });
+                    index = engineBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC"));
+                    brakeInfoValue = engineBrakeStatus.Substring(index, engineBrakeStatus.Length - index).TrimEnd();
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString(""),
+                        LastCol = $"{brakeInfoValue}{ColorCode[Color.White]}",
+                    });
+                }
+                else
                 {
-                    FirstCol = Viewer.Catalog.GetString(""),
-                    LastCol = $"{brakeInfoValue}{ColorCode[Color.White]}",
-                });
-            }
-            else
-            {
-                AddLabel(new ListLabel
-                {
-                    FirstCol = Viewer.Catalog.GetString("Engine brake"),
-                    LastCol = $"{engineBrakeStatus}{ColorCode[Color.Cyan]}",
-                });
-            }
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString("Engine brake"),
+                        LastCol = $"{engineBrakeStatus}{ColorCode[Color.Cyan]}",
+                    });
+                }
             }
 
             if (dynamicBrakeStatus != null && locomotive.IsLeadLocomotive())
