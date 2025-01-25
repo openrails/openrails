@@ -907,10 +907,10 @@ namespace Orts.Viewer3D
             SwitchPanelModule.SendSwitchPanelIfChanged();
             
             if (TrainCarOperationsWebpage != null)
-            {
-                TrainCarOperationsWebpage.handleReceiveAndSend();
+                {
+                    TrainCarOperationsWebpage.handleReceiveAndSend();
+                }
             }
-        }
 
         private void LoadDefectCarSound(TrainCar car, string filename)
         {

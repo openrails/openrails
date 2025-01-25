@@ -182,7 +182,7 @@ namespace Orts.Formats.Msts
                     STFException.TraceWarning(stf, "Invalid track section " + token);
 			}
 			stf.SkipRestOfBlock();
-        }
+		}
         public SectionIdx(TrackPath path)
         {
             X = 0;
@@ -193,7 +193,7 @@ namespace Orts.Formats.Msts
             TrackSections = path.TrackSections;
         }
 
-        public uint NoSections;
+		public uint NoSections;
 		public double X,Y,Z;  // Offset
 		public double A;  // Angular offset 
 		public uint[] TrackSections;
