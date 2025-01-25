@@ -35,7 +35,6 @@ namespace Orts.Formats.Msts
         {
             if (File.Exists(wsfilename))
             {
-                Trace.Write("$");
                 using (STFReader stf = new STFReader(wsfilename, false))
                 {
                     stf.ParseFile(new STFReader.TokenProcessor[] {
