@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2023-12-16 11:02:39+0300\n"
-"PO-Revision-Date: 2024-09-20 12:46+0300\n"
+"PO-Revision-Date: 2023-12-16 11:45+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -1489,7 +1489,7 @@ msgstr "Выбор полигона"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:12
 msgid "Select activity"
-msgstr "Выбор сценария"
+msgstr "Выберите сценарий"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:14
 msgid "Search by index"
@@ -1617,7 +1617,7 @@ msgstr "Отдалить (-)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:60
 msgid "Zoom to tile (Z)"
-msgstr "Тайл во весь экран (Z)"
+msgstr "Тайл во весь эеран (Z)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:61
 msgid "Zoom reset (R)"
@@ -1878,7 +1878,7 @@ msgstr "Отображать текстуры грунта (F6)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:165
 msgid "Show DM terrain textures (ctrl-F6)"
-msgstr "Отображать текстуры грунта гор (ctrl-F6)"
+msgstr "Отображать DM текстуры грунта (ctrl-F6)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:166
 msgid "Show patch lines (shift-F6)"
