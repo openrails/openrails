@@ -61,23 +61,35 @@ namespace Orts.Viewer3D
 
             TrackShape shape;
 
+            bool dontRender = false; // Should this shape be left as a static object?
+            SectionIdx[] SectionIdxs;
+
             try
             {
                 shape = viewer.Simulator.TSectionDat.TrackShapes.Get(trackObj.SectionIdx);
 
-                if (shape.RoadShape == true)
+                if (shape.RoadShape)
                     return false; // Roads don't use superelevation, no use in processing them.
+
+                // Can't render superelevation on tunnel shapes
+                dontRender = shape.TunnelShape;
+                SectionIdxs = shape.SectionIdxs;
             }
             catch (Exception)
             {
-                return false; // Won't be able to render with superelevation
+                // Some route-specific shapes (DynaTrax) won't be populated in the TrackShapes list, check the TrackPaths list
+                if (viewer.Simulator.TSectionDat.TSectionIdx.TrackPaths.TryGetValue(trackObj.SectionIdx, out TrackPath path))
+                {
+                    // Translate given data into a SectionIdx object that the rest of the method can interpret
+                    // Assumptions: Each piece of DynaTrax is a single section with origin 0, 0, 0 and 0 angle,
+                    // and the entire section of DynaTrax is defined by the track sections given in the track path
+                    SectionIdxs = new SectionIdx[1];
+                    SectionIdxs[0] = new SectionIdx(path);
+                }
+                else
+                    return false; // Not enough info, won't be able to render with superelevation
             }
 
-            SectionIdx[] SectionIdxs = shape.SectionIdxs;
-
-            // Can't render superelevation on tunnel shapes
-            // NOTE: Even if we don't render superelevation, we still need to run through processing to remove superelevation from track sections
-            bool dontRender = shape.TunnelShape;
             // Sometimes junctions get caught here, physics superelevation should be removed for those as well
             bool removePhys = false;
             // 0 = centered, positive = rotation axis moves to inside of curve, negative = moves to outside of curve
