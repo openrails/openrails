@@ -948,7 +948,7 @@ Linked two-state animations (doors type) are named ``<ORTSITEM1TWOSTATE>`` and
 The default animation speed for stopped/moving type animations is 8 FPS. 
 It may be modified with following parameter in the .sd file::
 
-   ESD_CustomAnimationSpeed ( 8 )
+   ESD_ORTSCustomAnimationFPS ( 8 )
 
 Examples of use are fan control, open/close of aerodynamic coverages of couplers 
 in high speed trains, menu pages switching.
