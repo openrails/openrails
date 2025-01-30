@@ -14,6 +14,8 @@ so Open Rails can continue to improve.
 What's been added
 -----------------
 
+- auto-save option
+- timetable has auto-pilot and switch player train options
 - detailed map which tracks player train
 - self-installing content
 - new rolling stock lighting controls, including horn-activated flashing lights

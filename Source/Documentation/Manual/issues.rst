@@ -1,7 +1,7 @@
 .. _issues:
 
 ************************
-Version 1.3 Known Issues
+Known Issues
 ************************
 
 Empty Effects Section in .eng File
@@ -28,12 +28,12 @@ Therefore the file must be edited as follows to be correctly interpreted by Open
 Spurious emergency braking in Timetable mode
 =============================================
 
-If in Timetable mode a speedplate with higher speedlimit follows a signal with 
-reduced speedlimit, the allowed speed in the Trackmonitor rises to the speed 
-shown on the speedplate. This occurs accordingly to specs of Timetable mode 
+If, in Timetable mode, a speedplate with higher speed limit follows a signal with 
+reduced speed limit, the allowed speed in the Trackmonitor rises to the speed 
+shown on the speedplate. This occurs according to specs of Timetable mode 
 (and differently from activity mode).
 
 However the overspeedmonitor considers the reduced signal speed, coherently 
 with activity mode. Therefore in this case if, in timetable mode, a train is 
-accelerated above the signal speed, the overspeedmonitor may trigger an 
+accelerated above the signal speed, the overspeedmonitor may trigger 
 emergency braking.
