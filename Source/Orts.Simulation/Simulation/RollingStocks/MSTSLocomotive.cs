@@ -405,6 +405,8 @@ namespace Orts.Simulation.RollingStocks
         public float DynamicBrakeDelayS;
         public bool DynamicBrakeAutoBailOff;
         public bool DynamicBrakePartialBailOff;
+        public bool DynamicBrakeEngineBrakeReplacement;
+        public float DynamicBrakeEngineBrakeReplacementSpeed;
         public bool UsingRearCab;
         public bool BrakeOverchargeSoundOn = false;
         protected bool DynamicBrakeBlendingEnabled; // dynamic brake blending is configured
@@ -600,15 +602,6 @@ namespace Orts.Simulation.RollingStocks
 
         protected void CheckCoherence()
         {
-            if (!TrainBrakeController.IsValid())
-                TrainBrakeController = new ScriptedBrakeController(this); //create a blank one
-
-            if (!EngineBrakeController.IsValid())
-                EngineBrakeController = null;
-
-            if (!BrakemanBrakeController.IsValid())
-                BrakemanBrakeController = null;
-
             if (ThrottleController == null)
             {
                 //If no controller so far, we create a default one
@@ -1083,6 +1076,8 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dynamicbrakehasautobailoff":
                 case "engine(ortsdynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
                 case "engine(ortsdynamicbrakeshaspartialbailoff": DynamicBrakePartialBailOff = stf.ReadBoolBlock(false); break;
+                case "engine(ortsdynamicbrakereplacementwithenginebrake": DynamicBrakeEngineBrakeReplacement = stf.ReadBoolBlock(false); break;
+                case "engine(ortsdynamicbrakereplacementwithenginebrakeatspeed": DynamicBrakeEngineBrakeReplacementSpeed = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesdelaytimebeforeengaging": DynamicBrakeDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(dynamicbrakesresistorcurrentlimit": DynamicBrakeMaxCurrentA = stf.ReadFloatBlock(STFReader.UNITS.Current, null); break;
                 case "engine(numwheels": MSTSLocoNumDrvWheels = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (MSTSLocoNumDrvWheels < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
@@ -1235,6 +1230,8 @@ namespace Orts.Simulation.RollingStocks
             DynamicBrakeForceCurves = locoCopy.DynamicBrakeForceCurves;
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
             DynamicBrakePartialBailOff = locoCopy.DynamicBrakePartialBailOff;
+            DynamicBrakeEngineBrakeReplacement = locoCopy.DynamicBrakeEngineBrakeReplacement;
+            DynamicBrakeEngineBrakeReplacementSpeed = locoCopy.DynamicBrakeEngineBrakeReplacementSpeed;
             DynamicBrakeMaxCurrentA = locoCopy.DynamicBrakeMaxCurrentA;
             DynamicBrakeSpeed1MpS = locoCopy.DynamicBrakeSpeed1MpS;
             DynamicBrakeSpeed2MpS = locoCopy.DynamicBrakeSpeed2MpS;
@@ -1539,8 +1536,29 @@ namespace Orts.Simulation.RollingStocks
         public override void Initialize()
         {
             TrainBrakeController.Initialize();
-            EngineBrakeController.Initialize();
-            BrakemanBrakeController.Initialize();
+            if (!TrainBrakeController.IsValid())
+            {
+                TrainBrakeController = new ScriptedBrakeController(this); //create a blank one
+                TrainBrakeController.Initialize();
+            }
+            if (EngineBrakeController != null)
+            {
+                EngineBrakeController.Initialize();
+                if (!EngineBrakeController.IsValid() && !SteamEngineBrakeFitted)
+                {
+                    EngineBrakeController = null;
+                    EngineBrakeFitted = false;
+                }
+            }
+            if (BrakemanBrakeController != null)
+            {
+                BrakemanBrakeController.Initialize();
+                if (!BrakemanBrakeController.IsValid())
+                {
+                    BrakemanBrakeController = null;
+                    BrakemanBrakeFitted = false;
+                }
+            }
             LocomotivePowerSupply?.Initialize();
             TrainControlSystem.Initialize();
             CruiseControl?.Initialize();
@@ -1826,6 +1844,11 @@ namespace Orts.Simulation.RollingStocks
                 {
                     TrainBrakePipeLeakPSIorInHgpS = 0.0f; // Air brakes
                 }
+            }
+
+            if (DynamicBrakeEngineBrakeReplacement && DynamicBrakeEngineBrakeReplacementSpeed == 0)
+            {
+                DynamicBrakeEngineBrakeReplacementSpeed = DynamicBrakeSpeed2MpS;
             }
 
             // Initialise track sanding parameters
