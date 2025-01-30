@@ -52,7 +52,7 @@ namespace ORTS.Common
         /// </summary>
         /// <param name="filePath">The new ini file path, relative to the OpenRails base directory, or NULL.</param>
         /// <param name="registryKey">The new registry key, relative to the HKEY_CURRENT_USER, or NULL.</param>
-        static public void OverrideSettingsLocations(string filePath, string registryKey)
+        public static void OverrideSettingsLocations(string filePath, string registryKey)
         {
             if (!String.IsNullOrEmpty(filePath) && !String.IsNullOrEmpty(registryKey))
             {
