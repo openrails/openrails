@@ -906,20 +906,11 @@ namespace Orts.Viewer3D
 
             SwitchPanelModule.SendSwitchPanelIfChanged();
             
-            try
-            {
-                if ((PlayerTrain != null) && (TrainCarOperationsWebpage != null))
+            if (TrainCarOperationsWebpage != null)
                 {
                     TrainCarOperationsWebpage.handleReceiveAndSend();
                 }
             }
-            catch (Exception error)
-            {
-                // some timing error causes an exception sometimes
-                // just silently ignore but log the exception
-                Trace.TraceWarning(error.ToString());
-            }
-        }
 
         private void LoadDefectCarSound(TrainCar car, string filename)
         {
