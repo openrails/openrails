@@ -601,8 +601,8 @@ namespace Orts.Viewer3D.Popups
 
                 if (!(first || disableCouplers))
                 {
-                Click += new Action<Control, Point>(TrainCarOperationsCouplerFront_Click);
-            }
+                    Click += new Action<Control, Point>(TrainCarOperationsCouplerFront_Click);
+                }
             }
 
             void TrainCarOperationsCouplerFront_Click(Control arg1, Point arg2)
@@ -645,8 +645,8 @@ namespace Orts.Viewer3D.Popups
                 Source = new Rectangle(0, 0, size, size);
                 if (!(last || disableCouplers))
                 {
-                Click += new Action<Control, Point>(TrainCarOperationsCouplerRear_Click);
-            }
+                    Click += new Action<Control, Point>(TrainCarOperationsCouplerRear_Click);
+                }
             }
 
             void TrainCarOperationsCouplerRear_Click(Control arg1, Point arg2)
