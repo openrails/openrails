@@ -38,7 +38,7 @@ namespace Orts.Viewer3D.RollingStock
 {
     public class MSTSWagonViewer : TrainCarViewer
     {
-        protected PoseableShape TrainCarShape;
+        public PoseableShape TrainCarShape { get; protected set; }
         protected AnimatedShape FreightShape;
         protected AnimatedShape InteriorShape;
         AnimatedShape FrontCouplerShape;
@@ -80,6 +80,9 @@ namespace Orts.Viewer3D.RollingStock
         protected AnimatedPart Item2Continuous;
         protected AnimatedPart Item1TwoState;
         protected AnimatedPart Item2TwoState;
+        protected AnimatedPart BrakeCylinders;
+        protected AnimatedPart Handbrakes;
+        protected AnimatedPart BrakeRigging;
         AnimatedPart UnloadingParts;
 
         public Dictionary<string, List<ParticleEmitterViewer>> ParticleDrawers = new Dictionary<string, List<ParticleEmitterViewer>>();
@@ -341,6 +344,9 @@ namespace Orts.Viewer3D.RollingStock
             Item2Continuous = new AnimatedPart(TrainCarShape);
             Item1TwoState = new AnimatedPart(TrainCarShape);
             Item2TwoState = new AnimatedPart(TrainCarShape);
+            BrakeCylinders = new AnimatedPart(TrainCarShape);
+            Handbrakes = new AnimatedPart(TrainCarShape);
+            BrakeRigging = new AnimatedPart(TrainCarShape);
 
             if (car.FreightAnimations != null)
                 FreightAnimations = new FreightAnimationsViewer(viewer, car, wagonFolderSlash);
@@ -413,6 +419,22 @@ namespace Orts.Viewer3D.RollingStock
                 if (TrainCarShape.SharedShape.GetAnimationParent(i) == -1)
                     MatchMatrixToPart(car, i, 0);
 
+            // Precompute bogie positioning parameters for later
+            if (car.Parts.Count > 1)
+            {
+                car.BogieZOffsets = new float[car.Parts.Count - 1];
+
+                float o = -car.CarLengthM / 2 - car.CentreOfGravityM.Z;
+                float tempHeight = 0;
+                for (int p = 1; p < car.Parts.Count; p++)
+                {
+                    car.BogieZOffsets[p - 1] = car.Parts[p].OffsetM.Z - o;
+                    o = car.Parts[p].OffsetM.Z;
+                    tempHeight += car.Parts[p].OffsetM.Y;
+                }
+                car.BogiePivotHeightM = tempHeight / (car.Parts.Count - 1);
+            }
+
             car.SetUpWheels();
 
             // If we have two pantographs, 2 is the forwards pantograph, unlike when there's only one.
@@ -432,6 +454,9 @@ namespace Orts.Viewer3D.RollingStock
             RightWindowRear.SetState(MSTSWagon.WindowStates[MSTSWagon.RightWindowRearIndex] >= MSTSWagon.WindowState.Opening);
             Item1TwoState.SetState(MSTSWagon.GenericItem1);
             Item2TwoState.SetState(MSTSWagon.GenericItem2);
+            BrakeCylinders.SetFrameClamp(MSTSWagon.BrakeSystem.GetNormalizedCylTravel() * 10.0f);
+            Handbrakes.SetState(MSTSWagon.GetTrainHandbrakeStatus());
+            BrakeRigging.SetFrameClamp(Math.Max(MSTSWagon.BrakeSystem.GetNormalizedCylTravel(), MSTSWagon.GetTrainHandbrakeStatus() ? 1.0f : 0.0f) * 10.0f);
             UnloadingParts.SetState(MSTSWagon.UnloadingPartsOpen);
 
             InitializeUserInputCommands();
@@ -479,7 +504,7 @@ namespace Orts.Viewer3D.RollingStock
                     if (matrixName.Length == 8 || matrixName.Length == 9)
                         Int32.TryParse(matrixName.Substring(6, 1), out id);
                     var pmatrix = TrainCarShape.SharedShape.GetAnimationTargetNode(TrainCarShape.SharedShape.GetAnimationParent(matrix));
-                    car.AddWheelSet(m.M43, id, pmatrix, matrixName.ToString(), bogie1Axles, bogie2Axles);
+                    car.AddWheelSet(m.Translation, id, pmatrix, matrixName.ToString(), bogie1Axles, bogie2Axles);
                 }
                 // Standard wheels are processed above, but wheels used as animated fans that are greater than 3m are processed here.
                 else
@@ -491,7 +516,7 @@ namespace Orts.Viewer3D.RollingStock
                 if (matrixName.Length == 6)
                     Int32.TryParse(matrixName.Substring(5), out id);
                 var m = TrainCarShape.SharedShape.GetMatrixProduct(targetNode);
-                car.AddBogie(m.M43, targetNode, id, matrixName.ToString(), numBogie1, numBogie2);
+                car.AddBogie(m.Translation, targetNode, id, matrixName.ToString(), numBogie1, numBogie2);
                 bogieMatrix = targetNode; // Bogie matrix needs to be saved for test with axles.
                 // Bogies contain wheels!
                 for (var i = 0; i < TrainCarShape.SharedShape.GetAnimationNamesCount(); i++)
@@ -614,6 +639,18 @@ namespace Orts.Viewer3D.RollingStock
             {
                 Item2TwoState.AddMatrix(matrix);
             }
+            else if (matrixName.StartsWith("ORTSBRAKECYLINDER")) // brake cylinder animation
+            {
+                BrakeCylinders.AddMatrix(matrix);
+            }
+            else if (matrixName.StartsWith("ORTSHANDBRAKE")) // handbrake wheel animation
+            {
+                Handbrakes.AddMatrix(matrix);
+            }
+            else if (matrixName.StartsWith("ORTSBRAKERIGGING")) // brake rigging/brake shoes animation
+            {
+                BrakeRigging.AddMatrix(matrix);
+            }
             else
             {
                 if (matrixAnimated && matrix != 0 && !ConsistGenerator.GltfVisualTestRun)
@@ -666,6 +703,9 @@ namespace Orts.Viewer3D.RollingStock
             UnloadingParts.UpdateState(MSTSWagon.UnloadingPartsOpen, elapsedTime);
             Item1TwoState.UpdateState(MSTSWagon.GenericItem1, elapsedTime);
             Item2TwoState.UpdateState(MSTSWagon.GenericItem2, elapsedTime);
+            BrakeCylinders.UpdateFrameClamp(MSTSWagon.BrakeSystem.GetNormalizedCylTravel() * 10.0f, elapsedTime, 10.0f);
+            Handbrakes.UpdateState(MSTSWagon.GetTrainHandbrakeStatus(), elapsedTime);
+            BrakeRigging.UpdateFrameClamp(Math.Max(MSTSWagon.BrakeSystem.GetNormalizedCylTravel(), MSTSWagon.GetTrainHandbrakeStatus() ? 1.0f : 0.0f) * 10.0f, elapsedTime, 10.0f);
             UpdateAnimation(frame, elapsedTime);
 
             var car = Car as MSTSWagon;
@@ -747,11 +787,11 @@ namespace Orts.Viewer3D.RollingStock
                 foreach (ParticleEmitterViewer drawer in drawers)
                     drawer.PrepareFrame(frame, elapsedTime);
 
-            if (!(car is MSTSLocomotive) && (LeftWindowFront.FrameCount > 0 || RightWindowFront.FrameCount > 0))
+            if (!(car is MSTSLocomotive) && (LeftWindowFront.MaxFrame > 0 || RightWindowFront.MaxFrame > 0))
             {
-                if (LeftWindowFront.FrameCount > 0)
+                if (LeftWindowFront.MaxFrame > 0)
                     car.SoundHeardInternallyCorrection[MSTSWagon.LeftWindowFrontIndex] = LeftWindowFront.AnimationKeyFraction();
-                if (RightWindowFront.FrameCount > 0)
+                if (RightWindowFront.MaxFrame > 0)
                     car.SoundHeardInternallyCorrection[MSTSWagon.RightWindowFrontIndex] = RightWindowFront.AnimationKeyFraction();
         }
         }
@@ -840,16 +880,34 @@ namespace Orts.Viewer3D.RollingStock
 #endif
 
             // truck angle animation
+            Matrix inverseLocation = Matrix.Invert(Car.WorldPosition.XNAMatrix);
+
             foreach (var p in Car.Parts)
             {
                 if (p.iMatrix <= 0)
                     continue;
+
+                // Determine orientation of bogie in absolute space
                 Matrix m = Matrix.Identity;
+                Vector3 fwd = new Vector3(p.Dir[0], p.Dir[1], -p.Dir[2]);
+                // Only do this calculation if the bogie position has been calculated
+                if (!(fwd.X == 0 && fwd.Y == 0 && fwd.Z == 0))
+                {
+                    fwd.Normalize();
+                    Vector3 side = Vector3.Cross(Vector3.Up, fwd);
+                    if (!(side.X == 0 && side.Y == 0 && side.Z == 0))
+                        side.Normalize();
+                    Vector3 up = Vector3.Cross(fwd, side);
+                    m.Right = side;
+                    m.Up = up;
+                    m.Backward = fwd;
+
+                    // Convert absolute rotation into rotation relative to train car
+                    m = Matrix.CreateRotationZ(p.Roll) * m * inverseLocation;
+                }
+
+                // Insert correct translation (previous step likely introduced garbage data)
                 m.Translation = TrainCarShape.SharedShape.Matrices[p.iMatrix].Translation;
-                m.M11 = p.Cos;
-                m.M13 = p.Sin;
-                m.M31 = -p.Sin;
-                m.M33 = p.Cos;
 
                 // To cancel out any vibration, apply the inverse here. If no vibration is present, this matrix will be Matrix.Identity.
                 TrainCarShape.XNAMatrices[p.iMatrix] = Car.VibrationInverseMatrix * m;

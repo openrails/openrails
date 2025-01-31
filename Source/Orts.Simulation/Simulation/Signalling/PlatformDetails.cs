@@ -59,7 +59,7 @@ namespace Orts.Simulation.Signalling
             Length = orgDetails.Length;
             orgDetails.EndSignals.CopyTo(EndSignals, 0);
             orgDetails.DistanceToSignals.CopyTo(DistanceToSignals, 0);
-            Name = String.Copy(orgDetails.Name);
+            Name = orgDetails.Name;
             MinWaitingTime = orgDetails.MinWaitingTime;
             NumPassengersWaiting = orgDetails.NumPassengersWaiting;
             PlatformSide[0] = orgDetails.PlatformSide[0];

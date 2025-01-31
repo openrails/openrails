@@ -785,12 +785,29 @@ namespace Orts.Formats.Msts
         public int WFNameX { get; set; }
         /// <summary>The TileZ in the WorldFile</summary>
         public int WFNameZ { get; set; }
-        /// <summary>The (super)elevation at the start</summary>
-        public float StartElev { get; set; }
-        /// <summary>The (super)elevation at the end</summary>
-        public float EndElev { get; set; }
-        /// <summary>The maximum (super) elevation</summary>
-        public float MaxElev { get; set; }
+
+        /// <summary>Interpolator storing the amount of physics superelevation in meters vs distance along
+        /// the track section normalized from 0 to 1.</summary>
+        public Interpolator PhysElevTable = new Interpolator(new float[] { 0, 1 }, new float[] { 0, 0 });
+
+        /// <summary>Interpolator storing the angle of visual superelevation in radians vs distance along
+        /// the track section normalized from 0 to 1.</summary>
+        public Interpolator VisElevTable = new Interpolator(new float[] { 0, 1 }, new float[] { 0, 0 });
+        /// <summary>Nominal amount of superelevation based on speed and radius.
+        /// Actual superelevation used will depend on adjacent curves and superelevation settings.</summary>
+        public float NomElevM { get; set; } = -1.0f;
+        /// <summary>Inward/outward offset from the centerline of the track about which this track section
+        /// is rotated during superelevation.
+        /// 0 = centered, positive = centerline moves to inside of curve, negative = centerline moves to outside of curve</summary>
+        public float ElevOffsetM { get; set; } = 0.0f;
+
+        /// <summary>The freight speed limit of this track section.
+        /// NOTE: Do not use for determining max train speed, this does not respect speed limit direction.</summary>
+        public float FreightSpeedMpS = float.NegativeInfinity;
+
+        /// <summary>The passenger speed limit of this track section.
+        /// NOTE: Do not use for determining max train speed, this does not respect speed limit direction.</summary>
+        public float PassSpeedMpS = float.NegativeInfinity;
 
         /// <summary>??? (needed for ActivityEditor, but not used here, so why is it defined here?)</summary>
         public bool Reduced { get; set; }
@@ -1449,7 +1466,7 @@ namespace Orts.Formats.Msts
             ItemName = thisSiding.ItemName;
             Flags1 = thisSiding.Flags1;
             LinkedPlatformItemId = thisSiding.LinkedSidingId;
-            Station = String.Copy(ItemName);
+            Station = ItemName;
         }
     }
 

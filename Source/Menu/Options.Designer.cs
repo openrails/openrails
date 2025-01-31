@@ -1,4 +1,4 @@
-﻿namespace ORTS
+﻿namespace Menu
 {
     partial class OptionsForm
     {
@@ -39,6 +39,11 @@
             this.checkAlerter = new System.Windows.Forms.CheckBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
+            this.labelAutoSaveInterval = new System.Windows.Forms.Label();
+            this.ButtonAutoSave60 = new System.Windows.Forms.RadioButton();
+            this.ButtonAutoSave30 = new System.Windows.Forms.RadioButton();
+            this.ButtonAutoSave15 = new System.Windows.Forms.RadioButton();
+            this.checkAutoSaveActive = new System.Windows.Forms.CheckBox();
             this.pbOverspeedMonitor = new System.Windows.Forms.PictureBox();
             this.pbEnableTcsScripts = new System.Windows.Forms.PictureBox();
             this.pbOtherUnits = new System.Windows.Forms.PictureBox();
@@ -153,21 +158,6 @@
             this.checkDataLogStationStops = new System.Windows.Forms.CheckBox();
             this.numericDataLogTSInterval = new System.Windows.Forms.NumericUpDown();
             this.checkDataLogTrainSpeed = new System.Windows.Forms.CheckBox();
-            this.tabPageContent = new System.Windows.Forms.TabPage();
-            this.labelContent = new System.Windows.Forms.Label();
-            this.buttonContentDelete = new System.Windows.Forms.Button();
-            this.groupBoxContent = new System.Windows.Forms.GroupBox();
-            this.buttonContentBrowse = new System.Windows.Forms.Button();
-            this.textBoxContentPath = new System.Windows.Forms.TextBox();
-            this.label20 = new System.Windows.Forms.Label();
-            this.label22 = new System.Windows.Forms.Label();
-            this.textBoxContentName = new System.Windows.Forms.TextBox();
-            this.buttonContentAdd = new System.Windows.Forms.Button();
-            this.panelContent = new System.Windows.Forms.Panel();
-            this.dataGridViewContent = new System.Windows.Forms.DataGridView();
-            this.nameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.pathDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.bindingSourceContent = new System.Windows.Forms.BindingSource(this.components);
             this.tabPageSystem = new System.Windows.Forms.TabPage();
             this.pbPerformanceTuner = new System.Windows.Forms.PictureBox();
             this.labelPerformanceTunerTarget = new System.Windows.Forms.Label();
@@ -177,8 +167,8 @@
             this.labelWebServerPort = new System.Windows.Forms.Label();
             this.numericWebServerPort = new System.Windows.Forms.NumericUpDown();
             this.pbControlConfirmations = new System.Windows.Forms.PictureBox();
-            this.labelControlConfirmations = new System.Windows.Forms.Label();
             this.comboControlConfirmations = new System.Windows.Forms.ComboBox();
+            this.labelControlConfirmations = new System.Windows.Forms.Label();
             this.pbWindowGlass = new System.Windows.Forms.PictureBox();
             this.checkWindowGlass = new System.Windows.Forms.CheckBox();
             this.comboWindowSize = new System.Windows.Forms.ComboBox();
@@ -203,9 +193,6 @@
             this.btnRDReset = new System.Windows.Forms.Button();
             this.btnCheck = new System.Windows.Forms.Button();
             this.btnRDSettingsExport = new System.Windows.Forms.Button();
-            this.buttonCheckKeys = new System.Windows.Forms.Button();
-            this.buttonDefaultKeys = new System.Windows.Forms.Button();
-            this.buttonExport = new System.Windows.Forms.Button();
             this.checkCorrectQuestionableBrakingParams = new System.Windows.Forms.CheckBox();
             this.label16 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
@@ -218,14 +205,13 @@
             this.trackAdhesionFactor = new System.Windows.Forms.TrackBar();
             this.checkUseMSTSEnv = new System.Windows.Forms.CheckBox();
             this.label8 = new System.Windows.Forms.Label();
+            this.pbSuperElevation = new System.Windows.Forms.PictureBox();
             this.numericSuperElevationGauge = new System.Windows.Forms.NumericUpDown();
-            this.label7 = new System.Windows.Forms.Label();
-            this.numericSuperElevationMinLen = new System.Windows.Forms.NumericUpDown();
-            this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.numericUseSuperElevation = new System.Windows.Forms.NumericUpDown();
+            this.checkUseSuperElevation = new System.Windows.Forms.CheckBox();
             this.ElevationText = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.pbAutoSave = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -277,11 +263,6 @@
             this.groupBoxReverseRDLevers.SuspendLayout();
             this.tabPageEvaluate.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericDataLogTSInterval)).BeginInit();
-            this.tabPageContent.SuspendLayout();
-            this.groupBoxContent.SuspendLayout();
-            this.panelContent.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewContent)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).BeginInit();
             this.tabPageSystem.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbPerformanceTuner)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericPerformanceTunerTarget)).BeginInit();
@@ -297,9 +278,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericActRandomizationLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactorChange)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSuperElevation)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAutoSave)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -385,8 +366,8 @@
             // 
             // tabOptions
             // 
-            this.tabOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.tabOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tabOptions.Controls.Add(this.tabPageGeneral);
             this.tabOptions.Controls.Add(this.tabPageAudio);
@@ -396,7 +377,6 @@
             this.tabOptions.Controls.Add(this.tabPageRailDriver);
             this.tabOptions.Controls.Add(this.tabPageDataLogger);
             this.tabOptions.Controls.Add(this.tabPageEvaluate);
-            this.tabOptions.Controls.Add(this.tabPageContent);
             this.tabOptions.Controls.Add(this.tabPageSystem);
             this.tabOptions.Controls.Add(this.tabPageExperimental);
             this.tabOptions.Location = new System.Drawing.Point(13, 12);
@@ -407,6 +387,12 @@
             // 
             // tabPageGeneral
             // 
+            this.tabPageGeneral.Controls.Add(this.pbAutoSave);
+            this.tabPageGeneral.Controls.Add(this.labelAutoSaveInterval);
+            this.tabPageGeneral.Controls.Add(this.ButtonAutoSave60);
+            this.tabPageGeneral.Controls.Add(this.ButtonAutoSave30);
+            this.tabPageGeneral.Controls.Add(this.ButtonAutoSave15);
+            this.tabPageGeneral.Controls.Add(this.checkAutoSaveActive);
             this.tabPageGeneral.Controls.Add(this.pbOverspeedMonitor);
             this.tabPageGeneral.Controls.Add(this.pbEnableTcsScripts);
             this.tabPageGeneral.Controls.Add(this.pbOtherUnits);
@@ -435,9 +421,65 @@
             this.tabPageGeneral.Text = "General";
             this.tabPageGeneral.UseVisualStyleBackColor = true;
             // 
+            // labelAutoSaveInterval
+            // 
+            this.labelAutoSaveInterval.AutoSize = true;
+            this.labelAutoSaveInterval.Location = new System.Drawing.Point(111, 299);
+            this.labelAutoSaveInterval.Name = "labelAutoSaveInterval";
+            this.labelAutoSaveInterval.Size = new System.Drawing.Size(48, 13);
+            this.labelAutoSaveInterval.TabIndex = 35;
+            this.labelAutoSaveInterval.Text = "Interval :";
+            // 
+            // ButtonAutoSave60
+            // 
+            this.ButtonAutoSave60.AutoSize = true;
+            this.ButtonAutoSave60.Location = new System.Drawing.Point(159, 331);
+            this.ButtonAutoSave60.Name = "ButtonAutoSave60";
+            this.ButtonAutoSave60.Size = new System.Drawing.Size(61, 17);
+            this.ButtonAutoSave60.TabIndex = 34;
+            this.ButtonAutoSave60.TabStop = true;
+            this.ButtonAutoSave60.Text = "60 mins";
+            this.ButtonAutoSave60.UseVisualStyleBackColor = true;
+            this.ButtonAutoSave60.CheckedChanged += new System.EventHandler(this.buttonAutoSaveInterval_checkchanged);
+            // 
+            // ButtonAutoSave30
+            // 
+            this.ButtonAutoSave30.AutoSize = true;
+            this.ButtonAutoSave30.Location = new System.Drawing.Point(159, 314);
+            this.ButtonAutoSave30.Name = "ButtonAutoSave30";
+            this.ButtonAutoSave30.Size = new System.Drawing.Size(61, 17);
+            this.ButtonAutoSave30.TabIndex = 33;
+            this.ButtonAutoSave30.TabStop = true;
+            this.ButtonAutoSave30.Text = "30 mins";
+            this.ButtonAutoSave30.UseVisualStyleBackColor = true;
+            this.ButtonAutoSave30.CheckedChanged += new System.EventHandler(this.buttonAutoSaveInterval_checkchanged);
+            // 
+            // ButtonAutoSave15
+            // 
+            this.ButtonAutoSave15.AutoSize = true;
+            this.ButtonAutoSave15.Location = new System.Drawing.Point(159, 297);
+            this.ButtonAutoSave15.Name = "ButtonAutoSave15";
+            this.ButtonAutoSave15.Size = new System.Drawing.Size(61, 17);
+            this.ButtonAutoSave15.TabIndex = 32;
+            this.ButtonAutoSave15.TabStop = true;
+            this.ButtonAutoSave15.Text = "15 mins";
+            this.ButtonAutoSave15.UseVisualStyleBackColor = true;
+            this.ButtonAutoSave15.CheckedChanged += new System.EventHandler(this.buttonAutoSaveInterval_checkchanged);
+            // 
+            // checkAutoSaveActive
+            // 
+            this.checkAutoSaveActive.AutoSize = true;
+            this.checkAutoSaveActive.Location = new System.Drawing.Point(32, 298);
+            this.checkAutoSaveActive.Name = "checkAutoSaveActive";
+            this.checkAutoSaveActive.Size = new System.Drawing.Size(74, 17);
+            this.checkAutoSaveActive.TabIndex = 31;
+            this.checkAutoSaveActive.Text = "Auto save";
+            this.checkAutoSaveActive.UseVisualStyleBackColor = true;
+            this.checkAutoSaveActive.CheckedChanged += new System.EventHandler(this.checkAutoSave_checkchanged);
+            // 
             // pbOverspeedMonitor
             // 
-            this.pbOverspeedMonitor.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbOverspeedMonitor.Image = global::Menu.Properties.Resources.info_18;
             this.pbOverspeedMonitor.Location = new System.Drawing.Point(296, 7);
             this.pbOverspeedMonitor.Name = "pbOverspeedMonitor";
             this.pbOverspeedMonitor.Size = new System.Drawing.Size(18, 18);
@@ -449,7 +491,7 @@
             // 
             // pbEnableTcsScripts
             // 
-            this.pbEnableTcsScripts.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbEnableTcsScripts.Image = global::Menu.Properties.Resources.info_18;
             this.pbEnableTcsScripts.Location = new System.Drawing.Point(6, 263);
             this.pbEnableTcsScripts.Name = "pbEnableTcsScripts";
             this.pbEnableTcsScripts.Size = new System.Drawing.Size(18, 18);
@@ -461,7 +503,7 @@
             // 
             // pbOtherUnits
             // 
-            this.pbOtherUnits.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbOtherUnits.Image = global::Menu.Properties.Resources.info_18;
             this.pbOtherUnits.Location = new System.Drawing.Point(6, 234);
             this.pbOtherUnits.Name = "pbOtherUnits";
             this.pbOtherUnits.Size = new System.Drawing.Size(18, 18);
@@ -473,7 +515,7 @@
             // 
             // pbPressureUnit
             // 
-            this.pbPressureUnit.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbPressureUnit.Image = global::Menu.Properties.Resources.info_18;
             this.pbPressureUnit.Location = new System.Drawing.Point(6, 207);
             this.pbPressureUnit.Name = "pbPressureUnit";
             this.pbPressureUnit.Size = new System.Drawing.Size(18, 18);
@@ -485,7 +527,7 @@
             // 
             // pbBrakePipeChargingRate
             // 
-            this.pbBrakePipeChargingRate.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbBrakePipeChargingRate.Image = global::Menu.Properties.Resources.info_18;
             this.pbBrakePipeChargingRate.Location = new System.Drawing.Point(6, 145);
             this.pbBrakePipeChargingRate.Name = "pbBrakePipeChargingRate";
             this.pbBrakePipeChargingRate.Size = new System.Drawing.Size(18, 18);
@@ -497,7 +539,7 @@
             // 
             // pbGraduatedRelease
             // 
-            this.pbGraduatedRelease.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbGraduatedRelease.Image = global::Menu.Properties.Resources.info_18;
             this.pbGraduatedRelease.Location = new System.Drawing.Point(6, 122);
             this.pbGraduatedRelease.Name = "pbGraduatedRelease";
             this.pbGraduatedRelease.Size = new System.Drawing.Size(18, 18);
@@ -509,7 +551,7 @@
             // 
             // pbRetainers
             // 
-            this.pbRetainers.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbRetainers.Image = global::Menu.Properties.Resources.info_18;
             this.pbRetainers.Location = new System.Drawing.Point(6, 99);
             this.pbRetainers.Name = "pbRetainers";
             this.pbRetainers.Size = new System.Drawing.Size(18, 18);
@@ -521,7 +563,7 @@
             // 
             // pbAlerter
             // 
-            this.pbAlerter.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbAlerter.Image = global::Menu.Properties.Resources.info_18;
             this.pbAlerter.Location = new System.Drawing.Point(6, 7);
             this.pbAlerter.Name = "pbAlerter";
             this.pbAlerter.Size = new System.Drawing.Size(18, 18);
@@ -641,7 +683,7 @@
             // 
             // pbExternalSoundPassThruPercent
             // 
-            this.pbExternalSoundPassThruPercent.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbExternalSoundPassThruPercent.Image = global::Menu.Properties.Resources.info_18;
             this.pbExternalSoundPassThruPercent.Location = new System.Drawing.Point(11, 73);
             this.pbExternalSoundPassThruPercent.Name = "pbExternalSoundPassThruPercent";
             this.pbExternalSoundPassThruPercent.Size = new System.Drawing.Size(18, 18);
@@ -653,7 +695,7 @@
             // 
             // pbSoundDetailLevel
             // 
-            this.pbSoundDetailLevel.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbSoundDetailLevel.Image = global::Menu.Properties.Resources.info_18;
             this.pbSoundDetailLevel.Location = new System.Drawing.Point(11, 41);
             this.pbSoundDetailLevel.Name = "pbSoundDetailLevel";
             this.pbSoundDetailLevel.Size = new System.Drawing.Size(18, 18);
@@ -665,7 +707,7 @@
             // 
             // pbSoundVolumePercent
             // 
-            this.pbSoundVolumePercent.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbSoundVolumePercent.Image = global::Menu.Properties.Resources.info_18;
             this.pbSoundVolumePercent.Location = new System.Drawing.Point(11, 9);
             this.pbSoundVolumePercent.Name = "pbSoundVolumePercent";
             this.pbSoundVolumePercent.Size = new System.Drawing.Size(18, 18);
@@ -821,7 +863,7 @@
             // 
             // pbViewingFOV
             // 
-            this.pbViewingFOV.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbViewingFOV.Image = global::Menu.Properties.Resources.info_18;
             this.pbViewingFOV.Location = new System.Drawing.Point(312, 233);
             this.pbViewingFOV.Name = "pbViewingFOV";
             this.pbViewingFOV.Size = new System.Drawing.Size(18, 18);
@@ -843,7 +885,7 @@
             // 
             // pbLODBias
             // 
-            this.pbLODBias.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbLODBias.Image = global::Menu.Properties.Resources.info_18;
             this.pbLODBias.Location = new System.Drawing.Point(312, 169);
             this.pbLODBias.Name = "pbLODBias";
             this.pbLODBias.Size = new System.Drawing.Size(18, 18);
@@ -855,7 +897,7 @@
             // 
             // pbWorldObjectDensity
             // 
-            this.pbWorldObjectDensity.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbWorldObjectDensity.Image = global::Menu.Properties.Resources.info_18;
             this.pbWorldObjectDensity.Location = new System.Drawing.Point(312, 137);
             this.pbWorldObjectDensity.Name = "pbWorldObjectDensity";
             this.pbWorldObjectDensity.Size = new System.Drawing.Size(18, 18);
@@ -867,7 +909,7 @@
             // 
             // pbAntiAliasing
             // 
-            this.pbAntiAliasing.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbAntiAliasing.Image = global::Menu.Properties.Resources.info_18;
             this.pbAntiAliasing.Location = new System.Drawing.Point(312, 73);
             this.pbAntiAliasing.Name = "pbAntiAliasing";
             this.pbAntiAliasing.Size = new System.Drawing.Size(18, 18);
@@ -879,7 +921,7 @@
             // 
             // pbVerticalSync
             // 
-            this.pbVerticalSync.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbVerticalSync.Image = global::Menu.Properties.Resources.info_18;
             this.pbVerticalSync.Location = new System.Drawing.Point(312, 41);
             this.pbVerticalSync.Name = "pbVerticalSync";
             this.pbVerticalSync.Size = new System.Drawing.Size(18, 18);
@@ -891,7 +933,7 @@
             // 
             // pbModelInstancing
             // 
-            this.pbModelInstancing.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbModelInstancing.Image = global::Menu.Properties.Resources.info_18;
             this.pbModelInstancing.Location = new System.Drawing.Point(312, 9);
             this.pbModelInstancing.Name = "pbModelInstancing";
             this.pbModelInstancing.Size = new System.Drawing.Size(18, 18);
@@ -903,7 +945,7 @@
             // 
             // pbDayAmbientLight
             // 
-            this.pbDayAmbientLight.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbDayAmbientLight.Image = global::Menu.Properties.Resources.info_18;
             this.pbDayAmbientLight.Location = new System.Drawing.Point(11, 297);
             this.pbDayAmbientLight.Name = "pbDayAmbientLight";
             this.pbDayAmbientLight.Size = new System.Drawing.Size(18, 18);
@@ -915,7 +957,7 @@
             // 
             // pbSignalLightGlow
             // 
-            this.pbSignalLightGlow.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbSignalLightGlow.Image = global::Menu.Properties.Resources.info_18;
             this.pbSignalLightGlow.Location = new System.Drawing.Point(11, 265);
             this.pbSignalLightGlow.Name = "pbSignalLightGlow";
             this.pbSignalLightGlow.Size = new System.Drawing.Size(18, 18);
@@ -927,7 +969,7 @@
             // 
             // pbDoubleWire
             // 
-            this.pbDoubleWire.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbDoubleWire.Image = global::Menu.Properties.Resources.info_18;
             this.pbDoubleWire.Location = new System.Drawing.Point(11, 233);
             this.pbDoubleWire.Name = "pbDoubleWire";
             this.pbDoubleWire.Size = new System.Drawing.Size(18, 18);
@@ -939,7 +981,7 @@
             // 
             // pbWire
             // 
-            this.pbWire.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbWire.Image = global::Menu.Properties.Resources.info_18;
             this.pbWire.Location = new System.Drawing.Point(11, 201);
             this.pbWire.Name = "pbWire";
             this.pbWire.Size = new System.Drawing.Size(18, 18);
@@ -951,7 +993,7 @@
             // 
             // pbShadowAllShapes
             // 
-            this.pbShadowAllShapes.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbShadowAllShapes.Image = global::Menu.Properties.Resources.info_18;
             this.pbShadowAllShapes.Location = new System.Drawing.Point(11, 169);
             this.pbShadowAllShapes.Name = "pbShadowAllShapes";
             this.pbShadowAllShapes.Size = new System.Drawing.Size(18, 18);
@@ -963,7 +1005,7 @@
             // 
             // pbDynamicShadows
             // 
-            this.pbDynamicShadows.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbDynamicShadows.Image = global::Menu.Properties.Resources.info_18;
             this.pbDynamicShadows.Location = new System.Drawing.Point(11, 137);
             this.pbDynamicShadows.Name = "pbDynamicShadows";
             this.pbDynamicShadows.Size = new System.Drawing.Size(18, 18);
@@ -975,7 +1017,7 @@
             // 
             // pbLODViewingExtension
             // 
-            this.pbLODViewingExtension.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbLODViewingExtension.Image = global::Menu.Properties.Resources.info_18;
             this.pbLODViewingExtension.Location = new System.Drawing.Point(11, 105);
             this.pbLODViewingExtension.Name = "pbLODViewingExtension";
             this.pbLODViewingExtension.Size = new System.Drawing.Size(18, 18);
@@ -987,7 +1029,7 @@
             // 
             // pbDistantMountains
             // 
-            this.pbDistantMountains.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbDistantMountains.Image = global::Menu.Properties.Resources.info_18;
             this.pbDistantMountains.Location = new System.Drawing.Point(11, 41);
             this.pbDistantMountains.Name = "pbDistantMountains";
             this.pbDistantMountains.Size = new System.Drawing.Size(18, 18);
@@ -999,7 +1041,7 @@
             // 
             // pbViewingDistance
             // 
-            this.pbViewingDistance.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbViewingDistance.Image = global::Menu.Properties.Resources.info_18;
             this.pbViewingDistance.Location = new System.Drawing.Point(11, 9);
             this.pbViewingDistance.Name = "pbViewingDistance";
             this.pbViewingDistance.Size = new System.Drawing.Size(18, 18);
@@ -1568,8 +1610,8 @@
             // 
             // panelKeys
             // 
-            this.panelKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.panelKeys.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panelKeys.AutoScroll = true;
             this.panelKeys.Location = new System.Drawing.Point(6, 6);
@@ -1728,8 +1770,8 @@
             // 
             // panelRDSettings
             // 
-            this.panelRDSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.panelRDSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panelRDSettings.AutoScroll = true;
             this.panelRDSettings.BackColor = System.Drawing.Color.Transparent;
@@ -1895,197 +1937,6 @@
             this.checkDataLogTrainSpeed.UseVisualStyleBackColor = true;
             this.checkDataLogTrainSpeed.Click += new System.EventHandler(this.checkDataLogTrainSpeed_Click);
             // 
-            // tabPageContent
-            // 
-            this.tabPageContent.Controls.Add(this.labelContent);
-            this.tabPageContent.Controls.Add(this.buttonContentDelete);
-            this.tabPageContent.Controls.Add(this.groupBoxContent);
-            this.tabPageContent.Controls.Add(this.buttonContentAdd);
-            this.tabPageContent.Controls.Add(this.panelContent);
-            this.tabPageContent.Location = new System.Drawing.Point(4, 22);
-            this.tabPageContent.Name = "tabPageContent";
-            this.tabPageContent.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageContent.Size = new System.Drawing.Size(602, 402);
-            this.tabPageContent.TabIndex = 9;
-            this.tabPageContent.Text = "Content";
-            this.tabPageContent.UseVisualStyleBackColor = true;
-            // 
-            // labelContent
-            // 
-            this.labelContent.AutoSize = true;
-            this.labelContent.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.labelContent.Location = new System.Drawing.Point(6, 6);
-            this.labelContent.Margin = new System.Windows.Forms.Padding(3);
-            this.labelContent.MaximumSize = new System.Drawing.Size(590, 0);
-            this.labelContent.Name = "labelContent";
-            this.labelContent.Size = new System.Drawing.Size(539, 13);
-            this.labelContent.TabIndex = 3;
-            this.labelContent.Text = "Installation profiles tell Open Rails where to look for game content. Add each fu" +
-    "ll and mini-route MSTS installation.";
-            // 
-            // buttonContentDelete
-            // 
-            this.buttonContentDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonContentDelete.Location = new System.Drawing.Point(6, 364);
-            this.buttonContentDelete.Name = "buttonContentDelete";
-            this.buttonContentDelete.Size = new System.Drawing.Size(75, 23);
-            this.buttonContentDelete.TabIndex = 1;
-            this.buttonContentDelete.Text = "Delete";
-            this.buttonContentDelete.UseVisualStyleBackColor = true;
-            this.buttonContentDelete.Click += new System.EventHandler(this.buttonContentDelete_Click);
-            // 
-            // groupBoxContent
-            // 
-            this.groupBoxContent.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBoxContent.Controls.Add(this.buttonContentBrowse);
-            this.groupBoxContent.Controls.Add(this.textBoxContentPath);
-            this.groupBoxContent.Controls.Add(this.label20);
-            this.groupBoxContent.Controls.Add(this.label22);
-            this.groupBoxContent.Controls.Add(this.textBoxContentName);
-            this.groupBoxContent.Location = new System.Drawing.Point(87, 317);
-            this.groupBoxContent.Name = "groupBoxContent";
-            this.groupBoxContent.Size = new System.Drawing.Size(509, 79);
-            this.groupBoxContent.TabIndex = 2;
-            this.groupBoxContent.TabStop = false;
-            this.groupBoxContent.Text = "Installation profile";
-            // 
-            // buttonContentBrowse
-            // 
-            this.buttonContentBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonContentBrowse.Location = new System.Drawing.Point(428, 19);
-            this.buttonContentBrowse.Name = "buttonContentBrowse";
-            this.buttonContentBrowse.Size = new System.Drawing.Size(75, 23);
-            this.buttonContentBrowse.TabIndex = 2;
-            this.buttonContentBrowse.Text = "Change...";
-            this.buttonContentBrowse.UseVisualStyleBackColor = true;
-            this.buttonContentBrowse.Click += new System.EventHandler(this.buttonContentBrowse_Click);
-            // 
-            // textBoxContentPath
-            // 
-            this.textBoxContentPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxContentPath.Location = new System.Drawing.Point(50, 21);
-            this.textBoxContentPath.Name = "textBoxContentPath";
-            this.textBoxContentPath.ReadOnly = true;
-            this.textBoxContentPath.Size = new System.Drawing.Size(372, 20);
-            this.textBoxContentPath.TabIndex = 1;
-            // 
-            // label20
-            // 
-            this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(6, 52);
-            this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(38, 13);
-            this.label20.TabIndex = 3;
-            this.label20.Text = "Name:";
-            // 
-            // label22
-            // 
-            this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(6, 24);
-            this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(32, 13);
-            this.label22.TabIndex = 0;
-            this.label22.Text = "Path:";
-            // 
-            // textBoxContentName
-            // 
-            this.textBoxContentName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxContentName.Location = new System.Drawing.Point(50, 49);
-            this.textBoxContentName.Name = "textBoxContentName";
-            this.textBoxContentName.Size = new System.Drawing.Size(453, 20);
-            this.textBoxContentName.TabIndex = 4;
-            this.textBoxContentName.TextChanged += new System.EventHandler(this.textBoxContentName_TextChanged);
-            // 
-            // buttonContentAdd
-            // 
-            this.buttonContentAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonContentAdd.Location = new System.Drawing.Point(6, 336);
-            this.buttonContentAdd.Name = "buttonContentAdd";
-            this.buttonContentAdd.Size = new System.Drawing.Size(75, 23);
-            this.buttonContentAdd.TabIndex = 0;
-            this.buttonContentAdd.Text = "Add...";
-            this.buttonContentAdd.UseVisualStyleBackColor = true;
-            this.buttonContentAdd.Click += new System.EventHandler(this.buttonContentAdd_Click);
-            // 
-            // panelContent
-            // 
-            this.panelContent.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.panelContent.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelContent.Controls.Add(this.dataGridViewContent);
-            this.panelContent.Location = new System.Drawing.Point(6, 38);
-            this.panelContent.Name = "panelContent";
-            this.panelContent.Size = new System.Drawing.Size(590, 273);
-            this.panelContent.TabIndex = 2;
-            // 
-            // dataGridViewContent
-            // 
-            this.dataGridViewContent.AllowUserToAddRows = false;
-            this.dataGridViewContent.AllowUserToDeleteRows = false;
-            this.dataGridViewContent.AutoGenerateColumns = false;
-            this.dataGridViewContent.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
-            this.dataGridViewContent.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
-            this.dataGridViewContent.BackgroundColor = System.Drawing.SystemColors.Window;
-            this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
-            this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-            this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-            this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.nameDataGridViewTextBoxColumn,
-            this.pathDataGridViewTextBoxColumn});
-            this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
-            this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
-            this.dataGridViewContent.MultiSelect = false;
-            this.dataGridViewContent.Name = "dataGridViewContent";
-            this.dataGridViewContent.ReadOnly = true;
-            this.dataGridViewContent.RowHeadersVisible = false;
-            this.dataGridViewContent.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridViewContent.Size = new System.Drawing.Size(588, 271);
-            this.dataGridViewContent.TabIndex = 0;
-            this.dataGridViewContent.SelectionChanged += new System.EventHandler(this.dataGridViewContent_SelectionChanged);
-            // 
-            // nameDataGridViewTextBoxColumn
-            // 
-            this.nameDataGridViewTextBoxColumn.DataPropertyName = "Name";
-            this.nameDataGridViewTextBoxColumn.HeaderText = "Name";
-            this.nameDataGridViewTextBoxColumn.Name = "nameDataGridViewTextBoxColumn";
-            this.nameDataGridViewTextBoxColumn.ReadOnly = true;
-            this.nameDataGridViewTextBoxColumn.Width = 60;
-            // 
-            // pathDataGridViewTextBoxColumn
-            // 
-            this.pathDataGridViewTextBoxColumn.DataPropertyName = "Path";
-            this.pathDataGridViewTextBoxColumn.HeaderText = "Path";
-            this.pathDataGridViewTextBoxColumn.Name = "pathDataGridViewTextBoxColumn";
-            this.pathDataGridViewTextBoxColumn.ReadOnly = true;
-            this.pathDataGridViewTextBoxColumn.Width = 54;
-            // 
-            // bindingSourceContent
-            // 
-            this.bindingSourceContent.DataSource = typeof(ORTS.OptionsForm.ContentFolder);
-            // 
             // tabPageSystem
             // 
             this.tabPageSystem.Controls.Add(this.pbPerformanceTuner);
@@ -2119,7 +1970,7 @@
             // 
             // pbPerformanceTuner
             // 
-            this.pbPerformanceTuner.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbPerformanceTuner.Image = global::Menu.Properties.Resources.info_18;
             this.pbPerformanceTuner.Location = new System.Drawing.Point(11, 330);
             this.pbPerformanceTuner.Name = "pbPerformanceTuner";
             this.pbPerformanceTuner.Size = new System.Drawing.Size(18, 18);
@@ -2183,7 +2034,7 @@
             // 
             // pbWebServerPort
             // 
-            this.pbWebServerPort.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbWebServerPort.Image = global::Menu.Properties.Resources.info_18;
             this.pbWebServerPort.Location = new System.Drawing.Point(11, 298);
             this.pbWebServerPort.Name = "pbWebServerPort";
             this.pbWebServerPort.Size = new System.Drawing.Size(18, 18);
@@ -2227,7 +2078,7 @@
             // 
             // pbControlConfirmations
             // 
-            this.pbControlConfirmations.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbControlConfirmations.Image = global::Menu.Properties.Resources.info_18;
             this.pbControlConfirmations.Location = new System.Drawing.Point(11, 266);
             this.pbControlConfirmations.Name = "pbControlConfirmations";
             this.pbControlConfirmations.Size = new System.Drawing.Size(18, 18);
@@ -2238,7 +2089,7 @@
             this.pbControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // comboControlConfirmations
-            //
+            // 
             this.comboControlConfirmations.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboControlConfirmations.FormattingEnabled = true;
             this.comboControlConfirmations.Location = new System.Drawing.Point(35, 265);
@@ -2252,7 +2103,7 @@
             // 
             this.labelControlConfirmations.Location = new System.Drawing.Point(161, 265);
             this.labelControlConfirmations.Margin = new System.Windows.Forms.Padding(3);
-            this.labelControlConfirmations.Name = "labelControlConfirmation";
+            this.labelControlConfirmations.Name = "labelControlConfirmations";
             this.labelControlConfirmations.Size = new System.Drawing.Size(200, 21);
             this.labelControlConfirmations.TabIndex = 37;
             this.labelControlConfirmations.Text = "Messages suppressed       ";
@@ -2261,7 +2112,7 @@
             // 
             // pbWindowGlass
             // 
-            this.pbWindowGlass.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbWindowGlass.Image = global::Menu.Properties.Resources.info_18;
             this.pbWindowGlass.Location = new System.Drawing.Point(11, 234);
             this.pbWindowGlass.Name = "pbWindowGlass";
             this.pbWindowGlass.Size = new System.Drawing.Size(18, 18);
@@ -2321,7 +2172,7 @@
             // 
             // pbWindowed
             // 
-            this.pbWindowed.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbWindowed.Image = global::Menu.Properties.Resources.info_18;
             this.pbWindowed.Location = new System.Drawing.Point(11, 169);
             this.pbWindowed.Name = "pbWindowed";
             this.pbWindowed.Size = new System.Drawing.Size(18, 18);
@@ -2344,7 +2195,7 @@
             // 
             // pbUpdateMode
             // 
-            this.pbUpdateMode.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbUpdateMode.Image = global::Menu.Properties.Resources.info_18;
             this.pbUpdateMode.Location = new System.Drawing.Point(11, 52);
             this.pbUpdateMode.Name = "pbUpdateMode";
             this.pbUpdateMode.Size = new System.Drawing.Size(18, 18);
@@ -2356,7 +2207,7 @@
             // 
             // pbLanguage
             // 
-            this.pbLanguage.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbLanguage.Image = global::Menu.Properties.Resources.info_18;
             this.pbLanguage.Location = new System.Drawing.Point(11, 9);
             this.pbLanguage.Name = "pbLanguage";
             this.pbLanguage.Size = new System.Drawing.Size(18, 18);
@@ -2419,12 +2270,10 @@
             this.tabPageExperimental.Controls.Add(this.trackAdhesionFactor);
             this.tabPageExperimental.Controls.Add(this.checkUseMSTSEnv);
             this.tabPageExperimental.Controls.Add(this.label8);
+            this.tabPageExperimental.Controls.Add(this.pbSuperElevation);
             this.tabPageExperimental.Controls.Add(this.numericSuperElevationGauge);
-            this.tabPageExperimental.Controls.Add(this.label7);
-            this.tabPageExperimental.Controls.Add(this.numericSuperElevationMinLen);
-            this.tabPageExperimental.Controls.Add(this.label6);
             this.tabPageExperimental.Controls.Add(this.label5);
-            this.tabPageExperimental.Controls.Add(this.numericUseSuperElevation);
+            this.tabPageExperimental.Controls.Add(this.checkUseSuperElevation);
             this.tabPageExperimental.Controls.Add(this.ElevationText);
             this.tabPageExperimental.Location = new System.Drawing.Point(4, 22);
             this.tabPageExperimental.Name = "tabPageExperimental";
@@ -2692,12 +2541,12 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(86, 96);
+            this.label8.Location = new System.Drawing.Point(86, 70);
             this.label8.Margin = new System.Windows.Forms.Padding(3);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(64, 13);
             this.label8.TabIndex = 7;
-            this.label8.Text = "Gauge (mm)";
+            this.label8.Text = "Default Gauge (mm)";
             // 
             // numericSuperElevationGauge
             // 
@@ -2706,7 +2555,7 @@
             0,
             0,
             0});
-            this.numericSuperElevationGauge.Location = new System.Drawing.Point(26, 94);
+            this.numericSuperElevationGauge.Location = new System.Drawing.Point(26, 68);
             this.numericSuperElevationGauge.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
             this.numericSuperElevationGauge.Maximum = new decimal(new int[] {
             1800,
@@ -2719,6 +2568,8 @@
             0,
             0});
             this.numericSuperElevationGauge.Name = "numericSuperElevationGauge";
+            this.toolTip1.SetToolTip(this.numericSuperElevationGauge, "The gauge (distance between rails) in millimeters used by the superelevation system " +
+                "when gauge data is missing from the route. Set to the most common track gauge used on your route.");
             this.numericSuperElevationGauge.Size = new System.Drawing.Size(54, 20);
             this.numericSuperElevationGauge.TabIndex = 6;
             this.numericSuperElevationGauge.Value = new decimal(new int[] {
@@ -2726,55 +2577,6 @@
             0,
             0,
             0});
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(86, 70);
-            this.label7.Margin = new System.Windows.Forms.Padding(3);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(97, 13);
-            this.label7.TabIndex = 5;
-            this.label7.Text = "Minimum length (m)";
-            // 
-            // numericSuperElevationMinLen
-            // 
-            this.numericSuperElevationMinLen.Increment = new decimal(new int[] {
-            5,
-            0,
-            0,
-            0});
-            this.numericSuperElevationMinLen.Location = new System.Drawing.Point(26, 68);
-            this.numericSuperElevationMinLen.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
-            this.numericSuperElevationMinLen.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            this.numericSuperElevationMinLen.Minimum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this.numericSuperElevationMinLen.Name = "numericSuperElevationMinLen";
-            this.numericSuperElevationMinLen.Size = new System.Drawing.Size(54, 20);
-            this.numericSuperElevationMinLen.TabIndex = 4;
-            this.toolTip1.SetToolTip(this.numericSuperElevationMinLen, "Shortest curve to have elevation");
-            this.numericSuperElevationMinLen.Value = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(86, 44);
-            this.label6.Margin = new System.Windows.Forms.Padding(3);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(33, 13);
-            this.label6.TabIndex = 3;
-            this.label6.Text = "Level";
             // 
             // label5
             // 
@@ -2788,29 +2590,51 @@
             this.label5.TabIndex = 0;
             this.label5.Text = "Experimental features that may slow down the game, use at your own risk.";
             // 
-            // numericUseSuperElevation
+            // checkUseSuperElevation
             // 
-            this.numericUseSuperElevation.Location = new System.Drawing.Point(26, 42);
-            this.numericUseSuperElevation.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
-            this.numericUseSuperElevation.Maximum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this.numericUseSuperElevation.Name = "numericUseSuperElevation";
-            this.numericUseSuperElevation.Size = new System.Drawing.Size(54, 20);
-            this.numericUseSuperElevation.TabIndex = 2;
-            this.toolTip1.SetToolTip(this.numericUseSuperElevation, "0: no elevation, 1: 9cm max; 10: 18cm max");
+            this.checkUseSuperElevation.AutoSize = true;
+            this.checkUseSuperElevation.Location = new System.Drawing.Point(26, 42);
+            this.checkUseSuperElevation.Name = "checkUseSuperElevation";
+            this.checkUseSuperElevation.Size = new System.Drawing.Size(122, 17);
+            this.checkUseSuperElevation.TabIndex = 2;
+            this.checkUseSuperElevation.Text = "Legacy Superelevation";
+            this.toolTip1.SetToolTip(this.checkUseSuperElevation, "Enables visual elements of superelevation on legacy routes. " +
+                "May lead to suboptimal track rendering.");
+            this.checkUseSuperElevation.UseVisualStyleBackColor = true;
             // 
             // ElevationText
             // 
             this.ElevationText.AutoSize = true;
-            this.ElevationText.Location = new System.Drawing.Point(6, 23);
+            this.ElevationText.Location = new System.Drawing.Point(24, 23);
             this.ElevationText.Margin = new System.Windows.Forms.Padding(3);
             this.ElevationText.Name = "ElevationText";
             this.ElevationText.Size = new System.Drawing.Size(81, 13);
             this.ElevationText.TabIndex = 1;
-            this.ElevationText.Text = "Super-elevation";
+            this.ElevationText.Text = "Superelevation";
+            // 
+            // pbSuperElevation
+            // 
+            this.pbSuperElevation.Image = global::Menu.Properties.Resources.info_18;
+            this.pbSuperElevation.Location = new System.Drawing.Point(6, 23);
+            this.pbSuperElevation.Name = "pbSuperElevation";
+            this.pbSuperElevation.Size = new System.Drawing.Size(18, 18);
+            this.pbSuperElevation.TabIndex = 28;
+            this.pbSuperElevation.TabStop = false;
+            this.pbSuperElevation.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbSuperElevation.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbSuperElevation.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbAutoSave
+            // 
+            this.pbAutoSave.Image = global::Menu.Properties.Resources.info_18;
+            this.pbAutoSave.Location = new System.Drawing.Point(6, 299);
+            this.pbAutoSave.Name = "pbAutoSave";
+            this.pbAutoSave.Size = new System.Drawing.Size(18, 18);
+            this.pbAutoSave.TabIndex = 36;
+            this.pbAutoSave.TabStop = false;
+            this.pbAutoSave.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbAutoSave.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbAutoSave.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // OptionsForm
             // 
@@ -2884,13 +2708,6 @@
             this.tabPageEvaluate.ResumeLayout(false);
             this.tabPageEvaluate.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericDataLogTSInterval)).EndInit();
-            this.tabPageContent.ResumeLayout(false);
-            this.tabPageContent.PerformLayout();
-            this.groupBoxContent.ResumeLayout(false);
-            this.groupBoxContent.PerformLayout();
-            this.panelContent.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewContent)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).EndInit();
             this.tabPageSystem.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pbPerformanceTuner)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericPerformanceTunerTarget)).EndInit();
@@ -2908,10 +2725,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactorChange)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAutoSave)).EndInit();
             this.ResumeLayout(false);
-
         }
 
         #endregion
@@ -2934,7 +2749,8 @@
         private System.Windows.Forms.CheckBox checkUseAdvancedAdhesion;
         private System.Windows.Forms.CheckBox checkBreakCouplers;
         private System.Windows.Forms.TabPage tabPageExperimental;
-        private System.Windows.Forms.NumericUpDown numericUseSuperElevation;
+        private System.Windows.Forms.PictureBox pbSuperElevation;
+        private System.Windows.Forms.CheckBox checkUseSuperElevation;
         private System.Windows.Forms.Label ElevationText;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TabPage tabPageAudio;
@@ -2947,8 +2763,6 @@
         private System.Windows.Forms.NumericUpDown numericWorldObjectDensity;
         private System.Windows.Forms.CheckBox checkDynamicShadows;
         private System.Windows.Forms.CheckBox checkWire;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.NumericUpDown numericSuperElevationMinLen;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.NumericUpDown numericSuperElevationGauge;
@@ -3017,24 +2831,14 @@
         private System.Windows.Forms.CheckBox checkRetainers;
         private System.Windows.Forms.Label labelOtherUnits;
         private System.Windows.Forms.ComboBox comboOtherUnits;
-        private System.Windows.Forms.TabPage tabPageContent;
-        private System.Windows.Forms.Panel panelContent;
-        private System.Windows.Forms.DataGridView dataGridViewContent;
-        private System.Windows.Forms.BindingSource bindingSourceContent;
-        private System.Windows.Forms.DataGridViewTextBoxColumn nameDataGridViewTextBoxColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn pathDataGridViewTextBoxColumn;
-        private System.Windows.Forms.GroupBox groupBoxContent;
-        private System.Windows.Forms.TextBox textBoxContentPath;
-        private System.Windows.Forms.Label label20;
-        private System.Windows.Forms.Label label22;
-        public System.Windows.Forms.TextBox textBoxContentName;
-        private System.Windows.Forms.Button buttonContentDelete;
-        private System.Windows.Forms.Button buttonContentBrowse;
-        private System.Windows.Forms.Button buttonContentAdd;
-        private System.Windows.Forms.Label labelContent;
         private System.Windows.Forms.CheckBox checkShapeWarnings;
         private System.Windows.Forms.Label labelDayAmbientLight;
         private System.Windows.Forms.CheckBox checkEnableTCSScripts;
+        private System.Windows.Forms.CheckBox checkAutoSaveActive;
+        private System.Windows.Forms.Label labelAutoSaveInterval;
+        private System.Windows.Forms.RadioButton ButtonAutoSave60;
+        private System.Windows.Forms.RadioButton ButtonAutoSave30;
+        private System.Windows.Forms.RadioButton ButtonAutoSave15;
         private System.Windows.Forms.CheckBox checkCorrectQuestionableBrakingParams;
         private System.Windows.Forms.CheckBox checkOverspeedMonitor;
         private System.Windows.Forms.NumericUpDown numericExternalSoundPassThruPercent;
@@ -3108,5 +2912,6 @@
         private System.Windows.Forms.PictureBox pbModelInstancing;
         private System.Windows.Forms.Label labelDefaultDetail;
         private System.Windows.Forms.PictureBox pbViewingFOV;
+        private System.Windows.Forms.PictureBox pbAutoSave;
     }
 }

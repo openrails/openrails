@@ -161,7 +161,7 @@ namespace Orts.Simulation.AIs
                 FirstNode.NextSidingNode = Nodes[otherPath.FirstNode.NextSidingNode.Index];
             }
 
-            pathName = String.Copy(otherPath.pathName);
+            pathName = otherPath.pathName;
         }
 
         /// <summary>

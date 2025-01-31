@@ -72,8 +72,8 @@ namespace Orts.Simulation.AIs
         public Service_Definition ServiceDefinition = null; // train's service definition in .act file
         public bool UncondAttach = false;                   // if false it states that train will unconditionally attach to a train on its path
 
-        public float doorOpenDelay = -1f;
-        public float doorCloseAdvance = -1f;
+        public float DoorOpenTimer = -1f;
+        public float DoorCloseTimer = -1f;
         public AILevelCrossingHornPattern LevelCrossingHornPattern { get; set; }
 
         public float PathLength;
@@ -159,7 +159,7 @@ namespace Orts.Simulation.AIs
             {
                 RandomizeEfficiency(ref Efficiency);
             }
-            Name = String.Copy(name);
+            Name = name;
             TrafficService = trafficService;
             MaxVelocityA = maxVelocityA;
             // <CSComment> TODO: as Cars.Count is always = 0 at this point, activityClearingDistanceM is set to the short distance also for long trains
@@ -244,9 +244,9 @@ namespace Orts.Simulation.AIs
             Efficiency = inf.ReadSingle();
             MaxVelocityA = inf.ReadSingle();
             UncondAttach = inf.ReadBoolean();
-            doorCloseAdvance = inf.ReadSingle();
-            doorOpenDelay = inf.ReadSingle();
-            if (!Simulator.TimetableMode && doorOpenDelay <= 0 && doorCloseAdvance > 0 && Simulator.OpenDoorsInAITrains &&
+            DoorCloseTimer = inf.ReadSingle();
+            DoorOpenTimer = inf.ReadSingle();
+            if (!Simulator.TimetableMode && DoorOpenTimer <= 0 && DoorCloseTimer > 0 && Simulator.OpenDoorsInAITrains &&
                 MovementState == AI_MOVEMENT_STATE.STATION_STOP && StationStops.Count > 0)
             {
                 StationStop thisStation = StationStops[0];
@@ -337,8 +337,8 @@ namespace Orts.Simulation.AIs
             outf.Write(Efficiency);
             outf.Write(MaxVelocityA);
             outf.Write(UncondAttach);
-            outf.Write(doorCloseAdvance);
-            outf.Write(doorOpenDelay);
+            outf.Write(DoorCloseTimer);
+            outf.Write(DoorOpenTimer);
             if (LevelCrossingHornPattern != null)
             {
                 outf.Write(0);
@@ -375,8 +375,10 @@ namespace Orts.Simulation.AIs
                 float initialThrottlepercent = InitialThrottlepercent;
                 MUDynamicBrakePercent = -1;
                 AITrainBrakePercent = 0;
-
-                FirstCar.CurrentElevationPercent = 100f * FirstCar.WorldPosition.XNAMatrix.M32;
+                // Percent slope = rise / run -> the Y position of the forward vector gives us the 'rise'
+                // Derive the 'run' by assuming a hypotenuse length of 1, so run = sqrt(1 - rise^2)
+                float rise = FirstCar.WorldPosition.XNAMatrix.M32;
+                FirstCar.CurrentElevationPercent = 100f * (rise / (float)Math.Sqrt(1 - rise * rise));
                 // Give it a bit more gas if it is uphill
                 if (FirstCar.CurrentElevationPercent < -2.0) initialThrottlepercent = 40f;
                 // Better block gas if it is downhill
@@ -701,7 +703,7 @@ namespace Orts.Simulation.AIs
                 SetReversalAction();
 
                 // Check if out of control - if so, remove
-                if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && TrainType != TRAINTYPE.AI_PLAYERHOSTING)
+                if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && !(TrainType == TRAINTYPE.AI_PLAYERHOSTING || Autopilot))
                 {
                     Trace.TraceInformation("Train {0} ({1}) is removed for out of control, reason : {2}", Name, Number, OutOfControlReason.ToString());
                     RemoveTrain();
@@ -710,7 +712,7 @@ namespace Orts.Simulation.AIs
 
                 if (Cars[0] is MSTSLocomotive leadingLoco)
                 {
-                    var isRainingOrSnowing = Simulator.Weather.PricipitationIntensityPPSPM2 > 0;
+                    var isRainingOrSnowing = Simulator.Weather.PrecipitationIntensityPPSPM2 > 0;
                     if (leadingLoco.Wiper && !isRainingOrSnowing)
                         leadingLoco.SignalEvent(Event.WiperOff);
                     else if (!leadingLoco.Wiper && isRainingOrSnowing)
@@ -1851,13 +1853,12 @@ namespace Orts.Simulation.AIs
                     thisStation.ActualArrival = presentTime;
                     var stopTime = thisStation.CalculateDepartTime(presentTime, this);
                     actualdepart = thisStation.ActualDepart;
-                    doorOpenDelay = 4.0f;
-                    doorCloseAdvance = stopTime - 10.0f;
-                    if (PreUpdate) doorCloseAdvance -= 10;
-                    if (doorCloseAdvance - 6 < doorOpenDelay)
+                    DoorOpenTimer = PreUpdate ? 0 : 4;
+                    DoorCloseTimer = PreUpdate ? stopTime - 20 : stopTime - 10.0f;
+                    if (DoorCloseTimer - 6 < DoorOpenTimer)
                     {
-                        doorOpenDelay = 0;
-                        doorCloseAdvance = stopTime - 3;
+                        DoorOpenTimer = 0;
+                        DoorCloseTimer = Math.Max (stopTime - 3, 0);
                     }
 
 #if DEBUG_REPORTS
@@ -1887,10 +1888,10 @@ namespace Orts.Simulation.AIs
                     if (!IsFreight && Simulator.OpenDoorsInAITrains)
                     {
                         var frontIsFront = thisStation.PlatformReference == thisStation.PlatformItem.PlatformFrontUiD;
-                        if (doorOpenDelay > 0)
+                        if (DoorOpenTimer >= 0)
                         {
-                            doorOpenDelay -= elapsedClockSeconds;
-                            if (doorOpenDelay < 0)
+                            DoorOpenTimer -= elapsedClockSeconds;
+                            if (DoorOpenTimer < 0)
                             {
                                 if (thisStation.PlatformItem.PlatformSide[0])
                                 {
@@ -1904,19 +1905,19 @@ namespace Orts.Simulation.AIs
                                 }
                             }
                         }
-                        if (doorCloseAdvance > 0)
+                        if (DoorCloseTimer >= 0)
                         {
-                            doorCloseAdvance -= elapsedClockSeconds;
-                            if (doorCloseAdvance < 0)
+                            DoorCloseTimer -= elapsedClockSeconds;
+                            if (DoorCloseTimer < 0)
                             {
                                 if (thisStation.PlatformItem.PlatformSide[0])
                                 {
-                                    // Open left doors
+                                    // Close left doors
                                     SetDoors(frontIsFront ? DoorSide.Right : DoorSide.Left, false);
                                 }
                                 if (thisStation.PlatformItem.PlatformSide[1])
                                 {
-                                    // Open right doors
+                                    // Close right doors
                                     SetDoors(frontIsFront ? DoorSide.Left : DoorSide.Right, false);
                                 }
                             }
@@ -3589,7 +3590,7 @@ namespace Orts.Simulation.AIs
             if (FirstCar != null)
             {
                 FirstCar.BrakeSystem.AISetPercent(AITrainBrakePercent);
-                if (TrainType == TRAINTYPE.AI_PLAYERHOSTING)
+                if (TrainType == TRAINTYPE.AI_PLAYERHOSTING || Autopilot)
                 {
                     if (FirstCar is MSTSLocomotive)
                         ((MSTSLocomotive)FirstCar).SetTrainBrakePercent(AITrainBrakePercent);
@@ -3610,7 +3611,7 @@ namespace Orts.Simulation.AIs
             if (FirstCar != null)
             {
                 FirstCar.BrakeSystem.AISetPercent(AITrainBrakePercent);
-                if (TrainType == TRAINTYPE.AI_PLAYERHOSTING)
+                if (TrainType == TRAINTYPE.AI_PLAYERHOSTING || Autopilot)
                 {
                     if (FirstCar is MSTSLocomotive)
                         ((MSTSLocomotive)FirstCar).SetTrainBrakePercent(AITrainBrakePercent);
@@ -3630,7 +3631,7 @@ namespace Orts.Simulation.AIs
             if (FirstCar != null)
             {
                 FirstCar.ThrottlePercent = AITrainThrottlePercent;
-                if (TrainType == TRAINTYPE.AI_PLAYERHOSTING)
+                if (TrainType == TRAINTYPE.AI_PLAYERHOSTING || Autopilot)
                 {
                     if (FirstCar is MSTSLocomotive)
                     {
@@ -3731,7 +3732,7 @@ namespace Orts.Simulation.AIs
             {
                 FirstCar.ThrottlePercent = AITrainThrottlePercent;
                 FirstCar.BrakeSystem.AISetPercent(AITrainBrakePercent);
-                if (TrainType == TRAINTYPE.AI_PLAYERHOSTING)
+                if (TrainType == TRAINTYPE.AI_PLAYERHOSTING || Autopilot)
                 {
                     if (FirstCar is MSTSLocomotive)
                     {
@@ -4366,6 +4367,7 @@ namespace Orts.Simulation.AIs
                     (attachTrain as AITrain).SwitchToPlayerControl();
                     Simulator.OnPlayerLocomotiveChanged();
                     AI.AITrains.Add(this);
+                    AI.aiListChanged = true;
                 }
                 if (!UncondAttach)
                 {
@@ -6149,15 +6151,15 @@ namespace Orts.Simulation.AIs
                         break;
                 }
 
-                retString[7] = String.Copy(actString);
+                retString[7] = actString;
                 retString[8] = FormatStrings.FormatDistance(
                         nextActionInfo.ActivateDistanceM - PresentPosition[0].DistanceTravelledM, metric);
 
             }
 
-            retString[4] = String.Copy(movString);
-            retString[5] = String.Copy(abString);
-            retString[11] = String.Copy(nameString);
+            retString[4] = movString;
+            retString[5] = abString;
+            retString[11] = nameString;
 
             return retString;
         }
@@ -6167,7 +6169,7 @@ namespace Orts.Simulation.AIs
         /// When in autopilot mode, switches to player control
         /// </summary>
         /// 
-        public bool SwitchToPlayerControl()
+        public virtual bool SwitchToPlayerControl()
         {
             bool success = false;
             int leadLocomotiveIndex = -1;
@@ -6206,10 +6208,10 @@ namespace Orts.Simulation.AIs
 
         //================================================================================================//
         /// <summary>
-        /// When in autopilot mode, switches to autopilot control
+        /// When in player mode, switches to autopilot control
         /// </summary>
         /// 
-        public bool SwitchToAutopilotControl()
+        public virtual bool SwitchToAutopilotControl()
         {
             bool success = false;
             // MUDirection set within following method call

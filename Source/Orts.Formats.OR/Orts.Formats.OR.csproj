@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework Condition="'$(BuildDotNet)' == 'true'">net6-windows</TargetFramework>
+    <TargetFramework Condition="'$(TargetFramework)' == ''">net472</TargetFramework>
     <OutputType>Library</OutputType>
     <IsPublishable>False</IsPublishable>
     <AssemblyTitle>Open Rails OR Formats Library</AssemblyTitle>
@@ -21,8 +22,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj" />
-    <ProjectReference Include="..\ORTS.Content\ORTS.Content.csproj" />
+    <ProjectReference Include="..\Orts.Common\Orts.Common.csproj" />
+    <ProjectReference Include="..\Orts.Content\Orts.Content.csproj" />
     <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj" />
     <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj" />
     <ProjectReference Include="..\Orts.Parsers.OR\Orts.Parsers.OR.csproj" />

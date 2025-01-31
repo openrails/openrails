@@ -138,6 +138,8 @@ namespace Orts.Simulation.AIs
 
             // Prerun trains
             PrerunAI(playerTrainOriginalTrain, playerTrainFormedOfType, playerTrain, cancellation);
+            if (playerTrain != null && (AITrains.Count == 0 || AITrains[0] != playerTrain))
+                AITrains.Insert(0, playerTrain);
 
             ClockTime = clockTime;
             localTime = false;
@@ -169,7 +171,7 @@ namespace Orts.Simulation.AIs
                 {
                     // Timetable mode trains
                     TTTrain aiTrain = new TTTrain(Simulator, inf, this);
-                    if (aiTrain.TrainType != Train.TRAINTYPE.PLAYER) // Add to AITrains except when it is player train
+                    if (!(AITrains.Count > 0 && aiTrain.Number == AITrains[0].Number)) // Add to AITrains except when it is player train
                     {
                         AITrains.Add(aiTrain);
                     }
@@ -692,6 +694,7 @@ namespace Orts.Simulation.AIs
                     Simulator.StartReference.Remove(thisTrain.Number);
                     if (thisTrain.TrainType == Train.TRAINTYPE.AI_NOTSTARTED) thisTrain.TrainType = Train.TRAINTYPE.AI;
                     endPreRun = AddToWorldTT(thisTrain, newTrains);
+                    aiListChanged = true;
                     if (endPreRun) break;
                 }
             }
@@ -705,11 +708,13 @@ namespace Orts.Simulation.AIs
                     if (acttrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC && acttrain.TrainType != Train.TRAINTYPE.PLAYER)
                     {
                         activeTrains = true;
+                        aiListChanged = true;
                         break;
                     }
                     else if (acttrain.MovementState == AITrain.AI_MOVEMENT_STATE.AI_STATIC && actTTTrain.ActivateTime < clockTime)
                     {
                         activeTrains = true;
+                        aiListChanged = true;
                         break;
                     }
                 }
@@ -922,16 +927,32 @@ namespace Orts.Simulation.AIs
 
                         if (Simulator.Activity != null && car is MSTSSteamLocomotive mstsSteamLocomotive)
                         {
+                            
                             mstsSteamLocomotive.CombinedTenderWaterVolumeUKG = ORTS.Common.Kg.ToLb(mstsSteamLocomotive.MaxLocoTenderWaterMassKG) / 10.0f * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelWater / 100.0f;
-                            mstsSteamLocomotive.TenderCoalMassKG = mstsSteamLocomotive.MaxTenderCoalMassKG * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelCoal / 100.0f;
+
+                            // Adjust fuel stocks depending upon fuel used - in Activity mode
+                            if (mstsSteamLocomotive.SteamLocomotiveFuelType == MSTSSteamLocomotive.SteamLocomotiveFuelTypes.Wood)
+                            {
+                                mstsSteamLocomotive.TenderFuelMassKG = mstsSteamLocomotive.MaxTenderFuelMassKG * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelWood / 100.0f;
+                            }
+                            else if (mstsSteamLocomotive.SteamLocomotiveFuelType == MSTSSteamLocomotive.SteamLocomotiveFuelTypes.Oil)
+                            {
+                                mstsSteamLocomotive.TenderFuelMassKG = mstsSteamLocomotive.MaxTenderFuelMassKG * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100.0f;
+                            }
+                            else // defaults to coal fired
+                            {
+                                mstsSteamLocomotive.TenderFuelMassKG = mstsSteamLocomotive.MaxTenderFuelMassKG * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelCoal / 100.0f;
+                            }
                         }
 
-                        if (train.InitialSpeed != 0)
-                            car.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
+                        if (train.InitialSpeed != 0 && car is MSTSLocomotive loco)
+                            loco.SetPower(true);
                     }
                     else
                     {
-                        car.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
+                        if (car is MSTSLocomotive loco)
+                            loco.SetPower(true);
+
                         car.CarID = "AI" + train.Number.ToString() + " - " + (train.Cars.Count - 1).ToString();
                     }
 
@@ -1314,13 +1335,21 @@ namespace Orts.Simulation.AIs
                 Simulator.NameDictionary.Add(train.Name.ToLower(), train);
                 if (train.TrainType == Train.TRAINTYPE.PLAYER || train.TrainType == Train.TRAINTYPE.INTENDED_PLAYER)
                 {
+                    if (AITrains.Count > 0 && AITrains[0].TrainType == Train.TRAINTYPE.PLAYER)
+                        AITrains.RemoveAt(0);
                     AITrains.Insert(0, train);
+                }
+                else if (train.Number == 0)
+                {
+                    AITrains.Insert(0, train);
+                    Simulator.Trains.Add(train);
                 }
                 else
                 {
                     AITrains.Add(train);
                     Simulator.Trains.Add(train);
                 }
+                aiListChanged = true;
             }
             TrainsToAdd.Clear();
         }

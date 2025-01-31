@@ -641,7 +641,7 @@ Calculation of Train Speed Limit
   - local signal speed limit
   - local speedpost speed limit
   - local temporary speedpost speed limit
-  - first parameter ``MaxVelocityA`` in ``.con`` file, if bigger than zero and not 
+  - first parameter of ``MaxVelocity`` line in ``.con`` file, if bigger than zero and not 
     equal 40
   - locomotive speed limit in ``.eng`` file in the other cases. 
 
@@ -651,17 +651,10 @@ Calculation of Train Speed Limit
   - local signal speed limit
   - local speedpost speed limit
   - local temporary speedpost speed limit
-  - first parameter ``MaxVelocityA`` in ``.con`` file, if bigger than zero and not 
-    equal 40
+  - first parameter of ``MaxVelocity`` line in ``.con`` file, if bigger than zero and not 
+    equal 40, multiplied by the Efficiency as explained :ref:``here <operation-performance>``
   - locomotive speed limit in ``.eng`` file in the other cases. 
 
-
-  - route speed limit as defined in the ``.trk`` file
-  - local signal speed limit
-  - local speedpost speed limit
-  - local temporary speedpost speed limit
-  - first parameter ``MaxVelocityA`` in ``.con`` file, if bigger than zero, 
-    multiplied by the Efficiency as explained :ref:``here <operation-performance>``.
 
 Start of Run of AI train in a Section Reserved by Another Train
 ---------------------------------------------------------------

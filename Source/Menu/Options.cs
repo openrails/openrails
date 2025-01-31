@@ -27,16 +27,18 @@ using System.Windows.Forms;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
 using MSTS;
+using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Settings;
 using ORTS.Updater;
 
-namespace ORTS
+namespace Menu
 {
     public partial class OptionsForm : Form
     {
         readonly UserSettings Settings;
         readonly UpdateManager UpdateManager;
+        readonly string BaseDocumentationUrl;
 
         private GettextResourceManager catalog = new GettextResourceManager("Menu");
 
@@ -46,19 +48,7 @@ namespace ORTS
             public string Name { get; set; }
         }
 
-        public class ContentFolder
-        {
-            public string Name { get; set; }
-            public string Path { get; set; }
-
-            public ContentFolder()
-            {
-                Name = "";
-                Path = "";
-            }
-        }
-
-        public OptionsForm(UserSettings settings, UpdateManager updateManager, bool initialContentSetup)
+        public OptionsForm(UserSettings settings, UpdateManager updateManager, string baseDocumentationUrl)
         {
             InitializeComponent();
 
@@ -66,13 +56,14 @@ namespace ORTS
 
             Settings = settings;
             UpdateManager = updateManager;
+            BaseDocumentationUrl = baseDocumentationUrl;
 
             InitializeHelpIcons();
 
             // Collect all the available language codes by searching for
             // localisation files, but always include English (base language).
             var languageCodes = new List<string> { "en" };
-            foreach (var path in Directory.GetDirectories(Path.GetDirectoryName(Application.ExecutablePath)))
+            foreach (var path in Directory.GetDirectories(ApplicationInfo.ProcessDirectory))
                 if (Directory.GetFiles(path, "*.Messages.resources.dll").Length > 0)
                     languageCodes.Add(Path.GetFileName(path));
 
@@ -148,6 +139,10 @@ namespace ORTS
             comboPressureUnit.Text = Settings.PressureUnit;
             comboOtherUnits.Text = settings.Units;
             checkEnableTCSScripts.Checked = !Settings.DisableTCSScripts;    // Inverted as "Enable scripts" is better UI than "Disable scripts"
+            checkAutoSaveActive.Checked = Settings.AutoSaveActive;
+            ButtonAutoSave15.Checked = checkAutoSaveActive.Checked & Settings.AutoSaveInterval == 15;
+            ButtonAutoSave30.Checked = checkAutoSaveActive.Checked & Settings.AutoSaveInterval == 30;
+            ButtonAutoSave60.Checked = checkAutoSaveActive.Checked & Settings.AutoSaveInterval == 60;
 
             // Audio tab
             numericSoundVolumePercent.Value = Settings.SoundVolumePercent;
@@ -242,21 +237,6 @@ namespace ORTS
                 checkListDataLogTSContents.SetItemChecked(i, Settings.DataLogTSContents[i] == 1);
             checkDataLogStationStops.Checked = Settings.DataLogStationStops;
 
-            // Content tab
-            bindingSourceContent.DataSource = (from folder in Settings.Folders.Folders
-                                               orderby folder.Key
-                                               select new ContentFolder() { Name = folder.Key, Path = folder.Value }).ToList();
-            if (initialContentSetup)
-            {
-                tabOptions.SelectedTab = tabPageContent;
-                buttonContentBrowse.Enabled = false; // Initial state because browsing a null path leads to an exception
-                try
-                {
-                    bindingSourceContent.Add(new ContentFolder() { Name = "Train Simulator", Path = MSTSPath.Base() });
-                }
-                catch { }
-            }
-
             // System tab
             comboLanguage.Text = Settings.Language;
 
@@ -325,8 +305,7 @@ namespace ORTS
             numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
 
             // Experimental tab
-            numericUseSuperElevation.Value = Settings.UseSuperElevation;
-            numericSuperElevationMinLen.Value = Settings.SuperElevationMinLen;
+            checkUseSuperElevation.Checked = Settings.UseSuperElevation;
             numericSuperElevationGauge.Value = Settings.SuperElevationGauge;
             trackLODBias.Value = Settings.LODBias;
             trackLODBias_ValueChanged(null, null);
@@ -440,6 +419,8 @@ namespace ORTS
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
             Settings.Units = comboOtherUnits.SelectedValue.ToString();
             Settings.DisableTCSScripts = !checkEnableTCSScripts.Checked; // Inverted as "Enable scripts" is better UI than "Disable scripts"
+            Settings.AutoSaveActive = checkAutoSaveActive.Checked;
+            Settings.AutoSaveInterval = ButtonAutoSave15.Checked ? 15 : ButtonAutoSave30.Checked ? 30 : 60;
 
             // Audio tab
             Settings.SoundVolumePercent = (int)numericSoundVolumePercent.Value;
@@ -497,11 +478,6 @@ namespace ORTS
                 Settings.DataLogTSContents[i] = checkListDataLogTSContents.GetItemChecked(i) ? 1 : 0;
             Settings.DataLogStationStops = checkDataLogStationStops.Checked;
 
-            // Content tab
-            Settings.Folders.Folders.Clear();
-            foreach (var folder in bindingSourceContent.DataSource as List<ContentFolder>)
-                Settings.Folders.Folders.Add(folder.Name, folder.Path);
-
             // System tab
             Settings.Language = comboLanguage.SelectedValue.ToString();
             foreach (Control control in tabPageSystem.Controls)
@@ -516,8 +492,7 @@ namespace ORTS
             Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
 
             // Experimental tab
-            Settings.UseSuperElevation = (int)numericUseSuperElevation.Value;
-            Settings.SuperElevationMinLen = (int)numericSuperElevationMinLen.Value;
+            Settings.UseSuperElevation = checkUseSuperElevation.Checked;
             Settings.SuperElevationGauge = (int)numericSuperElevationGauge.Value;
             Settings.LODBias = trackLODBias.Value;
             Settings.SignalLightGlow = checkSignalLightGlow.Checked;
@@ -662,103 +637,6 @@ namespace ORTS
                 labelLODBias.Text = catalog.GetStringFmt("All detail (+{0}%)", trackLODBias.Value);
         }
 
-        private void dataGridViewContent_SelectionChanged(object sender, EventArgs e)
-        {
-            var current = bindingSourceContent.Current as ContentFolder;
-            textBoxContentName.Enabled = buttonContentBrowse.Enabled = current != null;
-            if (current == null)
-            {
-                textBoxContentName.Text = textBoxContentPath.Text = "";
-            }
-            else
-            {
-                textBoxContentName.Text = current.Name;
-                textBoxContentPath.Text = current.Path;
-            }
-        }
-
-        private void buttonContentAdd_Click(object sender, EventArgs e)
-        {
-            bindingSourceContent.AddNew();
-            buttonContentBrowse_Click(sender, e);
-        }
-
-        private void buttonContentDelete_Click(object sender, EventArgs e)
-        {
-            DeleteContent();
-        }
-
-        private void DeleteContent()
-        {
-            bindingSourceContent.RemoveCurrent();
-            // ResetBindings() is to work around a bug in the binding and/or data grid where by deleting the bottom item doesn't show the selection moving to the new bottom item.
-            bindingSourceContent.ResetBindings(false);
-        }
-
-        private void buttonContentBrowse_Click(object sender, EventArgs e)
-        {
-            using (var folderBrowser = new FolderBrowserDialog())
-            {
-                folderBrowser.SelectedPath = textBoxContentPath.Text;
-                folderBrowser.Description = catalog.GetString("Select an installation profile (MSTS folder) to add:");
-                folderBrowser.ShowNewFolderButton = false;
-                if (folderBrowser.ShowDialog(this) == DialogResult.OK)
-                {
-                    var current = bindingSourceContent.Current as ContentFolder;
-                    System.Diagnostics.Debug.Assert(current != null, "List should not be empty");
-                    textBoxContentPath.Text = current.Path = folderBrowser.SelectedPath;
-                    if (String.IsNullOrEmpty(current.Name))
-                        // Don't need to set current.Name here as next statement triggers event textBoxContentName_TextChanged()
-                        // which does that and also checks for duplicate names 
-                        textBoxContentName.Text = Path.GetFileName(textBoxContentPath.Text);
-                    bindingSourceContent.ResetCurrentItem();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Edits to the input field are copied back to the list of content.
-        /// They are also checked for duplicate names which would lead to an exception when saving.
-        /// if duplicate, then " copy" is silently appended to the entry in list of content.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void textBoxContentName_TextChanged(object sender, EventArgs e)
-        {
-            var current = bindingSourceContent.Current as ContentFolder;
-            if (current != null && current.Name != textBoxContentName.Text)
-            {
-                if (current.Path.ToLower().Contains(Application.StartupPath.ToLower()))
-                {
-                    // Block added because a succesful Update operation will empty the Open Rails folder and lose any content stored within it.
-                    MessageBox.Show(catalog.GetString
-                        ($"Cannot use content from any folder which lies inside the Open Rails folder {Application.StartupPath}\n\n")
-                        , "Invalid content location"
-                        , MessageBoxButtons.OK
-                        , MessageBoxIcon.Error);
-                    DeleteContent();
-                    return;
-                }
-
-                // Duplicate names lead to an exception, so append " copy" repeatedly until no longer unique
-                var suffix = "";
-                var isNameUnique = true;
-                while (isNameUnique)
-                {
-                    isNameUnique = false; // to exit after a single pass
-                    foreach (var item in bindingSourceContent)
-                        if (((ContentFolder)item).Name == textBoxContentName.Text + suffix)
-                        {
-                            suffix += " copy"; // To ensure uniqueness
-                            isNameUnique = true; // to force another pass
-                            break;
-                        }
-                }
-                current.Name = textBoxContentName.Text + suffix;
-                bindingSourceContent.ResetCurrentItem();
-            }
-        }
-
         private void checkAlerter_CheckedChanged(object sender, EventArgs e)
         {
             //Disable checkAlerterExternal when checkAlerter is not checked
@@ -790,6 +668,50 @@ namespace ORTS
         {
             numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
             labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
+        }
+
+        private void checkAutoSave_checkchanged(object sender, EventArgs e)
+        {
+            if (checkAutoSaveActive.Checked)
+            {
+                ButtonAutoSave15.Enabled = true;
+                ButtonAutoSave15.Checked = Settings.AutoSaveInterval == 15;
+                ButtonAutoSave30.Enabled = true;
+                ButtonAutoSave30.Checked = Settings.AutoSaveInterval == 30;
+                ButtonAutoSave60.Enabled = true;
+                ButtonAutoSave60.Checked = Settings.AutoSaveInterval == 60;
+            }
+            else
+            {
+                ButtonAutoSave15.Checked = false;
+                ButtonAutoSave15.Enabled = false;
+                ButtonAutoSave30.Checked = false;
+                ButtonAutoSave30.Enabled = false;
+                ButtonAutoSave60.Checked = false;
+                ButtonAutoSave60.Enabled = false;
+            }
+        }
+
+        private void buttonAutoSaveInterval_checkchanged(object sender, EventArgs e)
+        {
+            if (ButtonAutoSave15.Checked)
+            {
+                Settings.AutoSaveInterval = 15;
+                ButtonAutoSave30.Checked = false;
+                ButtonAutoSave60.Checked = false;
+            }
+            else if (ButtonAutoSave30.Checked)
+            {
+                Settings.AutoSaveInterval = 30;
+                ButtonAutoSave15.Checked = false;
+                ButtonAutoSave60.Checked = false;
+            }
+            else if (ButtonAutoSave60.Checked)
+            {
+                Settings.AutoSaveInterval = 60;
+                ButtonAutoSave15.Checked = false;
+                ButtonAutoSave30.Checked = false;
+            }
         }
 
         #region Help for Options
@@ -856,6 +778,7 @@ namespace ORTS
                 (pbPressureUnit, new Control[] { labelPressureUnit, comboPressureUnit }),
                 (pbOtherUnits, new Control[] { labelOtherUnits, comboOtherUnits }),
                 (pbEnableTcsScripts, new[] { checkEnableTCSScripts }),
+                (pbAutoSave, new[] { checkAutoSaveActive }),
                 (pbOverspeedMonitor, new[] { checkOverspeedMonitor }),
 
                 // Audio tab
@@ -888,6 +811,9 @@ namespace ORTS
                 (pbControlConfirmations, new Control[] { labelControlConfirmations, comboControlConfirmations }),
                 (pbWebServerPort, new Control[] { labelWebServerPort }),
                 (pbPerformanceTuner, new Control[] { checkPerformanceTuner, labelPerformanceTunerTarget }),
+
+                // Experimental tab
+                (pbSuperElevation, new[] { ElevationText }),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
             {
@@ -905,146 +831,156 @@ namespace ORTS
         /// <param name="e"></param>
         private void HelpIcon_Click(object sender, EventArgs _)
         {
-            const string baseUrl = "https://open-rails.readthedocs.io/en/latest";
             var urls = new Dictionary<object, string>
             {
+                // General tab
                 {
                     pbAlerter,
-                    baseUrl + "/options.html#alerter-in-cab"
+                    BaseDocumentationUrl + "/options.html#alerter-in-cab"
                 },
                 {
                     pbRetainers,
-                    baseUrl + "/options.html#retainer-valve-on-all-cars"
+                    BaseDocumentationUrl + "/options.html#retainer-valve-on-all-cars"
                 },
                 {
                     pbGraduatedRelease,
-                    baseUrl + "/options.html#graduated-release-air-brakes"
+                    BaseDocumentationUrl + "/options.html#graduated-release-air-brakes"
                 },
                 {
                     pbBrakePipeChargingRate,
-                    baseUrl + "/options.html#brake-pipe-charging-rate"
+                    BaseDocumentationUrl + "/options.html#brake-pipe-charging-rate"
                 },
                 {
                     pbPressureUnit,
-                    baseUrl + "/options.html#pressure-unit"
+                    BaseDocumentationUrl + "/options.html#pressure-unit"
                 },
                 {
                     pbOtherUnits,
-                    baseUrl + "/options.html#other-units"
+                    BaseDocumentationUrl + "/options.html#other-units"
                 },
                 {
                     pbEnableTcsScripts,
-                    baseUrl + "/options.html#disable-tcs-scripts"
+                    BaseDocumentationUrl + "/options.html#disable-tcs-scripts"
+                },
+                {
+                    pbAutoSave,
+                    BaseDocumentationUrl + "/options.html#auto-save"
                 },
                 {
                     pbOverspeedMonitor,
-                    baseUrl + "/options.html#overspeed-monitor"
+                    BaseDocumentationUrl + "/options.html#overspeed-monitor"
                 },
 
                 // Audio tab
                 {
                     pbSoundVolumePercent,
-                    baseUrl + "/options.html#audio-options"
+                    BaseDocumentationUrl + "/options.html#audio-options"
                 },
                 {
                     pbSoundDetailLevel,
-                    baseUrl + "/options.html#audio-options"
+                    BaseDocumentationUrl + "/options.html#audio-options"
                 },
                 {
                     pbExternalSoundPassThruPercent,
-                    baseUrl + "/options.html#audio-options"
+                    BaseDocumentationUrl + "/options.html#audio-options"
                 },
 
                 // Video tab
                 {
                     pbViewingDistance,
-                    baseUrl + "/options.html#viewing-distance"
+                    BaseDocumentationUrl + "/options.html#viewing-distance"
                 },
                 {
                     pbDistantMountains,
-                    baseUrl + "/options.html#distant-mountains"
+                    BaseDocumentationUrl + "/options.html#distant-mountains"
                 },
                 {
                     pbLODViewingExtension,
-                    baseUrl + "/options.html#extend-object-maximum-viewing-distance-to-horizon"
+                    BaseDocumentationUrl + "/options.html#extend-object-maximum-viewing-distance-to-horizon"
                 },
                 {
                     pbDynamicShadows,
-                    baseUrl + "/options.html#dynamic-shadows"
+                    BaseDocumentationUrl + "/options.html#dynamic-shadows"
                 },
                 {
                     pbShadowAllShapes,
-                    baseUrl + "/options.html#shadow-for-all-shapes"
+                    BaseDocumentationUrl + "/options.html#shadow-for-all-shapes"
                 },
                 {
                     pbWire,
-                    baseUrl + "/options.html#overhead-wire"
+                    BaseDocumentationUrl + "/options.html#overhead-wire"
                 },
                 {
                     pbDoubleWire,
-                    baseUrl + "/options.html#double-overhead-wires"
+                    BaseDocumentationUrl + "/options.html#double-overhead-wires"
                 },
                 {
                     pbSignalLightGlow,
-                    baseUrl + "/options.html#signal-light-glow"
+                    BaseDocumentationUrl + "/options.html#signal-light-glow"
                 },
                 {
                     pbDayAmbientLight,
-                    baseUrl + "/options.html#ambient-daylight-brightness"
+                    BaseDocumentationUrl + "/options.html#ambient-daylight-brightness"
                 },
                 {
                     pbModelInstancing,
-                    baseUrl + "/options.html#model-instancing"
+                    BaseDocumentationUrl + "/options.html#model-instancing"
                 },
                 {
                     pbVerticalSync,
-                    baseUrl + "/options.html#vertical-sync"
+                    BaseDocumentationUrl + "/options.html#vertical-sync"
                 },
                 {
                     pbAntiAliasing,
-                    baseUrl + "/options.html#anti-aliasing"
+                    BaseDocumentationUrl + "/options.html#anti-aliasing"
                 },
                 {
                     pbWorldObjectDensity,
-                    baseUrl + "/options.html#world-object-density"
+                    BaseDocumentationUrl + "/options.html#world-object-density"
                 },
                 {
                     pbLODBias,
-                    baseUrl + "/options.html#level-of-detail-bias"
+                    BaseDocumentationUrl + "/options.html#level-of-detail-bias"
                 },
                 {
                     pbViewingFOV,
-                    baseUrl + "/options.html#viewing-vertical-fov"
+                    BaseDocumentationUrl + "/options.html#viewing-vertical-fov"
                 },
 
                 // System tab
                 {
                     pbLanguage,
-                    baseUrl + "/options.html#language"
+                    BaseDocumentationUrl + "/options.html#language"
                 },
                 {
                     pbUpdateMode,
-                    baseUrl + "/options.html#updater-options"
+                    BaseDocumentationUrl + "/options.html#updater-options"
                 },
                 {
                     pbWindowed,
-                    baseUrl + "/options.html#windowed"
+                    BaseDocumentationUrl + "/options.html#windowed"
                 },
                 {
                     pbWindowGlass,
-                    baseUrl + "/options.html#window-glass"
+                    BaseDocumentationUrl + "/options.html#window-glass"
                 },
                 {
                     pbControlConfirmations,
-                    baseUrl + "/options.html#control-confirmations"
+                    BaseDocumentationUrl + "/options.html#control-confirmations"
                 },
                 {
                     pbWebServerPort,
-                    baseUrl + "/options.html#web-server-port"
+                    BaseDocumentationUrl + "/options.html#web-server-port"
                 },
                 {
                     pbPerformanceTuner,
-                    baseUrl + "/options.html#performance-tuner"
+                    BaseDocumentationUrl + "/options.html#performance-tuner"
+                },
+
+                // Experimental tab
+                {
+                    pbSuperElevation,
+                    BaseDocumentationUrl + "/options.html#super-elevation"
                 },
             };
             if (urls.TryGetValue(sender, out var url))

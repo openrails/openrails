@@ -1444,6 +1444,32 @@ namespace Orts.Viewer3D
                     volume *= ((MSTSWagon)SoundSource.Viewer.Camera.AttachedCar).TrackSoundPassThruPercent * 0.01f;
             }
 
+            // check if time of day, season and weather enable the sound; if not, set volume to zero
+            if (MSTSStream?.TimeIntervals != null)
+            {
+                var outOfInterval = true;
+                foreach (var timeInterval in MSTSStream.TimeIntervals)
+                {
+                    int hourOfDay = (int)SoundSource.Viewer.Simulator.ClockTime / 3600;
+                    if (hourOfDay >= timeInterval[0] && hourOfDay < timeInterval[1])
+                    {
+                        outOfInterval = false;
+                        break;
+                    }
+                }
+                if (outOfInterval)
+                    volume = 0;
+            }
+            if (MSTSStream?.Season != null )
+            {
+                if (!MSTSStream.Season[(int)(SoundSource.Viewer.Simulator.Season)])
+                    volume = 0;
+            }
+            if (MSTSStream?.Weather != null )
+            {
+                if (!MSTSStream.Weather[(int)(SoundSource.Viewer.Simulator.WeatherType)])
+                    volume = 0;
+            }
             ALSoundSource.Volume = volume;
         }
 
@@ -1494,6 +1520,10 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.VolumeCurve.Controls.DistanceControlled: return SoundSource.DistanceSquared;
                 case Orts.Formats.Msts.VolumeCurve.Controls.SpeedControlled: return car.AbsSpeedMpS;
                 case Orts.Formats.Msts.VolumeCurve.Controls.Variable1Controlled: return car.Variable1;
+                case Orts.Formats.Msts.VolumeCurve.Controls.Variable1_2Controlled: return car.Variable1_2;
+                case Orts.Formats.Msts.VolumeCurve.Controls.Variable1_3Controlled: return car.Variable1_3;
+                case Orts.Formats.Msts.VolumeCurve.Controls.Variable1_4Controlled: return car.Variable1_4;
+                case Orts.Formats.Msts.VolumeCurve.Controls.Variable2BoosterControlled: return car.Variable2_Booster;
                 case Orts.Formats.Msts.VolumeCurve.Controls.Variable2Controlled: return car.Variable2;
                 case Orts.Formats.Msts.VolumeCurve.Controls.Variable3Controlled: return car.Variable3;
                 case Orts.Formats.Msts.VolumeCurve.Controls.BrakeCylControlled: return car.BrakeSystem.GetCylPressurePSI();
@@ -1925,6 +1955,9 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.Distance_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Speed_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_2_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_3_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_4_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable2_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Dec_Past:
@@ -1939,6 +1972,9 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.Distance_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Speed_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_2_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_3_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_4_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable2_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Inc_Past:
@@ -2005,6 +2041,15 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_Inc_Past:
                     return car.Variable1;
+                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_2_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_2_Inc_Past:
+                    return car.Variable1_2;
+                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_3_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_3_Inc_Past:
+                    return car.Variable1_3;
+                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_4_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.Variable1_4_Inc_Past:
+                    return car.Variable1_4;
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable2_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable2_Inc_Past:
                     return car.Variable2;

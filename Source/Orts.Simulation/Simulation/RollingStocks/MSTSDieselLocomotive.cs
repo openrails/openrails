@@ -760,13 +760,13 @@ namespace Orts.Simulation.RollingStocks
                 DieselEngines.HandleEvent(PowerSupplyEvent.StopEngine);
             }
 
-            ApplyDirectionToTractiveForce();
+            ApplyDirectionToTractiveForce(ref TractiveForceN, 0);
 
             // Calculate the total tractive force for the locomotive - ie Traction + Dynamic Braking force.
             // Note typically only one of the above will only ever be non-zero at the one time.
             // For flipped locomotives the force is "flipped" elsewhere, whereas dynamic brake force is "flipped" below by the direction of the speed.
 
-            if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
+            if (DynamicBrakePercent > 0 && DynamicBrake && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
             {
                 float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsTractionSpeedMpS);
                 if (f > 0 && LocomotivePowerSupply.DynamicBrakeAvailable)
@@ -1074,7 +1074,7 @@ namespace Orts.Simulation.RollingStocks
             status.AppendFormat("{0} {1}\t", GetStringAttribute.GetPrettyName(Direction), Flipped ? Simulator.Catalog.GetString("(flipped)") : "");
             status.AppendFormat("{0}\t", IsLeadLocomotive() || RemoteControlGroup < 0 ? "———" : RemoteControlGroup == 0 ? Simulator.Catalog.GetString("Sync") : Simulator.Catalog.GetString("Async"));
             status.AppendFormat("{0}\t", FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK));
-            status.AppendFormat("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), CouplerOverloaded ? "???" : "");
+            status.AppendFormat("{0}{1}", FormatStrings.FormatForce(TractiveForceN, IsMetric), CouplerOverloaded ? "???" : "");
             status.Append(DieselEngines.GetDPStatus());
 
             return status.ToString();
@@ -1120,8 +1120,8 @@ namespace Orts.Simulation.RollingStocks
 
             // Load
             var data = 0f;
-            if (FilteredMotiveForceN != 0)
-                data = Math.Abs(this.FilteredMotiveForceN);
+            if (FilteredTractiveForceN != 0)
+                data = Math.Abs(this.FilteredTractiveForceN);
             else
                 data = Math.Abs(TractiveForceN);
             if (DynamicBrakePercent > 0)
@@ -1171,8 +1171,7 @@ namespace Orts.Simulation.RollingStocks
             var brakeInfoValue = brakeValue(Simulator.Catalog.GetString("BP"), Simulator.Catalog.GetString("Flow"));
             status.AppendFormat("{0:F0}\t", brakeInfoValue);
             // Air flow meter
-            brakeInfoValue = brakeValue(Simulator.Catalog.GetString("Flow"), Simulator.Catalog.GetString("EOT"));
-            status.AppendFormat("{0:F0}\t", brakeInfoValue);
+            status.AppendFormat("{0:F0}\t", FormatStrings.FormatAirFlow(FilteredBrakePipeFlowM3pS, IsMetric));
 
             // Remote
             if (dataDpu)
@@ -1393,7 +1392,7 @@ namespace Orts.Simulation.RollingStocks
         public override void SwitchToAutopilotControl()
         {
             SetDirection(Direction.Forward);
-            if (!LocomotivePowerSupply.MainPowerSupplyOn)
+            if (!LocomotivePowerSupply.MainPowerSupplyOn || !LocomotivePowerSupply.BatteryOn || !LocomotivePowerSupply.MasterKey.On)
             {
                 LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.QuickPowerOn);
             }

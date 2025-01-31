@@ -178,6 +178,18 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             }
         }
 
+        private static void getStatusControlAlerterPushButton(ref SwitchOnPanelStatus switchOnPanelStatus)
+        {
+            MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
+
+            if (locomotive.AlerterSnd)
+            {
+                switchOnPanelStatus.Status = "Alerter";
+                switchOnPanelStatus.Color = "red";
+                switchOnPanelStatus.Blinking = true;
+            }
+        }
+
         private static void getStatusGameControlMode(ref SwitchOnPanelStatus switchOnPanelStatus)
         {
             switch (Viewer.PlayerTrain.ControlMode)
@@ -210,7 +222,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
         {
             MSTSLocomotive locomotive = Viewer.PlayerLocomotive as MSTSLocomotive;
 
-            var autopilot = (locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING);
+            var autopilot = (locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || locomotive.Train.Autopilot);
             if (autopilot)
             {
                 switchOnPanelStatus.Status = Viewer.Catalog.GetString("On");
@@ -504,6 +516,9 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                         break;
                     case UserCommand.ControlEmergencyPushButton:
                         getStatusControlEmergencyPushButton(ref switchOnPanelStatus);
+                        break;
+                    case UserCommand.ControlAlerter:
+                        getStatusControlAlerterPushButton(ref switchOnPanelStatus);
                         break;
                     case UserCommand.GameSwitchManualMode:
                         getStatusGameControlMode(ref switchOnPanelStatus);

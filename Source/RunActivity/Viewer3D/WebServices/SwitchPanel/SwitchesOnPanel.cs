@@ -140,7 +140,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
             SwitchesOnPanelArray[3, 2].InitDefinition(UserCommand.DisplayTrainDrivingWindow);
             SwitchesOnPanelArray[3, 3].InitDefinition(UserCommand.DisplayNextStationWindow);
             SwitchesOnPanelArray[3, 4].InitDefinition(UserCommand.DisplaySwitchWindow);
-            SwitchesOnPanelArray[3, 5].InitDefinition(UserCommand.DisplayTrainOperationsWindow);
+            SwitchesOnPanelArray[3, 5].InitDefinition(UserCommand.DisplayTrainCarOperationsWindow);
             SwitchesOnPanelArray[3, 6].InitDefinition(UserCommand.DisplayTrainDpuWindow);
             SwitchesOnPanelArray[3, 7].InitDefinition(UserCommand.DisplayTrainListWindow);
             SwitchesOnPanelArray[3, 8].InitDefinition(UserCommand.DisplayEOTListWindow);
@@ -194,6 +194,9 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                         return false;
                     case UserCommand.DisplayHUD:
                         IsPressedDisplayHUD();
+                        return false;
+                    case UserCommand.DisplayTrainDpuWindow:
+                        IsPressedDisplayDpuWindow();
                         return false;
                     default:
                         return true;
@@ -324,6 +327,52 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                 {
                     Viewer.HUDWindow.Visible = false;
                     Viewer.HUDWindow.TextPage = 0;
+                }
+            }
+        }
+
+        private void IsPressedDisplayDpuWindow()
+        {
+            if (!Viewer.TrainDpuWindow.Visible)
+            {
+                // DpuWindow not visible
+                Viewer.TrainDpuWindow.normalTextMode = true;
+                Viewer.TrainDpuWindow.normalVerticalMode = true;
+                Viewer.TrainDpuWindow.Visible = true;
+                Viewer.TrainDpuWindow.UpdateWindowSize();
+            }
+            else
+            {
+                // visible
+                if ((Viewer.TrainDpuWindow.normalTextMode == true) && (Viewer.TrainDpuWindow.normalVerticalMode == true))
+                {
+                    Viewer.TrainDpuWindow.normalVerticalMode = false;
+                    Viewer.TrainDpuWindow.UpdateWindowSize();
+                    return;
+                }
+
+                if ((Viewer.TrainDpuWindow.normalTextMode == true) && (Viewer.TrainDpuWindow.normalVerticalMode == false))
+                {
+                    Viewer.TrainDpuWindow.normalTextMode = false;
+                    Viewer.TrainDpuWindow.normalVerticalMode = true;
+                    Viewer.TrainDpuWindow.UpdateWindowSize();
+                    return;
+                }
+
+                if ((Viewer.TrainDpuWindow.normalTextMode == false) && (Viewer.TrainDpuWindow.normalVerticalMode == true))
+                {
+                    Viewer.TrainDpuWindow.normalVerticalMode = false;
+                    Viewer.TrainDpuWindow.UpdateWindowSize();
+                    return;
+                }
+
+                if ((Viewer.TrainDpuWindow.normalTextMode == false) && (Viewer.TrainDpuWindow.normalVerticalMode == false))
+                {
+                    Viewer.TrainDpuWindow.normalTextMode = true;
+                    Viewer.TrainDpuWindow.normalVerticalMode = true;
+                    Viewer.TrainDpuWindow.Visible = false;
+                    Viewer.TrainDpuWindow.UpdateWindowSize();
+                    return;
                 }
             }
         }

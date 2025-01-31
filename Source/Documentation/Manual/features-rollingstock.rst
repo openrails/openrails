@@ -9,7 +9,391 @@ For a full list of parameters, see :ref:`Developing OR Content - Parameters and 
 Train Engine Lights
 ===================
 
-OR supports the whole set of lights accepted by MSTS.
+OR supports the whole set of lights accepted by MSTS, MSTS-bin, and adds many new
+options to enhance the variety and complexity of lighting systems that can be recreated.
+
+Lights with multiple conditions
+-------------------------------
+
+In the original MSTS light implementation, each light could only have one set of
+activation conditions. If the same light were to be activated in multiple situations,
+(for example, a light which should turn on for both the front and rear units)
+the entire light would need to be included twice, just with different conditions.
+
+.. index::
+   single: Conditions
+
+Open Rails now allows for a single light to have multiple ``Conditions ()`` blocks.
+If *any* one set of conditions is fulfilled, the light will be enabled. If no conditions
+are specified, the light will be assumed to be on always. An example of how this can
+be used to simplify ``Lights`` implementation is included below::
+
+		Light	(
+			comment( Nose light bright )
+			Conditions	(
+				Headlight ( 3 )
+				Unit ( 2 )
+			)
+			FadeIn	( 0.5 )
+			FadeOut	( 0.5 )
+			States	(	1
+				State	(
+					LightColour ( FFffffe6 )
+					Radius ( 0.6 )
+					Position ( 0.0 4.12 6.55 )
+				)
+			)
+		)
+		Light	(
+			comment( Nose light bright DPU )
+			Conditions	(
+				Headlight ( 3 )
+				Unit ( 4 )
+			)
+			FadeIn	( 0.5 )
+			FadeOut	( 0.5 )
+			States	(	1
+				State	(
+					LightColour ( FFffffe6 )
+					Radius ( 0.6 )
+					Position ( 0.0 4.12 6.55 )
+				)
+			)
+		)
+
+This set of two lights can be simplified to one light like this::
+        
+		Light	(
+			comment( Nose light bright )
+			Conditions	(
+				Headlight ( 3 )
+				Unit ( 2 )
+			)
+			Conditions	(
+				Headlight ( 3 )
+				Unit ( 4 )
+			)
+			FadeIn	( 0.5 )
+			FadeOut	( 0.5 )
+			States	(	1
+				State	(
+					LightColour ( FFffffe6 )
+					Radius ( 0.6 )
+					Position ( 0.0 4.12 6.55 )
+				)
+			)
+		)
+
+Both of these snippets produce the same result: a light that turns on when the 
+headlights are bright and the unit is first, or the last unit reversed (ie:
+distributed power). However, by specifying multiple conditions, the second
+implementation takes up much less space and guarentees that both modes of the
+light have the exact same ``States``. There is no hard limit on the number
+of conditions a light can have.
+
+Lights attached to shape sub-objects
+------------------------------------
+
+The standard lighting configuration attaches all lights to the main body of the
+locomotive or wagon. While this allows lights to move and rotate as the vehicle
+itself moves, the approach has proven insufficient for more complicated rail
+vehicles such as articulated steam locomotives.
+
+.. index::
+   single: ShapeHierarchy
+
+To facilitate lighting on such locomotives and wagons, Open Rails now allows
+for attachment of lights to any sub-object of the shape file. With the
+``ShapeHierarchy`` token placed in a ``Light ()`` block, the object the light
+will rotate and translate with can be defined using the hierarchy name of said
+object. Tools such as Shape Viewer can be used to determine the hierarchy name
+of a particular object in the shape file. For example, *"BOGIE1"* is the standard
+name for the frontmost bogie. A light attached to this bogie could be created
+like so::
+
+	Light	(
+		comment( CNDR Side Front Truck Light )
+		ShapeHierarchy ( "BOGIE1" )
+		States	(	1
+			State	(
+				LightColour ( 91fedf91 )
+				Position ( -1.427 0.583 -0.330 )
+				Azimuth ( -90 -90 -90 )
+				Radius ( 0.2 )
+			)
+		)
+	)
+
+Be aware that the ``Position`` of a light is measured relative to the center of
+the object to which the light is attached, not to the center of the locomotive
+itself. Furthermore, the naming of shape parts is not consistent between all
+shape files. If the shape name entered in ``ShapeHierarchy`` is invalid, a
+warning will be produced in the log file and the light will attach to the
+main body of the locomotive or wagon.
+
+If ``ShapeHierarchy`` is not specified in a light, the light will attach
+to the main body of the locomotive or wagon by default.
+
+.. _features-light-conditions:
+
+Open Rails specific lighting conditions
+---------------------------------------
+
+Open Rails also adds a set of new lighting conditions which offer additional
+flexibility in creating detailed light behaviors. Note that each of these
+must be inside the ``Conditions ()`` block of a ``Light ()`` in the .eng/.wag
+file to function. All conditions are optional and can be mixed and matched
+as needed, though only one of each condition can be included per conditions
+block!
+
+.. index::
+   single: Conditions(ORTSBattery
+
+Battery Switch
+''''''''''''''
+
+The light condition ``ORTSBattery`` allows a light to respond to the state of
+the :ref:`battery switch subsystem <physics-battery-switch>`. The valid settings
+and associated conditions for the light to turn *on* are as follows:
+
+- ``ORTSBattery ( 0 )`` Battery state is ignored (default)
+- ``ORTSBattery ( 1 )`` Battery switch must be on
+- ``ORTSBattery ( 2 )`` Battery switch must be off
+
+.. index::
+   single: Conditions(Brake
+
+Friction Brakes
+'''''''''''''''
+
+The ``Brake`` condition can be used to create brake indicator lights
+which turn on or off when the friction brakes are applied. Dynamic brakes
+have no effect.
+
+- ``Brake ( 0 )`` Brake application/release is ignored (default)
+- ``Brake ( 1 )`` Brakes must be released
+- ``Brake ( 2 )`` Brakes must be applied
+
+.. index::
+   single: Conditions(Reverser
+
+Reverser
+''''''''
+
+``Reverser`` is a very powerful condition that gives lights the ability
+to be enabled by the selected direction of travel. Note that a flipped
+locomotive or wagon will automatically flip the sensed reverser setting
+to ensure lights shine in the correct direction. Also, steam locomotive
+cutoff values between -10% and 10% will be detected as 'neutral'.
+
+- ``Reverser ( 0 )`` Reverser direction is ignored (default)
+- ``Reverser ( 1 )`` Reverser direction must be forward
+- ``Reverser ( 2 )`` Reverser direction must be reverse
+- ``Reverser ( 3 )`` Reverser direction must be neutral
+- ``Reverser ( 4 )`` Reverser direction must be forward or reverse
+- ``Reverser ( 5 )`` Reverser direction must be forward or neutral
+- ``Reverser ( 6 )`` Reverser direction must be reverse or neutral
+
+.. index::
+   single: Conditions(Doors
+
+Passenger Doors
+'''''''''''''''
+
+Many pieces of passenger rolling stock have indicator lights to inform
+the crew :ref:`passenger doors <features-passenger-doors>` are open. The
+``Doors`` condition is suited to this type of lighting.
+
+- ``Doors ( 0 )`` Passenger doors are ignored (default)
+- ``Doors ( 1 )`` Passenger doors must all be closed
+- ``Doors ( 2 )`` Passenger doors on the left must be open
+- ``Doors ( 3 )`` Passenger doors on the right must be open
+- ``Doors ( 4 )`` Passenger doors on both sides must be open
+- ``Doors ( 5 )`` Passenger doors on either the left or right must be open
+
+.. index::
+   single: Conditions(Horn
+   single: ORTSHornLightsTimer
+
+Horn (Automatic Flashing Ditch Lights)
+''''''''''''''''''''''''''''''''''''''
+
+Open Rails now supports the ability to configure flashing ditch lights
+(or any other type of horn activated auxiliary lighting)
+with the ``Horn`` light condition. When the horn is sounded, lights
+with the horn condition will (de)activate, and remain (de)activated
+for a time after the horn stops sounding. The standard timer is 30
+seconds, but can be changed by placing a ``ORTSHornLightsTimer``
+token in the ``engine()`` section of the locomotive with flashing lights.
+If ``ORTSHornLightsTimer( 0s )`` is set, the lights will only activate
+while the horn is sounding and immediately stop afterward.
+
+- ``Horn ( 0 )`` Horn state is ignored (default)
+- ``Horn ( 1 )`` Horn must not have been sounded recently
+- ``Horn ( 2 )`` Horn must have been sounded recently
+
+Note that the solid ditch lights state should use ``Horn(1)`` to
+prevent these lights overlapping the flashing state. An example
+implementation of a flashing ditch light's conditions (many other
+details removed for clarity) is provided below::
+
+		Light	(
+			comment( Right ditch light )
+			Conditions	(
+				Headlight ( 3 )
+				Unit ( 2 )
+				Horn ( 1 )
+			)
+			States	(	1
+				State	(
+					LightColour ( FFFFFFFF )
+					Radius ( r )
+					Position ( x y z )
+				)
+			)
+		)
+		Light	(
+			comment( Right ditch light Flashing )
+			Conditions	(
+				Headlight ( 3 )
+				Unit ( 2 )
+				Horn ( 2 )
+			)
+			States	(	2
+				State	(
+					LightColour ( FFFFFFFF )
+					Radius ( r )
+					Transition ( 1 )
+					Duration ( 0.5 )
+					Position ( x y z )
+				)
+				State	(
+					LightColour ( FFFFFFFF )
+					Radius ( r )
+					Transition ( 1 )
+					Duration ( 0.5 )
+					Position ( x y z )
+				)
+			)
+		)
+
+.. index::
+   single: Conditions(Bell
+   single: ORTSBellLightsTimer
+
+Bell (Automatic Flashing Ditch Lights)
+''''''''''''''''''''''''''''''''''''''
+
+Similar to ``Horn``, the ``Bell`` condition is useful for replicating
+systems with flashing lights activated by the bell, though this is
+less common than using the horn. Like with the horn, a timer can be
+set to keep the lights activated for a time after the bell starts ringing.
+Unlike with the horn, this timer is set to 0 seconds by default, meaning
+the lights will only remain (de)activated while the bell is currently ringing.
+If a timer is desired, ``engine(ORTSBellLightsTimer`` can be used in
+the locomotive's .eng file.
+
+- ``Bell ( 0 )`` Bell state is ignored (default)
+- ``Bell ( 1 )`` Bell must not have been ringing recently
+- ``Bell ( 2 )`` Bell must have been ringing recently or is ringing now
+
+.. index::
+   single: Conditions(Brake
+
+Multiple Unit Configuration (Locomotives Only)
+''''''''''''''''''''''''''''''''''''''''''''''
+
+Some MU systems send headlight signals through the wires connecting locomotives,
+but do not or cannot send these signals through wagons/coaches to remote
+locomotives (eg: distributed power, banking locomotives, etc.). The ``MU``
+light condition allows for some flexibility in adjusting light behavior depending
+on a locomotive's physical connection to the lead locomotive (or lack thereof).
+While meant for locomotives only, wagons are always treated as remote locomotives
+for the purposes of calculation.
+
+- ``MU ( 0 )`` Locomotives's connection to the lead locomotive is ignored (default)
+- ``MU ( 1 )`` Locomotive must be the lead locomotive itself
+- ``MU ( 2 )`` Locomotive must be in the same group of locomotives as the lead locomotive
+    - This condition will also be fulfilled for the lead locomotive itself.
+- ``MU ( 3 )`` Locomotive must be in a different group to the lead locomotive
+
+
+Multiple type locomotive light glows
+------------------------------------
+
+Introduction
+''''''''''''
+
+As a default all OR (and MSTS) locomotives use the same texture to reproduce 
+the glow of their lights. This however doesn't allow to easily implement non-round 
+or LED array lights, neither to provide special glowing effects.
+
+This feature allows to specifiy customized light glow textures for the locomotives. 
+If nothing is specified, the standard light glow texture is used. Moreover in the ``Content`` 
+folder, two light glow textures are present: the "historical" one, and a new one, 
+more realistic. As a default the "historical" light glow texture is used, for backwards 
+compatibility; however adding a line to the Lights block in the .eng file the "new" light 
+glow texture is taken. Customized light glow textures can be either used for all lights 
+of a loco, or only for a subset of them. Different lights in the same locomotive 
+may have different customized light glow textures.
+
+Detailed spec
+'''''''''''''
+
+
+1) In the ``Content`` folder there is the default ``LightGlow.png``, which is displayed if 
+   no changes are done to the .eng file.
+2) In such folder there is also an ``ORTSLightGlow.png``, which is maybe more realistic.
+3) adding a line within the .eng file it is possible to select either ORTSLightGlow.png or any other picture
+   with extension ``.png, .jpg, bmp, .gif, .ace, or .dds``.
+   
+
+   Here an example for the legacy Acela loco::
+
+    	Lights	( 17
+	        ORTSGraphic ( "ORTSLightGlow.png" )
+		      Light	(
+			      comment( Sphere of light )
+			      Type	( 1 )
+			      Conditions	(...
+
+  The code first searches for the .png file by building its directory starting from the directory of 
+  the .eng file; in this case the line could be e.g.::
+
+           ORTSGraphic ( "ORTSAcelaLightGlow.png" )
+
+4) The ``ORTSGraphic`` line can be added also for one or more ``Light()`` blocks. In that case the 
+   .png file is used only for the related Light block. Here an example::
+
+    Light	(
+			comment( Head light outer right bright )
+			Type		( 0 )
+			Conditions	(
+				Headlight ( 3 )
+				Unit ( 2 )
+				)
+			FadeIn	( 0.5 )
+			FadeOut	( 0.5 )
+			Cycle	( 0 )
+			States	(	1
+				State	(
+					Duration ( 0.0 )
+					LightColour ( ffffffff )
+					Position ( -0.5922 2.4037 9.63208 )
+					Azimuth ( 0.0 0.0 0.0 )
+					Transition ( 0 )
+					Radius ( 0.60 )
+					Elevation ( -50 -50 -50 )
+					)
+				)
+			ORTSGraphic (BigLightGlow.png)
+    )
+
+  OR searches for the file as it does for the general file for all lights, as explained above.
+  If the ``ORTSGraphic`` line is present both at the top of the ``Lights()`` and also in some 
+  ``Light()`` subblock, the line present in the subblock prevails. So it is possible to have an 
+  .eng-specific graphic for all the lights, except the ones that have an own ``ORTSGraphic`` line.
+
 
 Tilting trains
 ==============
@@ -355,6 +739,8 @@ and the state of these parameters when the wagon or locomotive is full.
    single: EmptyORTSWagonFrontalArea
    single: EmptyORTSDavisDragConstant
    single: EmptyCentreOfGravity_Y
+   single: EmptyBrakeRelayValveRatio
+   single: EmptyBrakeRelayValveInshot
    single: IsGondola
    single: UnloadingStartDelay
    single: FreightAnimContinuous
@@ -372,11 +758,13 @@ and the state of these parameters when the wagon or locomotive is full.
    single: FullORTSWagonFrontalArea
    single: FullORTSDavisDragConstant
    single: FullCentreOfGravity_Y
+   single: FullBrakeRelayValveRatio
+   single: FullBrakeRelayValveInshot
 
 To configure the stock correctly the following empty and full parameters need to be 
 included in the ORTSFreightAnims file. Empty values are included in the first block, 
 and full values are included in the second code block. A sample code block is shown 
-below.::
+below::
 
     ORTSFreightAnims
     (
@@ -411,6 +799,58 @@ below.::
       FullCentreOfGravity_Y ( 1.8 ) 
      )
   )
+
+For some rolling stock, it may be more realistic to handle variations in load/empty
+brake force by changing the brake cylinder pressure developed, rather than changing
+the brake force directly. In such cases, the empty/load relay valve parameters work
+best. Unlike other freight physics parameters, the relay valve ratio will not change
+continuously as freight is loaded. Instead, when the freight load is above 25% capacity,
+the loaded relay valve ratio is used, otherwise the empty ratio (or the ratio defined
+in the main .wag file) is used. The level of brake cylinder in-shot can also be changed
+depending on the load level as is often the case on load proportioning equipment. The
+standard behavior of these parameters is defined in more detail in the 
+:ref:`air brakes physics <physics-braking-parameters>` section.
+
+Here is an example of a gondola with a 50% load/empty valve::
+
+    ORTSMaxBrakeShoeForce ( 31300lb )
+    MaxHandbrakeForce ( 32000lb )
+
+    ORTSFreightAnims (
+        MSTSFreightAnimEnabled ( 0 )
+        WagonEmptyWeight( 28.9t-us )
+
+        EmptyBrakeRelayValveRatio ( 0.5 )
+        EmptyBrakeRelayValveInshot ( -15psi )
+
+        ORTSDavis_A ( 87.35lbf )
+        ORTSDavis_B ( 0.289lbf/mph )
+        ORTSDavis_C ( 0.144lbf/mph^2 )
+        ORTSWagonFrontalArea ( 120ft^2 )
+        ORTSDavisDragConstant ( 0.0012 )
+        EmptyCentreOfGravity_Y ( 1.377 )
+        IsGondola( 1 )
+        UnloadingStartDelay ( 5 )
+
+        FreightAnimContinuous (
+            IntakePoint ( 0.0 6.0 FreightCoal )
+            Shape ( COAL_LOAD.s )
+            MaxHeight ( 0.0 )
+            MinHeight ( -2.2 )
+            FreightWeightWhenFull ( 114.1t-us )
+            FullAtStart ( 0 )
+
+            FullBrakeRelayValveRatio ( 1.0 )
+            FullBrakeRelayValveInshot ( 0psi )
+
+            FullORTSDavis_A ( 258.5lbf )
+            FullORTSDavis_B ( 1.43lbf/mph )
+            FullORTSDavis_C ( 0.0504lbf/mph^2 )
+            ORTSWagonFrontalArea ( 120ft^2 )
+            ORTSDavisDragConstant ( 0.00042 )
+            FullCentreOfGravity_Y ( 2.251 ) 
+        )
+    ) 
 
 .. index::
    single: Shape
@@ -588,7 +1028,7 @@ the ``.load-or`` files in a consistent way:  ``40HCtriton.load-or`` is suggested
 container type and ``triton`` the brand painted on the container.
 
 Format of the .load-or file
-'''''''''''''''''''''''
+'''''''''''''''''''''''''''
 
 Here below a sample of a ``.load-or`` file::
 
@@ -1118,7 +1558,8 @@ containers of same length).
 Multiple passenger viewpoints
 =============================
 
-Additional passenger viewpoints may be added within a carriage that 
+Additional passenger viewpoints may be added within a carriage or 
+locomotive that 
 is provided with passenger viewpoint.
 
 .. index::
@@ -1128,7 +1569,7 @@ is provided with passenger viewpoint.
    single: RotationLimit
    single: StartDirection
 
-Such additional passenger viewpoints are defined within an include file 
+Such additional passenger viewpoints may be defined within an include file 
 with the format shown in 
 following example for the legacy oebarcar.wag (located in the 380 folder) 
 MSTS wagon::
@@ -1155,6 +1596,9 @@ MSTS wagon::
         )
   )
 
+If the passenger viewpoints are defined in the base .wag or .eng file, they 
+must be defined below the Inside () block.
+
 At runtime, when in passenger view, the player may pass from one viewpoint to 
 the other by pressing Shift-5.
 
@@ -1178,6 +1622,56 @@ swing, the first stroke within the .wav file should be at the time distance equi
 to the oscillation from center point to an oscillation end point. The file should have 
 one cue point at its beginning and one after the time interval of a complete bell swing 
 forward and backward, and should have a final fadeoff for best result. 
+
+Brake Equipment Animations
+==========================
+
+Open Rails now supports animation of brake rigging components driven by the brake system
+simulation.
+
+Brake Cylinder Animation
+------------------------
+
+On engines and wagons with :ref:`advanced brake cylinder parameters <physics-braking-parameters>`
+`ORTSBrakeCylinderDiameter` and `ORTSBrakeCylinderPistonTravel` defined, Open Rails will
+simulate the motion of the brake cylinders and brake rigging. This simulation can be used
+to drive animations of brake cylinders using animation matricies with names that
+start with `ORTSBRAKECYLINDER`. This animation type should NOT be used for any brake equipment
+that can be actuated by the brake cylinder and the handbrakes. See the section on brake rigging
+animation for details.
+
+Unlike other animation types, the keyframes for brake cylinders do not represent time, and cannot
+be set to arbitrary values. Instead, the key value represents the level of brake cylinder
+extension. A keyframe value of 8 represents the state where the brake cylinder has taken up the
+slack in the brake rigging, 10 represents the level of brake cylinder extension at 50 psi/3.5
+bar, and the maximum value of cylinder extension is 16, which should not be possible in normal
+operation. These values are the same regardless of the settings used in the engine or wagon file.
+NOTE: Brake animations should at minimum have 2 animation frames, one at keyframe 0 and the
+second at keyframe 8. Other keyframes are optional and may be included to fine-tune the animation.
+
+Note that the advanced brake cylinder calculations are only run on air brake systems on the
+player train to save computing power. As such, brake cylinder animations on AI trains
+or brake systems other than air brakes behave in a simplified manner.
+
+Handbrake Animation
+-------------------
+
+Handbrake wheels and levers can also be animated using the same process as two-state animations
+such as mirrors, and the keyframe values will represent time in seconds like other animations.
+The matrix name for animated handbrakes must begin with `ORTSHANDBRAKE`.
+
+Brake Rigging and Brake Shoe Animation
+--------------------------------------
+
+For any brake equipment that is actuated by both the handbrake and the brake cylinders (typically,
+this includes brake rigging and brake shoes, but sometimes also includes brake cylinders themselves),
+use animations with a matrix name starting with `ORTSBRAKERIGGING`. For this type of animation, the
+animation state will respond to the brake cylinder travel or the handbrake, whichever input is greater.
+
+The same keyframe rules as brake cylinder animations apply here. A key value of 8 should represent the state
+where the brake shoes have made contact with the friction surface, and no further motion of brake shoes
+should occur after 8, though the brake levers may still animate beyond this point. Applying the
+handbrake will also drive the animation to keyframe 10 (ie: same as 50 psi/3.5 bar application).
 
 Coupler and Airhose Animation
 =============================
@@ -1216,6 +1710,8 @@ Open rails uses some defaults to calculate the required movement and angles for 
 shape movement, however for greater accuracy the modeler can add specific values such as 
 ``ORTSLengthAirHose``. In addition the length values suggested in the Derailment Coefficient should 
 also be added.
+
+.. _features-passenger-doors:
 
 Passenger doors
 ===============
@@ -1290,7 +1786,7 @@ needed in the .cvf file (same applies also for wipers, doors and so on as seen f
   ORTS_EXTERNALLEFTWINDOWREAR
   ORTS_EXTERNALRIGHTWINDOWREAR
 
-LEFTWINDOW and RIGHTWINDOW are the names of the controls that can be inserted in the 
+ORTS_LEFTWINDOW and ORTS_RIGHTWINDOW are the names of the controls that can be inserted in the 
 .cvf file and in the 3Dcab .s file to command the state change with the mouse.
 
 Here is an example of the animation of the left window in a 2D cab::
@@ -1602,8 +2098,18 @@ Use the following .eng parameter to load a circuit breaker script::
   )
 
 ``ORTSCircuitBreaker`` refers to the circuit breaker script in the engine's ``Script`` 
-subfolder. For this field, the .cs extension is optional. "Automatic" and "Manual" load the generic OR 
-circuit breaker implementation, so do `not` use these names for your own script.
+subfolder. For this field, the .cs extension is optional. Alternatively, there are several
+built-in OR circuit breaker implementations:
+
+- "Automatic": no driver intervention required, circuit breaker is closed when conditions are met.
+- "Manual": a circuit breaker switch with open and closed positions.
+- "PushButtons": a circuit breaker with dedicated open and close buttons.
+- "TwoStage": circuit breaker closing is authorized by a switch. If the switch is off, 
+  the circuit breaker is kept open. Once the switch is activated, it is required to use
+  a second button to order the closing.
+
+Please do `not` use these names for your own script, since the generic implementation will
+be loaded instead.
 
 ``ORTSCircuitBreakerClosingDelay`` refers to the delay between the closing command of the circuit breaker
 and the effective closing of the circuit breaker.

@@ -340,18 +340,7 @@ namespace Orts.Viewer3D.Popups
             UpdateWindowSize();
         }
 
-        public override void TabAction() => CycleMode();
-
-        /// <summary>
-        /// Change between full and abbreviated text mode.
-        /// </summary>
-        public void CycleMode()
-        {
-            normalTextMode = !normalTextMode;
-            UpdateWindowSize();
-        }
-
-        private void UpdateWindowSize()
+        public void UpdateWindowSize()
         {
             labels = TrainDPUWindowList(Owner.Viewer, normalTextMode).ToList();
             ModifyWindowSize();
@@ -542,7 +531,7 @@ namespace Orts.Viewer3D.Popups
                 if (Visible)
                 {
                     // Detect Autopilot is on to avoid flickering when slim window is displayed
-                    var AutopilotOn = Owner.Viewer.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING ? true : false;
+                    var AutopilotOn = (Owner.Viewer.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || Owner.Viewer.PlayerLocomotive.Train.Autopilot) ? true : false;
 
                     //ResizeWindow, when the string spans over the right boundary of the window
                     maxFirstColWidth = labels.Max(x => x.FirstColWidth);
@@ -653,22 +642,18 @@ namespace Orts.Viewer3D.Popups
                     var k = 0;
                     var dpUnitId = 0;
                     var dpUId = -1;
-                    for (var i = 0; i < train.Cars.Count; i++)
+                    foreach (TrainCar locoCar in train.DPLeadUnits)
                     {
-                        if (train.Cars[i] is MSTSDieselLocomotive)
+                        if (locoCar is MSTSDieselLocomotive loco)
                         {
-                            if (dpUId != (train.Cars[i] as MSTSLocomotive).DPUnitID)
+                            var status = loco.GetDpuStatus(normalVerticalMode).Split('\t');
+                            var fence = ((dpUnitId != (dpUnitId = locoCar.RemoteControlGroup)) ? "|" : " ");
+                            for (var j = 0; j < status.Length; j++)
                             {
-                                var status = (train.Cars[i] as MSTSDieselLocomotive).GetDpuStatus(normalVerticalMode).Split('\t');
-                                var fence = ((dpUnitId != (dpUnitId = train.Cars[i].RemoteControlGroup)) ? "|" : " ");
-                                for (var j = 0; j < status.Length; j++)
-                                {
-                                    // fence
-                                    tempStatus[k, j] = fence + status[j];
-                                }
-                                dpUId = (train.Cars[i] as MSTSLocomotive).DPUnitID;
-                                k++;
+                                // fence
+                                tempStatus[k, j] = fence + status[j];
                             }
+                            k++;
                         }
                     }
 

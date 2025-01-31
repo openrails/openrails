@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework Condition="'$(BuildDotNet)' == 'true'">net6-windows</TargetFramework>
+    <TargetFramework Condition="'$(TargetFramework)' == ''">net472</TargetFramework>
     <OutputType>WinExe</OutputType>
     <RootNamespace>Orts</RootNamespace>
     <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
@@ -488,6 +489,9 @@
     <Content Include="Content\LightGlow.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Content\ORTSLightGlow.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\Loading.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -563,6 +567,12 @@
     <Content Include="Content\TrainOperationsCoupler.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Content\TrainOperations\TrainOperationsMap.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\TrainOperations\TrainOperationsMap32.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\train_TM.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -616,9 +626,9 @@
     <Content Include="Viewer3D\WebServices\Web\TrackMonitor\index.js" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
+    <ProjectReference Include="..\Orts.Common\Orts.Common.csproj">
       <Project>{da94d876-7d35-46c3-aece-aface72c686c}</Project>
-      <Name>ORTS.Common</Name>
+      <Name>Orts.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
       <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>
@@ -632,17 +642,17 @@
       <Project>{8A84696C-3559-49B8-B27F-BB6932D8A1C6}</Project>
       <Name>Orts.Parsers.Msts</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ORTS.Content\ORTS.Content.csproj">
+    <ProjectReference Include="..\Orts.Content\Orts.Content.csproj">
       <Project>{812685A7-2683-4102-A3CA-2A5CED2E61EE}</Project>
-      <Name>ORTS.Content</Name>
+      <Name>Orts.Content</Name>
     </ProjectReference>
     <ProjectReference Include="..\Orts.Parsers.OR\Orts.Parsers.OR.csproj">
       <Project>{1cc3bd5c-06c5-4784-b067-f93945a7ca2c}</Project>
       <Name>Orts.Parsers.OR</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ORTS.Settings\ORTS.Settings.csproj">
+    <ProjectReference Include="..\Orts.Settings\Orts.Settings.csproj">
       <Project>{67F84996-8769-4FD8-819B-464AF269037B}</Project>
-      <Name>ORTS.Settings</Name>
+      <Name>Orts.Settings</Name>
     </ProjectReference>
     <ProjectReference Include="..\Orts.Simulation\Orts.Simulation.csproj">
       <Project>{333c4378-d82e-4b47-b561-6ba923b8fdfd}</Project>
@@ -651,10 +661,10 @@
     <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj" />
     <ProjectReference Include="..\Orts.Formats.OR\Orts.Formats.OR.csproj" />
     <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj" />
-    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj" />
-    <ProjectReference Include="..\ORTS.Content\ORTS.Content.csproj" />
+    <ProjectReference Include="..\Orts.Common\Orts.Common.csproj" />
+    <ProjectReference Include="..\Orts.Content\Orts.Content.csproj" />
     <ProjectReference Include="..\Orts.Parsers.OR\Orts.Parsers.OR.csproj" />
-    <ProjectReference Include="..\ORTS.Settings\ORTS.Settings.csproj" />
+    <ProjectReference Include="..\Orts.Settings\Orts.Settings.csproj" />
     <ProjectReference Include="..\Orts.Simulation\Orts.Simulation.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -669,6 +679,19 @@
     <PackageReference Include="System.Management" Version="7.0.0" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="Unosquare.Swan.Lite" Version="3.1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="PostBuildActions.bat" />

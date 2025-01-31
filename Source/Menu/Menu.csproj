@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework Condition="'$(BuildDotNet)' == 'true'">net6-windows</TargetFramework>
+    <TargetFramework Condition="'$(TargetFramework)' == ''">net472</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>ORTS</RootNamespace>
     <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
     <UseWindowsForms>true</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
@@ -30,11 +30,19 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\GNU.Gettext.WinForms.dll</HintPath>
     </Reference>
-    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="KeyInputControl.cs">
       <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -44,12 +52,12 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj" />
-    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj" />
-    <ProjectReference Include="..\ORTS.Content\ORTS.Content.csproj" />
+    <ProjectReference Include="..\Orts.Common\Orts.Common.csproj" />
+    <ProjectReference Include="..\Orts.Content\Orts.Content.csproj" />
     <ProjectReference Include="..\Orts.Formats.OR\Orts.Formats.OR.csproj" />
-    <ProjectReference Include="..\ORTS.Menu\ORTS.Menu.csproj" />
-    <ProjectReference Include="..\ORTS.Settings\ORTS.Settings.csproj" />
-    <ProjectReference Include="..\ORTS.Updater\ORTS.Updater.csproj" />
+    <ProjectReference Include="..\Orts.Menu\Orts.Menu.csproj" />
+    <ProjectReference Include="..\Orts.Settings\Orts.Settings.csproj" />
+    <ProjectReference Include="..\Orts.Updater\Orts.Updater.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="RailDriverLegend.png" />
@@ -60,9 +68,16 @@
   </ItemGroup>
   <PropertyGroup />
   <ItemGroup>
+    <PackageReference Include="LibGit2Sharp" Version="0.29.0" />
     <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.355802">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.0.1641" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>
