@@ -84,11 +84,14 @@ namespace Orts.Viewer3D.Popups
         public int RowsCount;
         public int SpacerRowCount;
         public int SymbolsRowCount;
+        public int CurrentNewWidth;
         public bool BrakeHoseCarCoupling;
 
         const int SymbolWidth = 32;
         public static bool FontChanged;
         public static bool FontToBold;
+        public int DisplaySizeY;
+        public bool DisplayReSized = false;
         public int WindowHeightMin;
         public int WindowHeightMax;
         public int WindowWidthMin;
@@ -305,6 +308,7 @@ namespace Orts.Viewer3D.Popups
         {
             if (SymbolsRowCount > 0)
             {
+                DisplaySizeY = Owner.Viewer.DisplaySize.Y;
                 var desiredHeight = FontToBold ? Owner.TextFontDefaultBold.Height * RowsCount
                     : (Owner.TextFontDefault.Height * RowsCount) + SymbolWidth;
                 var desiredWidth = (SymbolsRowCount * SymbolWidth) + (SpacerRowCount * (SymbolWidth / 2)) + (LocoRowCount * (SymbolWidth * 2));
@@ -319,10 +323,12 @@ namespace Orts.Viewer3D.Popups
                 SizeTo(newWidth, newHeight);
                 var locationX = Location.X;
                 var locationY = newTop;
-                if (Owner.Viewer.TrainCarOperationsWindow.LayoutMoved)
+                if (Owner.Viewer.TrainCarOperationsWindow.LayoutMoved || newWidth != CurrentNewWidth || DisplayReSized)
                 {
                     CkeckCollision(newWidth, newHeight, ref locationX, ref locationY);
                     Owner.Viewer.TrainCarOperationsWindow.LayoutMoved = false;
+                    CurrentNewWidth = newWidth;
+                    DisplayReSized = false;
                 }
                 MoveTo(locationX, locationY);
             }
@@ -479,6 +485,12 @@ namespace Orts.Viewer3D.Popups
                     if (Owner.Viewer.PlayerLocomotive != null) LastPlayerLocomotiveFlippedState = Owner.Viewer.PlayerLocomotive.Flipped;
 
                     Layout();
+                    UpdateWindowSize();
+                }
+
+                if (DisplaySizeY != Owner.Viewer.DisplaySize.Y)
+                {
+                    DisplayReSized = true;
                     UpdateWindowSize();
                 }
 
