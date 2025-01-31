@@ -127,10 +127,12 @@ namespace ORTS.SettingsExporter
                 var dir = Path.GetDirectoryName(Path.Combine(ApplicationInfo.ProcessDirectory, saveFilePath));
                 if (!Directory.Exists(dir)) { Console.WriteLine("ERROR: Directory {0} to save to does not exist.", dir); Environment.Exit(1); }
             }
-            else
-            {
-                // load from a custom registry key
-                saveRegistryKey = toArg;
+            else if (toArg.StartsWith("SOFTWARE")) { saveRegistryKey = toArg; }
+            else 
+            { 
+                Console.WriteLine("ERROR: Invalid destination {0}.", toArg);
+                Console.WriteLine("ERROR: Registry key must start with \"SOFTWARE\", or INI path must include \".ini\".");
+                Environment.Exit(1);
             }
             #endregion
 
@@ -186,6 +188,14 @@ namespace ORTS.SettingsExporter
             // FUTURE: add here when a new settings class is added (that is not handled by UserSettings)
 
             Console.WriteLine("Info: Successfully saved to {0}.", userSettings.GetSettingsStoreName());
+
+            if (toArg.Equals("REG") || toArg.Equals(SettingsBase.DefaultRegistryKey))
+            {
+                Console.WriteLine();
+                Console.WriteLine("To use the settings in the registry, manually delete the INI file in the OpenRails folder.");
+                Console.WriteLine("  eg: {0}", Path.Combine(ApplicationInfo.ProcessDirectory, SettingsBase.DefaultSettingsFileName));
+            }
+ 
             return 0;
         }
 
@@ -197,8 +207,8 @@ namespace ORTS.SettingsExporter
             Console.WriteLine("  <from>     Specify the source to load settings from. It may be:");
             Console.WriteLine("               INI  : use the default INI file {0}.", SettingsBase.DefaultSettingsFileName);
             Console.WriteLine("               REG  : use the default registry key {0}.", SettingsBase.DefaultRegistryKey);
-            Console.WriteLine("               path : a specific INI file, relative to the OpenRails main folder. Must end with \".ini\".");
-            Console.WriteLine("               key  : a specific registry key, relative to the HKEY_CURRENT_USER key.");
+            Console.WriteLine("               path : a specific INI file, relative to the OpenRails main folder. Must include \".ini\".");
+            Console.WriteLine("               key  : a specific registry key, relative to the HKEY_CURRENT_USER key. Must start with \"SOFTWARE\".");
             Console.WriteLine("  <to>       Specify the destination to save the settings to. Similar to <from>.");
             Console.WriteLine("  /h, /help  Show this help.");
             Console.WriteLine();
