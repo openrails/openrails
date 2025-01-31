@@ -82,7 +82,7 @@ namespace Orts.Viewer3D.Popups
                 //data from Webpage
                 var trainCarWebpage = Owner.Viewer.TrainCarOperationsWebpage;
                 var carIDWebpage = trainCarWebpage != null && trainCarWebpage.Connections > 0 ? trainCarWebpage.CurrentCarID : "";
-                bool isVisibleTrainCarViewerOrWebpage = Owner.Viewer.TrainCarOperationsViewerWindow.Visible || (trainCarWebpage != null && trainCarWebpage.Connections > 0 && Owner.Viewer.TrainCarOperationsWebpage.TrainCarSelected);
+                bool isVisibleTrainCarViewerOrWebpage = (Owner.Viewer.TrainCarOperationsWindow.Visible && !Owner.Viewer.TrainCarOperationsViewerWindow.Visible) || Owner.Viewer.TrainCarOperationsViewerWindow.Visible || (trainCarWebpage != null && trainCarWebpage.Connections > 0 && Owner.Viewer.TrainCarOperationsWebpage.TrainCarSelected);
                 foreach (var car in cars.Keys)
                 {
                     // Calculates distance between camera and platform label.
