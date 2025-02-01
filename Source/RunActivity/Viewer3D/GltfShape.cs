@@ -572,11 +572,13 @@ namespace Orts.Viewer3D
                                     GetVertexElementFormat(gltfFile.Accessors[attributes.Current.Value], shape.MsfsFlavoured),
                                     GetVertexElementSemantic(attributes.Current.Key, out var index), index));
                                 Accessors.Add(attributes.Current.Value);
-                                if (Debugger.IsAttached) DebugName += string.Join(":", attributes.Current.Key, Path.GetFileNameWithoutExtension(gltfFileName));
+                                if (Debugger.IsAttached) DebugName = (DebugName != "" ? DebugName + "," : "") + attributes.Current.Key;
                             }
                             loop = attributes.MoveNext();
                         }
                         while (loop && gltfFile.Accessors[attributes.Current.Value].ByteOffset < previousOffset + byteStride);
+
+                        if (Debugger.IsAttached) DebugName += ":" + Path.GetFileNameWithoutExtension(gltfFileName);
 
                         if (Accessors.All(a => VertexBufferBindings.ContainsKey(a)))
                             continue;
@@ -1165,8 +1167,8 @@ namespace Orts.Viewer3D
                 var vertexAttributes = meshPrimitive.Attributes.SelectMany(a => distanceLevel.VertexBufferBindings.Where(kvp => kvp.Key == a.Value).Select(kvp => kvp.Value)).ToList();
                 var vertexCount = vertexAttributes.FirstOrDefault().VertexBuffer?.VertexCount ?? 0;
 
-                // Currently three PBR vertex input combinations are possible. Any model must use either of those.
-                // If a vertex attribute buffer is missing to match one of the three, a dummy one must be added.
+                // Currently the below PBR vertex input combinations are possible. Any model must use one of those pipelines.
+                // If vertex attribute buffer(s) are missing to match one of these, dummy one(s) must be added.
                 // The order of the vertex buffers is unimportant, the shader will attach by semantics.
                 // If more combinations to be added in the future, there must be support for them both in SceneryShader and ShadowMapShader.
                 //
@@ -1197,7 +1199,7 @@ namespace Orts.Viewer3D
                 }
 
                 // Cannot proceed without Normal at all, must add a dummy one.
-                if (!meshPrimitive.Attributes.TryGetValue("NORMAL", out var accessorNormals))
+                if (!meshPrimitive.Attributes.ContainsKey("NORMAL"))
                 {
                     vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
                         new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.Normal, 0)), vertexCount, BufferUsage.None) { Name = "NORMAL_DUMMY" }));
@@ -1207,7 +1209,7 @@ namespace Orts.Viewer3D
                     options |= SceneryMaterialOptions.PbrHasNormals;
 
                 // Cannot proceed without TexCoord_0 at all, must add a dummy one.
-                if (!meshPrimitive.Attributes.TryGetValue("TEXCOORD_0", out var accessorTexcoords))
+                if (!meshPrimitive.Attributes.ContainsKey("TEXCOORD_0"))
                 {
                     vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
                         new VertexDeclaration(new VertexElement(0, VertexElementFormat.NormalizedShort2, VertexElementUsage.TextureCoordinate, 0)), vertexCount, BufferUsage.None) { Name = "TEXCOORD_0_DUMMY" }));
@@ -1232,10 +1234,15 @@ namespace Orts.Viewer3D
                         // Per-pixel tangent calculation gives better result. In that case we are not using the provided Tangent vertex attribute at all, so it can be removed. (See BoomBox)
                         if (TangentsAlwaysCalculatedPerPixel)
                         {
-                            var removables = vertexAttributes.Where(b => b.VertexBuffer.VertexDeclaration.GetVertexElements().Any(e => e.VertexElementUsage == VertexElementUsage.Tangent));
+                            var removables = vertexAttributes.Where(b => {
+                                var ve = b.VertexBuffer.VertexDeclaration.GetVertexElements();
+                                return ve.Count() == 1 && ve.Any(e => e.VertexElementUsage == VertexElementUsage.Tangent);
+                            });
                             foreach (var r in removables)
                                 Disposables.Enqueue(r.VertexBuffer);
-                            vertexAttributes.RemoveAll(b => removables.Contains(b));
+                            if (vertexAttributes.RemoveAll(b => removables.Contains(b)) == 0)
+                                // Unsuccessful removal because the buffers are interleaved
+                                options |= SceneryMaterialOptions.PbrHasTangents;
                         }
                         else
                             options |= SceneryMaterialOptions.PbrHasTangents;
@@ -1356,6 +1363,7 @@ namespace Orts.Viewer3D
         {
             public readonly int[] Joints; // Replaces ShapePrimitive.HierarchyIndex for non-skinned primitives
             public readonly Matrix[] InverseBindMatrices;
+            static readonly Matrix[] UnskinnedInverseBindMatrix = new[] { Matrix.Identity };
 
             /// <summary>
             /// It is used in <see cref="SetRenderMatrices"/> to store the animated bones until uploading them to GPU.
@@ -1427,7 +1435,7 @@ namespace Orts.Viewer3D
                 {
                     // Non-skinned model
                     Joints = new[] { HierarchyIndex };
-                    InverseBindMatrices = new[] { Matrix.Identity };
+                    InverseBindMatrices = UnskinnedInverseBindMatrix;
                 }
                 else
                 {
@@ -1518,7 +1526,7 @@ namespace Orts.Viewer3D
                         ActiveVertexBufferBindings[8 + MorphConfig[8] * i + j] = VertexBufferBindings[8 + MorphConfig[8] * ActiveWeightIndices[i] + j];
                     ActiveWeights[i] = MorphWeights[ActiveWeightIndices[i]];
                 }
-                // Fill up the rest of ActiveVertexBufferBindings with anything.
+                // Fill up the rest of ActiveVertexBufferBindings with anything, as a padding.
                 for (var i = 8 + MorphConfig[8] * w; i < 16; i++)
                     ActiveVertexBufferBindings[i] = VertexBufferBindings[8];
 
@@ -1726,12 +1734,7 @@ namespace Orts.Viewer3D
             Quaternion.Normalize(Quaternion.Multiply(v1, A(t)) + Quaternion.Multiply(b1, B(t)) + Quaternion.Multiply(v2, C(t)) + Quaternion.Multiply(a2, D(t)));
 
         /// <summary>
-        /// It is used to store the adjustments needed for the Khronos sample models for being able to show them all at once in a single consist.
-        /// For this to work 'git clone https://github.com/KhronosGroup/glTF-Sample-Models.git' to the MSTS/TRAINS/TRAINSET folder, so that the
-        /// models will be available in e.g. MSTS/TRAINS/TRAINSET/glTF-Sample-Models/2.0/... folder. Then start like:
-        /// RunActivity.exe -start -explorer "C:\Devel\MSTS\ROUTES\USA2\PATHS\tut6path.pat" "glTF-Sample-Models" 12:00 1 0
-        /// RunActivity.exe -start -explorer "C:\Devel\MSTS\ROUTES\USA2\PATHS\tut6path.pat" "glTF-Sample-Models&AnimatedTriangle" 12:00 1 0
-        /// RunActivity.exe -start -explorer "C:\Devel\MSTS\ROUTES\USA2\PATHS\tut6path.pat" "glTF-Sample-Models#2" 12:00 1 0
+        /// Adjustments needed for the Khronos sample assets models.
         /// </summary>
         static readonly Dictionary<string, Matrix> SampleModelsAdjustments = new Dictionary<string, Matrix>
         {
