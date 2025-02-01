@@ -5094,7 +5094,12 @@ namespace Orts.Simulation.RollingStocks
             if (Train == null)
                 return;
 
+            // change the up/down flag for the reset logic (above)
+            // change the forward/reverse flag for OdometerM calculation (see OdometerM get() function)
+            // change the reference point to match the up/down flag
             OdometerCountingUp = !OdometerCountingUp;
+            OdometerCountingForwards = !OdometerCountingForwards;
+            OdometerResetPositionM = OdometerCountingUp ? OdometerResetPositionM - Train.Length : OdometerResetPositionM + Train.Length;
 
             Simulator.Confirmer.Confirm(CabControl.Odometer, OdometerCountingUp ? CabSetting.Increase : CabSetting.Decrease);
         }
