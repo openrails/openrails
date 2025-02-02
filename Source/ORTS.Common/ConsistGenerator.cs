@@ -25,7 +25,12 @@ using System.Text;
 namespace ORTS.Common
 {
     /// <summary>
-    /// Utility functions to procedurally generate con and eng files to e.g. display the Khronos glTF-Sample-Models for testing purposes.
+    /// Utility functions to procedurally generate con and eng files to display the Khronos glTF-Sample-Assets for testing purposes.
+    /// For this to work 'git clone https://github.com/KhronosGroup/glTF-Sample-Assets.git' to the MSTS/TRAINS/TRAINSET folder,
+    /// so that the models will be available in e.g. MSTS/TRAINS/TRAINSET/glTF-Sample-Assets/Models/... folder. Then start like:
+    /// RunActivity.exe -start -explorer "C:\Devel\MSTS\ROUTES\USA2\PATHS\tut6path.pat" "glTF-Sample-Assets" 12:00 1 0
+    /// RunActivity.exe -start -explorer "C:\Devel\MSTS\ROUTES\USA2\PATHS\tut6path.pat" "glTF-Sample-Assets&AnimatedTriangle" 12:00 1 0
+    /// RunActivity.exe -start -explorer "C:\Devel\MSTS\ROUTES\USA2\PATHS\tut6path.pat" "glTF-Sample-Assets#2" 12:00 1 0
     /// </summary>
     public class ConsistGenerator
     {
@@ -56,14 +61,14 @@ namespace ORTS.Common
         static readonly Dictionary<string, string> Wagons = new Dictionary<string, string>();
         static readonly Dictionary<string, string> SubDirectories = new Dictionary<string, string>
         {
-            { "glTF-Sample-Models", "glTF"},
-            { "glTF-Sample-Models-Binary", "glTF-Binary"},
-            { "glTF-Sample-Models-Embedded", "glTF-Embedded"},
-            { "glTF-Sample-Models-Draco", "glTF-Draco"},
-            { "glTF-Sample-Models-Quantized", "glTF-Quantized"},
+            { "glTF-Sample-Assets", "glTF"},
+            { "glTF-Sample-Assets-Binary", "glTF-Binary"},
+            { "glTF-Sample-Assets-Embedded", "glTF-Embedded"},
+            { "glTF-Sample-Assets-Draco", "glTF-Draco"},
+            { "glTF-Sample-Assets-Quantized", "glTF-Quantized"},
         };
 
-        static string GltfExtension(string keyword) => keyword == "glTF-Sample-Models-Binary" ? ".glb" : ".gltf";
+        static string GltfExtension(string keyword) => keyword.EndsWith("-Binary") ? ".glb" : ".gltf";
         static string RequestedType(string requestedPath) => SubDirectories.FirstOrDefault(ext => ext.Key == Path.GetFileNameWithoutExtension(requestedPath).Split('#', '&').FirstOrDefault()).Key;
         
         public static bool IsConsistRecognized(string requestedPath) => RequestedType(requestedPath) != null;
@@ -76,7 +81,7 @@ namespace ORTS.Common
         /// <returns></returns>
         public static Stream GetConsist(string requestedPath)
         {
-            var trainsetDir = "glTF-Sample-Models";
+            var trainsetDir = "glTF-Sample-Assets";
             var baseDir = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(requestedPath)), "TRAINSET", trainsetDir);
             if (!Directory.Exists(baseDir))
             {
@@ -94,9 +99,9 @@ namespace ORTS.Common
                 GltfVisualTestRun = true;
 
                 var models = Directory.EnumerateFileSystemEntries(baseDir, "*.*", SearchOption.AllDirectories)
-                    .Where(f => !f.Contains(Path.Combine(baseDir, "2.0")) && !f.Contains(Path.Combine(baseDir, "1.0")) && (f.EndsWith(".gltf") || f.EndsWith(".glb")))
+                    .Where(f => !f.Contains(Path.Combine(baseDir, "Models")) && (f.EndsWith(".gltf") || f.EndsWith(".glb")))
                     .Select(f => Path.GetFileNameWithoutExtension(f))
-                    .Concat(Directory.EnumerateDirectories(Path.Combine(baseDir, "2.0")))
+                    .Concat(Directory.EnumerateDirectories(Path.Combine(baseDir, "Models")))
                     .Where((m, n) => Path.GetFileName(m) == (Path.GetFileNameWithoutExtension(requestedPath).Split('&').ElementAtOrDefault(1) ?? Path.GetFileName(m)) &&
                         n == (int.TryParse(Path.GetFileNameWithoutExtension(requestedPath).Split('#').ElementAtOrDefault(1), out var requestedModelNumber) ? requestedModelNumber : n));
 
@@ -114,7 +119,7 @@ namespace ORTS.Common
                     {
                         // When gltf files got dropped into the sample directory, show that ones too.
                         file = Directory.GetFiles(baseDir, Path.GetFileNameWithoutExtension(model) + "*.gl*", SearchOption.AllDirectories)
-                            .Where(f => !f.Contains(Path.Combine(baseDir, "2.0")) && !f.Contains(Path.Combine(baseDir, "1.0")) && (f.EndsWith(".gltf") || f.EndsWith(".glb")))
+                            .Where(f => !f.Contains(Path.Combine(baseDir, "Models")) && (f.EndsWith(".gltf") || f.EndsWith(".glb")))
                             .FirstOrDefault()
                             ?.Substring(baseDir.Length + 1)
                             ?.Replace(@"\", "/");
