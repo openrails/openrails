@@ -338,8 +338,9 @@ namespace Orts.Viewer3D
             // These are only temporary variables needed during the construction
             readonly Stack<int> TempStack = new Stack<int>();
             readonly List<VertexElement> VertexElements = new List<VertexElement>();
-            readonly List<int> Accessors = new List<int>();
+            readonly Dictionary<int, string> Accessors = new Dictionary<int, string>();
             string DebugName = "";
+            internal const int BUFFER_INDEX_OFFSET = 10000; // Arbitrary number
 
             public GltfDistanceLevel(GltfShape shape, int lodId, Gltf gltfFile, string gltfFileName, GltfDistanceLevel lod0DetailLevel)
             {
@@ -499,7 +500,7 @@ namespace Orts.Viewer3D
                         // Sparse buffers may index into a null buffer, so create a real one for these.
                         if (GetBufferViewSpan(accessor.BufferView, 0) is var buffer && buffer.IsEmpty)
                         {
-                            BinaryBuffers.Add(1000 + a, new byte[accessor.Count * GetSizeInBytes(accessor)]);
+                            BinaryBuffers.Add(BUFFER_INDEX_OFFSET + a, new byte[accessor.Count * GetSizeInBytes(accessor)]);
                             buffer = BinaryBuffers.Last().Value.AsSpan();
                         }
                         // It might have already been processed in another distance level.
@@ -550,48 +551,62 @@ namespace Orts.Viewer3D
                     // Trigger the loading of the binary buffer.
                     GetBufferViewSpan(bufferView.Key, 0);
                     
-                    var previousOffset = 0;
                     var attributes = bufferView.GetEnumerator();
                     var loop = attributes.MoveNext();
+                    var semantic = GetVertexElementSemantic(attributes.Current.Key, out var index);
                     do
                     {
                         DebugName = "";
                         VertexElements.Clear();
                         Accessors.Clear();
-                        previousOffset = gltfFile.Accessors[attributes.Current.Value].ByteOffset;
+                        var previousOffset = gltfFile.Accessors[attributes.Current.Value].ByteOffset;
+                        var currentOffset = previousOffset;
+                        var previousAttribute = attributes.Current.Key;
+                        var bindingKey = attributes.Current.Value + (int)semantic * BUFFER_INDEX_OFFSET;
 
                         // For interleaved data, multiple vertexElements and multiple accessors will be in a single vertexBuffer.
                         // For non-interleaved data, we create a distinct vertexBuffer for each accessor.
                         // A bufferView may consist of a series of (non-interleaved) accessors of POSITION:NORMAL:POSITION:NORMAL:POSITION:NORMAL etc. (See: 2CylinderEngine)
                         // Also e.g. TEXCOORDS_0 and TEXCOORDS_1 may refer to the same accessor.
+                        // Also POSITION and NORMAL may refer to the same accessor (see: PrimitiveModeNormalsTest), however due to the MonoGame limitations
+                        // we cannot use the same VertexBuffer with two different VertexElementUsage-s, duplicate ones are needed with the same data.
                         do
                         {
-                            if (!Accessors.Contains(attributes.Current.Value) && !VertexBufferBindings.ContainsKey(attributes.Current.Value))
+                            if (!Accessors.ContainsKey(attributes.Current.Value) && !VertexBufferBindings.ContainsKey(bindingKey))
                             {
                                 VertexElements.Add(new VertexElement(gltfFile.Accessors[attributes.Current.Value].ByteOffset - previousOffset,
-                                    GetVertexElementFormat(gltfFile.Accessors[attributes.Current.Value], shape.MsfsFlavoured),
-                                    GetVertexElementSemantic(attributes.Current.Key, out var index), index));
-                                Accessors.Add(attributes.Current.Value);
+                                    GetVertexElementFormat(gltfFile.Accessors[attributes.Current.Value], shape.MsfsFlavoured), semantic, index));
                                 if (Debugger.IsAttached) DebugName = (DebugName != "" ? DebugName + "," : "") + attributes.Current.Key;
                             }
-                            loop = attributes.MoveNext();
+                            // Multiple accessors to same bufferview with same semantic. Will reuse the VertexBuffer:
+                            //while (loop && previousOffset == currentOffset && attributes.Current.Key == previousAttribute)
+                            {
+                                if (!Accessors.ContainsKey(attributes.Current.Value) && !VertexBufferBindings.ContainsKey(bindingKey))
+                                {
+                                    Accessors.Add(attributes.Current.Value, attributes.Current.Key);
+                                }
+                                loop = attributes.MoveNext();
+                                semantic = GetVertexElementSemantic(attributes.Current.Key, out index);
+                                currentOffset = gltfFile.Accessors[attributes.Current.Value].ByteOffset;
+                            }
                         }
-                        while (loop && gltfFile.Accessors[attributes.Current.Value].ByteOffset < previousOffset + byteStride);
+                        while (loop && previousOffset < currentOffset && currentOffset < previousOffset + byteStride);
+
+                        if (VertexBufferBindings.ContainsKey(bindingKey))
+                            continue;
 
                         if (Debugger.IsAttached) DebugName += ":" + Path.GetFileNameWithoutExtension(gltfFileName);
 
-                        if (Accessors.All(a => VertexBufferBindings.ContainsKey(a)))
-                            continue;
-
-                        var vertexCount = gltfFile.Accessors[Accessors.First()].Count;
+                        var vertexCount = Accessors.Max(a => gltfFile.Accessors[a.Key].Count);
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice, new VertexDeclaration(byteStride, VertexElements.ToArray()), vertexCount, BufferUsage.None) { Name = DebugName };
 
+                        byte[] binaryBuffer = null;
                         if (gltfFile.BufferViews.ElementAtOrDefault(bufferView.Key) is var bv && bv != null)
                         {
-                            var byteOffset = bv.ByteOffset + gltfFile.Accessors[Accessors.First()].ByteOffset;
+                            var byteOffset = bv.ByteOffset + Accessors.Min(a => gltfFile.Accessors[a.Key].ByteOffset);
                             vertexBuffer.SetData(BinaryBuffers[bv.Buffer], byteOffset, vertexCount * byteStride);
                         }
-                        else if (BinaryBuffers.TryGetValue(1000 + Accessors.First(), out var binaryBuffer))
+                        else if (Accessors.Any(a => BinaryBuffers.TryGetValue(BUFFER_INDEX_OFFSET + a.Key, out binaryBuffer)))
                         {
                             vertexBuffer.SetData(binaryBuffer);
                         }
@@ -603,7 +618,25 @@ namespace Orts.Viewer3D
                         }
 
                         var vertexBufferBinding = new VertexBufferBinding(vertexBuffer);
-                        VertexBufferBindings.Add(Accessors.First(), vertexBufferBinding);
+                        VertexBufferBindings.Add(bindingKey, vertexBufferBinding);
+
+                        if (Accessors.Count > 1)
+                        {
+                            // Multiple accessors may refer to the same bufferview, in which case we may reuse the same VertexBuffer. (See: PrimitiveModeNormalsTest)
+                            // If the accessors ByteOffset is greater than the first, then it is interleaved, leave it alone. If eaqual, then reuse.
+                            // But we need to add it the the bindigs with all keys, otherwise it would not be found.
+                            var minByteOffset = Accessors.Min(a => gltfFile.Accessors[a.Key].ByteOffset);
+                            for (var i = 1; i < Accessors.Count; i++)
+                            {
+                                var accessor = Accessors.ElementAt(i);
+                                if (gltfFile.Accessors[accessor.Key].ByteOffset == minByteOffset)
+                                {
+                                    semantic = GetVertexElementSemantic(accessor.Value, out _);
+                                    bindingKey = accessor.Key + (int)semantic * BUFFER_INDEX_OFFSET;
+                                    VertexBufferBindings.Add(bindingKey, vertexBufferBinding);
+                                }
+                            }
+                        }
                     }
                     while (loop);
                 }
@@ -846,7 +879,7 @@ namespace Orts.Viewer3D
                 return BitConverter.ToSingle(BitConverter.GetBytes((intVal & 0x8000) << 16 | (exp | mant) << 13), 0);
             }
 
-            static VertexElementUsage GetVertexElementSemantic(string semantic, out int index)
+            internal static VertexElementUsage GetVertexElementSemantic(string semantic, out int index)
             {
                 var split = semantic.Split('_');
                 if (!int.TryParse(split.ElementAtOrDefault(1), out index))
@@ -1164,7 +1197,11 @@ namespace Orts.Viewer3D
                     options |= SceneryMaterialOptions.PbrHasIndices;
                 }
 
-                var vertexAttributes = meshPrimitive.Attributes.SelectMany(a => distanceLevel.VertexBufferBindings.Where(kvp => kvp.Key == a.Value).Select(kvp => kvp.Value)).ToList();
+                var vertexAttributes = meshPrimitive.Attributes
+                    .SelectMany(a => distanceLevel.VertexBufferBindings
+                    .Where(kvp => kvp.Key == a.Value + (int)GltfDistanceLevel.GetVertexElementSemantic(a.Key, out _) * GltfDistanceLevel.BUFFER_INDEX_OFFSET)
+                    .Select(kvp => kvp.Value))
+                    .ToList();
                 var vertexCount = vertexAttributes.FirstOrDefault().VertexBuffer?.VertexCount ?? 0;
 
                 // Currently the below PBR vertex input combinations are possible. Any model must use one of those pipelines.
@@ -1198,8 +1235,8 @@ namespace Orts.Viewer3D
                     MaxPosition = new Vector4(a.Max[0], a.Max[1], a.Max[2], 1);
                 }
 
-                // Cannot proceed without Normal at all, must add a dummy one.
-                if (!meshPrimitive.Attributes.ContainsKey("NORMAL"))
+                // Cannot proceed without Normal either, must add a dummy one.
+                if (!vertexAttributes.Any(a => a.VertexBuffer.VertexDeclaration.GetVertexElements().Any(e => e.VertexElementUsage == VertexElementUsage.Normal)))
                 {
                     vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
                         new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.Normal, 0)), vertexCount, BufferUsage.None) { Name = "NORMAL_DUMMY" }));
@@ -1208,7 +1245,7 @@ namespace Orts.Viewer3D
                 else
                     options |= SceneryMaterialOptions.PbrHasNormals;
 
-                // Cannot proceed without TexCoord_0 at all, must add a dummy one.
+                // Cannot proceed without TexCoord_0 neither, must add a dummy one.
                 if (!meshPrimitive.Attributes.ContainsKey("TEXCOORD_0"))
                 {
                     vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
@@ -1744,7 +1781,10 @@ namespace Orts.Viewer3D
             { "AnimatedMorphCube".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "AnimatedMorphSphere".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "AnimatedTriangle".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "AnisotropyBarnLamp".ToLower(), Matrix.CreateScale(10f) * Matrix.CreateTranslation(0, 2, 0) },
             { "AntiqueCamera".ToLower(), Matrix.CreateScale(0.5f) },
+            { "AnisotropyRotationTest".ToLower(), Matrix.CreateTranslation(0, 5, 0) },
+            { "AnisotropyStrengthTest".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
             { "AttenuationTest".ToLower(), Matrix.CreateScale(0.3f) * Matrix.CreateTranslation(0, 4, 0) },
             { "Avocado".ToLower(), Matrix.CreateScale(30) },
             { "BarramundiFish".ToLower(), Matrix.CreateScale(10) },
@@ -1758,33 +1798,65 @@ namespace Orts.Viewer3D
             { "BoxTexturedNonPowerOfTwo".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
             { "BoxVertexColors".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
             { "Buggy".ToLower(), Matrix.CreateScale(0.02f) * Matrix.CreateTranslation(0, 1, 0) },
+            { "ChairDamaskPurplegold".ToLower(), Matrix.CreateScale(3f) },
             { "ClearCoatTest".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(0, 3, 0) },
-            { "Corset".ToLower(), Matrix.CreateScale(30) * Matrix.CreateTranslation(0, 1, 0) },
+            { "CompareAlphaCoverage".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "CompareAmbientOcclusion".ToLower(), Matrix.CreateScale(3) * Matrix.CreateTranslation(0, 1, 0) },
+            { "CompareBaseColor".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "CompareClearcoat".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "CompareDispersion".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "CompareEmissiveStrength".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "CompareIor".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "CompareIridescence".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "CompareMetallic".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "CompareNormal".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "CompareRoughness".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "CompareSheen".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "CompareSpecular".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "CompareTransmission".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "CompareVolume".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "Corset".ToLower(), Matrix.CreateScale(30) },
             { "Cube".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "DamagedHelmet".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
-            { "DragonAttenuation".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
+            { "DiffuseTransmissionPlant".ToLower(), Matrix.CreateScale(4) * Matrix.CreateTranslation(0, 1, 0) },
+            { "DiffuseTransmissionTeacup".ToLower(), Matrix.CreateScale(8) * Matrix.CreateTranslation(0, 1, 0) },
+            { "DirectionalLight".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "DispersionTest".ToLower(), Matrix.CreateScale(16) * Matrix.CreateTranslation(0, 1, 0) },
+            { "DragonAttenuation".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "DragonDispersion".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
             { "EmissiveStrengthTest".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(0, 3, 0) },
             { "EnvironmentTest".ToLower(), Matrix.CreateScale(0.5f) },
             { "FlightHelmet".ToLower(), Matrix.CreateScale(5) },
             { "Fox".ToLower(), Matrix.CreateScale(0.02f) },
             { "GearboxAssy".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(80, -5, 0) },
             { "GlamVelvetSofa".ToLower(), Matrix.CreateScale(2) },
+            { "GlassBrokenWindow".ToLower(), Matrix.CreateScale(5) },
+            { "GlassHurricaneCandleHolder".ToLower(), Matrix.CreateScale(5) },
+            { "GlassVaseFlowers".ToLower(), Matrix.CreateScale(10) },
             { "InterpolationTest".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(0, 2, 0) },
-            { "IridescenceDielectricSpheres".ToLower(), Matrix.CreateScale(0.2f) * Matrix.CreateTranslation(0, 4, 0) },
+            { "IORTestGrid".ToLower(), Matrix.CreateScale(5) * Matrix.CreateTranslation(0, 2, 0) },
+            { "IridescenceAbalone".ToLower(), Matrix.CreateScale(5) * Matrix.CreateTranslation(0, 1, 0) },
+            { "IridescenceDielectricSpheres".ToLower(), Matrix.CreateScale(0.2f) * Matrix.CreateTranslation(0, 3, 0) },
             { "IridescenceLamp".ToLower(), Matrix.CreateScale(5) },
-            { "IridescenceMetallicSpheres".ToLower(), Matrix.CreateScale(0.2f) * Matrix.CreateTranslation(0, 4, 0) },
+            { "IridescenceMetallicSpheres".ToLower(), Matrix.CreateScale(0.2f) * Matrix.CreateTranslation(0, 3, 0) },
             { "IridescenceSuzanne".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "IridescentDishWithOlives".ToLower(), Matrix.CreateScale(10) },
             { "Lantern".ToLower(), Matrix.CreateScale(0.2f) },
+            { "MandarinOrange".ToLower(), Matrix.CreateScale(30) },
             { "MaterialsVariantsShoe".ToLower(), Matrix.CreateScale(5) },
+            { "MeshPrimitiveModes".ToLower(), Matrix.CreateTranslation(0, 5, 0) },
             { "MetalRoughSpheres".ToLower(), Matrix.CreateTranslation(0, 5, 0) },
             { "MetalRoughSpheresNoTextures".ToLower(), Matrix.CreateScale(800) * Matrix.CreateTranslation(0, 1, 0) },
             { "MorphPrimitivesTest".ToLower(), Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 1, 0) },
             { "MosquitoInAmber".ToLower(), Matrix.CreateScale(25) * Matrix.CreateTranslation(0, 1, 0) },
             { "MultiUVTest".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
+            { "NegativeScaleTest".ToLower(), Matrix.CreateTranslation(0, 3, 0) },
             { "NormalTangentMirrorTest".ToLower(), Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 2, 0) },
             { "NormalTangentTest".ToLower(), Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 2, 0) },
             { "OrientationTest".ToLower(), Matrix.CreateScale(0.2f) * Matrix.CreateTranslation(0, 2, 0) },
+            { "PlaysetLightTest".ToLower(), Matrix.CreateScale(30) },
+            { "PotOfCoals".ToLower(), Matrix.CreateScale(30) },
+            { "PrimitiveModeNormalsTest".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(0, 5, 0) },
             { "ReciprocatingSaw".ToLower(), Matrix.CreateScale(0.01f) * Matrix.CreateTranslation(0, 3, 0) },
             { "RecursiveSkeletons".ToLower(), Matrix.CreateScale(0.05f) },
             { "RiggedSimple".ToLower(), Matrix.CreateTranslation(0, 5, 0) },
