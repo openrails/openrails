@@ -85,6 +85,9 @@ namespace Orts.Viewer3D
         public float LightConeMinDotProduct;
         public Vector4 LightConeColor;
 
+        bool PreviousIsLightConeActive; // previous IsLightConeActive
+        ElapsedTime FadeTimer = ElapsedTime.Zero;
+
         public LightViewer(Viewer viewer, TrainCar car, TrainCarViewer carViewer)
         {
             Viewer = viewer;
@@ -248,7 +251,9 @@ namespace Orts.Viewer3D
                             frame.AddPrimitive(LightConeMaterial, lightPrimitive, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
 #endif
 
-            // Set the active light cone info for the material code.
+            FadeTimer += elapsedTime;
+
+            // TODO: Theoretically the headlight handling could be moved to the TrainCar level. Now we can have multiple of these.
             if (HasLightCone && ActiveLightCone != null)
             {
                 int coneIndex = ActiveLightCone.Light.ShapeIndex;
@@ -260,6 +265,24 @@ namespace Orts.Viewer3D
                 LightConeDistance = MathHelper.Lerp(ActiveLightCone.Distance1, ActiveLightCone.Distance2, ActiveLightCone.Fade.Y);
                 LightConeMinDotProduct = (float)Math.Cos(MathHelper.Lerp(ActiveLightCone.Angle1, ActiveLightCone.Angle2, ActiveLightCone.Fade.Y));
                 LightConeColor = Vector4.Lerp(ActiveLightCone.Color1, ActiveLightCone.Color2, ActiveLightCone.Fade.Y);
+
+                if (PreviousIsLightConeActive != IsLightConeActive)
+                {
+                    PreviousIsLightConeActive = IsLightConeActive;
+                    FadeTimer = ElapsedTime.Zero;
+                }
+
+                // The original shaders followed the phylisophy of wanting 50% brightness at half the range. (LightConeDistance is only the half)
+                // For the new calculation method the full range is needed.
+                var range = LightConeDistance * 2;
+                var color = new Vector3(LightConeColor.X, LightConeColor.Y, LightConeColor.Z);
+
+                var fadingIntensity = FadeTimer.ClockSeconds / (Math.Max(LightConeFadeIn, LightConeFadeOut) + float.Epsilon);
+                if (!IsLightConeActive)
+                    fadingIntensity = 1 - fadingIntensity;
+
+                if (fadingIntensity > 0)
+                    frame.AddLight(LightMode.Spot, LightConePosition, LightConeDirection, color, RenderFrame.HeadLightIntensity, range, 1, LightConeMinDotProduct, fadingIntensity, false);
             }
         }
 

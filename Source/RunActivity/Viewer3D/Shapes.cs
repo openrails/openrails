@@ -79,6 +79,7 @@ namespace Orts.Viewer3D
                 }
                 catch (Exception error)
                 {
+                    if (Debugger.IsAttached) Debugger.Break();
                     Trace.WriteLine(new FileLoadException(path, error));
                     Shapes.Add(path, EmptyShape);
                 }
@@ -2659,7 +2660,7 @@ namespace Orts.Viewer3D
 
                         var interior = (flags & ShapeFlags.Interior) != 0;
                         frame.AddAutoPrimitive(mstsLocation, distanceDetail.ViewSphereRadius, distanceDetail.ViewingDistance * lodBias, shapePrimitive.Material, shapePrimitive, interior ? RenderPrimitiveGroup.Interior : RenderPrimitiveGroup.World, ref xnaMatrix, flags, bones);
-                        frame.AddLight(shapePrimitive.Light, ref xnaMatrix, lodBias);
+                        frame.AddLight(shapePrimitive.Light, ref xnaMatrix, lodBias, 1);
                     }
                 }
             }

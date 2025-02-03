@@ -390,7 +390,9 @@ namespace Orts.Viewer3D
         static readonly Vector3 MoonGlow = new Vector3(245f / 255f, 243f / 255f, 206f / 255f);
         const float SunIntensity = 1;
         const float MoonIntensity = SunIntensity / 380000;
-        float HeadLightIntensity = 25000; // See some sample values: https://docs.unity3d.com/Packages/com.unity.cloud.gltfast@5.2/manual/LightUnits.html
+        public const float HeadLightIntensity = 25000; // See some sample values: https://docs.unity3d.com/Packages/com.unity.cloud.gltfast@5.2/manual/LightUnits.html
+        float LightClampTo = 1;
+        float LightDayNightMultiplier = 1;
 
         // Local shadow map data.
         Matrix[] ShadowMapLightView;
@@ -555,64 +557,27 @@ namespace Orts.Viewer3D
 
             // Ensure that the first light is always the sun/moon, because the ambient and shadow effects will be calculated based on the first light.
             if (SolarDirection.Y > -0.05)
-                AddLight(-SolarDirection, SunColor, SunIntensity);
+                AddLight(-SolarDirection, SunColor, SunIntensity, 1);
             else
             {
                 var moonDirection = viewer.Settings.UseMSTSEnv ? viewer.World.MSTSSky.mstsskylunarDirection : viewer.World.Sky.LunarDirection;
-                AddLight(-moonDirection, MoonGlow, MoonIntensity);
+                AddLight(-moonDirection, MoonGlow, MoonIntensity, 1);
             }
 
-            // Headlight illumination
-            if (viewer.PlayerLocomotiveViewer?.lightDrawer?.HasLightCone ?? false)
+            if (SolarDirection.Y <= -0.05)
             {
-                var clampValue = 1f;
-                var dayNightMultiplier = 1f;
-                var lightDrawer = viewer.PlayerLocomotiveViewer.lightDrawer;
-                var lightState = lightDrawer.IsLightConeActive;
-                if (lightState != lastLightState)
-                {
-                    if (lightDrawer.LightConeFadeIn > 0)
-                    {
-                        fadeStartTimer = viewer.Simulator.GameTime;
-                        fadeDuration = lightDrawer.LightConeFadeIn;
-                    }
-                    else if (lightDrawer.LightConeFadeOut > 0)
-                    {
-                        fadeStartTimer = viewer.Simulator.GameTime;
-                        fadeDuration = lightDrawer.LightConeFadeOut;
-                    }
-                    lastLightState = lightState;
-                }
-                if (SolarDirection.Y <= -0.05)
-                {
-                    clampValue = 1; // at nighttime max headlight
-                    dayNightMultiplier = 1;
-                }
-                else if (SolarDirection.Y >= 0.15)
-                {
-                    clampValue = 0.5f; // at daytime min headlight
-                    dayNightMultiplier = 0.1f;
-                }
-                else
-                {
-                    clampValue = 1 - 2.5f * (SolarDirection.Y + 0.05f); // in the meantime interpolate
-                    dayNightMultiplier = 1 - 4.5f * (SolarDirection.Y + 0.05f);
-                }
-
-                // The original shaders followed the phylisophy of wanting 50% brightness at half the range. (LightConeDistance is only the half)
-                // For the new calculation method the full range is needed.
-                var range = lightDrawer.LightConeDistance * 2 * dayNightMultiplier;
-                var color = new Vector3(lightDrawer.LightConeColor.X, lightDrawer.LightConeColor.Y, lightDrawer.LightConeColor.Z);
-
-                var intensity = (float)(viewer.Simulator.GameTime - fadeStartTimer) / (fadeDuration + float.Epsilon);
-                if (!lightState)
-                    intensity = 1 - intensity;
-                intensity = MathHelper.Clamp(intensity, 0, 1);
-                intensity = MathHelper.Clamp(intensity * dayNightMultiplier * clampValue, 0, clampValue);
-                intensity *= HeadLightIntensity;
-
-                if (intensity > 0)
-                    AddLight(LightMode.Spot, lightDrawer.LightConePosition, lightDrawer.LightConeDirection, color, intensity, range, 1, lightDrawer.LightConeMinDotProduct);
+                LightClampTo = 1; // at nighttime max light
+                LightDayNightMultiplier = 1;
+            }
+            else if (SolarDirection.Y >= 0.15)
+            {
+                LightClampTo = 0.5f; // at daytime min light
+                LightDayNightMultiplier = 0.1f;
+            }
+            else
+            {
+                LightClampTo = 1 - 2.5f * (SolarDirection.Y + 0.05f); // in the meantime interpolate
+                LightDayNightMultiplier = 1 - 4.5f * (SolarDirection.Y + 0.05f);
             }
         }
 
@@ -1084,14 +1049,17 @@ namespace Orts.Viewer3D
             }
         }
 
-        public void AddLight(ShapeLight light, ref Matrix worldMatrix, float lodBias)
+        public void AddLight(ShapeLight light, ref Matrix worldMatrix, float lodBias, float fadingIntensity)
         {
             // Do not allow directional light injection. That is reserved to the sun and the moon.
             if (light != null && light.Type != LightMode.Directional)
-                AddLight(light.Type, worldMatrix.Translation, Vector3.TransformNormal(-Vector3.UnitZ, worldMatrix), light.Color, light.Intensity, light.Range, light.InnerConeCos, light.OuterConeCos);
+                AddLight(light.Type, worldMatrix.Translation, Vector3.TransformNormal(-Vector3.UnitZ, worldMatrix), light.Color, light.Intensity, light.Range, light.InnerConeCos, light.OuterConeCos, fadingIntensity, false);
         }
-        public void AddLight(Vector3 direction, Vector3 color, float intensity) => AddLight(LightMode.Directional, Vector3.Zero, direction, color, intensity, -1, 0, 0);
-        public void AddLight(LightMode type, Vector3 position, Vector3 direction, Vector3 color, float intensity, float range, float innerConeCos, float outerConeCos)
+        /// <summary>
+        /// Used for Sun / Moon only
+        /// </summary>
+        public void AddLight(Vector3 direction, Vector3 color, float intensity, float fadingIntensity) => AddLight(LightMode.Directional, Vector3.Zero, direction, color, intensity, -1, 0, 0, fadingIntensity, true);
+        public void AddLight(LightMode type, Vector3 position, Vector3 direction, Vector3 color, float intensity, float range, float innerConeCos, float outerConeCos, float fadingIntensity, bool ignoreDayNight)
         {
             if (NumLights >= RenderProcess.MAX_LIGHTS)
                 return;
@@ -1100,8 +1068,9 @@ namespace Orts.Viewer3D
             LightPositions[NumLights] = position;
             LightDirections[NumLights] = direction;
             LightColors[NumLights] = color;
-            LightIntensities[NumLights] = intensity;
-            LightRanges[NumLights] = range;
+            LightIntensities[NumLights] = intensity
+                * (ignoreDayNight ? MathHelper.Clamp(fadingIntensity, 0, 1) : MathHelper.Clamp(fadingIntensity * LightDayNightMultiplier * LightClampTo, 0, LightClampTo));
+            LightRanges[NumLights] = range * (ignoreDayNight ? 1 : LightDayNightMultiplier);
             LightInnerConeCos[NumLights] = innerConeCos;
             LightOuterConeCos[NumLights] = outerConeCos;
             NumLights++;
