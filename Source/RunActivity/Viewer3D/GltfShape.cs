@@ -1246,7 +1246,7 @@ namespace Orts.Viewer3D
                     options |= SceneryMaterialOptions.PbrHasNormals;
 
                 // Cannot proceed without TexCoord_0 neither, must add a dummy one.
-                if (!meshPrimitive.Attributes.ContainsKey("TEXCOORD_0"))
+                if (!vertexAttributes.Any(a => a.VertexBuffer.VertexDeclaration.GetVertexElements().Any(e => e.VertexElementUsage == VertexElementUsage.TextureCoordinate && e.UsageIndex == 0)))
                 {
                     vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
                         new VertexDeclaration(new VertexElement(0, VertexElementFormat.NormalizedShort2, VertexElementUsage.TextureCoordinate, 0)), vertexCount, BufferUsage.None) { Name = "TEXCOORD_0_DUMMY" }));
@@ -1257,45 +1257,44 @@ namespace Orts.Viewer3D
                 {
                     options |= SceneryMaterialOptions.PbrHasTexCoord1; // With this we request to call the NormalMapColor pipeline
 
-                    if (!meshPrimitive.Attributes.ContainsKey("TANGENT"))
+                    if (!vertexAttributes.Any(a => a.VertexBuffer.VertexDeclaration.GetVertexElements().Any(e => e.VertexElementUsage == VertexElementUsage.Tangent)))
                         vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
                             new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.Tangent, 0)), vertexCount, BufferUsage.WriteOnly)
                         { Name = "TANGENT_DUMMY" })); // VertexElementFormat.Color is actually unsigned Byte4 normalized.
                     else if (!TangentsAlwaysCalculatedPerPixel)
                         options |= SceneryMaterialOptions.PbrHasTangents;
                 }
-                else if (normalScale != 0)
+
+                if (meshPrimitive.Attributes.ContainsKey("TANGENT"))
                 {
-                    if (meshPrimitive.Attributes.ContainsKey("TANGENT"))
+                    // Per-pixel tangent calculation gives better result. In that case we are not using the provided Tangent vertex attribute at all, so it can be removed. (See BoomBox)
+                    if (TangentsAlwaysCalculatedPerPixel && !meshPrimitive.Attributes.ContainsKey("COLOR_0") && !meshPrimitive.Attributes.ContainsKey("TEXCOORD_1")
+                        && (options & (SceneryMaterialOptions.PbrHasSkin | SceneryMaterialOptions.PbrHasMorphTargets)) == 0)
                     {
-                        // Per-pixel tangent calculation gives better result. In that case we are not using the provided Tangent vertex attribute at all, so it can be removed. (See BoomBox)
-                        if (TangentsAlwaysCalculatedPerPixel)
-                        {
-                            var removables = vertexAttributes.Where(b => {
-                                var ve = b.VertexBuffer.VertexDeclaration.GetVertexElements();
-                                return ve.Count() == 1 && ve.Any(e => e.VertexElementUsage == VertexElementUsage.Tangent);
-                            });
-                            foreach (var r in removables)
-                                Disposables.Enqueue(r.VertexBuffer);
-                            if (vertexAttributes.RemoveAll(b => removables.Contains(b)) == 0)
-                                // Unsuccessful removal because the buffers are interleaved
-                                options |= SceneryMaterialOptions.PbrHasTangents;
-                        }
-                        else
+                        var removables = vertexAttributes.Where(b => {
+                            var ve = b.VertexBuffer.VertexDeclaration.GetVertexElements();
+                            return ve.Count() == 1 && ve.Any(e => e.VertexElementUsage == VertexElementUsage.Tangent);
+                        });
+                        foreach (var r in removables)
+                            Disposables.Enqueue(r.VertexBuffer);
+                        if (vertexAttributes.RemoveAll(b => removables.Contains(b)) == 0)
+                            // Unsuccessful removal because the buffers are interleaved
                             options |= SceneryMaterialOptions.PbrHasTangents;
                     }
+                    else
+                        options |= SceneryMaterialOptions.PbrHasTangents;
                 }
 
                 // When we have a Tangent, must also make sure to have TexCoord_1 and Color_0
                 if ((options & (SceneryMaterialOptions.PbrHasTangents | SceneryMaterialOptions.PbrHasSkin | SceneryMaterialOptions.PbrHasMorphTargets)) != 0
                     || meshPrimitive.Attributes.ContainsKey("COLOR_0") || meshPrimitive.Attributes.ContainsKey("TEXCOORD_1"))
                 {
-                    if (!meshPrimitive.Attributes.ContainsKey("TEXCOORD_1"))
+                    if (!vertexAttributes.Any(a => a.VertexBuffer.VertexDeclaration.GetVertexElements().Any(e => e.VertexElementUsage == VertexElementUsage.TextureCoordinate && e.UsageIndex == 1)))
                     {
                         vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
                             new VertexDeclaration(new VertexElement(0, VertexElementFormat.NormalizedShort2, VertexElementUsage.TextureCoordinate, 1)), vertexCount, BufferUsage.None) { Name = "TEXCOORD_1_DUMMY" }));
                     }
-                    if (!meshPrimitive.Attributes.ContainsKey("COLOR_0"))
+                    if (!vertexAttributes.Any(a => a.VertexBuffer.VertexDeclaration.GetVertexElements().Any(e => e.VertexElementUsage == VertexElementUsage.Color)))
                     {
                         var vertexBuffer = new VertexBuffer(shape.Viewer.GraphicsDevice,
                             new VertexDeclaration(new VertexElement(0, VertexElementFormat.Color, VertexElementUsage.Color, 0)), vertexCount, BufferUsage.None) { Name = "COLOR_0_DUMMY" };
