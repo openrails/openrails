@@ -530,19 +530,15 @@ namespace Orts.Viewer3D
                 // Shovel all binary index & vertex attribute data over to the GPU. Such bufferViews are VertexBuffers/IndexBuffers in fact.
                 // The byteStride is constant throughout a vertex attribute bufferView, but may vary in index bufferViews.
                 // An accessor is the vertex attribute, is has a byteOffset within the bufferView. If byteOffset < byteStride, then the accessors are interleaved.
-                var bufferViews = gltfFile.Meshes
-                    .SelectMany(m => m.Primitives)
+                var primitives = gltfFile.Meshes.SelectMany(m => m.Primitives);
+                var bufferViews = primitives
                     .SelectMany(p => p.Attributes)
+                    .Concat(primitives // Upload all the morph targets too in this sole pass.
+                        .SelectMany(p => p.Targets ?? new Dictionary<string, int>[0])
+                        .SelectMany(t => t.Select(d => new KeyValuePair<string, int>("POSITION", d.Value)))) // Create all morph target vertex buffers with POSITION semantic, so they bind to the right slots.
                     .OrderBy(a => gltfFile.Accessors[a.Value].ByteOffset)
                     .Distinct()
-                    .GroupBy(a => gltfFile.Accessors[a.Value].BufferView ?? -1)
-                    .Concat(gltfFile.Meshes // Upload all the morph targets too in this sole pass.
-                        .SelectMany(m => m.Primitives)
-                        .SelectMany(p => p.Targets ?? new Dictionary<string, int>[0])
-                        .SelectMany(t => t.Select(d => new KeyValuePair<string, int>("POSITION", d.Value))) // Create all morph target vertex buffers with POSITION semantic, so they bind to the right slots.
-                        .OrderBy(a => gltfFile.Accessors[a.Value].ByteOffset)
-                        .Distinct()
-                        .GroupBy(a => gltfFile.Accessors[a.Value].BufferView ?? -1));
+                    .GroupBy(a => gltfFile.Accessors[a.Value].BufferView ?? -1);
 
                 foreach (var bufferView in bufferViews)
                 {
@@ -641,8 +637,7 @@ namespace Orts.Viewer3D
                     while (loop);
                 }
 
-                var indexBufferViews = gltfFile.Meshes
-                    .SelectMany(m => m.Primitives)
+                var indexBufferViews = primitives
                     .OrderBy(p => gltfFile.Accessors?.ElementAtOrDefault(p.Indices ?? -1)?.ByteOffset ?? -1)
                     .GroupBy(p => gltfFile.Accessors?.ElementAtOrDefault(p.Indices ?? -1)?.BufferView ?? -1)
                     .Where(i => i.Key != -1);
@@ -1289,7 +1284,7 @@ namespace Orts.Viewer3D
                 if ((options & (SceneryMaterialOptions.PbrHasTangents | SceneryMaterialOptions.PbrHasSkin | SceneryMaterialOptions.PbrHasMorphTargets)) != 0
                     || meshPrimitive.Attributes.ContainsKey("COLOR_0") || meshPrimitive.Attributes.ContainsKey("TEXCOORD_1"))
                 {
-                    if (!vertexAttributes.Any(a => a.VertexBuffer.VertexDeclaration.GetVertexElements().Any(e => e.VertexElementUsage == VertexElementUsage.TextureCoordinate && e.UsageIndex == 1)))
+                    if (vertexAttributes.Sum(a => a.VertexBuffer.VertexDeclaration.GetVertexElements().Count(e => e.VertexElementUsage == VertexElementUsage.TextureCoordinate)) < 2)
                     {
                         vertexAttributes.Add(new VertexBufferBinding(new VertexBuffer(shape.Viewer.GraphicsDevice,
                             new VertexDeclaration(new VertexElement(0, VertexElementFormat.NormalizedShort2, VertexElementUsage.TextureCoordinate, 1)), vertexCount, BufferUsage.None) { Name = "TEXCOORD_1_DUMMY" }));
