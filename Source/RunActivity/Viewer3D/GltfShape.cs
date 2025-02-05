@@ -1090,12 +1090,15 @@ namespace Orts.Viewer3D
                 if (meshPrimitive.Targets != null && meshPrimitive.Targets.Length > 0)
                     options |= SceneryMaterialOptions.PbrHasMorphTargets;
 
+                var flipNormals = 1f;
                 if (!shape.MsfsFlavoured && distanceLevel.Matrices.ElementAt(hierarchyIndex).Determinant() > 0)
                     // This is according to the glTF spec
                     options |= SceneryMaterialOptions.PbrCullClockWise;
                 else if (shape.MsfsFlavoured && distanceLevel.Matrices.ElementAt(hierarchyIndex).Determinant() < 0)
                     // Msfs seems to be using this reversed
                     options |= SceneryMaterialOptions.PbrCullClockWise;
+                else
+                    flipNormals = -1f;
 
                 var referenceAlpha = 0f;
                 var doubleSided = material.DoubleSided;
@@ -1167,12 +1170,12 @@ namespace Orts.Viewer3D
                 var baseColorFactor = MemoryMarshal.Cast<float, Vector4>(material.PbrMetallicRoughness?.BaseColorFactor ?? new[] { 1f, 1f, 1f, 1f })[0];
                 var metallicFactor = material.PbrMetallicRoughness?.MetallicFactor ?? 1f;
                 var roughtnessFactor = material.PbrMetallicRoughness?.RoughnessFactor ?? 1f;
-                var normalScale = material.NormalTexture?.Scale ?? 0; // Must be 0 only if the textureInfo is missing, otherwise it must have the default value 1.
+                var normalScale = flipNormals * (material.NormalTexture?.Scale ?? 2f); // 2 indicates the textureInfo is missing, otherwise it get default 1
                 var occlusionStrength = material.OcclusionTexture?.Strength ?? 0; // Must be 0 only if the textureInfo is missing, otherwise it must have the default value 1.
                 var emissiveFactor = MemoryMarshal.Cast<float, Vector3>(material.EmissiveFactor ?? new[] { 0f, 0f, 0f })[0] * emissiveStrength;
                 var clearcoatFactor = clearcoat?.ClearcoatFactor ?? 0;
                 var clearcoatRoughnessFactor = clearcoat?.ClearcoatRoughnessFactor ?? 0;
-                var clearcoatNormalScale = clearcoat?.ClearcoatNormalTexture?.Scale ?? 1;
+                var clearcoatNormalScale = flipNormals * (clearcoat?.ClearcoatNormalTexture?.Scale ?? 2f);
 
                 switch (baseColorSamplerState.Item2)
                 {
@@ -1844,7 +1847,7 @@ namespace Orts.Viewer3D
             { "MorphPrimitivesTest".ToLower(), Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 1, 0) },
             { "MosquitoInAmber".ToLower(), Matrix.CreateScale(25) * Matrix.CreateTranslation(0, 1, 0) },
             { "MultiUVTest".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
-            { "NegativeScaleTest".ToLower(), Matrix.CreateTranslation(0, 3, 0) },
+            { "NegativeScaleTest".ToLower(), Matrix.CreateTranslation(0, 4, 0) },
             { "NormalTangentMirrorTest".ToLower(), Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 2, 0) },
             { "NormalTangentTest".ToLower(), Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 2, 0) },
             { "OrientationTest".ToLower(), Matrix.CreateScale(0.2f) * Matrix.CreateTranslation(0, 2, 0) },
@@ -1857,9 +1860,11 @@ namespace Orts.Viewer3D
             { "SciFiHelmet".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "SheenChair".ToLower(), Matrix.CreateScale(2) },
             { "SheenCloth".ToLower(), Matrix.CreateScale(50) },
+            { "SheenTestGrid".ToLower(), Matrix.CreateScale(5) * Matrix.CreateTranslation(0, 4, 0)},
             { "SpecGlossVsMetalRough".ToLower(), Matrix.CreateScale(7) * Matrix.CreateTranslation(0, 2, 0) },
             { "SpecularTest".ToLower(), Matrix.CreateScale(5) * Matrix.CreateTranslation(0, 2, 0) },
             { "StainedGlassLamp".ToLower(), Matrix.CreateScale(3) },
+            { "SunglassesKhronos".ToLower(), Matrix.CreateScale(30) },
             { "Suzanne".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "TextureCoordinateTest".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "TextureEncodingTest".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(0, 3, 0) },

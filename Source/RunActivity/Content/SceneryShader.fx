@@ -788,7 +788,7 @@ float4 _PSTex2D(sampler s, float4 inTexCoords, float texCoordsSelector)
 
 float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents, float normalScale, sampler normalSampler, float texCoordsSelector, bool isFrontFace)
 {
-	bool hasNormalMap = normalScale > 0;
+	bool hasNormalMap = -1 <= normalScale && normalScale <= 1;
 	float3x3 tbn = float3x3(In.Tangent.xyz, In.Bitangent.xyz, In.Normal_Light.xyz);
     if (!hasTangents || !HasNormals)
 	{
@@ -841,7 +841,9 @@ float3 _PSGetNormal(in VERTEX_OUTPUT_PBR In, bool hasTangents, float normalScale
 		n = normalize(mul((n * float3(normalScale, normalScale, 1.0)), tbn));
 	}
 	else
-	    n = tbn[2].xyz;
+	{
+		n = tbn[2].xyz * sign(normalScale);
+	}
 
     return n;
 }
