@@ -85,9 +85,6 @@ namespace Orts.Viewer3D
         public float LightConeMinDotProduct;
         public Vector4 LightConeColor;
 
-        bool PreviousIsLightConeActive; // previous IsLightConeActive
-        ElapsedTime FadeTimer = ElapsedTime.Zero;
-
         public LightViewer(Viewer viewer, TrainCar car, TrainCarViewer carViewer)
         {
             Viewer = viewer;
@@ -130,15 +127,18 @@ namespace Orts.Viewer3D
                     {
                         if (light.ShapeHierarchy != null)
                         {
-                            if ((CarViewer as MSTSWagonViewer).TrainCarShape.SharedShape.MatrixNames.Contains(light.ShapeHierarchy))
-                            {
-                                light.ShapeIndex = (CarViewer as MSTSWagonViewer).TrainCarShape.SharedShape.MatrixNames.IndexOf(light.ShapeHierarchy);
-                            }
-                            else
+                            if (TrySetLightManaged((CarViewer as MSTSWagonViewer).TrainCarShape.SharedShape, light.ShapeHierarchy) is var index && index < 0)
+                                index = (CarViewer as MSTSWagonViewer).TrainCarShape.SharedShape.MatrixNames.IndexOf(light.ShapeHierarchy);
+
+                            if (index < 0)
                             {
                                 Trace.TraceWarning("Light in car {0} has invalid shape index defined, shape name {1} does not exist",
                                     (Car as MSTSWagon).WagFilePath, light.ShapeHierarchy);
                                 light.ShapeIndex = 0;
+                            }
+                            else
+                            {
+                                light.ShapeIndex = index;
                             }
                         }
                         else
@@ -251,9 +251,6 @@ namespace Orts.Viewer3D
                             frame.AddPrimitive(LightConeMaterial, lightPrimitive, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
 #endif
 
-            FadeTimer += elapsedTime;
-
-            // TODO: Theoretically the headlight handling could be moved to the TrainCar level. Now we can have multiple of these.
             if (HasLightCone && ActiveLightCone != null)
             {
                 int coneIndex = ActiveLightCone.Light.ShapeIndex;
@@ -266,23 +263,18 @@ namespace Orts.Viewer3D
                 LightConeMinDotProduct = (float)Math.Cos(MathHelper.Lerp(ActiveLightCone.Angle1, ActiveLightCone.Angle2, ActiveLightCone.Fade.Y));
                 LightConeColor = Vector4.Lerp(ActiveLightCone.Color1, ActiveLightCone.Color2, ActiveLightCone.Fade.Y);
 
-                if (PreviousIsLightConeActive != IsLightConeActive)
-                {
-                    PreviousIsLightConeActive = IsLightConeActive;
-                    FadeTimer = ElapsedTime.Zero;
-                }
-
-                // The original shaders followed the phylisophy of wanting 50% brightness at half the range. (LightConeDistance is only the half)
-                // For the new calculation method the full range is needed.
-                var range = LightConeDistance * 2;
-                var color = new Vector3(LightConeColor.X, LightConeColor.Y, LightConeColor.Z);
-
-                var fadingIntensity = FadeTimer.ClockSeconds / (Math.Max(LightConeFadeIn, LightConeFadeOut) + float.Epsilon);
-                if (!IsLightConeActive)
-                    fadingIntensity = 1 - fadingIntensity;
-
-                if (fadingIntensity > 0)
-                    frame.AddLight(LightMode.Spot, LightConePosition, LightConeDirection, color, RenderFrame.HeadLightIntensity, range, 1, LightConeMinDotProduct, fadingIntensity, false);
+                if (ActiveLightCone.Fade.X > 0)
+                    frame.AddLight(LightMode.Spot,
+                        LightConePosition,
+                        LightConeDirection,
+                        new Vector3(LightConeColor.X, LightConeColor.Y, LightConeColor.Z),
+                        RenderFrame.HeadLightIntensity,
+                        // The original shaders followed the phylisophy of wanting 50% brightness at half the range. (LightConeDistance is only the half)
+                        LightConeDistance * 2, // For the new calculation method the full range is needed.
+                        1,
+                        LightConeMinDotProduct,
+                        ActiveLightCone.Fade.X,
+                        false);
             }
         }
 
@@ -445,6 +437,20 @@ namespace Orts.Viewer3D
                 return true;
             }
             return false;
+        }
+
+        static int TrySetLightManaged(SharedShape sharedShape, string lightName)
+        {
+            if (sharedShape.LodControls
+                .SelectMany(l => l.DistanceLevels)
+                .SelectMany(d => d.SubObjects)
+                .SelectMany(s => s.ShapePrimitives)
+                .FirstOrDefault(p => lightName.Equals(p.Light?.ManagedName, StringComparison.OrdinalIgnoreCase)) is var primitive && primitive != null)
+            {
+                primitive.Light.IsManaged = true;
+                return primitive.HierarchyIndex;
+            }
+            return -1;
         }
     }
 
@@ -705,7 +711,7 @@ namespace Orts.Viewer3D
             else if (FadeOut)
             {
                 FadeTime += elapsedTime.ClockSeconds;
-                Fade.X = 1 - FadeTime / Light.FadeIn;
+                Fade.X = 1 - FadeTime / Light.FadeOut;
                 if (Fade.X < 0)
                 {
                     FadeOut = false;
@@ -785,6 +791,20 @@ namespace Orts.Viewer3D
         }
     }
 
+    public class StaticLight
+    {
+        public string Name;
+        public LightMode Type;
+        public Vector3 Color;
+        public float Intensity;
+        public float Range;
+        public float InnerConeCos;
+        public float OuterConeCos;
+
+        public string ManagedName;
+        public bool IsManaged;
+    }
+    
     struct LightGlowVertex
     {
         public Vector3 PositionO;

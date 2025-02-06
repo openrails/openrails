@@ -39,17 +39,42 @@ namespace ORTS.Common
         /// </summary>
         public static bool GltfVisualTestRun;
 
-        const string ConsistTemplateStart = @"Train (
-            TrainCfg ( ""trainname""
-                Name ( ""trainname"" )
-                MaxVelocity ( 50 1 )
+        const string ConsistTemplateStart =
+            @"Train (
+                TrainCfg ( ""trainname""
+                    Name ( ""trainname"" )
+                    MaxVelocity ( 50 1 )
             ";
         const string ConsistTemplateRecord = @"Engine ( UID ( xx ) EngineData ( ""engfile"" ""trainsetdir"" ) )" + "\r\n";
         const string ConsistTemplateEnd = ")\r\n)";
-        const string EngineTemplate = @"Wagon ( ""enginname""
+        const string EngineTemplate =
+            @"Wagon ( ""enginname""
                 Type ( Engine )
                 WagonShape ( ""shapefilename"" )
                 Size (100m 7m 100m )
+                Lights ( 1
+                    Light (
+                        Type ( 1 )
+                        ShapeHierarchy ( Headlight )
+                        Conditions ( 
+                            Headlight ( 3 )
+                            Unit ( 2 )
+                        )
+                        Cycle ( 0 )
+                        FadeIn ( 1 )
+                        FadeOut ( 1 )
+                        States ( 1
+                            State (
+                                Duration ( 0.0 )
+                                LightColour ( ffffffff )
+                                Position ( 0 0 0 )
+                                Transition ( 0 )
+                                Radius ( 400 )
+                                Angle ( 15 )
+                            )
+                        )
+                    )
+                )
             )
             Engine ( ""enginname""
                 Wagon ( ""enginname"" )

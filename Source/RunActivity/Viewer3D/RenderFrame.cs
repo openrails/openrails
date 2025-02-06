@@ -144,6 +144,8 @@ namespace Orts.Viewer3D
             }
             return DummyVertexBuffer;
         }
+
+        public StaticLight Light { get; protected set; }
     }
 
     [DebuggerDisplay("{Material} {RenderPrimitive} {Flags}")]
@@ -391,7 +393,7 @@ namespace Orts.Viewer3D
         const float SunIntensity = 1;
         const float MoonIntensity = SunIntensity / 380000;
         public const float HeadLightIntensity = 25000; // See some sample values: https://docs.unity3d.com/Packages/com.unity.cloud.gltfast@5.2/manual/LightUnits.html
-        float LightClampTo = 1;
+        float LightDayNightClampTo = 1;
         float LightDayNightMultiplier = 1;
 
         // Local shadow map data.
@@ -566,17 +568,17 @@ namespace Orts.Viewer3D
 
             if (SolarDirection.Y <= -0.05)
             {
-                LightClampTo = 1; // at nighttime max light
+                LightDayNightClampTo = 1; // at nighttime max light
                 LightDayNightMultiplier = 1;
             }
             else if (SolarDirection.Y >= 0.15)
             {
-                LightClampTo = 0.5f; // at daytime min light
+                LightDayNightClampTo = 0.5f; // at daytime min light
                 LightDayNightMultiplier = 0.1f;
             }
             else
             {
-                LightClampTo = 1 - 2.5f * (SolarDirection.Y + 0.05f); // in the meantime interpolate
+                LightDayNightClampTo = 1 - 2.5f * (SolarDirection.Y + 0.05f); // in the meantime interpolate
                 LightDayNightMultiplier = 1 - 4.5f * (SolarDirection.Y + 0.05f);
             }
         }
@@ -663,7 +665,12 @@ namespace Orts.Viewer3D
             if (float.IsPositiveInfinity(objectViewingDistance) || (Camera != null && Camera.InRange(mstsLocation, objectRadius, objectViewingDistance)))
             {
                 if (Camera != null && Camera.InFov(mstsLocation, objectRadius))
+                {
                     AddPrimitive(material, primitive, group, ref xnaMatrix, flags, itemData);
+
+                    if (primitive?.Light != null && !primitive.Light.IsManaged && primitive.Light.Range > 0 && Camera.InRange(mstsLocation, objectRadius, primitive.Light.Range))
+                        AddLight(primitive.Light, ref xnaMatrix);
+                }
             }
 
             if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && ((flags & ShapeFlags.ShadowCaster) != 0))
@@ -1049,17 +1056,35 @@ namespace Orts.Viewer3D
             }
         }
 
-        public void AddLight(ShapeLight light, ref Matrix worldMatrix, float lodBias, float fadingIntensity)
+        /// <summary>
+        /// Add unmanaged static lights
+        /// </summary>
+        public void AddLight(StaticLight light, ref Matrix worldMatrix)
         {
             // Do not allow directional light injection. That is reserved to the sun and the moon.
-            if (light != null && light.Type != LightMode.Directional)
-                AddLight(light.Type, worldMatrix.Translation, Vector3.TransformNormal(-Vector3.UnitZ, worldMatrix), light.Color, light.Intensity, light.Range, light.InnerConeCos, light.OuterConeCos, fadingIntensity, false);
+            if (light != null && !light.IsManaged && light.Type != LightMode.Directional)
+                AddLight(light.Type, worldMatrix.Translation, Vector3.TransformNormal(-Vector3.UnitZ, worldMatrix), light.Color, light.Intensity, light.Range, light.InnerConeCos, light.OuterConeCos, 1, false);
         }
+
         /// <summary>
-        /// Used for Sun / Moon only
+        /// Used for the Sun / Moon only, intensity is in lm/m2
         /// </summary>
-        public void AddLight(Vector3 direction, Vector3 color, float intensity, float fadingIntensity) => AddLight(LightMode.Directional, Vector3.Zero, direction, color, intensity, -1, 0, 0, fadingIntensity, true);
-        public void AddLight(LightMode type, Vector3 position, Vector3 direction, Vector3 color, float intensity, float range, float innerConeCos, float outerConeCos, float fadingIntensity, bool ignoreDayNight)
+        void AddLight(Vector3 direction, Vector3 color, float intensity, float fade) => AddLight(LightMode.Directional, Vector3.Zero, direction, color, intensity, -1, 0, 0, fade, true);
+
+        /// <summary>
+        /// Add an active light to the actually compiled frame.
+        /// </summary>
+        /// <param name="type">Can be Point or Spot only. Use the Directional type only for the Sun and the Moon.</param>
+        /// <param name="position">The worldMatrix.Translation</param>
+        /// <param name="direction">The light direction</param>
+        /// <param name="color">The light color</param>
+        /// <param name="intensity">Luminous intensity in candela (lm/sr)</param>
+        /// <param name="range">Cutoff distance</param>
+        /// <param name="innerConeCos"></param>
+        /// <param name="outerConeCos"></param>
+        /// <param name="fade">Fading, 0 no light, 1 full light</param>
+        /// <param name="ignoreDayNight">At daytime the intensity is automatically reduced to match the sunlight. Disable this by this parameter.</param>
+        public void AddLight(LightMode type, Vector3 position, Vector3 direction, Vector3 color, float intensity, float range, float innerConeCos, float outerConeCos, float fade, bool ignoreDayNight)
         {
             if (NumLights >= RenderProcess.MAX_LIGHTS)
                 return;
@@ -1068,8 +1093,9 @@ namespace Orts.Viewer3D
             LightPositions[NumLights] = position;
             LightDirections[NumLights] = direction;
             LightColors[NumLights] = color;
-            LightIntensities[NumLights] = intensity
-                * (ignoreDayNight ? MathHelper.Clamp(fadingIntensity, 0, 1) : MathHelper.Clamp(fadingIntensity * LightDayNightMultiplier * LightClampTo, 0, LightClampTo));
+            LightIntensities[NumLights] = intensity * (ignoreDayNight
+                ? MathHelper.Clamp(fade, 0, 1)
+                : MathHelper.Clamp(fade * LightDayNightMultiplier * LightDayNightClampTo, 0, LightDayNightClampTo));
             LightRanges[NumLights] = range * (ignoreDayNight ? 1 : LightDayNightMultiplier);
             LightInnerConeCos[NumLights] = innerConeCos;
             LightOuterConeCos[NumLights] = outerConeCos;
