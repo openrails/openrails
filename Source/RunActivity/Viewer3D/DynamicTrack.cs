@@ -1508,6 +1508,9 @@ namespace Orts.Viewer3D
                     }
                     break;
             }
+            // Limit the number of sections to prevent overflowing the number of triangles
+            if (NumSections > 250)
+                NumSections = 250;
             // Ensure an even number of sections
             if (NumSections % 2 == 1)
                 NumSections++;
