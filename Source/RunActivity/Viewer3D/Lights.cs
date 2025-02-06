@@ -199,8 +199,8 @@ namespace Orts.Viewer3D
                 Console.WriteLine();
             }
 #endif
-
-            ActiveLightCone = newLightCone;
+            if (newLightCone != null || LightConeFadeOut == 0)
+                ActiveLightCone = newLightCone;
         }
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
