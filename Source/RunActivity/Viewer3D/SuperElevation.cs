@@ -838,6 +838,9 @@ namespace Orts.Viewer3D
                 // Very short length track, use minimum of two sections
                 if (NumSections == 0)
                     NumSections = 2;
+                // Limit the number of sections to prevent overflowing the number of triangles
+                else if (NumSections > 250)
+                    NumSections = 250;
                 // Ensure an even number of sections
                 if (NumSections % 2 == 1)
                     NumSections++;
