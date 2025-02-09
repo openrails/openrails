@@ -128,7 +128,7 @@ msgstr "Si ese es el caso, ¡estás solo!"
 msgid ""
 "Get a git expert at your desk or just Delete and Install the route again."
 msgstr ""
-"Consiga un experto para su PC o simplemente elimine e instale la ruta "
+"Contacte a un experto en Git o simplemente elimine e instale la ruta."
 "nuevamente."
 
 #: ../../Menu/ContentForm.cs:401 ../../Menu/ContentForm.cs:513
