@@ -82,8 +82,8 @@ namespace Orts.Viewer3D
         public Vector3 LightConePosition;
         public Vector3 LightConeDirection;
         public float LightConeDistance;
-        public float LightConeMinDotProduct;
-        public Vector4 LightConeColor;
+        public float LightConeOuterAngle;
+        public Vector3 LightConeColor;
 
         public LightViewer(Viewer viewer, TrainCar car, TrainCarViewer carViewer)
         {
@@ -99,19 +99,7 @@ namespace Orts.Viewer3D
             {
                 foreach (var light in Car.Lights.Lights)
                 {
-                    switch (light.Type)
-                    {
-                        case LightType.Glow:
-                            LightPrimitives.Add(new LightGlowPrimitive(this, Viewer.RenderProcess, light));
-                            if (light.Graphic != null)
-                                (LightPrimitives.Last() as LightGlowPrimitive).SpecificGlowMaterial = viewer.MaterialManager.Load("LightGlow", DefineFullTexturePath(light.Graphic, true));
-                            else
-                                (LightPrimitives.Last() as LightGlowPrimitive).SpecificGlowMaterial = LightGlowMaterial;
-                            break;
-                        case LightType.Cone:
-                            LightPrimitives.Add(new LightConePrimitive(this, Viewer.RenderProcess, light));
-                            break;
-                    }
+                    StaticLight staticLight = null;
 
                     // Initialization step for light shape attachment, can't do this step in LightCollection
                     if (light.ShapeIndex != -1)
@@ -127,18 +115,25 @@ namespace Orts.Viewer3D
                     {
                         if (light.ShapeHierarchy != null)
                         {
-                            if (TrySetLightManaged((CarViewer as MSTSWagonViewer).TrainCarShape.SharedShape, light.ShapeHierarchy) is var index && index < 0)
-                                index = (CarViewer as MSTSWagonViewer).TrainCarShape.SharedShape.MatrixNames.IndexOf(light.ShapeHierarchy);
-
-                            if (index < 0)
+                            if ((CarViewer as MSTSWagonViewer).TrainCarShape.SharedShape.LodControls
+                                .SelectMany(l => l.DistanceLevels)
+                                .SelectMany(d => d.SubObjects)
+                                .SelectMany(s => s.ShapePrimitives)
+                                .FirstOrDefault(p => light.ShapeHierarchy.Equals(p.AttachedLight?.ManagedName, StringComparison.OrdinalIgnoreCase)) is var primitive && primitive != null)
+                            {
+                                light.ShapeIndex = primitive.HierarchyIndex;
+                                staticLight = primitive.AttachedLight;
+                                staticLight.IntensityX = 0; // Off by default if managed from here
+                            }
+                            else if ((CarViewer as MSTSWagonViewer).TrainCarShape.SharedShape.MatrixNames.IndexOf(light.ShapeHierarchy) is var index && index >= 0)
+                            {
+                                light.ShapeIndex = index;
+                            }
+                            else
                             {
                                 Trace.TraceWarning("Light in car {0} has invalid shape index defined, shape name {1} does not exist",
                                     (Car as MSTSWagon).WagFilePath, light.ShapeHierarchy);
                                 light.ShapeIndex = 0;
-                            }
-                            else
-                            {
-                                light.ShapeIndex = index;
                             }
                         }
                         else
@@ -147,6 +142,21 @@ namespace Orts.Viewer3D
 
                     if (!ShapeXNATranslations.ContainsKey(light.ShapeIndex))
                         ShapeXNATranslations.Add(light.ShapeIndex, Matrix.Identity);
+                    
+                    switch (light.Type)
+                    {
+                        case LightType.Glow:
+                            LightPrimitives.Add(new LightGlowPrimitive(this, Viewer.RenderProcess, light, staticLight));
+                            if (light.Graphic != null)
+                                (LightPrimitives.Last() as LightGlowPrimitive).SpecificGlowMaterial = viewer.MaterialManager.Load("LightGlow", DefineFullTexturePath(light.Graphic, true));
+                            else
+                                (LightPrimitives.Last() as LightGlowPrimitive).SpecificGlowMaterial = LightGlowMaterial;
+                            break;
+                        case LightType.Cone:
+                            LightPrimitives.Add(new LightConePrimitive(this, Viewer.RenderProcess, light, staticLight));
+                            break;
+                    }
+
                 }
             }
             HasLightCone = LightPrimitives.Any(lm => lm is LightConePrimitive);
@@ -199,6 +209,7 @@ namespace Orts.Viewer3D
                 Console.WriteLine();
             }
 #endif
+            // Keep the light cone active while fading out
             if (newLightCone != null || LightConeFadeOut == 0)
                 ActiveLightCone = newLightCone;
         }
@@ -253,28 +264,27 @@ namespace Orts.Viewer3D
 
             if (HasLightCone && ActiveLightCone != null)
             {
-                int coneIndex = ActiveLightCone.Light.ShapeIndex;
+                if (ActiveLightCone.StaticLight == null)
+                {
+                    int coneIndex = ActiveLightCone.Light.ShapeIndex;
+                    
+                    LightConePosition = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Position1, ActiveLightCone.Position2, ActiveLightCone.Fade.Y), ShapeXNATranslations[coneIndex]);
+                    LightConeDirection = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Direction1, ActiveLightCone.Direction2, ActiveLightCone.Fade.Y), ShapeXNATranslations[coneIndex]);
+                    LightConeDirection -= ShapeXNATranslations[coneIndex].Translation;
+                    LightConeDirection.Normalize();
+                    // The original shaders followed the phylisophy of wanting 50% brightness at half the range. (LightConeDistance is only the half.) Now we need the full range.
+                    LightConeDistance = 2 * MathHelper.Lerp(ActiveLightCone.Distance1, ActiveLightCone.Distance2, ActiveLightCone.Fade.Y);
+                    LightConeOuterAngle = MathHelper.Lerp(ActiveLightCone.Angle1, ActiveLightCone.Angle2, ActiveLightCone.Fade.Y);
+                    var lightConeColor = Vector4.Lerp(ActiveLightCone.Color1, ActiveLightCone.Color2, ActiveLightCone.Fade.Y);
+                    LightConeColor = new Vector3(lightConeColor.X, lightConeColor.Y, lightConeColor.Z);
 
-                LightConePosition = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Position1, ActiveLightCone.Position2, ActiveLightCone.Fade.Y), ShapeXNATranslations[coneIndex]);
-                LightConeDirection = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Direction1, ActiveLightCone.Direction2, ActiveLightCone.Fade.Y), ShapeXNATranslations[coneIndex]);
-                LightConeDirection -= ShapeXNATranslations[coneIndex].Translation;
-                LightConeDirection.Normalize();
-                LightConeDistance = MathHelper.Lerp(ActiveLightCone.Distance1, ActiveLightCone.Distance2, ActiveLightCone.Fade.Y);
-                LightConeMinDotProduct = (float)Math.Cos(MathHelper.Lerp(ActiveLightCone.Angle1, ActiveLightCone.Angle2, ActiveLightCone.Fade.Y));
-                LightConeColor = Vector4.Lerp(ActiveLightCone.Color1, ActiveLightCone.Color2, ActiveLightCone.Fade.Y);
-
-                if (ActiveLightCone.Fade.X > 0)
-                    frame.AddLight(LightMode.Spot,
-                        LightConePosition,
-                        LightConeDirection,
-                        new Vector3(LightConeColor.X, LightConeColor.Y, LightConeColor.Z),
-                        RenderFrame.HeadLightIntensity,
-                        // The original shaders followed the phylisophy of wanting 50% brightness at half the range. (LightConeDistance is only the half)
-                        LightConeDistance * 2, // For the new calculation method the full range is needed.
-                        1,
-                        LightConeMinDotProduct,
-                        ActiveLightCone.Fade.X,
-                        false);
+                    frame.AddLight(LightMode.Spot, LightConePosition, LightConeDirection, LightConeColor, RenderFrame.HeadLightIntensity, LightConeDistance, 0, LightConeOuterAngle, ActiveLightCone.Fade.X, false);
+                }
+                else
+                {
+                    // Only set the properties, the light is added in frame.AddAutoPrimitive()
+                    ActiveLightCone.StaticLight.IntensityX = ActiveLightCone.Fade.X;
+                }
             }
         }
 
@@ -295,7 +305,7 @@ namespace Orts.Viewer3D
             position = lightState.Position;
             position.Z *= -1;
             direction = Vector3.Transform(Vector3.Transform(-Vector3.UnitZ, Matrix.CreateRotationX(MathHelper.ToRadians(-lightState.Elevation.Y))), Matrix.CreateRotationY(MathHelper.ToRadians(-lightState.Azimuth.Y)));
-            angle = MathHelper.ToRadians(lightState.Angle) / 2;
+            angle = MathHelper.ToRadians(lightState.Angle);
             radius = lightState.Radius / 2;
             distance = (float)(radius / Math.Sin(angle));
             color = lightState.Color.ToVector4();
@@ -438,25 +448,12 @@ namespace Orts.Viewer3D
             }
             return false;
         }
-
-        static int TrySetLightManaged(SharedShape sharedShape, string lightName)
-        {
-            if (sharedShape.LodControls
-                .SelectMany(l => l.DistanceLevels)
-                .SelectMany(d => d.SubObjects)
-                .SelectMany(s => s.ShapePrimitives)
-                .FirstOrDefault(p => lightName.Equals(p.Light?.ManagedName, StringComparison.OrdinalIgnoreCase)) is var primitive && primitive != null)
-            {
-                primitive.Light.IsManaged = true;
-                return primitive.HierarchyIndex;
-            }
-            return -1;
-        }
     }
 
     public abstract class LightPrimitive : RenderPrimitive
     {
         public Light Light;
+        public StaticLight StaticLight;
         public bool Enabled;
         public Vector2 Fade;
         public bool FadeIn;
@@ -467,9 +464,10 @@ namespace Orts.Viewer3D
         protected float StateTime;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public LightPrimitive(Light light)
+        public LightPrimitive(Light light, StaticLight staticLight)
         {
             Light = light;
+            StaticLight = staticLight;
             StateCount = Math.Max(Light.Cycle ? 2 * Light.States.Count - 2 : Light.States.Count, 1);
             UpdateStates(State, (State + 1) % StateCount);
         }
@@ -732,8 +730,8 @@ namespace Orts.Viewer3D
         static IndexBuffer IndexBuffer;
         public Material SpecificGlowMaterial;
 
-        public LightGlowPrimitive(LightViewer lightViewer, RenderProcess renderProcess, Light light)
-            : base(light)
+        public LightGlowPrimitive(LightViewer lightViewer, RenderProcess renderProcess, Light light, StaticLight staticLight)
+            : base(light, staticLight)
         {
             Debug.Assert(light.Type == LightType.Glow, "LightGlowPrimitive is only for LightType.Glow lights.");
 
@@ -798,11 +796,18 @@ namespace Orts.Viewer3D
         public Vector3 Color;
         public float Intensity;
         public float Range;
-        public float InnerConeCos;
-        public float OuterConeCos;
+        public float InnerConeAngle;
+        public float OuterConeAngle;
+
+        public Vector3 ColorX = Vector3.One;
+        public float IntensityX = 1;
+        public float RangeX = 1;
+        public float InnerConeAngleX = 1;
+        public float OuterConeAngleX = 1;
 
         public string ManagedName;
-        public bool IsManaged;
+
+        public Matrix WorldMatrix;
     }
     
     struct LightGlowVertex
@@ -852,8 +857,8 @@ namespace Orts.Viewer3D
         static IndexBuffer IndexBuffer;
         static BlendState BlendState_SourceZeroDestOne;
 
-        public LightConePrimitive(LightViewer lightViewer, RenderProcess renderProcess, Light light)
-            : base(light)
+        public LightConePrimitive(LightViewer lightViewer, RenderProcess renderProcess, Light light, StaticLight staticLight)
+            : base(light, staticLight)
         {
             Debug.Assert(light.Type == LightType.Cone, "LightConePrimitive is only for LightType.Cone lights.");
 

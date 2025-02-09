@@ -67,7 +67,7 @@ namespace ORTS.Common
                             State (
                                 Duration ( 0.0 )
                                 LightColour ( ffffffff )
-                                Position ( 0 0 0 )
+                                Position ( 0 3.5 0 )
                                 Transition ( 0 )
                                 Radius ( 400 )
                                 Angle ( 15 )

@@ -1438,19 +1438,19 @@ namespace Orts.Viewer3D
                 : this(new EmptyMaterial(distanceLevel.Viewer), Enumerable.Empty<VertexBufferBinding>().ToList(), gltfFile, distanceLevel, new GltfIndexBufferSet(), null, hierarchyIndex, hierarchy, Vector4.Zero, Vector4.Zero, 0, Array.Empty<int>())
             {
                 object extension = null;
-                Light = new StaticLight
+                AttachedLight = new StaticLight
                 {
                     Name = light.name,
                     Type = light.type,
                     Color = light.color != null && light.color.Length > 2 ? new Vector3(light.color[0], light.color[1], light.color[2]) : Vector3.Zero,
                     Intensity = light.intensity,
                     Range = light.range == 0 ? 2000 : light.range,
-                    InnerConeCos = (float)Math.Cos(light.spot?.innerConeAngle ?? 0),
-                    OuterConeCos = (float)Math.Cos(light.spot?.outerConeAngle ?? MathHelper.Pi),
+                    InnerConeAngle = light.spot?.innerConeAngle ?? 0,
+                    OuterConeAngle = light.spot?.outerConeAngle ?? MathHelper.PiOver4,
                     ManagedName = (light.Extras?.TryGetValue("OPENRAILS_light_name", out extension) ?? false) && extension is string a ? a : null,
                 };
-                if (Light.ManagedName != null)
-                    distanceLevel.MatrixNames.Add(Light.ManagedName);
+                if (AttachedLight.ManagedName != null)
+                    distanceLevel.MatrixNames.Add(AttachedLight.ManagedName);
             }
 
             public GltfPrimitive(Material material, List<VertexBufferBinding> vertexAttributes, Gltf gltfFile, GltfDistanceLevel distanceLevel, GltfIndexBufferSet indexBufferSet, Skin skin, int hierarchyIndex, int[] hierarchy, Vector4 texCoords1, Vector4 texCoords2, int texturePacking, int[] morphConfig)
@@ -1856,6 +1856,7 @@ namespace Orts.Viewer3D
             { "NormalTangentTest".ToLower(), Matrix.CreateScale(2) * Matrix.CreateTranslation(0, 2, 0) },
             { "OrientationTest".ToLower(), Matrix.CreateScale(0.2f) * Matrix.CreateTranslation(0, 2, 0) },
             { "PlaysetLightTest".ToLower(), Matrix.CreateScale(30) },
+            { "PointLightIntensityTest".ToLower(), Matrix.CreateTranslation(0, 5, 0) },
             { "PotOfCoals".ToLower(), Matrix.CreateScale(30) },
             { "PrimitiveModeNormalsTest".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(0, 5, 0) },
             { "ReciprocatingSaw".ToLower(), Matrix.CreateScale(0.01f) * Matrix.CreateTranslation(0, 3, 0) },

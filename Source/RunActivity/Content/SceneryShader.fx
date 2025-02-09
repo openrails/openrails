@@ -709,7 +709,7 @@ float3 _PSGetLightVector(in int i, in float3 pointAbsolutePosition, inout float3
 		}
 		else
 		{
-			rangeAttenuation /= pow(pointLightDistance, 2); // The realistic range attenuation is inverse-squared.
+			rangeAttenuation /= pow(pointLightDistance, 1.5); // The realistic range attenuation is inverse-squared.
 			if (LightRanges[i] > 0)
 				rangeAttenuation *= clamp(1 - pow(pointLightDistance / LightRanges[i], 4), 0, 1);
 		}
