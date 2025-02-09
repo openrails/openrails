@@ -1233,7 +1233,7 @@ msgstr "RailDriver"
 
 #: ../../Menu/Options.Designer.cs:1738
 msgid "Reverse Levers"
-msgstr "Palanca Inversor"
+msgstr "Invertir palancas"
 
 #: ../../Menu/Options.Designer.cs:1748
 msgid "Reverse Independent Brake Direction"
