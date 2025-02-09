@@ -676,7 +676,12 @@ namespace Orts.Viewer3D
                     for (var k = 0; k < gltfAnimation.Channels.Length; k++)
                     {
                         var gltfChannel = gltfAnimation.Channels[k];
-                        if (gltfChannel.Target.Node == null) // then this is defined by an extension, which is not supported here.
+                        
+                        object pointerExtension = null;
+                        string pointer = null;
+                        if (gltfChannel.Target.Extensions?.TryGetValue("KHR_animation_pointer", out pointerExtension) ?? false)
+                            pointer = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_animation_pointer>(pointerExtension.ToString()).Pointer;
+                        else if (gltfChannel.Target.Node == null)
                             continue;
 
                         var sampler = gltfAnimation.Samplers[gltfChannel.Sampler];
@@ -687,11 +692,12 @@ namespace Orts.Viewer3D
                         var readOutput = GetNormalizedReader(outputAccessor.ComponentType, shape.MsfsFlavoured);
                         var bro = new BinaryReader(GetBufferView(outputAccessor, out _));
 
-                        animation.Channels.Add(new GltfAnimationChannel
+                        GltfAnimationChannel channel;
+                        animation.Channels.Add(channel = new GltfAnimationChannel
                         {
                             Interpolation = shape.MsfsFlavoured ? AnimationSampler.InterpolationEnum.LINEAR : sampler.Interpolation,
                             Path = gltfChannel.Target.Path,
-                            TargetNode = (int)gltfChannel.Target.Node,
+                            TargetNode = gltfChannel.Target.Node,
                             TimeArray = new float[inputAccessor.Count].Select(_ => readInput(bri)).ToArray(),
                             TimeMin = inputAccessor.Min[0],
                             TimeMax = inputAccessor.Max[0],
@@ -699,9 +705,62 @@ namespace Orts.Viewer3D
                                 new Quaternion[outputAccessor.Count].Select(_ => new Quaternion(readOutput(bro), readOutput(bro), readOutput(bro), readOutput(bro))).ToArray() : null,
                             OutputVector3 = gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.scale || gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.translation ?
                                 new Vector3[outputAccessor.Count].Select(_ => new Vector3(readOutput(bro), readOutput(bro), readOutput(bro))).ToArray() : null,
-                            OutputWeights = gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.weights ?
+                            OutputFloats = gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.weights ?
                                 new float[outputAccessor.Count].Select(_ => readOutput(bro)).ToArray() : null,
+                            Pointer = gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.pointer ? pointer : null,
                         });
+
+                        if (channel.Pointer != null)
+                        {
+                            var pointerSpan = channel.Pointer.AsSpan();
+                            var s2 = pointerSpan.Slice(1).IndexOf('/') + 1;
+                            var s3 = pointerSpan.Slice(s2 + 1).IndexOf('/');
+                            if (int.TryParse(pointerSpan.Slice(s2 + 1, s3).ToString(), out var index))
+                            {
+                                var property = pointerSpan.Slice(pointerSpan.LastIndexOf('/') + 1).ToString();
+                                var element = pointerSpan.Slice(1, s2 - 1);
+                                if (element.SequenceEqual("nodes".AsSpan()))
+                                {
+                                    // Switch back to the original behavior
+                                    channel.TargetNode = index;
+                                    switch (property)
+                                    {
+                                        case "translation": channel.Path = AnimationChannelTarget.PathEnum.translation; break;
+                                        case "rotation": channel.Path = AnimationChannelTarget.PathEnum.rotation; break;
+                                        case "scale": channel.Path = AnimationChannelTarget.PathEnum.scale; break;
+                                        case "weights": channel.Path = AnimationChannelTarget.PathEnum.weights; break;
+                                        default: break;
+                                    }
+                                    // FIXME: /nodes/{}/weights/{} is not yet implemented with this approach.
+                                }
+                                else if (element.SequenceEqual("meshes".AsSpan()))
+                                {
+
+                                }
+                            }
+
+                            foreach (var template in PointerTemplates.Keys)
+                            {
+                                var templateSpan = template.AsSpan();
+                                var c2 = templateSpan.IndexOf('{');
+                                var c3 = templateSpan.IndexOf('}');
+                                if (pointerSpan.Slice(0, s2 + 1).SequenceEqual(templateSpan.Slice(0, c2)) &&
+                                    pointerSpan.Slice(s2 + s3 + 1).SequenceEqual(templateSpan.Slice(c3 + 1)))
+                                {
+                                    switch (PointerTemplates[template])
+                                    {
+                                        case 0:
+                                        case 1: channel.OutputFloats = new float[outputAccessor.Count].Select(_ => readOutput(bro)).ToArray(); break;
+                                        case 2: channel.OutputQuaternion = new Quaternion[outputAccessor.Count].Select(_ => new Quaternion(readOutput(bro), readOutput(bro), readOutput(bro), readOutput(bro))).ToArray(); break;
+                                        case 3: channel.OutputVector3 = new Vector3[outputAccessor.Count].Select(_ => new Vector3(readOutput(bro), readOutput(bro), readOutput(bro))).ToArray(); break;
+                                        case 4: channel.OutputVector4 = new Vector4[outputAccessor.Count].Select(_ => new Vector4(readOutput(bro), readOutput(bro), readOutput(bro), readOutput(bro))).ToArray(); break;
+                                        default: break;
+                                    }
+
+                                    break;
+                                }
+                            }
+                        }
                     }
                     GltfAnimations.Add(animation);
                 }
@@ -1670,6 +1729,12 @@ namespace Orts.Viewer3D
             public float EmissiveStrength { get; set; }
         }
 
+        public class KHR_animation_pointer
+        {
+            [DefaultValue("")]
+            public string Pointer { get; set; }
+        }
+
         /// <summary>
         /// This method is part of the animation handling. Gets the parent that will be animated, for finding a bogie for wheels.
         /// </summary>
@@ -1730,33 +1795,40 @@ namespace Orts.Viewer3D
                     case AnimationSampler.InterpolationEnum.STEP: amount = 0; break;
                     default: amount = 0; break;
                 }
-                switch (channel.Path)
+                if (channel.TargetNode != null)
                 {
-                    case AnimationChannelTarget.PathEnum.translation:
-                        Translations[channel.TargetNode] = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
-                            ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame2)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
-                            : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
-                        break;
-                    case AnimationChannelTarget.PathEnum.rotation:
-                        Rotations[channel.TargetNode] = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
-                            ? CsInterp(channel.OutputQuaternion[Property(frame1)], channel.OutputQuaternion[OutTangent(frame2)], channel.OutputQuaternion[Property(frame2)], channel.OutputQuaternion[InTangent(frame2)], amount)
-                            : Quaternion.Slerp(channel.OutputQuaternion[frame1], channel.OutputQuaternion[frame2], amount);
-                        break;
-                    case AnimationChannelTarget.PathEnum.scale:
-                         Scales[channel.TargetNode] = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
-                            ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame2)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
-                            : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
-                        break;
-                    case AnimationChannelTarget.PathEnum.weights:
-                        var count = Weights[channel.TargetNode].Length;
-                        for (var i = 0; i < count; i++)
-                            Weights[channel.TargetNode][i] = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
-                                ? MathHelper.Hermite(channel.OutputWeights[Property(frame1) * count + i], channel.OutputWeights[OutTangent(frame2) * count + i], channel.OutputWeights[Property(frame2) * count + i], channel.OutputWeights[InTangent(frame2) * count + i], amount)
-                                : MathHelper.Lerp(channel.OutputWeights[frame1 * count + i], channel.OutputWeights[frame2 * count + i], amount);
-                        break;
-                    default: break;
+                    switch (channel.Path)
+                    {
+                        case AnimationChannelTarget.PathEnum.translation:
+                            Translations[(int)channel.TargetNode] = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                                ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame2)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
+                                : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
+                            break;
+                        case AnimationChannelTarget.PathEnum.rotation:
+                            Rotations[(int)channel.TargetNode] = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                                ? CsInterp(channel.OutputQuaternion[Property(frame1)], channel.OutputQuaternion[OutTangent(frame2)], channel.OutputQuaternion[Property(frame2)], channel.OutputQuaternion[InTangent(frame2)], amount)
+                                : Quaternion.Slerp(channel.OutputQuaternion[frame1], channel.OutputQuaternion[frame2], amount);
+                            break;
+                        case AnimationChannelTarget.PathEnum.scale:
+                            Scales[(int)channel.TargetNode] = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                               ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame2)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
+                               : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
+                            break;
+                        case AnimationChannelTarget.PathEnum.weights:
+                            var count = Weights[(int)channel.TargetNode].Length;
+                            for (var i = 0; i < count; i++)
+                                Weights[(int)channel.TargetNode][i] = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                                    ? MathHelper.Hermite(channel.OutputFloats[Property(frame1) * count + i], channel.OutputFloats[OutTangent(frame2) * count + i], channel.OutputFloats[Property(frame2) * count + i], channel.OutputFloats[InTangent(frame2) * count + i], amount)
+                                    : MathHelper.Lerp(channel.OutputFloats[frame1 * count + i], channel.OutputFloats[frame2 * count + i], amount);
+                            break;
+                        default: break;
+                    }
+                    animatedMatrices[(int)channel.TargetNode] = Matrix.CreateScale(Scales[(int)channel.TargetNode]) * Matrix.CreateFromQuaternion(Rotations[(int)channel.TargetNode]) * Matrix.CreateTranslation(Translations[(int)channel.TargetNode]);
                 }
-                animatedMatrices[channel.TargetNode] = Matrix.CreateScale(Scales[channel.TargetNode]) * Matrix.CreateFromQuaternion(Rotations[channel.TargetNode]) * Matrix.CreateTranslation(Translations[channel.TargetNode]);
+                else if (channel.Path == AnimationChannelTarget.PathEnum.pointer && !string.IsNullOrEmpty(channel.Pointer))
+                {
+
+                }
             }
         }
 
@@ -1772,12 +1844,44 @@ namespace Orts.Viewer3D
             Quaternion.Normalize(Quaternion.Multiply(v1, A(t)) + Quaternion.Multiply(b1, B(t)) + Quaternion.Multiply(v2, C(t)) + Quaternion.Multiply(a2, D(t)));
 
         /// <summary>
+        /// The pointers in the glTF animations are used to animate the properties of the materials and lights.
+        /// The values are 0: float[], 1: float, 2: Quaternion, 3: Vector3, 4: Vector4
+        /// </summary>
+        static readonly Dictionary<string, int> PointerTemplates = new Dictionary<string, int>()
+        {
+            // Core pointers
+            { "/materials/{}/alphaCutoff", 1 },
+            { "/materials/{}/emissiveFactor", 3 },
+            { "/materials/{}/normalTexture/scale", 1 },
+            { "/materials/{}/occlusionTexture/strength", 1 },
+            { "/materials/{}/pbrMetallicRoughness/baseColorFactor", 4 },
+            { "/materials/{}/pbrMetallicRoughness/metallicFactor", 1 },
+            { "/materials/{}/pbrMetallicRoughness/roughnessFactor", 1 },
+            { "/meshes/{}/weights", 0 },
+            { "/meshes/{}/weights/{}", 1 },
+            { "/nodes/{}/translation", 3 },
+            { "/nodes/{}/rotation", 2 },
+            { "/nodes/{}/scale", 3 },
+            { "/nodes/{}/weights", 0 },
+            { "/nodes/{}/weights/{}", 1 },
+
+            // Extension pointers
+            { "/extensions/KHR_lights_punctual/lights/{}/color", 3 },
+            { "/extensions/KHR_lights_punctual/lights/{}/intensity", 1 },
+            { "/extensions/KHR_lights_punctual/lights/{}/range", 1 },
+            { "/extensions/KHR_lights_punctual/lights/{}/spot/innerConeAngle", 1 },
+            { "/extensions/KHR_lights_punctual/lights/{}/spot/outerConeAngle", 1 },
+
+        };
+
+        /// <summary>
         /// Adjustments needed for the Khronos sample assets models.
         /// </summary>
         static readonly Dictionary<string, Matrix> SampleModelsAdjustments = new Dictionary<string, Matrix>
         {
             { "2CylinderEngine".ToLower(), Matrix.CreateScale(0.005f) * Matrix.CreateTranslation(0, 2, 0) },
             { "ABeautifulGame".ToLower(), Matrix.CreateScale(10) },
+            { "AnimatedColorsCube".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "AnimatedCube".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "AnimatedMorphCube".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "AnimatedMorphSphere".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
@@ -1908,14 +2012,16 @@ namespace Orts.Viewer3D
 
     class GltfAnimationChannel
     {
-        public int TargetNode; // ref to index in hierarchy, e.g. Matrices(index)
+        public int? TargetNode; // ref to index in hierarchy, e.g. Matrices(index)
         public AnimationChannelTarget.PathEnum Path; // e.g. rotation or tcb_rot, translation or linear_pos, scale, tcb_pos
         public AnimationSampler.InterpolationEnum Interpolation;
         public float[] TimeArray;
         public float TimeMin;
         public float TimeMax;
         public Vector3[] OutputVector3;
+        public Vector4[] OutputVector4;
         public Quaternion[] OutputQuaternion;
-        public float[] OutputWeights;
+        public float[] OutputFloats;
+        public string Pointer;
     }
 }
