@@ -297,7 +297,7 @@ msgstr "Error al descomprimir el archivo zip {0}: {1}"
 #: ../../Menu/ContentForm.cs:932
 #, csharp-format
 msgid "Error during github pull: {0}"
-msgstr "Error durante la conexión con github: {0}"
+msgstr "Error durante la conexión con github (pull): {0}"
 
 #: ../../Menu/ContentForm.cs:947
 #, csharp-format
