@@ -1245,7 +1245,7 @@ msgstr "Invertir palanca de freno automático"
 
 #: ../../Menu/Options.Designer.cs:1770
 msgid "Reverse Throttle Direction"
-msgstr "Inversor dirección regulador"
+msgstr "Invertir palanca del regulador"
 
 #: ../../Menu/Options.Designer.cs:1781
 msgid "Reverse Reverser Direction"
