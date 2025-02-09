@@ -1333,7 +1333,7 @@ msgstr "Clima actividad aleatorio"
 
 #: ../../Menu/Options.Designer.cs:2330
 msgid "Activity randomization"
-msgstr "Actividad aleatoria"
+msgstr "Aleatorizar actividad"
 
 #: ../../Menu/Options.Designer.cs:2363
 msgid "Correct questionable braking parameters"
