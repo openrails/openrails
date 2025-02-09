@@ -165,7 +165,7 @@ msgstr "No se encontraron archivos agregados"
 
 #: ../../Menu/ContentForm.cs:443
 msgid "Changed local file(s) after the install (git status)"
-msgstr "Archivos locales modificados después de la instalación"
+msgstr "Archivo(s) local(es) modificados después de la instalación (git status)"
 
 #: ../../Menu/ContentForm.cs:458
 msgid "Added local file(s) after the install (git status)"
