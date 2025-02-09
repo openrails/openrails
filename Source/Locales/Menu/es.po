@@ -254,7 +254,7 @@ msgstr "En {0} por {1}"
 #: ../../Menu/ContentForm.cs:512
 #, csharp-format
 msgid "Route to be installed in \"{0}\", are you sure?"
-msgstr "La ruta se instalara en \"{0}\", ¿está seguro?"
+msgstr "La ruta se instalará en \"{0}\", ¿está seguro?"
 
 #: ../../Menu/ContentForm.cs:541
 #, csharp-format
