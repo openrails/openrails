@@ -43,6 +43,7 @@ namespace Orts.Viewer3D
 
         public static List<string> ExtensionsSupported = new List<string>
         {
+            "KHR_animation_pointer",
             "KHR_lights_punctual",
             "KHR_materials_unlit",
             "KHR_materials_clearcoat",
@@ -60,6 +61,11 @@ namespace Orts.Viewer3D
         internal Quaternion[] Rotations;
         internal Vector3[] Translations;
         internal float[][] Weights;
+
+        // Need these at load time to connect the pointers
+        internal Dictionary<int, PbrMaterial> Materials = new Dictionary<int, PbrMaterial>();
+        internal Dictionary<int, GltfPrimitive> Meshes = new Dictionary<int, GltfPrimitive>();
+        internal Dictionary<int, StaticLight> Lights = new Dictionary<int, StaticLight>();
 
         /// <summary>
         /// glTF specification declares that the model's forward is +Z. However OpenRails uses -Z as forward,
@@ -226,6 +232,8 @@ namespace Orts.Viewer3D
                 GltfAnimations = lod.GltfAnimations;
                 LodChanged = true;
                 LastLod = lodId;
+
+                lod.ConnectPointers();
             }
             return lod;
         }
@@ -358,7 +366,7 @@ namespace Orts.Viewer3D
                 var parents = new Dictionary<int, int>();
                 var lods = Enumerable.Repeat(-1, GltfFile.Nodes.Length).ToArray(); // -1: common; 0, 1, 3, etc.: the lod the node belongs to
                 var meshes = new Dictionary<int, Node>();
-                var lights = new Dictionary<int, KHR_lights_punctual>();
+                var lights = new Dictionary<int, int>();
 
                 TempStack.Clear();
                 Array.ForEach(GltfFile.Scenes.ElementAtOrDefault(GltfFile.Scene ?? 0).Nodes, node => TempStack.Push(node));
@@ -411,11 +419,12 @@ namespace Orts.Viewer3D
                         {
                             var lightId = Newtonsoft.Json.JsonConvert.DeserializeObject<KHR_lights_punctual_index>(extension.ToString())?.light;
                             if (lightId != null)
-                                lights.Add(nodeNumber, gltfLights.lights[(int)lightId]);
+                                lights.Add(nodeNumber, (int)lightId);
                         }
                     }
                 }
 
+                GltfSubObject subObject;
                 var subObjects = new List<SubObject>();
                 foreach (var hierIndex in meshes.Keys)
                 {
@@ -424,11 +433,17 @@ namespace Orts.Viewer3D
                     var skin = node.Skin != null ? GltfFile.Skins[(int)node.Skin] : null;
 
                     for (var i = 0; i < mesh.Primitives.Length; i++)
-                        subObjects.Add(new GltfSubObject(mesh.Primitives[i], $"{mesh.Name}[{i}]", hierIndex, hierarchy, Helpers.TextureFlags.None, GltfFile, Shape, this, skin));
+                    {
+                        subObjects.Add(subObject = new GltfSubObject(mesh.Primitives[i], $"{mesh.Name}[{i}]", hierIndex, hierarchy, Helpers.TextureFlags.None, GltfFile, Shape, this, skin));
+                        if (!shape.Meshes.ContainsKey((int)node.Mesh) && subObject.ShapePrimitives?.FirstOrDefault() is GltfPrimitive primitive)
+                            shape.Meshes.Add((int)node.Mesh, primitive);
+                    }
                 }
                 foreach (var hierIndex in lights.Keys)
                 {
-                    subObjects.Add(new GltfSubObject(lights[hierIndex], hierIndex, hierarchy, GltfFile, Shape, this));
+                    subObjects.Add(subObject = new GltfSubObject(gltfLights.lights[lights[hierIndex]], hierIndex, hierarchy, GltfFile, Shape, this));
+                    if (!shape.Lights.ContainsKey(lights[hierIndex]))
+                        shape.Lights.Add(lights[hierIndex], subObject.ShapePrimitives?.FirstOrDefault()?.AttachedLight);
                 }
                 SubObjects = subObjects.ToArray();
 
@@ -710,34 +725,11 @@ namespace Orts.Viewer3D
                             Pointer = gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.pointer ? pointer : null,
                         });
 
-                        if (channel.Pointer != null)
+                        if (!string.IsNullOrEmpty(channel.Pointer))
                         {
                             var pointerSpan = channel.Pointer.AsSpan();
                             var s2 = pointerSpan.Slice(1).IndexOf('/') + 1;
                             var s3 = pointerSpan.Slice(s2 + 1).IndexOf('/');
-                            if (int.TryParse(pointerSpan.Slice(s2 + 1, s3).ToString(), out var index))
-                            {
-                                var property = pointerSpan.Slice(pointerSpan.LastIndexOf('/') + 1).ToString();
-                                var element = pointerSpan.Slice(1, s2 - 1);
-                                if (element.SequenceEqual("nodes".AsSpan()))
-                                {
-                                    // Switch back to the original behavior
-                                    channel.TargetNode = index;
-                                    switch (property)
-                                    {
-                                        case "translation": channel.Path = AnimationChannelTarget.PathEnum.translation; break;
-                                        case "rotation": channel.Path = AnimationChannelTarget.PathEnum.rotation; break;
-                                        case "scale": channel.Path = AnimationChannelTarget.PathEnum.scale; break;
-                                        case "weights": channel.Path = AnimationChannelTarget.PathEnum.weights; break;
-                                        default: break;
-                                    }
-                                    // FIXME: /nodes/{}/weights/{} is not yet implemented with this approach.
-                                }
-                                else if (element.SequenceEqual("meshes".AsSpan()))
-                                {
-
-                                }
-                            }
 
                             foreach (var template in PointerTemplates.Keys)
                             {
@@ -749,14 +741,13 @@ namespace Orts.Viewer3D
                                 {
                                     switch (PointerTemplates[template])
                                     {
-                                        case 0:
-                                        case 1: channel.OutputFloats = new float[outputAccessor.Count].Select(_ => readOutput(bro)).ToArray(); break;
-                                        case 2: channel.OutputQuaternion = new Quaternion[outputAccessor.Count].Select(_ => new Quaternion(readOutput(bro), readOutput(bro), readOutput(bro), readOutput(bro))).ToArray(); break;
-                                        case 3: channel.OutputVector3 = new Vector3[outputAccessor.Count].Select(_ => new Vector3(readOutput(bro), readOutput(bro), readOutput(bro))).ToArray(); break;
-                                        case 4: channel.OutputVector4 = new Vector4[outputAccessor.Count].Select(_ => new Vector4(readOutput(bro), readOutput(bro), readOutput(bro), readOutput(bro))).ToArray(); break;
+                                        case PointerTypes.FloatVector:
+                                        case PointerTypes.Float: channel.OutputFloats = new float[outputAccessor.Count].Select(_ => readOutput(bro)).ToArray(); break;
+                                        case PointerTypes.Quaternion: channel.OutputQuaternion = new Quaternion[outputAccessor.Count].Select(_ => new Quaternion(readOutput(bro), readOutput(bro), readOutput(bro), readOutput(bro))).ToArray(); break;
+                                        case PointerTypes.Vector3: channel.OutputVector3 = new Vector3[outputAccessor.Count].Select(_ => new Vector3(readOutput(bro), readOutput(bro), readOutput(bro))).ToArray(); break;
+                                        case PointerTypes.Vector4: channel.OutputVector4 = new Vector4[outputAccessor.Count].Select(_ => new Vector4(readOutput(bro), readOutput(bro), readOutput(bro), readOutput(bro))).ToArray(); break;
                                         default: break;
                                     }
-
                                     break;
                                 }
                             }
@@ -770,6 +761,108 @@ namespace Orts.Viewer3D
                 var dimensions = gltfFile.Nodes.Select(n => (n.Extras?.TryGetValue("OPENRAILS_animation_wheelradius", out extension) ?? false) && extension is string dim && float.TryParse(dim, out var d) ? d : 0f);
                 GltfAnimations.AddRange(names.Select(n => new GltfAnimation(n.Item1) { ExtrasWheelRadius = dimensions.ElementAt(n.i), Channels = { new GltfAnimationChannel() { TargetNode = n.i } } }));
                 MatrixNames.AddRange(names.Select(n => n.Item1));
+            }
+
+            internal void ConnectPointers()
+            {
+                foreach (var animation in GltfAnimations)
+                {
+                    foreach (var channel in animation.Channels)
+                    {
+                        if (string.IsNullOrEmpty(channel?.Pointer))
+                            continue;
+
+                        bool isMatch(string element, out int matchIndex, out ReadOnlySpan<char> matchProperty)
+                        {
+                            var pointer = channel.Pointer.AsSpan();
+                            if (pointer.StartsWith(element.AsSpan()))
+                            {
+                                var p2 = pointer.Slice(element.Length);
+                                var i1 = p2.Slice(0, p2.IndexOf('/'));
+                                matchProperty = p2.Slice(p2.IndexOf('/'));
+
+                                Debug.Assert(!p2.StartsWith("/".AsSpan()));
+                                Debug.Assert(!i1.Contains("/".AsSpan(), StringComparison.OrdinalIgnoreCase));
+                                Debug.Assert(matchProperty.StartsWith("/".AsSpan()));
+
+                                return int.TryParse(i1.ToString(), out matchIndex);
+                            }
+                            else
+                            {
+                                matchIndex = -1;
+                                matchProperty = default;
+                                return false;
+                            }
+                        }
+
+                        if (isMatch("/nodes/", out var index, out var property))
+                        {
+                            // Wire back to the original behavior
+                            channel.TargetNode = index;
+                            switch (property.ToString())
+                            {
+                                case "/translation": channel.Path = AnimationChannelTarget.PathEnum.translation; break;
+                                case "/rotation": channel.Path = AnimationChannelTarget.PathEnum.rotation; break;
+                                case "/scale": channel.Path = AnimationChannelTarget.PathEnum.scale; break;
+                                case "/weights": channel.Path = AnimationChannelTarget.PathEnum.weights; break;
+                                default:
+                                    if (property.StartsWith("/weights/".AsSpan()) && property.LastIndexOf('/') is var i2 && i2 < property.Length
+                                        && int.TryParse(property.Slice(i2).ToString(), out var index2))
+                                    {
+                                        channel.SetTargetFloat = (f) => Shape.Weights[(int)channel.TargetNode][index2] = f;
+                                        channel.TargetNode = null;
+                                    }
+                                    break;
+                            }
+                        }
+                        else if (isMatch("/meshes/", out index, out property))
+                        {
+                            // Wire back to the original behavior
+                            channel.TargetNode = Shape.Meshes[index].HierarchyIndex;
+                            if (property.SequenceEqual("/weights".AsSpan()))
+                            {
+                                channel.Path = AnimationChannelTarget.PathEnum.weights;
+                            }
+                            else if (property.StartsWith("/weights/".AsSpan()) && property.LastIndexOf('/') is var i2 && i2 < property.Length
+                                && int.TryParse(property.Slice(i2).ToString(), out var index2))
+                            {
+                                channel.SetTargetFloat = (f) => Shape.Weights[(int)channel.TargetNode][index2] = f;
+                                channel.TargetNode = null;
+                            }
+                        }
+                        else if (isMatch("/materials/", out index, out property))
+                        {
+                            var material = Shape.Materials[index];
+                            switch (property.ToString())
+                            {
+                                case "/alphaCutoff": channel.SetTargetFloat = material.SetAlphaCutoff; break;
+                                case "/emissiveFactor": channel.SetTargetVector3 = material.SetEmissiveFactor; break;
+                                case "/normalTexture/scale": channel.SetTargetFloat = material.SetNormalScale; break;
+                                case "/occlusionTexture/strength": channel.SetTargetFloat = material.SetOcclusionSrtength; break;
+                                case "/pbrMetallicRoughness/baseColorFactor": channel.SetTargetVector4 = material.SetBaseColorFactor; break;
+                                case "/pbrMetallicRoughness/metallicFactor": channel.SetTargetFloat = material.SetMetallicFactor; break;
+                                case "/pbrMetallicRoughness/roughnessFactor": channel.SetTargetFloat = material.SetRoughnessFactor; break;
+                                case "/extensions/KHR_materials_clearcoat/clearcoatFactor": channel.SetTargetFloat = material.SetClearcoatFactor; break;
+                                case "/extensions/KHR_materials_clearcoat/clearcoatRoughnessFactor": channel.SetTargetFloat = material.SetClearcoatRoughnessFactor; break;
+                                case "/extensions/KHR_materials_clearcoat/clearcoatNormalTexture/scale": channel.SetTargetFloat = material.SetClearcoatNormalScale; break;
+                                default: channel.SetTargetFloat = null; channel.SetTargetVector3 = null; channel.SetTargetVector4 = null; break;
+                            }
+                        }
+                        else if (isMatch("/extensions/KHR_lights_punctual/lights/", out index, out property))
+                        {
+                            var light = Shape.Lights[index];
+                            switch (property.ToString())
+                            {
+                                case "/color": channel.SetTargetVector3 = (c) => light.ColorX = c; break;
+                                case "/intensity": channel.SetTargetFloat = (f) => light.IntensityX = f; break;
+                                case "/range": channel.SetTargetFloat = (f) => light.RangeX = f; break;
+                                case "/spot/innerConeAngle": channel.SetTargetFloat = (f) => light.InnerConeAngleX = f; break;
+                                case "/spot/outerConeAngle": channel.SetTargetFloat = (f) => light.OuterConeAngleX = f; break;
+                                default: channel.SetTargetFloat = null; channel.SetTargetVector3 = null; channel.SetTargetVector4 = null; break;
+                            }
+                        }
+                    }
+                }
             }
 
             internal Span<byte> GetBufferViewSpan(AccessorSparseIndices accessor) => GetBufferViewSpan(accessor?.BufferView, accessor?.ByteOffset ?? 0);
@@ -1230,12 +1323,12 @@ namespace Orts.Viewer3D
                 var baseColorFactor = MemoryMarshal.Cast<float, Vector4>(material.PbrMetallicRoughness?.BaseColorFactor ?? new[] { 1f, 1f, 1f, 1f })[0];
                 var metallicFactor = material.PbrMetallicRoughness?.MetallicFactor ?? 1f;
                 var roughtnessFactor = material.PbrMetallicRoughness?.RoughnessFactor ?? 1f;
-                var normalScale = flipNormals * (material.NormalTexture?.Scale ?? 2f); // 2 indicates the textureInfo is missing, otherwise it get default 1
-                var occlusionStrength = material.OcclusionTexture?.Strength ?? 0; // Must be 0 only if the textureInfo is missing, otherwise it must have the default value 1.
+                var normalScale = flipNormals * (material.NormalTexture?.Scale ?? 2f); // 2 indicates the textureInfo is missing, otherwise it gets the default 1
+                var occlusionStrength = material.OcclusionTexture?.Strength ?? 2; // 2 indicates the textureInfo is missing, otherwise it gets the default 1
                 var emissiveFactor = MemoryMarshal.Cast<float, Vector3>(material.EmissiveFactor ?? new[] { 0f, 0f, 0f })[0] * emissiveStrength;
                 var clearcoatFactor = clearcoat?.ClearcoatFactor ?? 0;
                 var clearcoatRoughnessFactor = clearcoat?.ClearcoatRoughnessFactor ?? 0;
-                var clearcoatNormalScale = flipNormals * (clearcoat?.ClearcoatNormalTexture?.Scale ?? 2f);
+                var clearcoatNormalScale = flipNormals * (clearcoat?.ClearcoatNormalTexture?.Scale ?? 2f); // 2 indicates the textureInfo is missing, otherwise it gets the default 1
 
                 switch (baseColorSamplerState.Item2)
                 {
@@ -1445,6 +1538,9 @@ namespace Orts.Viewer3D
                     clearcoatSamplerState,
                     clearcoatRoughnessSamplerState,
                     clearcoatNormalSamplerState);
+
+                if (meshPrimitive.Material != null && !shape.Materials.ContainsKey((int)meshPrimitive.Material) && sceneryMaterial is PbrMaterial pbrMaterial)
+                    shape.Materials.Add((int)meshPrimitive.Material, pbrMaterial);
 
                 ShapePrimitives = new[] { new GltfPrimitive(sceneryMaterial, vertexAttributes, gltfFile, distanceLevel, indexBufferSet, skin, hierarchyIndex, hierarchy, texCoords1, texCoords2, texturePacking, morphConfig) };
                 ShapePrimitives[0].SortIndex = 0;
@@ -1827,7 +1923,15 @@ namespace Orts.Viewer3D
                 }
                 else if (channel.Path == AnimationChannelTarget.PathEnum.pointer && !string.IsNullOrEmpty(channel.Pointer))
                 {
-
+                    channel.SetTargetFloat?.Invoke(channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                        ? MathHelper.Hermite(channel.OutputFloats[Property(frame1)], channel.OutputFloats[OutTangent(frame2)], channel.OutputFloats[Property(frame2)], channel.OutputFloats[InTangent(frame2)], amount)
+                        : MathHelper.Lerp(channel.OutputFloats[frame1], channel.OutputFloats[frame2], amount));
+                    channel.SetTargetVector3?.Invoke(channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                        ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame2)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
+                        : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount));
+                    channel.SetTargetVector4?.Invoke(channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                        ? Vector4.Hermite(channel.OutputVector4[Property(frame1)], channel.OutputVector4[OutTangent(frame2)], channel.OutputVector4[Property(frame2)], channel.OutputVector4[InTangent(frame2)], amount)
+                        : Vector4.Lerp(channel.OutputVector4[frame1], channel.OutputVector4[frame2], amount));
                 }
             }
         }
@@ -1845,34 +1949,42 @@ namespace Orts.Viewer3D
 
         /// <summary>
         /// The pointers in the glTF animations are used to animate the properties of the materials and lights.
-        /// The values are 0: float[], 1: float, 2: Quaternion, 3: Vector3, 4: Vector4
         /// </summary>
-        static readonly Dictionary<string, int> PointerTemplates = new Dictionary<string, int>()
+        static readonly Dictionary<string, PointerTypes> PointerTemplates = new Dictionary<string, PointerTypes>()
         {
             // Core pointers
-            { "/materials/{}/alphaCutoff", 1 },
-            { "/materials/{}/emissiveFactor", 3 },
-            { "/materials/{}/normalTexture/scale", 1 },
-            { "/materials/{}/occlusionTexture/strength", 1 },
-            { "/materials/{}/pbrMetallicRoughness/baseColorFactor", 4 },
-            { "/materials/{}/pbrMetallicRoughness/metallicFactor", 1 },
-            { "/materials/{}/pbrMetallicRoughness/roughnessFactor", 1 },
-            { "/meshes/{}/weights", 0 },
-            { "/meshes/{}/weights/{}", 1 },
-            { "/nodes/{}/translation", 3 },
-            { "/nodes/{}/rotation", 2 },
-            { "/nodes/{}/scale", 3 },
-            { "/nodes/{}/weights", 0 },
-            { "/nodes/{}/weights/{}", 1 },
+            { "/materials/{}/alphaCutoff", PointerTypes.Float },
+            { "/materials/{}/emissiveFactor", PointerTypes.Vector3 },
+            { "/materials/{}/normalTexture/scale", PointerTypes.Float },
+            { "/materials/{}/occlusionTexture/strength", PointerTypes.Float },
+            { "/materials/{}/pbrMetallicRoughness/baseColorFactor", PointerTypes.Vector4 },
+            { "/materials/{}/pbrMetallicRoughness/metallicFactor", PointerTypes.Float },
+            { "/materials/{}/pbrMetallicRoughness/roughnessFactor", PointerTypes.Float },
+            { "/meshes/{}/weights", PointerTypes.FloatVector },
+            { "/meshes/{}/weights/{}", PointerTypes.Float },
+            { "/nodes/{}/translation", PointerTypes.Vector3 },
+            { "/nodes/{}/rotation", PointerTypes.Quaternion },
+            { "/nodes/{}/scale", PointerTypes.Vector3 },
+            { "/nodes/{}/weights", PointerTypes.FloatVector },
+            { "/nodes/{}/weights/{}", PointerTypes.Float },
 
             // Extension pointers
-            { "/extensions/KHR_lights_punctual/lights/{}/color", 3 },
-            { "/extensions/KHR_lights_punctual/lights/{}/intensity", 1 },
-            { "/extensions/KHR_lights_punctual/lights/{}/range", 1 },
-            { "/extensions/KHR_lights_punctual/lights/{}/spot/innerConeAngle", 1 },
-            { "/extensions/KHR_lights_punctual/lights/{}/spot/outerConeAngle", 1 },
+            { "/extensions/KHR_lights_punctual/lights/{}/color", PointerTypes.Vector3 },
+            { "/extensions/KHR_lights_punctual/lights/{}/intensity", PointerTypes.Float },
+            { "/extensions/KHR_lights_punctual/lights/{}/range", PointerTypes.Float },
+            { "/extensions/KHR_lights_punctual/lights/{}/spot/innerConeAngle", PointerTypes.Float },
+            { "/extensions/KHR_lights_punctual/lights/{}/spot/outerConeAngle", PointerTypes.Float },
 
         };
+
+        enum PointerTypes
+        {
+            FloatVector,
+            Float,
+            Quaternion,
+            Vector3,
+            Vector4
+        }
 
         /// <summary>
         /// Adjustments needed for the Khronos sample assets models.
@@ -1886,6 +1998,7 @@ namespace Orts.Viewer3D
             { "AnimatedMorphCube".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "AnimatedMorphSphere".ToLower(), Matrix.CreateTranslation(0, 2, 0) },
             { "AnimatedTriangle".ToLower(), Matrix.CreateTranslation(0, 1, 0) },
+            { "AnimationPointerUVs".ToLower(), Matrix.CreateTranslation(0, 5, 0) },
             { "AnisotropyBarnLamp".ToLower(), Matrix.CreateScale(10f) * Matrix.CreateTranslation(0, 2, 0) },
             { "AntiqueCamera".ToLower(), Matrix.CreateScale(0.5f) },
             { "AnisotropyRotationTest".ToLower(), Matrix.CreateTranslation(0, 5, 0) },
@@ -1962,6 +2075,7 @@ namespace Orts.Viewer3D
             { "PlaysetLightTest".ToLower(), Matrix.CreateScale(30) },
             { "PointLightIntensityTest".ToLower(), Matrix.CreateTranslation(0, 5, 0) },
             { "PotOfCoals".ToLower(), Matrix.CreateScale(30) },
+            { "PotOfCoalsAnimationPointer".ToLower(), Matrix.CreateScale(30) },
             { "PrimitiveModeNormalsTest".ToLower(), Matrix.CreateScale(0.5f) * Matrix.CreateTranslation(0, 5, 0) },
             { "ReciprocatingSaw".ToLower(), Matrix.CreateScale(0.01f) * Matrix.CreateTranslation(0, 3, 0) },
             { "RecursiveSkeletons".ToLower(), Matrix.CreateScale(0.05f) },
@@ -2022,6 +2136,10 @@ namespace Orts.Viewer3D
         public Vector4[] OutputVector4;
         public Quaternion[] OutputQuaternion;
         public float[] OutputFloats;
+
         public string Pointer;
+        public Action<float> SetTargetFloat;
+        public Action<Vector3> SetTargetVector3;
+        public Action<Vector4> SetTargetVector4;
     }
 }

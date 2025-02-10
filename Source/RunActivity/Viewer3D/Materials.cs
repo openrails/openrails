@@ -1161,22 +1161,24 @@ namespace Orts.Viewer3D
 
     public class PbrMaterial : SceneryMaterial
     {
-        protected readonly Vector4 BaseColorFactor;
         protected readonly Texture2D MetallicRoughnessTexture;
-        protected readonly float MetallicFactor;
-        protected readonly float RoughnessFactor;
         protected readonly Texture2D NormalTexture;
-        protected readonly float NormalScale;
         protected readonly Texture2D OcclusionTexture;
-        protected readonly float OcclusionStrength;
         protected readonly Texture2D EmissiveTexture;
-        protected readonly Vector3 EmissiveFactor;
         protected readonly Texture2D ClearcoatTexture;
-        protected readonly float ClearcoatFactor;
         protected readonly Texture2D ClearcoatRoughnessTexture;
-        protected readonly float ClearcoatRoughnessFactor;
         protected readonly Texture2D ClearcoatNormalTexture;
-        protected readonly float ClearcoatNormalScale;
+
+        // Animatable attributes
+        protected Vector4 BaseColorFactor;
+        protected float MetallicFactor;
+        protected float RoughnessFactor;
+        protected float NormalScale;
+        protected float OcclusionStrength;
+        protected Vector3 EmissiveFactor;
+        protected float ClearcoatFactor;
+        protected float ClearcoatRoughnessFactor;
+        protected float ClearcoatNormalScale;
 
         bool EmissiveFollowsDayNightCycle;
         bool DoubleSided;
@@ -1189,6 +1191,18 @@ namespace Orts.Viewer3D
         public SamplerState SamplerStateClearcoat;
         public SamplerState SamplerStateClearcoatRoughness;
         public SamplerState SamplerStateClearcoatNormal;
+
+        // Animation actuators:
+        public void SetAlphaCutoff(float value) => DefaultAlphaCutOff = (int)(value * 255f);
+        public void SetBaseColorFactor(Vector4 value) => BaseColorFactor = value;
+        public void SetMetallicFactor(float value) => MetallicFactor = value;
+        public void SetRoughnessFactor(float value) => RoughnessFactor = value;
+        public void SetNormalScale(float value) => NormalScale = Math.Abs(NormalScale) != 2 ? value : NormalScale;
+        public void SetOcclusionSrtength(float value) => OcclusionStrength = OcclusionStrength != 2 ? value : OcclusionStrength;
+        public void SetEmissiveFactor(Vector3 value) => EmissiveFactor = value;
+        public void SetClearcoatFactor(float value) => ClearcoatFactor = value;
+        public void SetClearcoatRoughnessFactor(float value) => ClearcoatRoughnessFactor = value;
+        public void SetClearcoatNormalScale(float value) => ClearcoatNormalScale = Math.Abs(ClearcoatNormalScale) != 2 ? value : ClearcoatNormalScale;
 
         static readonly Dictionary<(TextureFilter, TextureAddressMode, TextureAddressMode), SamplerState> GltfSamplerStates = new Dictionary<(TextureFilter, TextureAddressMode, TextureAddressMode), SamplerState>();
 
@@ -1284,7 +1298,7 @@ namespace Orts.Viewer3D
             shader.EmissiveFactor = !EmissiveFollowsDayNightCycle || IsNightTimeOrUnderground() ? EmissiveFactor : Vector3.Zero;
             shader.OcclusionTexture = OcclusionTexture;
             shader.MetallicRoughnessTexture = MetallicRoughnessTexture;
-            shader.OcclusionFactor = new Vector3(OcclusionStrength, RoughnessFactor, MetallicFactor);
+            shader.OcclusionFactor = new Vector3(OcclusionStrength == 2 ? 0 : OcclusionStrength, RoughnessFactor, MetallicFactor);
             shader.HasNormals = (Options & SceneryMaterialOptions.PbrHasNormals) != 0;
             shader.HasTangents = (Options & SceneryMaterialOptions.PbrHasTangents) != 0;
             shader.ClearcoatFactor = ClearcoatFactor;
