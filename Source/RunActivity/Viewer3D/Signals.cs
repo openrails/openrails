@@ -536,9 +536,9 @@ namespace Orts.Viewer3D
                         var material = defaultMaterial;
                         if (!string.IsNullOrEmpty(mstsSignalLight.LightTextureName))
                         {
-                            if (!viewer.SIGCFG.LightTextures.ContainsKey(mstsSignalType.LightTextureName))
+                            if (!viewer.SIGCFG.LightTextures.ContainsKey(mstsSignalLight.LightTextureName))
                             {
-                                Trace.TraceWarning("Skipped invalid texture {1} for signal light {0}", mstsSignalLight.Name, mstsSignalLight.LightTextureName);
+                                Trace.TraceWarning("Skipped invalid light texture {0} for signal light {1} in signal type {2}", mstsSignalLight.LightTextureName, mstsSignalLight.Name, mstsSignalType.Name);
                             }
                             else
                             {
