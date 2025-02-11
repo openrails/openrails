@@ -1335,6 +1335,8 @@ namespace Menu
 
         void UpdateFromMenuSelection<T>(ComboBox comboBox, UserSettings.Menu_SelectionIndex index, Func<T, string> map, T defaultValue)
         {
+            // if folder field, or the selected folder matches the menu selection setting
+            // and there is a value in the menu selection setting
             if (((index == UserSettings.Menu_SelectionIndex.Folder) ||
                  ((comboBoxFolder.Items.Count > 0) && (SelectedFolder != null) &&
                   (Settings.Menu_Selection.Count() > 0) &&
@@ -1353,6 +1355,7 @@ namespace Menu
             }
             else
             {
+                // if selected folder is in the content routes setting and has a start route
                 var routes = Settings.Content.ContentRouteSettings.Routes;
                 if ((SelectedFolder != null) &&
                     routes.ContainsKey(SelectedFolder.Name) &&
@@ -1390,30 +1393,37 @@ namespace Menu
                         default:
                             break;
                     }
-                    bool found = false;
-                    if ((index != UserSettings.Menu_SelectionIndex.Path) ||
-                        (SelectedActivity == null) || (!(SelectedActivity is ExploreActivity)))
+                    if (string.IsNullOrEmpty(valueComboboxToSetTo))
                     {
-                        if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
-                        {
-                            comboBox.Text = valueComboboxToSetTo;
-                            found = true;
-                        } 
-                        else
-                        {
-                            found = searchInComboBox(comboBox,  valueComboboxToSetTo);
-                        }
+                        SetToDefault(comboBox, index, map, defaultValue);
                     }
                     else
                     {
-                        found = searchInComboBox(comboBoxStartAt, valueComboboxToSetTo);
-                        found = searchInComboBox(comboBoxHeadTo, valueComboboxToSetTo);
-                    }
-                    if (!found)
-                    {
-                        if (comboBox.Items.Count > 0)
+                        bool found = false;
+                        if ((index != UserSettings.Menu_SelectionIndex.Path) ||
+                            (SelectedActivity == null) || (!(SelectedActivity is ExploreActivity)))
                         {
-                            comboBox.SelectedIndex = 0;
+                            if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
+                            {
+                                comboBox.Text = valueComboboxToSetTo;
+                                found = true;
+                            }
+                            else
+                            {
+                                found = searchInComboBox(comboBox, valueComboboxToSetTo);
+                            }
+                        }
+                        else
+                        {
+                            found = searchInComboBox(comboBoxStartAt, valueComboboxToSetTo);
+                            found = searchInComboBox(comboBoxHeadTo, valueComboboxToSetTo);
+                        }
+                        if (!found)
+                        {
+                            if (comboBox.Items.Count > 0)
+                            {
+                                comboBox.SelectedIndex = 0;
+                            }
                         }
                     }
                 }
