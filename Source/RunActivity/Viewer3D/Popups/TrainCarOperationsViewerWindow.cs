@@ -143,7 +143,6 @@ namespace Orts.Viewer3D.Popups
 
         Train PlayerTrain;
         bool LastPlayerLocomotiveFlippedState;
-        public bool IsFormationReversed;// Required when reversal
         public bool UpdateTCOLayout;// Required when reversal
         int LastPlayerTrainCars;
         int OldCarPosition;
@@ -476,18 +475,17 @@ namespace Orts.Viewer3D.Popups
             {
                 var carOperations = Owner.Viewer.CarOperationsWindow;
                 var trainCarOperations = Owner.Viewer.TrainCarOperationsWindow;
-                var trainInfo = Owner.Viewer.PlayerTrain.GetTrainInfo();
-                IsFormationReversed = trainInfo.cabOrientation != 0;
+                var isFormationReversed = Owner.Viewer.IsFormationReversed;
 
                 if (CouplerChanged || PlayerTrain != Owner.Viewer.PlayerTrain || Owner.Viewer.PlayerTrain.Cars.Count != LastPlayerTrainCars || (Owner.Viewer.PlayerLocomotive != null &&
-                LastPlayerLocomotiveFlippedState != IsFormationReversed))
+                LastPlayerLocomotiveFlippedState != isFormationReversed))
                 {
                     CouplerChanged = false;
                     PlayerTrain = Owner.Viewer.PlayerTrain;
 
                     LastPlayerTrainCars = Owner.Viewer.PlayerTrain.Cars.Count;
                     CarPosition = CarPosition >= LastPlayerTrainCars ? LastPlayerTrainCars - 1 : CarPosition;
-                    if (Owner.Viewer.PlayerLocomotive != null) LastPlayerLocomotiveFlippedState = IsFormationReversed;
+                    if (Owner.Viewer.PlayerLocomotive != null) LastPlayerLocomotiveFlippedState = isFormationReversed;
 
                     Layout();
                     UpdateWindowSize();

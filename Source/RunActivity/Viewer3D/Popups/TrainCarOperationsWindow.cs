@@ -32,6 +32,8 @@ using System.IO;
 using System.Linq;
 using static Orts.Viewer3D.Popups.TrainCarOperationsWindow;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
+using Orts.Viewer3D.RollingStock;
+using Orts.MultiPlayer;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -123,7 +125,6 @@ namespace Orts.Viewer3D.Popups
         public static bool FontChanged;
         public static bool FontToBold;
         public string LastCarIDSelected;// Required when reversal
-        public bool IsFormationReversed;// Required when reversal
         public int OldCarPosition;
 
         //Electrical power
@@ -153,7 +154,7 @@ namespace Orts.Viewer3D.Popups
 
         Train PlayerTrain;
         int LastPlayerTrainCars;
-        bool LastPlayerLocomotiveFlippedState;
+        public bool LastPlayerLocomotiveFlippedState;
 
         public TrainCarOperationsWindow(WindowManager owner)
             : base(owner, Window.DecorationSize.X + CarListPadding + (owner.TextFontDefault.Height * 15), Window.DecorationSize.Y + (owner.TextFontDefault.Height * 5), Viewer.Catalog.GetString("Train Car Operations"))
@@ -519,7 +520,7 @@ namespace Orts.Viewer3D.Popups
 
                     // Allows to resize the window according to the carPosition value.
                     if (RowsCount > carPosition) RowsCount = carPosition;
-                    if (SeparatorCount > carPosition -1) SeparatorCount = carPosition - 1;
+                    if (SeparatorCount > carPosition - 1) SeparatorCount = carPosition - 1;
                 }
             }
             return Vbox;
@@ -598,8 +599,7 @@ namespace Orts.Viewer3D.Popups
                 var trainCarViewer = Owner.Viewer.TrainCarOperationsViewerWindow;
                 var carOperations = Owner.Viewer.CarOperationsWindow;
                 var trainCarWebpage = Owner.Viewer.TrainCarOperationsWebpage;
-                var trainInfo = Owner.Viewer.PlayerTrain.GetTrainInfo();
-                IsFormationReversed = trainInfo.cabOrientation != 0;
+                var isFormationReversed = Owner.Viewer.IsFormationReversed;
 
                 CabCameraEnabled = Owner.Viewer.Camera is CabCamera || Owner.Viewer.Camera == Owner.Viewer.ThreeDimCabCamera;
                 if (CarIdClicked && !CabCameraEnabled && !trainCarViewer.Visible && (!FrontActive || !BackActive))
@@ -636,18 +636,27 @@ namespace Orts.Viewer3D.Popups
                     topCarPositionVisible();
                     localScrollLayout(SelectedCarPosition);
                 }
+                // Restore LastCarIDSelected (F9) after returning from different camera views
+                if (CarIdClicked && Owner.Viewer.Camera.AttachedCar.CarID != LastCarIDSelected)
+                {
+                    trainCarViewer.CurrentCarID = LastCarIDSelected;
+                    trainCarViewer.CarPosition = CarPosition = PlayerTrain.Cars.TakeWhile(x => x.CarID != LastCarIDSelected).Count();
+                    SelectedCarPosition = CarPosition;
+                    trainCarViewer.TrainCarOperationsChanged = true;
+                    SetCameraView();
+                }
 
                 UserCommand? controlDiesel = GetPressedKey(UserCommand.ControlDieselHelper, UserCommand.ControlDieselPlayer, UserCommand.ControlInitializeBrakes);
                 if (controlDiesel == UserCommand.ControlDieselHelper || controlDiesel == UserCommand.ControlDieselPlayer || controlDiesel == UserCommand.ControlInitializeBrakes)
                 {
                     Layout();
-                    PowerSupplyStatus = Owner.Viewer.PlayerTrain.Cars[Owner.Viewer.PlayerTrain.Cars.Count > CarPosition? CarPosition : CarPosition - 1].GetStatus();
+                    PowerSupplyStatus = Owner.Viewer.PlayerTrain.Cars[Owner.Viewer.PlayerTrain.Cars.Count > CarPosition ? CarPosition : CarPosition - 1].GetStatus();
                     ModifiedSetting = true;
                 }
 
                 var carsCountChanged = Owner.Viewer.PlayerTrain.Cars.Count != LastPlayerTrainCars;
                 if (PlayerTrain != Owner.Viewer.PlayerTrain || carsCountChanged || (Owner.Viewer.PlayerLocomotive != null &&
-                    LastPlayerLocomotiveFlippedState != IsFormationReversed))
+                    LastPlayerLocomotiveFlippedState != isFormationReversed))
                 {
                     PlayerTrain = Owner.Viewer.PlayerTrain;
                     if (LastPlayerTrainCars != Owner.Viewer.PlayerTrain.Cars.Count)
@@ -681,6 +690,7 @@ namespace Orts.Viewer3D.Popups
                         }
                     }
                 }
+
                 if (trainCarViewer.TrainCarOperationsChanged || trainCarViewer.RearBrakeHoseChanged
                     || trainCarViewer.FrontBrakeHoseChanged || ModifiedSetting || CarIdClicked || carOperations.CarOperationChanged)
                 {
@@ -693,41 +703,22 @@ namespace Orts.Viewer3D.Popups
                     carOperations.CarOperationChanged = carOperations.Visible && carOperations.CarOperationChanged;
                 }
 
-                if ((!trainCarViewer.Visible || trainCarViewer.UpdateTCOLayout) && (CarIdClicked || (LastPlayerLocomotiveFlippedState != IsFormationReversed)))
+                if ((!trainCarViewer.Visible || trainCarViewer.UpdateTCOLayout) && (CarIdClicked || (LastPlayerLocomotiveFlippedState != isFormationReversed)))
+                {   // Apply the reveral point to layout
+                    _ = new FormationReversed(Owner.Viewer, PlayerTrain);
+                }
+
+                if (trainCarViewer.TrainCarOperationsChanged || trainCarViewer.RearBrakeHoseChanged
+                    || trainCarViewer.FrontBrakeHoseChanged || ModifiedSetting || CarIdClicked || carOperations.CarOperationChanged)
                 {
-                    var currentCameraCarID = Owner.Viewer.Camera.AttachedCar.CarID;
-
-                    trainCarViewer.CurrentCarID = LastCarIDSelected;
-                    trainCarViewer.CarPosition = CarPosition = PlayerTrain.Cars.TakeWhile(x => x.CarID != LastCarIDSelected).Count();
-
-                    if (CabCameraEnabled)// Displays camera 1
-                    {  // Setting the camera view
-                        CabCameraEnabled = false;
-                    }
-                    else if (OldCarPosition != SelectedCarPosition || (CarIdClicked && CarPosition == 0))
-                    {
-                        SetCameraView();
-                        OldCarPosition = SelectedCarPosition;
-                    }
-                    if (PlayerTrain.Cars.Count > CarPosition)
-                    {
-                        trainCarViewer.CarPosition = SelectedCarPosition = CarPosition = PlayerTrain.Cars.TakeWhile(x => x.CarID != LastCarIDSelected).Count();
-                    }
-                    else
-                    {
-                        trainCarViewer.CarPosition = SelectedCarPosition = CarPosition = 0;
-                        trainCarViewer.CurrentCarID = PlayerTrain.Cars[0].CarID;
-                    }
-
-                    // Scroll LabelTop
-                    LabelTop = LabelPositionTop[SelectedCarPosition];
-                    Owner.Viewer.FrontCamera.IsCameraFront = Owner.Viewer.FrontCamera.AttachedCar != null;
-                    LastPlayerLocomotiveFlippedState = IsFormationReversed;
                     Layout();
                     localScrollLayout(SelectedCarPosition);
                     updateLayoutSize();
+                    ModifiedSetting = false;
+                    // Avoids bug
+                    trainCarViewer.TrainCarOperationsChanged = WarningEnabled;
+                    carOperations.CarOperationChanged = carOperations.Visible && carOperations.CarOperationChanged;
                     CarIdClicked = false;
-                    trainCarViewer.UpdateTCOLayout = false;
                 }
 
                 if (CarPositionChanged || (trainCarWebpage != null && CarPosition != trainCarViewer.CarPosition && trainCarWebpage.Connections > 0))
@@ -750,7 +741,7 @@ namespace Orts.Viewer3D.Popups
                 }
             }
         }
-        private void SetCameraView()
+        public void SetCameraView()
         {
             if (Owner.Viewer.FrontCamera.AttachedCar != null)
             {
@@ -777,6 +768,57 @@ namespace Orts.Viewer3D.Popups
             .Where((UserCommand key) => UserInput.IsDown(key))
             .FirstOrDefault();
     }
+
+    class FormationReversed
+    {
+        readonly Viewer Viewer; 
+        readonly TrainCarOperationsWindow TrainCar;
+        readonly TrainCarOperationsViewerWindow TrainCarViewer;
+        public FormationReversed(Viewer viewer, Train PlayerTrain)
+        {
+            Viewer = viewer;
+            TrainCar = Viewer.TrainCarOperationsWindow;
+            TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
+            var currentCameraCarID = Viewer.Camera.AttachedCar.CarID;
+
+            TrainCarViewer.CurrentCarID = TrainCar.LastCarIDSelected;
+            TrainCarViewer.CarPosition = TrainCar.CarPosition = PlayerTrain.Cars.TakeWhile(x => x.CarID != TrainCar.LastCarIDSelected).Count();
+
+            if (TrainCar.CabCameraEnabled)// Displays camera 1
+            {  // Setting the camera view
+                TrainCar.CabCameraEnabled = false;
+            }
+            else if (TrainCar.OldCarPosition != TrainCar.SelectedCarPosition || (TrainCar.CarIdClicked && TrainCar.CarPosition == 0))
+            {
+                TrainCar.SetCameraView();
+                TrainCar.OldCarPosition = TrainCar.SelectedCarPosition;
+            }
+
+            if (PlayerTrain.Cars.Count > TrainCar.CarPosition)
+            {
+                TrainCarViewer.CarPosition = TrainCar.SelectedCarPosition = TrainCar.CarPosition = PlayerTrain.Cars.TakeWhile(x => x.CarID != TrainCar.LastCarIDSelected).Count();
+            }
+            else
+            {
+                TrainCarViewer.CarPosition = TrainCar.SelectedCarPosition = TrainCar.CarPosition = 0;
+                TrainCarViewer.CurrentCarID = PlayerTrain.Cars[0].CarID;
+            }
+
+            // Scroll LabelTop
+            TrainCar.LabelTop = TrainCar.LabelPositionTop[TrainCar.SelectedCarPosition];
+            Viewer.FrontCamera.IsCameraFront = Viewer.FrontCamera.AttachedCar != null;
+            TrainCar.Layout();
+            TrainCar.localScrollLayout(TrainCar.SelectedCarPosition);
+            TrainCar.updateLayoutSize();
+
+            // Reset
+            Viewer.IsFormationReversed = false;
+            TrainCar.LastPlayerLocomotiveFlippedState = Viewer.IsFormationReversed;
+            TrainCar.CarIdClicked = false;
+            TrainCarViewer.UpdateTCOLayout = false;
+        }
+    }
+
     class buttonArrowRight : Image
     {
         readonly Viewer Viewer;

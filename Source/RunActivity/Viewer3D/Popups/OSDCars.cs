@@ -78,11 +78,17 @@ namespace Orts.Viewer3D.Popups
                 var newLabels = new Dictionary<TrainCar, LabelPrimitive>(labels.Count);
                 var cars = Owner.Viewer.World.Trains.Cars;
                 var cameraLocation = Owner.Viewer.Camera.CameraWorldLocation;
-                var carID = Owner.Viewer.TrainCarOperationsViewerWindow.CurrentCarID;
+
                 //data from Webpage
                 var trainCarWebpage = Owner.Viewer.TrainCarOperationsWebpage;
+                var trainCarWebpageActive = trainCarWebpage != null && trainCarWebpage.Connections > 0 && trainCarWebpage.TrainCarSelected;
                 var carIDWebpage = trainCarWebpage != null && trainCarWebpage.Connections > 0 ? trainCarWebpage.CurrentCarID : "";
-                bool isVisibleTrainCarViewerOrWebpage = (Owner.Viewer.TrainCarOperationsWindow.Visible && !Owner.Viewer.TrainCarOperationsViewerWindow.Visible) || Owner.Viewer.TrainCarOperationsViewerWindow.Visible || (trainCarWebpage != null && trainCarWebpage.Connections > 0 && Owner.Viewer.TrainCarOperationsWebpage.TrainCarSelected);
+
+                //shows only one CarID label when traincaroperationsviewer is not visible
+                var trainCarOperationsViewer = Owner.Viewer.TrainCarOperationsViewerWindow;
+                var carID = Owner.Viewer.TrainCarOperationsViewerWindow.Visible? trainCarOperationsViewer.CurrentCarID: trainCarWebpageActive ? trainCarWebpage.CurrentCarID : Owner.Viewer.TrainCarOperationsViewerWindow.CurrentCarID;
+
+                bool isVisibleTrainCarViewerOrWebpage = (Owner.Viewer.TrainCarOperationsWindow.Visible && !trainCarOperationsViewer.Visible) || trainCarOperationsViewer.Visible || trainCarWebpageActive;
                 foreach (var car in cars.Keys)
                 {
                     // Calculates distance between camera and platform label.
