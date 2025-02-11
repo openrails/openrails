@@ -236,50 +236,12 @@ namespace Orts.Simulation.RollingStocks
         public float BearingHotBoxSmokeDurationS;
         public float BearingHotBoxSmokeVelocityMpS = 15.0f;
         public Color BearingHotBoxSmokeSteadyColor = Color.Gray;
-
-        /// <summary>
-        /// True if vehicle is equipped with an additional emergency brake reservoir
-        /// </summary>
-        public bool EmergencyReservoirPresent;
-        public enum BrakeValveType
-        {
-            None,
-            TripleValve, // Plain triple valve
-            Distributor, // Triple valve with graduated release
-            DistributingValve, // Triple valve + driver brake valve control. Only for locomotives
-        }
-        /// <summary>
-        /// Type of brake valve in the car
-        /// </summary>
-        public BrakeValveType BrakeValve;
-        /// <summary>
-        /// True if equipped with handbrake. (Not common for older steam locomotives.)
-        /// </summary>
-        public bool HandBrakePresent;
-        /// <summary>
-        /// Number of available retainer positions. (Used on freight cars, mostly.) Might be 0, 3 or 4.
-        /// </summary>
-        public int RetainerPositions;
-
-         /// <summary>
-        /// Indicates whether a brake is present or not when Manual Braking is selected.
-        /// </summary>
-        public bool ManualBrakePresent;
+        List<string> BrakeEquipment = new List<string>();
 
         /// <summary>
         /// Indicates whether a non auto (straight) brake is present or not when braking is selected.
         /// </summary>
         public bool NonAutoBrakePresent;
-
-        /// <summary>
-        /// Indicates whether an auxiliary reservoir is present on the wagon or not.
-        /// </summary>
-        public bool AuxiliaryReservoirPresent;
-
-        /// <summary>
-        /// Indicates whether an additional supply reservoir is present on the wagon or not.
-        /// </summary>
-        public bool SupplyReservoirPresent;
 
         /// <summary>
         /// Active locomotive for a control trailer
@@ -1372,30 +1334,11 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(brakesystemtype":
                     CarBrakeSystemType = stf.ReadStringBlock(null).ToLower();
                     BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
+                    MSTSBrakeSystem?.SetBrakeEquipment(BrakeEquipment);
                     break;
                 case "wagon(brakeequipmenttype":
-                    foreach (var equipment in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
-                    {
-                        switch (equipment)
-                        {
-                            case "triple_valve": BrakeValve = BrakeValveType.TripleValve; break;
-                            case "distributor":
-                            case "graduated_release_triple_valve": BrakeValve = BrakeValveType.Distributor; break;
-                            case "distributing_valve": BrakeValve = BrakeValveType.DistributingValve; break;
-                            case "emergency_brake_reservoir": EmergencyReservoirPresent = true; break;
-                            case "handbrake": HandBrakePresent = true; break;
-                            case "auxilary_reservoir": // MSTS legacy parameter - use is discouraged
-                            case "auxiliary_reservoir":
-                                AuxiliaryReservoirPresent = true;
-                                break;
-                            case "manual_brake": ManualBrakePresent = true; break;
-                            case "retainer_3_position": RetainerPositions = 3; break;
-                            case "retainer_4_position": RetainerPositions = 4; break;
-                            case "supply_reservoir":
-                                SupplyReservoirPresent = true;
-                                break;
-                        }
-                    }
+                    BrakeEquipment = stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(',').ToList();
+                    MSTSBrakeSystem?.SetBrakeEquipment(BrakeEquipment);
                     break;
                 case "wagon(coupling":
                     Couplers.Add(new MSTSCoupling()); // Adds a new coupler every time "Coupler" parameters found in WAG and INC file
@@ -1739,13 +1682,6 @@ namespace Orts.Simulation.RollingStocks
             IsGreaseFrictionBearing = copy.IsGreaseFrictionBearing;
             CarBrakeSystemType = copy.CarBrakeSystemType;
             BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
-            EmergencyReservoirPresent = copy.EmergencyReservoirPresent;
-            BrakeValve = copy.BrakeValve;
-            HandBrakePresent = copy.HandBrakePresent;
-            ManualBrakePresent = copy.ManualBrakePresent;
-            AuxiliaryReservoirPresent = copy.AuxiliaryReservoirPresent;
-            SupplyReservoirPresent = copy.SupplyReservoirPresent;
-            RetainerPositions = copy.RetainerPositions;
             InteriorShapeFileName = copy.InteriorShapeFileName;
             InteriorSoundFileName = copy.InteriorSoundFileName;
             Cab3DShapeFileName = copy.Cab3DShapeFileName;
@@ -1817,7 +1753,7 @@ namespace Orts.Simulation.RollingStocks
                         IntakePointList.Add(new IntakePoint(copyIntakePoint));
                 }
             }
-
+            BrakeEquipment = new List<string>(BrakeEquipment);
             MSTSBrakeSystem.InitializeFromCopy(copy.BrakeSystem);
             if (copy.WeightLoadController != null) WeightLoadController = new MSTSNotchController(copy.WeightLoadController);
 
