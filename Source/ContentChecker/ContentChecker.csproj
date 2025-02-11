@@ -12,7 +12,7 @@
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ORTS.Content\ORTS.Content.csproj" />
+    <ProjectReference Include="..\Orts.Content\Orts.Content.csproj" />
     <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj" />
     <ProjectReference Include="..\Orts.Formats.OR\Orts.Formats.OR.csproj" />
     <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj" />

@@ -22,7 +22,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Resources;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Forms;
@@ -31,7 +30,8 @@ using ORTS.Common;
 using ORTS.Settings;
 using ORTS.Updater;
 using static ORTS.Common.SystemInfo;
-using static ORTS.NotificationPage;
+using static Menu.Notifications.NotificationPage;
+using Newtonsoft.Json.Serialization;
 
 // Behaviour
 // Notifications are read only once as a background task at start into Notifications.
@@ -40,7 +40,7 @@ using static ORTS.NotificationPage;
 // the visibility of each notification in NotificationList is re-assessed. Also its date.
 // Every time the user selects a different notification page, the panel is re-loaded with items for that page.
 
-namespace ORTS
+namespace Menu.Notifications
 {
     public class NotificationManager
     {
@@ -126,7 +126,7 @@ namespace ORTS
                 Notifications.NotificationList = IncludeValid(Notifications.NotificationList);
                 Notifications.NotificationList = SortByDate(Notifications.NotificationList);
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
                 Error = ex;
             }
@@ -154,7 +154,7 @@ namespace ORTS
                 notificationsSerial = GetRemoteJson();
             }
 
-            var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
+            var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto, SerializationBinder = new NotificationSerializationBinder() };
             var jsonInput = JsonConvert.DeserializeObject<Notifications>(notificationsSerial, jsonSettings);
 
             NewPages.Count = 0;
@@ -626,7 +626,7 @@ namespace ORTS
                 // Input from local file into a string
                 var overrideParametersSerial = File.ReadAllText(filename);
 
-                var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
+                var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto, SerializationBinder = new NotificationSerializationBinder() };
                 var jsonInput = JsonConvert.DeserializeObject<OverrideParameterList>(overrideParametersSerial, jsonSettings);
 
                 return jsonInput;
@@ -690,5 +690,24 @@ namespace ORTS
             using (StreamWriter sw = File.AppendText(LogFile)) sw.WriteLine(record);
         }
         #endregion
+
+        class NotificationSerializationBinder : ISerializationBinder
+        {
+            public void BindToName(Type serializedType, out string assemblyName, out string typeName)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Type BindToType(string assemblyName, string typeName)
+            {
+                if (assemblyName == "Menu")
+                {
+                    var ns = typeof(Notifications).Namespace;
+                    var name = typeName.Split('.').Last();
+                    return typeof(Notifications).Assembly.GetType($"{ns}.{name}");
+                }
+                return null;
+            }
+        }
     }
 }
