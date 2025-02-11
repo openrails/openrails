@@ -29,7 +29,6 @@ using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
-using Orts.Viewer3D.Popups;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Settings;
@@ -130,10 +129,7 @@ namespace Orts.Viewer3D
         public void Activate()
         {
             ScreenChanged();
-            if (!Viewer.IsFormationReversed)// Avoids flickering
-            {
-                OnActivate(Viewer.Camera == this);
-            }
+            OnActivate(Viewer.Camera == this);
             Viewer.Camera = this;
             Viewer.Simulator.PlayerIsInCab = Style == Styles.Cab || Style == Styles.ThreeDimCab;
             Update(ElapsedTime.Zero);
