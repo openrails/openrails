@@ -769,9 +769,6 @@ namespace Orts.Viewer3D
                 {
                     foreach (var channel in animation.Channels)
                     {
-                        if (string.IsNullOrEmpty(channel?.Pointer))
-                            continue;
-
                         bool isMatch(string element, out int matchIndex, out ReadOnlySpan<char> matchProperty)
                         {
                             var pointer = channel.Pointer.AsSpan();
@@ -797,7 +794,6 @@ namespace Orts.Viewer3D
 
                         if (isMatch("/nodes/", out var index, out var property))
                         {
-                            // Wire back to the original behavior
                             channel.TargetNode = index;
                             switch (property.ToString())
                             {
@@ -810,14 +806,12 @@ namespace Orts.Viewer3D
                                         && int.TryParse(property.Slice(i2).ToString(), out var index2))
                                     {
                                         channel.SetTargetFloat = (f) => Shape.Weights[(int)channel.TargetNode][index2] = f;
-                                        channel.TargetNode = null;
                                     }
                                     break;
                             }
                         }
                         else if (isMatch("/meshes/", out index, out property))
                         {
-                            // Wire back to the original behavior
                             channel.TargetNode = Shape.Meshes[index].HierarchyIndex;
                             if (property.SequenceEqual("/weights".AsSpan()))
                             {
@@ -827,7 +821,6 @@ namespace Orts.Viewer3D
                                 && int.TryParse(property.Slice(i2).ToString(), out var index2))
                             {
                                 channel.SetTargetFloat = (f) => Shape.Weights[(int)channel.TargetNode][index2] = f;
-                                channel.TargetNode = null;
                             }
                         }
                         else if (isMatch("/materials/", out index, out property))
@@ -860,6 +853,20 @@ namespace Orts.Viewer3D
                                 case "/spot/outerConeAngle": channel.SetTargetFloat = (f) => light.OuterConeAngleX = f; break;
                                 default: channel.SetTargetFloat = null; channel.SetTargetVector3 = null; channel.SetTargetVector4 = null; break;
                             }
+                        }
+                        if (channel.TargetNode != null)
+                        {
+                            switch (channel.Path)
+                            {
+                                case AnimationChannelTarget.PathEnum.rotation: channel.SetTargetQuaternion = (v) => Rotations[(int)channel.TargetNode] = v; break;
+                                case AnimationChannelTarget.PathEnum.translation: channel.SetTargetVector3 = (v) => Translations[(int)channel.TargetNode] = v; break;
+                                case AnimationChannelTarget.PathEnum.scale: channel.SetTargetVector3 = (v) => Scales[(int)channel.TargetNode] = v; break;
+                                case AnimationChannelTarget.PathEnum.weights:
+                                    channel.SetTargetFloatVector = (i, f) => Weights[(int)channel.TargetNode][i] = f;
+                                    channel.TargetFloatVectorLength = Weights[(int)channel.TargetNode].Length;
+                                    break;
+                            }
+                            continue;
                         }
                     }
                 }
@@ -1882,57 +1889,34 @@ namespace Orts.Viewer3D
                 var time1 = channel.TimeArray[frame1];
                 var time2 = channel.TimeArray[frame2];
 
-                float amount;
-                switch (channel.Interpolation)
+                float amount = 0;
+                if (channel.Interpolation != AnimationSampler.InterpolationEnum.STEP && time1 < time2)
+                    amount = MathHelper.Clamp((time - time1) / (time2 - time1), 0, 1);
+
+                // See the formula for cubic the spline: https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#interpolation-cubic
+                channel.SetTargetVector3?.Invoke(channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                    ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame2)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
+                    : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount));
+                channel.SetTargetVector4?.Invoke(channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                    ? Vector4.Hermite(channel.OutputVector4[Property(frame1)], channel.OutputVector4[OutTangent(frame2)], channel.OutputVector4[Property(frame2)], channel.OutputVector4[InTangent(frame2)], amount)
+                    : Vector4.Lerp(channel.OutputVector4[frame1], channel.OutputVector4[frame2], amount));
+                channel.SetTargetFloat?.Invoke(channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                    ? MathHelper.Hermite(channel.OutputFloats[Property(frame1)], channel.OutputFloats[OutTangent(frame2)], channel.OutputFloats[Property(frame2)], channel.OutputFloats[InTangent(frame2)], amount)
+                    : MathHelper.Lerp(channel.OutputFloats[frame1], channel.OutputFloats[frame2], amount));
+                channel.SetTargetQuaternion?.Invoke(((channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                    ? CsInterp(channel.OutputQuaternion[Property(frame1)], channel.OutputQuaternion[OutTangent(frame2)], channel.OutputQuaternion[Property(frame2)], channel.OutputQuaternion[InTangent(frame2)], amount)
+                    : Quaternion.Slerp(channel.OutputQuaternion[frame1], channel.OutputQuaternion[frame2], amount))
+                    is var q && q != new Quaternion(0, 0, 0, 0)) ? Quaternion.Normalize(q) : Quaternion.Identity);
+                if (channel.SetTargetFloatVector != null && channel.TargetFloatVectorLength > 0)
                 {
-                    // See the formula for cubic spline: https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html#interpolation-cubic
-                    case AnimationSampler.InterpolationEnum.CUBICSPLINE:
-                    case AnimationSampler.InterpolationEnum.LINEAR: amount = time1 < time2 ? MathHelper.Clamp((time - time1) / (time2 - time1), 0, 1) : 0; break;
-                    case AnimationSampler.InterpolationEnum.STEP: amount = 0; break;
-                    default: amount = 0; break;
+                    var count = channel.TargetFloatVectorLength;
+                    for (var i = 0; i < count; i++)
+                        channel.SetTargetFloatVector(i, channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
+                            ? MathHelper.Hermite(channel.OutputFloats[Property(frame1) * count + i], channel.OutputFloats[OutTangent(frame2) * count + i], channel.OutputFloats[Property(frame2) * count + i], channel.OutputFloats[InTangent(frame2) * count + i], amount)
+                            : MathHelper.Lerp(channel.OutputFloats[frame1 * count + i], channel.OutputFloats[frame2 * count + i], amount));
                 }
-                if (channel.TargetNode != null)
-                {
-                    switch (channel.Path)
-                    {
-                        case AnimationChannelTarget.PathEnum.translation:
-                            Translations[(int)channel.TargetNode] = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
-                                ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame2)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
-                                : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
-                            break;
-                        case AnimationChannelTarget.PathEnum.rotation:
-                            Rotations[(int)channel.TargetNode] = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
-                                ? CsInterp(channel.OutputQuaternion[Property(frame1)], channel.OutputQuaternion[OutTangent(frame2)], channel.OutputQuaternion[Property(frame2)], channel.OutputQuaternion[InTangent(frame2)], amount)
-                                : Quaternion.Slerp(channel.OutputQuaternion[frame1], channel.OutputQuaternion[frame2], amount);
-                            break;
-                        case AnimationChannelTarget.PathEnum.scale:
-                            Scales[(int)channel.TargetNode] = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
-                               ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame2)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
-                               : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount);
-                            break;
-                        case AnimationChannelTarget.PathEnum.weights:
-                            var count = Weights[(int)channel.TargetNode].Length;
-                            for (var i = 0; i < count; i++)
-                                Weights[(int)channel.TargetNode][i] = channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
-                                    ? MathHelper.Hermite(channel.OutputFloats[Property(frame1) * count + i], channel.OutputFloats[OutTangent(frame2) * count + i], channel.OutputFloats[Property(frame2) * count + i], channel.OutputFloats[InTangent(frame2) * count + i], amount)
-                                    : MathHelper.Lerp(channel.OutputFloats[frame1 * count + i], channel.OutputFloats[frame2 * count + i], amount);
-                            break;
-                        default: break;
-                    }
+                if (channel.Path == AnimationChannelTarget.PathEnum.rotation || channel.Path == AnimationChannelTarget.PathEnum.scale || channel.Path == AnimationChannelTarget.PathEnum.translation)
                     animatedMatrices[(int)channel.TargetNode] = Matrix.CreateScale(Scales[(int)channel.TargetNode]) * Matrix.CreateFromQuaternion(Rotations[(int)channel.TargetNode]) * Matrix.CreateTranslation(Translations[(int)channel.TargetNode]);
-                }
-                else if (channel.Path == AnimationChannelTarget.PathEnum.pointer && !string.IsNullOrEmpty(channel.Pointer))
-                {
-                    channel.SetTargetFloat?.Invoke(channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
-                        ? MathHelper.Hermite(channel.OutputFloats[Property(frame1)], channel.OutputFloats[OutTangent(frame2)], channel.OutputFloats[Property(frame2)], channel.OutputFloats[InTangent(frame2)], amount)
-                        : MathHelper.Lerp(channel.OutputFloats[frame1], channel.OutputFloats[frame2], amount));
-                    channel.SetTargetVector3?.Invoke(channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
-                        ? Vector3.Hermite(channel.OutputVector3[Property(frame1)], channel.OutputVector3[OutTangent(frame2)], channel.OutputVector3[Property(frame2)], channel.OutputVector3[InTangent(frame2)], amount)
-                        : Vector3.Lerp(channel.OutputVector3[frame1], channel.OutputVector3[frame2], amount));
-                    channel.SetTargetVector4?.Invoke(channel.Interpolation == AnimationSampler.InterpolationEnum.CUBICSPLINE
-                        ? Vector4.Hermite(channel.OutputVector4[Property(frame1)], channel.OutputVector4[OutTangent(frame2)], channel.OutputVector4[Property(frame2)], channel.OutputVector4[InTangent(frame2)], amount)
-                        : Vector4.Lerp(channel.OutputVector4[frame1], channel.OutputVector4[frame2], amount));
-                }
             }
         }
 
@@ -2126,8 +2110,8 @@ namespace Orts.Viewer3D
 
     class GltfAnimationChannel
     {
-        public int? TargetNode; // ref to index in hierarchy, e.g. Matrices(index)
-        public AnimationChannelTarget.PathEnum Path; // e.g. rotation or tcb_rot, translation or linear_pos, scale, tcb_pos
+        public int? TargetNode;
+        public AnimationChannelTarget.PathEnum Path;
         public AnimationSampler.InterpolationEnum Interpolation;
         public float[] TimeArray;
         public float TimeMin;
@@ -2141,5 +2125,8 @@ namespace Orts.Viewer3D
         public Action<float> SetTargetFloat;
         public Action<Vector3> SetTargetVector3;
         public Action<Vector4> SetTargetVector4;
+        public Action<Quaternion> SetTargetQuaternion;
+        public Action<int, float> SetTargetFloatVector;
+        public int TargetFloatVectorLength;
     }
 }
