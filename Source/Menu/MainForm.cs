@@ -1397,33 +1397,21 @@ namespace Menu
                     {
                         SetToDefault(comboBox, index, map, defaultValue);
                     }
+                    else if (index == UserSettings.Menu_SelectionIndex.Path && SelectedActivity != null && SelectedActivity is ExploreActivity)
+                    {
+                        // Is this ever called? Theoretically from ShowHeadToList(), but breakpoint was never hit.
+                        searchInComboBoxAndSet(comboBoxStartAt, valueComboboxToSetTo);
+                        searchInComboBoxAndSet(comboBoxHeadTo, valueComboboxToSetTo);
+                    }
                     else
                     {
-                        bool found = false;
-                        if ((index != UserSettings.Menu_SelectionIndex.Path) ||
-                            (SelectedActivity == null) || (!(SelectedActivity is ExploreActivity)))
+                        if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
                         {
-                            if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
-                            {
-                                comboBox.Text = valueComboboxToSetTo;
-                                found = true;
-                            }
-                            else
-                            {
-                                found = searchInComboBox(comboBox, valueComboboxToSetTo);
-                            }
+                            comboBox.Text = valueComboboxToSetTo;
                         }
                         else
                         {
-                            found = searchInComboBox(comboBoxStartAt, valueComboboxToSetTo);
-                            found = searchInComboBox(comboBoxHeadTo, valueComboboxToSetTo);
-                        }
-                        if (!found)
-                        {
-                            if (comboBox.Items.Count > 0)
-                            {
-                                comboBox.SelectedIndex = 0;
-                            }
+                            searchInComboBoxAndSet(comboBox, valueComboboxToSetTo);
                         }
                     }
                 }
@@ -1434,17 +1422,25 @@ namespace Menu
             }
         }
 
-        bool searchInComboBox(ComboBox comboBox, string valueComboboxToSetTo)
+        /// <summary>
+        /// Search the combobox for the specified value. When found, set the combobox to the value.
+        /// When not found, set it to the first defined value.
+        /// Leave empty when there are no defined values.
+        /// </summary>
+        void searchInComboBoxAndSet(ComboBox comboBox, string valueComboboxToSetTo)
         {
             for (var i = 0; i < comboBox.Items.Count; i++)
             {
                 if ((string)comboBox.Items[i].ToString() == valueComboboxToSetTo)
                 {
                     comboBox.SelectedIndex = i;
-                    return true;
+                    return;
                 }
             }
-            return false;
+            if (comboBox.Items.Count > 0)
+            {
+                comboBox.SelectedIndex = 0;
+            }
         }
 
         void SetToDefault<T>(ComboBox comboBox, UserSettings.Menu_SelectionIndex index, Func<T, string> map, T defaultValue)
