@@ -701,11 +701,12 @@ namespace Orts.Viewer3D
 
                         var sampler = gltfAnimation.Samplers[gltfChannel.Sampler];
                         var inputAccessor = gltfFile.Accessors[sampler.Input];
-                        var readInput = GetNormalizedReader(inputAccessor.ComponentType, shape.MsfsFlavoured);
-                        var bri = new BinaryReader(GetBufferView(inputAccessor, out _));
                         var outputAccessor = gltfFile.Accessors[sampler.Output];
-                        var readOutput = GetNormalizedReader(outputAccessor.ComponentType, shape.MsfsFlavoured);
-                        var bro = new BinaryReader(GetBufferView(outputAccessor, out _));
+
+                        var inputFloats = new Span<float>(new float[inputAccessor.Count * GetComponentNumber(inputAccessor.Type)]);
+                        Denormalize(inputAccessor, shape.MsfsFlavoured, GetBufferViewSpan(inputAccessor), ref inputFloats);
+                        var outputFloats = new Span<float>(new float[outputAccessor.Count * GetComponentNumber(outputAccessor.Type)]);
+                        Denormalize(outputAccessor, shape.MsfsFlavoured, GetBufferViewSpan(outputAccessor), ref outputFloats);
 
                         GltfAnimationChannel channel;
                         animation.Channels.Add(channel = new GltfAnimationChannel
@@ -713,15 +714,14 @@ namespace Orts.Viewer3D
                             Interpolation = shape.MsfsFlavoured ? AnimationSampler.InterpolationEnum.LINEAR : sampler.Interpolation,
                             Path = gltfChannel.Target.Path,
                             TargetNode = gltfChannel.Target.Node,
-                            TimeArray = new float[inputAccessor.Count].Select(_ => readInput(bri)).ToArray(),
+                            TimeArray = inputFloats.ToArray(),
                             TimeMin = inputAccessor.Min[0],
                             TimeMax = inputAccessor.Max[0],
                             OutputQuaternion = gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.rotation ?
-                                new Quaternion[outputAccessor.Count].Select(_ => new Quaternion(readOutput(bro), readOutput(bro), readOutput(bro), readOutput(bro))).ToArray() : null,
+                                MemoryMarshal.Cast<float, Quaternion>(outputFloats).ToArray() : null,
                             OutputVector3 = gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.scale || gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.translation ?
-                                new Vector3[outputAccessor.Count].Select(_ => new Vector3(readOutput(bro), readOutput(bro), readOutput(bro))).ToArray() : null,
-                            OutputFloats = gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.weights ?
-                                new float[outputAccessor.Count].Select(_ => readOutput(bro)).ToArray() : null,
+                                MemoryMarshal.Cast<float, Vector3>(outputFloats).ToArray() : null,
+                            OutputFloats = gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.weights ? outputFloats.ToArray() : null,
                             Pointer = gltfChannel.Target.Path == AnimationChannelTarget.PathEnum.pointer ? pointer : null,
                         });
 
@@ -742,10 +742,10 @@ namespace Orts.Viewer3D
                                     switch (PointerTemplates[template])
                                     {
                                         case PointerTypes.FloatVector:
-                                        case PointerTypes.Float: channel.OutputFloats = new float[outputAccessor.Count].Select(_ => readOutput(bro)).ToArray(); break;
-                                        case PointerTypes.Quaternion: channel.OutputQuaternion = new Quaternion[outputAccessor.Count].Select(_ => new Quaternion(readOutput(bro), readOutput(bro), readOutput(bro), readOutput(bro))).ToArray(); break;
-                                        case PointerTypes.Vector3: channel.OutputVector3 = new Vector3[outputAccessor.Count].Select(_ => new Vector3(readOutput(bro), readOutput(bro), readOutput(bro))).ToArray(); break;
-                                        case PointerTypes.Vector4: channel.OutputVector4 = new Vector4[outputAccessor.Count].Select(_ => new Vector4(readOutput(bro), readOutput(bro), readOutput(bro), readOutput(bro))).ToArray(); break;
+                                        case PointerTypes.Float: channel.OutputFloats = outputFloats.ToArray(); break;
+                                        case PointerTypes.Quaternion: channel.OutputQuaternion = MemoryMarshal.Cast<float, Quaternion>(outputFloats).ToArray(); break;
+                                        case PointerTypes.Vector3: channel.OutputVector3 = MemoryMarshal.Cast<float, Vector3>(outputFloats).ToArray(); break;
+                                        case PointerTypes.Vector4: channel.OutputVector4 = MemoryMarshal.Cast<float, Vector4>(outputFloats).ToArray(); break;
                                         default: break;
                                     }
                                     break;
@@ -872,6 +872,23 @@ namespace Orts.Viewer3D
                 }
             }
 
+            internal static void Denormalize(Accessor accessor, bool msfsFlavoured, Span<byte> bytes, ref Span<float> floats)
+            {
+                switch (accessor.ComponentType)
+                {
+                    case Accessor.ComponentTypeEnum.BYTE: for (var i = 0; i < accessor.Count; i++) floats[i] = Math.Max(bytes[i] / 127f, -1f); break;
+                    case Accessor.ComponentTypeEnum.UNSIGNED_BYTE: for (var i = 0; i < accessor.Count; i++) floats[i] = bytes[i] / 255f; break;
+                    case Accessor.ComponentTypeEnum.UNSIGNED_SHORT: for (var i = 0; i < accessor.Count; i++) floats[i] = MemoryMarshal.Read<ushort>(bytes.Slice(i * sizeof(ushort))) / 65535f; break;
+                    case Accessor.ComponentTypeEnum.SHORT:
+                        // Component type 5122 "SHORT" is a 16 bit int by the glTF specification, but is used as a 16 bit float (half) by asobo-msfs: 
+                        for (var i = 0; i < accessor.Count; i++)
+                            floats[i] = msfsFlavoured ? (float)MemoryMarshal.Read<SharpDX.Half>(bytes.Slice(i * sizeof(short))) : Math.Max(MemoryMarshal.Read<short>(bytes.Slice(i * sizeof(short))) / 32767f, -1f);
+                        break;
+                    case Accessor.ComponentTypeEnum.FLOAT:
+                    default: floats = MemoryMarshal.Cast<byte, float>(bytes.Slice(0, floats.Length * sizeof(float))); break;
+                }
+            }
+
             internal Span<byte> GetBufferViewSpan(AccessorSparseIndices accessor) => GetBufferViewSpan(accessor?.BufferView, accessor?.ByteOffset ?? 0);
             internal Span<byte> GetBufferViewSpan(AccessorSparseValues accessor) => GetBufferViewSpan(accessor?.BufferView, accessor?.ByteOffset ?? 0);
             internal Span<byte> GetBufferViewSpan(Accessor accessor) => GetBufferViewSpan(accessor.BufferView, accessor.ByteOffset);
@@ -885,21 +902,6 @@ namespace Orts.Viewer3D
                 return bytes.AsSpan(bufferView.ByteOffset + accessorByteOffset);
             }
 
-            internal Stream GetBufferView(Accessor accessor, out int? byteStride) => GetBufferView(accessor.BufferView, accessor.ByteOffset, out byteStride);
-            internal Stream GetBufferView(int? bufferViewNumber, int accessorByteOffset, out int? byteStride)
-            {
-                byteStride = null;
-                if (bufferViewNumber == null)
-                    return Stream.Null;
-                var bufferView = GltfFile.BufferViews[(int)bufferViewNumber];
-                byteStride = bufferView.ByteStride;
-                if (!BinaryBuffers.TryGetValue(bufferView.Buffer, out var bytes))
-                    BinaryBuffers.Add(bufferView.Buffer, bytes = glTFLoader.Interface.LoadBinaryBuffer(GltfFile, bufferView.Buffer, GltfFileName));
-                var stream = new MemoryStream(bytes);
-                stream.Seek(bufferView.ByteOffset + accessorByteOffset, SeekOrigin.Begin);
-                return stream;
-            }
-
             internal int GetSizeInBytes(Accessor accessor)
             {
                 var componentNumber = GetComponentNumber(accessor.Type);
@@ -908,7 +910,7 @@ namespace Orts.Viewer3D
                 return size + padding;
             }
             
-            int GetComponentNumber(Accessor.TypeEnum type)
+            internal int GetComponentNumber(Accessor.TypeEnum type)
             {
                 switch (type)
                 {
@@ -978,59 +980,6 @@ namespace Orts.Viewer3D
 
                     default: Trace.TraceWarning($"glTF: Unknown vertex attribute format is found in file {GltfFileName}"); return VertexElementFormat.Single;
                 }
-            }
-
-            internal static Func<BinaryReader, float> GetNormalizedReader(Accessor.ComponentTypeEnum componentType, bool msfsFlavoured)
-            {
-                switch (componentType)
-                {
-                    case Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return (br) => br.ReadByte() / 255.0f;
-                    case Accessor.ComponentTypeEnum.UNSIGNED_SHORT: return (br) => br.ReadUInt16() / 65535.0f;
-                    case Accessor.ComponentTypeEnum.BYTE: return (br) => Math.Max(br.ReadSByte() / 127.0f, -1.0f);
-                    // Component type 5122 "SHORT" is a 16 bit int by the glTF specification, but is used as a 16 bit float (half) by asobo-msfs: 
-                    case Accessor.ComponentTypeEnum.SHORT: return (br) => msfsFlavoured ? ToTwoByteFloat(br.ReadBytes(2)) : Math.Max(br.ReadInt16() / 32767.0f, -1.0f); // the prior is br.ReadHalf() in fact
-                    case Accessor.ComponentTypeEnum.FLOAT:
-                    default: return (br) => br.ReadSingle();
-                }
-            }
-
-            internal static Func<BinaryReader, ushort> GetIntegerReader(AccessorSparseIndices.ComponentTypeEnum componentType) => GetIntegerReader((Accessor.ComponentTypeEnum)componentType);
-            internal static Func<BinaryReader, ushort> GetIntegerReader(Accessor.ComponentTypeEnum componentType)
-            {
-                switch (componentType)
-                {
-                    case Accessor.ComponentTypeEnum.BYTE: return (br) => (ushort)br.ReadSByte();
-                    case Accessor.ComponentTypeEnum.UNSIGNED_INT: return (br) => (ushort)br.ReadUInt32();
-                    case Accessor.ComponentTypeEnum.UNSIGNED_BYTE: return (br) => br.ReadByte();
-                    case Accessor.ComponentTypeEnum.UNSIGNED_SHORT:
-                    default: return (br) => br.ReadUInt16();
-                }
-            }
-
-            static float ToTwoByteFloat(byte[] bytes) // Hi, Lo
-            {
-                var intVal = BitConverter.ToInt32(new byte[] { bytes[0], bytes[1], 0, 0 }, 0);
-
-                int mant = intVal & 0x03ff;
-                int exp = intVal & 0x7c00;
-                if (exp == 0x7c00) exp = 0x3fc00;
-                else if (exp != 0)
-                {
-                    exp += 0x1c000;
-                    if (mant == 0 && exp > 0x1c400)
-                        return BitConverter.ToSingle(BitConverter.GetBytes((intVal & 0x8000) << 16 | exp << 13 | 0x3ff), 0);
-                }
-                else if (mant != 0)
-                {
-                    exp = 0x1c400;
-                    do
-                    {
-                        mant <<= 1;
-                        exp -= 0x400;
-                    } while ((mant & 0x400) == 0);
-                    mant &= 0x3ff;
-                }
-                return BitConverter.ToSingle(BitConverter.GetBytes((intVal & 0x8000) << 16 | (exp | mant) << 13), 0);
             }
 
             internal static VertexElementUsage GetVertexElementSemantic(string semantic, out int index)
@@ -1651,17 +1600,9 @@ namespace Orts.Viewer3D
                         else
                         {
                             var accessor = gltfFile.Accessors[(int)skin.InverseBindMatrices];
-                            InverseBindMatrices = new Matrix[accessor.Count];
-                            var read = GltfDistanceLevel.GetNormalizedReader(accessor.ComponentType, distanceLevel.Shape.MsfsFlavoured);
-                            using (var br = new BinaryReader(distanceLevel.GetBufferView(accessor, out _)))
-                            {
-                                for (var i = 0; i < InverseBindMatrices.Length; i++)
-                                    InverseBindMatrices[i] = new Matrix(
-                                        read(br), read(br), read(br), read(br),
-                                        read(br), read(br), read(br), read(br),
-                                        read(br), read(br), read(br), read(br),
-                                        read(br), read(br), read(br), read(br));
-                            }
+                            Span<float> inputFloats = stackalloc float[accessor.Count * distanceLevel.GetComponentNumber(accessor.Type)];
+                            GltfDistanceLevel.Denormalize(accessor, distanceLevel.Shape.MsfsFlavoured, distanceLevel.GetBufferViewSpan(accessor), ref inputFloats);
+                            InverseBindMatrices = MemoryMarshal.Cast<float, Matrix>(inputFloats).ToArray();
                         }
                         distanceLevel.InverseBindMatrices.Add((int)skin.InverseBindMatrices, InverseBindMatrices);
                     }
