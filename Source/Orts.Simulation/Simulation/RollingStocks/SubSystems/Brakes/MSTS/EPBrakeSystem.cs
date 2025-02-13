@@ -178,7 +178,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         AutoCylPressurePSI += dp;
                     }
                 }
-                else if (EPBrakeActiveInhibitsTripleValve && AutoCylPressurePSI > demandedAutoCylPressurePSI)
+                else if (EPBrakeActiveInhibitsTripleValve && AutoCylPressurePSI > demandedAutoCylPressurePSI && Car.Train.BrakeLine4 != -2)
                 {
                     float dp = elapsedClockSeconds * ReleaseRatePSIpS;
                     if (AutoCylPressurePSI - dp < demandedAutoCylPressurePSI)
