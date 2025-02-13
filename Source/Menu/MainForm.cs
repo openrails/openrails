@@ -1356,11 +1356,13 @@ namespace Menu
             else
             {
                 // if selected folder is in the content routes setting and has a start route
+                // and the selected activity is explore in activit mode
                 var routes = Settings.Content.ContentRouteSettings.Routes;
                 if ((SelectedFolder != null) &&
                     routes.ContainsKey(SelectedFolder.Name) &&
                     routes[SelectedFolder.Name].Installed &&
-                    !string.IsNullOrEmpty(routes[SelectedFolder.Name].Start.Route))
+                    !string.IsNullOrEmpty(routes[SelectedFolder.Name].Start.Route) &&
+                    SelectedActivity != null && SelectedActivity is ExploreThroughActivity)
                 {
                     var route = routes[SelectedFolder.Name];
                     string valueComboboxToSetTo = "";
