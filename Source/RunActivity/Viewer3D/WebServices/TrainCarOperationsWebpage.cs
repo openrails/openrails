@@ -31,6 +31,7 @@ using Orts.Common;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using ORTS.Scripting.Api;
 using System.IO;
+using Orts.Simulation.Physics;
 
 namespace Orts.Viewer3D.WebServices
 {
@@ -276,6 +277,14 @@ namespace Orts.Viewer3D.WebServices
 
         private void fillStatus(OperationsStatus operationStatus)
         {
+            // Apply reveral point when TrainCarOperations/Viewer windows are not visibles
+            // Makes this Webpage version, more autonoumus
+            if (!Viewer.TrainCarOperationsWindow.Visible && !Viewer.TrainCarOperationsViewerWindow.Visible && Viewer.IsFormationReversed)
+            {
+                _ = new FormationReversed(Viewer, Viewer.PlayerTrain);
+                Viewer.IsFormationReversed = false;
+            }
+
             int carPosition = 0;
 
             foreach (TrainCar trainCar in Viewer.PlayerTrain.Cars)
@@ -507,6 +516,7 @@ namespace Orts.Viewer3D.WebServices
             if (TrainCarSelected && (carPosition == TrainCarSelectedPosition))
             {
                 filename = "TrainOperationsArrowRight32.png";
+                CurrentCarID = Viewer.PlayerTrain.Cars[carPosition].CarID;// Requiered by OSDCars.cs
             }
             else
             {
