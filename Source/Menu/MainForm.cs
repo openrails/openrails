@@ -1343,12 +1343,14 @@ namespace Menu
             string value = GetValueFromMenuSelection(index);
             if (!string.IsNullOrEmpty(value))
             {
-                if (comboBox.DropDownStyle == ComboBoxStyle.DropDown) { comboBox.Text = value; }
-                else { SelectComboBoxItem<T>(comboBox, item => map(item) == value); }
+                if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
+                    comboBox.Text = value;
+                else
+                    SelectComboBoxItem<T>(comboBox, item => map(item) == value);
             }
             else
             {
-                // when explore in activit mode, try the content route info
+                // when explore-in-activity mode, try the content route info
                 var routes = Settings.Content.ContentRouteSettings.Routes;
                 if ((SelectedActivity != null && SelectedActivity is ExploreThroughActivity) &&
                     (SelectedFolder != null && routes.ContainsKey(SelectedFolder.Name) && routes[SelectedFolder.Name].Installed) &&
