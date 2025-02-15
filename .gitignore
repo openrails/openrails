@@ -366,4 +366,4 @@ healthchecksdb
 
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
-/Source/RunActivity/Properties/launchSettings.json
+/Source/**/Properties/launchSettings.json
