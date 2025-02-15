@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Orts.MultiPlayerServer
+namespace MultiPlayerServer
 {
     internal class Program
     {

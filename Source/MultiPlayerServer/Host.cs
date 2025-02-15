@@ -11,7 +11,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Orts.MultiPlayerServer
+namespace MultiPlayerServer
 {
     //whoever connects first, will become dispatcher(server) by sending a "SERVER YOU" message
     //if a clients sends a "SERVER MakeMeServer", this client should be appointed new server

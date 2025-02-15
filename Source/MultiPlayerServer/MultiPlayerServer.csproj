@@ -1,13 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5-windows</TargetFramework>
+    <TargetFramework Condition="'$(BuildDotNet)' == 'true'">net6-windows</TargetFramework>
+    <TargetFramework Condition="'$(TargetFramework)' == ''">net5-windows</TargetFramework>
     <OutputType>Exe</OutputType>
-    <Description>Open Rails Multiplayer Server</Description>
-    <AssemblyTitle>Open Rails MultiPlayer Server (Forked)</AssemblyTitle>
-    <Product>Open Rails</Product>
-    <OutputPath>..\..\Program</OutputPath>
     <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
-    <RootNamespace>Orts.MultiPlayerServer</RootNamespace>
+    <IsPublishable>False</IsPublishable>
+    <AssemblyTitle>Open Rails MultiPlayer Server</AssemblyTitle>
+    <Description>Open Rails Transport Simulator</Description>
+    <Company>Open Rails</Company>
+    <Product>Open Rails</Product>
+    <Copyright>Copyright © 2009 - 2022</Copyright>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>..\Launcher\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.IO.Pipelines" Version="5.0.0.0" />
