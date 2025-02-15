@@ -1,16 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFramework>net6-windows</TargetFramework>
-		<OutputType>Exe</OutputType>
-		<Description>Open Rails Multiplayer Server</Description>
-		<AssemblyTitle>Open Rails MultiPlayer Server (Forked)</AssemblyTitle>
+  <PropertyGroup>
+    <TargetFramework>net5-windows</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Description>Open Rails Multiplayer Server</Description>
+    <AssemblyTitle>Open Rails MultiPlayer Server (Forked)</AssemblyTitle>
     <Product>Open Rails</Product>
-		<OutputPath>..\..\Program</OutputPath>
-		<ApplicationIcon>..\ORTS.ico</ApplicationIcon>
-		<RootNamespace>Orts.MultiPlayerServer</RootNamespace>
-		<LangVersion>10.0</LangVersion>
-</PropertyGroup>
-	<ItemGroup>
-		<PackageReference Include="System.IO.Pipelines" Version="5.0.0.0" />
-	</ItemGroup>
+    <OutputPath>..\..\Program</OutputPath>
+    <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
+    <RootNamespace>Orts.MultiPlayerServer</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.IO.Pipelines" Version="5.0.0.0" />
+  </ItemGroup>
 </Project>
