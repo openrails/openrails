@@ -301,12 +301,15 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             int permittedSpeed = (int)SpeedFromMpS(status.AllowedSpeedMpS);
             int targetSpeed = status.TargetSpeedMpS < status.AllowedSpeedMpS ? (int)SpeedFromMpS(status.TargetSpeedMpS.Value) : permittedSpeed;
             int releaseSpeed = (int)SpeedFromMpS(status.ReleaseSpeedMpS ?? 0);
-            float interventionSpeed = SpeedFromMpS(status.InterventionSpeedMpS);
+            int interventionSpeed = (int)SpeedFromMpS(status.InterventionSpeedMpS);
+
+            SpeedText = (int)(currentSpeed + (currentSpeed < 1f || currentSpeed < (float)SpeedText ? 0.99999f : 0.49999f));
+            CurrentSpeedAngle = Speed2Angle(SpeedText);
 
             if (interventionSpeed < permittedSpeed && interventionSpeed < releaseSpeed)
                 interventionSpeed = Math.Max(permittedSpeed, releaseSpeed);
             if (currentSpeed > permittedSpeed && currentSpeed > interventionSpeed)
-                interventionSpeed = Math.Max(currentSpeed - 1, releaseSpeed);
+                interventionSpeed = Math.Max(SpeedText, releaseSpeed);
 
             switch (status.CurrentMode)
             {
@@ -375,10 +378,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 var shaderAngles = new Vector4(NoGaugeAngle, NoGaugeAngle, NoGaugeAngle, NoGaugeAngle);
                 DMI.Shader.SetData(shaderAngles, GaugeColor, NeedleColor, GaugeColor);
             }
-
-            CurrentSpeedAngle = Speed2Angle(currentSpeed);
-
-            SpeedText = (int)(currentSpeed + (currentSpeed < 1f || currentSpeed < (float)SpeedText ? 0.99999f : 0.49999f));
 
             for (int i = 0, d = 1; i < CurrentSpeed.Length; i++, d *= 10)
             {
