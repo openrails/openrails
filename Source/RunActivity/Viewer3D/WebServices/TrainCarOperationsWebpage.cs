@@ -32,6 +32,7 @@ using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using ORTS.Scripting.Api;
 using System.IO;
 using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 
 namespace Orts.Viewer3D.WebServices
 {
@@ -603,6 +604,19 @@ namespace Orts.Viewer3D.WebServices
             bool first = trainCar == Viewer.PlayerTrain.Cars.First();
             var carAngleCockAOpenAmount = Viewer.PlayerTrain.Cars[carPosition].BrakeSystem.AngleCockAOpenAmount;
 
+            if (trainCar.BrakeSystem is VacuumSinglePipe)
+            {
+                StatusCurrent.Status[carPosition].Add(
+                    new OperationsStatus.Operation
+                    {
+                        Enabled = false,
+                        Filename = "TrainOperationsFrontAngleCockNotAvailable32.png",
+                        Functionname = "",
+                        CarPosition = carPosition
+                    });
+            }
+            else
+            {
             StatusCurrent.Status[carPosition].Add(
                 new OperationsStatus.Operation
                 {
@@ -613,6 +627,7 @@ namespace Orts.Viewer3D.WebServices
                     Functionname = "buttonFrontAngleCockClick",
                     CarPosition = carPosition
                 });
+            }
 
             if (first)
             {
@@ -805,6 +820,19 @@ namespace Orts.Viewer3D.WebServices
             bool last = trainCar == Viewer.PlayerTrain.Cars.Last();
             var carAngleCockBOpenAmount = Viewer.PlayerTrain.Cars[carPosition].BrakeSystem.AngleCockBOpenAmount;
 
+            if (trainCar.BrakeSystem is VacuumSinglePipe)
+            {
+                StatusCurrent.Status[carPosition].Add(
+                    new OperationsStatus.Operation
+                    {
+                        Enabled = false,
+                        Filename = "TrainOperationsRearAngleCockNotAvailable32.png",
+                        Functionname = "",
+                        CarPosition = carPosition
+                    });
+            }
+            else
+            {
             StatusCurrent.Status[carPosition].Add(
                 new OperationsStatus.Operation
                 {
@@ -815,7 +843,7 @@ namespace Orts.Viewer3D.WebServices
                     Functionname = "buttonRearAngleCockClick",
                     CarPosition = carPosition
                 });
-
+            }
             if (last)
             {
                 if (trainCar.BrakeSystem.AngleCockBOpen)
