@@ -32,6 +32,7 @@ using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using ORTS.Scripting.Api;
 using System.IO;
 using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 
 namespace Orts.Viewer3D.WebServices
 {
@@ -603,16 +604,30 @@ namespace Orts.Viewer3D.WebServices
             bool first = trainCar == Viewer.PlayerTrain.Cars.First();
             var carAngleCockAOpenAmount = Viewer.PlayerTrain.Cars[carPosition].BrakeSystem.AngleCockAOpenAmount;
 
-            StatusCurrent.Status[carPosition].Add(
+            if (trainCar.BrakeSystem is VacuumSinglePipe)
+            {
+                StatusCurrent.Status[carPosition].Add(
+                    new OperationsStatus.Operation
+                    {
+                        Enabled = false,
+                        Filename = "TrainOperationsFrontAngleCockNotAvailable32.png",
+                        Functionname = "",
+                        CarPosition = carPosition
+                    });
+            }
+            else
+            {
+                StatusCurrent.Status[carPosition].Add(
                 new OperationsStatus.Operation
                 {
                     Enabled = true,
-                    Filename = carAngleCockAOpenAmount >= 1 ? "TrainOperationsFrontAngleCockOpened32.png" 
+                    Filename = carAngleCockAOpenAmount >= 1 ? "TrainOperationsFrontAngleCockOpened32.png"
                         : carAngleCockAOpenAmount <= 0 ? "TrainOperationsFrontAngleCockClosed32.png"
                         : "TrainOperationsFrontAngleCockPartial32.png",
                     Functionname = "buttonFrontAngleCockClick",
                     CarPosition = carPosition
                 });
+            }
 
             if (first)
             {
@@ -805,17 +820,30 @@ namespace Orts.Viewer3D.WebServices
             bool last = trainCar == Viewer.PlayerTrain.Cars.Last();
             var carAngleCockBOpenAmount = Viewer.PlayerTrain.Cars[carPosition].BrakeSystem.AngleCockBOpenAmount;
 
-            StatusCurrent.Status[carPosition].Add(
-                new OperationsStatus.Operation
-                {
-                    Enabled = true,
-                    Filename = carAngleCockBOpenAmount >= 1 ? "TrainOperationsRearAngleCockOpened32.png"
-                        : carAngleCockBOpenAmount <= 0 ? "TrainOperationsRearAngleCockClosed32.png"
-                        : "TrainOperationsRearAngleCockPartial32.png",
-                    Functionname = "buttonRearAngleCockClick",
-                    CarPosition = carPosition
-                });
-
+            if (trainCar.BrakeSystem is VacuumSinglePipe)
+            {
+                StatusCurrent.Status[carPosition].Add(
+                    new OperationsStatus.Operation
+                    {
+                        Enabled = false,
+                        Filename = "TrainOperationsRearAngleCockNotAvailable32.png",
+                        Functionname = "",
+                        CarPosition = carPosition
+                    });
+            }
+            else
+            {
+                StatusCurrent.Status[carPosition].Add(
+                    new OperationsStatus.Operation
+                    {
+                        Enabled = true,
+                        Filename = carAngleCockBOpenAmount >= 1 ? "TrainOperationsRearAngleCockOpened32.png"
+                            : carAngleCockBOpenAmount <= 0 ? "TrainOperationsRearAngleCockClosed32.png"
+                            : "TrainOperationsRearAngleCockPartial32.png",
+                        Functionname = "buttonRearAngleCockClick",
+                        CarPosition = carPosition
+                    });
+            }
             if (last)
             {
                 if (trainCar.BrakeSystem.AngleCockBOpen)

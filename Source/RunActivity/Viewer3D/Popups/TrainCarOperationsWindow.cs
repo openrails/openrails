@@ -53,7 +53,9 @@ namespace Orts.Viewer3D.Popups
         internal static Texture2D BrakeHoseCon;
         internal static Texture2D BrakeHoseDis;
         internal static Texture2D BrakeHoseFirstDis;
-        internal static Texture2D BrakeHoseLastDis;
+        internal static Texture2D BrakeHoseFirstCon;
+        internal static Texture2D BrakeHoseRearDis;
+        internal static Texture2D BrakeHoseRearCon;
         internal static Texture2D Coupler;
         internal static Texture2D CouplerFront;
         internal static Texture2D CouplerNotAvailable;
@@ -64,6 +66,7 @@ namespace Orts.Viewer3D.Popups
         internal static Texture2D FrontAngleCockClosed;
         internal static Texture2D FrontAngleCockOpened;
         internal static Texture2D FrontAngleCockPartial;
+        internal static Texture2D FrontAngleCockNotAvailable;
         internal static Texture2D HandBrakeNotAvailable;
         internal static Texture2D HandBrakeNotSet;
         internal static Texture2D HandBrakeSet;
@@ -75,6 +78,7 @@ namespace Orts.Viewer3D.Popups
         internal static Texture2D RearAngleCockClosed;
         internal static Texture2D RearAngleCockOpened;
         internal static Texture2D RearAngleCockPartial;
+        internal static Texture2D RearAngleCockNotAvailable;
 
         public bool AngleCockAPartiallyEnabled;
         public bool AngleCockBPartiallyEnabled;
@@ -221,6 +225,8 @@ namespace Orts.Viewer3D.Popups
                 Rectangle BrakeHoseDisRect = new Rectangle(16, 32, 16, 16);
                 Rectangle BrakeHoseFirstDisRect = new Rectangle(32, 32, 16, 16);
                 Rectangle BrakeHoseLastDisRect = new Rectangle(48, 32, 16, 16);
+                Rectangle BrakeHoseFirstConRect = new Rectangle(0, 144, 16, 16);
+                Rectangle BrakeHoseRearConRect = new Rectangle(16, 144, 16, 16);
 
                 Rectangle CouplerNotAvailableRect = new Rectangle(0, 48, 16, 16);
                 Rectangle CouplerFrontRect = new Rectangle(16, 48, 16, 16);
@@ -242,6 +248,8 @@ namespace Orts.Viewer3D.Popups
                 Rectangle RearAngleCockOpenedRect = new Rectangle(48, 96, 16, 16);
                 Rectangle FrontAngleCockPartialRect = new Rectangle(0, 128, 16, 16);
                 Rectangle RearAngleCockPartialRect = new Rectangle(16, 128, 16, 16);
+                Rectangle FrontAngleCockNotAvailableRect = new Rectangle(32, 128, 16, 16);
+                Rectangle RearAngleCockNotAvailableRect = new Rectangle(48, 128, 16, 16);
 
                 Rectangle PowerOnRect = new Rectangle(0, 112, 16, 16);
                 Rectangle PowerOffRect = new Rectangle(16, 112, 16, 16);
@@ -268,11 +276,14 @@ namespace Orts.Viewer3D.Popups
                 BrakeHoseCon = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseConRect);
                 BrakeHoseDis = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseDisRect);
                 BrakeHoseFirstDis = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseFirstDisRect);
-                BrakeHoseLastDis = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseLastDisRect);
+                BrakeHoseRearDis = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseLastDisRect);
+                BrakeHoseFirstCon = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseFirstConRect);
+                BrakeHoseRearCon = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BrakeHoseRearConRect);
 
                 FrontAngleCockOpened = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, FrontAngleCockOpenedRect);
                 FrontAngleCockClosed = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, FrontAngleCockClosedRect);
                 FrontAngleCockPartial = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, FrontAngleCockPartialRect);
+                FrontAngleCockNotAvailable = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, FrontAngleCockNotAvailableRect);
 
                 BleedOffValveClosed = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BleedOffValveClosedRect);
                 BleedOffValveOpened = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, BleedOffValveOpenedRect);
@@ -281,6 +292,7 @@ namespace Orts.Viewer3D.Popups
                 RearAngleCockClosed = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, RearAngleCockClosedRect);
                 RearAngleCockOpened = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, RearAngleCockOpenedRect);
                 RearAngleCockPartial = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, RearAngleCockPartialRect);
+                RearAngleCockNotAvailable = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, RearAngleCockNotAvailableRect);
 
                 PowerChanging = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, PowerChangingRect);
                 PowerOff = SharedTextureManager.Get(GraphicsDeviceRender, TrainOperationsPath, PowerOffRect);
@@ -1057,7 +1069,7 @@ namespace Orts.Viewer3D.Popups
             Viewer = viewer;
             TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
             var Last = car == viewer.PlayerTrain.Cars.Last();
-            Texture = Last ? BrakeHoseLastDis : (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected ? BrakeHoseCon : BrakeHoseDis;
+            Texture = Last ? BrakeHoseRearDis : (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).BrakeSystem.RearBrakeHoseConnected ? BrakeHoseCon : BrakeHoseDis;
 
             // Update from viewer
             var viewerCarposition = TrainCarViewer.CarPosition;
@@ -1087,13 +1099,19 @@ namespace Orts.Viewer3D.Popups
             var First = car == viewer.PlayerTrain.Cars.First();
             var CurrentCar = Viewer.PlayerTrain.Cars[carPosition];
 
-            var carAngleCockAOpenAmount = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockAOpenAmount;
-            var carAngleCockAOpen = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockAOpen;
-            Texture = !TrainCarViewer.TrainCarOperationsChanged && First ? FrontAngleCockClosed
-                : carAngleCockAOpenAmount > 0 && carAngleCockAOpenAmount < 1 ? FrontAngleCockPartial
-                : carAngleCockAOpen ? FrontAngleCockOpened
-                : FrontAngleCockClosed;
-
+            if (CurrentCar.BrakeSystem is VacuumSinglePipe)
+            {
+                Texture = FrontAngleCockNotAvailable;
+            }
+            else
+            {
+                var carAngleCockAOpenAmount = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockAOpenAmount;
+                var carAngleCockAOpen = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockAOpen;
+                Texture = !TrainCarViewer.TrainCarOperationsChanged && First ? FrontAngleCockClosed
+                    : carAngleCockAOpenAmount > 0 && carAngleCockAOpenAmount < 1 ? FrontAngleCockPartial
+                    : carAngleCockAOpen ? FrontAngleCockOpened
+                    : FrontAngleCockClosed;
+            }
             Source = new Rectangle(0, 0, size, size);
 
             var trainCarOperations = Viewer.TrainCarOperationsWindow;
@@ -1114,13 +1132,19 @@ namespace Orts.Viewer3D.Popups
             var Last = car == viewer.PlayerTrain.Cars.Last();
             var CurrentCar = Viewer.PlayerTrain.Cars[carPosition];
 
-            var carAngleCockBOpenAmount = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockBOpenAmount;
-            var carAngleCockBOpen = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockBOpen;
-            Texture = Last ? RearAngleCockClosed
-                : carAngleCockBOpenAmount > 0 && carAngleCockBOpenAmount < 1 ? RearAngleCockPartial
-                : carAngleCockBOpen ? RearAngleCockOpened
-                : RearAngleCockClosed;
-
+            if (CurrentCar.BrakeSystem is VacuumSinglePipe)
+            {
+                Texture = RearAngleCockNotAvailable;
+            }
+            else
+            {
+                var carAngleCockBOpenAmount = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockBOpenAmount;
+                var carAngleCockBOpen = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockBOpen;
+                Texture = Last ? RearAngleCockClosed
+                    : carAngleCockBOpenAmount > 0 && carAngleCockBOpenAmount < 1 ? RearAngleCockPartial
+                    : carAngleCockBOpen ? RearAngleCockOpened
+                    : RearAngleCockClosed;
+            }
             Source = new Rectangle(0, 0, size, size);
 
             var trainCarOperations = Viewer.TrainCarOperationsWindow;
