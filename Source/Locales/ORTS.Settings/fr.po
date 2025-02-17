@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
 "POT-Creation-Date: 2024-11-09 17:45:32+0100\n"
-"PO-Revision-Date: 2025-02-17 12:06+0100\n"
+"PO-Revision-Date: 2025-02-17 12:12+0100\n"
 "Last-Translator: GNIEWEK Cédric <gniewek.cedric@free.fr>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: fr\n"
@@ -46,11 +46,11 @@ msgstr "Inverseur de marche complètement avant"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:18
 msgid "Throttle Idle"
-msgstr "Accélérateur à vide"
+msgstr "Manipulateur traction à vide"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:19
 msgid "Full Throttle"
-msgstr "Accélérateur à fond"
+msgstr "Manipulateur traction à fond"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:20
 msgid "Dynamic Brake"
@@ -66,7 +66,7 @@ msgstr "Frein automatique relâché"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:23
 msgid "Full Auto Brake "
-msgstr "Frein automatique complet"
+msgstr "Frein automatique complet "
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:24
 msgid "Emergency Brake"
@@ -126,7 +126,7 @@ msgstr "Inverser la direction de l’inverseur de marche"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:38
 msgid "Reverse Throttle Direction"
-msgstr " Inverser la direction de l'accélérateur"
+msgstr "Inverser la direction du manipulateur de traction"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:39
 msgid "Reverse Auto Brake Direction"
@@ -138,7 +138,7 @@ msgstr "Inverser la direction du frein indépendant"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:41
 msgid "Full Range Throttle"
-msgstr "Accélérateur pleine plage"
+msgstr "Manipulateur traction pleine plage"
 
 #: ../../ORTS.Settings/RailDriverSettings.cs:42
 msgid "Cut Off Delta"
