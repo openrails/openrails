@@ -1,33 +1,154 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2021-09-15 03:48:20+0200\n"
-"PO-Revision-Date: 2021-09-15 03:50+0200\n"
+"POT-Creation-Date: 2024-11-09 17:45:32+0100\n"
+"PO-Revision-Date: 2025-02-17 12:06+0100\n"
 "Last-Translator: GNIEWEK Cédric <gniewek.cedric@free.fr>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.4.3\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Poedit 3.5\n"
 
-#: ../../ORTS.Settings/InputSettings.cs:526
+#: ../../ORTS.Settings/InputSettings.cs:569
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
 msgstr "{0} nécessite d'appuyer sur Shift"
 
-#: ../../ORTS.Settings/InputSettings.cs:528
+#: ../../ORTS.Settings/InputSettings.cs:571
 #, csharp-format
 msgid "{0} requires and is modified by Control"
 msgstr "{0} nécessite d'appuyer sur Ctrl"
 
-#: ../../ORTS.Settings/InputSettings.cs:530
+#: ../../ORTS.Settings/InputSettings.cs:573
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr "{0} nécessite d'appuyer sur Alt"
 
-#: ../../ORTS.Settings/InputSettings.cs:561
+#: ../../ORTS.Settings/InputSettings.cs:604
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr "{0} et {1} correspondent tous les deux à la touche {2}"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:15
+msgid "Reverser Neutral"
+msgstr "Inverseur de marche neutre"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:16
+msgid "Reverser Full Reversed"
+msgstr "Inverseur de marche complètement arrière"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:17
+msgid "Reverser Full Forward"
+msgstr "Inverseur de marche complètement avant"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:18
+msgid "Throttle Idle"
+msgstr "Accélérateur à vide"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:19
+msgid "Full Throttle"
+msgstr "Accélérateur à fond"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:20
+msgid "Dynamic Brake"
+msgstr "Frein dynamique"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:21
+msgid "Dynamic Brake Setup"
+msgstr "Configuration du frein dynamique"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:22
+msgid "Auto Brake Released"
+msgstr "Frein automatique relâché"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:23
+msgid "Full Auto Brake "
+msgstr "Frein automatique complet"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:24
+msgid "Emergency Brake"
+msgstr "Frein d’urgence"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:25
+msgid "Independent Brake Released"
+msgstr "Frein indépendant relâché"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:26
+msgid "Independent Brake Full"
+msgstr "Frein indépendant activé au maximum"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:27
+msgid "Bail Off Disengaged (in Released position)"
+msgstr "Dispositif d’affranchissement désactivé (en position relâchée)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:28
+msgid "Bail Off Engaged (in Released position)"
+msgstr "Dispositif d’affranchissement activé (en position relâchée)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:29
+msgid "Bail Off Disengaged (in Full position)"
+msgstr "Dispositif d’affranchissement désactivé (en position maximale)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:30
+msgid "Bail Off Engaged (in Full position)"
+msgstr "Dispositif d’affranchissement activé (en position maximale)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:31
+msgid "Rotary Switch 1-Position 1(OFF)"
+msgstr "Interrupteur rotatif 1-Position 1 (OFF)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:32
+msgid "Rotary Switch 1-Position 2(SLOW)"
+msgstr "Interrupteur rotatif 1-Position 2 (SLOW)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:33
+msgid "Rotary Switch 1-Position 3(FULL)"
+msgstr "Interrupteur rotatif 1-Position 3 (FULL)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:34
+msgid "Rotary Switch 2-Position 1(OFF)"
+msgstr "Interrupteur rotatif 2-Position 1 (OFF)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:35
+msgid "Rotary Switch 2-Position 2(DIM)"
+msgstr "Interrupteur rotatif 2-Position 2 (DIM)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:36
+msgid "Rotary Switch 2-Position 3(FULL)"
+msgstr "Interrupteur rotatif 2-Position 3 (FULL)"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:37
+msgid "Reverse Reverser Direction"
+msgstr "Inverser la direction de l’inverseur de marche"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:38
+msgid "Reverse Throttle Direction"
+msgstr " Inverser la direction de l'accélérateur"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:39
+msgid "Reverse Auto Brake Direction"
+msgstr "Inverser la direction du frein automatique"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:40
+msgid "Reverse Independent Brake Direction"
+msgstr "Inverser la direction du frein indépendant"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:41
+msgid "Full Range Throttle"
+msgstr "Accélérateur pleine plage"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:42
+msgid "Cut Off Delta"
+msgstr "Delta de coupure"
+
+#: ../../ORTS.Settings/RailDriverSettings.cs:225
+#, csharp-format
+msgid ""
+"Button {0} is assigned to \r\n"
+"\t"
+msgstr ""
+"Le bouton {0} est assigné à \n"
+"\t"
