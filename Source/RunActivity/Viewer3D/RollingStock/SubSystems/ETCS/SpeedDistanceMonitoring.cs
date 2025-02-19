@@ -53,7 +53,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         readonly Point ReleaseSpeedPosition = new Point(26 - 6, 274 - 8);
         readonly int[] UnitCenterPosition = new int[] { 140, 204 };
         // 240 and 260 are non-standard scales by ETA, but national railways often use one of these instead of 250
-        readonly int[] StandardScalesKMpH = new int[] { 140, 180, 240, 250, 260, 280, 400 };
+        readonly int[] StandardScalesKMpH = new int[] { 140, 150, 180, 240, 250, 260, 280, 400 };
         readonly int[] StandardScalesMpH = new int[] { 87, 111, 155, 248 };
 
         const string UnitMetricString = "km/h";
@@ -206,7 +206,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 float x = 0, y = 0;
                 GetXY(RadiusOutside, angle, ref x, ref y);
 
-                if (speed % 10 == 0 || !UnitMetric && MaxSpeed < 130)
+                if (speed % 10 == 0 || !UnitMetric && MaxSpeed < 130 || speed % 5 == 0 && MaxSpeed == 150)
                 {
                     if (longLine == 0)
                     {
@@ -243,7 +243,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                     {
                         longLineEach = 4;
                     }
-                    if (MaxSpeed > 300 && UnitMetric)
+                    if ((MaxSpeed > 300 || MaxSpeed == 150) && UnitMetric)
                     {
                         longLineEach = 5;
                     }
