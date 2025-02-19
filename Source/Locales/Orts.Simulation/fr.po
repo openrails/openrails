@@ -167,7 +167,7 @@ msgstr "Début de déserrage SME"
 #, fuzzy
 #| msgid "Engine"
 msgid "Hold Engine"
-msgstr "Moteur"
+msgstr "Maintien loco"
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:418
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:239
