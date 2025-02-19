@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2024-11-09 17:45:32+0100\n"
-"PO-Revision-Date: 2025-02-17 19:46+0100\n"
+"PO-Revision-Date: 2025-02-19 13:00+0100\n"
 "Last-Translator: GNIEWEK Cédric <gniewek.cedric@free.fr>\n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -835,20 +835,16 @@ msgid "Tender"
 msgstr "Tender"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:229
-#, fuzzy
-#| msgid "Coal re-filled"
 msgid "Fuel re-filled"
-msgstr "Rechargement du charbon"
+msgstr "Combustible rechargé"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:229
-#, fuzzy
-#| msgid "Fuel levels"
 msgid "Fuel level"
-msgstr "Niveaux de carburant"
+msgstr "Niveaux de combustible"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:230
 msgid "Water re-filled"
-msgstr "Rechargement de l'eau"
+msgstr "Eau rechargée"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:230
 msgid "Water level"
@@ -2012,7 +2008,7 @@ msgstr "Perte de chaleur du feu"
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:7826
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:7830
 msgid "Fuel levels"
-msgstr "Niveaux de carburant"
+msgstr "Niveaux de combustible"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:7822
 msgid "oil"
@@ -2066,7 +2062,7 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:7857
 msgid "FuelCal"
-msgstr "CapCaloCarburant"
+msgstr "CapCaloCombustible"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:7862
 msgid "Adj:"
@@ -3063,11 +3059,11 @@ msgstr "Les vitesses ne peuvent être passées que si l'accélérateur est à z�
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:9785
 msgid "AI Fireman has started adding fuel to fire"
-msgstr "Le chauffeur IA a commencé à ajouter du carburant dans le feu"
+msgstr "Le chauffeur IA a commencé à ajouter du combustible dans le feu"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:9792
 msgid "AI Fireman has stopped adding fuel to fire"
-msgstr "Le chauffeur IA a cessé d'ajouter du carburant dans le feu"
+msgstr "Le chauffeur IA a cessé d'ajouter du combustible dans le feu"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:9799
 msgid "AI Fireman has been reset"
