@@ -3435,16 +3435,7 @@ namespace Orts.Viewer3D.RollingStock
                             break;
                     }
 
-                    if (style is CircularSpeedGaugeRenderer || style is DriverMachineInterfaceRenderer)
-                    {
-                        // Attach the control renderer to the material
-                        var material = Viewer.MaterialManager.Load("Screen", Helpers.GetTextureFile(Viewer.Simulator, Helpers.TextureFlags.None,
-                            TrainCarShape.SharedShape.ReferencePath, matrixName)) as ScreenMaterial;
-                        material?.Set2DRenderer(locoViewer.ThreeDimentionCabRenderer.ControlMap[key]);
-
-                        ScreenDisplays3D.Add(key, new ThreeDimCabScreen(viewer, iMatrix, TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
-                    }
-                    else if (style != null && style is CabViewDigitalRenderer)//digits?
+                    if (style != null && style is CabViewDigitalRenderer)//digits?
                     {
                         //DigitParts.Add(key, new DigitalDisplay(viewer, TrainCarShape, iMatrix, parameter, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
                         DigitParts3D.Add(key, new ThreeDimCabDigit(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key], Locomotive));
@@ -3486,7 +3477,49 @@ namespace Orts.Viewer3D.RollingStock
                     }
                 }
             }
+
+            var screens = TrainCarShape?.SharedShape?.LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?
+                .SubObjects?.SelectMany(s => s.ShapePrimitives).Select(p => p.Material).Where(m => m is ScreenMaterial);
+            foreach (var screen in screens)
+            {
+                var material = screen as ScreenMaterial;
+                if (!int.TryParse(material.Key.Split(':').LastOrDefault(), out var id))
+                    id = 0;
+                var des = material.Key.AsSpan();
+                var parameters = new Dictionary<string, string> { { "type", des.Slice(0, des.IndexOf(',')).ToString() } };
+                des = des.Slice(des.IndexOf(',') + 1);
+                while (des.IndexOf(',') is var c && c != -1)
+                {
+                    if (des.IndexOf('=') is var e && e != -1)
+                    {
+                        var key = des.Slice(0, e).ToString();
+                        if (!parameters.ContainsKey(key))
+                            parameters.Add(key, des.Slice(e + 1, c - e - 1).ToString());
         }
+                    des = des.Slice(c + 1);
+                }
+
+                var control = new CVCScreen()
+                {
+                    CustomParameters = { { "texture3d", "1" } },
+                    Units = parameters.TryGetValue("units", out var units) && units == "mph" ? CABViewControlUnits.MILES_PER_HOUR : CABViewControlUnits.KM_PER_HOUR,
+                };
+                foreach (var p in parameters.Keys)
+                    if (!control.CustomParameters.ContainsKey(p))
+                        control.CustomParameters.Add(p, parameters[p]);
+
+                if (parameters.TryGetValue("type", out var type) && type == "screens/etcs_dmi")
+                {
+                    // Usage: in s file e.g.: image ( screens/etcs_dmi,maxspeed=280,maxvisiblespeed=280,units=kmph,displayunits=0 )
+
+                    var renderer = new DriverMachineInterfaceRenderer(Viewer, Locomotive, control, Viewer.MaterialManager.CabShader);
+                    material.Set2DRenderer(renderer);
+                    var sd3d = new ThreeDimCabScreen(Viewer, material.HierarchyIndex, TrainCarShape, renderer);
+                    ScreenDisplays3D.Add((new CabViewControlType(CABViewControlTypes.ORTS_ETCS), id), sd3d);
+                }
+            }
+        }
+
         public override void InitializeUserInputCommands() { }
 
         /// <summary>
@@ -3615,6 +3648,24 @@ namespace Orts.Viewer3D.RollingStock
                     foreach (var screen in dpdisplay.Screens)
                     {
                         if (LocoViewer.ThreeDimentionCabRenderer.ActiveScreen[dpdisplay.Display] == screen)
+                        {
+                            p.Value.PrepareFrame(frame, elapsedTime);
+                            break;
+                        }
+                    }
+                    continue;
+                }
+                p.Value.PrepareFrame(frame, elapsedTime);
+            }
+
+            foreach (var p in ScreenDisplays3D)
+            {
+                var screen = p.Value.CVFR.Control;
+                if (screen.Screens != null && screen.Screens[0] != "all")
+                {
+                    foreach (var scr in screen.Screens)
+                    {
+                        if (LocoViewer.ThreeDimentionCabRenderer.ActiveScreen[screen.Display] == scr)
                         {
                             p.Value.PrepareFrame(frame, elapsedTime);
                             break;
