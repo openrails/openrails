@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Common\n"
 "POT-Creation-Date: 2024-11-09 17:45:31+0100\n"
-"PO-Revision-Date: 2025-02-17 11:48+0100\n"
+"PO-Revision-Date: 2025-02-20 11:18+0100\n"
 "Last-Translator: GNIEWEK Cédric <gniewek.cedric@free.fr>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: fr\n"
@@ -952,15 +952,15 @@ msgstr "Contrôle Réduction du chauffage du train"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:217
 msgid "Control Steam Booster Air Valve"
-msgstr "Contrôle Soupape d'air de l'injecteur à vapeur"
+msgstr "Contrôle Vanne d'air du booster à vapeur"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:218
 msgid "Control Steam Booster Idle Valve"
-msgstr "Contrôle Soupape au ralenti de l'injecteur à vapeur"
+msgstr "Contrôle Vanne de ralenti du booster à vapeur"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:219
 msgid "Control Steam Booster Latch"
-msgstr "Contrôle Verrou de l'injecteur à vapeur"
+msgstr "Contrôle Loquet du booster à vapeur"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:220
 msgid "Control Damper Increase"
