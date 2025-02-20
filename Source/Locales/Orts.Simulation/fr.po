@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2024-11-09 17:45:32+0100\n"
-"PO-Revision-Date: 2025-02-19 13:00+0100\n"
+"PO-Revision-Date: 2025-02-20 11:23+0100\n"
 "Last-Translator: GNIEWEK Cédric <gniewek.cedric@free.fr>\n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -779,11 +779,11 @@ msgstr "Robinet de cylindre"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:222
 msgid "Steam Booster Air Valve"
-msgstr "Soupape d'air du surpresseur de vapeur"
+msgstr "Vanne d'air du booster à vapeur"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:223
 msgid "Steam Booster Idle Valve"
-msgstr "Vanne de ralenti du surpresseur de vapeur"
+msgstr "Vanne de ralenti du booster à vapeur"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:223
 msgid "idle"
@@ -795,7 +795,7 @@ msgstr "marche"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:224
 msgid "Steam Booster Latch"
-msgstr "Loquet du surpresseur de vapeur"
+msgstr "Loquet du booster à vapeur"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:224
 msgid "opened"

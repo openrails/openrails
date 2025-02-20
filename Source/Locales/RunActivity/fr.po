@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2024-11-09 17:45:36+0100\n"
-"PO-Revision-Date: 2025-02-16 22:09+0100\n"
+"PO-Revision-Date: 2025-02-20 11:20+0100\n"
 "Last-Translator: GNIEWEK Cédric <gniewek.cedric@free.fr>\n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -2655,7 +2655,7 @@ msgstr "EAUCHD"
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:90
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:841
 msgid "Booster air valve"
-msgstr "Soupape d'air du booster"
+msgstr "Vanne d'air du booster à vapeur"
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:126
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:90
@@ -2667,7 +2667,7 @@ msgstr "SAIR"
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:91
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:867
 msgid "Booster idle valve"
-msgstr "Soupape de ralenti du booster"
+msgstr "Vanne de ralenti du booster à vapeur"
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:127
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:91
@@ -2679,7 +2679,7 @@ msgstr "SRAL"
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:92
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:890
 msgid "Booster latch"
-msgstr "Verrou du booster"
+msgstr "Loquet du booster à vapeur"
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:128
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:92
@@ -2691,7 +2691,7 @@ msgstr "VBST"
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:93
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:375
 msgid "Booster"
-msgstr "Booster"
+msgstr "Booster à vapeur"
 
 #: ../../RunActivity/Viewer3D/Popups/TrainDrivingWindow.cs:129
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:93
