@@ -3389,44 +3389,20 @@ namespace Orts.Viewer3D.RollingStock
                 }
             }
 
-            var screens = TrainCarShape?.SharedShape?.LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?
-                .SubObjects?.SelectMany(s => s.ShapePrimitives).Select(p => p.Material).Where(m => m is ScreenMaterial);
-            foreach (var screen in screens)
+            // Find the animated textures, like screens
+            if (locoViewer.ThreeDimentionCabRenderer.ControlMap.Values.FirstOrDefault(c => c is DriverMachineInterfaceRenderer) is DriverMachineInterfaceRenderer cvcr
+                && cvcr.Control?.ACEFile is var textureName && textureName != null)
             {
-                var material = screen as ScreenMaterial;
-                if (!int.TryParse(material.Key.Split(':').LastOrDefault(), out var id))
-                    id = 0;
-                var des = material.Key.AsSpan();
-                var parameters = new Dictionary<string, string> { { "type", des.Slice(0, des.IndexOf(',')).ToString() } };
-                des = des.Slice(des.IndexOf(',') + 1);
-                while (des.IndexOf(',') is var c && c != -1)
+                textureName = Path.GetFileName(textureName).ToLower();
+                if (TrainCarShape?.SharedShape?.LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?
+                .SubObjects?.SelectMany(s => s.ShapePrimitives).Where(p => p.Material.Key.Contains(textureName)).FirstOrDefault() is var primitive && primitive != null)
                 {
-                    if (des.IndexOf('=') is var e && e != -1)
-                    {
-                        var key = des.Slice(0, e).ToString();
-                        if (!parameters.ContainsKey(key))
-                            parameters.Add(key, des.Slice(e + 1, c - e - 1).ToString());
-                    }
-                    des = des.Slice(c + 1);
-                }
-
-                var control = new CVCScreen()
-                {
-                    CustomParameters = { { "texture3d", "1" } },
-                    Units = parameters.TryGetValue("units", out var units) && units == "mph" ? CABViewControlUnits.MILES_PER_HOUR : CABViewControlUnits.KM_PER_HOUR,
-                };
-                foreach (var p in parameters.Keys)
-                    if (!control.CustomParameters.ContainsKey(p))
-                        control.CustomParameters.Add(p, parameters[p]);
-
-                if (parameters.TryGetValue("type", out var type) && type == "screens/etcs_dmi")
-                {
-                    // Usage: in s file e.g.: image ( screens/etcs_dmi,maxspeed=280,maxvisiblespeed=280,units=kmph,displayunits=0 )
-
-                    var renderer = new DriverMachineInterfaceRenderer(Viewer, Locomotive, control, Viewer.MaterialManager.CabShader);
-                    material.Set2DRenderer(renderer);
-                    var sd3d = new ThreeDimCabScreen(Viewer, material.HierarchyIndex, TrainCarShape, renderer);
-                    ScreenDisplays3D.Add((new CabViewControlType(CABViewControlTypes.ORTS_ETCS), id), sd3d);
+                    cvcr.SetTexture3D();
+                    var material = Viewer.MaterialManager.Load("Screen", TrainCarShape.SharedShape.ReferencePath + cvcr.Control.ACEFile, primitive.HierarchyIndex) as ScreenMaterial;
+                    material.Set2DRenderer(cvcr);
+                    primitive.SetMaterial(material);
+                    ScreenDisplays3D.Add((new CabViewControlType(CABViewControlTypes.ORTS_ETCS), 0),
+                        new ThreeDimCabScreen(Viewer, material.HierarchyIndex, TrainCarShape, cvcr));
                 }
             }
         }

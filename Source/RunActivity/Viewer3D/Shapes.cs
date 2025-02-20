@@ -1790,6 +1790,11 @@ namespace Orts.Viewer3D
             }
         }
 
+        public void SetMaterial(Material material)
+        {
+            Material = material;
+        }
+
         [CallOnThread("Loader")]
         public virtual void Mark()
         {
@@ -1831,11 +1836,6 @@ namespace Orts.Viewer3D
         public void SetIndexData(short[] data)
         {
             IndexBuffer.SetData(data);
-        }
-
-        public void SetMaterial(Material material)
-        {
-            Material = material;
         }
     }
 
@@ -2283,12 +2283,7 @@ namespace Orts.Viewer3D
                         if (String.IsNullOrEmpty(sharedShape.ReferencePath))
                             material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetRouteTextureFile(sharedShape.Viewer.Simulator, textureFlags, imageName), (int)options, texture.MipMapLODBias);
                         else
-                        {
-                            if (imageName.ToLower().StartsWith("screens/"))
-                                material = sharedShape.Viewer.MaterialManager.Load("Screen", imageName + "," + Guid.NewGuid(), vertexState.imatrix);
-                            else
-                                material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName), (int)options, texture.MipMapLODBias);
-                        }
+                            material = sharedShape.Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(sharedShape.Viewer.Simulator, textureFlags, sharedShape.ReferencePath, imageName), (int)options, texture.MipMapLODBias);
                     }
                     else
                     {
