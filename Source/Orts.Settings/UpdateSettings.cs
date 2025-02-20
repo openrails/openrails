@@ -26,7 +26,7 @@ namespace ORTS.Settings
 {
     public class UpdateSettings : SettingsBase
     {
-        public static new readonly string SettingsFilePath = Path.Combine(ApplicationInfo.ProcessDirectory, "Updater.ini");
+        public static readonly string SettingsFilePath = Path.Combine(ApplicationInfo.ProcessDirectory, "Updater.ini");
 
         #region User Settings
 

@@ -24,14 +24,12 @@ namespace ORTS.Settings
 {
     public class ContentSettings : SettingsBase
     {
-        public static readonly string SectionName = "ContentRoutes";
-
         #region User Settings
         public ContentRouteSettings ContentRouteSettings;
         #endregion
 
         public ContentSettings(IEnumerable<string> options)
-        : base(SettingsStore.GetSettingStore(SettingsBase.SettingsFilePath, SettingsBase.RegistryKey, SectionName))
+        : base(SettingsStore.GetSettingStore(UserSettings.SettingsFilePath, UserSettings.RegistryKey, "ContentRoutes"))
         {
             ContentRouteSettings = new ContentRouteSettings();
             Load(options);

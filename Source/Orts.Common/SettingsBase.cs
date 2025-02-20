@@ -16,7 +16,6 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -28,52 +27,6 @@ namespace ORTS.Common
     /// </summary>
 	public abstract class SettingsBase
 	{
-        public const string DefaultRegistryKey = "SOFTWARE\\OpenRails\\ORTS";
-        public const string DefaultSettingsFileName = "OpenRails.ini";
-
-        public static string RegistryKey { get; private set; }        // ie @"SOFTWARE\OpenRails\ORTS"
-        public static string SettingsFilePath { get; private set; }   // ie @"C:\Program Files\Open Rails\OpenRails.ini"
-
-        static SettingsBase()
-        {
-            // Only one of these is allowed; if the INI file exists, we use that, otherwise we use the registry.
-            RegistryKey = DefaultRegistryKey;
-            SettingsFilePath = Path.Combine(ApplicationInfo.ProcessDirectory, DefaultSettingsFileName);
-            if (File.Exists(SettingsFilePath))
-                RegistryKey = null;
-            else
-                SettingsFilePath = null;
-        }
-
-        /// <summary>
-        /// Override the location for the settings. This only changes the static names.
-        /// Only one must be specified (see SettingsBase static constructor).
-        /// If settings objects already exist, they need to be changed using ChangeSettingsStore().
-        /// </summary>
-        /// <param name="filePath">The new ini file path, relative to the OpenRails base directory, or NULL.</param>
-        /// <param name="registryKey">The new registry key, relative to the HKEY_CURRENT_USER, or NULL.</param>
-        public static void OverrideSettingsLocations(string filePath, string registryKey)
-        {
-            if (!String.IsNullOrEmpty(filePath) && !String.IsNullOrEmpty(registryKey))
-            {
-                throw new ArgumentException("Only one of filePath and registryKey may be provided.");
-            }
-            else if (!String.IsNullOrEmpty(filePath))
-            {
-                SettingsFilePath = Path.Combine(ApplicationInfo.ProcessDirectory, filePath);
-                RegistryKey = null;
-            }
-            else if (!String.IsNullOrEmpty(registryKey))
-            {
-                RegistryKey = registryKey;
-                SettingsFilePath = null;
-            }
-            else
-            {
-                throw new ArgumentException("One of filePath and registryKey must be provided.");
-            }
-        }
-
         /// <summary>
         /// Enumeration of the various sources for settings
         /// </summary>
@@ -89,7 +42,6 @@ namespace ORTS.Common
 
         /// <summary>The store of the settings</summary>
         protected SettingsStore SettingStore { get; private set; }
-
         /// <summary>Translates name of a setting to its source</summary>
         protected readonly Dictionary<string, Source> Sources = new Dictionary<string, Source>();
 
@@ -147,33 +99,6 @@ namespace ORTS.Common
         /// Reset all values to their default
         /// </summary>
         public abstract void Reset();
-
-        public String GetSettingsStoreName()
-        {
-            string name = "none";
-            if (SettingStore != null) { name = SettingStore.GetStoreName(); }
-            return name;
-        }
-
-        /// <summary>
-        /// Change the settings store. Creates a new SettingsStore based on the provided parameters.
-        /// Only one of filePath and registry key should be specified. If both are provided, filePath
-        /// prevails. Does not change the static locations (as that would affect other objects).
-        /// See also SettingsStore.GetSettingStore() and OverrideSettingsLocations().
-        /// </summary>
-        /// <param name="filePath">The path to the INI file, or NULL if using the registry.</param>
-        /// <param name="registryKey">The registry key (name), or NULL if using an INI file. </param>
-        /// <param name="section">Optional, the name of the section / subkey.</param>
-        public virtual void ChangeSettingsStore(string filePath, string registryKey, string section)
-        {
-            if (SettingStore != null)
-            {
-                SettingStore.Discard();
-                SettingStore = null;
-            }
-            var fullPath = String.IsNullOrEmpty(filePath) ? null : Path.Combine(ApplicationInfo.ProcessDirectory, filePath);
-            SettingStore = SettingsStore.GetSettingStore(fullPath, registryKey, section);
-        }
 
         /// <summary>
         /// Load settings from the options

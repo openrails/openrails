@@ -169,7 +169,7 @@ namespace Menu
             this.buttonResume.Enabled = false;
             this.buttonResume.Location = new System.Drawing.Point(7, 79);
             this.buttonResume.Name = "buttonResume";
-            this.buttonResume.Size = new System.Drawing.Size(75, 41);
+            this.buttonResume.Size = new System.Drawing.Size(75, 35);
             this.buttonResume.TabIndex = 1;
             this.buttonResume.Text = "Resume/ Replay...";
             this.buttonResume.Click += new System.EventHandler(this.buttonResume_Click);
@@ -278,7 +278,7 @@ namespace Menu
             // 
             this.radioButtonMPServer.Location = new System.Drawing.Point(9, 91);
             this.radioButtonMPServer.Name = "radioButtonMPServer";
-            this.radioButtonMPServer.Size = new System.Drawing.Size(75, 20);
+            this.radioButtonMPServer.Size = new System.Drawing.Size(58, 20);
             this.radioButtonMPServer.TabIndex = 9;
             this.radioButtonMPServer.Text = "Server";
             this.radioButtonMPServer.UseVisualStyleBackColor = true;

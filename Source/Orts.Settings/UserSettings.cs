@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2024 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -19,36 +19,30 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using ORTS.Common;
 
 namespace ORTS.Settings
 {
-    [AttributeUsage(AttributeTargets.Property)]
-    public sealed class DefaultAttribute : Attribute
+    public class UserSettings : PropertySettingsBase
     {
-        public readonly object Value;
-        public DefaultAttribute(object value)
-        {
-            Value = value;
-        }
-    }
-
-    [AttributeUsage(AttributeTargets.Property)]
-    public sealed class DoNotSaveAttribute : Attribute
-    {
-    }
-
-    public class UserSettings : SettingsBase
-    {
+        public static readonly string RegistryKey;        // ie @"SOFTWARE\OpenRails\ORTS"
+        public static readonly string SettingsFilePath;   // ie @"C:\Program Files\Open Rails\OpenRails.ini"
         public static readonly string UserDataFolder;     // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
         public static readonly string DeletedSaveFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails\Deleted Saves"
         public static readonly string SavePackFolder;     // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails\Save Packs"
 
         static UserSettings()
         {
+            // Only one of these is allowed; if the INI file exists, we use that, otherwise we use the registry.
+            RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
+            SettingsFilePath = Path.Combine(ApplicationInfo.ProcessDirectory, "OpenRails.ini");
+            if (File.Exists(SettingsFilePath))
+                RegistryKey = null;
+            else
+                SettingsFilePath = null;
+
             UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationInfo.ProductName);
             // TODO: If using INI file, move these to application directory as well.
             if (!Directory.Exists(UserDataFolder)) Directory.CreateDirectory(UserDataFolder);
@@ -478,10 +472,11 @@ namespace ORTS.Settings
         public FolderSettings Folders { get; private set; }
         public InputSettings Input { get; private set; }
         public RailDriverSettings RailDriver { get; private set; }
-        public ContentSettings Content { get; private set; }   
+        public ContentSettings Content { get; private set; }
+        public TelemetrySettings Telemetry { get; private set; }
 
         public UserSettings(IEnumerable<string> options)
-            : base(SettingsStore.GetSettingStore(SettingsBase.SettingsFilePath, SettingsBase.RegistryKey, null))
+            : base(SettingsStore.GetSettingStore(SettingsFilePath, RegistryKey, null))
         {
             CustomDefaultValues["LoggingPath"] = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
             CustomDefaultValues["ScreenshotPath"] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), ApplicationInfo.ProductName);
@@ -491,31 +486,15 @@ namespace ORTS.Settings
             Input = new InputSettings(options);
             RailDriver = new RailDriverSettings(options);
             Content = new ContentSettings(options);
-        }
-
-        /// <summary>
-        /// Get a saving property from this instance by name.
-        /// </summary>
-        public SavingProperty<T> GetSavingProperty<T>(string name)
-        {
-            var property = GetProperty(name);
-            if (property == null)
-                return null;
-            else
-                return new SavingProperty<T>(this, property, AllowUserSettings);
+            Telemetry = new TelemetrySettings();
         }
 
         public override object GetDefaultValue(string name)
         {
-            var property = GetType().GetProperty(name);
+            if (CustomDefaultValues.ContainsKey(name))
+                return CustomDefaultValues[name];
 
-            if (CustomDefaultValues.ContainsKey(property.Name))
-                return CustomDefaultValues[property.Name];
-
-            if (property.GetCustomAttributes(typeof(DefaultAttribute), false).Length > 0)
-                return (property.GetCustomAttributes(typeof(DefaultAttribute), false)[0] as DefaultAttribute).Value;
-
-            throw new InvalidDataException(String.Format("UserSetting {0} has no default value.", property.Name));
+            return base.GetDefaultValue(name);
         }
 
         public string GetCacheFilePath(string type, string key)
@@ -532,138 +511,14 @@ namespace ORTS.Settings
             return Path.Combine(directory, hash + ".cache-or");
         }
 
-        public PropertyInfo GetProperty(string name)
-        {
-            return GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy);
-        }
-
-        PropertyInfo[] GetProperties()
-        {
-            return GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy).
-                // leave out the properties based on own, non System classes (f.i. RailDriver property)
-                Where(pi => pi.PropertyType.FullName.Split('.')[0] == "System").
-                    ToArray();
-        }
-
-        protected override object GetValue(string name)
-        {
-            return GetProperty(name).GetValue(this, null);
-        }
-
-        protected override void SetValue(string name, object value)
-        {
-            GetProperty(name).SetValue(this, value, null);
-        }
-
-        protected override void Load(Dictionary<string, string> optionsDictionary)
-        {
-            foreach (var property in GetProperties())
-                Load(optionsDictionary, property.Name, property.PropertyType);
-        }
-
         public override void Save()
         {
-            foreach (var property in GetProperties())
-                if (property.GetCustomAttributes(typeof(DoNotSaveAttribute), false).Length == 0)
-                {
-                    Console.WriteLine(property.Name, property.PropertyType);
-                    Save(property.Name, property.PropertyType);
-                }
-
+            base.Save();
             Folders.Save();
             Input.Save();
             RailDriver.Save();
             Content.Save();
-        }
-
-        public override void Save(string name)
-        {
-            var property = GetProperty(name);
-            if (property.GetCustomAttributes(typeof(DoNotSaveAttribute), false).Length == 0)
-                Save(property.Name, property.PropertyType);
-        }
-
-        public override void Reset()
-        {
-            foreach (var property in GetProperties())
-                Reset(property.Name);
-        }
-
-        /// <summary>
-        /// Change the settings store for the user settings and its sub-settings.
-        /// Creates a new SettingsStore based on the provided parameters.
-        /// </summary>
-        /// <param name="filePath">The path to the INI file, or NULL if using the registry.</param>
-        /// <param name="registryKey">The registry key (name), or NULL if using an INI file. </param>
-        /// <param name="section">Optional, the name of the section / subkey.</param>
-        public override void ChangeSettingsStore(string filePath, string registryKey, string section)
-        {
-            base.ChangeSettingsStore(filePath, registryKey, section);  // section is defined in SettingsStoreLocalIni
-            Folders.ChangeSettingsStore(filePath, registryKey, FolderSettings.SectionName);
-            Input.ChangeSettingsStore(filePath, registryKey, InputSettings.SectionName);
-            RailDriver.ChangeSettingsStore(filePath, registryKey, RailDriverSettings.SectionName);
-            Content.ChangeSettingsStore(filePath, registryKey, ContentSettings.SectionName);
-        }
-
-        public void Log()
-        {
-            foreach (var property in GetProperties().OrderBy(p => p.Name))
-            {
-                var value = property.GetValue(this, null);
-                var source = Sources[property.Name] == Source.CommandLine ? "(command-line)" : Sources[property.Name] == Source.User ? "(user set)" : "";
-                if (property.PropertyType == typeof(string[]))
-                    Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, String.Join(", ", ((string[])value).Select(v => v.ToString()).ToArray()), source);
-                else if (property.PropertyType == typeof(int[]))
-                    Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, String.Join(", ", ((int[])value).Select(v => v.ToString()).ToArray()), source);
-                else
-                    Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, value, source);
-            }
-        }
-    }
-
-    /// <summary>
-    /// A wrapper for a UserSettings property that saves any new values immediately.
-    /// </summary>
-    /// <typeparam name="T">Cast values to this type.</typeparam>
-    public class SavingProperty<T>
-    {
-        private readonly UserSettings Settings;
-        private readonly PropertyInfo Property;
-        private readonly bool DoSave;
-
-        internal SavingProperty(UserSettings settings, PropertyInfo property, bool allowSave = true)
-        {
-            Settings = settings;
-            Property = property;
-            DoSave = allowSave;
-        }
-
-        /// <summary>
-        /// Get or set the current value of this property.
-        /// </summary>
-        public T Value
-        {
-            get => GetValue();
-            set => SetValue(value);
-        }
-
-        /// <summary>
-        /// Get the current value of this property.
-        /// </summary>
-        public T GetValue()
-            => Property.GetValue(Settings) is T cast ? cast : default;
-
-        /// <summary>
-        /// Set the current value of this property.
-        /// </summary>
-        public void SetValue(T value)
-        {
-            if (!GetValue().Equals(value))
-            {
-                Property.SetValue(Settings, value);
-                if (DoSave)
-                    Settings.Save(Property.Name);
-            }
+            Telemetry.Save();
         }
     }
 }

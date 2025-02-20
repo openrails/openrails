@@ -139,21 +139,6 @@ namespace ORTS.Common
 		public abstract void DeleteUserValue(string name);
 
         /// <summary>
-        /// Discard the settings store.
-        /// Performs actions (if any) to close the settings store so that a new one can be used.
-        /// </summary>
-        public virtual void Discard()
-        {
-            // default action is to do nothing. Concrete classes may override.
-        }
-
-        /// <summary>
-        /// Get the name of the settings store.
-        /// </summary>
-        public abstract String GetStoreName();
-
-
-        /// <summary>
         /// Factory method to create a setting store (sub-class of SettingsStore)
         /// </summary>
         /// <param name="filePath">File patht o a .init file, if you want to use a .ini file</param>
@@ -323,29 +308,6 @@ namespace ORTS.Common
 		{
 			Key.DeleteValue(name, false);
 		}
-
-        /// <summary>
-        /// Discard the settings store.
-        /// Close the registry key.
-        /// </summary>
-        public override void Discard()
-        {
-            if (Key != null)
-            {
-                Key.Close();
-                // cannot set to null, as Key (and string version) are readonly
-            }
-        }
-
-        /// <summary>
-        /// Get the name of the settings store, in this case the registry key.
-        /// </summary>
-        public override String GetStoreName()
-        {
-            string name = "None (registry)";
-            if (Key != null) { name = Key.Name; }
-            return name;
-        }
 	}
 
 	/// <summary>
@@ -568,17 +530,7 @@ namespace ORTS.Common
 		{
 			NativeMethods.WritePrivateProfileString(Section, name, null, FilePath);
 		}
-
-        /// <summary>
-        /// Get the name of the settings store, in this case the INI file path.
-        /// </summary>
-        public override String GetStoreName()
-        {
-            string name = "None (file)";
-            if (!String.IsNullOrEmpty(FilePath)) { name = FilePath; }
-            return name;
-        }
-    }
+	}
 
     // TODO: This class and its methods should be internal visibility.
     /// <summary>

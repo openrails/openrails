@@ -62,8 +62,6 @@ namespace ORTS.Settings
     /// </remarks>
     public class InputSettings : SettingsBase
     {
-        public static readonly string SectionName = "Keys";
-
         static GettextResourceManager commonCatalog = new GettextResourceManager("ORTS.Common");
         static GettextResourceManager settingsCatalog = new GettextResourceManager("ORTS.Settings");
 
@@ -81,7 +79,7 @@ namespace ORTS.Settings
         /// </summary>
         /// <param name="options">The list of one-time options to override persisted settings, if any.</param>
         public InputSettings(IEnumerable<string> options)
-        : base(SettingsStore.GetSettingStore(SettingsBase.SettingsFilePath, SettingsBase.RegistryKey, SectionName))
+        : base(SettingsStore.GetSettingStore(UserSettings.SettingsFilePath, UserSettings.RegistryKey, "Keys"))
         {
             InitializeCommands(Commands);
             Load(options);
