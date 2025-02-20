@@ -95,7 +95,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public bool IsSoftLayout;
         public DMIWindow ActiveWindow;
         DMIButton ActiveButton;
-        public readonly bool IsTexture3D;
 
         public static readonly Dictionary<DMIMode, (int Width, int Height)> ScreenSizes = new Dictionary<DMIMode, (int, int)>
         {
@@ -108,24 +107,13 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public DriverMachineInterface(MSTSLocomotive locomotive, Viewer viewer, CabViewControl control)
             {
             if (!(control is CVCScreen cvcScreen))
-            {
                 CurrentDMIMode = DMIMode.GaugeOnly;
-            }
-            else
-            {
-                if (!(cvcScreen.CustomParameters.TryGetValue("mode", out var mode) && Enum.TryParse(mode, ignoreCase: true, out CurrentDMIMode))) 
-                    CurrentDMIMode = DMIMode.FullSize;
-                IsTexture3D = cvcScreen.CustomParameters.TryGetValue("texture3d", out var texture3d) && texture3d == "1";
-            }
+            else if (!(cvcScreen.CustomParameters.TryGetValue("mode", out var mode) && Enum.TryParse(mode, ignoreCase: true, out CurrentDMIMode))) 
+                CurrentDMIMode = DMIMode.FullSize;
 
             Width = ScreenSizes[CurrentDMIMode].Width;
             Height = ScreenSizes[CurrentDMIMode].Height;
 
-            if (IsTexture3D)
-            {
-                control.Width = Width;
-                control.Height = Height;
-            }
             SizeTo((float)control.Width, (float)control.Height);
 
             Viewer = viewer;
@@ -175,7 +163,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         }
         public void SizeTo(float width, float height)
         {
-            Scale = Math.Min(width / Width, height / Height);
+            Scale = width != 0 && height != 0 ? Math.Min(width / Width, height / Height) : 1;
 
             if (Math.Abs(1f - PrevScale / Scale) > 0.1f)
             {
@@ -788,6 +776,8 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         DriverMachineInterface DMI;
         bool Zoomed = false;
         protected Rectangle DrawPosition;
+        bool IsTexture3D;
+
         [CallOnThread("Loader")]
         public DriverMachineInterfaceRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCScreen control, CabShader shader)
             : base(viewer, locomotive, control, shader)
@@ -808,7 +798,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             if (!IsPowered && Control.HideIfDisabled)
                 return;
 
-            if (!DMI.IsTexture3D)
+            if (!IsTexture3D)
             {
             base.PrepareFrame(frame, elapsedTime);
             var xScale = (float)Viewer.CabWidthPixels / 640;
@@ -867,6 +857,15 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             return "";
         }
         public string ControlLabel => GetControlName();
+
+        public void SetTexture3D()
+        {
+            IsTexture3D = true;
+            Control.Width = DMI.Width;
+            Control.Height = DMI.Height;
+            DMI.SizeTo(DMI.Width, DMI.Height);
+        }
+
         public override void Draw(GraphicsDevice graphicsDevice)
         {
             DMI.Draw(ControlView.SpriteBatch, new Point(DrawPosition.X, DrawPosition.Y));
