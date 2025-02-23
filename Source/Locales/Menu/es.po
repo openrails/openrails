@@ -317,7 +317,7 @@ msgstr ""
 #, csharp-format
 msgid "Error during GitHub pull, updates might not be installed, error: {0}"
 msgstr ""
-"Error durante la conexión con GitHub, es posible que no se instalen las "
+"Error durante la conexión con GitHub (pull), es posible que no se instalen las "
 "actualizaciones, error: {0}"
 
 #: ../../Menu/ContentForm.Designer.cs:145
@@ -516,7 +516,7 @@ msgstr "Martes"
 
 #: ../../Menu/MainForm.cs:179
 msgid "Wednesday"
-msgstr "Miercoles"
+msgstr "Miércoles"
 
 #: ../../Menu/MainForm.cs:180
 msgid "Thursday"
@@ -564,7 +564,7 @@ msgstr "Actividad: {0}"
 #: ../../Menu/MainForm.cs:1142 ../../Menu/MainForm.cs:1168
 #, csharp-format
 msgid "Path: {0}"
-msgstr "Itinerario: {0}"
+msgstr "Trayecto: {0}"
 
 #: ../../Menu/MainForm.cs:1143
 #, csharp-format
@@ -706,11 +706,11 @@ msgstr "Dificultad:"
 
 #: ../../Menu/MainForm.Designer.cs:678 ../../Menu/MainForm.Designer.cs:824
 msgid "Season:"
-msgstr "Temporada:"
+msgstr "Estación:"
 
 #: ../../Menu/MainForm.Designer.cs:712
 msgid "Weather File:"
-msgstr "Tiempo:"
+msgstr "Archivo de meteorología:"
 
 #: ../../Menu/MainForm.Designer.cs:733
 msgid "Train:"
@@ -747,7 +747,7 @@ msgstr "Ubicación jugador"
 
 #: ../../Menu/Options.cs:97
 msgid "Metric"
-msgstr "Metrica"
+msgstr "Métrico"
 
 #: ../../Menu/Options.cs:98
 msgid "Imperial US"
@@ -815,7 +815,7 @@ msgstr "Velocidad tren"
 
 #: ../../Menu/Options.cs:221
 msgid "Max. Speed"
-msgstr "Velocidad maxima"
+msgstr "Velocidad máxima"
 
 #: ../../Menu/Options.cs:222
 msgid "Signal State"
@@ -900,7 +900,7 @@ msgstr "Error"
 
 #: ../../Menu/Options.cs:385
 msgid "Click to change this key"
-msgstr "Haga click para cmabiar esta tecla"
+msgstr "Haga click para cambiar esta tecla"
 
 #: ../../Menu/Options.cs:401
 msgid ""
@@ -1053,7 +1053,7 @@ msgstr "Detalle por defecto (+0%)"
 
 #: ../../Menu/Options.Designer.cs:992
 msgid "Level of detail bias:"
-msgstr ":Nivel detalle bias:"
+msgstr "Sesgo nivel de detalle:"
 
 #: ../../Menu/Options.Designer.cs:1018
 msgid "Signal light glow"
@@ -1093,7 +1093,7 @@ msgstr "Instancia modelo"
 
 #: ../../Menu/Options.Designer.cs:1154
 msgid "Vertical sync"
-msgstr "Sincronismo vertical"
+msgstr "Sincronización vertical"
 
 #: ../../Menu/Options.Designer.cs:1166
 msgid "Viewing distance (km)"
