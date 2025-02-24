@@ -1231,7 +1231,7 @@ namespace Orts.Viewer3D
         {
             ScreenRenderer = cabViewControlRenderer;
             Texture = new RenderTarget2D(Viewer.GraphicsDevice,
-                (int)ScreenRenderer.Control.Width, (int)ScreenRenderer.Control.Height, false, SurfaceFormat.Color, DepthFormat.None);
+                (int)ScreenRenderer.Control.Width, (int)ScreenRenderer.Control.Height, false, SurfaceFormat.Color, DepthFormat.None, 8, RenderTargetUsage.DiscardContents);
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
