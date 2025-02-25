@@ -789,7 +789,7 @@ namespace Orts.Viewer3D
             // We need to do it also here, because passing from manual to auto a ReverseFormation may be needed
             if (Camera is TrackingCamera && Camera.AttachedCar != null && Camera.AttachedCar.Train != null && Camera.AttachedCar.Train.FormationReversed)
             {
-                IsFormationReversed = TrainCarOperationsWindow.Visible || TrainCarOperationsWebpage.Connections > 0;
+                IsFormationReversed = TrainCarOperationsWindow.Visible || TrainCarOperationsWebpage?.Connections > 0;
                 Camera.AttachedCar.Train.FormationReversed = false;
                 (Camera as TrackingCamera).SwapCameras();
             }
@@ -845,7 +845,7 @@ namespace Orts.Viewer3D
             // Check if you need to swap camera
             if (Camera is TrackingCamera && Camera.AttachedCar != null && Camera.AttachedCar.Train != null && Camera.AttachedCar.Train.FormationReversed)
             {
-                IsFormationReversed = TrainCarOperationsWindow.Visible || TrainCarOperationsWebpage.Connections > 0;
+                IsFormationReversed = TrainCarOperationsWindow.Visible || TrainCarOperationsWebpage?.Connections > 0;
                 Camera.AttachedCar.Train.FormationReversed = false;
                 (Camera as TrackingCamera).SwapCameras();
             }
