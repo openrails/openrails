@@ -31,6 +31,8 @@ using Orts.Common;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using ORTS.Scripting.Api;
 using System.IO;
+using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 
 namespace Orts.Viewer3D.WebServices
 {
@@ -202,12 +204,29 @@ namespace Orts.Viewer3D.WebServices
             }
         }
 
+        double LastPrepareRealTime;
         public void handleReceiveAndSend()
         {
-            if (Connections > 0)
+            if ((Viewer.PlayerTrain != null))
             {
-                handleReceive();
-                handleSend();
+                if (Connections > 0)
+                {
+                    if (Viewer.RealTime - LastPrepareRealTime >= 0.25)
+                    {
+                        LastPrepareRealTime = Viewer.RealTime;
+                        try
+                        {
+                            handleReceive();
+                            handleSend();
+                        }
+                        catch (Exception error)
+                        {
+                            // some timing error causes an exception sometimes
+                            // just silently ignore but log the exception
+                            Trace.TraceWarning(error.ToString());
+                        }
+                    }
+                }
             }
         }
 
@@ -259,6 +278,14 @@ namespace Orts.Viewer3D.WebServices
 
         private void fillStatus(OperationsStatus operationStatus)
         {
+            // Apply reveral point when TrainCarOperations/Viewer windows are not visibles
+            // Makes this Webpage version, more autonoumus
+            if (!Viewer.TrainCarOperationsWindow.Visible && !Viewer.TrainCarOperationsViewerWindow.Visible && Viewer.IsFormationReversed)
+            {
+                _ = new FormationReversed(Viewer, Viewer.PlayerTrain);
+                Viewer.IsFormationReversed = false;
+            }
+
             int carPosition = 0;
 
             foreach (TrainCar trainCar in Viewer.PlayerTrain.Cars)
@@ -349,15 +376,13 @@ namespace Orts.Viewer3D.WebServices
         private string getCarId(TrainCar trainCar, int carPosition)
         {
             MSTSLocomotive locomotive = trainCar as MSTSLocomotive;
+            MSTSWagon wagon = trainCar as MSTSWagon;
             var isDiesel = trainCar is MSTSDieselLocomotive;
             var isElectric = trainCar is MSTSElectricLocomotive;
             var isSteam = trainCar is MSTSSteamLocomotive;
             var isEngine = isDiesel || isElectric || isSteam;
-            // Required by OSDCar.cs
-            CurrentCarID = Viewer.PlayerTrain.Cars[TrainCarSelectedPosition].CarID;
-            var wagonType = isEngine ?
-                $"  {Viewer.Catalog.GetString(locomotive.WagonType.ToString())}" + $":{Viewer.Catalog.GetString(locomotive.EngineType.ToString())}" :
-                $"  {Viewer.Catalog.GetString(trainCar.WagonType.ToString())}";
+            var wagonType = isEngine ? $"  {Viewer.Catalog.GetString(locomotive.WagonType.ToString())}" + $": {Viewer.Catalog.GetString(locomotive.EngineType.ToString())}"
+                : $"  {Viewer.Catalog.GetString(wagon.WagonType.ToString())}: {wagon.MainShapeFileName.Replace(".s", "").ToLower()}";
             return ($"{Viewer.Catalog.GetString("Car ID")} {(carPosition >= Viewer.PlayerTrain.Cars.Count ? " " : Viewer.PlayerTrain.Cars[carPosition].CarID + wagonType)}");
         }
 
@@ -400,6 +425,17 @@ namespace Orts.Viewer3D.WebServices
                 if (statusCurrent.AmountOfCars != statusPrevious.AmountOfCars)
                 {
                     all = true;
+                }
+                else
+                {
+                    for (int i = 0; i < statusCurrent.AmountOfCars; i++)
+                    {
+                        if (!statusCurrent.CarId[0].Equals(statusPrevious.CarId[0]) || 
+                            !statusCurrent.CarIdColor[0].Equals(statusPrevious.CarIdColor[0]))
+                        {
+                            all = true;
+                        }
+                    }
                 }
             }
 
@@ -481,6 +517,7 @@ namespace Orts.Viewer3D.WebServices
             if (TrainCarSelected && (carPosition == TrainCarSelectedPosition))
             {
                 filename = "TrainOperationsArrowRight32.png";
+                CurrentCarID = Viewer.PlayerTrain.Cars[carPosition].CarID;// Requiered by OSDCars.cs
             }
             else
             {
@@ -567,16 +604,30 @@ namespace Orts.Viewer3D.WebServices
             bool first = trainCar == Viewer.PlayerTrain.Cars.First();
             var carAngleCockAOpenAmount = Viewer.PlayerTrain.Cars[carPosition].BrakeSystem.AngleCockAOpenAmount;
 
-            StatusCurrent.Status[carPosition].Add(
+            if (trainCar.BrakeSystem is VacuumSinglePipe)
+            {
+                StatusCurrent.Status[carPosition].Add(
+                    new OperationsStatus.Operation
+                    {
+                        Enabled = false,
+                        Filename = "TrainOperationsFrontAngleCockNotAvailable32.png",
+                        Functionname = "",
+                        CarPosition = carPosition
+                    });
+            }
+            else
+            {
+                StatusCurrent.Status[carPosition].Add(
                 new OperationsStatus.Operation
                 {
                     Enabled = true,
-                    Filename = carAngleCockAOpenAmount >= 1 ? "TrainOperationsFrontAngleCockOpened32.png" 
+                    Filename = carAngleCockAOpenAmount >= 1 ? "TrainOperationsFrontAngleCockOpened32.png"
                         : carAngleCockAOpenAmount <= 0 ? "TrainOperationsFrontAngleCockClosed32.png"
                         : "TrainOperationsFrontAngleCockPartial32.png",
                     Functionname = "buttonFrontAngleCockClick",
                     CarPosition = carPosition
                 });
+            }
 
             if (first)
             {
@@ -618,12 +669,21 @@ namespace Orts.Viewer3D.WebServices
             TrainCar trainCar = Viewer.PlayerTrain.Cars[carPosition];
 
             bool first = trainCar == Viewer.PlayerTrain.Cars.First();
+            bool disableCouplers = false;
+            bool isSteam = Viewer.PlayerTrain.Cars[carPosition] is MSTSSteamLocomotive;
+            bool isTender = Viewer.PlayerTrain.Cars[carPosition].WagonType == MSTSWagon.WagonTypes.Tender;
+
+            if (isSteam || isTender)
+            {
+                var carFlipped = Viewer.PlayerTrain.Cars[carPosition].Flipped;
+                disableCouplers = isSteam ? carFlipped : !carFlipped;
+            }
 
             StatusCurrent.Status[carPosition].Add(
                 new OperationsStatus.Operation
                 {
-                    Enabled = !first,
-                    Filename = first ? "TrainOperationsCouplerFront32.png" : "TrainOperationsCoupler32.png",
+                    Enabled = !(first || disableCouplers),
+                    Filename = first ? "TrainOperationsCouplerFront32.png" : disableCouplers ? "TrainOperationsCouplerNotAvailable32.png" : "TrainOperationsCoupler32.png",
                     Functionname = "buttonCouplerFrontClick",
                     CarPosition = carPosition
                 });
@@ -707,12 +767,22 @@ namespace Orts.Viewer3D.WebServices
             TrainCar trainCar = Viewer.PlayerTrain.Cars[carPosition];
 
             bool last = trainCar == Viewer.PlayerTrain.Cars.Last();
+            var DisableCouplers = false;
+            bool isSteamAndHasTender = (Viewer.PlayerTrain.Cars[carPosition] is MSTSSteamLocomotive) &&
+                (carPosition + 1 < Viewer.PlayerTrain.Cars.Count) && (Viewer.PlayerTrain.Cars[carPosition + 1].WagonType == MSTSWagon.WagonTypes.Tender);
+            var isTender = Viewer.PlayerTrain.Cars[carPosition].WagonType == MSTSWagon.WagonTypes.Tender;
+
+            if (isSteamAndHasTender || isTender)
+            {
+                var carFlipped = Viewer.PlayerTrain.Cars[carPosition].Flipped;
+                DisableCouplers = isSteamAndHasTender ? !carFlipped : carFlipped;
+            }
 
             StatusCurrent.Status[carPosition].Add(
                 new OperationsStatus.Operation
                 {
-                    Enabled = !last,
-                    Filename = last ? "TrainOperationsCouplerRear32.png" : "TrainOperationsCoupler32.png",
+                    Enabled = !(last || DisableCouplers),
+                    Filename = last ? "TrainOperationsCouplerRear32.png" : DisableCouplers ? "TrainOperationsCouplerNotAvailable32.png" : "TrainOperationsCoupler32.png",
                     Functionname = "buttonCouplerRearClick",
                     CarPosition = carPosition
                 });
@@ -750,17 +820,30 @@ namespace Orts.Viewer3D.WebServices
             bool last = trainCar == Viewer.PlayerTrain.Cars.Last();
             var carAngleCockBOpenAmount = Viewer.PlayerTrain.Cars[carPosition].BrakeSystem.AngleCockBOpenAmount;
 
-            StatusCurrent.Status[carPosition].Add(
-                new OperationsStatus.Operation
-                {
-                    Enabled = true,
-                    Filename = carAngleCockBOpenAmount >= 1 ? "TrainOperationsRearAngleCockOpened32.png"
-                        : carAngleCockBOpenAmount <= 0 ? "TrainOperationsRearAngleCockClosed32.png"
-                        : "TrainOperationsRearAngleCockPartial32.png",
-                    Functionname = "buttonRearAngleCockClick",
-                    CarPosition = carPosition
-                });
-
+            if (trainCar.BrakeSystem is VacuumSinglePipe)
+            {
+                StatusCurrent.Status[carPosition].Add(
+                    new OperationsStatus.Operation
+                    {
+                        Enabled = false,
+                        Filename = "TrainOperationsRearAngleCockNotAvailable32.png",
+                        Functionname = "",
+                        CarPosition = carPosition
+                    });
+            }
+            else
+            {
+                StatusCurrent.Status[carPosition].Add(
+                    new OperationsStatus.Operation
+                    {
+                        Enabled = true,
+                        Filename = carAngleCockBOpenAmount >= 1 ? "TrainOperationsRearAngleCockOpened32.png"
+                            : carAngleCockBOpenAmount <= 0 ? "TrainOperationsRearAngleCockClosed32.png"
+                            : "TrainOperationsRearAngleCockPartial32.png",
+                        Functionname = "buttonRearAngleCockClick",
+                        CarPosition = carPosition
+                    });
+            }
             if (last)
             {
                 if (trainCar.BrakeSystem.AngleCockBOpen)
