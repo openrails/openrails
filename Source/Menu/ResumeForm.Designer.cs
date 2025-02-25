@@ -30,6 +30,14 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ResumeForm));
             this.gridSaves = new System.Windows.Forms.DataGridView();
+            this.fileDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.realTimeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.pathNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.gameTimeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.distanceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.currentTileDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.validDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.Blank = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.saveBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.buttonResume = new System.Windows.Forms.Button();
             this.buttonDelete = new System.Windows.Forms.Button();
@@ -49,14 +57,6 @@
             this.panelScreenshot = new System.Windows.Forms.Panel();
             this.pictureBoxScreenshot = new System.Windows.Forms.PictureBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.fileDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.realTimeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.pathNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.gameTimeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.distanceDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.currentTileDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.validDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.Blank = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.gridSaves)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.saveBindingSource)).BeginInit();
             this.groupBoxInvalid.SuspendLayout();
@@ -125,6 +125,74 @@
             this.gridSaves.SelectionChanged += new System.EventHandler(this.gridSaves_SelectionChanged);
             this.gridSaves.DoubleClick += new System.EventHandler(this.gridSaves_DoubleClick);
             // 
+            // fileDataGridViewTextBoxColumn
+            // 
+            this.fileDataGridViewTextBoxColumn.DataPropertyName = "File";
+            this.fileDataGridViewTextBoxColumn.HeaderText = "File";
+            this.fileDataGridViewTextBoxColumn.Name = "fileDataGridViewTextBoxColumn";
+            this.fileDataGridViewTextBoxColumn.ReadOnly = true;
+            this.fileDataGridViewTextBoxColumn.Visible = false;
+            this.fileDataGridViewTextBoxColumn.Width = 48;
+            // 
+            // realTimeDataGridViewTextBoxColumn
+            // 
+            this.realTimeDataGridViewTextBoxColumn.DataPropertyName = "RealTime";
+            this.realTimeDataGridViewTextBoxColumn.HeaderText = "Saved At";
+            this.realTimeDataGridViewTextBoxColumn.Name = "realTimeDataGridViewTextBoxColumn";
+            this.realTimeDataGridViewTextBoxColumn.ReadOnly = true;
+            this.realTimeDataGridViewTextBoxColumn.Width = 76;
+            // 
+            // pathNameDataGridViewTextBoxColumn
+            // 
+            this.pathNameDataGridViewTextBoxColumn.DataPropertyName = "PathName";
+            this.pathNameDataGridViewTextBoxColumn.HeaderText = "Path";
+            this.pathNameDataGridViewTextBoxColumn.Name = "pathNameDataGridViewTextBoxColumn";
+            this.pathNameDataGridViewTextBoxColumn.ReadOnly = true;
+            this.pathNameDataGridViewTextBoxColumn.Width = 54;
+            // 
+            // gameTimeDataGridViewTextBoxColumn
+            // 
+            this.gameTimeDataGridViewTextBoxColumn.DataPropertyName = "GameTime";
+            this.gameTimeDataGridViewTextBoxColumn.HeaderText = "Time";
+            this.gameTimeDataGridViewTextBoxColumn.Name = "gameTimeDataGridViewTextBoxColumn";
+            this.gameTimeDataGridViewTextBoxColumn.ReadOnly = true;
+            this.gameTimeDataGridViewTextBoxColumn.Width = 55;
+            // 
+            // distanceDataGridViewTextBoxColumn
+            // 
+            this.distanceDataGridViewTextBoxColumn.DataPropertyName = "Distance";
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopRight;
+            this.distanceDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle2;
+            this.distanceDataGridViewTextBoxColumn.HeaderText = "Distance";
+            this.distanceDataGridViewTextBoxColumn.Name = "distanceDataGridViewTextBoxColumn";
+            this.distanceDataGridViewTextBoxColumn.ReadOnly = true;
+            this.distanceDataGridViewTextBoxColumn.Width = 74;
+            // 
+            // currentTileDataGridViewTextBoxColumn
+            // 
+            this.currentTileDataGridViewTextBoxColumn.DataPropertyName = "CurrentTile";
+            this.currentTileDataGridViewTextBoxColumn.HeaderText = "Tile";
+            this.currentTileDataGridViewTextBoxColumn.Name = "currentTileDataGridViewTextBoxColumn";
+            this.currentTileDataGridViewTextBoxColumn.ReadOnly = true;
+            this.currentTileDataGridViewTextBoxColumn.Width = 49;
+            // 
+            // validDataGridViewCheckBoxColumn
+            // 
+            this.validDataGridViewCheckBoxColumn.DataPropertyName = "Valid";
+            this.validDataGridViewCheckBoxColumn.HeaderText = "Valid";
+            this.validDataGridViewCheckBoxColumn.Name = "validDataGridViewCheckBoxColumn";
+            this.validDataGridViewCheckBoxColumn.ReadOnly = true;
+            this.validDataGridViewCheckBoxColumn.ThreeState = true;
+            this.validDataGridViewCheckBoxColumn.Width = 36;
+            // 
+            // Blank
+            // 
+            this.Blank.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Blank.HeaderText = "";
+            this.Blank.Name = "Blank";
+            this.Blank.ReadOnly = true;
+            this.Blank.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            // 
             // saveBindingSource
             // 
             this.saveBindingSource.DataSource = typeof(Menu.ResumeForm.Save);
@@ -169,6 +237,7 @@
             this.labelInvalidSaves.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelInvalidSaves.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelInvalidSaves.Location = new System.Drawing.Point(6, 16);
             this.labelInvalidSaves.Name = "labelInvalidSaves";
             this.labelInvalidSaves.Size = new System.Drawing.Size(282, 61);
@@ -177,11 +246,12 @@
             // buttonDeleteInvalid
             // 
             this.buttonDeleteInvalid.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonDeleteInvalid.Location = new System.Drawing.Point(6, 80);
+            this.buttonDeleteInvalid.Location = new System.Drawing.Point(1, 86);
             this.buttonDeleteInvalid.Name = "buttonDeleteInvalid";
-            this.buttonDeleteInvalid.Size = new System.Drawing.Size(194, 23);
+            this.buttonDeleteInvalid.Size = new System.Drawing.Size(191, 23);
             this.buttonDeleteInvalid.TabIndex = 1;
             this.buttonDeleteInvalid.Text = "Delete all invalid saves";
+            this.buttonDeleteInvalid.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.buttonDeleteInvalid.UseVisualStyleBackColor = true;
             this.buttonDeleteInvalid.Click += new System.EventHandler(this.buttonDeleteInvalid_Click);
             // 
@@ -231,9 +301,9 @@
             this.tableLayoutPanel.Controls.Add(this.label1, 2, 3);
             this.tableLayoutPanel.Controls.Add(this.numericReplayPauseBeforeEnd, 3, 3);
             this.tableLayoutPanel.Controls.Add(this.buttonDelete, 1, 1);
-            this.tableLayoutPanel.Controls.Add(this.buttonUndelete, 1, 2);
             this.tableLayoutPanel.Controls.Add(this.panelSaves, 0, 0);
             this.tableLayoutPanel.Controls.Add(this.panelScreenshot, 2, 0);
+            this.tableLayoutPanel.Controls.Add(this.buttonUndelete, 1, 2);
             this.tableLayoutPanel.Location = new System.Drawing.Point(9, 9);
             this.tableLayoutPanel.Margin = new System.Windows.Forms.Padding(0);
             this.tableLayoutPanel.Name = "tableLayoutPanel";
@@ -348,74 +418,6 @@
             // openFileDialog1
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
-            // 
-            // fileDataGridViewTextBoxColumn
-            // 
-            this.fileDataGridViewTextBoxColumn.DataPropertyName = "File";
-            this.fileDataGridViewTextBoxColumn.HeaderText = "File";
-            this.fileDataGridViewTextBoxColumn.Name = "fileDataGridViewTextBoxColumn";
-            this.fileDataGridViewTextBoxColumn.ReadOnly = true;
-            this.fileDataGridViewTextBoxColumn.Visible = false;
-            this.fileDataGridViewTextBoxColumn.Width = 48;
-            // 
-            // realTimeDataGridViewTextBoxColumn
-            // 
-            this.realTimeDataGridViewTextBoxColumn.DataPropertyName = "RealTime";
-            this.realTimeDataGridViewTextBoxColumn.HeaderText = "Saved At";
-            this.realTimeDataGridViewTextBoxColumn.Name = "realTimeDataGridViewTextBoxColumn";
-            this.realTimeDataGridViewTextBoxColumn.ReadOnly = true;
-            this.realTimeDataGridViewTextBoxColumn.Width = 76;
-            // 
-            // pathNameDataGridViewTextBoxColumn
-            // 
-            this.pathNameDataGridViewTextBoxColumn.DataPropertyName = "PathName";
-            this.pathNameDataGridViewTextBoxColumn.HeaderText = "Path";
-            this.pathNameDataGridViewTextBoxColumn.Name = "pathNameDataGridViewTextBoxColumn";
-            this.pathNameDataGridViewTextBoxColumn.ReadOnly = true;
-            this.pathNameDataGridViewTextBoxColumn.Width = 54;
-            // 
-            // gameTimeDataGridViewTextBoxColumn
-            // 
-            this.gameTimeDataGridViewTextBoxColumn.DataPropertyName = "GameTime";
-            this.gameTimeDataGridViewTextBoxColumn.HeaderText = "Time";
-            this.gameTimeDataGridViewTextBoxColumn.Name = "gameTimeDataGridViewTextBoxColumn";
-            this.gameTimeDataGridViewTextBoxColumn.ReadOnly = true;
-            this.gameTimeDataGridViewTextBoxColumn.Width = 55;
-            // 
-            // distanceDataGridViewTextBoxColumn
-            // 
-            this.distanceDataGridViewTextBoxColumn.DataPropertyName = "Distance";
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopRight;
-            this.distanceDataGridViewTextBoxColumn.DefaultCellStyle = dataGridViewCellStyle2;
-            this.distanceDataGridViewTextBoxColumn.HeaderText = "Distance";
-            this.distanceDataGridViewTextBoxColumn.Name = "distanceDataGridViewTextBoxColumn";
-            this.distanceDataGridViewTextBoxColumn.ReadOnly = true;
-            this.distanceDataGridViewTextBoxColumn.Width = 74;
-            // 
-            // currentTileDataGridViewTextBoxColumn
-            // 
-            this.currentTileDataGridViewTextBoxColumn.DataPropertyName = "CurrentTile";
-            this.currentTileDataGridViewTextBoxColumn.HeaderText = "Tile";
-            this.currentTileDataGridViewTextBoxColumn.Name = "currentTileDataGridViewTextBoxColumn";
-            this.currentTileDataGridViewTextBoxColumn.ReadOnly = true;
-            this.currentTileDataGridViewTextBoxColumn.Width = 49;
-            // 
-            // validDataGridViewCheckBoxColumn
-            // 
-            this.validDataGridViewCheckBoxColumn.DataPropertyName = "Valid";
-            this.validDataGridViewCheckBoxColumn.HeaderText = "Valid";
-            this.validDataGridViewCheckBoxColumn.Name = "validDataGridViewCheckBoxColumn";
-            this.validDataGridViewCheckBoxColumn.ReadOnly = true;
-            this.validDataGridViewCheckBoxColumn.ThreeState = true;
-            this.validDataGridViewCheckBoxColumn.Width = 36;
-            // 
-            // Blank
-            // 
-            this.Blank.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.Blank.HeaderText = "";
-            this.Blank.Name = "Blank";
-            this.Blank.ReadOnly = true;
-            this.Blank.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             // 
             // ResumeForm
             // 
