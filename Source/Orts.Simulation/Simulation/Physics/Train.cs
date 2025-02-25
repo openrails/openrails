@@ -4512,9 +4512,9 @@ namespace Orts.Simulation.Physics
 
                     // Update car's curve radius and superelevation based on bogie position and move traveller to front bogie
                     // Also determine roll angle for superelevation by averaging both bogies
-                    float roll = traveller.GetVisualElevation();
+                    float roll = traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation);
                     car.UpdateCurvePhys(traveller, new[] { 0, car.CarBogieCentreLengthM });
-                    roll = (roll + traveller.GetVisualElevation()) / 2.0f;
+                    roll = (roll + traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation)) / 2.0f;
 
                     // Normalize across tile boundaries
                     x += 2048 * (tileX - traveller.TileX);
@@ -4633,9 +4633,9 @@ namespace Orts.Simulation.Physics
 
                     // Update car's curve radius and superelevation based on bogie position and move traveller to front bogie
                     // Outputs rotation angle for superelevation, used below
-                    float roll = traveller.GetVisualElevation();
+                    float roll = traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation);
                     car.UpdateCurvePhys(traveller, new[] { 0, car.CarBogieCentreLengthM });
-                    roll = (roll + traveller.GetVisualElevation()) / 2.0f;
+                    roll = (roll + traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation)) / 2.0f;
 
                     // Normalize across tile boundaries
                     x += 2048 * (tileX - traveller.TileX);
@@ -4714,9 +4714,9 @@ namespace Orts.Simulation.Physics
 
                 // Update car's curve radius and superelevation based on bogie position and move traveller to front bogie
                 // Outputs rotation angle for superelevation, used below
-                float roll = traveller.GetVisualElevation();
+                float roll = traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation);
                 car.UpdateCurvePhys(traveller, new[] { 0, car.CarBogieCentreLengthM });
-                roll = (roll + traveller.GetVisualElevation()) / 2.0f;
+                roll = (roll + traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation)) / 2.0f;
 
                 // Normalize across tile boundaries
                 x += 2048 * (tileX - traveller.TileX);
