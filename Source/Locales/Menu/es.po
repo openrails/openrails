@@ -940,7 +940,7 @@ msgstr "Normal"
 
 #: ../../Menu/Options.cs:575
 msgid "Very Hard"
-msgstr "Muy duro"
+msgstr "Muy difícil"
 
 #: ../../Menu/Options.cs:577
 msgid "Good luck!"
@@ -997,7 +997,7 @@ msgstr "Liberación gradual de los frenos de aire "
 
 #: ../../Menu/Options.Designer.cs:354
 msgid "Alerter in cab                                                        "
-msgstr "Alerta en cabina "
+msgstr "\"Hombre Muerto\" en cabina"
 
 #: ../../Menu/Options.Designer.cs:408
 msgid "General"
@@ -1081,7 +1081,7 @@ msgstr "Doble hilo de catenaria"
 
 #: ../../Menu/Options.Designer.cs:1104
 msgid "Ambient daylight brightness:"
-msgstr "Brillo luz ambiente dia:"
+msgstr "Brillo luz ambiente día:"
 
 #: ../../Menu/Options.Designer.cs:1115
 msgid "YYY"
@@ -1173,7 +1173,7 @@ msgstr "Rotura de enganches"
 
 #: ../../Menu/Options.Designer.cs:1487
 msgid "Advanced adhesion model"
-msgstr "Modelo de adherencia avanzada"
+msgstr "Modelo avanzado de adherencia"
 
 #: ../../Menu/Options.Designer.cs:1502
 msgid "Keyboard"
