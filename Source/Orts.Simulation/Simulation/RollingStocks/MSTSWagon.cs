@@ -93,10 +93,15 @@ namespace Orts.Simulation.RollingStocks
         public bool MirrorOpen;
         public bool UnloadingPartsOpen;
         public bool WaitForAnimationReady; // delay counter to start loading/unliading is on;
-        public bool IsRollerBearing = false; // Has roller bearings
-        public bool IsLowTorqueRollerBearing = false; // Has low torque roller bearings
-        public bool IsFrictionBearing = false; //Has oil based friction (or solid bearings)
-        public bool IsGreaseFrictionBearing = false; // Has grease based friction (or solid bearings)
+        public enum BearingTypes
+        {
+            Default,    // MSTS friction
+            Grease,     // Plain bearings with grease lubricant
+            Friction,   // Plain bearings with oil lubricant
+            Roller,     // Traditional roller bearings
+            Low,        // Modern roller bearings
+        }
+        public BearingTypes BearingType = BearingTypes.Default;
         public bool IsStandStill = true;  // Used for MSTS type friction
         public bool IsDavisFriction = true; // Default to new Davis type friction
         public bool IsBelowMergeSpeed = true; // set indicator for low speed operation as per given speed
@@ -567,6 +572,20 @@ namespace Orts.Simulation.RollingStocks
                 CurrentCarSteamHeatBoilerWaterCapacityL = L.FromGUK(800.0f);
             }
 
+            MassKG = InitialMassKG;
+
+            // If Davis A value is not defined, but bearing type is, estimate Davis A based on the bearing and wagon parameters
+            if (BearingType != BearingTypes.Default && DavisAN <= 0)
+            {
+                DavisAN = CalcDavisAValue(BearingType, MassKG, (WagonNumAxles + LocoNumDrvAxles));
+            }
+
+            // If Davis B value is not defined, but bearing type is, estimate Davis B based on the bearing and wagon parameters
+            if (BearingType != BearingTypes.Default && DavisBNSpM <= 0)
+            {
+                DavisBNSpM = CalcDavisBValue(BearingType, MassKG, WagonType);
+            }
+
             // If Drag constant not defined in WAG/ENG file then assign default value based upon orig Davis values
             if (DavisDragConstant == 0)
             {
@@ -599,9 +618,14 @@ namespace Orts.Simulation.RollingStocks
                 WagonFrontalAreaM2 = CarWidthM * CarHeightM;
             }
 
-            // Initialise key wagon parameters
-            MassKG = InitialMassKG;
+            // If Davis C value is not defined, determine it from the drag constant and area
+            if (DavisCNSSpMM <= 0)
+            {
+                // Note: Davis drag constant is intended to be used with area in ft^2
+                DavisCNSSpMM = NpMpS2.FromLbpMpH2(Me2.ToFt2(WagonFrontalAreaM2) * DavisDragConstant);
+            }
 
+            // Initialise key wagon parameters
             MaxHandbrakeForceN = InitialMaxHandbrakeForceN;
 
             FrictionBrakeBlendingMaxForceN = InitialMaxBrakeForceN; // set the value of braking when blended with dynamic brakes
@@ -679,8 +703,10 @@ namespace Orts.Simulation.RollingStocks
                 {
                     LoadEmptyORTSDavis_A = FreightAnimations.EmptyORTSDavis_A;
                 }
-                else
+                else if (BearingType == BearingTypes.Default)
                 {
+                    // Use default if bearing type isn't given
+                    // If bearing type is given, we will calculate the Davis value later
                     LoadEmptyORTSDavis_A = DavisAN;
                 }
 
@@ -688,18 +714,11 @@ namespace Orts.Simulation.RollingStocks
                 {
                     LoadEmptyORTSDavis_B = FreightAnimations.EmptyORTSDavis_B;
                 }
-                else
+                else if (BearingType == BearingTypes.Default)
                 {
+                    // Use default if bearing type isn't given
+                    // If bearing type is given, we will calculate the Davis value later
                     LoadEmptyORTSDavis_B = DavisBNSpM;
-                }
-
-                if (FreightAnimations.EmptyORTSDavis_C > 0)
-                {
-                    LoadEmptyORTSDavis_C = FreightAnimations.EmptyORTSDavis_C;
-                }
-                else
-                {
-                    LoadEmptyORTSDavis_C = DavisCNSSpMM;
                 }
 
                 if (FreightAnimations.EmptyORTSDavisDragConstant > 0)
@@ -718,6 +737,15 @@ namespace Orts.Simulation.RollingStocks
                 else
                 {
                     LoadEmptyWagonFrontalAreaM2 = WagonFrontalAreaM2;
+                }
+
+                if (FreightAnimations.EmptyORTSDavis_C > 0)
+                {
+                    LoadEmptyORTSDavis_C = FreightAnimations.EmptyORTSDavis_C;
+                }
+                else
+                {
+                    LoadEmptyORTSDavis_C = NpMpS2.FromLbpMpH2(Me2.ToFt2(LoadEmptyWagonFrontalAreaM2) * LoadEmptyDavisDragConstant);
                 }
 
                 if (FreightAnimations.EmptyMaxBrakeShoeForceN > 0)
@@ -777,8 +805,10 @@ namespace Orts.Simulation.RollingStocks
                     {
                         LoadFullORTSDavis_A = FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_A;
                     }
-                    else
+                    else if (BearingType == BearingTypes.Default)
                     {
+                        // Use default if bearing type isn't given
+                        // If bearing type is given, we will calculate the Davis value later
                         LoadFullORTSDavis_A = DavisAN;
                     }
 
@@ -786,18 +816,11 @@ namespace Orts.Simulation.RollingStocks
                     {
                         LoadFullORTSDavis_B = FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_B;
                     }
-                    else
+                    else if (BearingType == BearingTypes.Default)
                     {
+                        // Use default if bearing type isn't given
+                        // If bearing type is given, we will calculate the Davis value later
                         LoadFullORTSDavis_B = DavisBNSpM;
-                    }
-
-                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_C > 0)
-                    {
-                        LoadFullORTSDavis_C = FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_C;
-                    }
-                    else
-                    {
-                        LoadFullORTSDavis_C = DavisCNSSpMM;
                     }
 
                     if (FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavisDragConstant > 0)
@@ -816,6 +839,15 @@ namespace Orts.Simulation.RollingStocks
                     else
                     {
                         LoadFullWagonFrontalAreaM2 = WagonFrontalAreaM2;
+                    }
+
+                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_C > 0)
+                    {
+                        LoadFullORTSDavis_C = FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_C;
+                    }
+                    else
+                    {
+                        LoadFullORTSDavis_C = NpMpS2.FromLbpMpH2(Me2.ToFt2(LoadFullWagonFrontalAreaM2) * LoadFullDavisDragConstant);
                     }
 
                     if (FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeShoeForceN > 0)
@@ -885,8 +917,10 @@ namespace Orts.Simulation.RollingStocks
                     {
                         LoadFullORTSDavis_A = FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_A;
                     }
-                    else
+                    else if (BearingType == BearingTypes.Default)
                     {
+                        // Use default if bearing type isn't given
+                        // If bearing type is given, we will calculate the Davis value later
                         LoadFullORTSDavis_A = DavisAN;
                     }
 
@@ -894,18 +928,11 @@ namespace Orts.Simulation.RollingStocks
                     {
                         LoadFullORTSDavis_B = FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_B;
                     }
-                    else
+                    else if (BearingType == BearingTypes.Default)
                     {
+                        // Use default if bearing type isn't given
+                        // If bearing type is given, we will calculate the Davis value later
                         LoadFullORTSDavis_B = DavisBNSpM;
-                    }
-
-                    if (FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_C > 0)
-                    {
-                        LoadFullORTSDavis_C = FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_C;
-                    }
-                    else
-                    {
-                        LoadFullORTSDavis_C = DavisCNSSpMM;
                     }
 
                     if (FreightAnimations.FullPhysicsContinuousOne.FullORTSDavisDragConstant > 0)
@@ -924,6 +951,15 @@ namespace Orts.Simulation.RollingStocks
                     else
                     {
                         LoadFullWagonFrontalAreaM2 = WagonFrontalAreaM2;
+                    }
+
+                    if (FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_C > 0)
+                    {
+                        LoadFullORTSDavis_C = FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_C;
+                    }
+                    else
+                    {
+                        LoadFullORTSDavis_C = NpMpS2.FromLbpMpH2(Me2.ToFt2(LoadFullWagonFrontalAreaM2) * LoadFullDavisDragConstant);
                     }
 
                     if (FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeShoeForceN > 0)
@@ -990,6 +1026,16 @@ namespace Orts.Simulation.RollingStocks
                             }
                     }
                     CalculateTotalMass(totalContainerMassKG);
+
+                    // If Davis values are still missing, calculate them
+                    if (LoadEmptyORTSDavis_A <= 0 && BearingType != BearingTypes.Default)
+                        LoadEmptyORTSDavis_A = CalcDavisAValue(BearingType, LoadEmptyMassKg, (WagonNumAxles + LocoNumDrvAxles));
+                    if (LoadEmptyORTSDavis_B <= 0 && BearingType != BearingTypes.Default)
+                        LoadEmptyORTSDavis_B = CalcDavisBValue(BearingType, LoadEmptyMassKg, WagonType);
+                    if (LoadFullORTSDavis_A <= 0 && BearingType != BearingTypes.Default)
+                        LoadFullORTSDavis_A = CalcDavisAValue(BearingType, MassKG, (WagonNumAxles + LocoNumDrvAxles));
+                    if (LoadFullORTSDavis_B <= 0 && BearingType != BearingTypes.Default)
+                        LoadFullORTSDavis_B = CalcDavisBValue(BearingType, MassKG, WagonType);
 
                     if (FreightAnimations.StaticFreightAnimationsPresent) // If it is static freight animation, set wagon physics to full wagon value
                     {
@@ -1316,11 +1362,15 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(effects(specialeffects": ParseEffects(lowercasetoken, stf); break;
                 case "wagon(ortsbearingtype":
                     stf.MustMatch("(");
-                    string typeString2 = stf.ReadString();
-                    IsRollerBearing = String.Compare(typeString2, "Roller") == 0;
-                    IsLowTorqueRollerBearing = String.Compare(typeString2, "Low") == 0;
-                    IsFrictionBearing = String.Compare(typeString2, "Friction") == 0;
-                    IsGreaseFrictionBearing = String.Compare(typeString2, "Grease") == 0;
+                    string bearingType = stf.ReadString().ToLower();
+                    try
+                    {
+                        BearingType = (BearingTypes)Enum.Parse(typeof(BearingTypes), bearingType, true);
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Unknown wheel bearing type " + bearingType);
+                    }
                     break;
                 case "wagon(friction":
                     stf.MustMatch("(");
@@ -1676,10 +1726,7 @@ namespace Orts.Simulation.RollingStocks
             MergeSpeedFrictionN = copy.MergeSpeedFrictionN;
             MergeSpeedMpS = copy.MergeSpeedMpS;
             IsDavisFriction = copy.IsDavisFriction;
-            IsRollerBearing = copy.IsRollerBearing;
-            IsLowTorqueRollerBearing = copy.IsLowTorqueRollerBearing;
-            IsFrictionBearing = copy.IsFrictionBearing;
-            IsGreaseFrictionBearing = copy.IsGreaseFrictionBearing;
+            BearingType = copy.BearingType;
             CarBrakeSystemType = copy.CarBrakeSystemType;
             BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
             InteriorShapeFileName = copy.InteriorShapeFileName;
@@ -2347,7 +2394,7 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-            private void UpdateTrainBaseResistance()
+        private void UpdateTrainBaseResistance()
         {
             IsBelowMergeSpeed = AbsSpeedMpS < MergeSpeedMpS;
             IsStandStill = AbsSpeedMpS < 0.1f;
@@ -2382,17 +2429,10 @@ namespace Orts.Simulation.RollingStocks
         {
             if (FrictionV2 < 0 || FrictionV2 > 4.4407f) // > 10 mph
             {   // not fcalc ignore friction and use default davis equation
-                // Starting Friction 
-                //
-                //                      Above Freezing   Below Freezing
-                //    Journal Bearing      25 lb/ton        35 lb/ton   (short ton)
-                //     Roller Bearing       5 lb/ton        15 lb/ton
-                //
-                // [2009-10-25 from http://www.arema.org/publications/pgre/ ]
-                //Friction0N = MassKG * 30f /* lb/ton */ * 4.84e-3f;  // convert lbs/short-ton to N/kg 
-                DavisAN = 6.3743f * MassKG / 1000 + 128.998f * 4;
-                DavisBNSpM = .49358f * MassKG / 1000;
-                DavisCNSSpMM = .11979f * 100 / 10.76f;
+                // Assume plain bearings and calculate resistance per original Davis equation
+                DavisAN = CalcDavisAValue(BearingTypes.Friction, MassKG, (WagonNumAxles + LocoNumDrvAxles));
+                DavisBNSpM = CalcDavisBValue(BearingTypes.Friction, MassKG, WagonType);
+                DavisCNSSpMM = NpMpS2.FromLbpMpH2(Me2.ToFt2(WagonFrontalAreaM2) * DavisDragConstant);
                 Friction0N = DavisAN * 2.0f;            //More firendly to high load trains and the new physics
             }
             else
@@ -2474,6 +2514,98 @@ namespace Orts.Simulation.RollingStocks
         }
 
         /// <summary>
+        /// Calculate an estimate for the Davis A value of a wagon using the davis formula and variations on it.
+        /// </summary>
+        /// <param name="bearings">BearingType we want to calculate the resistance for.</param>
+        /// <param name="mass">kg weight of the rail vehicle.</param>
+        /// <param name="axles">Total number of axles on the rail vehicle.</param>
+        /// <returns>An estimate for the Davis A value of the wagon in newtons.</returns>
+        public static float CalcDavisAValue(BearingTypes bearings, float mass, int axles)
+        {
+            float cT = 1.5f; // Resistance component in pounds per US ton
+            float cN = 20f; // Resistance component in pounds per axle
+
+            // Calculations based on Davis studies, with some estimation where data isn't availble
+            switch (bearings)
+            {
+                case BearingTypes.Grease:
+                case BearingTypes.Friction: // 1926 Davis
+                    cT = 1.3f;
+                    cN = 29f;
+                    break;
+                case BearingTypes.Roller: // 1992 Canadian National
+                    cT = 1.5f;
+                    cN = 18f;
+                    break;
+                case BearingTypes.Low: // Estimate from CN method and tests on new bearings
+                    cT = 1.5f;
+                    cN = 11f;
+                    break;
+            }
+            // Davis uses imperial, convert to metric afterward
+            return N.FromLbf(cT * Kg.ToTUS(mass) + cN * axles);
+        }
+
+        /// <summary>
+        /// Calculate an estimate for the Davis B value of a wagon using the davis formula and variations on it.
+        /// </summary>
+        /// <param name="bearings">BearingType we want to calculate the resistance for.</param>
+        /// <param name="mass">kg weight of the rail vehicle.</param>
+        /// <param name="type">WagonType we want to calculate the resistance for.</param>
+        /// <returns>An estimate for the Davis B value of the wagon in newtons per meter per second.</returns>
+        public static float CalcDavisBValue(BearingTypes bearings, float mass, WagonTypes type = WagonTypes.Freight)
+        {
+            float cT = 0.03f; // Resistance component in pounds per US ton
+
+            // Calculations based on Davis studies, with some estimation where data isn't availble
+            switch (bearings)
+            {
+                case BearingTypes.Grease:
+                case BearingTypes.Friction: // 1926 Davis
+                    switch (type)
+                    {
+                        case WagonTypes.Tender:
+                        case WagonTypes.Freight:
+                            cT = 0.045f;
+                            break;
+                        case WagonTypes.Engine:
+                        case WagonTypes.Passenger:
+                            cT = 0.03f;
+                            break;
+                    }
+                    break;
+                case BearingTypes.Roller: // 1992 Canadian National
+                    switch (type)
+                    {
+                        case WagonTypes.Tender:
+                        case WagonTypes.Freight:
+                            cT = 0.03f;
+                            break;
+                        case WagonTypes.Engine:     // Estimate from CN method and Davis study
+                        case WagonTypes.Passenger:
+                            cT = 0.02f;
+                            break;
+                    }
+                    break;
+                case BearingTypes.Low: // Estimate from CN method and tests on new bearings
+                    switch (type)
+                    {
+                        case WagonTypes.Tender:
+                        case WagonTypes.Freight:
+                            cT = 0.02f;
+                            break;
+                        case WagonTypes.Engine:
+                        case WagonTypes.Passenger:
+                            cT = 0.015f;
+                            break;
+                    }
+                    break;
+            }
+            // Davis uses imperial, convert to metric afterward
+            return NpMpS.FromLbpMpH(cT * Kg.ToTUS(mass));
+        }
+
+        /// <summary>
         /// Update train base resistance with a manually specified starting friction.
         /// </summary>
         /// <remarks>
@@ -2483,7 +2615,7 @@ namespace Orts.Simulation.RollingStocks
         {
             // Dtermine the starting friction factor based upon the type of bearing
             float StartFrictionLoadN = StandstillFrictionN;  // Starting friction
-
+            
             // Determine the starting resistance due to wheel bearing temperature
             // Note reference values in lbf and US tons - converted to metric values as appropriate
             // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
@@ -2568,144 +2700,70 @@ namespace Orts.Simulation.RollingStocks
             float StartFrictionTrackN = 0.0f;
             float AxleLoadKg = 0;
             float ResistanceGrade = 0;
-            float ReferenceWheelDiameterIn = 37.0f;
-            float wheelvariationfactor = 1;
+            float ReferenceWheelRadiusM = Me.FromIn(37.0f / 2.0f);
+            float wheelVariationFactor = 1.0f;
 
             // Find the variation in journal resistance due to wheel size. Steam locomotive don't have any variation at this time.
             if (WagonType == WagonTypes.Engine)
             {
                 if (EngineType != EngineTypes.Steam)
                 {
-                    float wheeldiamM = 2.0f * DriverWheelRadiusM;
-                    wheelvariationfactor = Me.ToIn(wheeldiamM) / ReferenceWheelDiameterIn;
+                    wheelVariationFactor = DriverWheelRadiusM / ReferenceWheelRadiusM;
                 }
             }
             else
             {
-                float wheeldiamM = 2.0f * WheelRadiusM;
-                wheelvariationfactor = Me.ToIn(wheeldiamM) / ReferenceWheelDiameterIn;
+                wheelVariationFactor = WheelRadiusM / ReferenceWheelRadiusM;
             }
 
-            if (IsRollerBearing)
+            float LowTemperature = -10.0f;
+            float HighTemeprature = 25.0f;
+
+            float LowTemperatureResistanceN;
+            float HighTemperatureResistanceN;
+
+            switch (BearingType)
             {
                 // Determine the starting resistance due to wheel bearing temperature
                 // Note reference values in lbf and US tons - converted to metric values as appropriate
                 // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
                 // Assume a linear relationship between the two sets of points above and plot a straight line relationship.
-                float LowTemperature = -10.0f;
-                float HighTemeprature = 25.0f;
-                float LowTemperatureResistanceN = N.FromLbf( 12.0f ) * wheelvariationfactor;
-                float HighTemperatureResistanceN = N.FromLbf( 4.5f) * wheelvariationfactor;
+                case BearingTypes.Low:
+                    LowTemperatureResistanceN = N.FromLbf(7.5f) * wheelVariationFactor;
+                    HighTemperatureResistanceN = N.FromLbf(2.5f) * wheelVariationFactor;
+                    break;
+                case BearingTypes.Roller:
+                    LowTemperatureResistanceN = N.FromLbf(12.0f) * wheelVariationFactor;
+                    HighTemperatureResistanceN = N.FromLbf(4.5f) * wheelVariationFactor;
+                    break;
+                case BearingTypes.Grease:
+                    LowTemperatureResistanceN = N.FromLbf(45.0f) * wheelVariationFactor;
+                    HighTemperatureResistanceN = N.FromLbf(30.0f) * wheelVariationFactor;
+                    break;
+                case BearingTypes.Friction:
+                default:
+                    LowTemperatureResistanceN = N.FromLbf(30.0f) * wheelVariationFactor;
+                    HighTemperatureResistanceN = N.FromLbf(20.0f) * wheelVariationFactor;
+                    break;
 
-                float LowGrad = (LowTemperatureResistanceN - HighTemperatureResistanceN) / (LowTemperature - HighTemeprature);
-                float LowIntersect = LowTemperatureResistanceN - (LowGrad * LowTemperature);
-
-                if (WheelBearingTemperatureDegC < -10)
-                {
-                    // Set to snowing (frozen value)
-                    StartFrictionInternalFactorN = LowTemperatureResistanceN;  // Starting friction for car with standard roller bearings, snowing
-                }
-                else if (WheelBearingTemperatureDegC > 25)
-                {
-                    // Set to normal temperature value
-                    StartFrictionInternalFactorN = HighTemperatureResistanceN;  // Starting friction for car with standard roller bearings, not snowing
-                }
-                else
-                {
-                    // Set to variable value as bearing heats and cools
-                    StartFrictionInternalFactorN = LowGrad * WheelBearingTemperatureDegC + LowIntersect;
-                }
             }
-            else if (IsLowTorqueRollerBearing)
+
+            if (WheelBearingTemperatureDegC < LowTemperature)
             {
-                // Determine the starting resistance due to wheel bearing temperature
-                // Note reference values in lbf and US tons - converted to metric values as appropriate
-                // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
-                // Assume a linear relationship between the two sets of points above and plot a straight line relationship.
-                float LowTemperature = -10.0f;
-                float HighTemeprature = 25.0f;
-                float LowTemperatureResistanceN = N.FromLbf(7.5f) * wheelvariationfactor;
-                float HighTemperatureResistanceN = N.FromLbf(2.5f) * wheelvariationfactor;
-
-                float LowGrad = (LowTemperatureResistanceN - HighTemperatureResistanceN) / (LowTemperature - HighTemeprature);
-                float LowIntersect = LowTemperatureResistanceN - (LowGrad * LowTemperature);
-
-                if (WheelBearingTemperatureDegC < -10)
-                {
-                    // Set to snowing (frozen value)
-                    StartFrictionInternalFactorN = LowTemperatureResistanceN;  // Starting friction for car with Low torque bearings, snowing
-                }
-                else if (WheelBearingTemperatureDegC > 25)
-                {
-                    // Set to normal temperature value
-                    StartFrictionInternalFactorN = HighTemperatureResistanceN;  // Starting friction for car with Low troque bearings, not snowing
-                }
-                else
-                {
-                    // Set to variable value as bearing heats and cools
-                    StartFrictionInternalFactorN = LowGrad * WheelBearingTemperatureDegC + LowIntersect;
-                }
+                // Set to snowing (frozen value)
+                StartFrictionInternalFactorN = LowTemperatureResistanceN;
             }
-            else if (IsGreaseFrictionBearing)
+            else if (WheelBearingTemperatureDegC > HighTemeprature)
             {
-                // Determine the starting resistance due to wheel bearing temperature
-                // Note reference values in lbf and US tons - converted to metric values as appropriate
-                // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
-                // Assume a linear relationship between the two sets of points above and plot a straight line relationship.
-                float LowTemperature = -10.0f;
-                float HighTemeprature = 25.0f;
-                float LowTemperatureResistanceN = N.FromLbf(45.0f) * wheelvariationfactor;
-                float HighTemperatureResistanceN = N.FromLbf(30.0f) * wheelvariationfactor;
-
-                float LowGrad = (LowTemperatureResistanceN - HighTemperatureResistanceN) / (LowTemperature - HighTemeprature);
-                float LowIntersect = LowTemperatureResistanceN - (LowGrad * LowTemperature);
-
-                if (WheelBearingTemperatureDegC < -10)
-                {
-                    // Set to snowing (frozen value)
-                    StartFrictionInternalFactorN = LowTemperatureResistanceN;  // Starting friction car with Low torque bearings, snowing
-                }
-                else if (WheelBearingTemperatureDegC > 25)
-                {
-                    // Set to normal temperature value
-                    StartFrictionInternalFactorN = HighTemperatureResistanceN;  // Starting friction for car with Low troque bearings, not snowing
-                }
-                else
-                {
-                    // Set to variable value as bearing heats and cools
-                    StartFrictionInternalFactorN = LowGrad * WheelBearingTemperatureDegC + LowIntersect;
-                }
+                // Set to normal temperature value
+                StartFrictionInternalFactorN = HighTemperatureResistanceN;
             }
-            else  // default to friction (solid - oil journal) bearing
+            else
             {
-
-                // Determine the starting resistance due to wheel bearing temperature
-                // Note reference values in lbf and US tons - converted to metric values as appropriate
-                // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
-                // Assume a linear relationship between the two sets of points above and plot a straight line relationship.
-                float LowTemperature = -10.0f;
-                float HighTemeprature = 25.0f;
-                float LowTemperatureResistanceN = N.FromLbf(30.0f) * wheelvariationfactor;
-                float HighTemperatureResistanceN = N.FromLbf(20.0f) * wheelvariationfactor;
-
+                // Set to variable value as bearing heats and cools
                 float LowGrad = (LowTemperatureResistanceN - HighTemperatureResistanceN) / (LowTemperature - HighTemeprature);
                 float LowIntersect = LowTemperatureResistanceN - (LowGrad * LowTemperature);
-
-                if (WheelBearingTemperatureDegC < -10)
-                {
-                    // Set to snowing (frozen value)
-                    StartFrictionInternalFactorN = LowTemperatureResistanceN; // Starting friction for car with friction (journal) bearings - ton (US), snowing
-                }
-                else if (WheelBearingTemperatureDegC > 25)
-                {
-                    // Set to normal temperature value
-                    StartFrictionInternalFactorN = HighTemperatureResistanceN; // Starting friction for car with friction (journal) bearings - ton (US), not snowing
-                }
-                else
-                {
-                    // Set to variable value as bearing heats and cools
-                    StartFrictionInternalFactorN = LowGrad * WheelBearingTemperatureDegC + LowIntersect;
-                }
+                StartFrictionInternalFactorN = LowGrad * WheelBearingTemperatureDegC + LowIntersect;
             }
 
             // Determine the track starting resistance, based upon the axle loading of the wagon
@@ -2735,7 +2793,7 @@ namespace Orts.Simulation.RollingStocks
             // Calculate the track gradient based on wagon axle loading
             ResistanceGrade = TrackGrad * AxleLoadKg + TrackIntersect;
 
-            ResistanceGrade = MathHelper.Clamp(ResistanceGrade, 100, ResistanceGrade); // Clamp gradient so it doesn't go below 1 in 100
+            ResistanceGrade = Math.Max(ResistanceGrade, 100); // Clamp gradient so it doesn't go below 1 in 100
 
             const float trackfactor = 1120.0f;
             StartFrictionTrackN = N.FromLbf(trackfactor * (1 / ResistanceGrade) * Kg.ToTUK(AxleLoadKg));
@@ -2753,15 +2811,12 @@ namespace Orts.Simulation.RollingStocks
             float MotionLowTemperatureResistance = 1.3f;
             float MotionHighTemperatureResistance = 1.0f;
 
-            float RunGrad = (MotionLowTemperatureResistance - MotionHighTemperatureResistance) / (MotionLowTemperature - MotionHighTemeprature);
-            float RunIntersect = MotionLowTemperatureResistance - (RunGrad * MotionLowTemperature);
-
-            if (WheelBearingTemperatureDegC < -10)
+            if (WheelBearingTemperatureDegC < MotionLowTemperature)
             {
                 // Set to snowing (frozen value)
                 WheelBearingTemperatureResistanceFactor = 1.3f;
             }
-            else if (WheelBearingTemperatureDegC > 25)
+            else if (WheelBearingTemperatureDegC > MotionHighTemeprature)
             {
                 // Set to normal temperature value
                 WheelBearingTemperatureResistanceFactor = 1.0f;
@@ -2769,12 +2824,12 @@ namespace Orts.Simulation.RollingStocks
             else
             {
                 // Set to variable value as bearing heats and cools
+                float RunGrad = (MotionLowTemperatureResistance - MotionHighTemperatureResistance) / (MotionLowTemperature - MotionHighTemeprature);
+                float RunIntersect = MotionLowTemperatureResistance - (RunGrad * MotionLowTemperature);
                 WheelBearingTemperatureResistanceFactor = RunGrad * WheelBearingTemperatureDegC + RunIntersect;
-
             }
 
-
-            Friction0N = ( Kg.ToTonne(MassKG) * StartFrictionInternalFactorN) + StartFrictionTrackN; // Static friction is journal or roller bearing friction x weight + track resistance. Mass value must be in tons uk to match reference used for starting resistance
+            Friction0N = (Kg.ToTUK(MassKG) * StartFrictionInternalFactorN) + StartFrictionTrackN; // Static friction is journal or roller bearing friction x weight + track resistance. Mass value must be in tons uk to match reference used for starting resistance
 
             float Friction0DavisN = DavisAN * WheelBearingTemperatureResistanceFactor; // Calculate the starting firction if Davis formula was extended to zero
 
@@ -2850,13 +2905,16 @@ namespace Orts.Simulation.RollingStocks
                 WheelBearingTemperatureResistanceFactor = 2.0f;
             }
 
-            FrictionForceN = DavisAN * WheelBearingTemperatureResistanceFactor + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * DavisCNSSpMM); // for normal speed operation
 
-            // if this car is a locomotive, but not the lead one then recalculate the resistance with lower value as drag will not be as high on trailing locomotives
+            // if this car is a locomotive, but not the lead one then calculate the resistance with lower value as drag will not be as high on trailing locomotives
             // Only the drag (C) factor changes if a trailing locomotive, so only running resistance, and not starting resistance needs to be corrected
             if (WagonType == WagonTypes.Engine && Train.LeadLocomotive != this)
             {
                 FrictionForceN = DavisAN * WheelBearingTemperatureResistanceFactor + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * (TrailLocoResistanceFactor * DavisCNSSpMM));
+            }
+            else
+            {
+                FrictionForceN = DavisAN * WheelBearingTemperatureResistanceFactor + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * DavisCNSSpMM); // for normal speed operation
             }
 
             // Test to identify whether a tender is attached to the leading engine, if not then the resistance should also be derated as for the locomotive

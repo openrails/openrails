@@ -262,6 +262,21 @@ namespace ORTS.Common
     /// </summary>
     public static class NpMpS
     {
+        /// <summary>Convert from pounds per mph to newtons per meter per second</summary>
+        public static float FromLbpMpH(float lbfPerMpH) { return lbfPerMpH * 9.9503884f; }
+        /// <summary>Convert from newtons per meter per second to pounds per mph</summary>
+        public static float ToLbpMpH(float nPerMpS) { return nPerMpS / 9.9503884f; }
+    }
+
+    /// <summary>
+    /// Resistance conversions from and to Newtons/metre^2/sec^2
+    /// </summary>
+    public static class NpMpS2
+    {
+        /// <summary>Convert from pounds per mph^2 to newtons per mps^2</summary>
+        public static float FromLbpMpH2(float lbfPerMpH2) { return lbfPerMpH2 * 22.2583849f; }
+        /// <summary>Convert from newtons per mps^2 to pounds per mph^2</summary>
+        public static float ToLbpMpH2(float nPerMpS2) { return nPerMpS2 / 22.2583849f; }
     }
 
     /// <summary>
