@@ -678,6 +678,19 @@ The value speed is the required speed value in dimension as set by the relevant 
 Inclusion of speed definition is optional and need not be set if only approach control position functions
 are used.
 
+Signal light parameters
+-----------------------
+
+.. index::
+  single: ORTSSignalLightTex
+
+It is possible to have different light textures in the same signal, by inserting
+the following parameter in the signal light definition::
+
+    ORTSSignalLightTex ( "name" )
+
+Where **name** is the name of the texture to be used for the signal light.
+
 Signal aspect parameters
 ------------------------
 The following parameters can be included in signal aspect definitions.
