@@ -1,16 +1,16 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Menu\n"
-"POT-Creation-Date: 2020-04-19 00:19:42+0200\n"
-"PO-Revision-Date: 2020-04-19 00:46+0200\n"
-"Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
+"POT-Creation-Date: 2025-01-20 15:27:35+0100\n"
+"PO-Revision-Date: 2025-01-21 13:00+0100\n"
+"Last-Translator: Peter-BBBB <peter.brosowski@gmx.net>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.5\n"
 
 #: ../../ORTS.Menu/Activities.cs:47
 msgid "- Explore Route -"
@@ -21,26 +21,25 @@ msgid "+ Explore in Activity Mode +"
 msgstr "+ Route erkunden im Aufgabenmodus +"
 
 #: ../../ORTS.Menu/Activities.cs:81
-#, fuzzy
 msgid "Not same route:"
-msgstr "Falsche Route:"
+msgstr "Nicht dieselbe Route:"
 
 #: ../../ORTS.Menu/Activities.cs:85 ../../ORTS.Menu/Consists.cs:47
-#: ../../ORTS.Menu/Consists.cs:71 ../../ORTS.Menu/Consists.cs:199
+#: ../../ORTS.Menu/Consists.cs:71 ../../ORTS.Menu/Consists.cs:196
 #: ../../ORTS.Menu/ORTimetables.cs:56 ../../ORTS.Menu/ORTimetables.cs:78
 #: ../../ORTS.Menu/Paths.cs:63 ../../ORTS.Menu/Routes.cs:49
 msgid "load error:"
 msgstr "Ladefehler:"
 
 #: ../../ORTS.Menu/Activities.cs:88 ../../ORTS.Menu/Consists.cs:50
-#: ../../ORTS.Menu/Consists.cs:74 ../../ORTS.Menu/Consists.cs:202
+#: ../../ORTS.Menu/Consists.cs:74 ../../ORTS.Menu/Consists.cs:206
 #: ../../ORTS.Menu/Paths.cs:65 ../../ORTS.Menu/Paths.cs:66
 #: ../../ORTS.Menu/Paths.cs:67 ../../ORTS.Menu/Routes.cs:51
 msgid "unnamed:"
 msgstr "unbenannt:"
 
 #: ../../ORTS.Menu/Activities.cs:94 ../../ORTS.Menu/Consists.cs:54
-#: ../../ORTS.Menu/Consists.cs:78 ../../ORTS.Menu/Consists.cs:207
+#: ../../ORTS.Menu/Consists.cs:78 ../../ORTS.Menu/Consists.cs:215
 #: ../../ORTS.Menu/ORTimetables.cs:61 ../../ORTS.Menu/ORTimetables.cs:83
 #: ../../ORTS.Menu/Paths.cs:71 ../../ORTS.Menu/Routes.cs:56
 msgid "missing:"
@@ -55,7 +54,7 @@ msgstr "Aufgabe '{0}' wurde ausgeschlossen."
 msgid "- Any Locomotive -"
 msgstr "- Beliebige Lokomotive -"
 
-#: ../../ORTS.Menu/Consists.cs:201
+#: ../../ORTS.Menu/Consists.cs:203
 #, csharp-format
 msgid "Locomotive '{0}' is excluded."
 msgstr "Lokomotive '{0}' wurde ausgeschlossen."
