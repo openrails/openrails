@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -3108,7 +3108,7 @@ namespace Orts.Simulation.RollingStocks
                     Simulator.Confirmer.Message(ConfirmLevel.Error, Simulator.Catalog.GetString("Scoop is broken, can't refill"));
                     RefillingFromTrough = false;
                 }
-                else if (IsOverJunction())
+                else if (IsOverJunction)
                 {
                     if (!ScoopIsBroken) // Only display message first time scoop is broken
                     {

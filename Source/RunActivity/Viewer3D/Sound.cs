@@ -395,32 +395,8 @@ namespace Orts.Viewer3D
 
                     var CarBehind = Car.Train.Cars[CarNo + CarIncr];
                     var carPreviouslyOnSwitch = CarOnSwitch;
-                    CarOnSwitch = false;
-                    if (Car.Train.PresentPosition[0].TCSectionIndex != Car.Train.PresentPosition[1].TCSectionIndex)
-                    {
-                        try
-                        {
-                            var copyOccupiedTrack = Car.Train.OccupiedTrack.ToArray();
-                            foreach (var thisSection in copyOccupiedTrack)
-                            {
-                                if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
-                                {
-                                    // train is on a switch; let's see if car is on a switch too
-                                    WorldLocation switchLocation = UidLocation(Viewer.Simulator.TDB.TrackDB.TrackNodes[thisSection.OriginalIndex].UiD);
-                                    var distanceFromSwitch = WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, switchLocation);
-                                    if (distanceFromSwitch < Car.CarLengthM * Car.CarLengthM + Math.Min(Car.SpeedMpS * 3, 150))
-                                    {
-                                        CarOnSwitch = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        catch
-                        {
+                    CarOnSwitch = Car.IsOverJunction;
 
-                        }
-                    }
                     // here check for curve
                     var carPreviouslyOnCurve = CarOnCurve;
                     CarOnCurve = false;

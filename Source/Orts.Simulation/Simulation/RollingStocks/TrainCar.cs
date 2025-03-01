@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009 - 2022 by the Open Rails project.
+// COPYRIGHT 2009 - 2022 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -3093,6 +3093,8 @@ namespace Orts.Simulation.RollingStocks
         }
         #endregion
 
+        public bool IsOverJunction { get; private set; }
+
         void UpdatePositionFlags()
         {
             // Position flags can only change when we're moving!
@@ -3103,6 +3105,8 @@ namespace Orts.Simulation.RollingStocks
             for (var i = Train.Cars.IndexOf(this) + 1; i < Train.Cars.Count; i++)
                 rearOffsetM += Train.Cars[i - 1].CouplerSlackM + Train.Cars[i - 1].GetCouplerZeroLengthM() + Train.Cars[i].CarLengthM;
             var frontOffsetM = rearOffsetM + CarLengthM;
+
+            var isOverJunction = false;
 
             // Scan through the track sections forwards from the REAR of the train (`Train.PresentPosition[1]`),
             // stopping as soon as we've passed this car (`checkedM`) or run out of track (`currentPin.Link`)
@@ -3116,6 +3120,7 @@ namespace Orts.Simulation.RollingStocks
                 // Does this car overlap this track section?
                 if (checkedM <= frontOffsetM && rearOffsetM <= checkedM + section.Length)
                 {
+                    if (section.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || section.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover) isOverJunction = true;
                 }
                 checkedM += section.Length;
 
@@ -3123,6 +3128,8 @@ namespace Orts.Simulation.RollingStocks
                 lastPin = currentPin;
                 currentPin = nextPin;
             }
+
+            IsOverJunction = isOverJunction;
         }
 
         // TODO These three fields should be in the TrainCarViewer.
@@ -3207,58 +3214,6 @@ namespace Orts.Simulation.RollingStocks
             }
             return isOverTrough;
         }
-
-        /// <summary>
-        /// Checks if traincar is over junction or crossover. Used to check if water scoop breaks
-        /// </summary>
-        /// <returns> returns true if car is over junction</returns>
-
-        public bool IsOverJunction()
-        {
-
-            // To Do - This identifies the start of the train, but needs to be further refined to work for each carriage.
-            var isOverJunction = false;
-            // start at front of train
-            int thisSectionIndex = Train.PresentPosition[0].TCSectionIndex;
-            float thisSectionOffset = Train.PresentPosition[0].TCOffset;
-            int thisSectionDirection = Train.PresentPosition[0].TCDirection;
-
-
-            float usedCarLength = CarLengthM;
-
-            if (Train.PresentPosition[0].TCSectionIndex != Train.PresentPosition[1].TCSectionIndex)
-            {
-                try
-                {
-                    var copyOccupiedTrack = Train.OccupiedTrack.ToArray();
-                    foreach (var thisSection in copyOccupiedTrack)
-                    {
-
-                        //                    Trace.TraceInformation(" Track Section - Index {0} Ciruit Type {1}", thisSectionIndex, thisSection.CircuitType);
-
-                        if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
-                        {
-
-                            // train is on a switch; let's see if car is on a switch too
-                            WorldLocation switchLocation = TileLocation(Simulator.TDB.TrackDB.TrackNodes[thisSection.OriginalIndex].UiD);
-                            var distanceFromSwitch = WorldLocation.GetDistanceSquared(WorldPosition.WorldLocation, switchLocation);
-                            if (distanceFromSwitch < CarLengthM * CarLengthM + Math.Min(SpeedMpS * 3, 150))
-                            {
-                                isOverJunction = true;
-                                return isOverJunction;
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-
-                }
-            }
-
-            return isOverJunction;
-        }
-
 
         public static WorldLocation TileLocation(UiD uid)
         {
