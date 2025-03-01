@@ -1,4 +1,4 @@
-// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -3118,7 +3118,7 @@ namespace Orts.Simulation.RollingStocks
                     RefillingFromTrough = false;
                     SignalEvent(Event.WaterScoopBroken);
                 }
-                else if (!IsOverTrough())
+                else if (!IsOverTrough)
                 {
                     if (!WaterScoopOverTroughFlag)
                     {
@@ -3163,7 +3163,7 @@ namespace Orts.Simulation.RollingStocks
                 }
 
             }
-            else if (HasWaterScoop && MSTSWagon.RefillProcess.OkToRefill == true && IsOverTrough())// water scoop has been raised, stop water filling
+            else if (HasWaterScoop && MSTSWagon.RefillProcess.OkToRefill == true && IsOverTrough)// water scoop has been raised, stop water filling
             {
                 MSTSWagon.RefillProcess.OkToRefill = false;
                 MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
@@ -3234,7 +3234,7 @@ namespace Orts.Simulation.RollingStocks
                 WaterScoopInputAmountL = 0;
                 WaterScoopVelocityMpS = 0;
 
-                if (!IsOverTrough()) // Only reset once train moves off the trough
+                if (!IsOverTrough) // Only reset once train moves off the trough
                 {
                     WaterScoopTotalWaterL = 0.0f; // Reset amount of water picked up by water sccop.
                 }
