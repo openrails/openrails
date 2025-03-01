@@ -32,6 +32,8 @@ namespace Orts.Formats.Msts
         public string WagonType;
         public float MassKG;
         public CarSize WagonSize;
+        public int NumWagAxles;  // ORTS
+        public float NumWagWheels;  // MSTS
         public float MaxBrakeForceN;
         public float MinCouplerStrengthN = ImpossiblyHighForceN;
 
@@ -107,6 +109,8 @@ namespace Orts.Formats.Msts
                             new STFReader.TokenProcessor("type", ()=>{ WagonType = stf.ReadStringBlock(null); }),
                             new STFReader.TokenProcessor("mass", ()=>{ MassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); }),
                             new STFReader.TokenProcessor("size", ()=>{ WagonSize = new CarSize( stf); }),
+                            new STFReader.TokenProcessor("ortsnumberaxles", ()=>{ NumWagAxles = stf.ReadIntBlock( 0); }),
+                            new STFReader.TokenProcessor("numwheels", ()=>{ NumWagWheels = stf.ReadFloatBlock( STFReader.UNITS.None, 0f); }),
                             new STFReader.TokenProcessor("maxbrakeforce", ()=>{ MaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); }),
                             new STFReader.TokenProcessor("coupling", ()=>{ new CouplingSpring( ref MinCouplerStrengthN, stf); })
                         });

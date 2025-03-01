@@ -32,6 +32,8 @@ namespace Orts.Formats.Msts
         public float MaxPowerW;
         public float MaxForceN;
         public float MaxSpeedMps;
+        public int NumDriveAxles;  // ORTS
+        public float NumEngWheels;  // MSTS
         public string Description;
         public string CabViewFile;
 
@@ -39,6 +41,7 @@ namespace Orts.Formats.Msts
         {
             Name = Path.GetFileNameWithoutExtension(filePath);
             using (var stf = new STFReader(filePath, false))
+            {
                 stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("engine", ()=>{
                         stf.ReadString();
@@ -48,11 +51,14 @@ namespace Orts.Formats.Msts
                             new STFReader.TokenProcessor("maxpower", ()=>{ MaxPowerW = stf.ReadFloatBlock( STFReader.UNITS.Power, null); }),
                             new STFReader.TokenProcessor("maxforce", ()=>{ MaxForceN = stf.ReadFloatBlock( STFReader.UNITS.Force, null); }),
                             new STFReader.TokenProcessor("maxvelocity", ()=>{ MaxSpeedMps = stf.ReadFloatBlock( STFReader.UNITS.Speed, null); }),
+                            new STFReader.TokenProcessor("ortsnumberdriveaxles", ()=>{ NumDriveAxles = stf.ReadIntBlock( 0); }),
+                            new STFReader.TokenProcessor("numwheels", ()=>{ NumEngWheels = stf.ReadFloatBlock( STFReader.UNITS.None, 0f); }),
                             new STFReader.TokenProcessor("description", ()=>{ Description = stf.ReadStringBlock(null); }),
                             new STFReader.TokenProcessor("cabview", ()=>{ CabViewFile = stf.ReadStringBlock(null); }),
                         });
                     }),
                 });
+            }
         }
 
         public override string ToString()

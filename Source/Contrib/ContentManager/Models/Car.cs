@@ -15,12 +15,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+// MSTS Wheels and ORTS Axles
+// * ORTS uses unpowered and drive axles. Eg. 2 and 4 for an ES44C4
+// * MSTS uses a mix of wheels and axle. The Wagon section has the total,
+//   the Engine section the driven only.
+//   Values greater than 6 are wheels, less than 6 are axles. Some are
+//   intentionally wrong to work around MSTS issues.
+
 using Orts.Formats.Msts;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 
 namespace ORTS.ContentManager.Models
 {
@@ -38,15 +42,20 @@ namespace ORTS.ContentManager.Models
         public readonly string Description;
         public readonly float MassKG;
         public readonly float LengthM;
-        public readonly float MaxBarkeForceN;
+        public readonly int NumDriveAxles;
+        public readonly int NumAllAxles;
+        public readonly float MaxBrakeForceN;
         public readonly float MaxPowerW;
         public readonly float MaxForceN;
         public readonly float MaxSpeedMps;
         public readonly float MinCouplerStrengthN;
+        public readonly float MinDerailForceN;
 
         public Car(Content content)
         {
             Debug.Assert(content.Type == ContentType.Car);
+
+            const float GravitationalAccelerationMpS2 = 9.80665f;
 
             // .eng files also have a wagon block
             var wagFile = new WagonFile(content.PathName);
@@ -55,7 +64,7 @@ namespace ORTS.ContentManager.Models
             Name = wagFile.Name;
             MassKG = wagFile.MassKG;
             LengthM = wagFile.WagonSize.LengthM;
-            MaxBarkeForceN = wagFile.MaxBrakeForceN;
+            MaxBrakeForceN = wagFile.MaxBrakeForceN;
             MinCouplerStrengthN = wagFile.MinCouplerStrengthN;
 
             if (System.IO.Path.GetExtension(content.PathName).Equals(".eng", StringComparison.OrdinalIgnoreCase))
@@ -68,7 +77,23 @@ namespace ORTS.ContentManager.Models
                 MaxForceN = engFile.MaxForceN;
                 MaxSpeedMps = engFile.MaxSpeedMps;
                 Description = engFile.Description;
+                // see MSTSLocomotive.Initialize()
+                if (engFile.NumDriveAxles > 0) { NumDriveAxles = engFile.NumDriveAxles; }
+                else if (engFile.NumEngWheels >= 7f) { NumDriveAxles = (int)(engFile.NumEngWheels / 2f); }
+                else if (engFile.NumEngWheels > 0f) { NumDriveAxles = (int)engFile.NumEngWheels; }
+                else { NumDriveAxles = 4; }
             }
+
+            // see MSTSWagon.LoadFromWagFile()
+            if (wagFile.NumWagAxles > 0) { NumAllAxles = wagFile.NumWagAxles + NumDriveAxles; }
+            else if (wagFile.NumWagWheels >= 7f) { NumAllAxles = (int)(wagFile.NumWagWheels / 2f); }
+            else if (wagFile.NumWagWheels > 0f) { NumAllAxles = (int)wagFile.NumWagWheels; }
+            else { NumAllAxles = 4; }
+            if (NumDriveAxles > NumAllAxles) { NumAllAxles = NumDriveAxles; }
+
+            // see TrainCar.UpdateTrainDerailmentRisk()
+            var numWheels = NumAllAxles * 2;
+            if (numWheels > 0) { MinDerailForceN = MassKG / numWheels * GravitationalAccelerationMpS2; }
         }
     }
 }
