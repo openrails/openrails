@@ -2872,6 +2872,8 @@ namespace Orts.Simulation.RollingStocks
                     p.FindCenterLine();
                 }
             }
+
+            UpdatePositionFlags();
         }
 
         #region Traveller-based updates
@@ -3090,6 +3092,38 @@ namespace Orts.Simulation.RollingStocks
             }
         }
         #endregion
+
+        void UpdatePositionFlags()
+        {
+            // Position flags can only change when we're moving!
+            if (Train == null || AbsSpeedMpS < 0.01f) return;
+
+            // Calculate the position of the ends of this car relative to the REAR of the train
+            var rearOffsetM = Train.PresentPosition[1].TCOffset;
+            for (var i = Train.Cars.IndexOf(this) + 1; i < Train.Cars.Count; i++)
+                rearOffsetM += Train.Cars[i - 1].CouplerSlackM + Train.Cars[i - 1].GetCouplerZeroLengthM() + Train.Cars[i].CarLengthM;
+            var frontOffsetM = rearOffsetM + CarLengthM;
+
+            // Scan through the track sections forwards from the REAR of the train (`Train.PresentPosition[1]`),
+            // stopping as soon as we've passed this car (`checkedM`) or run out of track (`currentPin.Link`)
+            var checkedM = 0f;
+            var lastPin = new TrPin { Link = -1, Direction = -1 };
+            var currentPin = new TrPin { Link = Train.PresentPosition[1].TCSectionIndex, Direction = Train.PresentPosition[1].TCDirection };
+            while (checkedM <= frontOffsetM && currentPin.Link != -1)
+            {
+                var section = Simulator.Signals.TrackCircuitList[currentPin.Link];
+
+                // Does this car overlap this track section?
+                if (checkedM <= frontOffsetM && rearOffsetM <= checkedM + section.Length)
+                {
+                }
+                checkedM += section.Length;
+
+                var nextPin = section.GetNextActiveLink(currentPin.Direction, lastPin.Link);
+                lastPin = currentPin;
+                currentPin = nextPin;
+            }
+        }
 
         // TODO These three fields should be in the TrainCarViewer.
         public int TrackSoundType = 0;
