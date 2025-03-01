@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009 - 2022 by the Open Rails project.
+// COPYRIGHT 2009 - 2022 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -2883,6 +2883,8 @@ namespace Orts.Simulation.RollingStocks
                     p.FindCenterLine();
                 }
             }
+
+            UpdatePositionFlags();
         }
 
         #region Traveller-based updates
@@ -3102,140 +3104,60 @@ namespace Orts.Simulation.RollingStocks
         }
         #endregion
 
+        public bool IsOverJunction { get; private set; }
+        public bool IsOverTrough { get; private set; }
+
+        void UpdatePositionFlags()
+        {
+            // Position flags can only change when we're moving!
+            if (Train == null || AbsSpeedMpS < 0.01f) return;
+
+            // Calculate the position of the ends of this car relative to the REAR of the train
+            var rearOffsetM = Train.PresentPosition[1].TCOffset;
+            for (var i = Train.Cars.IndexOf(this) + 1; i < Train.Cars.Count; i++)
+                rearOffsetM += Train.Cars[i - 1].CouplerSlackM + Train.Cars[i - 1].GetCouplerZeroLengthM() + Train.Cars[i].CarLengthM;
+            var frontOffsetM = rearOffsetM + CarLengthM;
+
+            var isOverJunction = false;
+            var isOverTrough = false;
+
+            // Scan through the track sections forwards from the REAR of the train (`Train.PresentPosition[1]`),
+            // stopping as soon as we've passed this car (`checkedM`) or run out of track (`currentPin.Link`)
+            var checkedM = 0f;
+            var lastPin = new TrPin { Link = -1, Direction = -1 };
+            var currentPin = new TrPin { Link = Train.PresentPosition[1].TCSectionIndex, Direction = Train.PresentPosition[1].TCDirection };
+            while (checkedM <= frontOffsetM && currentPin.Link != -1)
+            {
+                var section = Simulator.Signals.TrackCircuitList[currentPin.Link];
+
+                // Does this car overlap this track section?
+                if (checkedM <= frontOffsetM && rearOffsetM <= checkedM + section.Length)
+                {
+                    if (section.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || section.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover) isOverJunction = true;
+                    if (section.TroughInfo != null)
+                    {
+                        foreach (var troughs in section.TroughInfo)
+                        {
+                            var trough = troughs[currentPin.Direction];
+                            if (checkedM + trough.TroughStart <= frontOffsetM && rearOffsetM <= checkedM + trough.TroughEnd) isOverTrough = true;
+                        }
+                    }
+                }
+                checkedM += section.Length;
+
+                var nextPin = section.GetNextActiveLink(currentPin.Direction, lastPin.Link);
+                lastPin = currentPin;
+                currentPin = nextPin;
+            }
+
+            IsOverJunction = isOverJunction;
+            IsOverTrough = isOverTrough;
+        }
+
         // TODO These three fields should be in the TrainCarViewer.
         public int TrackSoundType = 0;
         public WorldLocation TrackSoundLocation = WorldLocation.None;
         public float TrackSoundDistSquared = 0;
-
-
-        /// <summary>
-        /// Checks if traincar is over trough. Used to check if refill possible
-        /// </summary>
-        /// <returns> returns true if car is over trough</returns>
-
-        public bool IsOverTrough()
-        {
-            var isOverTrough = false;
-            // start at front of train
-            int thisSectionIndex = Train.PresentPosition[0].TCSectionIndex;
-            if (thisSectionIndex < 0) return isOverTrough;
-            float thisSectionOffset = Train.PresentPosition[0].TCOffset;
-            int thisSectionDirection = Train.PresentPosition[0].TCDirection;
-
-
-            float usedCarLength = CarLengthM;
-            float processedCarLength = 0;
-            bool validSections = true;
-
-            while (validSections)
-            {
-                TrackCircuitSection thisSection = Train.signalRef.TrackCircuitList[thisSectionIndex];
-                isOverTrough = false;
-
-                // car spans sections
-                if ((CarLengthM - processedCarLength) > thisSectionOffset)
-                {
-                    usedCarLength = thisSectionOffset - processedCarLength;
-                }
-
-                // section has troughs
-                if (thisSection.TroughInfo != null)
-                {
-                    foreach (TrackCircuitSection.troughInfoData[] thisTrough in thisSection.TroughInfo)
-                    {
-                        float troughStartOffset = thisTrough[thisSectionDirection].TroughStart;
-                        float troughEndOffset = thisTrough[thisSectionDirection].TroughEnd;
-
-                        if (troughStartOffset > 0 && troughStartOffset > thisSectionOffset)      // start of trough is in section beyond present position - cannot be over this trough nor any following
-                        {
-                            return isOverTrough;
-                        }
-
-                        if (troughEndOffset > 0 && troughEndOffset < (thisSectionOffset - usedCarLength)) // beyond end of trough, test next
-                        {
-                            continue;
-                        }
-
-                        if (troughStartOffset <= 0 || troughStartOffset < (thisSectionOffset - usedCarLength)) // start of trough is behind
-                        {
-                            isOverTrough = true;
-                            return isOverTrough;
-                        }
-                    }
-                }
-                // tested this section, any need to go beyond?
-
-                processedCarLength += usedCarLength;
-                {
-                    // go back one section
-                    int thisSectionRouteIndex = Train.ValidRoute[0].GetRouteIndexBackward(thisSectionIndex, Train.PresentPosition[0].RouteListIndex);
-                    if (thisSectionRouteIndex >= 0)
-                    {
-                        thisSectionIndex = thisSectionRouteIndex;
-                        thisSection = Train.signalRef.TrackCircuitList[thisSectionIndex];
-                        thisSectionOffset = thisSection.Length;  // always at end of next section
-                        thisSectionDirection = Train.ValidRoute[0][thisSectionRouteIndex].Direction;
-                    }
-                    else // ran out of train
-                    {
-                        validSections = false;
-                    }
-                }
-            }
-            return isOverTrough;
-        }
-
-        /// <summary>
-        /// Checks if traincar is over junction or crossover. Used to check if water scoop breaks
-        /// </summary>
-        /// <returns> returns true if car is over junction</returns>
-
-        public bool IsOverJunction()
-        {
-
-            // To Do - This identifies the start of the train, but needs to be further refined to work for each carriage.
-            var isOverJunction = false;
-            // start at front of train
-            int thisSectionIndex = Train.PresentPosition[0].TCSectionIndex;
-            float thisSectionOffset = Train.PresentPosition[0].TCOffset;
-            int thisSectionDirection = Train.PresentPosition[0].TCDirection;
-
-
-            float usedCarLength = CarLengthM;
-
-            if (Train.PresentPosition[0].TCSectionIndex != Train.PresentPosition[1].TCSectionIndex)
-            {
-                try
-                {
-                    var copyOccupiedTrack = Train.OccupiedTrack.ToArray();
-                    foreach (var thisSection in copyOccupiedTrack)
-                    {
-
-                        //                    Trace.TraceInformation(" Track Section - Index {0} Ciruit Type {1}", thisSectionIndex, thisSection.CircuitType);
-
-                        if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
-                        {
-
-                            // train is on a switch; let's see if car is on a switch too
-                            WorldLocation switchLocation = TileLocation(Simulator.TDB.TrackDB.TrackNodes[thisSection.OriginalIndex].UiD);
-                            var distanceFromSwitch = WorldLocation.GetDistanceSquared(WorldPosition.WorldLocation, switchLocation);
-                            if (distanceFromSwitch < CarLengthM * CarLengthM + Math.Min(SpeedMpS * 3, 150))
-                            {
-                                isOverJunction = true;
-                                return isOverJunction;
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-
-                }
-            }
-
-            return isOverJunction;
-        }
-
 
         public static WorldLocation TileLocation(UiD uid)
         {

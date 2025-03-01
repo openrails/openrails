@@ -3459,7 +3459,7 @@ namespace Orts.Simulation.RollingStocks
                     }
 
                     // Water scoop spray effects control - always on when scoop over trough, regardless of whether above minimum speed or not
-                    if (ProcessWaterEffects && LocomotiveParameters.IsWaterScoopDown && IsOverTrough() && AbsSpeedMpS > 0.1)
+                    if (ProcessWaterEffects && LocomotiveParameters.IsWaterScoopDown && IsOverTrough && AbsSpeedMpS > 0.1)
                     {
                         float SpeedRatio = AbsSpeedMpS / MpS.FromMpH(100); // Ratio to reduce water disturbance with speed - an arbitary value of 100mph has been chosen as the reference
 
