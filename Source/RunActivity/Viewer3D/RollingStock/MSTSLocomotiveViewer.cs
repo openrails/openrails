@@ -2336,8 +2336,8 @@ namespace Orts.Viewer3D.RollingStock
         float NormalizedMouseMovement()
         {
             return (ControlDiscrete.Orientation > 0
-                ? (float)UserInput.MouseMoveY / (float)Control.Height
-                : (float)UserInput.MouseMoveX / (float)Control.Width)
+                ? (float)(UserInput.MouseMoveY + UserInput.MouseWheelChange) / (float)Control.Height
+                : (float)(UserInput.MouseMoveX + UserInput.MouseWheelChange) / (float)Control.Width)
                 * (ControlDiscrete.Direction > 0 ? -1 : 1);
         }
 

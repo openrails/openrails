@@ -166,7 +166,6 @@ namespace Orts.Viewer3D
         List<Camera> WellKnownCameras; // Providing Camera save functionality by GeorgeS
 
         public TrainCarViewer PlayerLocomotiveViewer { get; private set; }  // we are controlling this loco, or null if we aren't controlling any
-        MouseState originalMouseState;      // Current mouse coordinates.
 
         // This is the train we are controlling
         public TrainCar PlayerLocomotive { get { return Simulator.PlayerLocomotive; } set { Simulator.PlayerLocomotive = value; } }
@@ -1437,15 +1436,10 @@ namespace Orts.Viewer3D
                 ForceMouseVisible = false;
             }
 
-            // reset cursor type when needed
-
-            if (!(Camera is CabCamera) && !(Camera is ThreeDimCabCamera) && ActualCursor != Cursors.Default) ActualCursor = Cursors.Default;
-
             if (UserInput.IsMouseLeftButtonPressed || RenderProcess.IsMouseVisible)
             {
-                var locoViewer = (PlayerLocomotiveViewer as MSTSLocomotiveViewer);
+                var locoViewer = PlayerLocomotiveViewer as MSTSLocomotiveViewer;
 
-                // Mouse control for 2D cab
                 if (Camera is CabCamera && locoViewer._hasCabRenderer)
                 {
                     foreach (var controlRenderer in locoViewer._CabRenderer.ControlMap.Values)
@@ -1463,8 +1457,7 @@ namespace Orts.Viewer3D
                         }
                     }
                 }
-                // mouse for 3D camera
-                if (Camera is ThreeDimCabCamera && locoViewer._has3DCabRenderer)
+                else if (Camera is ThreeDimCabCamera && locoViewer._has3DCabRenderer)
                 {
                     var trainCarShape = locoViewer.ThreeDimentionCabViewer.TrainCarShape;
                     float bestD = 0.01f;  // 10 cm squared click range
@@ -1497,35 +1490,33 @@ namespace Orts.Viewer3D
                         }
                     }
                 }
+                else
+                {
+                    ActualCursor = Cursors.Default;
+                }
             }
 
             if (MousePickedControl != null & MousePickedControl != OldMousePickedControl)
                 Simulator.Confirmer.Message(ConfirmLevel.None, String.IsNullOrEmpty(MousePickedControl.ControlLabel) ? MousePickedControl.GetControlName() : MousePickedControl.ControlLabel);
 
-            if (MousePickedControl != null) ActualCursor = Cursors.Hand;
-            else if (ActualCursor == Cursors.Hand) ActualCursor = Cursors.Default;
+            ActualCursor = RenderProcess.ActualCursor = MousePickedControl != null ? Cursors.Hand : Cursors.Default;
+
+            if (UserInput.IsMouseWheelChanged)
+                MousePickedControl?.HandleUserInput();
 
             OldMousePickedControl = MousePickedControl;
             MousePickedControl = null;
 
-            if (MouseChangingControl != null)
-            {
-                MouseChangingControl.HandleUserInput();
-                if (UserInput.IsMouseLeftButtonReleased)
-                    MouseChangingControl = null;
-            }
+            MouseChangingControl?.HandleUserInput();
+            if (UserInput.IsMouseLeftButtonReleased)
+                MouseChangingControl = null;
 
-            UserInput.Handled();
-
-            MouseState currentMouseState = Mouse.GetState();
-
-            if (currentMouseState.X != originalMouseState.X ||
-                currentMouseState.Y != originalMouseState.Y)
+            if (UserInput.IsMouseMoved || RenderProcess.IsMouseVisible && UserInput.IsMouseWheelChanged)
                 MouseVisibleTillRealTime = RealTime + 1;
 
             RenderProcess.IsMouseVisible = ForceMouseVisible || RealTime < MouseVisibleTillRealTime;
-            originalMouseState = currentMouseState;
-            RenderProcess.ActualCursor = ActualCursor;
+
+            UserInput.Handled();
         }
 
         static bool IsReverserInNeutral(TrainCar car)
