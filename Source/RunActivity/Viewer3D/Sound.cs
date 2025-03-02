@@ -395,7 +395,7 @@ namespace Orts.Viewer3D
 
                     var CarBehind = Car.Train.Cars[CarNo + CarIncr];
                     var carPreviouslyOnSwitch = CarOnSwitch;
-                    CarOnSwitch = Car.IsOverJunction;
+                    CarOnSwitch = Car.IsOverSwitch || Car.IsOverCrossover;
 
                     // here check for curve
                     var carPreviouslyOnCurve = CarOnCurve;

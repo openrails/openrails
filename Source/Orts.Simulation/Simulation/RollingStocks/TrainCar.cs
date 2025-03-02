@@ -3104,7 +3104,8 @@ namespace Orts.Simulation.RollingStocks
         }
         #endregion
 
-        public bool IsOverJunction { get; private set; }
+        public bool IsOverSwitch { get; private set; }
+        public bool IsOverCrossover { get; private set; }
         public bool IsOverTrough { get; private set; }
 
         void UpdatePositionFlags()
@@ -3118,7 +3119,8 @@ namespace Orts.Simulation.RollingStocks
                 rearOffsetM += Train.Cars[i - 1].CouplerSlackM + Train.Cars[i - 1].GetCouplerZeroLengthM() + Train.Cars[i].CarLengthM;
             var frontOffsetM = rearOffsetM + CarLengthM;
 
-            var isOverJunction = false;
+            var isOverSwitch = false;
+            var isOverCrossover = false;
             var isOverTrough = false;
 
             // Scan through the track sections forwards from the REAR of the train (`Train.PresentPosition[1]`),
@@ -3133,7 +3135,8 @@ namespace Orts.Simulation.RollingStocks
                 // Does this car overlap this track section?
                 if (checkedM <= frontOffsetM && rearOffsetM <= checkedM + section.Length)
                 {
-                    if (section.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || section.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover) isOverJunction = true;
+                    if (section.CircuitType == TrackCircuitSection.TrackCircuitType.Junction) isOverSwitch = true;
+                    if (section.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover) isOverCrossover = true;
                     if (section.TroughInfo != null)
                     {
                         foreach (var troughs in section.TroughInfo)
@@ -3150,7 +3153,8 @@ namespace Orts.Simulation.RollingStocks
                 currentPin = nextPin;
             }
 
-            IsOverJunction = isOverJunction;
+            IsOverSwitch = isOverSwitch;
+            IsOverCrossover = isOverCrossover;
             IsOverTrough = isOverTrough;
         }
 
