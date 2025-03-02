@@ -3142,7 +3142,10 @@ namespace Orts.Simulation.RollingStocks
                         foreach (var troughs in section.TroughInfo)
                         {
                             var trough = troughs[currentPin.Direction];
-                            if (checkedM + trough.TroughStart <= frontOffsetM && rearOffsetM <= checkedM + trough.TroughEnd) isOverTrough = true;
+                            // Start and end are -1 if the trough extends beyond this section
+                            var troughStart = trough.TroughStart < 0 ? 0 : trough.TroughStart;
+                            var troughEnd = trough.TroughEnd < 0 ? section.Length : trough.TroughEnd;
+                            if (checkedM + troughStart <= frontOffsetM && rearOffsetM <= checkedM + troughEnd) isOverTrough = true;
                         }
                     }
                 }
