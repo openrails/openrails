@@ -1441,255 +1441,78 @@ namespace Orts.Viewer3D
 
             if (!(Camera is CabCamera) && !(Camera is ThreeDimCabCamera) && ActualCursor != Cursors.Default) ActualCursor = Cursors.Default;
 
-            // Mouse control for 2D cab
-
-            if (Camera is CabCamera && (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._hasCabRenderer)
-            {
-                if (UserInput.IsMouseLeftButtonPressed)
-                {
-                    var cabRenderer = (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer;
-                    foreach (var controlRenderer in cabRenderer.ControlMap.Values)
-                    {
-                        if ((Camera as CabCamera).SideLocation == controlRenderer.Control.CabViewpoint && controlRenderer is ICabViewMouseControlRenderer mouseRenderer && mouseRenderer.IsMouseWithin())
-                        {
-                            if ((controlRenderer.Control.Screens == null || controlRenderer.Control.Screens[0] == "all"))
-                            {
-                                MouseChangingControl = mouseRenderer;
-                                break;
-                            }
-                            else
-                            {
-                                foreach (var screen in controlRenderer.Control.Screens)
-                                {
-                                    if (cabRenderer.ActiveScreen[controlRenderer.Control.Display] == screen)
-                                    {
-                                        MouseChangingControl = mouseRenderer;
-                                        break;
-                                    }
-                                }
-                                if (MouseChangingControl == mouseRenderer) break;
-                            }
-                        }
-                    }
-                }
-
-                if (MouseChangingControl != null)
-                {
-                    MouseChangingControl.HandleUserInput();
-                    if (UserInput.IsMouseLeftButtonReleased)
-                    {
-                        MouseChangingControl = null;
-                        UserInput.Handled();
-                    }
-                }
-            }
-
-            // explore 2D cabview controls
-
-            if (Camera is CabCamera && (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._hasCabRenderer && MouseChangingControl == null && 
-                RenderProcess.IsMouseVisible)
-            {
-                var cabRenderer = (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer;
-                if (!UserInput.IsMouseLeftButtonPressed)
-                {
-                    foreach (var controlRenderer in cabRenderer.ControlMap.Values)
-                    {
-                        if ((Camera as CabCamera).SideLocation == controlRenderer.Control.CabViewpoint && controlRenderer is ICabViewMouseControlRenderer mouseRenderer && mouseRenderer.IsMouseWithin())
-                        {
-                            if ((controlRenderer.Control.Screens == null || controlRenderer.Control.Screens[0] == "all"))
-                            {
-                                MousePickedControl = mouseRenderer;
-                                break;
-                            }
-                            else
-                            {
-                                foreach (var screen in controlRenderer.Control.Screens)
-                                {
-                                    if (cabRenderer.ActiveScreen[controlRenderer.Control.Display] == screen)
-                                    {
-                                        MousePickedControl = mouseRenderer;
-                                        break;
-                                    }
-                                }
-                                if (MousePickedControl == mouseRenderer) break;
-                            }
-                        }
-                    }
-                    if (MousePickedControl != null & MousePickedControl != OldMousePickedControl)
-                    {
-                        // say what control you have here
-                        Simulator.Confirmer.Message(ConfirmLevel.None, String.IsNullOrEmpty(MousePickedControl.ControlLabel) ? MousePickedControl.GetControlName() : MousePickedControl.ControlLabel);
-                    }
-                    if (MousePickedControl != null) ActualCursor = Cursors.Hand;
-                    else if (ActualCursor == Cursors.Hand) ActualCursor = Cursors.Default;
-                    OldMousePickedControl = MousePickedControl;
-                    MousePickedControl = null;
-                }
-            }
-
-            // mouse for 3D camera
-
-            if (Camera is ThreeDimCabCamera && (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._has3DCabRenderer)
-            {
-                if (UserInput.IsMouseLeftButtonPressed)
-                {
-                    var locoViewer = (PlayerLocomotiveViewer as MSTSLocomotiveViewer);
-                    var trainCarShape = locoViewer.ThreeDimentionCabViewer.TrainCarShape;
-                    var animatedParts = locoViewer.ThreeDimentionCabViewer.AnimateParts;
-                    var controlMap = locoViewer.ThreeDimentionCabRenderer.ControlMap;
-                    float bestD = 0.015f;  // 15 cm squared click range
-                    CabViewControlRenderer cabRenderer;
-                    foreach (var animatedPart in animatedParts)
-                    {
-                        var key = animatedPart.Value.Key;
-                        try
-                        {
-                            cabRenderer = controlMap[key];
-                        }
-                        catch
-                        {
-                            continue;
-                        }
-                        var control = cabRenderer.Control;
-                        if (cabRenderer is CabViewDiscreteRenderer)
-                        {
-                            var eligibleToCheck = true;
-                            if (control.Screens != null && control.Screens[0] != "all")
-                            {
-                                eligibleToCheck = false;
-                                foreach (var screen in control.Screens)
-                                {
-                                    if (locoViewer.ThreeDimentionCabRenderer.ActiveScreen[control.Display] == screen)
-                                    {
-                                        eligibleToCheck = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (eligibleToCheck)
-                            {
-                                foreach (var iMatrix in animatedPart.Value.MatrixIndexes)
-                                {
-                                    var matrix = Matrix.Identity;
-                                    var hi = iMatrix;
-                                    while (hi >= 0 && hi < trainCarShape.Hierarchy.Length && trainCarShape.Hierarchy[hi] != -1)
-                                    {
-                                        Matrix.Multiply(ref matrix, ref trainCarShape.XNAMatrices[hi], out matrix);
-                                        hi = trainCarShape.Hierarchy[hi];
-                                    }
-                                    matrix = Matrix.Multiply(matrix, trainCarShape.Location.XNAMatrix);
-                                    var matrixWorldLocation = trainCarShape.Location.WorldLocation;
-                                    matrixWorldLocation.Location.X = matrix.Translation.X;
-                                    matrixWorldLocation.Location.Y = matrix.Translation.Y;
-                                    matrixWorldLocation.Location.Z = -matrix.Translation.Z;
-                                    Vector3 xnaCenter = Camera.XnaLocation(matrixWorldLocation);
-                                    float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, NearPoint, FarPoint);
-                                    if (bestD > d)
-                                    {
-                                        MouseChangingControl = cabRenderer as CabViewDiscreteRenderer;
-                                        bestD = d;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (MouseChangingControl != null)
-                {
-                    MouseChangingControl.HandleUserInput();
-                    if (UserInput.IsMouseLeftButtonReleased)
-                    {
-                        MouseChangingControl = null;
-                        UserInput.Handled();
-                    }
-                }
-            }
-
-            // explore 3D cabview controls
-
-            if (Camera is ThreeDimCabCamera && (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._has3DCabRenderer && MouseChangingControl == null &&
-                RenderProcess.IsMouseVisible)
+            if (UserInput.IsMouseLeftButtonPressed || RenderProcess.IsMouseVisible)
             {
                 var locoViewer = (PlayerLocomotiveViewer as MSTSLocomotiveViewer);
-                if (!UserInput.IsMouseLeftButtonPressed)
+
+                // Mouse control for 2D cab
+                if (Camera is CabCamera && locoViewer._hasCabRenderer)
+                {
+                    foreach (var controlRenderer in locoViewer._CabRenderer.ControlMap.Values)
+                    {
+                        if ((Camera as CabCamera).SideLocation == controlRenderer.Control.CabViewpoint
+                            && controlRenderer is ICabViewMouseControlRenderer mouseRenderer && mouseRenderer.IsMouseWithin()
+                            && (controlRenderer.Control.Screens == null || controlRenderer.Control.Screens.Count == 0 || controlRenderer.Control.Screens[0] == "all"
+                            || controlRenderer.Control.Screens.Contains(locoViewer._CabRenderer.ActiveScreen[controlRenderer.Control.Display])))
+                        {
+                            if (UserInput.IsMouseLeftButtonPressed)
+                                MouseChangingControl = mouseRenderer;
+                            else if (MouseChangingControl == null && RenderProcess.IsMouseVisible)
+                                MousePickedControl = mouseRenderer;
+                            break;
+                        }
+                    }
+                }
+                // mouse for 3D camera
+                if (Camera is ThreeDimCabCamera && locoViewer._has3DCabRenderer)
                 {
                     var trainCarShape = locoViewer.ThreeDimentionCabViewer.TrainCarShape;
-                    var animatedParts = locoViewer.ThreeDimentionCabViewer.AnimateParts;
-                    var controlMap = locoViewer.ThreeDimentionCabRenderer.ControlMap;
                     float bestD = 0.01f;  // 10 cm squared click range
-                    CabViewControlRenderer cabRenderer;
-                    foreach (var animatedPart in animatedParts)
+                    foreach (var animatedPart in locoViewer.ThreeDimentionCabViewer.AnimateParts.Values)
                     {
-                        var key = animatedPart.Value.Key;
-                        try
+                        if (locoViewer.ThreeDimentionCabRenderer.ControlMap.TryGetValue(animatedPart.Key, out var controlRenderer)
+                            && controlRenderer is ICabViewMouseControlRenderer mouseRenderer
+                            && (controlRenderer.Control.Screens == null || controlRenderer.Control.Screens.Count == 0 || controlRenderer.Control.Screens[0] == "all" ||
+                                controlRenderer.Control.Screens.Contains(locoViewer.ThreeDimentionCabRenderer.ActiveScreen[controlRenderer.Control.Display])))
                         {
-                            cabRenderer = controlMap[key];
-                        }
-                        catch
-                        {
-                            continue;
-                        }
-                        var control = cabRenderer.Control;
-                        if (cabRenderer is CabViewDiscreteRenderer)
-                        {
-                            var eligibleToCheck = true;
-                            if (control.Screens != null && control.Screens[0] != "all")
+                            foreach (var targetNode in animatedPart.MatrixIndexes)
                             {
-                                eligibleToCheck = false;
-                                foreach (var screen in control.Screens)
+                                if (!trainCarShape.SharedShape.StoredResultMatrixes.TryGetValue(targetNode, out var matrix))
+                                    continue;
+                                var matrixWorldLocation = trainCarShape.Location.WorldLocation;
+                                matrixWorldLocation.Location.X = matrix.Translation.X;
+                                matrixWorldLocation.Location.Y = matrix.Translation.Y;
+                                matrixWorldLocation.Location.Z = -matrix.Translation.Z;
+                                Vector3 xnaCenter = Camera.XnaLocation(matrixWorldLocation);
+                                float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, NearPoint, FarPoint);
+                                if (bestD > d)
                                 {
-                                    if (locoViewer.ThreeDimentionCabRenderer.ActiveScreen[control.Display] == screen)
-                                    {
-                                        eligibleToCheck = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (eligibleToCheck)
-                            {
-                                foreach (var iMatrix in animatedPart.Value.MatrixIndexes)
-                                {
-                                    var matrix = Matrix.Identity;
-                                    var hi = iMatrix;
-                                    while (hi >= 0 && hi < trainCarShape.Hierarchy.Length && trainCarShape.Hierarchy[hi] != -1)
-                                    {
-                                        Matrix.Multiply(ref matrix, ref trainCarShape.XNAMatrices[hi], out matrix);
-                                        hi = trainCarShape.Hierarchy[hi];
-                                    }
-                                    matrix = Matrix.Multiply(matrix, trainCarShape.Location.XNAMatrix);
-                                    var matrixWorldLocation = trainCarShape.Location.WorldLocation;
-                                    matrixWorldLocation.Location.X = matrix.Translation.X;
-                                    matrixWorldLocation.Location.Y = matrix.Translation.Y;
-                                    matrixWorldLocation.Location.Z = -matrix.Translation.Z;
-                                    Vector3 xnaCenter = Camera.XnaLocation(matrixWorldLocation);
-                                    float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, NearPoint, FarPoint);
-
-                                    if (bestD > d)
-                                    {
-                                        MousePickedControl = cabRenderer as CabViewDiscreteRenderer;
-                                        bestD = d;
-                                    }
+                                    bestD = d;
+                                    if (UserInput.IsMouseLeftButtonPressed)
+                                        MouseChangingControl = mouseRenderer;
+                                    else if (MouseChangingControl == null && RenderProcess.IsMouseVisible)
+                                        MousePickedControl = mouseRenderer;
                                 }
                             }
                         }
                     }
-                    if (MousePickedControl != null & MousePickedControl != OldMousePickedControl)
-                    {
-                        // say what control you have here
-                        Simulator.Confirmer.Message(ConfirmLevel.None, String.IsNullOrEmpty(MousePickedControl.ControlLabel) ? MousePickedControl.GetControlName() : MousePickedControl.ControlLabel);
-                    }
-                    if (MousePickedControl != null)
-                    {
-                        ActualCursor = Cursors.Hand;
-                    }
-                    else if (ActualCursor == Cursors.Hand)
-                    {
-                        ActualCursor = Cursors.Default;
-                    }
-                    OldMousePickedControl = MousePickedControl;
-                    MousePickedControl = null;
                 }
+            }
+
+            if (MousePickedControl != null & MousePickedControl != OldMousePickedControl)
+                Simulator.Confirmer.Message(ConfirmLevel.None, String.IsNullOrEmpty(MousePickedControl.ControlLabel) ? MousePickedControl.GetControlName() : MousePickedControl.ControlLabel);
+
+            if (MousePickedControl != null) ActualCursor = Cursors.Hand;
+            else if (ActualCursor == Cursors.Hand) ActualCursor = Cursors.Default;
+
+            OldMousePickedControl = MousePickedControl;
+            MousePickedControl = null;
+
+            if (MouseChangingControl != null)
+            {
+                MouseChangingControl.HandleUserInput();
+                if (UserInput.IsMouseLeftButtonReleased)
+                    MouseChangingControl = null;
             }
 
             UserInput.Handled();
