@@ -59,7 +59,7 @@ namespace ORTS.ContentManager.Models
                 var CarList = new List<Car>();
                 foreach (Wagon wag in file.Train.TrainCfg.WagonList)
                 {
-                    float wagonMassKG = 0; int numEngAxlesOrts = 0;
+                    float wagonMassKG = 0; int ortsEngAxles = -1; int numDriveAxles = 0; int numAllAxles = 0;
                     try
                     {
                         var fileType = wag.IsEngine ? ".eng" : ".wag";
@@ -74,36 +74,46 @@ namespace ORTS.ContentManager.Models
                         MinCouplerStrengthN = Math.Min(MinCouplerStrengthN, wagonFile.MinCouplerStrengthN);
                         if (wagonFile.MaxBrakeForceN > 0) { NumOperativeBrakes++; }
 
-                        if (wag.IsEngine && engFile.MaxForceN > 25000)  // exclude legacy driving trailers / cab-cars
+                        if (wag.IsEngine)
                         {
-                            EngCount++;
-                            MaxPowerW += engFile.MaxPowerW;
-                            MaxTractiveForceN += engFile.MaxForceN;
-                            numEngAxlesOrts = engFile.NumDriveAxles;
+                            // see MSTSLocomotive.Initialize()
+                            ortsEngAxles = engFile.NumDriveAxles;
+                            if (ortsEngAxles >= 0) { numDriveAxles = ortsEngAxles; }
+                            else if (engFile.NumEngWheels > 7f) { numDriveAxles = (int)(engFile.NumEngWheels / 2f); }
+                            else if (engFile.NumEngWheels > 0) { numDriveAxles = (int)engFile.NumEngWheels; }
+                            else { numDriveAxles = 4; }
+
+                            if (engFile.MaxForceN > 25000)  // exclude legacy driving trailers / cab-cars
+                            {
+                                EngCount++;
+                                MaxPowerW += engFile.MaxPowerW;
+                                MaxTractiveForceN += engFile.MaxForceN;
+                            }
+                            else { WagCount++; }
                         }
                         else if (!wag.IsEOT && wagonFile.WagonSize.LengthM > 1.1) // exclude legacy EOT
                         {
                             WagCount++;
                         }
 
-                        int totAxles = 0;
                         // see MSTSWagon.LoadFromWagFile()
-                        if (numEngAxlesOrts > 0) { totAxles = numEngAxlesOrts + wagonFile.NumWagAxles; }
-                        else if (wagonFile.NumWagAxles > 0) { totAxles = wagonFile.NumWagAxles; }
-                        else if (wagonFile.NumWagWheels >= 7f) { totAxles = (int)(wagonFile.NumWagWheels / 2f); }
-                        else if (wagonFile.NumWagWheels >= 0f) { totAxles = (int)wagonFile.NumWagWheels; }
-                        else { totAxles = 4; }
+                        if (ortsEngAxles >= 0 && wagonFile.NumWagAxles >= 0) { numAllAxles = ortsEngAxles + wagonFile.NumWagAxles; }
+                        else if (wagonFile.NumWagAxles >= 0) { numAllAxles =  wagonFile.NumWagAxles; }
+                        else if (wagonFile.NumWagWheels >= 7f) { numAllAxles = (int)(wagonFile.NumWagWheels / 2f); }
+                        else if (wagonFile.NumWagWheels >= 0f) { numAllAxles = (int)wagonFile.NumWagWheels; }
+                        else { numAllAxles = 4; }
+                        if (numDriveAxles > numAllAxles) { numAllAxles = numDriveAxles; }
 
                         // exclude legacy EOT from total axle count
                         if (!wag.IsEOT && wagonFile.WagonSize.LengthM > 1.1)
                         {
-                            NumAxles += totAxles;
+                            NumAxles += numAllAxles;
                         }
 
-                        if (totAxles > 0 && wagonFile.MassKG > 1000)
+                        if (numAllAxles > 0 && wagonFile.MassKG > 1000)
                         {
                             const float GravitationalAccelerationMpS2 = 9.80665f;
-                            var derailForce = wagonFile.MassKG / totAxles / 2f * GravitationalAccelerationMpS2;
+                            var derailForce = wagonFile.MassKG / numAllAxles / 2f * GravitationalAccelerationMpS2;
                             if (derailForce > 1000f) { MinDerailForceN = Math.Min(MinDerailForceN, derailForce); }
                         }
                     }

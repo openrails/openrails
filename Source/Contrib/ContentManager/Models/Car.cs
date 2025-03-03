@@ -57,6 +57,8 @@ namespace ORTS.ContentManager.Models
 
             const float GravitationalAccelerationMpS2 = 9.80665f;
 
+            int ortsEngAxles = -1;  // not present
+
             // .eng files also have a wagon block
             var wagFile = new WagonFile(content.PathName);
             Type = CarType.Wagon;
@@ -77,15 +79,18 @@ namespace ORTS.ContentManager.Models
                 MaxForceN = engFile.MaxForceN;
                 MaxSpeedMps = engFile.MaxSpeedMps;
                 Description = engFile.Description;
+
                 // see MSTSLocomotive.Initialize()
-                if (engFile.NumDriveAxles > 0) { NumDriveAxles = engFile.NumDriveAxles; }
+                ortsEngAxles = engFile.NumDriveAxles;
+                if (ortsEngAxles >= 0) { NumDriveAxles = ortsEngAxles; }
                 else if (engFile.NumEngWheels >= 7f) { NumDriveAxles = (int)(engFile.NumEngWheels / 2f); }
                 else if (engFile.NumEngWheels > 0f) { NumDriveAxles = (int)engFile.NumEngWheels; }
                 else { NumDriveAxles = 4; }
             }
 
             // see MSTSWagon.LoadFromWagFile()
-            if (wagFile.NumWagAxles > 0) { NumAllAxles = wagFile.NumWagAxles + NumDriveAxles; }
+            if (ortsEngAxles >= 0 && wagFile.NumWagAxles >= 0) { NumAllAxles = ortsEngAxles + wagFile.NumWagAxles; }
+            else if (wagFile.NumWagAxles >= 0) { NumAllAxles = wagFile.NumWagAxles; }
             else if (wagFile.NumWagWheels >= 7f) { NumAllAxles = (int)(wagFile.NumWagWheels / 2f); }
             else if (wagFile.NumWagWheels > 0f) { NumAllAxles = (int)wagFile.NumWagWheels; }
             else { NumAllAxles = 4; }
