@@ -102,7 +102,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
 
             // Changes brake type if tender fitted with steam brakes
-            if (Car.WagonType == MSTSWagon.WagonTypes.Tender) 
+            if (Car.WagonType == MSTSWagon.WagonTypes.Tender)
             {
                 var wagonid = Car as MSTSWagon;
                 // Find the associated steam locomotive for this tender
@@ -155,11 +155,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
 
             BrakeForceFraction = ManualBrakingCurrentFraction / ManualMaxBrakeValue;
-          
+
             // If car is a locomotive or tender, then process engine brake
             if (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender) // Engine brake
             {
-                if (lead != null)
+                if (lead != null && lead.EngineBrakeController != null)
                 {
                     EngineBrakeSettingValue = lead.EngineBrakeController.CurrentValue;
                     if (lead.SteamEngineBrakeFitted)
@@ -171,7 +171,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
                         EngineBrakeDesiredFraction = EngineBrakeSettingValue * ManualMaxBrakeValue;
                     }
-              
+
 
                     if (EngineBrakingCurrentFraction < EngineBrakeDesiredFraction)
                     {
@@ -206,22 +206,30 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
             }
 
-                float f;
             if (!Car.BrakesStuck)
             {
-                f = Car.MaxBrakeForceN * Math.Min(BrakeForceFraction, 1);
-                if (f < Car.MaxHandbrakeForceN * HandbrakePercent / 100)
-                    f = Car.MaxHandbrakeForceN * HandbrakePercent / 100;
-            }
-            else f = Math.Max(Car.MaxBrakeForceN, Car.MaxHandbrakeForceN / 2);
-            Car.BrakeRetardForceN = f * Car.BrakeShoeRetardCoefficientFrictionAdjFactor; // calculates value of force applied to wheel, independent of wheel skid
-            if (Car.BrakeSkid) // Test to see if wheels are skiding to excessive brake force
-            {
-                Car.BrakeForceN = f * Car.SkidFriction;   // if excessive brakeforce, wheel skids, and loses adhesion
+                Car.BrakeShoeForceN = Car.MaxBrakeForceN * Math.Min(BrakeForceFraction, 1);
+                if (Car.BrakeShoeForceN < Car.MaxHandbrakeForceN * HandbrakePercent / 100)
+                {
+                    Car.BrakeShoeForceN = Car.MaxHandbrakeForceN * HandbrakePercent / 100;
+                }
             }
             else
             {
-                Car.BrakeForceN = f * Car.BrakeShoeCoefficientFrictionAdjFactor; // In advanced adhesion model brake shoe coefficient varies with speed, in simple model constant force applied as per value in WAG file, will vary with wheel skid.
+                Car.BrakeShoeForceN = Math.Max(Car.MaxBrakeForceN, Car.MaxHandbrakeForceN / 2);
+            }
+
+            float brakeShoeFriction = Car.GetBrakeShoeFrictionFactor();
+            Car.HuDBrakeShoeFriction = Car.GetBrakeShoeFrictionCoefficientHuD();
+
+            Car.BrakeRetardForceN = Car.BrakeShoeForceN * brakeShoeFriction; // calculates value of force applied to wheel, independent of wheel skid
+            if (Car.BrakeSkid) // Test to see if wheels are skiding to excessive brake force
+            {
+                Car.BrakeForceN = Car.BrakeShoeForceN * Car.SkidFriction;   // if excessive brakeforce, wheel skids, and loses adhesion
+            }
+            else
+            {
+                Car.BrakeForceN = Car.BrakeShoeForceN * brakeShoeFriction; // In advanced adhesion model brake shoe coefficient varies with speed, in simple model constant force applied as per value in WAG file, will vary with wheel skid.
             }
 
         }
@@ -252,6 +260,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 return new string[] {
                 DebugType,
                 string.Format("{0:F0}", FormatStrings.FormatPressure(SteamBrakeCylinderPressurePSI, PressureUnit.PSI,  PressureUnit.PSI, true)),
+                string.Empty,
                 string.Empty,
                 string.Empty,
                 string.Empty,
@@ -340,6 +349,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override float GetCylVolumeM3()
         {
             return 0;
+        }
+
+        public override float GetTotalCylVolumeM3()
+        {
+            return 0;
+        }
+
+        public override float GetNormalizedCylTravel()
+        {
+            return Car.BrakeShoeForceN > 0.0f ? 1.0f : 0.0f;
         }
 
         public override float GetVacResVolume()

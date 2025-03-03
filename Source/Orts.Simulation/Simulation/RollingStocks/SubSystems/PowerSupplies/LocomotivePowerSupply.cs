@@ -55,11 +55,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                return Train.Cars.OfType<MSTSWagon>()
-                    .Where(wagon => wagon.PassengerCarPowerSupply != null)
-                    .Where(wagon => wagon.PassengerCarPowerSupply.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive))
-                    .Select(wagon => wagon.PassengerCarPowerSupply.ElectricTrainSupplyPowerW / wagon.PassengerCarPowerSupply.ElectricTrainSupplyConnectedLocomotives.Count())
-                    .Sum();
+                float result = 0;
+                foreach (var car in Train.Cars)
+                {
+                    if (car == null) continue;
+                    if (!(car is MSTSWagon wagon)) continue;
+                    if (!(wagon.PassengerCarPowerSupply?.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive) ?? false)) continue;
+                    result += wagon.PassengerCarPowerSupply.ElectricTrainSupplyPowerW / wagon.PassengerCarPowerSupply.ElectricTrainSupplyConnectedLocomotives.Count();
+                }
+                return result;
             }
         }
 
@@ -328,11 +332,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             AbstractScript.SignalEventToTcsWithMessage = (evt, message) => Locomotive.TrainControlSystem.HandleEvent(evt, message);
             AbstractScript.SignalEventToOtherLocomotives = (evt) =>
             {
-                if (Locomotive == Simulator.PlayerLocomotive)
+                if (Locomotive == Train.LeadLocomotive)
                 {
                     foreach (MSTSLocomotive locomotive in Locomotive.Train.Cars.OfType<MSTSLocomotive>())
                     {
-                        if (locomotive != Locomotive && locomotive != Locomotive.Train.LeadLocomotive && locomotive.RemoteControlGroup != -1)
+                        if (locomotive != Locomotive && locomotive.RemoteControlGroup != -1)
                         {
                             locomotive.LocomotivePowerSupply.HandleEventFromLeadLocomotive(evt);
                         }
@@ -341,11 +345,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             };
             AbstractScript.SignalEventToOtherLocomotivesWithId = (evt, id) =>
             {
-                if (Locomotive == Simulator.PlayerLocomotive)
+                if (Locomotive == Train.LeadLocomotive)
                 {
                     foreach (MSTSLocomotive locomotive in Locomotive.Train.Cars.OfType<MSTSLocomotive>())
                     {
-                        if (locomotive != Locomotive && locomotive != Locomotive.Train.LeadLocomotive && locomotive.RemoteControlGroup != -1)
+                        if (locomotive != Locomotive && locomotive.RemoteControlGroup != -1)
                         {
                             locomotive.LocomotivePowerSupply.HandleEventFromLeadLocomotive(evt, id);
                         }
@@ -354,26 +358,40 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             };
             AbstractScript.SignalEventToOtherTrainVehicles = (evt) =>
             {
-                if (Locomotive == Simulator.PlayerLocomotive)
+                if (Locomotive == Train.LeadLocomotive)
                 {
                     foreach (TrainCar car in Locomotive.Train.Cars)
                     {
-                        if (car != Locomotive && car != Locomotive.Train.LeadLocomotive && car.RemoteControlGroup != -1)
+                        if (car != Locomotive && car.RemoteControlGroup != -1)
                         {
-                            car.PowerSupply?.HandleEventFromLeadLocomotive(evt);
+                            if (car.PowerSupply != null)
+                            {
+                                car.PowerSupply.HandleEventFromLeadLocomotive(evt);
+                            }
+                            else if (car is MSTSWagon wagon)
+                            {
+                                wagon.Pantographs.HandleEvent(evt);
+                            }
                         }
                     }
                 }
             };
             AbstractScript.SignalEventToOtherTrainVehiclesWithId = (evt, id) =>
             {
-                if (Locomotive == Simulator.PlayerLocomotive)
+                if (Locomotive == Train.LeadLocomotive)
                 {
                     foreach (TrainCar car in Locomotive.Train.Cars)
                     {
-                        if (car != Locomotive && car != Locomotive.Train.LeadLocomotive && car.RemoteControlGroup != -1)
+                        if (car != Locomotive && car.RemoteControlGroup != -1)
                         {
-                            car.PowerSupply?.HandleEventFromLeadLocomotive(evt, id);
+                            if (car.PowerSupply != null)
+                            {
+                                car.PowerSupply.HandleEventFromLeadLocomotive(evt, id);
+                            }
+                            else if (car is MSTSWagon wagon)
+                            {
+                                wagon.Pantographs.HandleEvent(evt, id);
+                            }
                         }
                     }
                 }
@@ -384,7 +402,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 foreach (MSTSDieselLocomotive locomotive in Train.Cars.OfType<MSTSDieselLocomotive>().Where((MSTSLocomotive locomotive) => { return locomotive.RemoteControlGroup != -1; }))
                 {
-                    if (locomotive == Simulator.PlayerLocomotive)
+                    if (locomotive == Train.LeadLocomotive)
                     {
                         // Engine number 1 or above are helper engines
                         for (int i = 1; i < locomotive.DieselEngines.Count; i++)

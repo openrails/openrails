@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2012, 2013 by the Open Rails project.
+// COPYRIGHT 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -473,7 +473,7 @@ namespace Orts.MultiPlayer
                 }
                 else
                 {
-                    System.Console.WriteLine("Wrong version of protocol, will play in single mode, please update to version " + MPManager.Instance().version);
+                    Trace.TraceWarning("Wrong version of protocol, will play in single mode, please update to version " + MPManager.Instance().version);
                     throw new MultiPlayerError();//client, close the connection
                 }
             }
@@ -1385,7 +1385,7 @@ namespace Orts.MultiPlayer
                 }
                 catch (Exception error)
                 {
-                    Console.WriteLine(wagonFilePath + " " + error);
+                    Trace.WriteLine(new FileLoadException(wagonFilePath, error));
                     car = MPManager.Instance().SubCar(train, wagonFilePath, lengths[i]);
                 }
 
@@ -1614,7 +1614,7 @@ namespace Orts.MultiPlayer
                     }
                     catch (Exception error)
                     {
-                        Console.WriteLine(wagonFilePath + " " + error);
+                        Trace.WriteLine(new FileLoadException(wagonFilePath, error));
                         car = MPManager.Instance().SubCar(train, wagonFilePath, lengths[i]);
                     }
 
@@ -1634,11 +1634,11 @@ namespace Orts.MultiPlayer
 
                 train.MUDirection = (Direction)mDirection;
                 train.RearTDBTraveller = traveller;
+                train.ReinitializeEOT();
                 train.CalculatePositionOfCars();
                 train.travelled = Travelled;
                 train.CheckFreight();
                 train.SetDPUnitIDs();
-                train.ReinitializeEOT();
             }
             // New train
             else
@@ -1664,7 +1664,7 @@ namespace Orts.MultiPlayer
                     }
                     catch (Exception error)
                     {
-                        Console.WriteLine(wagonFilePath + " " + error);
+                        Trace.WriteLine(new FileLoadException(wagonFilePath, error));
                         car = MPManager.Instance().SubCar(train, wagonFilePath, lengths[i]);
                     }
 
@@ -2756,7 +2756,7 @@ namespace Orts.MultiPlayer
                 }
                 if (tmpcars2.Count == 0) return;
                 train2.Cars = tmpcars2;
-                train2.Name = String.Concat(String.Copy(train.Name), Train.TotalNumber.ToString());
+                train2.Name = String.Concat(train.Name, Train.TotalNumber.ToString());
                 train2.LeadLocomotive = null;
                 train2.LeadNextLocomotive();
                 train2.CheckFreight();
@@ -2840,7 +2840,7 @@ namespace Orts.MultiPlayer
                     train2.TrainType = Train.TRAINTYPE.STATIC;
                     this.oldTrainNumber = train.Number;
                     train2.LastReportedSpeed = 1;
-                    if (train2.Name.Length < 4) train2.Name = String.Concat("STATIC-", String.Copy(train2.Name));
+                    if (train2.Name.Length < 4) train2.Name = String.Concat("STATIC-", train2.Name);
                     MPManager.Simulator.AI.aiListChanged = true;
                     MPManager.Instance().AddOrRemoveLocomotives(user, train, true);
                     MPManager.Instance().AddOrRemoveLocomotives(user, train2, true);

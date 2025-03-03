@@ -103,7 +103,8 @@ namespace Orts.Viewer3D.Popups
                     Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Can't attach EOT if player train not stopped"));
                     return;
                 }
-                if (PickedEOTTypeFromList.ToLower() != Viewer.PlayerLocomotive.Train.Cars[Viewer.PlayerLocomotive.Train.Cars.Count - 1].WagFilePath.ToLower())
+                if (PickedEOTTypeFromList.ToLower() != Viewer.PlayerLocomotive.Train.Cars[Viewer.PlayerLocomotive.Train.Cars.Count - 1].WagFilePath.ToLower() &&
+                    PickedEOTTypeFromList.ToLower() != Viewer.PlayerLocomotive.Train.Cars[0].WagFilePath.ToLower())
                 {
                     if (Viewer.PlayerLocomotive.Train?.EOT != null)
                     {
@@ -113,7 +114,8 @@ namespace Orts.Viewer3D.Popups
                     //Ask to mount EOT
                     new EOTMountCommand(Viewer.Log, true, PickedEOTTypeFromList);
                 }
-                else if (PickedEOTTypeFromList.ToLower() == Viewer.PlayerLocomotive.Train.Cars[Viewer.PlayerLocomotive.Train.Cars.Count - 1].WagFilePath.ToLower())
+                else if (PickedEOTTypeFromList.ToLower() == Viewer.PlayerLocomotive.Train.Cars[Viewer.PlayerLocomotive.Train.Cars.Count - 1].WagFilePath.ToLower() ||
+                    PickedEOTTypeFromList.ToLower() == Viewer.PlayerLocomotive.Train.Cars[0].WagFilePath.ToLower())
                 {
                     new EOTMountCommand(Viewer.Log, false, PickedEOTTypeFromList);
                 }

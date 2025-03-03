@@ -210,7 +210,6 @@ namespace Orts.Viewer3D
 
         WorldFile LoadWorldFile(int tileX, int tileZ, bool visible)
         {
-            Trace.Write("W");
             try
             {
                 return new WorldFile(Viewer, tileX, tileZ, visible);
@@ -340,10 +339,11 @@ namespace Orts.Viewer3D
                     }
                 }
 
-                if (shapeFilePath != null && Vfs.FileExists(shapeFilePath + "d"))
+                var shapeDescriptorPath = shapeFilePath + "d";
+                if (shapeFilePath != null)
                 {
-                    var shape = new ShapeDescriptorFile(shapeFilePath + "d");
-                    if (shape.shape.ESD_Bounding_Box != null)
+                    var shape = new ShapeDescriptorFile(shapeDescriptorPath);
+                    if (shape.shape?.ESD_Bounding_Box != null)
                     {
                         var min = shape.shape.ESD_Bounding_Box.Min;
                         var max = shape.shape.ESD_Bounding_Box.Max;
@@ -366,24 +366,25 @@ namespace Orts.Viewer3D
                         // We might not have found the junction node; if so, fall back to the static track shape.
                         if (trJunctionNode != null)
                         {
-                            if (viewer.Simulator.UseSuperElevation > 0) SuperElevationManager.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ, shapeFilePath);
+                            // Superelevation is a bit over zealous and will add superelevation to junctions, needs to be removed
+                            SuperElevationManager.ClearJunctionSuperElevation(viewer, trackObj, worldMatrix);
                             sceneryObjects.Add(new SwitchTrackShape(viewer, shapeFilePath, worldMatrix, trJunctionNode));
                         }
                         else
                         {
-                            //if want to use super elevation, we will generate tracks using dynamic tracks
-                            if (viewer.Simulator.UseSuperElevation > 0
-                                && SuperElevationManager.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ, shapeFilePath))
+                            // See if superelevation should be used on this piece of track
+                            if (viewer.Simulator.UseSuperElevation
+                                && SuperElevationManager.DecomposeStaticSuperElevation(viewer, trackObj, worldMatrix, dTrackList, shapeFilePath))
                             {
-                                //var success = SuperElevation.DecomposeStaticSuperElevation(viewer, dTrackList, trackObj, worldMatrix, TileX, TileZ, shapeFilePath);
-                                //if (success == 0) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
+                                // Don't add scenery for this section of track, dynamic superelevated track will be created instead
                             }
-                            //otherwise, use shapes
-                            else if (!containsMovingTable) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
+                            // No superelevation, use static shapes
+                            else if (!containsMovingTable)
+                                sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
                             else
                             {
                                 var found = false;
-                                foreach (var movingTable in Program.Simulator.            MovingTables)
+                                foreach (var movingTable in Program.Simulator.MovingTables)
                                 {
                                     if (worldObject.UID == movingTable.UID && WFileName == movingTable.WFile)
                                     {
@@ -414,7 +415,8 @@ namespace Orts.Viewer3D
                         {
                             int success = Wire.DecomposeStaticWire(viewer, dTrackList, trackObj, worldMatrix);
                             //if cannot draw wire, try to see if it is converted. modified for DynaTrax
-                            if (success == 0 && trackObj.FileName.Contains("Dyna")) Wire.DecomposeConvertedDynamicWire(viewer, dTrackList, trackObj, worldMatrix);
+                            if (success == 0 && trackObj.FileName.Contains("Dyna"))
+                                Wire.DecomposeConvertedDynamicWire(viewer, dTrackList, trackObj, worldMatrix);
                         }
                     }
                     else if (worldObject.GetType() == typeof(DyntrackObj))
@@ -422,11 +424,10 @@ namespace Orts.Viewer3D
                         if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true)
                             Wire.DecomposeDynamicWire(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
                         // Add DyntrackDrawers for individual subsections
-                        if (viewer.Simulator.UseSuperElevation > 0 && SuperElevationManager.UseSuperElevationDyn(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix))
-                            SuperElevationManager.DecomposeDynamicSuperElevation(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
-                        else DynamicTrack.Decompose(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
+                        SuperElevationManager.DecomposeDynamicSuperElevation(viewer, dTrackList, (DyntrackObj)worldObject, worldMatrix);
 
-                    } // end else if DyntrackObj
+                    }
+                    // Objects other than tracks
                     else if (worldObject.GetType() == typeof(ForestObj))
                     {
                         if (!(worldObject as ForestObj).IsYard)
@@ -575,8 +576,10 @@ namespace Orts.Viewer3D
                 }
             }
 
-            if (viewer.Simulator.UseSuperElevation > 0) SuperElevationManager.DecomposeStaticSuperElevation(Viewer, dTrackList, TileX, TileZ);
-            if (Viewer.World.Sounds != null) Viewer.World.Sounds.AddByTile(TileX, TileZ);
+            // Generate graphics for dynamic track objects after processing entire tile
+            foreach (var dView in dTrackList)
+                dView.Primitive.PreparePrimitives(viewer);
+            Viewer.World.Sounds?.AddByTile(TileX, TileZ);
         }
 
         /// <summary>

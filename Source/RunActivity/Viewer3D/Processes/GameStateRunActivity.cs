@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2021 by the Open Rails project.
+// COPYRIGHT 2021 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -95,7 +95,7 @@ namespace Orts.Viewer3D.Processes
             public string acttype;
         }
 
-        static DispatchViewer DebugViewer { get { return Program.DebugViewer; } set { Program.DebugViewer = value; } }
+        static MapViewer MapForm { get { return Program.MapForm; } set { Program.MapForm = value; } }
         static SoundDebugForm SoundDebugForm { get { return Program.SoundDebugForm; } set { Program.SoundDebugForm = value; } }
 
         LoadingPrimitive Loading;
@@ -243,7 +243,7 @@ namespace Orts.Viewer3D.Processes
                     default:
                         MessageBox.Show("To start " + Application.ProductName + ", please run 'OpenRails.exe'.\n\n"
                                 + "If you are attempting to debug this component, please run 'OpenRails.exe' and execute the scenario you are interested in. "
-                                + "In the log file, the command-line arguments used will be listed at the top. "
+                                + "In the log file, a line with the command-line arguments used will be listed at the top. "
                                 + "You should then configure your debug environment to execute this component with those command-line arguments.",
                                 Application.ProductName + " " + VersionInfo.VersionOrBuild);
                         Game.Exit();
@@ -432,11 +432,15 @@ namespace Orts.Viewer3D.Processes
                 if (MPManager.IsMultiPlayer() && MPManager.IsServer())
                     MPManager.OnlineTrains.Save (outf);
 
+                Viewer.TrainCarOperationsWebpage.Save(outf);
+
                 SaveEvaluation(outf);
 
                 // Write out position within file so we can check when restoring.
                 outf.Write(outf.BaseStream.Position);
             }
+
+            LogLocation();
 
             // Having written .save file, write other files: .replay, .txt, .evaluation.txt
 
@@ -452,30 +456,44 @@ namespace Orts.Viewer3D.Processes
                 File.Copy(Program.EvaluationFilename, Path.Combine(UserSettings.UserDataFolder, saveSet.FileStem + ".evaluation.txt"), true); 
         }
 
+
+        /// <summary>
+        /// Append time and location to the log for potential use in an ACT file. E.g.:
+        /// "Location ( -6112 15146 78.15 -672.81 10 )"
+        /// </summary>
+        private static void LogLocation()
+        {
+            var t = Simulator.Trains[0].FrontTDBTraveller;
+            var location = $"Location ( {t.TileX} {t.TileZ} {t.X:F2} {t.Z:F2}";
+            location += $" 10 )"; // Matches location if within this 10 meter radius
+            var clockTime = FormatStrings.FormatTime(Simulator.ClockTime);
+            Console.WriteLine($"\nSave after {(int)Simulator.GameTime} secs at {clockTime}, EventCategoryLocation = {location}");
+        }        
+
         private static void SaveEvaluation(BinaryWriter outf)
-                {
-                    outf.Write(ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Count);
-                    for (int i = 0; i < ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Count; i++)
-                    {
+        {
+            outf.Write(ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Count);
+            for (int i = 0; i < ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Count; i++)
+            {
                 outf.Write((string)ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding[i]);
-                    }
-                    outf.Write(Popups.TrackMonitor.DbfEvalOverSpeed);
-                    outf.Write(Popups.TrackMonitor.DbfEvalOverSpeedTimeS);
-                    outf.Write(Popups.TrackMonitor.DbfEvalIniOverSpeedTimeS);
-                    outf.Write(RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBmoving);
-                    outf.Write(RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBstopped);
-                    outf.Write(Simulation.Physics.Train.NumOfCouplerBreaks);
-                    outf.Write(Simulation.RollingStocks.MSTSLocomotive.DbfEvalFullTrainBrakeUnder8kmh);
-                    outf.Write(Simulation.RollingStocks.SubSystems.ScriptedTrainControlSystem.DbfevalFullBrakeAbove16kmh);
-                    outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTrainOverturned);
-                    outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFast);
-                    outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFastSnappedBrakeHose);
-                    outf.Write(Simulator.DbfEvalOverSpeedCoupling);
-                    outf.Write(Viewer.DbfEvalAutoPilotTimeS);
-                    outf.Write(Viewer.DbfEvalIniAutoPilotTimeS);
-                    outf.Write(Simulator.PlayerLocomotive.DistanceM + Popups.HelpWindow.DbfEvalDistanceTravelled);
+            }
+            outf.Write(Popups.TrackMonitor.DbfEvalOverSpeed);
+            outf.Write(Popups.TrackMonitor.DbfEvalOverSpeedTimeS);
+            outf.Write(Popups.TrackMonitor.DbfEvalIniOverSpeedTimeS);
+            outf.Write(RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBmoving);
+            outf.Write(RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBstopped);
+            outf.Write(Simulation.Physics.Train.NumOfCouplerBreaks);
+            outf.Write(Simulation.RollingStocks.MSTSLocomotive.DbfEvalFullTrainBrakeUnder8kmh);
+            outf.Write(Simulation.RollingStocks.SubSystems.ScriptedTrainControlSystem.DbfevalFullBrakeAbove16kmh);
+            outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTrainOverturned);
+            outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFast);
+            outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFastSnappedBrakeHose);
+            outf.Write(Simulator.DbfEvalOverSpeedCoupling);
+            outf.Write(Viewer.DbfEvalAutoPilotTimeS);
+            outf.Write(Viewer.DbfEvalIniAutoPilotTimeS);
+            outf.Write(Simulator.PlayerLocomotive.DistanceM + Popups.HelpWindow.DbfEvalDistanceTravelled);
             outf.Write(Viewer.DbfEvalAutoPilot);
-                }
+        }
 
         /// <summary>
         /// Resume a saved game.
@@ -512,13 +530,15 @@ namespace Orts.Viewer3D.Processes
                     if (MPManager.IsMultiPlayer() && MPManager.IsServer())
                         MPManager.OnlineTrains.Restore(inf);
 
+                    WebServices.TrainCarOperationsWebpage.Restore(inf);
+
                     ResumeEvaluation(inf);
 
                     var restorePosition = inf.BaseStream.Position;
                     var savePosition = inf.ReadInt64();
                     if (restorePosition != savePosition)
                         throw new InvalidDataException("Saved game stream position is incorrect.");
-                            }
+                }
                 catch (Exception error)
                 {
                     if (versionAndBuild[2] == VersionInfo.VersionOrBuild)
@@ -828,9 +848,24 @@ namespace Orts.Viewer3D.Processes
                 Console.WriteLine("Build      = {0}", VersionInfo.Build);
                 if (logFileName.Length > 0)
                     Console.WriteLine("Logfile    = {0}", logFileName);
-                Console.WriteLine("Executable = {0}", Path.GetFileName(Application.ExecutablePath));
+                Console.WriteLine("Executable = {0}", Path.GetFileName(ApplicationInfo.ProcessFile));
                 foreach (var arg in args)
                     Console.WriteLine("Argument   = {0}", arg);
+
+                string debugArgline = "";
+                foreach (var arg in args)
+                {
+                    if (arg.Contains(" ")) 
+                    {
+                        debugArgline += "\"" + arg + "\" ";
+                    } 
+                    else
+                    {
+                        debugArgline += arg + " ";
+                    }
+                 }
+                Console.WriteLine("Arguments  = {0}", debugArgline.TrimEnd());
+
                 LogSeparator();
                 settings.Log();
                 LogSeparator();
@@ -1123,7 +1158,8 @@ namespace Orts.Viewer3D.Processes
                     {
                         // for resume and replay : set timetable file and selected train info
                         Simulator.TimetableFileName = System.IO.Path.GetFileNameWithoutExtension(args[0]);
-                        Simulator.PathName = String.Copy(args[1]);
+                        Simulator.PathName = args[1];
+                        Simulator.IsAutopilotMode = true;
                     }
                     break;
             }
@@ -1142,7 +1178,7 @@ namespace Orts.Viewer3D.Processes
                 catch (Exception error)
                 {
                     Trace.WriteLine(error);
-                    Console.WriteLine("Connection error - will play in single mode.");
+                    Trace.TraceWarning("Connection error - will play in single mode.");
                     Server = null;
                 }
             }
@@ -1161,7 +1197,7 @@ namespace Orts.Viewer3D.Processes
                 catch (Exception error)
                 {
                     Trace.WriteLine(error);
-                    Console.WriteLine("Connection error - will play in single mode.");
+                    Trace.TraceWarning("Connection error - will play in single mode.");
                     Client = null;
                 }
             }

@@ -312,8 +312,9 @@ namespace Orts.Viewer3D
     public class WireViewer : DynamicTrackViewer
     {
         public WireViewer(Viewer viewer, WorldPosition position, WorldPosition endPosition, float radius, float angle)
-            : base(viewer, position, endPosition)
+            : base(viewer)
         {
+            WorldPosition = new WorldPosition(position);
 
             // Instantiate classes
             Primitive = new WirePrimitive(viewer, position, endPosition, radius, angle);
@@ -528,7 +529,12 @@ namespace Orts.Viewer3D
                 DTrackData.param1 = angle;
                 DTrackData.param2 = radius;
             }
-            DTrackData.deltaY = 0;
+            DTrackData.deltaY = 0; // No change in height-we construct the track level and then rotate the entire model into position later
+
+            if (DTrackData.IsCurved == 0)
+                ObjectRadius = 0.5f * DTrackData.param1; // half-length
+            else
+                ObjectRadius = DTrackData.param2 * (float)Math.Sin(0.5 * Math.Abs(DTrackData.param1)); // half chord length
 
             if (WireProfile == null)
             {
@@ -540,37 +546,8 @@ namespace Orts.Viewer3D
                 viewer.Simulator.TRK.Tr_RouteFile.DoubleWireHeight : 1.0f);
 
             XNAEnd = endPosition.XNAMatrix.Translation;
-
-            // Count all of the LODItems in all the LODs
-            int count = 0;
-            for (int i = 0; i < TrProfile.LODs.Count; i++)
-            {
-                LOD lod = (LOD)TrProfile.LODs[i];
-                count += lod.LODItems.Count;
-            }
-            // Allocate ShapePrimitives array for the LOD count
-            ShapePrimitives = new ShapePrimitive[count];
-
-            // Build the meshes for all the LODs, filling the vertex and triangle index buffers.
-            int primIndex = 0;
-            for (int iLOD = 0; iLOD < TrProfile.LODs.Count; iLOD++)
-            {
-                LOD lod = (LOD)TrProfile.LODs[iLOD];
-                lod.PrimIndexStart = primIndex; // Store start index for this LOD
-                for (int iLODItem = 0; iLODItem < lod.LODItems.Count; iLODItem++)
-                {
-                    // Build vertexList and triangleListIndices
-                    ShapePrimitives[primIndex] = BuildPrimitive(viewer, iLOD, iLODItem);
-                    primIndex++;
-                }
-                lod.PrimIndexStop = primIndex; // 1 above last index for this LOD
-            }
-
-
-            if (DTrackData.IsCurved == 0) ObjectRadius = 0.5f * DTrackData.param1; // half-length
-            else ObjectRadius = DTrackData.param2 * (float)Math.Sin(0.5 * Math.Abs(DTrackData.param1)); // half chord length
         }
-        
+
         /// <summary>
         /// Builds a Wire LOD to WireProfile specifications as one vertex buffer and one index buffer.
         /// The order in which the buffers are built reflects the nesting in the TrProfile.  The nesting order is:
@@ -579,7 +556,7 @@ namespace Orts.Viewer3D
         /// <param name="viewer">Viewer.</param>
         /// <param name="lodIndex">Index of LOD mesh to be generated from profile.</param>
         /// <param name="lodItemIndex">Index of LOD mesh to be generated from profile.</param>
-        public ShapePrimitive BuildPrimitive(Viewer viewer, int lodIndex, int lodItemIndex)
+        public override ShapePrimitive BuildPrimitive(Viewer viewer, int lodIndex, int lodItemIndex)
         {
             // Call for track section to initialize itself
             if (DTrackData.IsCurved == 0) LinearGen();
@@ -613,7 +590,7 @@ namespace Orts.Viewer3D
             // Initial load of base cross section complete
 
             // Now generate and load subsequent cross sections
-            OldRadius = -center;
+            OldRadius = -Center;
             uint stride = VertexIndex;
             for (uint i = 0; i < NumSections; i++)
             {
@@ -641,20 +618,20 @@ namespace Orts.Viewer3D
                         plv++;
                     }
                 }
-                OldRadius = radius; // Get ready for next segment
+                OldRadius = Radius; // Get ready for next segment
             }
 
             if (lodItem.VerticalPolylines != null && lodItem.VerticalPolylines.Count > 0)
             {
 
                 // Now generate and load subsequent cross sections
-                OldRadius = -center;
+                OldRadius = -Center;
                 float coveredLength = SegmentLength;
 
                 for (uint i = 0; i < NumSections; i++)
                 {
                     stride = 0;
-                    radius = Vector3.Transform(OldRadius, sectionRotation);
+                    Radius = Vector3.Transform(OldRadius, SectionRotation);
                     Vector3 p;
                     // Initial load of baseline cross section polylines for this LOD only:
                     if (i == 0)
@@ -680,9 +657,9 @@ namespace Orts.Viewer3D
                                 if (DTrackData.IsCurved != 0)
                                 {
 
-                                    OldV = v.Position - center - OldRadius;
+                                    OldV = v.Position - Center - OldRadius;
                                     // Rotate the point about local origin and reposition it (including elevation change)
-                                    p = DDY + center + radius + v.Position;// +Vector3.Transform(OldV, sectionRotation);
+                                    p = DDY + Center + Radius + v.Position;// +Vector3.Transform(OldV, sectionRotation);
                                     VertexList[VertexIndex].Position = new Vector3(p.X, p.Y, p.Z);
 
                                 }
@@ -725,7 +702,7 @@ namespace Orts.Viewer3D
 
                     if (i != 0)
                     {
-                        OldRadius = radius; // Get ready for next segment
+                        OldRadius = Radius; // Get ready for next segment
                         coveredLength += SegmentLength;
                     }
                 }
@@ -740,7 +717,7 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Initializes member variables for straight track sections.
         /// </summary>
-        void LinearGen()
+        public override void LinearGen()
         {
             NumSections = 1;
 
@@ -759,7 +736,7 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Initializes member variables for circular arc track sections.
         /// </summary>
-        void CircArcGen()
+        public override void CircArcGen()
         {
             float arcLength = Math.Abs(DTrackData.param2 * DTrackData.param1);
             // Define the number of track cross sections in addition to the base.
@@ -789,8 +766,8 @@ namespace Orts.Viewer3D
             // The approach here is to replicate the previous cross section, 
             // rotated into its position on the curve and vertically displaced if on grade.
             // The local center for the curve lies to the left or right of the local origin and ON THE BASE PLANE
-            center = DTrackData.param2 * (DTrackData.param1 < 0 ? Vector3.Left : Vector3.Right);
-            sectionRotation = Matrix.CreateRotationY(-SegmentLength); // Rotation per iteration (constant)
+            Center = DTrackData.param2 * (DTrackData.param1 < 0 ? Vector3.Left : Vector3.Right);
+            SectionRotation = Matrix.CreateRotationY(-SegmentLength); // Rotation per iteration (constant)
         }
 
         /// <summary>
@@ -805,6 +782,50 @@ namespace Orts.Viewer3D
             Vector2 uvDisplacement = pl.DeltaTexCoord * wrapLength;
 
             Vector3 p = VertexList[VertexIndex - stride].Position + displacement;
+            Vector3 n = VertexList[VertexIndex - stride].Normal;
+            Vector2 uv = VertexList[VertexIndex - stride].TextureCoordinate + uvDisplacement;
+
+            VertexList[VertexIndex].Position = new Vector3(p.X, p.Y, p.Z);
+            VertexList[VertexIndex].Normal = new Vector3(n.X, n.Y, n.Z);
+            VertexList[VertexIndex].TextureCoordinate = new Vector2(uv.X, uv.Y);
+        }
+
+        /// <summary>
+        /// Generates vertices for a succeeding cross section (straight track).
+        /// </summary>
+        /// <param name="stride">Index increment between section-to-section vertices.</param>
+        /// <param name="pl">Polyline.</param>
+        void LinearGen(uint stride, Polyline pl)
+        {
+            Vector3 displacement = new Vector3(0, 0, -SegmentLength) + DDY;
+            float wrapLength = displacement.Length();
+            Vector2 uvDisplacement = pl.DeltaTexCoord * wrapLength;
+
+            Vector3 p = VertexList[VertexIndex - stride].Position + displacement;
+            Vector3 n = VertexList[VertexIndex - stride].Normal;
+            Vector2 uv = VertexList[VertexIndex - stride].TextureCoordinate + uvDisplacement;
+
+            VertexList[VertexIndex].Position = new Vector3(p.X, p.Y, p.Z);
+            VertexList[VertexIndex].Normal = new Vector3(n.X, n.Y, n.Z);
+            VertexList[VertexIndex].TextureCoordinate = new Vector2(uv.X, uv.Y);
+        }
+
+        /// <summary>
+        /// /// Generates vertices for a succeeding cross section (circular arc track).
+        /// </summary>
+        /// <param name="stride">Index increment between section-to-section vertices.</param>
+        /// <param name="pl">Polyline.</param>
+        void CircArcGen(uint stride, Polyline pl)
+        {
+            // Get the previous vertex about the local coordinate system
+            OldV = VertexList[VertexIndex - stride].Position - Center - OldRadius;
+            // Rotate the old radius vector to become the new radius vector
+            Radius = Vector3.Transform(OldRadius, SectionRotation);
+            float wrapLength = (Radius - OldRadius).Length(); // Wrap length is centerline chord
+            Vector2 uvDisplacement = pl.DeltaTexCoord * wrapLength;
+
+            // Rotate the point about local origin and reposition it (including elevation change)
+            Vector3 p = DDY + Center + Radius + Vector3.Transform(OldV, SectionRotation);
             Vector3 n = VertexList[VertexIndex - stride].Normal;
             Vector2 uv = VertexList[VertexIndex - stride].TextureCoordinate + uvDisplacement;
 

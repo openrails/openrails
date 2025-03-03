@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2024 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -15,13 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using GNU.Gettext;
-using GNU.Gettext.WinForms;
-using Orts.Formats.OR;
-using ORTS.Common;
-using ORTS.Menu;
-using ORTS.Settings;
-using ORTS.Updater;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -32,9 +25,18 @@ using System.Linq;
 using System.Resources;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
+using Menu.Notifications;
+using Orts.Formats.OR;
+using ORTS.Common;
+using ORTS.Menu;
+using ORTS.Settings;
+using ORTS.Updater;
+using Activity = ORTS.Menu.Activity;
 using Path = ORTS.Menu.Path;
 
-namespace ORTS
+namespace Menu
 {
     public partial class MainForm : Form
     {
@@ -54,6 +56,7 @@ namespace ORTS
 
         bool Initialized;
         UserSettings Settings;
+        TelemetryManager TelemetryManager;
         List<Folder> Folders = new List<Folder>();
         public List<Route> Routes = new List<Route>();
         List<Activity> Activities = new List<Activity>();
@@ -68,15 +71,16 @@ namespace ORTS
         Task<List<Path>> PathLoader;
         Task<List<TimetableInfo>> TimetableSetLoader;
         Task<List<WeatherFileInfo>> TimetableWeatherFileLoader;
-        readonly ResourceManager Resources = new ResourceManager("ORTS.Properties.Resources", typeof(MainForm).Assembly);
+        readonly ResourceManager Resources = new ResourceManager("Menu.Properties.Resources", typeof(MainForm).Assembly);
         readonly UpdateManager UpdateManager;
         readonly Image ElevationIcon;
+        NotificationManager NotificationManager;
 
         internal string RunActivityProgram
         {
             get
             {
-                return System.IO.Path.Combine(Application.StartupPath, "RunActivity.exe");
+                return System.IO.Path.Combine(ApplicationInfo.ProcessDirectory, "RunActivity.exe");
             }
         }
 
@@ -108,6 +112,8 @@ namespace ORTS
 
         GettextResourceManager catalog = new GettextResourceManager("Menu");
 
+        public string BaseDocumentationUrl;
+
         #region Main Form
         public MainForm()
         {
@@ -126,14 +132,27 @@ namespace ORTS
             panelModeTimetable.Location = panelModeActivity.Location;
             ShowDetails();
             UpdateEnabled();
-            UpdateManager = new UpdateManager(System.IO.Path.GetDirectoryName(Application.ExecutablePath), Application.ProductName, VersionInfo.VersionOrBuild);
+            UpdateManager = new UpdateManager(ApplicationInfo.ProcessDirectory, Application.ProductName, VersionInfo.VersionOrBuild);
             ElevationIcon = new Icon(SystemIcons.Shield, SystemInformation.SmallIconSize).ToBitmap();
+
+            BaseDocumentationUrl = "https://open-rails.readthedocs.io/en/latest";
+            if (VersionInfo.Version.Length > 0)
+            {
+                if (VersionInfo.Version.StartsWith("T") || VersionInfo.Version.StartsWith("U"))
+                {
+                    BaseDocumentationUrl = "https://open-rails.readthedocs.io/en/unstable";
+                }
+            }
+ 
         }
 
         void MainForm_Shown(object sender, EventArgs e)
         {
             var options = Environment.GetCommandLineArgs().Where(a => (a.StartsWith("-") || a.StartsWith("/") && !a.TrimStart('/').Contains("/"))).Select(a => a.Substring(1));
             Settings = new UserSettings(options);
+            TelemetryManager = new TelemetryManager(Settings.Telemetry);
+
+            Cursor = Cursors.Default;
 
             LoadOptions();
             LoadLanguage();
@@ -182,7 +201,7 @@ namespace ORTS
                     "Updater.exe",
                 };
                 var tools = new List<ToolStripItem>();
-                foreach (var executable in Directory.GetFiles(System.IO.Path.GetDirectoryName(Application.ExecutablePath), "*.exe"))
+                foreach (var executable in Directory.GetFiles(ApplicationInfo.ProcessDirectory, "*.exe"))
                 {
                     // Don't show any of the core parts of the application.
                     if (coreExecutables.Contains(System.IO.Path.GetFileName(executable)))
@@ -240,14 +259,16 @@ namespace ORTS
                             LoadDocuments(docs, codePath, code);
                     }
                 }
-                else
-                    buttonDocuments.Enabled = false;
+                else buttonDocuments.Enabled = false;
+
+                NotificationManager = new NotificationManager(this, this.Resources, UpdateManager, Settings, panelDetails);
             }
 
             ShowEnvironment();
             ShowTimetableEnvironment();
 
             CheckForUpdate();
+            CheckForTelemetry();
 
             if (!Initialized)
             {
@@ -307,32 +328,38 @@ namespace ORTS
 
         void CheckForUpdate()
         {
-            // This is known directly from the chosen channel so doesn't need to wait for the update check itself.
-            linkLabelChangeLog.Visible = !string.IsNullOrEmpty(UpdateManager.ChangeLogLink);
-
+            // Uses a custom Task class which pre-dates the System.Threading.Task but provides much the same features.
             new Task<UpdateManager>(this, () =>
             {
                 UpdateManager.Check();
                 return null;
             }, _ =>
             {
-                if (UpdateManager.LastCheckError != null)
-                    linkLabelUpdate.Text = catalog.GetString("Update check failed");
-                else if (UpdateManager.LastUpdate != null && UpdateManager.LastUpdate.Version != VersionInfo.Version)
-                    linkLabelUpdate.Text = catalog.GetStringFmt("Update to {0}", UpdateManager.LastUpdate.Version);
-                else
-                    linkLabelUpdate.Text = "";
-                linkLabelUpdate.Enabled = true;
-                linkLabelUpdate.Visible = linkLabelUpdate.Text.Length > 0;
-                // Update link's elevation icon and size/position.
-                if (UpdateManager.LastCheckError == null && UpdateManager.LastUpdate != null && UpdateManager.LastUpdate.Version != VersionInfo.Version && UpdateManager.UpdaterNeedsElevation)
-                    linkLabelUpdate.Image = ElevationIcon;
-                else
-                    linkLabelUpdate.Image = null;
-                linkLabelUpdate.AutoSize = true;
-                linkLabelUpdate.Left = panelDetails.Right - linkLabelUpdate.Width - ElevationIcon.Width;
-                linkLabelUpdate.AutoSize = false;
-                linkLabelUpdate.Width = panelDetails.Right - linkLabelUpdate.Left;
+                NotificationManager.CheckNotifications();
+                UpdateNotificationPageAlert();
+            });
+        }
+
+        // Event raised by Retry button in NotificationPages so user can retry updates following an error notification.
+        //public event EventHandler CheckUpdatesAgain;
+
+        public virtual void OnCheckUpdatesAgain(EventArgs e)
+        {
+            CheckForUpdate();
+        }
+
+        void CheckForTelemetry()
+        {
+            // DO NOT await this call as we want it to run in the background
+            _ = TelemetryManager.SubmitIfDue(TelemetryType.System, () => new
+            {
+                SystemInfo.Application,
+                SystemInfo.Runtime,
+                SystemInfo.OperatingSystem,
+                SystemInfo.InstalledMemoryMB,
+                SystemInfo.CPUs,
+                SystemInfo.GPUs,
+                SystemInfo.Direct3DFeatureLevels
             });
         }
 
@@ -352,7 +379,7 @@ namespace ORTS
 
         void RestartMenu()
         {
-            Process.Start(Application.ExecutablePath);
+            Process.Start(ApplicationInfo.ProcessFile);
             Close();
         }
         #endregion
@@ -369,8 +396,8 @@ namespace ORTS
             catch (Exception ex)
             {
                 // If the init JSON deserialization fails, need to display some debug information to the user.
-                ClearDetails();
-                ShowDetail("VFS: Failed to initialize", ex.Message.Split('\n'));
+                ClearPanel();
+                AddDetail("VFS: Failed to initialize", ex.Message.Split('\n'));
                 FlowDetails();
                 return;
             }
@@ -528,27 +555,6 @@ namespace ORTS
         #endregion
 
         #region Misc. buttons and options
-        void linkLabelUpdate_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            if (UpdateManager.LastCheckError != null)
-            {
-                MessageBox.Show(catalog.GetStringFmt("The update check failed due to an error:\n\n{0}", UpdateManager.LastCheckError), Application.ProductName);
-                return;
-            }
-
-            UpdateManager.Update();
-
-            if (UpdateManager.LastUpdateError != null)
-            {
-                MessageBox.Show(catalog.GetStringFmt("The update failed due to an error:\n\n{0}", UpdateManager.LastUpdateError), Application.ProductName);
-                return;
-            }
-        }
-
-        void linkLabelChangeLog_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            Process.Start(UpdateManager.ChangeLogLink);
-        }
 
         void buttonTools_Click(object sender, EventArgs e)
         {
@@ -570,9 +576,14 @@ namespace ORTS
 
         void buttonOptions_Click(object sender, EventArgs e)
         {
+            ShowOptionsDialog();
+        }
+
+        public void ShowOptionsDialog()
+        {
             SaveOptions();
 
-            using (var form = new OptionsForm(Settings, UpdateManager, false))
+            using (var form = new OptionsForm(Settings, UpdateManager, TelemetryManager, BaseDocumentationUrl))
             {
                 switch (form.ShowDialog(this))
                 {
@@ -587,6 +598,22 @@ namespace ORTS
             }
         }
 
+        public void ShowTelemetryDialog()
+        {
+            using (var telemetryForm = new TelemetryForm(TelemetryManager))
+            {
+                telemetryForm.ShowDialog(this);
+            }
+        }
+
+        void buttonDownloadContent_Click(object sender, EventArgs e)
+        {
+            using (var form = new ContentForm(Settings, BaseDocumentationUrl))
+            {
+                form.ShowDialog(this);
+            }
+        }
+        
         void buttonStart_Click(object sender, EventArgs e)
         {
             SaveOptions();
@@ -745,7 +772,7 @@ namespace ORTS
         #endregion
 
         #region Folder list
-        void LoadFolderList()
+        public void LoadFolderList()
         {
             var initialized = Initialized;
             Folders.Clear();
@@ -760,12 +787,11 @@ namespace ORTS
 
                 if (!initialized && Folders.Count == 0)
                 {
-                    using (var form = new OptionsForm(Settings, UpdateManager, true))
+                    using (var form = new ContentForm(Settings, BaseDocumentationUrl))
                     {
                         switch (form.ShowDialog(this))
                         {
                             case DialogResult.OK:
-                                LoadFolderList();
                                 break;
                             case DialogResult.Retry:
                                 RestartMenu();
@@ -774,6 +800,12 @@ namespace ORTS
                     }
                 }
             });
+        }
+
+        public void LoadFolderListWithoutTask()
+        {
+            Folders = Folder.GetFolders(Settings).OrderBy(f => f.Name).ToList();
+            ShowFolderList();
         }
 
         void ShowFolderList()
@@ -787,7 +819,7 @@ namespace ORTS
         #endregion
 
         #region Route list
-        void LoadRouteList()
+        public void LoadRouteList()
         {
             if (RouteLoader != null)
                 RouteLoader.Cancel();
@@ -827,7 +859,7 @@ namespace ORTS
         #endregion
 
         #region Activity list
-        void LoadActivityList()
+        public void LoadActivityList()
         {
             if (ActivityLoader != null)
                 ActivityLoader.Cancel();
@@ -867,7 +899,7 @@ namespace ORTS
         #endregion
 
         #region Consist lists
-        void LoadLocomotiveList()
+        public void LoadLocomotiveList()
         {
             if (ConsistLoader != null)
                 ConsistLoader.Cancel();
@@ -923,7 +955,7 @@ namespace ORTS
         #endregion
 
         #region Path lists
-        void LoadStartAtList()
+        public void LoadStartAtList()
         {
             if (PathLoader != null)
                 PathLoader.Cancel();
@@ -948,6 +980,10 @@ namespace ORTS
                 comboBoxStartAt.Items.Clear();
                 foreach (var place in Paths.Select(p => p.Start).Distinct().OrderBy(s => s.ToString()))
                     comboBoxStartAt.Items.Add(place);
+                if (comboBoxStartAt.Items.Count > 0)
+                {
+                    comboBoxStartAt.SelectedIndex = 0;
+                }
                 // Because this list is unique names, we have to do some extra work to select it.
                 if (Settings.Menu_Selection.Length >= (int)UserSettings.Menu_SelectionIndex.Path)
                 {
@@ -1018,7 +1054,7 @@ namespace ORTS
         #endregion
 
         #region Timetable Set list
-        void LoadTimetableSetList()
+        public void LoadTimetableSetList()
         {
             if (TimetableSetLoader != null)
                 TimetableSetLoader.Cancel();
@@ -1078,7 +1114,7 @@ namespace ORTS
         #endregion
 
         #region Timetable list
-        void ShowTimetableList()
+        public void ShowTimetableList()
         {
             comboBoxTimetable.Items.Clear();
             if (SelectedTimetableSet != null)
@@ -1092,7 +1128,7 @@ namespace ORTS
         #endregion
 
         #region Timetable Train list
-        void ShowTimetableTrainList()
+        public void ShowTimetableTrainList()
         {
             comboBoxTimetableTrain.Items.Clear();
             if (SelectedTimetable != null)
@@ -1120,24 +1156,31 @@ namespace ORTS
         void ShowDetails()
         {
             Win32.LockWindowUpdate(Handle);
-            ClearDetails();
+            ClearPanel();
+            AddDetails();
+            FlowDetails();
+            Win32.LockWindowUpdate(IntPtr.Zero);
+        }
+
+        private void AddDetails()
+        {
             if (SelectedRoute != null && SelectedRoute.Description != null)
-                ShowDetail(catalog.GetStringFmt("Route: {0}", SelectedRoute.Name), SelectedRoute.Description.Split('\n'));
+                AddDetail(catalog.GetStringFmt("Route: {0}", SelectedRoute.Name), SelectedRoute.Description.Split('\n'));
 
             if (radioButtonModeActivity.Checked)
             {
                 if (SelectedConsist != null && SelectedConsist.Locomotive != null && SelectedConsist.Locomotive.Description != null)
                 {
-                    ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedConsist.Locomotive.Name), SelectedConsist.Locomotive.Description.Split('\n'));
+                    AddDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedConsist.Locomotive.Name), SelectedConsist.Locomotive.Description.Split('\n'));
                 }
                 if (SelectedActivity != null && SelectedActivity.Description != null)
                 {
-                    ShowDetail(catalog.GetStringFmt("Activity: {0}", SelectedActivity.Name), SelectedActivity.Description.Split('\n'));
-                    ShowDetail(catalog.GetString("Activity Briefing"), SelectedActivity.Briefing.Split('\n'));
+                    AddDetail(catalog.GetStringFmt("Activity: {0}", SelectedActivity.Name), SelectedActivity.Description.Split('\n'));
+                    AddDetail(catalog.GetString("Activity Briefing"), SelectedActivity.Briefing.Split('\n'));
                 }
                 else if (SelectedPath != null)
                 {
-                    ShowDetail(catalog.GetStringFmt("Path: {0}", SelectedPath.Name), new[] {
+                    AddDetail(catalog.GetStringFmt("Path: {0}", SelectedPath.Name), new[] {
                         catalog.GetStringFmt("Starting at: {0}", SelectedPath.Start),
                         catalog.GetStringFmt("Heading to: {0}", SelectedPath.End)
                     });
@@ -1146,29 +1189,26 @@ namespace ORTS
             if (radioButtonModeTimetable.Checked)
             {
                 if (SelectedTimetableSet != null)
-                    ShowDetail(catalog.GetStringFmt("Timetable set: {0}", SelectedTimetableSet), new string[0]);
-                    // Description not shown as no description is available for a timetable set.
+                    AddDetail(catalog.GetStringFmt("Timetable set: {0}", SelectedTimetableSet), new string[0]);
+                // Description not shown as no description is available for a timetable set.
 
                 if (SelectedTimetable != null)
-                    ShowDetail(catalog.GetStringFmt("Timetable: {0}", SelectedTimetable), SelectedTimetable.Briefing.Split('\n'));
+                    AddDetail(catalog.GetStringFmt("Timetable: {0}", SelectedTimetable), SelectedTimetable.Briefing.Split('\n'));
 
                 if (SelectedTimetableTrain != null)
                 {
-                    ShowDetail(catalog.GetStringFmt("Train: {0}", SelectedTimetableTrain), HideStartParameters(SelectedTimetableTrain.ToInfo()));
+                    AddDetail(catalog.GetStringFmt("Train: {0}", SelectedTimetableTrain), HideStartParameters(SelectedTimetableTrain.ToInfo()));
 
                     if (SelectedTimetableConsist != null)
                     {
-                        ShowDetail(catalog.GetStringFmt("Consist: {0}", SelectedTimetableConsist.Name), new string[0]);
+                        AddDetail(catalog.GetStringFmt("Consist: {0}", SelectedTimetableConsist.Name), new string[0]);
                         if (SelectedTimetableConsist.Locomotive != null && SelectedTimetableConsist.Locomotive.Description != null)
-                            ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedTimetableConsist.Locomotive.Name), SelectedTimetableConsist.Locomotive.Description.Split('\n'));
+                            AddDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedTimetableConsist.Locomotive.Name), SelectedTimetableConsist.Locomotive.Description.Split('\n'));
                     }
                     if (SelectedTimetablePath != null)
-                        ShowDetail(catalog.GetStringFmt("Path: {0}", SelectedTimetablePath.Name), SelectedTimetablePath.ToInfo());
+                        AddDetail(catalog.GetStringFmt("Path: {0}", SelectedTimetablePath.Name), SelectedTimetablePath.ToInfo());
                 }
             }
-
-            FlowDetails();
-            Win32.LockWindowUpdate(IntPtr.Zero);
         }
 
         /// <summary>
@@ -1180,7 +1220,7 @@ namespace ORTS
         /// </summary>
         /// <param name="info"></param>
         /// <returns></returns>
-        private string[] HideStartParameters(string [] info)
+        private string[] HideStartParameters(string[] info)
         {
             var fullStartTime = info[0].TrimStart();
             var startTimeArray = fullStartTime.Split('$');
@@ -1207,14 +1247,14 @@ namespace ORTS
             }
         }
 
-        void ClearDetails()
+        void ClearPanel()
         {
             Details.Clear();
             while (panelDetails.Controls.Count > 0)
                 panelDetails.Controls.RemoveAt(0);
         }
 
-        void ShowDetail(string title, string[] lines)
+        void AddDetail(string title, string[] lines)
         {
             var titleControl = new Label { Margin = new Padding(2), Text = title, UseMnemonic = false, Font = new Font(panelDetails.Font, FontStyle.Bold), TextAlign = ContentAlignment.BottomLeft };
             panelDetails.Controls.Add(titleControl);
@@ -1238,7 +1278,7 @@ namespace ORTS
             summaryControl.Width = panelDetails.ClientSize.Width - summaryControl.Margin.Horizontal;
             summaryControl.Height = TextRenderer.MeasureText("1\n2\n3\n4\n5", summaryControl.Font).Height;
 
-            // Find out where we need to cut the text to make the summary 5 lines long. Uses a binaty search to find the cut point.
+            // Find out where we need to cut the text to make the summary 5 lines long. Uses a binary search to find the cut point.
             var size = MeasureText(summaryControl.Text, summaryControl);
             if (size > summaryControl.Height)
             {
@@ -1335,21 +1375,127 @@ namespace ORTS
 
         void UpdateFromMenuSelection<T>(ComboBox comboBox, UserSettings.Menu_SelectionIndex index, Func<T, string> map, T defaultValue)
         {
-            if (Settings.Menu_Selection.Length > (int)index && Settings.Menu_Selection[(int)index] != "")
+            if (((index == UserSettings.Menu_SelectionIndex.Folder) ||
+                 ((comboBoxFolder.Items.Count > 0) && (SelectedFolder != null) &&
+                  (Settings.Menu_Selection.Count() > 0) &&
+                  (SelectedFolder.Path == Settings.Menu_Selection[(int)UserSettings.Menu_SelectionIndex.Folder]))) &&
+                (Settings.Menu_Selection.Length > (int)index) && 
+                (Settings.Menu_Selection[(int)index] != ""))
             {
                 if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
+                {
                     comboBox.Text = Settings.Menu_Selection[(int)index];
+                }
                 else
+                {
                     SelectComboBoxItem<T>(comboBox, item => map(item) == Settings.Menu_Selection[(int)index]);
+                }
             }
             else
             {
-                if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
-                    comboBox.Text = map(defaultValue);
-                else if (defaultValue != null)
+                var routes = Settings.Content.ContentRouteSettings.Routes;
+                if ((SelectedFolder != null) &&
+                    routes.ContainsKey(SelectedFolder.Name) &&
+                    routes[SelectedFolder.Name].Installed &&
+                    !string.IsNullOrEmpty(routes[SelectedFolder.Name].Start.Route))
+                {
+                    var route = routes[SelectedFolder.Name];
+                    string valueComboboxToSetTo = "";
+                    switch (index)
+                    {
+                        case UserSettings.Menu_SelectionIndex.Route:
+                            valueComboboxToSetTo = route.Start.Route;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Activity:
+                            valueComboboxToSetTo = route.Start.Activity;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Locomotive:
+                            valueComboboxToSetTo = route.Start.Locomotive;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Consist:
+                            valueComboboxToSetTo = route.Start.Consist;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Path:
+                            valueComboboxToSetTo = route.Start.StartingAt;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Time:
+                            valueComboboxToSetTo = route.Start.Time;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Season:
+                            valueComboboxToSetTo = route.Start.Season;
+                            break;
+                        case UserSettings.Menu_SelectionIndex.Weather:
+                            valueComboboxToSetTo = route.Start.Weather;
+                            break;
+                        default:
+                            break;
+                    }
+                    bool found = false;
+                    if ((index != UserSettings.Menu_SelectionIndex.Path) ||
+                        (SelectedActivity == null) || (!(SelectedActivity is ExploreActivity)))
+                    {
+                        if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
+                        {
+                            comboBox.Text = valueComboboxToSetTo;
+                            found = true;
+                        } 
+                        else
+                        {
+                            found = searchInComboBox(comboBox,  valueComboboxToSetTo);
+                        }
+                    }
+                    else
+                    {
+                        found = searchInComboBox(comboBoxStartAt, valueComboboxToSetTo);
+                        found = searchInComboBox(comboBoxHeadTo, valueComboboxToSetTo);
+                    }
+                    if (!found)
+                    {
+                        if (comboBox.Items.Count > 0)
+                        {
+                            comboBox.SelectedIndex = 0;
+                        }
+                    }
+                }
+                else
+                {
+                    SetToDefault(comboBox, index, map, defaultValue);
+                }
+            }
+        }
+
+        bool searchInComboBox(ComboBox comboBox, string valueComboboxToSetTo)
+        {
+            for (var i = 0; i < comboBox.Items.Count; i++)
+            {
+                if ((string)comboBox.Items[i].ToString() == valueComboboxToSetTo)
+                {
+                    comboBox.SelectedIndex = i;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        void SetToDefault<T>(ComboBox comboBox, UserSettings.Menu_SelectionIndex index, Func<T, string> map, T defaultValue)
+        {
+            if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
+            {
+                comboBox.Text = map(defaultValue);
+            }
+            else
+            {
+                if (defaultValue != null)
+                {
                     SelectComboBoxItem<T>(comboBox, item => map(item) == map(defaultValue));
-                else if (comboBox.Items.Count > 0)
-                    comboBox.SelectedIndex = 0;
+                }
+                else
+                {
+                    if (comboBox.Items.Count > 0)
+                    {
+                        comboBox.SelectedIndex = 0;
+                    }
+                }
             }
         }
 
@@ -1361,7 +1507,7 @@ namespace ORTS
             var index = (int)UserSettings.Menu_SelectionIndex.Activity;
             for (var i = 0; i < comboBox.Items.Count; i++)
             {
-                if (comboBox.Items[i] is T && predicate((T)comboBox.Items[i]) || (Settings.Menu_Selection.Length > i && comboBox.Items[i].ToString() == Settings.Menu_Selection[index] ))
+                if (comboBox.Items[i] is T && predicate((T)comboBox.Items[i]) || (Settings.Menu_Selection.Length > i && comboBox.Items[i].ToString() == Settings.Menu_Selection[index]))
                 {
                     comboBox.SelectedIndex = i;
                     return;
@@ -1370,7 +1516,7 @@ namespace ORTS
             comboBox.SelectedIndex = 0;
         }
 
-        private class KeyedComboBoxItem
+        public class KeyedComboBoxItem
         {
             public readonly int Key;
             public readonly string Value;
@@ -1474,5 +1620,99 @@ namespace ORTS
             }
             //TO DO: Debrief Eval TTActivity
         }
+
+        #region Notifications
+        private void pbNotificationsNone_Click(object sender, EventArgs e)
+        {
+            ToggleNotificationPages();
+        }
+        private void pbNotificationsSome_Click(object sender, EventArgs e)
+        {
+            ToggleNotificationPages();
+        }
+        private void lblNotificationCount_Click(object sender, EventArgs e)
+        {
+            ToggleNotificationPages();
+        }
+
+        private void ToggleNotificationPages()
+        {
+            if (NotificationManager.ArePagesVisible == false)
+            {
+                NotificationManager.ArePagesVisible = true; // Set before calling ShowNotifcations()
+                ShowNotificationPages();
+            }
+            else
+            {
+                NotificationManager.ArePagesVisible = false;
+                ShowDetails();
+            }
+        }
+
+        public void ShowNotificationPages()
+        {
+            Win32.LockWindowUpdate(Handle);
+            ClearPanel();
+            NotificationManager.PopulatePage();
+            UpdateNotificationPageAlert();
+            NotificationManager.Page.FlowNDetails();
+            Win32.LockWindowUpdate(IntPtr.Zero);
+        }
+
+        public void UpdateNotificationPageAlert()
+        {
+            if (NotificationManager.NewPages.Viewed < NotificationManager.NewPages.Count)
+            {
+                pbNotificationsSome.Visible = true;
+                lblNotificationCount.Visible = true;
+                lblNotificationCount.Text = $"{NotificationManager.NewPages.Count - NotificationManager.NewPages.Viewed}";
+
+                // If screen scaling != 100%, then the count doesn't lie on top of the red circle, so adjust its position.
+                if (NotificationManager.ScreenScaling != 1.0 & NotificationManager.ScreenAdjusted == false)
+                {
+                    var adjustment = (int)((NotificationManager.ScreenScaling - 1.0) * 20); // 20 to adjust 125% by 5 pixels
+                    lblNotificationCount.Top -= adjustment;
+                    lblNotificationCount.Left -= adjustment;
+                    NotificationManager.ScreenAdjusted = true;
+                }
+            }
+            else
+            {
+                pbNotificationsSome.Visible = false;
+                lblNotificationCount.Visible = false;
+            }
+        }
+
+        // 3 should be enough, but is there a way to get unlimited buttons?
+        public void Button0_Click(object sender, EventArgs e)
+        {
+            if (NotificationManager.Notifications == null) // button0 used for "Retry"
+            {
+                NotificationManager.CheckNotifications();
+                ShowNotificationPages();
+            }
+            else NotificationManager.Page.DoButton(UpdateManager, 0);
+        }
+
+        public void Button1_Click(object sender, EventArgs e)
+        {
+            NotificationManager.Page.DoButton(UpdateManager, 1);
+        }
+        public void Button2_Click(object sender, EventArgs e)
+        {
+            NotificationManager.Page.DoButton(UpdateManager, 2);
+        }
+
+        public void Next_Click(object sender, EventArgs e)
+        {
+            NotificationManager.ChangePage(1);
+        }
+
+        public void Previous_Click(object sender, EventArgs e)
+        {
+            NotificationManager.ChangePage(-1);
+        }
+
+        #endregion Notifications
     }
 }

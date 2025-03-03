@@ -151,6 +151,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         public float EmergencyRatePSIpS { get; private set; }
         public float FullServReductionPSI { get; private set; }
         public float MinReductionPSI { get; private set; }
+        public float TrainDynamicBrakeIntervention { get; set; } = -1;
+        InterpolatorDiesel2D DynamicBrakeBlendingTable;
 
         /// <summary>
         /// Needed for proper mouse operation in the cabview
@@ -225,7 +227,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 (item) => { Notches.Add(new MSTSNotch(item)); }
             );
 
-            Initialize();
+            DynamicBrakeBlendingTable = controller.DynamicBrakeBlendingTable;
         }
 
         public ScriptedBrakeController Clone(MSTSLocomotive locomotive)
@@ -309,8 +311,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             float value = stf.ReadFloat(STFReader.UNITS.None, null);
                             int smooth = stf.ReadInt(null);
                             string type = stf.ReadString();
-                            Notches.Add(new MSTSNotch(value, smooth, type, stf));
-                            if (type != ")") stf.SkipRestOfBlock();
+                            string name = null;
+                            while(type != ")" && !stf.EndOfBlock())
+                            {
+                                switch (stf.ReadItem().ToLower())
+                                {
+                                    case "(":
+                                        stf.SkipRestOfBlock();
+                                        break;
+                                    case "ortslabel":
+                                        name = stf.ReadStringBlock(null);
+                                        break;
+                                }
+                            }
+                            Notches.Add(new MSTSNotch(value, smooth, type, name, stf));
                         }),
                     });
                     break;
@@ -318,6 +332,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "engine(ortstrainbrakecontroller":
                 case "engine(ortsenginebrakecontroller":
                     ScriptName = stf.ReadStringBlock(null);
+                    break;
+                case "engine(ortstraindynamicblendingtable":
+                    DynamicBrakeBlendingTable = new InterpolatorDiesel2D(stf, false);
                     break;
             }
         }
@@ -333,8 +350,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 }
                 if (Script == null)
                 {
-                    Script = new MSTSBrakeController() as BrakeController;
-                    (Script as MSTSBrakeController).ForceControllerReleaseGraduated = Simulator.Settings.GraduatedRelease;
+                    var mstsController = new MSTSBrakeController();
+                    mstsController.ForceControllerReleaseGraduated = Simulator.Settings.GraduatedRelease;
+                    mstsController.DynamicBrakeBlendingTable = DynamicBrakeBlendingTable;
+                    Script = mstsController as BrakeController;
                 }
 
                 Script.AttachToHost(this);
@@ -355,7 +374,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         Locomotive.Train.SignalEvent(evt);
                     }
                 };
-
                 Script.Initialize();
             }
         }
@@ -476,7 +494,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         {
             if (Script != null)
             {
-                string state = ControllerStateDictionary.Dict[Script.GetState()];
+                string state = Script.GetStateName();
                 string fraction = GetStateFractionScripted();
 
                 if (String.IsNullOrEmpty(state) && String.IsNullOrEmpty(fraction))

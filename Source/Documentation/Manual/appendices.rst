@@ -58,13 +58,22 @@ Voltage                 volt                        V
 Mass Flow                                           g/h
 \                                                   kg/h
 \                       lb/h                        lb/h        lb/h
+Volumetric Flow         m^3/s           air flow    m^3/s
+                                        meters
+\                                                   ft^3/min
+\                                                   L/min
+\                                                   L/s
 Speed                   m/s             other       m/s         m/s             meter per second
+\                                                   cm/s                        centimeters per second
+\                                                   mm/s                        millimeters per second
 \                                                   km/h
 \                                                   kph         kph             kilometer per hour
-\                                                   kmh         kmh             misspelling accepted by MSTS
-\                                       kmph
-\                       mph             dynamic     mph         mph             miles per hour 
-                                        brake
+\                                                   kmh         kmh,            misspelling accepted by MSTS
+                                                                kmph
+\                       mph             dynamic     mph         mph             miles per hour, 
+                                        brake                                   legacy dynamic brake parameters use mph default
+\                                                   ft/s                        feet per second
+\                                                   in/s                        inches per second
 Frequency               Hz                          Hz                          Hertz
 \                                                   rps                         revolutions per second
 \                                                   rpm
@@ -85,7 +94,9 @@ Pressure                psi             air         psi                         
 \                                                   kPa                         KiloPascal
 \                       inHg            vacuum      inHg                        inches of mercury 
 Pressure Rate of Change psi/s                       psi/s
+\                                                   psi/min
 \                                                   bar/s
+\                                                   bar/min
 \                                                   kpa/s
 \                                                   inHg/s
 Energy Density          kJ/kg                       kJ/kg                       kiloJoule per kilogram
@@ -123,7 +134,8 @@ The following folders are also written to by Open Rails.
    Save images          AppData\\Roaming\\Open Rails\\shunt_1 2021-07-18 19.46.35.png
    Replays              AppData\\Roaming\\Open Rails\\shunt_1 2021-07-18 19.46.35.replay
    Evaluations          AppData\\Roaming\\Open Rails\\shunt_1 2021-07-18 19.46.35.dbfeval
-   Loading progress bar AppData\\Roaming\\Open Rails\\Load Cache\\3cd9... ...0ce2.dat
+   Loading progress bar AppData\\Roaming\\Open Rails\\Cache\\Load\\3cd9... ...0ce2.cache-or
+   Timetable path files AppData\\Roaming\\Open Rails\\Cache\\Path\\4ae2... ...4132.cache-or
    ==================== ========================================================================================
 
 
@@ -704,3 +716,21 @@ The advantages of using “SPEED” signals over speedposts are :
 
 A “SPEED” signalhead can be part of a signal which also contains other heads, but for clarity of operation
 this is not advisable.
+
+
+
+.. _appendices-ini-file:
+
+INI File and User Settings
+==========================
+
+By default, Open Rails keeps the user's settings and options in the Windows Registry.
+
+If you want to have a set of alternative settings which bypass the settings kept in the Registry,
+then you can use an INI text file for this.
+
+Create an empty file OpenRails.ini in the same folder as OpenRails.exe and start Open Rails.
+The program will attempt to load settings from the file, using default values for settings that 
+cannot be found and populates the INI file with these settings.
+
+If you change the settings and options, then these will be saved automatically to the INI file.

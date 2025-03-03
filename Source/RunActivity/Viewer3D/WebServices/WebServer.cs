@@ -27,6 +27,7 @@ using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Orts.Common;
+using Orts.Formats.Msts;
 using Orts.Simulation.Physics;
 using Orts.Viewer3D.RollingStock;
 using ORTS.Common;
@@ -37,7 +38,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static Orts.Common.InfoApiMap;
+using Orts.Viewer3D.WebServices.SwitchPanel;
 
 namespace Orts.Viewer3D.WebServices
 {
@@ -69,9 +70,12 @@ namespace Orts.Viewer3D.WebServices
 
             return new EmbedIO.WebServer(o => o
                     .WithUrlPrefixes(urls))
+                .WithModule(new SwitchPanelModule("/switchpanel", Program.Viewer))
+                .WithModule(Program.Viewer.TrainCarOperationsWebpage = new TrainCarOperationsWebpage("/traincaroperations", Program.Viewer))
                 .WithWebApi("/API", SerializationCallback, m => m
                     .WithController(() => new ORTSApiController(Program.Viewer)))
-                .WithStaticFolder("/", path, true);
+                // do not cache when debugging to make changing and testing web files easier
+                .WithStaticFolder("/", path, !System.Diagnostics.Debugger.IsAttached);
         }
 
         /// <remarks>
@@ -87,6 +91,14 @@ namespace Orts.Viewer3D.WebServices
                     Formatting = Formatting.Indented,
                     ContractResolver = new XnaFriendlyResolver()
                 }));
+            }
+        }
+        
+        public static async Task<T> DeserializationCallback<T>(IHttpContext context)
+        {
+            using (var text = context.OpenRequestText())
+            {
+                return JsonConvert.DeserializeObject<T>(await text.ReadToEndAsync());
             }
         }
 
@@ -243,15 +255,44 @@ namespace Orts.Viewer3D.WebServices
         public IEnumerable<TrainDpuDisplay.ListLabel> TrainDpuDisplay([QueryField] bool normalText) => Viewer.TrainDpuDisplayList(normalText);
         #endregion
 
+        #region /API/CABCONTROLS
         // Note: to see the JSON, use "localhost:2150/API/CABCONTROLS" - Beware: case matters
         // Note: to run the webpage, use "localhost:2150/CabControls/index.html" - case doesn't matter
         // or use "localhost:2150/CabControls/"
         // Do not use "localhost:2150/CabControls/"
         // as that will return the webpage, but the path will be "/" not "/CabControls/ and the appropriate scripts will not be loaded.
 
-        #region /API/CABCONTROLS
         [Route(HttpVerbs.Get, "/CABCONTROLS")]
         public IEnumerable<ControlValue> CabControls() => ((MSTSLocomotiveViewer)Viewer.PlayerLocomotiveViewer).GetWebControlValueList();
+        #endregion
+
+        #region /API/CABCONTROLS
+        // SetCabControls() expects a request passing an array of ControlValuePost objects using JSON.
+        // For example:
+        // [{ "TypeName": "THROTTLE"    // A CABViewControlTypes name - must be uppercase.
+        //  , "ControlIndex": 1         // Index of control type in CVF (optional for most controls)
+        //  , "Value": 0.50             // A floating-point value
+        //  }
+        // ]
+
+        [Route(HttpVerbs.Post, "/CABCONTROLS")]
+        public async Task SetCabControls()
+        {
+            var data = await HttpContext.GetRequestDataAsync<IEnumerable<ControlValuePost>>(WebServer.DeserializationCallback<IEnumerable<ControlValuePost>>);
+            var dev = UserInput.WebDeviceState;
+            foreach (var control in data)
+            {
+                var key = (new CabViewControlType(control.TypeName), control.ControlIndex);
+                if (!dev.CabControls.TryGetValue(key, out var state))
+                {
+                    state = new ExternalDeviceCabControl();
+                    var controls = new Dictionary<(CabViewControlType, int), ExternalDeviceCabControl>(dev.CabControls);
+                    controls[key] = state;
+                    dev.CabControls = controls;
+                }
+                state.Value = (float)control.Value;
+            }
+        }
         #endregion
 
         #region /API/TIME

@@ -21,11 +21,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
 
-namespace ORTS
+namespace Menu
 {
     static class Program
     {
-        [STAThread]  // requred for use of the DirectoryBrowserDialog in the main form.
+        [STAThread]  // required for use of the DirectoryBrowserDialog in the main form.
         static void Main(string[] args)
         {
             Application.EnableVisualStyles();
@@ -168,7 +168,7 @@ namespace ORTS
                         FileName = MainForm.RunActivityProgram,
                         Arguments = joinedParameters,
                         WindowStyle = ProcessWindowStyle.Normal,
-                        WorkingDirectory = Application.StartupPath,
+                        WorkingDirectory = ApplicationInfo.ProcessDirectory,
                     };
                     var process = Process.Start(processStartInfo);
                     process.WaitForExit();

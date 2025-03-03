@@ -42,7 +42,7 @@ namespace Orts.Common.Scripting
             typeof(ORTS.Common.ElapsedTime).Assembly.Location,
             typeof(ORTS.Scripting.Api.Timer).Assembly.Location,
             typeof(System.Linq.Enumerable).Assembly.Location,
-            };
+        };
         static MetadataReference[] References = ReferenceAssemblies.Select(r => MetadataReference.CreateFromFile(r)).ToArray();
         static CSharpCompilationOptions CompilationOptions = new CSharpCompilationOptions(
             OutputKind.DynamicallyLinkedLibrary,
@@ -177,9 +177,9 @@ namespace Orts.Common.Scripting
                     return null;
 
                 Scripts[path] = assembly;
-                }
-            return Scripts[path];
             }
+            return Scripts[path];
+        }
 
         [CallOnThread("Updater")]
         public string GetStatus()

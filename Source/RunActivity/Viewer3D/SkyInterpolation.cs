@@ -29,7 +29,7 @@ namespace Orts.Viewer3D
         public int Step1;
         public int Step2;
 
-        static float DaylightOffsetS => (Program.DebugViewer == null) ? 0f : (float)Program.DebugViewer.DaylightOffsetHrs * 60 * 60;
+        static float DaylightOffsetS => (float)Program.Viewer.World.WeatherControl.DaylightOffset * 60 * 60;
 
         public void SetSunAndMoonDirection(ref Vector3 solarDirection, ref Vector3 lunarDirection, Vector3[] solarPosArray, Vector3[] lunarPosArray, double clockTime)
         {
@@ -82,7 +82,7 @@ namespace Orts.Viewer3D
 
         /// <summary>
         /// Returns the advance of time in units of 20 mins (1200 seconds).
-        /// Allows for an offset in hours from a control in the DispatchViewer.
+        /// Allows for an offset in hours that can be set with the corresponding in-game keybinds.
         /// This is a user convenience to reveal in daylight what might be hard to see at night.
         /// </summary>
         /// <returns>The advance of time in units of 20 mins (1200 seconds).</returns>

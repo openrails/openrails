@@ -129,16 +129,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             return temp;
         }
 
-        public SeriesMotor(float nomCurrentA, float nomVoltageV, float nomRevolutionsRad, Axle axle) : base(axle)
+        public SeriesMotor(float nomCurrentA, float nomVoltageV, float nomRevolutionsRad, Axle axle, MSTSLocomotive locomotive) : base(axle, locomotive)
         {
             NominalCurrentA = nomCurrentA;
             NominalVoltageV = nomVoltageV;
             NominalRevolutionsRad = nomRevolutionsRad;
         }
 
-        public override float GetDevelopedTorqueNm(float revolutionsRad)
+        public override double GetDevelopedTorqueNm(double revolutionsRad)
         {
-            BackEMFvoltageV = revolutionsRad * fieldWb;
+            BackEMFvoltageV = (float)revolutionsRad * fieldWb;
             return fieldWb * armatureCurrentA/* - (frictionTorqueNm * revolutionsRad / NominalRevolutionsRad * revolutionsRad / NominalRevolutionsRad)*/;
         }
 
@@ -175,12 +175,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
             base.Update(timeSpan);
         }
-        public override void Reset()
+        public override void Initialize()
         {
             fieldCurrentA = 0.0f;
             armatureCurrentA = 0.0f;
             fieldWb = 0.0f;
-            base.Reset();
+            base.Initialize();
         }
     }
 }

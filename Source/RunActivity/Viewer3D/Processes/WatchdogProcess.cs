@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+// COPYRIGHT 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -36,7 +36,7 @@ namespace Orts.Viewer3D.Processes
     public class WatchdogProcess
     {
         readonly Profiler Profiler = new Profiler("Watchdog");
-        readonly ProcessState State = new ProcessState("Sound");
+        readonly ProcessState State = new ProcessState("Watchdog");
         readonly Game Game;
         readonly Thread Thread;
 
@@ -276,6 +276,10 @@ namespace Orts.Viewer3D.Processes
 
         StackTrace GetStackTrace()
         {
+#if NET5_0_OR_GREATER
+            // TODO: https://github.com/microsoft/clrmd is likely the best option to reimplement this in .NET 5+
+            throw new ThreadStateException("This is not implemented");
+#else
             // Yes, I know this is deprecated. Sorry. This code needs to collect the stack trace from a *different*
             // thread and this seems to be the only option - three seperate, deprecated APIs. :(
 #pragma warning disable 0618
@@ -289,6 +293,7 @@ namespace Orts.Viewer3D.Processes
                 Thread.Resume();
             }
 #pragma warning restore 0618
+#endif
         }
 
         bool StacksAreWaits()

@@ -126,7 +126,7 @@ float4 PSPrecipitation(in VERTEX_OUTPUT In) : COLOR0
 
 ////////////////////    T E C H N I Q U E S    /////////////////////////////////
 
-technique Pricipitation
+technique Precipitation
 {
 	pass Pass_0
 	{

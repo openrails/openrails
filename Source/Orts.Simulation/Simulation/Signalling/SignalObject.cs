@@ -138,6 +138,12 @@ namespace Orts.Simulation.Signalling
 
         public bool CallOnEnabled = false;      // set if signal script file uses CallOn functionality
 
+        private readonly List<int> passedSections = new List<int>();
+        private readonly List<int> SectionsWithAlternativePath = new List<int>();
+        private readonly List<int> SectionsWithAltPathSet = new List<int>();
+        private readonly static List<int> sectionsInRoute = new List<int>();
+        private static readonly ObjectSpeedInfo DefaultSpeedInfo = new ObjectSpeedInfo(-1, -1, false, false, 0, false);
+
         public bool enabled
         {
             get
@@ -580,7 +586,10 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public bool isSignalNormal()
         {
-            return SignalHeads.Any(sigHead => sigHead.Function == SignalFunction.NORMAL);
+            for (int i = 0; i < SignalHeads.Count; i++)
+                if (SignalHeads[i].Function == SignalFunction.NORMAL)
+                    return true;
+            return false;
         }
 
         /// <summary>
@@ -588,7 +597,10 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public bool isORTSSignalType(SignalFunction function)
         {
-            return SignalHeads.Any(sigHead => function == sigHead.Function);
+            for (int i = 0; i < SignalHeads.Count; i++)
+                if (SignalHeads[i].Function == function)
+                    return true;
+            return false;
         }
 
         /// <summary>
@@ -757,7 +769,7 @@ namespace Orts.Simulation.Signalling
         public MstsSignalAspect this_sig_mr(MstsSignalFunction msfn_type)
         {
             bool sigfound = false;
-            return this_sig_mr(signalRef.SignalFunctions[msfn_type.ToString()], ref sigfound);
+            return this_sig_mr(SignalConfigurationFile.MstsSignalFunctions[msfn_type], ref sigfound);
         }
 
         /// <summary>
@@ -856,7 +868,7 @@ namespace Orts.Simulation.Signalling
         public MstsSignalAspect this_sig_lr(MstsSignalFunction msfn_type)
         {
             bool sigfound = false;
-            return this_sig_lr(signalRef.SignalFunctions[msfn_type.ToString()], ref sigfound);
+            return this_sig_lr(SignalConfigurationFile.MstsSignalFunctions[msfn_type], ref sigfound);
         }
 
         /// <summary>
@@ -897,11 +909,11 @@ namespace Orts.Simulation.Signalling
         public ObjectSpeedInfo this_sig_speed(SignalFunction function)
         {
             var sigAsp = MstsSignalAspect.STOP;
-            var set_speed = new ObjectSpeedInfo(-1, -1, false, false, 0, false);
+            var set_speed = DefaultSpeedInfo;
 
-            foreach (SignalHead sigHead in SignalHeads.Where(sigHead => sigHead.Function == function))
+            foreach (SignalHead sigHead in SignalHeads)
             {
-                if (sigHead.state >= sigAsp && sigHead.CurrentSpeedInfo != null)
+                if (sigHead.Function == function && sigHead.state >= sigAsp && sigHead.CurrentSpeedInfo != null)
                 {
                     sigAsp = sigHead.state;
                     set_speed = sigHead.CurrentSpeedInfo;
@@ -1283,7 +1295,7 @@ namespace Orts.Simulation.Signalling
                 int sectionIndex = -1;
                 bool passedTrackJn = false;
 
-                List<int> passedSections = new List<int>();
+                passedSections.Clear();
                 passedSections.Add(thisSection.Index);
 
                 routeset = req_mainnode == thisSection.OriginalIndex;
@@ -1393,10 +1405,13 @@ namespace Orts.Simulation.Signalling
                 if (!isSignalNormal())
                 {
                     TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[direction][function];
-                    foreach (TrackCircuitSignalItem item in thisList.TrackCircuitItem.Where(item => item.SignalRef.TCOffset > TCOffset))
+                    for (int i = 0; i < thisList.TrackCircuitItem.Count; i++)
                     {
-                        signalFound = item.SignalRef.thisRef;
-                        break;
+                        if (thisList.TrackCircuitItem[i].SignalRef.TCOffset > TCOffset)
+                        {
+                            signalFound = thisList.TrackCircuitItem[i].SignalRef.thisRef;
+                            break;
+                        }
                     }
                 }
 
@@ -1791,15 +1806,17 @@ namespace Orts.Simulation.Signalling
                 if (holdState == HoldState.ManualApproach || holdState == HoldState.ManualLock || holdState == HoldState.ManualPass) return;
             }
 
-            foreach (SignalHead sigHead in SignalHeads.Where(sigHead => sigHead.Function == SignalFunction.NORMAL))
+            for (int i = 0; i < SignalHeads.Count; i++)
             {
-                sigHead.Update();
+                if (SignalHeads[i].Function == SignalFunction.NORMAL)
+                    SignalHeads[i].Update();
             }
 
             // next, update all other heads
-            foreach (SignalHead sigHead in SignalHeads.Where(sigHead => sigHead.Function != SignalFunction.NORMAL))
+            for (int i = 0; i < SignalHeads.Count; i++)
             {
-                sigHead.Update();
+                if (SignalHeads[i].Function != SignalFunction.NORMAL)
+                    SignalHeads[i].Update();
             }
 
         }
@@ -2143,7 +2160,7 @@ namespace Orts.Simulation.Signalling
             // copy sections upto next normal signal
             // check for loop
 
-            List<int> sectionsInRoute = new List<int>();
+            sectionsInRoute.Clear();
 
             for (int iNode = foundFirstSection; iNode < RoutePart.Count && foundLastSection < 0; iNode++)
             {
@@ -2681,9 +2698,9 @@ namespace Orts.Simulation.Signalling
 
             if (isSignalNormal() && hasFixedRoute)
             {
-                foreach (Train.TCRouteElement thisElement in fixedRoute)
+                for (int i = 0; i < fixedRoute.Count; i++)
                 {
-                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[fixedRoute[i].TCSectionIndex];
                     if (thisSection.CircuitState.HasTrainsOccupying())
                     {
                         localBlockState = InternalBlockstate.OccupiedSameDirection;
@@ -2972,8 +2989,8 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         private bool getBlockState_locationBased(Train.TCSubpathRoute thisRoute, Train.TrainRouted thisTrain, bool AIPermissionRequest)
         {
-            List<int> SectionsWithAlternativePath = new List<int>();
-            List<int> SectionsWithAltPathSet = new List<int>();
+            SectionsWithAlternativePath.Clear();
+            SectionsWithAltPathSet.Clear();
             bool altRouteAssigned = false;
 
             bool returnvalue = false;
@@ -3888,33 +3905,60 @@ namespace Orts.Simulation.Signalling
         {
             int foundSignal = -1;
 
-            // signal not enabled - no route available
-            if (enabledTrain == null)
+            Train.TrainRouted acttrain = enabledTrain;
+            int reqTC = isSignalNormal() ? TCNextTC : TCReference; // for normal signals, use section beyond signal; for not-normal, use signal section as TCNextTC is not set
+
+            // not normal signals may not have enabled train - check for train at next normal signal (use section ahead of signal in this case)
+            // note - next normal signal may not have the correct normal subtype, so proper search is still required
+            if (enabledTrain == null && !isSignalNormal())
+            {
+                int nextSignalIdent = SONextSignal(SignalFunction.NORMAL);
+
+                if (!String.IsNullOrEmpty(dumpfile))
+                {
+                    var sob = new StringBuilder();
+                    sob.AppendFormat("FIND_REQ_NORMAL_SIGNAL : using next normal signal for not enabled none-normal signal, found {0} \n", nextSignalIdent);
+                    File.AppendAllText(dumpfile, sob.ToString());
+                }
+
+                if (nextSignalIdent >= 0)
+                {
+                    SignalObject nextSignal = signalObjects[nextSignalIdent];
+                    acttrain = nextSignal.enabledTrain;
+                    reqTC = TCReference;
+                }
+            }
+
+            // no train found - no route available
+            if (acttrain == null || acttrain.Train.ValidRoute[acttrain.TrainRouteDirectionIndex] == null)
             {
                 if (!String.IsNullOrEmpty(dumpfile))
                 {
                     var sob = new StringBuilder();
-                    sob.Append("FIND_REQ_NORMAL_SIGNAL : not found : signal is not enabled");
+                    sob.Append("FIND_REQ_NORMAL_SIGNAL : not found : signal is not enabled or train has no valid route\n");
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
             }
             else
             {
-                int startIndex = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex].GetRouteIndex(TCNextTC, enabledTrain.Train.PresentPosition[0].RouteListIndex);
+                int startIndex = acttrain.Train.ValidRoute[acttrain.TrainRouteDirectionIndex].GetRouteIndex(reqTC, acttrain.Train.PresentPosition[0].RouteListIndex);
+
+                // this signal is not on trains route
                 if (startIndex < 0)
                 {
                     if (!String.IsNullOrEmpty(dumpfile))
                     {
                         var sob = new StringBuilder();
-                        sob.AppendFormat("FIND_REQ_NORMAL_SIGNAL : not found : cannot find signal {0} at section {1} in path of train {2}\n", thisRef, TCNextTC, enabledTrain.Train.Name);
+                        sob.AppendFormat("FIND_REQ_NORMAL_SIGNAL : not found : cannot find signal {0} at section {1} in path of train {2}\n", thisRef, TCNextTC, acttrain.Train.Name);
                         File.AppendAllText(dumpfile, sob.ToString());
                     }
                 }
                 else
                 {
-                    for (int iRouteIndex = startIndex; iRouteIndex < enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex].Count; iRouteIndex++)
+                    // search through train route until required signal type is found, or until end of route
+                    for (int iRouteIndex = startIndex; iRouteIndex < acttrain.Train.ValidRoute[acttrain.TrainRouteDirectionIndex].Count; iRouteIndex++)
                     {
-                        Train.TCRouteElement thisElement = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex][iRouteIndex];
+                        Train.TCRouteElement thisElement = acttrain.Train.ValidRoute[acttrain.TrainRouteDirectionIndex][iRouteIndex];
                         TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
                         if (thisSection.EndSignals[thisElement.Direction] != null)
                         {

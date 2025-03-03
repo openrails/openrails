@@ -23,8 +23,11 @@
 // #define DEBUG_TIMETABLE
 // #define DEBUG_TRACEINFO
 
-//
-
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
 using Orts.Parsers.OR;
@@ -34,18 +37,13 @@ using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.Timetables
 {
     public class TimetableInfo
     {
-        private Simulator simulator;
+        private readonly Simulator simulator;
 
         private enum columnType
         {
@@ -75,9 +73,9 @@ namespace Orts.Simulation.Timetables
             invalid,
         }
 
-        Dictionary<string, AIPath> Paths = new Dictionary<string, AIPath>();                                  // original path referenced by path name
-        List<string> reportedPaths = new List<string>();                                                      // reported path fails
-        Dictionary<int, string> TrainRouteXRef = new Dictionary<int, string>();                               // path name referenced from train index    
+        Dictionary<string, AIPath> Paths = new Dictionary<string, AIPath>();             // Original path referenced by path name
+        readonly List<string> reportedPaths = new List<string>();                        // Reported path fails
+        readonly Dictionary<int, string> TrainRouteXRef = new Dictionary<int, string>(); // Path name referenced from train index    
 
         public bool BinaryPaths = false;
 
@@ -110,34 +108,27 @@ namespace Orts.Simulation.Timetables
             List<string> filenames;
             int indexcount = 0;
 
-            // get filenames to process
+            // Get filenames to process
             filenames = GetFilenames(arguments[0]);
 
-            // get file contents as strings
-            Trace.Write("\n");
+            // Get file contents as strings
             foreach (string filePath in filenames)
             {
-                // get contents as strings
-                Trace.Write("TT File : " + filePath + "\n");
+                // Get contents as strings
                 var fileContents = new TimetableReader(filePath);
 
 #if DEBUG_TIMETABLE
                 File.AppendAllText(@"C:\temp\timetableproc.txt", "\nProcessing file : " + filePath + "\n");
 #endif
 
-                // convert to train info
+                // Convert to train info
                 indexcount = ConvertFileContents(fileContents, simulator.Signals, ref trainInfoList, indexcount, filePath);
             }
 
-            // read and pre-process routes
-
-            Trace.Write(" TTROUTES:" + Paths.Count.ToString() + " ");
-
+            // Read and pre-process routes
             loadPathNoFailure = PreProcessRoutes(cancellation);
 
-            Trace.Write(" TTTRAINS:" + trainInfoList.Count.ToString() + " ");
-
-            // get startinfo for player train
+            // Get startinfo for player train
             playerTrain = GetPlayerTrain(ref trainInfoList, arguments);
 
             // pre-init player train to abstract alternative paths if set
@@ -146,12 +137,12 @@ namespace Orts.Simulation.Timetables
                 PreInitPlayerTrain(playerTrain);
             }
 
-            // reduce trainlist using player train info and parameters
+            // Reduce trainlist using player train info and parameters
             bool addPathNoLoadFailure;
             trainList = BuildAITrains(cancellation, trainInfoList, playerTrain, arguments, out addPathNoLoadFailure);
             if (!addPathNoLoadFailure) loadPathNoFailure = false;
 
-            // set references (required to process commands)
+            // Set references (required to process commands)
             foreach (Train thisTrain in trainList)
             {
                 if (simulator.NameDictionary.ContainsKey(thisTrain.Name.ToLower()))
@@ -165,7 +156,7 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-            // set player train
+            // Set player train
             reqPlayerTrain = null;
             if (playerTrain != null)
             {
@@ -174,13 +165,13 @@ namespace Orts.Simulation.Timetables
                     addPathNoLoadFailure = playerTrain.ProcessDisposeInfo(ref trainList, null, simulator);
                     if (!addPathNoLoadFailure) loadPathNoFailure = false;
                 }
-                PlayerTrainOriginalStartTime = playerTrain.StartTime; // Saved here for use after playerTrain.StartTime gets changed.
+                PlayerTrainOriginalStartTime = playerTrain.StartTime; // Saved here for use after `playerTrain.StartTime` gets changed.
                 reqPlayerTrain = InitializePlayerTrain(playerTrain, ref Paths, ref trainList);
                 simulator.TrainDictionary.Add(reqPlayerTrain.Number, reqPlayerTrain);
                 simulator.NameDictionary.Add(reqPlayerTrain.Name.ToLower(), reqPlayerTrain);
             }
 
-            // process additional commands for all extracted trains
+            // Process additional commands for all extracted trains
             reqPlayerTrain.FinalizeTimetableCommands();
             reqPlayerTrain.StationStops.Sort();
 
@@ -189,13 +180,13 @@ namespace Orts.Simulation.Timetables
                 thisTrain.FinalizeTimetableCommands();
                 thisTrain.StationStops.Sort();
 
-                // finalize attach details
+                // Finalize attach details
                 if (thisTrain.AttachDetails != null && thisTrain.AttachDetails.Valid)
                 {
                     thisTrain.AttachDetails.FinalizeAttachDetails(thisTrain, trainList, playerTrain.TTTrain);
                 }
 
-                // finalize pickup details
+                // Finalize pickup details
                 if (thisTrain.PickUpDetails != null && thisTrain.PickUpDetails.Count > 0)
                 {
                     foreach (PickUpInfo thisPickUp in thisTrain.PickUpDetails)
@@ -205,7 +196,7 @@ namespace Orts.Simulation.Timetables
                     thisTrain.PickUpDetails.Clear();
                 }
 
-                // finalize transfer details
+                // Finalize transfer details
                 if (thisTrain.TransferStationDetails != null && thisTrain.TransferStationDetails.Count > 0)
                 {
                     foreach (KeyValuePair<int, TransferInfo> thisTransferStation in thisTrain.TransferStationDetails)
@@ -228,8 +219,10 @@ namespace Orts.Simulation.Timetables
                             }
                             else
                             {
-                                List<TransferInfo> thisTransferList = new List<TransferInfo>();
-                                thisTransferList.Add(thisTransfer);
+                                List<TransferInfo> thisTransferList = new List<TransferInfo>
+                                {
+                                    thisTransfer
+                                };
                                 thisTrain.TransferTrainDetails.Add(thisTransfer.TransferTrain, thisTransferList);
                             }
                         }
@@ -239,10 +232,10 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-            // process activation commands for all trains
+            // Process activation commands for all trains
             FinalizeActivationCommands(ref trainList, ref reqPlayerTrain);
 
-            // set timetable identification for simulator for saves etc.
+            // Set timetable identification for simulator for saves etc.
             simulator.TimetableFileName = Path.GetFileNameWithoutExtension(arguments[0]);
 
             if (!loadPathNoFailure)
@@ -250,7 +243,7 @@ namespace Orts.Simulation.Timetables
                 Trace.TraceError("Load path failures");
             }
 
-            // check on engine in player train
+            // Check on engine in player train
             if (simulator.PlayerLocomotive == null)
             {
                 if (reqPlayerTrain.NeedAttach != null && reqPlayerTrain.NeedAttach.Count > 0)
@@ -268,7 +261,7 @@ namespace Orts.Simulation.Timetables
             }
 
             trainList.Insert(0, reqPlayerTrain);
-            return (trainList);
+            return trainList;
         }
 
         //================================================================================================//
@@ -281,7 +274,7 @@ namespace Orts.Simulation.Timetables
         {
             List<string> filenames = new List<string>();
 
-            // check type of timetable file - list or single
+            // Check type of timetable file - list or single
             string fileExtension = Path.GetExtension(filePath);
             string fileDirectory = Path.GetDirectoryName(filePath);
 
@@ -314,7 +307,7 @@ namespace Orts.Simulation.Timetables
                 File.AppendAllText(@"C:\temp\timetableproc.txt", ttfile + "\n");
             }
 #endif
-            return (filenames);
+            return filenames;
         }
 
         //================================================================================================//
@@ -336,28 +329,27 @@ namespace Orts.Simulation.Timetables
             int firstCommentRow = -1;
             int firstCommentColumn = -1;
 
-            Dictionary<int, string> trainHeaders = new Dictionary<int, string>();          // key int = column no, value string = train header
-            Dictionary<int, TTTrainInfo> trainInfo = new Dictionary<int, TTTrainInfo>();   // key int = column no, value = train info class
-            Dictionary<int, int> addTrainInfo = new Dictionary<int, int>();                // key int = column no, value int = main train column
-            Dictionary<int, List<int>> addTrainColumns = new Dictionary<int, List<int>>(); // key int = main train column, value = add columns
-            Dictionary<int, StationInfo> stationNames = new Dictionary<int, StationInfo>();          // key int = row no, value string = station name
+            Dictionary<int, string> trainHeaders = new Dictionary<int, string>();           // Key int = column no, value string = train header
+            Dictionary<int, TTTrainInfo> trainInfo = new Dictionary<int, TTTrainInfo>();    // Key int = column no, value = train info class
+            Dictionary<int, int> addTrainInfo = new Dictionary<int, int>();                 // Key int = column no, value int = main train column
+            Dictionary<int, List<int>> addTrainColumns = new Dictionary<int, List<int>>();  // Key int = main train column, value = add columns
+            Dictionary<int, StationInfo> stationNames = new Dictionary<int, StationInfo>(); // Key int = row no, value string = station name
 
-            float actSpeedConv = 1.0f;                                                     // actual set speedconversion
+            float actSpeedConv = 1.0f; // Actual set speedconversion
 
             rowType[] RowInfo = new rowType[fileContents.Strings.Count];
             columnType[] ColInfo = new columnType[fileContents.Strings[0].Length];
 
-            // process first row separately
-
+            // Process first row separately
             ColInfo[0] = columnType.stationInfo;
 
             for (int iColumn = 1; iColumn <= fileContents.Strings[0].Length - 1; iColumn++)
             {
                 string columnDef = fileContents.Strings[0][iColumn];
 
-                // empty : continuation column
                 if (String.IsNullOrEmpty(columnDef))
                 {
+                    // Empty: continuation column
                     switch (ColInfo[iColumn - 1])
                     {
                         case columnType.stationInfo:
@@ -380,32 +372,30 @@ namespace Orts.Simulation.Timetables
                             break;
                     }
                 }
-
-                // comment
                 else if (String.Compare(columnDef, "#comment", true) == 0)
                 {
+                    // Comment
                     ColInfo[iColumn] = columnType.comment;
                     if (firstCommentColumn < 0) firstCommentColumn = iColumn;
                 }
 
-                // oheck for invalid command definition
                 else if (columnDef.Substring(0, 1).Equals("#"))
                 {
+                    // Check for invalid command definition
                     Trace.TraceWarning("Invalid column definition in {0} : column {1} : {2}", filePath, iColumn, columnDef);
                     ColInfo[iColumn] = columnType.invalid;
                 }
-
-                // otherwise it is a train definition
                 else
                 {
+                    // Otherwise it is a train definition
                     ColInfo[iColumn] = columnType.trainDefinition;
-                    trainHeaders.Add(iColumn, String.Copy(columnDef));
+                    trainHeaders.Add(iColumn, columnDef);
                     trainInfo.Add(iColumn, new TTTrainInfo(iColumn, columnDef, simulator, indexcount, this));
                     indexcount++;
                 }
             }
 
-            // get row information
+            // Get row information
             RowInfo[0] = rowType.trainInfo;
 
             for (int iRow = 1; iRow <= fileContents.Strings.Count - 1; iRow++)
@@ -420,25 +410,23 @@ namespace Orts.Simulation.Timetables
                     rowDef = rowCommands[0].Trim().ToLower();
                 }
 
-                // emtpy : continuation
                 if (String.IsNullOrEmpty(rowDef))
                 {
+                    // Emtpy: continuation
                     switch (RowInfo[iRow - 1])
                     {
                         case rowType.stationInfo:
                             RowInfo[iRow] = rowType.addStationInfo;
                             break;
 
-                        default:  // continuation of other types not allowed, treat line as comment
+                        default: // Continuation of other types not allowed, treat line as comment
                             RowInfo[iRow] = rowType.comment;
                             break;
                     }
                 }
-
-                // switch on actual string
-
                 else
                 {
+                    // switch on actual string
                     switch (rowDef)
                     {
                         case "#consist":
@@ -545,7 +533,7 @@ namespace Orts.Simulation.Timetables
                             else
                             {
                                 RowInfo[iRow] = rowType.stationInfo;
-                                stationNames.Add(iRow, new StationInfo(String.Copy(rowDef)));
+                                stationNames.Add(iRow, new StationInfo(rowDef));
                             }
                             break;
                     }
@@ -588,7 +576,7 @@ namespace Orts.Simulation.Timetables
 
             bool validFile = true;
 
-            // check if all required row definitions are available
+            // Check if all required row definitions are available
             if (consistRow < 0)
             {
                 Trace.TraceWarning("File : {0} - Consist definition row missing, file cannot be processed", filePath);
@@ -607,15 +595,13 @@ namespace Orts.Simulation.Timetables
                 validFile = false;
             }
 
-            if (!validFile) return (indexcount); // abandone processing
+            if (!validFile) return indexcount; // Abandon processing
 
-            // extract description
-
+            // Extract description
             string description = (firstCommentRow >= 0 && firstCommentColumn >= 0) ?
                 fileContents.Strings[firstCommentRow][firstCommentColumn] : Path.GetFileNameWithoutExtension(fileContents.FilePath);
 
-            // extract additional station info
-
+            // Extract additional station info
             for (int iRow = 1; iRow <= fileContents.Strings.Count - 1; iRow++)
             {
                 if (RowInfo[iRow] == rowType.stationInfo)
@@ -632,8 +618,7 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-            // build list of additional train columns
-
+            // Build list of additional train columns
             foreach (KeyValuePair<int, int> addColumn in addTrainInfo)
             {
                 if (addTrainColumns.ContainsKey(addColumn.Value))
@@ -642,14 +627,15 @@ namespace Orts.Simulation.Timetables
                 }
                 else
                 {
-                    List<int> addTrainColumn = new List<int>();
-                    addTrainColumn.Add(addColumn.Key);
+                    List<int> addTrainColumn = new List<int>
+                    {
+                        addColumn.Key
+                    };
                     addTrainColumns.Add(addColumn.Value, addTrainColumn);
                 }
             }
 
-            // build actual trains
-
+            // Build actual trains
             bool allCorrectBuild = true;
 
             for (int iColumn = 1; iColumn <= ColInfo.Length - 1; iColumn++)
@@ -676,7 +662,7 @@ namespace Orts.Simulation.Timetables
                 Trace.TraceError("Failed to build trains");
             }
 
-            // extract valid trains
+            // Extract valid trains
             foreach (KeyValuePair<int, TTTrainInfo> train in trainInfo)
             {
                 if (train.Value.validTrain)
@@ -685,7 +671,7 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-            return (indexcount);
+            return indexcount;
         }
 
         //================================================================================================//
@@ -746,7 +732,7 @@ namespace Orts.Simulation.Timetables
                 throw new InvalidDataException("Player train : " + arguments[1] + " not found in timetables");
             }
 
-            return (reqTrain);
+            return reqTrain;
         }
 
         //================================================================================================//
@@ -763,34 +749,34 @@ namespace Orts.Simulation.Timetables
 
             foreach (TTTrainInfo reqTrain in allTrains)
             {
-                if (cancellation.IsCancellationRequested) continue;  // ping watchdog token
+                if (cancellation.IsCancellationRequested) continue; // Ping watchdog token
 
-                // create train route
+                // Create train route
                 if (TrainRouteXRef.ContainsKey(reqTrain.Index) && Paths.ContainsKey(TrainRouteXRef[reqTrain.Index]))
                 {
                     AIPath usedPath = new AIPath(Paths[TrainRouteXRef[reqTrain.Index]]);
                     reqTrain.TTTrain.RearTDBTraveller = new Traveller(simulator.TSectionDat, simulator.TDB.TrackDB.TrackNodes, usedPath);
                     reqTrain.TTTrain.Path = usedPath;
-                    reqTrain.TTTrain.CreateRoute(false);  // create route without use of FrontTDBtraveller
+                    reqTrain.TTTrain.CreateRoute(false); // Create route without use of FrontTDBtraveller
                     reqTrain.TTTrain.EndRouteAtLastSignal();
                     reqTrain.TTTrain.ValidRoute[0] = new Train.TCSubpathRoute(reqTrain.TTTrain.TCRoute.TCRouteSubpaths[0]);
                     reqTrain.TTTrain.AITrainDirectionForward = true;
 
-                    // process stops
+                    // Process stops
                     reqTrain.ConvertStops(simulator, reqTrain.TTTrain, reqTrain.Name);
 
-                    // process commands
+                    // Process commands
                     if (reqTrain.TrainCommands.Count > 0)
                     {
                         reqTrain.ProcessCommands(simulator, reqTrain.TTTrain);
                     }
 
-                    // add AI train to output list
+                    // Add AI train to output list
                     trainList.Add(reqTrain.TTTrain);
                 }
             }
 
-            // process dispose commands
+            // Process dispose commands
             foreach (TTTrainInfo reqTrain in allTrains)
             {
                 if (reqTrain.DisposeDetails != null)
@@ -799,11 +785,11 @@ namespace Orts.Simulation.Timetables
                     if (!pathsNoLoadFailure)
                     {
                         allPathsLoaded = false;
-                        return (trainList);
+                        return trainList;
                     }
                 }
 
-                // build detach cross references
+                // Build detach cross references
                 if (reqTrain.TTTrain.DetachDetails != null)
                 {
                     int detachCount = 0;
@@ -832,7 +818,7 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-            return (trainList);
+            return trainList;
         }
 
         //================================================================================================//
@@ -841,7 +827,7 @@ namespace Orts.Simulation.Timetables
         /// </summary>
         private void PreInitPlayerTrain(TTTrainInfo reqTrain)
         {
-            // set player train idents
+            // Set player train idents
             TTTrain playerTrain = reqTrain.TTTrain;
             reqTrain.playerTrain = true;
 
@@ -851,14 +837,14 @@ namespace Orts.Simulation.Timetables
             playerTrain.ControlMode = Train.TRAIN_CONTROL.INACTIVE;
             playerTrain.MovementState = AITrain.AI_MOVEMENT_STATE.AI_STATIC;
 
-            // define style of passing path
+            // Define style of passing path
             simulator.Signals.UseLocationPassingPaths = true;
 
-            // create traveller
+            // Create traveller
             AIPath usedPath = Paths[TrainRouteXRef[reqTrain.Index]];
             playerTrain.RearTDBTraveller = new Traveller(simulator.TSectionDat, simulator.TDB.TrackDB.TrackNodes, usedPath);
 
-            // extract train path
+            // Extract train path
             playerTrain.SetRoutePath(usedPath, simulator.Signals);
             playerTrain.EndRouteAtLastSignal();
             playerTrain.ValidRoute[0] = new Train.TCSubpathRoute(playerTrain.TCRoute.TCRouteSubpaths[0]);
@@ -871,12 +857,12 @@ namespace Orts.Simulation.Timetables
         /// </summary>
         private TTTrain InitializePlayerTrain(TTTrainInfo reqTrain, ref Dictionary<string, AIPath> paths, ref List<TTTrain> trainList)
         {
-            // set player train idents
+            // Set player train idents
             TTTrain playerTrain = reqTrain.TTTrain;
 
             simulator.Trains.Add(playerTrain);
 
-            // reset train for each car
+            // Reset train for each car
 
             int icar = 1;
             foreach (TrainCar car in playerTrain.Cars)
@@ -886,8 +872,8 @@ namespace Orts.Simulation.Timetables
                 icar++;
             }
 
-            // set player locomotive
-            // first test first and last cars - if either is drivable, use it as player locomotive
+            // Set player locomotive
+            // First test first and last cars - if either is drivable, use it as player locomotive
             int lastIndex = playerTrain.Cars.Count - 1;
 
             if (playerTrain.Cars[0].IsDriveable)
@@ -902,7 +888,7 @@ namespace Orts.Simulation.Timetables
             {
                 foreach (TrainCar car in playerTrain.Cars)
                 {
-                    if (car.IsDriveable)  // first loco is the one the player drives
+                    if (car.IsDriveable) // First loco is the one the player drives
                     {
                         simulator.PlayerLocomotive = playerTrain.LeadLocomotive = car;
                         playerTrain.leadLocoAntiSlip = ((MSTSLocomotive)car).AntiSlip;
@@ -911,21 +897,20 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-            // initialize brakes
+            // Initialize brakes
             playerTrain.AITrainBrakePercent = 100;
             playerTrain.InitializeBrakes();
 
-            // set stops
+            // Set stops
             reqTrain.ConvertStops(simulator, playerTrain, reqTrain.Name);
 
-            // process commands
+            // Process commands
             if (reqTrain.TrainCommands.Count > 0)
             {
                 reqTrain.ProcessCommands(simulator, reqTrain.TTTrain);
             }
 
-
-            // set detach cross-references
+            // Set detach cross-references
             foreach (KeyValuePair<int, List<DetachInfo>> thisDetachInfo in reqTrain.TTTrain.DetachDetails)
             {
                 int detachCount = 0;
@@ -953,14 +938,13 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-
-            // finalize attach details
+            // Finalize attach details
             if (reqTrain.TTTrain.AttachDetails != null && reqTrain.TTTrain.AttachDetails.Valid)
             {
                 reqTrain.TTTrain.AttachDetails.FinalizeAttachDetails(reqTrain.TTTrain, trainList, null);
             }
 
-            // finalize pickup details
+            // Finalize pickup details
             if (reqTrain.TTTrain.PickUpDetails != null && reqTrain.TTTrain.PickUpDetails.Count > 0)
             {
                 foreach (PickUpInfo thisPickUp in reqTrain.TTTrain.PickUpDetails)
@@ -970,7 +954,7 @@ namespace Orts.Simulation.Timetables
                 reqTrain.TTTrain.PickUpDetails.Clear();
             }
 
-            // finalize transfer details
+            // Finalize transfer details
             if (reqTrain.TTTrain.TransferStationDetails != null && reqTrain.TTTrain.TransferStationDetails.Count > 0)
             {
                 foreach (KeyValuePair<int, TransferInfo> thisTransferStation in reqTrain.TTTrain.TransferStationDetails)
@@ -993,8 +977,10 @@ namespace Orts.Simulation.Timetables
                         }
                         else
                         {
-                            List<TransferInfo> thisTransferList = new List<TransferInfo>();
-                            thisTransferList.Add(thisTransfer);
+                            List<TransferInfo> thisTransferList = new List<TransferInfo>
+                            {
+                                thisTransfer
+                            };
                             reqTrain.TTTrain.TransferTrainDetails.Add(thisTransfer.TransferTrain, thisTransferList);
                         }
                     }
@@ -1002,11 +988,11 @@ namespace Orts.Simulation.Timetables
                 reqTrain.TTTrain.TransferTrainDetails.Remove(-1);
             }
 
-            // set activity details
+            // Set activity details
             simulator.ClockTime = reqTrain.StartTime;
             simulator.ActivityFileName = reqTrain.TTDescription + "_" + reqTrain.Name;
 
-            // if train is created before start time, create train as intended player train
+            // If train is created before start time, create train as intended player train
             if (playerTrain.StartTime != playerTrain.ActivateTime)
             {
                 playerTrain.TrainType = Train.TRAINTYPE.INTENDED_PLAYER;
@@ -1014,34 +1000,33 @@ namespace Orts.Simulation.Timetables
                 playerTrain.FormedOfType = TTTrain.FormCommand.Created;
             }
 
-            return (playerTrain);
+            return playerTrain;
         }
 
         //================================================================================================//
         /// <summary>
         /// Finalize activation commands
         /// </summary>
-
         public void FinalizeActivationCommands(ref List<TTTrain> trainList, ref TTTrain reqPlayerTrain)
         {
             List<int> activatedTrains = new List<int>();
 
-            // build list of trains to be activated
-            // set original AI number for player train
+            // Build list of trains to be activated
+            // Set original AI number for player train
             foreach (TTTrain thisTrain in trainList)
             {
                 if (thisTrain.TriggeredActivationRequired)
                 {
-                        activatedTrains.Add(thisTrain.OrgAINumber);
-                    }
-                    }
+                    activatedTrains.Add(thisTrain.OrgAINumber);
+                }
+            }
 
             if (reqPlayerTrain.TriggeredActivationRequired)
             {
                 activatedTrains.Add(reqPlayerTrain.OrgAINumber);
             }
 
-            // process all activation commands
+            // Process all activation commands
             foreach (TTTrain thisTrain in trainList)
             {
                 if (thisTrain.activatedTrainTriggers != null && thisTrain.activatedTrainTriggers.Count > 0)
@@ -1050,7 +1035,7 @@ namespace Orts.Simulation.Timetables
                     {
                         TTTrain.TriggerActivation thisTrigger = thisTrain.activatedTrainTriggers[itrigger];
                         thisTrain.activatedTrainTriggers.RemoveAt(itrigger);
-                        string otherTrainName = String.Copy(thisTrigger.activatedName);
+                        string otherTrainName = thisTrigger.activatedName;
 
                         if (!otherTrainName.Contains(':'))
                         {
@@ -1080,14 +1065,14 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-            // process activation request for player train
+            // Process activation request for player train
             if (reqPlayerTrain.activatedTrainTriggers != null && reqPlayerTrain.activatedTrainTriggers.Count > 0)
             {
                 for (int itrigger = reqPlayerTrain.activatedTrainTriggers.Count - 1; itrigger >= 0; itrigger--)
                 {
                     TTTrain.TriggerActivation thisTrigger = reqPlayerTrain.activatedTrainTriggers[itrigger];
                     reqPlayerTrain.activatedTrainTriggers.RemoveAt(itrigger);
-                    string otherTrainName = String.Copy(thisTrigger.activatedName);
+                    string otherTrainName = thisTrigger.activatedName;
 
                     if (!otherTrainName.Contains(':'))
                     {
@@ -1116,7 +1101,7 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-            // check if any activated trains remain untriggered
+            // Check if any activated trains remain untriggered
             foreach (int inumber in activatedTrains)
             {
                 TTTrain otherTrain = trainList[0].GetOtherTTTrainByNumber(inumber);
@@ -1132,7 +1117,7 @@ namespace Orts.Simulation.Timetables
         public bool PreProcessRoutes(CancellationToken cancellation)
         {
 
-            // extract names
+            // Extract names
             List<string> routeNames = new List<string>();
 
             foreach (KeyValuePair<string, AIPath> thisRoute in Paths)
@@ -1140,22 +1125,22 @@ namespace Orts.Simulation.Timetables
                 routeNames.Add(thisRoute.Key);
             }
 
-            // clear routes - will be refilled
+            // Clear routes - will be refilled
             Paths.Clear();
             bool allPathsLoaded = true;
 
-            // create routes
+            // Create routes
             foreach (string thisRoute in routeNames)
             {
-                // read route
+                // Read route
                 bool pathValid = true;
                 LoadPath(thisRoute, out pathValid);
                 if (!pathValid) allPathsLoaded = false;
                 if (cancellation.IsCancellationRequested)
-                    return (false);
+                    return false;
             }
 
-            return (allPathsLoaded);
+            return allPathsLoaded;
         }
 
         //================================================================================================//
@@ -1178,7 +1163,7 @@ namespace Orts.Simulation.Timetables
 
             if (!Paths.TryGetValue(formedpathFilefull, out var outPath))
             {
-                // try to load binary path if required
+                // Try to load binary path if required
                 bool binaryloaded = false;
                 var formedpathFilefullBinary = simulator.Settings.GetCacheFilePath("Path", formedpathFilefull);
 
@@ -1202,14 +1187,14 @@ namespace Orts.Simulation.Timetables
                             }
                             else
                             {
-                            outPath = new AIPath(simulator.TDB, simulator.TSectionDat, infpath);
+                                outPath = new AIPath(simulator.TDB, simulator.TSectionDat, infpath);
 
-                            if (outPath.Nodes != null)
-                            {
-                                Paths.Add(formedpathFilefull, outPath);
-                                binaryloaded = true;
+                                if (outPath.Nodes != null)
+                                {
+                                    Paths.Add(formedpathFilefull, outPath);
+                                    binaryloaded = true;
+                                }
                             }
-                        }
                             infpath.Close();
                         }
                         catch
@@ -1264,16 +1249,16 @@ namespace Orts.Simulation.Timetables
                                 outPath.Save(outfpath);
                                 outfpath.Close();
                             }
-                            // dummy catch to avoid error
+                            // Dummy catch to avoid error
                             catch
                             { }
                         }
                     }
-                    // report path load failure
+                    // Report path load failure
                 }
             }
 
-            return (outPath);
+            return outPath;
         }
 
         //================================================================================================//
@@ -1281,7 +1266,6 @@ namespace Orts.Simulation.Timetables
         /// class TTTrainInfo
         /// contains extracted train plus additional info for identification and selection
         /// </summary>
-
         private class TTTrainInfo
         {
             public TTTrain TTTrain;
@@ -1305,7 +1289,6 @@ namespace Orts.Simulation.Timetables
                 public bool reversed;
             }
 
-
             //================================================================================================//
             /// <summary>
             /// Constructor
@@ -1316,7 +1299,7 @@ namespace Orts.Simulation.Timetables
             public TTTrainInfo(int icolumn, string trainName, Simulator simulator, int index, TimetableInfo thisParent)
             {
                 parentInfo = thisParent;
-                Name = String.Copy(trainName.Trim());
+                Name = trainName.Trim();
                 TTTrain = new TTTrain(simulator);
                 columnIndex = icolumn;
                 Index = index;
@@ -1337,14 +1320,13 @@ namespace Orts.Simulation.Timetables
             public bool BuildTrain(List<string[]> fileStrings, rowType[] RowInfo, int pathRow, int consistRow, int startRow, int disposeRow, int briefingRow, string description,
                 Dictionary<int, StationInfo> stationNames, float actSpeedConv, TimetableInfo ttInfo)
             {
-                TTDescription = string.Copy(description);
+                TTDescription = description;
 
-                // set name
-
-                // if $static, set starttime row to $static and create unique name
+                // Set name
+                // If $static, set starttime row to $static and create unique name
                 if (Name.ToLower().Contains("$static"))
                 {
-                    fileStrings[startRow][columnIndex] = String.Copy("$static");
+                    fileStrings[startRow][columnIndex] = "$static";
 
                     if (String.Equals(Name.Trim().Substring(0, 1), "$"))
                     {
@@ -1365,14 +1347,14 @@ namespace Orts.Simulation.Timetables
                 TTTrain.MovementState = AITrain.AI_MOVEMENT_STATE.AI_STATIC;
                 TTTrain.OrgAINumber = TTTrain.Number;
 
-                // derive various directory paths
+                // Derive various directory paths
                 string pathDirectory = Path.Combine(ttInfo.simulator.RoutePath, "Paths");
 
-                // no path defined : exit
+                // No path defined: exit
                 if (String.IsNullOrEmpty(fileStrings[pathRow][columnIndex]))
                 {
                     Trace.TraceInformation("Error for train {0} : no path defined", TTTrain.Name);
-                    return (false);
+                    return false;
                 }
 
                 string pathFilefull = ExtractPathString(pathDirectory, fileStrings[pathRow][columnIndex], ref TTTrain);
@@ -1382,43 +1364,42 @@ namespace Orts.Simulation.Timetables
 
                 string consistdef = fileStrings[consistRow][columnIndex];
 
-                // no consist defined : exit
+                // No consist defined: exit
                 if (String.IsNullOrEmpty(consistdef))
                 {
                     Trace.TraceInformation("Error for train {0} : no consist defined", TTTrain.Name);
-                    return (false);
+                    return false;
                 }
 
                 List<consistInfo> consistdetails = ProcessConsistInfo(consistdef);
                 string trainsetDirectory = Path.Combine(trainsDirectory, "trainset");
 
-                // extract path
+                // EExtract path
                 string pathExtension = Path.GetExtension(pathFilefull);
                 if (String.IsNullOrEmpty(pathExtension))
                     pathFilefull = Path.ChangeExtension(pathFilefull, "pat");
-                ttInfo.TrainRouteXRef.Add(Index, pathFilefull);    // set reference to path
+                ttInfo.TrainRouteXRef.Add(Index, pathFilefull); // Set reference to path
 
                 if (!ttInfo.Paths.ContainsKey(pathFilefull))
                 {
-                    ttInfo.Paths.Add(pathFilefull, null);  // insert name in dictionary, path will be loaded later
+                    ttInfo.Paths.Add(pathFilefull, null); // Insert name in dictionary, path will be loaded later
                 }
 
-                // build consist
+                // Build consist
                 bool returnValue = true;
                 returnValue = BuildConsist(consistdetails, trainsetDirectory, consistDirectory, ttInfo.simulator);
 
-                // return if consist could not be loaded
-                if (!returnValue) return (returnValue);
+                // Return if consist could not be loaded
+                if (!returnValue) return returnValue;
 
-                // derive starttime
-
+                // Derive starttime
                 if (validTrain)
                 {
                     string startString = fileStrings[startRow][columnIndex].ToLower().Trim();
                     ExtractStartTime(startString, consistdetails[0].consistFile, ttInfo.simulator);
                 }
 
-                // process dispose info
+                // Process dispose info
                 if (disposeRow > 0)
                 {
                     string disposeString = fileStrings[disposeRow][columnIndex].ToLower().Trim();
@@ -1467,8 +1448,10 @@ namespace Orts.Simulation.Timetables
                                         }
                                         else
                                         {
-                                            List<DetachInfo> tempList = new List<DetachInfo>();
-                                            tempList.Add(thisDetach);
+                                            List<DetachInfo> tempList = new List<DetachInfo>
+                                            {
+                                                thisDetach
+                                            };
                                             TTTrain.DetachDetails.Add(-1, tempList);
                                         }
                                         break;
@@ -1497,8 +1480,10 @@ namespace Orts.Simulation.Timetables
                                         else
                                         {
                                             TransferInfo thisTransfer = new TransferInfo(-1, disposeCommands, TTTrain);
-                                            List<TransferInfo> newList = new List<TransferInfo>();
-                                            newList.Add(thisTransfer);
+                                            List<TransferInfo> newList = new List<TransferInfo>
+                                            {
+                                                thisTransfer
+                                            };
 
                                             if (thisTransfer.TransferTrain == -99)
                                             {
@@ -1508,7 +1493,7 @@ namespace Orts.Simulation.Timetables
                                             {
                                                 TTTrain.TransferTrainDetails.Add(-1, newList); // set key to -1 to work out reference later
                                             }
-                                        } 
+                                        }
                                         break;
 
                                     case "activate":
@@ -1518,10 +1503,11 @@ namespace Orts.Simulation.Timetables
                                             break;
                                         }
 
-                                        TTTrain.TriggerActivation thisTrigger = new TTTrain.TriggerActivation();
-
-                                        thisTrigger.activationType = TTTrain.TriggerActivationType.Dispose;
-                                        thisTrigger.activatedName = disposeCommands.CommandValues[0];
+                                        TTTrain.TriggerActivation thisTrigger = new TTTrain.TriggerActivation
+                                        {
+                                            activationType = TTTrain.TriggerActivationType.Dispose,
+                                            activatedName = disposeCommands.CommandValues[0]
+                                        };
                                         TTTrain.activatedTrainTriggers.Add(thisTrigger);
 
                                         break;
@@ -1536,13 +1522,12 @@ namespace Orts.Simulation.Timetables
                     }
                 }
 
-                // derive station stops and other info
-
+                // Derive station stops and other info
                 for (int iRow = 1; iRow <= fileStrings.Count - 1; iRow++)
                 {
                     switch (RowInfo[iRow])
                     {
-                        case rowType.directionInfo:   // no longer used, maintained for compatibility with existing timetables
+                        case rowType.directionInfo: // No longer used, maintained for compatibility with existing timetables
                             break;
 
                         case rowType.stationInfo:
@@ -1555,7 +1540,7 @@ namespace Orts.Simulation.Timetables
                                 }
                                 else if (fileStrings[iRow][columnIndex].StartsWith("P"))
                                 {
-                                    // allowed in timetable but not yet implemented
+                                    // Allowed in timetable but not yet implemented
                                 }
                                 else
                                 {
@@ -1591,13 +1576,13 @@ namespace Orts.Simulation.Timetables
                     }
                 }
 
-                // set speed details based on route, config and input
+                // Set speed details based on route, config and input
                 TTTrain.ProcessSpeedSettings();
 
                 if (briefingRow >= 0)
                     TTTrain.Briefing = fileStrings[briefingRow][columnIndex].Replace("<br>", "\n");
 
-                return (true);
+                return true;
             }
 
             //================================================================================================//
@@ -1612,7 +1597,7 @@ namespace Orts.Simulation.Timetables
             {
                 string fullstring = string.Empty;
 
-                // process strings
+                // Process strings
                 string procPathString = pathString.ToLower().Trim();
                 List<TTTrainCommands> pathCommands = new List<TTTrainCommands>();
 
@@ -1627,11 +1612,11 @@ namespace Orts.Simulation.Timetables
                         }
                     }
 
-                    // actual path is string [0]
+                    // Actual path is string [0]
                     fullstring = Path.Combine(pathDirectory, pathCommandString[0].Trim());
                     pathCommands.RemoveAt(0);
 
-                    // process qualifiers
+                    // Process qualifiers
                     foreach (TTTrainCommands thisCommand in pathCommands)
                     {
                         if (!String.IsNullOrEmpty(thisCommand.CommandToken))
@@ -1660,7 +1645,7 @@ namespace Orts.Simulation.Timetables
                     }
                 }
 
-                return (fullstring);
+                return fullstring;
             }
 
             //================================================================================================//
@@ -1685,8 +1670,7 @@ namespace Orts.Simulation.Timetables
                 bool setConsistName = false;
                 bool activationRequired = false;
 
-                // process qualifier if set
-
+                // Process qualifier if set
                 List<TTTrainCommands> StartCommands = new List<TTTrainCommands>();
 
                 if (startString.Contains('$'))
@@ -1700,7 +1684,7 @@ namespace Orts.Simulation.Timetables
                         }
                     }
 
-                    // first command is start time except for static
+                    // First command is start time except for static
                     if (!String.Equals(StartCommands[0].CommandToken, "static"))
                     {
                         startTimeString = StartCommands[0].CommandToken;
@@ -1713,22 +1697,16 @@ namespace Orts.Simulation.Timetables
                     {
                         switch (thisCommand.CommandToken)
                         {
-                            // check for create - syntax : $create [=starttime] [/ahead = train] [/pool = pool]
+                            // Check for create - syntax : $create [=starttime] [/ahead = train] [/pool = pool]
                             case "create":
                                 created = true;
 
-                                // process starttime
-                                if (thisCommand.CommandValues != null && thisCommand.CommandValues.Count > 0)
-                                {
-                                    startTimeString = String.Copy(thisCommand.CommandValues[0]);
-                                }
-                                else
-                                // if not set, start at 1 second (same start time as for static so /ahead will work for both create and static)
-                                {
-                                    startTimeString = "00:00:01";
-                                }
+                                // Process starttime
+                                startTimeString = thisCommand.CommandValues != null && thisCommand.CommandValues.Count > 0
+                                    ? thisCommand.CommandValues[0]
+                                    : "00:00:01";
 
-                                // check additional qualifiers
+                                // Check additional qualifiers
                                 if (thisCommand.CommandQualifiers != null && thisCommand.CommandQualifiers.Count > 0)
                                 {
                                     foreach (TTTrainCommands.TTTrainComQualifiers thisQualifier in thisCommand.CommandQualifiers)
@@ -1738,7 +1716,7 @@ namespace Orts.Simulation.Timetables
                                             case "ahead":
                                                 if (thisQualifier.QualifierValues != null && thisQualifier.QualifierValues.Count > 0)
                                                 {
-                                                    createAhead = String.Copy(thisQualifier.QualifierValues[0]);
+                                                    createAhead = thisQualifier.QualifierValues[0];
                                                 }
                                                 break;
 
@@ -1749,7 +1727,7 @@ namespace Orts.Simulation.Timetables
                                 }
                                 break;
 
-                            // pool : created from pool - syntax : $pool = pool [/direction = backward | forward]
+                            // Pool: created from pool - syntax: $pool = pool [/direction = backward | forward]
                             case "pool":
                                 if (thisCommand.CommandValues == null || thisCommand.CommandValues.Count < 1)
                                 {
@@ -1757,7 +1735,7 @@ namespace Orts.Simulation.Timetables
                                 }
                                 else
                                 {
-                                    createFromPool = String.Copy(thisCommand.CommandValues[0]);
+                                    createFromPool = thisCommand.CommandValues[0];
                                     if (thisCommand.CommandQualifiers != null)
                                     {
                                         foreach (TTTrainCommands.TTTrainComQualifiers thisQualifier in thisCommand.CommandQualifiers)
@@ -1769,7 +1747,7 @@ namespace Orts.Simulation.Timetables
                                                     break;
 
                                                 case "direction":
-                                                    createPoolDirection = String.Copy(thisQualifier.QualifierValues[0]);
+                                                    createPoolDirection = thisQualifier.QualifierValues[0];
                                                     break;
 
                                                 default:
@@ -1780,16 +1758,16 @@ namespace Orts.Simulation.Timetables
                                 }
                                 break;
 
-                            // check for $next : set special flag to start after midnight
+                            // Check for $next: set special flag to start after midnight
                             case "next":
                                 startNextNight = true;
                                 break;
 
-                            // static : syntax : $static [/ahead = train]
+                            // Static: syntax: $static [/ahead = train]
                             case "static":
                                 createStatic = true;
 
-                                // check additional qualifiers
+                                // Check additional qualifiers
                                 if (thisCommand.CommandQualifiers != null && thisCommand.CommandQualifiers.Count > 0)
                                 {
                                     foreach (TTTrainCommands.TTTrainComQualifiers thisQualifier in thisCommand.CommandQualifiers)
@@ -1799,14 +1777,14 @@ namespace Orts.Simulation.Timetables
                                             case "ahead":
                                                 if (thisQualifier.QualifierValues != null && thisQualifier.QualifierValues.Count > 0)
                                                 {
-                                                    createAhead = String.Copy(thisQualifier.QualifierValues[0]);
+                                                    createAhead = thisQualifier.QualifierValues[0];
                                                 }
                                                 break;
 
                                             case "pool":
                                                 if (thisQualifier.QualifierValues != null && thisQualifier.QualifierValues.Count > 0)
                                                 {
-                                                    createInPool = String.Copy(thisQualifier.QualifierValues[0]);
+                                                    createInPool = thisQualifier.QualifierValues[0];
                                                     if (!simulator.PoolHolder.Pools.ContainsKey(createInPool))
                                                     {
                                                         Trace.TraceInformation("Train : " + TTTrain.Name + " : no such pool : " + createInPool + " ; train not created");
@@ -1822,12 +1800,12 @@ namespace Orts.Simulation.Timetables
                                 }
                                 break;
 
-                            // activated : set activated flag
-                            case "activated" :
+                            // Activated : set activated flag
+                            case "activated":
                                 activationRequired = true;
                                 break;
 
-                            // invalid command
+                            // Invalid command
                             default:
                                 Trace.TraceInformation("Train : " + Name + " invalid command for start value : " + thisCommand.CommandToken + "\n");
                                 break;
@@ -1852,7 +1830,7 @@ namespace Orts.Simulation.Timetables
                     TTTrain.Created = created;
                     TTTrain.TriggeredActivationRequired = activationRequired;
 
-                    // trains starting after midnight
+                    // Trains starting after midnight
                     if (startNextNight && TTTrain.StartTime.HasValue)
                     {
                         TTTrain.StartTime = TTTrain.StartTime.Value + (24 * 3600);
@@ -1861,25 +1839,18 @@ namespace Orts.Simulation.Timetables
 
                     if (created && !String.IsNullOrEmpty(createAhead))
                     {
-                        if (!createAhead.Contains(':'))
-                        {
-                            TTTrain.CreateAhead = createAhead + ":" + TTDescription;
-                        }
-                        else
-                        {
-                            TTTrain.CreateAhead = createAhead;
-                        }
+                        TTTrain.CreateAhead = !createAhead.Contains(':') ? createAhead + ":" + TTDescription : createAhead;
                         TTTrain.CreateAhead = TTTrain.CreateAhead.ToLower();
                     }
 
                     if (!String.IsNullOrEmpty(createFromPool))
                     {
-                        TTTrain.CreateFromPool = String.Copy(createFromPool);
+                        TTTrain.CreateFromPool = createFromPool;
                         TTTrain.ForcedConsistName = String.Empty;
 
                         if (setConsistName)
                         {
-                            TTTrain.ForcedConsistName = String.Copy(consistInfo);
+                            TTTrain.ForcedConsistName = consistInfo;
                         }
 
                         switch (createPoolDirection)
@@ -1904,7 +1875,7 @@ namespace Orts.Simulation.Timetables
                 {
                     TTTrain.StartTime = 1;
                     TTTrain.ActivateTime = null;
-                    TTTrain.CreateInPool = String.Copy(createInPool);
+                    TTTrain.CreateInPool = createInPool;
                 }
                 else if (createStatic)
                 {
@@ -1913,14 +1884,7 @@ namespace Orts.Simulation.Timetables
 
                     if (!String.IsNullOrEmpty(createAhead))
                     {
-                        if (!createAhead.Contains(':'))
-                        {
-                            TTTrain.CreateAhead = createAhead + ":" + TTDescription;
-                        }
-                        else
-                        {
-                            TTTrain.CreateAhead = createAhead;
-                        }
+                        TTTrain.CreateAhead = !createAhead.Contains(':') ? createAhead + ":" + TTDescription : createAhead;
                         TTTrain.CreateAhead = TTTrain.CreateAhead.ToLower();
                     }
                 }
@@ -1930,13 +1894,12 @@ namespace Orts.Simulation.Timetables
                     validTrain = false;
                 }
 
-                // activation is not allowed if started from pool
+                // Activation is not allowed if started from pool
                 if (activationRequired && !String.IsNullOrEmpty(createFromPool))
                 {
                     activationRequired = false;
-                    Trace.TraceInformation("Trigger activation not allowed when starting from pool, trigger activation reset for train {0}", TTTrain.Name);                  
+                    Trace.TraceInformation("Trigger activation not allowed when starting from pool, trigger activation reset for train {0}", TTTrain.Name);
                 }
-
             }
 
             //================================================================================================//
@@ -1946,7 +1909,7 @@ namespace Orts.Simulation.Timetables
             /// <param name="restartDelayInfo"></param>
             public void ProcessRestartDelay(string restartDelayInfo)
             {
-                // build list of commands
+                // Build list of commands
                 List<TTTrainCommands> RestartDelayCommands = new List<TTTrainCommands>();
 
                 if (!String.IsNullOrEmpty(restartDelayInfo))
@@ -1961,50 +1924,49 @@ namespace Orts.Simulation.Timetables
                     }
                 }
 
-                // process list of commands
-
+                // Process list of commands
                 foreach (TTTrainCommands thisCommand in RestartDelayCommands)
                 {
                     switch (thisCommand.CommandToken)
                     {
-                        // delay when new
+                        // Delay when new
                         case "new":
                             TTTrain.DelayedStartSettings.newStart = ProcessRestartDelayValues(TTTrain.Name, thisCommand.CommandQualifiers, thisCommand.CommandToken);
                             break;
 
-                        // delay when restarting from signal or other path action
+                        // Delay when restarting from signal or other path action
                         case "path":
                             TTTrain.DelayedStartSettings.pathRestart = ProcessRestartDelayValues(TTTrain.Name, thisCommand.CommandQualifiers, thisCommand.CommandToken);
                             break;
 
-                        // delay when restarting from station stop
+                        // Delay when restarting from station stop
                         case "station":
                             TTTrain.DelayedStartSettings.stationRestart = ProcessRestartDelayValues(TTTrain.Name, thisCommand.CommandQualifiers, thisCommand.CommandToken);
                             break;
 
-                        // delay when restarting when following stopped train
+                        // Delay when restarting when following stopped train
                         case "follow":
                             TTTrain.DelayedStartSettings.followRestart = ProcessRestartDelayValues(TTTrain.Name, thisCommand.CommandQualifiers, thisCommand.CommandToken);
                             break;
 
-                        // delay after attaching
+                        // Delay after attaching
                         case "attach":
                             TTTrain.DelayedStartSettings.attachRestart = ProcessRestartDelayValues(TTTrain.Name, thisCommand.CommandQualifiers, thisCommand.CommandToken);
                             break;
 
-                        // delay on detaching
+                        // Delay on detaching
                         case "detach":
                             TTTrain.DelayedStartSettings.detachRestart = ProcessRestartDelayValues(TTTrain.Name, thisCommand.CommandQualifiers, thisCommand.CommandToken);
                             break;
 
-                        // delay for train and moving table
+                        // Delay for train and moving table
                         case "movingtable":
                             TTTrain.DelayedStartSettings.movingtableRestart = ProcessRestartDelayValues(TTTrain.Name, thisCommand.CommandQualifiers, thisCommand.CommandToken);
                             break;
 
-                        // delay when restarting at reversal
+                        // Delay when restarting at reversal
                         case "reverse":
-                            // process additional reversal delay
+                            // Process additional reversal delay
                             for (int iIndex = thisCommand.CommandQualifiers.Count - 1; iIndex >= 0; iIndex--)
                             {
                                 TTTrainCommands.TTTrainComQualifiers thisQual = thisCommand.CommandQualifiers[iIndex];
@@ -2045,10 +2007,10 @@ namespace Orts.Simulation.Timetables
             /// <returns></returns>
             public TTTrain.DelayedStartBase ProcessRestartDelayValues(String trainName, List<TTTrainCommands.TTTrainComQualifiers> commandQualifiers, string delayType)
             {
-                // preset values
+                // Preset values
                 TTTrain.DelayedStartBase newDelayInfo = new TTTrain.DelayedStartBase();
 
-                // process command qualifiers
+                // Process command qualifiers
                 foreach (TTTrainCommands.TTTrainComQualifiers thisQual in commandQualifiers)
                 {
                     switch (thisQual.QualifierName)
@@ -2083,7 +2045,7 @@ namespace Orts.Simulation.Timetables
                     }
                 }
 
-                return (newDelayInfo);
+                return newDelayInfo;
             }
 
             //================================================================================================//
@@ -2094,7 +2056,7 @@ namespace Orts.Simulation.Timetables
             /// <param name="actSpeedConv"></param>
             public void ProcessSpeedInfo(string speedInfo, float actSpeedConv)
             {
-                // build list of commands
+                // Build list of commands
                 List<TTTrainCommands> SpeedCommands = new List<TTTrainCommands>();
 
                 if (!String.IsNullOrEmpty(speedInfo))
@@ -2219,7 +2181,7 @@ namespace Orts.Simulation.Timetables
             public List<consistInfo> ProcessConsistInfo(string consistDef)
             {
                 List<consistInfo> consistDetails = new List<consistInfo>();
-                string consistProc = String.Copy(consistDef).Trim();
+                string consistProc = consistDef.Trim();
 
                 while (!String.IsNullOrEmpty(consistProc))
                 {
@@ -2229,17 +2191,21 @@ namespace Orts.Simulation.Timetables
                         if (endIndex < 0)
                         {
                             Trace.TraceWarning("Incomplete consist definition : \">\" character missing : {0}", consistProc);
-                            consistInfo thisConsist = new consistInfo();
-                            thisConsist.consistFile = String.Copy(consistProc.Substring(1));
-                            thisConsist.reversed = false;
+                            consistInfo thisConsist = new consistInfo
+                            {
+                                consistFile = consistProc.Substring(1),
+                                reversed = false
+                            };
                             consistDetails.Add(thisConsist);
                             consistProc = String.Empty;
                         }
                         else
                         {
-                            consistInfo thisConsist = new consistInfo();
-                            thisConsist.consistFile = String.Copy(consistProc.Substring(1, endIndex - 1));
-                            thisConsist.reversed = false;
+                            consistInfo thisConsist = new consistInfo
+                            {
+                                consistFile = consistProc.Substring(1, endIndex - 1),
+                                reversed = false
+                            };
                             consistDetails.Add(thisConsist);
                             consistProc = consistProc.Substring(endIndex + 1).Trim();
                         }
@@ -2276,8 +2242,10 @@ namespace Orts.Simulation.Timetables
                         }
                         else if (plusIndex > 0)
                         {
-                            consistInfo thisConsist = new consistInfo();
-                            thisConsist.consistFile = String.Copy(consistProc.Substring(0, plusIndex).Trim());
+                            consistInfo thisConsist = new consistInfo
+                            {
+                                consistFile = consistProc.Substring(0, plusIndex).Trim()
+                            };
 
                             int sepIndex = thisConsist.consistFile.IndexOf('$');
                             if (sepIndex > 0)
@@ -2294,8 +2262,10 @@ namespace Orts.Simulation.Timetables
                         }
                         else
                         {
-                            consistInfo thisConsist = new consistInfo();
-                            thisConsist.consistFile = String.Copy(consistProc);
+                            consistInfo thisConsist = new consistInfo
+                            {
+                                consistFile = consistProc
+                            };
 
                             int sepIndex = consistProc.IndexOf('$');
                             if (sepIndex > 0)
@@ -2313,7 +2283,7 @@ namespace Orts.Simulation.Timetables
                     }
                 }
 
-                return (consistDetails);
+                return consistDetails;
             }
 
             //================================================================================================//
@@ -2345,7 +2315,7 @@ namespace Orts.Simulation.Timetables
 
                     ConsistFile conFile = null;
 
-                    // try to load config file, exit if failed
+                    // Try to load config file, exit if failed
                     try
                     {
                         conFile = new ConsistFile(consistFile);
@@ -2364,17 +2334,12 @@ namespace Orts.Simulation.Timetables
 
                     AddWagons(conFile, consistDetails, trainsetDirectory, simulator);
 
-                    // derive speed
+                    // Derive speed
                     if (conFile.Train.TrainCfg.MaxVelocity != null && conFile.Train.TrainCfg.MaxVelocity.A > 0)
                     {
-                        if (confMaxSpeed.HasValue)
-                        {
-                            confMaxSpeed = Math.Min(confMaxSpeed.Value, conFile.Train.TrainCfg.MaxVelocity.A);
-                        }
-                        else
-                        {
-                            confMaxSpeed = Math.Min((float)simulator.TRK.Tr_RouteFile.SpeedLimit, conFile.Train.TrainCfg.MaxVelocity.A);
-                        }
+                        confMaxSpeed = confMaxSpeed.HasValue
+                            ? Math.Min(confMaxSpeed.Value, conFile.Train.TrainCfg.MaxVelocity.A)
+                            : Math.Min((float)simulator.TRK.Tr_RouteFile.SpeedLimit, conFile.Train.TrainCfg.MaxVelocity.A);
                     }
                 }
 
@@ -2384,7 +2349,7 @@ namespace Orts.Simulation.Timetables
                     validTrain = false;
                 }
 
-                // set train details
+                // Set train details
                 TTTrain.CheckFreight();
                 TTTrain.SetDPUnitIDs();
                 TTTrain.ReinitializeEOT();
@@ -2436,7 +2401,7 @@ namespace Orts.Simulation.Timetables
                     ? consistFile.Train.TrainCfg.WagonList.AsEnumerable().Reverse().ToList()
                     : consistFile.Train.TrainCfg.WagonList;
 
-                // add wagons
+                // Add wagons
                 foreach (Wagon wagon in wagonList)
                 {
                     string wagonFolder = Path.Combine(trainsDirectory, wagon.Folder);
@@ -2448,7 +2413,7 @@ namespace Orts.Simulation.Timetables
                         wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
                     else if (wagon.IsEOT)
                     {
-                        wagonFolder =  simulator.BasePath + @"\trains\orts_eot\" + wagon.Folder;
+                        wagonFolder = simulator.BasePath + @"\trains\orts_eot\" + wagon.Folder;
                         wagonFilePath = wagonFolder + @"\" + wagon.Name + ".eot";
                     }
 
@@ -2461,9 +2426,10 @@ namespace Orts.Simulation.Timetables
                     car = RollingStock.Load(simulator, TTTrain, wagonFilePath);
                     car.UiD = wagon.UiD;
                     car.Flipped = consistDetails.reversed ? !wagon.Flip : wagon.Flip;
+                    car.FreightAnimations?.Load(wagon.LoadDataList);
                     car.CarID = string.Concat(TTTrain.Number.ToString("0###"), "_", carId.ToString("0##"));
                     carId++;
-                    car.OrgConsist = string.Copy(consistDetails.consistFile).ToLower();
+                    car.OrgConsist = consistDetails.consistFile.ToLower();
 
                     car.SignalEvent(Event.Pantograph1Up);
 
@@ -2476,10 +2442,10 @@ namespace Orts.Simulation.Timetables
             //================================================================================================//
             /// <summary>
             /// Process station stop info cell including possible commands
-            /// Info may consist of :
-            /// one or two time values (arr / dep time or pass time)
-            /// commands
-            /// time values and commands
+            /// Info may consist of:
+            ///  - one or two time values (arr / dep time or pass time)
+            ///  - commands
+            ///  - time values and commands
             /// </summary>
             /// <param name="stationInfo">Reference to station string</param>
             /// <param name="stationName">Station Details class</param>
@@ -2504,14 +2470,16 @@ namespace Orts.Simulation.Timetables
                     }
                     else
                     {
-                        arr_dep[0] = String.Copy(stationInfo);
-                        arr_dep[1] = String.Copy(stationInfo);
+                        arr_dep[0] = stationInfo;
+                        arr_dep[1] = stationInfo;
                     }
                 }
 
-                StopInfo newStop = new StopInfo(stationDetails.StationName, arr_dep[0], arr_dep[1], parentInfo);
-                newStop.holdState = stationDetails.HoldState == StationInfo.HoldInfo.Hold ? StopInfo.SignalHoldType.Normal : StopInfo.SignalHoldType.None;
-                newStop.noWaitSignal = stationDetails.NoWaitSignal;
+                StopInfo newStop = new StopInfo(stationDetails.StationName, arr_dep[0], arr_dep[1], parentInfo)
+                {
+                    holdState = stationDetails.HoldState == StationInfo.HoldInfo.Hold ? StopInfo.SignalHoldType.Normal : StopInfo.SignalHoldType.None,
+                    noWaitSignal = stationDetails.NoWaitSignal
+                };
 
                 if (!String.IsNullOrEmpty(fullCommandString))
                 {
@@ -2523,7 +2491,7 @@ namespace Orts.Simulation.Timetables
                     }
                 }
 
-                // process forced stop through station commands
+                // Process forced stop through station commands
                 if (stationDetails.HoldState == StationInfo.HoldInfo.ForceHold)
                 {
                     if (newStop.Commands == null)
@@ -2534,7 +2502,7 @@ namespace Orts.Simulation.Timetables
                     newStop.Commands.Add(new TTTrainCommands("forcehold"));
                 }
 
-                // process forced wait signal command
+                // Process forced wait signal command
                 if (stationDetails.ForceWaitSignal)
                 {
                     if (newStop.Commands == null)
@@ -2545,7 +2513,7 @@ namespace Orts.Simulation.Timetables
                     newStop.Commands.Add(new TTTrainCommands("forcewait"));
                 }
 
-                // process terminal through station commands
+                // Process terminal through station commands
                 if (stationDetails.IsTerminal)
                 {
                     if (newStop.Commands == null)
@@ -2556,7 +2524,7 @@ namespace Orts.Simulation.Timetables
                     newStop.Commands.Add(new TTTrainCommands("terminal"));
                 }
 
-                // process closeupsignal through station commands
+                // PProcess closeupsignal through station commands
                 if (stationDetails.CloseupSignal)
                 {
                     if (newStop.Commands == null)
@@ -2567,7 +2535,7 @@ namespace Orts.Simulation.Timetables
                     newStop.Commands.Add(new TTTrainCommands("closeupsignal"));
                 }
 
-                // process actual min stop time
+                // Process actual min stop time
                 if (stationDetails.actMinStopTime.HasValue)
                 {
                     if (newStop.Commands == null)
@@ -2575,10 +2543,10 @@ namespace Orts.Simulation.Timetables
                         newStop.Commands = new List<TTTrainCommands>();
                     }
 
-                    newStop.Commands.Add(new TTTrainCommands(String.Concat("stoptime=",stationDetails.actMinStopTime.Value.ToString().Trim())));
+                    newStop.Commands.Add(new TTTrainCommands(String.Concat("stoptime=", stationDetails.actMinStopTime.Value.ToString().Trim())));
                 }
 
-                // process restrict to signal
+                // Process restrict to signal
                 if (stationDetails.RestrictPlatformToSignal)
                 {
                     if (newStop.Commands == null)
@@ -2589,7 +2557,7 @@ namespace Orts.Simulation.Timetables
                     newStop.Commands.Add(new TTTrainCommands("restrictplatformtosignal"));
                 }
 
-                // process restrict to signal
+                // Process restrict to signal
                 if (stationDetails.ExtendPlatformToSignal)
                 {
                     if (newStop.Commands == null)
@@ -2600,7 +2568,7 @@ namespace Orts.Simulation.Timetables
                     newStop.Commands.Add(new TTTrainCommands("extendplatformtosignal"));
                 }
 
-                return (newStop);
+                return newStop;
             }
 
             //================================================================================================//
@@ -2630,7 +2598,7 @@ namespace Orts.Simulation.Timetables
                         Trace.TraceInformation("Station {0} not found for train {1}:{2} ", stationStop.Key, Name, TTDescription);
                     }
                 }
-                actTrain.TCRoute.StationXRef.Clear();  // info no longer required
+                actTrain.TCRoute.StationXRef.Clear(); // Info no longer required
             }
 
             //================================================================================================//
@@ -2702,10 +2670,10 @@ namespace Orts.Simulation.Timetables
                 TTTrain.FormCommand formtype = TTTrain.FormCommand.None;
                 bool trainFound = false;
 
-                // set closeup if required
+                // Set closeup if required
                 TTTrain.Closeup = DisposeDetails.Closeup;
 
-                // train forms other train
+                // Train forms other train
                 if (DisposeDetails.FormType == TTTrain.FormCommand.TerminationFormed || DisposeDetails.FormType == TTTrain.FormCommand.TerminationTriggered)
                 {
                     formtype = DisposeDetails.FormType;
@@ -2714,10 +2682,10 @@ namespace Orts.Simulation.Timetables
                     if (DisposeDetails.FormedTrain == null)
                     {
                         Trace.TraceInformation("Error in dispose details for train : " + Name + " : no formed train defined");
-                        return (true);
+                        return true;
                     }
 
-                    // extract name
+                    // Extract name
                     if (DisposeDetails.FormedTrain.Contains('='))
                     {
                         otherTrainName = DisposeDetails.FormedTrain.Split('='); // extract train name
@@ -2725,7 +2693,7 @@ namespace Orts.Simulation.Timetables
                     else
                     {
                         otherTrainName = new string[2];
-                        otherTrainName[1] = String.Copy(DisposeDetails.FormedTrain);
+                        otherTrainName[1] = DisposeDetails.FormedTrain;
                     }
 
                     if (otherTrainName[1].Contains('/'))
@@ -2740,7 +2708,7 @@ namespace Orts.Simulation.Timetables
                         otherTrainName[1] = String.Concat(otherTrainName[1], ":", timetableName[1]);
                     }
 
-                    // search train
+                    // Search train
                     foreach (TTTrain otherTrain in trainList)
                     {
                         if (String.Compare(otherTrain.Name, otherTrainName[1], true) == 0)
@@ -2763,7 +2731,7 @@ namespace Orts.Simulation.Timetables
                         }
                     }
 
-                    // if not found, try player train
+                    // If not found, try player train
                     if (!trainFound)
                     {
                         if (playerTrain != null && String.Compare(playerTrain.TTTrain.Name, otherTrainName[1], true) == 0)
@@ -2805,13 +2773,13 @@ namespace Orts.Simulation.Timetables
                 TTTrain outTrain = null;
                 TTTrain inTrain = null;
 
-                // check if train must be stabled
+                // Check if train must be stabled
                 if (DisposeDetails.Stable && (trainFound || DisposeDetails.FormStatic))
                 {
-                    // save final train
+                    // Save final train
                     int finalForms = TTTrain.Forms;
 
-                    // create outbound train (note : train is defined WITHOUT consist as it is formed of incoming train)
+                    // Create outbound train (note: train is defined WITHOUT consist as it is formed of incoming train)
                     outTrain = new TTTrain(simulator, TTTrain);
 
                     bool addPathNoLoadFailure;
@@ -2835,7 +2803,7 @@ namespace Orts.Simulation.Timetables
                         }
                         else
                         {
-                            outTrain.Name = String.Copy(DisposeDetails.StableInfo.Stable_name.ToLower());
+                            outTrain.Name = DisposeDetails.StableInfo.Stable_name.ToLower();
                             if (!outTrain.Name.Contains(":"))
                             {
                                 int seppos = TTTrain.Name.IndexOf(':');
@@ -2856,7 +2824,7 @@ namespace Orts.Simulation.Timetables
                         TTTrain.Forms = outTrain.Number;
                     }
 
-                    // if stable to static
+                    // If stable to static
                     if (DisposeDetails.FormStatic)
                     {
                         outTrain.FormsStatic = true;
@@ -2865,7 +2833,7 @@ namespace Orts.Simulation.Timetables
                     {
                         outTrain.FormsStatic = false;
 
-                        // create inbound train
+                        // Create inbound train
                         inTrain = new TTTrain(simulator, TTTrain);
 
                         AIPath inPath = parentInfo.LoadPath(DisposeDetails.StableInfo.Stable_inpath, out addPathNoLoadFailure);
@@ -2884,7 +2852,7 @@ namespace Orts.Simulation.Timetables
                             inTrain.ActivateTime = DisposeDetails.StableInfo.Stable_intime;
                             inTrain.Name = String.Concat("SI_", finalForms.ToString("0000"));
                             inTrain.FormedOf = outTrain.Number;
-                            inTrain.FormedOfType = DisposeDetails.FormType; // set forms or triggered as defined in stable
+                            inTrain.FormedOfType = DisposeDetails.FormType; // Set forms or triggered as defined in stable
                             inTrain.TrainType = Train.TRAINTYPE.AI_AUTOGENERATE;
                             inTrain.Forms = finalForms;
                             inTrain.SetStop = DisposeDetails.SetStop;
@@ -2903,13 +2871,13 @@ namespace Orts.Simulation.Timetables
 
                             formtype = inTrain.FormedOfType;
 
-                            // set back reference from final train
+                            // Set back reference from final train
 
                             formedTrain.FormedOf = inTrain.Number;
                             formedTrain.FormedOfType = TTTrain.FormCommand.TerminationFormed;
 
                             Train.TCSubpathRoute lastSubpath = inTrain.TCRoute.TCRouteSubpaths[inTrain.TCRoute.TCRouteSubpaths.Count - 1];
-                            if (inTrain.FormedOfType == TTTrain.FormCommand.TerminationTriggered && formedTrain.Number != 0) // no need to set consist for player train
+                            if (inTrain.FormedOfType == TTTrain.FormCommand.TerminationTriggered && formedTrain.Number != 0) // No need to set consist for player train
                             {
                                 bool reverseTrain = CheckFormedReverse(lastSubpath, formedTrain.TCRoute.TCRouteSubpaths[0]);
                                 BuildStabledConsist(ref inTrain, formedTrain.Cars, formedTrain.TCRoute.TCRouteSubpaths[0], reverseTrain);
@@ -2917,12 +2885,12 @@ namespace Orts.Simulation.Timetables
                         }
                     }
                 }
-                // if run round required, build runround
 
+                // If run round required, build runround
                 if (formtype == TTTrain.FormCommand.TerminationFormed && trainFound && DisposeDetails.RunRound)
                 {
                     TTTrain usedTrain;
-                    bool atStart = false;  // indicates if run-round is to be performed before start of move or forms, or at end of move
+                    bool atStart = false; // Indicates if run-round is to be performed before start of move or forms, or at end of move
 
                     if (DisposeDetails.Stable)
                     {
@@ -2954,23 +2922,23 @@ namespace Orts.Simulation.Timetables
                     if (!addPathNoLoadFailure) loadPathNoFailure = false;
                 }
 
-                // static
+                // Static
                 if (DisposeDetails.FormStatic)
                 {
                     TTTrain.FormsStatic = true;
                 }
 
-                // pool
+                // Pool
                 if (DisposeDetails.Pool)
                 {
-                    // check pool name
+                    // Check pool name
                     if (!simulator.PoolHolder.Pools.ContainsKey(DisposeDetails.PoolName))
                     {
                         Trace.TraceInformation("Train : " + TTTrain.Name + " : reference to unkown pool in dispose command : " + DisposeDetails.PoolName + "\n");
                     }
                     else
                     {
-                        TTTrain.ExitPool = String.Copy(DisposeDetails.PoolName);
+                        TTTrain.ExitPool = DisposeDetails.PoolName;
 
                         switch (DisposeDetails.PoolExitDirection)
                         {
@@ -2988,7 +2956,7 @@ namespace Orts.Simulation.Timetables
                         }
                     }
                 }
-                return (loadPathNoFailure);
+                return loadPathNoFailure;
             }
 
             //================================================================================================//
@@ -3055,8 +3023,10 @@ namespace Orts.Simulation.Timetables
                         }
                         else
                         {
-                            List<DetachInfo> thisDetachList = new List<DetachInfo>();
-                            thisDetachList.Add(detachDetails);
+                            List<DetachInfo> thisDetachList = new List<DetachInfo>
+                            {
+                                detachDetails
+                            };
                             rrtrain.DetachDetails.Add(-1, thisDetachList);
                         }
                         formedTrain.ActivateTime = rrtime.HasValue ? (rrtime.Value + 30) : 0;
@@ -3071,15 +3041,17 @@ namespace Orts.Simulation.Timetables
                         }
                         else
                         {
-                            List<DetachInfo> thisDetachList = new List<DetachInfo>();
-                            thisDetachList.Add(detachDetails);
+                            List<DetachInfo> thisDetachList = new List<DetachInfo>
+                            {
+                                detachDetails
+                            };
                             rrtrain.DetachDetails.Add(-1, thisDetachList);
                         }
                         formedTrain.ActivateTime = 0;
                     }
                 }
 
-                return (loadPathNoFailure);
+                return loadPathNoFailure;
             }
 
             //================================================================================================//
@@ -3093,7 +3065,7 @@ namespace Orts.Simulation.Timetables
             {
                 int totalreverse = 0;
 
-                // check no. of reversals
+                // Check no. of reversals
                 foreach (Train.TCReversalInfo reversalInfo in stabledTrain.TCRoute.ReversalInfo)
                 {
                     if (reversalInfo.Valid) totalreverse++;
@@ -3101,8 +3073,8 @@ namespace Orts.Simulation.Timetables
 
                 if (reverseTrain) totalreverse++;
 
-                // copy consist in same or reverse direction
-                if ((totalreverse % 2) == 0) // even number, so same direction
+                // Copy consist in same or reverse direction
+                if ((totalreverse % 2) == 0) // Even number, so same direction
                 {
                     int carId = 0;
                     foreach (TrainCar car in cars)
@@ -3136,7 +3108,7 @@ namespace Orts.Simulation.Timetables
             /// <returns></returns>
             public bool CheckFormedReverse(Train.TCSubpathRoute thisTrainRoute, Train.TCSubpathRoute formedTrainRoute)
             {
-                // get matching route sections to check on direction
+                // Get matching route sections to check on direction
                 int lastElementIndex = thisTrainRoute.Count - 1;
                 Train.TCRouteElement lastElement = thisTrainRoute[lastElementIndex];
 
@@ -3149,7 +3121,7 @@ namespace Orts.Simulation.Timetables
                     firstElementIndex = formedTrainRoute.GetRouteIndex(lastElement.TCSectionIndex, 0);
                 }
 
-                // if no matching sections found leave train without consist
+                // If no matching sections found leave train without consist
                 if (firstElementIndex < 0)
                 {
                     return false;
@@ -3157,8 +3129,8 @@ namespace Orts.Simulation.Timetables
 
                 Train.TCRouteElement firstElement = formedTrainRoute[firstElementIndex];
 
-                // reverse required
-                return (firstElement.Direction != lastElement.Direction);
+                // Reverse required
+                return firstElement.Direction != lastElement.Direction;
             }
         }
 
@@ -3187,8 +3159,9 @@ namespace Orts.Simulation.Timetables
             public bool arrdeppassvalid;
             public SignalHoldType holdState;
             public bool noWaitSignal;
-            //          public int passageTime;   // not yet implemented
-            //          public bool passvalid;    // not yet implemented
+            // TODO
+            // public int passageTime; // not yet implemented
+            // public bool passvalid;  // not yet implemented
             public List<TTTrainCommands> Commands;
 
             public TimetableInfo refTTInfo;
@@ -3227,12 +3200,12 @@ namespace Orts.Simulation.Timetables
                 else
                 {
 
-                validArrTime = TimeSpan.TryParse(arrTime, out atime);
-                if (validArrTime)
-                {
-                    arrivalTime = Convert.ToInt32(atime.TotalSeconds);
-                    arrivalDT = new DateTime(atime.Ticks);
-                }
+                    validArrTime = TimeSpan.TryParse(arrTime, out atime);
+                    if (validArrTime)
+                    {
+                        arrivalTime = Convert.ToInt32(atime.TotalSeconds);
+                        arrivalDT = new DateTime(atime.Ticks);
+                    }
                 }
 
                 validDepTime = TimeSpan.TryParse(depTime, out atime);
@@ -3242,9 +3215,9 @@ namespace Orts.Simulation.Timetables
                     departureDT = new DateTime(atime.Ticks);
                 }
 
-                arrdeppassvalid = (validArrTime || validDepTime);
+                arrdeppassvalid = validArrTime || validDepTime;
 
-                StopName = String.Copy(name.ToLower());
+                StopName = name.ToLower();
             }
 
             //================================================================================================//
@@ -3259,10 +3232,10 @@ namespace Orts.Simulation.Timetables
             {
                 bool validStop = false;
 
-                // valid stop and not passing
+                // Valid stop and not passing
                 if (arrdeppassvalid && passTime < 0)
                 {
-                    // check for station flags
+                    // Check for station flags
                     bool terminal = false;
                     int? actMinStopTime = null;
                     float? keepClearFront = null;
@@ -3385,12 +3358,12 @@ namespace Orts.Simulation.Timetables
                                     }
                                     break;
 
-                                // train terminates at station
+                                // Train terminates at station
                                 case "endstop":
                                     endStop = true;
                                     break;
 
-                                // required minimal stop time
+                                // Required minimal stop time
                                 case "stoptime":
                                     if (thisCommand.CommandValues != null && thisCommand.CommandValues.Count > 0)
                                     {
@@ -3409,28 +3382,26 @@ namespace Orts.Simulation.Timetables
                                     }
                                     break;
 
-                                // other commands processed in station stop handling
+                                // Other commands processed in station stop handling
                                 default:
                                     break;
                             }
                         }
                     }
 
-                    // create station stop info
+                    // Create station stop info
                     validStop = actTrain.CreateStationStop(actPlatformID, arrivalTime, departureTime, arrivalDT, departureDT, AITrain.clearingDistanceM,
-                        AITrain.minStopDistanceM, terminal, actMinStopTime,keepClearFront, keepClearRear, forcePosition, closeupSignal, closeup, restrictPlatformToSignal, extendPlatformToSignal, endStop);
+                        AITrain.minStopDistanceM, terminal, actMinStopTime, keepClearFront, keepClearRear, forcePosition, closeupSignal, closeup, restrictPlatformToSignal, extendPlatformToSignal, endStop);
 
-                    // override holdstate using stop info - but only if exit signal is defined
-
+                    // Override holdstate using stop info - but only if exit signal is defined
                     int exitSignal = actTrain.StationStops[actTrain.StationStops.Count - 1].ExitSignal;
                     bool holdSignal = holdState != SignalHoldType.None && (exitSignal >= 0);
                     actTrain.StationStops[actTrain.StationStops.Count - 1].HoldSignal = holdSignal;
 
-                    // override nosignalwait using stop info
-
+                    // Override nosignalwait using stop info
                     actTrain.StationStops[actTrain.StationStops.Count - 1].NoWaitSignal = noWaitSignal;
 
-                    // process additional commands
+                    // Process additional commands
                     if (Commands != null && validStop)
                     {
                         int sectionIndex = actTrain.StationStops[actTrain.StationStops.Count - 1].TCSectionIndex;
@@ -3438,14 +3409,13 @@ namespace Orts.Simulation.Timetables
 
                         foreach (TTTrainCommands thisCommand in Commands)
                         {
-                            actTrain.ProcessTimetableStopCommands(thisCommand, subrouteIndex, sectionIndex, (actTrain.StationStops.Count - 1), actPlatformID, refTTInfo);
+                            actTrain.ProcessTimetableStopCommands(thisCommand, subrouteIndex, sectionIndex, actTrain.StationStops.Count - 1, actPlatformID, refTTInfo);
                         }
 
                         holdSignal = actTrain.StationStops[actTrain.StationStops.Count - 1].HoldSignal;
                     }
 
-                    // check holdsignal list
-
+                    // Check holdsignal list
                     if (holdSignal)
                     {
                         if (!actTrain.HoldingSignals.Contains(exitSignal))
@@ -3462,10 +3432,10 @@ namespace Orts.Simulation.Timetables
                     }
                 }
 
-                // stop used to define command only - find related section in route
+                // Stop used to define command only - find related section in route
                 else if (Commands != null)
                 {
-                    // get platform details
+                    // Get platform details
                     int platformIndex;
                     int actSubpath = 0;
 
@@ -3475,24 +3445,21 @@ namespace Orts.Simulation.Timetables
                         int sectionIndex = thisPlatform.TCSectionIndex[0];
                         int routeIndex = actTrain.TCRoute.TCRouteSubpaths[actSubpath].GetRouteIndex(sectionIndex, 0);
 
-                        // if first section not found in route, try last
-
+                        // If first section not found in route, try last
                         if (routeIndex < 0)
                         {
                             sectionIndex = thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
                             routeIndex = actTrain.TCRoute.TCRouteSubpaths[actSubpath].GetRouteIndex(sectionIndex, 0);
                         }
 
-                        // if neither section found - try next subroute - keep trying till found or out of subroutes
-
+                        // If neither section found - try next subroute - keep trying till found or out of subroutes
                         while (routeIndex < 0 && actSubpath < (actTrain.TCRoute.TCRouteSubpaths.Count - 1))
                         {
                             actSubpath++;
                             Train.TCSubpathRoute thisRoute = actTrain.TCRoute.TCRouteSubpaths[actSubpath];
                             routeIndex = thisRoute.GetRouteIndex(sectionIndex, 0);
 
-                            // if first section not found in route, try last
-
+                            // If first section not found in route, try last
                             if (routeIndex < 0)
                             {
                                 sectionIndex = thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
@@ -3500,7 +3467,7 @@ namespace Orts.Simulation.Timetables
                             }
                         }
 
-                        // if section found : process stop
+                        // If section found: process stop
                         if (routeIndex >= 0)
                         {
                             validStop = true;
@@ -3514,16 +3481,16 @@ namespace Orts.Simulation.Timetables
                     }
                 }
 
-                // pass time only - valid condition but not yet processed
+                // Pass time only - valid condition but not yet processed
                 if (!validStop && passTime >= 0)
                 {
                     validStop = true;
                 }
 
-                return (validStop);
-            } // end buildStopInfo
+                return validStop;
+            } // End buildStopInfo
 
-        } // end class stopInfo
+        } // End class stopInfo
 
         //================================================================================================//
         //================================================================================================//
@@ -3541,15 +3508,15 @@ namespace Orts.Simulation.Timetables
                 HoldConditional_DwellTime,
             }
 
-            public string StationName;       // Station Name
-            public HoldInfo HoldState;       // Hold State
-            public bool NoWaitSignal;        // Train will run up to signal and not wait in platform
-            public bool ForceWaitSignal;     // force to wait for signal even if not exit signal for platform
-            public int? actMinStopTime;      // Min Dwell time for Conditional Holdstate
-            public bool IsTerminal;          // Station is terminal
-            public bool CloseupSignal;       // Train may close up to signal
-            public bool RestrictPlatformToSignal;   // restrict platform end to signal position
-            public bool ExtendPlatformToSignal;     // extend platform end to next signal position
+            public string StationName;            // Station Name
+            public HoldInfo HoldState;            // Hold State
+            public bool NoWaitSignal;             // Train will run up to signal and not wait in platform
+            public bool ForceWaitSignal;          // Force to wait for signal even if not exit signal for platform
+            public int? actMinStopTime;           // Min Dwell time for Conditional Holdstate
+            public bool IsTerminal;               // Station is terminal
+            public bool CloseupSignal;            // Train may close up to signal
+            public bool RestrictPlatformToSignal; // Restrict platform end to signal position
+            public bool ExtendPlatformToSignal;   // Extend platform end to next signal position
 
             //================================================================================================//
             /// <summary>
@@ -3558,7 +3525,7 @@ namespace Orts.Simulation.Timetables
             /// <param name="stationName"></param>
             public StationInfo(string stationString)
             {
-                // default settings
+                // Default settings
                 HoldState = HoldInfo.NoHold;
                 NoWaitSignal = false;
                 ForceWaitSignal = false;
@@ -3568,17 +3535,17 @@ namespace Orts.Simulation.Timetables
                 RestrictPlatformToSignal = false;
                 ExtendPlatformToSignal = false;
 
-                // if string contains commands : split name and commands
                 if (stationString.Contains("$"))
                 {
+                    // WIf string contains commands: split name and commands
                     string[] stationDetails = stationString.Split('$');
-                    StationName = String.Copy(stationDetails[0]).ToLower().Trim();
+                    StationName = stationDetails[0].ToLower().Trim();
                     ProcessStationCommands(stationDetails);
                 }
                 else
-                // string contains name only
                 {
-                    StationName = String.Copy(stationString).ToLower().Trim();
+                    // String contains name only
+                    StationName = stationString.ToLower().Trim();
                 }
             }
 
@@ -3589,7 +3556,7 @@ namespace Orts.Simulation.Timetables
             /// <param name="commands"></param>
             public void ProcessStationCommands(string[] commands)
             {
-                // start at 1 as 0 is station name
+                // Start at 1 as 0 is station name
                 for (int iString = 1; iString <= commands.Length - 1; iString++)
                 {
                     string commandFull = commands[iString];
@@ -3633,7 +3600,7 @@ namespace Orts.Simulation.Timetables
                             RestrictPlatformToSignal = true;
                             break;
 
-                        // required minimal stop time
+                        // Required minimal stop time
                         case "stoptime":
                             if (thisCommand.CommandValues != null && thisCommand.CommandValues.Count > 0)
                             {
@@ -3652,8 +3619,7 @@ namespace Orts.Simulation.Timetables
                             }
                             break;
 
-
-                        // other commands not yet implemented
+                        // Other commands not yet implemented
                         default:
                             break;
                     }
@@ -3742,7 +3708,7 @@ namespace Orts.Simulation.Timetables
                 {
                     case DisposeType.Forms:
                     case DisposeType.Triggers:
-                        FormedTrain = String.Copy(trainCommands.CommandValues[0]);
+                        FormedTrain = trainCommands.CommandValues[0];
                         FormType = formType;
                         FormTrain = true;
 
@@ -3753,7 +3719,7 @@ namespace Orts.Simulation.Timetables
                                 if (String.Compare(formedTrainQualifiers.QualifierName, "runround") == 0)
                                 {
                                     RunRound = true;
-                                    RunRoundPath = String.Copy(formedTrainQualifiers.QualifierValues[0]);
+                                    RunRoundPath = formedTrainQualifiers.QualifierValues[0];
                                     RunRoundTime = -1;
                                 }
 
@@ -3793,13 +3759,13 @@ namespace Orts.Simulation.Timetables
                             }
                         }
 
-                        // reset speed if runround is not set
+                        // Reset speed if runround is not set
                         if (!RunRound && DisposeSpeed != null)
                         {
                             DisposeSpeed = null;
                         }
                         break;
-                    // end of Forms and Triggers
+                    // End of Forms and Triggers
 
                     case DisposeType.Static:
                         List<TTTrainCommands.TTTrainComQualifiers> staticQualifiers = trainCommands.CommandQualifiers;
@@ -3822,7 +3788,7 @@ namespace Orts.Simulation.Timetables
                             }
                         }
                         break;
-                    // end of static
+                    // End of static
 
                     case DisposeType.Stable:
                         Stable = true;
@@ -3835,7 +3801,7 @@ namespace Orts.Simulation.Timetables
                             switch (stableQualifier.QualifierName)
                             {
                                 case "out_path":
-                                    StableInfo.Stable_outpath = String.Copy(stableQualifier.QualifierValues[0]);
+                                    StableInfo.Stable_outpath = stableQualifier.QualifierValues[0];
                                     break;
 
                                 case "out_time":
@@ -3845,7 +3811,7 @@ namespace Orts.Simulation.Timetables
                                     break;
 
                                 case "in_path":
-                                    StableInfo.Stable_inpath = String.Copy(stableQualifier.QualifierValues[0]);
+                                    StableInfo.Stable_inpath = stableQualifier.QualifierValues[0];
                                     break;
 
                                 case "in_time":
@@ -3856,14 +3822,14 @@ namespace Orts.Simulation.Timetables
 
                                 case "forms":
                                     FormTrain = true;
-                                    FormedTrain = String.Copy(stableQualifier.QualifierValues[0]);
+                                    FormedTrain = stableQualifier.QualifierValues[0];
                                     FormStatic = false;
                                     FormType = TTTrain.FormCommand.TerminationFormed;
                                     break;
 
                                 case "triggers":
                                     FormTrain = true;
-                                    FormedTrain = String.Copy(stableQualifier.QualifierValues[0]);
+                                    FormedTrain = stableQualifier.QualifierValues[0];
                                     FormStatic = false;
                                     FormType = TTTrain.FormCommand.TerminationTriggered;
                                     break;
@@ -3880,7 +3846,7 @@ namespace Orts.Simulation.Timetables
 
                                 case "runround":
                                     RunRound = true;
-                                    RunRoundPath = String.Copy(stableQualifier.QualifierValues[0]);
+                                    RunRoundPath = stableQualifier.QualifierValues[0];
                                     RunRoundTime = -1;
                                     RunRoundPos = RunRoundPosition.stableposition;
                                     break;
@@ -3927,7 +3893,7 @@ namespace Orts.Simulation.Timetables
                                     break;
 
                                 case "name":
-                                    StableInfo.Stable_name = String.Copy(stableQualifier.QualifierValues[0]);
+                                    StableInfo.Stable_name = stableQualifier.QualifierValues[0];
                                     break;
 
                                 default:
@@ -3935,13 +3901,13 @@ namespace Orts.Simulation.Timetables
                             }
                         }
                         break;
-                    // end of stable
+                    // End of stable
 
-                    // process pool
+                    // Process pool
                     case DisposeType.Pool:
                         Pool = true;
                         FormType = formType;
-                        PoolName = String.Copy(trainCommands.CommandValues[0]).ToLower().Trim();
+                        PoolName = trainCommands.CommandValues[0].ToLower().Trim();
                         PoolExitDirection = String.Empty;
 
                         if (trainCommands.CommandQualifiers != null)
@@ -3951,7 +3917,7 @@ namespace Orts.Simulation.Timetables
                                 switch (poolQualifiers.QualifierName)
                                 {
                                     case "direction":
-                                        PoolExitDirection = String.Copy(poolQualifiers.QualifierValues[0]);
+                                        PoolExitDirection = poolQualifiers.QualifierValues[0];
                                         break;
 
                                     default:
@@ -3962,19 +3928,18 @@ namespace Orts.Simulation.Timetables
                         }
 
                         break;
+                    // End of pool
 
-                    // end of pool
-
-                    // unknow type
+                    // Unknow type
                     default:
                         Trace.TraceInformation("Train : {0} : invalid qualifier for dispose {1}\n", trainName, typeOfDispose);
                         break;
                 }
             }
 
-        }// end class DisposeInfo
+        } // End class DisposeInfo
 
-    } // end class TimetableInfo
+    } // End class TimetableInfo
 
     //================================================================================================//
     //================================================================================================//
@@ -3995,16 +3960,15 @@ namespace Orts.Simulation.Timetables
         /// <param name="CommandString"></param>
         public TTTrainCommands(string CommandString)
         {
-            string workString = String.Copy(CommandString).ToLower().Trim();
+            string workString = CommandString.ToLower().Trim();
             string restString = String.Empty;
             string commandValueString = String.Empty;
 
-            // check for qualifiers
-
+            // Check for qualifiers
             if (workString.Contains('/'))
             {
-                string[] tempStrings = workString.Split('/');  // first string is token plus value, rest is qualifiers
-                restString = String.Copy(tempStrings[0]);
+                string[] tempStrings = workString.Split('/'); // First string is token plus value, rest is qualifiers
+                restString = tempStrings[0];
 
                 if (CommandQualifiers == null) CommandQualifiers = new List<TTTrainComQualifiers>();
 
@@ -4015,10 +3979,10 @@ namespace Orts.Simulation.Timetables
             }
             else
             {
-                restString = String.Copy(workString);
+                restString = workString;
             }
 
-            // extract command token and values
+            // Extract command token and values
             if (restString.Contains('='))
             {
                 int splitPosition = restString.IndexOf('=');
@@ -4027,11 +3991,11 @@ namespace Orts.Simulation.Timetables
             }
             else
             {
-                CommandToken = String.Copy(restString.Trim());
+                CommandToken = restString.Trim();
             }
 
-            // process values
-            // split on "+" sign (multiple values)
+            // Process values
+            // Split on "+" sign (multiple values)
             string[] valueStrings = null;
 
             if (String.IsNullOrEmpty(commandValueString))
@@ -4042,14 +4006,7 @@ namespace Orts.Simulation.Timetables
             {
                 CommandValues = new List<string>();
 
-                if (commandValueString.Contains('+'))
-                {
-                    valueStrings = commandValueString.Split('+');
-                }
-                else
-                {
-                    valueStrings = new string[1] { commandValueString };
-                }
+                valueStrings = commandValueString.Contains('+') ? commandValueString.Split('+') : (new string[1] { commandValueString });
 
                 foreach (string thisValue in valueStrings)
                 {
@@ -4075,30 +4032,14 @@ namespace Orts.Simulation.Timetables
             /// <param name="qualifier"></param>
             public TTTrainComQualifiers(string qualifier)
             {
-                string[] qualparts = null;
-                if (qualifier.Contains('='))
-                {
-                    qualparts = qualifier.Split('=');
-                }
-                else
-                {
-                    qualparts = new string[1] { qualifier };
-                }
-
-                QualifierName = String.Copy(qualparts[0].Trim());
+                var qualparts = qualifier.Contains('=') ? qualifier.Split('=') : (new string[1] { qualifier });
+                QualifierName = qualparts[0].Trim();
 
                 string[] valueStrings;
 
                 if (qualparts.Length > 1)
                 {
-                    if (qualparts[1].Contains('+'))
-                    {
-                        valueStrings = qualparts[1].Trim().Split('+');
-                    }
-                    else
-                    {
-                        valueStrings = new string[1] { qualparts[1].Trim() };
-                    }
+                    valueStrings = qualparts[1].Contains('+') ? qualparts[1].Trim().Split('+') : (new string[1] { qualparts[1].Trim() });
 
                     foreach (string thisValue in valueStrings)
                     {
@@ -4107,6 +4048,6 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-        } // end class TTTrainComQualifiers
-    } // end class TTTrainCommands
+        } // End class TTTrainComQualifiers
+    } // End class TTTrainCommands
 }

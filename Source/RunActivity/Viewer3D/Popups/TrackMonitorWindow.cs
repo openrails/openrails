@@ -39,7 +39,7 @@ namespace Orts.Viewer3D.Popups
         Label SpeedAllowed;
         Label ControlMode;
         Label Gradient;
-        TrackMonitor Monitor;
+        public TrackMonitor Monitor { get; private set; }
 
         readonly Dictionary<Train.TRAIN_CONTROL, string> ControlModeLabels;
 
@@ -148,7 +148,7 @@ namespace Orts.Viewer3D.Popups
                 {
                     ControlText = String.Concat(ControlText, OutOfControlLabels[thisInfo.ObjectInfoForward[0].OutOfControlReason]);
                 }
-                ControlMode.Text = String.Copy(ControlText);
+                ControlMode.Text = ControlText;
                 if (-thisInfo.currentElevationPercent < -0.00015)
                 {
                     var c = '\u2198';
@@ -191,10 +191,10 @@ namespace Orts.Viewer3D.Popups
         readonly Viewer Viewer;
         private bool metric => Viewer.MilepostUnitsMetric;
         private readonly SavingProperty<int> StateProperty;
-        private DisplayMode Mode
+        public DisplayMode Mode
         {
             get => (DisplayMode)StateProperty.Value;
-            set
+            private set
             {
                 StateProperty.Value = (int)value;
             }

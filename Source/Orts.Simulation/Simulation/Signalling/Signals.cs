@@ -58,13 +58,13 @@ namespace Orts.Simulation.Signalling
         private Dictionary<int, int> SpeedPostRefList = new Dictionary<int, int>();
         public static SIGSCRfile scrfile;
         public static CsSignalScripts CsSignalScripts;
-        public readonly IDictionary<string, SignalFunction> SignalFunctions;
+        public readonly Dictionary<string, SignalFunction> SignalFunctions;
         public IList<string> ORTSNormalsubtypes;
 
         public int noSignals;
         private int foundSignals;
 
-        private static int updatecount;
+        private static int UpdateIndex;
 
         public List<TrackCircuitSection> TrackCircuitList;
         private Dictionary<int, CrossOverItem> CrossoverList = new Dictionary<int, CrossOverItem>();
@@ -93,7 +93,7 @@ namespace Orts.Simulation.Signalling
             SignalHeadList = new Dictionary<uint, SignalObject>();
             Dictionary<int, int> platformList = new Dictionary<int, int>();
 
-            SignalFunctions = sigcfg.SignalFunctions;
+            SignalFunctions = new Dictionary<string, SignalFunction>(sigcfg.SignalFunctions);
             ORTSNormalsubtypes = sigcfg.ORTSNormalSubtypes;
 
             trackDB = simulator.TDB.TrackDB;
@@ -101,7 +101,6 @@ namespace Orts.Simulation.Signalling
             tdbfile = Simulator.TDB;
 
             // read SIGSCR files
-            Trace.Write(" SIGSCR ");
             scrfile = new SIGSCRfile(new SignalScripts(sigcfg.ScriptPath, sigcfg.ScriptFiles, sigcfg.SignalTypes, sigcfg.SignalFunctions, sigcfg.ORTSNormalSubtypes));
             CsSignalScripts = new CsSignalScripts(Simulator);
 
@@ -423,7 +422,6 @@ namespace Orts.Simulation.Signalling
 
                 // read w-file, get SignalObjects only
 
-                Trace.Write("W");
                 WorldFile WFile;
                 try
                 {
@@ -553,6 +551,11 @@ namespace Orts.Simulation.Signalling
 
         }  //BuildSignalWorld
 
+        Stopwatch UpdateTimer = new Stopwatch();
+        long UpdateCounter = 0;
+        long UpdateTickTarget = 10000;
+        // long DebugUpdateCounter = 0;
+
         /// <summary>
         /// Update : perform signal updates
         /// </summary>
@@ -562,30 +565,41 @@ namespace Orts.Simulation.Signalling
 
             if (foundSignals > 0)
             {
-
-                // loop through all signals
-                // update required part
-                // in preupdate, process all
-
-                int totalSignal = SignalObjects.Length - 1;
-
-                int updatestep = (totalSignal / 20) + 1;
-                if (preUpdate)
+                // loop through all the signals, but only one batch of signals with every call to this method.
+                // update one batch of signals. Batch ends when time taken exceeds 1/20th of time for all signals.
+                // Processing 1/20th of signals in each batch gave a jerky result as processing time varies greatly.
+                // Smoother results now that equal time is given to each batch and let the batch size vary.
+                var updates = 0;
+                var updateStep = 0;
+                var targetTicks = Stopwatch.GetTimestamp() + UpdateTickTarget;
+                UpdateTimer.Start();
+                while (updateStep < foundSignals)
                 {
-                    updatestep = totalSignal;
-                }
-
-                for (int icount = updatecount; icount < Math.Min(totalSignal, updatecount + updatestep); icount++)
-                {
-                    SignalObject signal = SignalObjects[icount];
+                    var signal = SignalObjects[(UpdateIndex + updateStep) % foundSignals];
                     if (signal != null && !signal.noupdate) // to cater for orphans, and skip signals which do not require updates
                     {
                         signal.Update();
+                        updates++;
                     }
-                }
+                    updateStep++;
 
-                updatecount += updatestep;
-                updatecount = updatecount > totalSignal ? 0 : updatecount;
+                    // in preupdate, process all
+                    if (!preUpdate && updates % 10 == 0 && Stopwatch.GetTimestamp() >= targetTicks) break;
+                }
+                UpdateCounter += updates;
+                UpdateTimer.Stop();
+
+                if (UpdateIndex + updateStep >= foundSignals)
+                {
+                    // Calculate how long it takes to update all signals and target 1/20th of that
+                    // Slow adjustment using clamp stops it jumping around too much
+                    var ticksPerSignal = (double)UpdateTimer.ElapsedTicks / UpdateCounter;
+                    UpdateTickTarget = (long)MathHelper.Clamp((float)(ticksPerSignal * foundSignals / 20), UpdateTickTarget - 100, UpdateTickTarget + 100);
+                    // if (++DebugUpdateCounter % 10 == 0) Trace.WriteLine($"Signal update for {UpdateCounter,5} signals took {(double)UpdateTimer.ElapsedTicks * 1000 / Stopwatch.Frequency,9:F6} ms ({ticksPerSignal * 1000 / Stopwatch.Frequency,9:F6} ms/signal); new {(double)UpdateTickTarget * 1000 / Stopwatch.Frequency,6:F6} ms target");
+                    UpdateTimer.Reset();
+                    UpdateCounter = 0;
+                }
+                UpdateIndex = (UpdateIndex + updateStep) % foundSignals;
             }
         }
 
@@ -3908,7 +3922,7 @@ namespace Orts.Simulation.Signalling
                     }
                     else
                     {
-                        for (int iObject = 0; iObject < thisItemList.Count - 1 && !endOfRoute; iObject++)
+                        for (int iObject = 0; iObject < thisItemList.Count && !endOfRoute; iObject++)
                         {
                             TrackCircuitSignalItem thisItem = thisItemList[iObject];
 
@@ -4209,7 +4223,7 @@ namespace Orts.Simulation.Signalling
 
                 if (refIndex == 0)
                 {
-                    thisDetails.Name = string.Copy(thisPlatform.Station);
+                    thisDetails.Name = thisPlatform.Station;
                     thisDetails.MinWaitingTime = thisPlatform.PlatformMinWaitingTime;
                     thisDetails.NumPassengersWaiting = (int)thisPlatform.PlatformNumPassengersWaiting;
                 }

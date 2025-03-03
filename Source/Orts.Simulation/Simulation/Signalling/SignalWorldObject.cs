@@ -112,7 +112,7 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public SignalWorldObject(SignalWorldObject copy)
         {
-            SFileName = String.Copy(copy.SFileName);
+            SFileName = copy.SFileName;
             Backfacing = copy.Backfacing;
 
             HeadsSet = new bool[copy.HeadsSet.Length];

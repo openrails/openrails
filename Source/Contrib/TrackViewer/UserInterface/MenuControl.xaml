@@ -10,6 +10,7 @@
                 <MenuItem Header="Select install folder" Name="menuInstallFolder" Click="MenuInstallFolder_Click"/>
                 <MenuItem Header="Select VFS config file" Name="menuVfsConfigFile" Click="MenuVfsConfigFile_Click"/>
                 <MenuItem Header="Select route" Name="menuSelectRoute"/>
+                <MenuItem Header="Select activity" Name="menuSelectActivity"/>
                 <Separator/>
                 <MenuItem Header="Search by index">
                     <MenuItem Header="Search trackNode" Name="menuSearchTrackNode" IsCheckable="False" Click="MenuSearchTrackNode_Click"/>
@@ -87,6 +88,8 @@
                     <MenuItem Header="Show hazards" Name="menuShowHazards" IsCheckable="True" Click="UpdateMenuSettings"/>
                     <MenuItem Header="Show fuel/pickups" Name="menuShowPickups" IsCheckable="True" Click="UpdateMenuSettings"/>
                     <MenuItem Header="Show sound regions" Name="menuShowSoundRegions" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show events" Name="menuShowEvents" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show event names" Name="menuShowEventNames" IsCheckable="True" Click="UpdateMenuSettings"/>
                 </MenuItem>
                 <MenuItem Header="Posts">
                     <MenuItem Header="Show speed limits (F5)" Name="menuShowSpeedLimits" IsCheckable="True" Click="UpdateMenuSettings"/>
@@ -110,6 +113,8 @@
                 <MenuItem Header="Show signal info" Name="menuStatusShowSignal" IsCheckable="True" IsChecked="False"
                           Click="UpdateMenuSettings"/>
                 <MenuItem Header="Show platform/station names" Name="menuStatusShowNames" IsCheckable="True" IsChecked="False"
+                          Click="UpdateMenuSettings"/>
+                <MenuItem Header="Show event names" Name="menuStatusShowEventNames" IsCheckable="True" IsChecked="False"
                           Click="UpdateMenuSettings"/>
             </MenuItem>
             <MenuItem Header="_Preferences" Name="menuPreferences">

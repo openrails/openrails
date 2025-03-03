@@ -443,7 +443,7 @@ namespace Orts.Simulation
                     if (stask.GetType() == typeof(ActivityTaskPassengerStopAt))
                     {
                         ActivityTaskPassengerStopAt stoptask = stask as ActivityTaskPassengerStopAt;
-                        stoptask.LogStationLogFile = String.Copy(StationStopLogFile);
+                        stoptask.LogStationLogFile = StationStopLogFile;
                         stoptask.LogStationStops = true;
                     }
                 }
@@ -466,7 +466,7 @@ namespace Orts.Simulation
 
         public void StartStationLogging(string stationLogFile)
         {
-            StationStopLogFile = String.Copy(stationLogFile);
+            StationStopLogFile = stationLogFile;
             StationStopLogActive = true;
 
             var stringBuild = new StringBuilder();
@@ -493,7 +493,7 @@ namespace Orts.Simulation
                 if (task.GetType() == typeof(ActivityTaskPassengerStopAt))
                 {
                     ActivityTaskPassengerStopAt stoptask = task as ActivityTaskPassengerStopAt;
-                    stoptask.LogStationLogFile = String.Copy(StationStopLogFile);
+                    stoptask.LogStationLogFile = StationStopLogFile;
                     stoptask.LogStationStops = true;
                 }
             }
@@ -629,9 +629,7 @@ namespace Orts.Simulation
             var speedPostTablePosition = new Vector3(2.2f, 0, 0);
             Vector3.Transform(ref speedPostTablePosition, ref restrSpeedPost.WorldPosition.XNAMatrix, out speedPostTablePosition);
             restrSpeedPost.WorldPosition.XNAMatrix.Translation = speedPostTablePosition;
-            restrSpeedPost.WorldPosition.XNAMatrix.M43 *= -1;
             restrSpeedPost.WorldPosition.Normalize();
-            restrSpeedPost.WorldPosition.XNAMatrix.M43 *= -1;
         }
 
 

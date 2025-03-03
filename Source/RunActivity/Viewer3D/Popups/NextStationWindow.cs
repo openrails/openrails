@@ -141,7 +141,7 @@ namespace Orts.Viewer3D.Popups
                 ActivityTaskPassengerStopAt Current = null;
 
                 // timetable information
-                if (playerTrain.CheckStations)
+                if (playerTrain.CheckStations || playerTrain.Autopilot)
                 {
                     TTTrain playerTimetableTrain = playerTrain as TTTrain;
 
@@ -413,7 +413,7 @@ namespace Orts.Viewer3D.Popups
                         }
                         else if (transferValid)
                         {
-                            Message.Text = String.Copy(TransferMessage);
+                            Message.Text = TransferMessage;
                             Message.Color = Color.Orange;
                         }
                         else if (playerTimetableTrain.NeedTransfer)

@@ -19,7 +19,6 @@ using Orts.Formats.Msts;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -30,7 +29,7 @@ namespace DataCollector
         static void Main(string[] args)
         {
             if (args.Contains("/system", StringComparer.OrdinalIgnoreCase))
-                SystemInfo.WriteSystemDetails(Console.Out);
+                CollectSystem();
             else if (args.Contains("/tile-terrtex", StringComparer.OrdinalIgnoreCase))
                 CollectTileTerrtex(args);
             else
@@ -39,11 +38,10 @@ namespace DataCollector
 
         static void ShowHelp()
         {
-            var version = FileVersionInfo.GetVersionInfo(typeof(Program).Assembly.Location);
-            Console.WriteLine("{0} {1}", version.FileDescription, VersionInfo.VersionOrBuild);
+            Console.WriteLine("{0} {1}", ApplicationInfo.ApplicationName, VersionInfo.VersionOrBuild);
             Console.WriteLine();
             Console.WriteLine("Usage:");
-            Console.WriteLine("  {0} [options] [<PATH> [...]]", Path.GetFileNameWithoutExtension(version.FileName));
+            Console.WriteLine("  {0} [options] [<PATH> [...]]", Path.GetFileNameWithoutExtension(ApplicationInfo.ProcessFile));
             Console.WriteLine();
             Console.WriteLine("Arguments:");
             Console.WriteLine("  <PATH>         Directories to scan for specific options");
@@ -53,6 +51,12 @@ namespace DataCollector
             Console.WriteLine("  /tile-terrtex  Scans the provided PATHs for MSTS tile files (.t) and");
             Console.WriteLine("                 produces a statistical summary of the terrtex used");
             Console.WriteLine("  /help          Show help and usage information");
+        }
+
+        static void CollectSystem()
+        {
+            Console.Error.WriteLine("Collecting information...");
+            SystemInfo.WriteSystemDetails(Console.Out);
         }
 
         struct TileTerrtexDirectory

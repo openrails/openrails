@@ -265,8 +265,8 @@ namespace Orts.Viewer3D
                         Logger.Data(Viewer.PlayerLocomotive.ThrottlePercent.ToString("F0"));
                         Logger.Data(Viewer.PlayerLocomotive.MotiveForceN.ToString("F0"));
                         Logger.Data(Viewer.PlayerLocomotive.BrakeForceN.ToString("F0"));
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxle.AxleForceN.ToString("F2"));
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxle.SlipSpeedPercent.ToString("F1"));
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxles.CompensatedForceN.ToString("F2"));
+                        Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxles.SlipSpeedPercent.ToString("F1"));
 
                         void logSpeed(float speedMpS)
                         {

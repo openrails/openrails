@@ -26,7 +26,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace ORTS
+namespace Menu
 {
     /// <summary>
     /// Allows work to be done as a background task so that the form remains responsive (e.g. to a cancel or close button).

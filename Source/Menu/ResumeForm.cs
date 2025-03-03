@@ -50,7 +50,6 @@ Some problems remain (see comments in the code):
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -63,7 +62,7 @@ using ORTS.Menu;
 using ORTS.Settings;
 using Path = System.IO.Path;
 
-namespace ORTS
+namespace Menu
 {
     public partial class ResumeForm : Form
     {

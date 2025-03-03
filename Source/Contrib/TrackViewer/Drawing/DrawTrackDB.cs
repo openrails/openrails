@@ -45,6 +45,10 @@ namespace ORTS.TrackViewer.Drawing
         public RoadTrackDB RoadTrackDB { get; set; }
         /// <summary>The signal config file containing, for instance, the information to distinguish normal and non-normal signals</summary>
         public SignalConfigurationFile SigcfgFile { get; set; }
+        /// <summary>
+        /// <summary>Activity names</summary>
+        /// </summary>
+        public List<string> ActivityNames = new List<string> { };
 
         private string storedRoutePath;
         private Dictionary<uint, string> signalFileNames;
@@ -87,7 +91,7 @@ namespace ORTS.TrackViewer.Drawing
             }
             catch
             {
-            } 
+            }
 
             string ORfilepath = System.IO.Path.Combine(routePath, "OpenRails");
             if (Vfs.FileExists(ORfilepath + @"\sigcfg.dat"))
@@ -101,6 +105,72 @@ namespace ORTS.TrackViewer.Drawing
             else
             {
                 //sigcfgFile = null; // default initialization
+            }
+
+            // read the activity location events and store them in the TrackDB.TrItemTable
+
+            ActivityNames.Clear();
+            var directory = System.IO.Path.Combine(routePath, "ACTIVITIES");
+            if (System.IO.Directory.Exists(directory))
+            {
+                // counting
+                int cnt = 0;
+
+                foreach (var file in Directory.GetFiles(directory, "*.act"))
+                {
+                    try
+                    {
+                        var activityFile = new ActivityFile(file);
+                        Events events = activityFile.Tr_Activity.Tr_Activity_File.Events;
+                        if (events != null)
+                        {
+                            for (int i = 0; i < events.EventList.Count; i++)
+                            {
+                                if (events.EventList[i].GetType() == typeof(EventCategoryLocation))
+                                {
+                                    cnt++;
+                                }
+                            }
+                        }
+                    }
+                    catch { }
+                }
+
+                // adding
+                uint index = 0;
+                foreach (var file in Directory.GetFiles(directory, "*.act"))
+                {
+                    try
+                    {
+                        var activityFile = new ActivityFile(file);
+                        Events events = activityFile.Tr_Activity.Tr_Activity_File.Events;
+                        bool found = false;
+                        if (events != null)
+                        {
+                            for (int i = 0; i < events.EventList.Count; i++)
+                            {
+                                if (events.EventList[i].GetType() == typeof(EventCategoryLocation))
+                                {
+                                    EventCategoryLocation eventCategoryLocation = (EventCategoryLocation)events.EventList[i];
+                                    EventItem eventItem = new EventItem(
+                                        activityFile.Tr_Activity.Tr_Activity_Header.Name + ":" + eventCategoryLocation.Name,
+                                        eventCategoryLocation.Outcomes.DisplayMessage,
+                                        eventCategoryLocation.TileX, eventCategoryLocation.TileZ,
+                                        eventCategoryLocation.X, 0, eventCategoryLocation.Z,
+                                        index);
+                                    TrackDB.TrItemTable[index] = eventItem;
+                                    index++;
+                                    found = true;
+                                }
+                            }
+                        }
+                        if (found) {
+                            ActivityNames.Add(activityFile.Tr_Activity.Tr_Activity_Header.Name);
+                        }
+                    }
+                    catch { }
+                }
+
             }
         }
 
@@ -173,6 +243,32 @@ namespace ORTS.TrackViewer.Drawing
             {
                 return signalFileName;
             }
+        }
+    }
+
+    /// <summary>
+    /// represents an Activity Location EventItem
+    /// </summary>
+    /// defined in this trackviewer file because I want to keep changes localized to the TrackViewer
+    
+    public class EventItem : TrItem
+    {
+        /// <summary>
+        /// Default constructor, no file parsing used
+        /// </summary>
+        public EventItem(string itemName, string briefing, int tileX, int tileZ, float x, float y, float z, uint trItemId)
+        {
+            // ItemType is trEMPTY on purpose
+            // so that Orts.Formats.Msts.TrItem.trItemType does not need a change
+            ItemType = trItemType.trEMPTY;
+            ItemName = itemName;
+            TileX = tileX;
+            TileZ = tileZ;
+            X = x;
+            Y = y;
+            Z = z;
+            TrItemId = trItemId;
+            SData2 = briefing;
         }
     }
 

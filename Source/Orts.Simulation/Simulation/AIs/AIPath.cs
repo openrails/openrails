@@ -22,14 +22,14 @@
  * Could this be used for player trains also?
  * 
  */
-using Orts.Formats.Msts;
-using Orts.Formats.OR;
-using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Orts.Formats.Msts;
+using Orts.Formats.OR;
+using ORTS.Common;
 
 namespace Orts.Simulation.AIs
 {
@@ -42,10 +42,10 @@ namespace Orts.Simulation.AIs
 #if ACTIVITY_EDITOR
         public ORRouteConfig orRouteConfig { get; protected set; }
 #endif
-        public AIPathNode FirstNode;    // path starting node
-        //public AIPathNode LastVisitedNode; not used anymore
+        public AIPathNode FirstNode; // Path starting node
+        //public AIPathNode LastVisitedNode; not used anymore --- TODO: Remove?
         public List<AIPathNode> Nodes = new List<AIPathNode>();
-        public string pathName; //name of the path to be able to print it.
+        public string pathName; // Name of the path to be able to print it.
 
         /// <summary>
         /// Creates an AIPath from PAT file information.
@@ -84,11 +84,11 @@ namespace Orts.Simulation.AIs
                 node.Index = i;
                 TrPathNode tpn = patFile.TrPathNodes[i];
 
-                // find TVNindex to next main node.
+                // Find TVNindex to next main node.
                 if (tpn.HasNextMainNode)
                 {
                     node.NextMainNode = Nodes[(int)tpn.nextMainNode];
-                    node.NextMainTVNIndex = node.FindTVNIndex(node.NextMainNode, TDB, tsectiondat, i == 0 ? -1 : Nodes[i-1].NextMainTVNIndex );
+                    node.NextMainTVNIndex = node.FindTVNIndex(node.NextMainNode, TDB, tsectiondat, i == 0 ? -1 : Nodes[i - 1].NextMainTVNIndex);
                     if (node.JunctionIndex >= 0)
                         node.IsFacingPoint = TestFacingPoint(node.JunctionIndex, node.NextMainTVNIndex);
                     if (node.NextMainTVNIndex < 0)
@@ -99,7 +99,7 @@ namespace Orts.Simulation.AIs
                     }
                 }
 
-                // find TVNindex to next siding node
+                // Find TVNindex to next siding node
                 if (tpn.HasNextSidingNode)
                 {
                     node.NextSidingNode = Nodes[(int)tpn.nextSidingNode];
@@ -120,14 +120,13 @@ namespace Orts.Simulation.AIs
 
             FindSidingEnds();
 
-            if (fatalerror) Nodes = null; // invalid path - do not return any nodes
+            if (fatalerror) Nodes = null; // Invalid path - do not return any nodes
         }
 
         /// <summary>
         /// constructor out of other path
         /// </summary>
         /// <param name="otherPath"></param>
-
         public AIPath(AIPath otherPath)
         {
             TrackDB = otherPath.TrackDB; ;
@@ -138,8 +137,7 @@ namespace Orts.Simulation.AIs
                 Nodes.Add(new AIPathNode(otherNode));
             }
 
-            // set correct node references
-
+            // Set correct node references
             for (int iNode = 0; iNode <= otherPath.Nodes.Count - 1; iNode++)
             {
                 AIPathNode otherNode = otherPath.Nodes[iNode];
@@ -163,7 +161,7 @@ namespace Orts.Simulation.AIs
                 FirstNode.NextSidingNode = Nodes[otherPath.FirstNode.NextSidingNode.Index];
             }
 
-            pathName = String.Copy(otherPath.pathName);
+            pathName = otherPath.pathName;
         }
 
         /// <summary>
@@ -190,7 +188,7 @@ namespace Orts.Simulation.AIs
             //    kvp.Value.IsLastSwitchUse = true;
         }
 
-        // restore game state
+        // Restore game state
         public AIPath(TrackDatabaseFile TDB, TrackSectionsFile tsectiondat, BinaryReader inf)
         {
             pathName = inf.ReadString();
@@ -211,13 +209,10 @@ namespace Orts.Simulation.AIs
         public AIPathNode ReadNode(BinaryReader inf)
         {
             int index = inf.ReadInt32();
-            if (index < 0 || index > Nodes.Count)
-                return null;
-            else
-                return Nodes[index];
+            return index < 0 || index > Nodes.Count ? null : Nodes[index];
         }
 
-        // save game state
+        // Save game state
         public void Save(BinaryWriter outf)
         {
             outf.Write(pathName);
@@ -234,7 +229,7 @@ namespace Orts.Simulation.AIs
         public static void WriteNode(BinaryWriter outf, AIPathNode node)
         {
             if (node == null)
-                outf.Write((int)-1);
+                outf.Write(-1);
             else
                 outf.Write(node.Index);
         }
@@ -248,9 +243,7 @@ namespace Orts.Simulation.AIs
             if (junctionIndex < 0 || vectorIndex < 0)
                 return false;
             TrackNode tn = TrackDB.TrackNodes[junctionIndex];
-            if (tn.TrJunctionNode == null || tn.TrPins[0].Link == vectorIndex)
-                return false;
-            return true;
+            return tn.TrJunctionNode != null && tn.TrPins[0].Link != vectorIndex;
         }
     }
 
@@ -292,7 +285,6 @@ namespace Orts.Simulation.AIs
         /// Constructor from other AIPathNode
         /// </summary>
         /// <param name="otherNode"></param>
-        
         public AIPathNode(AIPathNode otherNode)
         {
             ID = otherNode.ID;
@@ -301,8 +293,8 @@ namespace Orts.Simulation.AIs
             WaitTimeS = otherNode.WaitTimeS;
             WaitUntil = otherNode.WaitUntil;
             NCars = otherNode.NCars;
-            NextMainNode = null; // set after completion of copying to get correct reference
-            NextSidingNode = null; // set after completion of copying to get correct reference
+            NextMainNode = null; // Set after completion of copying to get correct reference
+            NextSidingNode = null; // Set after completion of copying to get correct reference
             NextMainTVNIndex = otherNode.NextMainTVNIndex;
             NextSidingTVNIndex = otherNode.NextSidingTVNIndex;
             Location = otherNode.Location;
@@ -327,60 +319,61 @@ namespace Orts.Simulation.AIs
         private void InterpretPathNodeFlags(TrPathNode tpn, TrackPDP pdp, bool isTimetableMode)
         {
             if ((tpn.pathFlags & 03) == 0) return;
-            // bit 0 and/or bit 1 is set.
+            // Bit 0 and/or bit 1 is set.
 
             if ((tpn.pathFlags & 01) != 0)
             {
-                // if bit 0 is set: reversal
+                // If bit 0 is set: reversal
                 Type = AIPathNodeType.Reverse;
             }
             else
             {
-                // bit 0 is not set, but bit 1 is set:waiting point
+                // Bit 0 is not set, but bit 1 is set: waiting point
                 Type = AIPathNodeType.Stop;
-                //<CSComment> tests showed me that value 9 in pdp is generated  when the waiting point (or also 
-                //a path start or end point) are dragged within the path editor of the MSTS activity editor; the points are still valid;
+                // <CSComment> Tests showed me that value 9 in pdp is generated  when the waiting point (or also 
+                // a path start or end point) are dragged within the path editor of the MSTS activity editor; the points are still valid;
                 // however, as a contradictory case of the past has been reported, the check is skipped only when the enhanced compatibility flag is on;
-                if (pdp.IsInvalid && isTimetableMode) // not a valid point
+                if (pdp.IsInvalid && isTimetableMode) // Not a valid point
                 {
                     Type = AIPathNodeType.Invalid;
                 }
             }
 
             WaitTimeS = (int)((tpn.pathFlags >> 16) & 0xffff); // get the AAAA part.
-            // computations for absolute wait times are made within AITrain.cs
-/*            if (WaitTimeS >= 30000 && WaitTimeS < 40000)
-            {
-                // real wait time. 
-                // waitTimeS (in decimal notation) = 3HHMM  (hours and minuts)
-                int hour = (WaitTimeS / 100) % 100;
-                int minute = WaitTimeS % 100;
-                WaitUntil = 60 * (minute + 60 * hour);
-                WaitTimeS = 0;
-            }*/
+                                                               // computations for absolute wait times are made within AITrain.cs
+                                                               // TODO: Remove?
+            /*            if (WaitTimeS >= 30000 && WaitTimeS < 40000)
+                        {
+                            // real wait time. 
+                            // waitTimeS (in decimal notation) = 3HHMM  (hours and minuts)
+                            int hour = (WaitTimeS / 100) % 100;
+                            int minute = WaitTimeS % 100;
+                            WaitUntil = 60 * (minute + 60 * hour);
+                            WaitTimeS = 0;
+                        }*/
             // computations are made within AITrain.cs
-/*            else if (WaitTimeS >= 40000 && WaitTimeS < 60000)
-            {
-                // Uncouple if a wait=stop point
-                // waitTimeS (in decimal notation) = 4NNSS (uncouple NN cars, wait SS seconds)
-                //                                or 5NNSS (uncouple NN cars, keep rear, wait SS seconds)
-                NCars = (WaitTimeS / 100) % 100;
-                if (WaitTimeS >= 50000)
-                    NCars = -NCars;
-                WaitTimeS %= 100;
-                if (Type == AIPathNodeType.Stop)
-                    Type = AIPathNodeType.Uncouple;
-            }
-            else if (WaitTimeS >= 60000)  // this is old and should be removed/reused
-            {
-                // waitTimes = 6xSSS  with waitTime SSS seconds.
-                WaitTimeS %= 1000;
-            } */
+            /*            else if (WaitTimeS >= 40000 && WaitTimeS < 60000)
+                        {
+                            // Uncouple if a wait=stop point
+                            // waitTimeS (in decimal notation) = 4NNSS (uncouple NN cars, wait SS seconds)
+                            //                                or 5NNSS (uncouple NN cars, keep rear, wait SS seconds)
+                            NCars = (WaitTimeS / 100) % 100;
+                            if (WaitTimeS >= 50000)
+                                NCars = -NCars;
+                            WaitTimeS %= 100;
+                            if (Type == AIPathNodeType.Stop)
+                                Type = AIPathNodeType.Uncouple;
+                        }
+                        else if (WaitTimeS >= 60000)  // this is old and should be removed/reused
+                        {
+                            // waitTimes = 6xSSS  with waitTime SSS seconds.
+                            WaitTimeS %= 1000;
+                        } */
 
         }
 
 
-        // restore game state
+        // Restore game state
         public AIPathNode(BinaryReader inf)
         {
             ID = inf.ReadInt32();
@@ -401,7 +394,7 @@ namespace Orts.Simulation.AIs
             Location.Location.Z = inf.ReadSingle();
         }
 
-        // save game state
+        // Save game state
         public void Save(BinaryWriter outf)
         {
             outf.Write(ID);
@@ -429,7 +422,7 @@ namespace Orts.Simulation.AIs
             int junctionIndexThis = JunctionIndex;
             int junctionIndexNext = nextNode.JunctionIndex;
 
-            // if this is no junction, try to find the TVN index 
+            // If this is no junction, try to find the TVN index 
             if (junctionIndexThis < 0)
             {
                 try
@@ -455,7 +448,7 @@ namespace Orts.Simulation.AIs
                 }
             }
 
-            //both this node and the next node are junctions: find the vector node connecting them.
+            // Both this node and the next node are junctions: find the vector node connecting them.
             var iCand = -1;
             for (int i = 0; i < TDB.TrackDB.TrackNodes.Count(); i++)
             {
@@ -516,7 +509,7 @@ namespace Orts.Simulation.AIs
                 float dz = tn.UiD.Z - location.Location.Z;
                 dz += (tn.UiD.TileZ - location.TileZ) * 2048;
                 float dy = tn.UiD.Y - location.Location.Y;
-                float d = dx * dx + dy * dy + dz * dz;
+                float d = (dx * dx) + (dy * dy) + (dz * dz);
                 if (bestDistance2 > d)
                 {
                     bestIndex = j;

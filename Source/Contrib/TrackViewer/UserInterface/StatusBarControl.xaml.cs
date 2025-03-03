@@ -33,6 +33,7 @@ using Orts.Formats.Msts;
 using ORTS.Common;
 using ORTS.TrackViewer.Properties;
 using ORTS.TrackViewer.Editing;
+using ORTS.TrackViewer.Drawing;
 
 
 namespace ORTS.TrackViewer.UserInterface
@@ -165,6 +166,8 @@ namespace ORTS.TrackViewer.UserInterface
                     "{0,3:F3} ", closestPoint.Z);
                 AddSignalStatus(trackViewer, closestPoint.Description, closestPoint.Index);
                 AddNamesStatus(trackViewer, closestPoint.Description, closestPoint.Index);
+                AddEventNamesStatus(trackViewer, closestPoint.Description, closestPoint.Index);
+                CheckEventRightMouseClick(trackViewer, closestPoint.Description, closestPoint.Index);
             }
         }
 
@@ -348,6 +351,51 @@ namespace ORTS.TrackViewer.UserInterface
             if (platform == null) return;
             statusAdditional.Text += string.Format(System.Globalization.CultureInfo.CurrentCulture,
                 "{0} ({1})", platform.Station, platform.ItemName);
+        }
+
+        /// <summary>
+        /// Add event information to status line
+        /// </summary>
+        /// <param name="trackViewer">The trackviewer we need to find the trackDB</param>
+        /// <param name="description">The description of the item we might want to show, needed to make sure it is a proper item</param>
+        /// <param name="index">The index of the item to show</param>
+        /// 
+        private void AddEventNamesStatus(TrackViewer trackViewer, string description, uint index)
+        {
+            if (!String.Equals(description, "event")) return;
+
+            TrItem item = trackViewer.RouteData.TrackDB.TrItemTable[index];
+            EventItem eventItem = item as EventItem;
+            if (eventItem == null) return;
+
+            if (!Properties.Settings.Default.statusShowEventNames) return;
+
+            statusAdditional.Text += string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                "{0}", eventItem.ItemName);
+        }
+
+        /// <summary>
+        /// When right mouse click on event a messagebox with event name and description pops up
+        /// </summary>
+        /// <param name="trackViewer">The trackviewer we need to find the trackDB</param>
+        /// <param name="description">The description of the item we might want to show, needed to make sure it is a proper item</param>
+        /// <param name="index">The index of the item to show</param>
+        /// 
+        private void CheckEventRightMouseClick(TrackViewer trackViewer, string description, uint index)
+        {
+            if (!String.Equals(description, "event")) return;
+
+            TrItem item = trackViewer.RouteData.TrackDB.TrItemTable[index];
+            EventItem eventItem = item as EventItem;
+            if (eventItem == null) return;
+
+            if (!(trackViewer.PathEditor != null && trackViewer.PathEditor.EditingIsActive))
+            {
+                if (TVUserInput.IsMouseRightButtonPressed())
+                {
+                    MessageBox.Show(eventItem.SData2, eventItem.ItemName);
+                }
+            }
         }
 
         #region IDisposable

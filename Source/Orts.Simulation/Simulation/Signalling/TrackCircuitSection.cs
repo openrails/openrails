@@ -658,10 +658,7 @@ namespace Orts.Simulation.Signalling
 
                 // remove from claim or deadlock claim
 
-                if (CircuitState.TrainClaimed.ContainsTrain(thisTrain))
-                {
-                    CircuitState.TrainClaimed = removeFromQueue(CircuitState.TrainClaimed, thisTrain);
-                }
+                CircuitState.TrainClaimed.RemoveTrain(thisTrain);
 
                 // get element in routepath to find required alignment
 
@@ -902,15 +899,8 @@ namespace Orts.Simulation.Signalling
             CircuitState.TrainReserved = null;
             CircuitState.SignalReserved = -1;
 
-            if (CircuitState.TrainClaimed.ContainsTrain(thisTrain))
-            {
-                CircuitState.TrainClaimed = removeFromQueue(CircuitState.TrainClaimed, thisTrain);
-            }
-
-            if (CircuitState.TrainPreReserved.ContainsTrain(thisTrain))
-            {
-                CircuitState.TrainPreReserved = removeFromQueue(CircuitState.TrainPreReserved, thisTrain);
-            }
+            CircuitState.TrainClaimed.RemoveTrain(thisTrain);
+            CircuitState.TrainPreReserved.RemoveTrain(thisTrain);
 
             float distanceToClear = reqDistanceTravelledM + Length + thisTrain.Train.standardOverlapM;
 
@@ -1191,15 +1181,8 @@ namespace Orts.Simulation.Signalling
                 ClearOccupied(thisTrain, resetEndSignal);    // call clear occupy to reset signals and switches //
             }
 
-            if (CircuitState.TrainClaimed.ContainsTrain(thisTrain))
-            {
-                CircuitState.TrainClaimed = removeFromQueue(CircuitState.TrainClaimed, thisTrain);
-            }
-
-            if (CircuitState.TrainPreReserved.ContainsTrain(thisTrain))
-            {
-                CircuitState.TrainPreReserved = removeFromQueue(CircuitState.TrainPreReserved, thisTrain);
-            }
+            CircuitState.TrainClaimed.RemoveTrain(thisTrain);
+            CircuitState.TrainPreReserved.RemoveTrain(thisTrain);
         }
 
 
@@ -1223,15 +1206,8 @@ namespace Orts.Simulation.Signalling
                 ClearOccupied(thisTrain, resetEndSignal);    // call clear occupy to reset signals and switches //
             }
 
-            if (CircuitState.TrainClaimed.ContainsTrain(thisTrain))
-            {
-                CircuitState.TrainClaimed = removeFromQueue(CircuitState.TrainClaimed, thisTrain);
-            }
-
-            if (CircuitState.TrainPreReserved.ContainsTrain(thisTrain))
-            {
-                CircuitState.TrainPreReserved = removeFromQueue(CircuitState.TrainPreReserved, thisTrain);
-            }
+            CircuitState.TrainClaimed.RemoveTrain(thisTrain);
+            CircuitState.TrainPreReserved.RemoveTrain(thisTrain);
         }
 
         /// <summary>
@@ -1239,10 +1215,7 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         public void UnclaimTrain(Train.TrainRouted thisTrain)
         {
-            if (CircuitState.TrainClaimed.ContainsTrain(thisTrain))
-            {
-                CircuitState.TrainClaimed = removeFromQueue(CircuitState.TrainClaimed, thisTrain);
-            }
+            CircuitState.TrainClaimed.RemoveTrain(thisTrain);
         }
 
         /// <summary>
@@ -1305,38 +1278,6 @@ namespace Orts.Simulation.Signalling
 
                 nextSection.Claim(thisTrain);
             }
-        }
-
-        /// <summary>
-        /// Remove specified train from queue
-        /// </summary>
-        static TrainQueue removeFromQueue(TrainQueue thisQueue, Train.TrainRouted thisTrain)
-        {
-            List<Train.TrainRouted> tempList = new List<Train.TrainRouted>();
-            TrainQueue newQueue = new TrainQueue();
-
-            // extract trains from queue and store in list - this will revert the order!
-            // do not store train which is to be removed
-
-            int queueCount = thisQueue.Count;
-            while (queueCount > 0)
-            {
-                Train.TrainRouted queueTrain = thisQueue.Dequeue();
-                if (thisTrain == null || queueTrain.Train != thisTrain.Train)
-                {
-                    tempList.Add(queueTrain);
-                }
-                queueCount = thisQueue.Count;
-            }
-
-            // restore the order by requeing
-
-            foreach (Train.TrainRouted queueTrain in tempList)
-            {
-                newQueue.Enqueue(queueTrain);
-            }
-
-            return (newQueue);
         }
 
         /// <summary>
@@ -1948,7 +1889,7 @@ namespace Orts.Simulation.Signalling
 
                 // get other trains in section
 
-                Dictionary<Train, float> trainInfo = new Dictionary<Train, float>();
+                Dictionary<Train, float> trainInfo;
                 float offsetFromStart = offset;
 
                 // test train ahead of rear end (for non-placed trains, always use direction 0)

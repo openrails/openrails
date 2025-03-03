@@ -38,7 +38,7 @@ can select different views using the keyboard, as described in
 :ref:`Changing the View <driving-changing-view>`.
 
 Cab Letter-Boxing
-----------------
+-----------------
 
 OR manages not only cab interiors using 2D images in a MSTS-compatible
 way, but also supports 3D models. Most 2D cab images follow MSTS practice,
@@ -537,12 +537,15 @@ By clicking in this menu it is possible:
   for both electric and diesel locomotives;
 - to connect or disconnect locomotive operation with that of the player 
   locomotive;
-- to connect or disconnect the car's air hoses from the rest of the consist;
-- to toggle the angle cocks on the air hoses at either end of the car 
-  between open and closed;
-- to toggle the bleed valve on the car to vent the air pressure from the 
+- enable or disable the battery switch;
+- to connect or disconnect the Electric Train Supply;
+- to connect or disconnect the car's brake hoses from the rest of the consist;
+- to open or close the angle cocks on the air hoses at either end of the car;
+- to open or close the bleed valve on the car to vent the air pressure from the 
   car's reservoir and release the air brakes to move the car without brakes 
   (e.g. humping, etc.).
+
+Grayed out choices are not applicable for the chosen car.
 
 By toggling the angle cocks on individual cars it is possible to close 
 selected angle cocks of the air hoses so that when the cars are uncoupled, 
@@ -572,6 +575,97 @@ appears on the car's display line until the air pressure has fallen to zero.
 
 More information about manipulating the brakes during coupling and 
 uncoupling can also be found :ref:`here <driving-hud-brake>`.
+
+.. _train-operations-monitor:
+
+Ctrl-Alt-F9 Train Operations Monitor
+------------------------------------
+
+This Open Rails Train Operations window has a vertical view of the entire train:
+
+.. image:: images/TrainCarOperations-01.png
+  :align: center
+  :scale: 100%
+
+|
+
+This window shows the whole train in vertical mode. Any car can be selected by clicking on the Car ID. 
+Two arrows will then appear pointing to the selected car.
+
+By clicking on the selected CarId the "Train Operations Viewer" window will be displayed:
+
+.. image:: images/TrainOperationsViewer-02.png
+  :align: center
+  :scale: 100%
+
+|
+
+From the "Train Operations Viewer" window, we can set all the available systems, as in the “Car Operation menu”:
+
+- FrontBrakeHose
+- FrontAngleCock
+- CouplerFront
+- CouplerRear
+- RearAngleCock
+- RearBrakeHose
+- HandBrake
+- BleedOffValve
+- ToggleElectricTrainSupplyCable
+- ToggleMU
+- TogglePower
+- ToggleBatterySwitch
+
+This is where all the symbols are placed:
+
+.. image:: images/TrainOperationsViewer.png
+  :align: center
+  :scale: 100%
+
+|
+
+The red cross on the handbrake symbol (or another), indicates that it is not available.
+
+Any changes made in this window will also appear in the "Train Car Operations" window:
+
+.. image:: images/TrainOperationsViewer-03.png
+  :align: center
+  :scale: 100%
+
+|
+
+After a change in the braking system that keeps the train stopped, the CarID changes to a cyan colour. 
+In this way, it is easy for the user, to find out which car is stopping the train.
+
+A click on the right arrow hides all non-system brake symbols, inside the "Train Car Operations" window:
+
+.. image:: images/TrainCarOperations-04.png
+  :align: center
+  :scale: 100%
+
+|
+
+To make the text bold, click the left arrow:
+
+.. image:: images/TrainCarOperations-05.png
+  :align: center
+  :scale: 100%
+
+|
+
+While the "Train Operations Viewer" window is visible, we can modify the "Train Car Operations" window, 
+but if we open the "Train Operations" window <F9> and click on any CarID, the "Car Operation Menu" will 
+appear and it will point to the previously selected CarID in the "Train Operations Viewer" window.
+The "Car Operations Menu" is updated from the "Train Operations Viewer" window.
+A click on the CarID in the “Train Operations Viewer” will close the window.
+
+If the train is very long and not all the cars are displayed in the "Train Car Operations" window, we can scroll by clicking on the white down arrow (vertical scroll bar) at the bottom right.
+Once the required car has been selected, it will remain visible on the last row:
+
+.. image:: images/TrainCarOperations-06.png
+  :align: center
+  :scale: 100%
+
+|
 
 .. _driving-activity:
 
@@ -634,7 +728,7 @@ within the cabview, see :ref:`here <cabs-odometer>`.
 
 
 Activity Evaluation
-------------------
+-------------------
 
 ``Description``
 '''''''''''''''
@@ -707,8 +801,6 @@ This report is made up of several sections.
    :scale: 80%
    :align: center
 
-.. raw:: latex
-
 The report file OpenRailsEvaluation.txt is saved alongside the log file OpenRailsLog.txt and
 the default location for this is the Windows Desktop.
 
@@ -764,7 +856,9 @@ The following information is displayed in the basic display:
   Train brake HUD line has two Brake Reservoir pressure numbers: the first is 
   the Equalization Reservoir (EQ) and the second is the Brake Cylinder (BC) 
   pressure. The two BP numbers report the brake pressure in the lead engine 
-  and in the last car of the train. The unit of measure used for brake 
+  and in the last car of the train. Additionally, the brake flow is shown,
+  which measures the rate of air flowing into the brake pipe during release
+  and recharge. The unit of measure used for brake 
   pressure is defined by the option :ref:`Pressure unit <options-pressure>`.
 - Engine Brake = percentage of independent engine brake. Not fully 
   releasing the engine brake will affect train brake pressures.
@@ -1088,10 +1182,24 @@ More information on connecting brakes and manipulating the brake hose
 connections can be found :ref:`here <physics-hud-brake>` and 
 :ref:`here <driving-car-operations>`.
 
-Doors and Mirror Commands
--------------------------
+Doors, Mirror and Windows Commands
+----------------------------------
+.. _driving-anim-commands:
 
-Note that the standard keys in OR for these commands are different from 
+Note that these commands are active only if the trainset is equipped with 
+the related animations.
+
+===================     =====================================
+Command                 Function
+===================     =====================================
+``<Q>``                 Door left open/close   
+``<Shift+Q>``           Door right open/close
+``<Shift+V>``           Mirror rotate clock/counterclockwise
+``<Ctrl+Q>``            Window left open/close
+``<Ctrl+Shift+Q>``      Window right open/close
+===================     =====================================
+
+Note that the standard keys for doors and mirror in OR are different from 
 those of MSTS.
 
 Wheelslip Reset
@@ -1243,8 +1351,7 @@ or unloading operation is ongoing.
 Autopilot Mode
 ==============
 
-When in activity mode or in Explore in activity mode, through this feature 
-it is possible to stay
+Through this feature it is possible to stay
 in the cab of the player train, but to let Open Rails move the train,
 respecting path, signals, speeds and station stops.
 
@@ -1257,8 +1364,8 @@ but it can also be used to run an activity (or part of it, as it is
 possible to turn autopilot mode on or off at runtime) as a trainspotter or 
 a visitor within the cab.
 
-Autopilot mode is active only in activity mode (i.e. not in explorer or 
-timetable modes).
+Autopilot mode is available in activity, timetable and explore in activity 
+mode (i.e. not in explorer mode).
 
 When starting the game with any activity, you are in player driving mode. 
 If you press Alt+A, you enter the autopilot mode: you are in the loco's 
@@ -1281,7 +1388,7 @@ auto mode.
 Station stops, waiting points and reverse points are synchronized as far as 
 possible in the two modes.
 
-Cars can also be uncoupled in autopilot mode (but check that the train will 
+In activity mode cars can also be uncoupled in autopilot mode (but check that the train will 
 stop in enough time, otherwise it is better to change to player driven 
 mode). A static consist can also be coupled in autopilot mode.
 
@@ -1304,7 +1411,8 @@ Changing the Train Driven by the Player
 General
 -------
 
-This function only works in activity mode, and allows the player to select 
+This function works in activity mode as well as in timetable mode, 
+and allows the player to select 
 another (existing) train from a list and to start driving it.
 
 This function can be called more than once. A new information window has 
@@ -1346,9 +1454,11 @@ completely appeared on the screen - if it is far away from the player train
 this can require several seconds to load the *world* around the train) the 
 switch of control occurs. 
 
-The AI train string now becomes red and is moved to the first position.The 
-train can be driven, or set to autopilot mode. The former player train 
-becomes an AI train.
+The AI train string now becomes red and is moved to the first position.
+In timetable mode the new player train is automatically set to autopilot mode,
+while this does not apply to activity mode. However in both timetable and 
+activity mode the player can switch forth and back to autopilot mode. 
+The former player train becomes an AI train.
 
 Here is the final situation:
 
@@ -1356,7 +1466,8 @@ Here is the final situation:
     :align: center
     :scale: 80%
 
-If the second left-click was performed with the Shift key down, the former 
+In activity mode only, if the second left-click was performed with the Shift 
+key down, the former 
 player train still becomes an AI train, but it is put in a suspended mode 
 (only if its speed is 0). It won't move until it becomes a player train 
 again. A suspended train is shown in orange color on the Train List window.
@@ -1365,7 +1476,8 @@ The new player train can can be switched to manual mode, can also request to
 pass signals at danger with the ``<Tab>`` command, and can be moved outside 
 of its original path. However before switching control to still another train, 
 the new player train must be returned to the original path or put in suspend 
-mode; or else it will disappear, as occurs for AI trains running outside their 
+mode (last is possible only in activity mode); or else it will disappear, 
+as occurs for AI trains running outside their 
 path.
 
 The sequence may be restarted to switch to a new train or to switch back to 
@@ -1375,15 +1487,9 @@ Train switching also works in activity mode together with multiplayer mode,
 in the sense that the dispatcher player can switch its played train, and 
 the related information is sent to the client players.
 
-The Train List window is also available in 
-:ref:`Timetable mode <start-timetable>`. In this case the 
-names of all trains except the player train are shown in white (they can't 
-be driven), however with a single click on a train in the window the 
-external view cameras become linked to that train, as occurs with the Alt-9 
-command described :ref:`further below <driving-changing-view>`.
 
-Switching to a static train
----------------------------
+Switching to a static train (only activity mode)
+------------------------------------------------
 
 In the Train List window the drivable static consists (that is the ones 
 that have at least an engine provided with a cab) are also listed (in 
@@ -1764,7 +1870,7 @@ Following activity features are randomized:
   will be shown in red in the train operations window and will squeal 
   if an .sms file named BrakesStuck.sms is present in the 
   ``<Train Simulator\Sound>`` directory. `Here 
-  <http://www.interazioni-educative.it/Varie/BrakesStuckSound.zip>`_ 
+  <https://static.openrails.org/files/BrakesStuckSound.zip>`_ 
   an example of such file. 
   Of course when this event occurs it is advisable to uncouple the 
   wagon as soon as possible from the train. No more than a car will 

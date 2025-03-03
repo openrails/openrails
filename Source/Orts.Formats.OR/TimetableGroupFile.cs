@@ -42,7 +42,7 @@ namespace Orts.Formats.OR
                 using (StreamReader scrStream = Vfs.StreamReader(filePath, true))
                 {
                     MultiTTFilePreliminaryRead(filePath, directory, scrStream);
-                    if (String.IsNullOrEmpty(Description)) Description = String.Copy(filePath);
+                    if (String.IsNullOrEmpty(Description)) Description = filePath;
                 }
             }
             catch (Exception)
@@ -58,7 +58,7 @@ namespace Orts.Formats.OR
 
         public TimetableGroupFileLite(TimetableFileLite SingleTTInfo)
         {
-            Description = String.Copy(SingleTTInfo.Description);
+            Description = SingleTTInfo.Description;
             ORTTInfo.Add(SingleTTInfo);
         }
 
@@ -103,7 +103,7 @@ namespace Orts.Formats.OR
                 using (StreamReader scrStream = Vfs.StreamReader(filePath, true))
                 {
                     MultiTTFileRead(filePath, directory, scrStream);
-                    if (String.IsNullOrEmpty(Description)) Description = String.Copy(filePath);
+                    if (String.IsNullOrEmpty(Description)) Description = filePath;
                 }
             }
             catch (Exception)

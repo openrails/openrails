@@ -51,7 +51,7 @@ namespace Orts.Parsers.OR
         /// <param name="fileName"></param>
         /// <param name="tryParse"></param>
         public static (int Warning, int Information) ReadTest(string content, string fileName, Func<JsonReader, bool> tryParse)
-            {
+        {
             using (var reader = new JsonTextReader(new StringReader(content)))
             {
                 var json = new JsonReader(fileName, reader);

@@ -129,6 +129,11 @@ program folder and the web server defaults to ``Content\Web\index.html``.
 
 If you choose to develop your own pages, please consider sharing them with the Open Rails community.
 
+- The Cab Controls web page shows the controls from the cab and lets you use them to drive the player loco.
+
+.. image:: images/web-page-cab-controls.png
+
+
 - The HUD web page repeats the F5 overlay.
  
 .. image:: images/web-page-hud.png
@@ -146,6 +151,18 @@ If you choose to develop your own pages, please consider sharing them with the O
 - The Map page shows the position and direction of the train in the real world on the OpenRailwayMap https://www.openrailwaymap.org. Different OpenRailwayMap layers are available. Usability depends on the route, position of the train is not always 100% correct.
 
 .. image:: images/web-page-map.png
+
+- | The Switch Panel page shows a html panel with a selection of 40 buttons. Buttons which can be used to issue Open Rails commands, normally entered via the keyboard.
+  | This panel is most usefull when used on a touch enabled device, such as a tablet.
+  | The address of the panel is "<OR host>:2150/SwitchPanel/index.html", where <OR host> must be replaced with the hostname or IP address of the host where Open Rails is running. 
+  | Not all buttons are yet filled. Depends also on the type of locomotive.
+
+.. image:: images/switch-panel.png
+
+- The Train Car Operations page has the same functionality as the :ref:`Ctrl-Alt-F9 Train Operations Monitor <train-operations-monitor>`.
+  Advantage of having this windows as a web page is that it can be shown outside the Open Rails main window.
+  Even on another display like for instance a tablet. It has more or less the same functionality, more details
+  to be found :ref:`here <train-operations-monitor>`.
 
 .. _web-server-api:
 
@@ -186,18 +203,23 @@ Note: To avoid overloading the simulator, please keep API calls to once or twice
      - | ``Orts.Simulation.Physics .Train.TrainInfo``
    * - | GET
      - | ``/API/TIME``
-     - | Retrieves just the simulation time in seconds since midnight.
-     - | ``Orts.Viewer3D.WebServices .WebServer.ORTSApiController .ApiTime``
+     - | Retrieves the simulation time in seconds since midnight.
+     - | ``Orts.Viewer3D. WebServices.WebServer .ORTSApiController System.Double``
    * - | GET
      - | ``/API/MAP``
      - | Retrieves the postion and direction of the train.
        | Next to various Open Rails route data.
-     - | ``Orts.Viewer3D.WebServices .WebServer.ORTSApiController .ApiMap``
+     - | ``Orts.Common .LatLonDirection``
    * - | GET
      - | ``/API/CABCONTROLS``
-     - | Retrieves an array of the cab controls for the player localhost
+     - | Retrieves an array of the cab controls for the player loco
        | TypeName, MinValue, MaxValue, RangeFraction.
-     - | ``Orts.Viewer3D.WebServices .WebServer.ORTSApiController .ApiCabControls``
+     - | ``Orts.Viewer3D. WebServices.WebServer .ORTSApiController List<ControlValue>``
+   * - | POST
+     - | ``/API/CABCONTROLS``
+     - | Sets value of a cab control for the player loco such as
+       | Throttle/Regulator, Train Brake, Direction/Reverser.
+     - | ``Orts.Viewer3D .WebServices.WebServer .ORTSApiController void``
    * - | GET
      - | ``/API/APISAMPLE``
      - | A test object that demonstrates the JSON serialization of various

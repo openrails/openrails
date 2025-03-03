@@ -91,11 +91,6 @@ namespace Orts.Simulation.RollingStocks
 
         public float LocomotiveMaxRailOutputPowerW;
 
-        public int currentGearIndexRestore = -1;
-        public int currentnextGearRestore = -1;
-        public bool gearSaved;
-        public int dieselEngineRestoreState;
-
         public float EngineRPM;
         public SmoothedData ExhaustParticles = new SmoothedData(1);
         public SmoothedData ExhaustMagnitude = new SmoothedData(1);
@@ -306,10 +301,9 @@ namespace Orts.Simulation.RollingStocks
                     {
                         Trace.TraceInformation("MaxRailOutputPower (BASIC Config): set at arbitary value = {0}", FormatStrings.FormatPower(LocomotiveMaxRailOutputPowerW, IsMetric, false, false));
                     }
-
                 }
 
-                
+
                 if (MaximumDieselEnginePowerW == 0)
                 {
                     MaximumDieselEnginePowerW = LocomotiveMaxRailOutputPowerW;  // If no value set in ENG file, then set the Prime Mover power to same as RailOutputPower (typically the MaxPower value)
@@ -318,7 +312,6 @@ namespace Orts.Simulation.RollingStocks
                         Trace.TraceInformation("Maximum Diesel Engine Prime Mover Power set the same as MaxRailOutputPower {0} value", FormatStrings.FormatPower(MaximumDieselEnginePowerW, IsMetric, false, false));
 
                 }
-
             }
 
             // Check that maximum force value has been set
@@ -335,26 +328,25 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else
                 {
-                    float ThrottleSetting = 1.0f; // Must be at full throttle for these calculations
+                    float throttleSetting = 1.0f; // Must be at full throttle for these calculations
                     float StartingSpeedMpS = 0.1f; // Assumed starting speed for diesel - can't be zero otherwise error will occurr
-                    float MaxForceN = TractiveForceCurves.Get(ThrottleSetting, StartingSpeedMpS);
+                    MaxForceN = TractiveForceCurves.Get(throttleSetting, StartingSpeedMpS);
 
                     if (Simulator.Settings.VerboseConfigurationMessages)
                         Trace.TraceInformation("Maximum Force set to {0} value, calcuated from Tractive Force Tables", FormatStrings.FormatForce(MaxForceN, IsMetric));
                 }
-
-
             }
 
 
-            // Check force assumptions set for diesel
-            if (Simulator.Settings.VerboseConfigurationMessages)
+            // Check force assumptions set for diesel   
+            CalculatedMaxContinuousForceN = 0;
+            float ThrottleSetting = 1.0f; // Must be at full throttle for these calculations
+            if (TractiveForceCurves == null)  // Basic configuration - ie no force and Power tables, etc
             {
-                CalculatedMaxContinuousForceN = 0;
-                float ThrottleSetting = 1.0f; // Must be at full throttle for these calculations
-                if (TractiveForceCurves == null)  // Basic configuration - ie no force and Power tables, etc
+                CalculatedMaxContinuousForceN = ThrottleSetting * LocomotiveMaxRailOutputPowerW / SpeedOfMaxContinuousForceMpS;
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    CalculatedMaxContinuousForceN = ThrottleSetting * LocomotiveMaxRailOutputPowerW / SpeedOfMaxContinuousForceMpS;
                     Trace.TraceInformation("Diesel Force Settings (BASIC Config): Max Starting Force {0}, Calculated Max Continuous Force {1} @ speed of {2}", FormatStrings.FormatForce(MaxForceN, IsMetric), FormatStrings.FormatForce(CalculatedMaxContinuousForceN, IsMetric), FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
                     Trace.TraceInformation("Diesel Power Settings (BASIC Config): Prime Mover {0}, Max Rail Output Power {1}", FormatStrings.FormatPower(MaximumDieselEnginePowerW, IsMetric, false, false), FormatStrings.FormatPower(LocomotiveMaxRailOutputPowerW, IsMetric, false, false));
 
@@ -362,13 +354,16 @@ namespace Orts.Simulation.RollingStocks
                     {
                         Trace.TraceInformation("!!!! Warning: Starting Tractive force {0} is less then Calculated Continuous force {1}, please check !!!!", FormatStrings.FormatForce(MaxForceN, IsMetric), FormatStrings.FormatForce(CalculatedMaxContinuousForceN, IsMetric), FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
                     }
-
                 }
-                else // Advanced configuration - 
+
+            }
+            else // Advanced configuration - 
+            {
+                float StartingSpeedMpS = 0.1f; // Assumed starting speed for diesel - can't be zero otherwise error will occurr
+                float StartingForceN = TractiveForceCurves.Get(ThrottleSetting, StartingSpeedMpS);
+                CalculatedMaxContinuousForceN = TractiveForceCurves.Get(ThrottleSetting, SpeedOfMaxContinuousForceMpS);
+                if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    float StartingSpeedMpS = 0.1f; // Assumed starting speed for diesel - can't be zero otherwise error will occurr
-                    float StartingForceN = TractiveForceCurves.Get(ThrottleSetting, StartingSpeedMpS);
-                    CalculatedMaxContinuousForceN = TractiveForceCurves.Get(ThrottleSetting, SpeedOfMaxContinuousForceMpS);
                     Trace.TraceInformation("Diesel Force Settings (ADVANCED Config): Max Starting Force {0}, Calculated Max Continuous Force {1}, @ speed of {2}", FormatStrings.FormatForce(StartingForceN, IsMetric), FormatStrings.FormatForce(CalculatedMaxContinuousForceN, IsMetric), FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
                     Trace.TraceInformation("Diesel Power Settings (ADVANCED Config): Prime Mover {0}, Max Rail Output Power {1} @ {2} rpm", FormatStrings.FormatPower(DieselEngines.MaxPowerW, IsMetric, false, false), FormatStrings.FormatPower(DieselEngines.MaximumRailOutputPowerW, IsMetric, false, false), MaxRPM);
 
@@ -377,34 +372,43 @@ namespace Orts.Simulation.RollingStocks
                         Trace.TraceInformation("!!!! Warning: Calculated Starting Tractive force {0} is less then Calculated Continuous force {1}, please check !!!!", FormatStrings.FormatForce(StartingForceN, IsMetric), FormatStrings.FormatForce(CalculatedMaxContinuousForceN, IsMetric), FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
                     }
                 }
+            }
 
-                // Check that MaxPower value is realistic - Calculate power - metric - P = F x V
-                float CalculatedContinuousPowerW = MaxContinuousForceN * SpeedOfMaxContinuousForceMpS;
-                if (MaxPowerW < CalculatedContinuousPowerW)
+            // Check that MaxPower value is realistic - Calculate power - metric - P = F x V
+            float CalculatedContinuousPowerW = MaxContinuousForceN * SpeedOfMaxContinuousForceMpS;
+            if (MaxPowerW < CalculatedContinuousPowerW && Simulator.Settings.VerboseConfigurationMessages)
+            {
+                Trace.TraceInformation("!!!! Warning: MaxPower {0} is less then continuous force calculated power {1} @ speed of {2}, please check !!!!", FormatStrings.FormatPower(MaxPowerW, IsMetric, false, false), FormatStrings.FormatPower(CalculatedContinuousPowerW, IsMetric, false, false), FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
+            }
+
+            if (!DieselEngines.HasGearBox)
+            {
+                // Check Adhesion values
+                var calculatedmaximumpowerw = CalculatedMaxContinuousForceN * SpeedOfMaxContinuousForceMpS;
+                var maxforcekN = MaxForceN / 1000.0f;
+                var designadhesionzerospeed = maxforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
+                if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("!!!! Warning: MaxPower {0} is less then continuous force calculated power {1} @ speed of {2}, please check !!!!", FormatStrings.FormatPower(MaxPowerW, IsMetric, false, false), FormatStrings.FormatPower(CalculatedContinuousPowerW, IsMetric, false, false), FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
+                    Trace.TraceInformation("Zero Adhesion - zeroadhesion {0} maxForcekN {1} Driveweight {2}", designadhesionzerospeed, maxforcekN, DrvWheelWeightKg);
                 }
-
-                if (!DieselEngines.HasGearBox)
+                var calculatedmaxcontinuousforcekN = CalculatedMaxContinuousForceN / 1000.0f;
+                var designadhesionmaxcontspeed = calculatedmaxcontinuousforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
+                var zerospeed = 0;
+                var configuredadhesionzerospeed = (Curtius_KnifflerA / (zerospeed + Curtius_KnifflerB) + Curtius_KnifflerC);
+                var configuredadhesionmaxcontinuousspeed = (Curtius_KnifflerA / (SpeedOfMaxContinuousForceMpS + Curtius_KnifflerB) + Curtius_KnifflerC);
+                var dropoffspeed = calculatedmaximumpowerw / (MaxForceN);
+                var configuredadhesiondropoffspeed = (Curtius_KnifflerA / (dropoffspeed + Curtius_KnifflerB) + Curtius_KnifflerC);
+                if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    // Check Adhesion values
-                    var calculatedmaximumpowerw = CalculatedMaxContinuousForceN * SpeedOfMaxContinuousForceMpS;
-                    var maxforcekN = MaxForceN / 1000.0f;
-                    var designadhesionzerospeed = maxforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
-                    var calculatedmaxcontinuousforcekN = CalculatedMaxContinuousForceN / 1000.0f;
-                    var designadhesionmaxcontspeed = calculatedmaxcontinuousforcekN / (Kg.ToTonne(DrvWheelWeightKg) * 10);
-                    var zerospeed = 0;
-                    var configuredadhesionzerospeed = (Curtius_KnifflerA / (zerospeed + Curtius_KnifflerB) + Curtius_KnifflerC);
-                    var configuredadhesionmaxcontinuousspeed = (Curtius_KnifflerA / (SpeedOfMaxContinuousForceMpS + Curtius_KnifflerB) + Curtius_KnifflerC);
-                    var dropoffspeed = calculatedmaximumpowerw / (MaxForceN);
-                    var configuredadhesiondropoffspeed = (Curtius_KnifflerA / (dropoffspeed + Curtius_KnifflerB) + Curtius_KnifflerC);
-
                     Trace.TraceInformation("Slip control system: {0}, Traction motor type: {1}", SlipControlSystem.ToString(), TractionMotorType.ToString()); // Slip control
 
                     Trace.TraceInformation("Apparent (Design) Adhesion: Zero - {0:N2} @ {1}, Max Continuous Speed - {2:N2} @ {3}, Drive Wheel Weight - {4}", designadhesionzerospeed, FormatStrings.FormatSpeedDisplay(zerospeed, IsMetric), designadhesionmaxcontspeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric), FormatStrings.FormatMass(DrvWheelWeightKg, IsMetric));
                     Trace.TraceInformation("OR Calculated Adhesion Setting: Zero Speed - {0:N2} @ {1}, Dropoff Speed - {2:N2} @ {3}, Max Continuous Speed - {4:N2} @ {5}", configuredadhesionzerospeed, FormatStrings.FormatSpeedDisplay(zerospeed, IsMetric), configuredadhesiondropoffspeed, FormatStrings.FormatSpeedDisplay(dropoffspeed, IsMetric), configuredadhesionmaxcontinuousspeed, FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
                 }
+            }
 
+            if (Simulator.Settings.VerboseConfigurationMessages)
+            {
                 Trace.TraceInformation("===================================================================================================================\n\n");
             }
 
@@ -474,17 +478,6 @@ namespace Orts.Simulation.RollingStocks
                 {
                     CurrentLocomotiveSteamHeatBoilerWaterCapacityL = L.FromGUK(800.0f);
                 }
-            }
-
-            // TO BE LOOKED AT - fix restoration process for gearbox and gear controller
-            // It appears that the gearbox is initialised in two different places to cater for Basic and Advanced ENG file configurations(?).
-            // Hence the restore values recovered in gearbox class are being overwritten , and resume was not working correctly
-            // Hence restore gear position values are read as part of the diesel and restored at this point.
-            if (gearSaved)
-            {
-                DieselEngines[0].GearBox.nextGearIndex = currentnextGearRestore;
-                DieselEngines[0].GearBox.currentGearIndex = currentGearIndexRestore;
-                GearBoxController.SetValue((float)DieselEngines[0].GearBox.currentGearIndex);
             }
 
             if (Simulator.Settings.VerboseConfigurationMessages)
@@ -676,11 +669,6 @@ namespace Orts.Simulation.RollingStocks
                 if (TractionMotorType == TractionMotorTypes.AC)
                 {
                     AbsTractionSpeedMpS = AbsSpeedMpS;
-                    if (AbsWheelSpeedMpS > 1.1 * MaxSpeedMpS)
-                    {
-                        AverageForceN = TractiveForceN = 0;
-                        return;
-                    }
                 }
                 else
                 {
@@ -770,6 +758,53 @@ namespace Orts.Simulation.RollingStocks
             {
                 SignalEvent(Event.EnginePowerOff);
                 DieselEngines.HandleEvent(PowerSupplyEvent.StopEngine);
+            }
+
+            ApplyDirectionToTractiveForce(ref TractiveForceN, 0);
+
+            // Calculate the total tractive force for the locomotive - ie Traction + Dynamic Braking force.
+            // Note typically only one of the above will only ever be non-zero at the one time.
+            // For flipped locomotives the force is "flipped" elsewhere, whereas dynamic brake force is "flipped" below by the direction of the speed.
+
+            if (DynamicBrakePercent > 0 && DynamicBrake && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
+            {
+                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsTractionSpeedMpS);
+                if (f > 0 && LocomotivePowerSupply.DynamicBrakeAvailable)
+                {
+                    DynamicBrakeForceN = f * (1 - PowerReduction);
+                    TractiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * DynamicBrakeForceN;                 
+                }
+                else
+                {
+                    DynamicBrakeForceN = 0f;
+                }
+            }
+            else
+                DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0 position
+
+            foreach (var motor in TractionMotors)
+            {
+                motor.UpdateTractiveForce(elapsedClockSeconds, t);
+            }
+
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics)
+            {
+                UpdateAxleDriveForce();
+            }
+        }
+
+        protected override void UpdateAxleDriveForce()
+        {
+            /* TODO: connect different engines to different axles
+            if (DieselEngines.HasGearBox && DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+            {
+                foreach (var de in DieselEngines)
+                {
+                }
+            }
+            else */
+            {
+                base.UpdateAxleDriveForce();
             }
         }
 
@@ -1039,7 +1074,7 @@ namespace Orts.Simulation.RollingStocks
             status.AppendFormat("{0} {1}\t", GetStringAttribute.GetPrettyName(Direction), Flipped ? Simulator.Catalog.GetString("(flipped)") : "");
             status.AppendFormat("{0}\t", IsLeadLocomotive() || RemoteControlGroup < 0 ? "———" : RemoteControlGroup == 0 ? Simulator.Catalog.GetString("Sync") : Simulator.Catalog.GetString("Async"));
             status.AppendFormat("{0}\t", FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK));
-            status.AppendFormat("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), CouplerOverloaded ? "???" : "");
+            status.AppendFormat("{0}{1}", FormatStrings.FormatForce(TractiveForceN, IsMetric), CouplerOverloaded ? "???" : "");
             status.Append(DieselEngines.GetDPStatus());
 
             return status.ToString();
@@ -1085,10 +1120,10 @@ namespace Orts.Simulation.RollingStocks
 
             // Load
             var data = 0f;
-            if (FilteredMotiveForceN != 0)
-                data = Math.Abs(this.FilteredMotiveForceN);
+            if (FilteredTractiveForceN != 0)
+                data = Math.Abs(this.FilteredTractiveForceN);
             else
-                data = Math.Abs(this.LocomotiveAxle.DriveForceN);
+                data = Math.Abs(TractiveForceN);
             if (DynamicBrakePercent > 0)
             {
                 data = -Math.Abs(DynamicBrakeForceN);
@@ -1133,11 +1168,10 @@ namespace Orts.Simulation.RollingStocks
             status.AppendFormat((data < 0 ? "???" : " ") + "\t");
 
             // BP
-            var brakeInfoValue = brakeValue(Simulator.Catalog.GetString("BP"), Simulator.Catalog.GetString("EOT"));
+            var brakeInfoValue = brakeValue(Simulator.Catalog.GetString("BP"), Simulator.Catalog.GetString("Flow"));
             status.AppendFormat("{0:F0}\t", brakeInfoValue);
-
-            // Flow.
-            // TODO:The BP air flow that feeds the brake tube is not yet modeled in Open Rails.
+            // Air flow meter
+            status.AppendFormat("{0:F0}\t", FormatStrings.FormatAirFlow(FilteredBrakePipeFlowM3pS, IsMetric));
 
             // Remote
             if (dataDpu)
@@ -1235,6 +1269,7 @@ namespace Orts.Simulation.RollingStocks
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Throttle"));
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Load"));
             labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("BP"));
+            labels.AppendFormat("{0}\t", Simulator.Catalog.GetString("Flow"));
             if (!dpuFull)
             {
                 labels.AppendFormat("{0}", Simulator.Catalog.GetString("Remote"));
@@ -1357,7 +1392,7 @@ namespace Orts.Simulation.RollingStocks
         public override void SwitchToAutopilotControl()
         {
             SetDirection(Direction.Forward);
-            if (!LocomotivePowerSupply.MainPowerSupplyOn)
+            if (!LocomotivePowerSupply.MainPowerSupplyOn || !LocomotivePowerSupply.BatteryOn || !LocomotivePowerSupply.MasterKey.On)
             {
                 LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.QuickPowerOn);
             }

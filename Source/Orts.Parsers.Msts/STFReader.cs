@@ -769,13 +769,13 @@ namespace Orts.Parsers.Msts
             PressureDefaultInHg = 1 << 20,
 
             /// <summary>
-            /// Valid Units: psi/s, bar/s, inhg/s, kpa/s
+            /// Valid Units: psi/s, psi/min, bar/s, bar/min, inhg/s, kpa/s
             /// <para>Scaled to psi/s.</para>
             /// </summary>            
             PressureRateDefaultPSIpS = 1 << 21,
 
             /// <summary>
-            /// Valid Units: psi/s, bar/s, inhg/s, kpa/s
+            /// Valid Units: psi/s, psi/min, bar/s, bar/min, inhg/s, kpa/s
             /// <para>Scaled to psi/s.</para>
             /// Similar to UNITS.PressureRate except default unit is inHg/s.
             /// </summary>            
@@ -997,7 +997,11 @@ namespace Orts.Parsers.Msts
                 {
                     case "": return 1.0;
                     case "m/s": return 1.0;
+                    case "cm/s": return 0.01;
+                    case "mm/s": return 0.001;
                     case "mph": return 0.44704;
+                    case "ft/s": return 0.3048;
+                    case "in/s": return 0.0254;
                     case "kph": return 0.27777778;
                     case "km/h": return 0.27777778;
                     case "kmph": return 0.27777778;
@@ -1009,7 +1013,11 @@ namespace Orts.Parsers.Msts
                 {
                     case "": return 0.44704;
                     case "m/s": return 1.0;
+                    case "cm/s": return 0.01;
+                    case "mm/s": return 0.001;
                     case "mph": return 0.44704;
+                    case "ft/s": return 0.3048;
+                    case "in/s": return 0.0254;
                     case "kph": return 0.27777778;
                     case "km/h": return 0.27777778;
                     case "kmph": return 0.27777778;
@@ -1079,9 +1087,11 @@ namespace Orts.Parsers.Msts
                 {
                     case "": return 1.0;
                     case "psi/s": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
+                    case "psi/min": return 1.0 / 60.0;
                     case "inhg/s": return 0.4911542;
                     case "cmhg/s": return 0.1933672;
                     case "bar/s": return 14.5037738;
+                    case "bar/min": return 14.5037738 / 60.0;
                     case "kpa/s": return 0.145;
                 }
             if ((validUnits & UNITS.PressureRateDefaultInHgpS) > 0)
@@ -1089,9 +1099,11 @@ namespace Orts.Parsers.Msts
                 {
                     case "": return 0.4911542; // <PNComment> Is this correct? - It appears to hold inHg values, yet it does no conversion on psi values, and a conversion on inHg values 
                     case "psi/s": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
+                    case "psi/min": return 1.0 / 60.0;
                     case "inhg/s": return 0.4911542;
                     case "cmhg/s": return 0.1933672;
                     case "bar/s": return 14.5037738;
+                    case "bar/min": return 14.5037738 / 60.0;
                     case "kpa/s": return 0.145;
                 }
             if ((validUnits & UNITS.EnergyDensity) > 0)
@@ -1515,6 +1527,7 @@ namespace Orts.Parsers.Msts
                         tp.processor(); // Press F11 'Step Into' to debug the Processor delegate
             } // Press F10 'Step Over' to jump to the next token
         }
+
         /// <summary>Parse an STF file until the end of block ')' marker, using the array of lower case tokens, with a processor delegate/lambda
         /// </summary>
         /// <param name="processors">Array of lower case token, and the delegate/lambda to call when matched.</param>
@@ -1531,6 +1544,7 @@ namespace Orts.Parsers.Msts
                         tp.processor(); // Press F11 'Step Into' to debug the Processor delegate
             } // Press F10 'Step Over' to jump to the next token
         }
+
         /// <summary>Parse an STF file until the end of block ')' marker, using the array of lower case tokens, with a processor delegate/lambda
         /// </summary>
         /// <param name="breakout">A delegate that returns true, if the processing should be halted prematurely</param>
@@ -1554,6 +1568,46 @@ namespace Orts.Parsers.Msts
                         tp.processor(); // Press F11 'Step Into' to debug the Processor delegate
             } // Press F10 'Step Over' to jump to the next token
         }
+
+        /// <summary>Parse an entire STF block from a '(' until the end of block ')' marker, using the array of lower case tokens, with a processor delegate/lambda</summary>
+        /// <param name="processors">Array of lower case token, and the delegate/lambda to call when matched.</param>
+        public void ParseWholeBlock(TokenProcessor[] processors)
+        {
+            VerifyStartOfBlock();
+            ParseBlock(processors);
+        }
+
+        /// <summary>
+        /// Parse an entire STF block containing a count (int) and repeated sub-blocks of name <param name="blockName" />.
+        /// </summary>
+        /// <param name="list">A list to receive the sub-blocks</param>
+        /// <param name="blockName">The name of the repeated sub-blocks</param>
+        /// <param name="constructor">A function which constructs an object for the list</param>
+        public void ParseBlockList<T>(ref List<T> list, string blockName, Func<STFReader, T> constructor)
+        {
+            MustMatch("(");
+            var count = ReadInt(null);
+            var listForLambda = list = new List<T>(count);
+            ParseBlock(new[]
+            {
+                new TokenProcessor(blockName, () =>
+                {
+                    if (count-- > 0)
+                    {
+                        listForLambda.Add(constructor(this));
+                    }
+                    else
+                    {
+                        STFException.TraceWarning(this, $"Skipped extra {blockName}");
+                    }
+                }),
+            });
+            if (count > 0)
+            {
+                STFException.TraceWarning(this, $"{count} missing {blockName}");
+            }
+        }
+
         #region *** Delegate and Structure definitions used by the Parse...() methods.
         /// <summary>This delegate definition is used by the ParseFile and ParseBlock methods, and is called when an associated matching token is found.
         /// </summary>
@@ -3027,13 +3081,13 @@ namespace Orts.Parsers.Msts
             PressureDefaultInHg = 1 << 20,
 
             /// <summary>
-            /// Valid Units: psi/s, bar/s, inhg/s, kpa/s
+            /// Valid Units: psi/s, psi/min, bar/s, bar/min, inhg/s, kpa/s
             /// <para>Scaled to psi/s.</para>
             /// </summary>            
             PressureRateDefaultPSIpS = 1 << 21,
 
             /// <summary>
-            /// Valid Units: psi/s, bar/s, inhg/s, kpa/s
+            /// Valid Units: psi/s, psi/min, bar/s, bar/min, inhg/s, kpa/s
             /// <para>Scaled to psi/s.</para>
             /// Similar to UNITS.PressureRate except default unit is inHg/s.
             /// </summary>            
@@ -3322,8 +3376,10 @@ namespace Orts.Parsers.Msts
                 {
                     case "": return 1.0f;
                     case "psi/s": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
+                    case "psi/min": return 1.0 / 60.0;
                     case "inhg/s": return 0.4911542f;
                     case "bar/s": return 14.5037738f;
+                    case "bar/min": return 14.5037738 / 60.0;
                     case "kpa/s": return 0.145f;
                 }
             if ((validUnits & UNITS.PressureRateDefaultInHgpS) > 0)
@@ -3331,8 +3387,10 @@ namespace Orts.Parsers.Msts
                 {
                     case "": return 0.4911542f;
                     case "psi/s": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
+                    case "psi/min": return 1.0 / 60.0;
                     case "inhg/s": return 0.4911542f;
                     case "bar/s": return 14.5037738f;
+                    case "bar/min": return 14.5037738 / 60.0;
                     case "kpa/s": return 0.145f;
                 }
             if ((validUnits & UNITS.EnergyDensity) > 0)
