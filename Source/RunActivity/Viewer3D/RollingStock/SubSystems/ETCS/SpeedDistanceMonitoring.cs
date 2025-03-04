@@ -53,7 +53,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         readonly Point ReleaseSpeedPosition = new Point(26 - 6, 274 - 8);
         readonly int[] UnitCenterPosition = new int[] { 140, 204 };
         // 240 and 260 are non-standard scales by ETA, but national railways often use one of these instead of 250
-        readonly int[] StandardScalesKMpH = new int[] { 140, 180, 240, 250, 260, 400 };
+        readonly int[] StandardScalesKMpH = new int[] { 140, 150, 180, 240, 250, 260, 280, 400 };
         readonly int[] StandardScalesMpH = new int[] { 87, 111, 155, 248 };
 
         const string UnitMetricString = "km/h";
@@ -206,7 +206,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 float x = 0, y = 0;
                 GetXY(RadiusOutside, angle, ref x, ref y);
 
-                if (speed % 10 == 0 || !UnitMetric && MaxSpeed < 130)
+                if (speed % 10 == 0 || !UnitMetric && MaxSpeed < 130 || speed % 5 == 0 && MaxSpeed == 150)
                 {
                     if (longLine == 0)
                     {
@@ -222,21 +222,38 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                             y -= textHeight / 2f * (1f - (float)Math.Cos(angle));
                             // Cheating for better outlook:
                             if (UnitMetric && 240 <= MaxSpeed && MaxSpeed <= 260)
+                            {
                                 switch (speed)
                                 {
                                     case 100: x -= textWidth / 4f; break;
                                     case 120: x -= textWidth / 10f; y -= textHeight / 6f; break;
                                     case 140: x += textWidth / 6f; y -= textHeight / 6f; break;
                                 }
-
+                            }
                             DialSpeeds.Add(new TextPrimitive(new Point((int)x, (int)y), Color.White, speed.ToString(), FontDialSpeeds));
                         }
                     }
                     else
+                    {
                         DialLineCoords.Add(new Vector4(x, y, LineHalf, angle + MathHelper.PiOver2));
+                    }
+
+                    var longLineEach = 2;
+                    if (MaxSpeed == 280 && UnitMetric)
+                    {
+                        longLineEach = 4;
+                    }
+                    if ((MaxSpeed > 300 || MaxSpeed == 150) && UnitMetric)
+                    {
+                        longLineEach = 5;
+                    }
+                    if (MaxSpeed > 200 && !UnitMetric)
+                    {
+                        longLineEach = (speed + 5 > MidSpeed) ? 4 : 2;
+                    }
 
                     longLine++;
-                    longLine %= MaxSpeed != StandardScales[StandardScales.Length - 1] ? 2 : UnitMetric ? 5 : (speed + 5 > MidSpeed) ? 4 : 2;
+                    longLine %= longLineEach;
                 }
                 else if (UnitMetric && (MaxSpeed == 240 || MaxSpeed == 260))
                 {
@@ -284,12 +301,15 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             int permittedSpeed = (int)SpeedFromMpS(status.AllowedSpeedMpS);
             int targetSpeed = status.TargetSpeedMpS < status.AllowedSpeedMpS ? (int)SpeedFromMpS(status.TargetSpeedMpS.Value) : permittedSpeed;
             int releaseSpeed = (int)SpeedFromMpS(status.ReleaseSpeedMpS ?? 0);
-            float interventionSpeed = SpeedFromMpS(status.InterventionSpeedMpS);
+            int interventionSpeed = (int)SpeedFromMpS(status.InterventionSpeedMpS);
+
+            SpeedText = (int)(currentSpeed + (currentSpeed < 1f || currentSpeed < (float)SpeedText ? 0.99999f : 0.49999f));
+            CurrentSpeedAngle = Speed2Angle(SpeedText);
 
             if (interventionSpeed < permittedSpeed && interventionSpeed < releaseSpeed)
                 interventionSpeed = Math.Max(permittedSpeed, releaseSpeed);
             if (currentSpeed > permittedSpeed && currentSpeed > interventionSpeed)
-                interventionSpeed = Math.Max(currentSpeed - 1, releaseSpeed);
+                interventionSpeed = Math.Max(SpeedText, releaseSpeed);
 
             switch (status.CurrentMode)
             {
@@ -358,10 +378,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 var shaderAngles = new Vector4(NoGaugeAngle, NoGaugeAngle, NoGaugeAngle, NoGaugeAngle);
                 DMI.Shader.SetData(shaderAngles, GaugeColor, NeedleColor, GaugeColor);
             }
-
-            CurrentSpeedAngle = Speed2Angle(currentSpeed);
-
-            SpeedText = (int)(currentSpeed + (currentSpeed < 1f || currentSpeed < (float)SpeedText ? 0.99999f : 0.49999f));
 
             for (int i = 0, d = 1; i < CurrentSpeed.Length; i++, d *= 10)
             {
