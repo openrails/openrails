@@ -41,6 +41,8 @@ namespace Orts.Simulation.RollingStocks
                     // TODO search the path list
                     string wagFolder = Path.GetDirectoryName(wagFilePath);
                     string dllPath = ORTSPaths.FindTrainCarPlugin(wagFolder, wagFile.OpenRails.DLL);
+                    // FIXME: In .NET 6 there will be a System.Runtime.Loader.AssemblyLoadContext.LoadFromStream method
+                    // that will be able to load from the Vfs.StreamReader(). Anyway, what's this? Not mentioned in the manual... - PG
                     Assembly customDLL = Assembly.LoadFrom(dllPath);
                     object[] args = new object[] { wagFilePath };
                     car = (TrainCar)customDLL.CreateInstance("ORTS.CustomCar", true, BindingFlags.CreateInstance, null, args, null, null);

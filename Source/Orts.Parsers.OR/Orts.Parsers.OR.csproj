@@ -21,4 +21,7 @@
     <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.0.1641" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj" />
+  </ItemGroup>
 </Project>

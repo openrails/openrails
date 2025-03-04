@@ -349,19 +349,18 @@ namespace Orts.Viewer3D
             string path = routePath + @"\TrackProfiles";
             List<string> profileNames = new List<string>();
             trpFiles = new List<TRPFile>();
-
-            if (Directory.Exists(path))
+            if (Vfs.DirectoryExists(path))
             {
                 // The file called "TrProfile" should be used as the default track profile, if present
                 string xmlDefault = path + @"\TrProfile.xml";
                 string stfDefault = path + @"\TrProfile.stf";
 
-                if (File.Exists(xmlDefault))
+                if (Vfs.FileExists(xmlDefault))
                 {
                     trpFiles.Add(new TRPFile(viewer, xmlDefault));
                     profileNames.Add(Path.GetFileNameWithoutExtension(xmlDefault));
                 }
-                else if (File.Exists(stfDefault))
+                else if (Vfs.FileExists(stfDefault))
                 {
                     trpFiles.Add(new TRPFile(viewer, stfDefault));
                     profileNames.Add(Path.GetFileNameWithoutExtension(stfDefault));
@@ -422,8 +421,7 @@ namespace Orts.Viewer3D
                 TrackProfile = new TrProfile(viewer);
                 return;
             }
-            FileInfo fileInfo = new FileInfo(filespec);
-            if (!fileInfo.Exists)
+            if (!Vfs.FileExists(filespec))
             {
                 TrackProfile = new TrProfile(viewer); // Default profile if no file
             }

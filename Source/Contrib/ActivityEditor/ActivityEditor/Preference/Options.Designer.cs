@@ -67,6 +67,8 @@
             this.label7 = new System.Windows.Forms.Label();
             this.MSTSfolderBrowse = new System.Windows.Forms.FolderBrowserDialog();
             this.OptionOK = new System.Windows.Forms.Button();
+            this.browseFilePath = new System.Windows.Forms.Button();
+            this.VfsFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.tabControl1.SuspendLayout();
             this.EditorOptions.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PlSiZoomLevel)).BeginInit();
@@ -240,6 +242,7 @@
             this.PathOptions.Controls.Add(this.RemoveRoutePaths);
             this.PathOptions.Controls.Add(this.AddRoutePaths);
             this.PathOptions.Controls.Add(this.label2);
+            this.PathOptions.Controls.Add(this.browseFilePath);
             this.PathOptions.Controls.Add(this.browseMSTSPath);
             this.PathOptions.Controls.Add(this.MSTSPath);
             this.PathOptions.Controls.Add(this.label1);
@@ -319,9 +322,9 @@
             // 
             this.browseMSTSPath.Location = new System.Drawing.Point(325, 68);
             this.browseMSTSPath.Name = "browseMSTSPath";
-            this.browseMSTSPath.Size = new System.Drawing.Size(80, 19);
+            this.browseMSTSPath.Size = new System.Drawing.Size(36, 19);
             this.browseMSTSPath.TabIndex = 2;
-            this.browseMSTSPath.Text = "Browse";
+            this.browseMSTSPath.Text = "Dir";
             this.browseMSTSPath.UseVisualStyleBackColor = true;
             this.browseMSTSPath.Click += new System.EventHandler(this.browseMSTSPath_Click);
             // 
@@ -520,6 +523,20 @@
             this.OptionOK.UseVisualStyleBackColor = true;
             this.OptionOK.Click += new System.EventHandler(this.optionOK_click);
             // 
+            // browseFilePath
+            // 
+            this.browseFilePath.Location = new System.Drawing.Point(367, 68);
+            this.browseFilePath.Name = "browseFilePath";
+            this.browseFilePath.Size = new System.Drawing.Size(38, 19);
+            this.browseFilePath.TabIndex = 2;
+            this.browseFilePath.Text = "File";
+            this.browseFilePath.UseVisualStyleBackColor = true;
+            this.browseFilePath.Click += new System.EventHandler(this.browseFilePath_Click);
+            // 
+            // VfsFileDialog
+            // 
+            this.VfsFileDialog.FileName = "VfsFileDialog";
+            // 
             // Options
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -585,5 +602,7 @@
         private System.Windows.Forms.ListBox ListUsed;
         private System.Windows.Forms.ListBox ListAvailable;
         private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Button browseFilePath;
+        private System.Windows.Forms.OpenFileDialog VfsFileDialog;
     }
 }

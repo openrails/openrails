@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using ORTS.Common;
 
 namespace Tests
 {
@@ -29,9 +30,16 @@ namespace Tests
 
         public readonly string FileName;
 
-        public TestFile(string contents)
+        public TestFile(string contents) : this(contents, "") { }
+        public TestFile(string contents, string extension)
         {
             FileName = Path.GetTempFileName();
+            if (!string.IsNullOrEmpty(extension))
+            {
+                var newFileName = Path.ChangeExtension(FileName, extension);
+                File.Move(FileName, newFileName);
+                FileName = newFileName;
+            }
             using (var writer = new StreamWriter(FileName))
             {
                 writer.Write(contents);
@@ -61,6 +69,7 @@ namespace Tests
 
             if (disposing)
             {
+                Vfs.Cleanup();
                 File.Delete(FileName);
             }
             Disposed = true;
