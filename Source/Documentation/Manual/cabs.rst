@@ -1435,6 +1435,43 @@ Customizations for such file are possible following these rules:
 Except for the first column, fields 
 in the 3D distributed power display are always with center alignment.
 
+ETCS circular speed gauge and the Driver Machine Interface
+----------------------------------------------------------
+
+It is possible to show the ETCS display using the following block::
+
+    ScreenDisplay (
+        Type ( ORTS_ETCS SCREEN_DISPLAY )
+        Graphic ( statictexture.ace )
+        Units ( KM_PER_HOUR )
+        Parameters (
+            Mode FullSize
+            MaxSpeed 180
+            DisplayUnits 0
+        )
+    )
+
+The following DMI size variants are available: ``FullSize`` displays the whole DMI, 
+``SpeedArea`` displays only the left part with information about distance and speed 
+and ``PlanningArea`` displays only the right side planning area and navigation buttons. 
+The default value is FullSize
+
+The following commonly used ``MaxSpeed`` values can be set
+* 140, 150, 180, 240, 250, 260, 280, 400 for ``KM_PER_HOUR`` unit
+* 87, 111, 155, 248 for ``MILES_PER_HOUR`` unit
+The default value is 400 with KM_PER_HOUR unit.
+
+Use the ``MaxVisibleSpeed`` to set the highest speed displayed as a number, 
+if literal numbering is undesirable above this number on the circular speed gauge. 
+The default value is the MaxSpeed rounded to the highest tens below.
+
+Use the ``DisplayUnits`` parameter to suppress diplaying the speed unit at the 
+bottom of the circular speed gauge. The default is 1.
+
+Use the ``Graphic`` parameter to designate the static texture inside the .s file 
+that will be replaced at runtime with the dynamic picture of the display. This 
+parameter is mandatory, if omitted, no display will be shown.
+
 Alignment for digital controls
 ------------------------------
 
