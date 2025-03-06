@@ -907,6 +907,13 @@ namespace Orts.Viewer3D.RollingStock
 
                     // Convert absolute rotation into rotation relative to train car
                     m = Matrix.CreateRotationZ(p.Roll) * m * inverseLocation;
+                    if (MSTSWagon.Train?.ControlMode == Train.TRAIN_CONTROL.TURNTABLE)
+                    {
+                        m.M11 = 1;
+                        m.M13 = 0;
+                        m.M31 = 0;
+                        m.M33 = 1;
+                    }
                 }
 
                 // Insert correct translation (previous step likely introduced garbage data)
