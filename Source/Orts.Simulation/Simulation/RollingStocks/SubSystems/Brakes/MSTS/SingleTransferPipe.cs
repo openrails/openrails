@@ -34,15 +34,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             DebugType = "-";
         }
 
-        public override void Parse(string lowercasetoken, STFReader stf)
-        {
-            switch (lowercasetoken)
-            {
-                // OpenRails specific parameters
-                case "wagon(brakepipevolume": BrakePipeVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
-            }
-        }
-
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)
         {
             base.Initialize(handbrakeOn, 0, 0, true);
@@ -61,10 +52,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
         }
 
-        public override void InitializeFromCopy(BrakeSystem copy)
+        public override void InitializeFromCopy(BrakeSystem copy, bool diff)
         {
             SingleTransferPipe thiscopy = (SingleTransferPipe)copy;
-            BrakePipeVolumeM3 = thiscopy.BrakePipeVolumeM3;
+            BrakePipeVolumeM3 = diff && thiscopy.BrakePipeVolumeM3 == default ? BrakePipeVolumeM3 : thiscopy.BrakePipeVolumeM3;
         }
 
         public override string GetStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)

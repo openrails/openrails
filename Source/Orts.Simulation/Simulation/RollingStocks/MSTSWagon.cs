@@ -40,6 +40,7 @@ using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems;
+using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
@@ -257,7 +258,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public bool HandBrakePresent;
         /// <summary>
-        /// Number of available retainer positions. (Used on freight cars, mostly.) Might be 0, 3 or 4.
+        /// Number of available retainer positions. (Used on freight cars, mostly.) Might be 0, 2, 3 or 4.
         /// </summary>
         public int RetainerPositions;
 
@@ -1127,11 +1128,57 @@ namespace Orts.Simulation.RollingStocks
             // Determine whether or not to use the Davis friction model. Must come after freight animations are initialized.
             IsDavisFriction = DavisAN != 0 && DavisBNSpM != 0 && DavisCNSSpMM != 0;
 
-            if (BrakeSystem == null)
-                BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
-
             if (TrackGaugeM <= 0) // Use gauge of route/sim settings if gauge wasn't defined
                 TrackGaugeM = Simulator.RouteTrackGaugeM;
+
+            // Initialize the switchable brake system
+            if (BrakeModeNames?.Length > 0) // If the filter is set, enforce it
+            {
+                foreach (var key in BrakeSystems.Keys.ToArray())
+                    if (!BrakeModeNames.Contains(key.ToString()))
+                        BrakeSystems.Remove(key);
+            }
+            else
+            {
+                BrakeModeNames = BrakeSystems.Keys.Select(k => k.ToString()).ToArray();
+            }
+
+            if (BrakeModePreset != null)
+            {
+                foreach (var mode in BrakeModeNames)
+                {
+                    if (Enum.TryParse(mode, out BrakeModes modeEnum) && BrakeSystems.TryGetValue(modeEnum, out var brakeSystem))
+                        BrakeSystems[modeEnum] = brakeSystem.InitializePresetClone(BrakeModePreset, modeEnum);
+                    else
+                        BrakeSystems.Add(modeEnum, MSTSBrakeSystem.Create(CarBrakeSystemType, this)
+                            .InitializeDefault().InitializePresetClone(BrakeModePreset, modeEnum));
+                }
+            }
+            BrakeSystem = BrakeSystem ?? MSTSBrakeSystem.Create(CarBrakeSystemType, this);
+            SetBrakeSystemMode(BrakeModeNames.FirstOrDefault());
+        }
+
+        public void SetBrakeSystemMode(string mode)
+        {
+            if (!string.IsNullOrWhiteSpace(mode) && Enum.TryParse(mode, out BrakeModes modeEnum) && BrakeSystems.TryGetValue(modeEnum, out var brakeSystem))
+            {
+                if (brakeSystem is VacuumSinglePipe ^ BrakeSystem is VacuumSinglePipe)
+                {
+                    if (BrakeSystemAlt == null)
+                    {
+                        BrakeSystemAlt = brakeSystem.InitializePresetClone(null, 0).InitializeDefault();
+
+                        // Leave the car in a working state. However the train should reinitialize the car with correct values when all the switchings were finished.
+                        var maxPressurePSI = brakeSystem is VacuumSinglePipe ? 21f : 90f;
+                        var fullServPressurePSI = brakeSystem is VacuumSinglePipe ? 16f : 64f;
+                        var handbrakeOn = BrakeSystem.GetHandbrakeStatus();
+                        var immediateRelease = BrakeSystem.GetCylPressurePSI() == 0;
+                        BrakeSystemAlt.Initialize(handbrakeOn, maxPressurePSI, fullServPressurePSI, immediateRelease);
+                    }
+                    (BrakeSystem, BrakeSystemAlt) = (BrakeSystemAlt, BrakeSystem);
+                }
+                BrakeSystem.InitializeFromCopy(brakeSystem, true);
+            }
         }
 
         // Compute total mass of wagon including freight animations and variable loads like containers
@@ -1389,10 +1436,60 @@ namespace Orts.Simulation.RollingStocks
                                 AuxiliaryReservoirPresent = true;
                                 break;
                             case "manual_brake": ManualBrakePresent = true; break;
+                            case "uic_mountain": RetainerPositions = 2; break;
                             case "retainer_3_position": RetainerPositions = 3; break;
                             case "retainer_4_position": RetainerPositions = 4; break;
                             case "supply_reservoir":
                                 SupplyReservoirPresent = true;
+                                break;
+                        }
+                    }
+                    break;
+                case "wagon(ortsbrakemodenames": BrakeModeNames = stf.ReadStringBlock("").ToUpper().Replace(" ", "").Split(','); break;
+                case "wagon(ortsbrakemodepreset": BrakeModePreset = stf.ReadStringBlock(null).ToLower(); break;
+                case "wagon(ortsbrakemode":
+                    var newSystem = BrakeSystem?.InitializePresetClone(null, 0).InitializeDefault(); // Start with the same BrakeSystemType() as the base
+                    BrakeModes? brakeModeName = null;
+
+                    stf.VerifyStartOfBlock();
+                    while (!stf.EndOfBlock())
+                    {
+                        stf.ReadItem();
+                        lowercasetoken = stf.Tree.ToLower();
+                        switch (lowercasetoken)
+                        {
+                            case "wagon(ortsbrakemode(ortsbrakemodename":
+                                if (stf.ReadStringBlock(null) is var mode && !string.IsNullOrEmpty(mode) && Enum.TryParse(mode, true, out BrakeModes brakeMode))
+                                {
+                                    brakeModeName = brakeMode;
+                                    if (newSystem != null)
+                                    {
+                                        newSystem.BrakeMode = brakeModeName.Value;
+                                        if (BrakeSystems.ContainsKey(newSystem.BrakeMode))
+                                            BrakeSystems[newSystem.BrakeMode] = newSystem;
+                                        else
+                                            BrakeSystems.Add(newSystem.BrakeMode, newSystem);
+                                    }
+                                }
+                                break;
+                            case "wagon(ortsbrakemode(brakesystemtype":
+                                var carBrakeSystemType = stf.ReadStringBlock(null).ToLower();
+                                CarBrakeSystemType = CarBrakeSystemType ?? carBrakeSystemType;
+                                newSystem = MSTSBrakeSystem.Create(carBrakeSystemType, this).InitializeDefault();
+                                if (brakeModeName != null)
+                                {
+                                    newSystem.BrakeMode = brakeModeName.Value;
+                                    if (BrakeSystems.ContainsKey(newSystem.BrakeMode))
+                                        BrakeSystems[newSystem.BrakeMode] = newSystem;
+                                    else
+                                        BrakeSystems.Add(newSystem.BrakeMode, newSystem);
+                                }
+                                break;
+                            default:
+                                if (lowercasetoken.EndsWith("("))
+                                    stf.SkipRestOfBlock(); // Skip unknown parameters
+                                else if (newSystem is MSTSBrakeSystem newMmstsSystem)
+                                    newMmstsSystem.Parse(lowercasetoken.Replace("ortsbrakemode(", ""), stf);
                                 break;
                         }
                     }
@@ -1638,10 +1735,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     else stf.SkipRestOfBlock();
                     break;
-                default:
-                    if (MSTSBrakeSystem != null)
-                        MSTSBrakeSystem.Parse(lowercasetoken, stf);
-                    break;
+                default: if (BrakeSystem is MSTSBrakeSystem mstsBrakeSystem) mstsBrakeSystem.Parse(lowercasetoken, stf); break;
             }
         }
 
@@ -1740,7 +1834,6 @@ namespace Orts.Simulation.RollingStocks
             IsFrictionBearing = copy.IsFrictionBearing;
             IsGreaseFrictionBearing = copy.IsGreaseFrictionBearing;
             CarBrakeSystemType = copy.CarBrakeSystemType;
-            BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
             EmergencyReservoirPresent = copy.EmergencyReservoirPresent;
             BrakeValve = copy.BrakeValve;
             HandBrakePresent = copy.HandBrakePresent;
@@ -1820,7 +1913,21 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-            MSTSBrakeSystem.InitializeFromCopy(copy.BrakeSystem);
+            BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
+            BrakeSystem.InitializeFromCopy(copy.BrakeSystem, false);
+
+            BrakeSystemAlt = copy.BrakeSystemAlt?.InitializePresetClone(null, 0);
+            BrakeSystemAlt?.InitializeFromCopy(copy.BrakeSystemAlt, false);
+
+            foreach (var key in copy.BrakeSystems.Keys)
+            {
+                var copySystem = copy.BrakeSystems[key].InitializePresetClone(null, 0);
+                copySystem.InitializeFromCopy(copySystem, false);
+                BrakeSystems.Add(key, copySystem);
+            }
+            BrakeModeNames = copy.BrakeModeNames.Clone() as string[];
+            BrakeModePreset = copy.BrakeModePreset;
+
             if (copy.WeightLoadController != null) WeightLoadController = new MSTSNotchController(copy.WeightLoadController);
 
             if (copy.PassengerCarPowerSupply != null)
@@ -2185,7 +2292,7 @@ namespace Orts.Simulation.RollingStocks
 
             Doors.Update(elapsedClockSeconds);
 
-            MSTSBrakeSystem.Update(elapsedClockSeconds);
+            BrakeSystem.Update(elapsedClockSeconds);
 
             // Updates freight load animations when defined in WAG file - Locomotive and Tender load animation are done independently in UpdateTenderLoad() & UpdateLocomotiveLoadPhysics()
             if (WeightLoadController != null && WagonType != WagonTypes.Tender && AuxWagonType != "AuxiliaryTender" && WagonType != WagonTypes.Engine)
@@ -3898,7 +4005,7 @@ namespace Orts.Simulation.RollingStocks
 
         public bool GetTrainHandbrakeStatus()
         {
-            return MSTSBrakeSystem.GetHandbrakeStatus();
+            return BrakeSystem.GetHandbrakeStatus();
         }
 
         // sound sources and viewers can register themselves to get direct notification of an event
@@ -4253,13 +4360,7 @@ namespace Orts.Simulation.RollingStocks
 
         }
 
-        public void SetWagonHandbrake(bool ToState)
-        {
-            if (ToState)
-                MSTSBrakeSystem.SetHandbrakePercent(100);
-            else
-                MSTSBrakeSystem.SetHandbrakePercent(0);
-        }
+        public void SetWagonHandbrake(bool toState) => BrakeSystem.SetHandbrakePercent(toState ? 100 : 0);
 
         /// <summary>
         /// Returns the fraction of load already in wagon.

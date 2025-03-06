@@ -4085,7 +4085,7 @@ namespace Orts.Simulation.Physics
                             else
                                 throw new Exception("Unknown brake type");
 
-                            car.MSTSBrakeSystem.InitializeFromCopy(lead.BrakeSystem);
+                            car.BrakeSystem.InitializeFromCopy(lead.BrakeSystem, false);
                             Trace.TraceInformation("Car and Locomotive Brake System Types Incompatible on Car {0} - Car brakesystem type changed to {1}", car.CarID, car.CarBrakeSystemType);
                         }
                     }

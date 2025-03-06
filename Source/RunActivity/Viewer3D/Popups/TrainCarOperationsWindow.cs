@@ -439,6 +439,9 @@ namespace Orts.Viewer3D.Popups
                             var carLabel = new buttonLoco(CarUIDLenght + textHeight, textHeight, Owner.Viewer, car, carPosition, LabelAlignment.Center);
                             carLabel.Click += new Action<Control, Point>(carLabel_Click);
 
+                            var brakeLabel = new buttonBrakeMode(CarUIDLenght - textHeight, textHeight, Owner.Viewer, car, carPosition, LabelAlignment.Center);
+                            brakeLabel.Click += new Action<Control, Point>(brakeLabel_Click);
+
                             if (car == PlayerTrain.LeadLocomotive || car is MSTSLocomotive || car.WagonType == TrainCar.WagonTypes.Tender) carLabel.Color = Color.Green;
 
                             if (car.BrakesStuck || ((car is MSTSLocomotive) && (car as MSTSLocomotive).PowerReduction > 0)) carLabel.Color = Color.Red;
@@ -474,7 +477,7 @@ namespace Orts.Viewer3D.Popups
                             // Bleed off valve
                             line.Add(new buttonBleedOffValve(0, 0, SymbolSize, Owner.Viewer, carPosition));
                             AddSpace();
-
+                            
                             if (AllSymbolsMode)//Allows to display all symbols
                             {
                                 // Electric train supply connection (ETS)
@@ -499,6 +502,7 @@ namespace Orts.Viewer3D.Popups
                                         AddSpace();
                                     }
                                 }
+                                line.Add(brakeLabel);
                             }
                             // Right arrow
                             line.Add(new buttonArrowRight(0, 0, textHeight, Owner.Viewer, carPosition));
@@ -592,6 +596,9 @@ namespace Orts.Viewer3D.Popups
             LocalScrollPosition = position;
         }
         void carLabel_Click(Control arg1, Point arg2)
+        {
+        }
+        void brakeLabel_Click(Control arg1, Point arg2)
         {
         }
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
@@ -1345,6 +1352,44 @@ namespace Orts.Viewer3D.Popups
                 }
             }
             return Texture;
+        }
+    }
+    class buttonBrakeMode : Label
+    {
+        readonly Viewer Viewer;
+        readonly CarOperationsWindow CarOperations;
+        readonly TrainCarOperationsWindow TrainCar;
+        readonly TrainCarOperationsViewerWindow TrainCarViewer;
+        readonly int CarPosition;
+        readonly MSTSWagon Car;
+        public buttonBrakeMode(int x, int y, Viewer viewer, TrainCar car, int carPosition, LabelAlignment alignment)
+            : base(x, y, "", alignment)
+        {
+            Viewer = viewer;
+            CarOperations = Viewer.CarOperationsWindow;
+            TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
+            TrainCar = Viewer.TrainCarOperationsWindow;
+            CarPosition = carPosition;
+            Car = car as MSTSWagon;
+            Text = car.BrakeSystem.BrakeMode.ToString();
+            Click += new Action<Control, Point>(buttonLabel_Click);
+        }
+
+        public void buttonLabel_Click(Control arg1, Point arg2)
+        {
+            var next = 0;
+            for (var i = 0; i < Car.BrakeModeNames.Length; i++)
+            {
+                if (Car.BrakeSystem.BrakeMode.ToString() == Car.BrakeModeNames[i])
+                {
+                    next = i + 1;
+                    break;
+                }
+            }
+            if (next >= Car.BrakeModeNames.Length)
+                next = 0;
+            Car.SetBrakeSystemMode(Car.BrakeModeNames.ElementAtOrDefault(next));
+            Text = Car.BrakeSystem.BrakeMode.ToString();
         }
     }
 }

@@ -66,11 +66,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
         }
 
-        public override void InitializeFromCopy(BrakeSystem copy)
+        public override void InitializeFromCopy(BrakeSystem copy, bool diff)
         {
             ManualBraking thiscopy = (ManualBraking)copy;
-            ManualMaxApplicationRateValuepS = thiscopy.ManualMaxApplicationRateValuepS;
-            ManualReleaseRateValuepS = thiscopy.ManualReleaseRateValuepS;
+            ManualMaxApplicationRateValuepS = diff && thiscopy.ManualMaxApplicationRateValuepS == default ? ManualMaxApplicationRateValuepS : thiscopy.ManualMaxApplicationRateValuepS;
+            ManualReleaseRateValuepS = diff && thiscopy.ManualReleaseRateValuepS == default ? ManualReleaseRateValuepS : thiscopy.ManualReleaseRateValuepS;
 
         }
 

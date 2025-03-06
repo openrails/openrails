@@ -543,7 +543,12 @@ namespace Orts.Simulation.RollingStocks
                 Train.MUDirection = Flipped ^ loco.UsingRearCab ? DirectionControl.Flip(value) : value;
             }
         }
-        public BrakeSystem BrakeSystem;
+
+        public BrakeSystem BrakeSystem { get; protected set; }
+        protected BrakeSystem BrakeSystemAlt; // For dual vacuum/air vehicles, to be swapped with BrakeSystem
+        public readonly Dictionary<BrakeModes, BrakeSystem> BrakeSystems = new Dictionary<BrakeModes, BrakeSystem>(); // The G-P-R-etc. systems with differences only
+        public string[] BrakeModeNames { get; protected set; }
+        protected string BrakeModePreset;
 
         public float PreviousSteamBrakeCylinderPressurePSI;
 
@@ -2161,6 +2166,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(UiD);
             outf.Write(CarID);
             BrakeSystem.Save(outf);
+            BrakeSystemAlt.Save(outf);
             outf.Write(MotiveForceN);
             outf.Write(FrictionForceN);
             outf.Write(SpeedMpS);
@@ -2174,6 +2180,20 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(CarHeatCurrentCompartmentHeatJ);
             outf.Write(CarSteamHeatMainPipeSteamPressurePSI);
             outf.Write(CarHeatCompartmentHeaterOn);
+            outf.Write(BrakeModePreset);
+            outf.Write(BrakeSystems?.Count() ?? 0);
+            if (BrakeSystems?.Count() > 0)
+            {
+                foreach (var key in BrakeSystems.Keys)
+                {
+                    outf.Write(key.ToString());
+                    BrakeSystems[key].Save(outf);
+                }
+            }
+            outf.Write(BrakeModeNames?.Length ?? 0);
+            if (BrakeModeNames?.Length > 0)
+                foreach (var f in BrakeModeNames)
+                    outf.Write(f);
         }
 
         // Game restore
@@ -2183,6 +2203,7 @@ namespace Orts.Simulation.RollingStocks
             UiD = inf.ReadInt32();
             CarID = inf.ReadString();
             BrakeSystem.Restore(inf);
+            BrakeSystemAlt.Restore(inf);
             MotiveForceN = inf.ReadSingle();
             FrictionForceN = inf.ReadSingle();
             SpeedMpS = inf.ReadSingle();
@@ -2197,6 +2218,22 @@ namespace Orts.Simulation.RollingStocks
             CarHeatCurrentCompartmentHeatJ = inf.ReadSingle();
             CarSteamHeatMainPipeSteamPressurePSI = inf.ReadSingle();
             CarHeatCompartmentHeaterOn = inf.ReadBoolean();
+            BrakeModePreset = inf.ReadString();
+            for (var i = 0; i < inf.ReadInt32(); i++)
+            {
+                Enum.TryParse(inf.ReadString(), out BrakeModes mode);
+                BrakeSystem bs = null;
+                bs.Restore(inf);
+                BrakeSystems.Add(mode, bs);
+            }
+            var brakeModeFilterLength = inf.ReadInt32();
+            if (brakeModeFilterLength > 0)
+            {
+                BrakeModeNames = new string[brakeModeFilterLength];
+                for (var i = 0; i < brakeModeFilterLength; i++)
+                    BrakeModeNames[i] = inf.ReadString();
+            }
+
             FreightAnimations?.LoadDataList?.Clear();
         }
 
