@@ -360,7 +360,7 @@ namespace Orts.Viewer3D
             Size = 1 << (15 - (int)zoom);
 
             var fileName = filePath + TileName.FromTileXZ(tileX, tileZ, zoom);
-            if (!File.Exists(fileName + ".t"))
+            if (!Vfs.FileExists(fileName + ".t"))
             {
                 // Many tiles adjacent to the visible tile may not be modelled, so a warning is not helpful;
                 // ignore a missing .t file unless it is the currently visible tile.
@@ -388,7 +388,7 @@ namespace Orts.Viewer3D
             }
             try
             {
-                if (File.Exists(fileName + "_f.raw"))
+                if (Vfs.FileExists(fileName + "_f.raw"))
                     FFile = new TerrainFlagsFile(fileName + "_f.raw", SampleCount);
             }
             catch (Exception error)
