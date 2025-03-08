@@ -420,7 +420,7 @@ namespace Orts.Viewer3D
         {
             var shader = Viewer.MaterialManager.SceneryShader;
             shader.CurrentTechnique = shader.Techniques["Forest"];
-            if (ShaderPasses == null) ShaderPasses = shader.Techniques["Forest"].Passes.GetEnumerator();
+            if (ShaderPasses == null) ShaderPasses = shader.CurrentTechnique.Passes.GetEnumerator();
             shader.ImageTexture = TreeTexture;
             shader.ReferenceAlpha = 200;
 
