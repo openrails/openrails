@@ -1187,7 +1187,7 @@ namespace Orts.Viewer3D.Popups
                 }
                 else if (locomotive.IsWaterScoopDown && !locomotive.ScoopIsBroken)
                 {
-                    waterScoopIndicator = Viewer.Catalog.GetString("Down") + (locomotive.IsOverTrough() ? ColorCode[Color.Cyan] : ColorCode[Color.Orange]);
+                    waterScoopIndicator = Viewer.Catalog.GetString("Down") + (locomotive.IsOverTrough ? ColorCode[Color.Cyan] : ColorCode[Color.Orange]);
                     waterScoopKey = Symbols.ArrowToRight + ColorCode[Color.Yellow];
                 }
                 else
