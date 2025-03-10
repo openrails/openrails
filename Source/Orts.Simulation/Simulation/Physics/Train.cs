@@ -163,6 +163,8 @@ namespace Orts.Simulation.Physics
         public bool HuDIsWheelSlip;
         public bool IsBrakeSkid;
 
+        public bool SoundSetupInitialise = true;
+
         public bool HotBoxSetOnTrain = false;
         public int ActivityDurationS
         {
@@ -2002,6 +2004,27 @@ namespace Orts.Simulation.Physics
             if (DatalogTrainSpeed)
             {
                 LogTrainSpeed(Simulator.ClockTime);
+            }
+
+            // Initialise track joint trigger points. Only runs once at start up.
+            if (SoundSetupInitialise)
+            {
+                var trackjointdistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
+                float trainLengthM = 0;
+
+                foreach (var car in Cars)
+                {
+                    car.realTimeTrackJointDistanceM = trackjointdistanceM + trainLengthM;
+                    trainLengthM += car.CarLengthM;
+
+                    if (trainLengthM > (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM)
+                    {
+                        trainLengthM = 0;
+                    }
+
+                }
+
+                SoundSetupInitialise = false;
             }
 
         } // end Update
