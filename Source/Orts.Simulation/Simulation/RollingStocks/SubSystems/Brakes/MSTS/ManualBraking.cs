@@ -128,7 +128,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             SteamBrakeCompensation = 1.0f;
 
             // Process manual braking on all cars
-            if (lead != null)
+            if (lead != null && lead.BrakemanBrakeController != null)
             {
                 BrakemanBrakeSettingValue = lead.BrakemanBrakeController.CurrentValue;
             }
