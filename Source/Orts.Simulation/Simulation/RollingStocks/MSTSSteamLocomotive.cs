@@ -5811,9 +5811,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // mean pressure during stroke = ((absolute mean pressure + (clearance + cylstroke)) - (initial pressure + clearance)) / cylstroke
             // Mean effective pressure = cylinderpressure - backpressure
 
-            // Cylinder pressure also reduced by steam vented through cylinder cocks.
-            CylCockPressReduceFactor = 1.0f;
-
             if (SteamEngines[numberofengine].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
             {
 
@@ -5836,13 +5833,24 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         SteamEngines[numberofengine].CylCockSteamUsageLBpS = 0;
                     }
 
-                    if (HasSuperheater) // Superheated locomotive
+                    // Cylinder pressure also reduced by steam vented through cylinder cocks.
+
+                    if (throttle > 0.01 && absSpeedMpS > 0.1) // if regulator open and train stationary
                     {
-                        CylCockPressReduceFactor = ((SteamEngines[numberofengine].CylinderSteamUsageLBpS / SuperheaterSteamUsageFactor) / ((SteamEngines[numberofengine].CylinderSteamUsageLBpS / SuperheaterSteamUsageFactor) + SteamEngines[numberofengine].CylCockSteamUsageLBpS)); // For superheated locomotives temp convert back to a saturated comparison for calculation of steam cock reduction factor.
+
+                        if (HasSuperheater) // Superheated locomotive
+                        {
+                            CylCockPressReduceFactor = ((SteamEngines[numberofengine].CylinderSteamUsageLBpS / SuperheaterSteamUsageFactor) / ((SteamEngines[numberofengine].CylinderSteamUsageLBpS / SuperheaterSteamUsageFactor) + SteamEngines[numberofengine].CylCockSteamUsageLBpS)); // For superheated locomotives temp convert back to a saturated comparison for calculation of steam cock reduction factor.
+                        }
+                        else // Simple locomotive
+                        {
+                            CylCockPressReduceFactor = (SteamEngines[numberofengine].CylinderSteamUsageLBpS / (SteamEngines[numberofengine].CylinderSteamUsageLBpS + SteamEngines[numberofengine].CylCockSteamUsageLBpS)); // Saturated steam locomotive
+                        }
                     }
-                    else // Simple locomotive
+                    else 
+                    // if regulator open and train stationary. No steam is used and exahusted by the cylinders (apart from through cock), hence ReduceFactor = 1
                     {
-                        CylCockPressReduceFactor = (SteamEngines[numberofengine].CylinderSteamUsageLBpS / (SteamEngines[numberofengine].CylinderSteamUsageLBpS + SteamEngines[numberofengine].CylCockSteamUsageLBpS)); // Saturated steam locomotive
+                        CylCockPressReduceFactor = 1.0f;
                     }
 
                     if (SteamEngineType == SteamEngineTypes.Compound)
