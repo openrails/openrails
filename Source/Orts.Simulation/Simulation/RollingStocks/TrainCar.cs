@@ -865,7 +865,6 @@ namespace Orts.Simulation.RollingStocks
                 Trace.TraceInformation("Tunnel 1 tr perimeter {0} Tunnel 1 tr area {1}", SingleTunnelPerimeterAreaM, SingleTunnelPerimeterAreaM);
                 Trace.TraceInformation("Tunnel 2 tr perimeter {0} Tunnel 2 tr area {1}", DoubleTunnelPerimeterM, DoubleTunnelCrossSectAreaM2);
 #endif
-            realTimeTrackJointDistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM; // Initialise track joint distance
             SoundAxleCount = (LocoNumDrvAxles + WagonNumAxles);
 
         }
