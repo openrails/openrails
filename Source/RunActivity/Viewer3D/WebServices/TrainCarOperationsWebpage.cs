@@ -209,16 +209,16 @@ namespace Orts.Viewer3D.WebServices
         {
             if ((Viewer.PlayerTrain != null))
             {
-            if (Connections > 0)
-            {
+                if (Connections > 0)
+                {
                     if (Viewer.RealTime - LastPrepareRealTime >= 0.25)
                     {
                         LastPrepareRealTime = Viewer.RealTime;
                         try
                         {
-                handleReceive();
-                handleSend();
-            }
+                            handleReceive();
+                            handleSend();
+                        }
                         catch (Exception error)
                         {
                             // some timing error causes an exception sometimes
@@ -617,11 +617,11 @@ namespace Orts.Viewer3D.WebServices
             }
             else
             {
-            StatusCurrent.Status[carPosition].Add(
+                StatusCurrent.Status[carPosition].Add(
                 new OperationsStatus.Operation
                 {
                     Enabled = true,
-                    Filename = carAngleCockAOpenAmount >= 1 ? "TrainOperationsFrontAngleCockOpened32.png" 
+                    Filename = carAngleCockAOpenAmount >= 1 ? "TrainOperationsFrontAngleCockOpened32.png"
                         : carAngleCockAOpenAmount <= 0 ? "TrainOperationsFrontAngleCockClosed32.png"
                         : "TrainOperationsFrontAngleCockPartial32.png",
                     Functionname = "buttonFrontAngleCockClick",
@@ -833,16 +833,16 @@ namespace Orts.Viewer3D.WebServices
             }
             else
             {
-            StatusCurrent.Status[carPosition].Add(
-                new OperationsStatus.Operation
-                {
-                    Enabled = true,
-                    Filename = carAngleCockBOpenAmount >= 1 ? "TrainOperationsRearAngleCockOpened32.png"
-                        : carAngleCockBOpenAmount <= 0 ? "TrainOperationsRearAngleCockClosed32.png"
-                        : "TrainOperationsRearAngleCockPartial32.png",
-                    Functionname = "buttonRearAngleCockClick",
-                    CarPosition = carPosition
-                });
+                StatusCurrent.Status[carPosition].Add(
+                    new OperationsStatus.Operation
+                    {
+                        Enabled = true,
+                        Filename = carAngleCockBOpenAmount >= 1 ? "TrainOperationsRearAngleCockOpened32.png"
+                            : carAngleCockBOpenAmount <= 0 ? "TrainOperationsRearAngleCockClosed32.png"
+                            : "TrainOperationsRearAngleCockPartial32.png",
+                        Functionname = "buttonRearAngleCockClick",
+                        CarPosition = carPosition
+                    });
             }
             if (last)
             {

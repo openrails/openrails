@@ -618,8 +618,8 @@ namespace Orts.Viewer3D.Popups
 
                 if (!(first || disableCouplers))
                 {
-                Click += new Action<Control, Point>(TrainCarOperationsCouplerFront_Click);
-            }
+                    Click += new Action<Control, Point>(TrainCarOperationsCouplerFront_Click);
+                }
             }
 
             void TrainCarOperationsCouplerFront_Click(Control arg1, Point arg2)
@@ -663,8 +663,8 @@ namespace Orts.Viewer3D.Popups
                 Source = new Rectangle(0, 0, size, size);
                 if (!(last || disableCouplers))
                 {
-                Click += new Action<Control, Point>(TrainCarOperationsCouplerRear_Click);
-            }
+                    Click += new Action<Control, Point>(TrainCarOperationsCouplerRear_Click);
+                }
             }
 
             void TrainCarOperationsCouplerRear_Click(Control arg1, Point arg2)
@@ -825,8 +825,8 @@ namespace Orts.Viewer3D.Popups
                 Source = new Rectangle(0, 0, size, size);
                 if (!first)
                 {
-                Click += new Action<Control, Point>(buttonFrontBrakeHose_Click);
-            }
+                    Click += new Action<Control, Point>(buttonFrontBrakeHose_Click);
+                }
             }
 
             void buttonFrontBrakeHose_Click(Control arg1, Point arg2)
@@ -862,8 +862,8 @@ namespace Orts.Viewer3D.Popups
                 Source = new Rectangle(0, 0, size, size);
                 if (!last)
                 {
-                Click += new Action<Control, Point>(buttonRearBrakeHose_Click);
-            }
+                    Click += new Action<Control, Point>(buttonRearBrakeHose_Click);
+                }
             }
 
             void buttonRearBrakeHose_Click(Control arg1, Point arg2)
@@ -911,8 +911,8 @@ namespace Orts.Viewer3D.Popups
 
                     if (!first)
                     {
-                Click += new Action<Control, Point>(buttonFrontAngleCock_Click);
-            }
+                        Click += new Action<Control, Point>(buttonFrontAngleCock_Click);
+                    }
                 }
                 Source = new Rectangle(0, 0, size, size);
             }
@@ -962,8 +962,8 @@ namespace Orts.Viewer3D.Popups
 
                     if (!last)
                     {
-                Click += new Action<Control, Point>(buttonRearAngleCock_Click);
-            }
+                        Click += new Action<Control, Point>(buttonRearAngleCock_Click);
+                    }
                 }
                 Source = new Rectangle(0, 0, size, size);
             }
@@ -1057,8 +1057,8 @@ namespace Orts.Viewer3D.Popups
                 Source = new Rectangle(0, 0, size, size);
                 if (Viewer.PlayerTrain.Cars.Count() > 1)
                 {
-                Click += new Action<Control, Point>(ToggleElectricTrainSupplyCable_Click);
-            }
+                    Click += new Action<Control, Point>(ToggleElectricTrainSupplyCable_Click);
+                }
             }
             void ToggleElectricTrainSupplyCable_Click(Control arg1, Point arg2)
             {

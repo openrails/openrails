@@ -1107,7 +1107,7 @@ namespace Orts.Viewer3D.Popups
             {
                 var carAngleCockAOpenAmount = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockAOpenAmount;
                 var carAngleCockAOpen = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockAOpen;
-            Texture = !TrainCarViewer.TrainCarOperationsChanged && First ? FrontAngleCockClosed
+                Texture = !TrainCarViewer.TrainCarOperationsChanged && First ? FrontAngleCockClosed
                     : carAngleCockAOpenAmount > 0 && carAngleCockAOpenAmount < 1 ? FrontAngleCockPartial
                     : carAngleCockAOpen ? FrontAngleCockOpened
                     : FrontAngleCockClosed;
@@ -1140,7 +1140,7 @@ namespace Orts.Viewer3D.Popups
             {
                 var carAngleCockBOpenAmount = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockBOpenAmount;
                 var carAngleCockBOpen = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockBOpen;
-            Texture = Last ? RearAngleCockClosed
+                Texture = Last ? RearAngleCockClosed
                     : carAngleCockBOpenAmount > 0 && carAngleCockBOpenAmount < 1 ? RearAngleCockPartial
                     : carAngleCockBOpen ? RearAngleCockOpened
                     : RearAngleCockClosed;
