@@ -382,10 +382,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 // display as a automatic vacuum brake
 
                 return new string[] {
-                "1V",
+                "1V" + (BrakeMode == BrakeModes.NONE ? "" : "-" + BrakeMode),
                 FormatStrings.FormatPressure(Vac.FromPress(CylPressurePSIA), PressureUnit.InHg, PressureUnit.InHg, true),
                 FormatStrings.FormatPressure(Vac.FromPress(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, true),
                 FormatStrings.FormatPressure(Vac.FromPress(VacResPressureAdjPSIA()), PressureUnit.InHg, PressureUnit.InHg, true),
+                string.Empty,
                 string.Empty,
                 string.Empty,
                 string.Empty,
@@ -402,7 +403,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 // display as a straight vacuum brake
 
                 return new string[] {
-                "1VS",
+                "1VS" + (BrakeMode == BrakeModes.NONE ? "" : "-" + BrakeMode),
                 FormatStrings.FormatPressure(Vac.FromPress(CylPressurePSIA), PressureUnit.InHg, PressureUnit.InHg, true),
                 FormatStrings.FormatPressure(Vac.FromPress(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, true),
                 string.Empty,

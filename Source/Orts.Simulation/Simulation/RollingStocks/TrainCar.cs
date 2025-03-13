@@ -1,4 +1,4 @@
-// COPYRIGHT 2009 - 2022 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2022 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -544,7 +544,7 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        public BrakeSystem BrakeSystem { get; protected set; }
+        public BrakeSystem BrakeSystem;
         protected BrakeSystem BrakeSystemAlt; // For dual vacuum/air vehicles, to be swapped with BrakeSystem
         public readonly Dictionary<BrakeModes, BrakeSystem> BrakeSystems = new Dictionary<BrakeModes, BrakeSystem>(); // The G-P-R-etc. systems with differences only
         public string[] BrakeModeNames { get; protected set; }

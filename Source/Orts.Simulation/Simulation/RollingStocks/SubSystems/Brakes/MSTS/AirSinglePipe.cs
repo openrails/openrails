@@ -326,7 +326,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override string[] GetDebugStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
             return new string[] {
-                DebugType,
+                DebugType + (BrakeMode == BrakeModes.NONE ? "" : "-" + BrakeMode),
                 string.Format("{0}{1}",FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true), (Car as MSTSWagon).WheelBrakeSlideProtectionActive ? "???" : ""),
                 FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true),
                 FormatStrings.FormatPressure(AuxResPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.AuxiliaryReservoir], true),
@@ -2620,6 +2620,37 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         newSystem.TwoStageSpeedUpMpS = MpS.FromKpH(55); // ORTSTwoStageIncreasingSpeed ()
                         newSystem.TwoStageSpeedDownMpS = MpS.FromKpH(40); // ortstwostagedecreasingspeed ()
                         newSystem.AuxCylVolumeRatio = 2.67f; // TripleValveRatio ()
+                        return newSystem;
+                }
+            }
+            else if (type == "Westinghouse_K2")
+            {
+                var newSystem = MemberwiseClone() as AirSinglePipe;
+                newSystem.InitializeDefault(); // First come the preset definitions, then the parsed values
+
+                newSystem.AuxCylVolumeRatio = 2.5f; // TripleValveRatio ()
+                newSystem.BrakeInsensitivityPSIpS = Bar.ToPSI(pS.FrompM(0.45f)); // ORTSBrakeInsensitivity ()
+                newSystem.InitialApplicationThresholdPSI = Bar.ToPSI(0.2f); // ORTSInitialApplicationThreshold ()
+                newSystem.MaxTripleValveCylPressurePSI = Bar.ToPSI(3.8f); // ORTSMaxTripleValveCylinderPressure ()
+                newSystem.ReferencePressurePSI = Bar.ToPSI(3.5f); // ORTSBrakeForceReferencePressure (), P mode
+                newSystem.MaxAuxilaryChargingRatePSIpS = Bar.ToPSI(0.03f); // MaxAuxilaryChargingRate ()
+
+                switch (mode)
+                {
+                    case BrakeModes.G:
+                        newSystem.MaxReleaseRatePSIpS = Bar.ToPSI(0.08f); // MaxReleaseRate ()
+                        newSystem.MaxApplicationRatePSIpS = Bar.ToPSI(0.12f); // MaxApplicationRate ()
+                        newSystem.QuickServiceLimitPSI = Bar.ToPSI(1); // OrtsQuickServiceLimit ()
+                        newSystem.QuickServiceApplicationRatePSIpS = Bar.ToPSI(1); // OrtsQuickServiceApplicationRate ()
+                        newSystem.QuickServiceVentRatePSIpS = Bar.ToPSI(0.15f); // ORTSQuickServiceVentRate ()
+                        return newSystem;
+                    default:
+                    case BrakeModes.P:
+                        newSystem.MaxReleaseRatePSIpS = Bar.ToPSI(0.44f); // MaxReleaseRate ()
+                        newSystem.MaxApplicationRatePSIpS = Bar.ToPSI(0.6f); // MaxApplicationRate ()
+                        newSystem.QuickServiceLimitPSI = -1; // OrtsQuickServiceLimit ()
+                        newSystem.QuickServiceApplicationRatePSIpS = 0.0001f; // OrtsQuickServiceApplicationRate ()
+                        newSystem.QuickServiceVentRatePSIpS = 0.0001f; // ORTSQuickServiceVentRate ()
                         return newSystem;
                 }
             }

@@ -367,12 +367,6 @@ namespace Orts.Simulation.RollingStocks
             public static bool Unload { get; set; }
         }
 
-        public MSTSBrakeSystem MSTSBrakeSystem
-        {
-            get { return (MSTSBrakeSystem)base.BrakeSystem; }
-            set { base.BrakeSystem = value; } // value needs to be set to allow trailing cars to have same brake system as locomotive when in simple brake mode
-        }
-
         public MSTSWagon(Simulator simulator, string wagFilePath)
             : base(simulator, wagFilePath)
         {
@@ -1160,17 +1154,20 @@ namespace Orts.Simulation.RollingStocks
 
         public void SetBrakeSystemMode(string mode)
         {
+            if (Math.Abs(SpeedMpS) > .1)
+                return;
+
             if (!string.IsNullOrWhiteSpace(mode) && Enum.TryParse(mode, out BrakeModes modeEnum) && BrakeSystems.TryGetValue(modeEnum, out var brakeSystem))
             {
                 if (brakeSystem is VacuumSinglePipe ^ BrakeSystem is VacuumSinglePipe)
                 {
                     if (BrakeSystemAlt == null)
                     {
-                        BrakeSystemAlt = brakeSystem.InitializePresetClone(null, 0).InitializeDefault();
+                        BrakeSystemAlt = BrakeSystem.CreateNewLike(brakeSystem, this).InitializeDefault();
 
                         // Leave the car in a working state. However the train should reinitialize the car with correct values when all the switchings were finished.
-                        var maxPressurePSI = brakeSystem is VacuumSinglePipe ? 21f : 90f;
-                        var fullServPressurePSI = brakeSystem is VacuumSinglePipe ? 16f : 64f;
+                        float maxPressurePSI, fullServPressurePSI;
+                        (maxPressurePSI, fullServPressurePSI) = brakeSystem.GetDefaultPressures();
                         var handbrakeOn = BrakeSystem.GetHandbrakeStatus();
                         var immediateRelease = BrakeSystem.GetCylPressurePSI() == 0;
                         BrakeSystemAlt.Initialize(handbrakeOn, maxPressurePSI, fullServPressurePSI, immediateRelease);
@@ -1448,7 +1445,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsbrakemodenames": BrakeModeNames = stf.ReadStringBlock("").ToUpper().Replace(" ", "").Split(','); break;
                 case "wagon(ortsbrakemodepreset": BrakeModePreset = stf.ReadStringBlock(null).ToLower(); break;
                 case "wagon(ortsbrakemode":
-                    var newSystem = BrakeSystem?.InitializePresetClone(null, 0).InitializeDefault(); // Start with the same BrakeSystemType() as the base
+                    var newSystem = BrakeSystem.CreateNewLike(BrakeSystem, this)?.InitializeDefault(); // Start with the same BrakeSystemType() as the base
                     BrakeModes? brakeModeName = null;
 
                     stf.VerifyStartOfBlock();
@@ -1913,16 +1910,16 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-            BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
-            BrakeSystem.InitializeFromCopy(copy.BrakeSystem, false);
+            BrakeSystem = BrakeSystem.CreateNewLike(copy.BrakeSystem, this);
+            BrakeSystem?.InitializeFromCopy(copy.BrakeSystem, false);
 
-            BrakeSystemAlt = copy.BrakeSystemAlt?.InitializePresetClone(null, 0);
+            BrakeSystemAlt = BrakeSystem.CreateNewLike(copy.BrakeSystemAlt, this);
             BrakeSystemAlt?.InitializeFromCopy(copy.BrakeSystemAlt, false);
 
             foreach (var key in copy.BrakeSystems.Keys)
             {
-                var copySystem = copy.BrakeSystems[key].InitializePresetClone(null, 0);
-                copySystem.InitializeFromCopy(copySystem, false);
+                var copySystem = BrakeSystem.CreateNewLike(copy.BrakeSystems[key], this);
+                copySystem.InitializeFromCopy(copy.BrakeSystems[key], false);
                 BrakeSystems.Add(key, copySystem);
             }
             BrakeModeNames = copy.BrakeModeNames.Clone() as string[];
