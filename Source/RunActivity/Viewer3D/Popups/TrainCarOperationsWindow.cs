@@ -1371,7 +1371,7 @@ namespace Orts.Viewer3D.Popups
             TrainCar = Viewer.TrainCarOperationsWindow;
             CarPosition = carPosition;
             Car = car as MSTSWagon;
-            Text = car.BrakeSystem.BrakeMode.ToString();
+            Text = Car.BrakeSystem.BrakeMode != BrakeModes.NONE ? Car.BrakeSystem.BrakeMode.ToString() : "";
             Click += new Action<Control, Point>(buttonLabel_Click);
         }
 
@@ -1389,7 +1389,7 @@ namespace Orts.Viewer3D.Popups
             if (next >= Car.BrakeSystems.Keys.Count())
                 next = 0;
             Car.SetBrakeSystemMode(Car.BrakeSystems.ElementAtOrDefault(next).Key.ToString());
-            Text = Car.BrakeSystem.BrakeMode.ToString();
+            Text = Car.BrakeSystem.BrakeMode != BrakeModes.NONE ? Car.BrakeSystem.BrakeMode.ToString() : "";
         }
     }
 }

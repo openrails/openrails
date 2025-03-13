@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using ORTS.Common;
 using System.Collections.Generic;
 using System.IO;
@@ -121,6 +122,32 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         public abstract void LocoInitializeMoving(); // starting conditions when starting speed > 0
         public abstract bool IsBraking(); // return true if the wagon is braking above a certain threshold
         public abstract void CorrectMaxCylPressurePSI(MSTSLocomotive loco); // corrects max cyl pressure when too high
+
+        public static BrakeSystem CreateNewLike(BrakeSystem brakeSystem, TrainCar car)
+        {
+            if (brakeSystem == null)
+                return null;
+            else if (brakeSystem is ManualBraking)
+                return new ManualBraking(car);
+            else if (brakeSystem is StraightVacuumSinglePipe)
+                return new StraightVacuumSinglePipe(car);
+            else if (brakeSystem is VacuumSinglePipe)
+                return new VacuumSinglePipe(car);
+            else if (brakeSystem is SingleTransferPipe)
+                return new SingleTransferPipe(car);
+            else if (brakeSystem is EPBrakeSystem)
+                return new EPBrakeSystem(car);
+            else if (brakeSystem is SMEBrakeSystem)
+                return new SMEBrakeSystem(car);
+            else if (brakeSystem is AirTwinPipe)
+                return new AirTwinPipe(car);
+            else if (brakeSystem is AirSinglePipe)
+                return new AirSinglePipe(car);
+            else
+                return new SingleTransferPipe(car);
+        }
+
+        public virtual (float maxPressurePSI, float fullServPressurePSI) GetDefaultPressures() => (90, 64);
     }
 
     public enum RetainerSetting
@@ -133,6 +160,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
 
     public enum BrakeModes
     {
+        NONE,
         G, // Goods
         P, // Passanger
         R, // Rapid

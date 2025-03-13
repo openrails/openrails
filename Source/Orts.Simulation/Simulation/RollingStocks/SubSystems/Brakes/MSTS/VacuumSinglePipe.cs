@@ -129,6 +129,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             return base.InitializeDefault();
         }
 
+        public override (float maxPressurePSI, float fullServPressurePSI) GetDefaultPressures() => (21, 16);
+        
         // return vacuum reservior pressure adjusted for piston movement
         // this section works out from the brake cylinder movement the amount of volume change in the reservoir, and hence the drop in vacuum in the reservoir. 
         // Normally the reservoir is a closed space during brake application, and thus vacuum is not lost, but simply varied with volume change
@@ -187,8 +189,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (LocomotiveSteamBrakeFitted)
             {
                 return new string[] {
-                "S",
+                "S" + (BrakeMode == BrakeModes.NONE ? "" : "-" + BrakeMode),
                 string.Format("{0:F0}", FormatStrings.FormatPressure(SteamBrakeCylinderPressurePSI, PressureUnit.PSI,  PressureUnit.PSI, true)),
+                string.Empty,
                 string.Empty,
                 string.Empty,
                 string.Empty,
@@ -207,10 +210,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
 
                 return new string[] {
-                "1V",
+                "1V" + (BrakeMode == BrakeModes.NONE ? "" : "-" + BrakeMode),
                 FormatStrings.FormatPressure(Vac.FromPress(CylPressurePSIA), PressureUnit.InHg, PressureUnit.InHg, true),
                 FormatStrings.FormatPressure(Vac.FromPress(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, true),
                 FormatStrings.FormatPressure(Vac.FromPress(VacResPressureAdjPSIA()), PressureUnit.InHg, PressureUnit.InHg, true),
+                string.Empty,
                 string.Empty,
                 string.Empty,
                 string.Empty,

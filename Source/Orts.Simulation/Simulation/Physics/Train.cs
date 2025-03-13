@@ -4061,32 +4061,12 @@ namespace Orts.Simulation.Physics
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
                 if (lead.TrainBrakeController != null)
                 {
-                    foreach (MSTSWagon car in Cars)
+                    foreach (var car in Cars)
                     {
-                        if (lead.CarBrakeSystemType != car.CarBrakeSystemType) // Test to see if car brake system is the same as the locomotive
+                        if (lead.BrakeSystem.GetType() != car.BrakeSystem.GetType())
                         {
-                            // If not, change so that they are compatible
-                            car.CarBrakeSystemType = lead.CarBrakeSystemType;
-                            if (lead.BrakeSystem is VacuumSinglePipe)
-                                car.MSTSBrakeSystem = new VacuumSinglePipe(car);
-                            else if (lead.BrakeSystem is AirTwinPipe)
-                                car.MSTSBrakeSystem = new AirTwinPipe(car);
-                            else if (lead.BrakeSystem is AirSinglePipe)
-                            {
-                                car.MSTSBrakeSystem = new AirSinglePipe(car);
-                                // if emergency reservoir has been set on lead locomotive then also set on trailing cars
-                                if (lead.EmergencyReservoirPresent)
-                                {
-                                    car.EmergencyReservoirPresent = lead.EmergencyReservoirPresent;
-                                }
-                            }
-                            else if (lead.BrakeSystem is EPBrakeSystem)
-                                car.MSTSBrakeSystem = new EPBrakeSystem(car);
-                            else if (lead.BrakeSystem is SingleTransferPipe)
-                                car.MSTSBrakeSystem = new SingleTransferPipe(car);
-                            else
-                                throw new Exception("Unknown brake type");
-
+                            (car as MSTSWagon).EmergencyReservoirPresent = lead.EmergencyReservoirPresent;
+                            car.BrakeSystem = BrakeSystem.CreateNewLike(lead.BrakeSystem, car);
                             car.BrakeSystem.InitializeFromCopy(lead.BrakeSystem, false);
                             Trace.TraceInformation("Car and Locomotive Brake System Types Incompatible on Car {0} - Car brakesystem type changed to {1}", car.CarID, car.CarBrakeSystemType);
                         }
