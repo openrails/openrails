@@ -1155,7 +1155,7 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
             BrakeSystem = BrakeSystem ?? MSTSBrakeSystem.Create(CarBrakeSystemType, this);
-            SetBrakeSystemMode(BrakeModeNames.FirstOrDefault());
+            SetBrakeSystemMode(BrakeSystems.Keys.FirstOrDefault().ToString());
         }
 
         public void SetBrakeSystemMode(string mode)

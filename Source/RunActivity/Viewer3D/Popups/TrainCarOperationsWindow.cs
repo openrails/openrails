@@ -1378,17 +1378,17 @@ namespace Orts.Viewer3D.Popups
         public void buttonLabel_Click(Control arg1, Point arg2)
         {
             var next = 0;
-            for (var i = 0; i < Car.BrakeModeNames.Length; i++)
+            for (var i = 0; i < Car.BrakeSystems.Keys.Count(); i++)
             {
-                if (Car.BrakeSystem.BrakeMode.ToString() == Car.BrakeModeNames[i])
+                if (Car.BrakeSystem.BrakeMode == Car.BrakeSystems.ElementAt(i).Key)
                 {
                     next = i + 1;
                     break;
                 }
             }
-            if (next >= Car.BrakeModeNames.Length)
+            if (next >= Car.BrakeSystems.Keys.Count())
                 next = 0;
-            Car.SetBrakeSystemMode(Car.BrakeModeNames.ElementAtOrDefault(next));
+            Car.SetBrakeSystemMode(Car.BrakeSystems.ElementAtOrDefault(next).Key.ToString());
             Text = Car.BrakeSystem.BrakeMode.ToString();
         }
     }
