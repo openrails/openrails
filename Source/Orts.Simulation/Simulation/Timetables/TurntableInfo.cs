@@ -119,11 +119,11 @@ namespace Orts.Simulation.Timetables
             // Check type of timetable file - list or single
             string fileDirectory = Path.GetDirectoryName(filePath);
 
-            foreach (var ORTurntableFile in Directory.GetFiles(fileDirectory, "*.turntable_or"))
+            foreach (var ORTurntableFile in Vfs.GetFiles(fileDirectory, "*.turntable_or"))
             {
                 filenames.Add(ORTurntableFile);
             }
-            foreach (var ORTunrtableFile in Directory.GetFiles(fileDirectory, "*.turntable-or"))
+            foreach (var ORTunrtableFile in Vfs.GetFiles(fileDirectory, "*.turntable-or"))
             {
                 filenames.Add(ORTunrtableFile);
             }

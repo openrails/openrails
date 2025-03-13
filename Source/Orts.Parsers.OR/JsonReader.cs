@@ -1,4 +1,4 @@
-// COPYRIGHT 2018 by the Open Rails project.
+﻿// COPYRIGHT 2018 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -24,8 +24,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
+using ORTS.Common;
 
 namespace Orts.Parsers.OR
 {
@@ -38,7 +38,7 @@ namespace Orts.Parsers.OR
         /// <param name="tryParse"></param>
         public static void ReadFile(string fileName, Func<JsonReader, bool> tryParse)
         {
-            using (var reader = new JsonTextReader(File.OpenText(fileName)))
+            using (var reader = new JsonTextReader(Vfs.OpenText(fileName)))
             {
                 new JsonReader(fileName, reader).ReadFile(tryParse);
             }

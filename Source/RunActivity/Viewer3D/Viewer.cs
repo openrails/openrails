@@ -333,7 +333,7 @@ namespace Orts.Viewer3D
             ContentPath = Game.ContentPath;
             ENVFile = new EnvironmentFile(Simulator.RoutePath + @"\ENVFILES\" + Simulator.TRK.Tr_RouteFile.Environment.ENVFileName(Simulator.Season, Simulator.WeatherType));
 
-            if (File.Exists(ORfilepath + @"\sigcfg.dat"))
+            if (Vfs.FileExists(ORfilepath + @"\sigcfg.dat"))
             {
                 SIGCFG = new SignalConfigurationFile(ORfilepath + @"\sigcfg.dat", true);
             }
@@ -367,7 +367,7 @@ namespace Orts.Viewer3D
             if (Simulator.ActivityRun != null && Simulator.Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones != null)
             {
                 var speedpostDatFile = Simulator.RoutePath + @"\speedpost.dat";
-                if (File.Exists(speedpostDatFile))
+                if (Vfs.FileExists(speedpostDatFile))
                 {
                     SpeedpostDatFile = new SpeedpostDatFile(Simulator.RoutePath + @"\speedpost.dat", Simulator.RoutePath + @"\shapes\");
                 }
@@ -918,7 +918,7 @@ namespace Orts.Viewer3D
         private void LoadDefectCarSound(TrainCar car, string filename)
         {
             var smsFilePath = Simulator.BasePath + @"\sound\" + filename;
-            if (!File.Exists(smsFilePath))
+            if (!Vfs.FileExists(smsFilePath))
             {
                 Trace.TraceWarning("Cannot find defect car sound file {0}", filename);
                 return;

@@ -318,6 +318,8 @@ namespace Menu
             trackAdhesionFactorChange.Value = Settings.AdhesionFactorChange;
             trackAdhesionFactor_ValueChanged(null, null);
             checkShapeWarnings.Checked = !Settings.SuppressShapeWarnings;   // Inverted as "Show warnings" is better UI than "Suppress warnings"
+            numericVfsLogLevel.Value = Settings.VfsLogLevel;
+            checkVfsAutoMount.Checked = Settings.VfsAutoMount;
             checkCorrectQuestionableBrakingParams.Checked = Settings.CorrectQuestionableBrakingParams;
             numericActRandomizationLevel.Value = Settings.ActRandomizationLevel;
             numericActWeatherRandomizationLevel.Value = Settings.ActWeatherRandomizationLevel;
@@ -503,6 +505,8 @@ namespace Menu
             Settings.AdhesionFactor = (int)trackAdhesionFactor.Value;
             Settings.AdhesionFactorChange = (int)trackAdhesionFactorChange.Value;
             Settings.SuppressShapeWarnings = !checkShapeWarnings.Checked;
+            Settings.VfsLogLevel = Vfs.LogLevel = (int)numericVfsLogLevel.Value;
+            Settings.VfsAutoMount = Vfs.AutoMount = checkVfsAutoMount.Checked;
             Settings.CorrectQuestionableBrakingParams = checkCorrectQuestionableBrakingParams.Checked;
             Settings.ActRandomizationLevel = (int)numericActRandomizationLevel.Value;
             Settings.ActWeatherRandomizationLevel = (int)numericActWeatherRandomizationLevel.Value;

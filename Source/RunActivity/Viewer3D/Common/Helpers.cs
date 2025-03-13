@@ -17,6 +17,7 @@
 
 using Orts.Formats.Msts;
 using Orts.Simulation;
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -51,21 +52,21 @@ namespace Orts.Viewer3D.Common
         {
             var texturePath = Path.GetDirectoryName(textureFilePath);
             var textureName = Path.GetFileName(textureFilePath);
-            var nightTexturePath = !File.Exists(texturePath + @"\Night\" + textureName) &&
-                !File.Exists(texturePath + @"\Night\" + Path.ChangeExtension(textureName, ".dds")) ? Path.GetDirectoryName(texturePath) + @"\Night\" : texturePath + @"\Night\";
+            var nightTexturePath = !Vfs.FileExists(texturePath + @"\Night\" + textureName) &&
+                !Vfs.FileExists(texturePath + @"\Night\" + Path.ChangeExtension(textureName, ".dds")) ? Path.GetDirectoryName(texturePath) + @"\Night\" : texturePath + @"\Night\";
 
-            if (!String.IsNullOrEmpty(nightTexturePath + textureName) && Path.GetExtension(nightTexturePath + textureName) == ".dds" && File.Exists(nightTexturePath + textureName))
+            if (!String.IsNullOrEmpty(nightTexturePath + textureName) && Path.GetExtension(nightTexturePath + textureName) == ".dds" && Vfs.FileExists(nightTexturePath + textureName))
             {
                 return nightTexturePath + textureName;
             }
             else if (!String.IsNullOrEmpty(nightTexturePath + textureName) && Path.GetExtension(nightTexturePath + textureName) == ".ace")
             {
                 var alternativeTexture = Path.ChangeExtension(nightTexturePath + textureName, ".dds");
-                if (!String.IsNullOrEmpty(alternativeTexture.ToLower()) && File.Exists(alternativeTexture))
+                if (!String.IsNullOrEmpty(alternativeTexture.ToLower()) && Vfs.FileExists(alternativeTexture))
                 {
                     return alternativeTexture;
                 }
-                else if (File.Exists(nightTexturePath + textureName))
+                else if (Vfs.FileExists(nightTexturePath + textureName))
                 {
                     return nightTexturePath + textureName;
                 }
