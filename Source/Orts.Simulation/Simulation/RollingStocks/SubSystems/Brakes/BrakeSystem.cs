@@ -74,6 +74,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         /// </summary>
         public bool TwoPipes { get; protected set; }
 
+        public BrakeModes BrakeMode;
+
+        protected TrainCar Car;
+
         public abstract void AISetPercent(float percent);
 
         public abstract string GetStatus(Dictionary<BrakeSystemComponent, PressureUnit> units);
@@ -93,6 +97,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         public abstract void Restore(BinaryReader inf);
 
         public abstract void PropagateBrakePressure(float elapsedClockSeconds);
+
+        public abstract void Update(float elapsedClockSeconds);
+
+        public abstract void InitializeFromCopy(BrakeSystem copy, bool diff);
+
+        public virtual BrakeSystem InitializeDefault() { return this; }
+
+        public virtual BrakeSystem InitializePresetClone(string type, BrakeModes mode) { return MemberwiseClone() as BrakeSystem; }
 
         /// <summary>
         /// Convert real pressure to a system specific internal pressure.
@@ -118,4 +130,26 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         [GetString("Low Pressure")] LowPressure,
         [GetString("Slow Direct")] SlowDirect
     };
+
+    public enum BrakeModes
+    {
+        G, // Goods
+        P, // Passanger
+        R, // Rapid
+        RR, // Rapid with non-working accelerator, <R>
+        R_MG, // Rapid with Magnetic Track Brakes, R+Mg
+
+        D, // Passanger Long train (ru)
+        K, // Passanger Short train (ru)
+
+        LE, // Light Engine
+        
+        AG, // Same as G
+        AP, // Same as P
+        AU, // Air Unfitted/unbraked
+
+        VB, // Vacuum Goods
+        VP, // Vacuum Passanger
+        VU, // Vacuum Unfitted/unbraked
+    }
 }
