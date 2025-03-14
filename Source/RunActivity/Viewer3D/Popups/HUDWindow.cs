@@ -1005,7 +1005,6 @@ namespace Orts.Viewer3D.Popups
                     Viewer.Catalog.GetString(""),
                     Viewer.Catalog.GetString(""),
                     Viewer.Catalog.GetString(""),
-                    Viewer.Catalog.GetString(""),
                     Viewer.Catalog.GetString("Handbrk"),
                     Viewer.Catalog.GetString("Conn"),
                     Viewer.Catalog.GetString("AnglCock")
@@ -1020,7 +1019,6 @@ namespace Orts.Viewer3D.Popups
                     Viewer.Catalog.GetString("BrkCyl"),
                     Viewer.Catalog.GetString("BrkPipe"),
                     Viewer.Catalog.GetString("VacRes"),
-                    Viewer.Catalog.GetString(""),
                     Viewer.Catalog.GetString(""),
                     Viewer.Catalog.GetString(""),
                     Viewer.Catalog.GetString(""),
@@ -1050,7 +1048,6 @@ namespace Orts.Viewer3D.Popups
                 Viewer.Catalog.GetString("Car"),
                 Viewer.Catalog.GetString("Type"),
                 Viewer.Catalog.GetString("Brk"),
-                Viewer.Catalog.GetString(""),
                 Viewer.Catalog.GetString(""),
                 Viewer.Catalog.GetString(""),
                 Viewer.Catalog.GetString(""),

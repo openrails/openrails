@@ -1866,8 +1866,8 @@ namespace Orts.Simulation
                 foreach (MSTSWagon wagon in train2.Cars)
                 {
                     // Update twice to ensure steady state conditions
-                    wagon.BrakeSystem.Update(30);
-                    wagon.BrakeSystem.Update(30);
+                    wagon.MSTSBrakeSystem.Update(30);
+                    wagon.MSTSBrakeSystem.Update(30);
                 }
             }
             bool inPath;
@@ -2037,8 +2037,8 @@ namespace Orts.Simulation
                     foreach (MSTSWagon wagon in selectedAsPlayer.Cars)
                     {
                         // Update twice to ensure steady state conditions
-                        wagon.BrakeSystem.Update(30);
-                        wagon.BrakeSystem.Update(30);
+                        wagon.MSTSBrakeSystem.Update(30);
+                        wagon.MSTSBrakeSystem.Update(30);
                     }
 
                     // and now let the former static train die

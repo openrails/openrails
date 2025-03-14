@@ -25,10 +25,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
     public class SingleTransferPipe : AirSinglePipe
     {
+
+        readonly static float OneAtmospherePSI = Bar.ToPSI(1);
+
         public SingleTransferPipe(TrainCar car)
             : base(car)
         {
             DebugType = "-";
+        }
+
+        public override void Parse(string lowercasetoken, STFReader stf)
+        {
+            switch (lowercasetoken)
+            {
+                // OpenRails specific parameters
+                case "wagon(brakepipevolume": BrakePipeVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
+            }
         }
 
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)
@@ -36,8 +48,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             base.Initialize(handbrakeOn, 0, 0, true);
             AuxResPressurePSI = 0;
             EmergResPressurePSI = 0;
-            (Car as MSTSWagon).RetainerPositions = 0;
-            (Car as MSTSWagon).EmergencyReservoirPresent = false;
+            RetainerPositions = 0;
+            EmergencyReservoirPresent = false;
             // Calculate brake pipe size depending upon whether vacuum or air braked
             if (Car.CarBrakeSystemType == "vacuum_piped")
             {
@@ -49,10 +61,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
         }
 
-        public override void InitializeFromCopy(BrakeSystem copy, bool diff)
+        public override void InitializeFromCopy(BrakeSystem copy)
         {
             SingleTransferPipe thiscopy = (SingleTransferPipe)copy;
-            BrakePipeVolumeM3 = diff && thiscopy.BrakePipeVolumeM3 == default ? BrakePipeVolumeM3 : thiscopy.BrakePipeVolumeM3;
+            BrakePipeVolumeM3 = thiscopy.BrakePipeVolumeM3;
+            HandBrakePresent = thiscopy.HandBrakePresent;
         }
 
         public override string GetStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
@@ -105,12 +118,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 FormatStrings.FormatPressure(Vac.FromPress(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, true),
                 string.Empty,
                 string.Empty, // Spacer because the state above needs 2 columns.
-                string.Empty,
-                string.Empty,
-                string.Empty,
-                string.Empty,
-                string.Empty,
-                string.Empty,
                 HandbrakePercent > 0 ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
                 FrontBrakeHoseConnected ? "I" : "T",
                 string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
@@ -131,7 +138,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 string.Empty,
                 string.Empty,
                 string.Empty, // Spacer because the state above needs 2 columns.
-                (Car as MSTSWagon).HandBrakePresent ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
+                HandBrakePresent ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
                 FrontBrakeHoseConnected ? "I" : "T",
                 string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
                 BleedOffValveOpen ? Simulator.Catalog.GetString("Open") : string.Empty,
