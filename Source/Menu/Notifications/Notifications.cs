@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009 - 2024 by the Open Rails project.
+// COPYRIGHT 2009 - 2024 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -24,12 +24,6 @@ namespace Menu.Notifications
     {
         public List<Notification> NotificationList = new List<Notification>();
         public List<Check> CheckList = new List<Check>();
-    }
-
-    class JsonInput
-    {
-        public List<Notification> NotificationList { get; set; }
-        public List<Check> CheckList { get; set; }
     }
 
     public class Notification
