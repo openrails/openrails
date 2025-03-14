@@ -326,7 +326,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override string[] GetDebugStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
             return new string[] {
-                DebugType + (BrakeMode == BrakeModes.NONE ? "" : "-" + BrakeMode),
+                DebugType + (BrakeMode == BrakeModes.Undefined ? "" : "-" + BrakeMode),
                 string.Format("{0}{1}",FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true), (Car as MSTSWagon).WheelBrakeSlideProtectionActive ? "???" : ""),
                 FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true),
                 FormatStrings.FormatPressure(AuxResPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.AuxiliaryReservoir], true),
@@ -2483,11 +2483,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override BrakeSystem InitializePresetClone(string type, BrakeModes mode)
         {
+            var newSystem = CreateNewLike(this, Car).InitializeDefault() as AirSinglePipe; // First come the preset definitions, then the parsed values
+
             if (type == "Knorr_KE")
             {
-                var newSystem = MemberwiseClone() as AirSinglePipe;
-                newSystem.InitializeDefault(); // First come the preset definitions, then the parsed values
-
                 switch (mode)
                 {
                     case BrakeModes.G:
@@ -2502,9 +2501,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         // Clasp brakes: 1.7 bar empty, 3.8 bar full
                         newSystem.ReferencePressurePSI = Car.BrakeShoeType == TrainCar.BrakeShoeTypes.Disc_Pads ? Bar.ToPSI(3) : Bar.ToPSI(1.7f); // ORTSBrakeForceReferencePressure (), P mode
                         newSystem.AuxCylVolumeRatio = 2.53f; // TripleValveRatio (), for 3.6 bar use 2.53, and for 3.8 bar use 3.20
-
-                        newSystem.InitializeFromCopy(this, true);
-                        return newSystem;
+                        break;
                     default:
                     case BrakeModes.P:
                         if ((Car as MSTSWagon).AuxiliaryReservoirPresent)
@@ -2529,9 +2526,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         newSystem.TwoStageSpeedDownMpS = -1; // ortstwostagedecreasingspeed ()
                         newSystem.ReferencePressurePSI = Car.BrakeShoeType == TrainCar.BrakeShoeTypes.Disc_Pads ? Bar.ToPSI(3) : Bar.ToPSI(3.6f); // ORTSBrakeForceReferencePressure (), P mode
                         newSystem.AuxCylVolumeRatio = 3.2f; // TripleValveRatio (), for 3.6 bar use 2.53, and for 3.8 bar use 3.20
-
-                        newSystem.InitializeFromCopy(this, true);
-                        return newSystem;
+                        break;
                     case BrakeModes.R:
                         newSystem.MaxReleaseRatePSIpS = Bar.ToPSI(0.24f); // MaxReleaseRate ()
                         newSystem.MaxApplicationRatePSIpS = Bar.ToPSI(0.60f); // MaxApplicationRate ()
@@ -2555,16 +2550,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                         newSystem.ReferencePressurePSI = Car.BrakeShoeType == TrainCar.BrakeShoeTypes.Disc_Pads ? Bar.ToPSI(3) : Bar.ToPSI(3.6f); // ORTSBrakeForceReferencePressure (), P mode
                         newSystem.AuxCylVolumeRatio = 3.2f; // TripleValveRatio (), for 3.6 bar use 2.53, and for 3.8 bar use 3.20
-
-                        newSystem.InitializeFromCopy(this, true);
-                        return newSystem;
+                        break;
                 }
             }
             else if (type == "Hik_s1")
             {
-                var newSystem = MemberwiseClone() as AirSinglePipe;
-                newSystem.InitializeDefault(); // First come the preset definitions, then the parsed values
-
                 newSystem.BrakeInsensitivityPSIpS = Bar.ToPSI(pS.FrompM(0.004f)); // ORTSBrakeInsensitivity ()
                 newSystem.InitialApplicationThresholdPSI = Bar.ToPSI(0.2f); // ORTSInitialApplicationThreshold ()
                 newSystem.EmergencyValveActuationRatePSIpS = Bar.ToPSI(1.2f); // ORTSEmergencyValveActuationRate ()
@@ -2586,7 +2576,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         newSystem.TwoStageSpeedUpMpS = -1; // ORTSTwoStageIncreasingSpeed ()
                         newSystem.TwoStageSpeedDownMpS = -1; // ortstwostagedecreasingspeed ()
                         newSystem.AuxCylVolumeRatio = 2.67f; // TripleValveRatio ()
-                        return newSystem;
+                        break;
                     default:
                     case BrakeModes.P:
                         newSystem.MaxReleaseRatePSIpS = Bar.ToPSI(0.24f); // MaxReleaseRate ()
@@ -2598,7 +2588,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         newSystem.TwoStageSpeedUpMpS = -1; // ORTSTwoStageIncreasingSpeed ()
                         newSystem.TwoStageSpeedDownMpS = -1; // ortstwostagedecreasingspeed ()
                         newSystem.AuxCylVolumeRatio = 2.67f; // TripleValveRatio ()
-                        return newSystem;
+                        break;
                     case BrakeModes.R:
                         newSystem.MaxReleaseRatePSIpS = Bar.ToPSI(0.24f); // MaxReleaseRate ()
                         newSystem.MaxApplicationRatePSIpS = Bar.ToPSI(0.6f); // MaxApplicationRate ()
@@ -2609,7 +2599,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         newSystem.TwoStageSpeedUpMpS = MpS.FromKpH(55); // ORTSTwoStageIncreasingSpeed ()
                         newSystem.TwoStageSpeedDownMpS = MpS.FromKpH(40); // ortstwostagedecreasingspeed ()
                         newSystem.AuxCylVolumeRatio = 2.67f; // TripleValveRatio ()
-                        return newSystem;
+                        break;
                     case BrakeModes.RR:
                         newSystem.MaxReleaseRatePSIpS = Bar.ToPSI(0.24f); // MaxReleaseRate ()
                         newSystem.MaxApplicationRatePSIpS = Bar.ToPSI(1.8f); // MaxApplicationRate ()
@@ -2620,14 +2610,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         newSystem.TwoStageSpeedUpMpS = MpS.FromKpH(55); // ORTSTwoStageIncreasingSpeed ()
                         newSystem.TwoStageSpeedDownMpS = MpS.FromKpH(40); // ortstwostagedecreasingspeed ()
                         newSystem.AuxCylVolumeRatio = 2.67f; // TripleValveRatio ()
-                        return newSystem;
+                        break;
                 }
             }
             else if (type == "Westinghouse_K2")
             {
-                var newSystem = MemberwiseClone() as AirSinglePipe;
-                newSystem.InitializeDefault(); // First come the preset definitions, then the parsed values
-
                 newSystem.AuxCylVolumeRatio = 2.5f; // TripleValveRatio ()
                 newSystem.BrakeInsensitivityPSIpS = Bar.ToPSI(pS.FrompM(0.45f)); // ORTSBrakeInsensitivity ()
                 newSystem.InitialApplicationThresholdPSI = Bar.ToPSI(0.2f); // ORTSInitialApplicationThreshold ()
@@ -2643,7 +2630,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         newSystem.QuickServiceLimitPSI = Bar.ToPSI(1); // OrtsQuickServiceLimit ()
                         newSystem.QuickServiceApplicationRatePSIpS = Bar.ToPSI(1); // OrtsQuickServiceApplicationRate ()
                         newSystem.QuickServiceVentRatePSIpS = Bar.ToPSI(0.15f); // ORTSQuickServiceVentRate ()
-                        return newSystem;
+                        break;
                     default:
                     case BrakeModes.P:
                         newSystem.MaxReleaseRatePSIpS = Bar.ToPSI(0.44f); // MaxReleaseRate ()
@@ -2651,14 +2638,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         newSystem.QuickServiceLimitPSI = -1; // OrtsQuickServiceLimit ()
                         newSystem.QuickServiceApplicationRatePSIpS = 0.0001f; // OrtsQuickServiceApplicationRate ()
                         newSystem.QuickServiceVentRatePSIpS = 0.0001f; // ORTSQuickServiceVentRate ()
-                        return newSystem;
+                        break;
                 }
             }
             else if (type == "Oerlikon_LST")
             {
-                var newSystem = MemberwiseClone() as AirSinglePipe;
-                newSystem.InitializeDefault(); // First come the preset definitions, then the parsed values
-
                 switch (mode)
                 {
                     case BrakeModes.R:
@@ -2673,7 +2657,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         newSystem.TwoStageSpeedUpMpS = MpS.FromKpH(50); // ORTSTwoStageIncreasingSpeed ()
                         newSystem.TwoStageSpeedDownMpS = MpS.FromKpH(40); // ortstwostagedecreasingspeed ()
                         newSystem.AuxCylVolumeRatio = 2.67f; // TripleValveRatio ()
-                        return newSystem;
+                        break;
                     default:
                     case BrakeModes.P:
                         newSystem.MaxReleaseRatePSIpS = Bar.ToPSI(0.24f); // MaxReleaseRate ()
@@ -2685,7 +2669,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         newSystem.TwoStageSpeedUpMpS = -1; // ORTSTwoStageIncreasingSpeed ()
                         newSystem.TwoStageSpeedDownMpS = -1; // ortstwostagedecreasingspeed ()
                         newSystem.AuxCylVolumeRatio = 2.67f; // TripleValveRatio ()
-                        return newSystem;
+                        break;
                     case BrakeModes.G:
                         newSystem.MaxReleaseRatePSIpS = Bar.ToPSI(0.1f); // MaxReleaseRate ()
                         newSystem.MaxApplicationRatePSIpS = Bar.ToPSI(0.13f); // MaxApplicationRate ()
@@ -2696,14 +2680,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         newSystem.TwoStageSpeedUpMpS = -1; // ORTSTwoStageIncreasingSpeed ()
                         newSystem.TwoStageSpeedDownMpS = -1; // ortstwostagedecreasingspeed ()
                         newSystem.AuxCylVolumeRatio = 2.67f; // TripleValveRatio ()
-                        return newSystem;
+                        break;
                 }
             }
             else if (type == "Charmilles")
             {
-                var newSystem = MemberwiseClone() as AirSinglePipe;
-                newSystem.InitializeDefault(); // First come the preset definitions, then the parsed values
-
                 switch (mode)
                 {
                     case BrakeModes.R:
@@ -2716,7 +2697,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         newSystem.TwoStageSpeedUpMpS = MpS.FromKpH(50); // ORTSTwoStageIncreasingSpeed ()
                         newSystem.TwoStageSpeedDownMpS = MpS.FromKpH(40); // ortstwostagedecreasingspeed ()
                         newSystem.AuxCylVolumeRatio = 3.5f; // TripleValveRatio ()
-                        return newSystem;
+                        break;
                     default:
                     case BrakeModes.P:
                         newSystem.MaxReleaseRatePSIpS = Bar.ToPSI(0.22f); // MaxReleaseRate ()
@@ -2728,14 +2709,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         newSystem.TwoStageSpeedUpMpS = -1; // ORTSTwoStageIncreasingSpeed ()
                         newSystem.TwoStageSpeedDownMpS = -1; // ortstwostagedecreasingspeed ()
                         newSystem.AuxCylVolumeRatio = 3.5f; // TripleValveRatio ()
-                        return newSystem;
+                        break;
                 }
             }
             else if (type == "Oerlikon_Est_3d")
             {
-                var newSystem = MemberwiseClone() as AirSinglePipe;
-                newSystem.InitializeDefault(); // First come the preset definitions, then the parsed values
-
                 switch (mode)
                 {
                     case BrakeModes.R:
@@ -2748,7 +2726,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         newSystem.TwoStageSpeedUpMpS = MpS.FromKpH(50); // ORTSTwoStageIncreasingSpeed ()
                         newSystem.TwoStageSpeedDownMpS = MpS.FromKpH(40); // ortstwostagedecreasingspeed ()
                         newSystem.AuxCylVolumeRatio = 3.5f; // TripleValveRatio ()
-                        return newSystem;
+                        break;
                     default:
                     case BrakeModes.P:
                         newSystem.MaxReleaseRatePSIpS = Bar.ToPSI(0.22f); // MaxReleaseRate ()
@@ -2760,14 +2738,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         newSystem.TwoStageSpeedUpMpS = -1; // ORTSTwoStageIncreasingSpeed ()
                         newSystem.TwoStageSpeedDownMpS = -1; // ortstwostagedecreasingspeed ()
                         newSystem.AuxCylVolumeRatio = 3.5f; // TripleValveRatio ()
-                        return newSystem;
+                        break;
                 }
             }
             else if (type == "Dako")
             {
-                var newSystem = MemberwiseClone() as AirSinglePipe;
-                newSystem.InitializeDefault(); // First come the preset definitions, then the parsed values
-
                 switch (mode)
                 {
                     case BrakeModes.R:
@@ -2780,7 +2755,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         newSystem.TwoStageSpeedUpMpS = MpS.FromKpH(50); // ORTSTwoStageIncreasingSpeed ()
                         newSystem.TwoStageSpeedDownMpS = MpS.FromKpH(40); // ortstwostagedecreasingspeed ()
                         newSystem.AuxCylVolumeRatio = 3.5f; // TripleValveRatio ()
-                        return newSystem;
+                        break;
                     default:
                     case BrakeModes.P:
                         newSystem.MaxReleaseRatePSIpS = Bar.ToPSI(0.19f); // MaxReleaseRate ()
@@ -2792,10 +2767,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         newSystem.TwoStageSpeedUpMpS = -1; // ORTSTwoStageIncreasingSpeed ()
                         newSystem.TwoStageSpeedDownMpS = -1; // ortstwostagedecreasingspeed ()
                         newSystem.AuxCylVolumeRatio = 3.5f; // TripleValveRatio ()
-                        return newSystem;
+                        break;
                 }
             }
-            return base.InitializePresetClone(type, mode);
+
+            newSystem.InitializeFromCopy(this, true);
+            return newSystem;
         }
     }
 }

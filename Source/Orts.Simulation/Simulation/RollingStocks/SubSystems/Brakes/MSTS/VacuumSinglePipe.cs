@@ -189,7 +189,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (LocomotiveSteamBrakeFitted)
             {
                 return new string[] {
-                "S" + (BrakeMode == BrakeModes.NONE ? "" : "-" + BrakeMode),
+                "S" + (BrakeMode == BrakeModes.Undefined ? "" : "-" + BrakeMode),
                 string.Format("{0:F0}", FormatStrings.FormatPressure(SteamBrakeCylinderPressurePSI, PressureUnit.PSI,  PressureUnit.PSI, true)),
                 string.Empty,
                 string.Empty,
@@ -210,7 +210,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
 
                 return new string[] {
-                "1V" + (BrakeMode == BrakeModes.NONE ? "" : "-" + BrakeMode),
+                "1V" + (BrakeMode == BrakeModes.Undefined ? "" : "-" + BrakeMode),
                 FormatStrings.FormatPressure(Vac.FromPress(CylPressurePSIA), PressureUnit.InHg, PressureUnit.InHg, true),
                 FormatStrings.FormatPressure(Vac.FromPress(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, true),
                 FormatStrings.FormatPressure(Vac.FromPress(VacResPressureAdjPSIA()), PressureUnit.InHg, PressureUnit.InHg, true),

@@ -1141,11 +1141,14 @@ namespace Orts.Simulation.RollingStocks
             {
                 foreach (var mode in BrakeModeNames)
                 {
-                    if (Enum.TryParse(mode, out BrakeModes modeEnum) && BrakeSystems.TryGetValue(modeEnum, out var brakeSystem))
-                        BrakeSystems[modeEnum] = brakeSystem.InitializePresetClone(BrakeModePreset, modeEnum);
-                    else
-                        BrakeSystems.Add(modeEnum, MSTSBrakeSystem.Create(CarBrakeSystemType, this)
-                            .InitializeDefault().InitializePresetClone(BrakeModePreset, modeEnum));
+                    if (Enum.TryParse(mode, out BrakeModes modeEnum))
+                    {
+                        if (BrakeSystems.TryGetValue(modeEnum, out var brakeSystem))
+                            BrakeSystems[modeEnum] = brakeSystem.InitializePresetClone(BrakeModePreset, modeEnum);
+                        else
+                            BrakeSystems.Add(modeEnum, MSTSBrakeSystem.Create(CarBrakeSystemType, this)
+                                .InitializeDefault().InitializePresetClone(BrakeModePreset, modeEnum));
+                    }
                 }
             }
             BrakeSystem = BrakeSystem ?? MSTSBrakeSystem.Create(CarBrakeSystemType, this);
@@ -1172,6 +1175,16 @@ namespace Orts.Simulation.RollingStocks
                         var immediateRelease = BrakeSystem.GetCylPressurePSI() == 0;
                         BrakeSystemAlt.Initialize(handbrakeOn, maxPressurePSI, fullServPressurePSI, immediateRelease);
                     }
+                    BrakeSystemAlt.FrontBrakeHoseConnected = BrakeSystem.FrontBrakeHoseConnected;
+                    BrakeSystemAlt.RearBrakeHoseConnected = BrakeSystem.RearBrakeHoseConnected;
+                    BrakeSystemAlt.AngleCockAOpen = BrakeSystem.AngleCockAOpen;
+                    BrakeSystemAlt.AngleCockAOpenAmount = BrakeSystem.AngleCockAOpenAmount;
+                    BrakeSystemAlt.AngleCockAOpenTime = BrakeSystem.AngleCockAOpenTime;
+                    BrakeSystemAlt.AngleCockBOpen = BrakeSystem.AngleCockBOpen;
+                    BrakeSystemAlt.AngleCockBOpenAmount = BrakeSystem.AngleCockBOpenAmount;
+                    BrakeSystemAlt.AngleCockBOpenTime = BrakeSystem.AngleCockBOpenTime;
+                    BrakeSystemAlt.BleedOffValveOpen = BrakeSystem.BleedOffValveOpen;
+
                     (BrakeSystem, BrakeSystemAlt) = (BrakeSystemAlt, BrakeSystem);
                 }
                 BrakeSystem.InitializeFromCopy(brakeSystem, true);

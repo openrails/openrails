@@ -105,7 +105,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
 
         public virtual BrakeSystem InitializeDefault() { return this; }
 
-        public virtual BrakeSystem InitializePresetClone(string type, BrakeModes mode) { return MemberwiseClone() as BrakeSystem; }
+        public virtual BrakeSystem InitializePresetClone(string type, BrakeModes mode) { return CreateNewLike(this, Car); }
 
         /// <summary>
         /// Convert real pressure to a system specific internal pressure.
@@ -160,7 +160,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
 
     public enum BrakeModes
     {
-        NONE,
+        Undefined,
         G, // Goods
         P, // Passanger
         R, // Rapid
