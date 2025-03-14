@@ -35,9 +35,8 @@ namespace Menu.Notifications
         public List<string> IncludeIfNot { get; set; }
         public List<Item> ItemList { get; set; }
     }
-    class Record : Item
+    class Record : ValueItem
     {
-        public string Value { get; set; }
     }
     class Text : Item
     {
@@ -46,25 +45,26 @@ namespace Menu.Notifications
     {
         public new string Color { get; set; } = "blue";
     }
-    class Link : Item
+    class Link : ValueItem
     {
-        public string Value { get; set; }
         public string Url { get; set; }
         public string StableUrl { get; set; }
         public string TestingUrl { get; set; }
         public string UnstableUrl { get; set; }
     }
-    class Dialog : Item
+    class Dialog : ValueItem
     {
-        public string Value { get; set; }
         public string Form { get; set; }
     }
-    class Update : Item
+    class Update : ValueItem
     {
-        public string Value { get; set; }
         public string UpdateMode { get; set; }
     }
-    public class Item
+    abstract class ValueItem : Item
+    {
+        public string Value { get; set; }
+    }
+    public abstract class Item
     {
         public List<string> IncludeIf { get; set; }
         public List<string> IncludeIfNot { get; set; }
@@ -110,13 +110,13 @@ namespace Menu.Notifications
         public abstract bool IsMatch();
     }
 
-    public class ParameterValue
+    class ParameterValue
     {
         public string Parameter { get; set; }    // installed_version, direct3d, runtime, system, memory, cpu, gpu
         public string Value { get; set; }       // {{new_version}}, {{10_0}}
     }
 
-    public class OverrideParameterList
+    class OverrideParameterList
     {
         public List<ParameterValue> ParameterValueList = new List<ParameterValue>();
     }
