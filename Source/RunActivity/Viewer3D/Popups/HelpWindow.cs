@@ -20,8 +20,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
+using LibGit2Sharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation;
@@ -30,6 +32,11 @@ using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Settings;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using Orts.Formats.Msts;
+using SharpFont;
+using static Orts.Viewer3D.WebServices.TrainCarOperationsWebpage.OperationsSend;
+using SharpDX.Direct3D9;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -62,6 +69,14 @@ namespace Orts.Viewer3D.Popups
         StreamWriter wDbfEval;//Debrief eval
         public static float DbfEvalDistanceTravelled = 0;//Debrief eval
 
+        // for Train Info tab
+        private Train LastPlayerTrain = null;
+        private int LastPlayerTrainCarCount = 0;
+        private static Texture2D TrainInfoSpriteSheet = null;
+        //private struct CarInfo { public float MassKg; public bool IsEngine; }
+        //private CarInfo[] CarMass = null;  // TODO: Does not need to persist beyond method. Use List<T>(size) instead.
+        private class CarInfo { public readonly float MassKg; public readonly bool IsEngine; public CarInfo(float mass, bool isEng) { MassKg = mass; IsEngine = isEng; } }
+
         List<TabData> Tabs = new List<TabData>();
         int ActiveTab;
 
@@ -74,7 +89,7 @@ namespace Orts.Viewer3D.Popups
         }
 
         public HelpWindow(WindowManager owner)
-            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 37, Window.DecorationSize.Y + owner.TextFontDefault.Height * 24, Viewer.Catalog.GetString("Help"))
+            : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 42, Window.DecorationSize.Y + owner.TextFontDefault.Height * 24, Viewer.Catalog.GetString("Help"))
         {
             Tabs.Add(new TabData(Tab.KeyboardShortcuts, Viewer.Catalog.GetString("Key Commands"), (cl) =>
             {
@@ -574,6 +589,22 @@ namespace Orts.Viewer3D.Popups
                     ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures.Length > 0)
                 {
                     scrollbox.Add(new TextFlow(scrollbox.RemainingWidth, ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures));
+                }
+            }));
+            Tabs.Add(new TabData(Tab.TrainInfo, Viewer.Catalog.GetString("Train Info"), (cl) =>
+            {
+                var labelWidth = cl.TextHeight * 11;
+                var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
+                if (Owner.Viewer.PlayerTrain != null)
+                {
+                    string name = Owner.Viewer.PlayerTrain.Name;
+                    if (!String.IsNullOrEmpty(Owner.Viewer.Simulator.conFileName))
+                        name += "    (" + Viewer.Catalog.GetString("created from") + " " + Path.GetFileName(Owner.Viewer.Simulator.conFileName) + ")";
+                    var line = scrollbox.AddLayoutHorizontalLineOfText();
+                    line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Name:"), LabelAlignment.Left));
+                    line.Add(new Label(line.RemainingWidth, line.RemainingHeight, name, LabelAlignment.Left));
+
+                    if (Owner.Viewer.PlayerTrain.Cars != null) { AddAggregatedTrainInfo(Owner.Viewer.PlayerTrain, scrollbox, labelWidth); }
                 }
             }));
         }
@@ -1152,6 +1183,198 @@ namespace Orts.Viewer3D.Popups
             if (!lDebriefEvalFile) wDbfEval.WriteLine();
         }
 
+        /// <summary>
+        /// Add aggregated info to the Train Info layout.
+        /// Loops through the train cars and aggregates the info.
+        /// </summary>
+        private void AddAggregatedTrainInfo(Train playerTrain, ControlLayout scrollbox, int labelWidth)
+        {
+            string numEngines = ""; // using "+" between DPU sets
+            int numCars = 0;
+            int numAxles = 0;
+            var massKg = playerTrain.MassKg;
+            string sectionMass = ""; // using "  +  " between wagon sets
+            var lengthM = playerTrain.Length;
+            var maxSpeedMps = playerTrain.TrainMaxSpeedMpS;
+            float totPowerW = 0f;
+            string sectionTractiveForce = ""; // using "  +  " between DPU sets
+            float maxBrakeForceN = 0f;
+            float lowestCouplerStrengthN = 9.999e8f;  // impossible high force
+            float lowestDerailForceN = 9.999e8f;  // impossible high force
+
+            int engCount = 0; string countSeparator = ""; // when set, indicates that subsequent engines are in a separate block
+            float engForceN = 0f; string forceSeparator = ""; // when set, indicates that subsequent engines are in a separate block
+            float wagMassKg = 0f; string massSeparator = ""; // when set, indicates that subsequent engines are in a separate block
+            int numOperativeBrakes = 0;
+            bool isMetric = false; bool isUK = false;  // isImperial* does not seem to be used in simulation
+
+            if (TrainInfoSpriteSheet == null) { TrainInfoSpriteSheet = SharedTextureManager.Get(Owner.Viewer.RenderProcess.GraphicsDevice, Path.Combine(Owner.Viewer.ContentPath, "TrainInfoSprites.png")); }
+            const int spriteWidth = 6; const int spriteHeight = 26;
+            var carInfoList = new List<CarInfo>(playerTrain.Cars.Count);
+
+            foreach (var car in playerTrain.Cars)
+            {
+                // ignore (legacy) EOT
+                if (car.WagonType == TrainCar.WagonTypes.EOT || car.CarLengthM < 1.1f) { continue; }
+
+                var wag = car is MSTSWagon ? (MSTSWagon)car : null;
+                var eng = car is MSTSLocomotive ? (MSTSLocomotive)car : null;
+
+                var isEng = (car.WagonType == TrainCar.WagonTypes.Engine && eng != null && eng.MaxForceN > 25000);  // count legacy driving trailers as wagons
+
+                if (car.IsMetric) { isMetric = true; }; if (car.IsUK) { isUK = true; }
+
+                if (isEng)
+                {
+                    engCount++;
+                    numAxles += eng.LocoNumDrvAxles + eng.GetWagonNumAxles();
+                    totPowerW += eng.MaxPowerW;
+                    engForceN += eng.MaxForceN;
+
+                    // hanlde transition from wagons to engines
+                    if (wagMassKg > 0)
+                    {
+                        sectionMass += massSeparator + FormatStrings.FormatLargeMass(wagMassKg, isMetric, isUK);
+                        wagMassKg = 0f; massSeparator = "  +  ";
+                    }
+                }
+                else if (wag != null)
+                {
+                    numCars++;
+                    numAxles += wag.GetWagonNumAxles();
+                    wagMassKg += wag.MassKG;
+
+                    // handle transition from engines to wagons
+                    if (engCount > 0 || (engCount == 0 && numCars == 0))
+                    {
+                        numEngines += countSeparator + engCount.ToString();
+                        engCount = 0; countSeparator = "+";
+                        sectionTractiveForce += forceSeparator + FormatStrings.FormatForce(engForceN, isMetric);
+                        engForceN = 0f; forceSeparator = "  +  ";
+                    }
+                }
+
+                // wag and eng
+                if (wag != null)
+                {
+                    maxBrakeForceN += wag.MaxBrakeForceN;
+                    var couplerStrength = GetMinCouplerStrenght(wag);
+                    if (couplerStrength < lowestCouplerStrengthN) { lowestCouplerStrengthN = couplerStrength; }
+                    var derailForce = GetDerailForce(wag);
+                    if (derailForce < lowestDerailForceN) { lowestDerailForceN = derailForce; }
+                    if (wag.MaxBrakeForceN > 0) { numOperativeBrakes++; }
+
+                    carInfoList.Add(new CarInfo(wag.MassKG, isEng));
+                }
+            }
+
+            if (engCount > 0) { numEngines = numEngines + countSeparator + engCount.ToString(); }
+            if (String.IsNullOrEmpty(numEngines)) { numEngines = "0"; }
+            if (engForceN > 0) { sectionTractiveForce += forceSeparator + FormatStrings.FormatForce(engForceN, isMetric); }
+            if (wagMassKg > 0) { sectionMass += massSeparator + FormatStrings.FormatLargeMass(wagMassKg, isMetric, isUK); }
+
+            var line = scrollbox.AddLayoutHorizontalLineOfText();
+            line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Number of Engines:"), LabelAlignment.Left));
+            line.Add(new Label(line.RemainingWidth, line.RemainingHeight, numEngines, LabelAlignment.Left));
+
+            line = scrollbox.AddLayoutHorizontalLineOfText();
+            line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Number of Cars:"), LabelAlignment.Left));
+            line.Add(new Label(line.RemainingWidth, line.RemainingHeight, numCars.ToString(), LabelAlignment.Left));
+
+            line = scrollbox.AddLayoutHorizontalLineOfText();
+            line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Number of Axles:"), LabelAlignment.Left));
+            line.Add(new Label(line.RemainingWidth, line.RemainingHeight, numAxles.ToString(), LabelAlignment.Left));
+
+            line = scrollbox.AddLayoutHorizontalLineOfText();
+            line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Total Weight:"), LabelAlignment.Left));
+            string massValue = FormatStrings.FormatLargeMass(massKg, isMetric, isUK) + "    (" + sectionMass + ")";
+            line.Add(new Label(line.RemainingWidth, line.RemainingHeight, massValue, LabelAlignment.Left));
+
+            line = scrollbox.AddLayoutHorizontalLineOfText();
+            line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Total Length:"), LabelAlignment.Left));
+            line.Add(new Label(line.RemainingWidth, line.RemainingHeight, FormatStrings.FormatShortDistanceDisplay(lengthM, isMetric), LabelAlignment.Left));
+
+            line = scrollbox.AddLayoutHorizontalLineOfText();
+            line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Maximum Speed:"), LabelAlignment.Left));
+            line.Add(new Label(line.RemainingWidth, line.RemainingHeight, FormatStrings.FormatSpeedLimit(maxSpeedMps, isMetric), LabelAlignment.Left));
+
+            scrollbox.AddHorizontalSeparator();
+
+            line = scrollbox.AddLayoutHorizontalLineOfText();
+            line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Total Power:"), LabelAlignment.Left));
+            line.Add(new Label(line.RemainingWidth, line.RemainingHeight, FormatStrings.FormatPower(totPowerW, isMetric, false, false), LabelAlignment.Left));
+
+            line = scrollbox.AddLayoutHorizontalLineOfText();
+            line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Max Tractive Effort:"), LabelAlignment.Left));
+            line.Add(new Label(line.RemainingWidth, line.RemainingHeight, sectionTractiveForce, LabelAlignment.Left));
+
+            if (!isMetric)
+            {
+                float hpt = massKg > 0f ? W.ToHp(totPowerW) / Kg.ToTUS(massKg) : 0f;
+                line = scrollbox.AddLayoutHorizontalLineOfText();
+                line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Horespower per Ton:"), LabelAlignment.Left));
+                line.Add(new Label(line.RemainingWidth, line.RemainingHeight, string.Format("{0:0.0}", hpt), LabelAlignment.Left));
+
+                float tpob = numOperativeBrakes > 0 ? Kg.ToTUS(massKg) / numOperativeBrakes : 0;
+                line = scrollbox.AddLayoutHorizontalLineOfText();
+                line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Tons per Operative Brake:"), LabelAlignment.Left));
+                line.Add(new Label(line.RemainingWidth, line.RemainingHeight, string.Format("{0:0}", tpob), LabelAlignment.Left));
+            }
+
+            line = scrollbox.AddLayoutHorizontalLineOfText();
+            line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Lowest Coupler Strength:"), LabelAlignment.Left));
+            line.Add(new Label(line.RemainingWidth, line.RemainingHeight, FormatStrings.FormatForce(lowestCouplerStrengthN, isMetric), LabelAlignment.Left));
+
+            line = scrollbox.AddLayoutHorizontalLineOfText();
+            line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Lowest Derail Force:"), LabelAlignment.Left));
+            line.Add(new Label(line.RemainingWidth, line.RemainingHeight, FormatStrings.FormatForce(lowestDerailForceN, isMetric), LabelAlignment.Left));
+
+            scrollbox.AddHorizontalSeparator();
+
+            // weight graph
+            line = scrollbox.AddLayoutHorizontalLineOfText();
+            line.Add(new Label(line.RemainingWidth, line.RemainingHeight, Viewer.Catalog.GetString("Car Weight (front on left):"), LabelAlignment.Left));
+            scrollbox.AddSpace(scrollbox.RemainingWidth, 2);
+            var hscrollbox = scrollbox.AddLayoutScrollboxHorizontal(SystemInformation.HorizontalScrollBarHeight + spriteHeight + 2);
+            var vbox = hscrollbox.AddLayoutVertical(carInfoList.Count * spriteWidth + 2);
+            var weightbox = vbox.AddLayoutHorizontal(spriteHeight + 2);
+            foreach (var car in carInfoList)
+            {
+                int spriteIdx = (int)Math.Floor(car.MassKg / 15000f);
+                if (spriteIdx < 0) { spriteIdx = 0; } else if (spriteIdx > 11) { spriteIdx = 11; }
+                var image = new Image(spriteWidth, spriteHeight);
+                if (car.IsEngine) { image.Source = new Rectangle(spriteIdx * spriteWidth, 0, spriteWidth, spriteHeight); }
+                else { image.Source = new Rectangle(spriteIdx * spriteWidth, spriteHeight, spriteWidth, spriteHeight); }
+                image.Texture = TrainInfoSpriteSheet;
+                weightbox.Add(image);
+            }
+        }
+
+        /// <summary>
+        /// Get the lowest coupler strength for a car.
+        /// </summary>
+        private float GetMinCouplerStrenght(MSTSWagon wag)
+        {
+            float couplerStrength = 1e10f;  // default from TrainCar.GetCouplerBreak2N()
+            if (wag.Couplers.Count > 1 && wag.Couplers[1].Break2N < couplerStrength) { couplerStrength = wag.Couplers[1].Break2N; }
+            else if (wag.Couplers.Count > 0 && wag.Couplers[0].Break2N < couplerStrength) { couplerStrength = wag.Couplers[0].Break2N; }
+            if (couplerStrength < 99f) { couplerStrength = 1e10f; }  // use default if near zero
+            return couplerStrength;
+        }
+
+        /// <summary>
+        /// Calculate the lowest force it takes to derail the car (on a curve).
+        /// It is equivalent to the vertical force at the wheel.
+        /// </summary>
+        private float GetDerailForce(MSTSWagon wag)
+        {
+            // see TotalWagonVerticalDerailForceN in TrainCar.cs
+            float derailForce = 2.0e5f;  // 45k lbf on wheel
+            int numWheels = wag.GetWagonNumAxles() * 2;
+            if (numWheels > 2) { derailForce = wag.MassKG / numWheels * wag.GetGravitationalAccelerationMpS2(); }
+            return derailForce;
+        }
+
         public override void TabAction()
         {
             ActiveTab = (ActiveTab + 1) % Tabs.Count;
@@ -1195,6 +1418,7 @@ namespace Orts.Viewer3D.Popups
             ActivityEvaluation,
             TimetableBriefing,
             LocomotiveProcedures,
+            TrainInfo,
         }
 
         class TabData
@@ -1250,6 +1474,14 @@ namespace Orts.Viewer3D.Popups
                 if (train.DbfEvalValueChanged)//Debrief Eval
                 {
                     train.DbfEvalValueChanged = false;//Debrief Eval
+                    Layout();
+                }
+            }
+            else if (Tabs[ActiveTab].Tab == Tab.TrainInfo && Owner.Viewer.PlayerTrain != null)
+            {
+                if (LastPlayerTrain == null || Owner.Viewer.PlayerTrain != LastPlayerTrain || LastPlayerTrainCarCount != Owner.Viewer.PlayerTrain.Cars.Count)
+                {
+                    LastPlayerTrain = Owner.Viewer.PlayerTrain; LastPlayerTrainCarCount = Owner.Viewer.PlayerTrain.Cars.Count;
                     Layout();
                 }
             }
