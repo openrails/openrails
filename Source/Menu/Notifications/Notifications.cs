@@ -1,4 +1,4 @@
-// COPYRIGHT 2009 - 2024 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2024 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
-
 
 namespace Menu.Notifications
 {
@@ -24,6 +24,11 @@ namespace Menu.Notifications
     {
         public List<Notification> NotificationList = new List<Notification>();
         public List<Check> CheckList = new List<Check>();
+        internal void ReplaceParameters(Func<string, string> replaceFunc)
+        {
+            NotificationList?.ForEach(item => item.ReplaceParameters(replaceFunc));
+            CheckList?.ForEach(item => item.ReplaceParameters(replaceFunc));
+        }
     }
 
     public class Notification
@@ -33,6 +38,12 @@ namespace Menu.Notifications
         public List<string> IncludeIf { get; set; }
         public List<string> IncludeIfNot { get; set; }
         public List<Item> ItemList { get; set; }
+        internal void ReplaceParameters(Func<string, string> replaceFunc)
+        {
+            Date = replaceFunc(Date);
+            Title = replaceFunc(Title);
+            ItemList?.ForEach(item => item.ReplaceParameters(replaceFunc));
+        }
     }
     class Record : ValueItem
     {
@@ -61,6 +72,11 @@ namespace Menu.Notifications
     abstract class ValueItem : Item
     {
         public string Value { get; set; }
+        internal override void ReplaceParameters(Func<string, string> replaceFunc)
+        {
+            base.ReplaceParameters(replaceFunc);
+            Value = replaceFunc(Value);
+        }
     }
     public abstract class Item
     {
@@ -69,17 +85,29 @@ namespace Menu.Notifications
         public string Label { get; set; }
         public string Color { get; set; } = "black";
         public int Indent { get; set; } = 140;
+        internal virtual void ReplaceParameters(Func<string, string> replaceFunc)
+        {
+            Label = replaceFunc(Label);
+        }
     }
 
     public class Check
     {
         public string Id { get; set; }
         public List<AnyOf> AnyOfList { get; set; }
+        internal void ReplaceParameters(Func<string, string> replaceFunc)
+        {
+            AnyOfList?.ForEach(item => item.ReplaceParameters(replaceFunc));
+        }
     }
 
     public class AnyOf
     {
         public List<Criteria> AllOfList { get; set; }
+        internal void ReplaceParameters(Func<string, string> replaceFunc)
+        {
+            AllOfList?.ForEach(item => item.ReplaceParameters(replaceFunc));
+        }
     }
 
     // These criteria are all doing an actual comparison
@@ -106,6 +134,11 @@ namespace Menu.Notifications
         public string Property { get; set; }    // installed_version, direct3d, runtime, system, memory, cpu, gpu
         public string Value { get; set; }       // {{new_version}}, {{10_0}}
         public abstract bool IsMatch();
+        internal void ReplaceParameters(Func<string, string> replaceFunc)
+        {
+            Property = replaceFunc(Property);
+            Value = replaceFunc(Value);
+        }
     }
 
     class ParameterValue
