@@ -112,11 +112,9 @@ namespace Orts.Simulation.Timetables
             filenames = GetFilenames(arguments[0]);
 
             // Get file contents as strings
-            Trace.Write("\n");
             foreach (string filePath in filenames)
             {
                 // Get contents as strings
-                Trace.Write("TT File : " + filePath + "\n");
                 var fileContents = new TimetableReader(filePath);
 
 #if DEBUG_TIMETABLE
@@ -128,9 +126,7 @@ namespace Orts.Simulation.Timetables
             }
 
             // Read and pre-process routes
-            Trace.Write(" TTROUTES:" + Paths.Count.ToString() + " ");
             loadPathNoFailure = PreProcessRoutes(cancellation);
-            Trace.Write(" TTTRAINS:" + trainInfoList.Count.ToString() + " ");
 
             // Get startinfo for player train
             playerTrain = GetPlayerTrain(ref trainInfoList, arguments);
@@ -2430,6 +2426,7 @@ namespace Orts.Simulation.Timetables
                     car = RollingStock.Load(simulator, TTTrain, wagonFilePath);
                     car.UiD = wagon.UiD;
                     car.Flipped = consistDetails.reversed ? !wagon.Flip : wagon.Flip;
+                    car.FreightAnimations?.Load(wagon.LoadDataList);
                     car.CarID = string.Concat(TTTrain.Number.ToString("0###"), "_", carId.ToString("0##"));
                     carId++;
                     car.OrgConsist = consistDetails.consistFile.ToLower();

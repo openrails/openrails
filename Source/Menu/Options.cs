@@ -32,12 +32,13 @@ using ORTS.Common.Input;
 using ORTS.Settings;
 using ORTS.Updater;
 
-namespace ORTS
+namespace Menu
 {
     public partial class OptionsForm : Form
     {
         readonly UserSettings Settings;
         readonly UpdateManager UpdateManager;
+        readonly TelemetryManager TelemetryManager;
         readonly string BaseDocumentationUrl;
 
         private GettextResourceManager catalog = new GettextResourceManager("Menu");
@@ -48,7 +49,7 @@ namespace ORTS
             public string Name { get; set; }
         }
 
-        public OptionsForm(UserSettings settings, UpdateManager updateManager, string baseDocumentationUrl)
+        public OptionsForm(UserSettings settings, UpdateManager updateManager, TelemetryManager telemetryManager, string baseDocumentationUrl)
         {
             InitializeComponent();
 
@@ -56,6 +57,7 @@ namespace ORTS
 
             Settings = settings;
             UpdateManager = updateManager;
+            TelemetryManager = telemetryManager;
             BaseDocumentationUrl = baseDocumentationUrl;
 
             InitializeHelpIcons();
@@ -139,6 +141,10 @@ namespace ORTS
             comboPressureUnit.Text = Settings.PressureUnit;
             comboOtherUnits.Text = settings.Units;
             checkEnableTCSScripts.Checked = !Settings.DisableTCSScripts;    // Inverted as "Enable scripts" is better UI than "Disable scripts"
+            checkAutoSaveActive.Checked = Settings.AutoSaveActive;
+            ButtonAutoSave15.Checked = checkAutoSaveActive.Checked & Settings.AutoSaveInterval == 15;
+            ButtonAutoSave30.Checked = checkAutoSaveActive.Checked & Settings.AutoSaveInterval == 30;
+            ButtonAutoSave60.Checked = checkAutoSaveActive.Checked & Settings.AutoSaveInterval == 60;
 
             // Audio tab
             numericSoundVolumePercent.Value = Settings.SoundVolumePercent;
@@ -301,8 +307,7 @@ namespace ORTS
             numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
 
             // Experimental tab
-            numericUseSuperElevation.Value = Settings.UseSuperElevation;
-            numericSuperElevationMinLen.Value = Settings.SuperElevationMinLen;
+            checkUseSuperElevation.Checked = Settings.UseSuperElevation;
             numericSuperElevationGauge.Value = Settings.SuperElevationGauge;
             trackLODBias.Value = Settings.LODBias;
             trackLODBias_ValueChanged(null, null);
@@ -416,6 +421,8 @@ namespace ORTS
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
             Settings.Units = comboOtherUnits.SelectedValue.ToString();
             Settings.DisableTCSScripts = !checkEnableTCSScripts.Checked; // Inverted as "Enable scripts" is better UI than "Disable scripts"
+            Settings.AutoSaveActive = checkAutoSaveActive.Checked;
+            Settings.AutoSaveInterval = ButtonAutoSave15.Checked ? 15 : ButtonAutoSave30.Checked ? 30 : 60;
 
             // Audio tab
             Settings.SoundVolumePercent = (int)numericSoundVolumePercent.Value;
@@ -487,8 +494,7 @@ namespace ORTS
             Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
 
             // Experimental tab
-            Settings.UseSuperElevation = (int)numericUseSuperElevation.Value;
-            Settings.SuperElevationMinLen = (int)numericSuperElevationMinLen.Value;
+            Settings.UseSuperElevation = checkUseSuperElevation.Checked;
             Settings.SuperElevationGauge = (int)numericSuperElevationGauge.Value;
             Settings.LODBias = trackLODBias.Value;
             Settings.SignalLightGlow = checkSignalLightGlow.Checked;
@@ -666,6 +672,50 @@ namespace ORTS
             labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
         }
 
+        private void checkAutoSave_checkchanged(object sender, EventArgs e)
+        {
+            if (checkAutoSaveActive.Checked)
+            {
+                ButtonAutoSave15.Enabled = true;
+                ButtonAutoSave15.Checked = Settings.AutoSaveInterval == 15;
+                ButtonAutoSave30.Enabled = true;
+                ButtonAutoSave30.Checked = Settings.AutoSaveInterval == 30;
+                ButtonAutoSave60.Enabled = true;
+                ButtonAutoSave60.Checked = Settings.AutoSaveInterval == 60;
+            }
+            else
+            {
+                ButtonAutoSave15.Checked = false;
+                ButtonAutoSave15.Enabled = false;
+                ButtonAutoSave30.Checked = false;
+                ButtonAutoSave30.Enabled = false;
+                ButtonAutoSave60.Checked = false;
+                ButtonAutoSave60.Enabled = false;
+            }
+        }
+
+        private void buttonAutoSaveInterval_checkchanged(object sender, EventArgs e)
+        {
+            if (ButtonAutoSave15.Checked)
+            {
+                Settings.AutoSaveInterval = 15;
+                ButtonAutoSave30.Checked = false;
+                ButtonAutoSave60.Checked = false;
+            }
+            else if (ButtonAutoSave30.Checked)
+            {
+                Settings.AutoSaveInterval = 30;
+                ButtonAutoSave15.Checked = false;
+                ButtonAutoSave60.Checked = false;
+            }
+            else if (ButtonAutoSave60.Checked)
+            {
+                Settings.AutoSaveInterval = 60;
+                ButtonAutoSave15.Checked = false;
+                ButtonAutoSave30.Checked = false;
+            }
+        }
+
         #region Help for Options
         // The icons all share the same code which assumes they are named according to a simple scheme as follows:
         //   1. To add a new Help Icon, copy an existing one and paste it onto the tab.
@@ -730,7 +780,9 @@ namespace ORTS
                 (pbPressureUnit, new Control[] { labelPressureUnit, comboPressureUnit }),
                 (pbOtherUnits, new Control[] { labelOtherUnits, comboOtherUnits }),
                 (pbEnableTcsScripts, new[] { checkEnableTCSScripts }),
+                (pbAutoSave, new[] { checkAutoSaveActive }),
                 (pbOverspeedMonitor, new[] { checkOverspeedMonitor }),
+                (pbTelemetry, new[] { buttonTelemetry }),
 
                 // Audio tab
                 (pbSoundVolumePercent, new Control[] { labelSoundVolume, numericSoundVolumePercent }),
@@ -762,6 +814,9 @@ namespace ORTS
                 (pbControlConfirmations, new Control[] { labelControlConfirmations, comboControlConfirmations }),
                 (pbWebServerPort, new Control[] { labelWebServerPort }),
                 (pbPerformanceTuner, new Control[] { checkPerformanceTuner, labelPerformanceTunerTarget }),
+
+                // Experimental tab
+                (pbSuperElevation, new[] { ElevationText }),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
             {
@@ -781,6 +836,7 @@ namespace ORTS
         {
             var urls = new Dictionary<object, string>
             {
+                // General tab
                 {
                     pbAlerter,
                     BaseDocumentationUrl + "/options.html#alerter-in-cab"
@@ -810,8 +866,16 @@ namespace ORTS
                     BaseDocumentationUrl + "/options.html#disable-tcs-scripts"
                 },
                 {
+                    pbAutoSave,
+                    BaseDocumentationUrl + "/options.html#auto-save"
+                },
+                {
                     pbOverspeedMonitor,
                     BaseDocumentationUrl + "/options.html#overspeed-monitor"
+                },
+                {
+                    pbTelemetry,
+                    BaseDocumentationUrl + "/options.html#telemetry"
                 },
 
                 // Audio tab
@@ -919,6 +983,12 @@ namespace ORTS
                     pbPerformanceTuner,
                     BaseDocumentationUrl + "/options.html#performance-tuner"
                 },
+
+                // Experimental tab
+                {
+                    pbSuperElevation,
+                    BaseDocumentationUrl + "/options.html#super-elevation"
+                },
             };
             if (urls.TryGetValue(sender, out var url))
             {
@@ -948,5 +1018,13 @@ namespace ORTS
                 hover.Leave();
         }
         #endregion
+
+        private void buttonTelemetry_Click(object sender, EventArgs e)
+        {
+            using (var telemetryForm = new TelemetryForm(TelemetryManager))
+            {
+                telemetryForm.ShowDialog(this);
+            }
+        }
     }
 }

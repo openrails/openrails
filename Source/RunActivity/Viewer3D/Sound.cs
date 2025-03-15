@@ -395,32 +395,8 @@ namespace Orts.Viewer3D
 
                     var CarBehind = Car.Train.Cars[CarNo + CarIncr];
                     var carPreviouslyOnSwitch = CarOnSwitch;
-                    CarOnSwitch = false;
-                    if (Car.Train.PresentPosition[0].TCSectionIndex != Car.Train.PresentPosition[1].TCSectionIndex)
-                    {
-                        try
-                        {
-                            var copyOccupiedTrack = Car.Train.OccupiedTrack.ToArray();
-                            foreach (var thisSection in copyOccupiedTrack)
-                            {
-                                if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
-                                {
-                                    // train is on a switch; let's see if car is on a switch too
-                                    WorldLocation switchLocation = UidLocation(Viewer.Simulator.TDB.TrackDB.TrackNodes[thisSection.OriginalIndex].UiD);
-                                    var distanceFromSwitch = WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, switchLocation);
-                                    if (distanceFromSwitch < Car.CarLengthM * Car.CarLengthM + Math.Min(Car.SpeedMpS * 3, 150))
-                                    {
-                                        CarOnSwitch = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        catch
-                        {
+                    CarOnSwitch = Car.IsOverSwitch || Car.IsOverCrossover;
 
-                        }
-                    }
                     // here check for curve
                     var carPreviouslyOnCurve = CarOnCurve;
                     CarOnCurve = false;
@@ -1444,6 +1420,32 @@ namespace Orts.Viewer3D
                     volume *= ((MSTSWagon)SoundSource.Viewer.Camera.AttachedCar).TrackSoundPassThruPercent * 0.01f;
             }
 
+            // check if time of day, season and weather enable the sound; if not, set volume to zero
+            if (MSTSStream?.TimeIntervals != null)
+            {
+                var outOfInterval = true;
+                foreach (var timeInterval in MSTSStream.TimeIntervals)
+                {
+                    int hourOfDay = (int)SoundSource.Viewer.Simulator.ClockTime / 3600;
+                    if (hourOfDay >= timeInterval[0] && hourOfDay < timeInterval[1])
+                    {
+                        outOfInterval = false;
+                        break;
+                    }
+                }
+                if (outOfInterval)
+                    volume = 0;
+            }
+            if (MSTSStream?.Season != null )
+            {
+                if (!MSTSStream.Season[(int)(SoundSource.Viewer.Simulator.Season)])
+                    volume = 0;
+            }
+            if (MSTSStream?.Weather != null )
+            {
+                if (!MSTSStream.Weather[(int)(SoundSource.Viewer.Simulator.WeatherType)])
+                    volume = 0;
+            }
             ALSoundSource.Volume = volume;
         }
 

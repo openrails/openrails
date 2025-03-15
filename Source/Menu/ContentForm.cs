@@ -33,7 +33,7 @@ using System.Drawing;
 using System.Threading.Tasks;
 using GNU.Gettext.WinForms;
 
-namespace ORTS
+namespace Menu
 {
     public partial class ContentForm : Form
     {
@@ -346,15 +346,22 @@ namespace ORTS
                 else
                 {
                     outputFile.WriteLine("- " + Catalog.GetString("Installation profile") + ": " + AutoInstallRouteName + "<br>");
-                    outputFile.WriteLine("- " + Catalog.GetString("Activity") + ": " + route.Start.Activity + "<br>");
                     outputFile.WriteLine("- " + Catalog.GetString("Route") + ": " + route.Start.Route + "<br>");
-                    outputFile.WriteLine("- " + Catalog.GetString("Locomotive") + ": " + route.Start.Locomotive + "<br>");
-                    outputFile.WriteLine("- " + Catalog.GetString("Consist") + ": " + route.Start.Consist + "<br>");
-                    outputFile.WriteLine("- " + Catalog.GetString("Starting at") + ": " + route.Start.StartingAt + "<br>");
-                    outputFile.WriteLine("- " + Catalog.GetString("Heading to") + ": " + route.Start.HeadingTo + "<br>");
-                    outputFile.WriteLine("- " + Catalog.GetString("Time") + ": " + route.Start.Time + "<br>");
-                    outputFile.WriteLine("- " + Catalog.GetString("Season") + ": " + route.Start.Season + "<br>");
-                    outputFile.WriteLine("- " + Catalog.GetString("Weather") + ": " + route.Start.Weather + "<br></p>");
+                    outputFile.WriteLine("- " + Catalog.GetString("Activity") + ": " + route.Start.Activity + "<br>");
+                    if (!string.IsNullOrEmpty(route.Start.Locomotive))
+                        outputFile.WriteLine("- " + Catalog.GetString("Locomotive") + ": " + route.Start.Locomotive + "<br>");
+                    if (!string.IsNullOrEmpty(route.Start.Consist))
+                        outputFile.WriteLine("- " + Catalog.GetString("Consist") + ": " + route.Start.Consist + "<br>");
+                    if (!string.IsNullOrEmpty(route.Start.StartingAt))
+                        outputFile.WriteLine("- " + Catalog.GetString("Starting at") + ": " + route.Start.StartingAt + "<br>");
+                    if (!string.IsNullOrEmpty(route.Start.HeadingTo))
+                        outputFile.WriteLine("- " + Catalog.GetString("Heading to") + ": " + route.Start.HeadingTo + "<br>");
+                    if (!string.IsNullOrEmpty(route.Start.Time))
+                        outputFile.WriteLine("- " + Catalog.GetString("Time") + ": " + route.Start.Time + "<br>");
+                    if (!string.IsNullOrEmpty(route.Start.Season))
+                        outputFile.WriteLine("- " + Catalog.GetString("Season") + ": " + route.Start.Season + "<br>");
+                    if (!string.IsNullOrEmpty(route.Start.Weather))
+                        outputFile.WriteLine("- " + Catalog.GetString("Weather") + ": " + route.Start.Weather + "<br></p>");
                 }
 
                 if (Directory.Exists(route.DirectoryInstalledIn))
@@ -1113,25 +1120,25 @@ namespace ORTS
                 switch (classOfItem)
                 {
                     case "Folder":
-                        comboboxName = ((Menu.Folder)comboBox.Items[index]).Name;
+                        comboboxName = ((ORTS.Menu.Folder)comboBox.Items[index]).Name;
                         break;
                     case "Route":
-                        comboboxName = ((Menu.Route)comboBox.Items[index]).Name;
+                        comboboxName = ((ORTS.Menu.Route)comboBox.Items[index]).Name;
                         break;
                     case "DefaultExploreActivity":
-                        comboboxName = ((Menu.Activity)comboBox.Items[index]).Name;
+                        comboboxName = ((ORTS.Menu.Activity)comboBox.Items[index]).Name;
                         break;
                     case "Locomotive":
-                        comboboxName = ((Menu.Locomotive)comboBox.Items[index]).Name;
+                        comboboxName = ((ORTS.Menu.Locomotive)comboBox.Items[index]).Name;
                         break;
                     case "Consist":
-                        comboboxName = ((Menu.Consist)comboBox.Items[index]).Name;
+                        comboboxName = ((ORTS.Menu.Consist)comboBox.Items[index]).Name;
                         break;
                     case "String":
                         comboboxName = (string)comboBox.Items[index];
                         break;
                     case "Path":
-                        comboboxName = ((Menu.Path)comboBox.Items[index]).End;
+                        comboboxName = ((ORTS.Menu.Path)comboBox.Items[index]).End;
                         break;
                     case "KeyedComboBoxItem":
                         comboboxName = ((MainForm.KeyedComboBoxItem)comboBox.Items[index]).Value;
@@ -1529,7 +1536,9 @@ namespace ORTS
             Dictionary<string, int> subDirs = new Dictionary<string, int>();
             foreach (var folder in Settings.Folders.Folders)
             {
-                string subDir = Directory.GetParent(folder.Value).ToString();
+                var parentDir = Directory.GetParent(folder.Value);
+                if (parentDir == null) { continue; }  // ignore content in top-level dir
+                string subDir = parentDir.ToString();
                 if (subDirs.ContainsKey(subDir))
                 {
                     subDirs[subDir] += 1;
@@ -1549,16 +1558,16 @@ namespace ORTS
                 }
             }
 
-            string brouwseDir = "";
+            string browseDir = "";
             foreach (var subDir in subDirs)
             {
                 if (subDir.Value == max)
                 {
-                    brouwseDir = subDir.Key;
+                    browseDir = subDir.Key;
                 }
             }
 
-            return brouwseDir;
+            return browseDir;
         }
 
         #endregion

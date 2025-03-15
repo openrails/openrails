@@ -23,7 +23,7 @@ using System.Windows.Forms;
 using ORTS.Settings;
 using Xna = Microsoft.Xna.Framework.Input;
 
-namespace ORTS
+namespace Menu
 {
     /// <summary>
     /// A form used to edit keyboard input settings, in combination with <see cref="KeyInputControl"/>.

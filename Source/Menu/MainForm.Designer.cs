@@ -1,6 +1,6 @@
 ﻿// #define INCLUDE_TIMETABLE_INPUT
 
-namespace ORTS
+namespace Menu
 {
     partial class MainForm
     {
@@ -169,7 +169,7 @@ namespace ORTS
             this.buttonResume.Enabled = false;
             this.buttonResume.Location = new System.Drawing.Point(7, 79);
             this.buttonResume.Name = "buttonResume";
-            this.buttonResume.Size = new System.Drawing.Size(75, 35);
+            this.buttonResume.Size = new System.Drawing.Size(75, 41);
             this.buttonResume.TabIndex = 1;
             this.buttonResume.Text = "Resume/ Replay...";
             this.buttonResume.Click += new System.EventHandler(this.buttonResume_Click);
@@ -278,7 +278,7 @@ namespace ORTS
             // 
             this.radioButtonMPServer.Location = new System.Drawing.Point(9, 91);
             this.radioButtonMPServer.Name = "radioButtonMPServer";
-            this.radioButtonMPServer.Size = new System.Drawing.Size(58, 20);
+            this.radioButtonMPServer.Size = new System.Drawing.Size(75, 20);
             this.radioButtonMPServer.TabIndex = 9;
             this.radioButtonMPServer.Text = "Server";
             this.radioButtonMPServer.UseVisualStyleBackColor = true;
@@ -894,7 +894,7 @@ namespace ORTS
             // pbNotificationsSome
             // 
             this.pbNotificationsSome.BackColor = System.Drawing.Color.Transparent;
-            this.pbNotificationsSome.Image = global::ORTS.Properties.Resources.chat_icon_new_message_transparent;
+            this.pbNotificationsSome.Image = global::Menu.Properties.Resources.chat_icon_new_message_transparent;
             this.pbNotificationsSome.Location = new System.Drawing.Point(805, 0);
             this.pbNotificationsSome.Name = "pbNotificationsSome";
             this.pbNotificationsSome.Size = new System.Drawing.Size(37, 31);
@@ -905,7 +905,7 @@ namespace ORTS
             // 
             // pbNotificationsNone
             // 
-            this.pbNotificationsNone.Image = global::ORTS.Properties.Resources.chat_icon_no_message_transparent;
+            this.pbNotificationsNone.Image = global::Menu.Properties.Resources.chat_icon_no_message_transparent;
             this.pbNotificationsNone.InitialImage = ((System.Drawing.Image)(resources.GetObject("pbNotificationsNone.InitialImage")));
             this.pbNotificationsNone.Location = new System.Drawing.Point(805, 0);
             this.pbNotificationsNone.Name = "pbNotificationsNone";

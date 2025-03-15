@@ -101,7 +101,6 @@ namespace Orts.Simulation.Signalling
             tdbfile = Simulator.TDB;
 
             // read SIGSCR files
-            Trace.Write(" SIGSCR ");
             scrfile = new SIGSCRfile(new SignalScripts(sigcfg.ScriptPath, sigcfg.ScriptFiles, sigcfg.SignalTypes, sigcfg.SignalFunctions, sigcfg.ORTSNormalSubtypes));
             CsSignalScripts = new CsSignalScripts(Simulator);
 
@@ -423,7 +422,6 @@ namespace Orts.Simulation.Signalling
 
                 // read w-file, get SignalObjects only
 
-                Trace.Write("W");
                 WorldFile WFile;
                 try
                 {
@@ -3924,7 +3922,7 @@ namespace Orts.Simulation.Signalling
                     }
                     else
                     {
-                        for (int iObject = 0; iObject < thisItemList.Count - 1 && !endOfRoute; iObject++)
+                        for (int iObject = 0; iObject < thisItemList.Count && !endOfRoute; iObject++)
                         {
                             TrackCircuitSignalItem thisItem = thisItemList[iObject];
 

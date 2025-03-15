@@ -19,6 +19,5 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="MonoGame.Framework.WindowsDX" Version="3.8.0.1641" />
-    <PackageReference Include="SharpZipLib" Version="1.4.1" />
   </ItemGroup>
 </Project>

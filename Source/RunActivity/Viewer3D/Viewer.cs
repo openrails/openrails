@@ -79,6 +79,7 @@ namespace Orts.Viewer3D
         /// Monotonically increasing time value (in seconds) for the game/viewer. Starts at 0 and only ever increases, at real-time.
         /// </summary>
         public double RealTime { get; private set; }
+        public double AutoSaveDueAt { get; set; } = -1; // RealTime when next AutoSave is due
         InfoDisplay InfoDisplay;
         public WindowManager WindowManager { get; private set; }
         public MessagesWindow MessagesWindow { get; private set; } // Game message window (special, always visible)
@@ -202,7 +203,10 @@ namespace Orts.Viewer3D
 
         public bool SoundDebugFormEnabled { get; set; }
 
-        public TRPFile TRP; // Track profile file
+        public List<TRPFile> TRPs; // Track profile file(s)
+        // Dictionary associating a specific shape file path (string) with the track profile index to be used for that shape
+        // Shape file locations are to be matched ignoring case for simplicity
+        public Dictionary<string, int> TrackProfileIndicies = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
 
         enum VisibilityState
         {
@@ -304,6 +308,8 @@ namespace Orts.Viewer3D
             Settings = simulator.Settings;
             Use3DCabProperty = Settings.GetSavingProperty<bool>("Use3DCab");
 
+            AutoSaveDueAt = Simulator.Settings.AutoSaveInterval * 60;
+
             RenderProcess = game.RenderProcess;
             UpdaterProcess = game.UpdaterProcess;
             LoaderProcess = game.LoaderProcess;
@@ -324,22 +330,17 @@ namespace Orts.Viewer3D
 
             string ORfilepath = System.IO.Path.Combine(Simulator.RoutePath, "OpenRails");
             ContentPath = Game.ContentPath;
-            Trace.Write(" ENV");
             ENVFile = new EnvironmentFile(Simulator.RoutePath + @"\ENVFILES\" + Simulator.TRK.Tr_RouteFile.Environment.ENVFileName(Simulator.Season, Simulator.WeatherType));
 
-            Trace.Write(" SIGCFG");
             if (File.Exists(ORfilepath + @"\sigcfg.dat"))
             {
-                Trace.Write(" SIGCFG_OR");
                 SIGCFG = new SignalConfigurationFile(ORfilepath + @"\sigcfg.dat", true);
             }
             else
             {
-                Trace.Write(" SIGCFG");
                 SIGCFG = new SignalConfigurationFile(Simulator.RoutePath + @"\sigcfg.dat", false);
             }
 
-            Trace.Write(" TTYPE");
             TrackTypes = new TrackTypesFile(Simulator.RoutePath + @"\TTYPE.DAT");
 
             Tiles = new TileManager(Simulator.RoutePath + @"\TILES\", false);
@@ -367,7 +368,6 @@ namespace Orts.Viewer3D
                 var speedpostDatFile = Simulator.RoutePath + @"\speedpost.dat";
                 if (File.Exists(speedpostDatFile))
                 {
-                    Trace.Write(" SPEEDPOST");
                     SpeedpostDatFile = new SpeedpostDatFile(Simulator.RoutePath + @"\speedpost.dat", Simulator.RoutePath + @"\shapes\");
                 }
             }
@@ -525,6 +525,20 @@ namespace Orts.Viewer3D
             WindowManager.Initialize();
 
             InfoDisplay = new InfoDisplay(this);
+
+            // Load track profiles before considering the world/scenery
+            // Creates profile(s) and loads materials into SceneryMaterials
+            if (TRPFile.CreateTrackProfile(this, Simulator.RoutePath, out TRPs))
+            {
+                if (Simulator.TRK.Tr_RouteFile.SuperElevationMode < 0 && !Simulator.UseSuperElevation)
+                {
+                    Simulator.UseSuperElevation = true; // We found custom track profile(s), enable superelevation in order to use the track profile(s)
+                    Trace.TraceInformation("Custom track profile installed, superelevation graphics will be enabled." +
+                        "If superelevation should be disabled, add ORTSForceSuperElevation ( 0 ) to the TRK file.");
+                }
+            }
+            else // Using default track profile
+                Trace.TraceInformation("No track profiles found in TrackProfiles folder, using default track profile.");
 
             World = new World(this, Simulator.ClockTime);
 
@@ -755,6 +769,14 @@ namespace Orts.Viewer3D
             RealTime += elapsedRealTime;
             var elapsedTime = new ElapsedTime(Simulator.GetElapsedClockSeconds(elapsedRealTime), elapsedRealTime);
 
+            // auto save
+            if (Simulator.Settings.AutoSaveActive && RealTime > AutoSaveDueAt && !Simulator.Paused)
+            {
+                GameStateRunActivity.Save();
+                AutoSaveDueAt = RealTime + Simulator.Settings.AutoSaveInterval * 60;
+            }
+
+            // show message
             if (ComposeMessageWindow.Visible == true)
             {
                 UserInput.Handled();
@@ -970,7 +992,11 @@ namespace Orts.Viewer3D
                 Simulator.GameSpeed = 1;
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.SimulationSpeed, CabSetting.Off, Simulator.GameSpeed * 100);
             }
-            if (UserInput.IsPressed(UserCommand.GameSave)) { GameStateRunActivity.Save(); }
+            if (UserInput.IsPressed(UserCommand.GameSave))
+            {
+                GameStateRunActivity.Save();
+                AutoSaveDueAt = RealTime + 60 * Simulator.Settings.AutoSaveInterval;
+            }
             if (UserInput.IsPressed(UserCommand.DisplayHelpWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) HelpWindow.TabAction(); else HelpWindow.Visible = !HelpWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayTrackMonitorWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrackMonitorWindow.TabAction(); else TrackMonitorWindow.Visible = !TrackMonitorWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayTrainDrivingWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrainDrivingWindow.TabAction(); else TrainDrivingWindow.Visible = !TrainDrivingWindow.Visible;
@@ -1087,11 +1113,13 @@ namespace Orts.Viewer3D
             }
             if (UserInput.IsPressed(UserCommand.CameraOutsideFront))
             {
+                FrontCamera.IsCameraFront = true;
                 CheckReplaying();
                 new UseFrontCameraCommand(Log);
             }
             if (UserInput.IsPressed(UserCommand.CameraOutsideRear))
             {
+                FrontCamera.IsCameraFront = false;
                 CheckReplaying();
                 new UseBackCameraCommand(Log);
             }

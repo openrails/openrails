@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2021 by the Open Rails project.
+// COPYRIGHT 2021 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -1145,6 +1145,7 @@ namespace Orts.Viewer3D.Processes
                         // for resume and replay : set timetable file and selected train info
                         Simulator.TimetableFileName = System.IO.Path.GetFileNameWithoutExtension(args[0]);
                         Simulator.PathName = args[1];
+                        Simulator.IsAutopilotMode = true;
                     }
                     break;
             }
@@ -1163,7 +1164,7 @@ namespace Orts.Viewer3D.Processes
                 catch (Exception error)
                 {
                     Trace.WriteLine(error);
-                    Console.WriteLine("Connection error - will play in single mode.");
+                    Trace.TraceWarning("Connection error - will play in single mode.");
                     Server = null;
                 }
             }
@@ -1182,7 +1183,7 @@ namespace Orts.Viewer3D.Processes
                 catch (Exception error)
                 {
                     Trace.WriteLine(error);
-                    Console.WriteLine("Connection error - will play in single mode.");
+                    Trace.TraceWarning("Connection error - will play in single mode.");
                     Client = null;
                 }
             }

@@ -1411,7 +1411,8 @@ Changing the Train Driven by the Player
 General
 -------
 
-This function only works in activity mode, and allows the player to select 
+This function works in activity mode as well as in timetable mode, 
+and allows the player to select 
 another (existing) train from a list and to start driving it.
 
 This function can be called more than once. A new information window has 
@@ -1453,9 +1454,11 @@ completely appeared on the screen - if it is far away from the player train
 this can require several seconds to load the *world* around the train) the 
 switch of control occurs. 
 
-The AI train string now becomes red and is moved to the first position.The 
-train can be driven, or set to autopilot mode. The former player train 
-becomes an AI train.
+The AI train string now becomes red and is moved to the first position.
+In timetable mode the new player train is automatically set to autopilot mode,
+while this does not apply to activity mode. However in both timetable and 
+activity mode the player can switch forth and back to autopilot mode. 
+The former player train becomes an AI train.
 
 Here is the final situation:
 
@@ -1463,7 +1466,8 @@ Here is the final situation:
     :align: center
     :scale: 80%
 
-If the second left-click was performed with the Shift key down, the former 
+In activity mode only, if the second left-click was performed with the Shift 
+key down, the former 
 player train still becomes an AI train, but it is put in a suspended mode 
 (only if its speed is 0). It won't move until it becomes a player train 
 again. A suspended train is shown in orange color on the Train List window.
@@ -1472,7 +1476,8 @@ The new player train can can be switched to manual mode, can also request to
 pass signals at danger with the ``<Tab>`` command, and can be moved outside 
 of its original path. However before switching control to still another train, 
 the new player train must be returned to the original path or put in suspend 
-mode; or else it will disappear, as occurs for AI trains running outside their 
+mode (last is possible only in activity mode); or else it will disappear, 
+as occurs for AI trains running outside their 
 path.
 
 The sequence may be restarted to switch to a new train or to switch back to 
@@ -1482,15 +1487,9 @@ Train switching also works in activity mode together with multiplayer mode,
 in the sense that the dispatcher player can switch its played train, and 
 the related information is sent to the client players.
 
-The Train List window is also available in 
-:ref:`Timetable mode <start-timetable>`. In this case the 
-names of all trains except the player train are shown in white (they can't 
-be driven), however with a single click on a train in the window the 
-external view cameras become linked to that train, as occurs with the Alt-9 
-command described :ref:`further below <driving-changing-view>`.
 
-Switching to a static train
----------------------------
+Switching to a static train (only activity mode)
+------------------------------------------------
 
 In the Train List window the drivable static consists (that is the ones 
 that have at least an engine provided with a cab) are also listed (in 
@@ -1871,7 +1870,7 @@ Following activity features are randomized:
   will be shown in red in the train operations window and will squeal 
   if an .sms file named BrakesStuck.sms is present in the 
   ``<Train Simulator\Sound>`` directory. `Here 
-  <http://www.interazioni-educative.it/Varie/BrakesStuckSound.zip>`_ 
+  <https://static.openrails.org/files/BrakesStuckSound.zip>`_ 
   an example of such file. 
   Of course when this event occurs it is advisable to uncouple the 
   wagon as soon as possible from the train. No more than a car will 

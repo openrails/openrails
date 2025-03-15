@@ -1624,6 +1624,7 @@ namespace Orts.Viewer3D.Debugging
                     break;
             }
 
+            mapCanvas.Invalidate(); // Triggers a re-paint
             UnHandleItemPick();
         }
 
@@ -1668,6 +1669,7 @@ namespace Orts.Viewer3D.Debugging
                         break;
                 }
             }
+            mapCanvas.Invalidate(); // Triggers a re-paint
             UnHandleItemPick();
         }
 
@@ -1971,11 +1973,21 @@ namespace Orts.Viewer3D.Debugging
                     break;
 
                 case "kick":
-                    if (!MPManager.IsServer() || !MPManager.OnlineTrains.Players.ContainsKey(player)) return;
-
-                    MPManager.OnlineTrains.Players[player].status = OnlinePlayer.Status.Removed;
-                    MPManager.BroadCast(new MSGMessage(player, "Error", "Sorry the server has removed you").ToString());
-
+                    if (!MPManager.IsServer()) return;
+                    if (MPManager.OnlineTrains.Players.ContainsKey(player))
+                    {
+                        //MPManager.IsServer() && MPManager.Instance().lostPlayer != null && MPManager.Instance().lostPlayer.ContainsKey(player))
+                        MPManager.OnlineTrains.Players[player].status = OnlinePlayer.Status.Removed;
+                        MPManager.BroadCast(new MSGMessage(player, "Error", "Sorry the server has removed you").ToString());
+                        return;
+                    }
+                    lock (MPManager.Instance().lostPlayer)
+                    {
+                        if (MPManager.Instance().lostPlayer != null && MPManager.Instance().lostPlayer.ContainsKey(player))
+                        {
+                            MPManager.Instance().lostPlayer[player].quitTime = MPManager.Simulator.GameTime - 700;
+                        }
+                    }
                     break;
             }
         }

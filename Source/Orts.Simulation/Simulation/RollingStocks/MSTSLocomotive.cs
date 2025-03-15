@@ -360,7 +360,7 @@ namespace Orts.Simulation.RollingStocks
 
         protected float OdometerResetPositionM = 0;
         protected bool OdometerCountingUp = true;
-        protected bool OdometerCountingForwards = true;
+        protected bool OdometerDirectionForward = true; // direction of the train when odometer was reset
         public bool OdometerResetButtonPressed = false;
 
         public bool OdometerVisible { get; private set; }
@@ -371,7 +371,11 @@ namespace Orts.Simulation.RollingStocks
                 if (Train == null)
                     return 0;
 
-                return OdometerCountingForwards ? Train.DistanceTravelledM - OdometerResetPositionM : OdometerResetPositionM - Train.DistanceTravelledM;
+                float odo;
+
+                if (OdometerDirectionForward ^ OdometerCountingUp) { odo = OdometerResetPositionM - Train.DistanceTravelledM; }
+                else { odo = Train.DistanceTravelledM - OdometerResetPositionM; }
+                return odo;
             }
         }
 
@@ -405,6 +409,8 @@ namespace Orts.Simulation.RollingStocks
         public float DynamicBrakeDelayS;
         public bool DynamicBrakeAutoBailOff;
         public bool DynamicBrakePartialBailOff;
+        public bool DynamicBrakeEngineBrakeReplacement;
+        public float DynamicBrakeEngineBrakeReplacementSpeed;
         public bool UsingRearCab;
         public bool BrakeOverchargeSoundOn = false;
         protected bool DynamicBrakeBlendingEnabled; // dynamic brake blending is configured
@@ -448,7 +454,7 @@ namespace Orts.Simulation.RollingStocks
         public bool DPSyncTrainApplication { get; private set; }
         public bool DPSyncTrainRelease { get; private set; }
         public bool DPSyncEmergency { get; private set; }
-        public bool DPSyncIndependent { get; private set; } = true;
+        public bool DPSyncIndependent { get; private set; }
 
         protected const float DefaultCompressorRestartToMaxSysPressureDiff = 35;    // Used to check if difference between these two .eng parameters is correct, and to correct it
         protected const float DefaultMaxMainResToCompressorRestartPressureDiff = 10; // Used to check if difference between these two .eng parameters is correct, and to correct it
@@ -600,15 +606,6 @@ namespace Orts.Simulation.RollingStocks
 
         protected void CheckCoherence()
         {
-            if (!TrainBrakeController.IsValid())
-                TrainBrakeController = new ScriptedBrakeController(this); //create a blank one
-
-            if (!EngineBrakeController.IsValid())
-                EngineBrakeController = null;
-
-            if (!BrakemanBrakeController.IsValid())
-                BrakemanBrakeController = null;
-
             if (ThrottleController == null)
             {
                 //If no controller so far, we create a default one
@@ -1083,6 +1080,8 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dynamicbrakehasautobailoff":
                 case "engine(ortsdynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
                 case "engine(ortsdynamicbrakeshaspartialbailoff": DynamicBrakePartialBailOff = stf.ReadBoolBlock(false); break;
+                case "engine(ortsdynamicbrakereplacementwithenginebrake": DynamicBrakeEngineBrakeReplacement = stf.ReadBoolBlock(false); break;
+                case "engine(ortsdynamicbrakereplacementwithenginebrakeatspeed": DynamicBrakeEngineBrakeReplacementSpeed = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesdelaytimebeforeengaging": DynamicBrakeDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(dynamicbrakesresistorcurrentlimit": DynamicBrakeMaxCurrentA = stf.ReadFloatBlock(STFReader.UNITS.Current, null); break;
                 case "engine(numwheels": MSTSLocoNumDrvWheels = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (MSTSLocoNumDrvWheels < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
@@ -1160,8 +1159,6 @@ namespace Orts.Simulation.RollingStocks
                         DPSyncEmergency = true;
                     if (dpSyncModes.Contains("independent"))
                         DPSyncIndependent = true;
-                    else // Independent synchronization is assumed to be enabled unless explicitly not enabled
-                        DPSyncIndependent = false;
                     break;
                 case "engine(ortsdynamicblendingoverride": DynamicBrakeBlendingOverride = stf.ReadBoolBlock(false); break;
                 case "engine(ortsdynamicblendingforcematch": DynamicBrakeBlendingForceMatch = stf.ReadBoolBlock(false); break;
@@ -1237,6 +1234,8 @@ namespace Orts.Simulation.RollingStocks
             DynamicBrakeForceCurves = locoCopy.DynamicBrakeForceCurves;
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
             DynamicBrakePartialBailOff = locoCopy.DynamicBrakePartialBailOff;
+            DynamicBrakeEngineBrakeReplacement = locoCopy.DynamicBrakeEngineBrakeReplacement;
+            DynamicBrakeEngineBrakeReplacementSpeed = locoCopy.DynamicBrakeEngineBrakeReplacementSpeed;
             DynamicBrakeMaxCurrentA = locoCopy.DynamicBrakeMaxCurrentA;
             DynamicBrakeSpeed1MpS = locoCopy.DynamicBrakeSpeed1MpS;
             DynamicBrakeSpeed2MpS = locoCopy.DynamicBrakeSpeed2MpS;
@@ -1369,7 +1368,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(Wiper);
             outf.Write(OdometerResetPositionM);
             outf.Write(OdometerCountingUp);
-            outf.Write(OdometerCountingForwards);
+            outf.Write(OdometerDirectionForward);
             outf.Write(OdometerVisible);
             outf.Write(MainResPressurePSI);
             outf.Write(CompressorIsOn);
@@ -1423,7 +1422,7 @@ namespace Orts.Simulation.RollingStocks
             if (inf.ReadBoolean()) SignalEvent(Event.WiperOn);
             OdometerResetPositionM = inf.ReadSingle();
             OdometerCountingUp = inf.ReadBoolean();
-            OdometerCountingForwards = inf.ReadBoolean();
+            OdometerDirectionForward = inf.ReadBoolean();
             OdometerVisible = inf.ReadBoolean();
             MainResPressurePSI = inf.ReadSingle();
             CompressorIsOn = inf.ReadBoolean();
@@ -1541,8 +1540,29 @@ namespace Orts.Simulation.RollingStocks
         public override void Initialize()
         {
             TrainBrakeController.Initialize();
-            EngineBrakeController.Initialize();
-            BrakemanBrakeController.Initialize();
+            if (!TrainBrakeController.IsValid())
+            {
+                TrainBrakeController = new ScriptedBrakeController(this); //create a blank one
+                TrainBrakeController.Initialize();
+            }
+            if (EngineBrakeController != null)
+            {
+                EngineBrakeController.Initialize();
+                if (!EngineBrakeController.IsValid() && !SteamEngineBrakeFitted)
+                {
+                    EngineBrakeController = null;
+                    EngineBrakeFitted = false;
+                }
+            }
+            if (BrakemanBrakeController != null)
+            {
+                BrakemanBrakeController.Initialize();
+                if (!BrakemanBrakeController.IsValid())
+                {
+                    BrakemanBrakeController = null;
+                    BrakemanBrakeFitted = false;
+                }
+            }
             LocomotivePowerSupply?.Initialize();
             TrainControlSystem.Initialize();
             CruiseControl?.Initialize();
@@ -1828,6 +1848,11 @@ namespace Orts.Simulation.RollingStocks
                 {
                     TrainBrakePipeLeakPSIorInHgpS = 0.0f; // Air brakes
                 }
+            }
+
+            if (DynamicBrakeEngineBrakeReplacement && DynamicBrakeEngineBrakeReplacementSpeed == 0)
+            {
+                DynamicBrakeEngineBrakeReplacementSpeed = DynamicBrakeSpeed2MpS;
             }
 
             // Initialise track sanding parameters
@@ -3100,7 +3125,7 @@ namespace Orts.Simulation.RollingStocks
                     Simulator.Confirmer.Message(ConfirmLevel.Error, Simulator.Catalog.GetString("Scoop is broken, can't refill"));
                     RefillingFromTrough = false;
                 }
-                else if (IsOverJunction())
+                else if (IsOverSwitch || IsOverCrossover)
                 {
                     if (!ScoopIsBroken) // Only display message first time scoop is broken
                     {
@@ -3110,7 +3135,7 @@ namespace Orts.Simulation.RollingStocks
                     RefillingFromTrough = false;
                     SignalEvent(Event.WaterScoopBroken);
                 }
-                else if (!IsOverTrough())
+                else if (!IsOverTrough)
                 {
                     if (!WaterScoopOverTroughFlag)
                     {
@@ -3155,7 +3180,7 @@ namespace Orts.Simulation.RollingStocks
                 }
 
             }
-            else if (HasWaterScoop && MSTSWagon.RefillProcess.OkToRefill == true && IsOverTrough())// water scoop has been raised, stop water filling
+            else if (HasWaterScoop && MSTSWagon.RefillProcess.OkToRefill == true && IsOverTrough)// water scoop has been raised, stop water filling
             {
                 MSTSWagon.RefillProcess.OkToRefill = false;
                 MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
@@ -3226,7 +3251,7 @@ namespace Orts.Simulation.RollingStocks
                 WaterScoopInputAmountL = 0;
                 WaterScoopVelocityMpS = 0;
 
-                if (!IsOverTrough()) // Only reset once train moves off the trough
+                if (!IsOverTrough) // Only reset once train moves off the trough
                 {
                     WaterScoopTotalWaterL = 0.0f; // Reset amount of water picked up by water sccop.
                 }
@@ -4399,7 +4424,7 @@ namespace Orts.Simulation.RollingStocks
             AlerterReset(TCSEvent.TrainBrakeChanged);
             TrainBrakeController.StartIncrease(target);
             TrainBrakeController.CommandStartTime = Simulator.ClockTime;
-            if (CruiseControl != null && CruiseControl.TrainBrakeCommandHasPriorityOverCruiseControl)
+            if (CruiseControl != null && (CruiseControl.TrainBrakeCommandHasPriorityOverCruiseControl || CruiseControl.TrainBrakeCommandHasPriorityOverAcceleratingCruiseControl))
             {
                 CruiseControl.TrainBrakePriority = true;
             }
@@ -4488,7 +4513,8 @@ namespace Orts.Simulation.RollingStocks
             if (change != 0)
             {
                 new TrainBrakeCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
-                if (change > 0 && CruiseControl != null && CruiseControl.TrainBrakeCommandHasPriorityOverCruiseControl) CruiseControl.TrainBrakePriority = true;
+                if (change > 0 && CruiseControl != null && ( CruiseControl.TrainBrakeCommandHasPriorityOverCruiseControl || CruiseControl.TrainBrakeCommandHasPriorityOverAcceleratingCruiseControl)) 
+                    CruiseControl.TrainBrakePriority = true;
                 SignalEvent(Event.TrainBrakeChange);
                 AlerterReset(TCSEvent.TrainBrakeChanged);
             }
@@ -5044,52 +5070,48 @@ namespace Orts.Simulation.RollingStocks
             // Electric locos do nothing. Diesel and steam override this.
         }
 
+        /// <summary>
+        /// Show / hide the odometer.
+        /// </summary>
         public void OdometerToggle()
         {
             OdometerVisible = !OdometerVisible;
         }
 
         /// <summary>
-        /// Set odometer reference distance to actual travelled distance,
-        /// and set measuring direction to the actual direction
+        /// Reset the odometer. Sets a new reset position, adjusted by +/- the train length when counting down.
+        /// The odometer calculation is in OdometerM.get().
         /// </summary>
         public void OdometerReset(bool toState)
         {
             if (Train == null)
                 return;
+
             if (toState)
             {
-                if (OdometerCountingForwards != OdometerCountingUp ^ (Direction == Direction.Reverse))
-                {
-                    OdometerCountingForwards = !OdometerCountingForwards;
-                }
+                OdometerDirectionForward = (Direction == Direction.Reverse) ? false : true;
 
-                if (Direction == Direction.Reverse)
-                {
-                    if (OdometerCountingForwards)
-                        OdometerResetPositionM = Train.DistanceTravelledM - Train.Length;
-                    else
-                        OdometerResetPositionM = Train.DistanceTravelledM;
-                }
-                else
-                {
-                    if (OdometerCountingForwards)
-                        OdometerResetPositionM = Train.DistanceTravelledM;
-                    else
-                        OdometerResetPositionM = Train.DistanceTravelledM + Train.Length;
-                }
+                if (OdometerCountingUp) { OdometerResetPositionM = Train.DistanceTravelledM; }
+                else if (Direction == Direction.Reverse) { OdometerResetPositionM = Train.DistanceTravelledM - Train.Length; }
+                else { OdometerResetPositionM = Train.DistanceTravelledM + Train.Length; }
 
                 Simulator.Confirmer.Confirm(CabControl.Odometer, CabSetting.On);
             }
             OdometerResetButtonPressed = toState;
         }
 
+        /// <summary>
+        /// Change the odometer counting direction. Adjusts the reset position +/- the train length.
+        /// The odometer calculation is in OdometerM.get().
+        /// </summary>
         public void OdometerToggleDirection()
         {
             if (Train == null)
                 return;
 
             OdometerCountingUp = !OdometerCountingUp;
+            if (OdometerDirectionForward ^ OdometerCountingUp) { OdometerResetPositionM += Train.Length; }
+            else { OdometerResetPositionM -= Train.Length; }
 
             Simulator.Confirmer.Confirm(CabControl.Odometer, OdometerCountingUp ? CabSetting.Increase : CabSetting.Decrease);
         }

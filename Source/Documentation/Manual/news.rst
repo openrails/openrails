@@ -14,6 +14,8 @@ so Open Rails can continue to improve.
 What's been added
 -----------------
 
+- auto-save option
+- timetable has auto-pilot and switch player train options
 - detailed map which tracks player train
 - self-installing content
 - new rolling stock lighting controls, including horn-activated flashing lights
@@ -24,6 +26,7 @@ What's been added
 - more accurate wheelslip using Polach adhesion
 - duplex and booster steam engines (e.g. T1 class) 
 - cloud-free skies
+- sounds conditional on season, weather and time of day
 - more air and dynamic brake options for locos
 - mouse control for scripted brake controllers
 
@@ -39,6 +42,7 @@ What's been improved
 - controls for electric locos
 - air brake features for both European and American brake systems 
 - accurate friction simulation for 4 types of brake shoes
+- superelevation system rewritten to be smoother and more configurable
 
 
 Other changes
