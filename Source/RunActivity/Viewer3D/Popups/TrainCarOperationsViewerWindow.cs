@@ -729,7 +729,7 @@ namespace Orts.Viewer3D.Popups
                     // Reset Handbrakes
                     foreach (var car in Viewer.PlayerTrain.Cars)
                     {
-                        if ((car as MSTSWagon).HandBrakePresent && (car as MSTSWagon).GetTrainHandbrakeStatus())
+                        if ((car as MSTSWagon).MSTSBrakeSystem.HandBrakePresent && (car as MSTSWagon).GetTrainHandbrakeStatus())
                         {
                             new WagonHandbrakeCommand(Viewer.Log, (car as MSTSWagon), !(car as MSTSWagon).GetTrainHandbrakeStatus());
                             Texture = HandBrakeNotSet;
@@ -754,7 +754,7 @@ namespace Orts.Viewer3D.Popups
                 Viewer = viewer;
                 TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
                 CarPosition = carPosition;
-                Texture = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).HandBrakePresent ? (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).GetTrainHandbrakeStatus() ? HandBrakeSet : HandBrakeNotSet : HandBrakeNotAvailable;
+                Texture = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).MSTSBrakeSystem.HandBrakePresent ? (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).GetTrainHandbrakeStatus() ? HandBrakeSet : HandBrakeNotSet : HandBrakeNotAvailable;
                 Source = new Rectangle(0, 0, size, size);
                 Click += new Action<Control, Point>(buttonHandBrake_Click);
             }
@@ -766,7 +766,7 @@ namespace Orts.Viewer3D.Popups
                 }
                 else
                 {
-                    if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).HandBrakePresent)
+                    if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).MSTSBrakeSystem.HandBrakePresent)
                     {
                         new WagonHandbrakeCommand(Viewer.Log, (Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon), !(Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).GetTrainHandbrakeStatus());
                         if ((Viewer.PlayerTrain.Cars[CarPosition] as MSTSWagon).GetTrainHandbrakeStatus())
