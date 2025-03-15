@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
-
 
 namespace Menu.Notifications
 {
@@ -24,26 +24,29 @@ namespace Menu.Notifications
     {
         public List<Notification> NotificationList = new List<Notification>();
         public List<Check> CheckList = new List<Check>();
-    }
-
-    class JsonInput
-    {
-        public List<Notification> NotificationList { get; set; }
-        public List<Check> CheckList { get; set; }
+        internal void ReplaceParameters(Func<string, string> replaceFunc)
+        {
+            NotificationList?.ForEach(item => item.ReplaceParameters(replaceFunc));
+            CheckList?.ForEach(item => item.ReplaceParameters(replaceFunc));
+        }
     }
 
     public class Notification
     {
         public string Date { get; set; }
         public string Title { get; set; }
-        public string UpdateMode { get; set; }
         public List<string> IncludeIf { get; set; }
         public List<string> IncludeIfNot { get; set; }
         public List<Item> ItemList { get; set; }
+        internal void ReplaceParameters(Func<string, string> replaceFunc)
+        {
+            Date = replaceFunc(Date);
+            Title = replaceFunc(Title);
+            ItemList?.ForEach(item => item.ReplaceParameters(replaceFunc));
+        }
     }
-    class Record : Item
+    class Record : ValueItem
     {
-        public string Value { get; set; }
     }
     class Text : Item
     {
@@ -52,42 +55,59 @@ namespace Menu.Notifications
     {
         public new string Color { get; set; } = "blue";
     }
-    class Link : Item
+    class Link : ValueItem
     {
-        public string Value { get; set; }
         public string Url { get; set; }
         public string StableUrl { get; set; }
         public string TestingUrl { get; set; }
         public string UnstableUrl { get; set; }
     }
-    class Dialog : Item
+    class Dialog : ValueItem
     {
-        public string Value { get; set; }
         public string Form { get; set; }
     }
-    class Update : Item
+    class Update : ValueItem
+    {
+    }
+    abstract class ValueItem : Item
     {
         public string Value { get; set; }
-        public string UpdateMode { get; set; }
+        internal override void ReplaceParameters(Func<string, string> replaceFunc)
+        {
+            base.ReplaceParameters(replaceFunc);
+            Value = replaceFunc(Value);
+        }
     }
-    public class Item
+    public abstract class Item
     {
         public List<string> IncludeIf { get; set; }
         public List<string> IncludeIfNot { get; set; }
         public string Label { get; set; }
         public string Color { get; set; } = "black";
         public int Indent { get; set; } = 140;
+        internal virtual void ReplaceParameters(Func<string, string> replaceFunc)
+        {
+            Label = replaceFunc(Label);
+        }
     }
 
     public class Check
     {
         public string Id { get; set; }
         public List<AnyOf> AnyOfList { get; set; }
+        internal void ReplaceParameters(Func<string, string> replaceFunc)
+        {
+            AnyOfList?.ForEach(item => item.ReplaceParameters(replaceFunc));
+        }
     }
 
     public class AnyOf
     {
         public List<Criteria> AllOfList { get; set; }
+        internal void ReplaceParameters(Func<string, string> replaceFunc)
+        {
+            AllOfList?.ForEach(item => item.ReplaceParameters(replaceFunc));
+        }
     }
 
     // These criteria are all doing an actual comparison
@@ -114,15 +134,20 @@ namespace Menu.Notifications
         public string Property { get; set; }    // installed_version, direct3d, runtime, system, memory, cpu, gpu
         public string Value { get; set; }       // {{new_version}}, {{10_0}}
         public abstract bool IsMatch();
+        internal void ReplaceParameters(Func<string, string> replaceFunc)
+        {
+            Property = replaceFunc(Property);
+            Value = replaceFunc(Value);
+        }
     }
 
-    public class ParameterValue
+    class ParameterValue
     {
         public string Parameter { get; set; }    // installed_version, direct3d, runtime, system, memory, cpu, gpu
         public string Value { get; set; }       // {{new_version}}, {{10_0}}
     }
 
-    public class OverrideParameterList
+    class OverrideParameterList
     {
         public List<ParameterValue> ParameterValueList = new List<ParameterValue>();
     }
