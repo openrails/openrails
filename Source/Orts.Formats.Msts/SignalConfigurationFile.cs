@@ -889,6 +889,8 @@ namespace Orts.Formats.Msts
         public float Radius { get; private set; }
         /// <summary>is the SIGLIGHT flag SEMAPHORE_CHANGE set?</summary>
         public bool SemaphoreChange { get; private set; }
+        /// <summary> The name of the texture to use for this light, overriding signal's default </summary>
+        public string LightTextureName { get; private set; } = String.Empty;
 
         /// <summary>
         /// Default constructor used during file parsing.
@@ -916,6 +918,9 @@ namespace Orts.Formats.Msts
                             case "semaphore_change": SemaphoreChange = true; break;
                             default: stf.StepBackOneItem(); STFException.TraceInformation(stf, "Skipped unknown SignalLight flag " + stf.ReadString()); break;
                         }
+                }),
+                new STFReader.TokenProcessor("ortssignallighttex", ()=>{
+                    LightTextureName = stf.ReadStringBlock("").ToLowerInvariant();
                 }),
             });
         }

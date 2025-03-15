@@ -56,11 +56,9 @@ namespace Orts.Simulation.Timetables
             filenames = GetTurntableFilenames(arguments[0]);
 
             // Get file contents as strings
-            Trace.Write("\n");
             foreach (string filePath in filenames)
             {
                 // Get contents as strings
-                Trace.Write("Turntable File : " + filePath + "\n");
                 var turntableInfo = new TimetableReader(filePath);
 
                 // Read lines from input until 'Name' definition is found
