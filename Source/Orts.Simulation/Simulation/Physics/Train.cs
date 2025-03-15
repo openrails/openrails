@@ -21664,7 +21664,7 @@ namespace Orts.Simulation.Physics
                 {
                     car.SpeedMpS = SpeedMpS;
                     if (car.Flipped) car.SpeedMpS = -car.SpeedMpS;
-                    car.AbsSpeedMpS = car.AbsSpeedMpS * (1 - elapsedClockSeconds ) + targetSpeedMpS * elapsedClockSeconds;
+                    car.AbsSpeedMpS = car.AbsSpeedMpS * (1 - elapsedClockSeconds ) + Math.Abs(targetSpeedMpS) * elapsedClockSeconds;
                     if (car.IsDriveable && car is MSTSWagon)
                     {
                         (car as MSTSWagon).WheelSpeedMpS = SpeedMpS;
@@ -21683,7 +21683,7 @@ namespace Orts.Simulation.Physics
                             else if (car is MSTSSteamLocomotive)
                             {
                                 (car as MSTSSteamLocomotive).Variable1 = car.AbsSpeedMpS / car.DriverWheelRadiusM / MathHelper.Pi * 5;
-                                (car as MSTSSteamLocomotive).Variable2 = 0.7f;
+                                (car as MSTSSteamLocomotive).Variable2 = 70f;
                             }
                         }
                         else if (car is MSTSLocomotive)
