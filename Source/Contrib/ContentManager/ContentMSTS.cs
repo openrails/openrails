@@ -127,6 +127,13 @@ namespace ORTS.ContentManager
                     foreach (var item in Enumerable.Concat(Directory.GetFiles(pathOR, "*.timetable_or"), Directory.GetFiles(pathOR, "*.timetable-or")))
                         yield return new ContentORTimetableActivity(this, Path.Combine(pathOR, item));
             }
+            else if (type == ContentType.Path)
+            {
+                var path = Path.Combine(PathName, "Paths");
+                if (Directory.Exists(path))
+                    foreach (var item in Directory.GetFiles(path, "*.pat"))
+                        yield return new ContentMSTSPath(this, Path.Combine(path, item));
+            }
         }
 
         public override Content Get(string name, ContentType type)
