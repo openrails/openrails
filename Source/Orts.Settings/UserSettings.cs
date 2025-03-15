@@ -525,7 +525,7 @@ namespace ORTS.Settings
             Input.ChangeSettingsStore(filePath, registryKey, InputSettings.SectionName);
             RailDriver.ChangeSettingsStore(filePath, registryKey, RailDriverSettings.SectionName);
             Content.ChangeSettingsStore(filePath, registryKey, ContentSettings.SectionName);
-            Telemetry.ChangeSettingsStore(filePath, registryKey, ContentSettings.SectionName);
+            Telemetry.ChangeSettingsStore(filePath, registryKey, TelemetrySettings.SectionName);
         }
     }
 }
