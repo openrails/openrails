@@ -2533,7 +2533,7 @@ namespace Orts.Simulation.RollingStocks
                         AbsTractionSpeedMpS = AbsSpeedMpS;
                     }
                 }
-
+                
                 float supplyPowerLimitW = float.MaxValue;
                 if (this is MSTSElectricLocomotive electric)
                 {
