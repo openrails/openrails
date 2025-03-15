@@ -30,7 +30,6 @@ namespace Menu.Notifications
     {
         public string Date { get; set; }
         public string Title { get; set; }
-        public string UpdateMode { get; set; }
         public List<string> IncludeIf { get; set; }
         public List<string> IncludeIfNot { get; set; }
         public List<Item> ItemList { get; set; }
@@ -58,7 +57,6 @@ namespace Menu.Notifications
     }
     class Update : ValueItem
     {
-        public string UpdateMode { get; set; }
     }
     abstract class ValueItem : Item
     {
