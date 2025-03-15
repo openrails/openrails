@@ -134,8 +134,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
                 if (EPBrakeActiveInhibitsTripleValve)
                 {
-                    HoldingValve = ValveState.Release;
-                    IsolationValve = ValveState.Lap;
+                    if (TripleValveState != ValveState.Emergency)
+                    {
+                        HoldingValve = ValveState.Release;
+                        IsolationValve = ValveState.Lap;
+                    }
+                    else
+                    {
+                        IsolationValve = ValveState.Release;
+                    }
                 }
                 
                 base.Update(elapsedClockSeconds); // Allow processing of other valid tokens
