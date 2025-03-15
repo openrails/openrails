@@ -27,22 +27,12 @@ namespace ORTS.Settings
 {
     public class UserSettings : PropertySettingsBase
     {
-        public static readonly string RegistryKey;        // ie @"SOFTWARE\OpenRails\ORTS"
-        public static readonly string SettingsFilePath;   // ie @"C:\Program Files\Open Rails\OpenRails.ini"
         public static readonly string UserDataFolder;     // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails"
         public static readonly string DeletedSaveFolder;  // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails\Deleted Saves"
         public static readonly string SavePackFolder;     // ie @"C:\Users\Wayne\AppData\Roaming\Open Rails\Save Packs"
 
         static UserSettings()
         {
-            // Only one of these is allowed; if the INI file exists, we use that, otherwise we use the registry.
-            RegistryKey = "SOFTWARE\\OpenRails\\ORTS";
-            SettingsFilePath = Path.Combine(ApplicationInfo.ProcessDirectory, "OpenRails.ini");
-            if (File.Exists(SettingsFilePath))
-                RegistryKey = null;
-            else
-                SettingsFilePath = null;
-
             UserDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ApplicationInfo.ProductName);
             // TODO: If using INI file, move these to application directory as well.
             if (!Directory.Exists(UserDataFolder)) Directory.CreateDirectory(UserDataFolder);
@@ -476,7 +466,7 @@ namespace ORTS.Settings
         public TelemetrySettings Telemetry { get; private set; }
 
         public UserSettings(IEnumerable<string> options)
-            : base(SettingsStore.GetSettingStore(SettingsFilePath, RegistryKey, null))
+            : base(SettingsStore.GetSettingStore(SettingsBase.SettingsFilePath, SettingsBase.RegistryKey, null))
         {
             CustomDefaultValues["LoggingPath"] = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
             CustomDefaultValues["ScreenshotPath"] = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), ApplicationInfo.ProductName);
@@ -519,6 +509,23 @@ namespace ORTS.Settings
             RailDriver.Save();
             Content.Save();
             Telemetry.Save();
+        }
+
+        /// <summary>
+        /// Change the settings store for the user settings and its sub-settings.
+        /// Creates a new SettingsStore based on the provided parameters.
+        /// </summary>
+        /// <param name="filePath">The path to the INI file, or NULL if using the registry.</param>
+        /// <param name="registryKey">The registry key (name), or NULL if using an INI file. </param>
+        /// <param name="section">Optional, the name of the section / subkey.</param>
+        public override void ChangeSettingsStore(string filePath, string registryKey, string section)
+        {
+            base.ChangeSettingsStore(filePath, registryKey, section);  // section is defined in SettingsStoreLocalIni
+            Folders.ChangeSettingsStore(filePath, registryKey, FolderSettings.SectionName);
+            Input.ChangeSettingsStore(filePath, registryKey, InputSettings.SectionName);
+            RailDriver.ChangeSettingsStore(filePath, registryKey, RailDriverSettings.SectionName);
+            Content.ChangeSettingsStore(filePath, registryKey, ContentSettings.SectionName);
+            Telemetry.ChangeSettingsStore(filePath, registryKey, ContentSettings.SectionName);
         }
     }
 }
