@@ -73,7 +73,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         /// <summary>
         /// Indicates whether the main reservoir pipe is available
         /// </summary>
-        public bool TwoPipes { get; protected set; }
+        public bool TwoPipes;
+
+        public float MaxBrakeShoeForceN; // This is the force applied to the brake shoe, hence it will be decreased by CoF to give force applied to the wheel
 
         public BrakeModes BrakeMode;
 
