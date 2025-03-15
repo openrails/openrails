@@ -133,7 +133,7 @@ namespace Menu.Notifications
             }
         }
 
-        public Notifications GetNotifications()
+        Notifications GetNotifications()
         {
             string notificationsSerial;
 
@@ -437,68 +437,37 @@ namespace Menu.Notifications
             return url;
         }
 
-        public void ReplaceParameters()
+        void ReplaceParameters()
         {
-            foreach (var n in Notifications.NotificationList)
+            Notifications.ReplaceParameters(ReplaceParameterValues);
+        }
+
+        string ReplaceParameterValues(string value)
+        {
+            if (value == null) return value;
+            var start = 0;
+            while ((start = value.IndexOf("{{", start)) >= 0)
             {
-                n.Title = ReplaceParameter(n.Title);
-                n.Date = ReplaceParameter(n.Date);
-                n.ItemList?.ForEach(item => ReplaceItemParameter(item));
+                var end = value.IndexOf("}}", start);
+                if (end == -1) break;
+                var variable = value.Substring(start + 2, end - start - 2);
+                var replacement = GetParameterValue(variable);
+                value = value.Substring(0, start) + replacement + value.Substring(end + 2);
+                start += replacement.Length;
             }
-            foreach (var list in Notifications.CheckList)
-            {
-                foreach(var c in list?.AnyOfList)
-                {
-                    c?.AllOfList.ForEach(criteria => ReplaceCriteriaPropertyParameter(criteria));
-                    c?.AllOfList.ForEach(criteria => ReplaceCriteriaValueParameter(criteria));
-                }
-            }
+            return value;
         }
 
-        private void ReplaceItemParameter(Item item)
+        string GetParameterValue(string parameter)
         {
-            if (item is Record record)
-                record.Value = ReplaceParameter(record.Value);
-            if (item is Link link)
-                link.Value = ReplaceParameter(link.Value);
-            if (item is Update update)
-                update.Value = ReplaceParameter(update.Value);
-        }
-
-        /// <summary>
-        /// If Property is a parameter, remove {{..}} and add it and its replacement to the dictionary.
-        /// </summary>
-        /// <param name="criteria"></param>
-        private void ReplaceCriteriaPropertyParameter(Criteria criteria)
-        {
-            if (ContainsParameter(criteria.Property))
-            {
-                criteria.Property = ReplaceParameter(criteria.Property);
-            }
-        }
-
-        private void ReplaceCriteriaValueParameter(Criteria criteria)
-        {
-            criteria.Value = ReplaceParameter(criteria.Value);
-        }
-
-        private string ReplaceParameter(string field)
-        {
-            if (ContainsParameter(field) == false) return field;
-
-            var parameterArray = field.Split('{', '}'); // 5 elements: prefix, "", target, "", suffix
-            var target = parameterArray[2];
-            var lowerCaseTarget = parameterArray[2].ToLower();
             string replacement;
-
-            // If found in dictionary, then use that else extract it from program
-            if (ParameterDictionary.ContainsKey(lowerCaseTarget))
+            if (ParameterDictionary.ContainsKey(parameter))
             {
-                replacement = ParameterDictionary[lowerCaseTarget];
+                replacement = ParameterDictionary[parameter];
             }
             else
             {
-                switch (lowerCaseTarget)
+                switch (parameter)
                 {
                     // Update parameters
                     // Using "none" instead of "" so that records are readable.
@@ -555,23 +524,15 @@ namespace Menu.Notifications
                         replacement = GetInstalledRoutes();
                         break;
                     default:
-                        var propertyValue = GetSetting(target);
+                        var propertyValue = GetSetting(parameter);
                         replacement = (propertyValue == "")
-                            ? field     // strings that are not recognised are not replaced.
+                            ? "{{" + parameter + "}}"     // strings that are not recognised are not replaced.
                             : propertyValue.ToLower().Replace("false", "off").Replace("true", "on");
                         break;
                 }
-                ParameterDictionary.Add(lowerCaseTarget, replacement);
+                ParameterDictionary.Add(parameter, replacement);
             }
-
-            return parameterArray[0] + replacement + parameterArray[4];
-        }
-
-        private bool ContainsParameter(string field)
-        {
-            if (field.Contains("{{") == false) return false;
-            if (field.Contains("}}") == false) return false;
-            return true;
+            return replacement;
         }
 
         /// <summary>
@@ -617,7 +578,7 @@ namespace Menu.Notifications
             return installedRouteList;
         }
 
-        public OverrideParameterList GetOverrideParameters()
+        OverrideParameterList GetOverrideParameters()
         {
             // To support testing of a new remote notifications.json file before it is published,
             // GetNotifications tests first for a local file notifications_override_values.json
