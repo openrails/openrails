@@ -1445,15 +1445,15 @@ namespace Orts.Viewer3D
                             && controlRenderer is ICabViewMouseControlRenderer mouseRenderer && mouseRenderer.IsMouseWithin()
                             && (controlRenderer.Control.Screens == null || controlRenderer.Control.Screens.Count == 0 || controlRenderer.Control.Screens[0] == "all"
                             || controlRenderer.Control.Screens.Contains(locoViewer._CabRenderer.ActiveScreen[controlRenderer.Control.Display])))
-            {
-                if (UserInput.IsMouseLeftButtonPressed)
+                        {
+                            if (UserInput.IsMouseLeftButtonPressed)
                                 MouseChangingControl = mouseRenderer;
                             else if (MouseChangingControl == null && RenderProcess.IsMouseVisible)
-                                        MousePickedControl = mouseRenderer;
-                                        break;
-                                    }
-                                }
-                            }
+                                MousePickedControl = mouseRenderer;
+                            break;
+                        }
+                    }
+                }
                 else if (Camera is ThreeDimCabCamera && locoViewer._has3DCabRenderer)
                 {
                     var trainCarShape = locoViewer.ThreeDimentionCabViewer.TrainCarShape;
@@ -1466,31 +1466,31 @@ namespace Orts.Viewer3D
                                 controlRenderer.Control.Screens.Contains(locoViewer.ThreeDimentionCabRenderer.ActiveScreen[controlRenderer.Control.Display])))
                         {
                             foreach (var targetNode in animatedPart.MatrixIndexes)
-                        {
+                            {
                                 if (!trainCarShape.SharedShape.StoredResultMatrixes.TryGetValue(targetNode, out var matrix))
-                            continue;
-                                    var matrixWorldLocation = trainCarShape.Location.WorldLocation;
-                                    matrixWorldLocation.Location.X = matrix.Translation.X;
-                                    matrixWorldLocation.Location.Y = matrix.Translation.Y;
-                                    matrixWorldLocation.Location.Z = -matrix.Translation.Z;
-                                    Vector3 xnaCenter = Camera.XnaLocation(matrixWorldLocation);
-                                    float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, NearPoint, FarPoint);
-                                    if (bestD > d)
-                                    {
-                                        bestD = d;
+                                    continue;
+                                var matrixWorldLocation = trainCarShape.Location.WorldLocation;
+                                matrixWorldLocation.Location.X = matrix.Translation.X;
+                                matrixWorldLocation.Location.Y = matrix.Translation.Y;
+                                matrixWorldLocation.Location.Z = -matrix.Translation.Z;
+                                Vector3 xnaCenter = Camera.XnaLocation(matrixWorldLocation);
+                                float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, NearPoint, FarPoint);
+                                if (bestD > d)
+                                {
+                                    bestD = d;
                                     if (UserInput.IsMouseLeftButtonPressed)
                                         MouseChangingControl = mouseRenderer;
                                     else if (MouseChangingControl == null && RenderProcess.IsMouseVisible)
                                         MousePickedControl = mouseRenderer;
-                                    }
                                 }
                             }
                         }
                     }
+                }
                 else
-                    {
-                        ActualCursor = Cursors.Default;
-                    }
+                {
+                    ActualCursor = Cursors.Default;
+                }
             }
 
             if (MousePickedControl != null & MousePickedControl != OldMousePickedControl)
@@ -1501,8 +1501,8 @@ namespace Orts.Viewer3D
             if (UserInput.IsMouseWheelChanged)
                 MousePickedControl?.HandleUserInput();
 
-                    OldMousePickedControl = MousePickedControl;
-                    MousePickedControl = null;
+            OldMousePickedControl = MousePickedControl;
+            MousePickedControl = null;
 
             MouseChangingControl?.HandleUserInput();
             if (UserInput.IsMouseLeftButtonReleased)
