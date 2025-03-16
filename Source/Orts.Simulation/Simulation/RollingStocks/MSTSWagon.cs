@@ -415,6 +415,15 @@ namespace Orts.Simulation.RollingStocks
         float LoadFullRelayValveRatio;
         float LoadFullInshotPSI;
 
+        // Brake parameters for interpolating load compensation
+        float LoadStageLoMaxBrakeForceN;
+        float LoadStageHiMaxBrakeForceN;
+        float LoadStageLoMaxHandbrakeForceN;
+        float LoadStageHiHandbrakeForceN;
+        float LoadStageLoRelayValveRatio;
+        float LoadStageHiRelayValveRatio;
+        float LoadStageLoInshotPSI;
+        float LoadStageHiInshotPSI;
 
         /// <summary>
         /// This initializer is called when we haven't loaded this type of car before
@@ -634,10 +643,6 @@ namespace Orts.Simulation.RollingStocks
 
             // Initialise key wagon parameters
             MassKG = InitialMassKG;
-
-            MaxHandbrakeForceN = InitialMaxHandbrakeForceN;
-
-            FrictionBrakeBlendingMaxForceN = InitialMaxBrakeForceN; // set the value of braking when blended with dynamic brakes
 
             if (BrakeShoeType == BrakeShoeTypes.Unknown && Simulator.Settings.VerboseConfigurationMessages)
                 Trace.TraceInformation("Unknown BrakeShoeType set to OR default Cast Iron");
@@ -1015,29 +1020,20 @@ namespace Orts.Simulation.RollingStocks
 
                     if (FreightAnimations.StaticFreightAnimationsPresent) // If it is static freight animation, set wagon physics to full wagon value
                     {
-                        UpdateBrakeLoadCompensation(1);
-                        UpdateDavisLoadCompensation(1);
+                        TempMassDiffRatio = 1;
                     }
 
                 }
                 if (FreightAnimations.LoadedOne != null) // If it is a Continuouos freight animation, set freight wagon parameters to FullatStart
                 {
-                    WeightLoadController.CurrentValue = FreightAnimations.LoadedOne.LoadPerCent / 100;
-
-                    // Update wagon parameters sensitive to wagon mass change
                     // Calculate the difference ratio, ie how full the wagon is. This value allows the relevant value to be scaled from the empty mass to the full mass of the wagon
+                    WeightLoadController.CurrentValue = FreightAnimations.LoadedOne.LoadPerCent / 100;
                     TempMassDiffRatio = WeightLoadController.CurrentValue;
-                    UpdateBrakeLoadCompensation(TempMassDiffRatio);
-                    UpdateDavisLoadCompensation(TempMassDiffRatio);
                 }
-                else  // If Freight animation is Continuous and freight is not loaded then set initial values to the empty wagon values
+                else if (FreightAnimations.ContinuousFreightAnimationsPresent)
                 {
-                    if (FreightAnimations.ContinuousFreightAnimationsPresent)
-                    {
-                        // If it is an empty continuous freight animation, set wagon physics to empty wagon value
-                        UpdateBrakeLoadCompensation(0);
-                        UpdateDavisLoadCompensation(0);
-                    }
+                    // If it is an empty continuous freight animation, set wagon physics to empty wagon value
+                    TempMassDiffRatio = 0;
                 }
 
 #if DEBUG_VARIABLE_MASS
@@ -1049,6 +1045,30 @@ namespace Orts.Simulation.RollingStocks
                 Trace.TraceInformation("Empty Values = Brake {0} Handbrake {1} DavisA {2} DavisB {3} DavisC {4} CoGY {5}", LoadEmptyMaxBrakeForceN, LoadEmptyMaxHandbrakeForceN, LoadEmptyORTSDavis_A, LoadEmptyORTSDavis_B, LoadEmptyORTSDavis_C, LoadEmptyCentreOfGravityM_Y);
                 Trace.TraceInformation("Full Values = Brake {0} Handbrake {1} DavisA {2} DavisB {3} DavisC {4} CoGY {5}", LoadFullMaxBrakeForceN, LoadFullMaxHandbrakeForceN, LoadFullORTSDavis_A, LoadFullORTSDavis_B, LoadFullORTSDavis_C, LoadFullCentreOfGravityM_Y);
 #endif
+
+                // The FreightAnim-style brake parameters cannot support switchable states, so use them only in case there are none of those
+                if (BrakeSystems.Count <= 1 && BrakeLoadStages.Count == 0)
+                {
+                    var loStage = BrakeSystem.CreateNewLike(BrakeSystem, this).InitializeDefault();
+                    var hiStage = BrakeSystem.CreateNewLike(BrakeSystem, this).InitializeDefault();
+                    if (loStage != null && hiStage != null)
+                    {
+                        loStage.InitialMaxBrakeForceN = LoadEmptyMaxBrakeForceN;
+                        hiStage.InitialMaxBrakeForceN = LoadFullMaxBrakeForceN;
+                        loStage.InitialMaxHandbrakeForceN = LoadEmptyMaxHandbrakeForceN;
+                        hiStage.InitialMaxHandbrakeForceN = LoadFullMaxHandbrakeForceN;
+                        
+                        if (loStage is AirSinglePipe loStageAir && hiStage is AirSinglePipe hiStageAir)
+                        {
+                            loStageAir.RelayValveRatio = LoadEmptyRelayValveRatio;
+                            hiStageAir.RelayValveRatio = LoadFullRelayValveRatio;
+                            loStageAir.RelayValveInshotPSI = LoadEmptyInshotPSI;
+                            hiStageAir.RelayValveInshotPSI = LoadFullInshotPSI;
+                        }
+                    }
+                    BrakeLoadStages.Add((BrakeSystem.BrakeMode, InitialMassKG), loStage);
+                    BrakeLoadStages.Add((BrakeSystem.BrakeMode, MassKG), hiStage);
+                }
             }
 
             // Determine whether or not to use the Davis friction model. Must come after freight animations are initialized.
@@ -1085,6 +1105,11 @@ namespace Orts.Simulation.RollingStocks
             }
             BrakeSystem = BrakeSystem ?? MSTSBrakeSystem.Create(CarBrakeSystemType, this);
             SetBrakeSystemMode(BrakeSystems.Keys.FirstOrDefault().ToString());
+
+            MaxHandbrakeForceN = BrakeSystem.InitialMaxHandbrakeForceN;
+            FrictionBrakeBlendingMaxForceN = BrakeSystem.InitialMaxBrakeForceN; // set the value of braking when blended with dynamic brakes
+            UpdateBrakeLoadCompensation(TempMassDiffRatio);
+            UpdateDavisLoadCompensation(TempMassDiffRatio);
         }
 
         public void SetBrakeSystemMode(string mode)
@@ -1101,8 +1126,7 @@ namespace Orts.Simulation.RollingStocks
                         BrakeSystemAlt = BrakeSystem.CreateNewLike(brakeSystem, this).InitializeDefault();
 
                         // Leave the car in a working state. However the train should reinitialize the car with correct values when all the switchings were finished.
-                        float maxPressurePSI, fullServPressurePSI;
-                        (maxPressurePSI, fullServPressurePSI) = brakeSystem.GetDefaultPressures();
+                        (var maxPressurePSI, var fullServPressurePSI) = brakeSystem.GetDefaultPressures();
                         var handbrakeOn = BrakeSystem.GetHandbrakeStatus();
                         var immediateRelease = BrakeSystem.GetCylPressurePSI() == 0;
                         BrakeSystemAlt.Initialize(handbrakeOn, maxPressurePSI, fullServPressurePSI, immediateRelease);
@@ -1122,7 +1146,7 @@ namespace Orts.Simulation.RollingStocks
                 }
                 BrakeSystem.InitializeFromCopy(brakeSystem, true);
 
-                MaxBrakeForceN = BrakeSystem.MaxBrakeShoeForceN != 0 && BrakeShoeType != BrakeShoeTypes.Unknown ? BrakeSystem.MaxBrakeShoeForceN : InitialMaxBrakeForceN;
+                MaxBrakeForceN = BrakeSystem.MaxBrakeShoeForceN != 0 && BrakeShoeType != BrakeShoeTypes.Unknown ? BrakeSystem.MaxBrakeShoeForceN : BrakeSystem.InitialMaxBrakeForceN;
             }
         }
 
@@ -1294,8 +1318,6 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(sound": MainSoundFileName = stf.ReadStringBlock(null); break;
                 case "wagon(ortsbrakeshoefriction": BrakeShoeFrictionFactor = new Interpolator(stf); break;
-                case "wagon(maxhandbrakeforce": InitialMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "wagon(maxbrakeforce": InitialMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(ortsnumbercarbrakeshoes": NumberCarBrakeShoes = stf.ReadIntBlock(null); break;
                 case "wagon(ortsbrakeshoetype":
                     stf.MustMatch("(");
@@ -1427,6 +1449,35 @@ namespace Orts.Simulation.RollingStocks
                                         BrakeSystems[newSystem.BrakeMode] = newSystem;
                                     else
                                         BrakeSystems.Add(newSystem.BrakeMode, newSystem);
+                                }
+                                break;
+                            case "wagon(ortsbrakemode(ortsloadstage":
+                                float? maxMass = null;
+                                BrakeSystem stage = BrakeSystem.CreateNewLike(newSystem, this).InitializeDefault();
+                                stf.VerifyStartOfBlock();
+                                while (!stf.EndOfBlock())
+                                {
+                                    stf.ReadItem();
+                                    lowercasetoken = stf.Tree.ToLower();
+                                    switch (lowercasetoken)
+                                    {
+                                        case "wagon(ortsbrakemode(ortsloadstage(ortsloadstagemaxmass":
+                                            maxMass = stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
+                                            if (!BrakeLoadStages.ContainsKey((newSystem.BrakeMode, maxMass.Value)))
+                                                BrakeLoadStages.Add((newSystem.BrakeMode, maxMass.Value), stage);
+                                            break;
+                                        default:
+                                            if (lowercasetoken.EndsWith("("))
+                                            {
+                                                stf.SkipRestOfBlock();
+                                                STFException.TraceWarning(stf, "Unknown braking parameter ignored.");
+                                            }
+                                            else if (stage is MSTSBrakeSystem mstsStage)
+                                                mstsStage.Parse(lowercasetoken.Replace("ortsbrakemode(ortsloadstage(", ""), stf);
+                                            else
+                                                STFException.TraceWarning(stf, "The BrakeSystemType() has not yet been defined, parameter ignored.");
+                                            break;
+                                    }
                                 }
                                 break;
                             default:

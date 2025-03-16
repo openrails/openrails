@@ -128,8 +128,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float BrakePipeChangePSIpS;
         protected SmoothedData SmoothedBrakePipeChangePSIpS;
 
-        protected List<float> BrakeMassesT;
-        protected List<float> ReferenceMassesT;
+        protected float BrakeMass;
 
         /// <summary>
         /// EP brake holding valve. Needs to be closed (Lap) in case of brake application or holding.
@@ -267,8 +266,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             HighSpeedReducingPressurePSI = diff && thiscopy.HighSpeedReducingPressurePSI == default ? HighSpeedReducingPressurePSI : thiscopy.HighSpeedReducingPressurePSI;
             LegacyEmergencyValve = diff && thiscopy.LegacyEmergencyValve == default ? LegacyEmergencyValve : thiscopy.LegacyEmergencyValve;
             BrakeMode = diff && thiscopy.BrakeMode == default ? BrakeMode : thiscopy.BrakeMode;
-            BrakeMassesT = diff && thiscopy.BrakeMassesT == default ? BrakeMassesT : thiscopy.BrakeMassesT;
-            ReferenceMassesT = diff && thiscopy.ReferenceMassesT == default ? ReferenceMassesT : thiscopy.ReferenceMassesT;
+            BrakeMass = diff && thiscopy.BrakeMass == default ? BrakeMass : thiscopy.BrakeMass;
             MaxBrakeShoeForceN = diff && thiscopy.MaxBrakeShoeForceN == default ? MaxBrakeShoeForceN : thiscopy.MaxBrakeShoeForceN;
 
         }
@@ -303,8 +301,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             UniformReleaseThresholdPSI = default;
             AcceleratedApplicationLimitPSIpS = default;
             AcceleratedEmergencyReleaseThresholdPSI = default;
-            BrakeMassesT = default;
-            ReferenceMassesT = default;
+            BrakeMass = default;
 
             return base.InitializeDefault();
         }
@@ -489,18 +486,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 case "engine(ortssupplyreschargingrate":
                 case "wagon(ortssupplyreschargingrate": SupplyResChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "wagon(ortsmaxbrakeshoeforce": MaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "wagon(ortsbrakemass":
-                    BrakeMassesT = BrakeMassesT ?? new List<float>();
-                    stf.MustMatch("(");
-                    while (!stf.EndOfBlock())
-                        BrakeMassesT.Add(Kg.ToTonne(stf.ReadFloat(STFReader.UNITS.Mass, null)));
-                    break;
-                case "wagon(ortsreferencemasses":
-                    ReferenceMassesT = ReferenceMassesT ?? new List<float>();
-                    stf.MustMatch("(");
-                    while (!stf.EndOfBlock())
-                        ReferenceMassesT.Add(Kg.ToTonne(stf.ReadFloat(STFReader.UNITS.Mass, null)));
-                    break;
+                case "wagon(maxhandbrakeforce": InitialMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(maxbrakeforce": InitialMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(ortsbrakemass": BrakeMass = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
             }
         }
 

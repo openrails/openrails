@@ -76,6 +76,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         public bool TwoPipes;
 
         public float MaxBrakeShoeForceN; // This is the force applied to the brake shoe, hence it will be decreased by CoF to give force applied to the wheel
+        public float InitialMaxHandbrakeForceN;  // Initial force when the wagon initialised
+        public float InitialMaxBrakeForceN;   // Initial force when the wagon initialised, this is the force on the wheel, ie after the brake shoe.
 
         public BrakeModes BrakeMode;
 

@@ -212,8 +212,6 @@ namespace Orts.Simulation.RollingStocks
         public float MaxHandbrakeForceN;
         public float MaxBrakeForceN = 89e3f;
         public int NumberCarBrakeShoes;
-        public float InitialMaxHandbrakeForceN;  // Initial force when agon initialised
-        public float InitialMaxBrakeForceN = 89e3f;   // Initial force when wagon initialised, this is the force on the wheel, ie after the brake shoe.
 
         // Coupler Animation
         public AnimatedCoupler FrontCoupler = new AnimatedCoupler();
@@ -543,9 +541,15 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
+        /// <summary>The actually used brake system. When mode is changed, this one is updated from the values of <see cref="BrakeSystems"/> and used directly</summary>
         public BrakeSystem BrakeSystem;
-        protected BrakeSystem BrakeSystemAlt; // For dual vacuum/air vehicles, to be swapped with BrakeSystem
-        public readonly Dictionary<BrakeModes, BrakeSystem> BrakeSystems = new Dictionary<BrakeModes, BrakeSystem>(); // The G-P-R-etc. systems with differences only
+        /// <summary>Alternative for dual vacuum/air vehicles, to be swapped with <see cref="BrakeSystem"/> and used directly</summary>
+        protected BrakeSystem BrakeSystemAlt;
+        /// <summary>Store for the various modes. Never used directly, only the non-zero values get copied into <see cref="BrakeSystem"/></summary>
+        public readonly Dictionary<BrakeModes, BrakeSystem> BrakeSystems = new Dictionary<BrakeModes, BrakeSystem>();
+        /// <summary>Store for the various loades within modes. Never used directly, only the non-zero values get copied into <see cref="BrakeSystem"/></summary>
+        public readonly Dictionary<(BrakeModes BrakeMode, float MaxMass), BrakeSystem> BrakeLoadStages = new Dictionary<(BrakeModes, float), BrakeSystem>();
+        /// <summary>Filter for the <see cref="BrakeSystems"/>, in case that comes from an include file</summary>
         public string[] BrakeModeNames { get; protected set; }
         protected string BrakeModePreset;
 
