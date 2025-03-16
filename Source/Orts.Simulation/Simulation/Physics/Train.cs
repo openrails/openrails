@@ -2006,7 +2006,9 @@ namespace Orts.Simulation.Physics
                 LogTrainSpeed(Simulator.ClockTime);
             }
 
-            // Initialise track joint trigger points. Only runs once at start up.
+            // Initialise track joint trigger points. Sets the trigger point for the track joint reletative to other cars.
+            // This is then reset every time a track joint is triggered, and positioned the same distance apart, hence reletative positions are maintained.
+            // Only runs once at start up.
             if (SoundSetupInitialise)
             {
                 var trackjointdistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
@@ -2017,11 +2019,13 @@ namespace Orts.Simulation.Physics
                     car.realTimeTrackJointDistanceM = trackjointdistanceM + trainLengthM;
                     trainLengthM += car.CarLengthM;
 
+                    // Track joint "reached" move car joint into next track joint sesction
                     if (trainLengthM > (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM)
                     {
-                        trainLengthM = 0;
+                        trainLengthM -= (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
                     }
 
+  //                  Trace.TraceInformation("Initialise Track Joints - CarID {0} RealDistance {1} TrainLength {2}", car.CarID, car.realTimeTrackJointDistanceM, trainLengthM);
                 }
 
                 SoundSetupInitialise = false;
