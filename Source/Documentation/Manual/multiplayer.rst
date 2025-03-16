@@ -312,6 +312,27 @@ Additional info on using the Public Server
   time frame, it will re-enter the game in the position where he was at the 
   moment of the crash.
 
+.. _standalone-multiplayer-server:
+
+Standalone multiplayer server
+=============================
+
+If preferred, a standalone multiplayer server may be run on a local computer. It must be 
+started before the players enter the game.
+To start it, click on the *Tools* button in the main menu window, and then select 
+*MultiPlayer Server*. A window as shown below will appear.
+
+.. image:: images/multiplayerserver.png
+  :align: center
+  :scale: 160%
+
+First only the three first lines will be shown. As soon as the first player enters the game 
+(he must select the URL and the port of the standalone multiplayer server; furthermore he must select 
+the *Client* button, enter a User Name and click on *Start MP*) , he becomes appointed as the dispatcher, 
+and the standalone multiplayer server starts displaying all messages sent and received.
+At this point all other players can enter the game.
+
+
 Save and resume
 ===============
 
