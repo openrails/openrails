@@ -266,6 +266,7 @@ namespace Menu
                         Process.Start("https://www.openrails.org/learn/docs-list/");
                     }
                 );
+                contextMenuStripDocuments.Items.Add(new ToolStripSeparator());
                 contextMenuStripDocuments.Items.Add(item);
 
                 NotificationManager = new NotificationManager(this, this.Resources, UpdateManager, Settings, panelDetails);
