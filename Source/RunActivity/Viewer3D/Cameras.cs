@@ -1083,6 +1083,9 @@ namespace Orts.Viewer3D
                 isVisibleTrainCarViewerOrWebpage = (Viewer.TrainCarOperationsWindow.Visible && !Viewer.TrainCarOperationsViewerWindow.Visible) || Viewer.TrainCarOperationsViewerWindow.Visible || (Viewer.TrainCarOperationsWebpage?.Connections > 0 && Viewer.TrainCarOperationsWebpage.TrainCarSelected);
             }
 
+            // Update the camera view
+            oldCarPosition = oldCarPosition == 0 && carPosition == 0 ? -1 : oldCarPosition;
+
             if (attachedCar == null || attachedCar.Train != Viewer.SelectedTrain || carPosition != oldCarPosition)
             {
                 if (Front)
