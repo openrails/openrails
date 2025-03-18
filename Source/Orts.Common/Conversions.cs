@@ -767,6 +767,13 @@ namespace ORTS.Common
             return String.Format(CultureInfo.CurrentCulture, kilo ? "{0:F1} {1}" : "{0:F0} {1}", force, unit);
         }
 
+        public static string FormatLargeForce(float forceN, bool isMetric)
+        {
+            var force = isMetric ? forceN : N.ToLbf(forceN);
+            var unit = isMetric ? kN : klbf;
+            return String.Format(CultureInfo.CurrentCulture, "{0:F1} {1}", force * 1e-3f, unit);
+        }
+
         public static string FormatTemperature(float temperatureC, bool isMetric, bool isDelta)
         {
             var temperature = isMetric ? temperatureC : isDelta ? C.ToDeltaF(temperatureC) : C.ToF(temperatureC);
