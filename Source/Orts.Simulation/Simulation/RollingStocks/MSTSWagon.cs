@@ -1045,30 +1045,6 @@ namespace Orts.Simulation.RollingStocks
                 Trace.TraceInformation("Empty Values = Brake {0} Handbrake {1} DavisA {2} DavisB {3} DavisC {4} CoGY {5}", LoadEmptyMaxBrakeForceN, LoadEmptyMaxHandbrakeForceN, LoadEmptyORTSDavis_A, LoadEmptyORTSDavis_B, LoadEmptyORTSDavis_C, LoadEmptyCentreOfGravityM_Y);
                 Trace.TraceInformation("Full Values = Brake {0} Handbrake {1} DavisA {2} DavisB {3} DavisC {4} CoGY {5}", LoadFullMaxBrakeForceN, LoadFullMaxHandbrakeForceN, LoadFullORTSDavis_A, LoadFullORTSDavis_B, LoadFullORTSDavis_C, LoadFullCentreOfGravityM_Y);
 #endif
-
-                // The FreightAnim-style brake parameters cannot support switchable states, so use them only in case there are none of those
-                if (BrakeSystems.Count <= 1 && BrakeLoadStages.Count == 0)
-                {
-                    var loStage = BrakeSystem.CreateNewLike(BrakeSystem, this).InitializeDefault();
-                    var hiStage = BrakeSystem.CreateNewLike(BrakeSystem, this).InitializeDefault();
-                    if (loStage != null && hiStage != null)
-                    {
-                        loStage.InitialMaxBrakeForceN = LoadEmptyMaxBrakeForceN;
-                        hiStage.InitialMaxBrakeForceN = LoadFullMaxBrakeForceN;
-                        loStage.InitialMaxHandbrakeForceN = LoadEmptyMaxHandbrakeForceN;
-                        hiStage.InitialMaxHandbrakeForceN = LoadFullMaxHandbrakeForceN;
-                        
-                        if (loStage is AirSinglePipe loStageAir && hiStage is AirSinglePipe hiStageAir)
-                        {
-                            loStageAir.RelayValveRatio = LoadEmptyRelayValveRatio;
-                            hiStageAir.RelayValveRatio = LoadFullRelayValveRatio;
-                            loStageAir.RelayValveInshotPSI = LoadEmptyInshotPSI;
-                            hiStageAir.RelayValveInshotPSI = LoadFullInshotPSI;
-                        }
-                    }
-                    BrakeLoadStages.Add((BrakeSystem.BrakeMode, InitialMassKG), loStage);
-                    BrakeLoadStages.Add((BrakeSystem.BrakeMode, MassKG), hiStage);
-                }
             }
 
             // Determine whether or not to use the Davis friction model. Must come after freight animations are initialized.
@@ -1104,7 +1080,32 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
             BrakeSystem = BrakeSystem ?? MSTSBrakeSystem.Create(CarBrakeSystemType, this);
-            SetBrakeSystemMode(BrakeSystems.Keys.FirstOrDefault().ToString());
+
+            if (FreightAnimations != null && BrakeSystems.Count <= 1)
+            {
+                // The FreightAnim-style brake parameters cannot support switchable states, so use them only in case there are none configured
+                var loStage = BrakeSystem.CreateNewLike(BrakeSystem, this).InitializeDefault();
+                var hiStage = BrakeSystem.CreateNewLike(BrakeSystem, this).InitializeDefault();
+                if (loStage != null && hiStage != null)
+                {
+                    loStage.InitialMaxBrakeForceN = LoadEmptyMaxBrakeForceN;
+                    hiStage.InitialMaxBrakeForceN = LoadFullMaxBrakeForceN;
+                    loStage.InitialMaxHandbrakeForceN = LoadEmptyMaxHandbrakeForceN;
+                    hiStage.InitialMaxHandbrakeForceN = LoadFullMaxHandbrakeForceN;
+
+                    if (loStage is AirSinglePipe loStageAir && hiStage is AirSinglePipe hiStageAir)
+                    {
+                        loStageAir.RelayValveRatio = LoadEmptyRelayValveRatio;
+                        hiStageAir.RelayValveRatio = LoadFullRelayValveRatio;
+                        loStageAir.RelayValveInshotPSI = LoadEmptyInshotPSI;
+                        hiStageAir.RelayValveInshotPSI = LoadFullInshotPSI;
+                    }
+                }
+                BrakeSystems.Add((BrakeSystem.BrakeMode, InitialMassKG), loStage);
+                BrakeSystems.Add((BrakeSystem.BrakeMode, MassKG), hiStage);
+            }
+            var mode = BrakeSystems.Keys.FirstOrDefault();
+            SetBrakeSystemMode(mode.BrakeMode, mode.MaxMass);
 
             MaxHandbrakeForceN = BrakeSystem.InitialMaxHandbrakeForceN;
             FrictionBrakeBlendingMaxForceN = BrakeSystem.InitialMaxBrakeForceN; // set the value of braking when blended with dynamic brakes
@@ -1112,12 +1113,17 @@ namespace Orts.Simulation.RollingStocks
             UpdateDavisLoadCompensation(TempMassDiffRatio);
         }
 
-        public void SetBrakeSystemMode(string mode)
+        public void SetBrakeSystemMode(BrakeModes mode, float massKg)
         {
-            if (Math.Abs(SpeedMpS) > .1)
+            if (Math.Abs(SpeedMpS) > .1 || BrakeSystems.Count == 0)
                 return;
 
-            if (!string.IsNullOrWhiteSpace(mode) && Enum.TryParse(mode, out BrakeModes modeEnum) && BrakeSystems.TryGetValue(modeEnum, out var brakeSystem))
+            var max = 0f;
+            foreach (var key in BrakeSystems.Keys)
+                if (massKg < key.MaxMass && key.BrakeMode == mode)
+                    max = Math.Max(max, key.MaxMass);
+
+            if (BrakeSystems.TryGetValue((mode, max), out var brakeSystem))
             {
                 if (brakeSystem is VacuumSinglePipe ^ BrakeSystem is VacuumSinglePipe)
                 {
@@ -1431,10 +1437,10 @@ namespace Orts.Simulation.RollingStocks
                                     if (newSystem != null)
                                     {
                                         newSystem.BrakeMode = brakeModeName.Value;
-                                        if (BrakeSystems.ContainsKey(newSystem.BrakeMode))
-                                            BrakeSystems[newSystem.BrakeMode] = newSystem;
+                                        if (BrakeSystems.ContainsKey((newSystem.BrakeMode, 0)))
+                                            BrakeSystems[(newSystem.BrakeMode, 0)] = newSystem;
                                         else
-                                            BrakeSystems.Add(newSystem.BrakeMode, newSystem);
+                                            BrakeSystems.Add((newSystem.BrakeMode, 0), newSystem);
                                     }
                                 }
                                 break;
@@ -1445,10 +1451,10 @@ namespace Orts.Simulation.RollingStocks
                                 if (brakeModeName != null)
                                 {
                                     newSystem.BrakeMode = brakeModeName.Value;
-                                    if (BrakeSystems.ContainsKey(newSystem.BrakeMode))
-                                        BrakeSystems[newSystem.BrakeMode] = newSystem;
+                                    if (BrakeSystems.ContainsKey((newSystem.BrakeMode, 0)))
+                                        BrakeSystems[(newSystem.BrakeMode, 0)] = newSystem;
                                     else
-                                        BrakeSystems.Add(newSystem.BrakeMode, newSystem);
+                                        BrakeSystems.Add((newSystem.BrakeMode, 0), newSystem);
                                 }
                                 break;
                             case "wagon(ortsbrakemode(ortsloadstage":
@@ -1463,8 +1469,8 @@ namespace Orts.Simulation.RollingStocks
                                     {
                                         case "wagon(ortsbrakemode(ortsloadstage(ortsloadstagemaxmass":
                                             maxMass = stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
-                                            if (!BrakeLoadStages.ContainsKey((newSystem.BrakeMode, maxMass.Value)))
-                                                BrakeLoadStages.Add((newSystem.BrakeMode, maxMass.Value), stage);
+                                            if (!BrakeSystems.ContainsKey((newSystem.BrakeMode, maxMass.Value)))
+                                                BrakeSystems.Add((newSystem.BrakeMode, maxMass.Value), stage);
                                             break;
                                         default:
                                             if (lowercasetoken.EndsWith("("))
