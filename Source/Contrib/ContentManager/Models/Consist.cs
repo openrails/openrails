@@ -34,6 +34,7 @@ namespace ORTS.ContentManager.Models
         public readonly float MassKG = 0F;
         public readonly float MaxPowerW = 0F;
         public readonly float MaxTractiveForceN = 0F;
+        public readonly float MaxDynamicBrakeForceN = 0F;
         public readonly float MaxBrakeForce = 0F;
         public readonly int NumOperativeBrakes = 0;
         public readonly float MinCouplerStrengthN = 9.999e8f;  // impossible high force
@@ -88,6 +89,7 @@ namespace ORTS.ContentManager.Models
                                 EngCount++;
                                 MaxPowerW += engFile.MaxPowerW;
                                 MaxTractiveForceN += engFile.MaxForceN;
+                                MaxDynamicBrakeForceN += engFile.MaxDynamicBrakeForceN;
                             }
                             else { WagCount++; }
                         }

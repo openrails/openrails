@@ -194,8 +194,9 @@ namespace ORTS.ContentManager
                     details.AppendFormat("Length:\t{1}{0}", Environment.NewLine, FormatStrings.FormatShortDistanceDisplay(data.LengthM, IsMetric));
                     details.AppendFormat("Power:\t{1}{0}", Environment.NewLine, FormatStrings.FormatPower(data.MaxPowerW, IsMetric, IsImperialBHP, IsImperialBTUpS));
                     details.AppendFormat("MaxTE:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MaxTractiveForceN, IsMetric));
+                    details.AppendFormat("MaxDynBrk:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MaxDynamicBrakeForceN, IsMetric));
                     if (!IsMetric && !IsUK) { details.AppendFormat("HPT:\t{1}{0}", Environment.NewLine, FormatHPT(data.MaxPowerW, data.MassKG)); }
-                    if (!IsMetric && !IsUK) { details.AppendFormat("TPOB:\t{1}{0}", Environment.NewLine, FormatTPOB(data.MassKG, data.NumOperativeBrakes)); }
+                    if (!IsMetric && !IsUK) { details.AppendFormat("TpOB:\t{1}{0}", Environment.NewLine, FormatTPOB(data.MassKG, data.NumOperativeBrakes)); }
                     details.AppendFormat("MinCouplerStrength:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MinCouplerStrengthN, IsMetric));
                     details.AppendFormat("MinDerailForce:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MinDerailForceN, IsMetric));
                     details.AppendLine();
