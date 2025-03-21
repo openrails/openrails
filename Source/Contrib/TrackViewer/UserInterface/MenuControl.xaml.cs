@@ -348,6 +348,16 @@ namespace ORTS.TrackViewer.UserInterface
             }
         }
 
+        private void MenuVfsConfigFile_Click(object sender, RoutedEventArgs e)
+        {
+            bool newFolderWasInstalled = trackViewer.SelectVfsConfigFile();
+            if (newFolderWasInstalled)
+            {
+                CloseOtherPathsWindow();
+                PopulateRoutes();
+            }
+        }
+
         /// <summary>
         /// Update the menu to show the available routes
         /// </summary>

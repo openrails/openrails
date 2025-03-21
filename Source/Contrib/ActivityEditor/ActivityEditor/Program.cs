@@ -62,7 +62,7 @@ namespace ActivityEditor
                 "In ActivityEditor\n");
 #endif
 
-            var options = args.Where(a => (a.StartsWith("-") || a.StartsWith("/")));
+            var options = args.Where(a => (a.StartsWith("-") || a.StartsWith("/") && !a.TrimStart('/').Contains("/")));
             UserSettings settings = new UserSettings(options);   //   GetSettings(options);
             intlMngr = new IntalMngr(settings);
 
