@@ -22,6 +22,8 @@ namespace ORTS.Settings
 {
     public class TelemetrySettings : PropertySettingsBase
     {
+        public static readonly string SectionName = "Telemetry";
+
         [Default(0)]
         public int RandomNumber1000 { get; set; }
         [Default("https://telemetry.openrails.org")]
@@ -29,7 +31,7 @@ namespace ORTS.Settings
         public DateTime StateSystem { get; set; }
 
         public TelemetrySettings()
-            : base(SettingsStore.GetSettingStore(UserSettings.SettingsFilePath, UserSettings.RegistryKey, "Telemetry"))
+            : base(SettingsStore.GetSettingStore(UserSettings.SettingsFilePath, UserSettings.RegistryKey, SectionName))
         {
             Load(new string[0]);
         }
