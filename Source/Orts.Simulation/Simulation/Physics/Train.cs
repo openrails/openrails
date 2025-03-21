@@ -163,6 +163,8 @@ namespace Orts.Simulation.Physics
         public bool HuDIsWheelSlip;
         public bool IsBrakeSkid;
 
+        public bool SoundSetupInitialise = true;
+
         public bool HotBoxSetOnTrain = false;
         public int ActivityDurationS
         {
@@ -2000,6 +2002,31 @@ namespace Orts.Simulation.Physics
             if (DatalogTrainSpeed)
             {
                 LogTrainSpeed(Simulator.ClockTime);
+            }
+
+            // Initialise track joint trigger points. Sets the trigger point for the track joint reletative to other cars.
+            // This is then reset every time a track joint is triggered, and positioned the same distance apart, hence reletative positions are maintained.
+            // Only runs once at start up.
+            if (SoundSetupInitialise)
+            {
+                var trackjointdistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
+                float trainLengthM = 0;
+
+                foreach (var car in Cars)
+                {
+                    car.realTimeTrackJointDistanceM = trackjointdistanceM + trainLengthM;
+                    trainLengthM += car.CarLengthM;
+
+                    // Track joint "reached" move car joint into next track joint sesction
+                    if (trainLengthM > (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM)
+                    {
+                        trainLengthM -= (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
+                    }
+
+  //                  Trace.TraceInformation("Initialise Track Joints - CarID {0} RealDistance {1} TrainLength {2}", car.CarID, car.realTimeTrackJointDistanceM, trainLengthM);
+                }
+
+                SoundSetupInitialise = false;
             }
 
         } // end Update
