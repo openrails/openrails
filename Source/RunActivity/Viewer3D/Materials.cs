@@ -294,6 +294,7 @@ namespace Orts.Viewer3D
         public readonly ShadowMapShader ShadowMapShader;
         public readonly SkyShader SkyShader;
         public readonly DebugShader DebugShader;
+        public readonly CabShader CabShader;
 
         public static Texture2D MissingTexture;
         public static Texture2D DefaultSnowTexture;
@@ -329,6 +330,7 @@ namespace Orts.Viewer3D
             ShadowMapShader = new ShadowMapShader(viewer.RenderProcess.GraphicsDevice);
             SkyShader = new SkyShader(viewer.RenderProcess.GraphicsDevice);
             DebugShader = new DebugShader(viewer.RenderProcess.GraphicsDevice);
+            CabShader = new CabShader(viewer.RenderProcess.GraphicsDevice, Vector4.One, Vector4.One, Vector3.One, Vector3.One);
 
             // TODO: This should happen on the loader thread.
             MissingTexture = SharedTextureManager.Get(viewer.RenderProcess.GraphicsDevice, Path.Combine(viewer.ContentPath, "blank.bmp"));
@@ -413,6 +415,9 @@ namespace Orts.Viewer3D
                         break;
                     case "Water":
                         Materials[materialKey] = new WaterMaterial(Viewer, textureName);
+                        break;
+                    case "Screen":
+                        Materials[materialKey] = new ScreenMaterial(Viewer, textureName, options);
                         break;
                     default:
                         Trace.TraceInformation("Skipped unknown material type {0}", materialName);
@@ -606,7 +611,7 @@ namespace Orts.Viewer3D
     public abstract class Material
     {
         public readonly Viewer Viewer;
-        readonly string Key;
+        public readonly string Key;
 
         protected Material(Viewer viewer, string key)
         {
@@ -1208,6 +1213,42 @@ namespace Orts.Viewer3D
         public override bool GetBlending()
         {
             return true;
+        }
+    }
+
+    public class ScreenMaterial : SceneryMaterial
+    {
+        RollingStock.CabViewControlRenderer ScreenRenderer;
+        public readonly int HierarchyIndex;
+
+        public ScreenMaterial(Viewer viewer, string key, int hierarchyIndex)
+            : base(viewer, key, SceneryMaterialOptions.ShaderFullBright, 0)
+        {
+            HierarchyIndex = hierarchyIndex;
+        }
+
+        public void Set2DRenderer(RollingStock.CabViewControlRenderer cabViewControlRenderer)
+        {
+            ScreenRenderer = cabViewControlRenderer;
+            Texture = new RenderTarget2D(Viewer.GraphicsDevice,
+                (int)ScreenRenderer.Control.Width, (int)ScreenRenderer.Control.Height, false, SurfaceFormat.Color, DepthFormat.None, 8, RenderTargetUsage.DiscardContents);
+        }
+
+        public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
+        {
+            if (ScreenRenderer != null)
+            {
+                var originalRenderTargets = graphicsDevice.GetRenderTargets();
+                graphicsDevice.SetRenderTarget(Texture as RenderTarget2D);
+                ScreenRenderer.ControlView.SpriteBatch.Begin();
+                ScreenRenderer.Draw(graphicsDevice);
+                ScreenRenderer.ControlView.SpriteBatch.End();
+                graphicsDevice.SetRenderTargets(originalRenderTargets);
+            }
+
+            Viewer.MaterialManager.SceneryShader.ImageTexture = Texture;
+
+            base.Render(graphicsDevice, renderItems, ref XNAViewMatrix, ref XNAProjectionMatrix);
         }
     }
 
