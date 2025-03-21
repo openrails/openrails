@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
 using Orts.Parsers.Msts;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
@@ -41,9 +43,5 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         }
 
         public abstract void Parse(string lowercasetoken, STFReader stf);
-
-        public abstract void Update(float elapsedClockSeconds);
-
-        public abstract void InitializeFromCopy(BrakeSystem copy);
     }
 }
