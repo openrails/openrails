@@ -113,7 +113,7 @@ namespace Menu
             {
                 return new SortableBindingList<TestActivity>((from f in Folder.GetFolders(Settings)
                                                               from r in Route.GetRoutes(f)
-                                                              from a in Activity.GetActivities(f, r)
+                                                              from a in Activity.GetActivities(r)
                                                               where !(a is ORTS.Menu.ExploreActivity)
                                                               orderby a.Name
                                                               select new TestActivity(f, r, a)).ToList());

@@ -27,7 +27,6 @@ using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using static Orts.Viewer3D.RollingStock.SubSystems.DistributedPowerInterface;
 
@@ -755,7 +754,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
 
             if (String.IsNullOrEmpty(TrainCarShape.SharedShape.ReferencePath))
             {
-                if (!File.Exists(globalText + imageName))
+                if (!Vfs.FileExists(globalText + imageName))
                 {
                     Trace.TraceInformation("Ignored missing " + imageName + " using default. You can copy and unpack the " + imageName + " from OR\'s Documentation\\SampleFiles\\Manual folder to " + globalText +
                         ", or place it under " + TrainCarShape.SharedShape.ReferencePath);
@@ -764,7 +763,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
             }
             else
             {
-                if (!File.Exists(TrainCarShape.SharedShape.ReferencePath + @"\" + imageName))
+                if (!Vfs.FileExists(TrainCarShape.SharedShape.ReferencePath + @"\" + imageName))
                 {
                     Trace.TraceInformation("Ignored missing " + imageName + " using default. You can copy and unpack the " + imageName + " from OR\'s Documentation\\SampleFiles\\Manual folder to " + globalText +
                         ", or place it under " + TrainCarShape.SharedShape.ReferencePath);

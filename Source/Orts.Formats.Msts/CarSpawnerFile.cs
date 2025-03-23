@@ -18,9 +18,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
+using ORTS.Common;
 
 
 namespace Orts.Formats.Msts
@@ -63,7 +63,7 @@ namespace Orts.Formats.Msts
                         else
                         {
                             var dataItem = new CarSpawnerItemData(stf, shapePath);
-                            if (File.Exists(dataItem.name))
+                            if (Vfs.FileExists(dataItem.name))
                                 spawnerDataItems.Add(dataItem);
                             else
                                 STFException.TraceWarning(stf, String.Format("Non-existent shape file {0} referenced", dataItem.name));
