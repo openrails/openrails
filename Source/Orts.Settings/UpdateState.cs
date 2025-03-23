@@ -26,6 +26,8 @@ namespace ORTS.Settings
 {
     public class UpdateState : SettingsBase
     {
+        public static readonly string SectionName = "UpdateState";
+
         #region User Settings
 
         // Please put all update settings in here as auto-properties. Public properties
@@ -41,7 +43,7 @@ namespace ORTS.Settings
         #endregion
 
         public UpdateState()
-            : base(SettingsStore.GetSettingStore(UserSettings.SettingsFilePath, UserSettings.RegistryKey, "UpdateState"))
+            : base(SettingsStore.GetSettingStore(SettingsBase.SettingsFilePath, SettingsBase.RegistryKey, SectionName))
         {
             Load(new string[0]);
         }
