@@ -1542,10 +1542,6 @@ namespace Orts.Simulation.Timetables
                                 {
                                     Trace.TraceInformation("Double station reference : train " + Name + " ; station : " + stationDetails.StationName);
                                 }
-                                else if (fileStrings[iRow][columnIndex].StartsWith("P"))
-                                {
-                                    // Allowed in timetable but not yet implemented
-                                }
                                 else
                                 {
                                     Stops.Add(stationDetails.StationName, ProcessStopInfo(fileStrings[iRow][columnIndex], stationDetails));
@@ -3168,18 +3164,15 @@ namespace Orts.Simulation.Timetables
             public string StopName;
             public int? arrivalTime;
             public int? departureTime;
-            public int passTime;
+            public int? passTime;
             public DateTime? arrivalDT;
             public DateTime? departureDT;
-            public DateTime passDT;
+            public DateTime? passDT;
             public bool arrdeppassvalid;
             public bool allowDepartEarly;
             public bool reqStop;
             public SignalHoldType holdState;
             public bool noWaitSignal;
-            // TODO
-            // public int passageTime; // not yet implemented
-            // public bool passvalid;  // not yet implemented
             public List<TTTrainCommands> Commands;
 
             public TimetableInfo refTTInfo;
@@ -3197,7 +3190,7 @@ namespace Orts.Simulation.Timetables
                 refTTInfo = ttinfo;
                 arrivalTime = -1;
                 departureTime = -1;
-                passTime = -1;
+                passTime = null;
                 Commands = null;
                 allowDepartEarly = false;
                 reqStop = false;
@@ -3223,6 +3216,17 @@ namespace Orts.Simulation.Timetables
                         allowDepartEarly = true;
                         validArrTime = true;
                         departureTime = arrivalTime = null;
+                    }
+                }
+                else if (arrTime.StartsWith("P"))
+                {
+                    string passingTime = arrTime.Substring(1);
+                    validPassTime = TimeSpan.TryParse(passingTime, out atime);
+
+                    if (validPassTime)
+                    {
+                        passTime = Convert.ToInt32(atime.TotalSeconds);
+                        passDT = new DateTime(atime.Ticks);
                     }
                 }
                 else if (arrTime.Contains("P"))
@@ -3294,7 +3298,7 @@ namespace Orts.Simulation.Timetables
                 bool validStop = false;
 
                 // Valid stop and not passing
-                if (arrdeppassvalid && passTime < 0)
+                if (arrdeppassvalid && !passTime.HasValue)
                 {
                     // Check for station flags
                     bool terminal = false;
@@ -3561,9 +3565,10 @@ namespace Orts.Simulation.Timetables
                 }
 
                 // Pass time only - valid condition but not yet processed
-                if (!validStop && passTime >= 0)
+                if (!validStop && passTime.HasValue)
                 {
-                    validStop = true;
+                    validStop = actTrain.CreateStationStop(actPlatformID, null, null, arrivalDT, departureDT, 0,
+                        0, false, null, null, null, false, false, false, false, false, false, false, passTime, passDT);
                 }
 
                 return validStop;

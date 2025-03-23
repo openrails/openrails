@@ -141,7 +141,7 @@ namespace Orts.Viewer3D.Popups
                 ActivityTaskPassengerStopAt Current = null;
 
                 // timetable information
-                if (playerTrain.CheckStations || playerTrain.Autopilot)
+                if (playerTrain.CheckStations)
                 {
                     TTTrain playerTimetableTrain = playerTrain as TTTrain;
 
@@ -281,6 +281,15 @@ namespace Orts.Viewer3D.Popups
                                 StationPreviousDepartActual.Text = Viewer.Catalog.GetString("skipped");
                                 StationPreviousDepartActual.Color = Color.LightGreen;
                             }
+                            else if (playerTimetableTrain.PreviousStop.PassingOnly)
+                            {
+                                StationPreviousArriveScheduled.Text = Viewer.Catalog.GetString("passing");
+                                StationPreviousDepartScheduled.Text = playerTimetableTrain.PreviousStop.passDT.ToString("HH:mm:ss");
+                                StationPreviousArriveActual.Text = "";
+                                DateTime actDepDT = new DateTime((long)(Math.Pow(10, 7) * playerTimetableTrain.PreviousStop.ActualDepart));
+                                StationPreviousDepartActual.Text = actDepDT.ToString("HH:mm:ss");
+                                StationPreviousDepartActual.Color = actDepDT < playerTimetableTrain.PreviousStop.passDT ? Color.LightGreen : Color.LightSalmon;
+                            }
                             else if (playerTimetableTrain.PreviousStop.ActualArrival < 0)
                             {
                                 if (playerTimetableTrain.PreviousStop.ArrivalTime < 0)
@@ -382,6 +391,11 @@ namespace Orts.Viewer3D.Popups
                                     StationCurrentDepartScheduled.Text = "  x     ";
                                 }
                             }
+                            else if (playerTimetableTrain.StationStops[0].PassingOnly)
+                            {
+                                StationCurrentArriveScheduled.Text = Viewer.Catalog.GetString("passing");
+                                StationCurrentDepartScheduled.Text = playerTimetableTrain.StationStops[0].passDT.ToString("HH:mm:ss");
+                            }
                             else if (playerTimetableTrain.StationStops[0].AllowDepartEarly)
                             {
                                 if (playerTimetableTrain.StationStops[0].ArrivalTime >= 0)
@@ -438,6 +452,11 @@ namespace Orts.Viewer3D.Popups
                                         StationNextArriveScheduled.Text = "--:--:--";
                                         StationNextDepartScheduled.Text = "  x     ";
                                     }
+                                }
+                                else if (playerTimetableTrain.StationStops[1].PassingOnly)
+                                {
+                                    StationNextArriveScheduled.Text = Viewer.Catalog.GetString("passing");
+                                    StationNextDepartScheduled.Text = playerTimetableTrain.StationStops[1].passDT.ToString("HH:mm:ss");
                                 }
                                 else if (playerTimetableTrain.StationStops[1].AllowDepartEarly)
                                 {
@@ -548,7 +567,7 @@ namespace Orts.Viewer3D.Popups
                         }
                         else if (transferValid)
                         {
-                            Message.Text = TransferMessage;
+                            Message.Text = String.Copy(TransferMessage);
                             Message.Color = Color.Orange;
                         }
                         else if (playerTimetableTrain.NeedTransfer)
@@ -565,7 +584,7 @@ namespace Orts.Viewer3D.Popups
                                 Message.Color = Color.LightGreen;
                             }
                             else if (playerTimetableTrain.StationStops[0].ReqStopDetails.pickupSet)
-                            { 
+                            {
                                 Message.Text = Viewer.Catalog.GetString("Request stop : stop required to pick up");
                                 Message.Color = Color.LightGreen;
                             }

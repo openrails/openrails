@@ -20773,6 +20773,9 @@ namespace Orts.Simulation.Physics
             public Dictionary<int, int> ConnectionsAwaited = new Dictionary<int, int>();          // List of awaited trains : key = trainno., value = arr time
             public Dictionary<int, WaitInfo> ConnectionDetails = new Dictionary<int, WaitInfo>(); // Details of connection : key = trainno., value = wait info
             public RequestStop ReqStopDetails = null;                                             // Request stop details
+            public int PassTime;                                                                  // Passing time (int)
+            public DateTime passDT;                                                               // Passing time (DateTime)
+            public bool PassingOnly;
 
             //================================================================================================//
             //
@@ -20833,6 +20836,7 @@ namespace Orts.Simulation.Physics
                 AllowDepartEarly = allowdepartearly;
 
                 CallOnAllowed = false;
+                PassingOnly = false;
             }
 
             //================================================================================================//
@@ -20951,6 +20955,10 @@ namespace Orts.Simulation.Physics
                 {
                     ReqStopDetails = new RequestStop(inf, signalRef);
                 }
+
+                PassTime = inf.ReadInt32();
+                passDT = new DateTime(inf.ReadInt64());
+                PassingOnly = inf.ReadBoolean();
             }
 
             //================================================================================================//
@@ -21085,6 +21093,10 @@ namespace Orts.Simulation.Physics
                 {
                     outf.Write(false);
                 }
+
+                outf.Write(PassTime);
+                outf.Write((Int64)passDT.Ticks);
+                outf.Write(PassingOnly);
             }
 
             /// <summary>

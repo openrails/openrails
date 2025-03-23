@@ -1326,7 +1326,9 @@ namespace Orts.Simulation.Timetables
         /// <\summary>
         public StationStop CalculateStationStop(int platformStartID, int? arrivalTime, int? departTime, DateTime? arrivalDT, DateTime? departureDT, float clearingDistanceM,
             float minStopDistance, bool terminal, int? actMinStopTime, float? keepClearFront, float? keepClearRear, bool forcePosition, bool closeupSignal,
-            bool closeup, bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop, bool allowdepartearly)
+            bool closeup, bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop, bool allowdepartearly,
+            int? passTime = null, DateTime? passDT = null)
+
         {
             int platformIndex;
             int activeSubroute = 0;
@@ -1374,24 +1376,25 @@ namespace Orts.Simulation.Timetables
                     return null;
                 }
 
-                // Determine end stop position depending on direction
-                StationStop dummyStop = CalculateStationStopPosition(thisRoute, routeIndex, thisPlatform, activeSubroute,
-                    keepClearFront, keepClearRear, forcePosition, closeupSignal, closeup, restrictPlatformToSignal, extendPlatformToSignal,
-                    terminal, platformIndex);
+                StationStop thisStation;
 
-                // Build and add station stop
-                StationStop thisStation = new StationStop(
+                // Determine pass time
+                // determine end stop position depending on direction
+
+                if (passTime.HasValue)
+                {
+                    thisStation = new StationStop(
                         platformStartID,
                         thisPlatform,
                         activeSubroute,
-                        dummyStop.RouteIndex,
-                        dummyStop.TCSectionIndex,
-                        dummyStop.Direction,
-                        dummyStop.ExitSignal,
-                        dummyStop.HoldSignal,
+                        routeIndex,
+                        sectionIndex,
+                        0,
+                        -1,
                         false,
                         false,
-                        dummyStop.StopOffset,
+                        false,
+                        0,
                         arrivalTime,
                         departTime,
                         terminal,
@@ -1407,10 +1410,51 @@ namespace Orts.Simulation.Timetables
                         allowdepartearly,
                         StationStop.STOPTYPE.STATION_STOP);
 
-                if (arrivalDT.HasValue)
+                    thisStation.PassTime = passTime.Value;
+                    thisStation.passDT = passDT.Value;
+                    thisStation.PassingOnly = true;
+                }
+                else
                 {
-                    thisStation.arrivalDT = arrivalDT.Value;
-                    thisStation.departureDT = departureDT.Value;
+
+                    // Determine end stop position depending on direction
+                    StationStop dummyStop = CalculateStationStopPosition(thisRoute, routeIndex, thisPlatform, activeSubroute,
+                    keepClearFront, keepClearRear, forcePosition, closeupSignal, closeup, restrictPlatformToSignal, extendPlatformToSignal,
+                    terminal, platformIndex);
+
+                    // Build and add station stop
+                    thisStation = new StationStop(
+                            platformStartID,
+                            thisPlatform,
+                            activeSubroute,
+                            dummyStop.RouteIndex,
+                            dummyStop.TCSectionIndex,
+                            dummyStop.Direction,
+                            dummyStop.ExitSignal,
+                            dummyStop.HoldSignal,
+                            false,
+                            false,
+                            dummyStop.StopOffset,
+                            arrivalTime,
+                            departTime,
+                            terminal,
+                            actMinStopTime,
+                            keepClearFront,
+                            keepClearRear,
+                            forcePosition,
+                            closeupSignal,
+                            closeup,
+                            restrictPlatformToSignal,
+                            extendPlatformToSignal,
+                            endStop,
+                            allowdepartearly,
+                            StationStop.STOPTYPE.STATION_STOP);
+
+                    if (arrivalDT.HasValue)
+                    {
+                        thisStation.arrivalDT = arrivalDT.Value;
+                        thisStation.departureDT = departureDT.Value;
+                    }
                 }
 
                 return thisStation;
@@ -2000,11 +2044,12 @@ namespace Orts.Simulation.Timetables
         /// <returns></returns>
         public bool CreateStationStop(int platformStartID, int? arrivalTime, int? departTime, DateTime? arrivalDT, DateTime? departureDT, float clearingDistanceM,
             float minStopDistanceM, bool terminal, int? actMinStopTime, float? keepClearFront, float? keepClearRear, bool forcePosition, bool closeupSignal,
-            bool closeup, bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop, bool allowdepartearly)
+            bool closeup, bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop, bool allowdepartearly,
+            int? passTime = null, DateTime? passDT = null)
         {
             StationStop thisStation = CalculateStationStop(platformStartID, arrivalTime, departTime, arrivalDT, departureDT, clearingDistanceM,
                 minStopDistanceM, terminal, actMinStopTime, keepClearFront, keepClearRear, forcePosition, closeupSignal, closeup,
-                restrictPlatformToSignal, extendPlatformToSignal, endStop, allowdepartearly);
+                restrictPlatformToSignal, extendPlatformToSignal, endStop, allowdepartearly, passTime, passDT);
 
             if (thisStation != null)
             {
@@ -2222,6 +2267,20 @@ namespace Orts.Simulation.Timetables
             if (thisStation.SubrouteIndex > TCRoute.activeSubpath) // Station is not in this subpath
             {
                 return;
+            }
+
+            // check if passing location only, remove for AI trains
+
+            while (thisStation.PassingOnly)
+            {
+                StationStops.RemoveAt(0);
+
+                if (StationStops.Count <= 0)
+                {
+                    return;
+                }
+
+                thisStation = StationStops[0];
             }
 
             // Get distance to station, but not if just after switch to Autopilot and not during station stop
@@ -4055,6 +4114,23 @@ namespace Orts.Simulation.Timetables
             {
                 PreviousStop = StationStops[0].CreateCopy();
                 StationStops.RemoveAt(0);
+
+                if (StationStops.Count > 0)
+                {
+                    thisStation = StationStops[0];
+
+                    // check if next station is passing location only, if so remove
+
+                    while (thisStation.PassingOnly)
+                    {
+                        StationStops.RemoveAt(0);
+                        if (StationStops.Count <= 0)
+                        {
+                            break;
+                        }
+                        thisStation = StationStops[0];
+                    }
+                }
             }
 
             ResetActions(true);
@@ -10200,6 +10276,8 @@ namespace Orts.Simulation.Timetables
         /// </summary>
         public override void CheckStationTask()
         {
+            int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
+
             // If at station
             if (AtStation)
             {
@@ -10207,7 +10285,6 @@ namespace Orts.Simulation.Timetables
                 ActivateTriggeredTrain(TriggerActivationType.StationStop, StationStops[0].PlatformReference);
 
                 // Get time
-                int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
                 int eightHundredHours = 8 * 3600;
                 int sixteenHundredHours = 16 * 3600;
 
@@ -10598,7 +10675,6 @@ namespace Orts.Simulation.Timetables
                         {
                             MovementState = AI_MOVEMENT_STATE.STATION_STOP;
 
-                            int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
                             StationStops[0].ActualArrival = presentTime;
                             StationStops[0].CalculateDepartTime(presentTime, this);
 
@@ -10652,6 +10728,7 @@ namespace Orts.Simulation.Timetables
 
                         // check if station missed : station must be at least 500m. behind us
                         // also check if station was skipped as request stop
+                        // also check if station was only passing point
                         bool missedStation = false;
                         int stationRouteIndex = ValidRoute[0].GetRouteIndex(StationStops[0].TCSectionIndex, 0);
 
@@ -10680,6 +10757,36 @@ namespace Orts.Simulation.Timetables
                                     PreviousStop = StationStops[0].CreateCopy();
                                     StationStops.RemoveAt(0);
                                 }
+                            }
+                        }
+                        else if (StationStops[0].PassingOnly)
+                        {
+                            bool passedstation = false;
+                            if (StationStops[0].SubrouteIndex == TCRoute.activeSubpath)
+                            {
+                                if (stationRouteIndex < 0)
+                                {
+                                    passedstation = true;
+                                }
+                                else if (stationRouteIndex == PresentPosition[1].RouteListIndex)
+                                {
+                                    if ((PresentPosition[1].TCOffset - StationStops[0].StopOffset) > 50.0f)
+                                    {
+                                        passedstation = true;
+                                    }
+                                }
+                                else if (stationRouteIndex < PresentPosition[1].RouteListIndex)
+                                {
+                                    passedstation = true;
+                                }
+                            }
+
+                            if (passedstation)
+                            {
+                                StationStops[0].Passed = true;
+                                StationStops[0].ActualDepart = presentTime;
+                                PreviousStop = StationStops[0].CreateCopy();
+                                StationStops.RemoveAt(0);
                             }
                         }
                         else
