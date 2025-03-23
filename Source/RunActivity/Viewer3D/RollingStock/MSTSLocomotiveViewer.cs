@@ -1602,7 +1602,7 @@ namespace Orts.Viewer3D.RollingStock
         protected readonly MSTSLocomotive Locomotive;
         public readonly CabViewControl Control;
         protected readonly CabShader Shader;
-        protected readonly SpriteBatchMaterial ControlView;
+        public readonly SpriteBatchMaterial ControlView;
 
         protected Vector2 Position;
         protected Texture2D Texture;
@@ -3279,6 +3279,7 @@ namespace Orts.Viewer3D.RollingStock
         //Dictionary<int, DigitalDisplay> DigitParts = null;
         Dictionary<(CabViewControlType, int), ThreeDimCabDigit> DigitParts3D = null;
         Dictionary<(CabViewControlType, int), ThreeDimCabDPI> DPIDisplays3D = null;
+        Dictionary<(CabViewControlType, int), ThreeDimCabScreen> ScreenDisplays3D = null;
         AnimatedPart ExternalWipers = null; // setting to zero to prevent a warning. Probably this will be used later. TODO
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
         MSTSLocomotiveViewer LocoViewer;
@@ -3302,6 +3303,7 @@ namespace Orts.Viewer3D.RollingStock
             DigitParts3D = new Dictionary<(CabViewControlType, int), ThreeDimCabDigit>();
             Gauges = new Dictionary<(CabViewControlType, int), ThreeDimCabGaugeNative>();
             DPIDisplays3D = new Dictionary<(CabViewControlType, int), ThreeDimCabDPI>();
+            ScreenDisplays3D = new Dictionary<(CabViewControlType, int), ThreeDimCabScreen>();
             OnDemandAnimateParts = new Dictionary<(CabViewControlType, int), AnimatedPart>();
 
             // Find the animated parts
@@ -3422,7 +3424,25 @@ namespace Orts.Viewer3D.RollingStock
                     }
                 }
             }
+
+            // Find the animated textures, like screens
+            if (locoViewer.ThreeDimentionCabRenderer.ControlMap.Values.FirstOrDefault(c => c is DriverMachineInterfaceRenderer) is DriverMachineInterfaceRenderer cvcr
+                && cvcr.Control?.ACEFile is var textureName && textureName != null)
+            {
+                textureName = Path.GetFileName(textureName).ToLower();
+                if (TrainCarShape?.SharedShape?.LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?
+                .SubObjects?.SelectMany(s => s.ShapePrimitives).Where(p => p.Material.Key.Contains(textureName)).FirstOrDefault() is var primitive && primitive != null)
+                {
+                    cvcr.SetTexture3D();
+                    var material = Viewer.MaterialManager.Load("Screen", TrainCarShape.SharedShape.ReferencePath + cvcr.Control.ACEFile, primitive.HierarchyIndex) as ScreenMaterial;
+                    material.Set2DRenderer(cvcr);
+                    primitive.SetMaterial(material);
+                    ScreenDisplays3D.Add((new CabViewControlType(CABViewControlTypes.ORTS_ETCS), 0),
+                        new ThreeDimCabScreen(Viewer, material.HierarchyIndex, TrainCarShape, cvcr));
+                }
+            }
         }
+
         public override void InitializeUserInputCommands() { }
 
         /// <summary>
@@ -3551,6 +3571,24 @@ namespace Orts.Viewer3D.RollingStock
                     foreach (var screen in dpdisplay.Screens)
                     {
                         if (LocoViewer.ThreeDimentionCabRenderer.ActiveScreen[dpdisplay.Display] == screen)
+                        {
+                            p.Value.PrepareFrame(frame, elapsedTime);
+                            break;
+                        }
+                    }
+                    continue;
+                }
+                p.Value.PrepareFrame(frame, elapsedTime);
+            }
+
+            foreach (var p in ScreenDisplays3D)
+            {
+                var screen = p.Value.CVFR.Control;
+                if (screen.Screens != null && screen.Screens[0] != "all")
+                {
+                    foreach (var scr in screen.Screens)
+                    {
+                        if (LocoViewer.ThreeDimentionCabRenderer.ActiveScreen[screen.Display] == scr)
                         {
                             p.Value.PrepareFrame(frame, elapsedTime);
                             break;
