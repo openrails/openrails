@@ -1192,12 +1192,14 @@ namespace Orts.Viewer3D.Popups
             string numEngines = ""; // using "+" between DPU sets
             int numCars = 0;
             int numAxles = 0;
-            var massKg = playerTrain.MassKg;
+            var totMassKg = playerTrain.MassKg;
             string sectionMass = ""; // using "  +  " between wagon sets
             var lengthM = playerTrain.Length;
             var maxSpeedMps = playerTrain.TrainMaxSpeedMpS;
             float totPowerW = 0f;
+            float totMaxTractiveEffortN = 0f;
             string sectionMaxTractiveForce = ""; // using "  +  " between DPU sets
+            float totMaxDynamicBrakeForceN = 0f;
             string sectionMaxDynamicBrakeForce = ""; // using "  +  " between DPU sets
             float maxBrakeForceN = 0f;
             float lowestCouplerStrengthN = 9.999e8f;  // impossible high force
@@ -1231,7 +1233,9 @@ namespace Orts.Viewer3D.Popups
                     engCount++;
                     numAxles += eng.LocoNumDrvAxles + eng.GetWagonNumAxles();
                     totPowerW += eng.MaxPowerW;
+                    totMaxTractiveEffortN += eng.MaxForceN;
                     engMaxTractiveForceN += eng.MaxForceN;
+                    totMaxDynamicBrakeForceN += eng.MaxDynamicBrakeForceN;
                     engMaxDynBrakeForceN += eng.MaxDynamicBrakeForceN;
 
                     // hanlde transition from wagons to engines
@@ -1292,7 +1296,7 @@ namespace Orts.Viewer3D.Popups
 
             line = scrollbox.AddLayoutHorizontalLineOfText();
             line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Total Weight:"), LabelAlignment.Left));
-            string massValue = FormatStrings.FormatLargeMass(massKg, isMetric, isUK) + "    (" + sectionMass + ")";
+            string massValue = FormatStrings.FormatLargeMass(totMassKg, isMetric, isUK) + "    (" + sectionMass + ")";
             line.Add(new Label(line.RemainingWidth, line.RemainingHeight, massValue, LabelAlignment.Left));
 
             line = scrollbox.AddLayoutHorizontalLineOfText();
@@ -1319,16 +1323,36 @@ namespace Orts.Viewer3D.Popups
 
             if (!isMetric)
             {
-                float hpt = massKg > 0f ? W.ToHp(totPowerW) / Kg.ToTUS(massKg) : 0f;
+                float hpt = totMassKg > 0f ? W.ToHp(totPowerW) / Kg.ToTUS(totMassKg) : 0f;
                 line = scrollbox.AddLayoutHorizontalLineOfText();
                 line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Horespower per Ton:"), LabelAlignment.Left));
                 line.Add(new Label(line.RemainingWidth, line.RemainingHeight, string.Format("{0:0.0}", hpt), LabelAlignment.Left));
 
-                float tpob = numOperativeBrakes > 0 ? Kg.ToTUS(massKg) / numOperativeBrakes : 0;
+                float tpob = numOperativeBrakes > 0 ? Kg.ToTUS(totMassKg) / numOperativeBrakes : 0;
                 line = scrollbox.AddLayoutHorizontalLineOfText();
                 line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Tons per Operative Brake:"), LabelAlignment.Left));
                 line.Add(new Label(line.RemainingWidth, line.RemainingHeight, string.Format("{0:0}", tpob), LabelAlignment.Left));
+
+                // The next two metrics are based on UP's equivalent powered axles and equivalent dynamic brake axles. These are based on
+                // tractive effort, and thus provide a more accurate metric than horsepower per ton. UP uses 10k lbf for a standard axle.
+                // TODO: EPA and EDBA should really be defined in the eng file, and not calculated here.
+                // TODO: It would be great to also show the minimum TpEPA and TpEDBA for the current train-path. But that is hard to calculate,
+                //       and should really be defined in the path file.
+
+                // tons per equivalent powered axle (TPA or TpEPA)
+                float tpepa = totMaxTractiveEffortN > 0 ? Kg.ToTUS(totMassKg) / (N.ToLbf(totMaxTractiveEffortN) / 10000f) : 0;
+                line = scrollbox.AddLayoutHorizontalLineOfText();
+                line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Tons per EPA:"), LabelAlignment.Left));
+                line.Add(new Label(line.RemainingWidth, line.RemainingHeight, string.Format("{0:0}", tpepa), LabelAlignment.Left));
+
+                // tons per equivalent dynamic brake axle (TpEDBA)
+                float tpedba = totMaxDynamicBrakeForceN > 0 ? Kg.ToTUS(totMassKg) / (N.ToLbf(totMaxDynamicBrakeForceN) / 10000f) : 0;
+                line = scrollbox.AddLayoutHorizontalLineOfText();
+                line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Tons per EDBA:"), LabelAlignment.Left));
+                line.Add(new Label(line.RemainingWidth, line.RemainingHeight, string.Format("{0:0}", tpedba), LabelAlignment.Left));
             }
+
+            scrollbox.AddHorizontalSeparator();
 
             line = scrollbox.AddLayoutHorizontalLineOfText();
             line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Lowest Coupler Strength:"), LabelAlignment.Left));
