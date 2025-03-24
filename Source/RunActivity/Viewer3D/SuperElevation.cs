@@ -59,39 +59,34 @@ namespace Orts.Viewer3D
             // each subsection.  The rotation component changes only in heading.  The translation 
             // component steps along the path to reflect the root of each subsection.
 
-            TrackShape shape;
-
             bool dontRender = false; // Should this shape be left as a static object?
+            bool removePhys = false; // Should superelevation physics be removed from this object?
             SectionIdx[] SectionIdxs;
 
-            try
+            // Using the track object, determine the track sections
+            // Most track sections can be recovered directly from a TrackShape object
+            if (viewer.Simulator.TSectionDat.TrackShapes.TryGetValue(trackObj.SectionIdx, out TrackShape shape))
             {
-                shape = viewer.Simulator.TSectionDat.TrackShapes.Get(trackObj.SectionIdx);
-
                 if (shape.RoadShape)
                     return false; // Roads don't use superelevation, no use in processing them.
 
                 // Can't render superelevation on tunnel shapes
                 dontRender = shape.TunnelShape;
+                // Can't render superelevation and shouldn't have physics superelevation on junctions and crossovers
+                dontRender |= removePhys = (shape.NumPaths > 1 && shape.ClearanceDistance != 0);
                 SectionIdxs = shape.SectionIdxs;
-            }
-            catch (Exception)
+            }   // Some route-specific shapes (DynaTrax) won't be populated in the TrackShapes list, check the TrackPaths list
+            else if (viewer.Simulator.TSectionDat.TSectionIdx.TrackPaths.TryGetValue(trackObj.SectionIdx, out TrackPath path))
             {
-                // Some route-specific shapes (DynaTrax) won't be populated in the TrackShapes list, check the TrackPaths list
-                if (viewer.Simulator.TSectionDat.TSectionIdx.TrackPaths.TryGetValue(trackObj.SectionIdx, out TrackPath path))
-                {
-                    // Translate given data into a SectionIdx object that the rest of the method can interpret
-                    // Assumptions: Each piece of DynaTrax is a single section with origin 0, 0, 0 and 0 angle,
-                    // and the entire section of DynaTrax is defined by the track sections given in the track path
-                    SectionIdxs = new SectionIdx[1];
-                    SectionIdxs[0] = new SectionIdx(path);
-                }
-                else
-                    return false; // Not enough info, won't be able to render with superelevation
+                // Translate given data into a SectionIdx object that the rest of the method can interpret
+                // Assumptions: Each piece of DynaTrax is a single section with origin 0, 0, 0 and 0 angle,
+                // and the entire section of DynaTrax is defined by the track sections given in the track path
+                SectionIdxs = new SectionIdx[1];
+                SectionIdxs[0] = new SectionIdx(path);
             }
+            else
+                return false; // Can't find section info, won't be able to render with superelevation
 
-            // Sometimes junctions get caught here, physics superelevation should be removed for those as well
-            bool removePhys = false;
             // 0 = centered, positive = rotation axis moves to inside of curve, negative = moves to outside of curve
             float rollOffsetM = 0.0f;
 
@@ -135,26 +130,17 @@ namespace Orts.Viewer3D
             // Iterate through all subsections
             foreach (SectionIdx id in SectionIdxs)
             {
-                // If section angle offset is not zero, that means we have a complicated track shape (eg: junction)
-                // If any sections have identical starting conditions, that means we have a junction
-                // These should not be rendered using superelevation
-                if (!dontRender && id.A != 0.0f)
-                    dontRender = true;
-                if (!dontRender && !removePhys
-                    && SectionIdxs.Any(idx => idx != id && idx.X == id.X && idx.Y == id.Y && idx.Z == id.Z))
-                {
-                    dontRender = true;
-                    removePhys = true;
-                }
-
                 // The following vectors represent local positioning relative to root of original section:
-                Vector3 offset = new Vector3((float)id.X, (float)id.Y, (float)id.Z); // Offset from section origin for this series of sections
+                Vector3 offset = new Vector3((float)id.X, (float)id.Y, -(float)id.Z); // Offset from section origin for this series of sections
                 Vector3 localV = Vector3.Zero; // Local position of subsection (in x-z plane)
                 Vector3 heading = Vector3.Forward; // Local heading (unit vector)
 
                 WorldPosition worldMatrix = new WorldPosition(worldMatrixInput); // Copy origin location
 
                 worldMatrix.XNAMatrix.Translation = Vector3.Transform(offset, worldMatrix.XNAMatrix);
+
+                // If the section is rotated, apply that rotation now so we don't need to in the future
+                worldMatrix.XNAMatrix = Matrix.CreateRotationY(MathHelper.ToRadians(-(float)id.A)) * worldMatrix.XNAMatrix;
 
                 WorldPosition nextRoot = new WorldPosition(worldMatrix); // Will become initial root
                 Vector3 sectionOrigin = worldMatrix.XNAMatrix.Translation; // Original position for entire section
@@ -235,13 +221,16 @@ namespace Orts.Viewer3D
             foreach (SectionIdx id in SectionIdxs)
             {
                 // The following vectors represent local positioning relative to root of original section:
-                Vector3 offset = new Vector3((float)id.X, (float)id.Y, (float)id.Z); // Offset from section origin for this series of sections
+                Vector3 offset = new Vector3((float)id.X, (float)id.Y, -(float)id.Z); // Offset from section origin for this series of sections
                 Vector3 localV = Vector3.Zero; // Local position of subsection (in x-z plane)
                 Vector3 heading = Vector3.Forward; // Local heading (unit vector)
 
                 WorldPosition worldMatrix = new WorldPosition(worldMatrixInput); // Copy origin location
 
                 worldMatrix.XNAMatrix.Translation = Vector3.Transform(offset, worldMatrix.XNAMatrix);
+
+                // If the section is rotated, apply that rotation now so we don't need to in the future
+                worldMatrix.XNAMatrix = Matrix.CreateRotationY(MathHelper.ToRadians(-(float)id.A)) * worldMatrix.XNAMatrix;
 
                 WorldPosition nextRoot = new WorldPosition(worldMatrix); // Will become initial root
                 Vector3 sectionOrigin = worldMatrix.XNAMatrix.Translation; // Original position for entire section
