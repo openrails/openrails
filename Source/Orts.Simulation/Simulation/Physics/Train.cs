@@ -163,7 +163,7 @@ namespace Orts.Simulation.Physics
         public bool HuDIsWheelSlip;
         public bool IsBrakeSkid;
 
-        public bool SoundSetupInitialise = true;
+        public bool TrackJointSoundSetupInitialise = true;
 
         public bool HotBoxSetOnTrain = false;
         public int ActivityDurationS
@@ -2009,26 +2009,69 @@ namespace Orts.Simulation.Physics
             // Initialise track joint trigger points. Sets the trigger point for the track joint reletative to other cars.
             // This is then reset every time a track joint is triggered, and positioned the same distance apart, hence reletative positions are maintained.
             // Only runs once at start up.
-            if (SoundSetupInitialise)
+            if (TrackJointSoundSetupInitialise)
             {
                 var trackjointdistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
-                float trainLengthM = 0;
+                var trainLengthM = 0.0f;
+                var cummulativeTrackJointDistanceM = 0.0f;
+                var remainDistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
+
 
                 foreach (var car in Cars)
                 {
-                    car.realTimeTrackJointDistanceM = trackjointdistanceM + trainLengthM;
-                    trainLengthM += car.CarLengthM;
+                    // Initialise from the next track joint
 
-                    // Track joint "reached" move car joint into next track joint sesction
-                    if (trainLengthM > (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM)
+                    // if remain distance has gone negative then car has moved over the next track joint
+                    if (trackjointdistanceM > car.CarLengthM)
                     {
-                        trainLengthM -= (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
+
+                        car.realTimeTrackJointDistanceM = cummulativeTrackJointDistanceM;
+                        trainLengthM += car.CarLengthM;
+                        cummulativeTrackJointDistanceM += car.CarLengthM;
+                        remainDistanceM -= car.CarLengthM;
+
+
+          //              Trace.TraceInformation("Initialise Track Joints> - CarID {0} RealDistance {1} TrainLength {2} TRackJointDistance {3} CarLength {4} CumDistance {5} RemDistance {6}", car.CarID, car.realTimeTrackJointDistanceM, trainLengthM, trackjointdistanceM, car.CarLengthM, cummulativeTrackJointDistanceM, remainDistanceM);
+
+                        // the next track joint has been reached reset all parameters in preparation for the next pass
+                        if (remainDistanceM < 0.0f)
+                        {
+                            cummulativeTrackJointDistanceM = Math.Abs(remainDistanceM);
+                            remainDistanceM = trackjointdistanceM - cummulativeTrackJointDistanceM;
+           //                 Trace.TraceInformation("Reset> - Cum {0} Rem {1}", cummulativeTrackJointDistanceM, remainDistanceM);
+                        }
+
+                    }
+                    // Trackjoint less then Car length 
+                    else if (trackjointdistanceM < car.CarLengthM)
+                    {
+
+                        car.realTimeTrackJointDistanceM = cummulativeTrackJointDistanceM;
+                        trainLengthM += car.CarLengthM;
+                        cummulativeTrackJointDistanceM += trackjointdistanceM;
+                        remainDistanceM -= car.CarLengthM;
+
+      //                  Trace.TraceInformation("Initialise Track Joints< - CarID {0} RealDistance {1} TrainLength {2} TRackJointDistance {3} CarLength {4} CumDistance {5} RemDistance {6}", car.CarID, car.realTimeTrackJointDistanceM, trainLengthM, trackjointdistanceM, car.CarLengthM, cummulativeTrackJointDistanceM, remainDistanceM);
+
+                        if (remainDistanceM < 0.0f)
+                        {
+
+                            while (Math.Abs(remainDistanceM) > trackjointdistanceM)
+                            {
+                                remainDistanceM += trackjointdistanceM;
+      //                          Trace.TraceInformation("Reset Remain< - CarID {0}, remainDistanceM {1}", car.CarID, remainDistanceM);
+                            }
+
+                            cummulativeTrackJointDistanceM = Math.Abs(remainDistanceM);
+                            remainDistanceM = trackjointdistanceM - cummulativeTrackJointDistanceM;
+      //                      Trace.TraceInformation("Reset< - Cum {0} Rem {1}", cummulativeTrackJointDistanceM, remainDistanceM);
+                        }
+
                     }
 
-  //                  Trace.TraceInformation("Initialise Track Joints - CarID {0} RealDistance {1} TrainLength {2}", car.CarID, car.realTimeTrackJointDistanceM, trainLengthM);
                 }
 
-                SoundSetupInitialise = false;
+                TrackJointSoundSetupInitialise = false;
             }
 
         } // end Update
