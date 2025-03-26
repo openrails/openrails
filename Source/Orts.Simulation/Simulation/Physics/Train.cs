@@ -2009,7 +2009,7 @@ namespace Orts.Simulation.Physics
             // Initialise track joint trigger points. Sets the trigger point for the track joint reletative to other cars.
             // This is then reset every time a track joint is triggered, and positioned the same distance apart, hence reletative positions are maintained.
             // Only runs once at start up.
-            if (TrackJointSoundSetupInitialise && (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM > 0)
+            if (TrackJointSoundSetupInitialise && (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM > 0 && Simulator.TRK.Tr_RouteFile.TrackSoundDefaultContinuousPlay)
             {
                 var trackjointdistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
                 var trainLengthM = 0.0f;
