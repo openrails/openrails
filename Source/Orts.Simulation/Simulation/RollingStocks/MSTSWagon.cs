@@ -3733,36 +3733,49 @@ namespace Orts.Simulation.RollingStocks
                 ControlActiveLocomotive = null;
                 return;
             }
-            var controlIndex = 0;
-            var activeIndex = 0;
-            bool controlCar = false;
-            bool activeLocomotive = false;
-
-            // Check to see if this car is an active locomotive, if so then set linkage to relevant control car.
-            // Note this only checks the "closest" locomotive to the control car. Hence it could be "fooled" if there is another locomotive besides the two DMU locomotives.
-
-            for (var i = 0; i < Train.Cars.Count; i++)
+            MSTSLocomotive unmatchedLocomotive = null;
+            MSTSLocomotive unmatchedControlCar = null;
+            foreach (var car in Train.Cars)
             {
-
-                if (activeIndex == 0 && Train.Cars[i].EngineType == TrainCar.EngineTypes.Diesel)
+                if (car.EngineType == TrainCar.EngineTypes.Electric || car.EngineType == TrainCar.EngineTypes.Diesel)
                 {
-                    activeIndex = i;
-                    activeLocomotive = true;
+                    if (unmatchedControlCar != null)
+                    {
+                        if (unmatchedControlCar == this)
+                        {
+                            unmatchedLocomotive = car as MSTSLocomotive;
+                            break;
+                        }
+                        else
+                        {
+                            unmatchedControlCar = null;
+                        }
+                    }
+                    else
+                    {
+                        unmatchedLocomotive = car as MSTSLocomotive;
+                    }
                 }
-
-                if (controlIndex == 0 && Train.Cars[i].EngineType == TrainCar.EngineTypes.Control)
+                if (car.EngineType == TrainCar.EngineTypes.Control)
                 {
-                    controlIndex = i;
-                    controlCar = true;
-                }
-
-                // As soon as the control and active locomotive have been identified, then stop loop.
-                if (activeLocomotive && controlCar)
-                {
-                    ControlActiveLocomotive = Train.Cars[activeIndex] as MSTSDieselLocomotive;                 
-                    return;
+                    if (unmatchedLocomotive != null)
+                    {
+                        if (car == this)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            unmatchedLocomotive = null;
+                        }
+                    }
+                    else
+                    {
+                        unmatchedControlCar = car as MSTSLocomotive;
+                    }
                 }
             }
+            ControlActiveLocomotive = unmatchedLocomotive;
         }
 
         public void FindTendersSteamLocomotive()
