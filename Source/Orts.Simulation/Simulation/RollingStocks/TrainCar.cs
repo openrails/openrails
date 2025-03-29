@@ -546,10 +546,9 @@ namespace Orts.Simulation.RollingStocks
         /// <summary>Alternative for dual vacuum/air vehicles, to be swapped with <see cref="BrakeSystem"/> and used directly</summary>
         protected BrakeSystem BrakeSystemAlt;
         /// <summary>Store for the various loades within modes. Never used directly, only the non-zero values get copied into <see cref="BrakeSystem"/></summary>
-        public readonly Dictionary<(BrakeModes BrakeMode, float MaxMass), BrakeSystem> BrakeSystems = new Dictionary<(BrakeModes, float), BrakeSystem>();
+        public readonly Dictionary<(BrakeModes BrakeMode, float MinMass), BrakeSystem> BrakeSystems = new Dictionary<(BrakeModes, float), BrakeSystem>();
         /// <summary>Filter for the <see cref="BrakeSystems"/>, in case that comes from an include file</summary>
         public string[] BrakeModeNames { get; protected set; }
-        protected string BrakeModePreset;
 
         public float PreviousSteamBrakeCylinderPressurePSI;
 
@@ -2181,13 +2180,13 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(CarHeatCurrentCompartmentHeatJ);
             outf.Write(CarSteamHeatMainPipeSteamPressurePSI);
             outf.Write(CarHeatCompartmentHeaterOn);
-            outf.Write(BrakeModePreset);
             outf.Write(BrakeSystems?.Count() ?? 0);
             if (BrakeSystems?.Count() > 0)
             {
                 foreach (var key in BrakeSystems.Keys)
                 {
-                    outf.Write(key.ToString());
+                    outf.Write(key.BrakeMode.ToString());
+                    outf.Write(key.MinMass);
                     BrakeSystems[key].Save(outf);
                 }
             }
@@ -2219,13 +2218,13 @@ namespace Orts.Simulation.RollingStocks
             CarHeatCurrentCompartmentHeatJ = inf.ReadSingle();
             CarSteamHeatMainPipeSteamPressurePSI = inf.ReadSingle();
             CarHeatCompartmentHeaterOn = inf.ReadBoolean();
-            BrakeModePreset = inf.ReadString();
             for (var i = 0; i < inf.ReadInt32(); i++)
             {
                 Enum.TryParse(inf.ReadString(), out BrakeModes mode);
+                var minMass = inf.ReadSingle();
                 BrakeSystem bs = null;
                 bs.Restore(inf);
-                BrakeSystems.Add(mode, bs);
+                BrakeSystems.Add((mode, minMass), bs);
             }
             var brakeModeFilterLength = inf.ReadInt32();
             if (brakeModeFilterLength > 0)

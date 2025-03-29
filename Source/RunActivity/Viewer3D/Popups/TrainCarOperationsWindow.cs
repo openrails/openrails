@@ -1377,19 +1377,34 @@ namespace Orts.Viewer3D.Popups
 
         public void buttonLabel_Click(Control arg1, Point arg2)
         {
-            var next = 0;
+            // The goal is a circular selection of the BrakeMode, ignoring the load stages, because they are selected automatically
+            var start = -1;
+            var first = -1;
+            var next = -1;
             for (var i = 0; i < Car.BrakeSystems.Keys.Count(); i++)
             {
-                if (Car.BrakeSystem.BrakeMode == Car.BrakeSystems.ElementAt(i).Key)
+                if (Car.BrakeSystem.BrakeMode == Car.BrakeSystems.ElementAt(i).Key.BrakeMode)
+                    start = i;
+                else
                 {
-                    next = i + 1;
-                    break;
+                    if (start != -1)
+                    {
+                        next = i;
+                        break;
+                    }
+                    else if (first == -1)
+                    {
+                        first = i;
+                    }
                 }
             }
-            if (next >= Car.BrakeSystems.Keys.Count())
-                next = 0;
-            Car.SetBrakeSystemMode(Car.BrakeSystems.ElementAtOrDefault(next).Key.ToString());
-            Text = Car.BrakeSystem.BrakeMode != BrakeModes.Undefined ? Car.BrakeSystem.BrakeMode.ToString() : "";
+            if (next == -1 && first != -1)
+                next = first;
+            if (next != -1)
+            {
+                Car.SetBrakeSystemMode(Car.BrakeSystems.ElementAtOrDefault(next).Key.BrakeMode, Car.MassKG);
+                Text = Car.BrakeSystem.BrakeMode != BrakeModes.Undefined ? Car.BrakeSystem.BrakeMode.ToString() : "";
+            }
         }
     }
 }

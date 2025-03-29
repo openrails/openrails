@@ -109,8 +109,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
 
         public virtual BrakeSystem InitializeDefault() { return this; }
 
-        public virtual BrakeSystem InitializePresetClone(string type, BrakeModes mode) { return CreateNewLike(this, Car); }
-
         /// <summary>
         /// Convert real pressure to a system specific internal pressure.
         /// For pressured brakes it is a straight 1:1 noop conversion,

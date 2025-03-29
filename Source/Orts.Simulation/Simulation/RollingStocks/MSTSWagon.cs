@@ -397,11 +397,7 @@ namespace Orts.Simulation.RollingStocks
         float LoadEmptyORTSDavis_C;
         float LoadEmptyWagonFrontalAreaM2;
         float LoadEmptyDavisDragConstant;
-        float LoadEmptyMaxBrakeForceN;
-        float LoadEmptyMaxHandbrakeForceN;
         float LoadEmptyCentreOfGravityM_Y;
-        float LoadEmptyRelayValveRatio;
-        float LoadEmptyInshotPSI;
 
         float LoadFullMassKg;
         float LoadFullORTSDavis_A;
@@ -409,21 +405,19 @@ namespace Orts.Simulation.RollingStocks
         float LoadFullORTSDavis_C;
         float LoadFullWagonFrontalAreaM2;
         float LoadFullDavisDragConstant;
+        float LoadFullCentreOfGravityM_Y;
+
+        // The variables below are used to temporarily store the corresponding values of the actual brake system for interpolation.
+        // In case of multiple load stages the "Empty" ones are for the actual load stage, the "Full" ones for the above load stage.
+        // No need to Copy/Save/Restore these, they are reset at calling the SetBrakeSystemMode().
+        float LoadEmptyMaxBrakeForceN;
+        float LoadEmptyMaxHandbrakeForceN;
+        float LoadEmptyRelayValveRatio;
+        float LoadEmptyInshotPSI;
         float LoadFullMaxBrakeForceN;
         float LoadFullMaxHandbrakeForceN;
-        float LoadFullCentreOfGravityM_Y;
         float LoadFullRelayValveRatio;
         float LoadFullInshotPSI;
-
-        // Brake parameters for interpolating load compensation
-        float LoadStageLoMaxBrakeForceN;
-        float LoadStageHiMaxBrakeForceN;
-        float LoadStageLoMaxHandbrakeForceN;
-        float LoadStageHiHandbrakeForceN;
-        float LoadStageLoRelayValveRatio;
-        float LoadStageHiRelayValveRatio;
-        float LoadStageLoInshotPSI;
-        float LoadStageHiInshotPSI;
 
         /// <summary>
         /// This initializer is called when we haven't loaded this type of car before
@@ -678,8 +672,29 @@ namespace Orts.Simulation.RollingStocks
 
             CentreOfGravityM = InitialCentreOfGravityM;
 
+            // Initialize the switchable brake system
+            if (BrakeModeNames?.Length > 0) // If the filter is set, enforce it
+            {
+                foreach (var key in BrakeSystems.Keys.ToArray())
+                    if (!BrakeModeNames.Contains(key.BrakeMode.ToString()))
+                        BrakeSystems.Remove(key);
+            }
+            else
+            {
+                BrakeModeNames = BrakeSystems.Keys.Select(k => k.ToString()).ToArray();
+            }
+            BrakeSystem = BrakeSystem ?? MSTSBrakeSystem.Create(CarBrakeSystemType, this);
+
+            var (brakeMode, maxMass) = BrakeSystems?.Count > 0 ? BrakeSystems.Keys.FirstOrDefault() : default;
+            SetBrakeSystemMode(brakeMode, maxMass, forceSwitch: true);
+
             if (FreightAnimations != null)
             {
+                LoadEmptyMaxBrakeForceN = LoadFullMaxBrakeForceN = MaxBrakeForceN;
+                LoadEmptyMaxHandbrakeForceN = LoadFullMaxHandbrakeForceN = MaxHandbrakeForceN;
+                LoadEmptyRelayValveRatio = LoadFullRelayValveRatio = (BrakeSystem as AirSinglePipe)?.RelayValveRatio ?? 0;
+                LoadEmptyInshotPSI = LoadFullInshotPSI = (BrakeSystem as AirSinglePipe)?.RelayValveInshotPSI ?? 0;
+
                 foreach (var ortsFreightAnim in FreightAnimations.Animations)
                 {
                     if (ortsFreightAnim.ShapeFileName != null && !File.Exists(wagonFolderSlash + ortsFreightAnim.ShapeFileName))
@@ -755,18 +770,10 @@ namespace Orts.Simulation.RollingStocks
                 {
                     LoadEmptyMaxBrakeForceN = FreightAnimations.EmptyMaxBrakeForceN;
                 }
-                else
-                {
-                    LoadEmptyMaxBrakeForceN = MaxBrakeForceN;
-                }
 
                 if (FreightAnimations.EmptyMaxHandbrakeForceN > 0)
                 {
                     LoadEmptyMaxHandbrakeForceN = FreightAnimations.EmptyMaxHandbrakeForceN;
-                }
-                else
-                {
-                    LoadEmptyMaxHandbrakeForceN = MaxHandbrakeForceN;
                 }
 
                 if (FreightAnimations.EmptyCentreOfGravityM_Y > 0)
@@ -782,18 +789,10 @@ namespace Orts.Simulation.RollingStocks
                 {
                     LoadEmptyRelayValveRatio = FreightAnimations.EmptyRelayValveRatio;
                 }
-                else if (BrakeSystem is AirSinglePipe brakes)
-                {
-                    LoadEmptyRelayValveRatio = brakes.RelayValveRatio;
-                }
 
                 if (FreightAnimations.EmptyInshotPSI != 0)
                 {
                     LoadEmptyInshotPSI = FreightAnimations.EmptyInshotPSI;
-                }
-                else if (BrakeSystem is AirSinglePipe brakes)
-                {
-                    LoadEmptyInshotPSI = brakes.RelayValveInshotPSI;
                 }
 
                 // Read (initialise) Static load ones if a static load
@@ -853,18 +852,10 @@ namespace Orts.Simulation.RollingStocks
                     {
                         LoadFullMaxBrakeForceN = FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeForceN;
                     }
-                    else
-                    {
-                        LoadFullMaxBrakeForceN = MaxBrakeForceN;
-                    }
 
                     if (FreightAnimations.FullPhysicsStaticOne.FullStaticMaxHandbrakeForceN > 0)
                     {
                         LoadFullMaxHandbrakeForceN = FreightAnimations.FullPhysicsStaticOne.FullStaticMaxHandbrakeForceN;
-                    }
-                    else
-                    {
-                        LoadFullMaxHandbrakeForceN = MaxHandbrakeForceN;
                     }
 
                     if (FreightAnimations.FullPhysicsStaticOne.FullStaticCentreOfGravityM_Y > 0)
@@ -880,18 +871,10 @@ namespace Orts.Simulation.RollingStocks
                     {
                         LoadFullRelayValveRatio = FreightAnimations.FullPhysicsStaticOne.FullStaticRelayValveRatio;
                     }
-                    else if (BrakeSystem is AirSinglePipe brakes)
-                    {
-                        LoadFullRelayValveRatio = brakes.RelayValveRatio;
-                    }
 
                     if (FreightAnimations.FullPhysicsStaticOne.FullStaticInshotPSI > 0)
                     {
                         LoadFullInshotPSI = FreightAnimations.FullPhysicsStaticOne.FullStaticInshotPSI;
-                    }
-                    else if (BrakeSystem is AirSinglePipe brakes)
-                    {
-                        LoadFullInshotPSI = brakes.RelayValveInshotPSI;
                     }
                 }
 
@@ -961,18 +944,10 @@ namespace Orts.Simulation.RollingStocks
                     {
                         LoadFullMaxBrakeForceN = FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeForceN;
                     }
-                    else
-                    {
-                        LoadFullMaxBrakeForceN = MaxBrakeForceN;
-                    }
 
                     if (FreightAnimations.FullPhysicsContinuousOne.FullMaxHandbrakeForceN > 0)
                     {
                         LoadFullMaxHandbrakeForceN = FreightAnimations.FullPhysicsContinuousOne.FullMaxHandbrakeForceN;
-                    }
-                    else
-                    {
-                        LoadFullMaxHandbrakeForceN = MaxHandbrakeForceN;
                     }
 
                     if (FreightAnimations.FullPhysicsContinuousOne.FullCentreOfGravityM_Y > 0)
@@ -988,18 +963,10 @@ namespace Orts.Simulation.RollingStocks
                     {
                         LoadFullRelayValveRatio = FreightAnimations.FullPhysicsContinuousOne.FullRelayValveRatio;
                     }
-                    else if (BrakeSystem is AirSinglePipe brakes)
-                    {
-                        LoadFullRelayValveRatio = brakes.RelayValveRatio;
-                    }
 
                     if (FreightAnimations.FullPhysicsContinuousOne.FullInshotPSI != 0)
                     {
                         LoadFullInshotPSI = FreightAnimations.FullPhysicsContinuousOne.FullInshotPSI;
-                    }
-                    else if (BrakeSystem is AirSinglePipe brakes)
-                    {
-                        LoadFullInshotPSI = brakes.RelayValveInshotPSI;
                     }
                 }
 
@@ -1045,6 +1012,31 @@ namespace Orts.Simulation.RollingStocks
                 Trace.TraceInformation("Empty Values = Brake {0} Handbrake {1} DavisA {2} DavisB {3} DavisC {4} CoGY {5}", LoadEmptyMaxBrakeForceN, LoadEmptyMaxHandbrakeForceN, LoadEmptyORTSDavis_A, LoadEmptyORTSDavis_B, LoadEmptyORTSDavis_C, LoadEmptyCentreOfGravityM_Y);
                 Trace.TraceInformation("Full Values = Brake {0} Handbrake {1} DavisA {2} DavisB {3} DavisC {4} CoGY {5}", LoadFullMaxBrakeForceN, LoadFullMaxHandbrakeForceN, LoadFullORTSDavis_A, LoadFullORTSDavis_B, LoadFullORTSDavis_C, LoadFullCentreOfGravityM_Y);
 #endif
+                if (BrakeSystems.Count <= 1)
+                {
+                    // The FreightAnim-style brake parameters cannot support switchable states, so use them only in case there are none configured
+                    var loStage = BrakeSystem.CreateNewLike(BrakeSystem, this).InitializeDefault();
+                    var hiStage = BrakeSystem.CreateNewLike(BrakeSystem, this).InitializeDefault();
+                    if (loStage != null && hiStage != null)
+                    {
+                        loStage.InitialMaxBrakeForceN = LoadEmptyMaxBrakeForceN;
+                        hiStage.InitialMaxBrakeForceN = LoadFullMaxBrakeForceN;
+                        loStage.InitialMaxHandbrakeForceN = LoadEmptyMaxHandbrakeForceN;
+                        hiStage.InitialMaxHandbrakeForceN = LoadFullMaxHandbrakeForceN;
+
+                        if (loStage is AirSinglePipe loStageAir && hiStage is AirSinglePipe hiStageAir)
+                        {
+                            loStageAir.RelayValveRatio = LoadEmptyRelayValveRatio;
+                            hiStageAir.RelayValveRatio = LoadFullRelayValveRatio;
+                            loStageAir.RelayValveInshotPSI = LoadEmptyInshotPSI;
+                            hiStageAir.RelayValveInshotPSI = LoadFullInshotPSI;
+                        }
+
+                        BrakeSystems.Add((BrakeSystem.BrakeMode, LoadEmptyMassKg), loStage);
+                        BrakeSystems.Add((BrakeSystem.BrakeMode, LoadFullMassKg), hiStage);
+                    }
+                    SetBrakeSystemMode(BrakeSystem.BrakeMode, InitialMassKG, forceSwitch: true);
+                }
             }
 
             // Determine whether or not to use the Davis friction model. Must come after freight animations are initialized.
@@ -1053,107 +1045,78 @@ namespace Orts.Simulation.RollingStocks
             if (TrackGaugeM <= 0) // Use gauge of route/sim settings if gauge wasn't defined
                 TrackGaugeM = Simulator.RouteTrackGaugeM;
 
-            // Initialize the switchable brake system
-            if (BrakeModeNames?.Length > 0) // If the filter is set, enforce it
-            {
-                foreach (var key in BrakeSystems.Keys.ToArray())
-                    if (!BrakeModeNames.Contains(key.ToString()))
-                        BrakeSystems.Remove(key);
-            }
-            else
-            {
-                BrakeModeNames = BrakeSystems.Keys.Select(k => k.ToString()).ToArray();
-            }
-
-            if (BrakeModePreset != null)
-            {
-                foreach (var mode in BrakeModeNames)
-                {
-                    if (Enum.TryParse(mode, out BrakeModes modeEnum))
-                    {
-                        if (BrakeSystems.TryGetValue(modeEnum, out var brakeSystem))
-                            BrakeSystems[modeEnum] = brakeSystem.InitializePresetClone(BrakeModePreset, modeEnum);
-                        else
-                            BrakeSystems.Add(modeEnum, MSTSBrakeSystem.Create(CarBrakeSystemType, this)
-                                .InitializeDefault().InitializePresetClone(BrakeModePreset, modeEnum));
-                    }
-                }
-            }
-            BrakeSystem = BrakeSystem ?? MSTSBrakeSystem.Create(CarBrakeSystemType, this);
-
-            if (FreightAnimations != null && BrakeSystems.Count <= 1)
-            {
-                // The FreightAnim-style brake parameters cannot support switchable states, so use them only in case there are none configured
-                var loStage = BrakeSystem.CreateNewLike(BrakeSystem, this).InitializeDefault();
-                var hiStage = BrakeSystem.CreateNewLike(BrakeSystem, this).InitializeDefault();
-                if (loStage != null && hiStage != null)
-                {
-                    loStage.InitialMaxBrakeForceN = LoadEmptyMaxBrakeForceN;
-                    hiStage.InitialMaxBrakeForceN = LoadFullMaxBrakeForceN;
-                    loStage.InitialMaxHandbrakeForceN = LoadEmptyMaxHandbrakeForceN;
-                    hiStage.InitialMaxHandbrakeForceN = LoadFullMaxHandbrakeForceN;
-
-                    if (loStage is AirSinglePipe loStageAir && hiStage is AirSinglePipe hiStageAir)
-                    {
-                        loStageAir.RelayValveRatio = LoadEmptyRelayValveRatio;
-                        hiStageAir.RelayValveRatio = LoadFullRelayValveRatio;
-                        loStageAir.RelayValveInshotPSI = LoadEmptyInshotPSI;
-                        hiStageAir.RelayValveInshotPSI = LoadFullInshotPSI;
-                    }
-                }
-                BrakeSystems.Add((BrakeSystem.BrakeMode, InitialMassKG), loStage);
-                BrakeSystems.Add((BrakeSystem.BrakeMode, MassKG), hiStage);
-            }
-            var mode = BrakeSystems.Keys.FirstOrDefault();
-            SetBrakeSystemMode(mode.BrakeMode, mode.MaxMass);
-
-            MaxHandbrakeForceN = BrakeSystem.InitialMaxHandbrakeForceN;
-            FrictionBrakeBlendingMaxForceN = BrakeSystem.InitialMaxBrakeForceN; // set the value of braking when blended with dynamic brakes
-            UpdateBrakeLoadCompensation(TempMassDiffRatio);
             UpdateDavisLoadCompensation(TempMassDiffRatio);
         }
 
-        public void SetBrakeSystemMode(BrakeModes mode, float massKg)
+        public void SetBrakeSystemMode(BrakeModes mode, float massKg, bool forceSwitch = false)
         {
-            if (Math.Abs(SpeedMpS) > .1 || BrakeSystems.Count == 0)
+            if (Math.Abs(SpeedMpS) >  .1 && !forceSwitch)
                 return;
 
-            var max = 0f;
-            foreach (var key in BrakeSystems.Keys)
-                if (massKg < key.MaxMass && key.BrakeMode == mode)
-                    max = Math.Max(max, key.MaxMass);
-
-            if (BrakeSystems.TryGetValue((mode, max), out var brakeSystem))
+            if (BrakeSystems?.Count > 0)
             {
-                if (brakeSystem is VacuumSinglePipe ^ BrakeSystem is VacuumSinglePipe)
+                var max = 0f;
+                foreach (var key in BrakeSystems.Keys)
+                    if (key.BrakeMode == mode && key.MinMass <= massKg)
+                        max = Math.Max(max, key.MinMass);
+
+                if (BrakeSystems.TryGetValue((mode, max), out var brakeSystem))
                 {
-                    if (BrakeSystemAlt == null)
+                    if (brakeSystem is VacuumSinglePipe ^ BrakeSystem is VacuumSinglePipe)
                     {
-                        BrakeSystemAlt = BrakeSystem.CreateNewLike(brakeSystem, this).InitializeDefault();
+                        if (BrakeSystemAlt == null)
+                        {
+                            BrakeSystemAlt = BrakeSystem.CreateNewLike(brakeSystem, this).InitializeDefault();
 
-                        // Leave the car in a working state. However the train should reinitialize the car with correct values when all the switchings were finished.
-                        (var maxPressurePSI, var fullServPressurePSI) = brakeSystem.GetDefaultPressures();
-                        var handbrakeOn = BrakeSystem.GetHandbrakeStatus();
-                        var immediateRelease = BrakeSystem.GetCylPressurePSI() == 0;
-                        BrakeSystemAlt.Initialize(handbrakeOn, maxPressurePSI, fullServPressurePSI, immediateRelease);
+                            // Leave the car in a working state. However the train should reinitialize the car with correct values when all the switchings were finished.
+                            (var maxPressurePSI, var fullServPressurePSI) = brakeSystem.GetDefaultPressures();
+                            var handbrakeOn = BrakeSystem.GetHandbrakeStatus();
+                            var immediateRelease = BrakeSystem.GetCylPressurePSI() == 0;
+                            BrakeSystemAlt.Initialize(handbrakeOn, maxPressurePSI, fullServPressurePSI, immediateRelease);
+                        }
+                        BrakeSystemAlt.FrontBrakeHoseConnected = BrakeSystem.FrontBrakeHoseConnected;
+                        BrakeSystemAlt.RearBrakeHoseConnected = BrakeSystem.RearBrakeHoseConnected;
+                        BrakeSystemAlt.AngleCockAOpen = BrakeSystem.AngleCockAOpen;
+                        BrakeSystemAlt.AngleCockAOpenAmount = BrakeSystem.AngleCockAOpenAmount;
+                        BrakeSystemAlt.AngleCockAOpenTime = BrakeSystem.AngleCockAOpenTime;
+                        BrakeSystemAlt.AngleCockBOpen = BrakeSystem.AngleCockBOpen;
+                        BrakeSystemAlt.AngleCockBOpenAmount = BrakeSystem.AngleCockBOpenAmount;
+                        BrakeSystemAlt.AngleCockBOpenTime = BrakeSystem.AngleCockBOpenTime;
+                        BrakeSystemAlt.BleedOffValveOpen = BrakeSystem.BleedOffValveOpen;
+                        BrakeSystemAlt.TwoPipes = BrakeSystem.TwoPipes;
+
+                        (BrakeSystem, BrakeSystemAlt) = (BrakeSystemAlt, BrakeSystem);
                     }
-                    BrakeSystemAlt.FrontBrakeHoseConnected = BrakeSystem.FrontBrakeHoseConnected;
-                    BrakeSystemAlt.RearBrakeHoseConnected = BrakeSystem.RearBrakeHoseConnected;
-                    BrakeSystemAlt.AngleCockAOpen = BrakeSystem.AngleCockAOpen;
-                    BrakeSystemAlt.AngleCockAOpenAmount = BrakeSystem.AngleCockAOpenAmount;
-                    BrakeSystemAlt.AngleCockAOpenTime = BrakeSystem.AngleCockAOpenTime;
-                    BrakeSystemAlt.AngleCockBOpen = BrakeSystem.AngleCockBOpen;
-                    BrakeSystemAlt.AngleCockBOpenAmount = BrakeSystem.AngleCockBOpenAmount;
-                    BrakeSystemAlt.AngleCockBOpenTime = BrakeSystem.AngleCockBOpenTime;
-                    BrakeSystemAlt.BleedOffValveOpen = BrakeSystem.BleedOffValveOpen;
-                    BrakeSystemAlt.TwoPipes = BrakeSystem.TwoPipes;
-
-                    (BrakeSystem, BrakeSystemAlt) = (BrakeSystemAlt, BrakeSystem);
+                    BrakeSystem.InitializeFromCopy(brakeSystem, true);
                 }
-                BrakeSystem.InitializeFromCopy(brakeSystem, true);
+                else
+                {
+                    brakeSystem = BrakeSystem;
+                }
 
-                MaxBrakeForceN = BrakeSystem.MaxBrakeShoeForceN != 0 && BrakeShoeType != BrakeShoeTypes.Unknown ? BrakeSystem.MaxBrakeShoeForceN : BrakeSystem.InitialMaxBrakeForceN;
+                LoadEmptyMaxHandbrakeForceN = brakeSystem.InitialMaxHandbrakeForceN;
+                LoadEmptyMaxBrakeForceN = brakeSystem.MaxBrakeShoeForceN != 0 && BrakeShoeType != BrakeShoeTypes.Unknown ? brakeSystem.MaxBrakeShoeForceN : brakeSystem.InitialMaxBrakeForceN;
+                LoadEmptyRelayValveRatio = (brakeSystem as AirSinglePipe)?.RelayValveRatio ?? 0;
+                LoadEmptyInshotPSI = (brakeSystem as AirSinglePipe)?.RelayValveInshotPSI ?? 0;
+                FrictionBrakeBlendingMaxForceN = brakeSystem.InitialMaxBrakeForceN; // set the value of braking when blended with dynamic brakes
+
+                var next = float.MaxValue;
+                foreach (var key in BrakeSystems.Keys)
+                    if (key.BrakeMode == mode && massKg <= key.MinMass)
+                        next = Math.Min(next, key.MinMass);
+                if (next == float.MaxValue)
+                    next = max;
+
+                if (!BrakeSystems.TryGetValue((mode, next), out var brakeSystemNext))
+                    brakeSystemNext = BrakeSystem;
+
+                LoadFullMaxHandbrakeForceN = brakeSystemNext.InitialMaxHandbrakeForceN;
+                LoadFullMaxBrakeForceN = brakeSystemNext.MaxBrakeShoeForceN != 0 && BrakeShoeType != BrakeShoeTypes.Unknown ? brakeSystemNext.MaxBrakeShoeForceN : brakeSystemNext.InitialMaxBrakeForceN;
+                LoadFullRelayValveRatio = (brakeSystemNext as AirSinglePipe)?.RelayValveRatio ?? 0;
+                LoadFullInshotPSI = (brakeSystemNext as AirSinglePipe)?.RelayValveInshotPSI ?? 0;
             }
+
+            UpdateBrakeLoadCompensation(TempMassDiffRatio);
         }
 
         // Compute total mass of wagon including freight animations and variable loads like containers
@@ -1418,7 +1381,6 @@ namespace Orts.Simulation.RollingStocks
                     }
                     break;
                 case "wagon(ortsbrakemodenames": BrakeModeNames = stf.ReadStringBlock("").ToUpper().Replace(" ", "").Split(','); break;
-                case "wagon(ortsbrakemodepreset": BrakeModePreset = stf.ReadStringBlock(null).ToLower(); break;
                 case "wagon(ortsbrakemode":
                     var newSystem = BrakeSystem.CreateNewLike(BrakeSystem, this)?.InitializeDefault(); // Start with the same BrakeSystemType() as the base
                     BrakeModes? brakeModeName = null;
@@ -1437,10 +1399,11 @@ namespace Orts.Simulation.RollingStocks
                                     if (newSystem != null)
                                     {
                                         newSystem.BrakeMode = brakeModeName.Value;
-                                        if (BrakeSystems.ContainsKey((newSystem.BrakeMode, 0)))
-                                            BrakeSystems[(newSystem.BrakeMode, 0)] = newSystem;
+                                        var key = (newSystem.BrakeMode, 0);
+                                        if (BrakeSystems.ContainsKey(key))
+                                            BrakeSystems[key] = newSystem;
                                         else
-                                            BrakeSystems.Add((newSystem.BrakeMode, 0), newSystem);
+                                            BrakeSystems.Add(key, newSystem);
                                     }
                                 }
                                 break;
@@ -1451,15 +1414,17 @@ namespace Orts.Simulation.RollingStocks
                                 if (brakeModeName != null)
                                 {
                                     newSystem.BrakeMode = brakeModeName.Value;
-                                    if (BrakeSystems.ContainsKey((newSystem.BrakeMode, 0)))
-                                        BrakeSystems[(newSystem.BrakeMode, 0)] = newSystem;
+                                    var key = (newSystem.BrakeMode, 0);
+                                    if (BrakeSystems.ContainsKey(key))
+                                        BrakeSystems[key] = newSystem;
                                     else
-                                        BrakeSystems.Add((newSystem.BrakeMode, 0), newSystem);
+                                        BrakeSystems.Add(key, newSystem);
                                 }
                                 break;
                             case "wagon(ortsbrakemode(ortsloadstage":
-                                float? maxMass = null;
-                                BrakeSystem stage = BrakeSystem.CreateNewLike(newSystem, this).InitializeDefault();
+                                var minMass = 0f;
+                                var stage = BrakeSystem.CreateNewLike(newSystem, this).InitializeDefault();
+                                stage.BrakeMode = newSystem.BrakeMode;
                                 stf.VerifyStartOfBlock();
                                 while (!stf.EndOfBlock())
                                 {
@@ -1467,11 +1432,7 @@ namespace Orts.Simulation.RollingStocks
                                     lowercasetoken = stf.Tree.ToLower();
                                     switch (lowercasetoken)
                                     {
-                                        case "wagon(ortsbrakemode(ortsloadstage(ortsloadstagemaxmass":
-                                            maxMass = stf.ReadFloatBlock(STFReader.UNITS.Mass, null);
-                                            if (!BrakeSystems.ContainsKey((newSystem.BrakeMode, maxMass.Value)))
-                                                BrakeSystems.Add((newSystem.BrakeMode, maxMass.Value), stage);
-                                            break;
+                                        case "wagon(ortsbrakemode(ortsloadstage(ortsloadstageminmass": minMass = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                                         default:
                                             if (lowercasetoken.EndsWith("("))
                                             {
@@ -1485,6 +1446,10 @@ namespace Orts.Simulation.RollingStocks
                                             break;
                                     }
                                 }
+                                if (!BrakeSystems.ContainsKey((newSystem.BrakeMode, minMass)))
+                                    BrakeSystems.Add((newSystem.BrakeMode, minMass), stage);
+                                else
+                                    BrakeSystems[(newSystem.BrakeMode, minMass)].InitializeFromCopy(stage, true);
                                 break;
                             default:
                                 if (lowercasetoken.EndsWith("("))
@@ -1800,8 +1765,6 @@ namespace Orts.Simulation.RollingStocks
             BrakeShoeFrictionFactor = copy.BrakeShoeFrictionFactor;
             WheelBrakeSlideProtectionFitted = copy.WheelBrakeSlideProtectionFitted;
             WheelBrakeSlideProtectionLimitDisabled = copy.WheelBrakeSlideProtectionLimitDisabled;
-            InitialMaxBrakeForceN = copy.InitialMaxBrakeForceN;
-            InitialMaxHandbrakeForceN = copy.InitialMaxHandbrakeForceN;
             MaxBrakeForceN = copy.MaxBrakeForceN;
             NumberCarBrakeShoes = copy.NumberCarBrakeShoes;
             MaxHandbrakeForceN = copy.MaxHandbrakeForceN;
@@ -1885,26 +1848,18 @@ namespace Orts.Simulation.RollingStocks
 
             LoadEmptyMassKg = copy.LoadEmptyMassKg;
             LoadEmptyCentreOfGravityM_Y = copy.LoadEmptyCentreOfGravityM_Y;
-            LoadEmptyMaxBrakeForceN = copy.LoadEmptyMaxBrakeForceN;
-            LoadEmptyMaxHandbrakeForceN = copy.LoadEmptyMaxHandbrakeForceN;
             LoadEmptyORTSDavis_A = copy.LoadEmptyORTSDavis_A;
             LoadEmptyORTSDavis_B = copy.LoadEmptyORTSDavis_B;
             LoadEmptyORTSDavis_C = copy.LoadEmptyORTSDavis_C;
             LoadEmptyDavisDragConstant = copy.LoadEmptyDavisDragConstant;
             LoadEmptyWagonFrontalAreaM2 = copy.LoadEmptyWagonFrontalAreaM2;
-            LoadEmptyRelayValveRatio = copy.LoadEmptyRelayValveRatio;
-            LoadEmptyInshotPSI = copy.LoadEmptyInshotPSI;
             LoadFullMassKg = copy.LoadFullMassKg;
             LoadFullCentreOfGravityM_Y = copy.LoadFullCentreOfGravityM_Y;
-            LoadFullMaxBrakeForceN = copy.LoadFullMaxBrakeForceN;
-            LoadFullMaxHandbrakeForceN = copy.LoadFullMaxHandbrakeForceN;
             LoadFullORTSDavis_A = copy.LoadFullORTSDavis_A;
             LoadFullORTSDavis_B = copy.LoadFullORTSDavis_B;
             LoadFullORTSDavis_C = copy.LoadFullORTSDavis_C;
             LoadFullDavisDragConstant = copy.LoadFullDavisDragConstant;
             LoadFullWagonFrontalAreaM2 = copy.LoadFullWagonFrontalAreaM2;
-            LoadFullRelayValveRatio = copy.LoadFullRelayValveRatio;
-            LoadFullInshotPSI = copy.LoadFullInshotPSI;
 
             if (copy.IntakePointList != null)
             {
@@ -1931,7 +1886,6 @@ namespace Orts.Simulation.RollingStocks
                 BrakeSystems.Add(key, copySystem);
             }
             BrakeModeNames = copy.BrakeModeNames.Clone() as string[];
-            BrakeModePreset = copy.BrakeModePreset;
 
             if (copy.WeightLoadController != null) WeightLoadController = new MSTSNotchController(copy.WeightLoadController);
 
@@ -2315,7 +2269,6 @@ namespace Orts.Simulation.RollingStocks
                         // Update wagon parameters sensitive to wagon mass change
                         // Calculate the difference ratio, ie how full the wagon is. This value allows the relevant value to be scaled from the empty mass to the full mass of the wagon
                         TempMassDiffRatio = WeightLoadController.CurrentValue;
-                        UpdateBrakeLoadCompensation(TempMassDiffRatio);
                         UpdateDavisLoadCompensation(TempMassDiffRatio);
                     }
                 }
@@ -2324,7 +2277,7 @@ namespace Orts.Simulation.RollingStocks
                     FreightAnimations.LoadedOne = null;
                     FreightAnimations.FreightType = PickupType.None;
                 }
-                                if (WaitForAnimationReady && WeightLoadController.CommandStartTime + FreightAnimations.UnloadingStartDelay <= Simulator.ClockTime)
+                if (WaitForAnimationReady && WeightLoadController.CommandStartTime + FreightAnimations.UnloadingStartDelay <= Simulator.ClockTime)
                 {
                     WaitForAnimationReady = false;
                     Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Starting unload"));
@@ -2352,6 +2305,9 @@ namespace Orts.Simulation.RollingStocks
                     CalculateTotalMass(totalContainerMassKG);
                 }
             }
+
+            // This will update the brake load compensation, both the continuous automatic, both the manually switchabe automatically
+            SetBrakeSystemMode(BrakeSystem.BrakeMode, MassKG);
         }
 
         private void UpdateLocomotiveLoadPhysics()
@@ -3332,6 +3288,9 @@ namespace Orts.Simulation.RollingStocks
 
         private void UpdateBrakeLoadCompensation(float massDiffRatio)
         {
+            // The LoadFull... and LoadEmpty... variables are set by the SetBrakeSystem() method based on the actually active brake mode.
+            // The massDiffRatio is always 1 for manually switchable load stages, even for an empty wagon.
+            // Only wagons with automatic continuous load compensation can have a massDiffRatio below 1.
             MaxBrakeForceN = ((LoadFullMaxBrakeForceN - LoadEmptyMaxBrakeForceN) * massDiffRatio) + LoadEmptyMaxBrakeForceN;
             MaxHandbrakeForceN = ((LoadFullMaxHandbrakeForceN - LoadEmptyMaxHandbrakeForceN) * massDiffRatio) + LoadEmptyMaxHandbrakeForceN;
             // Not sensible to vary the relay valve ratio continouously; instead, it changes to loaded if more than 25% cargo is present
