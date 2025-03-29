@@ -1,4 +1,4 @@
-// COPYRIGHT 2021 by the Open Rails project.
+﻿// COPYRIGHT 2021 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -281,8 +281,10 @@ namespace Orts.Viewer3D.Processes
                                 String.Join("\n", data.Select(d => "\u2022 " + d).ToArray())),
                                 Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         else if (error is Traveller.MissingTrackNodeException)
-                            MessageBox.Show(String.Format("Open Rails detected a track section which is not present in tsection.dat and cannot continue.\n\n" +
-                                "Most likely you don't have the XTracks or Ytracks version needed for this route."));
+                            MessageBox.Show(String.Format("Open Rails detected a track shape index {0} which is not present in tsection.dat and cannot continue.\n\n" +
+                                "The version of standard tsection.dat may be out of date, or this route requires a custom tsection.dat.\n" +
+                                "Please check the route installation instructions to verify the required tsection.dat.",
+                                ((Traveller.MissingTrackNodeException)error).Index));
                         else if (error is FileNotFoundException)
                         {
                             MessageBox.Show(String.Format(
