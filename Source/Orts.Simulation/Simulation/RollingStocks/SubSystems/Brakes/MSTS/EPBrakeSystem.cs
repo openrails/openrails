@@ -131,11 +131,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     break;
             }
         }
-        public override void InitializeFromCopy(BrakeSystem copy)
+        public override void InitializeFromCopy(BrakeSystem copy, bool diff)
         {
             EPBrakeSystem thiscopy = (EPBrakeSystem)copy;
-            EPBrakeControlsBrakePipe = thiscopy.EPBrakeControlsBrakePipe;
-            base.InitializeFromCopy(copy);
+            EPBrakeControlsBrakePipe = diff && thiscopy.EPBrakeControlsBrakePipe == default ? EPBrakeControlsBrakePipe : thiscopy.EPBrakeControlsBrakePipe;
+            base.InitializeFromCopy(copy, diff);
         }
 
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, Dictionary<BrakeSystemComponent, PressureUnit> units)
