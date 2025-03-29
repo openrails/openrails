@@ -2185,7 +2185,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 foreach (var key in BrakeSystems.Keys)
                 {
-                    outf.Write(key.BrakeMode.ToString());
+                    outf.Write((int)key.BrakeMode);
                     outf.Write(key.MinMass);
                     BrakeSystems[key].Save(outf);
                 }
@@ -2220,7 +2220,7 @@ namespace Orts.Simulation.RollingStocks
             CarHeatCompartmentHeaterOn = inf.ReadBoolean();
             for (var i = 0; i < inf.ReadInt32(); i++)
             {
-                Enum.TryParse(inf.ReadString(), out BrakeModes mode);
+                var mode = (BrakeModes)inf.ReadInt32();
                 var minMass = inf.ReadSingle();
                 BrakeSystem bs = null;
                 bs.Restore(inf);

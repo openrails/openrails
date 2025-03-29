@@ -96,6 +96,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             VacResVolM3 = diff && thiscopy.VacResVolM3 == default ? VacResVolM3 : thiscopy.VacResVolM3;
             HasDirectAdmissionValue = diff && thiscopy.HasDirectAdmissionValue == default ? HasDirectAdmissionValue : thiscopy.HasDirectAdmissionValue;
             BrakeMode = diff && thiscopy.BrakeMode == default ? BrakeMode : thiscopy.BrakeMode;
+            MaxBrakeShoeForceN = diff && thiscopy.MaxBrakeShoeForceN == default ? MaxBrakeShoeForceN : thiscopy.MaxBrakeShoeForceN;
+            InitialMaxHandbrakeForceN = diff && thiscopy.InitialMaxHandbrakeForceN == default ? InitialMaxHandbrakeForceN : thiscopy.InitialMaxHandbrakeForceN;
+            InitialMaxBrakeForceN = diff && thiscopy.InitialMaxBrakeForceN == default ? InitialMaxBrakeForceN : thiscopy.InitialMaxBrakeForceN;
         }
 
         public override BrakeSystem InitializeDefault()
@@ -125,6 +128,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             SteamBrakeCylinderPressurePSI = default;
             SteamBrakeCompensation = default;
             SteamBrakingCurrentFraction = default;
+            BrakeMode = default;
+            MaxBrakeShoeForceN = default;
+            InitialMaxHandbrakeForceN = default;
+            InitialMaxBrakeForceN = default;
 
             return base.InitializeDefault();
         }
@@ -315,6 +322,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             outf.Write(AngleCockAOpen);
             outf.Write(AngleCockBOpen);
             outf.Write(BleedOffValveOpen);
+            outf.Write((int)BrakeMode);
+            outf.Write(MaxBrakeShoeForceN);
+            outf.Write(InitialMaxHandbrakeForceN);
+            outf.Write(InitialMaxBrakeForceN);
         }
 
         public override void Restore(BinaryReader inf)
@@ -329,6 +340,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             AngleCockAOpen = inf.ReadBoolean();
             AngleCockBOpen = inf.ReadBoolean();
             BleedOffValveOpen = inf.ReadBoolean();
+            BrakeMode = (BrakeModes)inf.ReadInt32();
+            MaxBrakeShoeForceN = inf.ReadSingle();
+            InitialMaxHandbrakeForceN = inf.ReadSingle();
+            InitialMaxBrakeForceN = inf.ReadSingle();
         }
 
         public override void Initialize(bool handbrakeOn, float maxVacuumInHg, float fullServVacuumInHg, bool immediateRelease)

@@ -80,6 +80,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         public float InitialMaxBrakeForceN;   // Initial force when the wagon initialised, this is the force on the wheel, ie after the brake shoe.
 
         public BrakeModes BrakeMode;
+        public float LoadStageMinMassKg;
 
         protected TrainCar Car;
 

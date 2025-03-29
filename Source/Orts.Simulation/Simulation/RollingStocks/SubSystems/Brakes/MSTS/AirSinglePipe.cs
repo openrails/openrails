@@ -268,6 +268,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             BrakeMode = diff && thiscopy.BrakeMode == default ? BrakeMode : thiscopy.BrakeMode;
             BrakeMass = diff && thiscopy.BrakeMass == default ? BrakeMass : thiscopy.BrakeMass;
             MaxBrakeShoeForceN = diff && thiscopy.MaxBrakeShoeForceN == default ? MaxBrakeShoeForceN : thiscopy.MaxBrakeShoeForceN;
+            InitialMaxHandbrakeForceN = diff && thiscopy.InitialMaxHandbrakeForceN == default ? InitialMaxHandbrakeForceN : thiscopy.InitialMaxHandbrakeForceN;
+            InitialMaxBrakeForceN = diff && thiscopy.InitialMaxBrakeForceN == default ? InitialMaxBrakeForceN : thiscopy.InitialMaxBrakeForceN;
+            LoadStageMinMassKg = diff && thiscopy.LoadStageMinMassKg == default ? LoadStageMinMassKg : thiscopy.LoadStageMinMassKg;
 
         }
 
@@ -301,7 +304,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             UniformReleaseThresholdPSI = default;
             AcceleratedApplicationLimitPSIpS = default;
             AcceleratedEmergencyReleaseThresholdPSI = default;
+            BrakeMode = default;
             BrakeMass = default;
+            MaxBrakeShoeForceN = default;
+            InitialMaxHandbrakeForceN = default;
+            InitialMaxBrakeForceN = default;
+            LoadStageMinMassKg = default;
 
             return base.InitializeDefault();
         }
@@ -529,6 +537,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             outf.Write(EmergResQuickReleaseActive);
             outf.Write(TwoStageLowSpeedActive);
             outf.Write(LegacyEmergencyValve);
+            outf.Write((int)BrakeMode);
+            outf.Write(BrakeMass);
+            outf.Write(MaxBrakeShoeForceN);
+            outf.Write(InitialMaxHandbrakeForceN);
+            outf.Write(InitialMaxBrakeForceN);
+            outf.Write(LoadStageMinMassKg);
         }
 
         public override void Restore(BinaryReader inf)
@@ -568,6 +582,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             EmergResQuickReleaseActive = inf.ReadBoolean();
             TwoStageLowSpeedActive = inf.ReadBoolean();
             LegacyEmergencyValve = inf.ReadBoolean();
+            BrakeMode = (BrakeModes)inf.ReadInt32();
+            BrakeMass = inf.ReadSingle();
+            MaxBrakeShoeForceN = inf.ReadSingle();
+            InitialMaxHandbrakeForceN = inf.ReadSingle();
+            InitialMaxBrakeForceN = inf.ReadSingle();
+            LoadStageMinMassKg = inf.ReadSingle();
         }
 
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)
