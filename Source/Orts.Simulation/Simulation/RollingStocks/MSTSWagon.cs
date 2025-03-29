@@ -3672,7 +3672,6 @@ namespace Orts.Simulation.RollingStocks
                         if (Pantographs != null)
                         {
                             Pantographs.HandleEvent(evt);
-                            SignalEvent(Event.PantographToggle);
                         }
                         break;
                 }
@@ -3692,7 +3691,6 @@ namespace Orts.Simulation.RollingStocks
                         if (Pantographs != null)
                         {
                             Pantographs.HandleEvent(evt, id);
-                            SignalEvent(Event.PantographToggle);
                         }
                         break;
                 }
