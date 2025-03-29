@@ -129,10 +129,12 @@ IF NOT "%Mode%" == "Unstable" (
 
 	REM Create the documentation folders for output.
 	CALL :create "Program\Documentation" || GOTO :error
+	CALL :create "Program\Documentation\Online" || GOTO :error
 	CALL :create "Program\Documentation\es" || GOTO :error
 
 	REM Compile the documentation.
 	FOR %%E IN (doc docx docm xls xlsx xlsm odt) DO FOR %%F IN ("Source\Documentation\*.%%E") DO ECHO %%~F && OfficeToPDF.exe /bookmarks /print "%%~F" "Program\Documentation\%%~nF.pdf" || GOTO :error
+	FOR %%E IN (doc docx docm xls xlsx xlsm odt) DO FOR %%F IN ("Source\Documentation\Online\*.%%E") DO ECHO %%~F && OfficeToPDF.exe /bookmarks /print "%%~F" "Program\Documentation\Online\%%~nF.pdf" || GOTO :error
 	>"Source\Documentation\Manual\version.py" ECHO version = '%OpenRails_Version%' || GOTO :error
 	>>"Source\Documentation\Manual\version.py" ECHO release = '%OpenRails_Revision%' || GOTO :error
 	PUSHD "Source\Documentation\Manual" && CALL make.bat clean & POPD || GOTO :error
@@ -147,6 +149,7 @@ IF NOT "%Mode%" == "Unstable" (
 
 	REM Copy the documentation separately.
 	FOR %%F IN ("Program\Documentation\*.pdf") DO CALL :copy "%%~F" "OpenRails-%Mode%-%%~nxF" || GOTO :error
+	FOR %%F IN ("Program\Documentation\Online\*.pdf") DO CALL :copy "%%~F" "OpenRails-%Mode%-%%~nxF" || GOTO :error
 )
 
 IF "%Mode%" == "Stable" (
@@ -162,7 +165,7 @@ IF "%Mode%" == "Stable" (
 )
 
 REM Create binary and source zips.
-PUSHD "Program" && 7za.exe a -r -tzip -x^^!*.xml "..\OpenRails-%Mode%.zip" . && POPD || GOTO :error
+PUSHD "Program" && 7za.exe a -r -tzip -x^^!*.xml -x^^!Online "..\OpenRails-%Mode%.zip" . && POPD || GOTO :error
 7za.exe a -r -tzip -x^^!.* -x^^!obj -x^^!lib -x^^!_build -x^^!*.bak "OpenRails-%Mode%-Source.zip" "Source" || GOTO :error
 
 ENDLOCAL
