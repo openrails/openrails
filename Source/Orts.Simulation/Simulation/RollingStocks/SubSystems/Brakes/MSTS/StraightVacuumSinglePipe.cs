@@ -33,10 +33,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
 
         }
-        /// <summary>
-        /// Indicates whether an auxiliary reservoir is present on the wagon or not.
-        /// </summary>
-        public bool AuxiliaryReservoirPresent;
 
         float DecreaseSoundTriggerBandwidth;
         float IncreaseSoundTriggerBandwidth;
@@ -44,7 +40,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override void Initialize(bool handbrakeOn, float maxVacuumInHg, float fullServVacuumInHg, bool immediateRelease)
         {
             CylPressurePSIA = BrakeLine1PressurePSI = Vac.ToPress(fullServVacuumInHg);
-            HandbrakePercent = handbrakeOn & HandBrakePresent ? 100 : 0;
+            HandbrakePercent = handbrakeOn & (Car as MSTSWagon).HandBrakePresent ? 100 : 0;
             VacResPressurePSIA = Vac.ToPress(maxVacuumInHg); // Only used if car coupled to auto braked locomotive
         }
 
@@ -55,19 +51,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             CylPressurePSIA = Vac.ToPress(Car.Train.EqualReservoirPressurePSIorInHg);
             VacResPressurePSIA = Vac.ToPress(Car.Train.EqualReservoirPressurePSIorInHg); // Only used if car coupled to auto braked locomotive
             HandbrakePercent = 0;
-        }
-        public override void SetBrakeEquipment(List<string> equipment)
-        {
-            base.SetBrakeEquipment(equipment);
-            AuxiliaryReservoirPresent = equipment.Contains("auxiliary_reservoir");
-            AuxiliaryReservoirPresent |= equipment.Contains("auxilary_reservoir"); // MSTS legacy parameter - use is discouraged
-        }
-
-        public override void InitializeFromCopy(BrakeSystem copy)
-        {
-            base.InitializeFromCopy(copy);
-            StraightVacuumSinglePipe thiscopy = (StraightVacuumSinglePipe)copy;
-            AuxiliaryReservoirPresent = thiscopy.AuxiliaryReservoirPresent;
         }
 
 
@@ -382,7 +365,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     }
                 }
                                  
-                if (((lead.CarBrakeSystemType == "vacuum_single_pipe" || lead.CarBrakeSystemType == "vacuum_twin_pipe") && AuxiliaryReservoirPresent))
+                if (((lead.CarBrakeSystemType == "vacuum_single_pipe" || lead.CarBrakeSystemType == "vacuum_twin_pipe") && (Car as MSTSWagon).AuxiliaryReservoirPresent))
                 {
                     // update non calculated values using vacuum single pipe class
                     base.Update(elapsedClockSeconds);
@@ -399,10 +382,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 // display as a automatic vacuum brake
 
                 return new string[] {
-                "1V",
+                "1V" + (BrakeMode == BrakeModes.Undefined ? "" : "-" + BrakeMode),
                 FormatStrings.FormatPressure(Vac.FromPress(CylPressurePSIA), PressureUnit.InHg, PressureUnit.InHg, true),
                 FormatStrings.FormatPressure(Vac.FromPress(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, true),
                 FormatStrings.FormatPressure(Vac.FromPress(VacResPressureAdjPSIA()), PressureUnit.InHg, PressureUnit.InHg, true),
+                string.Empty,
                 string.Empty,
                 string.Empty,
                 string.Empty,
@@ -419,7 +403,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 // display as a straight vacuum brake
 
                 return new string[] {
-                "1VS",
+                "1VS" + (BrakeMode == BrakeModes.Undefined ? "" : "-" + BrakeMode),
                 FormatStrings.FormatPressure(Vac.FromPress(CylPressurePSIA), PressureUnit.InHg, PressureUnit.InHg, true),
                 FormatStrings.FormatPressure(Vac.FromPress(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, true),
                 string.Empty,

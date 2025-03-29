@@ -439,6 +439,9 @@ namespace Orts.Viewer3D.Popups
                             var carLabel = new buttonLoco(CarUIDLenght + textHeight, textHeight, Owner.Viewer, car, carPosition, LabelAlignment.Center);
                             carLabel.Click += new Action<Control, Point>(carLabel_Click);
 
+                            var brakeLabel = new buttonBrakeMode(CarUIDLenght - textHeight, textHeight, Owner.Viewer, car, carPosition, LabelAlignment.Center);
+                            brakeLabel.Click += new Action<Control, Point>(brakeLabel_Click);
+
                             if (car == PlayerTrain.LeadLocomotive || car is MSTSLocomotive || car.WagonType == TrainCar.WagonTypes.Tender) carLabel.Color = Color.Green;
 
                             if (car.BrakesStuck || ((car is MSTSLocomotive) && (car as MSTSLocomotive).PowerReduction > 0)) carLabel.Color = Color.Red;
@@ -499,6 +502,7 @@ namespace Orts.Viewer3D.Popups
                                         AddSpace();
                                     }
                                 }
+                                line.Add(brakeLabel);
                             }
                             // Right arrow
                             line.Add(new buttonArrowRight(0, 0, textHeight, Owner.Viewer, carPosition));
@@ -592,6 +596,9 @@ namespace Orts.Viewer3D.Popups
             LocalScrollPosition = position;
         }
         void carLabel_Click(Control arg1, Point arg2)
+        {
+        }
+        void brakeLabel_Click(Control arg1, Point arg2)
         {
         }
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
@@ -996,7 +1003,7 @@ namespace Orts.Viewer3D.Popups
             : base(x, y, size, size)
         {
             Viewer = viewer;
-            Texture = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).MSTSBrakeSystem.HandBrakePresent ? (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).GetTrainHandbrakeStatus() ? HandBrakeSet : HandBrakeNotSet : HandBrakeNotAvailable;
+            Texture = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).HandBrakePresent ? (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).GetTrainHandbrakeStatus() ? HandBrakeSet : HandBrakeNotSet : HandBrakeNotAvailable;
             Source = new Rectangle(0, 0, size, size);
 
             var trainCarOperations = Viewer.TrainCarOperationsWindow;
@@ -1346,6 +1353,59 @@ namespace Orts.Viewer3D.Popups
                 }
             }
             return Texture;
+        }
+    }
+    class buttonBrakeMode : Label
+    {
+        readonly Viewer Viewer;
+        readonly CarOperationsWindow CarOperations;
+        readonly TrainCarOperationsWindow TrainCar;
+        readonly TrainCarOperationsViewerWindow TrainCarViewer;
+        readonly int CarPosition;
+        readonly MSTSWagon Car;
+        public buttonBrakeMode(int x, int y, Viewer viewer, TrainCar car, int carPosition, LabelAlignment alignment)
+            : base(x, y, "", alignment)
+        {
+            Viewer = viewer;
+            CarOperations = Viewer.CarOperationsWindow;
+            TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
+            TrainCar = Viewer.TrainCarOperationsWindow;
+            CarPosition = carPosition;
+            Car = car as MSTSWagon;
+            Text = Car.BrakeSystem.BrakeMode != BrakeModes.Undefined ? Car.BrakeSystem.BrakeMode.ToString() : "";
+            Click += new Action<Control, Point>(buttonLabel_Click);
+        }
+
+        public void buttonLabel_Click(Control arg1, Point arg2)
+        {
+            // The goal is a circular selection of the BrakeMode, ignoring the load stages, because they are selected automatically
+            var start = -1;
+            var first = -1;
+            var next = -1;
+            for (var i = 0; i < Car.BrakeSystems.Keys.Count(); i++)
+            {
+                if (Car.BrakeSystem.BrakeMode == Car.BrakeSystems.ElementAt(i).Key.BrakeMode)
+                    start = i;
+                else
+                {
+                    if (start != -1)
+                    {
+                        next = i;
+                        break;
+                    }
+                    else if (first == -1)
+                    {
+                        first = i;
+                    }
+                }
+            }
+            if (next == -1 && first != -1)
+                next = first;
+            if (next != -1)
+            {
+                Car.SetBrakeSystemMode(Car.BrakeSystems.ElementAtOrDefault(next).Key.BrakeMode, Car.MassKG);
+                Text = Car.BrakeSystem.BrakeMode != BrakeModes.Undefined ? Car.BrakeSystem.BrakeMode.ToString() : "";
+            }
         }
     }
 }

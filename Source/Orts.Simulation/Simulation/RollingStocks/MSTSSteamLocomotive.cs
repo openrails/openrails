@@ -2764,7 +2764,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             }
 
-            UpdateTractiveForce(elapsedClockSeconds);
+            UpdateTractiveForce(elapsedClockSeconds, ThrottlePercent / 100f, AbsSpeedMpS, AbsWheelSpeedMpS);
 
             #endregion
 
@@ -6518,9 +6518,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         /// <summary>
         /// Averages the tractive force for the steam locomotive as tractive force varies throught the full wheel revolution
         /// </summary>
-        protected override void UpdateTractiveForce(float elapsedClockSeconds)
+        protected override void UpdateTractiveForce(float elapsedClockSeconds, float locomotivethrottle, float AbsSpeedMpS, float AbsWheelSpeedMpS)
         {
-            float locomotivethrottle = ThrottlePercent / 100;
             TractiveForceN = 0; // reset tractiveforceN in preparation to calculating a new value
             if (!Simulator.UseAdvancedAdhesion && Simulator.Settings.SimpleControlPhysics)
             {

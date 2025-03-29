@@ -163,8 +163,6 @@ namespace Orts.Simulation.Physics
         public bool HuDIsWheelSlip;
         public bool IsBrakeSkid;
 
-        public bool TrackJointSoundSetupInitialise = true;
-
         public bool HotBoxSetOnTrain = false;
         public int ActivityDurationS
         {
@@ -2004,95 +2002,6 @@ namespace Orts.Simulation.Physics
             if (DatalogTrainSpeed)
             {
                 LogTrainSpeed(Simulator.ClockTime);
-            }
-
-            // Initialise track joint trigger points. Sets the trigger point for the track joint reletative to other cars.
-            // This is then reset every time a track joint is triggered, and positioned the same distance apart, hence reletative positions are maintained.
-            // Only runs once at start up.
-            if (TrackJointSoundSetupInitialise && (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM > 0 && Simulator.TRK.Tr_RouteFile.TrackSoundDefaultContinuousPlay)
-            {
-                var trackjointdistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
-                var trainLengthM = 0.0f;
-                var cummulativeTrackJointDistanceM = 0.0f;
-                var remainDistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
-
-                // Set values for printing
-                bool concretesleepers = false;
-                
-                if ((float)Simulator.TRK.Tr_RouteFile.ConcreteSleepers == 1)
-                {
-                    concretesleepers = true;
-                }
-
-                if (Simulator.Settings.VerboseConfigurationMessages && Simulator.TRK.Tr_RouteFile.TrackSoundDefaultContinuousPlay)
-                {
-                    Trace.TraceInformation("======================================================================================================================");
-                    Trace.TraceInformation("TType Track Sounds Initialisation - Concrete Sleepers = {0}, Track Joint Distance = {1} m", concretesleepers, (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM);
-                }
-
-
-                foreach (var car in Cars)
-                {
-                    // Initialise from the next track joint
-
-                    // if remain distance has gone negative then car has moved over the next track joint
-                    if (trackjointdistanceM > car.CarLengthM)
-                    {
-
-                        car.realTimeTrackJointDistanceM = cummulativeTrackJointDistanceM;
-                        trainLengthM += car.CarLengthM;
-                        cummulativeTrackJointDistanceM += car.CarLengthM;
-                        remainDistanceM -= car.CarLengthM;
-
-
-                        //              Trace.TraceInformation("Initialise Track Joints> - CarID {0} RealDistance {1} TrainLength {2} TRackJointDistance {3} CarLength {4} CumDistance {5} RemDistance {6}", car.CarID, car.realTimeTrackJointDistanceM, trainLengthM, trackjointdistanceM, car.CarLengthM, cummulativeTrackJointDistanceM, remainDistanceM);
-
-                        // the next track joint has been reached reset all parameters in preparation for the next pass
-                        if (remainDistanceM < 0.0f)
-                        {
-                            cummulativeTrackJointDistanceM = Math.Abs(remainDistanceM);
-                            remainDistanceM = trackjointdistanceM - cummulativeTrackJointDistanceM;
-                            //                 Trace.TraceInformation("Reset> - Cum {0} Rem {1}", cummulativeTrackJointDistanceM, remainDistanceM);
-                        }
-
-                    }
-                    // Trackjoint less then Car length 
-                    else if (trackjointdistanceM < car.CarLengthM)
-                    {
-
-                        car.realTimeTrackJointDistanceM = cummulativeTrackJointDistanceM;
-                        trainLengthM += car.CarLengthM;
-                        cummulativeTrackJointDistanceM += trackjointdistanceM;
-                        remainDistanceM -= car.CarLengthM;
-
-                        //                  Trace.TraceInformation("Initialise Track Joints< - CarID {0} RealDistance {1} TrainLength {2} TRackJointDistance {3} CarLength {4} CumDistance {5} RemDistance {6}", car.CarID, car.realTimeTrackJointDistanceM, trainLengthM, trackjointdistanceM, car.CarLengthM, cummulativeTrackJointDistanceM, remainDistanceM);
-
-                        if (remainDistanceM < 0.0f)
-                        {
-
-                            while (Math.Abs(remainDistanceM) > trackjointdistanceM)
-                            {
-                                remainDistanceM += trackjointdistanceM;
-                                //                          Trace.TraceInformation("Reset Remain< - CarID {0}, remainDistanceM {1}", car.CarID, remainDistanceM);
-                            }
-
-                            cummulativeTrackJointDistanceM = Math.Abs(remainDistanceM);
-                            remainDistanceM = trackjointdistanceM - cummulativeTrackJointDistanceM;
-                            //                      Trace.TraceInformation("Reset< - Cum {0} Rem {1}", cummulativeTrackJointDistanceM, remainDistanceM);
-                        }
-
-                    }
-
-                    if (Simulator.Settings.VerboseConfigurationMessages && Simulator.TRK.Tr_RouteFile.TrackSoundDefaultContinuousPlay)
-                    {
-                        Trace.TraceInformation("CarID {0}, Dist from Joint = {1} m, Car Length = {2} m, Train Length = {3} m, Axle Count = {4}", car.CarID, car.realTimeTrackJointDistanceM, car.CarLengthM, trainLengthM, car.SoundAxleCount);
-                    }
-
-                }
-
-                Trace.TraceInformation("======================================================================================================================");
-
-                TrackJointSoundSetupInitialise = false;
             }
 
         } // end Update
@@ -4133,7 +4042,7 @@ namespace Orts.Simulation.Physics
             if (Simulator.Settings.VerboseConfigurationMessages && LeadLocomotiveIndex >= 0) // Check incompatibilities between brake control valves
             {
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
-                if (lead.BrakeSystem is AirSinglePipe leadBrakes && Cars.Any(x => x.BrakeSystem is AirSinglePipe carBrakes && leadBrakes.BrakeValve != carBrakes.BrakeValve))
+                if (Cars.Any(x => (x as MSTSWagon).BrakeValve != lead.BrakeValve))
                 {
                     Trace.TraceInformation("Cars along the train have incompatible brake control valves");
                 }
@@ -4152,33 +4061,13 @@ namespace Orts.Simulation.Physics
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
                 if (lead.TrainBrakeController != null)
                 {
-                    foreach (MSTSWagon car in Cars)
+                    foreach (var car in Cars)
                     {
-                        if (lead.CarBrakeSystemType != car.CarBrakeSystemType) // Test to see if car brake system is the same as the locomotive
+                        if (lead.BrakeSystem.GetType() != car.BrakeSystem.GetType())
                         {
-                            // If not, change so that they are compatible
-                            car.CarBrakeSystemType = lead.CarBrakeSystemType;
-                            if (lead.BrakeSystem is VacuumSinglePipe)
-                                car.MSTSBrakeSystem = new VacuumSinglePipe(car);
-                            else if (lead.BrakeSystem is AirTwinPipe)
-                                car.MSTSBrakeSystem = new AirTwinPipe(car);
-                            else if (lead.BrakeSystem is AirSinglePipe leadAir)
-                            {
-                                car.MSTSBrakeSystem = new AirSinglePipe(car);
-                                // if emergency reservoir has been set on lead locomotive then also set on trailing cars
-                                if (leadAir.EmergencyReservoirPresent)
-                                {
-                                    (car.BrakeSystem as AirSinglePipe).EmergencyReservoirPresent = leadAir.EmergencyReservoirPresent;
-                                }
-                            }
-                            else if (lead.BrakeSystem is EPBrakeSystem ep)
-                                car.MSTSBrakeSystem = new EPBrakeSystem(car, ep.TwoPipes);
-                            else if (lead.BrakeSystem is SingleTransferPipe)
-                                car.MSTSBrakeSystem = new SingleTransferPipe(car);
-                            else
-                                throw new Exception("Unknown brake type");
-
-                            car.MSTSBrakeSystem.InitializeFromCopy(lead.BrakeSystem);
+                            (car as MSTSWagon).EmergencyReservoirPresent = lead.EmergencyReservoirPresent;
+                            car.BrakeSystem = BrakeSystem.CreateNewLike(lead.BrakeSystem, car);
+                            car.BrakeSystem.InitializeFromCopy(lead.BrakeSystem, false);
                             Trace.TraceInformation("Car and Locomotive Brake System Types Incompatible on Car {0} - Car brakesystem type changed to {1}", car.CarID, car.CarBrakeSystemType);
                         }
                     }

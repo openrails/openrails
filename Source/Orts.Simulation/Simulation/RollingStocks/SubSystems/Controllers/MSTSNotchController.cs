@@ -124,30 +124,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
      */
     public class MSTSNotchController: IController
     {
-        private float currentValue;
-        public float CurrentValue
-        {
-            get
-            {
-                return currentValue;
-            }
-            set
-            {
-                if (currentValue == value) return;
-                currentValue = value;
-                TimeSinceLastChange = 0;
-            }
-        }
-        private float savedValue;
-        public float SavedValue
-        {
-            get
-            {
-                if (TimeSinceLastChange >= DelayTimeBeforeUpdating)
-                    savedValue = currentValue;
-                return savedValue;
-            }
-        }
+        public float CurrentValue { get; set; }
         public float IntermediateValue;
         public float MinimumValue;
         public float MaximumValue = 1;
@@ -165,9 +142,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         public float UpdateValue { get; set; }
         private float? controllerTarget;
         public double CommandStartTime { get; set; }
-        private float prevValue;
-        public float TimeSinceLastChange { get; private set; }
-        public float DelayTimeBeforeUpdating;
 
         #region CONSTRUCTORS
 
@@ -199,7 +173,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             MaximumValue = other.MaximumValue;
             StepSize = other.StepSize;
             CurrentNotch = other.CurrentNotch;
-            DelayTimeBeforeUpdating = other.DelayTimeBeforeUpdating;
 
             foreach (MSTSNotch notch in other.Notches)
             {
@@ -235,36 +208,31 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             MaximumValue = stf.ReadFloat(STFReader.UNITS.None, null);
             StepSize = stf.ReadFloat(STFReader.UNITS.None, null);
             IntermediateValue = CurrentValue = stf.ReadFloat(STFReader.UNITS.None, null);
+            string token = stf.ReadItem(); // s/b numnotches
+            if (string.Compare(token, "NumNotches", true) != 0) // handle error in gp38.eng where extra parameter provided before NumNotches statement 
+                stf.ReadItem();
+            stf.MustMatch("(");
+            stf.ReadInt(null);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("numnotches", () =>{
+                new STFReader.TokenProcessor("notch", ()=>{
                     stf.MustMatch("(");
-                    stf.ReadInt(null);
-                    stf.ParseBlock(new STFReader.TokenProcessor[] {
-                        new STFReader.TokenProcessor("notch", ()=>{
-                            stf.MustMatch("(");
-                            float value = stf.ReadFloat(STFReader.UNITS.None, null);
-                            int smooth = stf.ReadInt(null);
-                            string type = stf.ReadString();
-                            string name = null;
-                            while(type != ")" && !stf.EndOfBlock())
-                            {
-                                switch (stf.ReadItem().ToLower())
-                                {
-                                    case "(":
-                                        stf.SkipRestOfBlock();
-                                        break;
-                                    case "ortslabel":
-                                        name = stf.ReadStringBlock(null);
-                                        break;
-                                }
-                            }
-                            Notches.Add(new MSTSNotch(value, smooth, type, name, stf));
-                        }),
-                    });
-                }),
-                new STFReader.TokenProcessor("ortsdelaytimebeforeupdating", () =>
-                {
-                    DelayTimeBeforeUpdating = stf.ReadFloatBlock(STFReader.UNITS.Time, null);
+                    float value = stf.ReadFloat(STFReader.UNITS.None, null);
+                    int smooth = stf.ReadInt(null);
+                    string type = stf.ReadString();
+                    string name = null;
+                    while(type != ")" && !stf.EndOfBlock())
+                    {
+                        switch (stf.ReadItem().ToLower())
+                        {
+                            case "(":
+                                stf.SkipRestOfBlock();
+                                break;
+                            case "ortslabel":
+                                name = stf.ReadStringBlock(null);
+                                break;
+                        }
+                    }
+                    Notches.Add(new MSTSNotch(value, smooth, type, name, stf));
                 }),
             });
             SetValue(CurrentValue);
@@ -417,8 +385,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 CheckControllerTargetAchieved();
                 UpdateValues(elapsedSeconds, UpdateValue, StandardBoost);
             }
-            if (prevValue == CurrentValue) TimeSinceLastChange += elapsedSeconds;
-            prevValue = CurrentValue;
             return CurrentValue;
         }
 
@@ -429,8 +395,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 CheckControllerTargetAchieved();
                 UpdateValues(elapsedSeconds, UpdateValue, boost);
             }
-            if (prevValue == CurrentValue) TimeSinceLastChange += elapsedSeconds;
-            prevValue = CurrentValue;
             return CurrentValue;
         }
 

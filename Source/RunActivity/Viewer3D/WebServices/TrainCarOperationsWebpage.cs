@@ -946,7 +946,7 @@ namespace Orts.Viewer3D.WebServices
             string filename;
             bool enabled = false;
 
-            if ((trainCar as MSTSWagon).MSTSBrakeSystem.HandBrakePresent)
+            if ((trainCar as MSTSWagon).HandBrakePresent)
             {
                 enabled = true;
                 if ((trainCar as MSTSWagon).GetTrainHandbrakeStatus())

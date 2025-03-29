@@ -580,21 +580,6 @@ namespace Orts.Simulation.RollingStocks
 
             base.Update(elapsedClockSeconds);
 
-            // Calculate fuel consumption will occur unless diesel engine is stopped
-            DieselFlowLps = DieselEngines.DieselFlowLps;
-            partialFuelConsumption += DieselEngines.DieselFlowLps * elapsedClockSeconds;
-            if (partialFuelConsumption >= 0.1)
-            {
-                DieselLevelL -= partialFuelConsumption;
-                partialFuelConsumption = 0;
-            }
-            // stall engine if fuel runs out
-            if (DieselLevelL <= 0.0f)
-            {
-                SignalEvent(Event.EnginePowerOff);
-                DieselEngines.HandleEvent(PowerSupplyEvent.StopEngine);
-            }
-
             // The following is not in the UpdateControllers function due to the fact that fuel level has to be calculated after the motive force calculation.
             FuelController.Update(elapsedClockSeconds);
             if (FuelController.UpdateValue > 0.0)
@@ -634,90 +619,193 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
         }
-        public override float GetAvailableTractionForceN(float t)
+
+        /// <summary>
+        /// This function updates periodically the locomotive's motive force.
+        /// </summary>
+        protected override void UpdateTractiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS)
         {
-            if (t <= 0) return 0;
-            if (DieselEngines.HasGearBox && (TractiveForceCurves == null || DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic))
+            // This section calculates the motive force of the locomotive as follows:
+            // Basic configuration (no TF table) - uses P = F /speed  relationship - requires power and force parameters to be set in the ENG file. 
+            // Advanced configuration (TF table) - use a user defined tractive force table
+            // With Simple adhesion apart from correction for rail adhesion, there is no further variation to the motive force. 
+            // With Advanced adhesion the raw motive force is fed into the advanced (axle) adhesion model, and is corrected for wheel slip and rail adhesion
+            // TO be Checked how main power supply conditions apply to geared locomotives - Note for geared locomotives it is possible to get some tractive force due to the drag of a stalled engine, if in gear, and clutch engaged
+            if ((LocomotivePowerSupply.MainPowerSupplyOn || DieselEngines.HasGearBox) && Direction != Direction.N)
             {
-                return base.GetAvailableTractionForceN(t); // TODO: provide more accurate values
-            }
-            float forceN = 0;
-            float powerW = float.MaxValue;
-            // If there is more then one diesel engine, and one or more engines is stopped, then the Fraction Power will give a fraction less then 1 depending upon power definitions of engines.
-            float DieselEngineFractionPower = 1.0f;
+                // Appartent throttle setting is a reverse lookup of the throttletab vs rpm, hence motive force increase will be related to increase in rpm. The minimum of the two values
+                // is checked to enable fast reduction in tractive force when decreasing the throttle. Typically it will take longer for the prime mover to decrease rpm then drop motive force.
+                float LocomotiveApparentThrottleSetting = 0;
 
-            if (DieselEngines.Count > 1)
-            {
-                DieselEngineFractionPower = DieselEngines.RunningPowerFraction;
-            }
-
-            DieselEngineFractionPower = MathHelper.Clamp(DieselEngineFractionPower, 0.0f, 1.0f);  // Clamp decay within bounds
-
-
-            if (!DieselEngines.HasGearBox && DieselPowerSupply.MaximumPowerW > 0)
-            {
-                powerW = DieselPowerSupply.MaximumPowerW * t;
-            }
-            if (TractiveForceCurves == null)
-            {
-                // This sets the maximum force of the locomotive, it will be adjusted down if it exceeds the max power of the locomotive.
-                forceN = MaxForceN * (1 - PowerReduction) * t;
-
-                // Maximum rail power is reduced by apparent throttle factor and the number of engines running (power ratio)
-                powerW = Math.Min(powerW, LocomotiveMaxRailOutputPowerW * DieselEngineFractionPower * t);
-
-                // If unloading speed is in ENG file, and locomotive speed is greater then unloading speed, and less then max speed, then apply a decay factor to the power/force
-                if (UnloadingSpeedMpS != 0 && AbsTractionSpeedMpS > UnloadingSpeedMpS && AbsTractionSpeedMpS < MaxSpeedMpS && !WheelSlip)
+                if (IsPlayerTrain)
                 {
-                    // use straight line curve to decay power to zero by 2 x unloading speed
-                    float unloadingspeeddecay = 1.0f - (1.0f / UnloadingSpeedMpS) * (AbsTractionSpeedMpS - UnloadingSpeedMpS);
-                    unloadingspeeddecay = MathHelper.Clamp(unloadingspeeddecay, 0.0f, 1.0f);  // Clamp decay within bounds
-                    powerW *= unloadingspeeddecay;
+                    LocomotiveApparentThrottleSetting = Math.Min(t, DieselEngines.ApparentThrottleSetting / 100.0f);
+                }
+                else // For AI trains, just use the throttle setting
+                {
+                    LocomotiveApparentThrottleSetting = t;
+                }
+
+                LocomotiveApparentThrottleSetting = MathHelper.Clamp(LocomotiveApparentThrottleSetting, 0.0f, 1.0f);  // Clamp decay within bounds
+
+                // If there is more then one diesel engine, and one or more engines is stopped, then the Fraction Power will give a fraction less then 1 depending upon power definitions of engines.
+                float DieselEngineFractionPower = 1.0f;
+
+                if (DieselEngines.Count > 1)
+                {
+                    DieselEngineFractionPower = DieselEngines.RunningPowerFraction;
+                }
+
+                DieselEngineFractionPower = MathHelper.Clamp(DieselEngineFractionPower, 0.0f, 1.0f);  // Clamp decay within bounds
+
+
+                // For the advanced adhesion model, a rudimentary form of slip control is incorporated by using the wheel speed to calculate tractive effort.
+                // As wheel speed is increased tractive effort is decreased. Hence wheel slip is "controlled" to a certain extent.
+                // This doesn't cover all types of locomotives, for eaxmple if DC traction motors and no slip control, then the tractive effort shouldn't be reduced. This won't eliminate slip, but limits
+                // its impact. More modern locomotive have a more sophisticated system that eliminates slip in the majority (if not all circumstances).
+                // Simple adhesion control does not have any slip control feature built into it.
+                // TODO - a full review of slip/no slip control.
+                if (TractionMotorType == TractionMotorTypes.AC)
+                {
+                    AbsTractionSpeedMpS = AbsSpeedMpS;
+                }
+                else
+                {
+                    if (WheelSlip && AdvancedAdhesionModel)
+                    {
+                        AbsTractionSpeedMpS = AbsWheelSpeedMpS;
+                    }
+                    else
+                    {
+                        AbsTractionSpeedMpS = AbsSpeedMpS;
+                    }
+                }
+
+                float supplyPowerLimitW = float.MaxValue;
+                if (!DieselEngines.HasGearBox)
+                {
+                    supplyPowerLimitW = DieselPowerSupply.AvailableTractionPowerW;
+                    if (DieselPowerSupply.MaximumPowerW > 0)
+                        supplyPowerLimitW = Math.Min(supplyPowerLimitW, DieselPowerSupply.MaximumPowerW * t);
+                }
+                if (TractiveForceCurves == null)
+                {
+                    if (DieselEngines.HasGearBox)
+                    {
+                        TractiveForceN = DieselEngines.TractiveForceN;
+                    }
+                    else
+                    {
+                        // This sets the maximum force of the locomotive, it will be adjusted down if it exceeds the max power of the locomotive.
+                        float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), AbsTractionSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * LocomotiveMaxRailOutputPowerW / AbsTractionSpeedMpS));
+
+                        // Maximum rail power is reduced by apparent throttle factor and the number of engines running (power ratio)
+                        float maxPowerW = LocomotiveMaxRailOutputPowerW * DieselEngineFractionPower * LocomotiveApparentThrottleSetting;
+
+                        maxPowerW = Math.Min(maxPowerW, supplyPowerLimitW);
+
+                        // If unloading speed is in ENG file, and locomotive speed is greater then unloading speed, and less then max speed, then apply a decay factor to the power/force
+                        if (UnloadingSpeedMpS != 0 && AbsTractionSpeedMpS > UnloadingSpeedMpS && AbsTractionSpeedMpS < MaxSpeedMpS && !WheelSlip)
+                        {
+                            // use straight line curve to decay power to zero by 2 x unloading speed
+                            float unloadingspeeddecay = 1.0f - (1.0f / UnloadingSpeedMpS) * (AbsTractionSpeedMpS - UnloadingSpeedMpS);
+                            unloadingspeeddecay = MathHelper.Clamp(unloadingspeeddecay, 0.0f, 1.0f);  // Clamp decay within bounds
+                            maxPowerW *= unloadingspeeddecay;
+                        }
+                        if (maxForceN * AbsSpeedMpS > maxPowerW)
+                            maxForceN = maxPowerW / AbsTractionSpeedMpS;
+
+                        TractiveForceN = maxForceN;
+                        // Motive force will be produced until power reaches zero, some locomotives had a overspeed monitor set at the maximum design speed
+                    }
+
+                }
+                else
+                {
+
+                    if (DieselEngines.HasGearBox && DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic)
+                    {
+                        TractiveForceN = DieselEngines.TractiveForceN;
+                    }
+                    else
+                    {
+                        // Tractive force is read from Table using the apparent throttle setting, and then reduced by the number of engines running (power ratio)
+                        TractiveForceN = TractiveForceCurves.Get(LocomotiveApparentThrottleSetting, AbsTractionSpeedMpS) * DieselEngineFractionPower * (1 - PowerReduction);  
+                        if (TractiveForceN * AbsTractionSpeedMpS > supplyPowerLimitW)
+                            TractiveForceN = supplyPowerLimitW / AbsTractionSpeedMpS;
+                    }
+
+                    if (TractiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
+                        TractiveForceN = 0;
+                }
+
+            }
+            else
+            {
+                TractiveForceN = 0f;
+            }
+
+            if (MaxForceN > 0 && MaxContinuousForceN > 0 && PowerReduction < 1)
+            {
+                TractiveForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN * (1 - PowerReduction);
+                float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
+                if (w < 0)
+                    w = 0;
+                AverageForceN = w * AverageForceN + (1 - w) * TractiveForceN;
+            }
+
+            // Calculate fuel consumption will occur unless diesel engine is stopped
+            DieselFlowLps = DieselEngines.DieselFlowLps;
+            partialFuelConsumption += DieselEngines.DieselFlowLps * elapsedClockSeconds;
+            if (partialFuelConsumption >= 0.1)
+            {
+                DieselLevelL -= partialFuelConsumption;
+                partialFuelConsumption = 0;
+            }
+            // stall engine if fuel runs out
+            if (DieselLevelL <= 0.0f)
+            {
+                SignalEvent(Event.EnginePowerOff);
+                DieselEngines.HandleEvent(PowerSupplyEvent.StopEngine);
+            }
+
+            ApplyDirectionToTractiveForce(ref TractiveForceN, 0);
+
+            // Calculate the total tractive force for the locomotive - ie Traction + Dynamic Braking force.
+            // Note typically only one of the above will only ever be non-zero at the one time.
+            // For flipped locomotives the force is "flipped" elsewhere, whereas dynamic brake force is "flipped" below by the direction of the speed.
+
+            if (DynamicBrakePercent > 0 && DynamicBrake && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
+            {
+                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsTractionSpeedMpS);
+                if (f > 0 && LocomotivePowerSupply.DynamicBrakeAvailable)
+                {
+                    DynamicBrakeForceN = f * (1 - PowerReduction);
+                    if (LocomotivePowerSupply.MaximumDynamicBrakePowerW > 0)
+                    {
+                        float maxPowerW = LocomotivePowerSupply.MaximumDynamicBrakePowerW * DynamicBrakePercent / 100 * (1 - PowerReduction);
+                        if (DynamicBrakeForceN * AbsTractionSpeedMpS > maxPowerW)
+                            DynamicBrakeForceN = maxPowerW / AbsTractionSpeedMpS;
+                    }
+                    TractiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * DynamicBrakeForceN;                 
+                }
+                else
+                {
+                    DynamicBrakeForceN = 0f;
                 }
             }
             else
-            {
-                // Tractive force is read from Table using the apparent throttle setting, and then reduced by the number of engines running (power ratio)
-                forceN = TractiveForceCurves.Get(t, AbsTractionSpeedMpS) * DieselEngineFractionPower * (1 - PowerReduction);
-                if (forceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
-                    forceN = 0;
-            }
-            if (forceN * AbsTractionSpeedMpS > powerW) forceN = powerW / AbsTractionSpeedMpS;
-            return forceN;
-        }
-        protected override void UpdateTractionForce(float elapsedClockSeconds)
-        {
-            if (DieselEngines.HasGearBox && (TractiveForceCurves == null || DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic))
-            {
-                TractiveForceN = TractionForceN = DieselEngines.TractiveForceN;
-                return;
-            }
-            float t = ThrottlePercent / 100;
+                DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0 position
 
-            float maxthrottle = MaxThrottlePercent / 100;
-            if (IsPlayerTrain) maxthrottle = Math.Min(maxthrottle, DieselEngines.ApparentThrottleSetting / 100.0f);
-            if (t > maxthrottle) t = maxthrottle;
-            t = MathHelper.Clamp(t, 0, 1);
+            foreach (var motor in TractionMotors)
+            {
+                motor.UpdateTractiveForce(elapsedClockSeconds, t);
+            }
 
-            // This section calculates the traction force of the locomotive as follows:
-            // Basic configuration (no TF table) - uses P = F /speed  relationship - requires power and force parameters to be set in the ENG file. 
-            // Advanced configuration (TF table) - use a user defined tractive force table
-            if (maxthrottle > 0 && Direction != Direction.N && LocomotivePowerSupply.MainPowerSupplyOn)
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics)
             {
-                float targetForceN = GetAvailableTractionForceN(t);
-                float limitForceN = GetAvailableTractionForceN(maxthrottle);
-                float maxForceN = float.MaxValue;
-                if (limitForceN >= targetForceN)
-                    maxForceN = limitForceN;
-                float maxPowerW = DieselPowerSupply.AvailableTractionPowerW;
-                if (targetForceN * AbsTractionSpeedMpS > maxPowerW) maxForceN = maxPowerW / AbsTractionSpeedMpS;
-                UpdateForceWithRamp(ref TractionForceN, elapsedClockSeconds, targetForceN, maxForceN, TractionForceRampUpNpS, TractionForceRampDownNpS, TractionForceRampDownToZeroNpS);
+                UpdateAxleDriveForce();
             }
-            else
-            {
-                TractionForceN = 0f;
-            }
-            TractiveForceN = TractionForceN;
         }
 
         protected override void UpdateAxleDriveForce()
