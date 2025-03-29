@@ -1,0 +1,15 @@
+In Source\Documentation\ store the source files for documents useful in running Open Rails.
+These will be processed to PDF format which is distributed as part of the installation and available to users in the drop-down Menu > Documents
+
+In Source\Documentation\Online store the source files for documents not used in running Open Rails.
+They should be MS Office or OpenOffice format and will be automatically processed to PDF format and stored on the website
+where they are available via a link in the drop-down.
+These include:
+- installation
+- translating
+- notifications
+- content creation
+- code-related
+- architecture
+
+
