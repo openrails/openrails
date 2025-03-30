@@ -208,6 +208,7 @@ namespace Orts.Simulation.RollingStocks
         public bool DerailPossible = false;
         public bool DerailExpected = false;
         public float DerailElapsedTimeS;
+        public bool HasDerailed = false;
 
         public float MaxHandbrakeForceN;
         public float MaxBrakeForceN = 89e3f;
@@ -1749,6 +1750,16 @@ namespace Orts.Simulation.RollingStocks
                     {
                         DerailExpected = true;
                         Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("Car {0} has derailed on the curve.", CarID));
+                        if (!HasDerailed)
+                        {
+                            string derailReason = "defect";
+                            if (CouplerForceU > 0 && CouplerSlackM < 0) { derailReason = "jackknifed"; }
+                            else if (CouplerForceU < 0 && CouplerSlackM > 0) { derailReason = "stringlined"; }
+                            Trace.TraceInformation("Car {0} derailed ({1}), on {2} curve with radius {3}, at speed {4}, after traveling {5}",
+                                CarID, derailReason, GetCurveDirection(), FormatStrings.FormatDistance(CurrentCurveRadiusM, IsMetric), FormatStrings.FormatSpeed(AbsSpeedMpS, IsMetric), FormatStrings.FormatDistance(DistanceM, IsMetric));
+                            // DistanceM is not a good location measure, as it is based on the train. Two railcars derailing at the same location have a different distance.
+                        }
+                        HasDerailed = true;
                       //  Trace.TraceInformation("Car Derail - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5} Nadal {6} Coeff {7}", CarID, CouplerForceU, CouplerForceUSmoothed.SmoothedValue, TotalWagonLateralDerailForceN, TotalWagonVerticalDerailForceN, WagonCouplerAngleDerailRad, NadalDerailmentCoefficient, DerailmentCoefficient);
                      //   Trace.TraceInformation("Car Ahead Derail - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5}", CarAhead.CarID, CarAhead.CouplerForceU, CarAhead.CouplerForceUSmoothed.SmoothedValue, CarAhead.TotalWagonLateralDerailForceN, CarAhead.TotalWagonVerticalDerailForceN, CarAhead.WagonCouplerAngleDerailRad);
                     }
@@ -1760,12 +1771,15 @@ namespace Orts.Simulation.RollingStocks
                     else
                     {
                         DerailElapsedTimeS = 0; // Reset timer if derail is not possible
+                        HasDerailed = false;
                     }
 
                     if (AbsSpeedMpS < 0.01)
                     {
                         DerailExpected = false;
                         DerailPossible = false;
+                        DerailElapsedTimeS = 0;
+                        HasDerailed = false;
                     }
 
 //                    if (CarID == "0 - 84" || CarID == "0 - 83" || CarID == "0 - 82" || CarID == "0 - 81" || CarID == "0 - 80" || CarID == "0 - 79")
@@ -1782,6 +1796,7 @@ namespace Orts.Simulation.RollingStocks
                     DerailExpected = false;
                     DerailPossible = false;
                     DerailElapsedTimeS = 0;
+                    HasDerailed = false;
                 }
 
 
