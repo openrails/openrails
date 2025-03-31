@@ -20,19 +20,19 @@ next paragraphs.
 ETCS circular speed gauge
 -------------------------
 
-You can add to the cabview a
-circular speed gauge accordingly to the European standard train control
-system ETCS.
+A circular speed gauge accordingly to the standard European Train Control System 
+(ETCS) can be added to the cabview. The information displayed in the Driver 
+Machine Interface (DMI) is controlled via the TCS script. For more details,
+see :ref:`C# engine scripting - Train Control System <features-scripting-tcs>`.
+
 
 .. image:: images/options-etcs.png
    :scale: 60 %
    :align: center
 
 
-.. admonition:: For content developers
-
-    The gauge is added by the insertion of a block like the following
-    into the .cvf file::
+The gauge is added by the insertion of a block like the following
+into the .cvf file::
 
         Digital (
             Type ( SPEEDOMETER DIGITAL )
@@ -47,19 +47,38 @@ instead::
 
 		ScreenDisplay (
 			Type ( ORTS_ETCS SCREEN_DISPLAY )
-			Position ( 280 272 320 240 )
+        Graphic ( statictexture.ace ) Comment( 3D cab only, mandatory there )
+        Position ( 280 272 320 240 )  Comment( 2D cab only )
 			Units ( KM_PER_HOUR )
 			Parameters (
 				Mode FullSize
+            MaxSpeed 180
+            DisplayUnits 0
 			)
 		)
 		
-The following DMI size variants are available: FullSize (displays the whole DMI), SpeedArea
-(displays only the left part with information about distance and speed) and PlanningArea
-(displays only the planning area and navigation buttons).
+The following commonly used ``MaxSpeed`` or ``ScaleRange`` values can be set
+* 140, 150, 180, 240, 250, 260, 280, 400 for ``KM_PER_HOUR`` unit
+* 87, 111, 155, 248 for ``MILES_PER_HOUR`` unit
+The default value is 400 with KM_PER_HOUR unit.
 
-The information displayed in the DMI is controlled via the TCS script. For more details,
-see :ref:`C# engine scripting - Train Control System <features-scripting-tcs>`.
+The following DMI size variants are available: 
+``FullSize`` displays the whole DMI, 
+``SpeedArea`` displays only the left part with information about distance and speed, 
+``PlanningArea`` displays only the right side planning area and navigation buttons. 
+The default value is FullSize
+
+Use the ``MaxVisibleSpeed`` to set the highest speed displayed as a number, 
+if literal numbering is undesirable above this number on the circular speed gauge. 
+The default value is the MaxSpeed rounded to the highest tens below.
+
+Use the ``DisplayUnits`` parameter to suppress diplaying the speed unit at the 
+bottom of the circular speed gauge. The default is 1, displaying the units.
+
+Use the ``Graphic`` parameter in 3D cabs to designate the static texture inside 
+the .s file that will be replaced at runtime with the dynamic picture of the 
+display. This parameter is mandatory. If omitted, or the named texture cannot 
+be found in the model, no display will be shown.
 
 .. _cabs-battery:
 
@@ -1434,43 +1453,6 @@ Customizations for such file are possible following these rules:
 
 Except for the first column, fields 
 in the 3D distributed power display are always with center alignment.
-
-ETCS circular speed gauge and the Driver Machine Interface
-----------------------------------------------------------
-
-It is possible to show the ETCS display using the following block::
-
-    ScreenDisplay (
-        Type ( ORTS_ETCS SCREEN_DISPLAY )
-        Graphic ( statictexture.ace )
-        Units ( KM_PER_HOUR )
-        Parameters (
-            Mode FullSize
-            MaxSpeed 180
-            DisplayUnits 0
-        )
-    )
-
-The following DMI size variants are available: ``FullSize`` displays the whole DMI, 
-``SpeedArea`` displays only the left part with information about distance and speed 
-and ``PlanningArea`` displays only the right side planning area and navigation buttons. 
-The default value is FullSize
-
-The following commonly used ``MaxSpeed`` values can be set
-* 140, 150, 180, 240, 250, 260, 280, 400 for ``KM_PER_HOUR`` unit
-* 87, 111, 155, 248 for ``MILES_PER_HOUR`` unit
-The default value is 400 with KM_PER_HOUR unit.
-
-Use the ``MaxVisibleSpeed`` to set the highest speed displayed as a number, 
-if literal numbering is undesirable above this number on the circular speed gauge. 
-The default value is the MaxSpeed rounded to the highest tens below.
-
-Use the ``DisplayUnits`` parameter to suppress diplaying the speed unit at the 
-bottom of the circular speed gauge. The default is 1.
-
-Use the ``Graphic`` parameter to designate the static texture inside the .s file 
-that will be replaced at runtime with the dynamic picture of the display. This 
-parameter is mandatory, if omitted, no display will be shown.
 
 Alignment for digital controls
 ------------------------------
