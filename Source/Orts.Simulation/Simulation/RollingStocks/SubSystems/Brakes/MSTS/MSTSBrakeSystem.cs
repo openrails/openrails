@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using Orts.Parsers.Msts;
 
@@ -23,6 +22,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
     public abstract class MSTSBrakeSystem : BrakeSystem
     {
+        /// <summary>
+        /// True if equipped with handbrake. (Not common for older steam locomotives.)
+        /// </summary>
+        public bool HandBrakePresent;
         public static BrakeSystem Create(string type, TrainCar car)
         {
             switch (type)
@@ -33,6 +36,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 case "vacuum_single_pipe": return new VacuumSinglePipe(car);
                 case "air_twin_pipe": return new AirTwinPipe(car);
                 case "air_single_pipe": return new AirSinglePipe(car);
+                case "ep_single_pipe": return new EPBrakeSystem(car, false);
                 case "ecp":
                 case "ep": return new EPBrakeSystem(car);
                 case "sme": return new SMEBrakeSystem(car);
@@ -41,7 +45,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 default: return new SingleTransferPipe(car);
             }
         }
+        public virtual void SetBrakeEquipment(List<string> equipment)
+        {
+            HandBrakePresent = equipment.Contains("handbrake");
+        }
 
         public abstract void Parse(string lowercasetoken, STFReader stf);
+
+        public abstract void Update(float elapsedClockSeconds);
+
+        public virtual void InitializeFromCopy(BrakeSystem copy)
+        {
+            HandBrakePresent = (copy as MSTSBrakeSystem).HandBrakePresent;
+        }
     }
 }

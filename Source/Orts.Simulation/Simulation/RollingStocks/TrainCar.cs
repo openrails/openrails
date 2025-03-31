@@ -212,7 +212,10 @@ namespace Orts.Simulation.RollingStocks
 
         public float MaxHandbrakeForceN;
         public float MaxBrakeForceN = 89e3f;
+        public float MaxBrakeShoeForceN; // This is the force applied to the brake shoe, hence it will be decreased by CoF to give force applied to the wheel
         public int NumberCarBrakeShoes;
+        public float InitialMaxHandbrakeForceN;  // Initial force when agon initialised
+        public float InitialMaxBrakeForceN = 89e3f;   // Initial force when wagon initialised, this is the force on the wheel, ie after the brake shoe.
 
         // Coupler Animation
         public AnimatedCoupler FrontCoupler = new AnimatedCoupler();
@@ -422,6 +425,30 @@ namespace Orts.Simulation.RollingStocks
         }
 
         public float LocalThrottlePercent;
+        public float MaxThrottlePercent
+        {
+            get
+            {
+                float percent = 100;
+                if (RemoteControlGroup == 0 && Train != null && Train.LeadLocomotive is MSTSLocomotive locomotive)
+                {
+                    if (!locomotive.TrainControlSystem.TractionAuthorization)
+                    {
+                        percent = 0;
+                    }
+                    else if (percent > locomotive.TrainControlSystem.MaxThrottlePercent)
+                    {
+                        percent = Math.Max(locomotive.TrainControlSystem.MaxThrottlePercent, 0);
+                    }
+                }
+                if (this is MSTSLocomotive loco)
+                {
+                    if (percent > 100 - loco.LocomotivePowerSupply.ThrottleReductionPercent) percent = 100 - loco.LocomotivePowerSupply.ThrottleReductionPercent;
+                    if (percent > loco.LocomotivePowerSupply.MaxThrottlePercent) percent = loco.LocomotivePowerSupply.MaxThrottlePercent / 100;
+                }
+                return percent;
+            }
+        }
         // represents the MU line travelling through the train.  Uncontrolled locos respond to these commands.
         public float ThrottlePercent
         {
@@ -431,18 +458,6 @@ namespace Orts.Simulation.RollingStocks
                 if (RemoteControlGroup == 0 && Train != null)
                 {
                     percent = Train.MUThrottlePercent;
-                    if (Train.LeadLocomotive is MSTSLocomotive locomotive)
-                    {
-                        if (!locomotive.TrainControlSystem.TractionAuthorization
-                            || percent <= 0)
-                        {
-                            percent = 0;
-                        }
-                        else if (percent > locomotive.TrainControlSystem.MaxThrottlePercent)
-                        {
-                            percent = Math.Max(locomotive.TrainControlSystem.MaxThrottlePercent, 0);
-                        }
-                    }
                 }
                 else if (RemoteControlGroup == 1 && Train != null)
                 {
@@ -454,10 +469,9 @@ namespace Orts.Simulation.RollingStocks
                 }
                 if (this is MSTSLocomotive loco)
                 {
-                    if (loco.LocomotivePowerSupply.ThrottleReductionPercent > 0) percent *= 1-loco.LocomotivePowerSupply.ThrottleReductionPercent/100;
-                    if (loco.LocomotivePowerSupply.MaxThrottlePercent < percent) percent = Math.Max(loco.LocomotivePowerSupply.MaxThrottlePercent, 0);
+                    if (loco.LocomotivePowerSupply.ThrottleReductionPercent > 0) percent *= 1 - loco.LocomotivePowerSupply.ThrottleReductionPercent / 100;
                 }
-                return percent;
+                return Math.Min(percent, MaxThrottlePercent);
             }
             set
             {
@@ -552,15 +566,7 @@ namespace Orts.Simulation.RollingStocks
                 Train.MUDirection = Flipped ^ loco.UsingRearCab ? DirectionControl.Flip(value) : value;
             }
         }
-
-        /// <summary>The actually used brake system. When mode is changed, this one is updated from the values of <see cref="BrakeSystems"/> and used directly</summary>
         public BrakeSystem BrakeSystem;
-        /// <summary>Alternative for dual vacuum/air vehicles, to be swapped with <see cref="BrakeSystem"/> and used directly</summary>
-        protected BrakeSystem BrakeSystemAlt;
-        /// <summary>Store for the various loades within modes. Never used directly, only the non-zero values get copied into <see cref="BrakeSystem"/></summary>
-        public readonly Dictionary<(BrakeModes BrakeMode, float MinMass), BrakeSystem> BrakeSystems = new Dictionary<(BrakeModes, float), BrakeSystem>();
-        /// <summary>Filter for the <see cref="BrakeSystems"/>, in case that comes from an include file</summary>
-        public string[] BrakeModeNames { get; protected set; }
 
         public float PreviousSteamBrakeCylinderPressurePSI;
 
@@ -580,6 +586,7 @@ namespace Orts.Simulation.RollingStocks
         public float GravityForceN;  // Newtons  - signed relative to direction of car.
         public float CurveForceN;   // Resistive force due to curve, in Newtons
         public float WindForceN;  // Resistive force due to wind
+        public float TractionForceN = 0f;
         public float DynamicBrakeForceN = 0f; // Raw dynamic brake force for diesel and electric locomotives
 
         // Derailment variables
@@ -761,11 +768,11 @@ namespace Orts.Simulation.RollingStocks
             if (BrakeShoeType == BrakeShoeTypes.Cast_Iron_P10 || BrakeShoeType == BrakeShoeTypes.Cast_Iron_P6 || BrakeShoeType == BrakeShoeTypes.High_Friction_Composite || BrakeShoeType == BrakeShoeTypes.Disc_Pads)
             {
                 float NewtonsTokNewtons = 0.001f;
-                float maxBrakeShoeForcekN = NewtonsTokNewtons * BrakeSystem.MaxBrakeShoeForceN / NumberCarBrakeShoes;
+                float maxBrakeShoeForcekN = NewtonsTokNewtons * MaxBrakeShoeForceN / NumberCarBrakeShoes;
 
                 if (maxBrakeShoeForcekN > 20 && Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("Maximum force per brakeshoe is {0} and has exceeded {1}, check MaxBrakeShoeForceN {2} or NumberCarBrakeShoes {3}",  FormatStrings.FormatForce(maxBrakeShoeForcekN * 1000, IsMetric), FormatStrings.FormatForce(20 * 1000, IsMetric), FormatStrings.FormatForce(BrakeSystem.MaxBrakeShoeForceN, IsMetric), NumberCarBrakeShoes);
+                    Trace.TraceInformation("Maximum force per brakeshoe is {0} and has exceeded {1}, check MaxBrakeShoeForceN {2} or NumberCarBrakeShoes {3}",  FormatStrings.FormatForce(maxBrakeShoeForcekN * 1000, IsMetric), FormatStrings.FormatForce(20 * 1000, IsMetric), FormatStrings.FormatForce(MaxBrakeShoeForceN, IsMetric), NumberCarBrakeShoes);
                 }
             } 
             
@@ -2192,7 +2199,8 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(UiD);
             outf.Write(CarID);
             BrakeSystem.Save(outf);
-            BrakeSystemAlt.Save(outf);
+            outf.Write(TractionForceN);
+            outf.Write(DynamicBrakeForceN);
             outf.Write(MotiveForceN);
             outf.Write(FrictionForceN);
             outf.Write(SpeedMpS);
@@ -2206,20 +2214,6 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(CarHeatCurrentCompartmentHeatJ);
             outf.Write(CarSteamHeatMainPipeSteamPressurePSI);
             outf.Write(CarHeatCompartmentHeaterOn);
-            outf.Write(BrakeSystems?.Count() ?? 0);
-            if (BrakeSystems?.Count() > 0)
-            {
-                foreach (var key in BrakeSystems.Keys)
-                {
-                    outf.Write((int)key.BrakeMode);
-                    outf.Write(key.MinMass);
-                    BrakeSystems[key].Save(outf);
-                }
-            }
-            outf.Write(BrakeModeNames?.Length ?? 0);
-            if (BrakeModeNames?.Length > 0)
-                foreach (var f in BrakeModeNames)
-                    outf.Write(f);
         }
 
         // Game restore
@@ -2229,7 +2223,8 @@ namespace Orts.Simulation.RollingStocks
             UiD = inf.ReadInt32();
             CarID = inf.ReadString();
             BrakeSystem.Restore(inf);
-            BrakeSystemAlt.Restore(inf);
+            TractionForceN = inf.ReadSingle();
+            DynamicBrakeForceN = inf.ReadSingle();
             MotiveForceN = inf.ReadSingle();
             FrictionForceN = inf.ReadSingle();
             SpeedMpS = inf.ReadSingle();
@@ -2244,22 +2239,6 @@ namespace Orts.Simulation.RollingStocks
             CarHeatCurrentCompartmentHeatJ = inf.ReadSingle();
             CarSteamHeatMainPipeSteamPressurePSI = inf.ReadSingle();
             CarHeatCompartmentHeaterOn = inf.ReadBoolean();
-            for (var i = 0; i < inf.ReadInt32(); i++)
-            {
-                var mode = (BrakeModes)inf.ReadInt32();
-                var minMass = inf.ReadSingle();
-                BrakeSystem bs = null;
-                bs.Restore(inf);
-                BrakeSystems.Add((mode, minMass), bs);
-            }
-            var brakeModeFilterLength = inf.ReadInt32();
-            if (brakeModeFilterLength > 0)
-            {
-                BrakeModeNames = new string[brakeModeFilterLength];
-                for (var i = 0; i < brakeModeFilterLength; i++)
-                    BrakeModeNames[i] = inf.ReadString();
-            }
-
             FreightAnimations?.LoadDataList?.Clear();
         }
 
