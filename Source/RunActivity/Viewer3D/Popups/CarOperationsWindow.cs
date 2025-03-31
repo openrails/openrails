@@ -67,7 +67,7 @@ protected override ControlLayout Layout(ControlLayout layout)
                 CarPosition = Viewer.TrainCarOperationsWindow.SelectedCarPosition;
 
             TrainCar trainCar = Viewer.PlayerTrain.Cars[CarPosition];
-            BrakeSystem brakeSystem = (trainCar as MSTSWagon).BrakeSystem;
+            BrakeSystem brakeSystem = trainCar.BrakeSystem;
             MSTSLocomotive locomotive = trainCar as MSTSLocomotive;
             MSTSWagon wagon = trainCar as MSTSWagon;
 
@@ -176,7 +176,7 @@ protected override ControlLayout Layout(ControlLayout layout)
             // add click controls
 
             // Handbrake
-            if ((trainCar as MSTSWagon).MSTSBrakeSystem.HandBrakePresent)
+            if (trainCar.BrakeSystem.HandBrakePresent)
                 buttonHandbrake.Click += new Action<Control, Point>(buttonHandbrake_Click);
             else
                 buttonHandbrake.Color = Color.Gray;

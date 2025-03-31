@@ -56,6 +56,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             AxleConnected.Motor = this;
             AxleConnected.TransmissionRatio = 1;
         }
+        public virtual void UpdateTractiveForce(float elapsedClockSeconds, float t)
+        {
+
+        }
 
         public virtual double GetDevelopedTorqueNm(double motorSpeedRadpS)
         {
