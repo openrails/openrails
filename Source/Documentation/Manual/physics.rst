@@ -1141,58 +1141,6 @@ with the ``ORTSTractionMotorType ( AC ) `` parameter, to be inserted in the Engi
 section of the ENG file. The use of this motor will have an impact on wheel slip,
 because the wheel speed never exceeds the frequency of the rotating magnetic field.
 
-Traction force retardation
-''''''''''''''''''''''''''
-
-.. index::
-    single: ORTSTractiveForceRampUpRate
-    single: ORTSTractiveForceRampDownRate
-    single: ORTSTractiveForceRampDownToZeroRate
-    single: ORTSDynamicBrakeForceRampUpRate
-    single: ORTSDynamicBrakeForceRampDownRate
-    single: ORTSDynamicBrakeForceRampDownToZeroRate
-    single: ORTSDelayTimeBeforeUpdating
-
-When the driver sets full throttle, the control electronics may not apply the full
-tractive force instantly, but it will instead linearly apply force until reaching
-the target demand. This can be tuned both for traction and dynamic braking by inserting
-``ORTSTractiveForceRampUpRate``, ``ORTSTractiveForceRampDownRate``,
-``ORTSTractiveForceRampDownToZeroRate``, ``ORTSDynamicBrakeForceRampUpRate``,
-``ORTSDynamicBrakeForceRampDownRate`` and ``ORTSDynamicBrakeForceRampDownToZeroRate``
-in the .eng file. The value of each parameter determines the force increase/decrease
-rate in one second.
-
-Example::
-
-  Engine (
-    ORTSTractiveForceRampUpRate ( 50kN )
-    ORTSTractiveForceRampDownRate ( 50kN )
-    ORTSTractiveForceRampDownToZeroRate ( 100kN )
-    ORTSDynamicBrakeForceRampUpRate ( 70kN )
-    ORTSDynamicBrakeForceRampDownRate ( 50kN )
-    ORTSDynamicBrakeForceRampDownToZeroRate ( 50kN )
-  )
-
-Another possibility to avoid sudden variations in tractive force while the driver
-is moving the throttle, is to only update the throttle/brake demand when the lever
-has not been moved for a defined amount of time. This can be implemented using the
-``ORTSDelayTimeBeforeUpdating``, which has to be inserted for the desired
-controller in the ``EngineControllers`` block.
-
-Example::
-
-  Engine (
-    EngineControllers (
-      Throttle ( 0 1 0.1 0
-        NumNotches ( 0 )
-        ORTSDelayTimeBeforeUpdating ( 0.5s )
-      )
-      Brake_Dynamic ( 0 1 0.1 0
-        NumNotches ( 0 )
-        ORTSDelayTimeBeforeUpdating ( 1s )
-      )
-    )
-  )
 
 Steam Locomotives
 -----------------
