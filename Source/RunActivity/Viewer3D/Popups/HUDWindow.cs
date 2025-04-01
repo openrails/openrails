@@ -1125,7 +1125,8 @@ namespace Orts.Viewer3D.Popups
                                 Viewer.Catalog.GetString("Handbrk"),
                                 Viewer.Catalog.GetString("Conn"),
                                 Viewer.Catalog.GetString("AnglCock"),
-                                Viewer.Catalog.GetString("BleedOff"));
+                                Viewer.Catalog.GetString("BleedOff"),
+                                Viewer.Catalog.GetString("BrkM-%"));
                 TableAddLine(table);
 
                 var n = train.Cars.Count; // Number of lines to show

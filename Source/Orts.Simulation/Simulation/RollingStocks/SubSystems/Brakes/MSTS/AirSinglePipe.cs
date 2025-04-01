@@ -164,7 +164,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float BrakePipeChangePSIpS;
         protected SmoothedData SmoothedBrakePipeChangePSIpS;
 
-        protected float BrakeMass;
+        public float BrakeMass;
 
         /// <summary>
         /// EP brake holding valve. Needs to be closed (Lap) in case of brake application or holding.
@@ -409,8 +409,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 FrontBrakeHoseConnected ? "I" : "T",
                 string.Format("A{0} B{1}", AngleCockAOpenAmount >= 1 ? "+" : AngleCockAOpenAmount <= 0 ? "-" : "/", AngleCockBOpenAmount >= 1 ? "+" : AngleCockBOpenAmount <= 0 ? "-" : "/"),
                 BleedOffValveOpen ? Simulator.Catalog.GetString("Open") : string.Empty,
+                string.Format("{0}t-{1}%", (int)Kg.ToTonne(BrakeMass), GetBrakePercent()),
             };
-
         }
 
         public override float GetCylPressurePSI()
@@ -564,9 +564,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 case "wagon(ortssupplyrescapacity": SupplyResVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
                 case "engine(ortssupplyreschargingrate":
                 case "wagon(ortssupplyreschargingrate": SupplyResChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
-                case "wagon(ortsmaxbrakeshoeforce": MaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "wagon(maxhandbrakeforce": InitialMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(maxbrakeforce": InitialMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(maxhandbrakeforce": InitialMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(ortsmaxbrakeshoeforce": MaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(ortsbrakemass": BrakeMass = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
             }
         }
@@ -2596,7 +2596,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (Car == null)
                 return;
 
-            if (MaxBrakeShoeForceN > 0)
+            if (MaxBrakeShoeForceN > 0 && BrakeMass > 0)
             {
                 Trace.TraceInformation("Brake mode {0}-{1} has both BrakeMass and MaxBrakeShoeForceN set. BrakeMass will be ignored: {2}", BrakeMode, LoadStageMinMassKg, Car.WagFilePath);
                 return;
@@ -2652,9 +2652,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             else
             {
                 var force = MaxBrakeShoeForceN > 0 ? MaxBrakeShoeForceN : InitialMaxBrakeForceN;
-                var brakePercentage = MathHelper.Clamp((force / referenceMass / 10 + d - c * referenceSpeed) / (a - b * referenceSpeed), 40, 250);
-                BrakeMass = referenceMass * brakePercentage / 100;
+                var brakePercentage = MathHelper.Clamp((force / referenceMass / 10 + d - c * referenceSpeed) / (a - b * referenceSpeed), 0, 250);
+                BrakeMass = Kg.FromTonne(referenceMass) * brakePercentage / 100;
+                if (modeIsAccelerated)
+                    BrakeMass /= 0.7f;
             }
+        }
+
+        public float GetBrakePercent()
+        {
+            return (int)MathHelper.Clamp(BrakeMass / Car.MassKG * 100, 0, 250);
         }
     }
 }

@@ -381,6 +381,13 @@ namespace Orts.Simulation.RollingStocks
         float LoadFullRelayValveRatio;
         float LoadFullInshotPSI;
 
+        // Used to avoid unnecessary brake mode changes. No need to Copy/Save/Restore them
+        BrakeModes PrevBrakeMode;
+        float PrevBrakeMass = -1;
+
+        // These settings may preceed the brake system type definition, which would cause them not to be parsed, that's why this workaround is needed.
+        (float MaxBrakeForceN, float MaxHandbrakeForceN, float MaxBrakeShoeForceN) ParsetimeBrakeForces;
+
         /// <summary>
         /// This initializer is called when we haven't loaded this type of car before
         /// and must read it new from the wag file.
@@ -642,11 +649,38 @@ namespace Orts.Simulation.RollingStocks
                     if (!BrakeModeNames.Contains(key.BrakeMode.ToString()))
                         BrakeSystems.Remove(key);
             }
-            else
-            {
-                BrakeModeNames = BrakeSystems.Keys.Select(k => k.ToString()).ToArray();
-            }
+            BrakeModeNames = BrakeSystems.Keys.Select(k => k.BrakeMode.ToString()).Distinct().ToArray();
             BrakeSystem = BrakeSystem ?? MSTSBrakeSystem.Create(CarBrakeSystemType, this);
+
+            BrakeSystem.InitialMaxBrakeForceN = ParsetimeBrakeForces.MaxBrakeForceN;
+            BrakeSystem.InitialMaxHandbrakeForceN = ParsetimeBrakeForces.MaxHandbrakeForceN;
+            BrakeSystem.MaxBrakeShoeForceN = ParsetimeBrakeForces.MaxBrakeShoeForceN;
+
+            if (BrakeSystem is AirSinglePipe airBrake)
+            {
+                if (BrakeSystems?.Count > 0)
+                {
+                    foreach (var key in BrakeSystems.Keys)
+                    {
+                        if (BrakeSystems[key] is AirSinglePipe subSystem)
+                        {
+                            BrakeSystems.TryGetValue((BrakeModes.P, key.MinMass), out var pMode);
+                            var pModeBrakeMass = (pMode as AirSinglePipe)?.BrakeMass;
+                            if (subSystem.BrakeMass == 0 && (pModeBrakeMass == null || pModeBrakeMass == 0))
+                            {
+                                // We will reverse calculate the brake mass from the brake forces
+                                subSystem.MaxBrakeShoeForceN = BrakeSystem.MaxBrakeShoeForceN;
+                                subSystem.InitialMaxBrakeForceN = BrakeSystem.InitialMaxBrakeForceN;
+                            }
+                            subSystem.BrakeMassToShoeForce(pModeBrakeMass);
+                        }
+                    }
+                }
+                else
+                {
+                    airBrake.BrakeMassToShoeForce(null);
+                }
+            }
 
             var (brakeMode, maxMass) = BrakeSystems?.Count > 0 ? BrakeSystems.Keys.FirstOrDefault() : default;
             SetBrakeSystemMode(brakeMode, maxMass, forceSwitch: true);
@@ -988,6 +1022,8 @@ namespace Orts.Simulation.RollingStocks
                             hiStageAir.RelayValveRatio = LoadFullRelayValveRatio;
                             loStageAir.RelayValveInshotPSI = LoadEmptyInshotPSI;
                             hiStageAir.RelayValveInshotPSI = LoadFullInshotPSI;
+                            loStageAir.BrakeMassToShoeForce(null);
+                            hiStageAir.BrakeMassToShoeForce(null);
                         }
 
                         BrakeSystems.Add((BrakeSystem.BrakeMode, LoadEmptyMassKg), loStage);
@@ -1008,8 +1044,11 @@ namespace Orts.Simulation.RollingStocks
 
         public void SetBrakeSystemMode(BrakeModes mode, float massKg, bool forceSwitch = false)
         {
-            if (Math.Abs(SpeedMpS) >  .1 && !forceSwitch)
+            if ((Math.Abs(SpeedMpS) > 0.1 || mode == PrevBrakeMode && massKg == PrevBrakeMass) && !forceSwitch)
                 return;
+
+            PrevBrakeMode = mode;
+            PrevBrakeMass = massKg;
 
             if (BrakeSystems?.Count > 0)
             {
@@ -1025,7 +1064,7 @@ namespace Orts.Simulation.RollingStocks
                 foreach (var key in BrakeSystems.Keys)
                     if (key.BrakeMode == mode && key.MinMass <= massKg)
                         max = Math.Max(max, key.MinMass);
-                if ((BrakeSystem.BrakeMode, BrakeSystem.LoadStageMinMassKg) != (mode, max) && BrakeSystems.TryGetValue((mode, max), out brakeSystem))
+                if (BrakeSystems.TryGetValue((mode, max), out brakeSystem))
                 {
                     HandleIncompatibleBrakesystems(brakeSystem);
                     BrakeSystem.InitializeFromCopy(brakeSystem, true);
@@ -1327,6 +1366,9 @@ namespace Orts.Simulation.RollingStocks
                     FrictionE2 = stf.ReadFloat(STFReader.UNITS.None, null);
                     stf.SkipRestOfBlock();
                     ; break;
+                case "wagon(maxbrakeforce": ParsetimeBrakeForces.MaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(maxhandbrakeforce": ParsetimeBrakeForces.MaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "wagon(ortsmaxbrakeshoeforce": ParsetimeBrakeForces.MaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(brakesystemtype":
                     CarBrakeSystemType = stf.ReadStringBlock(null).ToLower();
                     BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);

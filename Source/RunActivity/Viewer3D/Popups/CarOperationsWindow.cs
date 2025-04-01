@@ -58,7 +58,7 @@ namespace Orts.Viewer3D.Popups
             set;
             get;
         }
-protected override ControlLayout Layout(ControlLayout layout)
+        protected override ControlLayout Layout(ControlLayout layout)
         {
             Label ID, buttonHandbrake, buttonTogglePower, buttonToggleMU, buttonToggleBatterySwitch, buttonToggleElectricTrainSupplyCable, buttonToggleFrontBrakeHose, buttonToggleRearBrakeHose, buttonToggleAngleCockA, buttonToggleAngleCockB, buttonToggleBleedOffValve, buttonClose;
 
