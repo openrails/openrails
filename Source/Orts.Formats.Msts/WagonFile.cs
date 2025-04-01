@@ -32,7 +32,7 @@ namespace Orts.Formats.Msts
         public string WagonType;
         public float MassKG;
         public CarSize WagonSize;
-        public int NumWagAxles = -1;  // ORTS; -1 indicates absent
+        public int NumWagAxles;  // ORTS
         public float NumWagWheels;  // MSTS
         public float MaxBrakeForceN;
         public float MinCouplerStrengthN = ImpossiblyHighForceN;
