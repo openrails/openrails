@@ -33,7 +33,7 @@ namespace Orts.Formats.Msts
         public float MaxForceN;
         public float MaxDynamicBrakeForceN;
         public float MaxSpeedMps;
-        public int NumDriveAxles = -1;  // ORTS; -1 indicates absent
+        public int NumDriveAxles;  // ORTS
         public float NumEngWheels;  // MSTS
         public string Description;
         public string CabViewFile;

@@ -60,7 +60,7 @@ namespace ORTS.ContentManager.Models
                 var CarList = new List<Car>();
                 foreach (Wagon wag in file.Train.TrainCfg.WagonList)
                 {
-                    float wagonMassKG = 0; int ortsEngAxles = -1; int numDriveAxles = 0; int numAllAxles = 0;
+                    float wagonMassKG = 0; int numDriveAxles = 0; int numIdleAxles = 0; int numAllAxles = 0;
                     try
                     {
                         var fileType = wag.IsEngine ? ".eng" : ".wag";
@@ -73,16 +73,20 @@ namespace ORTS.ContentManager.Models
                         wagonMassKG = wagonFile.MassKG;
                         MaxBrakeForce += wagonFile.MaxBrakeForceN;
                         MinCouplerStrengthN = Math.Min(MinCouplerStrengthN, wagonFile.MinCouplerStrengthN);
+                        var subType = wagonFile.WagonType;
                         if (wagonFile.MaxBrakeForceN > 0) { NumOperativeBrakes++; }
 
-                        if (wag.IsEngine)
+                        if (engFile != null)
                         {
+                            subType = engFile.EngineType;
+
                             // see MSTSLocomotive.Initialize()
-                            ortsEngAxles = engFile.NumDriveAxles;
-                            if (ortsEngAxles >= 0) { numDriveAxles = ortsEngAxles; }
-                            else if (engFile.NumEngWheels > 7f) { numDriveAxles = (int)(engFile.NumEngWheels / 2f); }
-                            else if (engFile.NumEngWheels > 0) { numDriveAxles = (int)engFile.NumEngWheels; }
-                            else { numDriveAxles = 4; }
+                            numDriveAxles = engFile.NumDriveAxles;
+                            if (numDriveAxles == 0)
+                            {
+                                if (engFile.NumEngWheels != 0 && engFile.NumEngWheels < 7) { numDriveAxles = (int)engFile.NumEngWheels; }
+                                else { numDriveAxles = 4; }
+                            }
 
                             if (engFile.MaxForceN > 25000)  // exclude legacy driving trailers / cab-cars
                             {
@@ -99,12 +103,18 @@ namespace ORTS.ContentManager.Models
                         }
 
                         // see MSTSWagon.LoadFromWagFile()
-                        if (ortsEngAxles >= 0 && wagonFile.NumWagAxles >= 0) { numAllAxles = ortsEngAxles + wagonFile.NumWagAxles; }
-                        else if (wagonFile.NumWagAxles >= 0) { numAllAxles =  wagonFile.NumWagAxles; }
-                        else if (wagonFile.NumWagWheels >= 7f) { numAllAxles = (int)(wagonFile.NumWagWheels / 2f); }
-                        else if (wagonFile.NumWagWheels >= 0f) { numAllAxles = (int)wagonFile.NumWagWheels; }
-                        else { numAllAxles = 4; }
-                        if (numDriveAxles > numAllAxles) { numAllAxles = numDriveAxles; }
+                        numIdleAxles = wagonFile.NumWagAxles;
+                        if (numIdleAxles == 0 && !wag.IsEngine)
+                        {
+                            if (wagonFile.NumWagWheels != 0 && wagonFile.NumWagWheels < 6) { numIdleAxles = (int)wagonFile.NumWagWheels; }
+                            else { numIdleAxles = 4; }
+                        }
+
+                        // correction for steam engines; see TrainCar.Update()
+                        // this is not always correct as TrainCar uses the WheelAxles array for the count; that is too complex to do here
+                        if (subType.Equals("Steam") && numDriveAxles >= (numDriveAxles + numIdleAxles)) { numDriveAxles /= 2; }
+
+                        numAllAxles = numDriveAxles + numIdleAxles;
 
                         // exclude legacy EOT from total axle count
                         if (!wag.IsEOT && wagonFile.WagonSize.LengthM > 1.1)

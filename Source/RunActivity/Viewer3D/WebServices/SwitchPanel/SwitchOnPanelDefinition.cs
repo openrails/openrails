@@ -101,7 +101,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
 
                     for (int i = 0; i < train.Cars.Count; i++)
                     {
-                        if ((train.Cars[i] as MSTSWagon).BrakeSystem.HandBrakePresent)
+                        if ((train.Cars[i] as MSTSWagon).MSTSBrakeSystem.HandBrakePresent)
                             handBrakeCount++;
                     }
 
