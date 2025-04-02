@@ -187,6 +187,10 @@ namespace Orts.Simulation.RollingStocks
         public float CarWidthM = 2.5f;
         public float CarLengthM = 40;       // derived classes must overwrite these defaults
         public float CarHeightM = 4;        // derived classes must overwrite these defaults
+        public bool AutoSize = false;       // Are the dimensions of this wagon to be calculated automatically from the shape file?
+        public float AutoWidthOffsetM;
+        public float AutoLengthOffsetM;
+        public float AutoHeightOffsetM;
         public float MassKG = 10000;        // Mass in KG at runtime; coincides with InitialMassKG if there is no load and no ORTS freight anim
         public float InitialMassKG = 10000;
         public bool IsDriveable;
@@ -661,6 +665,7 @@ namespace Orts.Simulation.RollingStocks
         protected float TrackGaugeM;  // Track gauge - read in MSTSWagon, otherwise uses value given by the route
         protected Vector3 InitialCentreOfGravityM = new Vector3(0, 1.8f, 0); // get centre of gravity - read in MSTSWagon
         public Vector3 CentreOfGravityM = new Vector3(0, 1.8f, 0); // get centre of gravity after adjusted for freight animation
+        protected bool AutoCenter = false; // Should CentreOfGravityM.Z be set automatically to center the wagon?
         public float SuperElevationM; // Super elevation on the curve
         protected float MaxUnbalancedSuperElevationM;  // Maximum comfortable cant deficiency, read from MSTS Wagon File
         public float SuperElevationAngleRad;

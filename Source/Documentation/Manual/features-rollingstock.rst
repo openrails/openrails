@@ -403,6 +403,71 @@ OR supports tilting trains. A train tilts when its .con file name contains the
 
 .. image:: images/features-tilting.png
 
+Features to assist content creation
+===================================
+
+OR now includes some features that don't change the functionality of rolling stock, but simplify
+some steps of the content creation process or allow more control over content than was previously
+possible. The goal of these features is to save content creators' time, give additional power to
+creators, and to simplify the installation process for end users.
+
+Automatic wagon size calculation
+--------------------------------
+
+Determining the appropriate values to enter in the ``Size ( w, h, l )`` parameter of an engine or
+wagon can be tedious, as reasonable settings for the simulated width, height, and length of rolling
+stock depend on measurements of the 3D model used. Many content creators have entered largely
+arbitrary values of width and height into the size parameter, only adjusting the length value to
+give correct coupler alignement.
+
+.. index::
+   single: ORTSAutoSize
+
+To simplify this process, and produce more reasonable dimensions for rolling stock, OR can now
+automatically calculate the dimensions of rolling stock based on the shape file used. Enter
+``ORTSAutoSize`` in the Wagon section of an engine or wagon to allow OR to determine
+the width, height, and length of the rolling stock based on the dimensions of the main shape file,
+ignoring any values entered manually in the MSTS Size parameter.
+
+``ORTSAutoSize`` accepts 3 (optional) arguments, default units in meters, corresponding to offsets from the
+shape's width, height, and length respectively. For example, ``ORTSAutoSize ( 0.1m, -0.2m, -0.18m )``
+would tell OR to automatically determine the wagon's dimensions from the shape file, then subsequently
+add 0.1 meters to the width, subtract 0.2 meters from the height, and subtract 0.18 meters from the length,
+using the resulting values to set the simulated size of the wagon. In most cases, the width and height
+arguments can be set to 0, and the length argument adjusted to produce the desired coupler spacing. If
+no arguments are specified (ie: ``ORTSAutoSize ()`` was entered in the Wagon section) then all three
+offsets are assumed to be 0 meters.
+
+Note that automatic sizing uses the nearest LOD of the main shape file. LODs for further distances
+and freight animation shape files have no effect on the automatic sizing. This method also works best for rolling
+stock with standard buffers/couplers on each end. Automatic sizing generally can't produce reasonable results
+for articulated rolling stock. And should something go wrong with the shape file causing automatic sizing to fail,
+OR will revert to the values entered in the ``Size`` parameter.
+
+Automatic wagon centering
+-------------------------
+
+Many MSTS and OR creators have encountered rolling stock shapes that were not correctly centered,
+resulting in couplers/buffers clipping at one end of the wagon and separating at the other end.
+Normally, this would require inspecting the 3D model to determine exactly how off-center it was
+and carefully setting the Z value of ``CentreOfGravity ( x, y, z )`` to re-center the model.
+
+.. index::
+   single: ORTSAutoCenter
+
+To make this easier, OR now includes the ``ORTSAutoCenter`` parameter. When ``ORTSAutoCenter ( 1 )``
+is included in the Wagon section of an engine or wagon, OR will inspect the main shape file used by
+the wagon to determine the exact Z value of CentreOfGravity required to re-center the shape in the
+simulation. This will overwrite the manually entered Z component of ``CentreOfGravity`` but will
+not change the X or Y components. Should no re-centering be required, none will be applied.
+
+Some rolling stock will not align correctly when auto-centered. As with ``ORTSAutoSize``, this
+feature should be employed on rolling stock with standard buffers or couplers, and will
+not produce suitable results for articulated rolling stock or stock with different coupler
+types at each end. Only the highest detail LOD of the main shape is used to auto-center the
+rolling stock, other LODs and freight animations are ignored. If the process fails, a warning
+will be written to the log and the automatic calculation will be skipped.
+
 Freight animations and pickups
 ==============================
 
