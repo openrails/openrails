@@ -682,6 +682,7 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
+            // Calling SetBrakeSystemMode() is also a prerequisite for initializing the freightanim-style load compensation, by setting the default values for the Load... variables
             var (brakeMode, maxMass) = BrakeSystems?.Count > 0 ? BrakeSystems.Keys.FirstOrDefault() : default;
             SetBrakeSystemMode(brakeMode, maxMass, forceSwitch: true);
 

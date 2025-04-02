@@ -409,7 +409,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 FrontBrakeHoseConnected ? "I" : "T",
                 string.Format("A{0} B{1}", AngleCockAOpenAmount >= 1 ? "+" : AngleCockAOpenAmount <= 0 ? "-" : "/", AngleCockBOpenAmount >= 1 ? "+" : AngleCockBOpenAmount <= 0 ? "-" : "/"),
                 BleedOffValveOpen ? Simulator.Catalog.GetString("Open") : string.Empty,
-                string.Format("{0}t-{1}%", (int)Kg.ToTonne(BrakeMass), GetBrakePercent()),
             };
         }
 
@@ -2602,12 +2601,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 return;
             }
 
-            var referenceSpeed = 120; // km/h
-            var referenceMass = Kg.ToTonne(Math.Max(Car.InitialMassKG, LoadStageMinMassKg));
+            var referenceMass = Kg.ToTonne(LoadStageMinMassKg > 0 ? LoadStageMinMassKg : Car.InitialMassKG);
             if (referenceMass == 0)
                 referenceMass = 50;
 
             // Approximation of the UIC curves by Darwin Smith:
+            var referenceSpeed = 120; // km/h
             float a = 0, b = 0, c = 0, d = 0;
             switch (BrakeMode)
             {
@@ -2651,17 +2650,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             else
             {
+                // If we don't have the brake mass then try to calculate back from the brake force, using the same formula as above
                 var force = MaxBrakeShoeForceN > 0 ? MaxBrakeShoeForceN : InitialMaxBrakeForceN;
                 var brakePercentage = MathHelper.Clamp((force / referenceMass / 10 + d - c * referenceSpeed) / (a - b * referenceSpeed), 0, 250);
                 BrakeMass = Kg.FromTonne(referenceMass) * brakePercentage / 100;
                 if (modeIsAccelerated)
                     BrakeMass /= 0.7f;
             }
-        }
-
-        public float GetBrakePercent()
-        {
-            return (int)MathHelper.Clamp(BrakeMass / Car.MassKG * 100, 0, 250);
         }
     }
 }
