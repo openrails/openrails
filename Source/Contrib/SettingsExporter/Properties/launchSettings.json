@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "SettingsExporter": {
-      "commandName": "Project",
-      "commandLineArgs": "REG INI"
-    }
-  }
-}
