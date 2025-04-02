@@ -488,6 +488,112 @@ namespace Orts.Simulation.RollingStocks
                 RearAirHose.Connected.ShapeFileName = null;
             }
 
+            // If requested, use the shape file to determine the size of the wagon
+            if ((AutoSize || AutoCenter) && !string.IsNullOrEmpty(MainShapeFileName))
+            {
+                try // Shape file discrepancies might cause errors, we don't want to cause a crash here
+                {
+                    // This might be a bad idea, usually we wait to deal with shape files until within viewing range
+                    // But my hubris has decided we can use for the shape for things other than graphics - Phillip
+                    ShapeFile wagShape = new ShapeFile(wagonFolderSlash + MainShapeFileName, true);
+
+                    Vector3 mins = new Vector3(float.PositiveInfinity);
+                    Vector3 maxes = new Vector3(float.NegativeInfinity);
+
+                    // Determine size specifically for LOD0's (nearest LOD) sub objects
+                    foreach (sub_object subObj in wagShape.shape.lod_controls[0].distance_levels[0].sub_objects)
+                    {
+                        // Use vertex sets in the sub object to determine which vertices to check
+                        foreach (vertex_set vSet in subObj.vertex_sets)
+                        {
+                            // Use the vertex state used by this vertex set to determine the matrix used
+                            vtx_state vState = wagShape.shape.vtx_states[vSet.VtxStateIdx];
+
+                            // The index of the matrix used by this vertex state
+                            int mIndex = vState.imatrix;
+
+                            // The 'actual' XNA matrix used to determine the vertex transformation
+                            Matrix mat = Matrix.Identity;
+
+                            // Determine the overall transformation matrix from the root to the current matrix by following the hierarchy
+                            do
+                            {
+                                matrix m = wagShape.shape.matrices[mIndex];
+
+                                // Convert the shape file matrix to an XNA matrix
+                                Matrix matTransform = new Matrix
+                                {
+                                    M11 = m.AX,
+                                    M12 = m.AY,
+                                    M13 = m.AZ, //
+                                    M14 = 0,
+                                    M21 = m.BX,
+                                    M22 = m.BY,
+                                    M23 = m.BZ, //
+                                    M24 = 0,
+                                    M31 = m.CX, //
+                                    M32 = m.CY, //
+                                    M33 = m.CZ,
+                                    M34 = 0,
+                                    M41 = m.DX,
+                                    M42 = m.DY,
+                                    M43 = m.DZ, //
+                                    M44 = 1.0f
+                                };
+
+                                // Add the effect of this transformation to the overall transformation 
+                                mat = mat * matTransform;
+
+                                // Determine the index of the next highest matrix in the hierarchy
+                                mIndex = wagShape.shape.lod_controls[0].distance_levels[0].distance_level_header.hierarchy[mIndex];
+                            } // Keep calculating until we have calculated the root, or until a loop is encountered
+                            while (mIndex > -1 && mIndex != vState.imatrix && mIndex < wagShape.shape.matrices.Count);
+
+                            // Determine position of every vertex in this set from point position and tranformed by the matrix
+                            for (int i = vSet.StartVtxIdx; i < vSet.StartVtxIdx + vSet.VtxCount; i++)
+                            {
+                                // Determine vertex position from vertex index and point index
+                                point p = wagShape.shape.points[subObj.vertices[i].ipoint];
+                                Vector3 pPos = new Vector3(p.X, p.Y, p.Z);
+
+                                pPos = Vector3.Transform(pPos, mat);
+
+                                if (pPos.X < mins.X)
+                                    mins.X = pPos.X;
+                                if (pPos.X > maxes.X)
+                                    maxes.X = pPos.X;
+
+                                if (pPos.Y < mins.Y)
+                                    mins.Y = pPos.Y;
+                                if (pPos.Y > maxes.Y)
+                                    maxes.Y = pPos.Y;
+
+                                if (pPos.Z < mins.Z)
+                                    mins.Z = pPos.Z;
+                                if (pPos.Z > maxes.Z)
+                                    maxes.Z = pPos.Z;
+                            }
+                        }
+                    }
+
+                    // Set dimensions of wagon if configured as such
+                    if (AutoSize)
+                    {
+                        CarWidthM = Math.Max((maxes.X - mins.X) + AutoWidthOffsetM, 0.1f);
+                        CarHeightM = Math.Max((maxes.Y - mins.Y) + AutoHeightOffsetM, 0.1f);
+                        CarLengthM = Math.Max((maxes.Z - mins.Z) + AutoLengthOffsetM, 0.1f);
+                    }
+
+                    // Automatically determine the center of gravity offset required to perfectly center the shape (lengthwise)
+                    if (AutoCenter)
+                        InitialCentreOfGravityM.Z = (maxes.Z + mins.Z) / 2.0f;
+                }
+                catch
+                {
+                    Trace.TraceWarning("Could not automatically determine size of shape {0} in wagon {1}, there may be an error in the shape.", MainShapeFileName, wagFilePath);
+                }
+            }
+
             // If trailing loco resistance constant has not been  defined in WAG/ENG file then assign default value based upon orig Davis values
             if (TrailLocoResistanceFactor == 0)
             {
@@ -1287,6 +1393,14 @@ namespace Orts.Simulation.RollingStocks
                     CarLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(ortsautosize":
+                    AutoSize = true;
+                    stf.MustMatch("(");
+                    AutoWidthOffsetM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    AutoHeightOffsetM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    AutoLengthOffsetM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
                 case "wagon(ortslengthbogiecentre": CarBogieCentreLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthcarbody": CarBodyLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthairhose": CarAirHoseLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
@@ -1304,6 +1418,7 @@ namespace Orts.Simulation.RollingStocks
                         stf.SkipRestOfBlock();
                     }
                     break;
+                case "wagon(centerofgravity":
                 case "wagon(centreofgravity":
                     stf.MustMatch("(");
                     InitialCentreOfGravityM.X = stf.ReadFloat(STFReader.UNITS.Distance, null);
@@ -1316,6 +1431,8 @@ namespace Orts.Simulation.RollingStocks
                     }
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(ortsautocentre":
+                case "wagon(ortsautocenter": AutoCenter = stf.ReadBoolBlock(false); break;
                 case "wagon(ortsunbalancedsuperelevation": MaxUnbalancedSuperElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsrigidwheelbase":
                     stf.MustMatch("(");
@@ -1723,7 +1840,6 @@ namespace Orts.Simulation.RollingStocks
             CarLengthM = copy.CarLengthM;
             TrackGaugeM = copy.TrackGaugeM;
             CentreOfGravityM = copy.CentreOfGravityM;
-            InitialCentreOfGravityM = copy.InitialCentreOfGravityM;
             MaxUnbalancedSuperElevationM = copy.MaxUnbalancedSuperElevationM;
             RigidWheelBaseM = copy.RigidWheelBaseM;
             CarBogieCentreLengthM = copy.CarBogieCentreLengthM;
