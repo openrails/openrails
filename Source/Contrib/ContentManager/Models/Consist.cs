@@ -114,6 +114,7 @@ namespace ORTS.ContentManager.Models
                         // this is not always correct as TrainCar uses the WheelAxles array for the count; that is too complex to do here
                         if (subType.Equals("Steam") && numDriveAxles >= (numDriveAxles + numIdleAxles)) { numDriveAxles /= 2; }
 
+                        // see TrainCar.UpdateTrainDerailmentRisk(), ~ line 1609
                         numAllAxles = numDriveAxles + numIdleAxles;
 
                         // exclude legacy EOT from total axle count

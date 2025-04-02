@@ -100,6 +100,7 @@ namespace ORTS.ContentManager.Models
             // this is not always correct as TrainCar uses the WheelAxles array for the count; that is too complex to do here
             if (SubType.Equals("Steam") && NumDriveAxles >= (NumDriveAxles + NumIdleAxles)) { NumDriveAxles /= 2; }
 
+            // see TrainCar.UpdateTrainDerailmentRisk(), ~ line 1609
             NumAllAxles = NumDriveAxles + NumIdleAxles;
 
             // see TrainCar.UpdateTrainDerailmentRisk()
