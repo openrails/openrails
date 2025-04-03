@@ -3280,7 +3280,7 @@ namespace Orts.Simulation.RollingStocks
 
         private void UpdateBrakeLoadCompensation(float massDiffRatio)
         {
-            // The LoadFull... and LoadEmpty... variables are set by the SetBrakeSystem() method based on the actually active brake mode.
+            // The LoadFull... and LoadEmpty... variables are set by the SetBrakeSystemMode() method based on the actually active brake mode.
             // The massDiffRatio is always 1 for manually switchable load stages, even for an empty wagon.
             // Only wagons with automatic continuous load compensation can have a massDiffRatio below 1.
             MaxBrakeForceN = ((LoadFullMaxBrakeForceN - LoadEmptyMaxBrakeForceN) * massDiffRatio) + LoadEmptyMaxBrakeForceN;

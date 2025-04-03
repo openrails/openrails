@@ -4078,6 +4078,8 @@ namespace Orts.Simulation.Physics
             if (Simulator.Confirmer != null && IsActualPlayerTrain) // As Confirmer may not be created until after a restore.
                 Simulator.Confirmer.Confirm(CabControl.InitializeBrakes, CabSetting.Off);
 
+            SetInitialBrakeModes();
+
             float maxPressurePSI = 90;
             float fullServPressurePSI = 64;
             if (FirstCar != null && FirstCar.BrakeSystem is VacuumSinglePipe)
@@ -4562,6 +4564,38 @@ namespace Orts.Simulation.Physics
             }
             if (TrainType == TRAINTYPE.AI_INCORPORATED && IncorporatingTrainNo > -1) IsPlayable = true;
         } // CheckFreight
+
+
+        public void SetInitialBrakeModes()
+        {
+            var lead = LeadLocomotive ?? Cars?.FirstOrDefault();
+            if (lead == null) return;
+
+            // Check if lead is vacuum-braked
+            if (lead.BrakeSystem is VacuumSinglePipe || (lead.BrakeSystems?.Any(b => b.Value is VacuumSinglePipe) ?? false) &&
+                Cars.Count(c => c.BrakeSystem is VacuumSinglePipe || c.BrakeSystem is ManualBraking ||
+                (c.BrakeSystems?.Any(b => b.Value is VacuumSinglePipe || b.Value is ManualBraking) ?? false)) > Cars.Count / 3)
+            {
+                foreach (var car in Cars.Cast<MSTSWagon>())
+                {
+                    if (car.BrakeSystems?.ContainsKey((BrakeModes.VP, 0)) ?? false) car.SetBrakeSystemMode(BrakeModes.VP, car.MassKG);
+                    else if (car.BrakeSystems?.ContainsKey((BrakeModes.VB, 0)) ?? false) car.SetBrakeSystemMode(BrakeModes.VB, car.MassKG);
+                    else if (car.BrakeSystems?.ContainsKey((BrakeModes.VU, 0)) ?? false) car.SetBrakeSystemMode(BrakeModes.VU, car.MassKG);
+                }
+            }
+            else
+            {
+                foreach (var car in Cars.Cast<MSTSWagon>())
+                {
+                    if (car.BrakeSystems?.ContainsKey((BrakeModes.R_MG, 0)) ?? false) car.SetBrakeSystemMode(BrakeModes.R_MG, car.MassKG);
+                    else if (car.BrakeSystems?.ContainsKey((BrakeModes.R, 0)) ?? false) car.SetBrakeSystemMode(BrakeModes.R, car.MassKG);
+                    else if (car.BrakeSystems?.ContainsKey((BrakeModes.P, 0)) ?? false) car.SetBrakeSystemMode(BrakeModes.P, car.MassKG);
+                    else if (car.BrakeSystems?.ContainsKey((BrakeModes.AP, 0)) ?? false) car.SetBrakeSystemMode(BrakeModes.AP, car.MassKG);
+                    else if (car.BrakeSystems?.ContainsKey((BrakeModes.G, 0)) ?? false) car.SetBrakeSystemMode(BrakeModes.G, car.MassKG);
+                    else if (car.BrakeSystems?.ContainsKey((BrakeModes.AG, 0)) ?? false) car.SetBrakeSystemMode(BrakeModes.AG, car.MassKG);
+                }
+            }
+        }
 
         public void CalculatePositionOfCars()
         {
