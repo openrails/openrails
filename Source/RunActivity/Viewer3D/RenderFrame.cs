@@ -392,10 +392,10 @@ namespace Orts.Viewer3D
         static readonly Vector3 MoonGlow = new Vector3(245f / 255f, 243f / 255f, 206f / 255f);
         const float SunIntensity = 1;
         const float MoonIntensity = SunIntensity / 380000;
-        public const float HeadLightIntensity = 25000; // See some sample values: https://docs.unity3d.com/Packages/com.unity.cloud.gltfast@5.2/manual/LightUnits.html
+        public const float HeadLightIntensity = 250000; // See some sample values: https://docs.unity3d.com/Packages/com.unity.cloud.gltfast@5.2/manual/LightUnits.html
 
         const float LIGHT_INTENSITY_ADJUSTMENT_SPOT = 1f;
-        const float LIGHT_INTENSITY_ADJUSTMENT_POINT = 0.06f; // By visual inspection of PlaysetLightTest at nighttime. Probably should be 1 / 4π = 0.08
+        const float LIGHT_INTENSITY_ADJUSTMENT_POINT = 0.08f; // By visual inspection of PlaysetLightTest at nighttime. Probably should be 1 / 4π = 0.08
         const float LIGHT_INTENSITY_ADJUSTMENT_DIRECTIONAL = 1f;
         
         float LightDayNightClampTo = 1;
