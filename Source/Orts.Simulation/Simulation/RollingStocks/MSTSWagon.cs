@@ -650,7 +650,7 @@ namespace Orts.Simulation.RollingStocks
                         BrakeSystems.Remove(key);
             }
             BrakeModeNames = BrakeSystems.Keys.Select(k => k.BrakeMode.ToString()).Distinct().ToArray();
-            BrakeSystem = BrakeSystem ?? MSTSBrakeSystem.Create(CarBrakeSystemType, this);
+            BrakeSystem = BrakeSystemAlt = BrakeSystem ?? MSTSBrakeSystem.Create(CarBrakeSystemType, this);
 
             BrakeSystem.InitialMaxBrakeForceN = ParsetimeBrakeForces.MaxBrakeForceN;
             BrakeSystem.InitialMaxHandbrakeForceN = ParsetimeBrakeForces.MaxHandbrakeForceN;
@@ -1110,7 +1110,7 @@ namespace Orts.Simulation.RollingStocks
         {
             if (newBrakeSystem is VacuumSinglePipe ^ BrakeSystem is VacuumSinglePipe)
             {
-                if (BrakeSystemAlt == null)
+                if (BrakeSystemAlt == null || BrakeSystemAlt == BrakeSystem)
                 {
                     BrakeSystemAlt = BrakeSystem.CreateNewLike(newBrakeSystem, this).InitializeDefault();
 
