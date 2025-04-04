@@ -629,6 +629,9 @@ namespace Orts.Viewer3D
             SharedSMSFileManager.AutoTrackSound = false;
             SharedSMSFileManager.SwitchSMSNumber = Simulator.TRK.Tr_RouteFile.SwitchSMSNumber;
 
+            SharedSMSFileManager.PlayDefaultTrackSoundsContinuous = Simulator.TRK.Tr_RouteFile.TrackSoundDefaultContinuousPlay;
+            SharedSMSFileManager.ConcreteSleepers = Simulator.TRK.Tr_RouteFile.ConcreteSleepers;
+
             if (SharedSMSFileManager.SwitchSMSNumber < -1 || SharedSMSFileManager.SwitchSMSNumber >= TrackTypes.Count)
             {
                 SharedSMSFileManager.SwitchSMSNumber = -1;
