@@ -26,10 +26,12 @@ namespace ORTS.Settings
 {
     public class FolderSettings : SettingsBase
     {
+        public static readonly string SectionName = "Folders";
+
         public readonly Dictionary<string, string> Folders;
 
         public FolderSettings(IEnumerable<string> options)
-            : base(SettingsStore.GetSettingStore(UserSettings.SettingsFilePath, UserSettings.RegistryKey, "Folders"))
+            : base(SettingsStore.GetSettingStore(SettingsBase.SettingsFilePath, SettingsBase.RegistryKey, SectionName))
         {
             Folders = new Dictionary<string, string>();
             Load(options);
