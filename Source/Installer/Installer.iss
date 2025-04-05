@@ -22,7 +22,7 @@
 
 #define MyAppURL "http://openrails.org" ; Not yet HTTPS
 #define MyAppSourceURL "http://openrails.org/download/source/"
-#define MyAppSupportURL "https://launchpad.net/or"
+#define MyAppSupportURL "https://github.com/openrails/openrails/issues/"
 
 #define MyAppExeName "OpenRails.exe"
 #define MyAppManual "Documentation\Manual.pdf"
