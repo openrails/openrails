@@ -17,6 +17,7 @@
 
 using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
+using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using ORTS.Common;
 using ORTS.Scripting.Api;
