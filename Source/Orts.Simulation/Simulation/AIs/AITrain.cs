@@ -3978,6 +3978,7 @@ namespace Orts.Simulation.AIs
                 base.InitializeBrakes();
                 return;
             }
+            SetInitialBrakeModes();
             float maxPressurePSI = 90;
             float fullServPressurePSI = 64;
             float maxPressurePSIVacuum = 21;
