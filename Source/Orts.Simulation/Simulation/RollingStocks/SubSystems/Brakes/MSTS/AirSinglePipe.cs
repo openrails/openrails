@@ -402,7 +402,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 TwoPipes ? FormatStrings.FormatPressure(BrakeLine2PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.MainPipe], true) : string.Empty,
                 BrakeValve == BrakeValveType.Distributor ? FormatStrings.FormatPressure(ControlResPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.AuxiliaryReservoir], true) : string.Empty,
                 SupplyReservoirPresent ? FormatStrings.FormatPressure(SupplyResPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.SupplyReservoir], true) : string.Empty,
-                RetainerPositions == 0 ? string.Empty : RetainerDebugState,
+                RetainerPositions <= 0 ? string.Empty : RetainerDebugState,
                 Simulator.Catalog.GetString(GetStringAttribute.GetPrettyName(TripleValveState)),
                 string.Empty, // Spacer because the state above needs 2 columns.
                 HandBrakePresent ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
@@ -482,7 +482,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (equipment.Contains("retainer_4_position")) RetainerPositions = 4;
             else if (equipment.Contains("retainer_3_position")) RetainerPositions = 3;
             else if (equipment.Contains("uic_mountain")) RetainerPositions = 2;
-            else RetainerPositions = 0;
+            else RetainerPositions = -1;
             SupplyReservoirPresent = equipment.Contains("supply_reservoir");
             EmergencySolenoidValve = equipment.Contains("emergency_solenoid_valve");
         }
@@ -2515,6 +2515,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             switch (RetainerPositions)
             {
+                case -1:
                 case 0:
                 case 1: setting = RetainerSetting.Exhaust; break;
                 case 2: if (setting == RetainerSetting.LowPressure || setting == RetainerSetting.HighPressure) setting = RetainerSetting.SlowDirect; break;

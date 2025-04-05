@@ -1383,6 +1383,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsbrakemode":
                     var newSystem = BrakeSystem.CreateNewLike(BrakeSystem, this)?.InitializeDefault(); // Start with the same BrakeSystemType() as the base
                     BrakeModes? brakeModeName = null;
+                    List<string> brakeEquipment = null;
 
                     stf.VerifyStartOfBlock();
                     while (!stf.EndOfBlock())
@@ -1419,6 +1420,12 @@ namespace Orts.Simulation.RollingStocks
                                     else
                                         BrakeSystems.Add(key, newSystem);
                                 }
+                                if (brakeEquipment != null)
+                                    (newSystem as MSTSBrakeSystem)?.SetBrakeEquipment(brakeEquipment);
+                                break;
+                            case "wagon(ortsbrakemode(brakeequipmenttype":
+                                brakeEquipment = stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(',').ToList();
+                                (newSystem as MSTSBrakeSystem)?.SetBrakeEquipment(brakeEquipment);
                                 break;
                             case "wagon(ortsbrakemode(ortsloadstage":
                                 var stage = BrakeSystem.CreateNewLike(newSystem, this).InitializeDefault();
