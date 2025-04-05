@@ -243,6 +243,7 @@ namespace Menu
                 var docs = new List<ToolStripItem>();
                 var dir = Directory.GetCurrentDirectory();
                 var path = dir + @"\Documentation\";
+
                 if (Directory.Exists(path))
                 {
                     // Load English documents
@@ -259,7 +260,14 @@ namespace Menu
                             LoadDocuments(docs, codePath, code);
                     }
                 }
-                else buttonDocuments.Enabled = false;
+
+                var item = new ToolStripMenuItem($"Online documents (opens browser)", null, (object sender2, EventArgs e2) =>
+                    {
+                        Process.Start("https://www.openrails.org/learn/docs-list/");
+                    }
+                );
+                contextMenuStripDocuments.Items.Add(new ToolStripSeparator());
+                contextMenuStripDocuments.Items.Add(item);
 
                 NotificationManager = new NotificationManager(this, this.Resources, UpdateManager, Settings, panelDetails);
             }
