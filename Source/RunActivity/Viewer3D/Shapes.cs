@@ -1789,7 +1789,7 @@ namespace Orts.Viewer3D
         protected internal int PrimitiveOffset;
         protected internal PrimitiveType PrimitiveType;
 
-        protected readonly VertexBufferBinding[] VertexBufferBindings;
+        protected internal readonly VertexBufferBinding[] VertexBufferBindings;
 
         public ShapePrimitive() { }
         
@@ -1905,7 +1905,6 @@ namespace Orts.Viewer3D
         public int SubObjectIndex { get; protected set; }
 
         protected VertexBuffer VertexBuffer;
-        protected VertexDeclaration VertexDeclaration;
         protected int VertexBufferStride;
         protected IndexBuffer IndexBuffer;
         protected int PrimitiveCount;
@@ -1925,7 +1924,6 @@ namespace Orts.Viewer3D
             HierarchyIndex = shapePrimitive.HierarchyIndex;
             SubObjectIndex = subObjectIndex;
             VertexBuffer = shapePrimitive.VertexBuffer;
-            VertexDeclaration = shapePrimitive.VertexBuffer.VertexDeclaration;
             IndexBuffer = shapePrimitive.IndexBuffer;
             PrimitiveCount = shapePrimitive.PrimitiveCount;
             PrimitiveOffset = shapePrimitive.PrimitiveOffset;
@@ -1935,7 +1933,25 @@ namespace Orts.Viewer3D
             InstanceBuffer.SetData(positions);
             InstanceCount = positions.Length;
 
-            VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), new VertexBufferBinding(InstanceBuffer, 0, 1) };
+            var instanceBufferBinding = new VertexBufferBinding(InstanceBuffer, 0, 1);
+
+            if (VertexBuffer != null)
+            {
+                VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), instanceBufferBinding };
+            }
+            else
+            {
+                VertexBufferBindings = shapePrimitive.VertexBufferBindings.ToArray();
+                var dummyInstanceBuffer = RenderPrimitive.GetDummyVertexBuffer(graphicsDevice);
+                var position = -1;
+                for (var i = 0; i < VertexBufferBindings.Length; i++)
+                    if (VertexBufferBindings[i].VertexBuffer == dummyInstanceBuffer)
+                        position = i;
+                if (position == -1)
+                    VertexBufferBindings.Append(instanceBufferBinding);
+                else
+                    VertexBufferBindings[position] = instanceBufferBinding;
+            }
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
