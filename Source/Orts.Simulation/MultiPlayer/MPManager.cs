@@ -893,7 +893,7 @@ namespace Orts.MultiPlayer
         {
             string ending = "*.eng";
             if (type == 'w') ending = "*.wag";
-            string[] filePaths = Directory.GetFiles(simulator.BasePath + "\\trains\\trainset", ending, SearchOption.AllDirectories);
+            string[] filePaths = Vfs.GetFiles(simulator.BasePath + "\\trains\\trainset", ending, SearchOption.AllDirectories);
             string temp;
             List<string> allEngines = new List<string>();
             SortedList<double, string> carList = new SortedList<double, string>();
@@ -935,7 +935,7 @@ namespace Orts.MultiPlayer
             try
             {
                 string fileName = Simulator.RoutePath + @"\" + Simulator.TRK.Tr_RouteFile.FileName + ".tdb";
-                FileStream file = new FileStream(fileName, FileMode.Open);
+                var file = Vfs.OpenRead(fileName);
                 MD5 md5 = new MD5CryptoServiceProvider();
                 byte[] retVal = md5.ComputeHash(file);
                 file.Close();
