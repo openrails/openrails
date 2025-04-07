@@ -516,14 +516,14 @@ namespace Orts.Viewer3D
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            var level9_3 = Viewer.Settings.IsDirectXFeatureLevelIncluded(ORTS.Settings.UserSettings.DirectXFeature.Level9_3);
-            shader.CurrentTechnique = shader.Techniques[level9_3 ? "TerrainLevel9_3" : "TerrainLevel9_1"];
-            if (ShaderPasses == null) ShaderPasses = shader.Techniques[level9_3 ? "TerrainLevel9_3" : "TerrainLevel9_1"].Passes.GetEnumerator();
+            shader.CurrentTechnique = shader.Techniques["Terrain"];
+            if (ShaderPasses == null) ShaderPasses = shader.CurrentTechnique.Passes.GetEnumerator();
             shader.ImageTexture = PatchTexture;
             shader.OverlayTexture = PatchTextureOverlay;
             shader.OverlayScale = OverlayScale;
 
             graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
