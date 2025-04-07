@@ -2155,7 +2155,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class TogglePlayerEngineCommand : Command
     {
-        public static MSTSDieselLocomotive Receiver { get; set; }
+        public static MSTSLocomotive Receiver { get; set; }
 
         public TogglePlayerEngineCommand(CommandLog log)
             : base(log)

@@ -427,8 +427,6 @@ namespace Orts.Simulation.RollingStocks
         public float CombinedControlSplitPosition;
         public bool HasSmoothStruc;
 
-        bool controlTrailerBrakeSystemSet = false;
-
         public float MaxContinuousForceN;
         public float SpeedOfMaxContinuousForceMpS;  // Speed where maximum tractive effort occurs
         public float MSTSSpeedOfMaxContinuousForceMpS;  // Speed where maximum tractive effort occurs - MSTS parameter if used
@@ -2018,32 +2016,6 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
-            // A control car typically doesn't have its own compressor and relies on the attached power car. However OR uses the lead locomotive as the reference car for compressor calculations.
-            // Hence whilst users are encouraged to leave these parameters out of the ENG file, they need to be setup for OR to work correctly.
-            // Some parameters need to be split across the unpowered and powered car for correct timing and volume calculations.
-            // This setup loop is only processed the first time that update is run.
-            if (EngineType == EngineTypes.Control && !controlTrailerBrakeSystemSet)
-            {
-                FindControlActiveLocomotive();
-
-                if (ControlActiveLocomotive != null)
-                {
-                    // Split reservoir volume across the power car and the active locomotive
-                    MainResVolumeM3 = ControlActiveLocomotive.MainResVolumeM3 / 2;
-                    ControlActiveLocomotive.MainResVolumeM3 = MainResVolumeM3;
-
-                    MaxMainResPressurePSI = ControlActiveLocomotive.MaxMainResPressurePSI;
-                    MainResPressurePSI = MaxMainResPressurePSI;
-                    ControlActiveLocomotive.MainResPressurePSI = MainResPressurePSI;
-                    controlTrailerBrakeSystemSet = true; // Ensure this loop is only processes the first time update routine run
-                    MaximumMainReservoirPipePressurePSI = ControlActiveLocomotive.MaximumMainReservoirPipePressurePSI;
-                    CompressorRestartPressurePSI = ControlActiveLocomotive.CompressorRestartPressurePSI;
-                    MainResChargingRatePSIpS = ControlActiveLocomotive.MainResChargingRatePSIpS;
-                    BrakePipeChargingRatePSIorInHgpS = ControlActiveLocomotive.BrakePipeChargingRatePSIorInHgpS;
-                    TrainBrakePipeLeakPSIorInHgpS = ControlActiveLocomotive.TrainBrakePipeLeakPSIorInHgpS;
-                }
-            }
-
             var gearloco = this as MSTSDieselLocomotive;
 
             // Pass Gearbox commands
@@ -2848,10 +2820,8 @@ namespace Orts.Simulation.RollingStocks
                 {
                     FindControlActiveLocomotive();
 
-                    if (ControlActiveLocomotive != null)
+                    if (ControlActiveLocomotive is MSTSDieselLocomotive activeloco)
                     {
-                        var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
-
                         // Set charging rate depending upon compressor rpm
                         reservoirChargingRate = (activeloco.DieselEngines[0].RealRPM / activeloco.DieselEngines[0].MaxRPM) * MainResChargingRatePSIpS;
                     }
@@ -5559,97 +5529,35 @@ namespace Orts.Simulation.RollingStocks
 
                 case CABViewControlTypes.RPM:
                     {
-
-                        if (EngineType == EngineTypes.Control)
-                        {
-                            FindControlActiveLocomotive();
-
-                            if (ControlActiveLocomotive != null)
-                            {
-                                var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
-                                if (activeloco.DieselEngines[0] != null)
-                                    data = activeloco.DieselEngines[0].RealRPM;
-                            }
-
-                        }
-                        else
-                        {
-                            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
-                            if (mstsDieselLocomotive.DieselEngines[0] != null)
-                                data = mstsDieselLocomotive.DieselEngines[0].RealRPM;
-                        }
+                        var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+                        if (mstsDieselLocomotive.DieselEngines[0] != null)
+                            data = mstsDieselLocomotive.DieselEngines[0].RealRPM;
                         break;
                     }
 
                 case CABViewControlTypes.RPM_2:
                     {
-
-                        FindControlActiveLocomotive();
-
-                        if (ControlActiveLocomotive != null)
-                        {
-                            var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
-                            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
-
-                            if (EngineType == EngineTypes.Control && activeloco.DieselEngines.NumOfActiveEngines > 1)
-                            {
-                             
-                                if (activeloco.DieselEngines[1] != null)
-                                    data = activeloco.DieselEngines[1].RealRPM;
-                            }
-                            else if (EngineType == EngineTypes.Diesel && mstsDieselLocomotive.DieselEngines.NumOfActiveEngines > 1)
-                            {                      
-                                if (mstsDieselLocomotive.DieselEngines[1] != null)
-                                    data = mstsDieselLocomotive.DieselEngines[1].RealRPM;
-                            }
+                        if (this is MSTSDieselLocomotive mstsDieselLocomotive && mstsDieselLocomotive.DieselEngines.NumOfActiveEngines > 1)
+                        {                      
+                            if (mstsDieselLocomotive.DieselEngines[1] != null)
+                                data = mstsDieselLocomotive.DieselEngines[1].RealRPM;
                         }
-                        break;
                     }
+                    break;
 
                 case CABViewControlTypes.ORTS_DIESEL_TEMPERATURE:
                     {
-
-                        if (EngineType == EngineTypes.Control)
-                        {
-                            FindControlActiveLocomotive();
-
-                            if (ControlActiveLocomotive != null)
-                            {
-                                var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
-                                if (activeloco.DieselEngines[0] != null)
-                                    data = activeloco.DieselEngines[0].DieselTemperatureDeg;
-                            }
-
-                        }
-                        else
-                        {
-                            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
-                            if (mstsDieselLocomotive.DieselEngines[0] != null)
-                                data = mstsDieselLocomotive.DieselEngines[0].DieselTemperatureDeg;
-                        }
+                        var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+                        if (mstsDieselLocomotive.DieselEngines[0] != null)
+                            data = mstsDieselLocomotive.DieselEngines[0].DieselTemperatureDeg;
                         break;
                     }
 
                 case CABViewControlTypes.ORTS_OIL_PRESSURE:
                     {
-                        if (EngineType == EngineTypes.Control)
-                        {
-                            FindControlActiveLocomotive();
-
-                            if (ControlActiveLocomotive != null)
-                            {
-                                var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
-                                if (activeloco.DieselEngines[0] != null)
-                                    data = activeloco.DieselEngines[0].DieselOilPressurePSI;
-                            }
-
-                        }
-                        else
-                        {
-                            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
-                            if (mstsDieselLocomotive.DieselEngines[0] != null)
-                                data = mstsDieselLocomotive.DieselEngines[0].DieselOilPressurePSI;
-                        }
+                        var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+                        if (mstsDieselLocomotive.DieselEngines[0] != null)
+                            data = mstsDieselLocomotive.DieselEngines[0].DieselOilPressurePSI;
                         break;
                     }
 
@@ -5852,30 +5760,10 @@ namespace Orts.Simulation.RollingStocks
                     }
                 case CABViewControlTypes.WHEELSLIP:
                     {
-                        if (EngineType == EngineTypes.Control)
-                        {
-                            FindControlActiveLocomotive();
-
-                            if (ControlActiveLocomotive != null)
-                            {
-                                var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
-                                if (activeloco.DieselEngines[0] != null)
-                                {
-                                    if (activeloco.AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot)
-                                        data = activeloco.HuDIsWheelSlipWarninq ? 1 : 0;
-                                    else
-                                        data = activeloco.HuDIsWheelSlip ? 1 : 0;
-
-                                }
-                            }
-                        }
+                        if (AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot)
+                            data = HuDIsWheelSlipWarninq ? 1 : 0;
                         else
-                        {
-                            if (AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot)
-                                data = HuDIsWheelSlipWarninq ? 1 : 0;
-                            else
-                                data = HuDIsWheelSlip ? 1 : 0;
-                        }
+                            data = HuDIsWheelSlip ? 1 : 0;
                         break;
                     }
 
