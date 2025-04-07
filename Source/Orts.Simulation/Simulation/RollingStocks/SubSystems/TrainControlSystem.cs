@@ -670,9 +670,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     }
 
                     var functionHead = default(SignalHead);
-                    foreach (var head in trainSignal.SignalObject.SignalHeads)
-                        if (head.Function == function)
-                            functionHead = head;
+                    if (trainSignal?.SignalObject?.SignalHeads != null)
+                        foreach (var head in trainSignal.SignalObject.SignalHeads)
+                            if (head.Function == function)
+                                functionHead = head;
                     signalTypeName = functionHead.SignalTypeName;
                     foreach (var key in functionHead.signalType.DrawStates.Keys)
                     {
