@@ -18,6 +18,7 @@
 // This file is the responsibility of the 3D & Environment Team.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content.Pipeline;
@@ -57,7 +58,7 @@ namespace Orts.Viewer3D
         readonly OpaqueDataDictionary parameters = new OpaqueDataDictionary();
 
         public override ContentBuildLogger Logger { get { return logger; } }
-        readonly ContentBuildLogger logger = new Logger();
+        readonly ContentBuildLogger logger = new TraceContentBuildLogger();
 
         public override void AddDependency(string filename) { }
         public override void AddOutputFile(string filename) { }
@@ -67,11 +68,11 @@ namespace Orts.Viewer3D
         public override ExternalReference<TOutput> BuildAsset<TInput, TOutput>(ExternalReference<TInput> sourceAsset, string processorName, OpaqueDataDictionary processorParameters, string importerName, string assetName) { throw new NotImplementedException(); }
     }
 
-    class Logger : ContentBuildLogger
+    class TraceContentBuildLogger : ContentBuildLogger
     {
-        public override void LogMessage(string message, params object[] messageArgs) => Console.WriteLine(message, messageArgs);
-        public override void LogImportantMessage(string message, params object[] messageArgs) => Console.WriteLine(message, messageArgs);
-        public override void LogWarning(string helpLink, ContentIdentity contentIdentity, string message, params object[] messageArgs) => Console.WriteLine(message, messageArgs);
+        public override void LogMessage(string message, params object[] messageArgs) => Trace.TraceInformation(message, messageArgs);
+        public override void LogImportantMessage(string message, params object[] messageArgs) => Trace.TraceInformation(message, messageArgs);
+        public override void LogWarning(string helpLink, ContentIdentity contentIdentity, string message, params object[] messageArgs) => Trace.TraceWarning(message, messageArgs);
     }
 
     [CallOnThread("Render")]

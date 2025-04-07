@@ -2003,6 +2003,11 @@ namespace Orts.Viewer3D
         public string SoundFileName = "";
         public float CustomAnimationFPS = 8;
 
+        /// <summary>
+        /// Store for matrixes needed to be reused in later calculations, e.g. for 3d cabview mouse control
+        /// </summary>
+        public readonly Dictionary<int, Matrix> StoredResultMatrixes = new Dictionary<int, Matrix>();
+
 
         readonly protected Viewer Viewer;
         public readonly string FilePath;
@@ -2042,7 +2047,6 @@ namespace Orts.Viewer3D
         /// </summary>
         protected virtual void LoadContent()
         {
-            Trace.Write("S");
             var filePath = FilePath;
             // commented lines allow reading the animation block from an additional file in an Openrails subfolder
 //           string dir = Path.GetDirectoryName(filePath);
@@ -2653,6 +2657,9 @@ namespace Orts.Viewer3D
                         if (matrixVisible != null && !matrixVisible[hi]) continue;
 
                         var xnaMatrix = SetRenderMatrices(shapePrimitive, animatedXNAMatrices, ref xnaDTileTranslation, out var bones);
+
+                        if (StoredResultMatrixes.ContainsKey(shapePrimitive.HierarchyIndex))
+                            StoredResultMatrixes[shapePrimitive.HierarchyIndex] = xnaMatrix;
 
                         // TODO make shadows depend on shape overrides
 

@@ -394,7 +394,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
 
             for (int i = 0; i < train.Cars.Count; i++)
             {
-                if ((train.Cars[i] as MSTSWagon).HandBrakePresent)
+                if ((train.Cars[i] as MSTSWagon).MSTSBrakeSystem.HandBrakePresent)
                 {
                     handBrakeCount++;
                     if ((train.Cars[i] as MSTSWagon).GetTrainHandbrakeStatus())
@@ -565,7 +565,7 @@ namespace Orts.Viewer3D.WebServices.SwitchPanel
                     // exception not yet logged
                     ExceptionForCommand.Add(userCommand);
 
-                    Trace.Write("Error in Switch Panel function \"getStatus\" getting status for " + userCommand + ":");
+                    Trace.WriteLine("Error in Switch Panel function \"getStatus\" getting status for " + userCommand + ":");
                     Trace.WriteLine(ex);
                 }
             }
