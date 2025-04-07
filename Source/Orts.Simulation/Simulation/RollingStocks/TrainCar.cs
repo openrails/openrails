@@ -616,6 +616,7 @@ namespace Orts.Simulation.RollingStocks
         float jointTriggerDelayedS = 0.1f; // Set delay to 0.1 seconds
         float jointSpeedMpS;
         public float SoundAxleCount;
+        public float CarTrackControlledDistanceM = 0;
 
         // Track sound effects - switch / crossover
         public float TrackSwitchSoundTriggered;

@@ -330,6 +330,13 @@ namespace Orts.Viewer3D
                         Car.TrackSoundLocation = new WorldLocation(Car.WorldPosition.WorldLocation);
                     _prevTType = _curTType;
                 }
+
+                if (SharedSMSFileManager.PlayDefaultTrackSoundsContinuous)
+                {
+                    // Calculate the distance from the car to the camera position. Used for track based sounds
+                    Car.CarTrackControlledDistanceM = (float)Math.Sqrt(WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, Viewer.Camera.CameraWorldLocation));
+                }
+
             }
         }
 
@@ -1538,6 +1545,7 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.VolumeCurve.Controls.AngleofAttackControlled: return car.CurveSquealAoAmRadFiltered;
                 case Orts.Formats.Msts.VolumeCurve.Controls.CarFrictionControlled: return car.Train.WagonCoefficientFriction;
                 case Orts.Formats.Msts.VolumeCurve.Controls.WheelRpMControlled: var wheelRpM = pS.TopM((float)(car.AbsSpeedMpS / (2 * Math.PI * car.WheelRadiusM))); return wheelRpM;
+                case Orts.Formats.Msts.VolumeCurve.Controls.CarDistanceTrackControlled: return car.CarTrackControlledDistanceM;   
                 default: return 0;
             }
         }
