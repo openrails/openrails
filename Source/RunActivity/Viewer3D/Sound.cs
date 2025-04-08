@@ -1988,6 +1988,7 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.CarOnXover_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.ConcreteSleepers_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarCameraDistance_Dec_Past:
                     if (newValue < SMS.Threshold)
                     {
                         Signaled = true;
@@ -2013,6 +2014,7 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.CarOnXover_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.ConcreteSleepers_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarCameraDistance_Inc_Past:
                     if (newValue > SMS.Threshold)
                     {
                         Signaled = true;
@@ -2124,7 +2126,9 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Inc_Past:
                     return car.TrackSoundInTunnelTriggered;
-
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarCameraDistance_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarCameraDistance_Inc_Past:
+                    return car.CarTrackControlledDistanceM;
 
                 default:
                     return 0;
