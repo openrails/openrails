@@ -94,13 +94,16 @@ namespace Orts.Viewer3D.Popups
         private int LastPlayerTrainCars;
         private bool LastPlayerLocomotiveFlippedState;
 
-        private float LimitForCouplerStrengthN = 2.2e6f;  // 500k lbf, used for graph scale only
+        private static readonly float HighestRealisticCouplerStrengthN = 2.2e6f;  // 500k lbf, used for graph scale only
+        private float LimitForCouplerStrengthN = HighestRealisticCouplerStrengthN;
         private float CouplerStrengthScaleN;
 
-        private float LimitForDerailForceN = 1.55e5f;  // 35k lbf, used for graph scale only
+        private static readonly float HighestRealisticDerailForceN = 1.55e5f;  // 35k lbf, used for graph scale only
+        private float LimitForDerailForceN = HighestRealisticDerailForceN;
         private float DerailForceScaleN;
 
-        private float LimitForBrakeForceN = 2.0e5f;  // 45k lbf, used for graph scale only
+        private static readonly float HighestRealisticBrakeForceN = 2.0e5f;  // 45k lbf, used for graph scale only
+        private float LimitForBrakeForceN = HighestRealisticBrakeForceN;
         private float BrakeForceScaleN;
 
         private Image[] CouplerForceBarGraph;
@@ -312,9 +315,9 @@ namespace Orts.Viewer3D.Popups
         /// </summary>
         private void SetConsistProperties(Train theTrain)
         {
-            float lowestCouplerBreakN = LimitForCouplerStrengthN;
-            float lowestDerailForceN = LimitForDerailForceN;
-            float lowestMaxBrakeForceN = LimitForBrakeForceN;
+            float lowestCouplerBreakN = HighestRealisticCouplerStrengthN;
+            float lowestDerailForceN = HighestRealisticDerailForceN;
+            float lowestMaxBrakeForceN = HighestRealisticBrakeForceN;
 
             foreach (var car in theTrain.Cars)
             {
