@@ -674,12 +674,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         if (head.Function == function)
                             functionHead = head;
                     signalTypeName = functionHead.SignalTypeName;
-                    foreach (var key in functionHead.signalType.DrawStates.Keys)
+                    if (functionHead?.signalType?.DrawStates != null)
                     {
-                        if (functionHead.signalType.DrawStates[key].Index == functionHead.draw_state)
+                        foreach (var key in functionHead.signalType.DrawStates.Keys)
                         {
-                            drawStateName = functionHead.signalType.DrawStates[key].Name;
-                            break;
+                            if (functionHead.signalType.DrawStates[key].Index == functionHead.draw_state)
+                            {
+                                drawStateName = functionHead.signalType.DrawStates[key].Name;
+                                break;
+                            }
                         }
                     }
                     textAspect = functionHead?.TextSignalAspect ?? "";
