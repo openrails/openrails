@@ -126,7 +126,9 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortscurvesmsnumber", ()=>{ CurveSMSNumber = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("ortscurveswitchsmsnumber", ()=>{ CurveSwitchSMSNumber = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("ortsopendoorsinaitrains", ()=>{ OpenDoorsInAITrains = stf.ReadBoolBlock(false); }),
-
+                new STFReader.TokenProcessor("ortsplaytracksoundsbasecontinuous", ()=>{ TrackSoundDefaultContinuousPlay = stf.ReadBoolBlock(false); }),
+                new STFReader.TokenProcessor("ortsdistancebetweentrackjoints", ()=>{ DistanceBetweenTrackJointsM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("ortsconcretesleepers", ()=>{ ConcreteSleepers = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
            });
             //TODO This should be changed to STFException.TraceError() with defaults values created
             if (RouteID == null) throw new STFException(stf, "Missing RouteID");
@@ -174,6 +176,11 @@ namespace Orts.Formats.Msts
 
         public float ForestClearDistance = 0;
         public bool RemoveForestTreesFromRoads = false;
+
+        // Track based sounds
+        public bool TrackSoundDefaultContinuousPlay = false;
+        public float DistanceBetweenTrackJointsM;
+        public float ConcreteSleepers;
 
         // images
         public string Thumbnail;
