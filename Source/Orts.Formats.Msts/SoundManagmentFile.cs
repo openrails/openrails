@@ -270,7 +270,7 @@ namespace Orts.Formats.Msts
                 case "angleofattackcontrolled": Control = Controls.AngleofAttackControlled; break;
                 case "carfrictioncontrolled": Control = Controls.CarFrictionControlled; break;
                 case "wheelrpmcontrolled": Control = Controls.WheelRpMControlled; break;
-                case "distancetrackcontrolled": Control = Controls.CarDistanceTrackControlled; break;
+                case "cardistancetrackcontrolled": Control = Controls.CarDistanceTrackControlled; break;
                 default: STFException.TraceWarning(stf, "Crash expected: Skipped unknown VolumeCurve/Frequencycurve type " + type); stf.SkipRestOfBlock(); return;
             }
             stf.ParseBlock(new STFReader.TokenProcessor[] {
