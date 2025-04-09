@@ -1148,9 +1148,15 @@ Traction force retardation
     single: ORTSTractiveForceRampUpRate
     single: ORTSTractiveForceRampDownRate
     single: ORTSTractiveForceRampDownToZeroRate
+    single: ORTSTractivePowerRampUpRate
+    single: ORTSTractivePowerRampDownRate
+    single: ORTSTractivePowerRampDownToZeroRate
     single: ORTSDynamicBrakeForceRampUpRate
     single: ORTSDynamicBrakeForceRampDownRate
     single: ORTSDynamicBrakeForceRampDownToZeroRate
+    single: ORTSDynamicBrakePowerRampUpRate
+    single: ORTSDynamicBrakePowerRampDownRate
+    single: ORTSDynamicBrakePowerRampDownToZeroRate
     single: ORTSDelayTimeBeforeUpdating
 
 When the driver sets full throttle, the control electronics may not apply the full
@@ -1160,7 +1166,11 @@ the target demand. This can be tuned both for traction and dynamic braking by in
 ``ORTSTractiveForceRampDownToZeroRate``, ``ORTSDynamicBrakeForceRampUpRate``,
 ``ORTSDynamicBrakeForceRampDownRate`` and ``ORTSDynamicBrakeForceRampDownToZeroRate``
 in the .eng file. The value of each parameter determines the force increase/decrease
-rate in one second.
+rate in one second. To include ramp up/down times also for power, use the equivalent
+``ORTSTractivePowerRampUpRate``, ``ORTSTractivePowerRampDownRate``,
+``ORTSTractivePowerRampDownToZeroRate``, ``ORTSDynamicBrakePowerRampUpRate``,
+``ORTSDynamicBrakePowerRampDownRate`` and ``ORTSDynamicBrakePowerRampDownToZeroRate``
+parameters.
 
 Example::
 

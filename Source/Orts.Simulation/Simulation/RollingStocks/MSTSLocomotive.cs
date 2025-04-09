@@ -426,9 +426,15 @@ namespace Orts.Simulation.RollingStocks
         protected float TractionForceRampUpNpS;
         protected float TractionForceRampDownNpS;
         protected float TractionForceRampDownToZeroNpS=-1;
+        protected float TractionPowerRampUpWpS;
+        protected float TractionPowerRampDownWpS;
+        protected float TractionPowerRampDownToZeroWpS = -1;
         protected float DynamicBrakeForceRampUpNpS;
         protected float DynamicBrakeForceRampDownNpS;
         protected float DynamicBrakeForceRampDownToZeroNpS=-1;
+        protected float DynamicBrakePowerRampUpWpS;
+        protected float DynamicBrakePowerRampDownWpS;
+        protected float DynamicBrakePowerRampDownToZeroWpS = -1;
 
         public CombinedControl CombinedControlType;
         public float CombinedControlSplitPosition;
@@ -979,9 +985,15 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortstractiveforcerampuprate": TractionForceRampUpNpS = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(ortstractiveforcerampdownrate": TractionForceRampDownNpS = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(ortstractiveforcerampdowntozerorate": TractionForceRampDownToZeroNpS = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "engine(ortstractivepowerrampuprate": TractionPowerRampUpWpS = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
+                case "engine(ortstractivepowerrampdownrate": TractionPowerRampDownWpS = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
+                case "engine(ortstractivepowerrampdowntozerorate": TractionPowerRampDownToZeroWpS = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
                 case "engine(ortsdynamicbrakeforcerampuprate": DynamicBrakeForceRampUpNpS = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(ortsdynamicbrakeforcerampdownrate": DynamicBrakeForceRampDownNpS = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(ortsdynamicbrakeforcerampdowntozerorate": DynamicBrakeForceRampDownToZeroNpS = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "engine(ortsdynamicbrakepowerrampuprate": DynamicBrakePowerRampUpWpS = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
+                case "engine(ortsdynamicbrakepowerrampdownrate": DynamicBrakePowerRampDownWpS = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
+                case "engine(ortsdynamicbrakepowerrampdowntozerorate": DynamicBrakePowerRampDownToZeroWpS = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
 
                 case "engine(enginecontrollers(throttle": ThrottleController = new MSTSNotchController(stf); break;
                 case "engine(enginecontrollers(regulator": ThrottleController = new MSTSNotchController(stf); break;
@@ -1238,9 +1250,15 @@ namespace Orts.Simulation.RollingStocks
             TractionForceRampUpNpS = locoCopy.TractionForceRampUpNpS;
             TractionForceRampDownNpS = locoCopy.TractionForceRampDownNpS;
             TractionForceRampDownToZeroNpS = locoCopy.TractionForceRampDownToZeroNpS;
+            TractionPowerRampUpWpS = locoCopy.TractionPowerRampUpWpS;
+            TractionPowerRampDownWpS = locoCopy.TractionPowerRampDownWpS;
+            TractionPowerRampDownToZeroWpS = locoCopy.TractionPowerRampDownToZeroWpS;
             DynamicBrakeForceRampUpNpS = locoCopy.DynamicBrakeForceRampUpNpS;
             DynamicBrakeForceRampDownNpS = locoCopy.DynamicBrakeForceRampDownNpS;
             DynamicBrakeForceRampDownToZeroNpS = locoCopy.DynamicBrakeForceRampDownToZeroNpS;
+            DynamicBrakePowerRampUpWpS = locoCopy.DynamicBrakePowerRampUpWpS;
+            DynamicBrakePowerRampDownWpS = locoCopy.DynamicBrakePowerRampDownWpS;
+            DynamicBrakePowerRampDownToZeroWpS = locoCopy.DynamicBrakePowerRampDownToZeroWpS;
             MaxContinuousForceN = locoCopy.MaxContinuousForceN;
             SpeedOfMaxContinuousForceMpS = locoCopy.SpeedOfMaxContinuousForceMpS;
             MSTSSpeedOfMaxContinuousForceMpS = locoCopy.MSTSSpeedOfMaxContinuousForceMpS;
@@ -1586,7 +1604,9 @@ namespace Orts.Simulation.RollingStocks
             }
 
             if (TractionForceRampDownToZeroNpS < 0) TractionForceRampDownToZeroNpS = TractionForceRampDownNpS;
+            if (TractionPowerRampDownToZeroWpS < 0) TractionPowerRampDownToZeroWpS = TractionPowerRampDownWpS;
             if (DynamicBrakeForceRampDownToZeroNpS < 0) DynamicBrakeForceRampDownToZeroNpS = DynamicBrakeForceRampDownNpS;
+            if (DynamicBrakePowerRampDownToZeroWpS < 0) DynamicBrakePowerRampDownToZeroWpS = DynamicBrakePowerRampDownWpS;
 
             if (MaxSteamHeatPressurePSI == 0)       // Check to see if steam heating is fitted to locomotive
             {
@@ -2499,21 +2519,25 @@ namespace Orts.Simulation.RollingStocks
 			}
 #endif
         }
-        public void UpdateForceWithRamp(ref float forceN, float elapsedClockSeconds, float targetForceN, float maxForceN, float targetPowerW, float maxPowerW, float rampUpNpS=0, float rampDownNpS=0, float rampZeroNpS=0)
+        public void UpdateForceWithRamp(ref float forceN, float elapsedClockSeconds, float targetForceN, float maxForceN, float targetPowerW, float maxPowerW, float rampUpNpS=0, float rampDownNpS=0, float rampZeroNpS=0, float rampUpWpS=0, float rampDownWpS=0, float rampZeroWpS=0)
         {
             if (targetForceN > maxForceN) targetForceN = maxForceN;
             if (forceN > maxForceN) forceN = maxForceN;
             if (targetForceN > forceN)
             {
-                float ramp = rampUpNpS;
-                if (ramp > 0) forceN = Math.Min(forceN + ramp * elapsedClockSeconds, targetForceN);
-                else forceN = targetForceN;
+                float maxChangeN = float.MaxValue;
+                if (rampUpNpS > 0) maxChangeN = Math.Min(maxChangeN, rampUpNpS * elapsedClockSeconds);
+                if (rampUpWpS > 0 && AbsTractionSpeedMpS > 0) maxChangeN = Math.Min(maxChangeN, rampUpWpS / AbsTractionSpeedMpS * elapsedClockSeconds);
+                if (forceN + maxChangeN > targetForceN) forceN = targetForceN;
+                else forceN += maxChangeN;
             }
             else if (targetForceN < forceN)
             {
-                float ramp = targetForceN == 0 ? rampZeroNpS : rampDownNpS;
-                if (ramp > 0) forceN = Math.Max(forceN - ramp * elapsedClockSeconds, targetForceN);
-                else forceN = targetForceN;
+                float maxChangeN = float.MaxValue;
+                if ((targetForceN == 0 ? rampZeroNpS : rampDownNpS) > 0) maxChangeN = Math.Min(maxChangeN, (targetForceN == 0 ? rampZeroNpS : rampDownNpS) * elapsedClockSeconds);
+                if ((targetForceN == 0 ? rampZeroWpS : rampDownWpS) > 0 && AbsTractionSpeedMpS > 0) maxChangeN = Math.Min(maxChangeN, (targetForceN == 0 ? rampZeroWpS : rampDownWpS) / AbsTractionSpeedMpS * elapsedClockSeconds);
+                if (forceN - maxChangeN < targetForceN) forceN = targetForceN;
+                else forceN -= maxChangeN;
             }
         }
         public virtual float GetAvailableTractionForceN(float t)
@@ -2570,7 +2594,7 @@ namespace Orts.Simulation.RollingStocks
                     float maxPowerW = electric.ElectricPowerSupply.AvailableTractionPowerW;
                     if (targetForceN * AbsTractionSpeedMpS > maxPowerW) maxForceN = maxPowerW / AbsTractionSpeedMpS;
                 }
-                UpdateForceWithRamp(ref TractionForceN, elapsedClockSeconds, targetForceN, maxForceN, TractionForceRampUpNpS, TractionForceRampDownNpS, TractionForceRampDownToZeroNpS);
+                UpdateForceWithRamp(ref TractionForceN, elapsedClockSeconds, targetForceN, maxForceN, TractionForceRampUpNpS, TractionForceRampDownNpS, TractionForceRampDownToZeroNpS, TractionPowerRampUpWpS, TractionPowerRampDownWpS, TractionPowerRampDownToZeroWpS);
             }
             else
             {
@@ -2629,7 +2653,7 @@ namespace Orts.Simulation.RollingStocks
                 float limitForceN = GetAvailableDynamicBrakeForceN(maxdynamic);
                 float targetForceN = GetAvailableDynamicBrakeForceN(d);
                 float maxForceN = limitForceN >= targetForceN ? limitForceN : float.MaxValue;
-                UpdateForceWithRamp(ref DynamicBrakeForceN, elapsedClockSeconds, targetForceN, maxForceN, DynamicBrakeForceRampUpNpS, DynamicBrakeForceRampDownNpS, DynamicBrakeForceRampDownToZeroNpS);
+                UpdateForceWithRamp(ref DynamicBrakeForceN, elapsedClockSeconds, targetForceN, maxForceN, DynamicBrakeForceRampUpNpS, DynamicBrakeForceRampDownNpS, DynamicBrakeForceRampDownToZeroNpS, DynamicBrakePowerRampUpWpS, DynamicBrakePowerRampDownWpS, DynamicBrakePowerRampDownToZeroWpS);
             }
             else
             {
