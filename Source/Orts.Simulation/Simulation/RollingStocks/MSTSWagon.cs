@@ -1431,6 +1431,12 @@ namespace Orts.Simulation.RollingStocks
                     }
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(ortscenterofgravity_x":
+                case "wagon(ortscentreofgravity_x": InitialCentreOfGravityM.X = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortscenterofgravity_y":
+                case "wagon(ortscentreofgravity_y": InitialCentreOfGravityM.Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortscenterofgravity_z":
+                case "wagon(ortscentreofgravity_z": InitialCentreOfGravityM.Z = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsautocentre":
                 case "wagon(ortsautocenter": AutoCenter = stf.ReadBoolBlock(false); break;
                 case "wagon(ortsunbalancedsuperelevation": MaxUnbalancedSuperElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
