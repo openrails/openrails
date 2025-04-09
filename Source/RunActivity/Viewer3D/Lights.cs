@@ -276,9 +276,9 @@ namespace Orts.Viewer3D
                     LightConeDistance = 2 * MathHelper.Lerp(ActiveLightCone.Distance1, ActiveLightCone.Distance2, ActiveLightCone.Fade.Y);
                     LightConeOuterAngle = MathHelper.Lerp(ActiveLightCone.Angle1, ActiveLightCone.Angle2, ActiveLightCone.Fade.Y);
                     var lightConeColor = Vector4.Lerp(ActiveLightCone.Color1, ActiveLightCone.Color2, ActiveLightCone.Fade.Y);
-                    LightConeColor = new Vector3(lightConeColor.X, lightConeColor.Y, lightConeColor.Z) * lightConeColor.W;
+                    LightConeColor = new Vector3(lightConeColor.X, lightConeColor.Y, lightConeColor.Z);
 
-                    frame.AddLight(LightMode.Spot, LightConePosition, LightConeDirection, LightConeColor, RenderFrame.HeadLightIntensity, LightConeDistance, 0, LightConeOuterAngle, ActiveLightCone.Fade.X, false);
+                    frame.AddLight(LightMode.Spot, LightConePosition, LightConeDirection, LightConeColor, RenderFrame.HeadLightIntensity * lightConeColor.W, LightConeDistance, 0, LightConeOuterAngle, ActiveLightCone.Fade.X, false);
                 }
                 else
                 {
