@@ -414,7 +414,14 @@ namespace Orts.Viewer3D.Popups
         private void UpdateBrakeForceImage(TrainCar car, int carPosition)
         {
             var idx = 0;  // neutral
-            var absForceN = car.BrakeForceN;
+            bool isDynamicBrakes = false;
+
+            var absForceN = Math.Abs(car.BrakeForceN);  // using Math.Abs() for safety and consistency
+            if (car.WagonType == TrainCar.WagonTypes.Engine && Math.Abs(car.DynamicBrakeForceN) > absForceN)
+            {
+                absForceN = Math.Abs(car.DynamicBrakeForceN);
+                isDynamicBrakes = true;
+            }
 
             if (absForceN > 1000f && BrakeForceScaleN > 1000f)  // exclude improbabl values
             {
@@ -425,8 +432,12 @@ namespace Orts.Viewer3D.Popups
                 if (idx < 0) { idx = 0; } else if (idx > 9) { idx = 9; }
             }
 
-            if (car.WagonType == TrainCar.WagonTypes.Engine) { BrakeForceBarGraph[carPosition].Source = new Rectangle(1 + idx * BarWidth, BarHight * 2, BarWidth, HalfBarHight); }
-            else { BrakeForceBarGraph[carPosition].Source = new Rectangle(1 + idx * BarWidth, BarHight * 2 + HalfBarHight, BarWidth, HalfBarHight); }
+            if (car.WagonType == TrainCar.WagonTypes.Engine)
+            {
+                if (isDynamicBrakes) { BrakeForceBarGraph[carPosition].Source = new Rectangle(1 + idx * BarWidth, BarHight * 2, BarWidth, HalfBarHight); }
+                else { BrakeForceBarGraph[carPosition].Source = new Rectangle(1 + idx * BarWidth, BarHight * 2 + HalfBarHight, BarWidth, HalfBarHight); }
+            }
+            else { BrakeForceBarGraph[carPosition].Source = new Rectangle(1 + idx * BarWidth, BarHight * 2 + HalfBarHight * 2, BarWidth, HalfBarHight); }
         }
     }
 }
