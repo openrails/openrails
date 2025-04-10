@@ -272,13 +272,12 @@ namespace Orts.Viewer3D
                     LightConeDirection = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Direction1, ActiveLightCone.Direction2, ActiveLightCone.Fade.Y), ShapeXNATranslations[coneIndex]);
                     LightConeDirection -= ShapeXNATranslations[coneIndex].Translation;
                     LightConeDirection.Normalize();
-                    // The original shaders followed the phylisophy of wanting 50% brightness at half the range. (LightConeDistance is only the half.) Now we need the full range.
-                    LightConeDistance = 2 * MathHelper.Lerp(ActiveLightCone.Distance1, ActiveLightCone.Distance2, ActiveLightCone.Fade.Y);
+                    LightConeDistance = 4 * MathHelper.Lerp(ActiveLightCone.Distance1, ActiveLightCone.Distance2, ActiveLightCone.Fade.Y);
                     LightConeOuterAngle = MathHelper.Lerp(ActiveLightCone.Angle1, ActiveLightCone.Angle2, ActiveLightCone.Fade.Y);
                     var lightConeColor = Vector4.Lerp(ActiveLightCone.Color1, ActiveLightCone.Color2, ActiveLightCone.Fade.Y);
-                    LightConeColor = new Vector3(lightConeColor.X, lightConeColor.Y, lightConeColor.Z);
+                    LightConeColor = new Vector3(lightConeColor.X, lightConeColor.Y, lightConeColor.Z) * lightConeColor.W;
 
-                    frame.AddLight(LightMode.Spot, LightConePosition, LightConeDirection, LightConeColor, RenderFrame.HeadLightIntensity * lightConeColor.W, LightConeDistance, 0, LightConeOuterAngle, ActiveLightCone.Fade.X, false);
+                    frame.AddLight(LightMode.Headlight, LightConePosition, LightConeDirection, LightConeColor, RenderFrame.HeadLightIntensity, LightConeDistance, 0, LightConeOuterAngle, ActiveLightCone.Fade.X, false);
                 }
                 else
                 {
