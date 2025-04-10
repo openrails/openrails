@@ -3433,8 +3433,7 @@ namespace Orts.Viewer3D.RollingStock
                             break;
                     }
 
-                    // This is the case for .s files, for glTF-s it will not be true
-                    var targetNode = iMatrix;
+                    var targetNode = TrainCarShape.SharedShape.GetAnimationTargetNode(iMatrix);
 
                     if (style != null && style is CabViewDigitalRenderer)//digits?
                     {
