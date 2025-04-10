@@ -73,7 +73,8 @@ namespace Orts.Viewer3D
     {
         Directional = 0,
         Point = 1,
-        Spot = 2
+        Spot = 2,
+        Headlight = 3
     }
     
     public abstract class RenderPrimitive
@@ -392,7 +393,8 @@ namespace Orts.Viewer3D
         static readonly Vector3 MoonGlow = new Vector3(245f / 255f, 243f / 255f, 206f / 255f);
         const float SunIntensity = 1;
         const float MoonIntensity = SunIntensity / 380000;
-        public const float HeadLightIntensity = 250000; // See some sample values: https://docs.unity3d.com/Packages/com.unity.cloud.gltfast@5.2/manual/LightUnits.html
+        //public const float HeadLightIntensity = 250000; // See some sample values: https://docs.unity3d.com/Packages/com.unity.cloud.gltfast@5.2/manual/LightUnits.html
+        public const float HeadLightIntensity = 4; // Using the old linear attenuation model
 
         const float LIGHT_INTENSITY_ADJUSTMENT_SPOT = 1f;
         const float LIGHT_INTENSITY_ADJUSTMENT_POINT = 0.08f; // By visual inspection of PlaysetLightTest at nighttime. Probably should be 1 / 4π = 0.08

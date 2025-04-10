@@ -85,7 +85,7 @@ int      MorphConfig[9]; // 0-5: position of POSITION, NORMAL, TANGENT, TEXCOORD
 float    MorphWeights[MAX_MORPH_TARGETS]; // the actual morphing animation state
 
 int		NumLights; // The number of the lights used
-float	LightTypes[MAX_LIGHTS]; // 0: directional, 1: point, 2: spot
+float	LightTypes[MAX_LIGHTS]; // 0: directional, 1: point, 2: spot, 3: headlight
 float3	LightPositions[MAX_LIGHTS];
 float3	LightDirections[MAX_LIGHTS];
 float3	LightColors[MAX_LIGHTS];
