@@ -198,7 +198,7 @@ namespace ORTS.ContentManager
                     if (!IsMetric && !IsUK)
                     {
                         details.AppendFormat("HPT:\t{1}{0}", Environment.NewLine, FormatHPT(data.MaxPowerW, data.MassKG));
-                        details.AppendFormat("TpOB:\t{1}{0}", Environment.NewLine, FormatTPOB(data.MassKG, data.NumOperativeBrakes));
+                        details.AppendFormat("TpOB:\t{1}{0}", Environment.NewLine, FormatTPOB(data.TrailingMassKG, data.NumOperativeBrakes));
                         details.AppendFormat("TpEPA:\t{1}{0}", Environment.NewLine, FormatTonsPerEPA(data.MassKG, data.MaxTractiveForceN));
                         details.AppendFormat("TpEDBA:\t{1}{0}", Environment.NewLine, FormatTonsPerEDBA(data.MassKG, data.MaxDynamicBrakeForceN));
                     }
