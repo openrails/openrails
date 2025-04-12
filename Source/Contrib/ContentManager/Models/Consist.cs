@@ -35,6 +35,7 @@ namespace ORTS.ContentManager.Models
         public readonly float TrailingMassKG = 0F;
         public readonly float MaxPowerW = 0F;
         public readonly float MaxTractiveForceN = 0F;
+        public readonly float MaxContinuousTractiveForceN = 0F;
         public readonly float MaxDynamicBrakeForceN = 0F;
         public readonly float MaxBrakeForce = 0F;
         public readonly int NumOperativeBrakes = 0;
@@ -93,6 +94,7 @@ namespace ORTS.ContentManager.Models
                                 EngCount++;
                                 MaxPowerW += engFile.MaxPowerW;
                                 MaxTractiveForceN += engFile.MaxForceN;
+                                MaxContinuousTractiveForceN += engFile.MaxContinuousForceN > 0f ? engFile.MaxContinuousForceN : engFile.MaxForceN;
                                 MaxDynamicBrakeForceN += engFile.MaxDynamicBrakeForceN;
                             }
                             else { WagCount++; }

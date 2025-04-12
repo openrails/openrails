@@ -48,6 +48,8 @@ namespace ORTS.ContentManager.Models
         public readonly float MaxBrakeForceN;
         public readonly float MaxPowerW;
         public readonly float MaxForceN;
+        public readonly float MaxContinuousForceN;
+        public readonly float MaxDynamicBrakeForceN;
         public readonly float MaxSpeedMps;
         public readonly float MinCouplerStrengthN;
         public readonly float MinDerailForceN;
@@ -76,6 +78,8 @@ namespace ORTS.ContentManager.Models
                 Name = engFile.Name;
                 MaxPowerW = engFile.MaxPowerW;
                 MaxForceN = engFile.MaxForceN;
+                MaxContinuousForceN = engFile.MaxContinuousForceN;
+                MaxDynamicBrakeForceN = engFile.MaxDynamicBrakeForceN;
                 MaxSpeedMps = engFile.MaxSpeedMps;
                 Description = engFile.Description;
 
