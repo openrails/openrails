@@ -188,14 +188,24 @@ namespace ORTS.ContentManager
                     details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, data.Name);
                     details.AppendFormat("NumEngines:\t{1}{0}", Environment.NewLine, data.NumEngines);
                     details.AppendFormat("NumCars:\t{1}{0}", Environment.NewLine, data.NumCars);
-                    details.AppendFormat("MaxSpeed:\t{1}{0}", Environment.NewLine, FormatStrings.FormatSpeedLimit(data.MaxSpeedMps, IsMetric));
-                    details.AppendFormat("Weight:\t{1}{0}", Environment.NewLine, FormatStrings.FormatLargeMass(data.MassKG, IsMetric, IsUK));
+                    details.AppendFormat("Axles:\t{1}{0}", Environment.NewLine, data.NumAxles);
+                    details.AppendFormat("Weight:\t{1}  (trailing: {2}){0}", Environment.NewLine, FormatStrings.FormatLargeMass(data.MassKG, IsMetric, IsUK),
+                        FormatStrings.FormatLargeMass(data.TrailingMassKG, IsMetric, IsUK));
                     details.AppendFormat("Length:\t{1}{0}", Environment.NewLine, FormatStrings.FormatShortDistanceDisplay(data.LengthM, IsMetric));
-                    details.AppendFormat("Power:\t{1}{0}", Environment.NewLine, FormatStrings.FormatPower(data.MaxPowerW, IsMetric, IsImperialBHP, IsImperialBTUpS));
+                    details.AppendFormat("MaxPower:\t{1}{0}", Environment.NewLine, FormatStrings.FormatPower(data.MaxPowerW, IsMetric, IsImperialBHP, IsImperialBTUpS));
                     details.AppendFormat("MaxTE:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MaxTractiveForceN, IsMetric));
+                    details.AppendFormat("MaxContTE:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MaxContinuousTractiveForceN, IsMetric));
+                    details.AppendFormat("MaxDynBrk:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MaxDynamicBrakeForceN, IsMetric));
+                    if (!IsMetric && !IsUK)
+                    {
+                        details.AppendFormat("HPT:\t{1}{0}", Environment.NewLine, FormatHPT(data.MaxPowerW, data.TrailingMassKG));
+                        details.AppendFormat("TpOB:\t{1}{0}", Environment.NewLine, FormatTPOB(data.TrailingMassKG, data.NumOperativeBrakes));
+                        details.AppendFormat("TpEPA:\t{1}{0}", Environment.NewLine, FormatTonsPerEPA(data.TrailingMassKG, data.MaxContinuousTractiveForceN));
+                        details.AppendFormat("TpEDBA:\t{1}{0}", Environment.NewLine, FormatTonsPerEDBA(data.TrailingMassKG, data.MaxDynamicBrakeForceN));
+                    }
+                    details.AppendFormat("MaxSpeed:\t{1}{0}", Environment.NewLine, FormatStrings.FormatSpeedLimit(data.MaxSpeedMps, IsMetric));
                     details.AppendFormat("MinCouplerStrength:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MinCouplerStrengthN, IsMetric));
-                    if (!IsMetric && !IsUK) { details.AppendFormat("HPT:\t{1}{0}", Environment.NewLine, FormatHPT(data.MaxPowerW, data.MassKG)); }
-                    if (!IsMetric && !IsUK) { details.AppendFormat("TPOB:\t{1}{0}", Environment.NewLine, FormatTPOB(data.MassKG, data.NumOperativeBrakes)); }
+                    details.AppendFormat("MinDerailForce:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MinDerailForceN, IsMetric));
                     details.AppendLine();
                     details.AppendFormat("Car ID:\tDirection:\tWeight:\tName:\t{0}", Environment.NewLine);
                     foreach (var car in data.Cars)
@@ -208,16 +218,24 @@ namespace ORTS.ContentManager
                     details.AppendFormat("Type:\t{1}{0}", Environment.NewLine, data.Type);
                     details.AppendFormat("SubType:\t{1}{0}", Environment.NewLine, data.SubType);
                     details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, data.Name);
-                    details.AppendFormat("Weight:\t{1} ({2}){0}", Environment.NewLine, FormatStrings.FormatMass(data.MassKG, IsMetric), FormatStrings.FormatLargeMass(data.MassKG, IsMetric, IsUK));
+                    details.AppendFormat("Weight:\t{1}  ({2}){0}", Environment.NewLine, FormatStrings.FormatMass(data.MassKG, IsMetric), FormatStrings.FormatLargeMass(data.MassKG, IsMetric, IsUK));
                     details.AppendFormat("Length:\t{1}{0}", Environment.NewLine, FormatStrings.FormatShortDistanceDisplay(data.LengthM, IsMetric));
-                    if (data.Type == CarType.Engine)
+                    if (data.Type != CarType.Engine)
                     {
-                        details.AppendFormat("MaxPowerW:\t{1}{0}", Environment.NewLine, FormatStrings.FormatPower(data.MaxPowerW, IsMetric, IsImperialBHP, IsImperialBTUpS));
-                        details.AppendFormat("MaxForce:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MaxForceN, IsMetric));
-                        details.AppendFormat("MaxSpeed:\t{1}{0}", Environment.NewLine, FormatStrings.FormatSpeedLimit(data.MaxSpeedMps, IsMetric));
+                        details.AppendFormat("Axles:\t{1}{0}", Environment.NewLine, data.NumAllAxles);
                     }
-                    details.AppendFormat("MaxBrakeF:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MaxBarkeForceN, IsMetric));
+                    else
+                    {
+                        details.AppendFormat("Axles:\t{1}+{2}{0}", Environment.NewLine, data.NumDriveAxles, data.NumAllAxles - data.NumDriveAxles);
+                        details.AppendFormat("MaxPower:\t{1}{0}", Environment.NewLine, FormatStrings.FormatPower(data.MaxPowerW, IsMetric, IsImperialBHP, IsImperialBTUpS));
+                        details.AppendFormat("MaxTE:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MaxForceN, IsMetric));
+                        details.AppendFormat("MaxContTE:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MaxContinuousForceN, IsMetric));
+                        details.AppendFormat("MaxDynBrk:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MaxDynamicBrakeForceN, IsMetric));
+                    }
+                    details.AppendFormat("MaxBrakeF:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MaxBrakeForceN, IsMetric));
+                    if (data.MaxSpeedMps > 0f) { details.AppendFormat("MaxSpeed:\t{1}{0}", Environment.NewLine, FormatStrings.FormatSpeedLimit(data.MaxSpeedMps, IsMetric)); }
                     details.AppendFormat("MinCouplerStrength:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MinCouplerStrengthN, IsMetric));
+                    details.AppendFormat("MinDerailForce:\t{1}{0}", Environment.NewLine, FormatStrings.FormatForce(data.MinDerailForceN, IsMetric));
                     details.AppendLine();
                     details.AppendFormat("Description:\t{0}{0}{1}{0}{0}", Environment.NewLine, data.Description);
                 }
@@ -264,9 +282,6 @@ namespace ORTS.ContentManager
         /// <summary>
         /// Calculate and format horsepower per ton for consist, rounded to one decimal.
         /// </summary>
-        /// <param name="consistPowerW"></param>
-        /// <param name="consistMassKG"></param>
-        /// <returns>horsepower-per-ton formated to one decimal.</returns>
         //TODO: implement UK and metric version
         static string FormatHPT(float consistPowerW, float consistMassKG)
         {
@@ -277,14 +292,33 @@ namespace ORTS.ContentManager
         /// <summary>
         /// Calculate and format tons per operative brake for consist, rounded to an integer.
         /// </summary>
-        /// <param name="consistMassKG"></param>
-        /// <param name="consistNumOpBrakes"></param>
-        /// <returns>tons-per-operative-brake formated to an integer.</returns>
         //TODO: implement UK and metric version
         static string FormatTPOB(float consistMassKG, float consistNumOpBrakes)
         {
             var tpob = consistNumOpBrakes > 0 ? Kg.ToTUS(consistMassKG) / consistNumOpBrakes : 0;
             return string.Format("{0:0}", tpob);
+        }
+
+        /// <summary>
+        /// Calculate and format tons per equivalent powered axle, rounded to an integer.
+        /// Based on UP convention, of 10k lbf counting as one axle.
+        /// Strictly, EPA should be defined in the eng file. May be done in future.
+        /// </summary>
+        static string FormatTonsPerEPA(float consistMassKG, float consistMaxTractiveEffortN)
+        {
+            var tpepa = consistMaxTractiveEffortN > 0 ? Kg.ToTUS(consistMassKG) / (N.ToLbf(consistMaxTractiveEffortN) / 10000f) : 0;
+            return string.Format("{0:0}", tpepa);
+        }
+
+        /// <summary>
+        /// Calculate and format tons per equivalent dynamic brake axle, rounded to an integer.
+        /// Based on UP convention, of 10k lbf counting as one axle.
+        /// Strictly, EDBA should be defined in the eng file. May be done in future.
+        /// </summary>
+        static string FormatTonsPerEDBA(float consistMassKG, float consistMaxDynamicBrakeForceN)
+        {
+            var tpedba = consistMaxDynamicBrakeForceN > 0 ? Kg.ToTUS(consistMassKG) / (N.ToLbf(consistMaxDynamicBrakeForceN) / 10000f) : 0;
+            return string.Format("{0:0}", tpedba);
         }
     }
 }
