@@ -32,8 +32,10 @@ namespace ORTS.ContentManager.Models
         public readonly float LengthM = 0F;
         public readonly int NumAxles = 0;
         public readonly float MassKG = 0F;
+        public readonly float TrailingMassKG = 0F;
         public readonly float MaxPowerW = 0F;
         public readonly float MaxTractiveForceN = 0F;
+        public readonly float MaxContinuousTractiveForceN = 0F;
         public readonly float MaxDynamicBrakeForceN = 0F;
         public readonly float MaxBrakeForce = 0F;
         public readonly int NumOperativeBrakes = 0;
@@ -74,7 +76,6 @@ namespace ORTS.ContentManager.Models
                         MaxBrakeForce += wagonFile.MaxBrakeForceN;
                         MinCouplerStrengthN = Math.Min(MinCouplerStrengthN, wagonFile.MinCouplerStrengthN);
                         var subType = wagonFile.WagonType;
-                        if (wagonFile.MaxBrakeForceN > 0) { NumOperativeBrakes++; }
 
                         if (engFile != null)
                         {
@@ -93,6 +94,7 @@ namespace ORTS.ContentManager.Models
                                 EngCount++;
                                 MaxPowerW += engFile.MaxPowerW;
                                 MaxTractiveForceN += engFile.MaxForceN;
+                                MaxContinuousTractiveForceN += engFile.MaxContinuousForceN > 0f ? engFile.MaxContinuousForceN : engFile.MaxForceN;
                                 MaxDynamicBrakeForceN += engFile.MaxDynamicBrakeForceN;
                             }
                             else { WagCount++; }
@@ -100,6 +102,12 @@ namespace ORTS.ContentManager.Models
                         else if (!wag.IsEOT && wagonFile.WagonSize.LengthM > 1.1) // exclude legacy EOT
                         {
                             WagCount++;
+                            TrailingMassKG += wagonFile.MassKG;
+                            if (wagonFile.MaxBrakeForceN > 0 && wagonFile.BrakeSystemType != null && !wagonFile.BrakeSystemType.Contains("manual_braking") &&
+                                !wagonFile.BrakeSystemType.Contains("air_piped") && !wagonFile.BrakeSystemType.Contains("vacuum_piped"))
+                            {
+                                NumOperativeBrakes++;
+                            }
                         }
 
                         // see MSTSWagon.LoadFromWagFile()

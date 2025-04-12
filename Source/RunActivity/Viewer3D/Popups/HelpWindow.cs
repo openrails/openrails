@@ -37,6 +37,7 @@ using Orts.Formats.Msts;
 using SharpFont;
 using static Orts.Viewer3D.WebServices.TrainCarOperationsWebpage.OperationsSend;
 using SharpDX.Direct3D9;
+using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -1209,7 +1210,7 @@ namespace Orts.Viewer3D.Popups
             float engMaxContTractiveForceN = 0f; float engMaxDynBrakeForceN = 0f; string forceSeparator = "";  // when set, indicates that subsequent engines are in a separate block
 
             float wagMassKg = 0f; string massSeparator = ""; // when set, indicates that subsequent engines are in a separate block
-            int numOperativeBrakes = 0;
+            float trailingMassKg = 0f; int numOperativeBrakes = 0;
             bool isMetric = false; bool isUK = false;  // isImperial* does not seem to be used in simulation
 
             if (TrainInfoSpriteSheet == null) { TrainInfoSpriteSheet = SharedTextureManager.Get(Owner.Viewer.RenderProcess.GraphicsDevice, Path.Combine(Owner.Viewer.ContentPath, "TrainInfoSprites.png")); }
@@ -1250,6 +1251,8 @@ namespace Orts.Viewer3D.Popups
                     numCars++;
                     numAxles += wag.GetWagonNumAxles();
                     wagMassKg += wag.MassKG;
+                    trailingMassKg += wag.MassKG;
+                    if (wag.MaxBrakeForceN > 0 && car.BrakeSystem != null && !(car.BrakeSystem is SingleTransferPipe) && !(car.BrakeSystem is ManualBraking)) { numOperativeBrakes++; }
 
                     // handle transition from engines to wagons
                     if (engCount > 0 || (engCount == 0 && numCars == 0))
@@ -1270,7 +1273,6 @@ namespace Orts.Viewer3D.Popups
                     if (couplerStrength < lowestCouplerStrengthN) { lowestCouplerStrengthN = couplerStrength; }
                     var derailForce = GetDerailForce(wag);
                     if (derailForce < lowestDerailForceN) { lowestDerailForceN = derailForce; }
-                    if (wag.MaxBrakeForceN > 0) { numOperativeBrakes++; }  // simplistic: real world has cutout brakes, and no brakes on some articulated car-segments
 
                     carInfoList.Add(new CarInfo(wag.MassKG, isEng));
                 }
@@ -1328,7 +1330,7 @@ namespace Orts.Viewer3D.Popups
                 line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Horespower per Ton:"), LabelAlignment.Left));
                 line.Add(new Label(line.RemainingWidth, line.RemainingHeight, string.Format("{0:0.0}", hpt), LabelAlignment.Left));
 
-                float tpob = numOperativeBrakes > 0 ? Kg.ToTUS(totMassKg) / numOperativeBrakes : 0;
+                float tpob = numOperativeBrakes > 0 ? Kg.ToTUS(trailingMassKg) / numOperativeBrakes : 0;
                 line = scrollbox.AddLayoutHorizontalLineOfText();
                 line.Add(new Label(labelWidth, line.RemainingHeight, Viewer.Catalog.GetString("Tons per Operative Brake:"), LabelAlignment.Left));
                 line.Add(new Label(line.RemainingWidth, line.RemainingHeight, string.Format("{0:0}", tpob), LabelAlignment.Left));
