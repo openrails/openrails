@@ -6533,6 +6533,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             MaxForceN = 0;
             DisplayTractiveForceN = 0;
 
+            PrevAbsTractionSpeedMpS = AbsTractionSpeedMpS;
             if (WheelSlip && AdvancedAdhesionModel)
             {
                 AbsTractionSpeedMpS = AbsWheelSpeedMpS;

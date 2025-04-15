@@ -135,6 +135,7 @@ namespace Orts.Simulation.RollingStocks
         public float MaxPowerW;
         public float MaxForceN;
         public float AbsTractionSpeedMpS;
+        public float PrevAbsTractionSpeedMpS;
         public float MaxCurrentA = 0;
         public float MaxSpeedMpS = 1e3f;
         public float UnloadingSpeedMpS;
@@ -1432,7 +1433,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(CurrentTrackSandBoxCapacityM3);
             outf.Write(CurrentTrackSanderSandConsumptionM3pS);
             outf.Write(CurrentTrackSanderAirConsumptionM3pS);
-
+            outf.Write(AbsTractionSpeedMpS);
 
             base.Save(outf);
 
@@ -1491,6 +1492,8 @@ namespace Orts.Simulation.RollingStocks
             CurrentTrackSandBoxCapacityM3 = inf.ReadSingle();
             CurrentTrackSanderSandConsumptionM3pS = inf.ReadSingle();
             CurrentTrackSanderAirConsumptionM3pS = inf.ReadSingle();
+
+            AbsTractionSpeedMpS = PrevAbsTractionSpeedMpS = inf.ReadSingle();
 
             base.Restore(inf);
 
@@ -1968,6 +1971,7 @@ namespace Orts.Simulation.RollingStocks
                 BrakeSystem.LocoInitializeMoving();
                 EngineBrakeController?.InitializeMoving();
             }
+            AbsTractionSpeedMpS = PrevAbsTractionSpeedMpS = SpeedMpS;
         }
 
         //================================================================================================//
@@ -2519,25 +2523,40 @@ namespace Orts.Simulation.RollingStocks
 			}
 #endif
         }
-        public void UpdateForceWithRamp(ref float forceN, float elapsedClockSeconds, float targetForceN, float maxForceN, float targetPowerW, float maxPowerW, float rampUpNpS=0, float rampDownNpS=0, float rampZeroNpS=0, float rampUpWpS=0, float rampDownWpS=0, float rampZeroWpS=0)
+        public void UpdateForceWithRamp(ref float forceN, float elapsedClockSeconds, float targetForceN, float maxForceN, float rampUpNpS=0, float rampDownNpS=0, float rampZeroNpS=0, float rampUpWpS=0, float rampDownWpS=0, float rampZeroWpS=0)
         {
             if (targetForceN > maxForceN) targetForceN = maxForceN;
             if (forceN > maxForceN) forceN = maxForceN;
-            if (targetForceN > forceN)
+            if (AbsTractionSpeedMpS > 0)
             {
-                float maxChangeN = float.MaxValue;
-                if (rampUpNpS > 0) maxChangeN = Math.Min(maxChangeN, rampUpNpS * elapsedClockSeconds);
-                if (rampUpWpS > 0 && AbsTractionSpeedMpS > 0) maxChangeN = Math.Min(maxChangeN, rampUpWpS / AbsTractionSpeedMpS * elapsedClockSeconds);
-                if (forceN + maxChangeN > targetForceN) forceN = targetForceN;
-                else forceN += maxChangeN;
+                float powerW = forceN * PrevAbsTractionSpeedMpS;
+                float targetPowerW = targetForceN * AbsTractionSpeedMpS;
+                if (targetPowerW > powerW && rampUpWpS > 0)
+                {
+                    float maxChangeW = rampUpWpS * elapsedClockSeconds;
+                    if (powerW + maxChangeW < targetPowerW)
+                    {
+                        targetPowerW = powerW + maxChangeW;
+                        targetForceN = Math.Min(targetForceN, targetPowerW / AbsTractionSpeedMpS);
+                    }
+                }
+                if (targetPowerW < powerW && (targetPowerW == 0 ? rampZeroWpS : rampDownWpS) > 0)
+                {
+                    float maxChangeW = (targetPowerW == 0 ? rampZeroWpS : rampDownWpS) * elapsedClockSeconds;
+                    if (powerW - maxChangeW > targetPowerW)
+                    {
+                        targetPowerW = powerW - maxChangeW;
+                        targetForceN = Math.Max(targetForceN, Math.Min(forceN, targetPowerW / AbsTractionSpeedMpS));
+                    }
+                }
             }
-            else if (targetForceN < forceN)
+            if (targetForceN > forceN && rampUpNpS > 0)
             {
-                float maxChangeN = float.MaxValue;
-                if ((targetForceN == 0 ? rampZeroNpS : rampDownNpS) > 0) maxChangeN = Math.Min(maxChangeN, (targetForceN == 0 ? rampZeroNpS : rampDownNpS) * elapsedClockSeconds);
-                if ((targetForceN == 0 ? rampZeroWpS : rampDownWpS) > 0 && AbsTractionSpeedMpS > 0) maxChangeN = Math.Min(maxChangeN, (targetForceN == 0 ? rampZeroWpS : rampDownWpS) / AbsTractionSpeedMpS * elapsedClockSeconds);
-                if (forceN - maxChangeN < targetForceN) forceN = targetForceN;
-                else forceN -= maxChangeN;
+                forceN = Math.Min(targetForceN, forceN + rampUpNpS * elapsedClockSeconds);
+            }
+            else if (targetForceN < forceN && (targetForceN == 0 ? rampZeroNpS : rampDownNpS) > 0)
+            {
+                forceN = Math.Max(targetForceN, forceN - (targetForceN == 0 ? rampZeroNpS : rampDownNpS) * elapsedClockSeconds);
             }
         }
         public virtual float GetAvailableTractionForceN(float t)
@@ -2681,6 +2700,7 @@ namespace Orts.Simulation.RollingStocks
             // More modern locomotive have a more sophisticated system that eliminates slip in the majority (if not all circumstances).
             // Simple adhesion control does not have any slip control feature built into it.
             // TODO - a full review of slip/no slip control.
+            PrevAbsTractionSpeedMpS = AbsTractionSpeedMpS;
             if (TractionMotorType == TractionMotorTypes.AC)
             {
                 AbsTractionSpeedMpS = AbsSpeedMpS;
