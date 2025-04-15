@@ -2315,7 +2315,6 @@ namespace Orts.Simulation.RollingStocks
             UpdateHornAndBell(elapsedClockSeconds);
 
             UpdateSoundVariables(elapsedClockSeconds);
-            PrevTractiveForceN = TractiveForceN;
             base.Update(elapsedClockSeconds);
 
 #if DEBUG_ADHESION
@@ -5424,17 +5423,17 @@ namespace Orts.Simulation.RollingStocks
                         if (LocomotiveAxles.Count > 0)
                         {
                             data = 0.0f;
-                            if (ThrottlePercent > 0)
+                            if (TractionForceN > 0)
                             {
                                 //float rangeFactor = direction == 0 ? (float)cvc.MaxValue : (float)cvc.MinValue;
                                 float rangeFactor = direction == 0 ? MaxCurrentA : (float)cvc.MinValue;
                                 if (FilteredTractiveForceN != 0)
                                     data = FilteredTractiveForceN / MaxForceN * rangeFactor;
                                 else
-                                    data = TractiveForceN / MaxForceN * rangeFactor;
+                                    data = TractionForceN / MaxForceN * rangeFactor;
                                 data = Math.Abs(data);
                             }
-                            if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
+                            if (DynamicBrakeForceN > 0)
                             {
                                 float rangeFactor;
                                 if (cvc.ControlType.Type == CABViewControlTypes.AMMETER_ABS)
@@ -5472,7 +5471,7 @@ namespace Orts.Simulation.RollingStocks
                         if (DynamicBrakeMaxCurrentA == 0)
                             DynamicBrakeMaxCurrentA = (float)cvc.MinValue;
                         data = 0.0f;
-                        if (ThrottlePercent > 0)
+                        if (TractionForceN > 0)
                         {
                             if (FilteredTractiveForceN != 0)
                                 data = FilteredTractiveForceN / MaxForceN * MaxCurrentA;
@@ -5480,7 +5479,7 @@ namespace Orts.Simulation.RollingStocks
                                 data = TractiveForceN / MaxForceN * MaxCurrentA;
                             data = Math.Abs(data);
                         }
-                        if (DynamicBrake && DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
+                        if (DynamicBrakeForceN > 0)
                         {
                             data = DynamicBrakeForceN / MaxDynamicBrakeForceN * DynamicBrakeMaxCurrentA;
                             data = -Math.Abs(data); // Ensure that dynamic force is seen as a "-ve force", changes colour on the load meter
@@ -5499,7 +5498,7 @@ namespace Orts.Simulation.RollingStocks
                             data = FilteredTractiveForceN;
                         else
                             data = TractiveForceN;
-                        if (DynamicBrake && DynamicBrakePercent > 0)
+                        if (DynamicBrakeForceN > 0)
                         {
                             data = DynamicBrakeForceN;
                         }
@@ -5511,11 +5510,11 @@ namespace Orts.Simulation.RollingStocks
                                     MaxCurrentA = (float)cvc.MaxValue;
                                 if (DynamicBrakeMaxCurrentA == 0)
                                     DynamicBrakeMaxCurrentA = (float)cvc.MinValue;
-                                if (ThrottlePercent > 0)
+                                if (TractionForceN > 0)
                                 {
                                     data = (data / MaxForceN) * MaxCurrentA;
-                                 }
-                                if (DynamicBrakePercent > 0)
+                                }
+                                if (DynamicBrakeForceN > 0)
                                 {
                                     data = (DynamicBrakeForceN / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
                                 }
@@ -5558,11 +5557,11 @@ namespace Orts.Simulation.RollingStocks
                                     MaxCurrentA = (float)cvc.MaxValue;
                                 if (DynamicBrakeMaxCurrentA == 0)
                                     DynamicBrakeMaxCurrentA = (float)cvc.MinValue;
-                                if (ThrottlePercent >= 0 && DynamicBrakePercent == -1)
+                                if (TractionForceN > 0)
                                 {
                                     data = (data / MaxForceN) * MaxCurrentA;
                                 }
-                                if (ThrottlePercent == 0 && DynamicBrakePercent >= 0)
+                                if (DynamicBrakeForceN > 0)
                                 {
                                     data = (data / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
                                 }
