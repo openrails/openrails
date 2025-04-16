@@ -639,7 +639,9 @@ namespace Orts.Simulation.RollingStocks
             if (t <= 0) return 0;
             if (DieselEngines.HasGearBox && (TractiveForceCurves == null || DieselTransmissionType == MSTSDieselLocomotive.DieselTransmissionTypes.Mechanic))
             {
-                return base.GetAvailableTractionForceN(t); // TODO: provide more accurate values
+                // TODO: provide more accurate values
+                // Note: if this clause is fulfilled, this method is not used to calculate TractiveForceN, it just provides information for other subsystems about theoretical tractive force
+                return base.GetAvailableTractionForceN(t);
             }
             float forceN = 0;
             float powerW = float.MaxValue;
@@ -658,6 +660,9 @@ namespace Orts.Simulation.RollingStocks
             {
                 powerW = DieselPowerSupply.MaximumPowerW * t;
             }
+            // This section calculates the traction force of the locomotive as follows:
+            // Basic configuration (no TF table) - uses P = F /speed  relationship - requires power and force parameters to be set in the ENG file. 
+            // Advanced configuration (TF table) - use a user defined tractive force table
             if (TractiveForceCurves == null)
             {
                 // This sets the maximum force of the locomotive, it will be adjusted down if it exceeds the max power of the locomotive.
@@ -692,32 +697,7 @@ namespace Orts.Simulation.RollingStocks
                 TractiveForceN = TractionForceN = DieselEngines.TractiveForceN;
                 return;
             }
-            float t = ThrottlePercent / 100;
-
-            float maxthrottle = MaxThrottlePercent / 100;
-            if (IsPlayerTrain) maxthrottle = Math.Min(maxthrottle, DieselEngines.ApparentThrottleSetting / 100.0f);
-            if (t > maxthrottle) t = maxthrottle;
-            t = MathHelper.Clamp(t, 0, 1);
-
-            // This section calculates the traction force of the locomotive as follows:
-            // Basic configuration (no TF table) - uses P = F /speed  relationship - requires power and force parameters to be set in the ENG file. 
-            // Advanced configuration (TF table) - use a user defined tractive force table
-            if (maxthrottle > 0 && Direction != Direction.N && LocomotivePowerSupply.MainPowerSupplyOn)
-            {
-                float targetForceN = GetAvailableTractionForceN(t);
-                float limitForceN = GetAvailableTractionForceN(maxthrottle);
-                float maxForceN = float.MaxValue;
-                if (limitForceN >= targetForceN)
-                    maxForceN = limitForceN;
-                float maxPowerW = DieselPowerSupply.AvailableTractionPowerW;
-                if (targetForceN * AbsTractionSpeedMpS > maxPowerW) maxForceN = maxPowerW / AbsTractionSpeedMpS;
-                UpdateForceWithRamp(ref TractionForceN, elapsedClockSeconds, targetForceN, maxForceN, TractionForceRampUpNpS, TractionForceRampDownNpS, TractionForceRampDownToZeroNpS, TractionPowerRampUpWpS, TractionPowerRampDownWpS, TractionPowerRampDownToZeroWpS);
-            }
-            else
-            {
-                TractionForceN = 0f;
-            }
-            TractiveForceN = TractionForceN;
+            base.UpdateTractionForce(elapsedClockSeconds);
         }
 
         protected override void UpdateAxleDriveForce()

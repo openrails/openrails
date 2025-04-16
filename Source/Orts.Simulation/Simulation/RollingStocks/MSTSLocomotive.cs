@@ -2558,13 +2558,25 @@ namespace Orts.Simulation.RollingStocks
                 forceN = Math.Max(targetForceN, forceN - (targetForceN == 0 ? rampZeroNpS : rampDownNpS) * elapsedClockSeconds);
             }
         }
+        /// <summary>
+        /// Provides the theoretical tractive force that can be achieved at current speed
+        /// Takes into account number of available engines and power limitation effects from the power supply.
+        /// This method does not take into account transient effects that temporary limit tractive force
+        /// (e.g. diesel engine still revving up)
+        /// </summary>
+        /// <param name="t">Throttle position (0-1)</param>
+        /// <returns></returns>
         public virtual float GetAvailableTractionForceN(float t)
         {
             if (t <= 0) return 0;
             float powerW = float.MaxValue;
             float forceN;
-            if (this is MSTSElectricLocomotive electric && electric.ElectricPowerSupply.MaximumPowerW > 0)
-                powerW = electric.ElectricPowerSupply.MaximumPowerW * t * (1-PowerReduction);
+            // Take into account power limitation
+            if (LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply && supply.MaximumPowerW > 0)
+                powerW = supply.MaximumPowerW * t * (1-PowerReduction);
+            // This section calculates the traction force of the locomotive as follows:
+            // Basic configuration (no TF table) - uses P = F /speed  relationship - requires power and force parameters to be set in the ENG file. 
+            // Advanced configuration (TF table) - use a user defined tractive force table
             if (TractiveForceCurves == null)
             {
                 powerW = Math.Min(powerW, MaxPowerW * t * t * (1 - PowerReduction));
@@ -2596,20 +2608,28 @@ namespace Orts.Simulation.RollingStocks
         {
             float t = ThrottlePercent / 100;
 
+            // Ensure that throttle never exceeds the limits imposed by other subsystems
             float maxthrottle = MaxThrottlePercent / 100;
+            // For diesel locomotives, also take into account the throttle setting associated to the current engine RPM
+            if (IsPlayerTrain && this is MSTSDieselLocomotive diesel) maxthrottle = Math.Min(maxthrottle, diesel.DieselEngines.ApparentThrottleSetting / 100.0f);
             if (t > maxthrottle) t = maxthrottle;
             t = MathHelper.Clamp(t, 0, 1);
 
             if (maxthrottle > 0 && Direction != Direction.N && LocomotivePowerSupply.MainPowerSupplyOn)
             {
+                // Set the target force to the theoretically available tractive force for current throttle setting
+                // If there is a limit on the amount of throttle, ensure that tractive force never exceeds the limit
+                // imposed by that throttle setting
                 float targetForceN = GetAvailableTractionForceN(t);
                 float limitForceN = GetAvailableTractionForceN(maxthrottle);
                 float maxForceN = float.MaxValue;
+                // Ignore force limit for exotic curves where higher throttle settings provide less tractive force
                 if (limitForceN >= targetForceN)
                     maxForceN = limitForceN;
-                if (this is MSTSElectricLocomotive electric)
+                // Ensure that power consumption never exceeds the power that is available for traction at the moment
+                if (LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply)
                 {
-                    float maxPowerW = electric.ElectricPowerSupply.AvailableTractionPowerW;
+                    float maxPowerW = supply.AvailableTractionPowerW;
                     if (targetForceN * AbsTractionSpeedMpS > maxPowerW) maxForceN = maxPowerW / AbsTractionSpeedMpS;
                 }
                 UpdateForceWithRamp(ref TractionForceN, elapsedClockSeconds, targetForceN, maxForceN, TractionForceRampUpNpS, TractionForceRampDownNpS, TractionForceRampDownToZeroNpS, TractionPowerRampUpWpS, TractionPowerRampDownWpS, TractionPowerRampDownToZeroWpS);
