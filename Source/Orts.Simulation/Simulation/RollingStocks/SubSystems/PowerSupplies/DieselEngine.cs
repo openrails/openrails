@@ -1376,18 +1376,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (DieselPowerTab != null)
             {
-                CurrentDieselOutputPowerW = (DieselPowerTab[RawRpM] * (1 - Locomotive.PowerReduction) <= MaximumDieselPowerW * (1 - Locomotive.PowerReduction) ? DieselPowerTab[RawRpM] * (1 - Locomotive.PowerReduction) : MaximumDieselPowerW * (1 - Locomotive.PowerReduction));
+                CurrentDieselOutputPowerW = Math.Min(DieselPowerTab[RawRpM], MaximumDieselPowerW) * (1 - Locomotive.PowerReduction);
             }
             else
             {
                 CurrentDieselOutputPowerW = (RawRpM - IdleRPM) / (MaxRPM - IdleRPM) * MaximumDieselPowerW * (1 - Locomotive.PowerReduction);
-            }
-
-            if (Locomotive.DieselEngines.NumOfActiveEngines > 0)
-            {
-
-                CurrentDieselOutputPowerW -= Locomotive.DieselPowerSupply.ElectricTrainSupplyPowerW / Locomotive.DieselEngines.NumOfActiveEngines;
-                CurrentDieselOutputPowerW = CurrentDieselOutputPowerW < 0f ? 0f : CurrentDieselOutputPowerW;
             }
 
             CurrentDieselOutputPowerW = MathHelper.Clamp(CurrentDieselOutputPowerW, 0.0f, CurrentDieselOutputPowerW);  // prevent power going -ve

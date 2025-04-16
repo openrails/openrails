@@ -18,6 +18,7 @@
 using Orts.Common;
 using Orts.Parsers.Msts;
 using ORTS.Scripting.Api;
+using System;
 using System.IO;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
@@ -257,6 +258,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOff);
                 DieselEngineMinRpm = 0;
             }
+
+            AvailableTractionPowerW = Math.Max(DieselEngineOutputPowerW - ElectricTrainSupplyPowerW, 0);
 
             UpdateSounds();
         }
