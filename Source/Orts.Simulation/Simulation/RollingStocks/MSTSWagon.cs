@@ -706,7 +706,7 @@ namespace Orts.Simulation.RollingStocks
 
                 }
 
-                void setIfNonZero(ref float result, float? value) { if (value > 0) result = (float)value; }
+                void setIfNonZero(ref float result, float? value) { if (value != null && value != 0) result = (float)value; }
 
                 // Read freight animation values from animation INCLUDE files
                 // Read (initialise) "common" (empty values first).
