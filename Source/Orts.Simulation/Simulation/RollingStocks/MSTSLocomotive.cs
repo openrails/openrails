@@ -2526,6 +2526,7 @@ namespace Orts.Simulation.RollingStocks
         {
             if (targetForceN > maxForceN) targetForceN = maxForceN;
             if (forceN > maxForceN) forceN = maxForceN;
+            bool toZero = targetForceN == 0;
             if (AbsTractionSpeedMpS > 0)
             {
                 float powerW = forceN * PrevAbsTractionSpeedMpS;
@@ -2539,9 +2540,9 @@ namespace Orts.Simulation.RollingStocks
                         targetForceN = Math.Min(targetForceN, targetPowerW / AbsTractionSpeedMpS);
                     }
                 }
-                if (targetPowerW < powerW && (targetPowerW == 0 ? rampZeroWpS : rampDownWpS) > 0)
+                if (targetPowerW < powerW && (toZero ? rampZeroWpS : rampDownWpS) > 0)
                 {
-                    float maxChangeW = (targetPowerW == 0 ? rampZeroWpS : rampDownWpS) * elapsedClockSeconds;
+                    float maxChangeW = (toZero ? rampZeroWpS : rampDownWpS) * elapsedClockSeconds;
                     if (powerW - maxChangeW > targetPowerW)
                     {
                         targetPowerW = powerW - maxChangeW;
@@ -2549,13 +2550,15 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
             }
-            if (targetForceN > forceN && rampUpNpS > 0)
+            if (targetForceN > forceN)
             {
-                forceN = Math.Min(targetForceN, forceN + rampUpNpS * elapsedClockSeconds);
+                if (rampUpNpS > 0) forceN = Math.Min(forceN + rampUpNpS * elapsedClockSeconds, targetForceN);
+                else forceN = targetForceN;
             }
-            else if (targetForceN < forceN && (targetForceN == 0 ? rampZeroNpS : rampDownNpS) > 0)
+            else if (targetForceN < forceN)
             {
-                forceN = Math.Max(targetForceN, forceN - (targetForceN == 0 ? rampZeroNpS : rampDownNpS) * elapsedClockSeconds);
+                if ((toZero ? rampZeroNpS : rampDownNpS) > 0) forceN = Math.Max(forceN - (toZero ? rampZeroNpS : rampDownNpS) * elapsedClockSeconds, targetForceN);
+                else forceN = targetForceN;
             }
         }
         /// <summary>
@@ -2611,7 +2614,7 @@ namespace Orts.Simulation.RollingStocks
             // Ensure that throttle never exceeds the limits imposed by other subsystems
             float maxthrottle = MaxThrottlePercent / 100;
             // For diesel locomotives, also take into account the throttle setting associated to the current engine RPM
-            if (IsPlayerTrain && this is MSTSDieselLocomotive diesel) maxthrottle = Math.Min(maxthrottle, diesel.DieselEngines.ApparentThrottleSetting / 100.0f);
+            if (IsPlayerTrain && this is MSTSDieselLocomotive diesel && !diesel.TractiveForcePowerLimited) maxthrottle = Math.Min(maxthrottle, diesel.DieselEngines.ApparentThrottleSetting / 100.0f);
             if (t > maxthrottle) t = maxthrottle;
             t = MathHelper.Clamp(t, 0, 1);
 

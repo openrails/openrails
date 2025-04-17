@@ -90,6 +90,7 @@ namespace Orts.Simulation.RollingStocks
         float InitialMassKg = 100000.0f;
 
         public float LocomotiveMaxRailOutputPowerW;
+        public bool TractiveForcePowerLimited = false;
 
         public float EngineRPM;
         public SmoothedData ExhaustParticles = new SmoothedData(1);
@@ -169,6 +170,8 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dieselsmokeeffectinitialmagnitude": InitialMagnitude = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselsmokeeffectmaxsmokerate": MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselsmokeeffectmaxmagnitude": MaxMagnitude = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+
+                case "engine(ortstractiveforceispowerlimited": TractiveForcePowerLimited = stf.ReadBoolBlock(false); break;
 
                 case "engine(ortsdieseltransmissiontype":
                     stf.MustMatch("(");
@@ -436,6 +439,8 @@ namespace Orts.Simulation.RollingStocks
 
             EngineRPMderivation = locoCopy.EngineRPMderivation;
             EngineRPMold = locoCopy.EngineRPMold;
+
+            TractiveForcePowerLimited = locoCopy.TractiveForcePowerLimited;
 
             MaxDieselLevelL = locoCopy.MaxDieselLevelL;
             DieselUsedPerHourAtMaxPowerL = locoCopy.DieselUsedPerHourAtMaxPowerL;

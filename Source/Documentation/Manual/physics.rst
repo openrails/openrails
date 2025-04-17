@@ -425,6 +425,7 @@ locomotive (regardless of transmission type) are as follows:
    single: MaxPower
    single: MaxForce
    single: MaxContinuousForce
+   single: ORTSTractiveForceIsPowerLimited
 
 ``ORTSDieselEngineMaxPower`` ==> sets the maximum power output at the 
 shaft of the diesel engine (or prime mover).
@@ -437,6 +438,9 @@ wheels when starting.
 ``MaxContinuousForce`` ==> is the maximum force that the locomotive can 
 continuously supply to the wheels without exceeding the design specifications. 
 Typically this is linked to a particular speed (see next parameter).
+
+``ORTSTractiveForceIsPowerLimited`` ==> determines if tractive force curves
+shall be limited to the available output power from the diesel engine.
 
 .. index::
    single: ORTSSpeedOfMaxContinuousForce
