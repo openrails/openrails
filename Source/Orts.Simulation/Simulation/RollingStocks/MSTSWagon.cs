@@ -686,6 +686,14 @@ namespace Orts.Simulation.RollingStocks
             var (brakeMode, maxMass) = BrakeSystems?.Count > 0 ? BrakeSystems.Keys.FirstOrDefault() : default;
             SetBrakeSystemMode(brakeMode, maxMass, forceSwitch: true);
 
+            LoadFullMassKg = LoadEmptyMassKg = MassKG;
+            LoadFullORTSDavis_A = LoadEmptyORTSDavis_A = DavisAN;
+            LoadFullORTSDavis_B = LoadEmptyORTSDavis_B = DavisBNSpM;
+            LoadFullORTSDavis_C = LoadEmptyORTSDavis_C = DavisCNSSpMM;
+            LoadFullDavisDragConstant = LoadEmptyDavisDragConstant = DavisDragConstant;
+            LoadFullWagonFrontalAreaM2 = LoadEmptyWagonFrontalAreaM2 = WagonFrontalAreaM2;
+            LoadFullCentreOfGravityM_Y = LoadEmptyCentreOfGravityM_Y = CentreOfGravityM.Y;
+
             if (FreightAnimations != null)
             {
                 foreach (var ortsFreightAnim in FreightAnimations.Animations)
@@ -698,270 +706,52 @@ namespace Orts.Simulation.RollingStocks
 
                 }
 
+                void setIfNonZero(ref float result, float? value) { if (value > 0) result = (float)value; }
+
                 // Read freight animation values from animation INCLUDE files
                 // Read (initialise) "common" (empty values first).
                 // Test each value to make sure that it has been defined in the WAG file, if not default to Root WAG file value
-                if (FreightAnimations.WagonEmptyWeight > 0)
-                {
-                    LoadEmptyMassKg = FreightAnimations.WagonEmptyWeight;
-                }
-                else
-                {
-                    LoadEmptyMassKg = MassKG;
-                }  
-                
-                if (FreightAnimations.EmptyORTSDavis_A > 0)
-                {
-                    LoadEmptyORTSDavis_A = FreightAnimations.EmptyORTSDavis_A;
-                }
-                else
-                {
-                    LoadEmptyORTSDavis_A = DavisAN;
-                }
-
-                if (FreightAnimations.EmptyORTSDavis_B > 0)
-                {
-                    LoadEmptyORTSDavis_B = FreightAnimations.EmptyORTSDavis_B;
-                }
-                else
-                {
-                    LoadEmptyORTSDavis_B = DavisBNSpM;
-                }
-
-                if (FreightAnimations.EmptyORTSDavis_C > 0)
-                {
-                    LoadEmptyORTSDavis_C = FreightAnimations.EmptyORTSDavis_C;
-                }
-                else
-                {
-                    LoadEmptyORTSDavis_C = DavisCNSSpMM;
-                }
-
-                if (FreightAnimations.EmptyORTSDavisDragConstant > 0)
-                {
-                    LoadEmptyDavisDragConstant = FreightAnimations.EmptyORTSDavisDragConstant;
-                }
-                else
-                {
-                    LoadEmptyDavisDragConstant = DavisDragConstant;
-                }
-
-                if (FreightAnimations.EmptyORTSWagonFrontalAreaM2 > 0)
-                {
-                    LoadEmptyWagonFrontalAreaM2 = FreightAnimations.EmptyORTSWagonFrontalAreaM2;
-                }
-                else
-                {
-                    LoadEmptyWagonFrontalAreaM2 = WagonFrontalAreaM2;
-                }
-
-                if (FreightAnimations.EmptyMaxBrakeShoeForceN > 0)
-                {
-                    LoadEmptyMaxBrakeForceN = FreightAnimations.EmptyMaxBrakeShoeForceN;
-                }
-                else if (FreightAnimations.EmptyMaxBrakeForceN > 0)
-                {
-                    LoadEmptyMaxBrakeForceN = FreightAnimations.EmptyMaxBrakeForceN;
-                }
-
-                if (FreightAnimations.EmptyMaxHandbrakeForceN > 0)
-                {
-                    LoadEmptyMaxHandbrakeForceN = FreightAnimations.EmptyMaxHandbrakeForceN;
-                }
-
-                if (FreightAnimations.EmptyCentreOfGravityM_Y > 0)
-                {
-                    LoadEmptyCentreOfGravityM_Y = FreightAnimations.EmptyCentreOfGravityM_Y;
-                }
-                else
-                {
-                    LoadEmptyCentreOfGravityM_Y = CentreOfGravityM.Y;
-                }
-
-                if (FreightAnimations.EmptyRelayValveRatio > 0)
-                {
-                    LoadEmptyRelayValveRatio = FreightAnimations.EmptyRelayValveRatio;
-                }
-
-                if (FreightAnimations.EmptyInshotPSI != 0)
-                {
-                    LoadEmptyInshotPSI = FreightAnimations.EmptyInshotPSI;
-                }
+                setIfNonZero(ref LoadEmptyMassKg, FreightAnimations.WagonEmptyWeight);
+                setIfNonZero(ref LoadEmptyORTSDavis_A, FreightAnimations.EmptyORTSDavis_A);
+                setIfNonZero(ref LoadEmptyORTSDavis_B, FreightAnimations.EmptyORTSDavis_B);
+                setIfNonZero(ref LoadEmptyORTSDavis_C, FreightAnimations.EmptyORTSDavis_C);
+                setIfNonZero(ref LoadEmptyDavisDragConstant, FreightAnimations.EmptyORTSDavisDragConstant);
+                setIfNonZero(ref LoadEmptyWagonFrontalAreaM2, FreightAnimations.EmptyORTSWagonFrontalAreaM2);
+                setIfNonZero(ref LoadEmptyMaxBrakeForceN, FreightAnimations.EmptyMaxBrakeShoeForceN);
+                setIfNonZero(ref LoadEmptyMaxBrakeForceN, FreightAnimations.EmptyMaxBrakeForceN);
+                setIfNonZero(ref LoadEmptyMaxHandbrakeForceN, FreightAnimations.EmptyMaxHandbrakeForceN);
+                setIfNonZero(ref LoadEmptyCentreOfGravityM_Y, FreightAnimations.EmptyCentreOfGravityM_Y);
+                setIfNonZero(ref LoadEmptyRelayValveRatio, FreightAnimations.EmptyRelayValveRatio);
+                setIfNonZero(ref LoadEmptyInshotPSI, FreightAnimations.EmptyInshotPSI);
 
                 // Read (initialise) Static load ones if a static load
                 // Test each value to make sure that it has been defined in the WAG file, if not default to Root WAG file value
-                if (FreightAnimations.FullPhysicsStaticOne != null)
-                {
-                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_A > 0)
-                    {
-                        LoadFullORTSDavis_A = FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_A;
-                    }
-                    else
-                    {
-                        LoadFullORTSDavis_A = DavisAN;
-                    }
-
-                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_B > 0)
-                    {
-                        LoadFullORTSDavis_B = FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_B;
-                    }
-                    else
-                    {
-                        LoadFullORTSDavis_B = DavisBNSpM;
-                    }
-
-                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_C > 0)
-                    {
-                        LoadFullORTSDavis_C = FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_C;
-                    }
-                    else
-                    {
-                        LoadFullORTSDavis_C = DavisCNSSpMM;
-                    }
-
-                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavisDragConstant > 0)
-                    {
-                        LoadFullDavisDragConstant = FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavisDragConstant;
-                    }
-                    else
-                    {
-                        LoadFullDavisDragConstant = DavisDragConstant;
-                    }
-
-                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticORTSWagonFrontalAreaM2 > 0)
-                    {
-                        LoadFullWagonFrontalAreaM2 = FreightAnimations.FullPhysicsStaticOne.FullStaticORTSWagonFrontalAreaM2;
-                    }
-                    else
-                    {
-                        LoadFullWagonFrontalAreaM2 = WagonFrontalAreaM2;
-                    }
-
-                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeShoeForceN > 0)
-                    {
-                        LoadFullMaxBrakeForceN = FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeShoeForceN;
-                    }
-                    else if (FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeForceN > 0)
-                    {
-                        LoadFullMaxBrakeForceN = FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeForceN;
-                    }
-
-                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticMaxHandbrakeForceN > 0)
-                    {
-                        LoadFullMaxHandbrakeForceN = FreightAnimations.FullPhysicsStaticOne.FullStaticMaxHandbrakeForceN;
-                    }
-
-                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticCentreOfGravityM_Y > 0)
-                    {
-                        LoadFullCentreOfGravityM_Y = FreightAnimations.FullPhysicsStaticOne.FullStaticCentreOfGravityM_Y;
-                    }
-                    else
-                    {
-                        LoadFullCentreOfGravityM_Y = CentreOfGravityM.Y;
-                    }
-
-                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticRelayValveRatio > 0)
-                    {
-                        LoadFullRelayValveRatio = FreightAnimations.FullPhysicsStaticOne.FullStaticRelayValveRatio;
-                    }
-
-                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticInshotPSI > 0)
-                    {
-                        LoadFullInshotPSI = FreightAnimations.FullPhysicsStaticOne.FullStaticInshotPSI;
-                    }
-                }
+                setIfNonZero(ref LoadFullORTSDavis_A, FreightAnimations.FullPhysicsStaticOne?.FullStaticORTSDavis_A);
+                setIfNonZero(ref LoadFullORTSDavis_B, FreightAnimations.FullPhysicsStaticOne?.FullStaticORTSDavis_B);
+                setIfNonZero(ref LoadFullORTSDavis_C, FreightAnimations.FullPhysicsStaticOne?.FullStaticORTSDavis_C);
+                setIfNonZero(ref LoadFullDavisDragConstant, FreightAnimations.FullPhysicsStaticOne?.FullStaticORTSDavisDragConstant);
+                setIfNonZero(ref LoadFullWagonFrontalAreaM2, FreightAnimations.FullPhysicsStaticOne?.FullStaticORTSWagonFrontalAreaM2);
+                setIfNonZero(ref LoadFullMaxBrakeForceN, FreightAnimations.FullPhysicsStaticOne?.FullStaticMaxBrakeShoeForceN);
+                setIfNonZero(ref LoadFullMaxBrakeForceN, FreightAnimations.FullPhysicsStaticOne?.FullStaticMaxBrakeForceN);
+                setIfNonZero(ref LoadFullMaxHandbrakeForceN, FreightAnimations.FullPhysicsStaticOne?.FullStaticMaxHandbrakeForceN);
+                setIfNonZero(ref LoadFullCentreOfGravityM_Y, FreightAnimations.FullPhysicsStaticOne?.FullStaticCentreOfGravityM_Y);
+                setIfNonZero(ref LoadFullRelayValveRatio, FreightAnimations.FullPhysicsStaticOne?.FullStaticRelayValveRatio);
+                setIfNonZero(ref LoadFullInshotPSI, FreightAnimations.FullPhysicsStaticOne?.FullStaticInshotPSI);
 
                 // Read (initialise) Continuous load ones if a continuous load
                 // Test each value to make sure that it has been defined in the WAG file, if not default to Root WAG file value
-                if (FreightAnimations.FullPhysicsContinuousOne != null)
-                {
-                    if (FreightAnimations.FullPhysicsContinuousOne.FreightWeightWhenFull > 0)
-                    {
-                        LoadFullMassKg = FreightAnimations.WagonEmptyWeight + FreightAnimations.FullPhysicsContinuousOne.FreightWeightWhenFull;
-                    }
-                    else
-                    {
-                        LoadFullMassKg = MassKG;
-                    } 
-
-                    if (FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_A > 0)
-                    {
-                        LoadFullORTSDavis_A = FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_A;
-                    }
-                    else
-                    {
-                        LoadFullORTSDavis_A = DavisAN;
-                    }
-
-                    if (FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_B > 0)
-                    {
-                        LoadFullORTSDavis_B = FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_B;
-                    }
-                    else
-                    {
-                        LoadFullORTSDavis_B = DavisBNSpM;
-                    }
-
-                    if (FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_C > 0)
-                    {
-                        LoadFullORTSDavis_C = FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_C;
-                    }
-                    else
-                    {
-                        LoadFullORTSDavis_C = DavisCNSSpMM;
-                    }
-
-                    if (FreightAnimations.FullPhysicsContinuousOne.FullORTSDavisDragConstant > 0)
-                    {
-                        LoadFullDavisDragConstant = FreightAnimations.FullPhysicsContinuousOne.FullORTSDavisDragConstant;
-                    }
-                    else
-                    {
-                        LoadFullDavisDragConstant = DavisDragConstant;
-                    }
-
-                    if (FreightAnimations.FullPhysicsContinuousOne.FullORTSWagonFrontalAreaM2 > 0)
-                    {
-                        LoadFullWagonFrontalAreaM2 = FreightAnimations.FullPhysicsContinuousOne.FullORTSWagonFrontalAreaM2;
-                    }
-                    else
-                    {
-                        LoadFullWagonFrontalAreaM2 = WagonFrontalAreaM2;
-                    }
-
-                    if (FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeShoeForceN > 0)
-                    {
-                        LoadFullMaxBrakeForceN = FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeShoeForceN;
-                    }
-                    else if (FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeForceN > 0)
-                    {
-                        LoadFullMaxBrakeForceN = FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeForceN;
-                    }
-
-                    if (FreightAnimations.FullPhysicsContinuousOne.FullMaxHandbrakeForceN > 0)
-                    {
-                        LoadFullMaxHandbrakeForceN = FreightAnimations.FullPhysicsContinuousOne.FullMaxHandbrakeForceN;
-                    }
-
-                    if (FreightAnimations.FullPhysicsContinuousOne.FullCentreOfGravityM_Y > 0)
-                    {
-                        LoadFullCentreOfGravityM_Y = FreightAnimations.FullPhysicsContinuousOne.FullCentreOfGravityM_Y;
-                    }
-                    else
-                    {
-                        LoadFullCentreOfGravityM_Y = CentreOfGravityM.Y;
-                    }
-
-                    if (FreightAnimations.FullPhysicsContinuousOne.FullRelayValveRatio > 0)
-                    {
-                        LoadFullRelayValveRatio = FreightAnimations.FullPhysicsContinuousOne.FullRelayValveRatio;
-                    }
-
-                    if (FreightAnimations.FullPhysicsContinuousOne.FullInshotPSI != 0)
-                    {
-                        LoadFullInshotPSI = FreightAnimations.FullPhysicsContinuousOne.FullInshotPSI;
-                    }
-                }
+                setIfNonZero(ref LoadFullMassKg, FreightAnimations.WagonEmptyWeight + FreightAnimations.FullPhysicsContinuousOne?.FreightWeightWhenFull);
+                setIfNonZero(ref LoadFullORTSDavis_A, FreightAnimations.FullPhysicsContinuousOne?.FullORTSDavis_A);
+                setIfNonZero(ref LoadFullORTSDavis_B, FreightAnimations.FullPhysicsContinuousOne?.FullORTSDavis_B);
+                setIfNonZero(ref LoadFullORTSDavis_C, FreightAnimations.FullPhysicsContinuousOne?.FullORTSDavis_C);
+                setIfNonZero(ref LoadFullDavisDragConstant, FreightAnimations.FullPhysicsContinuousOne?.FullORTSDavisDragConstant);
+                setIfNonZero(ref LoadFullWagonFrontalAreaM2, FreightAnimations.FullPhysicsContinuousOne?.FullORTSWagonFrontalAreaM2);
+                setIfNonZero(ref LoadFullMaxBrakeForceN, FreightAnimations.FullPhysicsContinuousOne?.FullMaxBrakeShoeForceN);
+                setIfNonZero(ref LoadFullMaxBrakeForceN, FreightAnimations.FullPhysicsContinuousOne?.FullMaxBrakeForceN);
+                setIfNonZero(ref LoadFullMaxHandbrakeForceN, FreightAnimations.FullPhysicsContinuousOne?.FullMaxHandbrakeForceN);
+                setIfNonZero(ref LoadFullCentreOfGravityM_Y, FreightAnimations.FullPhysicsContinuousOne?.FullCentreOfGravityM_Y);
+                setIfNonZero(ref LoadFullRelayValveRatio, FreightAnimations.FullPhysicsContinuousOne?.FullRelayValveRatio);
+                setIfNonZero(ref LoadFullInshotPSI, FreightAnimations.FullPhysicsContinuousOne?.FullInshotPSI);
 
                 if (!FreightAnimations.MSTSFreightAnimEnabled) FreightShapeFileName = null;
                 if (FreightAnimations.WagonEmptyWeight != -1)
@@ -995,6 +785,8 @@ namespace Orts.Simulation.RollingStocks
                     // If it is an empty continuous freight animation, set wagon physics to empty wagon value
                     TempMassDiffRatio = 0;
                 }
+
+                UpdateDavisLoadCompensation(TempMassDiffRatio);
 
 #if DEBUG_VARIABLE_MASS
 
@@ -1039,8 +831,6 @@ namespace Orts.Simulation.RollingStocks
 
             if (TrackGaugeM <= 0) // Use gauge of route/sim settings if gauge wasn't defined
                 TrackGaugeM = Simulator.RouteTrackGaugeM;
-
-            UpdateDavisLoadCompensation(TempMassDiffRatio);
         }
 
         public void SetBrakeSystemMode(BrakeModes mode, float massKg, bool forceSwitch = false)
