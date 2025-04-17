@@ -1032,11 +1032,8 @@ namespace Orts.Simulation.RollingStocks
 
             // Load
             var data = 0f;
-            if (FilteredTractiveForceN != 0)
-                data = Math.Abs(this.FilteredTractiveForceN);
-            else
-                data = Math.Abs(TractiveForceN);
-            if (DynamicBrakePercent > 0)
+            data = Math.Abs(TractiveForceN);
+            if (DynamicBrakeForceN > 0)
             {
                 data = -Math.Abs(DynamicBrakeForceN);
             }
