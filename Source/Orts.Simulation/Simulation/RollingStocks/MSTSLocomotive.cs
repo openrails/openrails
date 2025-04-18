@@ -2605,6 +2605,7 @@ namespace Orts.Simulation.RollingStocks
 
             // Ensure that throttle never exceeds the limits imposed by other subsystems
             float maxthrottle = MaxThrottlePercent / 100;
+            if (DynamicBrake) maxthrottle = 0;
             // For diesel locomotives, also take into account the throttle setting associated to the current engine RPM
             if (IsPlayerTrain && this is MSTSDieselLocomotive diesel && !diesel.TractiveForcePowerLimited) maxthrottle = Math.Min(maxthrottle, diesel.DieselEngines.ApparentThrottleSetting / 100.0f);
             if (t > maxthrottle) t = maxthrottle;
@@ -2651,26 +2652,18 @@ namespace Orts.Simulation.RollingStocks
         }
         protected virtual void UpdateDynamicBrakeForce(float elapsedClockSeconds)
         {
-            if (ThrottlePercent <= 0 && TractionForceN <= 0 && LocomotivePowerSupply.DynamicBrakeAvailable && Direction != Direction.N)
+            if (ThrottlePercent <= 0 && TractionForceN <= 0 && LocomotivePowerSupply.DynamicBrakeAvailable && Direction != Direction.N && DynamicBrakePercent >= 0)
             {
-                if (DynamicBrakePercent >= 0)
+                if (DynamicBrakeCommandStartTime == null)
                 {
-                    if (DynamicBrakeCommandStartTime == null)
-                    {
-                        DynamicBrakeCommandStartTime = Simulator.ClockTime;
-                    }
-                    if (!DynamicBrake && DynamicBrakeCommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
-                    {
-                        DynamicBrake = true;
-                    }
+                    DynamicBrakeCommandStartTime = Simulator.ClockTime;
                 }
-                else if (DynamicBrakeForceN == 0)
+                if (!DynamicBrake && DynamicBrakeCommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
                 {
-                    DynamicBrake = false;
-                    DynamicBrakeCommandStartTime = null;
+                    DynamicBrake = true;
                 }
             }
-            else
+            else if (DynamicBrakeForceN == 0 || !LocomotivePowerSupply.DynamicBrakeAvailable || Direction == Direction.N)
             {
                 DynamicBrake = false;
                 DynamicBrakeCommandStartTime = null;
