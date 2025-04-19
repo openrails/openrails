@@ -183,16 +183,6 @@ namespace Orts.Formats.Msts
 			}
 			stf.SkipRestOfBlock();
 		}
-        public SectionIdx(TrackPath path)
-        {
-            X = 0;
-            Y = 0;
-            Z = 0;
-            A = 0;
-            NoSections = path.NoSections;
-            TrackSections = path.TrackSections;
-        }
-
 		public uint NoSections;
 		public double X,Y,Z;  // Offset
 		public double A;  // Angular offset 

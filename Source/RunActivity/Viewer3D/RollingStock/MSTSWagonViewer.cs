@@ -879,7 +879,7 @@ namespace Orts.Viewer3D.RollingStock
 
 #endif
 
-            // Bogie angle animation
+            // truck angle animation
             Matrix inverseLocation = Matrix.Invert(Car.WorldPosition.XNAMatrix);
 
             foreach (var p in Car.Parts)
@@ -887,13 +887,8 @@ namespace Orts.Viewer3D.RollingStock
                 if (p.iMatrix <= 0)
                     continue;
 
+                // Determine orientation of bogie in absolute space
                 Matrix m = Matrix.Identity;
-
-                // Bogie rotation calculation doesn't work on turntables
-                // Assume bogies aren't rotated when on a turntable
-                if (Car.Train?.ControlMode != Train.TRAIN_CONTROL.TURNTABLE)
-                {
-                    // Determine orientation of bogie in absolute space
                 Vector3 fwd = new Vector3(p.Dir[0], p.Dir[1], -p.Dir[2]);
                 // Only do this calculation if the bogie position has been calculated
                 if (!(fwd.X == 0 && fwd.Y == 0 && fwd.Z == 0))
@@ -910,7 +905,7 @@ namespace Orts.Viewer3D.RollingStock
                     // Convert absolute rotation into rotation relative to train car
                     m = Matrix.CreateRotationZ(p.Roll) * m * inverseLocation;
                 }
-                }
+
                 // Insert correct translation (previous step likely introduced garbage data)
                 m.Translation = TrainCarShape.SharedShape.Matrices[p.iMatrix].Translation;
 
