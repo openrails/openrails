@@ -375,10 +375,8 @@ namespace Orts.Simulation.AIs
                 float initialThrottlepercent = InitialThrottlepercent;
                 MUDynamicBrakePercent = -1;
                 AITrainBrakePercent = 0;
-                // Percent slope = rise / run -> the Y position of the forward vector gives us the 'rise'
-                // Derive the 'run' by assuming a hypotenuse length of 1, so run = sqrt(1 - rise^2)
-                float rise = FirstCar.WorldPosition.XNAMatrix.M32;
-                FirstCar.CurrentElevationPercent = 100f * (rise / (float)Math.Sqrt(1 - rise * rise));
+                // Force calculate gradient at the front of the train
+                FirstCar.UpdateGravity();
                 // Give it a bit more gas if it is uphill
                 if (FirstCar.CurrentElevationPercent < -2.0) initialThrottlepercent = 40f;
                 // Better block gas if it is downhill
