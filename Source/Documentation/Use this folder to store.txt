@@ -1,5 +1,5 @@
 In Source\Documentation\ to store source for documents useful in running Open Rails.
-This applies to core Open Rails and also to non-core (or "contributed" programs.
+This applies to core Open Rails and also to non-core (or "contributed") programs.
 
 They should be MS Office or OpenOffice format and will be processed to PDF format which is distributed as part of the installation and available to users in the drop-down Menu > Documents
 
