@@ -2626,7 +2626,7 @@ namespace Orts.Simulation.RollingStocks
                 if (LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply)
                 {
                     float maxPowerW = supply.AvailableTractionPowerW;
-                    if (targetForceN * AbsTractionSpeedMpS > maxPowerW) maxForceN = maxPowerW / AbsTractionSpeedMpS;
+                    if (maxForceN * AbsTractionSpeedMpS > maxPowerW) maxForceN = maxPowerW / AbsTractionSpeedMpS;
                 }
                 UpdateForceWithRamp(ref TractionForceN, elapsedClockSeconds, targetForceN, maxForceN, TractionForceRampUpNpS, TractionForceRampDownNpS, TractionForceRampDownToZeroNpS, TractionPowerRampUpWpS, TractionPowerRampDownWpS, TractionPowerRampDownToZeroWpS);
             }
