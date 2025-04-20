@@ -979,18 +979,18 @@ namespace Orts.Simulation.RollingStocks
                         STFException.TraceWarning(stf, "Skipped unknown traction motor type " + tractionMotorType);
                     }
                     break;
-                case "engine(ortstractiveforcerampuprate": TractionForceRampUpNpS = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "engine(ortstractiveforcerampdownrate": TractionForceRampDownNpS = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "engine(ortstractiveforcerampdowntozerorate": TractionForceRampDownToZeroNpS = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "engine(ortstractivepowerrampuprate": TractionPowerRampUpWpS = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
-                case "engine(ortstractivepowerrampdownrate": TractionPowerRampDownWpS = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
-                case "engine(ortstractivepowerrampdowntozerorate": TractionPowerRampDownToZeroWpS = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
-                case "engine(ortsdynamicbrakeforcerampuprate": DynamicBrakeForceRampUpNpS = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "engine(ortsdynamicbrakeforcerampdownrate": DynamicBrakeForceRampDownNpS = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "engine(ortsdynamicbrakeforcerampdowntozerorate": DynamicBrakeForceRampDownToZeroNpS = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "engine(ortsdynamicbrakepowerrampuprate": DynamicBrakePowerRampUpWpS = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
-                case "engine(ortsdynamicbrakepowerrampdownrate": DynamicBrakePowerRampDownWpS = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
-                case "engine(ortsdynamicbrakepowerrampdowntozerorate": DynamicBrakePowerRampDownToZeroWpS = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
+                case "engine(ortstractiveforcerampuprate": TractionForceRampUpNpS = stf.ReadFloatBlock(STFReader.UNITS.ForceRate, null); break;
+                case "engine(ortstractiveforcerampdownrate": TractionForceRampDownNpS = stf.ReadFloatBlock(STFReader.UNITS.ForceRate, null); break;
+                case "engine(ortstractiveforcerampdowntozerorate": TractionForceRampDownToZeroNpS = stf.ReadFloatBlock(STFReader.UNITS.ForceRate, null); break;
+                case "engine(ortstractivepowerrampuprate": TractionPowerRampUpWpS = stf.ReadFloatBlock(STFReader.UNITS.PowerRate, null); break;
+                case "engine(ortstractivepowerrampdownrate": TractionPowerRampDownWpS = stf.ReadFloatBlock(STFReader.UNITS.PowerRate, null); break;
+                case "engine(ortstractivepowerrampdowntozerorate": TractionPowerRampDownToZeroWpS = stf.ReadFloatBlock(STFReader.UNITS.PowerRate, null); break;
+                case "engine(ortsdynamicbrakeforcerampuprate": DynamicBrakeForceRampUpNpS = stf.ReadFloatBlock(STFReader.UNITS.ForceRate, null); break;
+                case "engine(ortsdynamicbrakeforcerampdownrate": DynamicBrakeForceRampDownNpS = stf.ReadFloatBlock(STFReader.UNITS.ForceRate, null); break;
+                case "engine(ortsdynamicbrakeforcerampdowntozerorate": DynamicBrakeForceRampDownToZeroNpS = stf.ReadFloatBlock(STFReader.UNITS.ForceRate, null); break;
+                case "engine(ortsdynamicbrakepowerrampuprate": DynamicBrakePowerRampUpWpS = stf.ReadFloatBlock(STFReader.UNITS.PowerRate, null); break;
+                case "engine(ortsdynamicbrakepowerrampdownrate": DynamicBrakePowerRampDownWpS = stf.ReadFloatBlock(STFReader.UNITS.PowerRate, null); break;
+                case "engine(ortsdynamicbrakepowerrampdowntozerorate": DynamicBrakePowerRampDownToZeroWpS = stf.ReadFloatBlock(STFReader.UNITS.PowerRate, null); break;
 
                 case "engine(enginecontrollers(throttle": ThrottleController = new MSTSNotchController(stf); break;
                 case "engine(enginecontrollers(regulator": ThrottleController = new MSTSNotchController(stf); break;

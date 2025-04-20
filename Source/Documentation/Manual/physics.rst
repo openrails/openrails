@@ -1170,7 +1170,7 @@ the target demand. This can be tuned both for traction and dynamic braking by in
 ``ORTSTractiveForceRampDownToZeroRate``, ``ORTSDynamicBrakeForceRampUpRate``,
 ``ORTSDynamicBrakeForceRampDownRate`` and ``ORTSDynamicBrakeForceRampDownToZeroRate``
 in the .eng file. The value of each parameter determines the force increase/decrease
-rate in one second. To include ramp up/down times also for power, use the equivalent
+rate. To include ramp up/down times also for power, use the equivalent
 ``ORTSTractivePowerRampUpRate``, ``ORTSTractivePowerRampDownRate``,
 ``ORTSTractivePowerRampDownToZeroRate``, ``ORTSDynamicBrakePowerRampUpRate``,
 ``ORTSDynamicBrakePowerRampDownRate`` and ``ORTSDynamicBrakePowerRampDownToZeroRate``
@@ -1179,12 +1179,11 @@ parameters.
 Example::
 
   Engine (
-    ORTSTractiveForceRampUpRate ( 50kN )
-    ORTSTractiveForceRampDownRate ( 50kN )
-    ORTSTractiveForceRampDownToZeroRate ( 100kN )
-    ORTSDynamicBrakeForceRampUpRate ( 70kN )
-    ORTSDynamicBrakeForceRampDownRate ( 50kN )
-    ORTSDynamicBrakeForceRampDownToZeroRate ( 50kN )
+    ORTSTractiveForceRampUpRate ( 50kN/s )
+    ORTSTractiveForceRampDownRate ( 50kN/s )
+    ORTSTractiveForceRampDownToZeroRate ( 100kN/s )
+    ORTSDynamicBrakePowerRampUpRate ( 1000kW/s )
+    ORTSDynamicBrakeForceRampDownRate ( 50kN/s )
   )
 
 Another possibility to avoid sudden variations in tractive force while the driver
