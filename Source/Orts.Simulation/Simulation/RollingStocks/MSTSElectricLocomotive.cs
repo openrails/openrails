@@ -27,18 +27,15 @@
  * 
  */
 
-using Microsoft.Xna.Framework;
+using System;
+using System.IO;
+using System.Text;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
 using ORTS.Scripting.Api;
-using System;
-using System.Diagnostics;
-using System.IO;
-using System.Text;
-using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks
 {
@@ -70,14 +67,16 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortspowerondelay":
                 case "engine(ortsauxpowerondelay":
                 case "engine(ortspowersupply":
+                case "engine(ortspowersupplyparameters":
                 case "engine(ortscircuitbreaker":
                 case "engine(ortscircuitbreakerclosingdelay":
-                case "engine(ortsbattery(mode":
-                case "engine(ortsbattery(delay":
-                case "engine(ortsbattery(defaulton":
+                case "engine(ortsbattery":
                 case "engine(ortsmasterkey(mode":
                 case "engine(ortsmasterkey(delayoff":
                 case "engine(ortsmasterkey(headlightcontrol":
+                case "engine(ortsvoltageselector":
+                case "engine(ortspantographselector":
+                case "engine(ortspowerlimitationselector":
                 case "engine(ortselectrictrainsupply(mode":
                     LocomotivePowerSupply.Parse(lowercasetoken, stf);
                     break;
@@ -232,6 +231,18 @@ namespace Orts.Simulation.RollingStocks
                         data /= 1000;
                     break;
 
+                case CABViewControlTypes.ORTS_PANTOGRAPH_VOLTAGE_AC:
+                    data = ElectricPowerSupply.PantographVoltageVAC;
+                    if (cvc.Units == CABViewControlUnits.KILOVOLTS)
+                        data /= 1000;
+                    break;
+
+                case CABViewControlTypes.ORTS_PANTOGRAPH_VOLTAGE_DC:
+                    data = ElectricPowerSupply.PantographVoltageVDC;
+                    if (cvc.Units == CABViewControlUnits.KILOVOLTS)
+                        data /= 1000;
+                    break;
+                
                 case CABViewControlTypes.PANTO_DISPLAY:
                     data = Pantographs.State == PantographState.Up ? 1 : 0;
                     break;
@@ -273,6 +284,18 @@ namespace Orts.Simulation.RollingStocks
                         data = 3;
                     else
                         data = 2;
+                    break;
+
+                case CABViewControlTypes.ORTS_VOLTAGE_SELECTOR:
+                    data = ElectricPowerSupply.VoltageSelector.PositionId;
+                    break;
+
+                case CABViewControlTypes.ORTS_PANTOGRAPH_SELECTOR:
+                    data = ElectricPowerSupply.PantographSelector.PositionId;
+                    break;
+
+                case CABViewControlTypes.ORTS_POWER_LIMITATION_SELECTOR:
+                    data = ElectricPowerSupply.PowerLimitationSelector.PositionId;
                     break;
 
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
