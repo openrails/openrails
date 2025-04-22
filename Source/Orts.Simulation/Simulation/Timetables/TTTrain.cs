@@ -181,6 +181,9 @@ namespace Orts.Simulation.Timetables
             public float routeSpeedMpS;        // Route defined max speed
             public float consistSpeedMpS;      // Consist defined max speed
             public bool restrictedSet;         // Special speed has been set
+            public bool gradient;              // gradient definition has been set
+            public float? gradPerc;            // gradient percentage
+            public float? gradMinSpeed;        // gradient minimum speed
         }
 
         public DelayedStartValues DelayedStartSettings = new DelayedStartValues();
@@ -259,6 +262,9 @@ namespace Orts.Simulation.Timetables
             SpeedSettings.detachSpeedMpS = null;
             SpeedSettings.movingtableSpeedMpS = null;
             SpeedSettings.restrictedSet = false;
+            SpeedSettings.gradient = false;
+            SpeedSettings.gradPerc = null;
+            SpeedSettings.gradMinSpeed = null;
         }
 
         //================================================================================================//
@@ -528,8 +534,17 @@ namespace Orts.Simulation.Timetables
                 attachSpeedMpS = inf.ReadBoolean() ? inf.ReadSingle() : (float?)null,
                 detachSpeedMpS = inf.ReadBoolean() ? inf.ReadSingle() : (float?)null,
                 movingtableSpeedMpS = inf.ReadBoolean() ? inf.ReadSingle() : (float?)null,
-                restrictedSet = inf.ReadBoolean()
+                restrictedSet = inf.ReadBoolean(),
+                gradient = inf.ReadBoolean(),
+                gradPerc = null,
+                gradMinSpeed = null
             };
+
+            if (SpeedSettings.gradient)
+            {
+                SpeedSettings.gradPerc = inf.ReadSingle();
+                SpeedSettings.gradMinSpeed = inf.ReadSingle();
+            }
 
             DriverOnlyOperation = inf.ReadBoolean();
             ForceReversal = inf.ReadBoolean();
@@ -841,6 +856,13 @@ namespace Orts.Simulation.Timetables
                 outf.Write(SpeedSettings.movingtableSpeedMpS.Value);
             }
             outf.Write(SpeedSettings.restrictedSet);
+            outf.Write(SpeedSettings.gradient);
+            if (SpeedSettings.gradient)
+            {
+                outf.Write(SpeedSettings.gradPerc.Value);
+                outf.Write(SpeedSettings.gradMinSpeed.Value);
+            }
+
             outf.Write(DriverOnlyOperation);
             outf.Write(ForceReversal);
             outf.Write(Briefing);
@@ -5804,6 +5826,70 @@ namespace Orts.Simulation.Timetables
 #if DEBUG_TTANALYSIS
             TTAnalysisStartMoving("Move");
 #endif
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Train control routine for full acceleration
+        /// Overrride for AITrain.cs
+        /// </summary>
+
+        public override void AdjustControlsAccelMore(float reqAccelMpSS, float timeS, int stepSize)
+        {
+            if (AITrainBrakePercent > 0)
+            {
+                AdjustControlsBrakeOff();
+            }
+
+            if (AITrainThrottlePercent < 100)
+            {
+                AITrainThrottlePercent += stepSize;
+                if (AITrainThrottlePercent > 100)
+                    AITrainThrottlePercent = 100;
+            }
+            else if (LastSpeedMpS == 0 || (((SpeedMpS - LastSpeedMpS) / timeS) < 0.5f * MaxAccelMpSS))
+            {
+                bool forceaccreq = true;
+
+                // test for train on gradient
+                if (SpeedSettings.gradient)
+                {
+                    bool ongrad = false;
+                    foreach (TrainCar car in Cars)
+                    {
+                        if (car.CurrentElevationPercent > SpeedSettings.gradPerc)
+                        {
+                            ongrad = true;
+                            continue;
+                        }
+                    }
+                    if (ongrad && SpeedMpS > SpeedSettings.gradMinSpeed)
+                    {
+                        forceaccreq = false;
+                    }
+                }
+
+                // forced acc is required
+                if (forceaccreq)
+                {
+                    float ds = timeS * (reqAccelMpSS);
+                    SpeedMpS = LastSpeedMpS + ds;
+                    foreach (TrainCar car in Cars)
+                    {
+                        //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
+                        // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
+                        //  car.SpeedMpS = car.Flipped ? -SpeedMpS : SpeedMpS;
+                        car.SpeedMpS = car.Flipped ^ (car.IsDriveable && car.Train.IsActualPlayerTrain && ((MSTSLocomotive)car).UsingRearCab) ? -SpeedMpS : SpeedMpS;
+                    }
+
+                    if (CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "Forced speed increase : was " + LastSpeedMpS + " - now " + SpeedMpS + "\n");
+                    }
+                }
+            }
+
+            SetPercentsFromTrainToTrainset();
         }
 
         //================================================================================================//
