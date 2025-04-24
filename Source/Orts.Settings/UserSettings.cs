@@ -390,6 +390,8 @@ namespace ORTS.Settings
         public int[] WindowPosition_ComposeMessage { get; set; }
         [Default(new[] { 100, 0 })]
         public int[] WindowPosition_TrainList { get; set; }
+        [Default(new[] { 50, 50 })]
+        public int[] WindowPosition_TrainForces { get; set; }
         [Default("")]
         public string LastViewNotificationDate { get; set; }
 
