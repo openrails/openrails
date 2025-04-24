@@ -64,7 +64,6 @@ namespace ORTS.Common.Input
         [GetString("Display Train Car Operations Window")] DisplayTrainCarOperationsWindow,
         [GetString("Display Train Dpu Window")] DisplayTrainDpuWindow,
         [GetString("Display Next Station Window")] DisplayNextStationWindow,
-        [GetString("Display Train Forces Window")] DisplayTrainForcesWindow,
         [GetString("Display Compass Window")] DisplayCompassWindow,
         [GetString("Display Train List Window")] DisplayTrainListWindow,
         [GetString("Display EOT List Window")] DisplayEOTListWindow,

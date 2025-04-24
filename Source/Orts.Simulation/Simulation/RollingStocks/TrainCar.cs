@@ -203,7 +203,7 @@ namespace Orts.Simulation.RollingStocks
         public bool DerailmentCoefficientEnabled = true;
         public float MaximumWheelFlangeAngleRad;
         public float WheelFlangeLengthM;
-        public float AngleOfAttackmRad;
+        public float AngleOfAttackRad;
         public float DerailClimbDistanceM;
         public bool DerailPossible = false;
         public bool DerailExpected = false;
@@ -605,29 +605,6 @@ namespace Orts.Simulation.RollingStocks
         protected SmoothedData CurveForceFilter = new SmoothedData(0.75f);
         public float CurveForceNFiltered;
 
-        protected SmoothedData CurveSquealAoAmRadFilter = new SmoothedData(0.75f);
-        public float CurveSquealAoAmRadFiltered;
-
-        // Track sound effects - joints
-        public float TrackJointSoundTriggered;
-        public float realTimeTrackJointDistanceM;
-        bool carOnJointTriggered = false;
-        int jointTrigger;
-        float jointTriggerDelayedS = 0.1f; // Set delay to 0.1 seconds
-        float jointSpeedMpS;
-        public float SoundAxleCount;
-        public float CarTrackControlledDistanceM = 0;
-
-        // Track sound effects - switch / crossover
-        public float TrackSwitchSoundTriggered;
-        bool carOnSwitchTriggered = false;
-        float switchTriggerDelayedS = 0.1f; // Set delay to 0.1 seconds
-        public bool EnableCarOnXoverTrigger = false;
-        public float carOnXoverTriggerDelayedS = 0.1f;
-        public float TrackXoverSoundTriggered;
-
-        public float TrackSoundInTunnelTriggered;
-
         public float TunnelForceN;  // Resistive force due to tunnel, in Newtons
         public float FrictionForceN; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
         public float BrakeForceN;    // current braking force applied to slow train (Newtons) - will be impacted by wheel/rail friction
@@ -883,7 +860,6 @@ namespace Orts.Simulation.RollingStocks
                 Trace.TraceInformation("Tunnel 1 tr perimeter {0} Tunnel 1 tr area {1}", SingleTunnelPerimeterAreaM, SingleTunnelPerimeterAreaM);
                 Trace.TraceInformation("Tunnel 2 tr perimeter {0} Tunnel 2 tr area {1}", DoubleTunnelPerimeterM, DoubleTunnelCrossSectAreaM2);
 #endif
-            SoundAxleCount = (LocoNumDrvAxles + WagonNumAxles);
 
         }
 
@@ -1014,33 +990,6 @@ namespace Orts.Simulation.RollingStocks
             CarOutsideTempC = InitialCarOutsideTempC - TemperatureHeightVariationDegC;
 
             AbsSpeedMpS = Math.Abs(_SpeedMpS);
-
-            //TODO: next if block has been inserted to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
-            // To achieve the same result with other means, without flipping trainset physics, the block should be deleted
-            //      
-            if (IsDriveable && Train != null & Train.IsPlayerDriven && (this as MSTSLocomotive).UsingRearCab)
-            {
-                GravityForceN = -GravityForceN;
-                CurrentElevationPercent = -CurrentElevationPercent;
-            }
-
-            AngleOfAttackmRad = GetAngleofAttackmRad();
-            
-            CurveSquealAoAmRadFilter.Update(elapsedClockSeconds, AngleOfAttackmRad);
-            CurveSquealAoAmRadFiltered = CurveSquealAoAmRadFilter.SmoothedValue;
-
-            TrackJointSoundTriggered = GetTrackJointPosition(elapsedClockSeconds);
-
-            TrackSwitchSoundTriggered = GetTrackSwitchTrigger(elapsedClockSeconds);
-
-            if (IsOverCrossover)
-            {
-                TrackXoverSoundTriggered = 1;
-            }
-            else
-            {
-                TrackXoverSoundTriggered = 0;
-            }
 
             UpdateCurveSpeedLimit(elapsedClockSeconds);
             UpdateCurveForce(elapsedClockSeconds);
@@ -1317,14 +1266,10 @@ namespace Orts.Simulation.RollingStocks
                     float UnitAerodynamicDrag = ((TunnelAComponent * TrainLengthTunnelM) / Kg.ToTonne(TrainMassTunnelKg)) * TempTunnel2;
 
                     TunnelForceN = UnitAerodynamicDrag * Kg.ToTonne(MassKG) * AbsSpeedMpS * AbsSpeedMpS;
-
-                    TrackSoundInTunnelTriggered = 1;
                 }
                 else
                 {
                     TunnelForceN = 0.0f; // Reset tunnel force to zero when train is no longer in the tunnel
-
-                    TrackSoundInTunnelTriggered = 0;
                 }
             }
         }
@@ -1711,7 +1656,7 @@ namespace Orts.Simulation.RollingStocks
                         float BB1 = 0;
 
                         // Prevent NaN if WagonNumBogies = 0
-                        if (WagonNumBogies != 0)
+                        if ( WagonNumBogies != 0)
                         {
                             // AA1 = CarAhead.CouplerForceU * (float)Math.Sin(WagonCouplerAngleDerailRad) / WagonNumBogies;
                             AA1 = Math.Abs(CarAhead.CouplerForceUSmoothed.SmoothedValue) * (float)Math.Sin(WagonCouplerAngleDerailRad) / WagonNumBogies;
@@ -1757,7 +1702,11 @@ namespace Orts.Simulation.RollingStocks
                     var wagonAdhesion = Train.WagonCoefficientFriction;
 
                     // Calculate Nadal derailment coefficient limit
-                    NadalDerailmentCoefficient = ((float)Math.Tan(MaximumWheelFlangeAngleRad) - wagonAdhesion) / (1f + wagonAdhesion * (float)Math.Tan(MaximumWheelFlangeAngleRad));
+                    NadalDerailmentCoefficient = ((float) Math.Tan(MaximumWheelFlangeAngleRad) - wagonAdhesion) / (1f + wagonAdhesion * (float) Math.Tan(MaximumWheelFlangeAngleRad));
+
+                    // Calculate Angle of Attack - AOA = sin-1(2 * bogie wheel base / curve radius)
+                    AngleOfAttackRad = (float)Math.Asin(2 * RigidWheelBaseM / CurrentCurveRadiusM);
+                    var angleofAttackmRad = AngleOfAttackRad * 1000f; // Convert to micro radians
 
                     // Calculate the derail climb distance - uses the general form equation 2.4 from the above publication
                     var parameterA_1 = ((100 / (-1.9128f * MathHelper.ToDegrees(MaximumWheelFlangeAngleRad) + 146.56f)) + 3.1f) * Me.ToIn(WheelFlangeLengthM);
@@ -1772,7 +1721,7 @@ namespace Orts.Simulation.RollingStocks
 
                     var parameterB = parameterB_1 + parameterB_2;
 
-                    DerailClimbDistanceM = Me.FromFt((float)((parameterA * parameterB * Me.ToIn(WheelFlangeLengthM)) / ((AngleOfAttackmRad + (parameterB * Me.ToIn(WheelFlangeLengthM))))));
+                    DerailClimbDistanceM = Me.FromFt( (float)((parameterA * parameterB * Me.ToIn(WheelFlangeLengthM)) / ((angleofAttackmRad + (parameterB * Me.ToIn(WheelFlangeLengthM))))) );
 
                     // calculate the time taken to travel the derail climb distance
                     var derailTimeS = DerailClimbDistanceM / AbsSpeedMpS;
@@ -1856,111 +1805,6 @@ namespace Orts.Simulation.RollingStocks
         }
 
         #endregion
-
-        /// <summary>
-        /// Get the Angle of attack for a car as it goes through a curve
-        /// </summary>
-        /// <returns>angle in micro radians</returns>
-        /// 
-        public float GetAngleofAttackmRad()
-        {
-            if (CurrentCurveRadiusM > 0)
-            {
-                // Calculate Angle of Attack - AOA = sin-1(2 * bogie wheel base / curve radius)
-                var angleofAttackmRad = (float)Math.Asin(2 * RigidWheelBaseM / CurrentCurveRadiusM) * 1000f; // Convert to micro radians
-                return angleofAttackmRad;
-            }
-            else
-            {
-                return 0;
-            }
-        }
-
-        /// <summary>
-        /// Get the track switch /crossover trigger for a car as it goes over a switch
-        /// </summary>
-        /// <returns>1 = switch, 0 = no switch</returns>
-        ///
-        public float GetTrackSwitchTrigger(float elapsedClockSeconds)
-        {
-
-            // Timer to hold trigger on for a period of time
-            if (carOnSwitchTriggered)
-            {
-                switchTriggerDelayedS -= elapsedClockSeconds;
-                if (switchTriggerDelayedS < 0)
-                    switchTriggerDelayedS = 0;
-            }
-
-            if (IsOverSwitch && !carOnSwitchTriggered)
-            {
-                carOnSwitchTriggered = true;
-                return 1; // Set trigger for car on switch
-            }
-            else if (!IsOverSwitch && switchTriggerDelayedS == 0 && carOnSwitchTriggered)
-            {
-                carOnSwitchTriggered = false;
-                switchTriggerDelayedS = 0.1f;
-                return 0; // Reset trigger when off
-            }
-            else if (carOnSwitchTriggered && switchTriggerDelayedS > 0)
-            {
-                return 1; // ensure trigger stays on until time out
-            }
-
-            return 0; // default if no result found
-        }
-
-        /// <summary>
-        /// Get the track joint trigger for a car as it goes over a joint
-        /// </summary>
-        /// <returns>1 = track joint, 0 = no track joint</returns>
-        ///
-        public float GetTrackJointPosition(float elapsedClockSeconds)
-        {
-            if ((float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM == 0)
-            {
-                return 0; // Rail joints have not been selected
-            }
-            else
-            {
-                // Calculate remaining distance beween track joints
-                realTimeTrackJointDistanceM -= AbsSpeedMpS * elapsedClockSeconds;
-                if (realTimeTrackJointDistanceM < 0)
-                    realTimeTrackJointDistanceM = 0;
-                if (realTimeTrackJointDistanceM == 0)
-                {
-                    jointTrigger = 1;
-                    carOnJointTriggered = true;
-                    jointTriggerDelayedS -= elapsedClockSeconds;
-                    if (jointTriggerDelayedS < 0)
-                        jointTriggerDelayedS = 0;
-                }
-                else
-                {
-                    jointTrigger = 0;
-                }
-                if (jointTrigger == 1 && jointTriggerDelayedS == 0)
-                {
-                    jointTriggerDelayedS = 0.1f; // Ensure enough delay to trigger sound
-                    jointTrigger = 0;
-                    // To ensure that track joints are never closer then 1 sec apart set to speedmps when distance traveled in 1 sec is greater then the joint distance.
-                    if (AbsSpeedMpS > (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM)
-                    {
-                        realTimeTrackJointDistanceM = AbsSpeedMpS;
-                        jointSpeedMpS = AbsSpeedMpS;
-                    }
-                    else
-                    {
-                        realTimeTrackJointDistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM; // Reset for next pass
-                        jointSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
-                    }
-                    carOnJointTriggered = false;
-                }
-
-                return jointTrigger;
-            }
-        }
 
         /// <summary>
         /// Get the current direction that curve is heading relative to the train.
@@ -2353,7 +2197,6 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(CarHeatCurrentCompartmentHeatJ);
             outf.Write(CarSteamHeatMainPipeSteamPressurePSI);
             outf.Write(CarHeatCompartmentHeaterOn);
-            outf.Write(CurveSquealAoAmRadFiltered);
         }
 
         // Game restore
@@ -2378,8 +2221,6 @@ namespace Orts.Simulation.RollingStocks
             CarHeatCurrentCompartmentHeatJ = inf.ReadSingle();
             CarSteamHeatMainPipeSteamPressurePSI = inf.ReadSingle();
             CarHeatCompartmentHeaterOn = inf.ReadBoolean();
-            CurveSquealAoAmRadFiltered = inf.ReadSingle();
-            CurveSquealAoAmRadFilter.ForceSmoothValue(CurveSquealAoAmRadFiltered);
             FreightAnimations?.LoadDataList?.Clear();
         }
 
@@ -3007,8 +2848,7 @@ namespace Orts.Simulation.RollingStocks
             m.Backward = fwd;
 
             // Update gravity force when position is updated, but before any secondary motion is added
-            GravityForceN = MassKG * GravitationalAccelerationMpS2 * fwd.Y;
-            CurrentElevationPercent = 100f * (fwd.Y / (float)Math.Sqrt(1 - fwd.Y * fwd.Y));
+            UpdateGravity(m);
 
             // Consider body roll from superelevation and from tilting.
             UpdateTilting(traveler, elapsedTimeS, speed, direction);
@@ -3641,9 +3481,35 @@ namespace Orts.Simulation.RollingStocks
             return new LatLonDirection(latLon, directionDeg); ;
         }
 
-        public int GetWagonNumAxles() { return WagonNumAxles; }
+        /// <summary>
+        /// Update the gravity force and % gradient of this train car at the current position
+        /// </summary>
+        public void UpdateGravity()
+        {
+            UpdateGravity(WorldPosition.XNAMatrix);
+        }
 
-        public float GetGravitationalAccelerationMpS2() { return GravitationalAccelerationMpS2; }
+        /// <summary>
+        /// Update the gravity force and % gradient of this train car at an arbitrary position
+        /// </summary>
+        /// <param name="orientation">Matrix giving the train car orientation used to determine gravity.</param>
+        public void UpdateGravity(Matrix orientation)
+        {
+            // Percent slope = 100 * rise / run -> the Y component of the forward vector gives us the 'rise'
+            // Derive the 'run' by assuming a hypotenuse length of 1, so per Pythagoras run = sqrt(1 - rise^2)
+            float rise = orientation.Backward.Y;
+
+            GravityForceN = MassKG * GravitationalAccelerationMpS2 * rise;
+            CurrentElevationPercent = 100f * (rise / (float)Math.Sqrt(1 - rise * rise));
+
+            // Reverse gravity force and % gradient on locomotives operated from the rear cab
+            // FUTURE: Change rear cabs to not require such forbidden manipulations of physics
+            if (IsDriveable && Train != null & Train.IsPlayerDriven && (this as MSTSLocomotive).UsingRearCab)
+            {
+                GravityForceN = -GravityForceN;
+                CurrentElevationPercent = -CurrentElevationPercent;
+            }
+        }
     }
 
     public class WheelAxle : IComparer<WheelAxle>

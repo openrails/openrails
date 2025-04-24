@@ -163,8 +163,6 @@ namespace Orts.Simulation.Physics
         public bool HuDIsWheelSlip;
         public bool IsBrakeSkid;
 
-        public bool TrackJointSoundSetupInitialise = true;
-
         public bool HotBoxSetOnTrain = false;
         public int ActivityDurationS
         {
@@ -1863,18 +1861,8 @@ namespace Orts.Simulation.Physics
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
                 if (lead is MSTSSteamLocomotive) MUReverserPercent = 25;
 
-                // Percent slope = rise / run -> the Y position of the forward vector gives us the 'rise'
-                // Derive the 'run' by assuming a hypotenuse length of 1, so run = sqrt(1 - rise^2)
-                float rise = lead.WorldPosition.XNAMatrix.M32;
-                lead.CurrentElevationPercent = 100f * (rise / (float)Math.Sqrt(1 - rise * rise));
-
-                //TODO: next if block has been inserted to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
-                // To achieve the same result with other means, without flipping trainset physics, the block should be deleted
-                //         
-                if (lead.IsDriveable && (lead as MSTSLocomotive).UsingRearCab)
-                {
-                    lead.CurrentElevationPercent = -lead.CurrentElevationPercent;
-                }
+                // Force calculate gradient at the lead locomotive
+                lead.UpdateGravity();
                 // give it a bit more gas if it is uphill
                 if (lead.CurrentElevationPercent < -2.0) initialThrottlepercent = 40f;
                 // better block gas if it is downhill
@@ -2004,95 +1992,6 @@ namespace Orts.Simulation.Physics
             if (DatalogTrainSpeed)
             {
                 LogTrainSpeed(Simulator.ClockTime);
-            }
-
-            // Initialise track joint trigger points. Sets the trigger point for the track joint reletative to other cars.
-            // This is then reset every time a track joint is triggered, and positioned the same distance apart, hence reletative positions are maintained.
-            // Only runs once at start up.
-            if (TrackJointSoundSetupInitialise && (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM > 0 && Simulator.TRK.Tr_RouteFile.TrackSoundDefaultContinuousPlay)
-            {
-                var trackjointdistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
-                var trainLengthM = 0.0f;
-                var cummulativeTrackJointDistanceM = 0.0f;
-                var remainDistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
-
-                // Set values for printing
-                bool concretesleepers = false;
-                
-                if ((float)Simulator.TRK.Tr_RouteFile.ConcreteSleepers == 1)
-                {
-                    concretesleepers = true;
-                }
-
-                if (Simulator.Settings.VerboseConfigurationMessages && Simulator.TRK.Tr_RouteFile.TrackSoundDefaultContinuousPlay)
-                {
-                    Trace.TraceInformation("======================================================================================================================");
-                    Trace.TraceInformation("TType Track Sounds Initialisation - Concrete Sleepers = {0}, Track Joint Distance = {1} m", concretesleepers, (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM);
-                }
-
-
-                foreach (var car in Cars)
-                {
-                    // Initialise from the next track joint
-
-                    // if remain distance has gone negative then car has moved over the next track joint
-                    if (trackjointdistanceM > car.CarLengthM)
-                    {
-
-                        car.realTimeTrackJointDistanceM = cummulativeTrackJointDistanceM;
-                        trainLengthM += car.CarLengthM;
-                        cummulativeTrackJointDistanceM += car.CarLengthM;
-                        remainDistanceM -= car.CarLengthM;
-
-
-                        //              Trace.TraceInformation("Initialise Track Joints> - CarID {0} RealDistance {1} TrainLength {2} TRackJointDistance {3} CarLength {4} CumDistance {5} RemDistance {6}", car.CarID, car.realTimeTrackJointDistanceM, trainLengthM, trackjointdistanceM, car.CarLengthM, cummulativeTrackJointDistanceM, remainDistanceM);
-
-                        // the next track joint has been reached reset all parameters in preparation for the next pass
-                        if (remainDistanceM < 0.0f)
-                        {
-                            cummulativeTrackJointDistanceM = Math.Abs(remainDistanceM);
-                            remainDistanceM = trackjointdistanceM - cummulativeTrackJointDistanceM;
-                            //                 Trace.TraceInformation("Reset> - Cum {0} Rem {1}", cummulativeTrackJointDistanceM, remainDistanceM);
-                        }
-
-                    }
-                    // Trackjoint less then Car length 
-                    else if (trackjointdistanceM < car.CarLengthM)
-                    {
-
-                        car.realTimeTrackJointDistanceM = cummulativeTrackJointDistanceM;
-                        trainLengthM += car.CarLengthM;
-                        cummulativeTrackJointDistanceM += trackjointdistanceM;
-                        remainDistanceM -= car.CarLengthM;
-
-                        //                  Trace.TraceInformation("Initialise Track Joints< - CarID {0} RealDistance {1} TrainLength {2} TRackJointDistance {3} CarLength {4} CumDistance {5} RemDistance {6}", car.CarID, car.realTimeTrackJointDistanceM, trainLengthM, trackjointdistanceM, car.CarLengthM, cummulativeTrackJointDistanceM, remainDistanceM);
-
-                        if (remainDistanceM < 0.0f)
-                        {
-
-                            while (Math.Abs(remainDistanceM) > trackjointdistanceM)
-                            {
-                                remainDistanceM += trackjointdistanceM;
-                                //                          Trace.TraceInformation("Reset Remain< - CarID {0}, remainDistanceM {1}", car.CarID, remainDistanceM);
-                            }
-
-                            cummulativeTrackJointDistanceM = Math.Abs(remainDistanceM);
-                            remainDistanceM = trackjointdistanceM - cummulativeTrackJointDistanceM;
-                            //                      Trace.TraceInformation("Reset< - Cum {0} Rem {1}", cummulativeTrackJointDistanceM, remainDistanceM);
-                        }
-
-                    }
-
-                    if (Simulator.Settings.VerboseConfigurationMessages && Simulator.TRK.Tr_RouteFile.TrackSoundDefaultContinuousPlay)
-                    {
-                        Trace.TraceInformation("CarID {0}, Dist from Joint = {1} m, Car Length = {2} m, Train Length = {3} m, Axle Count = {4}", car.CarID, car.realTimeTrackJointDistanceM, car.CarLengthM, trainLengthM, car.SoundAxleCount);
-                    }
-
-                }
-
-                Trace.TraceInformation("======================================================================================================================");
-
-                TrackJointSoundSetupInitialise = false;
             }
 
         } // end Update
@@ -4579,9 +4478,9 @@ namespace Orts.Simulation.Physics
 
                     // Update car's curve radius and superelevation based on bogie position and move traveller to front bogie
                     // Also determine roll angle for superelevation by averaging both bogies
-                    float roll = traveller.GetVisualElevation();
+                    float roll = traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation);
                     car.UpdateCurvePhys(traveller, new[] { 0, car.CarBogieCentreLengthM });
-                    roll = (roll + traveller.GetVisualElevation()) / 2.0f;
+                    roll = (roll + traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation)) / 2.0f;
 
                     // Normalize across tile boundaries
                     x += 2048 * (tileX - traveller.TileX);
@@ -4599,9 +4498,7 @@ namespace Orts.Simulation.Physics
                     car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y, traveller.Z, x, y, z);
 
                     // Update gravity force when position is updated, but before any secondary motion is added
-                    Vector3 fwd = car.WorldPosition.XNAMatrix.Backward;
-                    car.GravityForceN = car.MassKG * TrainCar.GravitationalAccelerationMpS2 * fwd.Y;
-                    car.CurrentElevationPercent = 100f * (fwd.Y / (float)Math.Sqrt(1 - fwd.Y * fwd.Y));
+                    car.UpdateGravity();
 
                     // Apply superelevation to car
                     car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
@@ -4732,9 +4629,9 @@ namespace Orts.Simulation.Physics
 
                     // Update car's curve radius and superelevation based on bogie position and move traveller to front bogie
                     // Outputs rotation angle for superelevation, used below
-                    float roll = traveller.GetVisualElevation();
+                    float roll = traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation);
                     car.UpdateCurvePhys(traveller, new[] { 0, car.CarBogieCentreLengthM });
-                    roll = (roll + traveller.GetVisualElevation()) / 2.0f;
+                    roll = (roll + traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation)) / 2.0f;
 
                     // Normalize across tile boundaries
                     x += 2048 * (tileX - traveller.TileX);
@@ -4752,9 +4649,7 @@ namespace Orts.Simulation.Physics
                     car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y, traveller.Z, x, y, z);
 
                     // Update gravity force when position is updated, but before any secondary motion is added
-                    Vector3 fwd = car.WorldPosition.XNAMatrix.Backward;
-                    car.GravityForceN = car.MassKG * TrainCar.GravitationalAccelerationMpS2 * fwd.Y;
-                    car.CurrentElevationPercent = 100f * (fwd.Y / (float)Math.Sqrt(1 - fwd.Y * fwd.Y));
+                    car.UpdateGravity();
 
                     // Apply superelevation to car
                     car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
@@ -4813,9 +4708,9 @@ namespace Orts.Simulation.Physics
 
                 // Update car's curve radius and superelevation based on bogie position and move traveller to front bogie
                 // Outputs rotation angle for superelevation, used below
-                float roll = traveller.GetVisualElevation();
+                float roll = traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation);
                 car.UpdateCurvePhys(traveller, new[] { 0, car.CarBogieCentreLengthM });
-                roll = (roll + traveller.GetVisualElevation()) / 2.0f;
+                roll = (roll + traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation)) / 2.0f;
 
                 // Normalize across tile boundaries
                 x += 2048 * (tileX - traveller.TileX);
@@ -4833,9 +4728,7 @@ namespace Orts.Simulation.Physics
                 car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y, traveller.Z, x, y, z);
 
                 // Update gravity force when position is updated, but before any secondary motion is added
-                Vector3 fwd = car.WorldPosition.XNAMatrix.Backward;
-                car.GravityForceN = car.MassKG * TrainCar.GravitationalAccelerationMpS2 * fwd.Y;
-                car.CurrentElevationPercent = 100f * (fwd.Y / (float)Math.Sqrt(1 - fwd.Y * fwd.Y));
+                car.UpdateGravity();
 
                 // Apply superelevation to car
                 car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
