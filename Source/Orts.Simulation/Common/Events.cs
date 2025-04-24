@@ -27,6 +27,14 @@ namespace Orts.Common
     public enum Event
     {
         None,
+        AITrainApproachingStation,
+        AITrainHelperLoco,
+        AITrainLeadLoco,
+        AITrainLeavingStation,
+        PlayerTrainHelperLoco,
+        PlayerTrainLeadLoco,
+        StaticTrainLoco,
+        EndAITrainLeadLoco,
         BatterySwitchOff,
         BatterySwitchOn,
         BatterySwitchCommandOff,
@@ -123,8 +131,12 @@ namespace Orts.Common
         PermissionDenied,
         PermissionGranted,
         PermissionToDepart,
-        PowerKeyOff,
-        PowerKeyOn,
+        VoltageSelectorDecrease,
+        VoltageSelectorIncrease,
+        PantographSelectorDecrease,
+        PantographSelectorIncrease,
+        PowerLimitationSelectorDecrease,
+        PowerLimitationSelectorIncrease,
         ReverserChange,
         ReverserToForwardBackward,
         ReverserToNeutral,
@@ -542,6 +554,13 @@ namespace Orts.Common
                         case 251: return Event.OverchargeBrakingOff;
                         case 252: return Event.EmergencyVentValveOn;
 
+                        case 253: return Event.VoltageSelectorDecrease;
+                        case 254: return Event.VoltageSelectorIncrease;
+                        case 255: return Event.PantographSelectorDecrease;
+                        case 256: return Event.PantographSelectorIncrease;
+                        case 257: return Event.PowerLimitationSelectorDecrease;
+                        case 258: return Event.PowerLimitationSelectorIncrease;
+
                         case 260: return Event.WindowClosing;
                         case 261: return Event.WindowOpening;
                         case 262: return Event.WindowsClosed;
@@ -561,6 +580,16 @@ namespace Orts.Common
                         case 321: return Event.BoosterCylinderCocksOpen;
                         case 322: return Event.BoosterCylinderCocksClose;
 
+                        // AI train related events
+                        case 330: return Event.AITrainLeadLoco;
+                        case 331: return Event.AITrainHelperLoco;
+                        case 332: return Event.PlayerTrainLeadLoco;
+                        case 333: return Event.PlayerTrainHelperLoco;
+                        case 334: return Event.AITrainApproachingStation;
+                        case 335: return Event.AITrainLeavingStation;
+                        case 336: return Event.StaticTrainLoco;
+                        case 337: return Event.EndAITrainLeadLoco;
+						
                         default: return 0;
                     }
                 case Source.MSTSCrossing:

@@ -191,7 +191,7 @@ msgstr "Updates im Netz gefunden. Wollen Sie fortfahren?"
 #: ../../Menu/ContentForm.cs:882
 msgid "Changed or added local files found, Update might fail. Do you want to continue?"
 msgstr ""
-"Geänderte  oder hinzugefügte lokale Dateien gefunden. Update kann fehlschlagen. Wollen Sie "
+"Geänderte oder hinzugefügte lokale Dateien gefunden.Das Update kann fehlschlagen. Wollen Sie "
 "fortfahren?"
 
 #: ../../Menu/ContentForm.cs:892
@@ -200,7 +200,7 @@ msgstr "Updates installiert"
 
 #: ../../Menu/ContentForm.cs:1422 ../../Menu/ContentForm.cs:1448
 msgid "Path where the route is installed"
-msgstr "Pfad, in dem die Route installiert ist"
+msgstr "Pfad,in dem die Route installiert ist"
 
 #: ../../Menu/ContentForm.cs:308 ../../Menu/ContentForm.cs:334 ../../Menu/ContentForm.cs:335
 #: ../../Menu/ContentForm.cs:336 ../../Menu/ContentForm.cs:337
@@ -297,7 +297,7 @@ msgstr ""
 #: ../../Menu/ContentForm.cs:1354
 #, csharp-format
 msgid "Error during GitHub pull, updates might not be installed, error: {0}"
-msgstr "Fehler beim GitHub-Pull, Updates wurden möglicherweise nicht installiert,  Fehler: {0}"
+msgstr "Fehler beim GitHub-Pull, Updates wurden möglicherweise nicht installiert, Fehler: {0}"
 
 #: ../../Menu/ContentForm.Designer.cs:145
 msgid "Install Path:"

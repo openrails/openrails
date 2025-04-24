@@ -729,7 +729,7 @@ namespace Orts.Viewer3D.WebServices
                 }
                 else if (locomotive.WaterScoopDown && !locomotive.ScoopIsBroken)
                 {
-                    waterScoopIndicator = Viewer.Catalog.GetString("Down") + (locomotive.IsOverTrough() ? ColorCode[Color.Cyan] : ColorCode[Color.Orange]);
+                    waterScoopIndicator = Viewer.Catalog.GetString("Down") + (locomotive.IsOverTrough ? ColorCode[Color.Cyan] : ColorCode[Color.Orange]);
                     waterScoopKey = Symbols.ArrowToRight + ColorCode[Color.Yellow];
                 }
                 else
