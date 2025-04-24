@@ -490,7 +490,6 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.DebugPrecipitationIncrease] = new UserCommandKeyInput(0x0D, KeyModifiers.Alt);
             Commands[(int)UserCommand.DebugPrecipitationLiquidityDecrease] = new UserCommandKeyInput(0x0C, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommand.DebugPrecipitationLiquidityIncrease] = new UserCommandKeyInput(0x0D, KeyModifiers.Control | KeyModifiers.Alt);
-            Commands[(int)UserCommand.DebugRequestStopInformation] = new UserCommandKeyInput(0x44, KeyModifiers.Alt);
             Commands[(int)UserCommand.DebugResetWheelSlip] = new UserCommandKeyInput(0x2D, KeyModifiers.Alt);
             Commands[(int)UserCommand.DebugSignalling] = new UserCommandKeyInput(0x57, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommand.DebugSoundForm] = new UserCommandKeyInput(0x1F, KeyModifiers.Alt);

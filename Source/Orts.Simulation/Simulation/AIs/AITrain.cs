@@ -2061,11 +2061,7 @@ namespace Orts.Simulation.AIs
                     MovementState = AI_MOVEMENT_STATE.STOPPED_EXISTING;
                     if (TrainType != TRAINTYPE.AI_PLAYERHOSTING) AtStation = false;
                 }
-
-                if (thisStation.ArrivalTime >= 0)
-                {
-                    Delay = TimeSpan.FromSeconds((presentTime - thisStation.DepartTime) % (24 * 3600));
-                }
+                Delay = TimeSpan.FromSeconds((presentTime - thisStation.DepartTime) % (24 * 3600));
             }
 
 #if DEBUG_REPORTS

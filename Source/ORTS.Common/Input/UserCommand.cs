@@ -80,7 +80,6 @@ namespace ORTS.Common.Input
         [GetString("Debug Precipitation Decrease")] DebugPrecipitationDecrease,
         [GetString("Debug Precipitation Liquidity Increase")] DebugPrecipitationLiquidityIncrease,
         [GetString("Debug Precipitation Liquidity Decrease")] DebugPrecipitationLiquidityDecrease,
-        [GetString("Debug Request Stop Information")] DebugRequestStopInformation,
         [GetString("Debug Daylight Offset Increase")] DebugDaylightOffsetIncrease,
         [GetString("Debug Daylight Offset Decrease")] DebugDaylightOffsetDecrease,
         [GetString("Debug Weather Change")] DebugWeatherChange,
