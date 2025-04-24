@@ -75,6 +75,7 @@ namespace Orts.Simulation.AIs
         public float DoorOpenTimer = -1f;
         public float DoorCloseTimer = -1f;
         public AILevelCrossingHornPattern LevelCrossingHornPattern { get; set; }
+        public bool ApproachTriggerSet = false;         // station approach trigger for AI trains has been set
 
         public float PathLength;
 
@@ -246,6 +247,7 @@ namespace Orts.Simulation.AIs
             UncondAttach = inf.ReadBoolean();
             DoorCloseTimer = inf.ReadSingle();
             DoorOpenTimer = inf.ReadSingle();
+            ApproachTriggerSet = inf.ReadBoolean();
             if (!Simulator.TimetableMode && DoorOpenTimer <= 0 && DoorCloseTimer > 0 && Simulator.OpenDoorsInAITrains &&
                 MovementState == AI_MOVEMENT_STATE.STATION_STOP && StationStops.Count > 0)
             {
@@ -339,6 +341,7 @@ namespace Orts.Simulation.AIs
             outf.Write(UncondAttach);
             outf.Write(DoorCloseTimer);
             outf.Write(DoorOpenTimer);
+            outf.Write(ApproachTriggerSet);
             if (LevelCrossingHornPattern != null)
             {
                 outf.Write(0);
@@ -1302,6 +1305,7 @@ namespace Orts.Simulation.AIs
                         AIActionItem newAction = new AIActionItem(null, AIActionItem.AI_ACTION_TYPE.STATION_STOP);
                         newAction.SetParam(distancesM[1], 0.0f, distancesM[0], DistanceTravelledM);
                         requiredActions.InsertAction(newAction);
+                        ApproachTriggerSet = false;
 
 #if DEBUG_REPORTS
                 if (StationStops[0].ActualStopType == StationStop.STOPTYPE.STATION_STOP)
@@ -2061,6 +2065,7 @@ namespace Orts.Simulation.AIs
 
                 Delay = TimeSpan.FromSeconds((presentTime - thisStation.DepartTime) % (24 * 3600));
             }
+            if (Cars[0] is MSTSLocomotive) Cars[0].SignalEvent(Event.AITrainLeavingStation);
 
 #if DEBUG_REPORTS
             DateTime baseDTd = new DateTime();
@@ -2620,6 +2625,13 @@ namespace Orts.Simulation.AIs
                         }
                     }
                 }
+            }
+
+            if (nextActionInfo != null && nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.STATION_STOP &&
+                distanceToGoM < 150 + StationStops[0].PlatformItem.Length && !ApproachTriggerSet)
+            {
+                if (Cars[0] is MSTSLocomotive) Cars[0].SignalEvent(Event.AITrainApproachingStation);
+                ApproachTriggerSet = true;
             }
 
             if (nextActionInfo != null && nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.STATION_STOP)
@@ -4369,6 +4381,8 @@ namespace Orts.Simulation.AIs
                     AI.AITrains.Add(this);
                     AI.aiListChanged = true;
                 }
+                else 
+                    attachTrain.RedefineSoundTriggers();
                 if (!UncondAttach)
                 {
                     RemoveTrain();
@@ -4477,6 +4491,7 @@ namespace Orts.Simulation.AIs
             AddTrackSections();
             ResetActions(true);
             physicsUpdate(0);
+            RedefineSoundTriggers();
         }
 
         //================================================================================================//
@@ -4718,7 +4733,8 @@ namespace Orts.Simulation.AIs
             // Move WP, if any, just under the loco;
             AuxActionsContain.MoveAuxActionAfterReversal(this);
             ResetActions(true);
-
+            RedefineSoundTriggers();
+            attachTrain.RedefineSoundTriggers();
             physicsUpdate(0);// Stop the wheels from moving etc
 
         }
