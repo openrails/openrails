@@ -17,27 +17,15 @@
 
 using System;
 using System.IO;
+using ORTS.Common;
 using Orts.Common;
 using Orts.Simulation.RollingStocks.SubSystems;
-using ORTS.Common;
 using ORTS.Scripting.Api.ETCS;
-using Orts.Simulation;
-using Orts.Simulation.RollingStocks;
-using Orts.Simulation.RollingStocks.SubSystems;
 
 namespace ORTS.Scripting.Api
 {
     public abstract class TrainControlSystem : AbstractTrainScriptClass
     {
-        internal ScriptedTrainControlSystem Host;
-        internal MSTSLocomotive Locomotive => Host.Locomotive;
-        internal Simulator Simulator => Host.Simulator;
-
-        internal void AttachToHost(ScriptedTrainControlSystem host)
-        {
-            Host = host;
-        }
-
         public bool Activated { get; set; }
 
         public readonly ETCSStatus ETCSStatus = new ETCSStatus();
@@ -167,6 +155,10 @@ namespace ORTS.Scripting.Api
         /// int: direction; 0: forwards; 1: backwards
         /// </summary>
         public Func<int, float> EOADistanceM;
+        /// <summary>
+        /// Train's length
+        /// </summary>
+        public Func<float> TrainLengthM;
         /// <summary>
         /// Locomotive direction.
         /// </summary>
@@ -528,36 +520,6 @@ namespace ORTS.Scripting.Api
         /// Get string parameter in the INI file.
         /// </summary>
         public Func<string, string, string, string> GetStringParameter;
-
-
-        /// <summary>
-        /// Sends an event to the power supply
-        /// </summary>
-        /// <param name="evt">The event to send</param>
-        public void SignalEventToPowerSupply(PowerSupplyEvent evt)
-        {
-            Locomotive.LocomotivePowerSupply.HandleEventFromTcs(evt);
-        }
-
-        /// <summary>
-        /// Sends an event to the power supply
-        /// </summary>
-        /// <param name="evt">The event to send</param>
-        /// <param name="id">Additional id for the event</param>
-        public void SignalEventToPowerSupply(PowerSupplyEvent evt, int id)
-        {
-            Locomotive.LocomotivePowerSupply.HandleEventFromTcs(evt, id);
-        }
-
-        /// <summary>
-        /// Sends an event and/or a message to the power supply
-        /// </summary>
-        /// <param name="evt">The event to send</param>
-        /// <param name="message">The message to send</param>
-        public void SignalEventToPowerSupply(PowerSupplyEvent evt, string message)
-        {
-            Locomotive.LocomotivePowerSupply.HandleEventFromTcs(evt, message);
-        }
 
         /// <summary>
         /// Called once at initialization time.

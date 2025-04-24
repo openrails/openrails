@@ -429,37 +429,31 @@ namespace Orts.Simulation.RollingStocks
         {
             get
             {
-                float percent;
                 if (RemoteControlGroup == 0 && Train != null)
                 {
-                    percent = Train.MUThrottlePercent;
                     if (Train.LeadLocomotive is MSTSLocomotive locomotive)
                     {
                         if (!locomotive.TrainControlSystem.TractionAuthorization
-                            || percent <= 0)
+                            || Train.MUThrottlePercent <= 0)
                         {
-                            percent = 0;
+                            return 0;
                         }
-                        else if (percent > locomotive.TrainControlSystem.MaxThrottlePercent)
+                        else if (Train.MUThrottlePercent > locomotive.TrainControlSystem.MaxThrottlePercent)
                         {
-                            percent = Math.Max(locomotive.TrainControlSystem.MaxThrottlePercent, 0);
+                            return Math.Max(locomotive.TrainControlSystem.MaxThrottlePercent, 0);
                         }
                     }
+
+                    return Train.MUThrottlePercent;
                 }
                 else if (RemoteControlGroup == 1 && Train != null)
                 {
-                    percent = Train.DPThrottlePercent;
+                    return Train.DPThrottlePercent;
                 }
                 else
                 {
-                    percent = LocalThrottlePercent;
+                    return LocalThrottlePercent;
                 }
-                if (this is MSTSLocomotive loco)
-                {
-                    if (loco.LocomotivePowerSupply.ThrottleReductionPercent > 0) percent *= 1-loco.LocomotivePowerSupply.ThrottleReductionPercent/100;
-                    if (loco.LocomotivePowerSupply.MaxThrottlePercent < percent) percent = Math.Max(loco.LocomotivePowerSupply.MaxThrottlePercent, 0);
-                }
-                return percent;
             }
             set
             {
@@ -515,12 +509,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     percent = LocalDynamicBrakePercent;
                 }
-                if (this is MSTSLocomotive loco)
-                {
-                    if (loco.DynamicBrakeBlendingPercent > percent) percent = loco.DynamicBrakeBlendingPercent;
-                    if (loco.LocomotivePowerSupply.PowerSupplyDynamicBrakePercent > percent) percent = loco.LocomotivePowerSupply.PowerSupplyDynamicBrakePercent;
-                }
-                return percent;
+                return Math.Max(percent, this is MSTSLocomotive loco ? loco.DynamicBrakeBlendingPercent : -1);
             }
             set
             {

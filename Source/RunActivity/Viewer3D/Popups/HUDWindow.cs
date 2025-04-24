@@ -847,7 +847,7 @@ namespace Orts.Viewer3D.Popups
                     tractionCutOffRelayState,
                     mainPowerSupplyState,
                     auxiliaryPowerSupplyState,
-                    String.Format("{0} {1}", Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.BatteryState)), FormatStrings.FormatVoltage(car.PowerSupply.BatteryVoltageV)),
+                    Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.BatteryState)),
                     Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.LowVoltagePowerSupplyState)),
                     locomotivePowerSupply != null ? Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.CabPowerSupplyState)) : string.Empty,
                     electricTrainSupplyState,

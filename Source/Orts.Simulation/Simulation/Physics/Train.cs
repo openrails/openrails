@@ -1524,11 +1524,13 @@ namespace Orts.Simulation.Physics
             // Reverse brake hose connections and angle cocks
             for (var i = 0; i < Cars.Count; i++)
             {
-                var bs = Cars[i].BrakeSystem;
-                (bs.AngleCockBOpen, bs.AngleCockAOpen) = (bs.AngleCockAOpen, bs.AngleCockBOpen);
-                (bs.AngleCockBOpenAmount, bs.AngleCockAOpenAmount) = (bs.AngleCockAOpenAmount, bs.AngleCockBOpenAmount);
-                (bs.AngleCockBOpenTime, bs.AngleCockAOpenTime) = (bs.AngleCockAOpenTime, bs.AngleCockBOpenTime);
-                (bs.RearBrakeHoseConnected, bs.FrontBrakeHoseConnected) = (bs.FrontBrakeHoseConnected, bs.RearBrakeHoseConnected);
+                var ac = Cars[i].BrakeSystem.AngleCockAOpen;
+                Cars[i].BrakeSystem.AngleCockAOpen = Cars[i].BrakeSystem.AngleCockBOpen;
+                Cars[i].BrakeSystem.AngleCockBOpen = ac;
+                if (i == Cars.Count - 1)
+                    Cars[i].BrakeSystem.FrontBrakeHoseConnected = false;
+                else
+                    Cars[i].BrakeSystem.FrontBrakeHoseConnected = Cars[i + 1].BrakeSystem.FrontBrakeHoseConnected;
             }
             // Reverse the actual order of the cars in the train.
             Cars.Reverse();
@@ -4131,7 +4133,7 @@ namespace Orts.Simulation.Physics
             if (Simulator.Settings.VerboseConfigurationMessages && LeadLocomotiveIndex >= 0) // Check incompatibilities between brake control valves
             {
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
-                if (lead.BrakeSystem is AirSinglePipe leadBrakes && Cars.Any(x => x.BrakeSystem is AirSinglePipe carBrakes && leadBrakes.BrakeValve != carBrakes.BrakeValve))
+                if (Cars.Any(x => (x as MSTSWagon).BrakeValve != lead.BrakeValve))
                 {
                     Trace.TraceInformation("Cars along the train have incompatible brake control valves");
                 }
@@ -4160,17 +4162,17 @@ namespace Orts.Simulation.Physics
                                 car.MSTSBrakeSystem = new VacuumSinglePipe(car);
                             else if (lead.BrakeSystem is AirTwinPipe)
                                 car.MSTSBrakeSystem = new AirTwinPipe(car);
-                            else if (lead.BrakeSystem is AirSinglePipe leadAir)
+                            else if (lead.BrakeSystem is AirSinglePipe)
                             {
                                 car.MSTSBrakeSystem = new AirSinglePipe(car);
                                 // if emergency reservoir has been set on lead locomotive then also set on trailing cars
-                                if (leadAir.EmergencyReservoirPresent)
+                                if (lead.EmergencyReservoirPresent)
                                 {
-                                    (car.BrakeSystem as AirSinglePipe).EmergencyReservoirPresent = leadAir.EmergencyReservoirPresent;
+                                    car.EmergencyReservoirPresent = lead.EmergencyReservoirPresent;
                                 }
                             }
-                            else if (lead.BrakeSystem is EPBrakeSystem ep)
-                                car.MSTSBrakeSystem = new EPBrakeSystem(car, ep.TwoPipes);
+                            else if (lead.BrakeSystem is EPBrakeSystem)
+                                car.MSTSBrakeSystem = new EPBrakeSystem(car);
                             else if (lead.BrakeSystem is SingleTransferPipe)
                                 car.MSTSBrakeSystem = new SingleTransferPipe(car);
                             else
@@ -21755,7 +21757,7 @@ namespace Orts.Simulation.Physics
                 {
                     car.SpeedMpS = SpeedMpS;
                     if (car.Flipped) car.SpeedMpS = -car.SpeedMpS;
-                    car.AbsSpeedMpS = car.AbsSpeedMpS * (1 - elapsedClockSeconds ) + Math.Abs(targetSpeedMpS) * elapsedClockSeconds;
+                    car.AbsSpeedMpS = car.AbsSpeedMpS * (1 - elapsedClockSeconds ) + targetSpeedMpS * elapsedClockSeconds;
                     if (car.IsDriveable && car is MSTSWagon)
                     {
                         (car as MSTSWagon).WheelSpeedMpS = SpeedMpS;
@@ -21774,7 +21776,7 @@ namespace Orts.Simulation.Physics
                             else if (car is MSTSSteamLocomotive)
                             {
                                 (car as MSTSSteamLocomotive).Variable1 = car.AbsSpeedMpS / car.DriverWheelRadiusM / MathHelper.Pi * 5;
-                                (car as MSTSSteamLocomotive).Variable2 = 70f;
+                                (car as MSTSSteamLocomotive).Variable2 = 0.7f;
                             }
                         }
                         else if (car is MSTSLocomotive)

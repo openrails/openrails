@@ -90,7 +90,7 @@ namespace Orts.Viewer3D.RollingStock
             });
             UserInputCommands.Add(UserCommand.ControlMasterKey, new Action[] { Noop, () => new ToggleMasterKeyCommand(Viewer.Log, !ElectricLocomotive.LocomotivePowerSupply.MasterKey.CommandSwitch) });
             UserInputCommands.Add(UserCommand.ControlServiceRetention, new Action[] { () => new ServiceRetentionButtonCommand(Viewer.Log, false), () => new ServiceRetentionButtonCommand(Viewer.Log, true) });
-            UserInputCommands.Add(UserCommand.ControlServiceRetentionCancellation, new Action[] { () => new ServiceRetentionCancellationButtonCommand(Viewer.Log, false), () => new ServiceRetentionCancellationButtonCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommand.ControlServiceRetentionCancellation, new Action[] { () => new ServiceRetentionCancellationButtonCommand(Viewer.Log, false), () => new ServiceRetentionButtonCommand(Viewer.Log, true) });
             UserInputCommands.Add(UserCommand.ControlElectricTrainSupply, new Action[] { Noop, () => new ElectricTrainSupplyCommand(Viewer.Log, !ElectricLocomotive.LocomotivePowerSupply.ElectricTrainSupplySwitch.CommandSwitch) });
             UserInputCommands.Add(UserCommand.ControlCircuitBreakerClosingOrder, new Action[] {
                 () => new CircuitBreakerClosingOrderButtonCommand(Viewer.Log, false),

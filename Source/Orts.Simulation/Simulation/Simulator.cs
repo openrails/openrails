@@ -25,7 +25,6 @@ using Orts.MultiPlayer;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
-using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.Signalling;
 using Orts.Simulation.Timetables;
@@ -649,49 +648,46 @@ namespace Orts.Simulation
             RetainersCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             BrakeHoseConnectCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleWaterScoopCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            if (PlayerLocomotive is MSTSSteamLocomotive steamLocomotive)
+            if (PlayerLocomotive is MSTSSteamLocomotive)
             {
-                ContinuousReverserCommand.Receiver = steamLocomotive;
-                ContinuousInjectorCommand.Receiver = steamLocomotive;
-                ContinuousSmallEjectorCommand.Receiver = steamLocomotive;
-                ContinuousLargeEjectorCommand.Receiver = steamLocomotive;
-                ToggleInjectorCommand.Receiver = steamLocomotive;
-                ToggleBlowdownValveCommand.Receiver = steamLocomotive;
-                ToggleSteamBoosterAirCommand.Receiver = steamLocomotive;
-                ToggleSteamBoosterIdleCommand.Receiver = steamLocomotive;
-                ToggleSteamBoosterLatchCommand.Receiver = steamLocomotive;
-                ContinuousBlowerCommand.Receiver = steamLocomotive;
-                ContinuousDamperCommand.Receiver = steamLocomotive;
-                ContinuousFiringRateCommand.Receiver = steamLocomotive;
-                ToggleManualFiringCommand.Receiver = steamLocomotive;
-                ToggleCylinderCocksCommand.Receiver = steamLocomotive;
-                ToggleCylinderCompoundCommand.Receiver = steamLocomotive;
-                FireShovelfullCommand.Receiver = steamLocomotive;
-                AIFireOnCommand.Receiver = steamLocomotive;
-                AIFireOffCommand.Receiver = steamLocomotive;
-                AIFireResetCommand.Receiver = steamLocomotive;
+                ContinuousReverserCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousInjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousSmallEjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousLargeEjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleInjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleBlowdownValveCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleSteamBoosterAirCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleSteamBoosterIdleCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleSteamBoosterLatchCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousBlowerCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousDamperCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousFiringRateCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleManualFiringCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleCylinderCocksCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleCylinderCompoundCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                FireShovelfullCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                AIFireOnCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                AIFireOffCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                AIFireResetCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
             }
 
-            PantographCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-            if (PlayerLocomotive is MSTSElectricLocomotive electricLocomotive)
+            PantographCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            if (PlayerLocomotive is MSTSElectricLocomotive)
             {
-                VoltageSelectorCommand.Receiver = electricLocomotive.LocomotivePowerSupply;
-                PantographSelectorCommand.Receiver = electricLocomotive.LocomotivePowerSupply;
-                PowerLimitationSelectorCommand.Receiver = electricLocomotive.LocomotivePowerSupply;
-                CircuitBreakerClosingOrderCommand.Receiver = electricLocomotive.LocomotivePowerSupply;
-                CircuitBreakerClosingOrderButtonCommand.Receiver = electricLocomotive.LocomotivePowerSupply;
-                CircuitBreakerOpeningOrderButtonCommand.Receiver = electricLocomotive.LocomotivePowerSupply;
-                CircuitBreakerClosingAuthorizationCommand.Receiver = electricLocomotive.LocomotivePowerSupply;
+                CircuitBreakerClosingOrderCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+                CircuitBreakerClosingOrderButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+                CircuitBreakerOpeningOrderButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+                CircuitBreakerClosingAuthorizationCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
             }
 
-            if (PlayerLocomotive is MSTSDieselLocomotive dieselLocomotive)
+            if (PlayerLocomotive is MSTSDieselLocomotive)
             {
-                TractionCutOffRelayClosingOrderCommand.Receiver = dieselLocomotive.LocomotivePowerSupply;
-                TractionCutOffRelayClosingOrderButtonCommand.Receiver = dieselLocomotive.LocomotivePowerSupply;
-                TractionCutOffRelayOpeningOrderButtonCommand.Receiver = dieselLocomotive.LocomotivePowerSupply;
-                TractionCutOffRelayClosingAuthorizationCommand.Receiver = dieselLocomotive.LocomotivePowerSupply;
-                TogglePlayerEngineCommand.Receiver = dieselLocomotive;
-                VacuumExhausterCommand.Receiver = dieselLocomotive;
+                TractionCutOffRelayClosingOrderCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+                TractionCutOffRelayClosingOrderButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+                TractionCutOffRelayOpeningOrderButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+                TractionCutOffRelayClosingAuthorizationCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+                TogglePlayerEngineCommand.Receiver = (MSTSDieselLocomotive)PlayerLocomotive;
+                VacuumExhausterCommand.Receiver = (MSTSDieselLocomotive)PlayerLocomotive;
             }
 
             ToggleOdometerCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
@@ -718,11 +714,6 @@ namespace Orts.Simulation
             ServiceRetentionButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
             ServiceRetentionCancellationButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
             ElectricTrainSupplyCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-            if ((PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply)
-            {
-                PowerSupplyButtonCommand.Receiver = supply;
-                PowerSupplySwitchCommand.Receiver = supply;
-            }
             TCSButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).TrainControlSystem;
             TCSSwitchCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).TrainControlSystem;
             ToggleGenericItem1Command.Receiver = (MSTSLocomotive)PlayerLocomotive;

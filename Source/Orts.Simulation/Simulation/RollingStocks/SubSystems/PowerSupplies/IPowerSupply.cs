@@ -25,21 +25,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     public interface IPowerSupply : ISubSystem<IPowerSupply>, IParsable
     {
         TrainCar Car { get; }
-        Battery Battery { get; }
         BatterySwitch BatterySwitch { get; }
-        Pantographs Pantographs { get; }
 
-        PowerSupplyState ElectricTrainSupplyState { get; set; }
+        PowerSupplyState ElectricTrainSupplyState { get; }
         bool ElectricTrainSupplyOn { get; }
         bool FrontElectricTrainSupplyCableConnected { get; set; }
         float ElectricTrainSupplyPowerW { get; }
 
-        PowerSupplyState LowVoltagePowerSupplyState { get; set; }
+        PowerSupplyState LowVoltagePowerSupplyState { get; }
         bool LowVoltagePowerSupplyOn { get; }
 
-        PowerSupplyState BatteryState { get; set; }
+        PowerSupplyState BatteryState { get; }
         bool BatteryOn { get; }
-        float BatteryVoltageV { get; }
 
         void HandleEvent(PowerSupplyEvent evt);
         void HandleEvent(PowerSupplyEvent evt, int id);

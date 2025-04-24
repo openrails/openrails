@@ -374,7 +374,7 @@ namespace Orts.Viewer3D
                     {
                         frame.AddPrimitive(material, slp, RenderPrimitiveGroup.Lights, ref xnaMatrix, ShapeFlags.None, state);
                     }
-                    renderEffect(slp.Material);
+                    renderEffect(SignalTypeData.Material);
                     if (Viewer.Settings.SignalLightGlow)
                         renderEffect(SignalTypeData.GlowMaterial);
                 }
@@ -465,6 +465,7 @@ namespace Orts.Viewer3D
     {
         readonly Viewer Viewer;
 
+        public readonly Material Material;
         public readonly Material GlowMaterial;
 #if DEBUG_SIGNAL_SHAPES
             public readonly SignalTypeDataType Type;
@@ -487,6 +488,7 @@ namespace Orts.Viewer3D
             if (!viewer.SIGCFG.LightTextures.ContainsKey(mstsSignalType.LightTextureName))
             {
                 Trace.TraceWarning("Skipped invalid light texture {1} for signal type {0}", mstsSignalType.Name, mstsSignalType.LightTextureName);
+                Material = viewer.MaterialManager.Load("missing-signal-light");
 #if DEBUG_SIGNAL_SHAPES
                     Type = SignalTypeDataType.Normal;
 #endif
@@ -496,7 +498,7 @@ namespace Orts.Viewer3D
             else
             {
                 var mstsLightTexture = viewer.SIGCFG.LightTextures[mstsSignalType.LightTextureName];
-                var defaultMaterial = viewer.MaterialManager.Load("SignalLight", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, mstsLightTexture.TextureFile));
+                Material = viewer.MaterialManager.Load("SignalLight", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, mstsLightTexture.TextureFile));
                 GlowMaterial = viewer.MaterialManager.Load("SignalLightGlow");
 #if DEBUG_SIGNAL_SHAPES
                     Type = (SignalTypeDataType)mstsSignalType.FnType;
@@ -533,20 +535,7 @@ namespace Orts.Viewer3D
                             continue;
                         }
                         var mstsLight = viewer.SIGCFG.LightsTable[mstsSignalLight.Name];
-                        var material = defaultMaterial;
-                        if (!string.IsNullOrEmpty(mstsSignalLight.LightTextureName))
-                        {
-                            if (!viewer.SIGCFG.LightTextures.ContainsKey(mstsSignalLight.LightTextureName))
-                            {
-                                Trace.TraceWarning("Skipped invalid light texture {0} for signal light {1} in signal type {2}", mstsSignalLight.LightTextureName, mstsSignalLight.Name, mstsSignalType.Name);
-                            }
-                            else
-                            {
-                                var texture = viewer.SIGCFG.LightTextures[mstsSignalLight.LightTextureName];
-                                material = viewer.MaterialManager.Load("SignalLight", Helpers.GetRouteTextureFile(viewer.Simulator, Helpers.TextureFlags.None, texture.TextureFile));
-                            }
-                        }
-                        Lights.Add(new SignalLightPrimitive(viewer, new Vector3(-mstsSignalLight.X, mstsSignalLight.Y, mstsSignalLight.Z), mstsSignalLight.Radius, new Color(mstsLight.r, mstsLight.g, mstsLight.b, mstsLight.a), glowDay, glowNight, mstsLightTexture.u0, mstsLightTexture.v0, mstsLightTexture.u1, mstsLightTexture.v1, material));
+                        Lights.Add(new SignalLightPrimitive(viewer, new Vector3(-mstsSignalLight.X, mstsSignalLight.Y, mstsSignalLight.Z), mstsSignalLight.Radius, new Color(mstsLight.r, mstsLight.g, mstsLight.b, mstsLight.a), glowDay, glowNight, mstsLightTexture.u0, mstsLightTexture.v0, mstsLightTexture.u1, mstsLightTexture.v1));
                         LightsSemaphoreChange.Add(mstsSignalLight.SemaphoreChange);
                     }
                 }
@@ -566,10 +555,7 @@ namespace Orts.Viewer3D
         public void Mark()
         {
             Viewer.SignalTypeDataManager.Mark(this);
-            foreach (var light in Lights)
-            {
-                light.Mark();
-            }
+            Material.Mark();
             GlowMaterial?.Mark();
         }
     }
@@ -661,9 +647,8 @@ namespace Orts.Viewer3D
         internal readonly float GlowIntensityDay;
         internal readonly float GlowIntensityNight;
         readonly VertexBuffer VertexBuffer;
-        public readonly Material Material;
 
-        public SignalLightPrimitive(Viewer viewer, Vector3 position, float radius, Color color, float glowDay, float glowNight, float u0, float v0, float u1, float v1, Material material)
+        public SignalLightPrimitive(Viewer viewer, Vector3 position, float radius, Color color, float glowDay, float glowNight, float u0, float v0, float u1, float v1)
         {
             Position = position;
             GlowIntensityDay = glowDay;
@@ -678,19 +663,12 @@ namespace Orts.Viewer3D
 
             VertexBuffer = new VertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionColorTexture), verticies.Length, BufferUsage.WriteOnly);
             VertexBuffer.SetData(verticies);
-
-            Material = material;
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
             graphicsDevice.SetVertexBuffer(VertexBuffer);
             graphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
-        }
-
-        public void Mark()
-        {
-            Material.Mark();
         }
     }
 

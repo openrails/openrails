@@ -1976,11 +1976,6 @@ namespace Orts.Viewer3D
         public string SoundFileName = "";
         public float CustomAnimationFPS = 8;
 
-        /// <summary>
-        /// Store for matrixes needed to be reused in later calculations, e.g. for 3d cabview mouse control
-        /// </summary>
-        public readonly Dictionary<int, Matrix> StoredResultMatrixes = new Dictionary<int, Matrix>();
-
 
         readonly Viewer Viewer;
         public readonly string FilePath;
@@ -2614,9 +2609,6 @@ namespace Orts.Viewer3D
                             hi = shapePrimitive.Hierarchy[hi];
                         }
                         Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
-
-                        if (StoredResultMatrixes.ContainsKey(shapePrimitive.HierarchyIndex))
-                            StoredResultMatrixes[shapePrimitive.HierarchyIndex] = xnaMatrix;
 
                         // TODO make shadows depend on shape overrides
 

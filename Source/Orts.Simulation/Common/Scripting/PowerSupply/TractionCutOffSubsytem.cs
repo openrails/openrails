@@ -26,7 +26,7 @@ namespace ORTS.Scripting.Api
     public abstract class TractionCutOffSubsystem : AbstractTrainScriptClass
     {
         internal ITractionCutOffSubsystem Host;
-        internal ScriptedLocomotivePowerSupply PowerSupply => Host.PowerSupply as ScriptedLocomotivePowerSupply;
+        internal ILocomotivePowerSupply PowerSupply => Host.PowerSupply;
         internal MSTSLocomotive Locomotive => PowerSupply.Car as MSTSLocomotive;
         internal MSTSDieselLocomotive DieselLocomotive => Locomotive as MSTSDieselLocomotive;
 
@@ -37,7 +37,6 @@ namespace ORTS.Scripting.Api
         internal void AttachToHost(ITractionCutOffSubsystem host)
         {
             Host = host;
-            Car = Locomotive;
         }
 
         /// <summary>
@@ -101,14 +100,6 @@ namespace ORTS.Scripting.Api
         protected float ClosingDelayS() => Host.DelayS;
 
         /// <summary>
-        /// True if the service retention is active
-        /// </summary>
-        protected bool ServiceRetentionActive
-        {
-            get => PowerSupply.ServiceRetentionActive;
-        }
-
-        /// <summary>
         /// Sets the driver's circuit breaker closing order
         /// </summary>
         protected void SetDriverClosingOrder(bool value)
@@ -161,26 +152,5 @@ namespace ORTS.Scripting.Api
         /// </summary>
         /// <param name="evt">The event happened</param>
         public abstract void HandleEvent(PowerSupplyEvent evt);
-        public virtual void HandleEvent(PowerSupplyEvent evt, int id) {}
-
-        protected void SignalEventToPowerSupply(PowerSupplyEvent evt) => PowerSupply.HandleEvent(evt);
-
-        protected void SignalEventToPowerSupply(PowerSupplyEvent evt, int id) => PowerSupply.HandleEvent(evt, id);
-
-        /// <summary>
-        /// Sets the value for a cabview control.
-        /// </summary>
-        protected void SetCabDisplayControl(int index, float value)
-        {
-            PowerSupply.CabDisplayControls[index] = value;
-        }
-
-        /// <summary>
-        /// Sets the name which is to be shown which putting the cursor above a cabview control.
-        /// </summary>
-        protected void SetCustomizedCabviewControlName(int index, string name)
-        {
-            PowerSupply.CustomizedCabviewControlNames[index] = name;
-        }
     }
 }

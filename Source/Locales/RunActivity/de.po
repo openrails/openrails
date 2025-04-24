@@ -121,11 +121,11 @@ msgstr "Zug- und Fahrzeugnamen ausgeblendet."
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:1063
 msgid "This car doesn't have a 2D cab"
-msgstr "Dieses Fahrzeug hat kein 2D-Führerstand"
+msgstr ""
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:1067
 msgid "This car doesn't have a 3D cab"
-msgstr "Dieses Fahrzeug hat kein 3D-Führerstand"
+msgstr ""
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:1098
 #, fuzzy
@@ -211,7 +211,7 @@ msgstr "Nachr. an Server"
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:570
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:256
 msgid "MSG to All"
-msgstr "Nachr. an alle"
+msgstr "Nachr an alle"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:121
 msgid "View Train"
@@ -237,12 +237,12 @@ msgstr "Avatare"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:241
 msgid "MSG to Selected"
-msgstr "Nachr. an Markiert"
+msgstr "Nachr an Markiert"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:270
 #: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:88
 msgid "Compose MSG"
-msgstr "Nachr. verfassen"
+msgstr "Nachr verfassen"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:282
 #, fuzzy
@@ -253,7 +253,7 @@ msgstr "Ansicht"
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:295
 #, fuzzy
 msgid "Reply to Selected"
-msgstr "Ausgew. antworten"
+msgstr "Ausgew. antwortn"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:309
 msgid "Draw Path"
@@ -359,7 +359,7 @@ msgstr "Aktive Sounds"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:608
 msgid "All"
-msgstr "Alle"
+msgstr ""
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:643
 msgid "Daylight offset (hrs)"
@@ -377,7 +377,7 @@ msgstr "Weiche"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:685
 msgid "To pan, drag with left mouse."
-msgstr "Zum Verschieben mit der linken Maustaste ziehen."
+msgstr ""
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:699
 msgid "Name"
@@ -402,23 +402,23 @@ msgstr "Status"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:757
 msgid "To zoom, drag with left and right mouse or scroll mouse wheel."
-msgstr "Zum Zoomen mit der linken und rechten Maustaste ziehen oder das Mausrad scrollen."
+msgstr ""
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:768
 msgid "To zoom in to a location, press Shift and click the left mouse."
-msgstr "Um in einer Position hineinzuzoomen, drücken Sie Shift und klicken mit der linken Maustaste"
+msgstr ""
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:779
 msgid "To zoom out of a location, press Alt and click the left mouse."
-msgstr "Um aus einer Position herauszuzoomen, drücken Sie Alt und klicken mit der linken Maustaste"
+msgstr ""
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:793
 msgid "Platforms"
-msgstr "Bahnsteige"
+msgstr ""
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:852
 msgid "Map Window"
-msgstr "Kartenfenster"
+msgstr ""
 
 # Wo verwendet?
 #: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:46
@@ -3316,7 +3316,7 @@ msgstr "Fluss"
 #~ msgid ""
 #~ "You are an assistant now, will be able to handle switches and signals."
 #~ msgstr ""
-#~ "Sie sind jetzt ein Assistent und können Weichen und Signale schalten."
+#~ "Sie sind jetzt ein Assisten und können Weichen und Signale schalten."
 
 #~ msgid "You are no longer an assistant."
 #~ msgstr "Sie sind kein Assistent mehr."
@@ -3383,7 +3383,7 @@ msgstr "Fluss"
 #~ "Original route is reverse from present direction, stop train before "
 #~ "switching"
 #~ msgstr ""
-#~ "Ursprüngliche Fahrstraße verläuft in entgegengesetzte Richtung. Zug vor "
+#~ "Ursprüngliche Farhstraße verläuft in entgegengesetzte Richtung. Zug vor "
 #~ "umschalten anhalten."
 
 #~ msgid "Cannot change to Manual Mode while in Explorer Mode"

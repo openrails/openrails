@@ -19,13 +19,12 @@
 
 using Orts.Common;
 using Orts.Simulation.RollingStocks.SubSystems;
-using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using System;
 
 namespace ORTS.Scripting.Api
 {
     /// <summary>
-    /// This is the list of commands available for custom scripts; they are generic commands, whose action will specified by the active script
+    /// This is the list of commands available for TCS scripts; they are generic commands, whose action will specified by the active script
     /// All commands record the time when the command is created, but a continuous command backdates the time to when the key
     /// was pressed.
     /// 
@@ -89,64 +88,6 @@ namespace ORTS.Scripting.Api
             {
                 Receiver.TCSCommandSwitchOn[CommandIndex] = ToState;
                 Receiver.HandleEvent(ToState ? TCSEvent.GenericTCSSwitchOn : TCSEvent.GenericTCSSwitchOff, CommandIndex);
-            }
-        }
-
-        public override string ToString()
-        {
-            return base.ToString() + " - " + (ToState ? "on" : "off");
-        }
-    }
-
-    // Generic power supply button command
-    [Serializable()]
-    public sealed class PowerSupplyButtonCommand : BooleanCommand
-    {
-        public int CommandIndex;
-        public static ScriptedLocomotivePowerSupply Receiver { get; set; }
-
-        public PowerSupplyButtonCommand(CommandLog log, bool toState, int commandIndex)
-            : base(log, toState)
-        {
-            CommandIndex = commandIndex;
-            Redo();
-        }
-
-        public override void Redo()
-        {
-            if (Receiver != null)
-            {
-                Receiver.PowerSupplyCommandButtonDown[CommandIndex] = ToState;
-                Receiver.HandleEvent(ToState ? PowerSupplyEvent.GenericPowerSupplyButtonPressed : PowerSupplyEvent.GenericPowerSupplyButtonReleased, CommandIndex);
-            }
-        }
-
-        public override string ToString()
-        {
-            return base.ToString() + " - " + (ToState ? "on" : "off");
-        }
-    }
-
-    // Generic power supply switch command
-    [Serializable()]
-    public sealed class PowerSupplySwitchCommand : BooleanCommand
-    {
-        public int CommandIndex;
-        public static ScriptedLocomotivePowerSupply Receiver { get; set; }
-
-        public PowerSupplySwitchCommand(CommandLog log, bool toState, int commandIndex)
-            : base(log, toState)
-        {
-            CommandIndex = commandIndex;
-            Redo();
-        }
-
-        public override void Redo()
-        {
-            if (Receiver != null)
-            {
-                Receiver.PowerSupplyCommandSwitchOn[CommandIndex] = ToState;
-                Receiver.HandleEvent(ToState ? PowerSupplyEvent.GenericPowerSupplySwitchOn : PowerSupplyEvent.GenericPowerSupplySwitchOff, CommandIndex);
             }
         }
 

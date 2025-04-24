@@ -261,7 +261,7 @@ namespace Orts.Simulation
                     throw new InvalidDataException(String.Format("Track node {0} could not be found in the track database.", startTrackNode.UiD));
                 else
                 {
-                    throw new MissingTrackNodeException(tvs.ShapeIndex);
+                    throw new MissingTrackNodeException();
                 }
 
             }
@@ -295,7 +295,7 @@ namespace Orts.Simulation
                         throw new InvalidDataException(String.Format("Track node {0} could not be found in the track database.", startTrackNode.UiD));
                     else
                     {
-                        throw new MissingTrackNodeException(tvs.ShapeIndex);
+                        throw new MissingTrackNodeException();
                     }
                     
                 }
@@ -1358,12 +1358,9 @@ namespace Orts.Simulation
 
         public sealed class MissingTrackNodeException : Exception
         {
-            public readonly uint Index;
-
-            public MissingTrackNodeException(uint index)
+            public MissingTrackNodeException()
                 : base("")
             {
-                Index = index;
             }
         }
     }

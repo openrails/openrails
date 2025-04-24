@@ -15,90 +15,67 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
+using System;
 
 namespace ORTS.Scripting.Api
 {
     public abstract class PowerSupply : AbstractTrainScriptClass
     {
-        internal IPowerSupply Host;
-
-        /// <summary>
-        /// Attaches the script to its host
-        /// </summary>
-        /// <param name="host">The hosting IPowerSupply object</param>
-        internal void AttachToHost(IPowerSupply host)
-        {
-            Host = host;
-            Car = host.Car;
-        }
-
         /// <summary>
         /// Current state of the electric train supply
         /// ETS is used by the systems of the cars (such as air conditionning)
         /// </summary>
-        public PowerSupplyState CurrentElectricTrainSupplyState() => Host.ElectricTrainSupplyState;
-
+        public Func<PowerSupplyState> CurrentElectricTrainSupplyState;
         /// <summary>
         /// Current state of the low voltage power supply
         /// Low voltage power is used by safety systems (such as TCS) or lights
         /// </summary>
-        public PowerSupplyState CurrentLowVoltagePowerSupplyState() => Host.LowVoltagePowerSupplyState;
-
+        public Func<PowerSupplyState> CurrentLowVoltagePowerSupplyState;
         /// <summary>
         /// Current state of the battery
         /// </summary>
-        public PowerSupplyState CurrentBatteryState() => Host.BatteryState;
-        public float BatteryVoltageV => Host.Battery.VoltageV;
-
+        public Func<PowerSupplyState> CurrentBatteryState;
         /// <summary>
         /// True if the battery is switched on
         /// </summary>
-        public bool BatterySwitchOn() => Host.BatterySwitch.On;
+        public Func<bool> BatterySwitchOn;
 
         /// <summary>
         /// Sets the current state of the low voltage power supply
         /// Low voltage power is used by safety systems (such as TCS) or lights
         /// </summary>
-        public void SetCurrentLowVoltagePowerSupplyState(PowerSupplyState state) => Host.LowVoltagePowerSupplyState = state;
-
+        public Action<PowerSupplyState> SetCurrentLowVoltagePowerSupplyState;
         /// <summary>
         /// Sets the current state of the battery
         /// </summary>
-        public void SetCurrentBatteryState(PowerSupplyState state) => Host.BatteryState = state;
-
+        public Action<PowerSupplyState> SetCurrentBatteryState;
         /// <summary>
         /// Sends an event to the battery switch
         /// </summary>
-        public void SignalEventToBatterySwitch(PowerSupplyEvent evt) => Host.BatterySwitch.HandleEvent(evt);
-
+        public Action<PowerSupplyEvent> SignalEventToBatterySwitch;
         /// <summary>
         /// Sends an event to all pantographs
         /// </summary>
-        public void SignalEventToPantographs(PowerSupplyEvent evt) => Host.Pantographs.HandleEvent(evt);
-
+        public Action<PowerSupplyEvent> SignalEventToPantographs;
         /// <summary>
         /// Sends an event to one pantograph
         /// </summary>
-        public void SignalEventToPantograph(PowerSupplyEvent evt, int id) => Host.Pantographs.HandleEvent(evt, id);
+        public Action<PowerSupplyEvent, int> SignalEventToPantograph;
 
         /// <summary>
         /// Called once at initialization time.
         /// </summary>
         public abstract void Initialize();
-
         /// <summary>
         /// Called once at initialization time if the train speed is greater than 0.
         /// Set as virtual to keep compatibility with scripts not providing this method.
         /// </summary>
         public virtual void InitializeMoving() { }
-
         /// <summary>
         /// Called regularly at every simulator update cycle.
         /// </summary>
         public abstract void Update(float elapsedClockSeconds);
-
         /// <summary>
         /// Called when the driver (or the train's systems) want something to happen on the power supply system
         /// </summary>
@@ -141,17 +118,10 @@ namespace ORTS.Scripting.Api
         CloseBatterySwitchButtonReleased,
         OpenBatterySwitchButtonPressed,
         OpenBatterySwitchButtonReleased,
-        OpenBatterySwitchRequestedByPowerSupply,
         TurnOnMasterKey,
         TurnOffMasterKey,
         RaisePantograph,
         LowerPantograph,
-        IncreaseVoltageSelectorPosition,
-        DecreaseVoltageSelectorPosition,
-        IncreasePantographSelectorPosition,
-        DecreasePantographSelectorPosition,
-        IncreasePowerLimitationSelectorPosition,
-        DecreasePowerLimitationSelectorPosition,
         CloseCircuitBreaker,
         OpenCircuitBreaker,
         CloseCircuitBreakerButtonPressed,
@@ -177,11 +147,6 @@ namespace ORTS.Scripting.Api
         SwitchOnElectricTrainSupply,
         SwitchOffElectricTrainSupply,
         StallEngine,
-        MessageFromTcs,
-        GenericPowerSupplyButtonPressed,
-        GenericPowerSupplyButtonReleased,
-        GenericPowerSupplySwitchOn,
-        GenericPowerSupplySwitchOff,
     }
 
     public enum PowerSupplyType

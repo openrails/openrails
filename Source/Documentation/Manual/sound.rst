@@ -101,7 +101,7 @@ Trigger       Function
     44        SteamHeatChange
     45        Pantograph1Up
     46        Pantograph1Down
-    47        PantographToggle
+    47        Pantograph1Toggle
     48        VigilanceAlarmReset
     54        TrainBrakePressureDecrease 
     56        VigilanceAlarmOn

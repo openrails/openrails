@@ -96,15 +96,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     switch(ScriptName)
                     {
                         case "Automatic":
-                            Script = new AutomaticTractionCutOffRelay();
+                            Script = new AutomaticTractionCutOffRelay() as TractionCutOffRelay;
                             break;
 
                         case "Manual":
-                            Script = new ManualTractionCutOffRelay();
-                            break;
-
-                        case "PushButtons":
-                            Script = new PushButtonsTractionCutOffRelay();
+                            Script = new ManualTractionCutOffRelay() as TractionCutOffRelay;
                             break;
 
                         default:
@@ -165,11 +161,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public void HandleEvent(PowerSupplyEvent evt)
         {
             Script?.HandleEvent(evt);
-        }
-
-        public void HandleEvent(PowerSupplyEvent evt, int id)
-        {
-            Script?.HandleEvent(evt, id);
         }
 
         public void Save(BinaryWriter outf)
@@ -377,7 +368,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             switch (evt)
             {
                 case PowerSupplyEvent.CloseTractionCutOffRelay:
-                case PowerSupplyEvent.QuickPowerOn:
                     if (!DriverClosingOrder())
                     {
                         SetDriverClosingOrder(true);
@@ -393,132 +383,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     break;
 
                 case PowerSupplyEvent.OpenTractionCutOffRelay:
-                case PowerSupplyEvent.QuickPowerOff:
                     SetDriverClosingOrder(false);
                     SetDriverOpeningOrder(true);
                     SignalEvent(Event.TractionCutOffRelayClosingOrderOff);
 
                     Confirm(CabControl.TractionCutOffRelayClosingOrder, CabSetting.Off);
-                    break;
-            }
-        }
-    }
-
-    public class PushButtonsTractionCutOffRelay : TractionCutOffRelay
-    {
-        private Timer ClosingTimer;
-        private TractionCutOffRelayState PreviousState;
-        private bool QuickPowerOn;
-
-        public override void Initialize()
-        {
-            ClosingTimer = new Timer(this);
-            ClosingTimer.Setup(ClosingDelayS());
-
-            SetDriverClosingAuthorization(true);
-        }
-
-        public override void Update(float elapsedSeconds)
-        {
-            SetClosingAuthorization(TCSClosingAuthorization() && CurrentDieselEngineState() == DieselEngineState.Running);
-
-            switch (CurrentState())
-            {
-                case TractionCutOffRelayState.Closed:
-                    if (!ClosingAuthorization() || DriverOpeningOrder())
-                    {
-                        SetCurrentState(TractionCutOffRelayState.Open);
-                    }
-                    break;
-
-                case TractionCutOffRelayState.Closing:
-                    if (ClosingAuthorization() && (DriverClosingOrder() || QuickPowerOn))
-                    {
-                        if (!ClosingTimer.Started)
-                        {
-                            ClosingTimer.Start();
-                        }
-
-                        if (ClosingTimer.Triggered)
-                        {
-                            QuickPowerOn = false;
-                            ClosingTimer.Stop();
-                            SetCurrentState(TractionCutOffRelayState.Closed);
-                        }
-                    }
-                    else
-                    {
-                        QuickPowerOn = false;
-                        ClosingTimer.Stop();
-                        SetCurrentState(TractionCutOffRelayState.Open);
-                    }
-                    break;
-
-                case TractionCutOffRelayState.Open:
-                    if (ClosingAuthorization() && (DriverClosingOrder() || QuickPowerOn))
-                    {
-                        SetCurrentState(TractionCutOffRelayState.Closing);
-                    }
-                    else if (QuickPowerOn)
-                    {
-                        QuickPowerOn = false;
-                    }
-                    break;
-            }
-
-            if (PreviousState != CurrentState())
-            {
-                switch (CurrentState())
-                {
-                    case TractionCutOffRelayState.Open:
-                        SignalEvent(Event.TractionCutOffRelayOpen);
-                        break;
-
-                    case TractionCutOffRelayState.Closing:
-                        SignalEvent(Event.TractionCutOffRelayClosing);
-                        break;
-
-                    case TractionCutOffRelayState.Closed:
-                        SignalEvent(Event.TractionCutOffRelayClosed);
-                        break;
-                }
-            }
-
-            PreviousState = CurrentState();
-        }
-
-        public override void HandleEvent(PowerSupplyEvent evt)
-        {
-            switch (evt)
-            {
-                case PowerSupplyEvent.CloseTractionCutOffRelayButtonPressed:
-                    SetDriverOpeningOrder(false);
-                    SetDriverClosingOrder(true);
-                    SignalEvent(Event.TractionCutOffRelayClosingOrderOn);
-                    Confirm(CabControl.TractionCutOffRelayClosingOrder, CabSetting.On);
-                    if (!ClosingAuthorization())
-                    {
-                        Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Traction cut-off relay closing not authorized"));
-                    }
-                    break;
-                case PowerSupplyEvent.CloseTractionCutOffRelayButtonReleased:
-                    SetDriverClosingOrder(false);
-                    break;
-                case PowerSupplyEvent.OpenTractionCutOffRelayButtonPressed:
-                    SetDriverClosingOrder(false);
-                    SetDriverOpeningOrder(true);
-                    SignalEvent(Event.TractionCutOffRelayClosingOrderOff);
-                    Confirm(CabControl.TractionCutOffRelayClosingOrder, CabSetting.Off);
-                    break;
-                case PowerSupplyEvent.OpenTractionCutOffRelayButtonReleased:
-                    SetDriverOpeningOrder(false);
-                    break;
-                case PowerSupplyEvent.QuickPowerOn:
-                    QuickPowerOn = true;
-                    break;
-                case PowerSupplyEvent.QuickPowerOff:
-                    QuickPowerOn = false;
-                    SetCurrentState(TractionCutOffRelayState.Open);
                     break;
             }
         }
