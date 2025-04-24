@@ -1443,13 +1443,13 @@ namespace Menu
                     }
                     else if (!string.IsNullOrEmpty(valueComboboxToSetTo))
                     {
-                        if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
+                        if (comboBox.DropDownStyle == ComboBoxStyle.DropDown) 
                             comboBox.Text = valueComboboxToSetTo;
                         else
                             searchInComboBoxAndSet(comboBox, valueComboboxToSetTo);
-                        } 
-                        else
-                        {
+                    }
+                    else
+                    {
                         SetToDefault(comboBox, index, map, defaultValue);
                     }
                 }
