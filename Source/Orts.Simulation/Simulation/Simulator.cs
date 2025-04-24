@@ -778,10 +778,10 @@ namespace Orts.Simulation
                 {
                     if (!leadFound)
                     {
-                    PlayerLocomotive = car;
-                    playerTrain.LeadLocomotive = car;
-                    playerTrain.InitializeBrakes();
-                    PlayerLocomotive.LocalThrottlePercent = playerTrain.AITrainThrottlePercent;
+                        PlayerLocomotive = car;
+                        playerTrain.LeadLocomotive = car;
+                        playerTrain.InitializeBrakes();
+                        PlayerLocomotive.LocalThrottlePercent = playerTrain.AITrainThrottlePercent;
                         PlayerLocomotive.SignalEvent(Event.PlayerTrainLeadLoco);
                         leadFound = true;
                     }

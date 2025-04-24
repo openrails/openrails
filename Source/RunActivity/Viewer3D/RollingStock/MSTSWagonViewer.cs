@@ -793,7 +793,7 @@ namespace Orts.Viewer3D.RollingStock
                     car.SoundHeardInternallyCorrection[MSTSWagon.LeftWindowFrontIndex] = LeftWindowFront.AnimationKeyFraction();
                 if (RightWindowFront.MaxFrame > 0)
                     car.SoundHeardInternallyCorrection[MSTSWagon.RightWindowFrontIndex] = RightWindowFront.AnimationKeyFraction();
-        }
+            }
         }
 
 
@@ -814,18 +814,18 @@ namespace Orts.Viewer3D.RollingStock
                 foreach (var kvp in RunningGears)
                 {
                     if (!kvp.Value.Empty())
-                {
+                    {
                         var axle = kvp.Key >= 0 && kvp.Key < loco.LocomotiveAxles.Count ? loco.LocomotiveAxles[kvp.Key] : null;
                         if (axle != null)
                             //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                             kvp.Value.UpdateLoop(((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && loco.UsingRearCab) ? -1 : 1) * (float)axle.AxleSpeedMpS * elapsedTime.ClockSeconds / MathHelper.TwoPi / axle.WheelRadiusM);
                         else if (AnimationDriveWheelRadiusM > 0.001)
                             kvp.Value.UpdateLoop(distanceTravelledM / MathHelper.TwoPi / AnimationDriveWheelRadiusM);
-                }
+                    }
                         
-            }
+                }
                 foreach (var kvp in WheelPartIndexes)
-            {
+                {
                     var axle = kvp.Key < loco.LocomotiveAxles.Count && kvp.Key >= 0 ? loco.LocomotiveAxles[kvp.Key] : (Car.EngineType == TrainCar.EngineTypes.Steam ? null : loco.LocomotiveAxles[0]);
                     Matrix wheelRotationMatrix;
                     if (axle != null)
@@ -840,13 +840,13 @@ namespace Orts.Viewer3D.RollingStock
                         wheelRotationMatrix = Matrix.CreateRotationX(WheelRotationR);
                     }
                     foreach (var iMatrix in kvp.Value)
-                {
+                    {
                         TrainCarShape.XNAMatrices[iMatrix] = wheelRotationMatrix * TrainCarShape.SharedShape.Matrices[iMatrix];
-                }
+                    }
                 }
             }
             else // set values for simple adhesion
-                {
+            {
                 distanceTravelledM = ((MSTSWagon.IsDriveable && MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && ((MSTSLocomotive)MSTSWagon).UsingRearCab) ? -1 : 1) * MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
                 if (Car.BrakeSkid) distanceTravelledM = 0;
                 foreach (var kvp in RunningGears)
@@ -854,19 +854,19 @@ namespace Orts.Viewer3D.RollingStock
                     if (!kvp.Value.Empty() && AnimationDriveWheelRadiusM > 0.001)
                         kvp.Value.UpdateLoop(distanceTravelledM / MathHelper.TwoPi / AnimationDriveWheelRadiusM);
                 }
-            // Wheel rotation (animation) - for non-drive wheels in steam locomotives and all wheels in other stock
-            if (WheelPartIndexes.Count > 0)
-             {
+                // Wheel rotation (animation) - for non-drive wheels in steam locomotives and all wheels in other stock
+                if (WheelPartIndexes.Count > 0)
+                {
                     var rotationalDistanceR = distanceTravelledM / AnimationWheelRadiusM;  // in radians
-                WheelRotationR = MathHelper.WrapAngle(WheelRotationR - rotationalDistanceR);
-                var wheelRotationMatrix = Matrix.CreateRotationX(WheelRotationR);
+                    WheelRotationR = MathHelper.WrapAngle(WheelRotationR - rotationalDistanceR);
+                    var wheelRotationMatrix = Matrix.CreateRotationX(WheelRotationR);
                     foreach (var kvp in WheelPartIndexes)
-                 {
+                    {
                         foreach (var iMatrix in kvp.Value)
                         {
-                    TrainCarShape.XNAMatrices[iMatrix] = wheelRotationMatrix * TrainCarShape.SharedShape.Matrices[iMatrix];
-                 }
-              }
+                            TrainCarShape.XNAMatrices[iMatrix] = wheelRotationMatrix * TrainCarShape.SharedShape.Matrices[iMatrix];
+                        }
+                    }
                 }
             }
 
