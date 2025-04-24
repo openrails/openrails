@@ -1861,18 +1861,8 @@ namespace Orts.Simulation.Physics
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
                 if (lead is MSTSSteamLocomotive) MUReverserPercent = 25;
 
-                // Percent slope = rise / run -> the Y position of the forward vector gives us the 'rise'
-                // Derive the 'run' by assuming a hypotenuse length of 1, so run = sqrt(1 - rise^2)
-                float rise = lead.WorldPosition.XNAMatrix.M32;
-                lead.CurrentElevationPercent = 100f * (rise / (float)Math.Sqrt(1 - rise * rise));
-
-                //TODO: next if block has been inserted to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
-                // To achieve the same result with other means, without flipping trainset physics, the block should be deleted
-                //         
-                if (lead.IsDriveable && (lead as MSTSLocomotive).UsingRearCab)
-                {
-                    lead.CurrentElevationPercent = -lead.CurrentElevationPercent;
-                }
+                // Force calculate gradient at the lead locomotive
+                lead.UpdateGravity();
                 // give it a bit more gas if it is uphill
                 if (lead.CurrentElevationPercent < -2.0) initialThrottlepercent = 40f;
                 // better block gas if it is downhill
@@ -4512,9 +4502,9 @@ namespace Orts.Simulation.Physics
 
                     // Update car's curve radius and superelevation based on bogie position and move traveller to front bogie
                     // Also determine roll angle for superelevation by averaging both bogies
-                    float roll = traveller.GetVisualElevation();
+                    float roll = traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation);
                     car.UpdateCurvePhys(traveller, new[] { 0, car.CarBogieCentreLengthM });
-                    roll = (roll + traveller.GetVisualElevation()) / 2.0f;
+                    roll = (roll + traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation)) / 2.0f;
 
                     // Normalize across tile boundaries
                     x += 2048 * (tileX - traveller.TileX);
@@ -4532,9 +4522,7 @@ namespace Orts.Simulation.Physics
                     car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y, traveller.Z, x, y, z);
 
                     // Update gravity force when position is updated, but before any secondary motion is added
-                    Vector3 fwd = car.WorldPosition.XNAMatrix.Backward;
-                    car.GravityForceN = car.MassKG * TrainCar.GravitationalAccelerationMpS2 * fwd.Y;
-                    car.CurrentElevationPercent = 100f * (fwd.Y / (float)Math.Sqrt(1 - fwd.Y * fwd.Y));
+                    car.UpdateGravity();
 
                     // Apply superelevation to car
                     car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
@@ -4633,9 +4621,9 @@ namespace Orts.Simulation.Physics
 
                     // Update car's curve radius and superelevation based on bogie position and move traveller to front bogie
                     // Outputs rotation angle for superelevation, used below
-                    float roll = traveller.GetVisualElevation();
+                    float roll = traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation);
                     car.UpdateCurvePhys(traveller, new[] { 0, car.CarBogieCentreLengthM });
-                    roll = (roll + traveller.GetVisualElevation()) / 2.0f;
+                    roll = (roll + traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation)) / 2.0f;
 
                     // Normalize across tile boundaries
                     x += 2048 * (tileX - traveller.TileX);
@@ -4653,9 +4641,7 @@ namespace Orts.Simulation.Physics
                     car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y, traveller.Z, x, y, z);
 
                     // Update gravity force when position is updated, but before any secondary motion is added
-                    Vector3 fwd = car.WorldPosition.XNAMatrix.Backward;
-                    car.GravityForceN = car.MassKG * TrainCar.GravitationalAccelerationMpS2 * fwd.Y;
-                    car.CurrentElevationPercent = 100f * (fwd.Y / (float)Math.Sqrt(1 - fwd.Y * fwd.Y));
+                    car.UpdateGravity();
 
                     // Apply superelevation to car
                     car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
@@ -4714,9 +4700,9 @@ namespace Orts.Simulation.Physics
 
                 // Update car's curve radius and superelevation based on bogie position and move traveller to front bogie
                 // Outputs rotation angle for superelevation, used below
-                float roll = traveller.GetVisualElevation();
+                float roll = traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation);
                 car.UpdateCurvePhys(traveller, new[] { 0, car.CarBogieCentreLengthM });
-                roll = (roll + traveller.GetVisualElevation()) / 2.0f;
+                roll = (roll + traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation)) / 2.0f;
 
                 // Normalize across tile boundaries
                 x += 2048 * (tileX - traveller.TileX);
@@ -4734,9 +4720,7 @@ namespace Orts.Simulation.Physics
                 car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y, traveller.Z, x, y, z);
 
                 // Update gravity force when position is updated, but before any secondary motion is added
-                Vector3 fwd = car.WorldPosition.XNAMatrix.Backward;
-                car.GravityForceN = car.MassKG * TrainCar.GravitationalAccelerationMpS2 * fwd.Y;
-                car.CurrentElevationPercent = 100f * (fwd.Y / (float)Math.Sqrt(1 - fwd.Y * fwd.Y));
+                car.UpdateGravity();
 
                 // Apply superelevation to car
                 car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
