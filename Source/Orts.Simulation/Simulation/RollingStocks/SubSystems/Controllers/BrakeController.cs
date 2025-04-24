@@ -359,6 +359,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 Script.AttachToHost(this);
 
                 // AbstractScriptClass
+                Script.Car = Locomotive;
                 Script.ClockTime = () => (float)Simulator.ClockTime;
                 Script.GameTime = () => (float)Simulator.GameTime;
                 Script.PreUpdate = () => Simulator.PreUpdate;
