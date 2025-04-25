@@ -120,6 +120,7 @@ namespace Orts.Simulation.RollingStocks
 
         // wag file data
         public string MainShapeFileName;
+        public string WagonName;
         public string FreightShapeFileName;
         public float FreightAnimMaxLevelM;
         public float FreightAnimMinLevelM;
@@ -395,6 +396,9 @@ namespace Orts.Simulation.RollingStocks
             if (File.Exists(orFile))
                 wagFilePath = orFile;
 
+            // Get the path starting at the TRAINS folder, in order to produce a shorter, more legible, path
+            string shortPath = wagFilePath.Remove(0, Simulator.BasePath.Length);
+
             using (STFReader stf = new STFReader(wagFilePath, true))
             {
                 while (!stf.Eof)
@@ -407,41 +411,41 @@ namespace Orts.Simulation.RollingStocks
             var wagonFolderSlash = Path.GetDirectoryName(WagFilePath) + @"\";
             if (MainShapeFileName != null && !File.Exists(wagonFolderSlash + MainShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + MainShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + MainShapeFileName);
                 MainShapeFileName = string.Empty;
             }
             if (FreightShapeFileName != null && !File.Exists(wagonFolderSlash + FreightShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FreightShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + FreightShapeFileName);
                 FreightShapeFileName = null;
             }
             if (InteriorShapeFileName != null && !File.Exists(wagonFolderSlash + InteriorShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + InteriorShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + InteriorShapeFileName);
                 InteriorShapeFileName = null;
             }
 
             if (FrontCoupler.Closed.ShapeFileName != null && !File.Exists(wagonFolderSlash + FrontCoupler.Closed.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontCoupler.Closed.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + FrontCoupler.Closed.ShapeFileName);
                 FrontCoupler.Closed.ShapeFileName = null;
             }
 
             if (RearCoupler.Closed.ShapeFileName != null && !File.Exists(wagonFolderSlash + RearCoupler.Closed.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearCoupler.Closed.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + RearCoupler.Closed.ShapeFileName);
                 RearCoupler.Closed.ShapeFileName = null;
             }
 
             if (FrontAirHose.Connected.ShapeFileName != null && !File.Exists(wagonFolderSlash + FrontAirHose.Connected.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontAirHose.Connected.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + FrontAirHose.Connected.ShapeFileName);
                 FrontAirHose.Connected.ShapeFileName = null;
             }
 
             if (RearAirHose.Connected.ShapeFileName != null && !File.Exists(wagonFolderSlash + RearAirHose.Connected.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearAirHose.Connected.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + RearAirHose.Connected.ShapeFileName);
                 RearAirHose.Connected.ShapeFileName = null;
             }
 
@@ -539,15 +543,49 @@ namespace Orts.Simulation.RollingStocks
                         CarWidthM = Math.Max((maxes.X - mins.X) + AutoWidthOffsetM, 0.1f);
                         CarHeightM = Math.Max((maxes.Y - mins.Y) + AutoHeightOffsetM, 0.1f);
                         CarLengthM = Math.Max((maxes.Z - mins.Z) + AutoLengthOffsetM, 0.1f);
+
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            Trace.TraceInformation("Rolling stock {0} size automatically calculated using ORTSAutoSize ( {1}, {2}, {3} ).", shortPath,
+                                FormatStrings.FormatVeryShortDistanceDisplay(AutoWidthOffsetM, IsMetric),
+                                FormatStrings.FormatVeryShortDistanceDisplay(AutoHeightOffsetM, IsMetric),
+                                FormatStrings.FormatVeryShortDistanceDisplay(AutoLengthOffsetM, IsMetric));
+                            Trace.TraceInformation("Main shape file {0} calculated to be {1} wide, {2} tall, and {3} long. " +
+                                "Resulting Size ( ) is {4} wide, {5} tall, and {6} long.\n", MainShapeFileName,
+                                FormatStrings.FormatVeryShortDistanceDisplay((maxes.X - mins.X), IsMetric),
+                                FormatStrings.FormatVeryShortDistanceDisplay((maxes.Y - mins.Y), IsMetric),
+                                FormatStrings.FormatVeryShortDistanceDisplay((maxes.Z - mins.Z), IsMetric),
+                                FormatStrings.FormatVeryShortDistanceDisplay(CarWidthM, IsMetric),
+                                FormatStrings.FormatVeryShortDistanceDisplay(CarHeightM, IsMetric),
+                                FormatStrings.FormatVeryShortDistanceDisplay(CarLengthM, IsMetric));
+                        }
                     }
 
                     // Automatically determine the center of gravity offset required to perfectly center the shape (lengthwise)
                     if (AutoCenter)
+                    {
                         InitialCentreOfGravityM.Z = (maxes.Z + mins.Z) / 2.0f;
+
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            Trace.TraceInformation("Rolling stock {0} CoG z-value automatically calculated using ORTSAutoCenter.", shortPath);
+                            if (Math.Abs(InitialCentreOfGravityM.Z) < 0.0001f)
+                                Trace.TraceInformation("Main shape file {0} bounds calculated to be {1} to {2}. Shape is already centered, CoG offset reset to zero.\n",
+                                    MainShapeFileName,
+                                    FormatStrings.FormatVeryShortDistanceDisplay(mins.Z, IsMetric),
+                                    FormatStrings.FormatVeryShortDistanceDisplay(maxes.Z, IsMetric));
+                            else
+                                Trace.TraceInformation("Main shape file {0} bounds calculated to be {1} to {2}. CoG offset used to center shape is {0}.\n",
+                                    MainShapeFileName,
+                                    FormatStrings.FormatVeryShortDistanceDisplay(mins.Z, IsMetric),
+                                    FormatStrings.FormatVeryShortDistanceDisplay(maxes.Z, IsMetric),
+                                    FormatStrings.FormatVeryShortDistanceDisplay(InitialCentreOfGravityM.Z, IsMetric));
+                        }
+                    }
                 }
                 catch
                 {
-                    Trace.TraceWarning("Could not automatically determine size of shape {0} in wagon {1}, there may be an error in the shape.", MainShapeFileName, wagFilePath);
+                    Trace.TraceWarning("Could not automatically determine size of shape {0} in wagon {1}, there may be an error in the shape.", MainShapeFileName, shortPath);
                 }
             }
 
@@ -608,7 +646,7 @@ namespace Orts.Simulation.RollingStocks
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("Derailment Coefficient set to false for Wagon {0}", WagFilePath);
+                    Trace.TraceInformation("Derailment Coefficient set to false for Wagon {0}", shortPath);
                 }
             }
 
@@ -626,7 +664,7 @@ namespace Orts.Simulation.RollingStocks
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("Number of Wagon Axles set to default value of {0} on Wagon {1}", WagonNumAxles, WagFilePath);
+                    Trace.TraceInformation("Number of Wagon Axles set to default value of {0} on Wagon {1}", WagonNumAxles, shortPath);
                 }
             }
             else
@@ -763,7 +801,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     if (ortsFreightAnim.ShapeFileName != null && !File.Exists(wagonFolderSlash + ortsFreightAnim.ShapeFileName))
                     {
-                        Trace.TraceWarning("ORTS FreightAnim in trainset {0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + ortsFreightAnim.ShapeFileName);
+                        Trace.TraceWarning("ORTS FreightAnim in trainset {0} references non-existent shape {1}", file, wagonFolderSlash + ortsFreightAnim.ShapeFileName);
                         ortsFreightAnim.ShapeFileName = null;
                     }
 
@@ -1277,6 +1315,7 @@ namespace Orts.Simulation.RollingStocks
                         STFException.TraceWarning(stf, "Skipped unknown wagon type " + wagonType);
                     }
                     break;
+                case "wagon(name": WagonName = stf.ReadStringBlock(null); break;
                 case "wagon(ortswagonspecialtype":
                     stf.MustMatch("(");
                     var wagonspecialType = stf.ReadString();

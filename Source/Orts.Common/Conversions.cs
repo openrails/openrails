@@ -260,7 +260,7 @@ namespace ORTS.Common
     /// <summary>
     /// Resistance conversions from and to Newtons/metre/sec
     /// </summary>
-    public static class NpMpS
+    public static class NSpM
     {
     }
 
@@ -576,8 +576,12 @@ namespace ORTS.Common
         public static string f = Catalog.GetString("°F");
         public static string n = Catalog.GetString("N");
         public static string kN = Catalog.GetString("kN");
+        public static string nspm = Catalog.GetString("N/m/s");
+        public static string nsspmm = Catalog.GetString("N/(m/s)²");
         public static string lbf = Catalog.GetString("lbf");
         public static string klbf = Catalog.GetString("klbf");
+        public static string lbfpmph = Catalog.GetString("lbf/mph");
+        public static string lbfpmph2 = Catalog.GetString("lbf/mph²");
         public static string deg = Catalog.GetString("°");
 
         /// <summary>
