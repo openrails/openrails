@@ -61,6 +61,8 @@ namespace Menu
         private bool In_dataGridViewManualInstall_SelectionChanged = false;
         private bool In_buttonManualInstallAdd_Click = false;
 
+        private bool ManualInstallChangesMade = false;
+
         public ContentForm(UserSettings settings, string baseDocumentationUrl)
         {
             InitializeComponent();
@@ -134,6 +136,7 @@ namespace Menu
             dataGridViewManualInstall.Sort(dataGridViewManualInstall.Columns[0], ListSortDirection.Ascending);
 
             ManualInstallBrouwseDir = determineBrowseDir();
+            buttonCancel.Enabled = false;
         }
 
         private void tabControlContent_Selecting(object sender, TabControlCancelEventArgs e)
@@ -147,6 +150,7 @@ namespace Menu
                 case "tabPageManuallyInstall":
                     dataGridViewManualInstall.Select();
                     buttonCancel.Show();
+                    buttonCancel.Enabled = ManualInstallChangesMade;
                     break;
             }
         }
@@ -1483,6 +1487,8 @@ namespace Menu
             if (dataGridViewManualInstall.CurrentRow != null)
             {
                 dataGridViewManualInstall.Rows.Remove(dataGridViewManualInstall.CurrentRow);
+                ManualInstallChangesMade = true;
+                buttonCancel.Enabled = ManualInstallChangesMade;
             }
         }
 
