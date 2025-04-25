@@ -5536,35 +5536,35 @@ namespace Orts.Simulation.RollingStocks
 
                 case CABViewControlTypes.RPM:
                     {
-                            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
-                            if (mstsDieselLocomotive.DieselEngines[0] != null)
-                                data = mstsDieselLocomotive.DieselEngines[0].RealRPM;
+                        var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+                        if (mstsDieselLocomotive.DieselEngines[0] != null)
+                            data = mstsDieselLocomotive.DieselEngines[0].RealRPM;
                         break;
                     }
 
                 case CABViewControlTypes.RPM_2:
                     {
                         if (this is MSTSDieselLocomotive mstsDieselLocomotive && mstsDieselLocomotive.DieselEngines.NumOfActiveEngines > 1)
-                            {                      
-                                if (mstsDieselLocomotive.DieselEngines[1] != null)
-                                    data = mstsDieselLocomotive.DieselEngines[1].RealRPM;
-                            }
+                        {                      
+                            if (mstsDieselLocomotive.DieselEngines[1] != null)
+                                data = mstsDieselLocomotive.DieselEngines[1].RealRPM;
                         }
-                        break;
+                    }
+                    break;
 
                 case CABViewControlTypes.ORTS_DIESEL_TEMPERATURE:
                     {
-                            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
-                            if (mstsDieselLocomotive.DieselEngines[0] != null)
-                                data = mstsDieselLocomotive.DieselEngines[0].DieselTemperatureDeg;
+                        var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+                        if (mstsDieselLocomotive.DieselEngines[0] != null)
+                            data = mstsDieselLocomotive.DieselEngines[0].DieselTemperatureDeg;
                         break;
                     }
 
                 case CABViewControlTypes.ORTS_OIL_PRESSURE:
                     {
-                            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
-                            if (mstsDieselLocomotive.DieselEngines[0] != null)
-                                data = mstsDieselLocomotive.DieselEngines[0].DieselOilPressurePSI;
+                        var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+                        if (mstsDieselLocomotive.DieselEngines[0] != null)
+                            data = mstsDieselLocomotive.DieselEngines[0].DieselOilPressurePSI;
                         break;
                     }
 
@@ -5767,10 +5767,10 @@ namespace Orts.Simulation.RollingStocks
                     }
                 case CABViewControlTypes.WHEELSLIP:
                     {
-                            if (AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot)
-                                data = HuDIsWheelSlipWarninq ? 1 : 0;
-                            else
-                                data = HuDIsWheelSlip ? 1 : 0;
+                        if (AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot)
+                            data = HuDIsWheelSlipWarninq ? 1 : 0;
+                        else
+                            data = HuDIsWheelSlip ? 1 : 0;
                         break;
                     }
 

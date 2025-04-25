@@ -3474,12 +3474,12 @@ namespace Orts.Simulation.RollingStocks
                         {
                             unmatchedLocomotive = car as MSTSLocomotive;
                             break;
-                }
+                        }
                         else
-                {
+                        {
                             unmatchedControlCar = null;
-                }
-            }
+                        }
+                    }
                     else
                     {
                         unmatchedLocomotive = car as MSTSLocomotive;
