@@ -1061,7 +1061,6 @@ namespace Menu
             buttonAutoInstallUpdate.Enabled = false;
             buttonAutoInstallDelete.Enabled = false;
             buttonOK.Enabled = false;
-            buttonCancel.Enabled = false;
         }
 
         private void setCursorToWaitCursor()
@@ -1083,7 +1082,6 @@ namespace Menu
             buttonAutoInstallUpdate.Enabled = route.Installed && (route.getDownloadType() == ContentRouteSettings.DownloadType.github);
             buttonAutoInstallDelete.Enabled = route.Installed;
             buttonOK.Enabled = true;
-            buttonCancel.Enabled = true;
 
             setCursorToDefaultCursor();
         }
