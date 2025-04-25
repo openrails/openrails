@@ -113,6 +113,10 @@ namespace Menu
             // set focus to datagridview so that arrow keys can be used to scroll thru the list
             dataGridViewAutoInstall.Select();
 
+            // tab "Auto Installed" does not contain a Cancel button
+            // it's too difficult and not logical to rollback an "Auto Installed" route
+            buttonCancel.Hide();
+
             //
             // "Manually Installed" tab
             //
@@ -138,9 +142,11 @@ namespace Menu
             {
                 case "tabPageAutoInstall":
                     dataGridViewAutoInstall.Select();
+                    buttonCancel.Hide();
                     break;
                 case "tabPageManuallyInstall":
                     dataGridViewManualInstall.Select();
+                    buttonCancel.Show();
                     break;
             }
         }
