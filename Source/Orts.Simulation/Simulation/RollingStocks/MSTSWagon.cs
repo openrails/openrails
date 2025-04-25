@@ -125,6 +125,7 @@ namespace Orts.Simulation.RollingStocks
 
         // wag file data
         public string MainShapeFileName;
+        public string WagonName;
         public string FreightShapeFileName;
         public float FreightAnimMaxLevelM;
         public float FreightAnimMinLevelM;
@@ -400,6 +401,9 @@ namespace Orts.Simulation.RollingStocks
             if (File.Exists(orFile))
                 wagFilePath = orFile;
 
+            // Get the path starting at the TRAINS folder, in order to produce a shorter, more legible, path
+            string shortPath = wagFilePath.Remove(0, Simulator.BasePath.Length);
+
             using (STFReader stf = new STFReader(wagFilePath, true))
             {
                 while (!stf.Eof)
@@ -412,41 +416,41 @@ namespace Orts.Simulation.RollingStocks
             var wagonFolderSlash = Path.GetDirectoryName(WagFilePath) + @"\";
             if (MainShapeFileName != null && !File.Exists(wagonFolderSlash + MainShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + MainShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + MainShapeFileName);
                 MainShapeFileName = string.Empty;
             }
             if (FreightShapeFileName != null && !File.Exists(wagonFolderSlash + FreightShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FreightShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + FreightShapeFileName);
                 FreightShapeFileName = null;
             }
             if (InteriorShapeFileName != null && !File.Exists(wagonFolderSlash + InteriorShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + InteriorShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + InteriorShapeFileName);
                 InteriorShapeFileName = null;
             }
 
             if (FrontCoupler.Closed.ShapeFileName != null && !File.Exists(wagonFolderSlash + FrontCoupler.Closed.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontCoupler.Closed.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + FrontCoupler.Closed.ShapeFileName);
                 FrontCoupler.Closed.ShapeFileName = null;
             }
 
             if (RearCoupler.Closed.ShapeFileName != null && !File.Exists(wagonFolderSlash + RearCoupler.Closed.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearCoupler.Closed.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + RearCoupler.Closed.ShapeFileName);
                 RearCoupler.Closed.ShapeFileName = null;
             }
 
             if (FrontAirHose.Connected.ShapeFileName != null && !File.Exists(wagonFolderSlash + FrontAirHose.Connected.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontAirHose.Connected.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + FrontAirHose.Connected.ShapeFileName);
                 FrontAirHose.Connected.ShapeFileName = null;
             }
 
             if (RearAirHose.Connected.ShapeFileName != null && !File.Exists(wagonFolderSlash + RearAirHose.Connected.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearAirHose.Connected.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + RearAirHose.Connected.ShapeFileName);
                 RearAirHose.Connected.ShapeFileName = null;
             }
 
@@ -507,7 +511,7 @@ namespace Orts.Simulation.RollingStocks
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("Derailment Coefficient set to false for Wagon {0}", WagFilePath);
+                    Trace.TraceInformation("Derailment Coefficient set to false for Wagon {0}", shortPath);
                 }
             }
 
@@ -525,7 +529,7 @@ namespace Orts.Simulation.RollingStocks
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("Number of Wagon Axles set to default value of {0} on Wagon {1}", WagonNumAxles, WagFilePath);
+                    Trace.TraceInformation("Number of Wagon Axles set to default value of {0} on Wagon {1}", WagonNumAxles, shortPath);
                 }
             }
             else
@@ -578,12 +582,31 @@ namespace Orts.Simulation.RollingStocks
             if (BearingType != BearingTypes.Default && DavisAN <= 0)
             {
                 DavisAN = CalcDavisAValue(BearingType, MassKG, (WagonNumAxles + LocoNumDrvAxles));
+
+                // Add some extra resistance to steam locomotives for running gear drag
+                if (this is MSTSLocomotive loco && loco.EngineType == EngineTypes.Steam)
+                        DavisAN += N.FromLbf(20.0f * Kg.ToTUS(loco.InitialDrvWheelWeightKg)); // 20 pounds per us ton of driven weight
+                // Note: at this point, loco.DrvWheelWeightKg hasn't been determined, so we use the InitialDrvWheelWeightKg as an estimate
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Rolling stock {0} defines ORTSBearingType ( {1} ) but does not define a value for ORTSDavis_A.", shortPath, BearingType);
+                    Trace.TraceInformation("Davis A value automatically calculated to be {0}, given {1} bearings, mass of {2}, and {3} axles.\n",
+                        FormatStrings.FormatForce(DavisAN, IsMetric), BearingType, FormatStrings.FormatLargeMass(MassKG, IsMetric, IsUK), (WagonNumAxles + LocoNumDrvAxles));
+                }
             }
 
             // If Davis B value is not defined, but bearing type is, estimate Davis B based on the bearing and wagon parameters
             if (BearingType != BearingTypes.Default && DavisBNSpM <= 0)
             {
-                DavisBNSpM = CalcDavisBValue(BearingType, MassKG, WagonType);
+                DavisBNSpM = CalcDavisBValue(BearingType, MassKG, (WagonNumAxles + LocoNumDrvAxles), WagonType);
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Rolling stock {0} defines ORTSBearingType ( {1} ) but does not define a value for ORTSDavis_B.", shortPath, BearingType);
+                    Trace.TraceInformation("Davis B value automatically calculated to be {0}, given {1} bearings, mass of {2}, and wagon type {3}.\n",
+                        FormatStrings.FormatLinearResistance(DavisBNSpM, IsMetric), BearingType, FormatStrings.FormatLargeMass(MassKG, IsMetric, IsUK), WagonType);
+                }
             }
 
             // If Drag constant not defined in WAG/ENG file then assign default value based upon orig Davis values
@@ -622,7 +645,14 @@ namespace Orts.Simulation.RollingStocks
             if (DavisCNSSpMM <= 0)
             {
                 // Note: Davis drag constant is intended to be used with area in ft^2
-                DavisCNSSpMM = NpMpS2.FromLbpMpH2(Me2.ToFt2(WagonFrontalAreaM2) * DavisDragConstant);
+                DavisCNSSpMM = NSSpMM.FromLbfpMpH2(Me2.ToFt2(WagonFrontalAreaM2) * DavisDragConstant);
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Rolling stock {0} does not define a value for ORTSDavis_C.", shortPath);
+                    Trace.TraceInformation("Davis C value automatically calculated to be {0}, given frontal area of {1} and Davis drag constant of {2:F5}.\n",
+                        FormatStrings.FormatQuadraticResistance(DavisCNSSpMM, IsMetric), FormatStrings.FormatArea(WagonFrontalAreaM2, IsMetric), DavisDragConstant);
+                }
             }
 
             // Initialise key wagon parameters
@@ -681,7 +711,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     if (ortsFreightAnim.ShapeFileName != null && !File.Exists(wagonFolderSlash + ortsFreightAnim.ShapeFileName))
                     {
-                        Trace.TraceWarning("ORTS FreightAnim in trainset {0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + ortsFreightAnim.ShapeFileName);
+                        Trace.TraceWarning("ORTS FreightAnim in trainset {0} references non-existent shape {1}", file, wagonFolderSlash + ortsFreightAnim.ShapeFileName);
                         ortsFreightAnim.ShapeFileName = null;
                     }
 
@@ -745,7 +775,7 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else
                 {
-                    LoadEmptyORTSDavis_C = NpMpS2.FromLbpMpH2(Me2.ToFt2(LoadEmptyWagonFrontalAreaM2) * LoadEmptyDavisDragConstant);
+                    LoadEmptyORTSDavis_C = NSSpMM.FromLbfpMpH2(Me2.ToFt2(LoadEmptyWagonFrontalAreaM2) * LoadEmptyDavisDragConstant);
                 }
 
                 if (FreightAnimations.EmptyMaxBrakeShoeForceN > 0)
@@ -847,7 +877,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     else
                     {
-                        LoadFullORTSDavis_C = NpMpS2.FromLbpMpH2(Me2.ToFt2(LoadFullWagonFrontalAreaM2) * LoadFullDavisDragConstant);
+                        LoadFullORTSDavis_C = NSSpMM.FromLbfpMpH2(Me2.ToFt2(LoadFullWagonFrontalAreaM2) * LoadFullDavisDragConstant);
                     }
 
                     if (FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeShoeForceN > 0)
@@ -959,7 +989,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     else
                     {
-                        LoadFullORTSDavis_C = NpMpS2.FromLbpMpH2(Me2.ToFt2(LoadFullWagonFrontalAreaM2) * LoadFullDavisDragConstant);
+                        LoadFullORTSDavis_C = NSSpMM.FromLbfpMpH2(Me2.ToFt2(LoadFullWagonFrontalAreaM2) * LoadFullDavisDragConstant);
                     }
 
                     if (FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeShoeForceN > 0)
@@ -1031,11 +1061,11 @@ namespace Orts.Simulation.RollingStocks
                     if (LoadEmptyORTSDavis_A <= 0 && BearingType != BearingTypes.Default)
                         LoadEmptyORTSDavis_A = CalcDavisAValue(BearingType, LoadEmptyMassKg, (WagonNumAxles + LocoNumDrvAxles));
                     if (LoadEmptyORTSDavis_B <= 0 && BearingType != BearingTypes.Default)
-                        LoadEmptyORTSDavis_B = CalcDavisBValue(BearingType, LoadEmptyMassKg, WagonType);
+                        LoadEmptyORTSDavis_B = CalcDavisBValue(BearingType, LoadEmptyMassKg, (WagonNumAxles + LocoNumDrvAxles), WagonType);
                     if (LoadFullORTSDavis_A <= 0 && BearingType != BearingTypes.Default)
                         LoadFullORTSDavis_A = CalcDavisAValue(BearingType, MassKG, (WagonNumAxles + LocoNumDrvAxles));
                     if (LoadFullORTSDavis_B <= 0 && BearingType != BearingTypes.Default)
-                        LoadFullORTSDavis_B = CalcDavisBValue(BearingType, MassKG, WagonType);
+                        LoadFullORTSDavis_B = CalcDavisBValue(BearingType, MassKG, (WagonNumAxles + LocoNumDrvAxles), WagonType);
 
                     if (FreightAnimations.StaticFreightAnimationsPresent) // If it is static freight animation, set wagon physics to full wagon value
                     {
@@ -1217,6 +1247,7 @@ namespace Orts.Simulation.RollingStocks
                         STFException.TraceWarning(stf, "Skipped unknown wagon type " + wagonType);
                     }
                     break;
+                case "wagon(name": WagonName = stf.ReadStringBlock(null); break;
                 case "wagon(ortswagonspecialtype":
                     stf.MustMatch("(");
                     var wagonspecialType = stf.ReadString();
@@ -2431,8 +2462,8 @@ namespace Orts.Simulation.RollingStocks
             {   // not fcalc ignore friction and use default davis equation
                 // Assume plain bearings and calculate resistance per original Davis equation
                 DavisAN = CalcDavisAValue(BearingTypes.Friction, MassKG, (WagonNumAxles + LocoNumDrvAxles));
-                DavisBNSpM = CalcDavisBValue(BearingTypes.Friction, MassKG, WagonType);
-                DavisCNSSpMM = NpMpS2.FromLbpMpH2(Me2.ToFt2(WagonFrontalAreaM2) * DavisDragConstant);
+                DavisBNSpM = CalcDavisBValue(BearingTypes.Friction, MassKG, (WagonNumAxles + LocoNumDrvAxles), WagonType);
+                DavisCNSSpMM = NSSpMM.FromLbfpMpH2(Me2.ToFt2(WagonFrontalAreaM2) * DavisDragConstant);
                 Friction0N = DavisAN * 2.0f;            //More firendly to high load trains and the new physics
             }
             else
@@ -2530,8 +2561,16 @@ namespace Orts.Simulation.RollingStocks
             {
                 case BearingTypes.Grease:
                 case BearingTypes.Friction: // 1926 Davis
-                    cT = 1.3f;
-                    cN = 29f;
+                    if (Kg.ToTUS(mass) / axles < 5.0f) // Alternate Davis formula for light vehicles
+                    {
+                        cT = 9.4f * (float)Math.Sqrt(Kg.ToTUS(mass));
+                        cN = 12.5f;
+                    }
+                    else
+                    {
+                        cT = 1.3f;
+                        cN = 29f;
+                    }
                     break;
                 case BearingTypes.Roller: // 1992 Canadian National
                     cT = 1.5f;
@@ -2551,9 +2590,10 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         /// <param name="bearings">BearingType we want to calculate the resistance for.</param>
         /// <param name="mass">kg weight of the rail vehicle.</param>
+        /// <param name="axles">Total number of axles on the rail vehicle.</param>
         /// <param name="type">WagonType we want to calculate the resistance for.</param>
         /// <returns>An estimate for the Davis B value of the wagon in newtons per meter per second.</returns>
-        public static float CalcDavisBValue(BearingTypes bearings, float mass, WagonTypes type = WagonTypes.Freight)
+        public static float CalcDavisBValue(BearingTypes bearings, float mass, int axles, WagonTypes type = WagonTypes.Freight)
         {
             float cT = 0.03f; // Resistance component in pounds per US ton
 
@@ -2562,16 +2602,23 @@ namespace Orts.Simulation.RollingStocks
             {
                 case BearingTypes.Grease:
                 case BearingTypes.Friction: // 1926 Davis
-                    switch (type)
+                    if (Kg.ToTUS(mass) / axles < 5.0f) // Alternate Davis formula for light vehicles
                     {
-                        case WagonTypes.Tender:
-                        case WagonTypes.Freight:
-                            cT = 0.045f;
-                            break;
-                        case WagonTypes.Engine:
-                        case WagonTypes.Passenger:
-                            cT = 0.03f;
-                            break;
+                        cT = 0.009f;
+                    }
+                    else
+                    {
+                        switch (type)
+                        {
+                            case WagonTypes.Tender:
+                            case WagonTypes.Freight:
+                                cT = 0.045f;
+                                break;
+                            case WagonTypes.Engine:
+                            case WagonTypes.Passenger:
+                                cT = 0.03f;
+                                break;
+                        }
                     }
                     break;
                 case BearingTypes.Roller: // 1992 Canadian National
@@ -2602,7 +2649,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
             }
             // Davis uses imperial, convert to metric afterward
-            return NpMpS.FromLbpMpH(cT * Kg.ToTUS(mass));
+            return NSpM.FromLbfpMpH(cT * Kg.ToTUS(mass));
         }
 
         /// <summary>
