@@ -85,10 +85,10 @@ or the 1992 CN equation (for roller and low bearings). If given a supported
 vehicle weight and number of axles. Likewise, if the C coefficient is missing it
 is automatically calculated from the ``ORTSWagonFrontalArea`` and
 ``ORTSDavisDragConstant`` values (or defaults, if those are missing).
-While the auto-calculated results will be reasonable in many cases, manual
-entry of ORTSDavis coefficients is still preferred for rolling stock that
-was not studied in the original Davis or CN experiments, such as steam
-locomotives, multiple units, and high speed trains.
+While the auto-calculated results will be reasonable for standard rolling stock,
+manual entry of ORTSDavis coefficients is still preferred for more complicated
+rolling stock such as steam locomotives, multiple units, high speed trains,
+articulated units, and anything studied in experiments other than Davis.
 
 .. index::
    single: ORTSMergeSpeed

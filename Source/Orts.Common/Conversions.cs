@@ -260,23 +260,23 @@ namespace ORTS.Common
     /// <summary>
     /// Resistance conversions from and to Newtons/metre/sec
     /// </summary>
-    public static class NpMpS
+    public static class NSpM
     {
         /// <summary>Convert from pounds per mph to newtons per meter per second</summary>
-        public static float FromLbpMpH(float lbfPerMpH) { return lbfPerMpH * 9.9503884f; }
+        public static float FromLbfpMpH(float lbfPerMpH) { return lbfPerMpH * 9.9503884f; }
         /// <summary>Convert from newtons per meter per second to pounds per mph</summary>
-        public static float ToLbpMpH(float nPerMpS) { return nPerMpS / 9.9503884f; }
+        public static float ToLbfpMpH(float nPerMpS) { return nPerMpS / 9.9503884f; }
     }
 
     /// <summary>
     /// Resistance conversions from and to Newtons/metre^2/sec^2
     /// </summary>
-    public static class NpMpS2
+    public static class NSSpMM
     {
         /// <summary>Convert from pounds per mph^2 to newtons per mps^2</summary>
-        public static float FromLbpMpH2(float lbfPerMpH2) { return lbfPerMpH2 * 22.2583849f; }
+        public static float FromLbfpMpH2(float lbfPerMpH2) { return lbfPerMpH2 * 22.2583849f; }
         /// <summary>Convert from newtons per mps^2 to pounds per mph^2</summary>
-        public static float ToLbpMpH2(float nPerMpS2) { return nPerMpS2 / 22.2583849f; }
+        public static float ToLbfpMpH2(float nPerMpS2) { return nPerMpS2 / 22.2583849f; }
     }
 
     /// <summary>
@@ -591,8 +591,12 @@ namespace ORTS.Common
         public static string f = Catalog.GetString("°F");
         public static string n = Catalog.GetString("N");
         public static string kN = Catalog.GetString("kN");
+        public static string nspm = Catalog.GetString("N/m/s");
+        public static string nsspmm = Catalog.GetString("N/(m/s)²");
         public static string lbf = Catalog.GetString("lbf");
         public static string klbf = Catalog.GetString("klbf");
+        public static string lbfpmph = Catalog.GetString("lbf/mph");
+        public static string lbfpmph2 = Catalog.GetString("lbf/mph²");
         public static string deg = Catalog.GetString("°");
 
         /// <summary>
@@ -795,6 +799,18 @@ namespace ORTS.Common
             if (kilo = Math.Abs(force) > 1e4f) force *= 1e-3f;
             var unit = isMetric ? kilo ? kN : n : kilo ? klbf : lbf;
             return String.Format(CultureInfo.CurrentCulture, kilo ? "{0:F1} {1}" : "{0:F0} {1}", force, unit);
+        }
+
+        public static string FormatLinearResistance(float resistanceNSpM, bool isMetric)
+        {
+            var resistance = isMetric ? resistanceNSpM : NSpM.ToLbfpMpH(resistanceNSpM);
+            return String.Format(CultureInfo.CurrentCulture, isMetric ? "{0:F1} {1}" : "{0:F2} {2}", resistance, nspm, lbfpmph);
+        }
+
+        public static string FormatQuadraticResistance(float resistanceNSSpMM, bool isMetric)
+        {
+            var resistance = isMetric ? resistanceNSSpMM : NSSpMM.ToLbfpMpH2(resistanceNSSpMM);
+            return String.Format(CultureInfo.CurrentCulture, isMetric ? "{0:F3} {1}" : "{0:F4} {2}", resistance, nsspmm, lbfpmph2);
         }
 
         public static string FormatTemperature(float temperatureC, bool isMetric, bool isDelta)
