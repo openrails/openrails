@@ -31,6 +31,7 @@ using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
 using Orts.Viewer3D.RollingStock.SubSystems;
@@ -39,7 +40,6 @@ using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Scripting.Api;
 using Event = Orts.Common.Event;
-using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 
 namespace Orts.Viewer3D.RollingStock
 {
@@ -2366,6 +2366,37 @@ namespace Orts.Viewer3D.RollingStock
 
         public void HandleUserInput()
         {
+            var Locomotive = this.Locomotive;
+            if (Locomotive is MSTSControlTrailerCar controlCar)
+            {
+                switch (Control.ControlType.Type)
+                {
+                    // Diesel locomotive controls
+                    case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE:
+                    case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_DRIVER_CLOSING_AUTHORIZATION:
+                    case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_DRIVER_CLOSING_ORDER:
+                    case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_DRIVER_OPENING_ORDER:
+                        Locomotive = controlCar.ControlActiveLocomotive as MSTSDieselLocomotive;
+                        break;
+                    // Electric locomotive controls
+                    case CABViewControlTypes.PANTOGRAPH:
+                    case CABViewControlTypes.PANTOGRAPH2:
+                    case CABViewControlTypes.ORTS_PANTOGRAPH3:
+                    case CABViewControlTypes.ORTS_PANTOGRAPH4:
+                    case CABViewControlTypes.PANTOGRAPHS_4:
+                    case CABViewControlTypes.PANTOGRAPHS_4C:
+                    case CABViewControlTypes.PANTOGRAPHS_5:
+                    case CABViewControlTypes.ORTS_VOLTAGE_SELECTOR:
+                    case CABViewControlTypes.ORTS_PANTOGRAPH_SELECTOR:
+                    case CABViewControlTypes.ORTS_POWER_LIMITATION_SELECTOR:
+                    case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
+                    case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_OPENING_ORDER:
+                    case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_AUTHORIZATION:
+                        Locomotive = controlCar.ControlActiveLocomotive as MSTSElectricLocomotive;
+                        break;
+                }
+                if (Locomotive == null) return;
+            }
             switch (Control.ControlType.Type)
             {
                 case CABViewControlTypes.REGULATOR:
