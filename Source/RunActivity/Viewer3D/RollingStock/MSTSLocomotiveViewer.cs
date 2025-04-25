@@ -3536,7 +3536,7 @@ namespace Orts.Viewer3D.RollingStock
                     primitive.SetMaterial(material);
                     ScreenDisplays3D.Add((new CabViewControlType(CABViewControlTypes.ORTS_ETCS), 0),
                         new ThreeDimCabScreen(Viewer, material.HierarchyIndex, TrainCarShape, cvcr));
-        }
+                }
             }
         }
 

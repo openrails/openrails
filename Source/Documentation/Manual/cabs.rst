@@ -34,29 +34,29 @@ see :ref:`C# engine scripting - Train Control System <features-scripting-tcs>`.
 The gauge is added by the insertion of a block like the following
 into the .cvf file::
 
-        Digital (
-            Type ( SPEEDOMETER DIGITAL )
-            Style ( NEEDLE )
-            Position ( 160 255 56 56 )
-            ScaleRange ( 0 250 )
-            Units ( KM_PER_HOUR )
-        )
+    Digital (
+        Type ( SPEEDOMETER DIGITAL )
+        Style ( NEEDLE )
+        Position ( 160 255 56 56 )
+        ScaleRange ( 0 250 )
+        Units ( KM_PER_HOUR )
+    )
 
 It is also possible to display the full ETCS display using the following block
 instead::
 
-		ScreenDisplay (
-			Type ( ORTS_ETCS SCREEN_DISPLAY )
+    ScreenDisplay (
+        Type ( ORTS_ETCS SCREEN_DISPLAY )
         Graphic ( statictexture.ace ) Comment( 3D cab only, mandatory there )
         Position ( 280 272 320 240 )  Comment( 2D cab only )
-			Units ( KM_PER_HOUR )
-			Parameters (
-				Mode FullSize
+        Units ( KM_PER_HOUR )
+        Parameters (
+            Mode FullSize
             MaxSpeed 180
             DisplayUnits 0
-			)
-		)
-		
+        )
+    )
+
 The following commonly used ``MaxSpeed`` or ``ScaleRange`` values can be set
 * 140, 150, 180, 240, 250, 260, 280, 400 for ``KM_PER_HOUR`` unit
 * 87, 111, 155, 248 for ``MILES_PER_HOUR`` unit

@@ -105,7 +105,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         };
 
         public DriverMachineInterface(MSTSLocomotive locomotive, Viewer viewer, CabViewControl control)
-            {
+        {
             if (!(control is CVCScreen cvcScreen))
                 CurrentDMIMode = DMIMode.GaugeOnly;
             else if (!(cvcScreen.CustomParameters.TryGetValue("mode", out var mode) && Enum.TryParse(mode, ignoreCase: true, out CurrentDMIMode))) 
@@ -800,27 +800,27 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
             if (!IsTexture3D)
             {
-            base.PrepareFrame(frame, elapsedTime);
-            var xScale = (float)Viewer.CabWidthPixels / 640;
-            var yScale = (float)Viewer.CabHeightPixels / 480;
-            DrawPosition.X = (int)(Position.X * xScale) - Viewer.CabXOffsetPixels + Viewer.CabXLetterboxPixels;
-            DrawPosition.Y = (int)(Position.Y * yScale) + Viewer.CabYOffsetPixels + Viewer.CabYLetterboxPixels;
-            DrawPosition.Width = (int)(Control.Width * xScale);
-            DrawPosition.Height = (int)(Control.Height * yScale);
-            if (Zoomed)
-            {
-                DrawPosition.Width = DMI.Width;
-                DrawPosition.Height = DMI.Height;
-                DMI.SizeTo(DrawPosition.Width, DrawPosition.Height);
+                base.PrepareFrame(frame, elapsedTime);
+                var xScale = (float)Viewer.CabWidthPixels / 640;
+                var yScale = (float)Viewer.CabHeightPixels / 480;
+                DrawPosition.X = (int)(Position.X * xScale) - Viewer.CabXOffsetPixels + Viewer.CabXLetterboxPixels;
+                DrawPosition.Y = (int)(Position.Y * yScale) + Viewer.CabYOffsetPixels + Viewer.CabYLetterboxPixels;
+                DrawPosition.Width = (int)(Control.Width * xScale);
+                DrawPosition.Height = (int)(Control.Height * yScale);
+                if (Zoomed)
+                {
+                    DrawPosition.Width = DMI.Width;
+                    DrawPosition.Height = DMI.Height;
+                    DMI.SizeTo(DrawPosition.Width, DrawPosition.Height);
                     DrawPosition.X -= DMI.Width / 2;
                     DrawPosition.Y -= DMI.Height / 2;
-                DMI.ETCSDefaultWindow.BackgroundColor = ColorBackground;
-            }
-            else
-            {
-                DMI.SizeTo(DrawPosition.Width, DrawPosition.Height);
-                DMI.ETCSDefaultWindow.BackgroundColor = Color.Transparent;
-            }
+                    DMI.ETCSDefaultWindow.BackgroundColor = ColorBackground;
+                }
+                else
+                {
+                    DMI.SizeTo(DrawPosition.Width, DrawPosition.Height);
+                    DMI.ETCSDefaultWindow.BackgroundColor = Color.Transparent;
+                }
             }
             DMI.PrepareFrame(elapsedTime.ClockSeconds);
         }
