@@ -1598,6 +1598,17 @@ namespace Menu
             return false;
         }
 
+        private void buttonCancel_Click(object sender, EventArgs e)
+        {
+            string message = Catalog.GetString("Cancel: changes made in the 'Manually Installed' tab will not be saved, are you sure?");
+            if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
+            {
+                // not sure, cancel the cancel
+                ManualInstallChangesMade = false;
+                this.DialogResult = DialogResult.None;
+            }
+        }
+
         private void buttonOK_Click(object sender, EventArgs e)
         {
             // save "Manually Installed" tab changes into the registry/ini file via Settings.Folders.Folders
@@ -1651,6 +1662,8 @@ namespace Menu
 
             Settings.Save();
 
+            ManualInstallChangesMade = false;
+
             this.Close();
         }
 
@@ -1682,6 +1695,17 @@ namespace Menu
 
         private void DownloadContentForm_FormClosing(object sender, FormClosingEventArgs formClosingEventArgs)
         {
+            if (ManualInstallChangesMade)
+            {
+                string message = Catalog.GetString("Cancel: changes made in the 'Manually Installed' tab will not be saved, are you sure?");
+                if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
+                {
+                    // not sure, cancel the cancel
+                    formClosingEventArgs.Cancel = true;
+                    return;
+                }
+            }
+
             if (AutoInstallClosingBlocked)
             {
                 // cancelled event, so continue
