@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2025-01-25 11:57:36+0000\n"
-"PO-Revision-Date: 2025-01-25 11:57:37+0000\n"
+"POT-Creation-Date: 2025-04-26 11:26:04+0100\n"
+"PO-Revision-Date: 2025-04-26 11:26:04+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -152,42 +152,50 @@ msgid "bhp"
 msgstr ""
 
 #: ../../ORTS.Common/Conversions.cs:570
-msgid "kJ"
+msgid "V"
 msgstr ""
 
 #: ../../ORTS.Common/Conversions.cs:571
-msgid "MJ"
+msgid "kV"
 msgstr ""
 
 #: ../../ORTS.Common/Conversions.cs:572
-msgid "BTU"
+msgid "kJ"
 msgstr ""
 
 #: ../../ORTS.Common/Conversions.cs:573
-msgid "°C"
+msgid "MJ"
 msgstr ""
 
 #: ../../ORTS.Common/Conversions.cs:574
-msgid "°F"
+msgid "BTU"
 msgstr ""
 
 #: ../../ORTS.Common/Conversions.cs:575
-msgid "N"
+msgid "°C"
 msgstr ""
 
 #: ../../ORTS.Common/Conversions.cs:576
-msgid "kN"
+msgid "°F"
 msgstr ""
 
 #: ../../ORTS.Common/Conversions.cs:577
-msgid "lbf"
+msgid "N"
 msgstr ""
 
 #: ../../ORTS.Common/Conversions.cs:578
-msgid "klbf"
+msgid "kN"
 msgstr ""
 
 #: ../../ORTS.Common/Conversions.cs:579
+msgid "lbf"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:580
+msgid "klbf"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:581
 msgid "°"
 msgstr ""
 
