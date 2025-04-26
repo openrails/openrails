@@ -1460,6 +1460,8 @@ namespace Menu
                     string route = determineUniqueRoute(Path.GetFileName(folderBrowser.SelectedPath));
                     dataGridViewManualInstall.CurrentRow.Cells[0].Value = route;
                     dataGridViewManualInstall.CurrentRow.Cells[1].Value = folderBrowser.SelectedPath;
+                    ManualInstallChangesMade = true;
+                    buttonCancel.Enabled = ManualInstallChangesMade;
                 }
                 else
                 {
@@ -1604,8 +1606,12 @@ namespace Menu
             if (MessageBox.Show(message, Catalog.GetString("Attention"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
             {
                 // not sure, cancel the cancel
-                ManualInstallChangesMade = false;
                 this.DialogResult = DialogResult.None;
+            }
+            else 
+            {
+                // sure to cancel the changes
+                ManualInstallChangesMade = false;
             }
         }
 
