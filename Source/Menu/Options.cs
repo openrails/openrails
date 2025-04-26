@@ -38,6 +38,7 @@ namespace Menu
     {
         readonly UserSettings Settings;
         readonly UpdateManager UpdateManager;
+        readonly TelemetryManager TelemetryManager;
         readonly string BaseDocumentationUrl;
 
         private GettextResourceManager catalog = new GettextResourceManager("Menu");
@@ -48,7 +49,7 @@ namespace Menu
             public string Name { get; set; }
         }
 
-        public OptionsForm(UserSettings settings, UpdateManager updateManager, string baseDocumentationUrl)
+        public OptionsForm(UserSettings settings, UpdateManager updateManager, TelemetryManager telemetryManager, string baseDocumentationUrl)
         {
             InitializeComponent();
 
@@ -56,6 +57,7 @@ namespace Menu
 
             Settings = settings;
             UpdateManager = updateManager;
+            TelemetryManager = telemetryManager;
             BaseDocumentationUrl = baseDocumentationUrl;
 
             InitializeHelpIcons();
@@ -780,6 +782,7 @@ namespace Menu
                 (pbEnableTcsScripts, new[] { checkEnableTCSScripts }),
                 (pbAutoSave, new[] { checkAutoSaveActive }),
                 (pbOverspeedMonitor, new[] { checkOverspeedMonitor }),
+                (pbTelemetry, new[] { buttonTelemetry }),
 
                 // Audio tab
                 (pbSoundVolumePercent, new Control[] { labelSoundVolume, numericSoundVolumePercent }),
@@ -869,6 +872,10 @@ namespace Menu
                 {
                     pbOverspeedMonitor,
                     BaseDocumentationUrl + "/options.html#overspeed-monitor"
+                },
+                {
+                    pbTelemetry,
+                    BaseDocumentationUrl + "/options.html#telemetry"
                 },
 
                 // Audio tab
@@ -1011,5 +1018,13 @@ namespace Menu
                 hover.Leave();
         }
         #endregion
+
+        private void buttonTelemetry_Click(object sender, EventArgs e)
+        {
+            using (var telemetryForm = new TelemetryForm(TelemetryManager))
+            {
+                telemetryForm.ShowDialog(this);
+            }
+        }
     }
 }

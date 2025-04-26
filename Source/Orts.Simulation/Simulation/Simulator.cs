@@ -25,6 +25,7 @@ using Orts.MultiPlayer;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.Signalling;
 using Orts.Simulation.Timetables;
@@ -284,9 +285,6 @@ namespace Orts.Simulation
 
             string ORfilepath = System.IO.Path.Combine(RoutePath, "OpenRails");
 
-            Trace.Write("Loading ");
-
-            Trace.Write(" TRK");
             TRK = new RouteFile(MSTS.MSTSPath.GetTRKFileName(RoutePath));
             RouteName = TRK.Tr_RouteFile.Name;
             MilepostUnitsMetric = TRK.Tr_RouteFile.MilepostUnitsMetric;
@@ -307,21 +305,17 @@ namespace Orts.Simulation
             else if (TRK.Tr_RouteFile.SuperElevation.Count > 0 && !TRK.Tr_RouteFile.SuperElevation[0].DefaultStandard)
                 UseSuperElevation = true; // Custom superelevation standard entered, force enable superelevation
 
-            Trace.Write(" TDB");
             TDB = new TrackDatabaseFile(RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".tdb");
 
             if (File.Exists(ORfilepath + @"\sigcfg.dat"))
             {
-                Trace.Write(" SIGCFG_OR");
                 SIGCFG = new SignalConfigurationFile(ORfilepath + @"\sigcfg.dat", true);
             }
             else
             {
-                Trace.Write(" SIGCFG");
                 SIGCFG = new SignalConfigurationFile(RoutePath + @"\sigcfg.dat", false);
             }
 
-            Trace.Write(" DAT");
             if (Directory.Exists(RoutePath + @"\Openrails") && File.Exists(RoutePath + @"\Openrails\TSECTION.DAT"))
                 TSectionDat = new TrackSectionsFile(RoutePath + @"\Openrails\TSECTION.DAT");
             else if (Directory.Exists(RoutePath + @"\GLOBAL") && File.Exists(RoutePath + @"\GLOBAL\TSECTION.DAT"))
@@ -337,12 +331,9 @@ namespace Orts.Simulation
             orRouteConfig.SetTraveller(TSectionDat, TDB);
 #endif
 
-            Trace.Write(" ACT");
-
             var rdbFile = RoutePath + @"\" + TRK.Tr_RouteFile.FileName + ".rdb";
             if (File.Exists(rdbFile))
             {
-                Trace.Write(" RDB");
                 RDB = new RoadDatabaseFile(rdbFile);
             }
 
@@ -350,7 +341,6 @@ namespace Orts.Simulation
             if (File.Exists(carSpawnFile))
             {
                 CarSpawnerLists = new List<CarSpawnerList>();
-                Trace.Write(" CARSPAWN");
                 CarSpawnerFile = new CarSpawnerFile(RoutePath + @"\carspawn.dat", RoutePath + @"\shapes\", CarSpawnerLists);
             }
 
@@ -359,7 +349,6 @@ namespace Orts.Simulation
             if (File.Exists(extCarSpawnFile))
             {
                 if (CarSpawnerLists == null) CarSpawnerLists = new List<CarSpawnerList>();
-                Trace.Write(" EXTCARSPAWN");
                 ExtCarSpawnerFile = new ExtCarSpawnerFile(RoutePath + @"\openrails\carspawn.dat", RoutePath + @"\shapes\", CarSpawnerLists);
             }
 
@@ -367,14 +356,12 @@ namespace Orts.Simulation
             var clockFile = RoutePath + @"\animated.clocks-or";
             if (File.Exists(clockFile))
             {
-                Trace.Write(" CLOCKS");
                 new ClocksFile(clockFile, ClockShapeList, RoutePath + @"\shapes\");
             }
 
             // Generate a list of EOTs that may be used to attach at end of train
             if (Directory.Exists(EOTPath))
             {
-                Trace.Write(" EOT");
                 FullEOTPaths = new FullEOTPaths(EOTPath);
             }
 
@@ -662,46 +649,66 @@ namespace Orts.Simulation
             RetainersCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             BrakeHoseConnectCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleWaterScoopCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            if (PlayerLocomotive is MSTSSteamLocomotive)
+            if (PlayerLocomotive is MSTSSteamLocomotive steamLocomotive)
             {
-                ContinuousReverserCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ContinuousInjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ContinuousSmallEjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ContinuousLargeEjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ToggleInjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ToggleBlowdownValveCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ToggleSteamBoosterAirCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ToggleSteamBoosterIdleCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ToggleSteamBoosterLatchCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ContinuousBlowerCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ContinuousDamperCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ContinuousFiringRateCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ToggleManualFiringCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ToggleCylinderCocksCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                ToggleCylinderCompoundCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                FireShovelfullCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                AIFireOnCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                AIFireOffCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
-                AIFireResetCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousReverserCommand.Receiver = steamLocomotive;
+                ContinuousInjectorCommand.Receiver = steamLocomotive;
+                ContinuousSmallEjectorCommand.Receiver = steamLocomotive;
+                ContinuousLargeEjectorCommand.Receiver = steamLocomotive;
+                ToggleInjectorCommand.Receiver = steamLocomotive;
+                ToggleBlowdownValveCommand.Receiver = steamLocomotive;
+                ToggleSteamBoosterAirCommand.Receiver = steamLocomotive;
+                ToggleSteamBoosterIdleCommand.Receiver = steamLocomotive;
+                ToggleSteamBoosterLatchCommand.Receiver = steamLocomotive;
+                ContinuousBlowerCommand.Receiver = steamLocomotive;
+                ContinuousDamperCommand.Receiver = steamLocomotive;
+                ContinuousFiringRateCommand.Receiver = steamLocomotive;
+                ToggleManualFiringCommand.Receiver = steamLocomotive;
+                ToggleCylinderCocksCommand.Receiver = steamLocomotive;
+                ToggleCylinderCompoundCommand.Receiver = steamLocomotive;
+                FireShovelfullCommand.Receiver = steamLocomotive;
+                AIFireOnCommand.Receiver = steamLocomotive;
+                AIFireOffCommand.Receiver = steamLocomotive;
+                AIFireResetCommand.Receiver = steamLocomotive;
             }
 
-            PantographCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            if (PlayerLocomotive is MSTSElectricLocomotive)
+            PantographCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+            if (PlayerLocomotive is MSTSElectricLocomotive electricLocomotive)
             {
-                CircuitBreakerClosingOrderCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-                CircuitBreakerClosingOrderButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-                CircuitBreakerOpeningOrderButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-                CircuitBreakerClosingAuthorizationCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+                VoltageSelectorCommand.Receiver = electricLocomotive.LocomotivePowerSupply;
+                PantographSelectorCommand.Receiver = electricLocomotive.LocomotivePowerSupply;
+                PowerLimitationSelectorCommand.Receiver = electricLocomotive.LocomotivePowerSupply;
+                CircuitBreakerClosingOrderCommand.Receiver = electricLocomotive.LocomotivePowerSupply;
+                CircuitBreakerClosingOrderButtonCommand.Receiver = electricLocomotive.LocomotivePowerSupply;
+                CircuitBreakerOpeningOrderButtonCommand.Receiver = electricLocomotive.LocomotivePowerSupply;
+                CircuitBreakerClosingAuthorizationCommand.Receiver = electricLocomotive.LocomotivePowerSupply;
             }
 
-            if (PlayerLocomotive is MSTSDieselLocomotive)
+            if (PlayerLocomotive is MSTSDieselLocomotive dieselLocomotive)
             {
-                TractionCutOffRelayClosingOrderCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-                TractionCutOffRelayClosingOrderButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-                TractionCutOffRelayOpeningOrderButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-                TractionCutOffRelayClosingAuthorizationCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
-                TogglePlayerEngineCommand.Receiver = (MSTSDieselLocomotive)PlayerLocomotive;
-                VacuumExhausterCommand.Receiver = (MSTSDieselLocomotive)PlayerLocomotive;
+                TractionCutOffRelayClosingOrderCommand.Receiver = dieselLocomotive.LocomotivePowerSupply;
+                TractionCutOffRelayClosingOrderButtonCommand.Receiver = dieselLocomotive.LocomotivePowerSupply;
+                TractionCutOffRelayOpeningOrderButtonCommand.Receiver = dieselLocomotive.LocomotivePowerSupply;
+                TractionCutOffRelayClosingAuthorizationCommand.Receiver = dieselLocomotive.LocomotivePowerSupply;
+                TogglePlayerEngineCommand.Receiver = dieselLocomotive;
+                VacuumExhausterCommand.Receiver = dieselLocomotive;
+            }
+
+            if (PlayerLocomotive is MSTSControlTrailerCar controlCar)
+            {
+                VoltageSelectorCommand.Receiver = controlCar.LocomotivePowerSupply;
+                PantographSelectorCommand.Receiver = controlCar.LocomotivePowerSupply;
+                PowerLimitationSelectorCommand.Receiver = controlCar.LocomotivePowerSupply;
+                CircuitBreakerClosingOrderCommand.Receiver = controlCar.LocomotivePowerSupply;
+                CircuitBreakerClosingOrderButtonCommand.Receiver = controlCar.LocomotivePowerSupply;
+                CircuitBreakerOpeningOrderButtonCommand.Receiver = controlCar.LocomotivePowerSupply;
+                CircuitBreakerClosingAuthorizationCommand.Receiver = controlCar.LocomotivePowerSupply;
+
+                TractionCutOffRelayClosingOrderCommand.Receiver = controlCar.LocomotivePowerSupply;
+                TractionCutOffRelayClosingOrderButtonCommand.Receiver = controlCar.LocomotivePowerSupply;
+                TractionCutOffRelayOpeningOrderButtonCommand.Receiver = controlCar.LocomotivePowerSupply;
+                TractionCutOffRelayClosingAuthorizationCommand.Receiver = controlCar.LocomotivePowerSupply;
+                TogglePlayerEngineCommand.Receiver = controlCar;
             }
 
             ToggleOdometerCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
@@ -728,6 +735,11 @@ namespace Orts.Simulation
             ServiceRetentionButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
             ServiceRetentionCancellationButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
             ElectricTrainSupplyCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply;
+            if ((PlayerLocomotive as MSTSLocomotive).LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply)
+            {
+                PowerSupplyButtonCommand.Receiver = supply;
+                PowerSupplySwitchCommand.Receiver = supply;
+            }
             TCSButtonCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).TrainControlSystem;
             TCSSwitchCommand.Receiver = (PlayerLocomotive as MSTSLocomotive).TrainControlSystem;
             ToggleGenericItem1Command.Receiver = (MSTSLocomotive)PlayerLocomotive;
@@ -760,14 +772,20 @@ namespace Orts.Simulation
         public TrainCar SetPlayerLocomotive(Train playerTrain)
         {
             TrainCar PlayerLocomotive = null;
+            var leadFound = false;
             foreach (TrainCar car in playerTrain.Cars)
                 if (car.IsDriveable)  // first loco is the one the player drives
                 {
-                    PlayerLocomotive = car;
-                    playerTrain.LeadLocomotive = car;
-                    playerTrain.InitializeBrakes();
-                    PlayerLocomotive.LocalThrottlePercent = playerTrain.AITrainThrottlePercent;
-                    break;
+                    if (!leadFound)
+                    {
+                        PlayerLocomotive = car;
+                        playerTrain.LeadLocomotive = car;
+                        playerTrain.InitializeBrakes();
+                        PlayerLocomotive.LocalThrottlePercent = playerTrain.AITrainThrottlePercent;
+                        PlayerLocomotive.SignalEvent(Event.PlayerTrainLeadLoco);
+                        leadFound = true;
+                    }
+                    else car.SignalEvent(Event.PlayerTrainHelperLoco);
                 }
             if (PlayerLocomotive == null)
                 throw new InvalidDataException("Can't find player locomotive in activity");
@@ -987,6 +1005,7 @@ namespace Orts.Simulation
                     }
                     drivenTrain.Cars.Clear();
                     AI.TrainsToRemoveFromAI.Add((AITrain)train);
+                    PlayerLocomotive.SignalEvent(Event.PlayerTrainHelperLoco);
                     PlayerLocomotive = SetPlayerLocomotive(train);
                     (train as AITrain).SwitchToPlayerControl();
                     OnPlayerLocomotiveChanged();
@@ -1101,6 +1120,7 @@ namespace Orts.Simulation
                             {
                                 drivenTrain.Cars.Add(car);
                                 car.Train = drivenTrain;
+                                if (car is MSTSLocomotive) car.SignalEvent(Event.PlayerTrainHelperLoco);
                             }
                             FinishRearCoupling(drivenTrain, train, true);
                             return;
@@ -1131,6 +1151,7 @@ namespace Orts.Simulation
                                 drivenTrain.Cars.Add(car);
                                 car.Train = drivenTrain;
                                 car.Flipped = !car.Flipped;
+                                if (car is MSTSLocomotive) car.SignalEvent(Event.PlayerTrainHelperLoco);
                             }
                             FinishRearCoupling(drivenTrain, train, false);
                             return;
@@ -1195,6 +1216,7 @@ namespace Orts.Simulation
                                     TrainCar car = train.Cars[i];
                                     drivenTrain.Cars.Insert(i, car);
                                     car.Train = drivenTrain;
+                                    if (car is MSTSLocomotive) car.SignalEvent(Event.PlayerTrainHelperLoco);
                                 }
                                 if (drivenTrain.LeadLocomotiveIndex >= 0) drivenTrain.LeadLocomotiveIndex += train.Cars.Count;
                                 FinishFrontCoupling(drivenTrain, train, lead, true);
@@ -1228,6 +1250,7 @@ namespace Orts.Simulation
                                 drivenTrain.Cars.Insert(0, car);
                                 car.Train = drivenTrain;
                                 car.Flipped = !car.Flipped;
+                                if (car is MSTSLocomotive) car.SignalEvent(Event.PlayerTrainHelperLoco);
                             }
                             if (drivenTrain.LeadLocomotiveIndex >= 0) drivenTrain.LeadLocomotiveIndex += train.Cars.Count;
                             FinishFrontCoupling(drivenTrain, train, lead, false);
@@ -1836,6 +1859,19 @@ namespace Orts.Simulation
                 train2.TrainType = Train.TRAINTYPE.AI;
                 train.IncorporatedTrainNo = -1;
                 train2.MUDirection = Direction.Forward;
+                var leadFound = false;
+                foreach (var trainCar in train2.Cars)
+                {
+                    if (trainCar is MSTSLocomotive)
+                    {
+                        if (!leadFound)
+                        {
+                            trainCar.SignalEvent(Event.AITrainLeadLoco);
+                            leadFound = true;
+                        }
+                    }
+                    else trainCar.SignalEvent(Event.AITrainHelperLoco);
+                }
             }
             else train2.TrainType = Train.TRAINTYPE.STATIC;
             train2.LeadLocomotive = null;
@@ -1964,6 +2000,7 @@ namespace Orts.Simulation
                         playerTrain.TrainType = Train.TRAINTYPE.AI;
                         if (!TimetableMode) AI.AITrains.Add(playerTrain);
                         playerTrain.Autopilot = false;
+                        playerTrain.RedefineAITriggers();
                         if (TrainSwitcher.SuspendOldPlayer)
                         {
                             playerTrain.MovementState = AITrain.AI_MOVEMENT_STATE.SUSPENDED;
@@ -2163,6 +2200,7 @@ namespace Orts.Simulation
                 PlayerLocomotive.Train.CreatePathlessPlayerTrain();
             }
             var playerLocomotive = PlayerLocomotive as MSTSLocomotive;
+            PlayerLocomotive.Train.RedefinePlayerTrainTriggers();
             playerLocomotive.UsingRearCab = (PlayerLocomotive.Flipped ^ PlayerLocomotive.Train.MUDirection == Direction.Reverse) && (playerLocomotive.HasRearCab || playerLocomotive.HasRear3DCab);
             OnPlayerLocomotiveChanged();
             playerSwitchOngoing = false;

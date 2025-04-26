@@ -182,8 +182,18 @@ namespace Orts.Formats.Msts
                     STFException.TraceWarning(stf, "Invalid track section " + token);
 			}
 			stf.SkipRestOfBlock();
-		}
-		public uint NoSections;
+        }
+        public SectionIdx(TrackPath path)
+        {
+            X = 0;
+            Y = 0;
+            Z = 0;
+            A = 0;
+            NoSections = path.NoSections;
+            TrackSections = path.TrackSections;
+        }
+
+        public uint NoSections;
 		public double X,Y,Z;  // Offset
 		public double A;  // Angular offset 
 		public uint[] TrackSections;
@@ -344,7 +354,7 @@ namespace Orts.Formats.Msts
 			}
 			catch (Exception e)
 			{
-				System.Console.WriteLine("Warning: in route tsection.dat " + e.Message);
+				Trace.WriteLine(new FileLoadException("In route tsection.dat", e));
 			}
 		}
 		public uint NoSections;

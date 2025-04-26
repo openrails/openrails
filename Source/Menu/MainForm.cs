@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2009 - 2024 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -56,6 +56,7 @@ namespace Menu
 
         bool Initialized;
         UserSettings Settings;
+        TelemetryManager TelemetryManager;
         List<Folder> Folders = new List<Folder>();
         public List<Route> Routes = new List<Route>();
         List<Activity> Activities = new List<Activity>();
@@ -149,6 +150,7 @@ namespace Menu
         {
             var options = Environment.GetCommandLineArgs().Where(a => (a.StartsWith("-") || a.StartsWith("/"))).Select(a => a.Substring(1));
             Settings = new UserSettings(options);
+            TelemetryManager = new TelemetryManager(Settings.Telemetry);
 
             Cursor = Cursors.Default;
 
@@ -266,6 +268,7 @@ namespace Menu
             ShowTimetableEnvironment();
 
             CheckForUpdate();
+            CheckForTelemetry();
 
             if (!Initialized)
             {
@@ -343,6 +346,21 @@ namespace Menu
         public virtual void OnCheckUpdatesAgain(EventArgs e)
         {
             CheckForUpdate();
+        }
+
+        void CheckForTelemetry()
+        {
+            // DO NOT await this call as we want it to run in the background
+            _ = TelemetryManager.SubmitIfDue(TelemetryType.System, () => new
+            {
+                SystemInfo.Application,
+                SystemInfo.Runtime,
+                SystemInfo.OperatingSystem,
+                SystemInfo.InstalledMemoryMB,
+                SystemInfo.CPUs,
+                SystemInfo.GPUs,
+                SystemInfo.Direct3DFeatureLevels
+            });
         }
 
         void LoadLanguage()
@@ -544,9 +562,14 @@ namespace Menu
 
         void buttonOptions_Click(object sender, EventArgs e)
         {
+            ShowOptionsDialog();
+        }
+
+        public void ShowOptionsDialog()
+        {
             SaveOptions();
 
-            using (var form = new OptionsForm(Settings, UpdateManager, BaseDocumentationUrl))
+            using (var form = new OptionsForm(Settings, UpdateManager, TelemetryManager, BaseDocumentationUrl))
             {
                 switch (form.ShowDialog(this))
                 {
@@ -560,7 +583,15 @@ namespace Menu
                 }
             }
         }
-        
+
+        public void ShowTelemetryDialog()
+        {
+            using (var telemetryForm = new TelemetryForm(TelemetryManager))
+            {
+                telemetryForm.ShowDialog(this);
+            }
+        }
+
         void buttonDownloadContent_Click(object sender, EventArgs e)
         {
             using (var form = new ContentForm(Settings, BaseDocumentationUrl))
@@ -1333,34 +1364,32 @@ namespace Menu
             UpdateFromMenuSelection<T>(comboBox, index, map, default(T));
         }
 
+        /// <summary>
+        /// Update the combobox with the selection stored in the menu selection settings (from the previous run).
+        /// If the menu selection settings do not match the current selection use the default; except for 
+        /// "Explore in Activity Mode" also try the content route settings (for the route).
+        /// </summary>
         void UpdateFromMenuSelection<T>(ComboBox comboBox, UserSettings.Menu_SelectionIndex index, Func<T, string> map, T defaultValue)
         {
-            if (((index == UserSettings.Menu_SelectionIndex.Folder) ||
-                 ((comboBoxFolder.Items.Count > 0) && (SelectedFolder != null) &&
-                  (Settings.Menu_Selection.Count() > 0) &&
-                  (SelectedFolder.Path == Settings.Menu_Selection[(int)UserSettings.Menu_SelectionIndex.Folder]))) &&
-                (Settings.Menu_Selection.Length > (int)index) && 
-                (Settings.Menu_Selection[(int)index] != ""))
+            string value = GetValueFromMenuSelection(index);
+            if (!string.IsNullOrEmpty(value))
             {
                 if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
-                {
-                    comboBox.Text = Settings.Menu_Selection[(int)index];
-                }
+                    comboBox.Text = value;
                 else
-                {
-                    SelectComboBoxItem<T>(comboBox, item => map(item) == Settings.Menu_Selection[(int)index]);
-                }
+                    SelectComboBoxItem<T>(comboBox, item => map(item) == value);
             }
             else
             {
+                // when explore-in-activity mode, try the content route info
                 var routes = Settings.Content.ContentRouteSettings.Routes;
-                if ((SelectedFolder != null) &&
-                    routes.ContainsKey(SelectedFolder.Name) &&
-                    routes[SelectedFolder.Name].Installed &&
-                    !string.IsNullOrEmpty(routes[SelectedFolder.Name].Start.Route))
+                if ((SelectedActivity != null && SelectedActivity is ExploreThroughActivity) &&
+                    (SelectedFolder != null && routes.ContainsKey(SelectedFolder.Name) && routes[SelectedFolder.Name].Installed) &&
+                    (!string.IsNullOrEmpty(routes[SelectedFolder.Name].Start.Route)))
                 {
                     var route = routes[SelectedFolder.Name];
                     string valueComboboxToSetTo = "";
+                    string conditionalSecondValue = "";
                     switch (index)
                     {
                         case UserSettings.Menu_SelectionIndex.Route:
@@ -1377,6 +1406,7 @@ namespace Menu
                             break;
                         case UserSettings.Menu_SelectionIndex.Path:
                             valueComboboxToSetTo = route.Start.StartingAt;
+                            conditionalSecondValue = route.Start.HeadingTo;
                             break;
                         case UserSettings.Menu_SelectionIndex.Time:
                             valueComboboxToSetTo = route.Start.Time;
@@ -1390,31 +1420,29 @@ namespace Menu
                         default:
                             break;
                     }
-                    bool found = false;
-                    if ((index != UserSettings.Menu_SelectionIndex.Path) ||
-                        (SelectedActivity == null) || (!(SelectedActivity is ExploreActivity)))
+
+                    if (index == UserSettings.Menu_SelectionIndex.Path)
                     {
-                        if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
-                        {
-                            comboBox.Text = valueComboboxToSetTo;
-                            found = true;
-                        } 
+                        if (!string.IsNullOrEmpty(valueComboboxToSetTo))
+                            searchInComboBoxAndSet(comboBoxStartAt, valueComboboxToSetTo);
                         else
-                        {
-                            found = searchInComboBox(comboBox,  valueComboboxToSetTo);
-                        }
+                            SetToDefault(comboBoxStartAt, index, map, defaultValue);
+
+                        if (!string.IsNullOrEmpty(conditionalSecondValue))
+                            searchInComboBoxAndSet(comboBoxHeadTo, conditionalSecondValue);
+                        else
+                            SetToDefault(comboBoxHeadTo, index, map, defaultValue);
+                    }
+                    else if (!string.IsNullOrEmpty(valueComboboxToSetTo))
+                    {
+                        if (comboBox.DropDownStyle == ComboBoxStyle.DropDown) 
+                            comboBox.Text = valueComboboxToSetTo;
+                        else
+                            searchInComboBoxAndSet(comboBox, valueComboboxToSetTo);
                     }
                     else
                     {
-                        found = searchInComboBox(comboBoxStartAt, valueComboboxToSetTo);
-                        found = searchInComboBox(comboBoxHeadTo, valueComboboxToSetTo);
-                    }
-                    if (!found)
-                    {
-                        if (comboBox.Items.Count > 0)
-                        {
-                            comboBox.SelectedIndex = 0;
-                        }
+                        SetToDefault(comboBox, index, map, defaultValue);
                     }
                 }
                 else
@@ -1424,19 +1452,77 @@ namespace Menu
             }
         }
 
-        bool searchInComboBox(ComboBox comboBox, string valueComboboxToSetTo)
+        /// <summary>
+        /// Get the combobox's value from the menu selection in the settings. 
+        /// Checks that folder, route and activity/timetable-set match.
+        /// Returns the value from the settings, or an empty string.
+        /// </summary>
+        string GetValueFromMenuSelection(UserSettings.Menu_SelectionIndex index)
+        {
+            if (Settings.Menu_Selection.Length <= (int)index)
+                return ""; // not in menu selection settings
+
+            else if (index == UserSettings.Menu_SelectionIndex.Folder)
+                return Settings.Menu_Selection[(int)index];
+
+            else if (SelectedFolder == null)
+                return ""; // no current folder to match to
+
+            else if (SelectedFolder.Path != Settings.Menu_Selection[(int)UserSettings.Menu_SelectionIndex.Folder])
+                return ""; // current folder and menu selection settings folder don't match
+
+            else if (index == UserSettings.Menu_SelectionIndex.Route)
+                return Settings.Menu_Selection[(int)index];
+
+            else if (SelectedRoute == null)
+                return ""; // no current route to match to
+
+            else if (SelectedRoute.Path != Settings.Menu_Selection[(int)UserSettings.Menu_SelectionIndex.Route])
+                return ""; // current route and menu selection settings route don't match
+
+            else if (index == UserSettings.Menu_SelectionIndex.Activity || index == UserSettings.Menu_SelectionIndex.TimetableSet)
+                return Settings.Menu_Selection[(int)index];
+
+            else if (radioButtonModeActivity.Checked && SelectedActivity == null)
+                return ""; // no current activity to match to
+
+            else if (radioButtonModeTimetable.Checked && SelectedTimetableSet == null)
+                return ""; // no current timetable set to match to
+
+            else if (radioButtonModeActivity.Checked && SelectedActivity.Name != Settings.Menu_Selection[(int)UserSettings.Menu_SelectionIndex.Activity])
+                return ""; // current activity and menu selection settings activity don't match
+
+            else if (radioButtonModeTimetable.Checked && SelectedTimetableSet.fileName != Settings.Menu_Selection[(int)UserSettings.Menu_SelectionIndex.TimetableSet])
+                return ""; // current timetable set is different from timetable set in menu selection setting
+
+            else
+                return Settings.Menu_Selection[(int)index];
+        }
+
+        /// <summary>
+        /// Search the DropDown combobox (editable) for the specified string value.
+        /// When found, set the combobox to the value, otherwise to the first defined value.
+        /// Leave unselected when there are no defined values.
+        /// </summary>
+        void searchInComboBoxAndSet(ComboBox comboBox, string valueComboboxToSetTo)
         {
             for (var i = 0; i < comboBox.Items.Count; i++)
             {
                 if ((string)comboBox.Items[i].ToString() == valueComboboxToSetTo)
                 {
                     comboBox.SelectedIndex = i;
-                    return true;
+                    return;
                 }
             }
-            return false;
+            if (comboBox.Items.Count > 0)
+            {
+                comboBox.SelectedIndex = 0;
+            }
         }
 
+        /// <summary>
+        /// Set the combobox to the specified default (item).
+        /// </summary>
         void SetToDefault<T>(ComboBox comboBox, UserSettings.Menu_SelectionIndex index, Func<T, string> map, T defaultValue)
         {
             if (comboBox.DropDownStyle == ComboBoxStyle.DropDown)
@@ -1459,6 +1545,11 @@ namespace Menu
             }
         }
 
+        /// <summary>
+        /// Select  the the specified item in the combobox (not editable).
+        /// When not found, set it to the first item.
+        /// Leave unselected when there are no defined items.
+        /// </summary>
         void SelectComboBoxItem<T>(ComboBox comboBox, Func<T, bool> predicate)
         {
             if (comboBox.Items.Count == 0)

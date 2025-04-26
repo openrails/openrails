@@ -882,7 +882,7 @@ namespace Orts.Viewer3D.RollingStock
 
 #endif
 
-            // truck angle animation
+            // Bogie angle animation
             Matrix inverseLocation = Matrix.Invert(Car.WorldPosition.XNAMatrix);
 
             foreach (var p in Car.Parts)
@@ -890,25 +890,30 @@ namespace Orts.Viewer3D.RollingStock
                 if (p.iMatrix <= 0)
                     continue;
 
-                // Determine orientation of bogie in absolute space
                 Matrix m = Matrix.Identity;
-                Vector3 fwd = new Vector3(p.Dir[0], p.Dir[1], -p.Dir[2]);
-                // Only do this calculation if the bogie position has been calculated
-                if (!(fwd.X == 0 && fwd.Y == 0 && fwd.Z == 0))
+
+                // Bogie rotation calculation doesn't work on turntables
+                // Assume bogies aren't rotated when on a turntable
+                if (Car.Train?.ControlMode != Train.TRAIN_CONTROL.TURNTABLE)
                 {
-                    fwd.Normalize();
-                    Vector3 side = Vector3.Cross(Vector3.Up, fwd);
-                    if (!(side.X == 0 && side.Y == 0 && side.Z == 0))
-                        side.Normalize();
-                    Vector3 up = Vector3.Cross(fwd, side);
-                    m.Right = side;
-                    m.Up = up;
-                    m.Backward = fwd;
+                    // Determine orientation of bogie in absolute space
+                    Vector3 fwd = new Vector3(p.Dir[0], p.Dir[1], -p.Dir[2]);
+                    // Only do this calculation if the bogie position has been calculated
+                    if (!(fwd.X == 0 && fwd.Y == 0 && fwd.Z == 0))
+                    {
+                        fwd.Normalize();
+                        Vector3 side = Vector3.Cross(Vector3.Up, fwd);
+                        if (!(side.X == 0 && side.Y == 0 && side.Z == 0))
+                            side.Normalize();
+                        Vector3 up = Vector3.Cross(fwd, side);
+                        m.Right = side;
+                        m.Up = up;
+                        m.Backward = fwd;
 
-                    // Convert absolute rotation into rotation relative to train car
-                    m = Matrix.CreateRotationZ(p.Roll) * m * inverseLocation;
+                        // Convert absolute rotation into rotation relative to train car
+                        m = Matrix.CreateRotationZ(p.Roll) * m * inverseLocation;
+                    }
                 }
-
                 // Insert correct translation (previous step likely introduced garbage data)
                 m.Translation = TrainCarShape.SharedShape.Matrices[p.iMatrix].Translation;
 
@@ -1460,6 +1465,19 @@ namespace Orts.Viewer3D.RollingStock
             try
             {
                 Viewer.SoundProcess.AddSoundSource(this, new SoundSource(Viewer, MSTSWagon, smsFilePath));
+                if (MSTSWagon is MSTSLocomotive && MSTSWagon.Train != null && MSTSWagon.Train.TrainType == Train.TRAINTYPE.AI)
+                {
+                    if (MSTSWagon.CarID == MSTSWagon.Train.Cars[0].CarID)
+                    // Lead loco, enable AI train trigger
+                        MSTSWagon.SignalEvent(Event.AITrainLeadLoco);
+                    // AI train helper loco
+                    else MSTSWagon.SignalEvent(Event.AITrainHelperLoco);
+                }
+                else if (MSTSWagon == Viewer.PlayerLocomotive)
+                    MSTSWagon.SignalEvent(Event.PlayerTrainLeadLoco);
+                else if (MSTSWagon is MSTSLocomotive && MSTSWagon.Train != null && (MSTSWagon.Train.TrainType == Train.TRAINTYPE.PLAYER ||
+                    MSTSWagon.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || MSTSWagon.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING))
+                    MSTSWagon.SignalEvent(Event.PlayerTrainHelperLoco);
             }
             catch (Exception error)
             {

@@ -20,64 +20,85 @@ next paragraphs.
 ETCS circular speed gauge
 -------------------------
 
-You can add to the cabview a
-circular speed gauge accordingly to the European standard train control
-system ETCS.
+A circular speed gauge accordingly to the standard European Train Control System 
+(ETCS) can be added to the cabview. The information displayed in the Driver 
+Machine Interface (DMI) is controlled via the TCS script. For more details,
+see :ref:`C# engine scripting - Train Control System <features-scripting-tcs>`.
+
 
 .. image:: images/options-etcs.png
    :scale: 60 %
    :align: center
 
 
-.. admonition:: For content developers
+The gauge is added by the insertion of a block like the following
+into the .cvf file::
 
-    The gauge is added by the insertion of a block like the following
-    into the .cvf file::
-
-        Digital (
-            Type ( SPEEDOMETER DIGITAL )
-            Style ( NEEDLE )
-            Position ( 160 255 56 56 )
-            ScaleRange ( 0 250 )
-            Units ( KM_PER_HOUR )
-        )
+    Digital (
+        Type ( SPEEDOMETER DIGITAL )
+        Style ( NEEDLE )
+        Position ( 160 255 56 56 )
+        ScaleRange ( 0 250 )
+        Units ( KM_PER_HOUR )
+    )
 
 It is also possible to display the full ETCS display using the following block
 instead::
 
-		ScreenDisplay (
-			Type ( ORTS_ETCS SCREEN_DISPLAY )
-			Position ( 280 272 320 240 )
-			Units ( KM_PER_HOUR )
-			Parameters (
-				Mode FullSize
-			)
-		)
-		
-The following DMI size variants are available: FullSize (displays the whole DMI), SpeedArea
-(displays only the left part with information about distance and speed) and PlanningArea
-(displays only the planning area and navigation buttons).
+    ScreenDisplay (
+        Type ( ORTS_ETCS SCREEN_DISPLAY )
+        Graphic ( statictexture.ace ) Comment( 3D cab only, mandatory there )
+        Position ( 280 272 320 240 )  Comment( 2D cab only )
+        Units ( KM_PER_HOUR )
+        Parameters (
+            Mode FullSize
+            MaxSpeed 180
+            DisplayUnits 0
+        )
+    )
 
-The information displayed in the DMI is controlled via the TCS script. For more details,
-see :ref:`C# engine scripting - Train Control System <features-scripting-tcs>`.
+The following commonly used ``MaxSpeed`` or ``ScaleRange`` values can be set
+* 140, 150, 180, 240, 250, 260, 280, 400 for ``KM_PER_HOUR`` unit
+* 87, 111, 155, 248 for ``MILES_PER_HOUR`` unit
+The default value is 400 with KM_PER_HOUR unit.
 
-.. _cabs-battery-switch:
+The following DMI size variants are available: 
+``FullSize`` displays the whole DMI, 
+``SpeedArea`` displays only the left part with information about distance and speed, 
+``PlanningArea`` displays only the right side planning area and navigation buttons. 
+The default value is FullSize
 
-Battery switch
---------------
+Use the ``MaxVisibleSpeed`` to set the highest speed displayed as a number, 
+if literal numbering is undesirable above this number on the circular speed gauge. 
+The default value is the MaxSpeed rounded to the highest tens below.
+
+Use the ``DisplayUnits`` parameter to suppress diplaying the speed unit at the 
+bottom of the circular speed gauge. The default is 1, displaying the units.
+
+Use the ``Graphic`` parameter in 3D cabs to designate the static texture inside 
+the .s file that will be replaced at runtime with the dynamic picture of the 
+display. This parameter is mandatory. If omitted, or the named texture cannot 
+be found in the model, no display will be shown.
+
+.. _cabs-battery:
+
+Battery
+-------
 
 .. index::
    single: ORTS_BATTERY_SWITCH_COMMAND_SWITCH
    single: ORTS_BATTERY_SWITCH_COMMAND_BUTTON_CLOSE
    single: ORTS_BATTERY_SWITCH_ON
+   single: ORTS_BATTERY_VOLTAGE
 
-The :ref:`battery switch <physics-battery-switch>` controls the low voltage power supply of the locomotive.
+The :ref:`battery subsystem <physics-battery>` controls the low voltage power supply of the locomotive.
 
 The following controls are available for the cabview:
 
-- ``ORTS_BATTERY_SWITCH_COMMAND_SWITCH`` can be used if the switch is directly controlled from the cab
+- ``ORTS_BATTERY_SWITCH_COMMAND_SWITCH`` can be used if the battery switch is directly controlled from the cab
 - ``ORTS_BATTERY_SWITCH_COMMAND_BUTTON_CLOSE`` and ``ORTS_BATTERY_SWITCH_COMMAND_BUTTON_OPEN`` can be used if the switch is controlled with two pushbuttons (one to close the switch and the other to open it)
 - ``ORTS_BATTERY_SWITCH_ON`` can be used to control a light on the cab showing the state of the battery switch
+- ``ORTS_BATTERY_VOLTAGE`` monitors the battery voltage
 
 Other controls can be disabled if the low voltage power supply is not available using the following parameter::
 
@@ -165,6 +186,44 @@ The following controls are available for the cabview:
 
 - ``ORTS_ELECTRIC_TRAIN_SUPPLY_COMMAND_SWITCH`` can be used to control the electric train supply switch
 - ``ORTS_ELECTRIC_TRAIN_SUPPLY_ON`` can be used to indicate that the electric train supply line is powered on
+
+.. _cabs-voltmeters:
+
+Voltmeters
+----------
+
+.. index::
+   single: LINE_VOLTAGE
+   single: ORTS_PANTOGRAPH_VOLTAGE_AC
+   single: ORTS_PANTOGRAPH_VOLTAGE_DC
+   single: ORTS_BATTERY_VOLTAGE
+
+The following voltmeters are available for the cabview:
+
+- ``LINE_VOLTAGE`` indicates the line voltage
+- ``ORTS_PANTOGRAPH_VOLTAGE_AC`` indicates the line voltage when operating on AC lines
+- ``ORTS_PANTOGRAPH_VOLTAGE_DC`` indicates the line voltage when operating on DC lines
+- ``ORTS_BATTERY_VOLTAGE`` indicates the vehicle's battery voltage
+
+.. _cabs-electricselectors:
+
+.. index::
+   single: ORTS_PANTOGRAPH_SELECTOR
+   single: ORTS_POWER_LIMITATION_SELECTOR
+   single: ORTS_VOLTAGE_SELECTOR
+
+There :ref:`pantograph selector <physics-pantograph-selector>`, 
+:ref:`voltage selector <physics-voltage-selector>` and 
+:ref:`power limitation selector <physics-power-limitation-selector>` can be used
+to switch the traction system for locomotives operating at different voltages.
+
+They can be included in the cabview as follows:
+
+- ``ORTS_PANTOGRAPH_SELECTOR`` allows selecting pre-defined pantograph arrangements
+  (requires a custom script).
+- ``ORTS_VOLTAGE_SELECTOR`` configures the power supply for the voltage of the line
+  (requires a custom script to raise the right pantograph).
+- ``ORTS_POWER_LIMITATION_SELECTOR`` limits the maximum power that the locomotive can draw.
 
 .. _cabs-dieselenginesonoff:
 
@@ -908,7 +967,7 @@ Linked two-state animations (doors type) are named ``<ORTSITEM1TWOSTATE>`` and
 The default animation speed for stopped/moving type animations is 8 FPS. 
 It may be modified with following parameter in the .sd file::
 
-   ESD_CustomAnimationSpeed ( 8 )
+   ESD_ORTSCustomAnimationFPS ( 8 )
 
 Examples of use are fan control, open/close of aerodynamic coverages of couplers 
 in high speed trains, menu pages switching.

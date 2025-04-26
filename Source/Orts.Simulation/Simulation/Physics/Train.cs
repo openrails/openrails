@@ -215,7 +215,7 @@ namespace Orts.Simulation.Physics
             AI_NOTSTARTED,
             AI_AUTOGENERATE,
             REMOTE,
-            AI_PLAYERDRIVEN,   //Player is on board and is durrently driving train
+            AI_PLAYERDRIVEN,   //Player is on board and is currently driving train
             AI_PLAYERHOSTING,   //Player is on board, but train is currently autopiloted
             AI_INCORPORATED    // AI train is incorporated in other train
         }
@@ -1504,6 +1504,7 @@ namespace Orts.Simulation.Physics
                 MUReverserPercent = -MUReverserPercent;
             }
             if (!((this is AITrain && Simulator.PreUpdate) || this.TrainType == TRAINTYPE.STATIC)) FormationReversed = true;
+            RedefineSoundTriggers();
         }
 
         //================================================================================================//
@@ -1522,13 +1523,11 @@ namespace Orts.Simulation.Physics
             // Reverse brake hose connections and angle cocks
             for (var i = 0; i < Cars.Count; i++)
             {
-                var ac = Cars[i].BrakeSystem.AngleCockAOpen;
-                Cars[i].BrakeSystem.AngleCockAOpen = Cars[i].BrakeSystem.AngleCockBOpen;
-                Cars[i].BrakeSystem.AngleCockBOpen = ac;
-                if (i == Cars.Count - 1)
-                    Cars[i].BrakeSystem.FrontBrakeHoseConnected = false;
-                else
-                    Cars[i].BrakeSystem.FrontBrakeHoseConnected = Cars[i + 1].BrakeSystem.FrontBrakeHoseConnected;
+                var bs = Cars[i].BrakeSystem;
+                (bs.AngleCockBOpen, bs.AngleCockAOpen) = (bs.AngleCockAOpen, bs.AngleCockBOpen);
+                (bs.AngleCockBOpenAmount, bs.AngleCockAOpenAmount) = (bs.AngleCockAOpenAmount, bs.AngleCockBOpenAmount);
+                (bs.AngleCockBOpenTime, bs.AngleCockAOpenTime) = (bs.AngleCockAOpenTime, bs.AngleCockBOpenTime);
+                (bs.RearBrakeHoseConnected, bs.FrontBrakeHoseConnected) = (bs.FrontBrakeHoseConnected, bs.RearBrakeHoseConnected);
             }
             // Reverse the actual order of the cars in the train.
             Cars.Reverse();
@@ -1538,6 +1537,7 @@ namespace Orts.Simulation.Physics
             // Update flipped state of each car.
             for (var i = 0; i < Cars.Count; i++)
                 Cars[i].Flipped = !Cars[i].Flipped;
+            RedefineSoundTriggers();
         }
 
         /// <summary>
@@ -1861,18 +1861,8 @@ namespace Orts.Simulation.Physics
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
                 if (lead is MSTSSteamLocomotive) MUReverserPercent = 25;
 
-                // Percent slope = rise / run -> the Y position of the forward vector gives us the 'rise'
-                // Derive the 'run' by assuming a hypotenuse length of 1, so run = sqrt(1 - rise^2)
-                float rise = lead.WorldPosition.XNAMatrix.M32;
-                lead.CurrentElevationPercent = 100f * (rise / (float)Math.Sqrt(1 - rise * rise));
-
-                //TODO: next if block has been inserted to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
-                // To achieve the same result with other means, without flipping trainset physics, the block should be deleted
-                //         
-                if (lead.IsDriveable && (lead as MSTSLocomotive).UsingRearCab)
-                {
-                    lead.CurrentElevationPercent = -lead.CurrentElevationPercent;
-                }
+                // Force calculate gradient at the lead locomotive
+                lead.UpdateGravity();
                 // give it a bit more gas if it is uphill
                 if (lead.CurrentElevationPercent < -2.0) initialThrottlepercent = 40f;
                 // better block gas if it is downhill
@@ -4042,7 +4032,7 @@ namespace Orts.Simulation.Physics
             if (Simulator.Settings.VerboseConfigurationMessages && LeadLocomotiveIndex >= 0) // Check incompatibilities between brake control valves
             {
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
-                if (Cars.Any(x => (x as MSTSWagon).BrakeValve != lead.BrakeValve))
+                if (lead.BrakeSystem is AirSinglePipe leadBrakes && Cars.Any(x => x.BrakeSystem is AirSinglePipe carBrakes && leadBrakes.BrakeValve != carBrakes.BrakeValve))
                 {
                     Trace.TraceInformation("Cars along the train have incompatible brake control valves");
                 }
@@ -4071,17 +4061,17 @@ namespace Orts.Simulation.Physics
                                 car.MSTSBrakeSystem = new VacuumSinglePipe(car);
                             else if (lead.BrakeSystem is AirTwinPipe)
                                 car.MSTSBrakeSystem = new AirTwinPipe(car);
-                            else if (lead.BrakeSystem is AirSinglePipe)
+                            else if (lead.BrakeSystem is AirSinglePipe leadAir)
                             {
                                 car.MSTSBrakeSystem = new AirSinglePipe(car);
                                 // if emergency reservoir has been set on lead locomotive then also set on trailing cars
-                                if (lead.EmergencyReservoirPresent)
+                                if (leadAir.EmergencyReservoirPresent)
                                 {
-                                    car.EmergencyReservoirPresent = lead.EmergencyReservoirPresent;
+                                    (car.BrakeSystem as AirSinglePipe).EmergencyReservoirPresent = leadAir.EmergencyReservoirPresent;
                                 }
                             }
-                            else if (lead.BrakeSystem is EPBrakeSystem)
-                                car.MSTSBrakeSystem = new EPBrakeSystem(car);
+                            else if (lead.BrakeSystem is EPBrakeSystem ep)
+                                car.MSTSBrakeSystem = new EPBrakeSystem(car, ep.TwoPipes);
                             else if (lead.BrakeSystem is SingleTransferPipe)
                                 car.MSTSBrakeSystem = new SingleTransferPipe(car);
                             else
@@ -4512,9 +4502,9 @@ namespace Orts.Simulation.Physics
 
                     // Update car's curve radius and superelevation based on bogie position and move traveller to front bogie
                     // Also determine roll angle for superelevation by averaging both bogies
-                    float roll = traveller.GetVisualElevation();
+                    float roll = traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation);
                     car.UpdateCurvePhys(traveller, new[] { 0, car.CarBogieCentreLengthM });
-                    roll = (roll + traveller.GetVisualElevation()) / 2.0f;
+                    roll = (roll + traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation)) / 2.0f;
 
                     // Normalize across tile boundaries
                     x += 2048 * (tileX - traveller.TileX);
@@ -4532,9 +4522,7 @@ namespace Orts.Simulation.Physics
                     car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y, traveller.Z, x, y, z);
 
                     // Update gravity force when position is updated, but before any secondary motion is added
-                    Vector3 fwd = car.WorldPosition.XNAMatrix.Backward;
-                    car.GravityForceN = car.MassKG * TrainCar.GravitationalAccelerationMpS2 * fwd.Y;
-                    car.CurrentElevationPercent = 100f * (fwd.Y / (float)Math.Sqrt(1 - fwd.Y * fwd.Y));
+                    car.UpdateGravity();
 
                     // Apply superelevation to car
                     car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
@@ -4633,9 +4621,9 @@ namespace Orts.Simulation.Physics
 
                     // Update car's curve radius and superelevation based on bogie position and move traveller to front bogie
                     // Outputs rotation angle for superelevation, used below
-                    float roll = traveller.GetVisualElevation();
+                    float roll = traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation);
                     car.UpdateCurvePhys(traveller, new[] { 0, car.CarBogieCentreLengthM });
-                    roll = (roll + traveller.GetVisualElevation()) / 2.0f;
+                    roll = (roll + traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation)) / 2.0f;
 
                     // Normalize across tile boundaries
                     x += 2048 * (tileX - traveller.TileX);
@@ -4653,9 +4641,7 @@ namespace Orts.Simulation.Physics
                     car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y, traveller.Z, x, y, z);
 
                     // Update gravity force when position is updated, but before any secondary motion is added
-                    Vector3 fwd = car.WorldPosition.XNAMatrix.Backward;
-                    car.GravityForceN = car.MassKG * TrainCar.GravitationalAccelerationMpS2 * fwd.Y;
-                    car.CurrentElevationPercent = 100f * (fwd.Y / (float)Math.Sqrt(1 - fwd.Y * fwd.Y));
+                    car.UpdateGravity();
 
                     // Apply superelevation to car
                     car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
@@ -4714,9 +4700,9 @@ namespace Orts.Simulation.Physics
 
                 // Update car's curve radius and superelevation based on bogie position and move traveller to front bogie
                 // Outputs rotation angle for superelevation, used below
-                float roll = traveller.GetVisualElevation();
+                float roll = traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation);
                 car.UpdateCurvePhys(traveller, new[] { 0, car.CarBogieCentreLengthM });
-                roll = (roll + traveller.GetVisualElevation()) / 2.0f;
+                roll = (roll + traveller.GetVisualElevation(Simulator.Settings.UseSuperElevation)) / 2.0f;
 
                 // Normalize across tile boundaries
                 x += 2048 * (tileX - traveller.TileX);
@@ -4734,9 +4720,7 @@ namespace Orts.Simulation.Physics
                 car.WorldPosition.XNAMatrix *= Simulator.XNAMatrixFromMSTSCoordinates(traveller.X, traveller.Y, traveller.Z, x, y, z);
 
                 // Update gravity force when position is updated, but before any secondary motion is added
-                Vector3 fwd = car.WorldPosition.XNAMatrix.Backward;
-                car.GravityForceN = car.MassKG * TrainCar.GravitationalAccelerationMpS2 * fwd.Y;
-                car.CurrentElevationPercent = 100f * (fwd.Y / (float)Math.Sqrt(1 - fwd.Y * fwd.Y));
+                car.UpdateGravity();
 
                 // Apply superelevation to car
                 car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
@@ -13832,6 +13816,81 @@ namespace Orts.Simulation.Physics
         }
 
         //================================================================================================//
+        /// <summary>
+        /// Redefine sound triggers for AI trains
+        /// </summary>
+        public void RedefineAITriggers()
+        {
+            var leadFound = false;
+            foreach (var car in Cars)
+            {
+                if (car is MSTSLocomotive)
+                {
+                    if (!leadFound)
+                    {
+                        car.SignalEvent(Event.AITrainLeadLoco);
+                        leadFound = true;
+                    }
+                    else
+                    {
+                        car.SignalEvent(Event.AITrainHelperLoco);
+                        car.SignalEvent(Event.EndAITrainLeadLoco);
+                    }
+                }
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Redefine sound triggers for Player Train
+        /// </summary>
+        public void RedefinePlayerTrainTriggers()
+        {
+            Simulator.PlayerLocomotive.SignalEvent(Event.PlayerTrainLeadLoco);
+            foreach (var car in Cars)
+            {
+                if (car is MSTSLocomotive)
+                {
+                    if (car != Simulator.PlayerLocomotive)
+                    {
+                        car.SignalEvent(Event.PlayerTrainHelperLoco);
+                    }
+                    car.SignalEvent(Event.EndAITrainLeadLoco);
+                }
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Redefine sound triggers for static trains
+        /// </summary>
+        public void RedefineStaticTrainTriggers()
+        {
+            foreach (var car in Cars)
+            {
+                if (car is MSTSLocomotive)
+                {
+                    car.SignalEvent(Event.StaticTrainLoco);
+                    car.SignalEvent(Event.EndAITrainLeadLoco);
+                }
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Redefine sound triggers
+        /// </summary>
+        public void RedefineSoundTriggers()
+        {
+            if (TrainType == TRAINTYPE.PLAYER || TrainType == TRAINTYPE.AI_PLAYERDRIVEN || TrainType == TRAINTYPE.AI_PLAYERHOSTING)
+                RedefinePlayerTrainTriggers();
+            else if (TrainType == TRAINTYPE.AI)
+                RedefineAITriggers();
+            else
+                RedefineStaticTrainTriggers();
+        }
+
+        //================================================================================================//
 
         /// <summary>
         /// Create status line
@@ -21666,7 +21725,7 @@ namespace Orts.Simulation.Physics
                 {
                     car.SpeedMpS = SpeedMpS;
                     if (car.Flipped) car.SpeedMpS = -car.SpeedMpS;
-                    car.AbsSpeedMpS = car.AbsSpeedMpS * (1 - elapsedClockSeconds ) + targetSpeedMpS * elapsedClockSeconds;
+                    car.AbsSpeedMpS = car.AbsSpeedMpS * (1 - elapsedClockSeconds ) + Math.Abs(targetSpeedMpS) * elapsedClockSeconds;
                     if (car.IsDriveable && car is MSTSWagon)
                     {
                         (car as MSTSWagon).WheelSpeedMpS = SpeedMpS;
@@ -21685,7 +21744,7 @@ namespace Orts.Simulation.Physics
                             else if (car is MSTSSteamLocomotive)
                             {
                                 (car as MSTSSteamLocomotive).Variable1 = car.AbsSpeedMpS / car.DriverWheelRadiusM / MathHelper.Pi * 5;
-                                (car as MSTSSteamLocomotive).Variable2 = 0.7f;
+                                (car as MSTSSteamLocomotive).Variable2 = 70f;
                             }
                         }
                         else if (car is MSTSLocomotive)

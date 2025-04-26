@@ -948,6 +948,132 @@ for Pantograph 2 (replacing 2 with 3 and 4).
 The third panto is moved with Ctrl-P, while the fourth panto is moved with Ctrl-Shift-P.
 The cabview controls must be named ORTS_PANTOGRAPH3 and ORTS_PANTOGRAPH4.
 
+.. _physics-pantograph-selector:
+
+Pantograph selector
+'''''''''''''''''''
+
+.. index::
+  single: ORTSPantographSelector
+  single: SelectorPositions
+  single: SelectorPosition
+
+When using customized :ref:`power supply scripts:<features-scripting-powersupply>`,
+it is possible to implement a pantograph selector that selects a specific pantograph
+combination direcly, without operating every pantograph control individually.
+
+Example::
+
+  Engine (
+    ORTSPowerSupply ( "YourEPSScript.cs" )
+    ORTSPantographSelector ( 
+      Script ( Default )
+      SelectorPositions (
+        SelectorPosition (
+          Name ( "Zero" )
+          Default ()
+        )
+        SelectorPosition (
+          Name ( "Local" )
+        )
+        SelectorPosition (
+          Name ( "Rear" )
+        )
+        SelectorPosition (
+          Name ( "Front" )
+        )
+        SelectorPosition (
+          Name ( "All" )
+        )
+      )
+    )
+  )
+
+In combination with a customized power supply script, you can use the pantograph selector
+to achieve different pantograph combinations, for example:
+
+- Position "Zero" would keep all pantographs down
+- Position "Local" would only raise the pantograph from the lead locomotive
+- Position "Rear" would raise the pantograph only of rear-facing locomotives (this is the usually
+the standard position for EMUs, with only the rear pantograph being raised, and the front power head
+is powered through the roof line)
+- Position "Front" would raise the pantograph only of front-facing locomotives
+- Position "All" would raise all pantographs
+
+Please note that this only works with custom scripts.
+
+.. _physics-voltage-selector:
+
+Voltage selector
+''''''''''''''''
+
+.. index::
+  single: ORTSVoltageSelector
+  single: SelectorPositions
+  single: SelectorPosition
+
+When using customized :ref:`power supply scripts:<features-scripting-powersupply>`,
+it is possible to implement a voltage selector that automatically raises the pantograph
+associated to the selected voltage.
+
+Example::
+
+  Engine (
+    ORTSPowerSupply ( "YourEPSScript.cs" )
+    ORTSVoltageSelector ( 
+      Script ( Default )
+      SelectorPositions (
+        SelectorPosition (
+          Name ( "AC" )
+          Voltage ( 25000 )
+        )
+        SelectorPosition (
+          Name ( "DC" )
+          Voltage ( 1500 )
+        )
+      )
+    )
+  )
+
+Please note that this only works with custom scripts.
+
+.. _physics-power-limitation-selector:
+
+Power limitation selector
+'''''''''''''''''''''''''
+
+.. index::
+  single: ORTSPowerLimitationSelector
+  single: SelectorPositions
+  single: SelectorPosition
+
+The power limitation selector allows limiting the total current drawn from
+the overhead wire.
+
+Example::
+
+  Engine (
+    ORTSPowerLimitationSelector ( 
+      Script ( Default )
+      SelectorPositions (
+        SelectorPosition (
+          Name ( "Conventional line" )
+          MaxPower ( 1200kW )
+          Default()
+        )
+        SelectorPosition (
+          Name ( "High speed line" )
+          MaxPower ( 1800kW )
+        )
+      )
+    )
+  )
+
+Depending on the controller position, the power consumption of every locomotive will be limited.
+
+In combination with customized :ref:`power supply scripts:<features-scripting-powersupply>`, more
+advanced power limits can be imposed, e.g. depending on the number of locomotives in the trainset.
+
 .. _physics-circuit-breaker:
 
 Circuit breaker
@@ -2293,7 +2419,7 @@ To allow the auxiliary tender to be filled at a water fuelling point, a water fr
 Unpowered Control Car
 ---------------------
 
-This module simulates the control cab of a DMU set of cars. The cab typically would be located in an unpowered 
+This module simulates the control cab of a MU set of cars. The cab typically would be located in an unpowered 
 trailer car which is attached to a powered car for the provision of its motive force to drive the train forward.
 
 Apart from producing motive force the car (and cabin controls) should behave exactly the same as a locomotive.
@@ -2464,6 +2590,10 @@ behave exactly the same way as player controlled ones.
 
 .. _physics-braking:
 
+.. index::
+   single: BrakeSystemType
+   single: BrakeEquipmentType
+
 Open Rails Braking
 ==================
 
@@ -2501,13 +2631,15 @@ graduated release. It will also force graduated release of brakes in triple
 valves. This option should be unchecked, except for compatibility problems
 with old MSTS stock.
 
-The following brake types are implemented in OR:
+The following brake types are implemented in OR. They can be selected using
+the ``Wagon(BrakeSystemType`` parameter:
 
-- Vacuum single
-- Air single-pipe
-- Air twin-pipe
-- EP (Electro-pneumatic)
-- Single-transfer-pipe (air and vacuum)
+- Vacuum single pipe: ``BrakeSystemType ("Vacuum_single_pipe")``
+- Air single-pipe: ``BrakeSystemType ("Air_single_pipe")``
+- Air twin-pipe: ``BrakeSystemType ("Air_twin_pipe")``
+- EP (Electro-pneumatic, twin-pipe): ``BrakeSystemType ("EP")``
+- EP single-pipe: ``BrakeSystemType ("EP_single_pipe")``
+- Single-transfer-pipe (air and vacuum): ``BrakeSystemType ("Air_piped")`` or ``BrakeSystemType ("Vacuum_piped")``
 
 The operation of air single-pipe brakes is described in general below.
 
@@ -2532,17 +2664,19 @@ brake features.
 For EP brakes, two variants are available:
 
 - If ``Wagon(ORTSEPBrakeControlsBrakePipe`` is set to 0 (default situation),
-an electrical wire (application wire) provides simultaneous fast brake application
-along the train. Release time will be fast if standard air brake haven't been applied,
-otherwise air brakes will determine release time. Typically this system is present
-with Train Brake Controllers having an EP-only application section, followed by an
-air application portion which serves as a fallback system.
+  an electrical wire (application wire) provides simultaneous fast brake application
+  along the train. Release time will be fast if standard air brake haven't been applied,
+  otherwise air brakes will determine release time. Typically this system is present
+  with Train Brake Controllers having an EP-only application section, followed by an
+  air application portion which serves as a fallback system, or in combination with a
+  solenoid valve that isolates the triple valve when EP brakes are operational.
+
 - If ``Wagon(ORTSEPBrakeControlsBrakePipe`` is set to 1, brake pipe is charged and discharged
-simultaneously at each car in the train, providing fast and uniform brake application and release.
-The locomotive instructs the cars to "charge" or "discharge" the brake pipe to reach
-a reference pressure. Standard triple valves or distributors will follow brake pipe variations
-actuating the cylinders. This system is sometimes called "UIC EP brake". It is typically the system
-used in high speed trains.
+  simultaneously at each car in the train, providing fast and uniform brake application and release.
+  The locomotive instructs the cars to "charge" or "discharge" the brake pipe to reach
+  a reference pressure. Standard triple valves or distributors will follow brake pipe variations
+  actuating the cylinders. This system is sometimes called "UIC EP brake". It is typically the system
+  used in high speed trains.
 
 .. _physics-brake-controller:
 
@@ -3144,6 +3278,9 @@ the following parameters will adjust the behaviour of air brakes:
 .. index::
    single: DynamicBrakeHasAutoBailOff
    single: ORTSDynamicBrakesHasPartialBailOff
+   single: ORTSTrainDynamicBlendingTable
+   single: ORTSDynamicBrakeReplacementWithEngineBrake 
+   single: ORTSDynamicBrakeReplacementWithEngineBrakeAtSpeed
    
 - ``Engine(DynamicBrakeHasAutoBailOff`` -- Set to 1 if brake cylinders are
   emptied while dynamic brake is active
@@ -3183,6 +3320,11 @@ notch of the train brake controller, where 0 means no dynamic brake and 1 means 
         )
     )
   )
+Dynamic braking is not effective at low speeds. Thus, in some locomotives,
+dynamic brake application demanded by the train brake controller is replaced by
+`engine` air braking at low speeds. This effect can be activated setting
+``Engine(ORTSDynamicBrakeReplacementWithEngineBrake`` to 1, provided that the locomotive
+speed is below ``Engine(ORTSDynamicBrakeReplacementWithEngineBrakeAtSpeed``.
 
 Native Open Rails Braking Parameters
 ------------------------------------
@@ -3246,10 +3388,12 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
    single: ORTSBrakeEmergencyTimeFactor
    single: ORTSBrakePipeTimeFactor
    single: ORTSEPBrakeControlsBrakePipe
+   single: ORTSEPBrakeInhibitsTripleValve
    single: ORTSCompressorIsMuControlled
    single: Supply_Reservoir
    single: ORTSSupplyResCapacity
    single: ORTSSupplyResChargingRate
+   single: Emergency_Solenoid_Valve
 
 - ``Wagon(BrakePipeVolume`` -- Volume of car's brake pipe in cubic feet
   (default .5).
@@ -3322,6 +3466,8 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   by the brake system.
 - ``Wagon(ORTSEPBrakeControlsBrakePipe`` -- Set to 1 for UIC EP brake: brake pipe
   pressure is electrically controlled at every fitted car.
+- ``Wagon(ORTSEPBrakeInhibitsTripleValve`` -- Set to 1 if the car is fitted with a
+  selector valve that ignores brake pipe pressure when EP brakes are operational.
 - ``Wagon(ORTSBrakeRelayValveRatio`` -- Determines the proportionality constant
   between pressure as demanded by the triple valve and brake cylinder pressure.
   This is achieved via a relay valve which sets BC pressure proportionally.
@@ -3400,7 +3546,7 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
 - ``Wagon(ORTSInitialApplicationThreshold`` -- The pressure difference between
   the brake pipe and auxiliary reservoir at which the triple valve will
   change from release to apply (default 1 psi).
-- ``BrakeEquipmentType(Supply_Reservoir`` -- Adds a supply reservoir to the
+- ``Wagon(BrakeEquipmentType(Supply_Reservoir`` -- Adds a supply reservoir to the
   loco or wagon, which will constantly charge to the brake pipe pressure
   or MR pipe (if equipped) pressure. If a supply reservoir is equipped,
   supply res air will be used to pressurize the brake cylinders thru the relay
@@ -3437,6 +3583,10 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   Pipe for twin pipe braking systems (default = Main Reservoir Pressure).
 - ``Engine(ORTSCompressorIsMuControlled`` -- Set to 1 if compressors from
   all locomotives are synchronized.
+- ``Wagon(BrakeEquipmentType(Emergency_Solenoid_Valve`` -- Adds an
+  electrically controlled valve that quickly applies maximum
+  brake cylinder pressure during an emergency braking. Only available if the
+  brake cylinder pressure is controlled using a relay valve.
 
 .. _physics-retainers:
 
@@ -4856,16 +5006,16 @@ outside the usual MSTS folders; e.g. brake parameters.
 Common locomotive subsystems
 ============================
 
-.. _physics-battery-switch:
+.. _physics-battery:
 
-Battery switch
---------------
+Battery
+-------
 
-The battery switch controls the low voltage power supply of the locomotive.
+The battery provides a low voltage power supply of the train car. It is activated via the battery switch.
 If the low voltage power supply is disabled, all of the systems of the locomotive are disabled
 (for example, the circuit breaker opens and the pantograph falls down).
 
-The battery switch of all locomotives in a consist can be controlled by
+The battery switch of all vehicles in a consist can be controlled by
 *Control Battery Switch Close* and *Control Battery Switch Open* commands
 ( ``<Insert>`` and ``<Ctrl+Insert>`` by default ). The status of the battery switch
 is indicated by the *Battery switch* value in the HUD view.
@@ -4891,6 +5041,13 @@ you have to keep pressing the button until the battery is (dis)connected.
 It is possible for the battery switch to be switched on at the start of the simulation.
 To activate this behaviour, you can add the optional parameter ``ORTSBattery( DefaultOn ( 1 ) )``
 
+The voltage and energetic capacity of the battery can be indicated using the ``Voltage`` and ``MaxCapacity``
+parameters. The performance of the battery charger, which is powered by the power converters, can be
+adjusted using the ``ChargerPower`` and ``ChargerVoltage`` parameters.
+
+Optionally, it is possible to define a capacity-voltage curve such that voltage becomes
+lower when the battery is discharged, using ``ChargeVoltageCurve``. Battery discharge is not implemented yet.
+
 Example::
 
     Engine (
@@ -4898,6 +5055,16 @@ Example::
         Mode ( PushButtons )
         Delay ( 2s )
         DefaultOn ( 1 )
+        Voltage ( 72V )
+        MaxCapacity ( 50kWh )
+        ChargeVoltageCurve (
+          0       0
+          5kWh    50V
+          30kWh   72V
+          50kWh   80V
+        )
+        ChargerVoltage ( 80V )
+        ChargerPower ( 10kW )
       )
     )
 

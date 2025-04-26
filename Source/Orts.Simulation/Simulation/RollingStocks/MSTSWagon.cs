@@ -236,50 +236,12 @@ namespace Orts.Simulation.RollingStocks
         public float BearingHotBoxSmokeDurationS;
         public float BearingHotBoxSmokeVelocityMpS = 15.0f;
         public Color BearingHotBoxSmokeSteadyColor = Color.Gray;
-
-        /// <summary>
-        /// True if vehicle is equipped with an additional emergency brake reservoir
-        /// </summary>
-        public bool EmergencyReservoirPresent;
-        public enum BrakeValveType
-        {
-            None,
-            TripleValve, // Plain triple valve
-            Distributor, // Triple valve with graduated release
-            DistributingValve, // Triple valve + driver brake valve control. Only for locomotives
-        }
-        /// <summary>
-        /// Type of brake valve in the car
-        /// </summary>
-        public BrakeValveType BrakeValve;
-        /// <summary>
-        /// True if equipped with handbrake. (Not common for older steam locomotives.)
-        /// </summary>
-        public bool HandBrakePresent;
-        /// <summary>
-        /// Number of available retainer positions. (Used on freight cars, mostly.) Might be 0, 3 or 4.
-        /// </summary>
-        public int RetainerPositions;
-
-         /// <summary>
-        /// Indicates whether a brake is present or not when Manual Braking is selected.
-        /// </summary>
-        public bool ManualBrakePresent;
+        List<string> BrakeEquipment = new List<string>();
 
         /// <summary>
         /// Indicates whether a non auto (straight) brake is present or not when braking is selected.
         /// </summary>
         public bool NonAutoBrakePresent;
-
-        /// <summary>
-        /// Indicates whether an auxiliary reservoir is present on the wagon or not.
-        /// </summary>
-        public bool AuxiliaryReservoirPresent;
-
-        /// <summary>
-        /// Indicates whether an additional supply reservoir is present on the wagon or not.
-        /// </summary>
-        public bool SupplyReservoirPresent;
 
         /// <summary>
         /// Active locomotive for a control trailer
@@ -1372,30 +1334,11 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(brakesystemtype":
                     CarBrakeSystemType = stf.ReadStringBlock(null).ToLower();
                     BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
+                    MSTSBrakeSystem?.SetBrakeEquipment(BrakeEquipment);
                     break;
                 case "wagon(brakeequipmenttype":
-                    foreach (var equipment in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
-                    {
-                        switch (equipment)
-                        {
-                            case "triple_valve": BrakeValve = BrakeValveType.TripleValve; break;
-                            case "distributor":
-                            case "graduated_release_triple_valve": BrakeValve = BrakeValveType.Distributor; break;
-                            case "distributing_valve": BrakeValve = BrakeValveType.DistributingValve; break;
-                            case "emergency_brake_reservoir": EmergencyReservoirPresent = true; break;
-                            case "handbrake": HandBrakePresent = true; break;
-                            case "auxilary_reservoir": // MSTS legacy parameter - use is discouraged
-                            case "auxiliary_reservoir":
-                                AuxiliaryReservoirPresent = true;
-                                break;
-                            case "manual_brake": ManualBrakePresent = true; break;
-                            case "retainer_3_position": RetainerPositions = 3; break;
-                            case "retainer_4_position": RetainerPositions = 4; break;
-                            case "supply_reservoir":
-                                SupplyReservoirPresent = true;
-                                break;
-                        }
-                    }
+                    BrakeEquipment = stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(',').ToList();
+                    MSTSBrakeSystem?.SetBrakeEquipment(BrakeEquipment);
                     break;
                 case "wagon(coupling":
                     Couplers.Add(new MSTSCoupling()); // Adds a new coupler every time "Coupler" parameters found in WAG and INC file
@@ -1599,9 +1542,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "wagon(ortspowersupply":
                 case "wagon(ortspowerondelay":
-                case "wagon(ortsbattery(mode":
-                case "wagon(ortsbattery(delay":
-                case "wagon(ortsbattery(defaulton":
+                case "wagon(ortsbattery":
                 case "wagon(ortspowersupplycontinuouspower":
                 case "wagon(ortspowersupplyheatingpower":
                 case "wagon(ortspowersupplyairconditioningpower":
@@ -1741,13 +1682,6 @@ namespace Orts.Simulation.RollingStocks
             IsGreaseFrictionBearing = copy.IsGreaseFrictionBearing;
             CarBrakeSystemType = copy.CarBrakeSystemType;
             BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
-            EmergencyReservoirPresent = copy.EmergencyReservoirPresent;
-            BrakeValve = copy.BrakeValve;
-            HandBrakePresent = copy.HandBrakePresent;
-            ManualBrakePresent = copy.ManualBrakePresent;
-            AuxiliaryReservoirPresent = copy.AuxiliaryReservoirPresent;
-            SupplyReservoirPresent = copy.SupplyReservoirPresent;
-            RetainerPositions = copy.RetainerPositions;
             InteriorShapeFileName = copy.InteriorShapeFileName;
             InteriorSoundFileName = copy.InteriorSoundFileName;
             Cab3DShapeFileName = copy.Cab3DShapeFileName;
@@ -1819,7 +1753,7 @@ namespace Orts.Simulation.RollingStocks
                         IntakePointList.Add(new IntakePoint(copyIntakePoint));
                 }
             }
-
+            BrakeEquipment = new List<string>(BrakeEquipment);
             MSTSBrakeSystem.InitializeFromCopy(copy.BrakeSystem);
             if (copy.WeightLoadController != null) WeightLoadController = new MSTSNotchController(copy.WeightLoadController);
 
@@ -3525,7 +3459,7 @@ namespace Orts.Simulation.RollingStocks
                     }
 
                     // Water scoop spray effects control - always on when scoop over trough, regardless of whether above minimum speed or not
-                    if (ProcessWaterEffects && LocomotiveParameters.IsWaterScoopDown && IsOverTrough() && AbsSpeedMpS > 0.1)
+                    if (ProcessWaterEffects && LocomotiveParameters.IsWaterScoopDown && IsOverTrough && AbsSpeedMpS > 0.1)
                     {
                         float SpeedRatio = AbsSpeedMpS / MpS.FromMpH(100); // Ratio to reduce water disturbance with speed - an arbitary value of 100mph has been chosen as the reference
 
@@ -3674,7 +3608,6 @@ namespace Orts.Simulation.RollingStocks
                         if (Pantographs != null)
                         {
                             Pantographs.HandleEvent(evt);
-                            SignalEvent(Event.PantographToggle);
                         }
                         break;
                 }
@@ -3694,7 +3627,6 @@ namespace Orts.Simulation.RollingStocks
                         if (Pantographs != null)
                         {
                             Pantographs.HandleEvent(evt, id);
-                            SignalEvent(Event.PantographToggle);
                         }
                         break;
                 }
@@ -3735,36 +3667,49 @@ namespace Orts.Simulation.RollingStocks
                 ControlActiveLocomotive = null;
                 return;
             }
-            var controlIndex = 0;
-            var activeIndex = 0;
-            bool controlCar = false;
-            bool activeLocomotive = false;
-
-            // Check to see if this car is an active locomotive, if so then set linkage to relevant control car.
-            // Note this only checks the "closest" locomotive to the control car. Hence it could be "fooled" if there is another locomotive besides the two DMU locomotives.
-
-            for (var i = 0; i < Train.Cars.Count; i++)
+            MSTSLocomotive unmatchedLocomotive = null;
+            MSTSLocomotive unmatchedControlCar = null;
+            foreach (var car in Train.Cars)
             {
-
-                if (activeIndex == 0 && Train.Cars[i].EngineType == TrainCar.EngineTypes.Diesel)
+                if (car.EngineType == TrainCar.EngineTypes.Electric || car.EngineType == TrainCar.EngineTypes.Diesel)
                 {
-                    activeIndex = i;
-                    activeLocomotive = true;
+                    if (unmatchedControlCar != null)
+                    {
+                        if (unmatchedControlCar == this)
+                        {
+                            unmatchedLocomotive = car as MSTSLocomotive;
+                            break;
+                        }
+                        else
+                        {
+                            unmatchedControlCar = null;
+                        }
+                    }
+                    else
+                    {
+                        unmatchedLocomotive = car as MSTSLocomotive;
+                    }
                 }
-
-                if (controlIndex == 0 && Train.Cars[i].EngineType == TrainCar.EngineTypes.Control)
+                if (car.EngineType == TrainCar.EngineTypes.Control)
                 {
-                    controlIndex = i;
-                    controlCar = true;
-                }
-
-                // As soon as the control and active locomotive have been identified, then stop loop.
-                if (activeLocomotive && controlCar)
-                {
-                    ControlActiveLocomotive = Train.Cars[activeIndex] as MSTSDieselLocomotive;                 
-                    return;
+                    if (unmatchedLocomotive != null)
+                    {
+                        if (car == this)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            unmatchedLocomotive = null;
+                        }
+                    }
+                    else
+                    {
+                        unmatchedControlCar = car as MSTSLocomotive;
+                    }
                 }
             }
+            ControlActiveLocomotive = unmatchedLocomotive;
         }
 
         public void FindTendersSteamLocomotive()

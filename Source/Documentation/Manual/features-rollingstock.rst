@@ -149,11 +149,11 @@ block!
 .. index::
    single: Conditions(ORTSBattery
 
-Battery Switch
-''''''''''''''
+Battery
+'''''''
 
 The light condition ``ORTSBattery`` allows a light to respond to the state of
-the :ref:`battery switch subsystem <physics-battery-switch>`. The valid settings
+the :ref:`battery subsystem <physics-battery>`. The valid settings
 and associated conditions for the light to turn *on* are as follows:
 
 - ``ORTSBattery ( 0 )`` Battery state is ignored (default)
@@ -317,6 +317,82 @@ for the purposes of calculation.
     - This condition will also be fulfilled for the lead locomotive itself.
 - ``MU ( 3 )`` Locomotive must be in a different group to the lead locomotive
 
+
+Multiple type locomotive light glows
+------------------------------------
+
+Introduction
+''''''''''''
+
+As a default all OR (and MSTS) locomotives use the same texture to reproduce 
+the glow of their lights. This however doesn't allow to easily implement non-round 
+or LED array lights, neither to provide special glowing effects.
+
+This feature allows to specifiy customized light glow textures for the locomotives. 
+If nothing is specified, the standard light glow texture is used. Moreover in the ``Content`` 
+folder, two light glow textures are present: the "historical" one, and a new one, 
+more realistic. As a default the "historical" light glow texture is used, for backwards 
+compatibility; however adding a line to the Lights block in the .eng file the "new" light 
+glow texture is taken. Customized light glow textures can be either used for all lights 
+of a loco, or only for a subset of them. Different lights in the same locomotive 
+may have different customized light glow textures.
+
+Detailed spec
+'''''''''''''
+
+
+1) In the ``Content`` folder there is the default ``LightGlow.png``, which is displayed if 
+   no changes are done to the .eng file.
+2) In such folder there is also an ``ORTSLightGlow.png``, which is maybe more realistic.
+3) adding a line within the .eng file it is possible to select either ORTSLightGlow.png or any other picture
+   with extension ``.png, .jpg, bmp, .gif, .ace, or .dds``.
+   
+
+   Here an example for the legacy Acela loco::
+
+    	Lights	( 17
+	        ORTSGraphic ( "ORTSLightGlow.png" )
+		      Light	(
+			      comment( Sphere of light )
+			      Type	( 1 )
+			      Conditions	(...
+
+  The code first searches for the .png file by building its directory starting from the directory of 
+  the .eng file; in this case the line could be e.g.::
+
+           ORTSGraphic ( "ORTSAcelaLightGlow.png" )
+
+4) The ``ORTSGraphic`` line can be added also for one or more ``Light()`` blocks. In that case the 
+   .png file is used only for the related Light block. Here an example::
+
+    Light	(
+			comment( Head light outer right bright )
+			Type		( 0 )
+			Conditions	(
+				Headlight ( 3 )
+				Unit ( 2 )
+				)
+			FadeIn	( 0.5 )
+			FadeOut	( 0.5 )
+			Cycle	( 0 )
+			States	(	1
+				State	(
+					Duration ( 0.0 )
+					LightColour ( ffffffff )
+					Position ( -0.5922 2.4037 9.63208 )
+					Azimuth ( 0.0 0.0 0.0 )
+					Transition ( 0 )
+					Radius ( 0.60 )
+					Elevation ( -50 -50 -50 )
+					)
+				)
+			ORTSGraphic (BigLightGlow.png)
+    )
+
+  OR searches for the file as it does for the general file for all lights, as explained above.
+  If the ``ORTSGraphic`` line is present both at the top of the ``Lights()`` and also in some 
+  ``Light()`` subblock, the line present in the subblock prevails. So it is possible to have an 
+  .eng-specific graphic for all the lights, except the ones that have an own ``ORTSGraphic`` line.
 
 
 Tilting trains
@@ -1845,6 +1921,9 @@ Scripts will run if referenced by OR-specific fields in the .eng file.
    single: ORTSEngineBrakeController
    single: ORTSCircuitBreaker
    single: ORTSTractionCutOffRelay
+   single: ORTSPantographSelector
+   single: ORTSVoltageSelector
+   single: ORTSPowerLimitationSelector
    single: ORTSPowerSupply
    single: ORTSTrainControlSystem
 
@@ -1876,6 +1955,15 @@ Scripts will run if referenced by OR-specific fields in the .eng file.
    * - Passenger car power supply
      - ``ORTS.Scripting.Api.PassengerCarPowerSupply``
      - ``Wagon ( ORTSPowerSupply ( "DemoPower.cs" ) )``
+   * - Pantograph selector
+     - ``ORTS.Scripting.Api.PantographSelector``
+     - ``Engine ( ORTSPantographSelector ( Script ( "DemoPantographSelector.cs" ) ) )``
+   * - Voltage selector
+     - ``ORTS.Scripting.Api.VoltageSelector``
+     - ``Engine ( ORTSVoltageSelector ( Script ( "DemoVoltageSelector.cs" ) ) )``
+   * - Power limitation selector
+     - ``ORTS.Scripting.Api.PowerLimitationSelector``
+     - ``Engine ( ORTSPantographSelector ( Script ( "DemoPowerLimitator.cs" ) ) )``
    * - Train Control System
      - ``ORTS.Scripting.Api.TrainControlSystem``
      - ``Engine ( ORTSTrainControlSystem ( "DemoTCS.cs" ) )``
@@ -2058,13 +2146,65 @@ Use the following .eng parameter to load a traction cut-off relay script::
   )
 
 ``ORTSTractionCutOffRelay`` refers to the traction cut-off relay script in the engine's ``Script`` 
-subfolder. For this field, the .cs extension is optional. "Automatic" and "Manual" load the generic OR 
-traction cut-off relay implementation, so do `not` use these names for your own script.
+subfolder. For this field, the .cs extension is optional. Alternatively, there are several
+built-in OR traction cut-off relay implementations:
+
+- "Automatic": no driver intervention required, circuit breaker is closed when conditions are met.
+- "Manual": a traction cut-off switch with open and closed positions.
+- "PushButtons": a traction cut-off relay with dedicated open and close buttons.
+
+Please do `not` use these names for your own script, since the generic implementation will
+be loaded instead.
 
 ``ORTSTractionCutOffRelayClosingDelay`` refers to the delay between the closing command of the traction cut-off relay
 and the effective closing of the relay.
 
+.. _features-scripting-powerselectors
+
+Pantograph, voltage and power limitation selectors
+--------------------------------------------------
+
+Available for electric locomotives only. The scripts control 
+the behavior of the locomotive's 
+:ref:`pantograph selector <physics-pantograph-selector>`, 
+:ref:`voltage selector <physics-voltage-selector>` and 
+:ref:`power limitation selector <physics-power-limitation-selector>` respectively.
+
+.. index::
+   single: ORTSPantographSelector
+   single: ORTSVoltageSelector
+   single: ORTSPowerLimitationSelector
+
+Use the following .eng parameters to load power selector scripts::
+
+  Engine (
+      ORTSPantographSelector ( 
+        Script ( "YourPSScript.cs" )
+        SelectorPositions ( ... )
+      )
+      ORTSVoltageSelector ( 
+        Script ( "YourVSScript.cs" )
+        SelectorPositions ( ... )
+      )
+      ORTSPowerLimitationSelector ( 
+        Script ( "YourPLSScript.cs" )
+        SelectorPositions ( ... )
+      )
+  )
+
+``Script`` refers to the circuit breaker script in the engine's ``Script`` 
+subfolder. For this field, the .cs extension is optional. Alternatively, there are several
+built-in OR selector implementations which can be used if custom features such as interlocking
+with other devices are not required:
+
+- "Default": a selector with sequential positions.
+- "Circular": same as above, but the first position follows again after the last one.
+
+Please do `not` use these names for your own script, since the generic implementation will
+be loaded instead.
+
 .. _features-scripting-powersupply:
+
 
 Diesel and electric power supply
 --------------------------------
@@ -2085,6 +2225,7 @@ Use the following .eng parameter to load a power supply script::
 
   Engine (
       ORTSPowerSupply ( "YourEPS.cs" )
+      ORTSPowerSupplyParameters ( "YourEPS.ini" )
       ORTSPowerOnDelay ( 5s )
       ORTSAuxPowerOnDelay ( 10s )
   )
@@ -2092,6 +2233,12 @@ Use the following .eng parameter to load a power supply script::
 ``ORTSPowerSupply`` refers to the power supply script in the engine's ``Script`` 
 subfolder. For this field, the .cs extension is optional. "Default" will load the generic OR power supply 
 implementation, so do `not` use this name for your own script.
+
+``ORTSPowerSupplyParameters``, an optional field, refers to an .ini file, 
+also in the ``Script`` subfolder, whose parameters will be made available to the 
+power supply script through the ``GetBoolParameter()``, ``GetIntParameter()``, 
+``GetFloatParameter()``, and ``GetStringParameter()`` methods. This .ini file provides for easy customization of 
+the behavior of the power supply script by end users.
 
 ``ORTSPowerOnDelay`` refers to the delay between the closing of the circuit breaker or the traction cut-off relay
 and the availability of the power for traction.
@@ -2473,6 +2620,23 @@ which may be used this way within the script:
     SetCustomizedCabviewControlName(0, "AWS acknowledge"); // Sets the name "AWS acknowledge" for the cabview control ORTS_TCS1
 
 so that, instead of ORTS_TCSnn the related mnemonic string is displayed.
+
+Generic cabview controls are also available for the Power Supply subsystem. They are named ORTS_POWER_SUPPLY1, ORTS_POWER_SUPPLY2
+and so on in the cabview file. Their usage is the same as for the TCS controls.
+
+Events related to power supply controls are made available to power supply scripts via ``TCSEvent.GenericTCSButtonPressed``, 
+``TCSEvent.GenericTCSButtonReleased``, ``TCSEvent.GenericTCSSwitchOff`` and ``TCSEvent.GenericTCSSwitchOn`` events, 
+received asynchronously by script through the method:
+
+.. code-block:: csharp
+
+    public override void HandleEvent(PowerSupplyEvent evt, string message)
+
+As for the TCS buttons, message is a string representing the control number with zero-base indexing
+(e.g. "5" corresponds to ORTS_POWER_SUPPLY6).
+
+SetCabDisplayControl and SetCustomizedCabviewControlName methods, which work in the same
+way as their TCS counterparts, are accessible from all power supply scripts.
 
 Helper classes
 --------------

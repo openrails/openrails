@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009 - 2024 by the Open Rails project.
+// COPYRIGHT 2009 - 2024 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -22,7 +22,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Resources;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Forms;
@@ -32,6 +31,7 @@ using ORTS.Settings;
 using ORTS.Updater;
 using static ORTS.Common.SystemInfo;
 using static Menu.Notifications.NotificationPage;
+using Newtonsoft.Json.Serialization;
 
 // Behaviour
 // Notifications are read only once as a background task at start into Notifications.
@@ -126,13 +126,14 @@ namespace Menu.Notifications
                 Notifications.NotificationList = IncludeValid(Notifications.NotificationList);
                 Notifications.NotificationList = SortByDate(Notifications.NotificationList);
             }
-            catch (WebException ex)
+            catch (Exception ex)
             {
+                AppendToLog(ex.ToString());
                 Error = ex;
             }
         }
 
-        public Notifications GetNotifications()
+        Notifications GetNotifications()
         {
             string notificationsSerial;
 
@@ -154,7 +155,7 @@ namespace Menu.Notifications
                 notificationsSerial = GetRemoteJson();
             }
 
-            var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
+            var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto, SerializationBinder = new NotificationSerializationBinder() };
             var jsonInput = JsonConvert.DeserializeObject<Notifications>(notificationsSerial, jsonSettings);
 
             NewPages.Count = 0;
@@ -224,6 +225,10 @@ namespace Menu.Notifications
             {
                 PopulateRetryPage();
             }
+            else if (Notifications.NotificationList.Count == 0)
+            {
+                PopulateEmptyPage();
+            }
             else
             {
                 Settings.LastViewNotificationDate = $"{DateTime.Today:yyyy-MM-dd}";
@@ -266,6 +271,15 @@ namespace Menu.Notifications
             Page.NDetailList.Add(new NTextControl(Panel, "Is your Internet connected?"));
 
             Page.NDetailList.Add(new NRetryControl(Page, "Retry", 140, "Try again to fetch notifications", MainForm));
+        }
+
+        private void PopulateEmptyPage()
+        {
+            NewPages.Count = 0;
+
+            // Reports no notifications.
+            var today = DateTime.Now.Date;
+            Page.NDetailList.Add(new NTitleControl(Panel, 1, 1, $"{today:dd-MMM-yy}", "No notifications"));
         }
 
         #region Process Criteria
@@ -356,34 +370,11 @@ namespace Menu.Notifications
         {
             foreach (var c in criteriaList)
             {
-                if (c is Contains) // other criteria might be added such as NoLessThan and NoMoreThan.
-                {
-                    if (CheckContains(c, true) == false) return false;
-                }
-                if (c is NotContains)
-                {
-                    if (CheckContains(c, false) == false) return false;
-                }
+                var result = c.IsMatch();
+                AppendToLog($"Check: {result}: '{c.Property}' {c.GetType().Name} '{c.Value}'");
+                if (!result) return false;
             }
             return true;
-        }
-
-        /// <summary>
-        /// Returns true if a match is found and sense = true. For NotContains, use sense = false.
-        /// </summary>
-        /// <param name="criteria"></param>
-        /// <param name="sense"></param>
-        /// <returns></returns>
-        private bool CheckContains(Criteria criteria, bool sense)
-        {
-            // If Property was a parameter, then use the expansion
-            var content = ParameterDictionary.ContainsKey(criteria.Property)
-                ? ParameterDictionary[criteria.Property]
-                : criteria.Property;
-
-            var result = content.IndexOf(criteria.Value, StringComparison.OrdinalIgnoreCase) > -1 == sense;
-            LogCheckContains(criteria.Value, sense, content, result);
-            return result;
         }
         #endregion
 
@@ -400,6 +391,10 @@ namespace Menu.Notifications
                 {
                     Page.NDetailList.Add(new NLinkControl(Page, item.Label, item.Indent, link.Value, MainForm, url));
                 }
+            }
+            else if (item is Dialog dialog)
+            {
+                Page.NDetailList.Add(new NDialogControl(Page, item.Label, item.Indent, dialog.Value, MainForm, dialog.Form));
             }
             else if (item is Update update)
             {
@@ -442,68 +437,37 @@ namespace Menu.Notifications
             return url;
         }
 
-        public void ReplaceParameters()
+        void ReplaceParameters()
         {
-            foreach (var n in Notifications.NotificationList)
+            Notifications.ReplaceParameters(ReplaceParameterValues);
+        }
+
+        string ReplaceParameterValues(string value)
+        {
+            if (value == null) return value;
+            var start = 0;
+            while ((start = value.IndexOf("{{", start)) >= 0)
             {
-                n.Title = ReplaceParameter(n.Title);
-                n.Date = ReplaceParameter(n.Date);
-                n.ItemList?.ForEach(item => ReplaceItemParameter(item));
+                var end = value.IndexOf("}}", start);
+                if (end == -1) break;
+                var variable = value.Substring(start + 2, end - start - 2);
+                var replacement = GetParameterValue(variable);
+                value = value.Substring(0, start) + replacement + value.Substring(end + 2);
+                start += replacement.Length;
             }
-            foreach (var list in Notifications.CheckList)
-            {
-                foreach(var c in list?.AnyOfList)
-                {
-                    c?.AllOfList.ForEach(criteria => ReplaceCriteriaPropertyParameter(criteria));
-                    c?.AllOfList.ForEach(criteria => ReplaceCriteriaValueParameter(criteria));
-                }
-            }
+            return value;
         }
 
-        private void ReplaceItemParameter(Item item)
+        string GetParameterValue(string parameter)
         {
-            if (item is Record record)
-                record.Value = ReplaceParameter(record.Value);
-            if (item is Link link)
-                link.Value = ReplaceParameter(link.Value);
-            if (item is Update update)
-                update.Value = ReplaceParameter(update.Value);
-        }
-
-        /// <summary>
-        /// If Property is a parameter, remove {{..}} and add it and its replacement to the dictionary.
-        /// </summary>
-        /// <param name="criteria"></param>
-        private void ReplaceCriteriaPropertyParameter(Criteria criteria)
-        {
-            if (ContainsParameter(criteria.Property))
-            {
-                criteria.Property = ReplaceParameter(criteria.Property);
-            }
-        }
-
-        private void ReplaceCriteriaValueParameter(Criteria criteria)
-        {
-            criteria.Value = ReplaceParameter(criteria.Value);
-        }
-
-        private string ReplaceParameter(string field)
-        {
-            if (ContainsParameter(field) == false) return field;
-
-            var parameterArray = field.Split('{', '}'); // 5 elements: prefix, "", target, "", suffix
-            var target = parameterArray[2];
-            var lowerCaseTarget = parameterArray[2].ToLower();
             string replacement;
-
-            // If found in dictionary, then use that else extract it from program
-            if (ParameterDictionary.ContainsKey(lowerCaseTarget))
+            if (ParameterDictionary.ContainsKey(parameter))
             {
-                replacement = ParameterDictionary[lowerCaseTarget];
+                replacement = ParameterDictionary[parameter];
             }
             else
             {
-                switch (lowerCaseTarget)
+                switch (parameter)
                 {
                     // Update parameters
                     // Using "none" instead of "" so that records are readable.
@@ -560,23 +524,15 @@ namespace Menu.Notifications
                         replacement = GetInstalledRoutes();
                         break;
                     default:
-                        var propertyValue = GetSetting(target);
+                        var propertyValue = GetSetting(parameter);
                         replacement = (propertyValue == "")
-                            ? field     // strings that are not recognised are not replaced.
+                            ? "{{" + parameter + "}}"     // strings that are not recognised are not replaced.
                             : propertyValue.ToLower().Replace("false", "off").Replace("true", "on");
                         break;
                 }
-                ParameterDictionary.Add(lowerCaseTarget, replacement);
+                ParameterDictionary.Add(parameter, replacement);
             }
-
-            return parameterArray[0] + replacement + parameterArray[4];
-        }
-
-        private bool ContainsParameter(string field)
-        {
-            if (field.Contains("{{") == false) return false;
-            if (field.Contains("}}") == false) return false;
-            return true;
+            return replacement;
         }
 
         /// <summary>
@@ -586,12 +542,20 @@ namespace Menu.Notifications
         /// <returns></returns>
         string GetSetting(string settingText)
         {
-            var nameArray = settingText.Split('.'); // 2 elements: "Settings.<property>", e.g. "SimpleControlPhysics" 
-            if (nameArray[0] == "Settings" && nameArray.Length == 2)
+            // 2 elements: "Settings.<property>", e.g. "SimpleControlPhysics" 
+            // 3 elements: "Settings.<group>.<property>", e.g. "Telemetry.RandomNumber1000"
+            var nameArray = settingText.Split('.');
+            if (nameArray.Length < 2 || nameArray[0] != "Settings") return "";
+
+            var value = (object)Settings;
+            for (var i = 1; i < nameArray.Length; i++)
             {
-                return Settings.GetType().GetProperty(nameArray[1])?.GetValue(Settings).ToString() ?? "";
+                var prop = value.GetType().GetProperty(nameArray[i]);
+                if (prop == null) return "";
+                value = prop.GetValue(value);
             }
-            return "";
+            if (value is DateTime dateTime) return dateTime.ToString("yyyy-MM-dd");
+            return value?.ToString() ?? "";
         }
 
         private string GetInstalledRoutes()
@@ -614,7 +578,7 @@ namespace Menu.Notifications
             return installedRouteList;
         }
 
-        public OverrideParameterList GetOverrideParameters()
+        OverrideParameterList GetOverrideParameters()
         {
             // To support testing of a new remote notifications.json file before it is published,
             // GetNotifications tests first for a local file notifications_override_values.json
@@ -626,7 +590,7 @@ namespace Menu.Notifications
                 // Input from local file into a string
                 var overrideParametersSerial = File.ReadAllText(filename);
 
-                var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto };
+                var jsonSettings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto, SerializationBinder = new NotificationSerializationBinder() };
                 var jsonInput = JsonConvert.DeserializeObject<OverrideParameterList>(overrideParametersSerial, jsonSettings);
 
                 return jsonInput;
@@ -648,7 +612,7 @@ namespace Menu.Notifications
         }
 
         #region Logging
-        public void LogOverrideParameters()
+        void LogOverrideParameters()
         {
             if (Log == false) return;
 
@@ -660,7 +624,7 @@ namespace Menu.Notifications
             }
         }
 
-        public void LogParameters()
+        void LogParameters()
         {
             if (Log == false) return;
 
@@ -672,23 +636,36 @@ namespace Menu.Notifications
             }
         }
 
-        public void LogNotification(Notification n)
+        void LogNotification(Notification n)
         {
             AppendToLog($"\r\nNotification: {n.Title}");
         }
 
-        public void LogCheckContains(string value, bool sense, string content, bool result)
-        {
-            var negation = sense ? "" : "NOT ";
-            AppendToLog($"Check: {result} = '{value}' {negation}contained in '{content}'");
-        }
-
-        public void AppendToLog(string record)
+        void AppendToLog(string record)
         {
             if (Log == false) return;
 
             using (StreamWriter sw = File.AppendText(LogFile)) sw.WriteLine(record);
         }
         #endregion
+
+        class NotificationSerializationBinder : ISerializationBinder
+        {
+            public void BindToName(Type serializedType, out string assemblyName, out string typeName)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Type BindToType(string assemblyName, string typeName)
+            {
+                if (assemblyName == "Menu")
+                {
+                    var ns = typeof(Notifications).Namespace;
+                    var name = typeName.Split('.').Last();
+                    return typeof(Notifications).Assembly.GetType($"{ns}.{name}");
+                }
+                return null;
+            }
+        }
     }
 }

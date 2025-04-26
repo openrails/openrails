@@ -227,6 +227,7 @@ namespace Orts.Viewer3D.Popups
 
         public bool normalTextMode = true;// Standard text
         public bool TrainDrivingUpdating = false;
+        public int CurrentWidth = 0;
         public static bool MonoFont;
         public static bool FontChanged;
         public static bool FontToBold;
@@ -488,6 +489,15 @@ namespace Orts.Viewer3D.Popups
 
                 var newHeight = (int)MathHelper.Clamp(desiredHeight, (normalTextMode ? WindowHeightMin : 100), WindowHeightMax);
                 var newWidth = (int)MathHelper.Clamp(desiredWidth, (normalTextMode ? WindowWidthMin : 100), WindowWidthMax);
+
+                // Stable window width
+                if (normalTextMode) CurrentWidth = 0;// Reset CurrentWidth value
+                if (!normalTextMode && newWidth != CurrentWidth)
+                {
+                    var newWidthHigher = newWidth > CurrentWidth;
+                    newWidth = newWidthHigher ? newWidth : CurrentWidth;
+                    CurrentWidth = newWidthHigher ? newWidth : CurrentWidth;
+                }
 
                 // Move the dialog up if we're expanding it, or down if not; this keeps the center in the same place.
                 var newTop = Location.Y + (Location.Height - newHeight) / 2;
@@ -1009,28 +1019,31 @@ namespace Orts.Viewer3D.Popups
                 });
             }
 
-            if (engineBrakeStatus.Contains(Viewer.Catalog.GetString("BC")))
+            if (engineBrakeStatus != null)
             {
-                AddLabel(new ListLabel
+                if (engineBrakeStatus.Contains(Viewer.Catalog.GetString("BC")))
                 {
-                    FirstCol = Viewer.Catalog.GetString("Engine brake"),
-                    LastCol = engineBrakeStatus.Substring(0, engineBrakeStatus.IndexOf("BC")) + ColorCode[Color.Cyan],
-                });
-                index = engineBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC"));
-                brakeInfoValue = engineBrakeStatus.Substring(index, engineBrakeStatus.Length - index).TrimEnd();
-                AddLabel(new ListLabel
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString("Engine brake"),
+                        LastCol = engineBrakeStatus.Substring(0, engineBrakeStatus.IndexOf("BC")) + ColorCode[Color.Cyan],
+                    });
+                    index = engineBrakeStatus.IndexOf(Viewer.Catalog.GetString("BC"));
+                    brakeInfoValue = engineBrakeStatus.Substring(index, engineBrakeStatus.Length - index).TrimEnd();
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString(""),
+                        LastCol = $"{brakeInfoValue}{ColorCode[Color.White]}",
+                    });
+                }
+                else
                 {
-                    FirstCol = Viewer.Catalog.GetString(""),
-                    LastCol = $"{brakeInfoValue}{ColorCode[Color.White]}",
-                });
-            }
-            else
-            {
-                AddLabel(new ListLabel
-                {
-                    FirstCol = Viewer.Catalog.GetString("Engine brake"),
-                    LastCol = $"{engineBrakeStatus}{ColorCode[Color.Cyan]}",
-                });
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString("Engine brake"),
+                        LastCol = $"{engineBrakeStatus}{ColorCode[Color.Cyan]}",
+                    });
+                }
             }
 
             if (dynamicBrakeStatus != null && locomotive.IsLeadLocomotive())
@@ -1174,7 +1187,7 @@ namespace Orts.Viewer3D.Popups
                 }
                 else if (locomotive.IsWaterScoopDown && !locomotive.ScoopIsBroken)
                 {
-                    waterScoopIndicator = Viewer.Catalog.GetString("Down") + (locomotive.IsOverTrough() ? ColorCode[Color.Cyan] : ColorCode[Color.Orange]);
+                    waterScoopIndicator = Viewer.Catalog.GetString("Down") + (locomotive.IsOverTrough ? ColorCode[Color.Cyan] : ColorCode[Color.Orange]);
                     waterScoopKey = Symbols.ArrowToRight + ColorCode[Color.Yellow];
                 }
                 else

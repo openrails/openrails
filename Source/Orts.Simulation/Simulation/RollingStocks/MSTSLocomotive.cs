@@ -360,7 +360,7 @@ namespace Orts.Simulation.RollingStocks
 
         protected float OdometerResetPositionM = 0;
         protected bool OdometerCountingUp = true;
-        protected bool OdometerCountingForwards = true;
+        protected bool OdometerDirectionForward = true; // direction of the train when odometer was reset
         public bool OdometerResetButtonPressed = false;
 
         public bool OdometerVisible { get; private set; }
@@ -371,7 +371,11 @@ namespace Orts.Simulation.RollingStocks
                 if (Train == null)
                     return 0;
 
-                return OdometerCountingForwards ? Train.DistanceTravelledM - OdometerResetPositionM : OdometerResetPositionM - Train.DistanceTravelledM;
+                float odo;
+
+                if (OdometerDirectionForward ^ OdometerCountingUp) { odo = OdometerResetPositionM - Train.DistanceTravelledM; }
+                else { odo = Train.DistanceTravelledM - OdometerResetPositionM; }
+                return odo;
             }
         }
 
@@ -405,6 +409,8 @@ namespace Orts.Simulation.RollingStocks
         public float DynamicBrakeDelayS;
         public bool DynamicBrakeAutoBailOff;
         public bool DynamicBrakePartialBailOff;
+        public bool DynamicBrakeEngineBrakeReplacement;
+        public float DynamicBrakeEngineBrakeReplacementSpeed;
         public bool UsingRearCab;
         public bool BrakeOverchargeSoundOn = false;
         protected bool DynamicBrakeBlendingEnabled; // dynamic brake blending is configured
@@ -420,8 +426,6 @@ namespace Orts.Simulation.RollingStocks
         public CombinedControl CombinedControlType;
         public float CombinedControlSplitPosition;
         public bool HasSmoothStruc;
-
-        bool controlTrailerBrakeSystemSet = false;
 
         public float MaxContinuousForceN;
         public float SpeedOfMaxContinuousForceMpS;  // Speed where maximum tractive effort occurs
@@ -600,15 +604,6 @@ namespace Orts.Simulation.RollingStocks
 
         protected void CheckCoherence()
         {
-            if (!TrainBrakeController.IsValid())
-                TrainBrakeController = new ScriptedBrakeController(this); //create a blank one
-
-            if (!EngineBrakeController.IsValid())
-                EngineBrakeController = null;
-
-            if (!BrakemanBrakeController.IsValid())
-                BrakemanBrakeController = null;
-
             if (ThrottleController == null)
             {
                 //If no controller so far, we create a default one
@@ -1083,6 +1078,8 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dynamicbrakehasautobailoff":
                 case "engine(ortsdynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
                 case "engine(ortsdynamicbrakeshaspartialbailoff": DynamicBrakePartialBailOff = stf.ReadBoolBlock(false); break;
+                case "engine(ortsdynamicbrakereplacementwithenginebrake": DynamicBrakeEngineBrakeReplacement = stf.ReadBoolBlock(false); break;
+                case "engine(ortsdynamicbrakereplacementwithenginebrakeatspeed": DynamicBrakeEngineBrakeReplacementSpeed = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesdelaytimebeforeengaging": DynamicBrakeDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(dynamicbrakesresistorcurrentlimit": DynamicBrakeMaxCurrentA = stf.ReadFloatBlock(STFReader.UNITS.Current, null); break;
                 case "engine(numwheels": MSTSLocoNumDrvWheels = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (MSTSLocoNumDrvWheels < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
@@ -1235,6 +1232,8 @@ namespace Orts.Simulation.RollingStocks
             DynamicBrakeForceCurves = locoCopy.DynamicBrakeForceCurves;
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
             DynamicBrakePartialBailOff = locoCopy.DynamicBrakePartialBailOff;
+            DynamicBrakeEngineBrakeReplacement = locoCopy.DynamicBrakeEngineBrakeReplacement;
+            DynamicBrakeEngineBrakeReplacementSpeed = locoCopy.DynamicBrakeEngineBrakeReplacementSpeed;
             DynamicBrakeMaxCurrentA = locoCopy.DynamicBrakeMaxCurrentA;
             DynamicBrakeSpeed1MpS = locoCopy.DynamicBrakeSpeed1MpS;
             DynamicBrakeSpeed2MpS = locoCopy.DynamicBrakeSpeed2MpS;
@@ -1367,7 +1366,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(Wiper);
             outf.Write(OdometerResetPositionM);
             outf.Write(OdometerCountingUp);
-            outf.Write(OdometerCountingForwards);
+            outf.Write(OdometerDirectionForward);
             outf.Write(OdometerVisible);
             outf.Write(MainResPressurePSI);
             outf.Write(CompressorIsOn);
@@ -1421,7 +1420,7 @@ namespace Orts.Simulation.RollingStocks
             if (inf.ReadBoolean()) SignalEvent(Event.WiperOn);
             OdometerResetPositionM = inf.ReadSingle();
             OdometerCountingUp = inf.ReadBoolean();
-            OdometerCountingForwards = inf.ReadBoolean();
+            OdometerDirectionForward = inf.ReadBoolean();
             OdometerVisible = inf.ReadBoolean();
             MainResPressurePSI = inf.ReadSingle();
             CompressorIsOn = inf.ReadBoolean();
@@ -1539,8 +1538,29 @@ namespace Orts.Simulation.RollingStocks
         public override void Initialize()
         {
             TrainBrakeController.Initialize();
-            EngineBrakeController.Initialize();
-            BrakemanBrakeController.Initialize();
+            if (!TrainBrakeController.IsValid())
+            {
+                TrainBrakeController = new ScriptedBrakeController(this); //create a blank one
+                TrainBrakeController.Initialize();
+            }
+            if (EngineBrakeController != null)
+            {
+                EngineBrakeController.Initialize();
+                if (!EngineBrakeController.IsValid() && !SteamEngineBrakeFitted)
+                {
+                    EngineBrakeController = null;
+                    EngineBrakeFitted = false;
+                }
+            }
+            if (BrakemanBrakeController != null)
+            {
+                BrakemanBrakeController.Initialize();
+                if (!BrakemanBrakeController.IsValid())
+                {
+                    BrakemanBrakeController = null;
+                    BrakemanBrakeFitted = false;
+                }
+            }
             LocomotivePowerSupply?.Initialize();
             TrainControlSystem.Initialize();
             CruiseControl?.Initialize();
@@ -1716,7 +1736,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // MaximumMainReservoirPipePressurePSI is only used in twin pipe system, and should have a value
-            if ((BrakeSystem is AirTwinPipe))
+            if (BrakeSystem is AirSinglePipe air && air.TwoPipes)
             {
 
                 // for airtwinpipe system, make sure that a value is set for it
@@ -1826,6 +1846,11 @@ namespace Orts.Simulation.RollingStocks
                 {
                     TrainBrakePipeLeakPSIorInHgpS = 0.0f; // Air brakes
                 }
+            }
+
+            if (DynamicBrakeEngineBrakeReplacement && DynamicBrakeEngineBrakeReplacementSpeed == 0)
+            {
+                DynamicBrakeEngineBrakeReplacementSpeed = DynamicBrakeSpeed2MpS;
             }
 
             // Initialise track sanding parameters
@@ -1991,32 +2016,6 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
-            // A control car typically doesn't have its own compressor and relies on the attached power car. However OR uses the lead locomotive as the reference car for compressor calculations.
-            // Hence whilst users are encouraged to leave these parameters out of the ENG file, they need to be setup for OR to work correctly.
-            // Some parameters need to be split across the unpowered and powered car for correct timing and volume calculations.
-            // This setup loop is only processed the first time that update is run.
-            if (EngineType == EngineTypes.Control && !controlTrailerBrakeSystemSet)
-            {
-                FindControlActiveLocomotive();
-
-                if (ControlActiveLocomotive != null)
-                {
-                    // Split reservoir volume across the power car and the active locomotive
-                    MainResVolumeM3 = ControlActiveLocomotive.MainResVolumeM3 / 2;
-                    ControlActiveLocomotive.MainResVolumeM3 = MainResVolumeM3;
-
-                    MaxMainResPressurePSI = ControlActiveLocomotive.MaxMainResPressurePSI;
-                    MainResPressurePSI = MaxMainResPressurePSI;
-                    ControlActiveLocomotive.MainResPressurePSI = MainResPressurePSI;
-                    controlTrailerBrakeSystemSet = true; // Ensure this loop is only processes the first time update routine run
-                    MaximumMainReservoirPipePressurePSI = ControlActiveLocomotive.MaximumMainReservoirPipePressurePSI;
-                    CompressorRestartPressurePSI = ControlActiveLocomotive.CompressorRestartPressurePSI;
-                    MainResChargingRatePSIpS = ControlActiveLocomotive.MainResChargingRatePSIpS;
-                    BrakePipeChargingRatePSIorInHgpS = ControlActiveLocomotive.BrakePipeChargingRatePSIorInHgpS;
-                    TrainBrakePipeLeakPSIorInHgpS = ControlActiveLocomotive.TrainBrakePipeLeakPSIorInHgpS;
-                }
-            }
-
             var gearloco = this as MSTSDieselLocomotive;
 
             // Pass Gearbox commands
@@ -2147,7 +2146,7 @@ namespace Orts.Simulation.RollingStocks
                     if (RemoteControlGroup != -1)
                     {
                         if (!LocomotivePowerSupply.MainPowerSupplyOn)
-                            Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
+                            Train.SignalEvent(PowerSupplyEvent.QuickPowerOn);
 
                         if (this is MSTSDieselLocomotive dieselLocomotive)
                         {
@@ -2506,11 +2505,21 @@ namespace Orts.Simulation.RollingStocks
                         AbsTractionSpeedMpS = AbsSpeedMpS;
                     }
                 }
+                
+                float supplyPowerLimitW = float.MaxValue;
+                if (this is MSTSElectricLocomotive electric)
+                {
+                    supplyPowerLimitW = electric.ElectricPowerSupply.AvailableTractionPowerW;
+                    if (electric.ElectricPowerSupply.MaximumPowerW > 0)
+                        supplyPowerLimitW = Math.Min(supplyPowerLimitW, electric.ElectricPowerSupply.MaximumPowerW * t);
+                }
 
                 if (TractiveForceCurves == null)
                 {
                     float maxForceN = MaxForceN * t * (1 - PowerReduction);
-                    float maxPowerW = MaxPowerW * t * t * (1 - PowerReduction);
+                    float maxPowerW = MaxPowerW;
+                    maxPowerW *= t * t * (1 - PowerReduction);
+                    maxPowerW = Math.Min(maxPowerW, supplyPowerLimitW);
 
                     if (maxForceN * AbsTractionSpeedMpS > maxPowerW)
                         maxForceN = maxPowerW / AbsTractionSpeedMpS;
@@ -2525,6 +2534,8 @@ namespace Orts.Simulation.RollingStocks
                 else
                 {
                     TractiveForceN = TractiveForceCurves.Get(t, AbsTractionSpeedMpS) * (1 - PowerReduction);
+                    if (TractiveForceN * AbsTractionSpeedMpS > supplyPowerLimitW)
+                        TractiveForceN = supplyPowerLimitW / AbsTractionSpeedMpS;
                     if (TractiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                         TractiveForceN = 0;
                 }
@@ -2546,13 +2557,18 @@ namespace Orts.Simulation.RollingStocks
             // Calculate the total tractive force for the locomotive - ie Traction + Dynamic Braking force.
             // Note typically only one of the above will only ever be non-zero at the one time.
             // For flipped locomotives the force is "flipped" elsewhere, whereas dynamic brake force is "flipped" below by the direction of the speed.
-
             if (DynamicBrakePercent > 0 && DynamicBrake && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
             {
                 float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsTractionSpeedMpS);
                 if (f > 0 && LocomotivePowerSupply.DynamicBrakeAvailable)
                 {
                     DynamicBrakeForceN = f * (1 - PowerReduction);
+                    if (LocomotivePowerSupply.MaximumDynamicBrakePowerW > 0)
+                    {
+                        float maxPowerW = LocomotivePowerSupply.MaximumDynamicBrakePowerW * DynamicBrakePercent / 100 * (1 - PowerReduction);
+                        if (DynamicBrakeForceN * AbsTractionSpeedMpS > maxPowerW)
+                            DynamicBrakeForceN = maxPowerW / AbsTractionSpeedMpS;
+                    }
                     TractiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * DynamicBrakeForceN;                 
                 }
                 else
@@ -2804,10 +2820,8 @@ namespace Orts.Simulation.RollingStocks
                 {
                     FindControlActiveLocomotive();
 
-                    if (ControlActiveLocomotive != null)
+                    if (ControlActiveLocomotive is MSTSDieselLocomotive activeloco)
                     {
-                        var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
-
                         // Set charging rate depending upon compressor rpm
                         reservoirChargingRate = (activeloco.DieselEngines[0].RealRPM / activeloco.DieselEngines[0].MaxRPM) * MainResChargingRatePSIpS;
                     }
@@ -3081,7 +3095,7 @@ namespace Orts.Simulation.RollingStocks
                     Simulator.Confirmer.Message(ConfirmLevel.Error, Simulator.Catalog.GetString("Scoop is broken, can't refill"));
                     RefillingFromTrough = false;
                 }
-                else if (IsOverJunction())
+                else if (IsOverSwitch || IsOverCrossover)
                 {
                     if (!ScoopIsBroken) // Only display message first time scoop is broken
                     {
@@ -3091,7 +3105,7 @@ namespace Orts.Simulation.RollingStocks
                     RefillingFromTrough = false;
                     SignalEvent(Event.WaterScoopBroken);
                 }
-                else if (!IsOverTrough())
+                else if (!IsOverTrough)
                 {
                     if (!WaterScoopOverTroughFlag)
                     {
@@ -3136,7 +3150,7 @@ namespace Orts.Simulation.RollingStocks
                 }
 
             }
-            else if (HasWaterScoop && MSTSWagon.RefillProcess.OkToRefill == true && IsOverTrough())// water scoop has been raised, stop water filling
+            else if (HasWaterScoop && MSTSWagon.RefillProcess.OkToRefill == true && IsOverTrough)// water scoop has been raised, stop water filling
             {
                 MSTSWagon.RefillProcess.OkToRefill = false;
                 MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
@@ -3207,7 +3221,7 @@ namespace Orts.Simulation.RollingStocks
                 WaterScoopInputAmountL = 0;
                 WaterScoopVelocityMpS = 0;
 
-                if (!IsOverTrough()) // Only reset once train moves off the trough
+                if (!IsOverTrough) // Only reset once train moves off the trough
                 {
                     WaterScoopTotalWaterL = 0.0f; // Reset amount of water picked up by water sccop.
                 }
@@ -5026,52 +5040,48 @@ namespace Orts.Simulation.RollingStocks
             // Electric locos do nothing. Diesel and steam override this.
         }
 
+        /// <summary>
+        /// Show / hide the odometer.
+        /// </summary>
         public void OdometerToggle()
         {
             OdometerVisible = !OdometerVisible;
         }
 
         /// <summary>
-        /// Set odometer reference distance to actual travelled distance,
-        /// and set measuring direction to the actual direction
+        /// Reset the odometer. Sets a new reset position, adjusted by +/- the train length when counting down.
+        /// The odometer calculation is in OdometerM.get().
         /// </summary>
         public void OdometerReset(bool toState)
         {
             if (Train == null)
                 return;
+
             if (toState)
             {
-                if (OdometerCountingForwards != OdometerCountingUp ^ (Direction == Direction.Reverse))
-                {
-                    OdometerCountingForwards = !OdometerCountingForwards;
-                }
+                OdometerDirectionForward = (Direction == Direction.Reverse) ? false : true;
 
-                if (Direction == Direction.Reverse)
-                {
-                    if (OdometerCountingForwards)
-                        OdometerResetPositionM = Train.DistanceTravelledM - Train.Length;
-                    else
-                        OdometerResetPositionM = Train.DistanceTravelledM;
-                }
-                else
-                {
-                    if (OdometerCountingForwards)
-                        OdometerResetPositionM = Train.DistanceTravelledM;
-                    else
-                        OdometerResetPositionM = Train.DistanceTravelledM + Train.Length;
-                }
+                if (OdometerCountingUp) { OdometerResetPositionM = Train.DistanceTravelledM; }
+                else if (Direction == Direction.Reverse) { OdometerResetPositionM = Train.DistanceTravelledM - Train.Length; }
+                else { OdometerResetPositionM = Train.DistanceTravelledM + Train.Length; }
 
                 Simulator.Confirmer.Confirm(CabControl.Odometer, CabSetting.On);
             }
             OdometerResetButtonPressed = toState;
         }
 
+        /// <summary>
+        /// Change the odometer counting direction. Adjusts the reset position +/- the train length.
+        /// The odometer calculation is in OdometerM.get().
+        /// </summary>
         public void OdometerToggleDirection()
         {
             if (Train == null)
                 return;
 
             OdometerCountingUp = !OdometerCountingUp;
+            if (OdometerDirectionForward ^ OdometerCountingUp) { OdometerResetPositionM += Train.Length; }
+            else { OdometerResetPositionM -= Train.Length; }
 
             Simulator.Confirmer.Confirm(CabControl.Odometer, OdometerCountingUp ? CabSetting.Increase : CabSetting.Decrease);
         }
@@ -5519,97 +5529,35 @@ namespace Orts.Simulation.RollingStocks
 
                 case CABViewControlTypes.RPM:
                     {
-
-                        if (EngineType == EngineTypes.Control)
-                        {
-                            FindControlActiveLocomotive();
-
-                            if (ControlActiveLocomotive != null)
-                            {
-                                var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
-                                if (activeloco.DieselEngines[0] != null)
-                                    data = activeloco.DieselEngines[0].RealRPM;
-                            }
-
-                        }
-                        else
-                        {
-                            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
-                            if (mstsDieselLocomotive.DieselEngines[0] != null)
-                                data = mstsDieselLocomotive.DieselEngines[0].RealRPM;
-                        }
+                        var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+                        if (mstsDieselLocomotive.DieselEngines[0] != null)
+                            data = mstsDieselLocomotive.DieselEngines[0].RealRPM;
                         break;
                     }
 
                 case CABViewControlTypes.RPM_2:
                     {
-
-                        FindControlActiveLocomotive();
-
-                        if (ControlActiveLocomotive != null)
-                        {
-                            var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
-                            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
-
-                            if (EngineType == EngineTypes.Control && activeloco.DieselEngines.NumOfActiveEngines > 1)
-                            {
-                             
-                                if (activeloco.DieselEngines[1] != null)
-                                    data = activeloco.DieselEngines[1].RealRPM;
-                            }
-                            else if (EngineType == EngineTypes.Diesel && mstsDieselLocomotive.DieselEngines.NumOfActiveEngines > 1)
-                            {                      
-                                if (mstsDieselLocomotive.DieselEngines[1] != null)
-                                    data = mstsDieselLocomotive.DieselEngines[1].RealRPM;
-                            }
+                        if (this is MSTSDieselLocomotive mstsDieselLocomotive && mstsDieselLocomotive.DieselEngines.NumOfActiveEngines > 1)
+                        {                      
+                            if (mstsDieselLocomotive.DieselEngines[1] != null)
+                                data = mstsDieselLocomotive.DieselEngines[1].RealRPM;
                         }
-                        break;
                     }
+                    break;
 
                 case CABViewControlTypes.ORTS_DIESEL_TEMPERATURE:
                     {
-
-                        if (EngineType == EngineTypes.Control)
-                        {
-                            FindControlActiveLocomotive();
-
-                            if (ControlActiveLocomotive != null)
-                            {
-                                var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
-                                if (activeloco.DieselEngines[0] != null)
-                                    data = activeloco.DieselEngines[0].DieselTemperatureDeg;
-                            }
-
-                        }
-                        else
-                        {
-                            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
-                            if (mstsDieselLocomotive.DieselEngines[0] != null)
-                                data = mstsDieselLocomotive.DieselEngines[0].DieselTemperatureDeg;
-                        }
+                        var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+                        if (mstsDieselLocomotive.DieselEngines[0] != null)
+                            data = mstsDieselLocomotive.DieselEngines[0].DieselTemperatureDeg;
                         break;
                     }
 
                 case CABViewControlTypes.ORTS_OIL_PRESSURE:
                     {
-                        if (EngineType == EngineTypes.Control)
-                        {
-                            FindControlActiveLocomotive();
-
-                            if (ControlActiveLocomotive != null)
-                            {
-                                var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
-                                if (activeloco.DieselEngines[0] != null)
-                                    data = activeloco.DieselEngines[0].DieselOilPressurePSI;
-                            }
-
-                        }
-                        else
-                        {
-                            var mstsDieselLocomotive = this as MSTSDieselLocomotive;
-                            if (mstsDieselLocomotive.DieselEngines[0] != null)
-                                data = mstsDieselLocomotive.DieselEngines[0].DieselOilPressurePSI;
-                        }
+                        var mstsDieselLocomotive = this as MSTSDieselLocomotive;
+                        if (mstsDieselLocomotive.DieselEngines[0] != null)
+                            data = mstsDieselLocomotive.DieselEngines[0].DieselOilPressurePSI;
                         break;
                     }
 
@@ -5812,30 +5760,10 @@ namespace Orts.Simulation.RollingStocks
                     }
                 case CABViewControlTypes.WHEELSLIP:
                     {
-                        if (EngineType == EngineTypes.Control)
-                        {
-                            FindControlActiveLocomotive();
-
-                            if (ControlActiveLocomotive != null)
-                            {
-                                var activeloco = ControlActiveLocomotive as MSTSDieselLocomotive;
-                                if (activeloco.DieselEngines[0] != null)
-                                {
-                                    if (activeloco.AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot)
-                                        data = activeloco.HuDIsWheelSlipWarninq ? 1 : 0;
-                                    else
-                                        data = activeloco.HuDIsWheelSlip ? 1 : 0;
-
-                                }
-                            }
-                        }
+                        if (AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot)
+                            data = HuDIsWheelSlipWarninq ? 1 : 0;
                         else
-                        {
-                            if (AdvancedAdhesionModel && Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && !Train.Autopilot)
-                                data = HuDIsWheelSlipWarninq ? 1 : 0;
-                            else
-                                data = HuDIsWheelSlip ? 1 : 0;
-                        }
+                            data = HuDIsWheelSlip ? 1 : 0;
                         break;
                     }
 
@@ -6056,6 +5984,11 @@ namespace Orts.Simulation.RollingStocks
                     TrainControlSystem.CabDisplayControls.TryGetValue(cvc.ControlType.Id - 1, out data);
                     break;
 
+                case CABViewControlTypes.ORTS_POWER_SUPPLY:
+                    if (LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply)
+                        supply.CabDisplayControls.TryGetValue(cvc.ControlType.Id - 1, out data);
+                    break;
+
                 case CABViewControlTypes.ORTS_BATTERY_SWITCH_COMMAND_SWITCH:
                     data = LocomotivePowerSupply.BatterySwitch.CommandSwitch ? 1 : 0;
                     break;
@@ -6070,6 +6003,10 @@ namespace Orts.Simulation.RollingStocks
 
                 case CABViewControlTypes.ORTS_BATTERY_SWITCH_ON:
                     data = LocomotivePowerSupply.BatterySwitch.On ? 1 : 0;
+                    break;
+
+                case CABViewControlTypes.ORTS_BATTERY_VOLTAGE:
+                    data = LocomotivePowerSupply.BatteryVoltageV;
                     break;
 
                 case CABViewControlTypes.ORTS_MASTER_KEY:
