@@ -706,51 +706,52 @@ namespace Orts.Simulation.RollingStocks
 
                 }
 
+                void setIfPositive(ref float result, float? value) { if (value > 0) result = (float)value; }
                 void setIfNonZero(ref float result, float? value) { if (value != null && value != 0) result = (float)value; }
 
                 // Read freight animation values from animation INCLUDE files
                 // Read (initialise) "common" (empty values first).
                 // Test each value to make sure that it has been defined in the WAG file, if not default to Root WAG file value
-                setIfNonZero(ref LoadEmptyMassKg, FreightAnimations.WagonEmptyWeight);
-                setIfNonZero(ref LoadEmptyORTSDavis_A, FreightAnimations.EmptyORTSDavis_A);
-                setIfNonZero(ref LoadEmptyORTSDavis_B, FreightAnimations.EmptyORTSDavis_B);
-                setIfNonZero(ref LoadEmptyORTSDavis_C, FreightAnimations.EmptyORTSDavis_C);
-                setIfNonZero(ref LoadEmptyDavisDragConstant, FreightAnimations.EmptyORTSDavisDragConstant);
-                setIfNonZero(ref LoadEmptyWagonFrontalAreaM2, FreightAnimations.EmptyORTSWagonFrontalAreaM2);
-                setIfNonZero(ref LoadEmptyMaxBrakeForceN, FreightAnimations.EmptyMaxBrakeShoeForceN);
-                setIfNonZero(ref LoadEmptyMaxBrakeForceN, FreightAnimations.EmptyMaxBrakeForceN);
-                setIfNonZero(ref LoadEmptyMaxHandbrakeForceN, FreightAnimations.EmptyMaxHandbrakeForceN);
-                setIfNonZero(ref LoadEmptyCentreOfGravityM_Y, FreightAnimations.EmptyCentreOfGravityM_Y);
-                setIfNonZero(ref LoadEmptyRelayValveRatio, FreightAnimations.EmptyRelayValveRatio);
+                setIfPositive(ref LoadEmptyMassKg, FreightAnimations.WagonEmptyWeight);
+                setIfPositive(ref LoadEmptyORTSDavis_A, FreightAnimations.EmptyORTSDavis_A);
+                setIfPositive(ref LoadEmptyORTSDavis_B, FreightAnimations.EmptyORTSDavis_B);
+                setIfPositive(ref LoadEmptyORTSDavis_C, FreightAnimations.EmptyORTSDavis_C);
+                setIfPositive(ref LoadEmptyDavisDragConstant, FreightAnimations.EmptyORTSDavisDragConstant);
+                setIfPositive(ref LoadEmptyWagonFrontalAreaM2, FreightAnimations.EmptyORTSWagonFrontalAreaM2);
+                setIfPositive(ref LoadEmptyMaxBrakeForceN, FreightAnimations.EmptyMaxBrakeShoeForceN);
+                setIfPositive(ref LoadEmptyMaxBrakeForceN, FreightAnimations.EmptyMaxBrakeForceN);
+                setIfPositive(ref LoadEmptyMaxHandbrakeForceN, FreightAnimations.EmptyMaxHandbrakeForceN);
+                setIfPositive(ref LoadEmptyCentreOfGravityM_Y, FreightAnimations.EmptyCentreOfGravityM_Y);
+                setIfPositive(ref LoadEmptyRelayValveRatio, FreightAnimations.EmptyRelayValveRatio);
                 setIfNonZero(ref LoadEmptyInshotPSI, FreightAnimations.EmptyInshotPSI);
 
                 // Read (initialise) Static load ones if a static load
                 // Test each value to make sure that it has been defined in the WAG file, if not default to Root WAG file value
-                setIfNonZero(ref LoadFullORTSDavis_A, FreightAnimations.FullPhysicsStaticOne?.FullStaticORTSDavis_A);
-                setIfNonZero(ref LoadFullORTSDavis_B, FreightAnimations.FullPhysicsStaticOne?.FullStaticORTSDavis_B);
-                setIfNonZero(ref LoadFullORTSDavis_C, FreightAnimations.FullPhysicsStaticOne?.FullStaticORTSDavis_C);
-                setIfNonZero(ref LoadFullDavisDragConstant, FreightAnimations.FullPhysicsStaticOne?.FullStaticORTSDavisDragConstant);
-                setIfNonZero(ref LoadFullWagonFrontalAreaM2, FreightAnimations.FullPhysicsStaticOne?.FullStaticORTSWagonFrontalAreaM2);
-                setIfNonZero(ref LoadFullMaxBrakeForceN, FreightAnimations.FullPhysicsStaticOne?.FullStaticMaxBrakeShoeForceN);
-                setIfNonZero(ref LoadFullMaxBrakeForceN, FreightAnimations.FullPhysicsStaticOne?.FullStaticMaxBrakeForceN);
-                setIfNonZero(ref LoadFullMaxHandbrakeForceN, FreightAnimations.FullPhysicsStaticOne?.FullStaticMaxHandbrakeForceN);
-                setIfNonZero(ref LoadFullCentreOfGravityM_Y, FreightAnimations.FullPhysicsStaticOne?.FullStaticCentreOfGravityM_Y);
-                setIfNonZero(ref LoadFullRelayValveRatio, FreightAnimations.FullPhysicsStaticOne?.FullStaticRelayValveRatio);
-                setIfNonZero(ref LoadFullInshotPSI, FreightAnimations.FullPhysicsStaticOne?.FullStaticInshotPSI);
+                setIfPositive(ref LoadFullORTSDavis_A, FreightAnimations.FullPhysicsStaticOne?.FullStaticORTSDavis_A);
+                setIfPositive(ref LoadFullORTSDavis_B, FreightAnimations.FullPhysicsStaticOne?.FullStaticORTSDavis_B);
+                setIfPositive(ref LoadFullORTSDavis_C, FreightAnimations.FullPhysicsStaticOne?.FullStaticORTSDavis_C);
+                setIfPositive(ref LoadFullDavisDragConstant, FreightAnimations.FullPhysicsStaticOne?.FullStaticORTSDavisDragConstant);
+                setIfPositive(ref LoadFullWagonFrontalAreaM2, FreightAnimations.FullPhysicsStaticOne?.FullStaticORTSWagonFrontalAreaM2);
+                setIfPositive(ref LoadFullMaxBrakeForceN, FreightAnimations.FullPhysicsStaticOne?.FullStaticMaxBrakeShoeForceN);
+                setIfPositive(ref LoadFullMaxBrakeForceN, FreightAnimations.FullPhysicsStaticOne?.FullStaticMaxBrakeForceN);
+                setIfPositive(ref LoadFullMaxHandbrakeForceN, FreightAnimations.FullPhysicsStaticOne?.FullStaticMaxHandbrakeForceN);
+                setIfPositive(ref LoadFullCentreOfGravityM_Y, FreightAnimations.FullPhysicsStaticOne?.FullStaticCentreOfGravityM_Y);
+                setIfPositive(ref LoadFullRelayValveRatio, FreightAnimations.FullPhysicsStaticOne?.FullStaticRelayValveRatio);
+                setIfPositive(ref LoadFullInshotPSI, FreightAnimations.FullPhysicsStaticOne?.FullStaticInshotPSI);
 
                 // Read (initialise) Continuous load ones if a continuous load
                 // Test each value to make sure that it has been defined in the WAG file, if not default to Root WAG file value
-                setIfNonZero(ref LoadFullMassKg, FreightAnimations.WagonEmptyWeight + FreightAnimations.FullPhysicsContinuousOne?.FreightWeightWhenFull);
-                setIfNonZero(ref LoadFullORTSDavis_A, FreightAnimations.FullPhysicsContinuousOne?.FullORTSDavis_A);
-                setIfNonZero(ref LoadFullORTSDavis_B, FreightAnimations.FullPhysicsContinuousOne?.FullORTSDavis_B);
-                setIfNonZero(ref LoadFullORTSDavis_C, FreightAnimations.FullPhysicsContinuousOne?.FullORTSDavis_C);
-                setIfNonZero(ref LoadFullDavisDragConstant, FreightAnimations.FullPhysicsContinuousOne?.FullORTSDavisDragConstant);
-                setIfNonZero(ref LoadFullWagonFrontalAreaM2, FreightAnimations.FullPhysicsContinuousOne?.FullORTSWagonFrontalAreaM2);
-                setIfNonZero(ref LoadFullMaxBrakeForceN, FreightAnimations.FullPhysicsContinuousOne?.FullMaxBrakeShoeForceN);
-                setIfNonZero(ref LoadFullMaxBrakeForceN, FreightAnimations.FullPhysicsContinuousOne?.FullMaxBrakeForceN);
-                setIfNonZero(ref LoadFullMaxHandbrakeForceN, FreightAnimations.FullPhysicsContinuousOne?.FullMaxHandbrakeForceN);
-                setIfNonZero(ref LoadFullCentreOfGravityM_Y, FreightAnimations.FullPhysicsContinuousOne?.FullCentreOfGravityM_Y);
-                setIfNonZero(ref LoadFullRelayValveRatio, FreightAnimations.FullPhysicsContinuousOne?.FullRelayValveRatio);
+                setIfPositive(ref LoadFullMassKg, FreightAnimations.WagonEmptyWeight + FreightAnimations.FullPhysicsContinuousOne?.FreightWeightWhenFull);
+                setIfPositive(ref LoadFullORTSDavis_A, FreightAnimations.FullPhysicsContinuousOne?.FullORTSDavis_A);
+                setIfPositive(ref LoadFullORTSDavis_B, FreightAnimations.FullPhysicsContinuousOne?.FullORTSDavis_B);
+                setIfPositive(ref LoadFullORTSDavis_C, FreightAnimations.FullPhysicsContinuousOne?.FullORTSDavis_C);
+                setIfPositive(ref LoadFullDavisDragConstant, FreightAnimations.FullPhysicsContinuousOne?.FullORTSDavisDragConstant);
+                setIfPositive(ref LoadFullWagonFrontalAreaM2, FreightAnimations.FullPhysicsContinuousOne?.FullORTSWagonFrontalAreaM2);
+                setIfPositive(ref LoadFullMaxBrakeForceN, FreightAnimations.FullPhysicsContinuousOne?.FullMaxBrakeShoeForceN);
+                setIfPositive(ref LoadFullMaxBrakeForceN, FreightAnimations.FullPhysicsContinuousOne?.FullMaxBrakeForceN);
+                setIfPositive(ref LoadFullMaxHandbrakeForceN, FreightAnimations.FullPhysicsContinuousOne?.FullMaxHandbrakeForceN);
+                setIfPositive(ref LoadFullCentreOfGravityM_Y, FreightAnimations.FullPhysicsContinuousOne?.FullCentreOfGravityM_Y);
+                setIfPositive(ref LoadFullRelayValveRatio, FreightAnimations.FullPhysicsContinuousOne?.FullRelayValveRatio);
                 setIfNonZero(ref LoadFullInshotPSI, FreightAnimations.FullPhysicsContinuousOne?.FullInshotPSI);
 
                 if (!FreightAnimations.MSTSFreightAnimEnabled) FreightShapeFileName = null;
