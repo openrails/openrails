@@ -1160,6 +1160,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
         }
 
+        public virtual void UpdateTractionCutoff()
+        {
+            var locomotive = Car as MSTSLocomotive;
+            if (!locomotive.DoesBrakeCutPower) return;
+            if (locomotive.BrakeCutsPowerAtBrakePipePressurePSI > 0)
+            {
+                if (BrakeLine1PressurePSI < locomotive.BrakeCutsPowerAtBrakePipePressurePSI) locomotive.TrainControlSystem.BrakeSystemTractionAuthorization = false;
+                else if (BrakeLine1PressurePSI >= locomotive.BrakeRestoresPowerAtBrakePipePressurePSI) locomotive.TrainControlSystem.BrakeSystemTractionAuthorization = true;
+            }
+            else locomotive.TrainControlSystem.BrakeSystemTractionAuthorization = CylPressurePSI <= locomotive.BrakeCutsPowerAtBrakeCylinderPressurePSI;
+        }
+
         public override void Update(float elapsedClockSeconds)
         {
             var valveType = BrakeValve;
@@ -1926,6 +1938,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
 
             }
+
+            if (Car is MSTSLocomotive) UpdateTractionCutoff();
                        
             // Record HUD display values for brake cylinders depending upon whether they are wagons or locomotives/tenders (which are subject to their own engine brakes)   
             if (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender)

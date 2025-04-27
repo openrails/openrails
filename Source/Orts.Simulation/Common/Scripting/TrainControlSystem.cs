@@ -261,9 +261,14 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> DoesBrakeCutPower;
         /// <summary>
-        /// Train brake pressure value which triggers the power cut-off.
+        /// Deprecated. Returns positive infinity if traction cutoff is requested by the brake system, and negative infinity if it is not requested
         /// </summary>
-        public Func<float> BrakeCutsPowerAtBrakeCylinderPressureBar;
+        [Obsolete("BrakeCutsPowerAtBrakeCylinderPressureBar() is deprecated, use BrakeSystemTractionAuthorization instead")]
+        public float BrakeCutsPowerAtBrakeCylinderPressureBar()
+        {
+            return BrakeSystemTractionAuthorization ? float.PositiveInfinity : float.NegativeInfinity;
+        }
+        public bool BrakeSystemTractionAuthorization => Host.BrakeSystemTractionAuthorization;
         /// <summary>
         /// State of the train brake controller.
         /// </summary>
