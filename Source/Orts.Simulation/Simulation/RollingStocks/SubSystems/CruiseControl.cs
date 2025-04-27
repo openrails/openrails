@@ -26,6 +26,7 @@ using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using ORTS.Common;
 using ORTS.Scripting.Api;
+using static Orts.Simulation.RollingStocks.TrainCar;
 namespace Orts.Simulation.RollingStocks.SubSystems
 {
     public class CruiseControl
@@ -200,7 +201,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool WasBraking = false;
         public bool WasForceReset = true;
 
-        protected float DeltaAccelerationExponent = 0.5f;
+        protected enum SpeedDeltaMode
+        {
+            Linear,
+            Sqrt
+        }
+        protected SpeedDeltaMode SpeedDeltaFunctionMode = SpeedDeltaMode.Sqrt;
 
         AccelerationController ThrottlePID;
         AccelerationController DynamicBrakePID;
@@ -245,7 +251,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             MaxForceSelectorIsDiscrete = other.MaxForceSelectorIsDiscrete;
             SpeedRegulatorOptions = other.SpeedRegulatorOptions;
             CruiseControlLogic = other.CruiseControlLogic;
-            DeltaAccelerationExponent = other.DeltaAccelerationExponent;
+            SpeedDeltaFunctionMode = other.SpeedDeltaFunctionMode;
             SpeedRegulatorNominalSpeedStepMpS = other.SpeedRegulatorNominalSpeedStepMpS;
             MaxAccelerationMpSS = other.MaxAccelerationMpSS;
             MaxDecelerationMpSS = other.MaxDecelerationMpSS;
@@ -398,7 +404,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     case "throttleneutralposition": ThrottleNeutralPosition = stf.ReadBoolBlock(false); break;
                     case "modeswitchallowedwiththrottlenotatzero": ModeSwitchAllowedWithThrottleNotAtZero = stf.ReadBoolBlock(false); break;
                     case "docomputenumberofaxles": DoComputeNumberOfAxles = stf.ReadBoolBlock(false); break;
-                    case "deltaaccelerationexponent": DeltaAccelerationExponent = stf.ReadFloatBlock(STFReader.UNITS.Any, 1f); break;
+                    case "speeddeltafunctionmode":
+                        stf.MustMatch("(");
+                        var speedDeltaMode = stf.ReadString();
+                        try
+                        {
+                            SpeedDeltaFunctionMode = (SpeedDeltaMode)Enum.Parse(typeof(SpeedDeltaMode), speedDeltaMode, true);
+                        }
+                        catch
+                        {
+                            STFException.TraceWarning(stf, "Skipped unknown speed delta function mode " + speedDeltaMode);
+                            SpeedDeltaFunctionMode = SpeedDeltaMode.Linear;
+                        }
+                        break;
                     case "options":
                         foreach (var speedRegulatorOption in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
                         {
@@ -486,7 +504,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (SpeedDeltaToStartAcceleratingMpS < SpeedDeltaToStopAcceleratingMpS) SpeedDeltaToStopAcceleratingMpS = SpeedDeltaToStartAcceleratingMpS;
             if (SpeedDeltaToStartBrakingMpS > SpeedDeltaToStopBrakingMpS) SpeedDeltaToStopBrakingMpS = SpeedDeltaToStartBrakingMpS;
 
-            if (DeltaAccelerationExponent == 0.5f) StartReducingSpeedDeltaDownwards /= 3;
+            if (SpeedDeltaFunctionMode == SpeedDeltaMode.Sqrt) StartReducingSpeedDeltaDownwards /= 3;
 
             if (StartInAutoMode) SpeedRegMode = SpeedRegulatorMode.Auto;
 
@@ -1239,18 +1257,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 // However, this means that near the set speed the algorithm oscillates, since small changes in speed
                 // correspond to higher throttle demands:
                 // da/dv = -srsd / 2 / sqrt((vset-v) * srsd) which diverges when v = vset
-                if (DeltaAccelerationExponent == 0.5f)
+                if (SpeedDeltaFunctionMode == SpeedDeltaMode.Sqrt)
                     demandedAccelerationMpSS = (float)-Math.Sqrt(-demandedAccelerationMpSS);
-                else if (DeltaAccelerationExponent != 1)
-                    demandedAccelerationMpSS = (float)-Math.Pow(-demandedAccelerationMpSS, DeltaAccelerationExponent);
             }
             else if (deltaSpeedMpS > SpeedDeltaToStartAcceleratingMpS || (deltaSpeedMpS > SpeedDeltaToStopAcceleratingMpS && prevDemandedAccelerationMpSS > 0))
             {
                 demandedAccelerationMpSS = (deltaSpeedMpS - SpeedDeltaAcceleratingOffsetMpS) * StartReducingSpeedDelta;
-                if (DeltaAccelerationExponent == 0.5f)
+                if (SpeedDeltaFunctionMode == SpeedDeltaMode.Sqrt)
                     demandedAccelerationMpSS = (float)Math.Sqrt(demandedAccelerationMpSS);
-                else if (DeltaAccelerationExponent != 1)
-                    demandedAccelerationMpSS = (float)Math.Pow(demandedAccelerationMpSS, DeltaAccelerationExponent);
             }
             prevDemandedAccelerationMpSS = demandedAccelerationMpSS;
             if (ASCAccelerationMpSS > 0)
@@ -1348,7 +1362,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 {
                     enabled = true;
                 }
-                else if (SpeedDeltaToEnableTrainBrake <= 0 || demandedAccelerationMpSS <= -(float)Math.Pow(SpeedDeltaToEnableTrainBrake * StartReducingSpeedDeltaDownwards, DeltaAccelerationExponent))
+                else if (SpeedDeltaToEnableTrainBrake <= 0 || demandedAccelerationMpSS <= (float)-(SpeedDeltaFunctionMode == SpeedDeltaMode.Sqrt ? Math.Sqrt(SpeedDeltaToEnableTrainBrake * StartReducingSpeedDeltaDownwards) : SpeedDeltaToEnableTrainBrake * StartReducingSpeedDeltaDownwards))
                 {
                     // Otherwise, only enabled if dynamic brake cannot provide enough force
                     enabled = CCThrottleOrDynBrakePercent < -MinDynamicBrakePercentToEnableTrainBrake || TrainBrakePercent > 0;
