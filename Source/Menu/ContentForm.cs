@@ -1406,6 +1406,18 @@ namespace Menu
             {
                 // only update the grid when user is filling/changing the route in the textbox
                 dataGridViewManualInstall.CurrentRow.Cells[0].Value = textBoxManualInstallRoute.Text;
+                ManualInstallChangesMade = true;
+                buttonCancel.Enabled = true;
+            }
+        }
+
+        private void textBoxManualInstallRoute_Leave(object sender, EventArgs e)
+        {
+            string route = textBoxManualInstallRoute.Text;
+            textBoxManualInstallRoute.Text = determineUniqueRoute(route);
+            if (textBoxManualInstallRoute.Text != route)
+            {
+                dataGridViewManualInstall.CurrentRow.Cells[0].Value = textBoxManualInstallRoute.Text;
             }
         }
 
@@ -1524,7 +1536,7 @@ namespace Menu
         string determineUniqueRoute(string Route)
         {
             string route = Route;
-
+            long seqNr = 0;
             bool found = false;
 
             while (!found)
@@ -1532,9 +1544,10 @@ namespace Menu
                 found = true;
                 for (int i = 0; i < dataGridViewManualInstall.Rows.Count - 1; i++)
                 {
-                    if (dataGridViewManualInstall.Rows[i].Cells[0].Value.ToString() == route)
+                    if ((dataGridViewManualInstall.Rows[i].Cells[0].Value.ToString() == route) && (!dataGridViewManualInstall.Rows[i].Selected))
                     {
-                        route += " copy";
+                        seqNr++;
+                        route = Route + " (" + seqNr + ")";
                         found = false;
                     }
                 }

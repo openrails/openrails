@@ -344,6 +344,7 @@ namespace Menu
             this.textBoxManualInstallRoute.Size = new System.Drawing.Size(453, 20);
             this.textBoxManualInstallRoute.TabIndex = 4;
             this.textBoxManualInstallRoute.TextChanged += new System.EventHandler(this.textBoxManualInstallRoute_TextChanged);
+            this.textBoxManualInstallRoute.Leave += new System.EventHandler(this.textBoxManualInstallRoute_Leave);
             // 
             // buttonManualInstallAdd
             // 
