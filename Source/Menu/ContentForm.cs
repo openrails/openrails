@@ -1544,8 +1544,8 @@ namespace Menu
                 found = true;
                 for (int i = 0; i < dataGridViewManualInstall.Rows.Count - 1; i++)
                 {
-                    if ((dataGridViewManualInstall.Rows[i].Cells[0].Value.ToString() == route) && (!dataGridViewManualInstall.Rows[i].Selected))
-                    {
+                    if (((dataGridViewManualInstall.Rows[i].Cells[0].Value.ToString() == route) && (!dataGridViewManualInstall.Rows[i].Selected)) ||
+                            (AutoInstallRoutes.ContainsKey(route))) {
                         seqNr++;
                         route = Route + " (" + seqNr + ")";
                         found = false;
