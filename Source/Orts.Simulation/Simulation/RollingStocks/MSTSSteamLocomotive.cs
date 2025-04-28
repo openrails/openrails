@@ -258,6 +258,10 @@ namespace Orts.Simulation.RollingStocks
         // eng file configuration parameters
 
         float BoilerVolumeFT3;      // total space in boiler that can hold water and steam
+        float MSTSBoilerLengthM;
+        float ORBoilerLengthM;
+        float BoilerLengthM;
+        public float GradientBoilerLevelPercent;
         public int MSTSNumCylinders = 2;       // Number of Cylinders
         public float MSTSCylinderStrokeM;      // High pressure cylinders
         public float MSTSCylinderDiameterM;    // High pressure cylinders
@@ -455,7 +459,11 @@ namespace Orts.Simulation.RollingStocks
         float WaterGlassMinLevel = 0.73f;   // min height of water gauge as a fraction of boiler level
         float WaterGlassLengthIN = 8.0f;    // nominal length of water gauge
         float WaterGlassLevelIN;            // Water glass level in inches
+        float ORSteamGaugeGlassHeightM;
+        float MSTSSteamGaugeGlassHeightM;
+        float WaterGlassLengthM;
         float waterGlassPercent;            // Water glass level in percent
+        bool WaterGlassLevelGradientEnabled = false;
         float MEPFactor = 0.7f;             // Factor to determine the MEP
         float GrateAreaDesignFactor = 500.0f;   // Design factor for determining Grate Area
         float EvapAreaDesignFactor = 10.0f;     // Design factor for determining Evaporation Area
@@ -945,6 +953,10 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 case "engine(lpcylinderdiameter": MSTSLPCylinderDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(ortscylinderportopening": CylinderPortOpeningFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(boilervolume": BoilerVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null); break;
+                case "engine(boilerlength": MSTSBoilerLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(ortsboilerlength": ORBoilerLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(steamgaugeglassheight": MSTSSteamGaugeGlassHeightM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "engine(ortswatergaugeglassheight": ORSteamGaugeGlassHeightM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(maxboilerpressure": MaxBoilerPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(ortsmaxsuperheattemperature": MaxSuperheatRefTempF = stf.ReadFloatBlock(STFReader.UNITS.Temperature, null); break;
                 case "engine(ortsmaxindicatedhorsepower":
@@ -1091,6 +1103,10 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             CylinderExhaustOpenFactor = locoCopy.CylinderExhaustOpenFactor;
             CylinderPortOpeningFactor = locoCopy.CylinderPortOpeningFactor;
             BoilerVolumeFT3 = locoCopy.BoilerVolumeFT3;
+            MSTSBoilerLengthM = locoCopy.MSTSBoilerLengthM;
+            ORBoilerLengthM = locoCopy.ORBoilerLengthM;
+            MSTSSteamGaugeGlassHeightM = locoCopy.MSTSSteamGaugeGlassHeightM;
+            ORSteamGaugeGlassHeightM = locoCopy.ORSteamGaugeGlassHeightM;
             MaxBoilerPressurePSI = locoCopy.MaxBoilerPressurePSI;
             SteamLocomotiveFeedWaterType = locoCopy.SteamLocomotiveFeedWaterType;
             MaxSuperheatRefTempF = locoCopy.MaxSuperheatRefTempF;
@@ -1460,6 +1476,57 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             }
             BoilerEvapRateLbspFt2 = MathHelper.Clamp(BoilerEvapRateLbspFt2, 7.5f, 30.0f); // Clamp BoilerEvap Rate to between 7.5 & 30 - some modern locomotives can go as high as 30, but majority are around 15.
             TheoreticalMaxSteamOutputLBpS = pS.FrompH(Me2.ToFt2(EvaporationAreaM2) * BoilerEvapRateLbspFt2); // set max boiler theoretical steam output
+
+            // Initialise Boiler parameters
+
+            // Boiler Length - always use OR entered value as first preference
+            BoilerLengthM = ORBoilerLengthM;
+
+            /*
+            // If OR value hasn't been set, then use MSTS value if present
+            if (BoilerLengthM == 0 && MSTSBoilerLengthM > 0) 
+            {
+                if (MSTSBoilerLengthM > 0.4f * CarLengthM && MSTSBoilerLengthM < CarLengthM)
+                {
+                    BoilerLengthM = MSTSBoilerLengthM;
+
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                    {
+                        Trace.TraceInformation("Boiler Length set as per MSTS default = {0}", FormatStrings.FormatDistance(BoilerLengthM, IsMetric));
+                    }
+                }
+            }
+            */
+
+            // Water Gauge Length - always use OR entered value as first preference
+            WaterGlassLengthM = ORSteamGaugeGlassHeightM;
+
+            /*
+            // If OR value hasn't been set, then use MSTS value if present
+            if (WaterGlassLengthM == 0 && MSTSSteamGaugeGlassHeightM > 0)
+            {
+                var defaultGlassLength = Me.FromIn(12);
+
+                if (MSTSSteamGaugeGlassHeightM < defaultGlassLength)
+                {
+                    WaterGlassLengthM = MSTSSteamGaugeGlassHeightM;
+                    WaterGlassLengthIN = Me.ToIn(WaterGlassLengthM);
+
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                    {
+                        Trace.TraceInformation("Water Glass Length set as per MSTS default = {0}", FormatStrings.FormatDistance(WaterGlassLengthM, IsMetric));
+                    }
+                }
+            }
+            */
+
+
+            if (WaterGlassLengthM > 0 && BoilerLengthM > 0 )
+            {
+                WaterGlassLevelGradientEnabled = true;
+            }
+
+    //        Trace.TraceInformation("Boiler Water Level - MSTSLength {0} ORLength {1} MSTSGlass {2} OR Glass {3} Enabled {4}, WaterGlass {5} BoilerLength {6}", MSTSBoilerLengthM, ORBoilerLengthM, MSTSSteamGaugeGlassHeightM, ORSteamGaugeGlassHeightM, WaterGlassLevelGradientEnabled, WaterGlassLengthM, BoilerLengthM);
 
             float BoilerVolumeCheck = Me2.ToFt2(EvaporationAreaM2) / BoilerVolumeFT3;    //Calculate the Boiler Volume Check value.
             if (BoilerVolumeCheck > 15) // If boiler volume is not in ENG file or less then a viable figure (ie high ratio figure), then set to a default value
@@ -7056,6 +7123,36 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Boiler no longer priming."));
                 BoilerIsPriming = false;
             }
+
+            // Calculate water glass level when on gradient
+            if (WaterGlassLevelGradientEnabled)
+            {
+                var boilerangleRad = Math.Atan(CurrentElevationPercent / 100);
+                var waterVariationLevelM = (float)Math.Sin(boilerangleRad) * BoilerLengthM / 2.0f;
+
+                // Assume that reference glass height is 50% of glass 
+                var maxWaterVariationIN = Me.ToIn(WaterGlassLengthM) / 2.0f;
+
+                float glasslevelIN = 0;
+                float glassLevelFraction = 0;
+
+                if (CurrentElevationPercent > 0)  // Downslope - -ve water slope
+                {
+                    glasslevelIN -= Me.ToIn(waterVariationLevelM) * -1.0f;                    
+                }
+                else   // up slope - +ve water level
+                {
+                    glasslevelIN += Me.ToIn(waterVariationLevelM) * -1.0f;
+                }
+
+                glassLevelFraction = glasslevelIN / maxWaterVariationIN;
+
+                GradientBoilerLevelPercent = glassLevelFraction * 100;
+
+//             Trace.TraceInformation("Gradient - Current {0} BoilAng {1} GlassIN {2} Glass% {3}", CurrentElevationPercent, boilerangleRad, glasslevelIN,  GradientBoilerLevelPercent);
+            }
+
+
         }
 
         private void UpdateWaterInjection(float elapsedClockSeconds)
@@ -7828,7 +7925,15 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     SteamGearRatio, SteamGearPosition == 0 ? Simulator.Catalog.GetParticularString("Gear", "N") : SteamGearPosition.ToString());
             status.AppendFormat("{0}{2} = {1}/{3}{2}\n", Simulator.Catalog.GetString("Steam usage"), FormatStrings.FormatMass(pS.TopH(Kg.FromLb(PreviousTotalSteamUsageLBpS)), MainPressureUnit != PressureUnit.PSI), steamusagesafety, FormatStrings.h);
             status.AppendFormat("{0}{2} = {1}{2}\n", Simulator.Catalog.GetString("Boiler pressure"), FormatStrings.FormatPressure(BoilerPressurePSI, PressureUnit.PSI, MainPressureUnit, true), boilerPressureSafety);
-            status.AppendFormat("{0}{2} = {1:F0}% {3}{2}\n", Simulator.Catalog.GetString("Boiler water glass"), 100 * waterGlassPercent, boilerWaterSafety, FiringIsManual ? Simulator.Catalog.GetString("(safe range)") : "");
+
+            if (WaterGlassLevelGradientEnabled)
+            {
+                status.AppendFormat("{0}{2} = {1:F0}% {3}{2}\n", Simulator.Catalog.GetString("Boiler water glass"), GradientBoilerLevelPercent, boilerWaterSafety, FiringIsManual ? Simulator.Catalog.GetString("(safe range)") : "");
+            }
+            else
+            {
+                status.AppendFormat("{0}{2} = {1:F0}% {3}{2}\n", Simulator.Catalog.GetString("Boiler water glass"), 100 * waterGlassPercent, boilerWaterSafety, FiringIsManual ? Simulator.Catalog.GetString("(safe range)") : "");
+            }
 
             if (FiringIsManual)
             {

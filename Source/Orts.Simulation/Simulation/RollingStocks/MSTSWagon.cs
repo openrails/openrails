@@ -739,7 +739,7 @@ namespace Orts.Simulation.RollingStocks
                 setIfPositive(ref LoadFullMaxHandbrakeForceN, FreightAnimations.FullPhysicsStaticOne?.FullStaticMaxHandbrakeForceN);
                 setIfPositive(ref LoadFullCentreOfGravityM_Y, FreightAnimations.FullPhysicsStaticOne?.FullStaticCentreOfGravityM_Y);
                 setIfPositive(ref LoadFullRelayValveRatio, FreightAnimations.FullPhysicsStaticOne?.FullStaticRelayValveRatio);
-                setIfPositive(ref LoadFullInshotPSI, FreightAnimations.FullPhysicsStaticOne?.FullStaticInshotPSI);
+                setIfNonZero(ref LoadFullInshotPSI, FreightAnimations.FullPhysicsStaticOne?.FullStaticInshotPSI);
 
                 // Read (initialise) Continuous load ones if a continuous load
                 // Test each value to make sure that it has been defined in the WAG file, if not default to Root WAG file value
