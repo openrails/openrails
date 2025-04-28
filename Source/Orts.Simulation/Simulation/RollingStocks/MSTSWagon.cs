@@ -803,7 +803,7 @@ namespace Orts.Simulation.RollingStocks
                     // The FreightAnim-style brake parameters cannot support switchable states, so use them only in case there are none configured
                     var loStage = BrakeSystem.CreateNewLike(BrakeSystem, this).InitializeDefault();
                     var hiStage = BrakeSystem.CreateNewLike(BrakeSystem, this).InitializeDefault();
-                    if (loStage != null && hiStage != null)
+                    if (loStage != null && hiStage != null && LoadEmptyMassKg != LoadFullMassKg)
                     {
                         loStage.InitialMaxBrakeForceN = LoadEmptyMaxBrakeForceN;
                         hiStage.InitialMaxBrakeForceN = LoadFullMaxBrakeForceN;
