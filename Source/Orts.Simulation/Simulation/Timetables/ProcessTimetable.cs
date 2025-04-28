@@ -3516,7 +3516,7 @@ namespace Orts.Simulation.Timetables
                 }
 
                 // Stop used to define command only - find related section in route
-                else if (Commands != null)
+                else if (Commands != null && !passTime.HasValue)
                 {
                     // Get platform details
                     int platformIndex;
