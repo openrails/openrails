@@ -1428,6 +1428,8 @@ namespace Orts.Simulation.RollingStocks
                     AutoLengthOffsetM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
+                case "wagon(ortsfrontarticulation": FrontArticulation = stf.ReadIntBlock(null); break;
+                case "wagon(ortsreararticulation": RearArticulation = stf.ReadIntBlock(null); break;
                 case "wagon(ortslengthbogiecentre": CarBogieCentreLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthcarbody": CarBodyLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthairhose": CarAirHoseLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
