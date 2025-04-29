@@ -95,6 +95,10 @@ namespace Menu
                     route.Installed ? route.DateInstalled.ToString(CultureInfo.CurrentCulture.DateTimeFormat) : "",
                     route.Url });
                 dataGridViewAutoInstall.Rows[indexAdded].Cells[2].ToolTipText = route.Url;
+                if (!route.Installed)
+                {
+                    changeManualInstallRoute(routeName);
+                }
             }
 
             dataGridViewAutoInstall.Sort(dataGridViewAutoInstall.Columns[0], ListSortDirection.Ascending);
@@ -137,6 +141,42 @@ namespace Menu
 
             ManualInstallBrouwseDir = determineBrowseDir();
             buttonCancel.Enabled = false;
+        }
+
+        void changeManualInstallRoute(string Route)
+        {
+            bool found = false;
+
+            foreach (var folder in Settings.Folders.Folders)
+            {
+                if (folder.Key == Route)
+                {
+                    // Route found in folder settings
+                    found = true;
+                }
+            }
+
+            if (found)
+            {
+                // search for the next route (1), (2) etc. not found in folder settings
+                int seqNr = 1;
+                string route = Route + " (" + seqNr + ")";
+                while (found)
+                {
+                    found = false;
+                    foreach (var folder in Settings.Folders.Folders)
+                    {
+                        if (folder.Key == route)
+                        {
+                            found = true;
+                            seqNr++;
+                            route = Route + " (" + seqNr + ")";
+                        }
+                    }
+                }
+                Settings.Folders.Folders[route] = Settings.Folders.Folders[Route];
+                Settings.Folders.Folders.Remove(Route);
+            }
         }
 
         private void tabControlContent_Selecting(object sender, TabControlCancelEventArgs e)
