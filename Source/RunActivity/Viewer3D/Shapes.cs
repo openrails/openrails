@@ -2734,7 +2734,8 @@ namespace Orts.Viewer3D
         /// </summary>
         /// <param name="animationId">For stf files it is the node id, for gltf files it is the animation id.</param>
         /// <returns>true if there is no internal seqence defined in the shape.</returns>
-        public virtual bool IsAnimationArticulation(int animationId) => Animations?.FirstOrDefault()?.anim_nodes?.ElementAtOrDefault(animationId)?.controllers.Count == 0;
+        public virtual bool IsAnimationArticulation(int animationId) =>
+            !(Animations?.FirstOrDefault()?.anim_nodes is anim_nodes a && a.Count > animationId && a.ElementAtOrDefault(animationId)?.controllers is controllers c && c.Count > 0);
 
         /// <summary>
         /// Returns the parent animation id.
