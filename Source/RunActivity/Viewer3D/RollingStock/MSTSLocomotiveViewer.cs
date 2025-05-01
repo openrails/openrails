@@ -2340,9 +2340,10 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         float NormalizedMouseMovement()
         {
+            var mouseWheelChange = (UserInput.IsDown(UserCommand.GameSwitchWithMouse) ? UserInput.MouseWheelChange : 0) / 10;
             return (ControlDiscrete.Orientation > 0
-                ? (float)(UserInput.MouseMoveY + UserInput.MouseWheelChange) / (float)Control.Height
-                : (float)(UserInput.MouseMoveX + UserInput.MouseWheelChange) / (float)Control.Width)
+                ? (float)(UserInput.MouseMoveY + mouseWheelChange) / (float)Control.Height
+                : (float)(UserInput.MouseMoveX + mouseWheelChange) / (float)Control.Width)
                 * (ControlDiscrete.Direction > 0 ? -1 : 1);
         }
 
