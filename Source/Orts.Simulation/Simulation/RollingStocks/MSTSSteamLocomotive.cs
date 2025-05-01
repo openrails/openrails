@@ -7138,7 +7138,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 float glasslevelM = 0;
 
                 // Calculate water level on level gradient
-                var referenceLevelFraction = (BoilerCrownCoverageHeightM + BoilerCrownHeightM + BoilerDiameterM / 2.0f)/BoilerDiameterM;
+                var referenceLevelFraction = (BoilerCrownCoverageHeightM + BoilerCrownHeightM + (BoilerDiameterM / 2.0f))/BoilerDiameterM;
 
                 // Convert reference point to reading on glass
                 if (WaterFraction > referenceLevelFraction)
@@ -7148,7 +7148,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 }
                 else if (WaterFraction < referenceLevelFraction)
                 {
-                    glasslevelfraction = -1.0f  * referenceLevelFraction - WaterFraction;
+                    glasslevelfraction = -1.0f  * (referenceLevelFraction - WaterFraction);
                 }
 
                 glasslevelM = glasslevelfraction * BoilerDiameterM;
@@ -7158,9 +7158,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 GradientBoilerLevelPercent = totalglassLevelM * 100;
 
-                //             Trace.TraceInformation("Gradient - Current {0} BoilAng {1} GlassIN {2} Glass% {3}", CurrentElevationPercent, boilerangleRad, glasslevelIN,  GradientBoilerLevelPercent);
-
-          //      Trace.TraceInformation("Boiler - refLevel {0} GlassLevel {1} GlassLevelM {2} GradientLevel {3} TotalLevel {4} % {5}", referenceLevelFraction, glasslevelfraction, glasslevelM, glassLevelGradientM, totalglassLevelM, GradientBoilerLevelPercent);
+            //    Trace.TraceInformation("Boiler - refLevel {0} GlassLevel {1} GlassLevelM {2} GradientLevel {3} TotalLevel {4} % {5} WaterFraction {6}", referenceLevelFraction, glasslevelfraction, glasslevelM, glassLevelGradientM, totalglassLevelM, GradientBoilerLevelPercent, WaterFraction);
 
             }
 
