@@ -102,6 +102,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 return forceN;
             }
         }
+        /// <summary>
+        /// Get total axle in force
+        /// </summary>
+        public float DriveForceN
+        {
+            get
+            {
+                float forceN = 0;
+                foreach (var axle in AxleList)
+                {
+                    forceN += axle.DriveForceN;
+                }
+                return forceN;
+            }
+        }
         public bool IsWheelSlip
         {
             get

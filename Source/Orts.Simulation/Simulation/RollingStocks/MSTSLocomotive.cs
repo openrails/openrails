@@ -2221,8 +2221,8 @@ namespace Orts.Simulation.RollingStocks
                     }
 
                     AntiSlip = true; // Always set AI trains to AntiSlip
-                    SimpleAdhesion(elapsedClockSeconds);   // Simple adhesion model used for AI trains
                     AdvancedAdhesionModel = false;
+                    UpdateAxles(elapsedClockSeconds);   // Simple adhesion model used for AI trains
                     WheelSpeedMpS = Flipped ? -AbsSpeedMpS : AbsSpeedMpS;            //make the wheels go round
                     break;
                 case Train.TRAINTYPE.STATIC:
@@ -2253,13 +2253,12 @@ namespace Orts.Simulation.RollingStocks
                     if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && EngineType != EngineTypes.Control) 
                     {
                         AdvancedAdhesionModel = true;  // Set flag to advise advanced adhesion model is in use
-                        AdvancedAdhesion(elapsedClockSeconds); // Use advanced adhesion model
                     }
                     else
                     {
                         AdvancedAdhesionModel = false; // Set flag to advise simple adhesion model is in use
-                        SimpleAdhesion(elapsedClockSeconds);  // Use simple adhesion model
                     }
+                    UpdateAxles(elapsedClockSeconds);
 
                     UpdateTrackSander(elapsedClockSeconds);
 
@@ -2731,16 +2730,32 @@ namespace Orts.Simulation.RollingStocks
             AbsTractionSpeedMpS = AbsWheelSpeedMpS;
             UpdateTractionForce(elapsedClockSeconds);
             TractiveForceN = TractionForceN;
-            ApplyDirectionToTractiveForce(ref TractiveForceN, 0);
+            ApplyDirectionToTractiveForce(ref TractiveForceN);
 
             UpdateDynamicBrakeForce(elapsedClockSeconds);
             TractiveForceN -= Math.Sign(WheelSpeedMpS) * DynamicBrakeForceN;
+
+            foreach (var axle in LocomotiveAxles)
+            {
+                if (axle.DriveType == AxleDriveType.ForceDriven)
+                {
+                    axle.DriveForceN = TractiveForceN / LocomotiveAxles.Count;
+                    if (SlipControlSystem == SlipControlType.Full)
+                    {
+                        // Simple slip control
+                        // Motive force is reduced to the maximum adhesive force
+                        // In wheelslip situations, motive force is set to zero
+                        axle.DriveForceN = Math.Sign(axle.DriveForceN) * Math.Min(axle.MaximumWheelAdhesion * axle.AxleWeightN, Math.Abs(axle.DriveForceN));
+                        if (axle.IsWheelSlip) axle.DriveForceN = 0;
+                    }
+                }
+            }
         }
 
         /// <summary>
         /// This function applies a sign to the motive force as a function of the direction of the train.
         /// </summary>
-        protected virtual void ApplyDirectionToTractiveForce(ref float tractiveForceN, int numberofengine = 0 )
+        protected void ApplyDirectionToTractiveForce(ref float tractiveForceN)
         {
             if (Train.IsPlayerDriven)
             {
@@ -3081,7 +3096,7 @@ namespace Orts.Simulation.RollingStocks
             base.Update(elapsedClockSeconds);
         }
 
-        protected void UpdateAxles(float elapsedClockSeconds)
+        protected virtual void UpdateAxles(float elapsedClockSeconds)
         {
             if (LocoNumDrvAxles <= 0)
             {
@@ -3102,6 +3117,8 @@ namespace Orts.Simulation.RollingStocks
             LocomotiveAxles.Update(elapsedClockSeconds);
 
             MotiveForceN = LocomotiveAxles.CompensatedForceN;
+            TractiveForceN = LocomotiveAxles.DriveForceN;
+
 
             if (elapsedClockSeconds > 0)
             {
@@ -3112,21 +3129,6 @@ namespace Orts.Simulation.RollingStocks
             }
 
             WheelSpeedMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
-        }
-        /// <summary>
-        /// Adjusts the MotiveForce to account for adhesion limits
-        /// If UseAdvancedAdhesion is true, dynamic adhesion model is computed
-        /// If UseAdvancedAdhesion is false, the basic force limits are calculated the same way MSTS calculates them, but
-        /// the weather handling is different and Curtius-Kniffler curves are considered as a static limit
-        /// </summary>
-        public virtual void AdvancedAdhesion(float elapsedClockSeconds)
-        {
-            UpdateAxles(elapsedClockSeconds);
-        }
-
-        public void SimpleAdhesion(float elapsedClockSeconds)
-        {
-            UpdateAxles(elapsedClockSeconds); // Simple adhesion is now handled in the Axle module, together with advanced adhesion
         }
 
         /// <summary>

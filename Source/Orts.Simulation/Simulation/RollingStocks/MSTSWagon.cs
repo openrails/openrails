@@ -172,7 +172,7 @@ namespace Orts.Simulation.RollingStocks
         public float SlipWarningThresholdPercent = 70;
         public MSTSNotchController WeightLoadController; // Used to control freight loading in freight cars
 
-        public Axles LocomotiveAxles; // Only used at locomotives for efficiency
+        public Axles LocomotiveAxles;
 
         // Colours for smoke and steam effects
         public Color ExhaustTransientColor = Color.Black;
@@ -340,6 +340,7 @@ namespace Orts.Simulation.RollingStocks
             Pantographs = new Pantographs(this);
             Doors = new Doors(this);
             LocomotiveAxles = new Axles(this);
+            LocomotiveAxles.Add(new Axle(this));
         }
 
         public void Load()

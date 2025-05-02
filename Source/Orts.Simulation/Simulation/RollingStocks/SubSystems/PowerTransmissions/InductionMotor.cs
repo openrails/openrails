@@ -50,7 +50,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
         public override void Update(float timeSpan)
         {
-            TargetForceN = Locomotive.TractiveForceN / Locomotive.LocomotiveAxles.Count;
+            TargetForceN = Locomotive.TractiveForceN / Locomotive.TractionMotors.Count;
             EngineMaxSpeedMpS = Locomotive.MaxSpeedMpS;
             SlipControl = Locomotive.SlipControlSystem == MSTSLocomotive.SlipControlType.Full;
             float linToAngFactor = AxleConnected.TransmissionRatio / AxleConnected.WheelRadiusM;
