@@ -1453,7 +1453,7 @@ namespace Menu
 
         private void textBoxManualInstallRoute_Leave(object sender, EventArgs e)
         {
-            string route = textBoxManualInstallRoute.Text;
+            string route = textBoxManualInstallRoute.Text.Trim();
             textBoxManualInstallRoute.Text = determineUniqueRoute(route);
             if (textBoxManualInstallRoute.Text != route)
             {
