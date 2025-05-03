@@ -2081,7 +2081,7 @@
             // pbPerformanceTuner
             // 
             this.pbPerformanceTuner.Image = global::Menu.Properties.Resources.info_18;
-            this.pbPerformanceTuner.Location = new System.Drawing.Point(11, 330);
+            this.pbPerformanceTuner.Location = new System.Drawing.Point(287, 308);
             this.pbPerformanceTuner.Name = "pbPerformanceTuner";
             this.pbPerformanceTuner.Size = new System.Drawing.Size(18, 18);
             this.pbPerformanceTuner.TabIndex = 45;
@@ -2092,7 +2092,7 @@
             // 
             // labelPerformanceTunerTarget
             // 
-            this.labelPerformanceTunerTarget.Location = new System.Drawing.Point(116, 359);
+            this.labelPerformanceTunerTarget.Location = new System.Drawing.Point(392, 337);
             this.labelPerformanceTunerTarget.Margin = new System.Windows.Forms.Padding(3);
             this.labelPerformanceTunerTarget.Name = "labelPerformanceTunerTarget";
             this.labelPerformanceTunerTarget.Size = new System.Drawing.Size(200, 13);
@@ -2108,7 +2108,7 @@
             0,
             0,
             0});
-            this.numericPerformanceTunerTarget.Location = new System.Drawing.Point(56, 356);
+            this.numericPerformanceTunerTarget.Location = new System.Drawing.Point(332, 334);
             this.numericPerformanceTunerTarget.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
             this.numericPerformanceTunerTarget.Maximum = new decimal(new int[] {
             300,
@@ -2132,7 +2132,7 @@
             // 
             // checkPerformanceTuner
             // 
-            this.checkPerformanceTuner.Location = new System.Drawing.Point(35, 329);
+            this.checkPerformanceTuner.Location = new System.Drawing.Point(311, 307);
             this.checkPerformanceTuner.Name = "checkPerformanceTuner";
             this.checkPerformanceTuner.Size = new System.Drawing.Size(285, 17);
             this.checkPerformanceTuner.TabIndex = 11;
@@ -2145,7 +2145,7 @@
             // pbWebServerPort
             // 
             this.pbWebServerPort.Image = global::Menu.Properties.Resources.info_18;
-            this.pbWebServerPort.Location = new System.Drawing.Point(11, 298);
+            this.pbWebServerPort.Location = new System.Drawing.Point(11, 371);
             this.pbWebServerPort.Name = "pbWebServerPort";
             this.pbWebServerPort.Size = new System.Drawing.Size(18, 18);
             this.pbWebServerPort.TabIndex = 41;
@@ -2156,9 +2156,9 @@
             // 
             // labelWebServerPort
             // 
-            this.labelWebServerPort.Location = new System.Drawing.Point(109, 301);
+            this.labelWebServerPort.Location = new System.Drawing.Point(109, 374);
             this.labelWebServerPort.Name = "labelWebServerPort";
-            this.labelWebServerPort.Size = new System.Drawing.Size(220, 13);
+            this.labelWebServerPort.Size = new System.Drawing.Size(192, 13);
             this.labelWebServerPort.TabIndex = 10;
             this.labelWebServerPort.Text = "Web server port";
             this.labelWebServerPort.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
@@ -2166,7 +2166,7 @@
             // 
             // numericWebServerPort
             // 
-            this.numericWebServerPort.Location = new System.Drawing.Point(35, 298);
+            this.numericWebServerPort.Location = new System.Drawing.Point(35, 371);
             this.numericWebServerPort.Maximum = new decimal(new int[] {
             65534,
             0,
@@ -2189,7 +2189,7 @@
             // pbControlConfirmations
             // 
             this.pbControlConfirmations.Image = global::Menu.Properties.Resources.info_18;
-            this.pbControlConfirmations.Location = new System.Drawing.Point(11, 266);
+            this.pbControlConfirmations.Location = new System.Drawing.Point(11, 339);
             this.pbControlConfirmations.Name = "pbControlConfirmations";
             this.pbControlConfirmations.Size = new System.Drawing.Size(18, 18);
             this.pbControlConfirmations.TabIndex = 38;
@@ -2202,7 +2202,7 @@
             // 
             this.comboControlConfirmations.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboControlConfirmations.FormattingEnabled = true;
-            this.comboControlConfirmations.Location = new System.Drawing.Point(35, 265);
+            this.comboControlConfirmations.Location = new System.Drawing.Point(35, 338);
             this.comboControlConfirmations.Name = "comboControlConfirmations";
             this.comboControlConfirmations.Size = new System.Drawing.Size(121, 21);
             this.comboControlConfirmations.TabIndex = 7;
@@ -2211,10 +2211,10 @@
             // 
             // labelControlConfirmations
             // 
-            this.labelControlConfirmations.Location = new System.Drawing.Point(161, 265);
+            this.labelControlConfirmations.Location = new System.Drawing.Point(161, 338);
             this.labelControlConfirmations.Margin = new System.Windows.Forms.Padding(3);
             this.labelControlConfirmations.Name = "labelControlConfirmations";
-            this.labelControlConfirmations.Size = new System.Drawing.Size(200, 21);
+            this.labelControlConfirmations.Size = new System.Drawing.Size(140, 21);
             this.labelControlConfirmations.TabIndex = 8;
             this.labelControlConfirmations.Text = "Messages suppressed       ";
             this.labelControlConfirmations.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
@@ -2223,7 +2223,7 @@
             // pbWindowGlass
             // 
             this.pbWindowGlass.Image = global::Menu.Properties.Resources.info_18;
-            this.pbWindowGlass.Location = new System.Drawing.Point(11, 234);
+            this.pbWindowGlass.Location = new System.Drawing.Point(11, 307);
             this.pbWindowGlass.Name = "pbWindowGlass";
             this.pbWindowGlass.Size = new System.Drawing.Size(18, 18);
             this.pbWindowGlass.TabIndex = 36;
@@ -2234,9 +2234,9 @@
             // 
             // checkWindowGlass
             // 
-            this.checkWindowGlass.Location = new System.Drawing.Point(35, 233);
+            this.checkWindowGlass.Location = new System.Drawing.Point(35, 306);
             this.checkWindowGlass.Name = "checkWindowGlass";
-            this.checkWindowGlass.Size = new System.Drawing.Size(285, 17);
+            this.checkWindowGlass.Size = new System.Drawing.Size(266, 17);
             this.checkWindowGlass.TabIndex = 6;
             this.checkWindowGlass.Text = "Use glass for in-game windows";
             this.checkWindowGlass.UseVisualStyleBackColor = true;
@@ -2262,7 +2262,7 @@
             "1920x1200",
             "2560x1440",
             "3840x2160"});
-            this.comboWindowSize.Location = new System.Drawing.Point(54, 192);
+            this.comboWindowSize.Location = new System.Drawing.Point(54, 265);
             this.comboWindowSize.Name = "comboWindowSize";
             this.comboWindowSize.Size = new System.Drawing.Size(121, 21);
             this.comboWindowSize.TabIndex = 4;
@@ -2271,7 +2271,7 @@
             // 
             // labelWindowSize
             // 
-            this.labelWindowSize.Location = new System.Drawing.Point(181, 195);
+            this.labelWindowSize.Location = new System.Drawing.Point(181, 268);
             this.labelWindowSize.Margin = new System.Windows.Forms.Padding(3);
             this.labelWindowSize.Name = "labelWindowSize";
             this.labelWindowSize.Size = new System.Drawing.Size(400, 13);
@@ -2283,7 +2283,7 @@
             // pbWindowed
             // 
             this.pbWindowed.Image = global::Menu.Properties.Resources.info_18;
-            this.pbWindowed.Location = new System.Drawing.Point(11, 169);
+            this.pbWindowed.Location = new System.Drawing.Point(11, 242);
             this.pbWindowed.Name = "pbWindowed";
             this.pbWindowed.Size = new System.Drawing.Size(18, 18);
             this.pbWindowed.TabIndex = 32;
@@ -2294,7 +2294,7 @@
             // 
             // checkWindowed
             // 
-            this.checkWindowed.Location = new System.Drawing.Point(35, 168);
+            this.checkWindowed.Location = new System.Drawing.Point(35, 241);
             this.checkWindowed.Name = "checkWindowed";
             this.checkWindowed.Size = new System.Drawing.Size(285, 17);
             this.checkWindowed.TabIndex = 3;
@@ -2306,7 +2306,7 @@
             // pbUpdateMode
             // 
             this.pbUpdateMode.Image = global::Menu.Properties.Resources.info_18;
-            this.pbUpdateMode.Location = new System.Drawing.Point(11, 52);
+            this.pbUpdateMode.Location = new System.Drawing.Point(10, 45);
             this.pbUpdateMode.Name = "pbUpdateMode";
             this.pbUpdateMode.Size = new System.Drawing.Size(18, 18);
             this.pbUpdateMode.TabIndex = 30;
@@ -2351,7 +2351,7 @@
             // 
             // labelUpdateMode
             // 
-            this.labelUpdateMode.Location = new System.Drawing.Point(36, 53);
+            this.labelUpdateMode.Location = new System.Drawing.Point(35, 46);
             this.labelUpdateMode.Margin = new System.Windows.Forms.Padding(3);
             this.labelUpdateMode.Name = "labelUpdateMode";
             this.labelUpdateMode.Size = new System.Drawing.Size(285, 13);
