@@ -141,6 +141,8 @@ namespace Menu
 
             ManualInstallBrouwseDir = determineBrowseDir();
             buttonCancel.Enabled = false;
+
+            setTextBoxesManualInstall();
         }
 
         void changeManualInstallRoute(string Route)
@@ -1563,6 +1565,7 @@ namespace Menu
                 }
                 else
                 {
+                    // route automatically installed
                     textBoxManualInstallRoute.Text = "";
                     textBoxManualInstallPath.Text = "";
                     textBoxManualInstallRoute.Enabled = false;
@@ -1571,25 +1574,46 @@ namespace Menu
                     buttonManualInstallDelete.Enabled = false;
                 }
             }
+            else
+            {
+                // empty form, like after installing OR
+                textBoxManualInstallRoute.Text = "";
+                textBoxManualInstallPath.Text = "";
+                textBoxManualInstallRoute.Enabled = false;
+                textBoxManualInstallPath.Enabled = false;
+                buttonManualInstallBrowse.Enabled = false;
+                buttonManualInstallDelete.Enabled = false;
+            }
         }
 
         string determineUniqueRoute(string Route)
         {
             string route = Route;
             long seqNr = 0;
-            bool found = false;
+            bool foundUniqueRoute = false;
 
-            while (!found)
+            if (AutoInstallRoutes.ContainsKey(route))
             {
-                found = true;
+                // route already exists in the AutoInstall routes
+                seqNr = 1;
+                route = Route + " (" + seqNr + ")";
+            }
+
+            while (!foundUniqueRoute)
+            {
+                bool found = false;
                 for (int i = 0; i < dataGridViewManualInstall.Rows.Count; i++)
                 {
-                    if (((!dataGridViewManualInstall.Rows[i].Selected)) && (dataGridViewManualInstall.Rows[i].Cells[0].Value.ToString() == route) ||
-                            (AutoInstallRoutes.ContainsKey(route))) {
+                    if ((!dataGridViewManualInstall.Rows[i].Selected) && (dataGridViewManualInstall.Rows[i].Cells[0].Value.ToString() == route))
+                    {
                         seqNr++;
                         route = Route + " (" + seqNr + ")";
-                        found = false;
+                        found = true;
                     }
+                }
+                if (!found)
+                {
+                    foundUniqueRoute = true;
                 }
             }
 
