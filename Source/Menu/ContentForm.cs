@@ -1453,7 +1453,7 @@ namespace Menu
 
         private void textBoxManualInstallRoute_Leave(object sender, EventArgs e)
         {
-            string route = textBoxManualInstallRoute.Text;
+            string route = textBoxManualInstallRoute.Text.Trim();
             textBoxManualInstallRoute.Text = determineUniqueRoute(route);
             if (textBoxManualInstallRoute.Text != route)
             {
@@ -1582,9 +1582,9 @@ namespace Menu
             while (!found)
             {
                 found = true;
-                for (int i = 0; i < dataGridViewManualInstall.Rows.Count - 1; i++)
+                for (int i = 0; i < dataGridViewManualInstall.Rows.Count; i++)
                 {
-                    if (((dataGridViewManualInstall.Rows[i].Cells[0].Value.ToString() == route) && (!dataGridViewManualInstall.Rows[i].Selected)) ||
+                    if (((!dataGridViewManualInstall.Rows[i].Selected)) && (dataGridViewManualInstall.Rows[i].Cells[0].Value.ToString() == route) ||
                             (AutoInstallRoutes.ContainsKey(route))) {
                         seqNr++;
                         route = Route + " (" + seqNr + ")";
