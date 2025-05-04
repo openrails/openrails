@@ -3116,9 +3116,9 @@ namespace Orts.Simulation.RollingStocks
 
             LocomotiveAxles.Update(elapsedClockSeconds);
 
-            MotiveForceN = LocomotiveAxles.CompensatedForceN;
             TractiveForceN = LocomotiveAxles.DriveForceN;
-
+            MotiveForceN = LocomotiveAxles.AxleMotiveForceN;
+            BrakeForceN = LocomotiveAxles.AxleBrakeForceN;
 
             if (elapsedClockSeconds > 0)
             {

@@ -75,14 +75,44 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Get total axle out force with brake and friction force substracted
         /// </summary>
-        public float CompensatedForceN
+        public float AxleMotiveForceN
         {
             get
             {
                 float forceN = 0;
                 foreach (var axle in AxleList)
                 {
-                    forceN += axle.CompensatedAxleForceN;
+                    forceN += axle.AxleMotiveForceN;
+                }
+                return forceN;
+            }
+        }
+        /// <summary>
+        /// Get total axle out force due to braking
+        /// </summary>
+        public float AxleBrakeForceN
+        {
+            get
+            {
+                float forceN = 0;
+                foreach (var axle in AxleList)
+                {
+                    forceN += axle.AxleBrakeForceN;
+                }
+                return forceN;
+            }
+        }
+        /// <summary>
+        /// Get total axle out force due to friction
+        /// </summary>
+        public float AxleFrictionForceN
+        {
+            get
+            {
+                float forceN = 0;
+                foreach (var axle in AxleList)
+                {
+                    forceN += axle.AxleFrictionForceN;
                 }
                 return forceN;
             }
@@ -460,22 +490,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float BrakeRetardForceN;
 
         /// <summary>
-        /// Damping force covered by DampingForceN interface
+        /// Positive only damping force to the axle, in Newton-second
         /// </summary>
-        protected float dampingNs;
-        /// <summary>
-        /// Read/Write positive only damping force to the axle, in Newton-second
-        /// </summary>
-        public float DampingNs { set { dampingNs = Math.Abs(value); } get { return dampingNs; } }
+        public float DampingNs;
 
         int count;
-
-        protected float frictionN;
 
         /// <summary>
         /// Positive only friction force to the axle, in Newtons
         /// </summary>
-        public float FrictionN { set { frictionN = Math.Abs(value); } get { return frictionN; } }
+        public float FrictionN;
 
         /// <summary>
         /// Axle drive type covered by DriveType interface
@@ -512,15 +536,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             }
 
         }
-
         /// <summary>
-        /// Drive force covered by DriveForceN interface, in Newtons
+        /// Drive force used to pass the force directly to the axle without gearbox, in Newtons
         /// </summary>
-        protected float driveForceN;
-        /// <summary>
-        /// Read/Write drive force used to pass the force directly to the axle without gearbox, in Newtons
-        /// </summary>
-        public float DriveForceN { set { driveForceN = value; } get { return driveForceN; } }
+        public float DriveForceN;
 
         /// <summary>
         /// Sum of inertia over all axle conected rotating mass, in kg.m^2
@@ -708,11 +727,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// Read only axle force value, in Newtons
         /// </summary>
         public float AxleForceN { get; private set; }
-
         /// <summary>
-        /// Compensated Axle force value, this provided the motive force equivalent excluding brake and friction force, in Newtons
+        /// Component of the total axle out force caused by motional forces (drive force and inertia)
         /// </summary>
-        public float CompensatedAxleForceN { get; protected set; }
+        public float AxleMotiveForceN { get; protected set; }
+        /// <summary>
+        /// Component of the total axle out force caused by brake force
+        /// </summary>
+        public float AxleBrakeForceN { get; protected set; }
+        /// <summary>
+        /// Component of the total axle out force caused by rolling friction and heat dissipated at the wheel-rail interface
+        /// </summary>
+        public float AxleFrictionForceN { get; protected set; }
 
         /// <summary>
         /// Read/Write axle weight parameter in Newtons
@@ -752,8 +778,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             double fb = SlipCharacteristicsPolach(b + dx) - SlipCharacteristicsPolach(b);
 
             double SlipSpeedMpS = AxleSpeedMpS - TrainSpeedMpS;
-
-            MaximumWheelAdhesion = (float)SlipCharacteristicsPolach(WheelSlipThresholdMpS);
 
             if (SlipSpeedMpS == 0)
             {
@@ -979,11 +1003,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <summary>
         /// Compute variation in axle dynamics. Calculates axle speed, axle angular position and in/out forces.
         /// </summary>
-        public (double, double, double, double) GetAxleMotionVariation(double axleSpeedMpS, double elapsedClockSeconds)
+        public (double accelMpSS, double angSpeedRadpS, double driveForceN, double axleMotiveForceN, double axleBrakeForceN, double axleFrictionForceN) GetAxleMotionVariation(double axleSpeedMpS, double elapsedClockSeconds)
         {
             double slipSpeedMpS = axleSpeedMpS - TrainSpeedMpS;
+            // Compute force transmitted to rail according to adhesion curves
             double axleOutForceN = 0;
-
             if (Axles.UsePolachAdhesion)
             {
                 axleOutForceN = Math.Sign(slipSpeedMpS) * AxleWeightN * SlipCharacteristicsPolach(slipSpeedMpS);
@@ -992,30 +1016,56 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 axleOutForceN = AxleWeightN * SlipCharacteristicsPacha((float)axleSpeedMpS - TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionLimit);
             }
-            
+
+            // Compute force produced by the engine
             double axleInForceN = 0;
             if (DriveType == AxleDriveType.ForceDriven)
                 axleInForceN = DriveForceN * transmissionEfficiency;
             else if (DriveType == AxleDriveType.MotorDriven)
                 axleInForceN = motor.GetDevelopedTorqueNm(axleSpeedMpS * transmissionRatio / WheelRadiusM) * transmissionEfficiency / WheelRadiusM;
 
-            double motionForceN = axleInForceN - dampingNs * (axleSpeedMpS - TrainSpeedMpS); // Drive force + heat losses
-            double frictionForceN = BrakeRetardForceN + frictionN; // Dissipative forces: they will never increase wheel speed
-            double totalAxleForceN = motionForceN - Math.Sign(axleSpeedMpS) * frictionForceN;
-            if (Math.Abs(TrainSpeedMpS) < 0.001f && Math.Abs(slipSpeedMpS) < 0.001f && Math.Abs(motionForceN) < frictionForceN)
+            double frictionForceN = FrictionN + DampingNs * Math.Abs(slipSpeedMpS); // Rolling friction
+            double totalFrictionForceN = BrakeRetardForceN + frictionForceN; // Dissipative forces: they will never increase wheel speed
+            double internalForceN = axleInForceN - Math.Sign(axleSpeedMpS) * totalFrictionForceN; // All forces except rail
+            double accelerationMpSS = (internalForceN - axleOutForceN) * forceToAccelerationFactor; // Resulting acceleration from the sum of all forces (including rail)
+            // Rail force is divided in 3 components: due to engine (motive), brake and axle friction
+            // Usually only the total rail force is relevant for train physics, splitted in 3 for debug (HUD) purposes
+            // However, distinguishing between motive and frictional forces is required to start from 0 speed, as motion force must exceed friction losses, otherwise speed stays at 0
+            double axleMotiveForceN = axleInForceN;
+            double axleBrakeForceN = BrakeRetardForceN;
+            // Case when axle speed == 0, drive+rail forces must overcome friction to start moving the wheel
+            // For Polach, axleOutForceN is bad-behaved for low train speeds. Thus, for low speeds, since axle speed == 0 in this clause, consider out force to be zero. Otherwise use the real out force.
+            if (Math.Abs(axleInForceN - (axleStaticForceN > 0 && Math.Abs(slipSpeedMpS) < 0.1f ? 0 : axleOutForceN)) < totalFrictionForceN && (Math.Abs(axleSpeedMpS) < 0.001f || Math.Sign(axleSpeedMpS + accelerationMpSS * elapsedClockSeconds) != Math.Sign(axleSpeedMpS)))
             {
-                return (-slipSpeedMpS / elapsedClockSeconds, axleSpeedMpS / WheelRadiusM, 0, axleInForceN);
-            }
-            if (Math.Abs(totalAxleForceN) < axleStaticForceN)
-            {
-                if (Math.Abs(slipSpeedMpS) < 0.001f || Math.Sign(slipSpeedMpS) != Math.Sign(slipSpeedMpS + (totalAxleForceN - axleOutForceN) * forceToAccelerationFactor * elapsedClockSeconds))
+                // Require that wheel speed stays at 0
+                accelerationMpSS = -axleSpeedMpS / elapsedClockSeconds;
+                // The car can also start moving when braked if external forces (e.g. gravity, coupler) overcome the static adhesion coefficient
+                // Ensure that axle static friction never exceeds the adhesion coefficient, so the car will start moving even when wheels are stuck
+                if (Math.Abs(slipSpeedMpS) < 0.1f)
                 {
-                    axleOutForceN = slipSpeedMpS / elapsedClockSeconds / forceToAccelerationFactor + totalAxleForceN;
+                    axleBrakeForceN = Math.Min(BrakeRetardForceN, Math.Max(MaximumWheelAdhesion * AxleWeightN - frictionForceN + Math.Abs(axleInForceN), 0));
+                    return (accelerationMpSS, axleSpeedMpS / WheelRadiusM, axleInForceN, axleMotiveForceN, axleBrakeForceN, frictionForceN);
                 }
             }
-            totalAxleForceN -= axleOutForceN;
-
-            return (totalAxleForceN * forceToAccelerationFactor, axleSpeedMpS / WheelRadiusM, axleOutForceN, axleInForceN);
+            // In the static adhesion regime (low speeds for Polach formula), unless the static adhesion coefficient is exceeded,
+            // all forces (including rail output force) are balanced, so slip speed stays at 0
+            else if (Math.Abs(internalForceN) < axleStaticForceN
+                    && (Math.Abs(slipSpeedMpS) < 0.001f || Math.Sign(slipSpeedMpS) != Math.Sign(slipSpeedMpS + accelerationMpSS * elapsedClockSeconds)))
+            {
+                accelerationMpSS = -slipSpeedMpS / elapsedClockSeconds;
+                axleOutForceN = internalForceN - accelerationMpSS / forceToAccelerationFactor;
+            }
+            // By default, differences between axle in and out forces (caused by axle inertia and slip), are accounted as part of the motive component
+            // If the car is braking, they are accounted in the brake force component (e.g. during wheel skid, AxleBrakeForceN will be reduced with respect to BrakeRetardForceN)
+            if (Math.Abs(axleInForceN) < BrakeRetardForceN && TrainSpeedMpS != 0)
+            {
+                axleBrakeForceN = Math.Sign(TrainSpeedMpS) * (-axleOutForceN + axleInForceN) - frictionForceN;
+            }
+            else
+            {
+                axleMotiveForceN = axleOutForceN + Math.Sign(TrainSpeedMpS) * totalFrictionForceN;
+            }
+            return (accelerationMpSS, axleSpeedMpS / WheelRadiusM, axleInForceN, axleMotiveForceN, axleBrakeForceN, frictionForceN);
         }
 
         /// <summary>
@@ -1114,7 +1164,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             double dt = elapsedClockSeconds / NumOfSubstepsPS;
             double hdt = dt / 2;
             double axleInForceSumN = 0;
-            double axleOutForceSumN = 0;
+            double axleMotiveForceSumN = 0;
+            double axleBrakeForceSumN = 0;
+            double axleFrictionForceSumN = 0;
             for (int i = 0; i < NumOfSubstepsPS; i++)
             {
                 var k1 = GetAxleMotionVariation(AxleSpeedMpS, dt);
@@ -1127,29 +1179,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         dt = elapsedClockSeconds / NumOfSubstepsPS;
                         hdt = dt / 2;
                     }
-
-                    if (Math.Sign(AxleSpeedMpS + k1.Item1 * dt) != Math.Sign(AxleSpeedMpS) && BrakeRetardForceN + frictionN > Math.Abs(driveForceN - k1.Item3))
-                    {
-                        AxlePositionRad += AxleSpeedMpS * hdt;
-                        AxlePositionRad = MathHelper.WrapAngle((float)AxlePositionRad);
-                        AxleSpeedMpS = 0;
-                        AxleForceN = 0;
-                        DriveForceN = (float)k1.Item4;
-                        return;
-                    }
                 }
 
-                var k2 = GetAxleMotionVariation(AxleSpeedMpS + k1.Item1 * hdt, hdt);
-                var k3 = GetAxleMotionVariation(AxleSpeedMpS + k2.Item1 * hdt, hdt);
-                var k4 = GetAxleMotionVariation(AxleSpeedMpS + k3.Item1 * dt, dt);
+                var k2 = GetAxleMotionVariation(AxleSpeedMpS + k1.accelMpSS * hdt, hdt);
+                var k3 = GetAxleMotionVariation(AxleSpeedMpS + k2.accelMpSS * hdt, hdt);
+                var k4 = GetAxleMotionVariation(AxleSpeedMpS + k3.accelMpSS * dt, dt);
 
-                AxleSpeedMpS += (integratorError = (k1.Item1 + 2 * (k2.Item1 + k3.Item1) + k4.Item1) * dt / 6);
-                AxlePositionRad += (k1.Item2 + 2 * (k2.Item2 + k3.Item2) + k4.Item2) * dt / 6;
-                axleOutForceSumN += (k1.Item3 + 2 * (k2.Item3 + k3.Item3) + k4.Item3);
-                axleInForceSumN += (k1.Item4 + 2 * (k2.Item4 + k3.Item4) + k4.Item4);
+                AxleSpeedMpS += (integratorError = (k1.accelMpSS + 2 * (k2.accelMpSS + k3.accelMpSS) + k4.accelMpSS) * dt / 6);
+                AxlePositionRad += (k1.angSpeedRadpS + 2 * (k2.angSpeedRadpS + k3.angSpeedRadpS) + k4.angSpeedRadpS) * dt / 6;
+                axleInForceSumN += (k1.driveForceN + 2 * (k2.driveForceN + k3.driveForceN) + k4.driveForceN);
+                axleMotiveForceSumN += (k1.axleMotiveForceN + 2 * (k2.axleMotiveForceN + k3.axleMotiveForceN) + k4.axleMotiveForceN);
+                axleBrakeForceSumN += (k1.axleBrakeForceN + 2 * (k2.axleBrakeForceN + k3.axleBrakeForceN) + k4.axleBrakeForceN);
+                axleFrictionForceSumN += (k1.axleFrictionForceN + 2 * (k2.axleFrictionForceN + k3.axleFrictionForceN) + k4.axleFrictionForceN);
             }
-            AxleForceN = (float)(axleOutForceSumN / (NumOfSubstepsPS * 6));
             DriveForceN = (float)(axleInForceSumN / (NumOfSubstepsPS * 6));
+            AxleMotiveForceN = (float)(axleMotiveForceSumN / (NumOfSubstepsPS * 6));
+            AxleBrakeForceN = (float)(axleBrakeForceSumN / (NumOfSubstepsPS * 6));
+            AxleFrictionForceN = (float)(axleFrictionForceSumN / (NumOfSubstepsPS * 6));
+            if (Math.Abs(TrainSpeedMpS) < 0.001f && Math.Abs(AxleMotiveForceN) < AxleBrakeForceN + AxleFrictionForceN) AxleForceN = 0;
+            else AxleForceN = (float)(AxleMotiveForceN - Math.Sign(TrainSpeedMpS) * (AxleBrakeForceN + AxleFrictionForceN));
             AxlePositionRad = MathHelper.WrapAngle((float)AxlePositionRad);
         }
 
@@ -1167,6 +1215,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (!advancedAdhesion)
             {
                 MaximumWheelAdhesion = AdhesionLimit;
+                axleStaticForceN = 0;
             }
             else if (Axles.UsePolachAdhesion)
             {
@@ -1174,6 +1223,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 axleStaticForceN = AxleWeightN * SlipCharacteristicsPolach(0);
                 ComputeWheelSlipThresholdMpS();
                 WheelAdhesion = (float)SlipCharacteristicsPolach(SlipSpeedMpS);
+                MaximumWheelAdhesion = (float)SlipCharacteristicsPolach(WheelSlipThresholdMpS);
 
                 if (count < 6 && count++ == 5)
                 {
@@ -1188,6 +1238,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 WheelSlipThresholdMpS = MpS.FromKpH(AdhesionK / AdhesionLimit);
                 WheelAdhesion = Math.Abs(SlipCharacteristicsPacha(SlipSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionLimit));
                 MaximumWheelAdhesion = AdhesionLimit;
+                axleStaticForceN = 0;
             }
 
 #if DEBUG_ADHESION
@@ -1254,25 +1305,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 UpdateSimpleAdhesion(elapsedSeconds);
             }
-            // TODO: We should calculate brake force here
-            // Adding and substracting the brake force is correct for normal operation,
-            // but during wheelslip this will produce wrong results.
-            // The Axle module subtracts brake force from the motive force for calculation purposes. However brake force is already taken into account in the braking module.
-            // And thus there is a duplication of the braking effect in OR. To compensate for this, after the slip characteristics have been calculated, the output of the axle
-            // module has the brake force "added" back in to give the appropriate motive force output for the locomotive. Braking force is handled separately.
-            // Hence CompensatedAxleForce is the actual output force on the axle. Similarly friction is also handled separately so it is also discounted from the CompensatedForce.
-
-            // Make sure that compensated value never exceeds the "output" force, otherwise resulting value will be overcompensated
-            var CompensationVariation = BrakeRetardForceN + FrictionN;
-
-            if (CompensationVariation > Math.Abs(AxleForceN))
-            {
-                CompensationVariation = Math.Abs(AxleForceN);
-            }
-
-            if (Math.Abs(TrainSpeedMpS) < 0.001f && AxleForceN == 0) CompensatedAxleForceN = 0;
-            else if (TrainSpeedMpS < 0) CompensatedAxleForceN = AxleForceN - CompensationVariation;
-            else CompensatedAxleForceN = AxleForceN + CompensationVariation;
 
             if (elapsedSeconds > 0.0f)
             {
@@ -1286,8 +1318,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         
         public void UpdateSimpleAdhesion(float elapsedClockSeconds)
         {
-            AxleSpeedMpS = TrainSpeedMpS;
-            AxlePositionRad += TrainSpeedMpS / WheelRadiusM * elapsedClockSeconds;
             
             float axleInForceN = 0;
             if (DriveType == AxleDriveType.ForceDriven)
@@ -1296,24 +1326,50 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 axleInForceN = (float)motor.GetDevelopedTorqueNm(AxleSpeedMpS * transmissionRatio / WheelRadiusM) * transmissionEfficiency / WheelRadiusM;
             DriveForceN = axleInForceN;
 
-            float motionForceN = axleInForceN;
-            float frictionForceN = BrakeRetardForceN + frictionN; // Dissipative forces: they will never increase wheel speed
-            float totalAxleForceN = motionForceN - Math.Sign(AxleSpeedMpS) * frictionForceN;
+            float frictionForceN = FrictionN;
+            float totalFrictionForceN = BrakeRetardForceN + frictionForceN; // Dissipative forces: they will never increase wheel speed
+            float totalAxleForceN = DriveForceN - Math.Sign(TrainSpeedMpS) * totalFrictionForceN;
             float axleOutForceN = totalAxleForceN;
-            if (Math.Abs(TrainSpeedMpS) < 0.001f && Math.Abs(motionForceN) < frictionForceN)
+            AxleMotiveForceN = DriveForceN;
+            AxleBrakeForceN = BrakeRetardForceN;
+            AxleFrictionForceN = frictionForceN;
+
+            float maxAdhesionForceN = AxleWeightN * AdhesionLimit;
+            if (Math.Abs(axleOutForceN) > maxAdhesionForceN)
             {
-                axleOutForceN = 0;
-            }
-            float maxForceN = AxleWeightN * AdhesionLimit;
-            if (Math.Abs(axleOutForceN) > maxForceN)
-            {
-                axleOutForceN = MathHelper.Clamp(axleOutForceN, -maxForceN, maxForceN);
+                axleOutForceN = MathHelper.Clamp(axleOutForceN, -maxAdhesionForceN, maxAdhesionForceN);
                 if (Car is MSTSLocomotive locomotive && !locomotive.AntiSlip) axleOutForceN *= locomotive.Adhesion1;
+
                 HuDIsWheelSlip = HuDIsWheelSlipWarning = IsWheelSlip = IsWheelSlipWarning = true;
+
+                if ((TrainSpeedMpS > 0 && axleOutForceN < 0) || (TrainSpeedMpS < 0 && axleOutForceN > 0))
+                {
+                    AxleSpeedMpS = 0;
+                    if (Math.Abs(axleInForceN) < BrakeRetardForceN && Math.Sign(TrainSpeedMpS) * (-axleOutForceN + axleInForceN) - frictionForceN > 0)
+                    {
+                        AxleBrakeForceN = Math.Sign(TrainSpeedMpS) * (-axleOutForceN + axleInForceN) - frictionForceN;
+                    }
+                    else
+                    {
+                        AxleMotiveForceN = axleOutForceN + Math.Sign(TrainSpeedMpS) * totalFrictionForceN;
+                    }
+                }
+                else
+                {
+                    AxleSpeedMpS = 2 * TrainSpeedMpS;
+                    AxleMotiveForceN = axleOutForceN + Math.Sign(TrainSpeedMpS) * totalFrictionForceN;
+                }
             }
             else
             {
+                AxleSpeedMpS = TrainSpeedMpS;
                 HuDIsWheelSlip = HuDIsWheelSlipWarning = IsWheelSlip = IsWheelSlipWarning = false;
+            }
+            AxlePositionRad += AxleSpeedMpS / WheelRadiusM * elapsedClockSeconds;
+
+            if (Math.Abs(TrainSpeedMpS) < 0.001f && Math.Abs(axleInForceN) < frictionForceN)
+            {
+                axleOutForceN = 0;
             }
             AxleForceN = axleOutForceN;
         }

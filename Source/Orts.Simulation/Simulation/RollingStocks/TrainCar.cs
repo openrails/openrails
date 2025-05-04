@@ -1107,108 +1107,97 @@ namespace Orts.Simulation.RollingStocks
 
         public virtual void UpdateBrakeSlideCalculation()
         {
-
-            // Only apply slide, and advanced brake friction, if advanced adhesion is selected, simplecontrolphysics is not set, and it is a Player train
-            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain)
+            if (this is MSTSLocomotive)
             {
-
-                // ************  Check if diesel or electric - assumed already be cover by advanced adhesion model *********
-
-                if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)
+                // If advanced adhesion model indicates wheel slip warning, then check other conditions (throttle and brake force) to determine whether it is a wheel slip or brake skid
+                if (WheelSlipWarning && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0)
                 {
-                    // If advanced adhesion model indicates wheel slip warning, then check other conditions (throttle and brake force) to determine whether it is a wheel slip or brake skid
-                    if (WheelSlipWarning && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0) 
-                    {
-                        BrakeSkidWarning = true;  // set brake skid flag true
-                    }
-                    else
-                    {
-                        BrakeSkidWarning = false;
-                    }
-
-                    // If advanced adhesion model indicates wheel slip, then check other conditions (throttle and brake force) to determine whether it is a wheel slip or brake skid
-                    if (WheelSlip && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0)
-                    {
-                        BrakeSkid = true;  // set brake skid flag true
-                    }
-                    else
-                    {
-                        BrakeSkid = false;
-                    }
-                }
-
-                else if (!(this is MSTSDieselLocomotive) || !(this is MSTSElectricLocomotive))
-                {
-
-                    // Calculate tread force on wheel - use the retard force as this is related to brakeshoe coefficient, and doesn't vary with skid.
-                    BrakeWheelTreadForceN = BrakeRetardForceN;
-
-                    // Determine whether car is experiencing a wheel slip during braking
-                    if (!BrakeSkidWarning && AbsSpeedMpS > 0.01)
-                    {
-                        var wagonbrakeadhesiveforcen = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction; // Adhesive force wheel normal 
-
-                        if (BrakeWheelTreadForceN > 0.80f * WagonBrakeAdhesiveForceN && ThrottlePercent > 0.01)
-                        {
-                            BrakeSkidWarning = true; 	// wagon wheel is about to slip
-                        }
-                    }
-                    else if ( BrakeWheelTreadForceN < 0.75f * WagonBrakeAdhesiveForceN)
-                    {
-                        BrakeSkidWarning = false; 	// wagon wheel is back to normal
-                    }
-
-                    // Reset WSP dump valve lockout
-                    if (WheelBrakeSlideProtectionFitted && WheelBrakeSlideProtectionDumpValveLockout && (ThrottlePercent > 0.01 || AbsSpeedMpS <= 0.002))
-                    {
-                        WheelBrakeSlideProtectionTimerS = wheelBrakeSlideTimerResetValueS;
-                        WheelBrakeSlideProtectionDumpValveLockout = false;
-
-                    }       
-
-                    // Calculate adhesive force based upon whether in skid or not
-                    if (BrakeSkid)
-                    {
-                        WagonBrakeAdhesiveForceN = MassKG * GravitationalAccelerationMpS2 * SkidFriction;  // Adhesive force if wheel skidding
-                    }
-                    else
-                    {
-                        WagonBrakeAdhesiveForceN = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction; // Adhesive force wheel normal
-                    }
-                                   
-
-                    // Test if wheel forces are high enough to induce a slip. Set slip flag if slip occuring 
-                    if (!BrakeSkid && AbsSpeedMpS > 0.01)  // Train must be moving forward to experience skid
-                    {
-                        if (BrakeWheelTreadForceN > WagonBrakeAdhesiveForceN)
-                        {
-                            BrakeSkid = true; 	// wagon wheel is slipping
-                            var message = "Car ID: " + CarID + " - experiencing braking force wheel skid.";
-                            Simulator.Confirmer.Message(ConfirmLevel.Warning, message);
-                        }
-                    }
-                    else if (BrakeSkid && AbsSpeedMpS > 0.01)
-                    {
-                        if (BrakeWheelTreadForceN < WagonBrakeAdhesiveForceN || BrakeForceN == 0.0f)
-                        {
-                            BrakeSkid = false; 	// wagon wheel is not slipping
-                        }
-                        
-                    }
-                    else
-                    {
-                        BrakeSkid = false; 	// wagon wheel is not slipping
-
-                    }
+                    BrakeSkidWarning = true;  // set brake skid flag true
                 }
                 else
                 {
-                    BrakeSkid = false; 	// wagon wheel is not slipping
+                    BrakeSkidWarning = false;
                 }
+
+                // If advanced adhesion model indicates wheel slip, then check other conditions (throttle and brake force) to determine whether it is a wheel slip or brake skid
+                if (WheelSlip && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0)
+                {
+                    BrakeSkid = true;  // set brake skid flag true
+                }
+                else
+                {
+                    BrakeSkid = false;
+                }
+            }
+            // Only apply slide, and advanced brake friction, if advanced adhesion is selected, simplecontrolphysics is not set, and it is a Player train
+            else if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain)
+            {
+                // Calculate tread force on wheel - use the retard force as this is related to brakeshoe coefficient, and doesn't vary with skid.
+                BrakeWheelTreadForceN = BrakeRetardForceN;
+
+                // Determine whether car is experiencing a wheel slip during braking
+                if (!BrakeSkidWarning && AbsSpeedMpS > 0.01)
+                {
+                    var wagonbrakeadhesiveforcen = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction; // Adhesive force wheel normal 
+
+                    if (BrakeWheelTreadForceN > 0.80f * WagonBrakeAdhesiveForceN && ThrottlePercent > 0.01)
+                    {
+                        BrakeSkidWarning = true; 	// wagon wheel is about to slip
+                    }
+                }
+                else if ( BrakeWheelTreadForceN < 0.75f * WagonBrakeAdhesiveForceN)
+                {
+                    BrakeSkidWarning = false; 	// wagon wheel is back to normal
+                }
+
+                // Reset WSP dump valve lockout
+                if (WheelBrakeSlideProtectionFitted && WheelBrakeSlideProtectionDumpValveLockout && (ThrottlePercent > 0.01 || AbsSpeedMpS <= 0.002))
+                {
+                    WheelBrakeSlideProtectionTimerS = wheelBrakeSlideTimerResetValueS;
+                    WheelBrakeSlideProtectionDumpValveLockout = false;
+
+                }       
+
+                // Calculate adhesive force based upon whether in skid or not
+                if (BrakeSkid)
+                {
+                    WagonBrakeAdhesiveForceN = MassKG * GravitationalAccelerationMpS2 * SkidFriction;  // Adhesive force if wheel skidding
+                }
+                else
+                {
+                    WagonBrakeAdhesiveForceN = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction; // Adhesive force wheel normal
+                }
+                                   
+
+                // Test if wheel forces are high enough to induce a slip. Set slip flag if slip occuring 
+                if (!BrakeSkid && AbsSpeedMpS > 0.01)  // Train must be moving forward to experience skid
+                {
+                    if (BrakeWheelTreadForceN > WagonBrakeAdhesiveForceN)
+                    {
+                        BrakeSkid = true; 	// wagon wheel is slipping
+                        var message = "Car ID: " + CarID + " - experiencing braking force wheel skid.";
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, message);
+                    }
+                }
+                else if (BrakeSkid && AbsSpeedMpS > 0.01)
+                {
+                    if (BrakeWheelTreadForceN < WagonBrakeAdhesiveForceN || BrakeForceN == 0.0f)
+                    {
+                        BrakeSkid = false; 	// wagon wheel is not slipping
+                    }
+                        
+                }
+                else
+                {
+                    BrakeSkid = false;  // wagon wheel is not slipping
+                }
+                BrakeForceN = BrakeRetardForceN;
+                if (BrakeSkid) BrakeForceN *= SkidFriction;
             }
             else  // set default values if simple adhesion model, or if diesel or electric locomotive is used, which doesn't check for brake skid.
             {
                 BrakeSkid = false; 	// wagon wheel is not slipping
+                BrakeForceN = BrakeRetardForceN;
             }
 
 #if DEBUG_BRAKE_SLIDE

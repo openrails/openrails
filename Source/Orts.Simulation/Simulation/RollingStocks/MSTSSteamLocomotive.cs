@@ -6728,8 +6728,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             
             LocomotiveAxles.Update(elapsedClockSeconds);
 
-            MotiveForceN = LocomotiveAxles.CompensatedForceN;
             TractiveForceN = LocomotiveAxles.DriveForceN;
+            MotiveForceN = LocomotiveAxles.AxleMotiveForceN;
+            BrakeForceN = LocomotiveAxles.AxleBrakeForceN;
 
             if (LocoNumDrvAxles <= 0)
             {
@@ -8611,7 +8612,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         Simulator.Catalog.GetString("Eng#:"),
                         i + 1,
                         Simulator.Catalog.GetString("AForceN"),
-                        FormatStrings.FormatForce(SteamEngines[i].AttachedAxle.CompensatedAxleForceN, IsMetric),
+                        FormatStrings.FormatForce(SteamEngines[i].AttachedAxle.AxleMotiveForceN, IsMetric),
                         Simulator.Catalog.GetString("Tang(t)"),
                         FormatStrings.FormatForce(SteamEngines[i].RealTractiveForceN, IsMetric),
                         Simulator.Catalog.GetString("Static"),

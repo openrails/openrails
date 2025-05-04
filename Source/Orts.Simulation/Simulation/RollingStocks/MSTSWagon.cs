@@ -340,7 +340,6 @@ namespace Orts.Simulation.RollingStocks
             Pantographs = new Pantographs(this);
             Doors = new Doors(this);
             LocomotiveAxles = new Axles(this);
-            LocomotiveAxles.Add(new Axle(this));
         }
 
         public void Load()
