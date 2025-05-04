@@ -581,7 +581,7 @@ namespace Orts.Viewer3D.WebServices
 
             TrainCar trainCarOneBefore = Viewer.PlayerTrain.Cars[carPosition - 1];
 
-            new WagonBrakeHoseConnectCommand(Viewer.Log, (trainCar as MSTSWagon), !trainCar.BrakeSystem.FrontBrakeHoseConnected);
+            new WagonBrakeHoseConnectCommand(Viewer.Log, (trainCar as MSTSWagon), !(trainCar as MSTSWagon).BrakeSystem.FrontBrakeHoseConnected);
 
             if (trainCar.BrakeSystem.FrontBrakeHoseConnected)
             {
@@ -649,7 +649,7 @@ namespace Orts.Viewer3D.WebServices
         {
             TrainCar trainCar = Viewer.PlayerTrain.Cars[carPosition];
 
-            new ToggleAngleCockACommand(Viewer.Log, (trainCar as MSTSWagon), !trainCar.BrakeSystem.AngleCockAOpen);
+            new ToggleAngleCockACommand(Viewer.Log, (trainCar as MSTSWagon), !(trainCar as MSTSWagon).BrakeSystem.AngleCockAOpen);
 
             if (trainCar.BrakeSystem.AngleCockAOpen)
             {
@@ -864,7 +864,7 @@ namespace Orts.Viewer3D.WebServices
         {
             TrainCar trainCar = Viewer.PlayerTrain.Cars[carPosition];
 
-            new ToggleAngleCockBCommand(Viewer.Log, (trainCar as MSTSWagon), !trainCar.BrakeSystem.AngleCockBOpen);
+            new ToggleAngleCockBCommand(Viewer.Log, (trainCar as MSTSWagon), !(trainCar as MSTSWagon).BrakeSystem.AngleCockBOpen);
 
             if (trainCar.BrakeSystem.AngleCockBOpen)
             {
@@ -922,9 +922,9 @@ namespace Orts.Viewer3D.WebServices
 
             TrainCar trainCarOneAfter = Viewer.PlayerTrain.Cars[carPosition + 1];
 
-            new WagonBrakeHoseRearConnectCommand(Viewer.Log, (trainCar as MSTSWagon), !trainCar.BrakeSystem.RearBrakeHoseConnected);
+            new WagonBrakeHoseRearConnectCommand(Viewer.Log, (trainCar as MSTSWagon), !(trainCar as MSTSWagon).BrakeSystem.RearBrakeHoseConnected);
 
-            if (trainCar.BrakeSystem.RearBrakeHoseConnected)
+            if ((trainCar as MSTSWagon).BrakeSystem.RearBrakeHoseConnected)
             {
                 Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Rear brake hose connected"));
             }
@@ -933,7 +933,7 @@ namespace Orts.Viewer3D.WebServices
                 Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Rear brake hose disconnected"));
             }
 
-            new WagonBrakeHoseConnectCommand(Viewer.Log, (trainCarOneAfter as MSTSWagon), trainCar.BrakeSystem.RearBrakeHoseConnected);
+            new WagonBrakeHoseConnectCommand(Viewer.Log, (trainCarOneAfter as MSTSWagon), (trainCar as MSTSWagon).BrakeSystem.RearBrakeHoseConnected);
         }
 
         //
@@ -946,7 +946,7 @@ namespace Orts.Viewer3D.WebServices
             string filename;
             bool enabled = false;
 
-            if (trainCar.BrakeSystem.HandBrakePresent)
+            if ((trainCar as MSTSWagon).MSTSBrakeSystem.HandBrakePresent)
             {
                 enabled = true;
                 if ((trainCar as MSTSWagon).GetTrainHandbrakeStatus())
@@ -1007,7 +1007,7 @@ namespace Orts.Viewer3D.WebServices
             string filename;
             bool enabled;
 
-            if (trainCar.BrakeSystem is SingleTransferPipe
+            if ((trainCar as MSTSWagon).BrakeSystem is SingleTransferPipe
                 || Viewer.PlayerTrain.Cars.Count() == 1)
             {
                 enabled = false;
@@ -1016,9 +1016,9 @@ namespace Orts.Viewer3D.WebServices
             else
             {
                 enabled = true;
-                filename = trainCar.BrakeSystem.BleedOffValveOpen ? "TrainOperationsBleedOffValveOpened32.png" : "TrainOperationsBleedOffValveClosed32.png";
+                filename = (trainCar as MSTSWagon).BrakeSystem.BleedOffValveOpen ? "TrainOperationsBleedOffValveOpened32.png" : "TrainOperationsBleedOffValveClosed32.png";
 
-                if (trainCar.BrakeSystem.BleedOffValveOpen)
+                if ((trainCar as MSTSWagon).BrakeSystem.BleedOffValveOpen)
                 {
                     StatusCurrent.CarIdColor[carPosition] = "Cyan";
                 }
@@ -1038,9 +1038,9 @@ namespace Orts.Viewer3D.WebServices
         {
             TrainCar trainCar = Viewer.PlayerTrain.Cars[carPosition];
 
-            new ToggleBleedOffValveCommand(Viewer.Log, (trainCar as MSTSWagon), !trainCar.BrakeSystem.BleedOffValveOpen);
+            new ToggleBleedOffValveCommand(Viewer.Log, (trainCar as MSTSWagon), !(trainCar as MSTSWagon).BrakeSystem.BleedOffValveOpen);
 
-            if (trainCar.BrakeSystem.BleedOffValveOpen)
+            if ((trainCar as MSTSWagon).BrakeSystem.BleedOffValveOpen)
             {
                 Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Bleed off valve opened"));
             }

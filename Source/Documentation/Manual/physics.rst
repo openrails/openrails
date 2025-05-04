@@ -425,6 +425,7 @@ locomotive (regardless of transmission type) are as follows:
    single: MaxPower
    single: MaxForce
    single: MaxContinuousForce
+   single: ORTSTractiveForceIsPowerLimited
 
 ``ORTSDieselEngineMaxPower`` ==> sets the maximum power output at the 
 shaft of the diesel engine (or prime mover).
@@ -437,6 +438,9 @@ wheels when starting.
 ``MaxContinuousForce`` ==> is the maximum force that the locomotive can 
 continuously supply to the wheels without exceeding the design specifications. 
 Typically this is linked to a particular speed (see next parameter).
+
+``ORTSTractiveForceIsPowerLimited`` ==> determines if tractive force curves
+shall be limited to the available output power from the diesel engine.
 
 .. index::
    single: ORTSSpeedOfMaxContinuousForce
@@ -1141,6 +1145,67 @@ with the ``ORTSTractionMotorType ( AC ) `` parameter, to be inserted in the Engi
 section of the ENG file. The use of this motor will have an impact on wheel slip,
 because the wheel speed never exceeds the frequency of the rotating magnetic field.
 
+Traction force retardation
+''''''''''''''''''''''''''
+
+.. index::
+    single: ORTSTractiveForceRampUpRate
+    single: ORTSTractiveForceRampDownRate
+    single: ORTSTractiveForceRampDownToZeroRate
+    single: ORTSTractivePowerRampUpRate
+    single: ORTSTractivePowerRampDownRate
+    single: ORTSTractivePowerRampDownToZeroRate
+    single: ORTSDynamicBrakeForceRampUpRate
+    single: ORTSDynamicBrakeForceRampDownRate
+    single: ORTSDynamicBrakeForceRampDownToZeroRate
+    single: ORTSDynamicBrakePowerRampUpRate
+    single: ORTSDynamicBrakePowerRampDownRate
+    single: ORTSDynamicBrakePowerRampDownToZeroRate
+    single: ORTSDelayTimeBeforeUpdating
+
+When the driver sets full throttle, the control electronics may not apply the full
+tractive force instantly, but it will instead linearly apply force until reaching
+the target demand. This can be tuned both for traction and dynamic braking by inserting
+``ORTSTractiveForceRampUpRate``, ``ORTSTractiveForceRampDownRate``,
+``ORTSTractiveForceRampDownToZeroRate``, ``ORTSDynamicBrakeForceRampUpRate``,
+``ORTSDynamicBrakeForceRampDownRate`` and ``ORTSDynamicBrakeForceRampDownToZeroRate``
+in the .eng file. The value of each parameter determines the force increase/decrease
+rate. To include ramp up/down times also for power, use the equivalent
+``ORTSTractivePowerRampUpRate``, ``ORTSTractivePowerRampDownRate``,
+``ORTSTractivePowerRampDownToZeroRate``, ``ORTSDynamicBrakePowerRampUpRate``,
+``ORTSDynamicBrakePowerRampDownRate`` and ``ORTSDynamicBrakePowerRampDownToZeroRate``
+parameters.
+
+Example::
+
+  Engine (
+    ORTSTractiveForceRampUpRate ( 50kN/s )
+    ORTSTractiveForceRampDownRate ( 50kN/s )
+    ORTSTractiveForceRampDownToZeroRate ( 100kN/s )
+    ORTSDynamicBrakePowerRampUpRate ( 1000kW/s )
+    ORTSDynamicBrakeForceRampDownRate ( 50kN/s )
+  )
+
+Another possibility to avoid sudden variations in tractive force while the driver
+is moving the throttle, is to only update the throttle/brake demand when the lever
+has not been moved for a defined amount of time. This can be implemented using the
+``ORTSDelayTimeBeforeUpdating``, which has to be inserted for the desired
+controller in the ``EngineControllers`` block.
+
+Example::
+
+  Engine (
+    EngineControllers (
+      Throttle ( 0 1 0.1 0
+        NumNotches ( 0 )
+        ORTSDelayTimeBeforeUpdating ( 0.5s )
+      )
+      Brake_Dynamic ( 0 1 0.1 0
+        NumNotches ( 0 )
+        ORTSDelayTimeBeforeUpdating ( 1s )
+      )
+    )
+  )
 
 Steam Locomotives
 -----------------
@@ -2678,46 +2743,6 @@ For EP brakes, two variants are available:
   actuating the cylinders. This system is sometimes called "UIC EP brake". It is typically the system
   used in high speed trains.
 
-Defining Multiple Brake Systems
--------------------------------
-
-It is possible to define multiple systems within ``OrtsBrakeMode`` sections::
-
-    ORTSBrakeMode (
-        ORTSBrakeModeName ( AG )
-        BrakeSystemType( Air_single_pipe )
-        Comment ( All brake parameters are available in such a section )
-    )
-    ORTSBrakeMode (
-        ORTSBrakeModeName ( VB )
-        BrakeSystemType( Vacuum_single_pipe )
-        Comment ( All brake parameters are available in such a section )
-    )
-
-These sections can be used to either define dual vacuum/air rolling stock, or 
-can be used to define the brake modes of the UIC stock in the following form::
-
-    BrakeSystemType( Air_twin_pipe )
-    ORTSBrakeMode (
-        ORTSBrakeModeName ( G )
-        ORTSBrakeMass ( 67t )
-        Comment ( All brake parameters are available in such a section )
-    )
-    ORTSBrakeMode (
-        ORTSBrakeModeName ( P )
-        ORTSBrakeMass ( 83t )
-        BrakeSystemType( Vacuum_single_pipe )
-        Comment ( All brake parameters are available in such a section )
-    )
-
-Available brake mode names to be used are: GG, G, PP, P, RR, R, R_MG, AG, AP, AU, VB, VP, VU. 
-With the ``ORTSBrakeModeNames`` keyword the used brake modes can be filtered, 
-for being able to define them in an include file, and using only the needed 
-ones. It can be used e.g. in the following form::
-
-    ORTSBrakeModeNames ( "P, R" )
-
-
 .. _physics-brake-controller:
 
 Train Brake Controller Positions
@@ -3127,13 +3152,6 @@ using the ORTSBrakeShoeFriction parameter, 1D (ie, speed only, see above section
 
 ``ORTSNumberCarBrakeShoes`` - to facilitate the operation of the default 2D curves above it is necessary to configure the number of brake shoes for each car.
 
-``ORTSBrakeMass`` - Railways part of the UIC organisation instead of NBR 
-provide brake masses, measured in tonnes, which is a virtual value to define 
-the brake efficiency. Openrails uses this value as an alternative to setting 
-the max brake shoe force directly, and recalculates this to that force using 
-approximating formulas to the published UIC brake curves. This parameter is 
-ignored if the ``ORTSMaxBrakeShoeForce`` also set.
-
 Whilst OR will attempt to set some defaults if parameters are left out, the most realistic operation will be achieved by using all the relevant parameters.
 
 The following two legacy arrangements can be used as an alternative to the above method,
@@ -3141,26 +3159,6 @@ The following two legacy arrangements can be used as an alternative to the above
 -  Legacy #1 - legacy arrangements using MaxBrakeForce on its own will remain unchanged. This in effect is an old MSTS file.
 
 - Legacy #2 - where MaxBrakeForce and ORTSBrakeShoeFriction have been set, legacy operation will remain unchanged.
-
-Load Compensation
------------------
-
-Load compensation stages can be defined in the following way::
-
-    OrtsLoadStage (
-        OrtsBrakeMass ( 28t )
-        Comment ( All brake parameters are available in such a section )
-    )
-    OrtsLoadStage (
-        OrtsBrakeMass ( 37t )
-        OrtsLoadStageMinMass ( 34t )
-        Comment ( All brake parameters are available in such a section )
-    )
-
-The ``OrtsLoadStageMinMass`` parameter defines the minimum car mass (together 
-with the load) where the stage can be activated without risking the brake lock. 
-For the lowest stage this keyword should be omitted. In OpenRails the switching 
-between stages is automatic.
 
 
 Train Brake Pipe Losses
@@ -3664,11 +3662,10 @@ The retainers of a car will only be available if either the General Option
 :ref:`Retainer valve on all cars <options-retainers>` is checked, or the car's
 .wag file contains a retainer valve declaration. To declare a retainer the line
 ``BrakeEquipmentType (  )`` in the .wag file must include either the item
-``Retainer_4_Position``, ``Retainer_3_Position`` or ``UIC_mountain``. A 4 position
+``Retainer_4_Position`` or  the item ``Retainer_3_Position``. A 4 position
 retainer includes four states: exhaust, low pressure (10 psi), high pressure
 (20 psi), and slow direct (gradual drop to zero). A 3 position retainer does
-not include the low pressure position. The UIC plain-mountain switch has only 
-2 positions. The use and display of the retainers is 
+not include the low pressure position. The use and display of the retainers is
 described in :ref:`Extended HUD for Brake Information <physics-hud-brake>`.
 
 The setting of the retained pressure and the number of retainers is

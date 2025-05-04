@@ -609,10 +609,11 @@ namespace Orts.Parsers.Msts
             // However, some values (mostly "time" ones) may be followed by text. Therefore that approach cannot be used consistently 
             // and has been abandoned. </CJComment> 
 
+            float val;
+            double scale = ParseUnitSuffix(ref item, validUnits);
             if (item.Length == 0) return 0.0f;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
-            double scale = ParseUnitSuffix(ref item, validUnits); // must be after TrimEnd(','), otherwise the unit parsed becomes invalid
-            if (float.TryParse(item, parseNum, parseNFI, out float val)) return (scale == 1) ? val : (float)(scale * val);
+            if (float.TryParse(item, parseNum, parseNFI, out val)) return (scale == 1) ? val : (float)(scale * val);
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
             return defaultValue.GetValueOrDefault(0);
@@ -819,6 +820,16 @@ namespace Orts.Parsers.Msts
             /// <para>Scaled to J.</para>
             /// </summary>            
             Energy = 1 << 29,
+
+            /// <summary>Valid Units: n/s, kn/s, lbf/s
+            /// <para>Scaled to newtons per second.</para>
+            /// </summary>
+            ForceRate = 1 << 30,
+
+            /// <summary>Valid Units: w/s, kw/s, hp/s
+            /// <para>Scaled to watts per second.</para>
+            /// </summary>
+            PowerRate = 1 << 31,
 
             // "Any" is used where units cannot easily be specified, such as generic routines for interpolating continuous data from point values.
             // or interpreting locomotive cab attributes from the ORTSExtendedCVF experimental mechanism.
@@ -1168,6 +1179,23 @@ namespace Orts.Parsers.Msts
                     case "mj": return 1e6f;
                     case "wh": return 3.6e3f;
                     case "kwh": return 3.6e6f;
+                }
+            if ((validUnits & UNITS.ForceRate) > 0)
+                switch (suffix)
+                {
+                    case "": return 1.0;
+                    case "n/s": return 1;
+                    case "kn/s": return 1e3;
+                    case "lbf/s": return 4.44822162;
+                    case "lb/s": return 4.44822162;
+                }
+            if ((validUnits & UNITS.PowerRate) > 0)
+                switch (suffix)
+                {
+                    case "": return 1.0;
+                    case "w/s": return 1;
+                    case "kw/s": return 1e3;
+                    case "hp/s": return 745.699872;
                 }
             STFException.TraceWarning(this, "Found a suffix '" + suffix + "' which could not be parsed as a " + validUnits.ToString() + " unit");
             return 1;
