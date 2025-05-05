@@ -3081,7 +3081,7 @@ Brake Shoe Force - This is the current change being implemented. The following c
 
 ``ORTSBrakeShoeType`` - this defines a number of different brake shoe types and curves. To provide a more realistic representation of the braking force the default CoF curves are 2D, ie 
 they are impacted by both the speed and Brake Shoe Force.  Typically ``ORTSBrakeShoeType`` will have one of the following keywords included - 
-``Cast_Iron_P6`` - older cast iron brake shoes, 2D as above, ``Cast_Iron_P10`` - newer cast iron brake shoes with increased phosphorous, 2D as above, ``Hi_Friction_Composite`` 
+``Cast_Iron_P6`` - older cast iron brake shoes, 2D as above, ``Cast_Iron_P10`` - newer cast iron brake shoes with increased phosphorous, 2D as above, ``High_Friction_Composite`` 
 - high friction composite shoe, 2D as above, ``Disc_Pads`` - brakes with disc pads, 2D as above, ``User_Defined`` - is a user defined curve 
 using the ORTSBrakeShoeFriction parameter, 1D (ie, speed only, see above section for the parameter format).
 
