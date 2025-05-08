@@ -288,6 +288,9 @@ namespace Orts.Common
         CruiseControlAlert,
         CruiseControlAlert1,
 
+        // request stop
+        RequestStopAnnounce,
+
         MPCChangePosition,
 
     }
@@ -565,6 +568,8 @@ namespace Orts.Common
                         case 261: return Event.WindowOpening;
                         case 262: return Event.WindowsClosed;
                         case 263: return Event.WindowsOpen;
+
+                        case 270: return Event.RequestStopAnnounce;
 
                         // Cruise Control
                         case 298: return Event.LeverFromZero;

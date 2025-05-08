@@ -108,6 +108,7 @@ namespace Orts.Viewer3D
         public ComposeMessage ComposeMessageWindow { get; private set; } // ??? window
         public TrainListWindow TrainListWindow { get; private set; } // for switching driven train
         public TTDetachWindow TTDetachWindow { get; private set; } // for detaching player train in timetable mode
+        public TTRequestStopWindow TTRequestStopWindow { get; private set; } // for request stop message in timetable mode
         public EOTListWindow EOTListWindow { get; private set; } // to select EOT
         public ControlRectangle ControlRectangle { get; private set; } // to display the control rectangles
         private OutOfFocusWindow OutOfFocusWindow; // to show colored rectangle around the main window when not in focus
@@ -360,6 +361,7 @@ namespace Orts.Viewer3D
             Simulator.PlayerLocomotiveChanged += PlayerLocomotiveChanged;
             Simulator.PlayerTrainChanged += PlayerTrainChanged;
             Simulator.RequestTTDetachWindow += RequestTTDetachWindow;
+            Simulator.TTRequestStopMessageWindow += TTRequestStopMessageWindow;
 
             // The speedpost.dat file is needed only to derive the shape names for the temporary speed restriction zones,
             // so it is opened only in activity mode
@@ -516,6 +518,7 @@ namespace Orts.Viewer3D
             ComposeMessageWindow = new ComposeMessage(WindowManager);
             TrainListWindow = new TrainListWindow(WindowManager);
             TTDetachWindow = new TTDetachWindow(WindowManager);
+            TTRequestStopWindow = new TTRequestStopWindow(WindowManager);
             EOTListWindow = new EOTListWindow(WindowManager);
             ControlRectangle = new ControlRectangle(WindowManager, this);
             if (Settings.SuppressConfirmations < (int)ConfirmLevel.Error)
@@ -1156,6 +1159,18 @@ namespace Orts.Viewer3D
                 Settings.Save();
             }
 
+            //ALT-F10 : display request stop info for player train - to be restored later when user setting can be defined
+            //if (UserInput.IsPressed(UserCommand.DebugRequestStopInformation))
+            //{
+            //    if (PlayerTrain != null)
+            //    {
+            //        if (PlayerTrain.StationStops != null && PlayerTrain.StationStops.Count > 0 && PlayerTrain.StationStops[0].ReqStopDetails != null)
+            //        {
+            //            PlayerTrain.StationStops[0].ReqStopDetails.displayRQSInfo = true;
+            //        }
+            //    }
+            //}
+
             //hit 9 key, get back to player train
             if (UserInput.IsPressed(UserCommand.CameraJumpBackPlayer))
             {
@@ -1602,6 +1617,12 @@ namespace Orts.Viewer3D
         void RequestTTDetachWindow(object sender, EventArgs e)
         {
             TTDetachWindow.Visible = true;
+        }
+
+        // display window for Timetable Player Request stop message - create window as size is flexible
+        void TTRequestStopMessageWindow(object sender, EventArgs e)
+        {
+            TTRequestStopWindow.Visible = true;
         }
 
         // Finds the Turntable or Transfertable nearest to the viewing point
