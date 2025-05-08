@@ -496,8 +496,8 @@ A switch shown in green can be operated, a switch shown in red is locked.
 
 .. _driving-train-operations:
 
-F9 Train Operations Monitor
----------------------------
+Ctrl-Alt-F9 Train Operations Monitor
+------------------------------------
 
 The Open Rails Train Operations window is similar in function to the F9 
 window in MSTS, but includes additional features to control the air brake 
@@ -578,10 +578,10 @@ uncoupling can also be found :ref:`here <driving-hud-brake>`.
 
 .. _train-operations-monitor:
 
-Ctrl-Alt-F9 Train Operations Monitor
-------------------------------------
+F9 Train Car Operations Monitor
+---------------------------
 
-This Open Rails Train Operations window has a vertical view of the entire train:
+This Train Operations window provides a vertical view of the entire train:
 
 .. image:: images/TrainCarOperations-01.png
   :align: center
@@ -592,7 +592,7 @@ This Open Rails Train Operations window has a vertical view of the entire train:
 This window shows the whole train in vertical mode. Any car can be selected by clicking on the Car ID. 
 Two arrows will then appear pointing to the selected car.
 
-By clicking on the selected CarId the "Train Operations Viewer" window will be displayed:
+By clicking on the selected Car Id the "Train Operations Viewer" window will be displayed:
 
 .. image:: images/TrainOperationsViewer-02.png
   :align: center
@@ -600,7 +600,7 @@ By clicking on the selected CarId the "Train Operations Viewer" window will be d
 
 |
 
-From the "Train Operations Viewer" window, we can set all the available systems, as in the “Car Operation menu”:
+From the "Train Operations Viewer" window, we can set all the available systems, as in the “Car Operation Menu”:
 
 - FrontBrakeHose
 - FrontAngleCock
@@ -633,7 +633,7 @@ Any changes made in this window will also appear in the "Train Car Operations" w
 
 |
 
-After a change in the braking system that keeps the train stopped, the CarID changes to a cyan colour. 
+After a change in the braking system that keeps the train stopped, the Car ID changes to a cyan colour. 
 In this way, it is easy for the user, to find out which car is stopping the train.
 
 A click on the right arrow hides all non-system brake symbols, inside the "Train Car Operations" window:
@@ -653,10 +653,10 @@ To make the text bold, click the left arrow:
 |
 
 While the "Train Operations Viewer" window is visible, we can modify the "Train Car Operations" window, 
-but if we open the "Train Operations" window <F9> and click on any CarID, the "Car Operation Menu" will 
-appear and it will point to the previously selected CarID in the "Train Operations Viewer" window.
+but if we open the "Train Operations" window <Alt+Shift+F9> and click on any Car ID, the "Car Operation Menu" will 
+appear and it will point to the Car ID which was previously selected in the "Train Operations Viewer" window.
 The "Car Operations Menu" is updated from the "Train Operations Viewer" window.
-A click on the CarID in the “Train Operations Viewer” will close the window.
+A click on the Car ID in the “Train Operations Viewer” will close the window.
 
 If the train is very long and not all the cars are displayed in the "Train Car Operations" window, we can scroll by clicking on the white down arrow (vertical scroll bar) at the bottom right.
 Once the required car has been selected, it will remain visible on the last row:
@@ -1123,8 +1123,9 @@ of the train that is approaching. In this image, signal 462 is showing an APPROA
 
 .. image:: images/timetable_tab4.png
 
-The adjustment for "Daylight offset (hrs)" is provided for convenience to advance the sun as it moves 
+An adjustment for "Daylight offset (hrs)" is provided for convenience to advance the sun as it moves 
 across the sky so that night time trains can be more easily observed in daylight.
+Use ``<Alt+Shift+=>`` to increase the offset and ``<Alt+Shift+->`` to decrease it.
 
 Additional Train Operation Commands
 ===================================
