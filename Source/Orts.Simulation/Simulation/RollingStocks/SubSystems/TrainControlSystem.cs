@@ -152,6 +152,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool TractionAuthorization { get; private set; }
         public float MaxThrottlePercent { get; private set; } = 100f;
         public bool FullDynamicBrakingOrder { get; private set; }
+        public bool BrakeSystemTractionAuthorization = true;
 
         public Dictionary<int, float> CabDisplayControls = new Dictionary<int, float>();
 
@@ -365,8 +366,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.TractionAuthorization = () => TractionAuthorization;
                 Script.BrakePipePressureBar = () => Locomotive.BrakeSystem != null ? Bar.FromPSI(Locomotive.BrakeSystem.BrakeLine1PressurePSI) : float.MaxValue;
                 Script.LocomotiveBrakeCylinderPressureBar = () => Locomotive.BrakeSystem != null ? Bar.FromPSI(Locomotive.BrakeSystem.GetCylPressurePSI()) : float.MaxValue;
-                Script.DoesBrakeCutPower = () => Locomotive.DoesBrakeCutPower;
-                Script.BrakeCutsPowerAtBrakeCylinderPressureBar = () => Bar.FromPSI(Locomotive.BrakeCutsPowerAtBrakeCylinderPressurePSI);
+                Script.DoesBrakeCutPower = () => Locomotive.DoesBrakeCutPower || Locomotive.DoesVacuumBrakeCutPower;
                 Script.TrainBrakeControllerState = () => Locomotive.TrainBrakeController.TrainBrakeControllerState;
                 Script.AccelerationMpSS = () => Locomotive.AccelerationMpSS;
                 Script.AltitudeM = () => Locomotive.WorldPosition.Location.Y;
@@ -1192,7 +1192,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         PowerCut |= ExternalEmergency;
                 }
 
-                SetTractionAuthorization(!DoesBrakeCutPower() || LocomotiveBrakeCylinderPressureBar() < BrakeCutsPowerAtBrakeCylinderPressureBar());
+                SetTractionAuthorization(BrakeSystemTractionAuthorization);
 
                 SetEmergencyBrake(EmergencyBrake);
                 SetFullBrake(FullBrake);
