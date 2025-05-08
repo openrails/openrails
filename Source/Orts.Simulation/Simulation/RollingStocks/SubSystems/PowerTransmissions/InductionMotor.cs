@@ -44,16 +44,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             base.Initialize();
         }
-        public override void UpdateTractiveForce(float elapsedClockSeconds, float t)
-        {
-            TargetForceN = Locomotive.TractiveForceN / Locomotive.LocomotiveAxles.Count;
-        }
         public override double GetDevelopedTorqueNm(double motorSpeedRadpS)
         {
             return requiredTorqueNm * MathHelper.Clamp((float)(DriveSpeedRadpS - motorSpeedRadpS) / OptimalAsyncSpeedRadpS, -1, 1);
         }
         public override void Update(float timeSpan)
         {
+            TargetForceN = Locomotive.TractiveForceN / Locomotive.LocomotiveAxles.Count;
             EngineMaxSpeedMpS = Locomotive.MaxSpeedMpS;
             SlipControl = Locomotive.SlipControlSystem == MSTSLocomotive.SlipControlType.Full;
             float linToAngFactor = AxleConnected.TransmissionRatio / AxleConnected.WheelRadiusM;
