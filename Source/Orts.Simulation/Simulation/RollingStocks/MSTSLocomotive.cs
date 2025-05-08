@@ -5027,6 +5027,7 @@ namespace Orts.Simulation.RollingStocks
         public void ToggleWipers(bool newState)
         {
             SignalEvent(newState ? Event.WiperOn : Event.WiperOff);
+            if (ConsistGenerator.GltfVisualTestRun) Train.SignalEvent(newState ? Event.WiperOn : Event.WiperOff);
         }
 
         public void SetBailOff(bool bailOff)
@@ -5090,12 +5091,14 @@ namespace Orts.Simulation.RollingStocks
         {
             GenericItem1 = !GenericItem1;
             SignalEvent(GenericItem1? Event.GenericItem1On : Event.GenericItem1Off); // hook for sound trigger
+            if (ConsistGenerator.GltfVisualTestRun) Train.SignalEvent(GenericItem1 ? Event.GenericItem1On : Event.GenericItem1Off);
         }
 
         public void GenericItem2Toggle()
         {
             GenericItem2 = !GenericItem2;
             SignalEvent(GenericItem2 ? Event.GenericItem2On : Event.GenericItem2Off); // hook for sound trigger
+            if (ConsistGenerator.GltfVisualTestRun) Train.SignalEvent(GenericItem2 ? Event.GenericItem2On : Event.GenericItem2Off);
         }
 
         public override bool GetCabFlipped()
@@ -5178,6 +5181,10 @@ namespace Orts.Simulation.RollingStocks
                         }
                         break;
                     }
+                case Event.GenericItem1On: if (ConsistGenerator.GltfVisualTestRun) GenericItem1 = true; break;
+                case Event.GenericItem1Off: if (ConsistGenerator.GltfVisualTestRun) GenericItem1 = false; break;
+                case Event.GenericItem2On: if (ConsistGenerator.GltfVisualTestRun) GenericItem2 = true; break;
+                case Event.GenericItem2Off: if (ConsistGenerator.GltfVisualTestRun) GenericItem2 = false; break;
             }
 
             base.SignalEvent(evt);
