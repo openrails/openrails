@@ -2164,6 +2164,61 @@ namespace Orts.Simulation.Timetables
                                 }
                                 break;
 
+                            case "gradient":
+                                foreach (TTTrainCommands.TTTrainComQualifiers thisComValue in thisCommand.CommandQualifiers)
+                                {
+                                    switch (thisComValue.QualifierName)
+                                    {
+                                        case "perc":
+                                            try
+                                            {
+                                                float gradPerc = Convert.ToSingle(thisComValue.QualifierValues[0]);
+                                                if (gradPerc <= 0 || gradPerc > 25)
+                                                {
+                                                    Trace.TraceInformation("Train {0} : invalid value for gradient percent in speed setting : {1} \n",
+                                                    TTTrain.Name, gradPerc);
+                                                }
+                                                else
+                                                {
+                                                    TTTrain.SpeedSettings.gradPerc = gradPerc;
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                Trace.TraceInformation("Train {0} : invalid value for gradient percent in speed setting : {1} \n",
+                                                TTTrain.Name, thisComValue.QualifierValues[0]);
+                                            }
+                                            break;
+
+                                        case "speed":
+                                            try
+                                            {
+                                                float gradSpeed = Convert.ToSingle(thisComValue.QualifierValues[0]);
+                                                TTTrain.SpeedSettings.gradMinSpeed = gradSpeed;
+                                            }
+                                            catch
+                                            {
+                                                Trace.TraceInformation("Train {0} : invalid value for gradient min speed in speed setting : {1} \n",
+                                                TTTrain.Name, thisComValue.QualifierValues[0]);
+                                            }
+                                            break;
+
+                                        default:
+                                            Trace.TraceInformation("Invalid qualifier in gradient speed command : {0} for train : {1}", thisComValue.QualifierName, TTTrain.Name);
+                                            break;
+                                    }
+                                }
+
+                                if (TTTrain.SpeedSettings.gradPerc.HasValue && TTTrain.SpeedSettings.gradMinSpeed.HasValue)
+                                {
+                                    TTTrain.SpeedSettings.gradient = true;
+                                }
+                                else
+                                {
+                                    Trace.TraceInformation("Train {0} : incomplete definition for gradient\n", TTTrain.Name);
+                                }
+                                break;
+
                             default:
                                 Trace.TraceInformation("Invalid token in speed command : {0} for train : {1}", thisCommand.CommandToken, TTTrain.Name);
                                 break;
