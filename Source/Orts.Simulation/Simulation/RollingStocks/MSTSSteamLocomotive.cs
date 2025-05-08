@@ -850,7 +850,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             : base(simulator, wagFile)
         {
             SteamEngines = new SteamEngines(this);
-            PowerSupply = new SteamPowerSupply(this);
+            PowerSupply = new ScriptedSteamPowerSupply(this);
 
             RefillTenderWithFuel();
             RefillTenderWithWater();
