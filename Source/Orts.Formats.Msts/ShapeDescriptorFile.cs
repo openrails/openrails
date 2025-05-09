@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
@@ -69,7 +70,7 @@ namespace Orts.Formats.Msts
 
             public SDShape(STFReader stf)
             {
-                stf.ReadString(); // Ignore the filename string. TODO: Check if it agrees with the SD file name? Is this important?
+                stf.ReadString();
                 stf.ParseBlock(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("esd_detail_level", ()=>{ ESD_Detail_Level = stf.ReadIntBlock(null); }),
                     new STFReader.TokenProcessor("esd_alternative_texture", ()=>{ ESD_Alternative_Texture = stf.ReadIntBlock(null); }),
@@ -84,9 +85,22 @@ namespace Orts.Formats.Msts
                     new STFReader.TokenProcessor("esd_ortssoundfilename", ()=>{ ESD_SoundFileName = stf.ReadStringBlock(null); }),
                     new STFReader.TokenProcessor("esd_ortsbellanimationfps", ()=>{ ESD_CustomAnimationFPS = stf.ReadFloatBlock(STFReader.UNITS.Frequency, null); }),
                     new STFReader.TokenProcessor("esd_ortscustomanimationfps", ()=>{ ESD_CustomAnimationFPS = stf.ReadFloatBlock(STFReader.UNITS.Frequency, null); }),
+                    new STFReader.TokenProcessor("esd_ortstexturereplacement", ()=>{ ParseReplacementStrings(stf, ref ESD_TextureReplacement); }),
+                    new STFReader.TokenProcessor("esd_ortsmatrixrename", ()=>{ ParseReplacementStrings(stf, ref ESD_MatrixRename); }),
+                    new STFReader.TokenProcessor("esd_ortsmatrixtranslation", ()=>{ ParseMatrixOverride(STFReader.UNITS.Distance, stf, ref ESD_MatrixTranslation); }),
+                    new STFReader.TokenProcessor("esd_ortsmatrixscale", ()=>{ ParseMatrixOverride(STFReader.UNITS.None, stf, ref ESD_MatrixScale); }),
+                    new STFReader.TokenProcessor("esd_ortsmatrixrotation", ()=>{ ParseMatrixOverride(STFReader.UNITS.Angle, stf, ref ESD_MatrixRotation); }),
                 });
-                // TODO - some objects have no bounding box - ie JP2BillboardTree1.sd
-                //if (ESD_Bounding_Box == null) throw new STFException(stf, "Missing ESD_Bound_Box statement");
+
+                // Store set of all matrices that got modified
+                foreach (string mat in ESD_MatrixRename.Keys)
+                    ESD_ModifiedMatrices.Add(mat);
+                foreach (string mat in ESD_MatrixTranslation.Keys)
+                    ESD_ModifiedMatrices.Add(mat);
+                foreach (string mat in ESD_MatrixScale.Keys)
+                    ESD_ModifiedMatrices.Add(mat);
+                foreach (string mat in ESD_MatrixRotation.Keys)
+                    ESD_ModifiedMatrices.Add(mat);
             }
             public int ESD_Detail_Level;
             public int ESD_Alternative_Texture;
@@ -96,6 +110,48 @@ namespace Orts.Formats.Msts
             public bool ESD_SubObj;
             public string ESD_SoundFileName = "";
             public float ESD_CustomAnimationFPS = 8;
+            // Dictionary of <original texture name, replacement texture name>
+            public Dictionary<string, string> ESD_TextureReplacement = new Dictionary<string, string>();
+            // Dictionary of <original matrix name, replacement matrix name>
+            public Dictionary<string, string> ESD_MatrixRename = new Dictionary<string, string>();
+            // Set of matrix names that are modified in some way or another
+            public HashSet<string> ESD_ModifiedMatrices = new HashSet<string>();
+            // Dictionary of <matrix name, matrix translation x/y/z vector>
+            public Dictionary<string, Vector3> ESD_MatrixTranslation = new Dictionary<string, Vector3>();
+            // Dictionary of <matrix name, matrix scale x/y/z vector>
+            public Dictionary<string, Vector3> ESD_MatrixScale = new Dictionary<string, Vector3>();
+            // Dictionary of <matrix name, matrix rotation x/y/z vector>
+            public Dictionary<string, Vector3> ESD_MatrixRotation = new Dictionary<string, Vector3>();
+
+            // Handle parameters concerning replacement of string values
+            protected void ParseReplacementStrings(STFReader stf, ref Dictionary<string, string> renamePairs)
+            {
+                stf.MustMatch("(");
+                // Allow for multiple pairs of replaced and replacement values
+                while (!stf.EndOfBlock())
+                {
+                    string replaced = stf.ReadString();
+                    string replacement = stf.ReadString();
+                    // Add pair of values so long as we haven't reached the end of block
+                    if (replaced != ")" && replacement != ")")
+                        renamePairs.Add(replaced, replacement);
+                }
+            }
+
+            // Handle matrix adjustment parameters
+            protected void ParseMatrixOverride(STFReader.UNITS units, STFReader stf, ref Dictionary<string, Vector3> matrixParams)
+            {
+                Vector3 data = new Vector3(0);
+
+                stf.MustMatch("(");
+                string matName = stf.ReadString();
+                data.X = stf.ReadFloat(units, 0);
+                data.Y = stf.ReadFloat(units, 0);
+                data.Z = stf.ReadFloat(units, 0);
+                stf.SkipRestOfBlock();
+
+                matrixParams.Add(matName, data);
+            }
         }
 
         public class ESD_Bounding_Box

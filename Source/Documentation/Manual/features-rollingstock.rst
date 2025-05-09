@@ -403,6 +403,129 @@ OR supports tilting trains. A train tilts when its .con file name contains the
 
 .. image:: images/features-tilting.png
 
+Features to assist content creation
+===================================
+
+OR now includes some features that don't change the functionality of rolling stock, but simplify
+some steps of the content creation process or allow more control over content than was previously
+possible. The goal of these features is to save content creators' time, give additional power to
+creators, and to simplify the installation process for end users.
+
+Runtime shape manipulation
+--------------------------
+
+.. _features-shape-manipulation:
+
+MSTS shape files can be clunky to work with due to the proprietary nature of the file format
+and the limitations of the tools available to manipulate them. Even when a shape has been
+manipulated, it's often not appropriate to redistribute those changes (unless the end user
+is to replicate the manipulation themselves) to avoid plagarism. To improve this, OR now
+supports additional ways to manipulate shape file data in memory without editing the original
+shape.
+
+These features use the shape descriptor (.sd) file to provide the information needed to change
+the shape file data at runtime. The .sd file can be edited in plain text in standard text editors,
+and there is no risk of plagarism when including .sd files in a download, so changes can be
+made and distributed easily. However, it may be desired to use a different .sd file than the
+default one (the .sd default file has the same name as the .s file) out of a desire to not overwrite
+the original, or to re-use the same shape file repeatedly with different data, saving file space.
+To facilitate this, most places in wagons and engines where a .s file can be specified now accept 
+an additional input to *specify a different .sd file than the default*.
+
+For example, ``WagonShape ( "dash9.s" "dash9_reskin.sd" )`` would load the dash9 shape, but
+instead of loading dash9.sd, would load dash9_reskin.sd and apply any settings in that alternate .sd file.
+Similar can be applied to ORTS freight animations (not MSTS freight animations), passenger views,
+3D cabs, and animated couplers. Note that both the .s and .sd file specified can be
+in a different folder from the .eng or .wag by using relative file paths. If only the .s file is
+given, OR will assume the .sd file has the same name as the given .s file, just like MSTS. OR does
+not require .sd files to function, so if the .sd file is missing OR will continue with default settings.
+
+While .sd file replacement is currently unique to engines and wagons, the new features inside .sd files
+can be applied to any .sd file, including scenery.
+
+.. index::
+   single: ESD_ORTSTextureReplacement
+
+Texture Replacement
+^^^^^^^^^^^^^^^^^^^
+
+Perhaps one of the most useful additional shape descriptor features is the ability to replace the
+textures used by a shape without editing, copying, or even moving the shape file. To achieve this,
+add the ``ESD_ORTSTextureReplacement`` parameter to the .sd file, and enter texture names in the
+format ``ESD_ORTSTextureReplacement ( OriginalTexture.ace ReplacementTexture.ace )``. Any
+OriginalTexture not specified won't be changed, and if the shape doesn't have a texture specified,
+then a warning message is produced. This works with both .ace and .dds textures. Multiple
+textures can be replaced in one go by adding additional pairs of textures::
+
+    SIMISA@@@@@@@@@@JINX0t1t______
+
+    shape ( BNSF_C44_9W_4614.s
+	    ESD_Detail_Level ( 0 )
+	    ESD_Alternative_Texture ( 0 )
+	    ESD_Bounding_Box ( -1.632 -0.095 -11.05 1.684 4.628 11.05 )
+        ESD_ORTSTextureReplacement (
+            "BNSF_C449W_4410a.dds"    "BNSF_C449W_4614a.dds"
+            "BNSF_C449W_4410b.dds"    "BNSF_C449W_4614b.dds"
+        )
+    )
+
+This would reskin BNSF 4410 into BNSF 4614 without any need to edit the original shape. Remember
+to reference the original .s file, but with a custom .sd file ``WagonShape ( "..\\BNSF_MULLAN_GE_ENGINES\\BNSF_C44_9W_4410.s" 
+"BNSF_C44_9W_4614.sd" )`` so that the original shape file doesn't need to be copied. It is recommended
+that content creators making multiple skins of a new model, or reskinning an existing model, use this
+method to provide different textures for different engines/wagons as only one copy of the shape file is
+needed, reducing install size and simplifying installation as users don't need to move/copy/edit any
+shape files.
+
+Translation Matrix Modification
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+All shape files are organized into one or more *sub objects*, where each sub object is positioned/scaled/rotated
+relative to the other sub objects using a *transformation matrix*, which are the named parts of the
+shape that can be seen in shape viewing utilities. A consequence of this is that the
+position/scale/rotation of a sub object can be changed without changing any of the 3D data used
+to draw the sub object. This can be useful to correct errors in the position/scale/rotation
+of the whole, or part of, a model without changing a tremendous amount of data.
+
+.. index::
+   single: ESD_ORTSMatrixTranslation
+   single: ESD_ORTSMatrixScale
+   single: ESD_ORTSMatrixRotation
+
+- To change the position of a sub object, use ``ESD_ORTSMatrixTranslation ( MATRIX x y z )`` where
+  ``MATRIX`` is the name of the matrix and ``x y z`` are respectively the +right/-left, +up/-down,
+  and +front/-back offsets from the original position, measured in units of distance (meters by default).
+- To change the scale (size) of a sub object, use ``ESD_ORTSMatrixScale ( MATRIX x y z )`` where
+  ``MATRIX`` is the name of the matrix and ``x y z`` are the horizontal, vertical, and lengthwise
+  scale factors from the original scale. Scale factors larger than 1 increase size in that dimension,
+  between 0 and 1 reduce size, and negative scale factor mirrors the object in that dimension.
+- To change the rotation of a sub object, use ``ESD_ORTSMatrixRotation ( MATRIX y p r )`` where
+  ``MATRIX`` is the name of the matrix and ``y p r`` are the yaw (+left/-right), pitch (+up/-down)
+  and roll (+ccw/-cw) angle change from the original rotation, measured in radians by default. The ``deg``
+  unit suffix can be used to give angles in degrees.
+
+Only one of each type of parameter can be provided for each matrix. If all 3 transformations are
+applied to a matrix, they will be applied in the order of *translation, scale, then rotation*.
+An important consideration when manipulating these properties of transformation matrices is that
+the transformation will also be applied to any sub objects *below* the current matrix in the hierarchy.
+The transformation also affects 3D interiors, particle emitters, lights, and sounds attached to any
+affected sub objects.
+Should the transformation be desired only for something higher in the hierarchy, an equal but opposite
+transformation would be required on the lower-level sub object. It should also be considered that
+changes made to matrices are not purely graphical and could have consequences with some simulation
+systems. Extreme settings may break simulation behavior.
+
+.. index::
+   single: ESD_ORTSMatrixRename
+
+The name of the transformation matrix is itself important for simulator behaviors, particularly
+animations and determining the structure of rolling stock. Should a matrix be named incorrectly,
+or a change in behavior be desired, a matrix can be renamed using ``ESD_ORTSMatrixReanme ( OLDNAME NEWNAME )``
+in the .sd file. OR will scan for any matrix "OLDNAME" and change the name to "NEWNAME". If no
+matrix with the old name can be found, a warning will be produced and nothing will change. Note
+that the matrix rename step occurs *after* the previously described matrix modifications, so
+the old matrix name must be used by any other .sd parameters that require a matrix name.
+
 Freight animations and pickups
 ==============================
 
@@ -1037,6 +1160,7 @@ Here below a sample of a ``.load-or`` file::
   	{
 	  	"Name" : "triton",
 	  	"Shape" : "COMMON_Container_3d\\Cont_40ftHC\\container-40ftHC_Triton.s",
+	  	"ShapeDescriptor" : "COMMON_Container_3d\\Cont_40ftHC\\container-40ftHC_Triton.sd",
 	  	"ContainerType" : "C40ftHC",
 	  	"IntrinsicShapeOffset": [0,1.175,0],
    		"EmptyMassKG": 2100.,
@@ -1047,7 +1171,10 @@ Here below a sample of a ``.load-or`` file::
 - "Container" is a fixed keyword.
 - "Name" has as value a string used by Open Rails when the container must be indentified in a message 
   to the player.
-- "Shape" has as value the path of the container shape, having ``Trainset`` as base.
+- "Shape" has as value the path of the container shape (.s) file, having ``Trainset`` as base.
+- "ShapeDescriptor" has the path of the container shape descriptor (.sd) file,
+  having ``Trainset`` as base. This is optional; if missing OR assumes the shape
+  descriptor is in the same location with the same name as the shape file.
 - "ContainerType" identifies the container type, which may be one of the following ones::
 
   * C20ft

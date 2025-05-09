@@ -971,6 +971,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems
     public abstract class FreightAnimation
     {
         public string ShapeFileName;
+        public string ShapeDescriptor;
+        // index of visibility flag vector
+        public enum VisibleFrom
+        {
+            Outside,
+            Cab2D,
+            Cab3D
+        }
+        public bool Flipped = false;
+        public bool[] Visibility = { true, false, false };
+        public Vector3 Offset = new Vector3();
+        public int ShapeHierarchy; // TODO: Allow user inputs to specify ShapeHierarchy as per lights
     }
 
     public class FreightAnimationContinuous : FreightAnimation
@@ -1006,7 +1018,46 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     wagon.IntakePointList.Last().LinkedFreightAnim = this;
                     LinkedIntakePoint = wagon.IntakePointList.Last();
                 }),
-                new STFReader.TokenProcessor("shape", ()=>{ ShapeFileName = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("shape", ()=>{
+                    stf.MustMatch("(");
+                    ShapeFileName = stf.ReadString();
+                    if (!stf.EndOfBlock())
+                    {
+                        ShapeDescriptor = stf.ReadString();
+                        stf.SkipRestOfBlock();
+                    }
+                    else
+                        ShapeDescriptor = ShapeFileName + "d";
+                }),
+                new STFReader.TokenProcessor("offset", ()=>{
+                    stf.MustMatch("(");
+                    Offset.X = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                    Offset.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                    Offset.Z = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                    stf.MustMatch(")");
+                }),
+                new STFReader.TokenProcessor("flip", ()=>{ Flipped = stf.ReadBoolBlock(true);}),
+                new STFReader.TokenProcessor("visibility", ()=>{
+                    for (int index = 0; index < 3; index++)
+                        Visibility[index] = false;
+                    foreach (var visibilityPlace in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
+                    {
+                        switch (visibilityPlace)
+                        {
+                            case "outside":
+                                Visibility[(int)VisibleFrom.Outside] = true;
+                                break;
+                            case "cab2d":
+                                Visibility[(int)VisibleFrom.Cab2D] = true;
+                                break;
+                            case "cab3d":
+                                Visibility[(int)VisibleFrom.Cab3D] = true;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }),
                 new STFReader.TokenProcessor("maxheight", ()=>{ MaxHeight = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0); }),
                 new STFReader.TokenProcessor("minheight", ()=>{ MinHeight = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0); }),
                 new STFReader.TokenProcessor("freightweightwhenfull", ()=>{ FreightWeightWhenFull = stf.ReadFloatBlock(STFReader.UNITS.Mass, 0); }),
@@ -1037,6 +1088,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 LinkedIntakePoint = wagon.IntakePointList.Last();
             }
             ShapeFileName = freightAnimContin.ShapeFileName;
+            ShapeDescriptor = freightAnimContin.ShapeDescriptor;
+            Offset = freightAnimContin.Offset;
+            Flipped = freightAnimContin.Flipped;
+            for (int index = 0; index < 3; index++)
+                Visibility[index] = freightAnimContin.Visibility[index];
             MaxHeight = freightAnimContin.MaxHeight;
             MinHeight = freightAnimContin.MinHeight;
             FreightWeightWhenFull = freightAnimContin.FreightWeightWhenFull;
@@ -1064,21 +1120,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         {
             DEFAULT
         }
-        // index of visibility flag vector
-        public enum VisibleFrom
-        {
-            Outside,
-            Cab2D,
-            Cab3D
-        }
         public Type SubType;
         public float FreightWeight = 0;
-        public bool Flipped = false;
         public bool Cab3DFreightAnim = false;
-        public bool[] Visibility = { true, false, false };
-        public float XOffset = 0;
-        public float YOffset = 0;
-        public float ZOffset = 0;
 
         // additions to manage consequences of variable weight on friction and brake forces
         public float FullStaticORTSDavis_A = -9999;
@@ -1107,13 +1151,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         break;
 	            }
             }),
-            new STFReader.TokenProcessor("shape", ()=>{ ShapeFileName = stf.ReadStringBlock(null); }),
+            new STFReader.TokenProcessor("shape", ()=>{
+                stf.MustMatch("(");
+                ShapeFileName = stf.ReadString();
+                if (!stf.EndOfBlock())
+                {
+                    ShapeDescriptor = stf.ReadString();
+                    stf.SkipRestOfBlock();
+                }
+                else
+                    ShapeDescriptor = ShapeFileName + "d";
+            }),
             new STFReader.TokenProcessor("freightweight", ()=>{ FreightWeight = stf.ReadFloatBlock(STFReader.UNITS.Mass, 0); }),
             new STFReader.TokenProcessor("offset", ()=>{
                 stf.MustMatch("(");
-                XOffset = stf.ReadFloat(STFReader.UNITS.Distance, 0);
-                YOffset = stf.ReadFloat(STFReader.UNITS.Distance, 0);
-                ZOffset = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                Offset.X = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                Offset.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                Offset.Z = stf.ReadFloat(STFReader.UNITS.Distance, 0);
                 stf.MustMatch(")");
             }),
             new STFReader.TokenProcessor("flip", ()=>{ Flipped = stf.ReadBoolBlock(true);}),
@@ -1158,9 +1212,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         {
             SubType = freightAnimStatic.SubType;
             ShapeFileName = freightAnimStatic.ShapeFileName;
-            XOffset = freightAnimStatic.XOffset;
-            YOffset = freightAnimStatic.YOffset;
-            ZOffset = freightAnimStatic.ZOffset;
+            ShapeDescriptor = freightAnimStatic.ShapeDescriptor;
+            Offset = freightAnimStatic.Offset;
             Flipped = freightAnimStatic.Flipped;
             for (int index = 0; index < 3; index++)
                 Visibility[index] = freightAnimStatic.Visibility[index];

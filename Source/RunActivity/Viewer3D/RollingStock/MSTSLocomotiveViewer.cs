@@ -76,7 +76,7 @@ namespace Orts.Viewer3D.RollingStock
                     try
                     {
                         Viewer.SoundProcess.AddSoundSources(script, new List<SoundSourceBase>() {
-                            new SoundSource(Viewer, Locomotive, Locomotive.TrainControlSystem.Sounds[script])});
+                            new SoundSource(Viewer, this, Locomotive.TrainControlSystem.Sounds[script])});
                     }
                     catch (Exception error)
                     {
@@ -3383,7 +3383,7 @@ namespace Orts.Viewer3D.RollingStock
             if (car.CabView3D != null)
             {
                 var shapePath = car.CabView3D.ShapeFilePath;
-                TrainCarShape = new PoseableShape(viewer, shapePath + '\0' + Path.GetDirectoryName(shapePath), car.WorldPosition, ShapeFlags.ShadowCaster | ShapeFlags.Interior);
+                TrainCarShape = new PoseableShape(viewer, shapePath + '\0' + Path.GetDirectoryName(shapePath), car.CabView3D.ShapeDescriptorPath, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster | ShapeFlags.Interior);
                 locoViewer.ThreeDimentionCabRenderer = new CabRenderer(viewer, car, car.CabView3D.CVFFile);
             }
             else locoViewer.ThreeDimentionCabRenderer = locoViewer._CabRenderer;
@@ -3465,8 +3465,6 @@ namespace Orts.Viewer3D.RollingStock
                     {
                         //DigitParts.Add(key, new DigitalDisplay(viewer, TrainCarShape, iMatrix, parameter, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
                         DigitParts3D.Add(key, new ThreeDimCabDigit(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key], Locomotive));
-                        if (!TrainCarShape.SharedShape.StoredResultMatrixes.ContainsKey(targetNode))
-                            TrainCarShape.SharedShape.StoredResultMatrixes.Add(targetNode, Matrix.Identity);
                     }
                     else if (style != null && style is CabViewGaugeRenderer)
                     {
@@ -3475,8 +3473,6 @@ namespace Orts.Viewer3D.RollingStock
                         if (CVFR.GetGauge().ControlStyle != CABViewControlStyles.POINTER) //pointer will be animated, others will be drawn dynamicaly
                         {
                             Gauges.Add(key, new ThreeDimCabGaugeNative(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
-                            if (!TrainCarShape.SharedShape.StoredResultMatrixes.ContainsKey(targetNode))
-                                TrainCarShape.SharedShape.StoredResultMatrixes.Add(targetNode, Matrix.Identity);
                         }
                         else
                         {//for pointer animation
@@ -3488,15 +3484,11 @@ namespace Orts.Viewer3D.RollingStock
                             }
                             else tmpPart = AnimateParts[key];
                             tmpPart.AddMatrix(iMatrix); //tmpPart.SetPosition(false);
-                            if (!TrainCarShape.SharedShape.StoredResultMatrixes.ContainsKey(targetNode))
-                                TrainCarShape.SharedShape.StoredResultMatrixes.Add(targetNode, Matrix.Identity);
                         }
                     }
                     else if (style != null && style is DistributedPowerInterfaceRenderer)
                     {
                         DPIDisplays3D.Add(key, new ThreeDimCabDPI(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
-                        if (!TrainCarShape.SharedShape.StoredResultMatrixes.ContainsKey(targetNode))
-                            TrainCarShape.SharedShape.StoredResultMatrixes.Add(targetNode, Matrix.Identity);
                     }
                     else
                     {
@@ -3508,8 +3500,6 @@ namespace Orts.Viewer3D.RollingStock
                         }
                         else tmpPart = AnimateParts[key];
                         tmpPart.AddMatrix(iMatrix); //tmpPart.SetPosition(false);
-                        if (!TrainCarShape.SharedShape.StoredResultMatrixes.ContainsKey(targetNode))
-                            TrainCarShape.SharedShape.StoredResultMatrixes.Add(targetNode, Matrix.Identity);
                     }
                 }
             }
@@ -3714,7 +3704,22 @@ namespace Orts.Viewer3D.RollingStock
             }*/ //removed with 3D digits
 
             if (TrainCarShape != null)
+            {
+                int viewPoint = (Viewer.Camera as InsideThreeDimCamera).ActViewPoint;
+                // Update transform of entire interior
+                TrainCarShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
+                TrainCarShape.Location.TileX = Car.WorldPosition.TileX;
+                TrainCarShape.Location.TileZ = Car.WorldPosition.TileZ;
+
+                // Locomotive's TrainCarShape.ResultMatrices won't be updated automatically, force manual update
+                LocoViewer.TrainCarShape.UpdateResultMatrices();
+
+                TrainCarShape.XNAMatrices[0].Translation = Car.CabViewpoints[viewPoint].ShapeOffset;
+                if (Car.CabViewpoints[viewPoint].ShapeHierarchy < LocoViewer.TrainCarShape.ResultMatrices.Length)
+                    TrainCarShape.Location.XNAMatrix = LocoViewer.TrainCarShape.ResultMatrices[Car.CabViewpoints[viewPoint].ShapeHierarchy] * TrainCarShape.Location.XNAMatrix;
+
                 TrainCarShape.ConditionallyPrepareFrame(frame, elapsedTime, MatrixVisible);
+            }
         }
 
         internal void PrepareFrameForWindow(int windowIndex, AnimatedPartMultiState anim, ElapsedTime elapsedTime)
