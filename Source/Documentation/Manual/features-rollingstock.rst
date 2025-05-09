@@ -403,6 +403,237 @@ OR supports tilting trains. A train tilts when its .con file name contains the
 
 .. image:: images/features-tilting.png
 
+Features to assist content creation
+===================================
+
+OR now includes some features that don't change the functionality of rolling stock, but simplify
+some steps of the content creation process or allow more control over content than was previously
+possible. The goal of these features is to save content creators' time, give additional power to
+creators, and to simplify the installation process for end users.
+
+Runtime shape manipulation
+--------------------------
+
+.. _features-shape-manipulation:
+
+MSTS shape files can be clunky to work with due to the proprietary nature of the file format
+and the limitations of the tools available to manipulate them. Even when a shape has been
+manipulated, it's often not appropriate to redistribute those changes (unless the end user
+is to replicate the manipulation themselves) to avoid plagarism. To improve this, OR now
+supports additional ways to manipulate shape file data in memory without editing the original
+shape.
+
+These features use the shape descriptor (.sd) file to provide the information needed to change
+the shape file data at runtime. The .sd file can be edited in plain text in standard text editors,
+and there is no risk of plagarism when including .sd files in a download, so changes can be
+made and distributed easily. However, it may be desired to use a different .sd file than the
+default one (the .sd default file has the same name as the .s file) out of a desire to not overwrite
+the original, or to re-use the same shape file repeatedly with different data, saving file space.
+To facilitate this, most places in wagons and engines where a .s file can be specified now accept 
+an additional input to *specify a different .sd file than the default*.
+
+For example, ``WagonShape ( "dash9.s" "dash9_reskin.sd" )`` would load the dash9 shape, but
+instead of loading dash9.sd, would load dash9_reskin.sd and apply any settings in that alternate .sd file.
+Similar can be applied to ORTS freight animations (not MSTS freight animations), passenger views,
+3D cabs, and animated couplers. Note that both the .s and .sd file specified can be
+in a different folder from the .eng or .wag by using relative file paths. If only the .s file is
+given, OR will assume the .sd file has the same name as the given .s file, just like MSTS. OR does
+not require .sd files to function, so if the .sd file is missing OR will continue with default settings.
+
+While .sd file replacement is currently unique to engines and wagons, the new features inside .sd files
+can be applied to any .sd file, including scenery.
+
+.. index::
+   single: ESD_ORTSTextureReplacement
+
+Texture Replacement
+^^^^^^^^^^^^^^^^^^^
+
+Perhaps one of the most useful additional shape descriptor features is the ability to replace the
+textures used by a shape without editing, copying, or even moving the shape file. To achieve this,
+add the ``ESD_ORTSTextureReplacement`` parameter to the .sd file, and enter texture names in the
+format ``ESD_ORTSTextureReplacement ( OriginalTexture.ace ReplacementTexture.ace )``. Any
+OriginalTexture not specified won't be changed, and if the shape doesn't have a texture specified,
+then a warning message is produced. This works with both .ace and .dds textures. Multiple
+textures can be replaced in one go by adding additional pairs of textures::
+
+    SIMISA@@@@@@@@@@JINX0t1t______
+
+    shape ( BNSF_C44_9W_4614.s
+	    ESD_Detail_Level ( 0 )
+	    ESD_Alternative_Texture ( 0 )
+	    ESD_Bounding_Box ( -1.632 -0.095 -11.05 1.684 4.628 11.05 )
+        ESD_ORTSTextureReplacement (
+            "BNSF_C449W_4410a.dds"    "BNSF_C449W_4614a.dds"
+            "BNSF_C449W_4410b.dds"    "BNSF_C449W_4614b.dds"
+        )
+    )
+
+This would reskin BNSF 4410 into BNSF 4614 without any need to edit the original shape. Remember
+to reference the original .s file, but with a custom .sd file ``WagonShape ( "..\\BNSF_MULLAN_GE_ENGINES\\BNSF_C44_9W_4410.s" 
+"BNSF_C44_9W_4614.sd" )`` so that the original shape file doesn't need to be copied. It is recommended
+that content creators making multiple skins of a new model, or reskinning an existing model, use this
+method to provide different textures for different engines/wagons as only one copy of the shape file is
+needed, reducing install size and simplifying installation as users don't need to move/copy/edit any
+shape files.
+
+Translation Matrix Modification
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+All shape files are organized into one or more *sub objects*, where each sub object is positioned/scaled/rotated
+relative to the other sub objects using a *transformation matrix*, which are the named parts of the
+shape that can be seen in shape viewing utilities. A consequence of this is that the
+position/scale/rotation of a sub object can be changed without changing any of the 3D data used
+to draw the sub object. This can be useful to correct errors in the position/scale/rotation
+of the whole, or part of, a model without changing a tremendous amount of data.
+
+.. index::
+   single: ESD_ORTSMatrixTranslation
+   single: ESD_ORTSMatrixScale
+   single: ESD_ORTSMatrixRotation
+
+- To change the position of a sub object, use ``ESD_ORTSMatrixTranslation ( MATRIX x y z )`` where
+  ``MATRIX`` is the name of the matrix and ``x y z`` are respectively the +right/-left, +up/-down,
+  and +front/-back offsets from the original position, measured in units of distance (meters by default).
+- To change the scale (size) of a sub object, use ``ESD_ORTSMatrixScale ( MATRIX x y z )`` where
+  ``MATRIX`` is the name of the matrix and ``x y z`` are the horizontal, vertical, and lengthwise
+  scale factors from the original scale. Scale factors larger than 1 increase size in that dimension,
+  between 0 and 1 reduce size, and negative scale factor mirrors the object in that dimension.
+- To change the rotation of a sub object, use ``ESD_ORTSMatrixRotation ( MATRIX y p r )`` where
+  ``MATRIX`` is the name of the matrix and ``y p r`` are the yaw (+left/-right), pitch (+up/-down)
+  and roll (+ccw/-cw) angle change from the original rotation, measured in radians by default. The ``deg``
+  unit suffix can be used to give angles in degrees.
+
+Only one of each type of parameter can be provided for each matrix. If all 3 transformations are
+applied to a matrix, they will be applied in the order of *translation, scale, then rotation*.
+An important consideration when manipulating these properties of transformation matrices is that
+the transformation will also be applied to any sub objects *below* the current matrix in the hierarchy.
+The transformation also affects 3D interiors, particle emitters, lights, and sounds attached to any
+affected sub objects.
+Should the transformation be desired only for something higher in the hierarchy, an equal but opposite
+transformation would be required on the lower-level sub object. It should also be considered that
+changes made to matrices are not purely graphical and could have consequences with some simulation
+systems. Extreme settings may break simulation behavior.
+
+.. index::
+   single: ESD_ORTSMatrixRename
+
+The name of the transformation matrix is itself important for simulator behaviors, particularly
+animations and determining the structure of rolling stock. Should a matrix be named incorrectly,
+or a change in behavior be desired, a matrix can be renamed using ``ESD_ORTSMatrixReanme ( OLDNAME NEWNAME )``
+in the .sd file. OR will scan for any matrix "OLDNAME" and change the name to "NEWNAME". If no
+matrix with the old name can be found, a warning will be produced and nothing will change. Note
+that the matrix rename step occurs *after* the previously described matrix modifications, so
+the old matrix name must be used by any other .sd parameters that require a matrix name.
+
+Automatic wagon size calculation
+--------------------------------
+
+Determining the appropriate values to enter in the ``Size ( w, h, l )`` parameter of an engine or
+wagon can be tedious, as reasonable settings for the simulated width, height, and length of rolling
+stock depend on measurements of the 3D model used. Many content creators have entered largely
+arbitrary values of width and height into the size parameter, only adjusting the length value to
+give correct coupler alignement.
+
+.. index::
+   single: ORTSAutoSize
+
+To simplify this process, and produce more reasonable dimensions for rolling stock, OR can now
+automatically calculate the dimensions of rolling stock based on the shape file used. Enter
+``ORTSAutoSize`` in the Wagon section of an engine or wagon to allow OR to determine
+the width, height, and length of the rolling stock based on the dimensions of the main shape file,
+ignoring any values entered manually in the MSTS Size parameter. Note that this process is
+not aware of any :ref:`shape descriptor overrides <features-shape-manipulation>` so any changes made
+to the shape there will not be reflected in the automatically calculated size.
+
+``ORTSAutoSize`` accepts 3 (optional) arguments, default units in meters, corresponding to offsets from the
+shape's width, height, and length respectively. For example, ``ORTSAutoSize ( 0.1m, -0.2m, -0.18m )``
+would tell OR to automatically determine the wagon's dimensions from the shape file, then subsequently
+add 0.1 meters to the width, subtract 0.2 meters from the height, and subtract 0.18 meters from the length,
+using the resulting values to set the simulated size of the wagon. In most cases, the width and height
+arguments can be set to 0, and the length argument adjusted to produce the desired coupler spacing. If
+no arguments are specified (ie: ``ORTSAutoSize ()`` was entered in the Wagon section) then all three
+offsets are assumed to be 0 meters.
+
+Note that automatic sizing uses the nearest LOD of the main shape file. LODs for further distances
+and freight animation shape files have no effect on the automatic sizing. This method also works best for rolling
+stock with standard buffers/couplers on each end. Automatic sizing generally can't produce reasonable results
+for articulated rolling stock. And should something go wrong with the shape file causing automatic sizing to fail,
+OR will revert to the values entered in the ``Size`` parameter.
+
+Improved wagon alignment tools
+------------------------------
+
+Many MSTS and OR creators have encountered rolling stock shapes that were not correctly aligned,
+resulting in couplers/buffers clipping at one end of the wagon and separating at the other end.
+Normally, this would require inspecting the 3D model to determine exactly how off-center it was
+and carefully setting the Z value of ``CentreOfGravity ( x, y, z )`` to re-center the model.
+
+.. index::
+   single: ORTSCentreOfGravity_X
+   single: ORTSCentreOfGravity_Y
+   single: ORTSCentreOfGravity_Z
+
+In some cases, this approach could still be insufficient as the Z offset is limited to 2 meters in
+order to prevent unusual behaviors with some MSTS models that used unreasonably large Z offsets.
+To facilitate models that need large offsets without introducing errors, OR now has parameters
+to define the CoG dimensions individually without any artifical limits added afterward.
+To set the horizontal, vertical, and lengthwise CoG offset ``ORTSCentreOfGravity_X``, ``ORTSCentreOfGravity_Y``,
+and ``ORTSCentreOfGravity_Z`` respectively can be entered in the Wagon section of an engine or wagon.
+
+If placed later in the file than the original ``CentreOfGravity`` parameter, the data entered in the X/Y/Z
+parameters will overwrite the original data, but only for the specific X/Y/Z component provided. For
+example, if ``ORTSCentreOfGravity_Z ( -1m )`` is placed after ``CentreOfGravity ( 0m 2.5m 0.5m )`` the
+resulting CoG offset will actually be 0m, 2.5m, -1m, overwriting the original 0.5m Z offset while
+leaving the X and Y components unchanged.
+
+.. index::
+   single: ORTSAutoCenter
+
+However, in many cases it is desireable to simply center the 3D model lengthwise such that the
+couplers/buffers are equidistant from the centerpoint of the model. To make this specific case
+easier, OR now includes the ``ORTSAutoCenter`` parameter. When ``ORTSAutoCenter ( 1 )``
+is included in the Wagon section of an engine or wagon, OR will inspect the main shape file used by
+the wagon to determine the exact Z value of CentreOfGravity required to re-center the shape in the
+simulation. This will overwrite the manually entered Z component of ``CentreOfGravity`` but will
+not change the X or Y components. Should no re-centering be required, none will be applied.
+
+Some rolling stock will not align correctly when auto-centered. As with ``ORTSAutoSize``, this
+feature should be employed on rolling stock with standard buffers or couplers, and will
+not produce suitable results for articulated rolling stock or stock with different coupler
+types at each end. Only the highest detail LOD of the main shape is used to auto-center the
+rolling stock, other LODs and freight animations are ignored. If the process fails, a warning
+will be written to the log and the automatic calculation will be skipped.
+
+Advanced articulation control
+-----------------------------
+
+A wide variety of modern rolling stock uses articulation, in which multiple rail vehicles
+share a single "Jacobs Bogie". Open Rails offers partial support for such passenger and
+freight units by allowing one wagon to include a bogie in its 3D model while the next
+wagon removes the bogie from its 3D model. Ideally, OR will then add an invisible bogie
+to the end of the wagon without the bogie to emulate "sharing" the bogie with the previous
+wagon.
+
+However, this automatic system is limited. OR will check for wheels in the wagon's 3D
+model and will assume the wagon is articulated at one end if there are no wheels towards
+that end of the 3D model. This approach will only be used on 3D models with 3, 2, or 0 axles
+(the 1-axle case is excluded for compatibility reasons) and won't be used on locomotives.
+In some cases, this approach will result in false negative or false positive detection
+of articulation. Should the automatic articulation method not produce the expected track
+following behavior, it is now possible to manually define whether a wagon or engine
+should use the articulation behavior.
+
+.. index::
+   single: ORTSFrontArticulation
+   single: ORTSRearArticulation
+
+To forcibly enable the articulation behavior at the front of the rail vehicle, use
+``ORTSFrontArticulation ( 1 )`` and at the rear use ``ORTSRearArticulation ( 1 )``.
+Conversely, use ``ORTSFrontArticulation ( 0 )`` or ``ORTSRearArticulation ( 0 )`` to
+force disable articulation behavior. Entering a value of -1 provides the default
+automatic behavior.
+
 Freight animations and pickups
 ==============================
 
@@ -762,9 +993,9 @@ and the state of these parameters when the wagon or locomotive is full.
    single: FullBrakeRelayValveInshot
 
 To configure the stock correctly the following empty and full parameters need to be 
-included in the ORTSFreightAnims file. Empty values are included in the first block, 
-and full values are included in the second code block. A sample code block is shown 
-below::
+included in the ``ORTSFreightAnims`` block. Empty values are included in the first block, 
+and full values are included in the ``FreightAnimContinuous`` or ``FreightAnimStatic``
+sub-block. A sample code block is shown below::
 
     ORTSFreightAnims
     (
@@ -799,6 +1030,12 @@ below::
       FullCentreOfGravity_Y ( 1.8 ) 
      )
   )
+
+Any parameters not included will use the equivalent value specified outside
+the ORTSFreightAnims block. If the Davis A, B, and C values are not given
+they will be determined automatically using other properties of the rolling
+stock and either the 1926 Davis formula or 1992 CN formula, depending on the
+ORTSBearingType specified in the Wagon section.
 
 For some rolling stock, it may be more realistic to handle variations in load/empty
 brake force by changing the brake cylinder pressure developed, rather than changing
@@ -1037,6 +1274,7 @@ Here below a sample of a ``.load-or`` file::
   	{
 	  	"Name" : "triton",
 	  	"Shape" : "COMMON_Container_3d\\Cont_40ftHC\\container-40ftHC_Triton.s",
+	  	"ShapeDescriptor" : "COMMON_Container_3d\\Cont_40ftHC\\container-40ftHC_Triton.sd",
 	  	"ContainerType" : "C40ftHC",
 	  	"IntrinsicShapeOffset": [0,1.175,0],
    		"EmptyMassKG": 2100.,
@@ -1047,7 +1285,10 @@ Here below a sample of a ``.load-or`` file::
 - "Container" is a fixed keyword.
 - "Name" has as value a string used by Open Rails when the container must be indentified in a message 
   to the player.
-- "Shape" has as value the path of the container shape, having ``Trainset`` as base.
+- "Shape" has as value the path of the container shape (.s) file, having ``Trainset`` as base.
+- "ShapeDescriptor" has the path of the container shape descriptor (.sd) file,
+  having ``Trainset`` as base. This is optional; if missing OR assumes the shape
+  descriptor is in the same location with the same name as the shape file.
 - "ContainerType" identifies the container type, which may be one of the following ones::
 
   * C20ft

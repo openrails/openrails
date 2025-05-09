@@ -26,6 +26,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using Orts.Simulation.RollingStocks;
+using Orts.Viewer3D.RollingStock;
 
 namespace Orts.Viewer3D
 {
@@ -54,11 +55,11 @@ namespace Orts.Viewer3D
         int InputCycle;
 #endif
 
-        public ParticleEmitterViewer(Viewer viewer, ParticleEmitterData data, WorldPosition worldPosition)
+        public ParticleEmitterViewer(Viewer viewer, ParticleEmitterData data, MSTSWagonViewer car, WorldPosition worldPosition)
         {
             Viewer = viewer;
             EmissionHoleM2 = (MathHelper.Pi * ((data.NozzleWidth / 2f) * (data.NozzleWidth / 2f)));
-            Emitter = new ParticleEmitterPrimitive(viewer, data, worldPosition);
+            Emitter = new ParticleEmitterPrimitive(viewer, data, car, worldPosition);
 #if DEBUG_EMITTER_INPUT
             EmitterID = ++EmitterIDIndex;
             InputCycle = Viewer.Random.Next(InputCycleLimit);
@@ -194,6 +195,9 @@ namespace Orts.Viewer3D
         internal WorldPosition WorldPosition;
         internal WorldPosition LastWorldPosition;
 
+        internal MSTSWagonViewer CarViewer;
+        internal int ShapeHierarchy; // TODO: Give a way for user input to change the ShapeHierarchy, as is possible for lights
+
         // Particle buffer goes like this:
         //   +--active>-----new>--+
         //   |                    |
@@ -210,7 +214,7 @@ namespace Orts.Viewer3D
         Viewer viewer;
         GraphicsDevice graphicsDevice;
 
-        public ParticleEmitterPrimitive(Viewer viewer, ParticleEmitterData data, WorldPosition worldPosition)
+        public ParticleEmitterPrimitive(Viewer viewer, ParticleEmitterData data, MSTSWagonViewer car, WorldPosition worldPosition)
         {
             this.viewer = viewer;
             this.graphicsDevice = viewer.GraphicsDevice;
@@ -228,6 +232,7 @@ namespace Orts.Viewer3D
             ParticleDuration = 3;
             ParticleColor = Color.White;
 
+            CarViewer = car;
             WorldPosition = worldPosition;
             LastWorldPosition = new WorldPosition(worldPosition);
 
@@ -337,13 +342,21 @@ namespace Orts.Viewer3D
 
             if (numToEmit > 0)
             {
-                var rotation = WorldPosition.XNAMatrix;
-                rotation.Translation = Vector3.Zero;
+                Matrix rotation = WorldPosition.XNAMatrix;
+                rotation.Translation = Vector3.Zero; // Only want rotation data for this step
+                rotation = CarViewer.TrainCarShape.ResultMatrices[ShapeHierarchy] * rotation;
 
                 var position = Vector3.Transform(EmitterData.XNALocation, rotation) + WorldPosition.XNAMatrix.Translation;
+                rotation.Translation = Vector3.Zero; // Last step needed translation, next step does not
                 var globalInitialVelocity = Vector3.Transform(XNAInitialVelocity, rotation) + velocity;
-                // TODO: This should only be rotated about the Y axis and not get fully rotated.
-                var globalTargetVelocity = Vector3.Transform(XNATargetVelocity, rotation);
+                // FUTURE: Allow target velocities in directions other than straight upward, for now it's just 0, 1, 0
+                // Target velocity should rotate with the attached train car, but only about the Y axis
+                //rotation.Decompose(out _, out Quaternion rot, out _);
+                //rot.X = 0;
+                //rot.Z = 0;
+                //rot.Normalize();
+                //var globalTargetVelocity = Vector3.Transform(XNATargetVelocity, rot);
+                Vector3 globalTargetVelocity = XNATargetVelocity;
 
                 var time = TimeParticlesLastEmitted;
 
