@@ -2745,8 +2745,11 @@ namespace Orts.Simulation.RollingStocks
                         // Simple slip control
                         // Motive force is reduced to the maximum adhesive force
                         // In wheelslip situations, motive force is set to zero
-                        axle.DriveForceN = Math.Sign(axle.DriveForceN) * Math.Min(axle.MaximumWheelAdhesion * axle.AxleWeightN, Math.Abs(axle.DriveForceN));
-                        if (axle.IsWheelSlip) axle.DriveForceN = 0;
+                        float adhesionLimit;
+                        if (axle.SlipSpeedPercent > 115) adhesionLimit = 0;
+                        else if (axle.SlipSpeedPercent > 95) adhesionLimit = axle.MaximumWheelAdhesion * (115 - axle.SlipSpeedPercent) / 20;
+                        else adhesionLimit = axle.MaximumWheelAdhesion;
+                        axle.DriveForceN = Math.Sign(axle.DriveForceN) * Math.Min(adhesionLimit * axle.AxleWeightN, Math.Abs(axle.DriveForceN));
                     }
                 }
             }
@@ -3115,6 +3118,8 @@ namespace Orts.Simulation.RollingStocks
             }
 
             LocomotiveAxles.Update(elapsedClockSeconds);
+
+            // TODO: Rolling friction should be handled by the axle module
 
             TractiveForceN = LocomotiveAxles.DriveForceN;
             MotiveForceN = LocomotiveAxles.AxleMotiveForceN;

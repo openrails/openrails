@@ -1092,12 +1092,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 var targetNumOfSubstepsPS = Math.Abs((AdhesGrad * SlipSpeedMpS) + lowerSubStepLimit);
                 if (float.IsNaN((float)targetNumOfSubstepsPS)) targetNumOfSubstepsPS = 1;
 
-                if (SlipSpeedMpS > WheelSlipThresholdMpS) // if in wheel slip then maximise the substeps
+                if (SlipSpeedPercent > 100) // if in wheel slip then maximise the substeps
                 {
                     targetNumOfSubstepsPS = upperSubStepLimit;
                 }
 
-                if (Math.Abs(integratorError) < 0.000277 && !IsWheelSlip && !IsWheelSlipWarning && SlipSpeedMpS < 0.25 * WheelSlipThresholdMpS && SlipSpeedMpS < previousSlipSpeedMpS)
+                if (Math.Abs(integratorError) < 0.000277 && SlipSpeedPercent < 25 && Math.Abs(SlipSpeedMpS) < Math.Abs(previousSlipSpeedMpS))
                 {
                     if (--waitBeforeChangingRate <= 0) //wait for a while before changing the integration rate
                     {
@@ -1110,7 +1110,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     if (--waitBeforeChangingRate <= 0) //wait for a while before changing the integration rate
                     {
 
-                        if (IsWheelSlip || IsWheelSlipWarning || SlipSpeedMpS > previousSlipSpeedMpS)
+                        if (SlipSpeedPercent > 70 || Math.Abs(SlipSpeedMpS) > Math.Abs(previousSlipSpeedMpS))
                         {
                             // this speeds up the substep increase if the slip speed approaches the threshold or has exceeded it, ie "critical conditions".
                             NumOfSubstepsPS += 10;
@@ -1216,6 +1216,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 MaximumWheelAdhesion = AdhesionLimit;
                 axleStaticForceN = 0;
+                WheelSlipThresholdMpS = 0;
             }
             else if (Axles.UsePolachAdhesion)
             {
@@ -1269,12 +1270,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (advancedAdhesion)
             {
                 Integrate(elapsedSeconds);
-                if (Math.Abs(SlipSpeedMpS) > WheelSlipThresholdMpS)
+                if (SlipSpeedPercent > (Car is MSTSLocomotive loco && loco.SlipControlSystem == MSTSLocomotive.SlipControlType.Full ? (200 - SlipWarningTresholdPercent) : 100))
                 {
                     // Wheel slip internally happens instantaneously, but may correct itself in a short period, so HuD indication has a small time delay to eliminate "false" indications
                     IsWheelSlip = IsWheelSlipWarning = true;
 
                     // Wait some time before indicating the HuD wheelslip to avoid false triggers
+                    // TODO: set an increased HUD wheelslip threshold if a slip control system is fitted, as it operates close to the wheelslip threshold
                     if (WheelSlipTimeS > WheelSlipThresholdTimeS)
                     {
                         HuDIsWheelSlip = HuDIsWheelSlipWarning = true;
@@ -1318,12 +1320,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         
         public void UpdateSimpleAdhesion(float elapsedClockSeconds)
         {
-            
             float axleInForceN = 0;
             if (DriveType == AxleDriveType.ForceDriven)
                 axleInForceN = DriveForceN * transmissionEfficiency;
             else if (DriveType == AxleDriveType.MotorDriven)
-                axleInForceN = (float)motor.GetDevelopedTorqueNm(AxleSpeedMpS * transmissionRatio / WheelRadiusM) * transmissionEfficiency / WheelRadiusM;
+                axleInForceN = (float)motor.GetDevelopedTorqueNm(TrainSpeedMpS * transmissionRatio / WheelRadiusM) * transmissionEfficiency / WheelRadiusM;
             DriveForceN = axleInForceN;
 
             float frictionForceN = FrictionN;
@@ -1333,21 +1334,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             AxleMotiveForceN = DriveForceN;
             AxleBrakeForceN = BrakeRetardForceN;
             AxleFrictionForceN = frictionForceN;
+            AxleSpeedMpS = TrainSpeedMpS;
 
             float maxAdhesionForceN = AxleWeightN * AdhesionLimit;
             if (Math.Abs(axleOutForceN) > maxAdhesionForceN)
             {
                 axleOutForceN = MathHelper.Clamp(axleOutForceN, -maxAdhesionForceN, maxAdhesionForceN);
-                if (Car is MSTSLocomotive locomotive && !locomotive.AntiSlip) axleOutForceN *= locomotive.Adhesion1;
+                if (Car is MSTSLocomotive locomotive && !locomotive.AntiSlip && locomotive.SlipControlSystem == MSTSLocomotive.SlipControlType.None) axleOutForceN *= locomotive.Adhesion1;
+                //else if (!(Car is MSTSLocomotive) && Car.Simulator.UseAdvancedAdhesion && !Car.Simulator.Settings.SimpleControlPhysics && Car.IsPlayerTrain) axleOutForceN = MathHelper.Clamp(axleOutForceN, -);
 
                 HuDIsWheelSlip = HuDIsWheelSlipWarning = IsWheelSlip = IsWheelSlipWarning = true;
 
                 if ((TrainSpeedMpS > 0 && axleOutForceN < 0) || (TrainSpeedMpS < 0 && axleOutForceN > 0))
                 {
-                    AxleSpeedMpS = 0;
                     if (Math.Abs(axleInForceN) < BrakeRetardForceN && Math.Sign(TrainSpeedMpS) * (-axleOutForceN + axleInForceN) - frictionForceN > 0)
                     {
                         AxleBrakeForceN = Math.Sign(TrainSpeedMpS) * (-axleOutForceN + axleInForceN) - frictionForceN;
+                        AxleSpeedMpS = 0;
                     }
                     else
                     {
@@ -1356,13 +1359,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 }
                 else
                 {
-                    AxleSpeedMpS = 2 * TrainSpeedMpS;
                     AxleMotiveForceN = axleOutForceN + Math.Sign(TrainSpeedMpS) * totalFrictionForceN;
                 }
             }
             else
             {
-                AxleSpeedMpS = TrainSpeedMpS;
                 HuDIsWheelSlip = HuDIsWheelSlipWarning = IsWheelSlip = IsWheelSlipWarning = false;
             }
             AxlePositionRad += AxleSpeedMpS / WheelRadiusM * elapsedClockSeconds;
