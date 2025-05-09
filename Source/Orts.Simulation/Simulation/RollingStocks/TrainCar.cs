@@ -91,6 +91,9 @@ namespace Orts.Simulation.RollingStocks
         // Remember direction of passenger camera and apply when user returns to it.
         public float RotationXRadians;
         public float RotationYRadians;
+        // TODO: Add user inputs for these, similar to what's capable elsewhere
+        public Vector3 ShapeOffset;
+        public int ShapeHierarchy;
     }
 
     public abstract class TrainCar
@@ -2833,6 +2836,8 @@ namespace Orts.Simulation.RollingStocks
             // Check if null (0-length) vector
             if (!(fwd.X == 0 && fwd.Y == 0 && fwd.Z == 0))
                 fwd.Normalize();
+            else // If calculation fails, force set forward vector to prevent NaN errors
+                fwd.X = 1; 
             Vector3 side = Vector3.Cross(Vector3.Up, fwd);
             // Check if null (0-length) vector
             if (!(side.X == 0 && side.Y == 0 && side.Z == 0))

@@ -49,9 +49,9 @@ namespace Orts.Viewer3D
     public class SharedShapeManager
     {
         readonly Viewer Viewer;
-
-        Dictionary<string, SharedShape> Shapes = new Dictionary<string, SharedShape>();
-        Dictionary<string, bool> ShapeMarks = new Dictionary<string, bool>();
+        
+        Dictionary<SharedShape.ShapeAndDescriptor, SharedShape> Shapes = new Dictionary<SharedShape.ShapeAndDescriptor, SharedShape>();
+        Dictionary<SharedShape.ShapeAndDescriptor, bool> ShapeMarks = new Dictionary<SharedShape.ShapeAndDescriptor, bool>();
         SharedShape EmptyShape;
 
         [CallOnThread("Render")]
@@ -61,35 +61,41 @@ namespace Orts.Viewer3D
             EmptyShape = new SharedShape(Viewer);
         }
 
-        public SharedShape Get(string path)
+        public SharedShape Get(string path, string descriptor = null)
         {
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("SharedShapeManager.Get incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
 
             if (path == null || path == EmptyShape.FilePath)
                 return EmptyShape;
+            if (string.IsNullOrEmpty(descriptor)) // Default shape descriptor file location
+                descriptor = path + "d";
 
             path = path.ToLowerInvariant();
-            if (!Shapes.ContainsKey(path))
+            descriptor = descriptor.ToLowerInvariant();
+
+            SharedShape.ShapeAndDescriptor sAndSd = new SharedShape.ShapeAndDescriptor(path, descriptor);
+
+            if (!Shapes.ContainsKey(sAndSd))
             {
                 try
                 {
-                    Shapes.Add(path, new SharedShape(Viewer, path));
+                    Shapes.Add(sAndSd, new SharedShape(Viewer, sAndSd));
                 }
                 catch (Exception error)
                 {
                     Trace.WriteLine(new FileLoadException(path, error));
-                    Shapes.Add(path, EmptyShape);
+                    Shapes.Add(sAndSd, EmptyShape);
                 }
             }
-            return Shapes[path];
+            return Shapes[sAndSd];
         }
 
         public void Mark()
         {
             ShapeMarks.Clear();
-            foreach (var path in Shapes.Keys)
-                ShapeMarks.Add(path, false);
+            foreach (var sAndSd in Shapes.Keys)
+                ShapeMarks.Add(sAndSd, false);
         }
 
         public void Mark(SharedShape shape)
@@ -106,10 +112,10 @@ namespace Orts.Viewer3D
 
         public void Sweep()
         {
-            foreach (var path in ShapeMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
+            foreach (var sAndSd in ShapeMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
             {
-                Shapes[path].Dispose();
-                Shapes.Remove(path);
+                Shapes[sAndSd].Dispose();
+                Shapes.Remove(sAndSd);
             }
         }
 
@@ -142,14 +148,26 @@ namespace Orts.Viewer3D
 
         /// <summary>
         /// Construct and initialize the class
-        /// This constructor is for objects described by a MSTS shape file
+        /// This constructor is for objects described by an MSTS shape file
+        /// and a specific MSTS shape descriptor file
         /// </summary>
-        public StaticShape(Viewer viewer, string path, WorldPosition position, ShapeFlags flags)
+        public StaticShape(Viewer viewer, string path, string descriptor, WorldPosition position, ShapeFlags flags)
         {
             Viewer = viewer;
             Location = position;
             Flags = flags;
-            SharedShape = Viewer.ShapeManager.Get(path);
+            if (string.IsNullOrEmpty(descriptor))
+                descriptor = path + "d"; // Default shape descriptor
+            SharedShape = Viewer.ShapeManager.Get(path, descriptor);
+        }
+
+        /// <summary>
+        /// Construct and initialize the class
+        /// This constructor is for objects described by an MSTS shape file
+        /// </summary>
+        public StaticShape(Viewer viewer, string path, WorldPosition position, ShapeFlags flags)
+            : this(viewer, path, null, position, flags)
+        {
         }
 
         public virtual void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -270,16 +288,18 @@ namespace Orts.Viewer3D
     {
         protected static Dictionary<string, bool> SeenShapeAnimationError = new Dictionary<string, bool>();
 
-        public Matrix[] XNAMatrices = new Matrix[0];  // the positions of the subobjects
+        public Matrix[] XNAMatrices = new Matrix[0]; // The relative positions of the subobjects
+        public Matrix[] ResultMatrices = new Matrix[0]; // the absolute positions of the subobjects
 
         public readonly int[] Hierarchy;
 
-        public PoseableShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
-            : base(viewer, path, initialPosition, flags)
+        public PoseableShape(Viewer viewer, string path, string descriptor, WorldPosition initialPosition, ShapeFlags flags)
+            : base(viewer, path, descriptor, initialPosition, flags)
         {
             if (SharedShape.Matrices.Length > 0)
             {
                 XNAMatrices = new Matrix[SharedShape.Matrices.Length];
+                ResultMatrices = new Matrix[SharedShape.Matrices.Length];
                 for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                     XNAMatrices[iMatrix] = SharedShape.Matrices[iMatrix];
             }
@@ -293,29 +313,82 @@ namespace Orts.Viewer3D
 
                     Trace.TraceWarning("Couldn't load shape {0} file may be corrupt", location);
                 }
-                // The 0th matrix should always be the identity matrix
+                // Add default identity matrix
                 XNAMatrices = new Matrix[1];
                 XNAMatrices[0] = Matrix.Identity;
+                ResultMatrices = new Matrix[1];
+                ResultMatrices[0] = Matrix.Identity;
             }
 
-            if (SharedShape.LodControls.Length > 0 && SharedShape.LodControls[0].DistanceLevels.Length > 0 && SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length > 0 && SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0)
+            if (SharedShape.LodControls?.FirstOrDefault().DistanceLevels?.FirstOrDefault().SubObjects?.FirstOrDefault().ShapePrimitives?.Length > 0)
                 Hierarchy = SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy;
             else
                 Hierarchy = new int[0];
+
+            // Initialize resulting matrices, will need to be recalculated when original matrices change
+            // Doing this calculation for all matrices here saves from duplicating the process
+            // every time an absolute position is needed by some other system
+            UpdateResultMatrices();
+        }
+
+        public PoseableShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
+            : this(viewer, path, null, initialPosition, ShapeFlags.None)
+        {
         }
 
         public PoseableShape(Viewer viewer, string path, WorldPosition initialPosition)
-            : this(viewer, path, initialPosition, ShapeFlags.None)
+            : this(viewer, path, null, initialPosition, ShapeFlags.None)
         {
+        }
+
+        public void UpdateResultMatrices()
+        {
+            // Determine the absolute position and orientation of each matrix
+            // Using the relative position and orientation combined with the hierarchy
+
+            // Array indicating which results have already been calculated,
+            // which can be used to shortcut some calculating
+            bool[] resultCalculated = new bool[Hierarchy.Length];
+
+            for (int i = 0; i < Hierarchy.Length; i++)
+            {
+                Matrix res = XNAMatrices[i];
+                int hIndex = Hierarchy[i];
+
+                // Transform the matrix repeatedly for all of its parents
+                while (hIndex > -1 && hIndex < Hierarchy.Length)
+                {
+                    // Can finish calculating sooner if we already have the result matrix for the next level up
+                    if (resultCalculated[hIndex])
+                    {
+                        res = res * ResultMatrices[hIndex];
+                        break;
+                    }
+                    else
+                    {
+                        res = res * XNAMatrices[hIndex];
+                        // Prevent potential infinite loop due to faulty hierarchy definition
+                        if (hIndex != Hierarchy[hIndex])
+                            hIndex = Hierarchy[hIndex];
+                        else
+                            break;
+                    }
+                }
+
+                ResultMatrices[i] = res;
+                resultCalculated[i] = true;
+            }
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            UpdateResultMatrices();
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
 
         public void ConditionallyPrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, bool[] matrixVisible = null)
         {
+            UpdateResultMatrices();
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags, matrixVisible);
         }
 
@@ -427,10 +500,18 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Construct and initialize the class
         /// </summary>
-        public AnimatedShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, float frameRateDivisor = 1.0f)
-            : base(viewer, path, initialPosition, flags)
+        public AnimatedShape(Viewer viewer, string path, string descriptor, WorldPosition initialPosition, ShapeFlags flags, float frameRateDivisor = 1.0f)
+            : base(viewer, path, descriptor, initialPosition, flags)
         {
             FrameRateMultiplier = 1 / frameRateDivisor;
+        }
+
+        /// <summary>
+        /// Construct and initialize the class
+        /// </summary>
+        public AnimatedShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags, float frameRateDivisor = 1.0f)
+            : this(viewer, path, null, initialPosition, flags, frameRateDivisor)
+        {
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -1976,15 +2057,24 @@ namespace Orts.Viewer3D
         public string SoundFileName = "";
         public float CustomAnimationFPS = 8;
 
-        /// <summary>
-        /// Store for matrixes needed to be reused in later calculations, e.g. for 3d cabview mouse control
-        /// </summary>
-        public readonly Dictionary<int, Matrix> StoredResultMatrixes = new Dictionary<int, Matrix>();
+        // Structure to store both a shape file path and the path of the associated shape descriptor
+        public readonly struct ShapeAndDescriptor
+        {
+            public ShapeAndDescriptor(string s, string sd)
+            {
+                ShapePath = s;
+                DescriptorPath = sd;
+            }
+
+            public readonly string ShapePath;
+            public readonly string DescriptorPath;
+        }
 
 
         readonly Viewer Viewer;
         public readonly string FilePath;
         public readonly string ReferencePath;
+        public readonly string DescriptorPath;
 
         /// <summary>
         /// Create an empty shape used as a sub when the shape won't load
@@ -2002,13 +2092,14 @@ namespace Orts.Viewer3D
         /// </summary>
         /// <param name="viewer"></param>
         /// <param name="filePath">Path to shape's S file</param>
-        public SharedShape(Viewer viewer, string filePath)
+        public SharedShape(Viewer viewer, ShapeAndDescriptor files)
         {
             Viewer = viewer;
-            FilePath = filePath;
-            if (filePath.Contains('\0'))
+            FilePath = files.ShapePath;
+            DescriptorPath = files.DescriptorPath;
+            if (files.ShapePath.Contains('\0'))
             {
-                var parts = filePath.Split('\0');
+                var parts = files.ShapePath.Split('\0');
                 FilePath = parts[0];
                 ReferencePath = parts[1];
             }
@@ -2033,9 +2124,11 @@ namespace Orts.Viewer3D
 
 
             var textureFlags = Helpers.TextureFlags.None;
-            if (File.Exists(FilePath + "d"))
+            ShapeDescriptorFile sdFile = null;
+            bool adjustMAIN = false; // Check to see if the 0th matrix is modified in any way
+            if (File.Exists(DescriptorPath))
             {
-                var sdFile = new ShapeDescriptorFile(FilePath + "d");
+                sdFile = new ShapeDescriptorFile(DescriptorPath);
                 textureFlags = (Helpers.TextureFlags)sdFile.shape.ESD_Alternative_Texture;
                 if (FilePath != null && FilePath.Contains("\\global\\")) textureFlags |= Helpers.TextureFlags.SnowTrack;//roads and tracks are in global, as MSTS will always use snow texture in snow weather
                 HasNightSubObj = sdFile.shape.ESD_SubObj;
@@ -2043,6 +2136,90 @@ namespace Orts.Viewer3D
                     textureFlags |= Helpers.TextureFlags.Underground;
                 SoundFileName = sdFile.shape.ESD_SoundFileName;
                 CustomAnimationFPS = sdFile.shape.ESD_CustomAnimationFPS;
+
+                // Replace textures as defined in the sd file
+                foreach (string tex in sdFile.shape.ESD_TextureReplacement.Keys)
+                {
+                    bool found = false;
+
+                    for (int i = 0; i < sFile.shape.images.Count; i++)
+                    {
+                        // Check if shape uses one of the textures we want to replace
+                        // Ignore case, ignore file extension
+                        if (Path.GetFileNameWithoutExtension(sFile.shape.images[i].ToLower()) ==
+                            Path.GetFileNameWithoutExtension(tex.ToLower()))
+                        {
+                            sFile.shape.images[i] = sdFile.shape.ESD_TextureReplacement[tex];
+                            found = true;
+                        }    
+                    }
+
+                    if (!found)
+                        Trace.TraceWarning("Shape descriptor file {0} specifies texture {1} to be replaced, " +
+                            "but shape {2} does not contain this texture.", (filePath + "d"), tex, filePath);
+                }
+
+                // Manipulate matrices as defined in the sd file
+                foreach (string matName in sdFile.shape.ESD_ModifiedMatrices)
+                {
+                    bool found = false;
+
+                    for (int i = 0; i < sFile.shape.matrices.Count; i++)
+                    {
+                        // Check if this matrix is to be modified, and modify accordingly
+                        // Ignore case
+                        if (sFile.shape.matrices[i].Name.ToUpper() == matName.ToUpper())
+                        {
+                            if (i == 0)
+                                adjustMAIN = true;
+
+                            Vector3 data;
+                            // See if this matrix is to be translated
+                            if (sdFile.shape.ESD_MatrixTranslation.TryGetValue(matName, out data))
+                            {
+                                sFile.shape.matrices[i].DX += data.X;
+                                sFile.shape.matrices[i].DY += data.Y;
+                                sFile.shape.matrices[i].DZ += data.Z;
+                            }
+                            // See if this matrix is to be scaled
+                            if (sdFile.shape.ESD_MatrixScale.TryGetValue(matName, out data))
+                            {
+                                // Transform matrix, and convert back to MSTS
+                                Matrix oldMatrix = XNAMatrixFromMSTS(sFile.shape.matrices[i]);
+                                Matrix newMatrix = Matrix.CreateScale(data);
+                                // Zero translation to prevent unintended translational shifts
+                                oldMatrix.Translation = Vector3.Zero;
+                                newMatrix = newMatrix * oldMatrix;
+                                // Restore translation
+                                newMatrix.Translation = new Vector3(sFile.shape.matrices[i].DX, sFile.shape.matrices[i].DY, -sFile.shape.matrices[i].DZ);
+                                sFile.shape.matrices[i] = MSTSMatrixFromXNA(newMatrix, sFile.shape.matrices[i].Name);
+                            }
+                            // See if this matrix is to be rotated
+                            if (sdFile.shape.ESD_MatrixRotation.TryGetValue(matName, out data))
+                            {
+                                // Transform matrix, and convert back to MSTS
+                                Matrix oldMatrix = XNAMatrixFromMSTS(sFile.shape.matrices[i]);
+                                Matrix newMatrix = Matrix.CreateFromYawPitchRoll(data.X, data.Y, data.Z);
+                                newMatrix = oldMatrix * newMatrix;
+                                // Restore translation
+                                newMatrix.Translation = new Vector3(sFile.shape.matrices[i].DX, sFile.shape.matrices[i].DY, -sFile.shape.matrices[i].DZ);
+                                sFile.shape.matrices[i] = MSTSMatrixFromXNA(newMatrix, sFile.shape.matrices[i].Name);
+                            }
+
+                            // Finally, see if this matrix is to be renamed
+                            if (sdFile.shape.ESD_MatrixRename.TryGetValue(matName, out string newName))
+                            {
+                                sFile.shape.matrices[i].Name = newName;
+                            }
+
+                            found = true;
+                        }
+                    }
+
+                    if (!found)
+                        Trace.TraceWarning("Shape descriptor file {0} specifies matrix name {1} to be modified, " +
+                            "but shape {2} does not contain this matrix.", (filePath + "d"), matName, filePath);
+                }
             }
 
             var matrixCount = sFile.shape.matrices.Count;
@@ -2080,12 +2257,11 @@ namespace Orts.Viewer3D
                 throw new InvalidDataException("Shape file missing lod_control section");
             else if (LodControls[0].DistanceLevels.Length > 0 && LodControls[0].DistanceLevels[0].SubObjects.Length > 0)
             {
-                // Zero the position offset of the root matrix for compatibility with MSTS
-                if (LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0 && LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy[0] == -1)
+                // Zero the position offset of the root matrix for compatibility with MSTS, unless modified thru SD file
+                if (!adjustMAIN && LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0 &&
+                    LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy[0] == -1)
                 {
-                    Matrices[0].M41 = 0;
-                    Matrices[0].M42 = 0;
-                    Matrices[0].M43 = 0;
+                    Matrices[0].Translation = Vector3.Zero;
                 }
                 // Look for root subobject, it is not necessarily the first (see ProTrain signal)
                 for (int soIndex = 0; soIndex <= LodControls[0].DistanceLevels[0].SubObjects.Length - 1; soIndex++)
@@ -2525,6 +2701,28 @@ namespace Orts.Viewer3D
 
             return XNAMatrix;
         }
+        static matrix MSTSMatrixFromXNA(Matrix XNAMatrix, string name = "")
+        {
+            var MSTSMatrix = new matrix
+            {
+                AX = XNAMatrix.M11,
+                AY = XNAMatrix.M12,
+                AZ = -XNAMatrix.M13,
+                BX = XNAMatrix.M21,
+                BY = XNAMatrix.M22,
+                BZ = -XNAMatrix.M23,
+                CX = -XNAMatrix.M31,
+                CY = -XNAMatrix.M32,
+                CZ = XNAMatrix.M33,
+                DX = XNAMatrix.M41,
+                DY = XNAMatrix.M42,
+                DZ = -XNAMatrix.M43,
+
+                Name = name
+            };
+
+            return MSTSMatrix;
+        }
 
         public void PrepareFrame(RenderFrame frame, WorldPosition location, ShapeFlags flags)
         {
@@ -2614,9 +2812,6 @@ namespace Orts.Viewer3D
                             hi = shapePrimitive.Hierarchy[hi];
                         }
                         Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
-
-                        if (StoredResultMatrixes.ContainsKey(shapePrimitive.HierarchyIndex))
-                            StoredResultMatrixes[shapePrimitive.HierarchyIndex] = xnaMatrix;
 
                         // TODO make shadows depend on shape overrides
 
