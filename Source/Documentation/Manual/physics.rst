@@ -2447,7 +2447,7 @@ To allow the auxiliary tender to be filled at a water fuelling point, a water fr
 Unpowered Control Car
 ---------------------
 
-This module simulates the control cab of a DMU set of cars. The cab typically would be located in an unpowered 
+This module simulates the control cab of a MU set of cars. The cab typically would be located in an unpowered 
 trailer car which is attached to a powered car for the provision of its motive force to drive the train forward.
 
 Apart from producing motive force the car (and cabin controls) should behave exactly the same as a locomotive.

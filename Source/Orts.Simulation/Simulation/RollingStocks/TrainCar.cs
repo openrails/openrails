@@ -217,6 +217,7 @@ namespace Orts.Simulation.RollingStocks
         public bool DerailPossible = false;
         public bool DerailExpected = false;
         public float DerailElapsedTimeS;
+        public bool HasDerailed = false;
 
         public float MaxHandbrakeForceN;
         public float MaxBrakeForceN = 89e3f;
@@ -995,15 +996,6 @@ namespace Orts.Simulation.RollingStocks
 
             AbsSpeedMpS = Math.Abs(_SpeedMpS);
 
-            //TODO: next if block has been inserted to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
-            // To achieve the same result with other means, without flipping trainset physics, the block should be deleted
-            //      
-            if (IsDriveable && Train != null & Train.IsPlayerDriven && (this as MSTSLocomotive).UsingRearCab)
-            {
-                GravityForceN = -GravityForceN;
-                CurrentElevationPercent = -CurrentElevationPercent;
-            }
-
             UpdateCurveSpeedLimit(elapsedClockSeconds);
             UpdateCurveForce(elapsedClockSeconds);
             UpdateTunnelForce();
@@ -1754,8 +1746,18 @@ namespace Orts.Simulation.RollingStocks
                     {
                         DerailExpected = true;
                         Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("Car {0} has derailed on the curve.", CarID));
-                      //  Trace.TraceInformation("Car Derail - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5} Nadal {6} Coeff {7}", CarID, CouplerForceU, CouplerForceUSmoothed.SmoothedValue, TotalWagonLateralDerailForceN, TotalWagonVerticalDerailForceN, WagonCouplerAngleDerailRad, NadalDerailmentCoefficient, DerailmentCoefficient);
-                     //   Trace.TraceInformation("Car Ahead Derail - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5}", CarAhead.CarID, CarAhead.CouplerForceU, CarAhead.CouplerForceUSmoothed.SmoothedValue, CarAhead.TotalWagonLateralDerailForceN, CarAhead.TotalWagonVerticalDerailForceN, CarAhead.WagonCouplerAngleDerailRad);
+                        if (!HasDerailed)
+                        {
+                            string derailReason = "defect";
+                            if (CouplerForceU > 0 && CouplerSlackM < 0) { derailReason = "jackknifed"; }
+                            else if (CouplerForceU < 0 && CouplerSlackM > 0) { derailReason = "stringlined"; }
+                            Trace.TraceInformation("Car {0} derailed ({1}), on {2} curve with radius {3}, at speed {4}, after traveling {5}",
+                                CarID, derailReason, GetCurveDirection(), FormatStrings.FormatDistance(CurrentCurveRadiusM, IsMetric), FormatStrings.FormatSpeed(AbsSpeedMpS, IsMetric), FormatStrings.FormatDistance(DistanceM, IsMetric));
+                            // DistanceM is not a good location measure, as it is based on the train. Two railcars derailing at the same location have a different distance.
+                        }
+                        HasDerailed = true;
+                        //  Trace.TraceInformation("Car Derail - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5} Nadal {6} Coeff {7}", CarID, CouplerForceU, CouplerForceUSmoothed.SmoothedValue, TotalWagonLateralDerailForceN, TotalWagonVerticalDerailForceN, WagonCouplerAngleDerailRad, NadalDerailmentCoefficient, DerailmentCoefficient);
+                        //   Trace.TraceInformation("Car Ahead Derail - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5}", CarAhead.CarID, CarAhead.CouplerForceU, CarAhead.CouplerForceUSmoothed.SmoothedValue, CarAhead.TotalWagonLateralDerailForceN, CarAhead.TotalWagonVerticalDerailForceN, CarAhead.WagonCouplerAngleDerailRad);
                     }
                     else if (DerailPossible)
                     {
@@ -1765,12 +1767,15 @@ namespace Orts.Simulation.RollingStocks
                     else
                     {
                         DerailElapsedTimeS = 0; // Reset timer if derail is not possible
+                        HasDerailed = false;
                     }
 
                     if (AbsSpeedMpS < 0.01)
                     {
                         DerailExpected = false;
                         DerailPossible = false;
+                        DerailElapsedTimeS = 0;
+                        HasDerailed = false;
                     }
 
 //                    if (CarID == "0 - 84" || CarID == "0 - 83" || CarID == "0 - 82" || CarID == "0 - 81" || CarID == "0 - 80" || CarID == "0 - 79")
@@ -1787,6 +1792,7 @@ namespace Orts.Simulation.RollingStocks
                     DerailExpected = false;
                     DerailPossible = false;
                     DerailElapsedTimeS = 0;
+                    HasDerailed = false;
                 }
 
 
@@ -2849,8 +2855,7 @@ namespace Orts.Simulation.RollingStocks
             m.Backward = fwd;
 
             // Update gravity force when position is updated, but before any secondary motion is added
-            GravityForceN = MassKG * GravitationalAccelerationMpS2 * fwd.Y;
-            CurrentElevationPercent = 100f * (fwd.Y / (float)Math.Sqrt(1 - fwd.Y * fwd.Y));
+            UpdateGravity(m);
 
             // Consider body roll from superelevation and from tilting.
             UpdateTilting(traveler, elapsedTimeS, speed, direction);
@@ -3481,6 +3486,36 @@ namespace Orts.Simulation.RollingStocks
             }
 
             return new LatLonDirection(latLon, directionDeg); ;
+        }
+
+        /// <summary>
+        /// Update the gravity force and % gradient of this train car at the current position
+        /// </summary>
+        public void UpdateGravity()
+        {
+            UpdateGravity(WorldPosition.XNAMatrix);
+        }
+
+        /// <summary>
+        /// Update the gravity force and % gradient of this train car at an arbitrary position
+        /// </summary>
+        /// <param name="orientation">Matrix giving the train car orientation used to determine gravity.</param>
+        public void UpdateGravity(Matrix orientation)
+        {
+            // Percent slope = 100 * rise / run -> the Y component of the forward vector gives us the 'rise'
+            // Derive the 'run' by assuming a hypotenuse length of 1, so per Pythagoras run = sqrt(1 - rise^2)
+            float rise = orientation.Backward.Y;
+
+            GravityForceN = MassKG * GravitationalAccelerationMpS2 * rise;
+            CurrentElevationPercent = 100f * (rise / (float)Math.Sqrt(1 - rise * rise));
+
+            // Reverse gravity force and % gradient on locomotives operated from the rear cab
+            // FUTURE: Change rear cabs to not require such forbidden manipulations of physics
+            if (IsDriveable && Train != null & Train.IsPlayerDriven && (this as MSTSLocomotive).UsingRearCab)
+            {
+                GravityForceN = -GravityForceN;
+                CurrentElevationPercent = -CurrentElevationPercent;
+            }
         }
     }
 

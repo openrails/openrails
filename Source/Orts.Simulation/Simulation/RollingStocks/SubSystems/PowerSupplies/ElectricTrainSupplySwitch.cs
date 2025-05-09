@@ -1,4 +1,4 @@
-// COPYRIGHT 2020 by the Open Rails project.
+﻿// COPYRIGHT 2020 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -31,16 +31,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             Unfitted, // Locomotive without ETS
             Switch,    // Locomotive with ETS activation via a switch
         }
-        public ModeType Mode { get; protected set; } = ModeType.Automatic;
+        public ModeType Mode { get; protected set; }
 
         // Variables
         readonly MSTSLocomotive Locomotive;
         public bool CommandSwitch { get; protected set; } = false;
         public bool On { get; protected set; } = false;
 
-        public ElectricTrainSupplySwitch(MSTSLocomotive locomotive)
+        public ElectricTrainSupplySwitch(MSTSLocomotive locomotive, ModeType defaultMode = ModeType.Automatic)
         {
             Locomotive = locomotive;
+            Mode = defaultMode;
         }
 
         public virtual void Parse(string lowercasetoken, STFReader stf)

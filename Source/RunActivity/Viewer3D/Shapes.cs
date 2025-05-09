@@ -1888,6 +1888,11 @@ namespace Orts.Viewer3D
             }
         }
 
+        public void SetMaterial(Material material)
+        {
+            Material = material;
+        }
+
         [CallOnThread("Loader")]
         public virtual void Mark()
         {
@@ -1929,11 +1934,6 @@ namespace Orts.Viewer3D
         public void SetIndexData(short[] data)
         {
             IndexBuffer.SetData(data);
-        }
-
-        public void SetMaterial(Material material)
-        {
-            Material = material;
         }
     }
 
