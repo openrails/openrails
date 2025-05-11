@@ -1,17 +1,17 @@
 ﻿// COPYRIGHT 2025 by the Open Rails project.
-// 
+//
 // This file is part of Open Rails.
-// 
+//
 // Open Rails is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // Open Rails is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -128,8 +128,8 @@ namespace ORTS.SettingsExporter
                 if (!Directory.Exists(dir)) { Console.WriteLine("ERROR: Directory {0} to save to does not exist.", dir); Environment.Exit(1); }
             }
             else if (toArg.StartsWith("SOFTWARE")) { saveRegistryKey = toArg; }
-            else 
-            { 
+            else
+            {
                 Console.WriteLine("ERROR: Invalid destination {0}.", toArg);
                 Console.WriteLine("ERROR: Registry key must start with \"SOFTWARE\", or INI path must include \".ini\".");
                 Environment.Exit(1);
@@ -161,7 +161,7 @@ namespace ORTS.SettingsExporter
                     if (regKey != null)
                     {
                         using (var backupRegKey = Registry.CurrentUser.CreateSubKey(saveRegistryKey + "-Backup"))
-                        { 
+                        {
                             CopyRegistryKey(regKey, backupRegKey);
                             Console.WriteLine("Info: Backed up existing Registry key as {0}.", backupRegKey.Name);
                         }
@@ -195,7 +195,7 @@ namespace ORTS.SettingsExporter
                 Console.WriteLine("To use the settings in the registry, manually delete the INI file in the OpenRails folder.");
                 Console.WriteLine("  eg: {0}", Path.Combine(ApplicationInfo.ProcessDirectory, SettingsBase.DefaultSettingsFileName));
             }
- 
+
             return 0;
         }
 
