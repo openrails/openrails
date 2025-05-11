@@ -690,13 +690,14 @@ namespace Orts.Viewer3D.Popups
                 // Updates power supply status
                 else if (SelectedCarPosition <= CarPositionVisible && SelectedCarPosition == CarPosition)
                 {
-                    var powerSupplyStatusChanged = PowerSupplyStatus != null && PowerSupplyStatus != Owner.Viewer.PlayerTrain.Cars[CarPosition].GetStatus();
-                    var batteyStatusChanged = BatteryStatus != null && BatteryStatus != Owner.Viewer.PlayerTrain.Cars[CarPosition].GetStatus();
-                    var circuitBreakerStateChanged = CircuitBreakerState != null && CircuitBreakerState != (Owner.Viewer.PlayerTrain.Cars[CarPosition] as MSTSElectricLocomotive).ElectricPowerSupply.CircuitBreaker.State.ToString();
+                    var carposition = Owner.Viewer.PlayerTrain.Cars.Count > CarPosition ? CarPosition : CarPosition - 1;
+                    var powerSupplyStatusChanged = PowerSupplyStatus != null && PowerSupplyStatus != Owner.Viewer.PlayerTrain.Cars[carposition].GetStatus();
+                    var batteyStatusChanged = BatteryStatus != null && BatteryStatus != Owner.Viewer.PlayerTrain.Cars[carposition].GetStatus();
+                    var circuitBreakerStateChanged = CircuitBreakerState != null && CircuitBreakerState != (Owner.Viewer.PlayerTrain.Cars[carposition] as MSTSElectricLocomotive).ElectricPowerSupply.CircuitBreaker.State.ToString();
 
                     if (powerSupplyStatusChanged || batteyStatusChanged || circuitBreakerStateChanged)
                     {
-                        var Status = Owner.Viewer.PlayerTrain.Cars[CarPosition].GetStatus();
+                        var Status = Owner.Viewer.PlayerTrain.Cars[carposition].GetStatus();
                         if (Status != null && Status != PowerSupplyStatus)
                         {
                             PowerSupplyStatus = Status;
@@ -995,7 +996,7 @@ namespace Orts.Viewer3D.Popups
             : base(x, y, size, size)
         {
             Viewer = viewer;
-            Texture = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).HandBrakePresent ? (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).GetTrainHandbrakeStatus() ? HandBrakeSet : HandBrakeNotSet : HandBrakeNotAvailable;
+            Texture = (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).MSTSBrakeSystem.HandBrakePresent ? (viewer.PlayerTrain.Cars[carPosition] as MSTSWagon).GetTrainHandbrakeStatus() ? HandBrakeSet : HandBrakeNotSet : HandBrakeNotAvailable;
             Source = new Rectangle(0, 0, size, size);
 
             var trainCarOperations = Viewer.TrainCarOperationsWindow;

@@ -282,8 +282,8 @@ namespace Orts.Viewer3D.WebServices
             // Makes this Webpage version, more autonoumus
             if (!Viewer.TrainCarOperationsWindow.Visible && !Viewer.TrainCarOperationsViewerWindow.Visible && Viewer.IsFormationReversed)
             {
-                _ = new FormationReversed(Viewer, Viewer.PlayerTrain);
                 Viewer.IsFormationReversed = false;
+                _ = new FormationReversed(Viewer, Viewer.PlayerTrain);
             }
 
             int carPosition = 0;
@@ -946,7 +946,7 @@ namespace Orts.Viewer3D.WebServices
             string filename;
             bool enabled = false;
 
-            if ((trainCar as MSTSWagon).HandBrakePresent)
+            if ((trainCar as MSTSWagon).MSTSBrakeSystem.HandBrakePresent)
             {
                 enabled = true;
                 if ((trainCar as MSTSWagon).GetTrainHandbrakeStatus())
