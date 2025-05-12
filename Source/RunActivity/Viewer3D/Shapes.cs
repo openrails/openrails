@@ -320,7 +320,7 @@ namespace Orts.Viewer3D
                 ResultMatrices[0] = Matrix.Identity;
             }
 
-            if (SharedShape.LodControls?.FirstOrDefault().DistanceLevels?.FirstOrDefault().SubObjects?.FirstOrDefault().ShapePrimitives?.Length > 0)
+            if (SharedShape.LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?.SubObjects?.FirstOrDefault()?.ShapePrimitives?.Length > 0)
                 Hierarchy = SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy;
             else
                 Hierarchy = new int[0];
@@ -341,6 +341,10 @@ namespace Orts.Viewer3D
         {
         }
 
+        /// <summary>
+        /// Updates the result matrices for the entire hierarchy to reflect changes in
+        /// the actual object matrices (eg: due to animations)
+        /// </summary>
         public void UpdateResultMatrices()
         {
             // Determine the absolute position and orientation of each matrix

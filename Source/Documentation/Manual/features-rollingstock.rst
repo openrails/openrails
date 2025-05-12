@@ -100,20 +100,20 @@ itself moves, the approach has proven insufficient for more complicated rail
 vehicles such as articulated steam locomotives.
 
 .. index::
-   single: ShapeHierarchy
+   single: ORTSShapeHierarchy
 
 To facilitate lighting on such locomotives and wagons, Open Rails now allows
 for attachment of lights to any sub-object of the shape file. With the
-``ShapeHierarchy`` token placed in a ``Light ()`` block, the object the light
-will rotate and translate with can be defined using the hierarchy name of said
-object. Tools such as Shape Viewer can be used to determine the hierarchy name
+``ORTSShapeHierarchy`` token placed in a ``Light ()`` block, the object the light
+will rotate and translate with can be defined using the matrix name of said
+object. Tools such as Shape Viewer can be used to determine the matrix name
 of a particular object in the shape file. For example, *"BOGIE1"* is the standard
 name for the frontmost bogie. A light attached to this bogie could be created
 like so::
 
 	Light	(
 		comment( CNDR Side Front Truck Light )
-		ShapeHierarchy ( "BOGIE1" )
+		ORTSShapeHierarchy ( "BOGIE1" )
 		States	(	1
 			State	(
 				LightColour ( 91fedf91 )
@@ -127,11 +127,11 @@ like so::
 Be aware that the ``Position`` of a light is measured relative to the center of
 the object to which the light is attached, not to the center of the locomotive
 itself. Furthermore, the naming of shape parts is not consistent between all
-shape files. If the shape name entered in ``ShapeHierarchy`` is invalid, a
+shape files. If the shape name entered in ``ORTSShapeHierarchy`` is invalid, a
 warning will be produced in the log file and the light will attach to the
 main body of the locomotive or wagon.
 
-If ``ShapeHierarchy`` is not specified in a light, the light will attach
+If ``ORTSShapeHierarchy`` is not specified in a light, the light will attach
 to the main body of the locomotive or wagon by default.
 
 .. _features-light-conditions:
@@ -460,58 +460,69 @@ Following are the native features Open Rails offers:
 
 - two types of OR freightanims: continuous and static
 - continuous OR freightanims are related to commodity loads, like coal, or 
-  stones: the load level in the trainset varies accordingly to the amount of load
-- static OR freightanims are in fact additional shapes that can be attached to 
-  the main trainset shape. Such shapes may also include an animation (independent 
-  from train behaviour);
+  stones: the visual load level in the trainset varies accordingly to the amount of load
+- static OR freightanims are additional shapes that can be attached to the main
+  trainset shape. Such shapes can represent any 3D items desired as additions to the
+  main shape, not just commodity loads. Such shapes may also include an animation (independent 
+  from train behaviour)
 - both types of OR freightanims can be present in the same trainset, and can 
   coexist with original MSTS freight animations
-- both types of OR freightanims can be related to locomotives or wagons
+- both types of OR freightanims can be attached simultaneously, and can be used
+  on locomotives or wagons
 - more than one static OR freightanim can be present in a single trainset
-- a wagon can be loaded with different commodities in different moments
+- a wagon can be loaded with different commodities, represented by different
+  continuous freightanims, but only one can be active at a given moment
 - commodities can be loaded (in pickup stations) and unloaded (in unloading 
-  stations).
+  stations)
 - wagons supporting continuous OR freightanims may be provided with a physical 
   animation that is triggered when unloading the wagon (like opening its bottom or 
   fully rotating)
 - OR freightanims are defined with an ``ORTSFreightAnims ()`` block within the .wag 
-  or within the wagon section of an .eng file. It is suggested that this block 
-  be defined within an include file as described :ref:`here <physics-inclusions>`.
+  or within the wagon section of an .eng file. If applied to a pre-existing locomotive
+  or wagon, is suggested that this block be defined within an include file as
+  described :ref:`here <physics-inclusions>`.
 
 Continuous OR Freightanims
 ''''''''''''''''''''''''''
 
 A description of this feature is best achieved by showing an example of an 
-include file, (in this case named ``AECX1636.wag`` and located in an Openrails 
-subfolder within the wagon's folder). Note that the first line of the file must 
-be blank.:: 
+include file, (in this case modifying an existing wagon named ``AECX1636.wag``
+with the .inc file located in an Openrails subfolder within the wagon's folder). Note that
+the first line of the include file must be blank.:: 
 
     include ( ../AECX1636.wag )
 
     Wagon (
-        ORTSFreightAnims
-        (
-            MSTSFreightAnimEnabled (0)
-            WagonEmptyWeight(22t)
-            IsGondola(1)
-            UnloadingStartDelay (7)
-            FreightAnimContinuous
-            (
+        ORTSFreightAnims (
+            MSTSFreightAnimEnabled ( 0 )
+            WagonEmptyWeight ( 22t )
+            IsGondola ( 1 )
+            UnloadingStartDelay ( 7 )
+            FreightAnimContinuous (
+                SubType ( Default )
                 IntakePoint ( 0.0 6.0 FreightCoal )
-                Shape(Coal.s)
-                MaxHeight(0.3)
-                MinHeight(-2.0)
-                FreightWeightWhenFull(99t)
-                FullAtStart(0)
+                Shape ( Coal.s )
+                Offset ( 0 0 0 )
+                Flip ( 0 )
+                ShapeHierarchy ( "MAIN" )
+                Visibility ( "Outside" )
+                MaxHeight ( 0.3 )
+                MinHeight ( -2.0 )
+                FreightWeightWhenFull ( 99t )
+                FullAtStart ( 0 )
             )
-            FreightAnimContinuous
-            (
+            FreightAnimContinuous (
+                SubType ( Default )
                 IntakePoint ( 0.0 6.0 FuelCoal )
-                Shape(Coal.s)
-                MaxHeight(0.3)
-                MinHeight(-2.0)
-                FreightWeightWhenFull(99t)
-                FullAtStart(0)
+                Shape ( Coal.s )
+                Offset ( 0 0 0 )
+                Flip ( 0 )
+                ShapeHierarchy ( "MAIN" )
+                Visibility ( "Outside" )
+                MaxHeight ( 0.3 )
+                MinHeight ( -2.0 )
+                FreightWeightWhenFull ( 99t )
+                FullAtStart ( 0 )
             )
         )
     )
@@ -529,60 +540,96 @@ followed by the description of the OR freightanims. Here below the general
 parameters are described:
 
 - ``MSTSFreightAnimEnabled`` specifies if eventual MSTS freight animations within 
-  the trainset are enabled (1) or not (0). This is useful if one wants to use a 
+  the trainset are enabled ( 1 ) or not ( 0 ). This is useful if one wants to use a 
   wagon where the load is already shown with a (static) MSTS freight animation. In 
-  such a case the MSTS freight animation must be disabled, to use the OR 
-  freightanim, that allows to modify the vertical position of the freight shape. 
+  such a case the MSTS freight animation must be disabled in order to use the OR 
+  freightanim to adjust vertical position of the freight shape. 
 - ``WagonEmptyWeight`` defines the mass of the wagon when empty. If the parameter 
   is missing, the weight of the load is not considered and the weight of the 
-  wagon is always the value present in the root .eng file.
-- ``IsGondola`` specifies (in case it is set to 1) if the load has to be rotated 
+  wagon is always the value present in the root .eng/.wag file.
+- ``IsGondola`` when set to ( 1 ) specifies the load has to be rotated 
   during unloading, as happens in a gondola wagon. If absent the parameter is set 
   to 0.
 - ``UnloadingStartDelay`` specifies, if present, after how many seconds after 
   pressing of the T key the unloading starts. This is due to the fact that some 
-  seconds may be needed before the wagon is set in a unloading layout. For 
+  time may be needed before the wagon is in position to unload. For 
   example, a gondola must rotate more than a certain number of degrees before the 
   load begins to fall down.
 
 There may be more than one ``FreightAnimContinuous`` subblock, one for each 
-possible load type. The parameters of the subblock are described below:
+possible load type, though only one continuous load can be present at any given
+moment. The parameters of the subblock are described below:
 
 .. index::
-   single: IntakePoint
-   single: FreightGrain
-   single: FreightCoal
-   single: FreightGravel
-   single: FreightSand
-   single: FuelWater
-   single: FuelCoal
-   single: FuelDiesel
-   single: FuelWood
-   single: FuelSand
-   single: FreightGeneral
-   single: FreightLivestock
-   single: FreightFuel
-   single: FreightMilk
-   single: SpecialMail
-   single: Shape
-   single: MaxHeight
-   single: MinHeight
-   single: FreightWeightWhenFull
-   single: FullAtStart
+    single: SubType
+    single: IntakePoint
+    single: FreightGrain
+    single: FreightCoal
+    single: FreightGravel
+    single: FreightSand
+    single: FuelWater
+    single: FuelCoal
+    single: FuelDiesel
+    single: FuelWood
+    single: FuelSand
+    single: FreightGeneral
+    single: FreightLivestock
+    single: FreightFuel
+    single: FreightMilk
+    single: SpecialMail
+    single: Shape
+    single: Offset
+    single: Flip
+    single: ShapeHierarchy
+    single: Visibility
+    single: MaxHeight
+    single: MinHeight
+    single: FreightWeightWhenFull
+    single: FullAtStart
 
+- ``SubType`` is used to indicate if a freightanim is a ``container`` to be manged
+  by the :ref:`container system<features-containers>` or a standard ``default``
+  freightanim. If not defined, the type is assumed to be default.
 - ``IntakePoint`` has the same format and the same meaning of the IntakePoint 
   line within the standard MSTS freight animations. Following types of loads are 
   accepted: FreightGrain, FreightCoal, FreightGravel, FreightSand, FuelWater, 
   FuelCoal, FuelDiesel, FuelWood, FuelSand, FreightGeneral, FreightLivestock, 
   FreightFuel, FreightMilk, SpecialMail. All these types of loads can be defined. 
   Some of the pickup types (to right of FuelDiesel) need to be coded in W text files. 
-- ``Shape`` defines the path of the shape to be displayed for the load
-- ``MaxHeight`` defines the height of the shape over its 0 position at full load
-- ``MinHeight`` defines the height of the shape over its 0 position at zero load
+- ``Shape`` defines the file path and name of the shape to be displayed for the load
+- ``Offset`` specifies the x (left/right), y (up/down), and z (back/front) offsets in
+  units of length (default meters) of the freight shape file from its origin position.
+  This may be needed to precisely position the shape, but is optional.
+- ``Flip`` determines if the freight shape should be flipped 180 degrees. If Flip
+  isn't entered, or is given a value of ( 0 ), no flip will occur.
+- ``ShapeHierarchy`` can be used to determine which sub object of the locomotive/wagon
+  shape the freight shape should be attached to, determined by specifying the name
+  of the sub object matrix. Note that the position of the freight shape is measured
+  relative to the origin of the sub object it is attached to, and the freight shape
+  will move in sync with whatever sub object it is attached to. The matrix names used
+  by the rolling stock can be determined using shape viewing utilities. If this
+  parameter isn't included or the given matrix name can't be found, the freight shape
+  will attach to the main locomotive/wagon shape object.
+- ``Visibility`` if present, changes which camera views the freight shape will be
+  visible from. If the parameter is missing, the freightanim will be visible only
+  from outside cameras and from any inside camera of locomotives different from
+  the one hosting the freight animation. The same behavior occurs if the substring
+  ``"Outside"`` is entered in the ``Visibility`` parameter. However, in some cases
+  it may be desired to show the freightanim while inside the cab view, in which
+  case ``"Cab2D"`` and/or ``"Cab3D"`` substrings can be added. ``Cab2D`` allows the
+  freightanim to be seen while inside the 2D cabview of the attached locomotive,
+  and ``Cab3D`` does the same for 3D cab views. Any combination of settings
+  can be applied, so long as all settings are contained within the same quotation marks
+  and commas are present to separate individual settings. For example, ``Visibility ( "Cab2D, Cab3D" )``
+  would make the freightanim visible from either style of cab view, but *not* from outside.
+- ``MaxHeight`` defines the height of the shape over its default position at full load
+  (after accounting for any y displacement entered in ``Offset``)
+- ``MinHeight`` defines the height of the shape over its default position at zero load
+  (after accounting for any y displacement entered in ``Offset``)
 - ``FreightWeightWhenFull`` defines the mass of the freight when the wagon is full; 
   the mass of the wagon is computed by adding the mass of the empty wagon to the 
   actual mass of the freight 
-- ``FullAtStart`` defines wether the wagon is fully loaded (1) or is empty at game 
+- ``FullAtStart`` defines wether the wagon is fully loaded ( 1 ) or is empty at game 
   start; if there are more continuous OR freightanims that have ``FullAtStart`` 
   set to 1, only the first one is considered.
 
@@ -650,60 +697,37 @@ Static OR Freightanims
 ''''''''''''''''''''''
 
 .. index::
-   single: MSTSFreightAnimEnabled
-   single: WagonEmptyWeight
-   single: ORTSFreightAnims
    single: FreightAnimStatic
-   single: SubType
-   single: Shape
    single: FreightWeight
-   single: Flip
-   single: Visibility
 
-Only the two general parameters shown below are used for static OR freightanims::
+Static OR freightanims are defined similarly to continuous OR freightanims,
+but only some of the previously described parameters are useful for static
+freightanims. The ``FreightAnimStatic`` subblock has the following format::
 
-    MSTSFreightAnimEnabled (0)
-    WagonEmptyWeight(22t)
-
-The subblock (to be inserted within the ``ORTSFreightAnims`` block) has the 
-following format::
-
-    FreightAnimStatic
-    (
-        SubType(Default)
-        Shape(xxshape.s)
-        Offset(XOffset, YOffset, ZOffset)
-        FreightWeight(weight)
-        Flip()
-        Visibility ( "Outside,Cab2D,Cab3D" )
+    ORTSFreightAnims (
+        MSTSFreightAnimEnabled ( 0 )
+        WagonEmptyWeight ( 22t )
+        FreightAnimStatic (
+            SubType ( Default )
+            Shape ( xxshape.s )
+            Offset ( XOffset, YOffset, ZOffset )
+            FreightWeight ( weight )
+            Flip ()
+            ShapeHierarchy ( MATRIXNAME )
+            Visibility ( "Outside, Cab2D, Cab3D" )
+        )
     )
 
-Where:
+The only new parameter is ``FreightWeight``, which behaves analogously to ``FreightWeightWhenFull``
+on a continuous freightanim except this weight is *always* added to the ``WagonEmptyWeight`` value
+(if present) to provide the total weight of the wagon. If more static OR freightanims are present,
+each of their weights is added to define the total weight of the wagon.
 
-- ``SubType`` is not currently used
-- ``Shape`` is the path of the shape file.
-- ``XOffset``, ``YOffset`` and ``ZOffset`` are the offsets of the shape with 
-  respect to its zero position, and are useful to place the shape precisely. 
-- ``FreightWeight`` is the weight of the specific load. This weight is added to 
-  the ``WagonEmptyWeight`` value (if present) to provide the total weight of the 
-  wagon. If more static OR freightanims are present, each of their weights is 
-  added to define the total weight of the wagon.
-- ``Flip()``, if present, flips the shape around its pivot point.
-- ``Visibility``, if present, changes the default visibility of the static 
-  freightanim. Default is visible only from outside cameras and from any inside 
-  camera of locomotives different from the one hosting the static freightanim. 
-  If substring ``Outside`` is present, the static freightanim is visible from outside 
-  cameras and from any inside camera of locomotives different from the one 
-  hosting the static freightanim; if ``Cab2D`` is present, the static freightanim 
-  is visible from the 2D cabview camera of loco hosting the freightanim; 
-  if ``Cab3D`` is present, the static freightanim is visible from the 3D cabview camera
-  of loco hosting the freightanim. 1, 2 or 3 of such substrings 
-  may be inserted in the ``Visibility`` line allowing for any combination of visibility.  
+Note that there is no hard limit to the number of static OR freightanims which can be defined
+for a wagon, and these can even be combined with continuous OR freightanims. This allows for a
+wide variety of possible configurations when attaching shapes to a locomotive or wagon. Users
+are encouraged to experiment with attaching custom objects, not just cargo, to their rolling stock.
 
-Because more static OR freightanims may be defined for a wagon, in the case of a 
-container wagon that is able to carry more than one container, even as a double 
-stack, it is possible to use a static OR freightanim for each 
-container, defining its position within the wagon. 
 
 Physics Variation with Loads
 ----------------------------
@@ -1559,12 +1583,18 @@ containers of same length).
 
 .. _features-passengerviewpoints:
 
-Multiple passenger viewpoints
+Camera viewpoint improvements
 =============================
 
+Open Rails expands on the capabilities of camera viewpoints, which allows for a wider range
+of configurations and customization on interior (passenger) views and head out views
+than was possible in MSTS.
+
+Multiple passenger viewpoints
+-----------------------------
+
 Additional passenger viewpoints may be added within a carriage or 
-locomotive that 
-is provided with passenger viewpoint.
+locomotive that is provided with passenger viewpoint shape.
 
 .. index::
    single: ORTSAlternatePassengerViewPoints
@@ -1574,37 +1604,109 @@ is provided with passenger viewpoint.
    single: StartDirection
 
 Such additional passenger viewpoints may be defined within an include file 
-with the format shown in 
-following example for the legacy oebarcar.wag (located in the 380 folder) 
-MSTS wagon::
+to expand on the views of a preexisting locomotive or wagon, with the
+format shown in following example for the legacy oebarcar.wag
+(located in the 380 folder) MSTS wagon::
      
   include ( ../oebarcar.wag )
   
-  Wagon (
+    Wagon (
         ORTSAlternatePassengerViewPoints (
-                ORTSAlternatePassengerViewPoint (
-                        PassengerCabinHeadPos ( -0.0 2.85801 -6.091 )
-                        RotationLimit ( 50 270 0 )
-                        StartDirection ( 0 0 0 )      
-                )  
-                ORTSAlternatePassengerViewPoint (
-                        PassengerCabinHeadPos ( -0.5 2.35801 -1.791 )
-                        RotationLimit ( 50 270 0 )
-                        StartDirection ( 0 0 0 )      
-                ) 	
-                ORTSAlternatePassengerViewPoint (
-                        PassengerCabinHeadPos ( 0.9 2.35801 -1.791 )
-                        RotationLimit ( 50 270 0 )
-                        StartDirection ( -5 -90 0 )      
-                ) 				
+            ORTSAlternatePassengerViewPoint (
+                PassengerCabinHeadPos ( -0.0 2.85801 -6.091 )
+                RotationLimit ( 50 270 0 )
+                StartDirection ( 0 0 0 )      
+            )  
+            ORTSAlternatePassengerViewPoint (
+                PassengerCabinHeadPos ( -0.5 2.35801 -1.791 )
+                RotationLimit ( 50 270 0 )
+                StartDirection ( 0 0 0 )      
+            ) 	
+            ORTSAlternatePassengerViewPoint (
+                PassengerCabinHeadPos ( 0.9 2.35801 -1.791 )
+                RotationLimit ( 50 270 0 )
+                StartDirection ( -5 -90 0 )      
+            ) 				
         )
-  )
+    )
 
 If the passenger viewpoints are defined in the base .wag or .eng file, they 
 must be defined below the Inside () block.
 
 At runtime, when in passenger view, the player may pass from one viewpoint to 
 the other by pressing Shift-5.
+
+.. _features-viewpoint-positioning:
+
+Advanced viewpoint positioning
+------------------------------
+
+Viewpoints (head out view, inside view, and 3D cabs) can be modified with
+new OR-only paramters to change how the view is positioned.
+
+.. index::
+   single: ORTSShapeHierarchy
+
+The ``ORTSShapeHierarchy ( MATRIXNAME )`` parameter can be added inside
+``HeadOut``, ``Inside``, ``ORTSAlternatePassengerViewPoint``, ``ORTS3DCab`` and
+``ORTSAlternate3DCabViewPoint`` blocks to attach the camera and the view
+shape (in the case of interior shapes and 3D cabs) to a different
+sub object of the locomotive or wagon than the main sub object. The
+viewpoint will attach to whichever shape sub object has the given
+"MATRIXNAME", allowing the viewpoint to move in sync with the rotation
+and translation of that sub object, which can be useful for articulated
+units or interesting camera angles::
+
+    Comment ( Head out view attached to steam loco connecting rod. )
+    Comment ( Camera will move with connecting rod, as if a portable camera has been mounted there. )
+    HeadOut (
+        1.5 0.1 -2
+        ORTSShapeHierarchy ( ROD1 )
+    )
+    Comment ( ORTSShapeHierarchy must be added AFTER the x y z position of the head out view! )
+
+
+    Comment ( Hypothetical example of articulated locomotive where the cab is on a bogie object. )
+    Comment ( Cab view will move with the "bogie" instead. )
+    ORTS3DCab (
+        ORTS3DCabFile ( Cab.s )
+        ORTS3DCabHeadPos ( 1.265 3.44 6.24 )
+        RotationLimit ( 40 60 0 )
+        StartDirection ( 12 0 0 )
+        ORTSShapeHierarchy ( BOGIE1 )
+    )
+
+If matrix names are not known, they can be found using
+shape viewing programs. Note that any position measurements the viewpoint uses will
+no longer be measured relative to the center train car shape, but rather to
+the center of whichever sub object is specified, so double check all position
+measurements. If the given matrix name cannot be found in the attached train car
+shape, a warning will be logged and the viewpoint will attach to the main shape object.
+Likewise, if ``ORTSShapeHierarchy`` isn't included, the viewpoint will also attach to
+the main object.
+
+Another feature, applicable only to viewpoints with 3D interiors (passenger views
+and 3D cabs), is ``ORTSShapeOffset ( x y z )`` where ``x y z`` respectively measure
+a right/left, up/down, and front/back offset applied to the interior/3D cab shape itself.
+The default units are meters, but other units of length are accepted as well. This can be useful
+if the construction of the shape file doesn't place the shape exactly where it's needed
+relative to the locomotive or wagon it is attached to. Note that this offset does not
+move the camera location, that should be changed using the existing ``ORTS3DCabHeadPos``
+and ``PassengerCabinHeadPos`` parameters. ``ORTSShapeOffset`` can be inserted into
+any ``Inside``, ``ORTSAlternatePassengerViewPoint``, ``ORTS3DCab`` or ``ORTSAlternate3DCabViewPoint``
+block::
+
+    Comment ( Moving passenger view to a different compartment on the coach. )
+    Comment ( Original PassengerCabinHeadPos ( 1.046 2.14 4.506 ), pos moved to account for ShapeOffset. )
+    Inside (
+        PassengerCabinFile ( PassengerCam.s )
+        PassengerCabinHeadPos ( 1.046 2.14 -7.544 )
+        RotationLimit ( 20 80 0 )
+        StartDirection ( 0 0 0 )
+        Sound ( "FSPas.sms" )
+        ORTSShapeOffset ( 0 0 -12.05 )
+    )
+
 
 Bell animation
 ==============

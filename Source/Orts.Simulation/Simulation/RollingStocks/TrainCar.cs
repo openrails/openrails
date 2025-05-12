@@ -61,6 +61,8 @@ namespace Orts.Simulation.RollingStocks
         public Vector3 Location;
         public Vector3 StartDirection;
         public Vector3 RotationLimit;
+        public int ShapeIndex = -1;
+        public string ShapeHierarchy;
 
         public ViewPoint()
         {
@@ -76,6 +78,8 @@ namespace Orts.Simulation.RollingStocks
             Location = copy.Location;
             StartDirection = copy.StartDirection;
             RotationLimit = copy.RotationLimit;
+            ShapeIndex = copy.ShapeIndex;
+            ShapeHierarchy = copy.ShapeHierarchy;
             if (rotate)
             {
                 Location.X *= -1;
@@ -91,9 +95,7 @@ namespace Orts.Simulation.RollingStocks
         // Remember direction of passenger camera and apply when user returns to it.
         public float RotationXRadians;
         public float RotationYRadians;
-        // TODO: Add user inputs for these, similar to what's capable elsewhere
         public Vector3 ShapeOffset;
-        public int ShapeHierarchy;
     }
 
     public abstract class TrainCar
@@ -657,7 +659,7 @@ namespace Orts.Simulation.RollingStocks
 
         // For use by cameras, initialized in MSTSWagon class and its derived classes
         public List<PassengerViewPoint> PassengerViewpoints = new List<PassengerViewPoint>();
-        public List<PassengerViewPoint> CabViewpoints; //three dimensional cab view point
+        public List<PassengerViewPoint> CabViewpoints = new List<PassengerViewPoint>(); //three dimensional cab view point
         public List<ViewPoint> HeadOutViewpoints = new List<ViewPoint>();
 
         // Used by Curve Speed Method

@@ -1243,16 +1243,12 @@ namespace Orts.Simulation.RollingStocks
                     }
                     break;
                 case "wagon(centreofgravity":
-                    stf.MustMatch("(");
-                    InitialCentreOfGravityM.X = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    InitialCentreOfGravityM.Y = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    InitialCentreOfGravityM.Z = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    InitialCentreOfGravityM = stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero);
                     if (Math.Abs(InitialCentreOfGravityM.Z) > 2)
                     {
                         STFException.TraceWarning(stf, string.Format("CentreOfGravity Z set to zero because value {0} outside range -2 to +2", InitialCentreOfGravityM.Z));
                         InitialCentreOfGravityM.Z = 0;
                     }
-                    stf.SkipRestOfBlock();
                     break;
                 case "wagon(ortsunbalancedsuperelevation": MaxUnbalancedSuperElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsrigidwheelbase":
@@ -1860,15 +1856,19 @@ namespace Orts.Simulation.RollingStocks
                 new STFReader.TokenProcessor("passengercabinheadpos", ()=>{ passengerViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
                 new STFReader.TokenProcessor("rotationlimit", ()=>{ passengerViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
                 new STFReader.TokenProcessor("startdirection", ()=>{ passengerViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
+                new STFReader.TokenProcessor("ortsshapeoffset", ()=>{ passengerViewPoint.ShapeOffset = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
+                new STFReader.TokenProcessor("ortsshapeindex", ()=>{ passengerViewPoint.ShapeIndex = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("ortsshapehierarchy", ()=>{ passengerViewPoint.ShapeHierarchy = stf.ReadStringBlock(null); }),
             });
             // Set initial direction
             passengerViewPoint.RotationXRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.X);
             passengerViewPoint.RotationYRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.Y);
+            passengerViewPoint.ShapeOffset.Z *= -1; // Convert to MSTS coordinate system
             PassengerViewpoints.Add(passengerViewPoint);
         }
         protected void Parse3DCab(STFReader stf)
         {
-            PassengerViewPoint passengerViewPoint = new PassengerViewPoint();
+            PassengerViewPoint cabViewPoint = new PassengerViewPoint();
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("sound", ()=>{ Cab3DSoundFileName = stf.ReadStringBlock(null); }),
@@ -1883,15 +1883,19 @@ namespace Orts.Simulation.RollingStocks
                     else
                         Cab3DShapeDescriptor = Cab3DShapeFileName + "d";
                 }),
-                new STFReader.TokenProcessor("orts3dcabheadpos", ()=>{ passengerViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
-                new STFReader.TokenProcessor("rotationlimit", ()=>{ passengerViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
-                new STFReader.TokenProcessor("startdirection", ()=>{ passengerViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
+                new STFReader.TokenProcessor("orts3dcabheadpos", ()=>{ cabViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
+                new STFReader.TokenProcessor("ortsshapeoffset", ()=>{ cabViewPoint.ShapeOffset = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
+                new STFReader.TokenProcessor("ortsshapeindex", ()=>{ cabViewPoint.ShapeIndex = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("ortsshapehierarchy", ()=>{ cabViewPoint.ShapeHierarchy = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("rotationlimit", ()=>{ cabViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
+                new STFReader.TokenProcessor("startdirection", ()=>{ cabViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
             });
             // Set initial direction
-            passengerViewPoint.RotationXRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.X);
-            passengerViewPoint.RotationYRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.Y);
-            if (this.CabViewpoints == null) CabViewpoints = new List<PassengerViewPoint>();
-            CabViewpoints.Add(passengerViewPoint);
+            cabViewPoint.RotationXRadians = MathHelper.ToRadians(cabViewPoint.StartDirection.X);
+            cabViewPoint.RotationYRadians = MathHelper.ToRadians(cabViewPoint.StartDirection.Y);
+            cabViewPoint.ShapeOffset.Z *= -1; // Convert to MSTS coordinate system
+            if (CabViewpoints == null) CabViewpoints = new List<PassengerViewPoint>();
+            CabViewpoints.Add(cabViewPoint);
         }
 
         // parses additional passenger viewpoints, if any
@@ -4709,24 +4713,28 @@ public void SetTensionStiffness(float a, float b)
         public static Dictionary<string, MSTSWagon> LoadedCars = new Dictionary<string, MSTSWagon>();
     }
 
-    public struct ParticleEmitterData
+    public class ParticleEmitterData
     {
-        public readonly Vector3 XNALocation;
-        public readonly Vector3 XNADirection;
-        public readonly float NozzleWidth;
+        public Vector3 XNALocation;
+        public Vector3 XNADirection;
+        public float NozzleWidth;
+        public int ShapeIndex = -1;
+        public string ShapeHierarchy;
 
         public ParticleEmitterData(STFReader stf)
         {
             stf.MustMatch("(");
-            XNALocation.X = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNALocation.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNALocation.Z = -stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNADirection.X = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNADirection.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNADirection.Z = -stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNALocation = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
+            XNALocation.Z *= -1; // Convert to MSTS coordinate system
+            XNADirection = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
+            XNADirection.Z *= -1; // Convert to MSTS coordinate system
             XNADirection.Normalize();
             NozzleWidth = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            stf.SkipRestOfBlock();
+            // Parse new parameters after all MSTS parameters, otherwise it's ambiguous which data is which
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("ortsshapeindex", ()=>{ ShapeIndex = stf.ReadIntBlock(null); }),
+                    new STFReader.TokenProcessor("ortsshapehierarchy", ()=>{ ShapeHierarchy = stf.ReadStringBlock(null); }),
+            });
         }
     }
 }

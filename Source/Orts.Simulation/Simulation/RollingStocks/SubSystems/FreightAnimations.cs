@@ -122,7 +122,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         if (empty)
                         {
                             empty = false;
-                            FreightType = wagon.IntakePointList.Last().Type;
+                            FreightType = wagon.IntakePointList.LastOrDefault()?.Type ?? MSTSWagon.PickupType.None;
                             LoadedOne = Animations.Last() as FreightAnimationContinuous;
                             FreightWeight += LoadedOne.FreightWeightWhenFull;
                             LoadedOne.LoadPerCent = 100;
@@ -970,6 +970,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
     /// </summary>
     public abstract class FreightAnimation
     {
+        public enum Type
+        {
+            DEFAULT,
+            Container
+        }
+        public Type SubType;
         public string ShapeFileName;
         public string ShapeDescriptor;
         // index of visibility flag vector
@@ -982,7 +988,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool Flipped = false;
         public bool[] Visibility = { true, false, false };
         public Vector3 Offset = new Vector3();
-        public int ShapeHierarchy; // TODO: Allow user inputs to specify ShapeHierarchy as per lights
+        public int ShapeIndex = -1; // TODO: Allow user inputs to specify ShapeIndex as per lights
+        public string ShapeHierarchy;
     }
 
     public class FreightAnimationContinuous : FreightAnimation
@@ -1012,6 +1019,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("subtype", ()=>
+                {
+                    var typeString = stf.ReadStringBlock(null);
+                    switch (typeString)
+                    {
+                        default:
+                            SubType = FreightAnimationStatic.Type.DEFAULT;
+                            break;
+                    }
+                }),
                 new STFReader.TokenProcessor("intakepoint", ()=>
                 {
                     wagon.IntakePointList.Add(new IntakePoint(stf));
@@ -1030,13 +1047,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         ShapeDescriptor = ShapeFileName + "d";
                 }),
                 new STFReader.TokenProcessor("offset", ()=>{
-                    stf.MustMatch("(");
-                    Offset.X = stf.ReadFloat(STFReader.UNITS.Distance, 0);
-                    Offset.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0);
-                    Offset.Z = stf.ReadFloat(STFReader.UNITS.Distance, 0);
-                    stf.MustMatch(")");
+                    Offset = stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero);
+                    // Note: Offset.Z should probably be inverted to convert from MSTS to XNA, but that would probably break existing content
                 }),
                 new STFReader.TokenProcessor("flip", ()=>{ Flipped = stf.ReadBoolBlock(true);}),
+                new STFReader.TokenProcessor("shapeindex", ()=>{ ShapeIndex = stf.ReadIntBlock(null);}),
+                new STFReader.TokenProcessor("shapehierarchy", ()=>{ ShapeHierarchy = stf.ReadStringBlock(null);}),
                 new STFReader.TokenProcessor("visibility", ()=>{
                     for (int index = 0; index < 3; index++)
                         Visibility[index] = false;
@@ -1116,11 +1132,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
     public class FreightAnimationStatic : FreightAnimation
     {
-        public enum Type
-        {
-            DEFAULT
-        }
-        public Type SubType;
         public float FreightWeight = 0;
         public bool Cab3DFreightAnim = false;
 
@@ -1164,13 +1175,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }),
             new STFReader.TokenProcessor("freightweight", ()=>{ FreightWeight = stf.ReadFloatBlock(STFReader.UNITS.Mass, 0); }),
             new STFReader.TokenProcessor("offset", ()=>{
-                stf.MustMatch("(");
-                Offset.X = stf.ReadFloat(STFReader.UNITS.Distance, 0);
-                Offset.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0);
-                Offset.Z = stf.ReadFloat(STFReader.UNITS.Distance, 0);
-                stf.MustMatch(")");
+                Offset = stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero);
+                // Note: Offset.Z should probably be inverted to convert from MSTS to XNA, but that would probably break existing content
             }),
             new STFReader.TokenProcessor("flip", ()=>{ Flipped = stf.ReadBoolBlock(true);}),
+            new STFReader.TokenProcessor("shapeindex", ()=>{ ShapeIndex = stf.ReadIntBlock(null);}),
+            new STFReader.TokenProcessor("shapehierarchy", ()=>{ ShapeHierarchy = stf.ReadStringBlock(null);}),
             new STFReader.TokenProcessor("visibility", ()=>{
                 for (int index = 0; index < 3; index++)
                     Visibility[index] = false;
@@ -1236,16 +1246,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
     public class FreightAnimationDiscrete : FreightAnimation
     {
-        public enum Type
-        {
-            DEFAULT,
-            Container
-        }
-        public Type SubType;
         public bool Loaded = false;
         public bool LoadedAtStart = false;
         public IntakePoint LinkedIntakePoint = null;
-        public Vector3 Offset;
         public MSTSWagon Wagon;
         public FreightAnimations FreightAnimations;
         public Container Container;

@@ -145,9 +145,7 @@ namespace Orts.Formats.Msts
 
                 stf.MustMatch("(");
                 string matName = stf.ReadString();
-                data.X = stf.ReadFloat(units, 0);
-                data.Y = stf.ReadFloat(units, 0);
-                data.Z = stf.ReadFloat(units, 0);
+                data = stf.ReadVector3(units, Vector3.Zero);
                 stf.SkipRestOfBlock();
 
                 matrixParams.Add(matName, data);

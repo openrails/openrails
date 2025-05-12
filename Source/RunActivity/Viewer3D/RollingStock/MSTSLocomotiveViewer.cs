@@ -359,7 +359,12 @@ namespace Orts.Viewer3D.RollingStock
                 Viewer.Camera.Style == Camera.Styles.Cab)
             {
                 if (_CabRenderer != null)
+                {
+                    // Locomotive's TrainCarShape.ResultMatrices won't be updated automatically, force manual update
+                    TrainCarShape.UpdateResultMatrices();
+
                     _CabRenderer.PrepareFrame(frame, elapsedTime);
+                }
             }
 
             base.PrepareFrame(frame, elapsedTime);
@@ -372,7 +377,7 @@ namespace Orts.Viewer3D.RollingStock
                 if (Locomotive.CabViewList.Count > 0)
                 {
                     if (Locomotive.CabViewList[(int)CabViewType.Front].CVFFile != null && Locomotive.CabViewList[(int)CabViewType.Front].CVFFile.TwoDViews.Count > 0)
-                        _CabRenderer = new CabRenderer(Viewer, Locomotive);
+                        _CabRenderer = new CabRenderer(Viewer, this);
                     _hasCabRenderer = true;
                 }
             }
@@ -1181,11 +1186,11 @@ namespace Orts.Viewer3D.RollingStock
         public string[] ActiveScreen = { "default", "default", "default", "default", "default", "default", "default", "default" };
 
         [CallOnThread("Loader")]
-        public CabRenderer(Viewer viewer, MSTSLocomotive car)
+        public CabRenderer(Viewer viewer, MSTSLocomotiveViewer carViewer)
         {
             //Sequence = RenderPrimitiveSequence.CabView;
             _Viewer = viewer;
-            _Locomotive = car;
+            _Locomotive = (carViewer.Car as MSTSLocomotive);
 
             // _Viewer.DisplaySize intercepted to adjust cab view height
             Point DisplaySize = _Viewer.DisplaySize;
@@ -1212,7 +1217,7 @@ namespace Orts.Viewer3D.RollingStock
             ControlMap = new Dictionary<(CabViewControlType, int), CabViewControlRenderer>();
             var count = new Dictionary<CabViewControlType, int>();
             var i = 0;
-            foreach (var cabView in car.CabViewList)
+            foreach (var cabView in _Locomotive.CabViewList)
             {
                 if (cabView.CVFFile != null)
                 {
@@ -1236,7 +1241,7 @@ namespace Orts.Viewer3D.RollingStock
                         CVCDial dial = cvc as CVCDial;
                         if (dial != null)
                         {
-                            CabViewDialRenderer cvcr = new CabViewDialRenderer(viewer, car, dial, _Shader);
+                            CabViewDialRenderer cvcr = new CabViewDialRenderer(viewer, _Locomotive, dial, _Shader);
                             cvcr.SortIndex = controlSortIndex;
                             CabViewControlRenderersList[i].Add(cvcr);
                             if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvcr);
@@ -1246,7 +1251,7 @@ namespace Orts.Viewer3D.RollingStock
                         CVCFirebox firebox = cvc as CVCFirebox;
                         if (firebox != null)
                         {
-                            CabViewGaugeRenderer cvgrFire = new CabViewGaugeRenderer(viewer, car, firebox, _Shader);
+                            CabViewGaugeRenderer cvgrFire = new CabViewGaugeRenderer(viewer, _Locomotive, firebox, _Shader);
                             cvgrFire.SortIndex = controlSortIndex++;
                             CabViewControlRenderersList[i].Add(cvgrFire);
                             // don't "continue", because this cvc has to be also recognized as CVCGauge
@@ -1254,7 +1259,7 @@ namespace Orts.Viewer3D.RollingStock
                         CVCGauge gauge = cvc as CVCGauge;
                         if (gauge != null)
                         {
-                            CabViewGaugeRenderer cvgr = new CabViewGaugeRenderer(viewer, car, gauge, _Shader);
+                            CabViewGaugeRenderer cvgr = new CabViewGaugeRenderer(viewer, _Locomotive, gauge, _Shader);
                             cvgr.SortIndex = controlSortIndex;
                             CabViewControlRenderersList[i].Add(cvgr);
                             if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvgr);
@@ -1264,7 +1269,7 @@ namespace Orts.Viewer3D.RollingStock
                         CVCSignal asp = cvc as CVCSignal;
                         if (asp != null)
                         {
-                            CabViewDiscreteRenderer aspr = new CabViewDiscreteRenderer(viewer, car, asp, _Shader);
+                            CabViewDiscreteRenderer aspr = new CabViewDiscreteRenderer(viewer, _Locomotive, asp, _Shader);
                             aspr.SortIndex = controlSortIndex;
                             CabViewControlRenderersList[i].Add(aspr);
                             if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, aspr);
@@ -1274,7 +1279,7 @@ namespace Orts.Viewer3D.RollingStock
                         CVCAnimatedDisplay anim = cvc as CVCAnimatedDisplay;
                         if (anim != null)
                         {
-                            CabViewAnimationsRenderer animr = new CabViewAnimationsRenderer(viewer, car, anim, _Shader);
+                            CabViewAnimationsRenderer animr = new CabViewAnimationsRenderer(viewer, _Locomotive, anim, _Shader);
                             animr.SortIndex = controlSortIndex;
                             CabViewControlRenderersList[i].Add(animr);
                             if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, animr);
@@ -1284,7 +1289,7 @@ namespace Orts.Viewer3D.RollingStock
                         CVCMultiStateDisplay multi = cvc as CVCMultiStateDisplay;
                         if (multi != null)
                         {
-                            CabViewDiscreteRenderer mspr = new CabViewDiscreteRenderer(viewer, car, multi, _Shader);
+                            CabViewDiscreteRenderer mspr = new CabViewDiscreteRenderer(viewer, _Locomotive, multi, _Shader);
                             mspr.SortIndex = controlSortIndex;
                             CabViewControlRenderersList[i].Add(mspr);
                             if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, mspr);
@@ -1294,7 +1299,7 @@ namespace Orts.Viewer3D.RollingStock
                         CVCDiscrete disc = cvc as CVCDiscrete;
                         if (disc != null)
                         {
-                            CabViewDiscreteRenderer cvdr = new CabViewDiscreteRenderer(viewer, car, disc, _Shader);
+                            CabViewDiscreteRenderer cvdr = new CabViewDiscreteRenderer(viewer, _Locomotive, disc, _Shader);
                             cvdr.SortIndex = controlSortIndex;
                             CabViewControlRenderersList[i].Add(cvdr);
                             if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvdr);
@@ -1306,9 +1311,9 @@ namespace Orts.Viewer3D.RollingStock
                         {
                             CabViewDigitalRenderer cvdr;
                             if (digital.ControlStyle == CABViewControlStyles.NEEDLE)
-                                cvdr = new CircularSpeedGaugeRenderer(viewer, car, digital, _Shader);
+                                cvdr = new CircularSpeedGaugeRenderer(viewer, _Locomotive, digital, _Shader);
                             else
-                                cvdr = new CabViewDigitalRenderer(viewer, car, digital, _Shader);
+                                cvdr = new CabViewDigitalRenderer(viewer, _Locomotive, digital, _Shader);
                             cvdr.SortIndex = controlSortIndex;
                             CabViewControlRenderersList[i].Add(cvdr);
                             if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvdr);
@@ -1320,7 +1325,7 @@ namespace Orts.Viewer3D.RollingStock
                         {
                             if (screen.ControlType.Type == CABViewControlTypes.ORTS_ETCS)
                             {
-                                var cvr = new DriverMachineInterfaceRenderer(viewer, car, screen, _Shader);
+                                var cvr = new DriverMachineInterfaceRenderer(viewer, _Locomotive, screen, _Shader);
                                 cvr.SortIndex = controlSortIndex;
                                 CabViewControlRenderersList[i].Add(cvr);
                                 if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvr);
@@ -1329,7 +1334,7 @@ namespace Orts.Viewer3D.RollingStock
                             }
                             else if (screen.ControlType.Type == CABViewControlTypes.ORTS_DISTRIBUTED_POWER)
                             {
-                                var cvr = new DistributedPowerInterfaceRenderer(viewer, car, screen, _Shader);
+                                var cvr = new DistributedPowerInterfaceRenderer(viewer, _Locomotive, screen, _Shader);
                                 cvr.SortIndex = controlSortIndex;
                                 CabViewControlRenderersList[i].Add(cvr);
                                 if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvr);
@@ -1339,6 +1344,39 @@ namespace Orts.Viewer3D.RollingStock
                         }
                     }
                 }
+
+                foreach (ViewPoint view in cabView.ViewPointList)
+                {
+                    // Initialization step for cab viewpoint shape attachment
+                    if (view.ShapeIndex != -1)
+                    {
+                        if (view.ShapeIndex < 0 || view.ShapeIndex >= carViewer.TrainCarShape.ResultMatrices.Count())
+                        {
+                            Trace.TraceWarning("Cab camera viewpoint in car {0} has invalid shape index defined, shape index {1} does not exist",
+                                _Locomotive.WagFilePath, view.ShapeIndex);
+                            view.ShapeIndex = 0;
+                        }
+                    }
+                    else
+                    {
+                        if (view.ShapeHierarchy != null)
+                        {
+                            if (carViewer.TrainCarShape.SharedShape.MatrixNames.Contains(view.ShapeHierarchy))
+                            {
+                                view.ShapeIndex = carViewer.TrainCarShape.SharedShape.MatrixNames.IndexOf(view.ShapeHierarchy);
+                            }
+                            else
+                            {
+                                Trace.TraceWarning("Cab camera viewpoint in car {0} has invalid shape index defined, matrix name {1} does not exist",
+                                    _Locomotive.WagFilePath, view.ShapeHierarchy);
+                                view.ShapeIndex = 0;
+                            }
+                        }
+                        else
+                            view.ShapeIndex = 0;
+                    }
+                }
+
                 i++;
             }
             #endregion
@@ -3715,8 +3753,8 @@ namespace Orts.Viewer3D.RollingStock
                 LocoViewer.TrainCarShape.UpdateResultMatrices();
 
                 TrainCarShape.XNAMatrices[0].Translation = Car.CabViewpoints[viewPoint].ShapeOffset;
-                if (Car.CabViewpoints[viewPoint].ShapeHierarchy < LocoViewer.TrainCarShape.ResultMatrices.Length)
-                    TrainCarShape.Location.XNAMatrix = LocoViewer.TrainCarShape.ResultMatrices[Car.CabViewpoints[viewPoint].ShapeHierarchy] * TrainCarShape.Location.XNAMatrix;
+                if (Car.CabViewpoints[viewPoint].ShapeIndex < LocoViewer.TrainCarShape.ResultMatrices.Length)
+                    TrainCarShape.Location.XNAMatrix = LocoViewer.TrainCarShape.ResultMatrices[Car.CabViewpoints[viewPoint].ShapeIndex] * TrainCarShape.Location.XNAMatrix;
 
                 TrainCarShape.ConditionallyPrepareFrame(frame, elapsedTime, MatrixVisible);
             }

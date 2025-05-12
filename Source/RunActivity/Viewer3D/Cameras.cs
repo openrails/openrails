@@ -899,6 +899,7 @@ namespace Orts.Viewer3D
             {
                 cameraLocation.TileX = worldPosition.TileX;
                 cameraLocation.TileZ = worldPosition.TileZ;
+
                 if (IsCameraFlipped())
                 {
                     cameraLocation.Location.X = -attachedLocation.X;
@@ -926,19 +927,29 @@ namespace Orts.Viewer3D
 
             // Consider that the train car shape might introduce some transformation
             Matrix carTransform = Matrix.Identity;
-            int shapeHierarchy = 0;
-            // Account for settings specific to interior cameras
+            int shapeIndex = 0;
+            // Account for settings specific to viewpoints (head out, 2D cab, and 3D interior cameras)
             if (this is InsideThreeDimCamera cam3D)
             {
                 if (cam3D is PassengerCamera)
-                    shapeHierarchy = attachedCar.PassengerViewpoints[cam3D.ActViewPoint].ShapeHierarchy;
+                    shapeIndex = attachedCar.PassengerViewpoints[cam3D.ActViewPoint].ShapeIndex;
                 else if (cam3D is ThreeDimCabCamera)
-                    shapeHierarchy = attachedCar.CabViewpoints[cam3D.ActViewPoint].ShapeHierarchy;
+                    shapeIndex = attachedCar.CabViewpoints[cam3D.ActViewPoint].ShapeIndex;
+            }
+            else if (this is HeadOutCamera camHead)
+            {
+                shapeIndex = attachedCar.HeadOutViewpoints[camHead.CurrentViewpointIndex].ShapeIndex;
+            }
+            else if (this is CabCamera camCab)
+            {
+                // Need to consider that front and rear cab may not be the same
+                shapeIndex = (attachedCar as MSTSLocomotive).CabViewList[(attachedCar as MSTSLocomotive).UsingRearCab ? (int)CabViewType.Rear :
+                    (int)CabViewType.Front].ViewPointList[camCab.SideLocation].ShapeIndex;
             }
             if ((attachedCarViewer as MSTSWagonViewer)?.TrainCarShape.ResultMatrices != null)
             {
-                shapeHierarchy = MathHelper.Clamp(shapeHierarchy, 0, (attachedCarViewer as MSTSWagonViewer).TrainCarShape.ResultMatrices.Length);
-                carTransform = (attachedCarViewer as MSTSWagonViewer).TrainCarShape.ResultMatrices[shapeHierarchy];
+                shapeIndex = MathHelper.Clamp(shapeIndex, 0, (attachedCarViewer as MSTSWagonViewer).TrainCarShape.ResultMatrices.Length);
+                carTransform = (attachedCarViewer as MSTSWagonViewer).TrainCarShape.ResultMatrices[shapeIndex];
             }
 
             if (flipped)
@@ -975,23 +986,34 @@ namespace Orts.Viewer3D
             {
                 // Consider that the train car shape might introduce some transformation
                 Matrix carTransform = Matrix.Identity;
-                int shapeHierarchy = 0;
-                // Account for settings specific to interior cameras
+                int shapeIndex = 0;
+                // Account for settings specific to viewpoints (head out, 2D cab, and 3D interior cameras)
                 if (this is InsideThreeDimCamera cam3D)
                 {
                     if (cam3D is PassengerCamera)
-                        shapeHierarchy = attachedCar.PassengerViewpoints[cam3D.ActViewPoint].ShapeHierarchy;
+                        shapeIndex = attachedCar.PassengerViewpoints[cam3D.ActViewPoint].ShapeIndex;
                     else if (cam3D is ThreeDimCabCamera)
-                        shapeHierarchy = attachedCar.CabViewpoints[cam3D.ActViewPoint].ShapeHierarchy;
+                        shapeIndex = attachedCar.CabViewpoints[cam3D.ActViewPoint].ShapeIndex;
+                }
+                else if (this is HeadOutCamera camHead)
+                {
+                    shapeIndex = attachedCar.HeadOutViewpoints[camHead.CurrentViewpointIndex].ShapeIndex;
+                }
+                else if (this is CabCamera camCab)
+                {
+                    // Need to consider that front and rear cab may not be the same
+                    shapeIndex = (attachedCar as MSTSLocomotive).CabViewList[(attachedCar as MSTSLocomotive).UsingRearCab ? (int)CabViewType.Rear :
+                        (int)CabViewType.Front].ViewPointList[camCab.SideLocation].ShapeIndex;
                 }
                 if ((attachedCarViewer as MSTSWagonViewer)?.TrainCarShape.ResultMatrices != null)
                 {
-                    shapeHierarchy = MathHelper.Clamp(shapeHierarchy, 0, (attachedCarViewer as MSTSWagonViewer).TrainCarShape.ResultMatrices.Length);
-                    carTransform = (attachedCarViewer as MSTSWagonViewer).TrainCarShape.ResultMatrices[shapeHierarchy];
+                    shapeIndex = MathHelper.Clamp(shapeIndex, 0, (attachedCarViewer as MSTSWagonViewer).TrainCarShape.ResultMatrices.Length);
+                    carTransform = (attachedCarViewer as MSTSWagonViewer).TrainCarShape.ResultMatrices[shapeIndex];
                 }
 
                 cameraLocation.TileX = attachedCar.WorldPosition.TileX;
                 cameraLocation.TileZ = attachedCar.WorldPosition.TileZ;
+
                 if (IsCameraFlipped())
                 {
                     cameraLocation.Location.X = -attachedLocation.X;
@@ -2036,7 +2058,7 @@ namespace Orts.Viewer3D
     {
         protected readonly bool Forwards;
         public enum HeadDirection { Forward, Backward }
-        protected int CurrentViewpointIndex;
+        public int CurrentViewpointIndex;
         protected bool PrevCabWasRear;
 
         // Head-out camera is only possible on the player train.
