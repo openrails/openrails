@@ -208,6 +208,7 @@ namespace Orts.Simulation.RollingStocks
         public bool DerailPossible = false;
         public bool DerailExpected = false;
         public float DerailElapsedTimeS;
+        public bool HasDerailed = false;
 
         public float MaxHandbrakeForceN;
         public float MaxBrakeForceN = 89e3f;
@@ -429,31 +430,37 @@ namespace Orts.Simulation.RollingStocks
         {
             get
             {
+                float percent;
                 if (RemoteControlGroup == 0 && Train != null)
                 {
+                    percent = Train.MUThrottlePercent;
                     if (Train.LeadLocomotive is MSTSLocomotive locomotive)
                     {
                         if (!locomotive.TrainControlSystem.TractionAuthorization
-                            || Train.MUThrottlePercent <= 0)
+                            || percent <= 0)
                         {
-                            return 0;
+                            percent = 0;
                         }
-                        else if (Train.MUThrottlePercent > locomotive.TrainControlSystem.MaxThrottlePercent)
+                        else if (percent > locomotive.TrainControlSystem.MaxThrottlePercent)
                         {
-                            return Math.Max(locomotive.TrainControlSystem.MaxThrottlePercent, 0);
+                            percent = Math.Max(locomotive.TrainControlSystem.MaxThrottlePercent, 0);
                         }
                     }
-
-                    return Train.MUThrottlePercent;
                 }
                 else if (RemoteControlGroup == 1 && Train != null)
                 {
-                    return Train.DPThrottlePercent;
+                    percent = Train.DPThrottlePercent;
                 }
                 else
                 {
-                    return LocalThrottlePercent;
+                    percent = LocalThrottlePercent;
                 }
+                if (this is MSTSLocomotive loco)
+                {
+                    if (loco.LocomotivePowerSupply.ThrottleReductionPercent > 0) percent *= 1-loco.LocomotivePowerSupply.ThrottleReductionPercent/100;
+                    if (loco.LocomotivePowerSupply.MaxThrottlePercent < percent) percent = Math.Max(loco.LocomotivePowerSupply.MaxThrottlePercent, 0);
+                }
+                return percent;
             }
             set
             {
@@ -509,7 +516,12 @@ namespace Orts.Simulation.RollingStocks
                 {
                     percent = LocalDynamicBrakePercent;
                 }
-                return Math.Max(percent, this is MSTSLocomotive loco ? loco.DynamicBrakeBlendingPercent : -1);
+                if (this is MSTSLocomotive loco)
+                {
+                    if (loco.DynamicBrakeBlendingPercent > percent) percent = loco.DynamicBrakeBlendingPercent;
+                    if (loco.LocomotivePowerSupply.PowerSupplyDynamicBrakePercent > percent) percent = loco.LocomotivePowerSupply.PowerSupplyDynamicBrakePercent;
+                }
+                return percent;
             }
             set
             {
@@ -973,15 +985,6 @@ namespace Orts.Simulation.RollingStocks
             CarOutsideTempC = InitialCarOutsideTempC - TemperatureHeightVariationDegC;
 
             AbsSpeedMpS = Math.Abs(_SpeedMpS);
-
-            //TODO: next if block has been inserted to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
-            // To achieve the same result with other means, without flipping trainset physics, the block should be deleted
-            //      
-            if (IsDriveable && Train != null & Train.IsPlayerDriven && (this as MSTSLocomotive).UsingRearCab)
-            {
-                GravityForceN = -GravityForceN;
-                CurrentElevationPercent = -CurrentElevationPercent;
-            }
 
             UpdateCurveSpeedLimit(elapsedClockSeconds);
             UpdateCurveForce(elapsedClockSeconds);
@@ -1733,8 +1736,18 @@ namespace Orts.Simulation.RollingStocks
                     {
                         DerailExpected = true;
                         Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("Car {0} has derailed on the curve.", CarID));
-                      //  Trace.TraceInformation("Car Derail - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5} Nadal {6} Coeff {7}", CarID, CouplerForceU, CouplerForceUSmoothed.SmoothedValue, TotalWagonLateralDerailForceN, TotalWagonVerticalDerailForceN, WagonCouplerAngleDerailRad, NadalDerailmentCoefficient, DerailmentCoefficient);
-                     //   Trace.TraceInformation("Car Ahead Derail - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5}", CarAhead.CarID, CarAhead.CouplerForceU, CarAhead.CouplerForceUSmoothed.SmoothedValue, CarAhead.TotalWagonLateralDerailForceN, CarAhead.TotalWagonVerticalDerailForceN, CarAhead.WagonCouplerAngleDerailRad);
+                        if (!HasDerailed)
+                        {
+                            string derailReason = "defect";
+                            if (CouplerForceU > 0 && CouplerSlackM < 0) { derailReason = "jackknifed"; }
+                            else if (CouplerForceU < 0 && CouplerSlackM > 0) { derailReason = "stringlined"; }
+                            Trace.TraceInformation("Car {0} derailed ({1}), on {2} curve with radius {3}, at speed {4}, after traveling {5}",
+                                CarID, derailReason, GetCurveDirection(), FormatStrings.FormatDistance(CurrentCurveRadiusM, IsMetric), FormatStrings.FormatSpeed(AbsSpeedMpS, IsMetric), FormatStrings.FormatDistance(DistanceM, IsMetric));
+                            // DistanceM is not a good location measure, as it is based on the train. Two railcars derailing at the same location have a different distance.
+                        }
+                        HasDerailed = true;
+                        //  Trace.TraceInformation("Car Derail - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5} Nadal {6} Coeff {7}", CarID, CouplerForceU, CouplerForceUSmoothed.SmoothedValue, TotalWagonLateralDerailForceN, TotalWagonVerticalDerailForceN, WagonCouplerAngleDerailRad, NadalDerailmentCoefficient, DerailmentCoefficient);
+                        //   Trace.TraceInformation("Car Ahead Derail - CarID: {0}, Coupler: {1}, CouplerSmoothed {2}, Lateral {3}, Vertical {4}, Angle {5}", CarAhead.CarID, CarAhead.CouplerForceU, CarAhead.CouplerForceUSmoothed.SmoothedValue, CarAhead.TotalWagonLateralDerailForceN, CarAhead.TotalWagonVerticalDerailForceN, CarAhead.WagonCouplerAngleDerailRad);
                     }
                     else if (DerailPossible)
                     {
@@ -1744,12 +1757,15 @@ namespace Orts.Simulation.RollingStocks
                     else
                     {
                         DerailElapsedTimeS = 0; // Reset timer if derail is not possible
+                        HasDerailed = false;
                     }
 
                     if (AbsSpeedMpS < 0.01)
                     {
                         DerailExpected = false;
                         DerailPossible = false;
+                        DerailElapsedTimeS = 0;
+                        HasDerailed = false;
                     }
 
 //                    if (CarID == "0 - 84" || CarID == "0 - 83" || CarID == "0 - 82" || CarID == "0 - 81" || CarID == "0 - 80" || CarID == "0 - 79")
@@ -1766,6 +1782,7 @@ namespace Orts.Simulation.RollingStocks
                     DerailExpected = false;
                     DerailPossible = false;
                     DerailElapsedTimeS = 0;
+                    HasDerailed = false;
                 }
 
 
@@ -2824,8 +2841,7 @@ namespace Orts.Simulation.RollingStocks
             m.Backward = fwd;
 
             // Update gravity force when position is updated, but before any secondary motion is added
-            GravityForceN = MassKG * GravitationalAccelerationMpS2 * fwd.Y;
-            CurrentElevationPercent = 100f * (fwd.Y / (float)Math.Sqrt(1 - fwd.Y * fwd.Y));
+            UpdateGravity(m);
 
             // Consider body roll from superelevation and from tilting.
             UpdateTilting(traveler, elapsedTimeS, speed, direction);
@@ -2872,6 +2888,8 @@ namespace Orts.Simulation.RollingStocks
                     p.FindCenterLine();
                 }
             }
+
+            UpdatePositionFlags();
         }
 
         #region Traveller-based updates
@@ -3091,140 +3109,67 @@ namespace Orts.Simulation.RollingStocks
         }
         #endregion
 
+        public bool IsOverSwitch { get; private set; }
+        public bool IsOverCrossover { get; private set; }
+        public bool IsOverTrough { get; private set; }
+
+        void UpdatePositionFlags()
+        {
+            // Position flags can only change when we're moving!
+            if (Train == null || AbsSpeedMpS < 0.01f) return;
+
+            // Calculate the position of the ends of this car relative to the REAR of the train
+            var rearOffsetM = Train.PresentPosition[1].TCOffset;
+            for (var i = Train.Cars.IndexOf(this) + 1; i < Train.Cars.Count; i++)
+                rearOffsetM += Train.Cars[i - 1].CouplerSlackM + Train.Cars[i - 1].GetCouplerZeroLengthM() + Train.Cars[i].CarLengthM;
+            var frontOffsetM = rearOffsetM + CarLengthM;
+
+            var isOverSwitch = false;
+            var isOverCrossover = false;
+            var isOverTrough = false;
+
+            // Scan through the track sections forwards from the REAR of the train (`Train.PresentPosition[1]`),
+            // stopping as soon as we've passed this car (`checkedM`) or run out of track (`currentPin.Link`)
+            var checkedM = 0f;
+            var lastPin = new TrPin { Link = -1, Direction = -1 };
+            var currentPin = new TrPin { Link = Train.PresentPosition[1].TCSectionIndex, Direction = Train.PresentPosition[1].TCDirection };
+            while (checkedM <= frontOffsetM && currentPin.Link != -1)
+            {
+                var section = Simulator.Signals.TrackCircuitList[currentPin.Link];
+
+                // Does this car overlap this track section?
+                if (checkedM <= frontOffsetM && rearOffsetM <= checkedM + section.Length)
+                {
+                    if (section.CircuitType == TrackCircuitSection.TrackCircuitType.Junction) isOverSwitch = true;
+                    if (section.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover) isOverCrossover = true;
+                    if (section.TroughInfo != null)
+                    {
+                        foreach (var troughs in section.TroughInfo)
+                        {
+                            var trough = troughs[currentPin.Direction];
+                            // Start and end are -1 if the trough extends beyond this section
+                            var troughStart = trough.TroughStart < 0 ? 0 : trough.TroughStart;
+                            var troughEnd = trough.TroughEnd < 0 ? section.Length : trough.TroughEnd;
+                            if (checkedM + troughStart <= frontOffsetM && rearOffsetM <= checkedM + troughEnd) isOverTrough = true;
+                        }
+                    }
+                }
+                checkedM += section.Length;
+
+                var nextPin = section.GetNextActiveLink(currentPin.Direction, lastPin.Link);
+                lastPin = currentPin;
+                currentPin = nextPin;
+            }
+
+            IsOverSwitch = isOverSwitch;
+            IsOverCrossover = isOverCrossover;
+            IsOverTrough = isOverTrough;
+        }
+
         // TODO These three fields should be in the TrainCarViewer.
         public int TrackSoundType = 0;
         public WorldLocation TrackSoundLocation = WorldLocation.None;
         public float TrackSoundDistSquared = 0;
-
-
-        /// <summary>
-        /// Checks if traincar is over trough. Used to check if refill possible
-        /// </summary>
-        /// <returns> returns true if car is over trough</returns>
-
-        public bool IsOverTrough()
-        {
-            var isOverTrough = false;
-            // start at front of train
-            int thisSectionIndex = Train.PresentPosition[0].TCSectionIndex;
-            if (thisSectionIndex < 0) return isOverTrough;
-            float thisSectionOffset = Train.PresentPosition[0].TCOffset;
-            int thisSectionDirection = Train.PresentPosition[0].TCDirection;
-
-
-            float usedCarLength = CarLengthM;
-            float processedCarLength = 0;
-            bool validSections = true;
-
-            while (validSections)
-            {
-                TrackCircuitSection thisSection = Train.signalRef.TrackCircuitList[thisSectionIndex];
-                isOverTrough = false;
-
-                // car spans sections
-                if ((CarLengthM - processedCarLength) > thisSectionOffset)
-                {
-                    usedCarLength = thisSectionOffset - processedCarLength;
-                }
-
-                // section has troughs
-                if (thisSection.TroughInfo != null)
-                {
-                    foreach (TrackCircuitSection.troughInfoData[] thisTrough in thisSection.TroughInfo)
-                    {
-                        float troughStartOffset = thisTrough[thisSectionDirection].TroughStart;
-                        float troughEndOffset = thisTrough[thisSectionDirection].TroughEnd;
-
-                        if (troughStartOffset > 0 && troughStartOffset > thisSectionOffset)      // start of trough is in section beyond present position - cannot be over this trough nor any following
-                        {
-                            return isOverTrough;
-                        }
-
-                        if (troughEndOffset > 0 && troughEndOffset < (thisSectionOffset - usedCarLength)) // beyond end of trough, test next
-                        {
-                            continue;
-                        }
-
-                        if (troughStartOffset <= 0 || troughStartOffset < (thisSectionOffset - usedCarLength)) // start of trough is behind
-                        {
-                            isOverTrough = true;
-                            return isOverTrough;
-                        }
-                    }
-                }
-                // tested this section, any need to go beyond?
-
-                processedCarLength += usedCarLength;
-                {
-                    // go back one section
-                    int thisSectionRouteIndex = Train.ValidRoute[0].GetRouteIndexBackward(thisSectionIndex, Train.PresentPosition[0].RouteListIndex);
-                    if (thisSectionRouteIndex >= 0)
-                    {
-                        thisSectionIndex = thisSectionRouteIndex;
-                        thisSection = Train.signalRef.TrackCircuitList[thisSectionIndex];
-                        thisSectionOffset = thisSection.Length;  // always at end of next section
-                        thisSectionDirection = Train.ValidRoute[0][thisSectionRouteIndex].Direction;
-                    }
-                    else // ran out of train
-                    {
-                        validSections = false;
-                    }
-                }
-            }
-            return isOverTrough;
-        }
-
-        /// <summary>
-        /// Checks if traincar is over junction or crossover. Used to check if water scoop breaks
-        /// </summary>
-        /// <returns> returns true if car is over junction</returns>
-
-        public bool IsOverJunction()
-        {
-
-            // To Do - This identifies the start of the train, but needs to be further refined to work for each carriage.
-            var isOverJunction = false;
-            // start at front of train
-            int thisSectionIndex = Train.PresentPosition[0].TCSectionIndex;
-            float thisSectionOffset = Train.PresentPosition[0].TCOffset;
-            int thisSectionDirection = Train.PresentPosition[0].TCDirection;
-
-
-            float usedCarLength = CarLengthM;
-
-            if (Train.PresentPosition[0].TCSectionIndex != Train.PresentPosition[1].TCSectionIndex)
-            {
-                try
-                {
-                    var copyOccupiedTrack = Train.OccupiedTrack.ToArray();
-                    foreach (var thisSection in copyOccupiedTrack)
-                    {
-
-                        //                    Trace.TraceInformation(" Track Section - Index {0} Ciruit Type {1}", thisSectionIndex, thisSection.CircuitType);
-
-                        if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
-                        {
-
-                            // train is on a switch; let's see if car is on a switch too
-                            WorldLocation switchLocation = TileLocation(Simulator.TDB.TrackDB.TrackNodes[thisSection.OriginalIndex].UiD);
-                            var distanceFromSwitch = WorldLocation.GetDistanceSquared(WorldPosition.WorldLocation, switchLocation);
-                            if (distanceFromSwitch < CarLengthM * CarLengthM + Math.Min(SpeedMpS * 3, 150))
-                            {
-                                isOverJunction = true;
-                                return isOverJunction;
-                            }
-                        }
-                    }
-                }
-                catch
-                {
-
-                }
-            }
-
-            return isOverJunction;
-        }
-
 
         public static WorldLocation TileLocation(UiD uid)
         {
@@ -3532,6 +3477,36 @@ namespace Orts.Simulation.RollingStocks
         public int GetWagonNumAxles() { return WagonNumAxles; }
 
         public float GetGravitationalAccelerationMpS2() { return GravitationalAccelerationMpS2; }
+
+        /// <summary>
+        /// Update the gravity force and % gradient of this train car at the current position
+        /// </summary>
+        public void UpdateGravity()
+        {
+            UpdateGravity(WorldPosition.XNAMatrix);
+        }
+
+        /// <summary>
+        /// Update the gravity force and % gradient of this train car at an arbitrary position
+        /// </summary>
+        /// <param name="orientation">Matrix giving the train car orientation used to determine gravity.</param>
+        public void UpdateGravity(Matrix orientation)
+        {
+            // Percent slope = 100 * rise / run -> the Y component of the forward vector gives us the 'rise'
+            // Derive the 'run' by assuming a hypotenuse length of 1, so per Pythagoras run = sqrt(1 - rise^2)
+            float rise = orientation.Backward.Y;
+
+            GravityForceN = MassKG * GravitationalAccelerationMpS2 * rise;
+            CurrentElevationPercent = 100f * (rise / (float)Math.Sqrt(1 - rise * rise));
+
+            // Reverse gravity force and % gradient on locomotives operated from the rear cab
+            // FUTURE: Change rear cabs to not require such forbidden manipulations of physics
+            if (IsDriveable && Train != null & Train.IsPlayerDriven && (this as MSTSLocomotive).UsingRearCab)
+            {
+                GravityForceN = -GravityForceN;
+                CurrentElevationPercent = -CurrentElevationPercent;
+            }
+        }
     }
 
     public class WheelAxle : IComparer<WheelAxle>

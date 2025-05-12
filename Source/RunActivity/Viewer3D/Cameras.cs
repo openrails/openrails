@@ -29,6 +29,7 @@ using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
+using Orts.Viewer3D.Popups;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Settings;
@@ -129,7 +130,10 @@ namespace Orts.Viewer3D
         public void Activate()
         {
             ScreenChanged();
-            OnActivate(Viewer.Camera == this);
+            if (!Viewer.IsFormationReversed)// Avoids flickering
+            {
+                OnActivate(Viewer.Camera == this);
+            }
             Viewer.Camera = this;
             Viewer.Simulator.PlayerIsInCab = Style == Styles.Cab || Style == Styles.ThreeDimCab;
             Update(ElapsedTime.Zero);
@@ -266,7 +270,7 @@ namespace Orts.Viewer3D
         {
             // Will not zoom-in-out when help windows is up.
             // TODO: Property input processing through WindowManager.
-            if (UserInput.IsMouseWheelChanged && !Viewer.HelpWindow.Visible)
+            if (UserInput.IsMouseWheelChanged && (!UserInput.IsDown(UserCommand.GameSwitchWithMouse) || !(this is ThreeDimCabCamera)) && !Viewer.HelpWindow.Visible)
             {
                 var fieldOfView = MathHelper.Clamp(FieldOfView - speed * UserInput.MouseWheelChange / 10, 1, 135);
                 new FieldOfViewCommand(Viewer.Log, fieldOfView);
@@ -1076,8 +1080,11 @@ namespace Orts.Viewer3D
             }
             else
             {
-                isVisibleTrainCarViewerOrWebpage = Viewer.TrainCarOperationsViewerWindow.Visible || (Viewer.TrainCarOperationsWebpage.Connections > 0 && Viewer.TrainCarOperationsWebpage.TrainCarSelected);
+                isVisibleTrainCarViewerOrWebpage = (Viewer.TrainCarOperationsWindow.Visible && !Viewer.TrainCarOperationsViewerWindow.Visible) || Viewer.TrainCarOperationsViewerWindow.Visible || (Viewer.TrainCarOperationsWebpage?.Connections > 0 && Viewer.TrainCarOperationsWebpage.TrainCarSelected);
             }
+
+            // Update the camera view
+            oldCarPosition = oldCarPosition == 0 && carPosition == 0 ? -1 : oldCarPosition;
 
             if (attachedCar == null || attachedCar.Train != Viewer.SelectedTrain || carPosition != oldCarPosition)
             {

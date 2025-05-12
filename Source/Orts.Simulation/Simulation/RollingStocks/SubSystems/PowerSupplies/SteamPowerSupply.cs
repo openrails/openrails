@@ -15,8 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Diagnostics;
 using System.IO;
 using Orts.Parsers.Msts;
+using ORTS.Common;
 using ORTS.Scripting.Api;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
@@ -25,118 +27,103 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
     /// Basic power supply class for steam locomotives
     /// For electrical systems powered by battery
     /// </summary>
-    public class SteamPowerSupply : ILocomotivePowerSupply
+    public class ScriptedSteamPowerSupply : ScriptedLocomotivePowerSupply
     {
-        public TrainCar Car { get; }
-        public MSTSSteamLocomotive Locomotive => Car as MSTSSteamLocomotive;
-        public PowerSupplyType Type => PowerSupplyType.Steam;
-
-        public BatterySwitch BatterySwitch { get; protected set; }
-        public MasterKey MasterKey { get; protected set; }
-        public ElectricTrainSupplySwitch ElectricTrainSupplySwitch => null;
-
-        public PowerSupplyState MainPowerSupplyState => PowerSupplyState.PowerOn;
-        public bool MainPowerSupplyOn => true;
-        public bool DynamicBrakeAvailable => false;
-
-        public PowerSupplyState AuxiliaryPowerSupplyState => PowerSupplyState.PowerOn;
-        public bool AuxiliaryPowerSupplyOn => true;
-
-        public PowerSupplyState LowVoltagePowerSupplyState => BatterySwitch.On ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff;
-        public bool LowVoltagePowerSupplyOn => LowVoltagePowerSupplyState == PowerSupplyState.PowerOn;
-
-        public PowerSupplyState BatteryState => BatterySwitch.On ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff;
-        public bool BatteryOn => BatteryState == PowerSupplyState.PowerOn;
-
-        public PowerSupplyState CabPowerSupplyState => MasterKey.On ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff;
-        public bool CabPowerSupplyOn => CabPowerSupplyState == PowerSupplyState.PowerOn;
-
-        public PowerSupplyState ElectricTrainSupplyState => PowerSupplyState.Unavailable;
-        public bool ElectricTrainSupplyOn => false;
-        public bool FrontElectricTrainSupplyCableConnected { get => false; set { } }
-        public float ElectricTrainSupplyPowerW => 0f;
-
-        public bool ServiceRetentionButton => false;
-        public bool ServiceRetentionCancellationButton => false;
-
-        public SteamPowerSupply(MSTSSteamLocomotive locomotive)
+        public MSTSSteamLocomotive SteamLocomotive => Locomotive as MSTSSteamLocomotive;
+        public override PowerSupplyType Type => PowerSupplyType.Steam;
+        public ScriptedSteamPowerSupply(MSTSSteamLocomotive locomotive) : base(locomotive)
         {
-            Car = locomotive;
-
-            BatterySwitch = new BatterySwitch(Locomotive);
-            MasterKey = new MasterKey(Locomotive);
+            ElectricTrainSupplySwitch = new ElectricTrainSupplySwitch(Locomotive, ElectricTrainSupplySwitch.ModeType.Unfitted);
         }
-
-        public virtual void Parse(string lowercasetoken, STFReader stf)
+        public override void Initialize()
         {
-            switch (lowercasetoken)
+            base.Initialize();
+
+            if (AbstractScript == null)
             {
-                case "engine(ortsbattery(mode":
-                case "engine(ortsbattery(delay":
-                case "engine(ortsbattery(defaulton":
-                    BatterySwitch.Parse(lowercasetoken, stf);
-                    break;
-                case "engine(ortsmasterkey(mode":
-                case "engine(ortsmasterkey(delayoff":
-                case "engine(ortsmasterkey(headlightcontrol":
-                    MasterKey.Parse(lowercasetoken, stf);
-                    break;
+                if (ScriptName != null && ScriptName != "Default")
+                {
+                    Trace.TraceWarning("Skipped custom power supply script, not available for steam locomotives.");
+                }
+
+                if (ParametersFileName != null)
+                {
+                    ParametersFileName = Path.Combine(Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script"), ParametersFileName);
+                }
+
+                if (AbstractScript == null)
+                {
+                    AbstractScript = new DefaultSteamPowerSupply();
+                }
+
+                AssignScriptFunctions();
+
+                AbstractScript.AttachToHost(this);
+                AbstractScript.Initialize();
             }
         }
 
-        public void Copy(IPowerSupply other)
+        public override void Update(float elapsedClockSeconds)
         {
-            if (other is SteamPowerSupply steamOther)
+            base.Update(elapsedClockSeconds);
+
+            AbstractScript?.Update(elapsedClockSeconds);
+        }
+    }
+    public class DefaultSteamPowerSupply : LocomotivePowerSupply
+    {
+        public override void Initialize()
+        {
+        }
+
+        public override void Update(float elapsedClockSeconds)
+        {
+            SetCurrentBatteryState(BatterySwitchOn() ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
+            SetCurrentLowVoltagePowerSupplyState(BatterySwitchOn() ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
+            SetCurrentCabPowerSupplyState(BatterySwitchOn() && MasterKeyOn() ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
+
+            SetCurrentMainPowerSupplyState(PowerSupplyState.PowerOn);
+            SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOn);
+
+            if (ElectricTrainSupplyUnfitted())
             {
-                BatterySwitch.Copy(steamOther.BatterySwitch);
-                MasterKey.Copy(steamOther.MasterKey);
+                SetCurrentElectricTrainSupplyState(PowerSupplyState.Unavailable);
+            }
+            else if (CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn
+                    && ElectricTrainSupplySwitchOn())
+            {
+                SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOn);
+            }
+            else
+            {
+                SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOff);
             }
         }
 
-        public void Initialize()
+        public override void HandleEvent(PowerSupplyEvent evt)
         {
-            BatterySwitch.Initialize();
-            MasterKey.Initialize();
-        }
+            switch (evt)
+            {
+                case PowerSupplyEvent.QuickPowerOn:
+                    SignalEventToBatterySwitch(PowerSupplyEvent.QuickPowerOn);
+                    SignalEventToMasterKey(PowerSupplyEvent.TurnOnMasterKey);
+                    SignalEventToPantograph(PowerSupplyEvent.RaisePantograph, 1);
+                    SignalEventToOtherTrainVehiclesWithId(PowerSupplyEvent.RaisePantograph, 1);
+                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.SwitchOnElectricTrainSupply);
+                    break;
 
-        public virtual void InitializeMoving()
-        {
-            BatterySwitch.InitializeMoving();
-            MasterKey.InitializeMoving();
-        }
+                case PowerSupplyEvent.QuickPowerOff:
+                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.SwitchOffElectricTrainSupply);
+                    SignalEventToPantographs(PowerSupplyEvent.LowerPantograph);
+                    SignalEventToOtherTrainVehicles(PowerSupplyEvent.LowerPantograph);
+                    SignalEventToMasterKey(PowerSupplyEvent.TurnOffMasterKey);
+                    SignalEventToBatterySwitch(PowerSupplyEvent.QuickPowerOff);
+                    break;
 
-        public void Save(BinaryWriter outf)
-        {
-            BatterySwitch.Save(outf);
-            MasterKey.Save(outf);
-        }
-
-        public void Restore(BinaryReader inf)
-        {
-            BatterySwitch.Restore(inf);
-            MasterKey.Restore(inf);
-        }
-
-        public void Update(float elapsedClockSeconds)
-        {
-        }
-
-        public void HandleEvent(PowerSupplyEvent evt)
-        {
-            BatterySwitch.HandleEvent(evt);
-            MasterKey.HandleEvent(evt);
-        }
-
-        public void HandleEvent(PowerSupplyEvent evt, int id)
-        {
-        }
-
-        public void HandleEventFromLeadLocomotive(PowerSupplyEvent evt)
-        {
-        }
-
-        public void HandleEventFromLeadLocomotive(PowerSupplyEvent evt, int id)
-        {
+                default:
+                    base.HandleEvent(evt);
+                    break;
+            }
         }
     }
 }

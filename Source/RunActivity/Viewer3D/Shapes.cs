@@ -1807,6 +1807,11 @@ namespace Orts.Viewer3D
             }
         }
 
+        public void SetMaterial(Material material)
+        {
+            Material = material;
+        }
+
         [CallOnThread("Loader")]
         public virtual void Mark()
         {
@@ -1848,11 +1853,6 @@ namespace Orts.Viewer3D
         public void SetIndexData(short[] data)
         {
             IndexBuffer.SetData(data);
-        }
-
-        public void SetMaterial(Material material)
-        {
-            Material = material;
         }
     }
 
@@ -1975,6 +1975,11 @@ namespace Orts.Viewer3D
         //public bool negativeBogie = false;
         public string SoundFileName = "";
         public float CustomAnimationFPS = 8;
+
+        /// <summary>
+        /// Store for matrixes needed to be reused in later calculations, e.g. for 3d cabview mouse control
+        /// </summary>
+        public readonly Dictionary<int, Matrix> StoredResultMatrixes = new Dictionary<int, Matrix>();
 
 
         readonly Viewer Viewer;
@@ -2609,6 +2614,9 @@ namespace Orts.Viewer3D
                             hi = shapePrimitive.Hierarchy[hi];
                         }
                         Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
+
+                        if (StoredResultMatrixes.ContainsKey(shapePrimitive.HierarchyIndex))
+                            StoredResultMatrixes[shapePrimitive.HierarchyIndex] = xnaMatrix;
 
                         // TODO make shadows depend on shape overrides
 

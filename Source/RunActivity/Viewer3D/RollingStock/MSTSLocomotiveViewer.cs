@@ -31,6 +31,7 @@ using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
 using Orts.Viewer3D.RollingStock.SubSystems;
@@ -1602,7 +1603,7 @@ namespace Orts.Viewer3D.RollingStock
         protected readonly MSTSLocomotive Locomotive;
         public readonly CabViewControl Control;
         protected readonly CabShader Shader;
-        protected readonly SpriteBatchMaterial ControlView;
+        public readonly SpriteBatchMaterial ControlView;
 
         protected Vector2 Position;
         protected Texture2D Texture;
@@ -2206,6 +2207,9 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.PANTOGRAPHS_4C:
                 case CABViewControlTypes.PANTOGRAPHS_5:
                 case CABViewControlTypes.PANTO_DISPLAY:
+                case CABViewControlTypes.ORTS_VOLTAGE_SELECTOR:
+                case CABViewControlTypes.ORTS_PANTOGRAPH_SELECTOR:
+                case CABViewControlTypes.ORTS_POWER_LIMITATION_SELECTOR:
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_OPENING_ORDER:
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_AUTHORIZATION:
@@ -2288,6 +2292,7 @@ namespace Orts.Viewer3D.RollingStock
                     if (index == -2) index = ControlDiscrete.Values.Count - 1;
                     break;
                 case CABViewControlTypes.ORTS_TCS:
+                case CABViewControlTypes.ORTS_POWER_SUPPLY:
                 // Jindrich
                 case CABViewControlTypes.ORTS_RESTRICTED_SPEED_ZONE_ACTIVE:
                 case CABViewControlTypes.ORTS_SELECTED_SPEED_MODE:
@@ -2335,9 +2340,10 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         float NormalizedMouseMovement()
         {
+            var mouseWheelChange = (UserInput.IsDown(UserCommand.GameSwitchWithMouse) ? UserInput.MouseWheelChange : 0) / 10;
             return (ControlDiscrete.Orientation > 0
-                ? (float)UserInput.MouseMoveY / (float)Control.Height
-                : (float)UserInput.MouseMoveX / (float)Control.Width)
+                ? (float)(UserInput.MouseMoveY + mouseWheelChange) / (float)Control.Height
+                : (float)(UserInput.MouseMoveX + mouseWheelChange) / (float)Control.Width)
                 * (ControlDiscrete.Direction > 0 ? -1 : 1);
         }
 
@@ -2348,7 +2354,8 @@ namespace Orts.Viewer3D.RollingStock
 
         public string GetControlName()
         {
-            if (ControlDiscrete.ControlType.Type == CABViewControlTypes.ORTS_TCS) return (Locomotive as MSTSLocomotive).TrainControlSystem.GetDisplayString(ControlDiscrete.ControlType.Id);
+            if (ControlDiscrete.ControlType.Type == CABViewControlTypes.ORTS_TCS) return Locomotive.TrainControlSystem.GetDisplayString(ControlDiscrete.ControlType.Id);
+            if (ControlDiscrete.ControlType.Type == CABViewControlTypes.ORTS_POWER_SUPPLY && Locomotive.LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply) return supply.GetDisplayString(ControlDiscrete.ControlType.Id);
             return GetControlType().ToString();
         }
 
@@ -2360,6 +2367,37 @@ namespace Orts.Viewer3D.RollingStock
 
         public void HandleUserInput()
         {
+            var Locomotive = this.Locomotive;
+            if (Locomotive is MSTSControlTrailerCar controlCar)
+            {
+                switch (Control.ControlType.Type)
+                {
+                    // Diesel locomotive controls
+                    case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE:
+                    case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_DRIVER_CLOSING_AUTHORIZATION:
+                    case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_DRIVER_CLOSING_ORDER:
+                    case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_DRIVER_OPENING_ORDER:
+                        Locomotive = controlCar.ControlActiveLocomotive as MSTSDieselLocomotive;
+                        break;
+                    // Electric locomotive controls
+                    case CABViewControlTypes.PANTOGRAPH:
+                    case CABViewControlTypes.PANTOGRAPH2:
+                    case CABViewControlTypes.ORTS_PANTOGRAPH3:
+                    case CABViewControlTypes.ORTS_PANTOGRAPH4:
+                    case CABViewControlTypes.PANTOGRAPHS_4:
+                    case CABViewControlTypes.PANTOGRAPHS_4C:
+                    case CABViewControlTypes.PANTOGRAPHS_5:
+                    case CABViewControlTypes.ORTS_VOLTAGE_SELECTOR:
+                    case CABViewControlTypes.ORTS_PANTOGRAPH_SELECTOR:
+                    case CABViewControlTypes.ORTS_POWER_LIMITATION_SELECTOR:
+                    case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
+                    case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_OPENING_ORDER:
+                    case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_AUTHORIZATION:
+                        Locomotive = controlCar.ControlActiveLocomotive as MSTSElectricLocomotive;
+                        break;
+                }
+                if (Locomotive == null) return;
+            }
             switch (Control.ControlType.Type)
             {
                 case CABViewControlTypes.REGULATOR:
@@ -2426,6 +2464,51 @@ namespace Orts.Viewer3D.RollingStock
                     break;
                 case CABViewControlTypes.STEAM_HEAT: Locomotive.SetSteamHeatValue(ChangedValue(Locomotive.SteamHeatController.IntermediateValue)); break;
                 case CABViewControlTypes.ORTS_WATER_SCOOP: if (((Locomotive as MSTSSteamLocomotive).WaterScoopDown ? 1 : 0) != ChangedValue(Locomotive.WaterScoopDown ? 1 : 0)) new ToggleWaterScoopCommand(Viewer.Log); break;
+                case CABViewControlTypes.ORTS_VOLTAGE_SELECTOR:
+                {
+                    if (Locomotive is MSTSElectricLocomotive electricLocomotive)
+                    {
+                        if (ChangedValue(electricLocomotive.ElectricPowerSupply.VoltageSelector.PositionId) > 0)
+                        {
+                            new VoltageSelectorCommand(Viewer.Log, true);
+                        }
+                        else if (ChangedValue(electricLocomotive.ElectricPowerSupply.VoltageSelector.PositionId) < 0)
+                        {
+                            new VoltageSelectorCommand(Viewer.Log, false);
+                        }
+                    }
+                    break;
+                }
+                case CABViewControlTypes.ORTS_PANTOGRAPH_SELECTOR:
+                {
+                    if (Locomotive is MSTSElectricLocomotive electricLocomotive)
+                    {
+                        if (ChangedValue(electricLocomotive.ElectricPowerSupply.PantographSelector.PositionId) > 0)
+                        {
+                            new PantographSelectorCommand(Viewer.Log, true);
+                        }
+                        else if (ChangedValue(electricLocomotive.ElectricPowerSupply.PantographSelector.PositionId) < 0)
+                        {
+                            new PantographSelectorCommand(Viewer.Log, false);
+                        }
+                    }
+                    break;
+                }
+                case CABViewControlTypes.ORTS_POWER_LIMITATION_SELECTOR:
+                {
+                    if (Locomotive is MSTSElectricLocomotive electricLocomotive)
+                    {
+                        if (ChangedValue(electricLocomotive.ElectricPowerSupply.PowerLimitationSelector.PositionId) > 0)
+                        {
+                            new PowerLimitationSelectorCommand(Viewer.Log, true);
+                        }
+                        else if (ChangedValue(electricLocomotive.ElectricPowerSupply.PowerLimitationSelector.PositionId) < 0)
+                        {
+                            new PowerLimitationSelectorCommand(Viewer.Log, false);
+                        }
+                    }
+                    break;
+                }
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
                     new CircuitBreakerClosingOrderCommand(Viewer.Log, ChangedValue((Locomotive as MSTSElectricLocomotive).ElectricPowerSupply.CircuitBreaker.DriverClosingOrder ? 1 : 0) > 0);
                     new CircuitBreakerClosingOrderButtonCommand(Viewer.Log, ChangedValue(UserInput.IsMouseLeftButtonPressed ? 1 : 0) > 0);
@@ -2546,10 +2629,10 @@ namespace Orts.Viewer3D.RollingStock
                     new ToggleMasterKeyCommand(Viewer.Log, ChangedValue(Locomotive.LocomotivePowerSupply.MasterKey.CommandSwitch ? 1 : 0) > 0);
                     break;
                 case CABViewControlTypes.ORTS_SERVICE_RETENTION_BUTTON:
-                    new ServiceRetentionButtonCommand(Viewer.Log, ChangedValue(UserInput.IsMouseLeftButtonPressed ? 1 : 0) > 0);
+                    new ServiceRetentionButtonCommand(Viewer.Log, ChangedValue(Locomotive.LocomotivePowerSupply.ServiceRetentionButton ? 1 : 0) > 0);
                     break;
                 case CABViewControlTypes.ORTS_SERVICE_RETENTION_CANCELLATION_BUTTON:
-                    new ServiceRetentionCancellationButtonCommand(Viewer.Log, ChangedValue(UserInput.IsMouseLeftButtonPressed ? 1 : 0) > 0);
+                    new ServiceRetentionCancellationButtonCommand(Viewer.Log, ChangedValue(Locomotive.LocomotivePowerSupply.ServiceRetentionCancellationButton ? 1 : 0) > 0);
                     break;
                 case CABViewControlTypes.ORTS_ELECTRIC_TRAIN_SUPPLY_COMMAND_SWITCH:
                     new ElectricTrainSupplyCommand(Viewer.Log, ChangedValue(Locomotive.LocomotivePowerSupply.ElectricTrainSupplySwitch.CommandSwitch ? 1 : 0) > 0);
@@ -2590,12 +2673,27 @@ namespace Orts.Viewer3D.RollingStock
 
                 // Train Control System controls
                 case CABViewControlTypes.ORTS_TCS:
-                    int commandIndex = Control.ControlType.Id - 1;
-                    Locomotive.TrainControlSystem.TCSCommandButtonDown.TryGetValue(commandIndex, out bool currentValue);
-                    if (ChangedValue(1) > 0 ^ currentValue)
-                        new TCSButtonCommand(Viewer.Log, !currentValue, commandIndex);
-                    Locomotive.TrainControlSystem.TCSCommandSwitchOn.TryGetValue(commandIndex, out bool currentSwitchValue);
-                    new TCSSwitchCommand(Viewer.Log, ChangedValue(currentSwitchValue ? 1 : 0) > 0, commandIndex);
+                    {
+                        int commandIndex = Control.ControlType.Id - 1;
+                        Locomotive.TrainControlSystem.TCSCommandButtonDown.TryGetValue(commandIndex, out bool currentValue);
+                        if (ChangedValue(1) > 0 ^ currentValue)
+                            new TCSButtonCommand(Viewer.Log, !currentValue, commandIndex);
+                        Locomotive.TrainControlSystem.TCSCommandSwitchOn.TryGetValue(commandIndex, out bool currentSwitchValue);
+                        new TCSSwitchCommand(Viewer.Log, ChangedValue(currentSwitchValue ? 1 : 0) > 0, commandIndex);
+                    }
+                    break;
+
+                // Power Supply controls
+                case CABViewControlTypes.ORTS_POWER_SUPPLY:
+                    if (Locomotive.LocomotivePowerSupply is ScriptedLocomotivePowerSupply supply)
+                    {
+                        int commandIndex = Control.ControlType.Id - 1;
+                        supply.PowerSupplyCommandButtonDown.TryGetValue(commandIndex, out bool currentValue);
+                        if (ChangedValue(1) > 0 ^ currentValue)
+                            new PowerSupplyButtonCommand(Viewer.Log, !currentValue, commandIndex);
+                        supply.PowerSupplyCommandSwitchOn.TryGetValue(commandIndex, out bool currentSwitchValue);
+                        new PowerSupplySwitchCommand(Viewer.Log, ChangedValue(currentSwitchValue ? 1 : 0) > 0, commandIndex);
+                    }
                     break;
 
                 // Jindrich
@@ -3279,6 +3377,7 @@ namespace Orts.Viewer3D.RollingStock
         //Dictionary<int, DigitalDisplay> DigitParts = null;
         Dictionary<(CabViewControlType, int), ThreeDimCabDigit> DigitParts3D = null;
         Dictionary<(CabViewControlType, int), ThreeDimCabDPI> DPIDisplays3D = null;
+        Dictionary<(CabViewControlType, int), ThreeDimCabScreen> ScreenDisplays3D = null;
         AnimatedPart ExternalWipers = null; // setting to zero to prevent a warning. Probably this will be used later. TODO
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
         MSTSLocomotiveViewer LocoViewer;
@@ -3302,6 +3401,7 @@ namespace Orts.Viewer3D.RollingStock
             DigitParts3D = new Dictionary<(CabViewControlType, int), ThreeDimCabDigit>();
             Gauges = new Dictionary<(CabViewControlType, int), ThreeDimCabGaugeNative>();
             DPIDisplays3D = new Dictionary<(CabViewControlType, int), ThreeDimCabDPI>();
+            ScreenDisplays3D = new Dictionary<(CabViewControlType, int), ThreeDimCabScreen>();
             OnDemandAnimateParts = new Dictionary<(CabViewControlType, int), AnimatedPart>();
 
             // Find the animated parts
@@ -3367,10 +3467,15 @@ namespace Orts.Viewer3D.RollingStock
                             break;
                     }
 
+                    // This is the case for .s files, for glTF-s it will not be true
+                    var targetNode = iMatrix;
+
                     if (style != null && style is CabViewDigitalRenderer)//digits?
                     {
                         //DigitParts.Add(key, new DigitalDisplay(viewer, TrainCarShape, iMatrix, parameter, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
                         DigitParts3D.Add(key, new ThreeDimCabDigit(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key], Locomotive));
+                        if (!TrainCarShape.SharedShape.StoredResultMatrixes.ContainsKey(targetNode))
+                            TrainCarShape.SharedShape.StoredResultMatrixes.Add(targetNode, Matrix.Identity);
                     }
                     else if (style != null && style is CabViewGaugeRenderer)
                     {
@@ -3379,6 +3484,8 @@ namespace Orts.Viewer3D.RollingStock
                         if (CVFR.GetGauge().ControlStyle != CABViewControlStyles.POINTER) //pointer will be animated, others will be drawn dynamicaly
                         {
                             Gauges.Add(key, new ThreeDimCabGaugeNative(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
+                            if (!TrainCarShape.SharedShape.StoredResultMatrixes.ContainsKey(targetNode))
+                                TrainCarShape.SharedShape.StoredResultMatrixes.Add(targetNode, Matrix.Identity);
                         }
                         else
                         {//for pointer animation
@@ -3390,11 +3497,15 @@ namespace Orts.Viewer3D.RollingStock
                             }
                             else tmpPart = AnimateParts[key];
                             tmpPart.AddMatrix(iMatrix); //tmpPart.SetPosition(false);
+                            if (!TrainCarShape.SharedShape.StoredResultMatrixes.ContainsKey(targetNode))
+                                TrainCarShape.SharedShape.StoredResultMatrixes.Add(targetNode, Matrix.Identity);
                         }
                     }
                     else if (style != null && style is DistributedPowerInterfaceRenderer)
                     {
                         DPIDisplays3D.Add(key, new ThreeDimCabDPI(viewer, iMatrix, parameter1, parameter2, this.TrainCarShape, locoViewer.ThreeDimentionCabRenderer.ControlMap[key]));
+                        if (!TrainCarShape.SharedShape.StoredResultMatrixes.ContainsKey(targetNode))
+                            TrainCarShape.SharedShape.StoredResultMatrixes.Add(targetNode, Matrix.Identity);
                     }
                     else
                     {
@@ -3406,10 +3517,30 @@ namespace Orts.Viewer3D.RollingStock
                         }
                         else tmpPart = AnimateParts[key];
                         tmpPart.AddMatrix(iMatrix); //tmpPart.SetPosition(false);
+                        if (!TrainCarShape.SharedShape.StoredResultMatrixes.ContainsKey(targetNode))
+                            TrainCarShape.SharedShape.StoredResultMatrixes.Add(targetNode, Matrix.Identity);
                     }
                 }
             }
+
+            // Find the animated textures, like screens
+            if (locoViewer.ThreeDimentionCabRenderer.ControlMap.Values.FirstOrDefault(c => c is DriverMachineInterfaceRenderer) is DriverMachineInterfaceRenderer cvcr
+                && cvcr.Control?.ACEFile is var textureName && textureName != null)
+            {
+                textureName = Path.GetFileName(textureName).ToLower();
+                if (TrainCarShape?.SharedShape?.LodControls?.FirstOrDefault()?.DistanceLevels?.FirstOrDefault()?
+                .SubObjects?.SelectMany(s => s.ShapePrimitives).Where(p => p.Material.Key.Contains(textureName)).FirstOrDefault() is var primitive && primitive != null)
+                {
+                    cvcr.SetTexture3D();
+                    var material = Viewer.MaterialManager.Load("Screen", TrainCarShape.SharedShape.ReferencePath + cvcr.Control.ACEFile, primitive.HierarchyIndex) as ScreenMaterial;
+                    material.Set2DRenderer(cvcr);
+                    primitive.SetMaterial(material);
+                    ScreenDisplays3D.Add((new CabViewControlType(CABViewControlTypes.ORTS_ETCS), 0),
+                        new ThreeDimCabScreen(Viewer, material.HierarchyIndex, TrainCarShape, cvcr));
+                }
+            }
         }
+
         public override void InitializeUserInputCommands() { }
 
         /// <summary>
@@ -3538,6 +3669,24 @@ namespace Orts.Viewer3D.RollingStock
                     foreach (var screen in dpdisplay.Screens)
                     {
                         if (LocoViewer.ThreeDimentionCabRenderer.ActiveScreen[dpdisplay.Display] == screen)
+                        {
+                            p.Value.PrepareFrame(frame, elapsedTime);
+                            break;
+                        }
+                    }
+                    continue;
+                }
+                p.Value.PrepareFrame(frame, elapsedTime);
+            }
+
+            foreach (var p in ScreenDisplays3D)
+            {
+                var screen = p.Value.CVFR.Control;
+                if (screen.Screens != null && screen.Screens[0] != "all")
+                {
+                    foreach (var scr in screen.Screens)
+                    {
+                        if (LocoViewer.ThreeDimentionCabRenderer.ActiveScreen[screen.Display] == scr)
                         {
                             p.Value.PrepareFrame(frame, elapsedTime);
                             break;
