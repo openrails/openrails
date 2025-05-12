@@ -2332,7 +2332,7 @@ iii. `Testing Resources for Open Rails Steam Locomotives
 Steam exhausts on a steam locomotive, and other special visual effects can be modelled in OR by defining
 appropriate visual effects in the ``SteamSpecialEffects`` section of the steam locomotive ENG file, the
 ``DieselSpecialEffects`` section of the diesel locomotive ENG file, or the ``SpecialEffects`` section
-of a relevant wagon (including diesel, steam or electric locomotives.
+of a relevant wagon (also including diesel, steam or electric locomotives).
 
 OR supports the following special visual effects in a steam locomotive:
 
@@ -2412,6 +2412,7 @@ the one shown below::
         -1.0485 1.0 2.8
         -1  0  0
         0.1
+        ORTSShapeHierarchy ( "MAIN" )
     )
 
 The code block consists of the following elements:
@@ -2421,6 +2422,21 @@ The code block consists of the following elements:
   from the origin of the wagon shape)
 - Effect direction of emission (given as a normal x, y and z)
 - Effect nozzle width (in metres)
+
+.. index::
+   single: ORTSShapeHierarchy
+
+After including these settings, additional *optional* parameters unique to OR can
+be included to further customize effect emitters:
+
+- ``ORTSShapeHierarchy ( MATRIXNAME )`` -- Selects the sub object of the engine/wagon
+  shape the emitter should be attached to using the name of the sub object matrix.
+  The x, y, z location given earlier will then be measured relative to the sub object,
+  and the emitter will move as the sub object moves in real time.
+  Matrix names can be determined using shape viewing programs. If the given name
+  cannot be found, a warning is produced in the log and the emitter will be attached
+  to the main shape object. Similarly, if ``ORTSShapeHierarchy`` isn't defined, the emitter
+  will be attached to the main object, similar to the MSTS behavior.
 
 Auxiliary Water Tenders
 '''''''''''''''''''''''

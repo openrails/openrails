@@ -129,7 +129,7 @@ namespace Orts.Viewer3D
             _inSources = new List<SoundSource>();
             _outSources = new List<SoundSource>();
 
-            foreach (Orts.Formats.Msts.TrackTypesFile.TrackType ttdf in viewer.TrackTypes)
+            foreach (TrackTypesFile.TrackType ttdf in viewer.TrackTypes)
             {
                 MSTSLocomotive loco = Car as MSTSLocomotive;
 
@@ -670,8 +670,8 @@ namespace Orts.Viewer3D
         public string WavFolder;
         public string WavFileName;
         public bool Active;
-        private Orts.Formats.Msts.Activation ActivationConditions;
-        private Orts.Formats.Msts.Deactivation DeactivationConditions;
+        private Activation ActivationConditions;
+        private Deactivation DeactivationConditions;
         public bool IsEnvSound;
         public bool IsExternal = true;
         public bool IsInternalTrackSound = false;
@@ -741,8 +741,40 @@ namespace Orts.Viewer3D
 
                 SetRolloffFactor();
 
-                foreach (Orts.Formats.Msts.SMSStream mstsStream in mstsScalabiltyGroup.Streams)
+                foreach (SMSStream mstsStream in mstsScalabiltyGroup.Streams)
                 {
+                    // Initialization step for light shape attachment, can't do this step in LightCollection
+                    if (CarViewer != null && Car != null)
+                    {
+                        if (mstsStream.ShapeIndex != -1)
+                        {
+                            if (mstsStream.ShapeIndex < 0 || mstsStream.ShapeIndex >= CarViewer.TrainCarShape.ResultMatrices.Count())
+                            {
+                                Trace.TraceWarning("Sound stream in car {0} has invalid shape index defined, shape index {1} does not exist",
+                                    Car.WagFilePath, mstsStream.ShapeIndex);
+                                mstsStream.ShapeIndex = 0;
+                            }
+                        }
+                        else
+                        {
+                            if (mstsStream.ShapeHierarchy != null)
+                            {
+                                if (CarViewer.TrainCarShape.SharedShape.MatrixNames.Contains(mstsStream.ShapeHierarchy))
+                                {
+                                    mstsStream.ShapeIndex = CarViewer.TrainCarShape.SharedShape.MatrixNames.IndexOf(mstsStream.ShapeHierarchy);
+                                }
+                                else
+                                {
+                                    Trace.TraceWarning("Sound stream in car {0} has invalid shape index defined, matrix name {1} does not exist",
+                                        Car.WagFilePath, mstsStream.ShapeHierarchy);
+                                    mstsStream.ShapeIndex = 0;
+                                }
+                            }
+                            else
+                                mstsStream.ShapeIndex = 0;
+                        }
+                    }
+
                     SoundStreams.Add(new SoundStream(mstsStream, eventSource, this, Viewer.Settings));
                 }
             }
@@ -1013,7 +1045,7 @@ namespace Orts.Viewer3D
                     {
                         // Convert position offset into train-car space offset
                         Vector3 pos = stream.MSTSStream.Position;
-                        int shapeHierarchy = MathHelper.Clamp(stream.MSTSStream.ShapeHierarchy, 0, CarViewer.TrainCarShape.ResultMatrices.Count() - 1);
+                        int shapeHierarchy = MathHelper.Clamp(stream.MSTSStream.ShapeIndex, 0, CarViewer.TrainCarShape.ResultMatrices.Count() - 1);
                         Matrix mat = CarViewer.TrainCarShape.ResultMatrices[shapeHierarchy];
                         pos = Vector3.Transform(pos, mat);
 

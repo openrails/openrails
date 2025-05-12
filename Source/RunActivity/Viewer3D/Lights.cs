@@ -133,7 +133,7 @@ namespace Orts.Viewer3D
                             }
                             else
                             {
-                                Trace.TraceWarning("Light in car {0} has invalid shape index defined, shape name {1} does not exist",
+                                Trace.TraceWarning("Light in car {0} has invalid shape index defined, matrix name {1} does not exist",
                                     (Car as MSTSWagon).WagFilePath, light.ShapeHierarchy);
                                 light.ShapeIndex = 0;
                             }

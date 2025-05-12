@@ -849,6 +849,8 @@ namespace Orts.Viewer3D
                 (Camera as TrackingCamera).SwapCameras();
             }
 
+            // TODO: Update all trainset animations before calling Camera.Update, as the camera needs up-to-date animation info
+
             // Update camera first...
             Camera.Update(elapsedTime);
             // No above camera means we're allowed to auto-switch to cab view.

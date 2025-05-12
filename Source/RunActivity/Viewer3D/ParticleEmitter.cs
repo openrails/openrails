@@ -27,6 +27,8 @@ using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.RollingStock;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Orts.Viewer3D
 {
@@ -196,7 +198,6 @@ namespace Orts.Viewer3D
         internal WorldPosition LastWorldPosition;
 
         internal MSTSWagonViewer CarViewer;
-        internal int ShapeHierarchy; // TODO: Give a way for user input to change the ShapeHierarchy, as is possible for lights
 
         // Particle buffer goes like this:
         //   +--active>-----new>--+
@@ -244,6 +245,35 @@ namespace Orts.Viewer3D
                 (float)Viewer.Random.NextDouble() * 30000f,
                 (float)Viewer.Random.NextDouble() * 30000f,
             };
+
+            // Initialization step for emitter shape attachment
+            if (EmitterData.ShapeIndex != -1)
+            {
+                if (EmitterData.ShapeIndex < 0 || EmitterData.ShapeIndex >= CarViewer.TrainCarShape.ResultMatrices.Count())
+                {
+                    Trace.TraceWarning("Particle emitter in car {0} has invalid shape index defined, shape index {1} does not exist",
+                        (CarViewer.Car as MSTSWagon).WagFilePath, EmitterData.ShapeIndex);
+                    EmitterData.ShapeIndex = 0;
+                }
+            }
+            else
+            {
+                if (EmitterData.ShapeHierarchy != null)
+                {
+                    if (CarViewer.TrainCarShape.SharedShape.MatrixNames.Contains(EmitterData.ShapeHierarchy))
+                    {
+                        EmitterData.ShapeIndex = CarViewer.TrainCarShape.SharedShape.MatrixNames.IndexOf(EmitterData.ShapeHierarchy);
+                    }
+                    else
+                    {
+                        Trace.TraceWarning("Particle emitter in car {0} has invalid shape index defined, matrix name {1} does not exist",
+                            (CarViewer.Car as MSTSWagon).WagFilePath, EmitterData.ShapeHierarchy);
+                        EmitterData.ShapeIndex = 0;
+                    }
+                }
+                else
+                    EmitterData.ShapeIndex = 0;
+            }
         }
 
         void VertexBuffer_ContentLost()
@@ -344,7 +374,7 @@ namespace Orts.Viewer3D
             {
                 Matrix rotation = WorldPosition.XNAMatrix;
                 rotation.Translation = Vector3.Zero; // Only want rotation data for this step
-                rotation = CarViewer.TrainCarShape.ResultMatrices[ShapeHierarchy] * rotation;
+                rotation = CarViewer.TrainCarShape.ResultMatrices[EmitterData.ShapeIndex] * rotation;
 
                 var position = Vector3.Transform(EmitterData.XNALocation, rotation) + WorldPosition.XNAMatrix.Translation;
                 rotation.Translation = Vector3.Zero; // Last step needed translation, next step does not
@@ -364,8 +394,8 @@ namespace Orts.Viewer3D
                 {
                     time += 1 / ParticlesPerSecond;
 
-                    var particle = (FirstFreeParticle + 1) % MaxParticles;
-                    var vertex = particle * VerticiesPerParticle;
+                    var nextFreeParticle = (FirstFreeParticle + 1) % MaxParticles;
+                    var vertex = FirstFreeParticle * VerticiesPerParticle;
                     var texture = Viewer.Random.Next(16); // Randomizes emissions.
                     var color_Random = new Color((float)ParticleColor.R / 255f, (float)ParticleColor.G / 255f, (float)ParticleColor.B / 255f, (float)Viewer.Random.NextDouble());
 
@@ -396,7 +426,7 @@ namespace Orts.Viewer3D
                         Vertices[vertex + j].Color_Random = color_Random;
                     }
 
-                    FirstFreeParticle = particle;
+                    FirstFreeParticle = nextFreeParticle;
                 }
 
                 TimeParticlesLastEmitted = time;
