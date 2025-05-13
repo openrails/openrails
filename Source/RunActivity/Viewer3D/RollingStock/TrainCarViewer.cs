@@ -47,6 +47,7 @@ namespace Orts.Viewer3D.RollingStock
         /// Executes in the UpdaterThread
         /// </summary>
         public abstract void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime);
+        public abstract void UpdateAnimations(ElapsedTime elapsedTime);
 
         [CallOnThread("Loader")]
         public virtual void Unload() { }

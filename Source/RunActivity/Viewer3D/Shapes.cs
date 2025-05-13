@@ -293,6 +293,8 @@ namespace Orts.Viewer3D
 
         public readonly int[] Hierarchy;
 
+        public bool DontRender; // Flag to be used by other processes to see if the shape should not be rendered
+
         public PoseableShape(Viewer viewer, string path, string descriptor, WorldPosition initialPosition, ShapeFlags flags)
             : base(viewer, path, descriptor, initialPosition, flags)
         {
@@ -386,13 +388,11 @@ namespace Orts.Viewer3D
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            UpdateResultMatrices();
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
         }
 
         public void ConditionallyPrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, bool[] matrixVisible = null)
         {
-            UpdateResultMatrices();
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags, matrixVisible);
         }
 

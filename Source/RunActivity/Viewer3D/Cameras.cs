@@ -893,6 +893,11 @@ namespace Orts.Viewer3D
             SetCameraCar(trainCars.Last());
         }
 
+        public bool RefreshCarViewer()
+        {
+            return Viewer.World.Trains.Cars.TryGetValue(attachedCar, out attachedCarViewer);
+        }
+
         public void UpdateLocation(WorldPosition worldPosition)
         {
             if (worldPosition != null)

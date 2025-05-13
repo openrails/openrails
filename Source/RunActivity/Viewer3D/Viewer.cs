@@ -578,6 +578,10 @@ namespace Orts.Viewer3D
             // MUST be after loading is done! (Or we try and load shapes on the main thread.)
             PlayerLocomotiveViewer = World.Trains.GetViewer(PlayerLocomotive);
 
+            // Camera loaded before car viewers did, make sure camera has an up to date car viewer
+            if (Camera is AttachedCamera atCam)
+                atCam.RefreshCarViewer();
+
             SetCommandReceivers();
             InitReplay();
         }
@@ -812,10 +816,12 @@ namespace Orts.Viewer3D
 
             UserInput.RDState.ShowSpeed(MpS.FromMpS(PlayerLocomotive.SpeedMpS, PlayerLocomotive.IsMetric));
 
-            // This has to be done also for stopped trains
-            var cars = World.Trains.Cars;
-            foreach (var car in cars)
-                car.Value.UpdateSoundPosition();
+            // Update animations and sound for all train cars before proceeding
+            foreach (TrainCarViewer car in World.Trains.Cars.Values)
+            {
+                car.UpdateAnimations(elapsedTime);
+                car.UpdateSoundPosition();
+            }
 
             if (Simulator.ReplayCommandList != null)
             {
@@ -853,8 +859,6 @@ namespace Orts.Viewer3D
                 Camera.AttachedCar.Train.FormationReversed = false;
                 (Camera as TrackingCamera).SwapCameras();
             }
-
-            // TODO: Update all trainset animations before calling Camera.Update, as the camera needs up-to-date animation info
 
             // Update camera first...
             Camera.Update(elapsedTime);
