@@ -202,7 +202,8 @@ F1 Information Monitor
 ----------------------
 
 The F1 key displays the following set of panels in a tabbed format, 
-selected by clicking with the mouse on the desired heading:
+selected by clicking with the mouse on the desired heading or
+using ``<Shift+F1>`` to step through the tabs:
 
 ``Key Commands``: displays the actions of the keyboard keys
 
@@ -231,6 +232,11 @@ completed, the string ``Done`` appears in the last column:
 
 ``Procedures``: basic instructions for driving trains in Open Rails.
 
+``Train Info``: information about the player train.
+
+.. image:: images/driving-traininfo.png
+  :align: center
+  :scale: 80%
 
 F3 
 ----------------
