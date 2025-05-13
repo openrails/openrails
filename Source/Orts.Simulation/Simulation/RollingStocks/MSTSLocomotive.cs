@@ -2629,9 +2629,16 @@ namespace Orts.Simulation.RollingStocks
                 {
                     DynamicBrakeCommandStartTime = Simulator.ClockTime;
                 }
-                if (!DynamicBrake && DynamicBrakeCommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
+                if (!DynamicBrake)
                 {
-                    DynamicBrake = true;
+                    if (DynamicBrakeCommandStartTime + DynamicBrakeDelayS < Simulator.ClockTime)
+                    {
+                        DynamicBrake = true;
+                        if (IsLeadLocomotive() && DynamicBrakeController?.CurrentValue > 0)
+                            Simulator.Confirmer.ConfirmWithPerCent(CabControl.DynamicBrake, DynamicBrakeController.CurrentValue * 100);
+                    }
+                    else if (IsLeadLocomotive() && DynamicBrakeController?.CurrentValue > 0)
+                        Simulator.Confirmer.Confirm(CabControl.DynamicBrake, CabSetting.On); // Keeping status string on screen so user knows what's happening
                 }
             }
             else if (DynamicBrakeForceN == 0 || !LocomotivePowerSupply.DynamicBrakeAvailable || Direction == Direction.N)
