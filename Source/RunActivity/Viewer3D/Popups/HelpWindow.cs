@@ -20,10 +20,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
-using LibGit2Sharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation;
@@ -32,11 +30,6 @@ using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Settings;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using Orts.Formats.Msts;
-using SharpFont;
-using static Orts.Viewer3D.WebServices.TrainCarOperationsWebpage.OperationsSend;
-using SharpDX.Direct3D9;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 
 namespace Orts.Viewer3D.Popups
@@ -74,8 +67,6 @@ namespace Orts.Viewer3D.Popups
         private Train LastPlayerTrain = null;
         private int LastPlayerTrainCarCount = 0;
         private static Texture2D TrainInfoSpriteSheet = null;
-        //private struct CarInfo { public float MassKg; public bool IsEngine; }
-        //private CarInfo[] CarMass = null;  // TODO: Does not need to persist beyond method. Use List<T>(size) instead.
         private class CarInfo { public readonly float MassKg; public readonly bool IsEngine; public CarInfo(float mass, bool isEng) { MassKg = mass; IsEngine = isEng; } }
 
         List<TabData> Tabs = new List<TabData>();
