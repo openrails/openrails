@@ -1263,7 +1263,7 @@ namespace Orts.Viewer3D.Popups
                 if (wag != null)
                 {
                     maxBrakeForceN += wag.MaxBrakeForceN;
-                    var couplerStrength = GetMinCouplerStrenght(wag);
+                    var couplerStrength = GetMinCouplerStrength(wag);
                     if (couplerStrength < lowestCouplerStrengthN) { lowestCouplerStrengthN = couplerStrength; }
                     var derailForce = GetDerailForce(wag);
                     if (derailForce < lowestDerailForceN) { lowestDerailForceN = derailForce; }
@@ -1386,12 +1386,15 @@ namespace Orts.Viewer3D.Popups
         /// <summary>
         /// Get the lowest coupler strength for a car.
         /// </summary>
-        private float GetMinCouplerStrenght(MSTSWagon wag)
+        private float GetMinCouplerStrength(MSTSWagon wag)
         {
             float couplerStrength = 1e10f;  // default from TrainCar.GetCouplerBreak2N()
-            if (wag.Couplers.Count > 1 && wag.Couplers[1].Break2N < couplerStrength) { couplerStrength = wag.Couplers[1].Break2N; }
-            else if (wag.Couplers.Count > 0 && wag.Couplers[0].Break2N < couplerStrength) { couplerStrength = wag.Couplers[0].Break2N; }
-            if (couplerStrength < 99f) { couplerStrength = 1e10f; }  // use default if near zero
+            foreach (var coupler in wag.Couplers)
+            {
+                // ignore unrealistically low values; some cars have Break2N lower than Break1N
+                if (coupler.Break1N > 99f && coupler.Break1N < couplerStrength) { couplerStrength = coupler.Break1N; }
+                if (coupler.Break2N > 99f && coupler.Break2N < couplerStrength) { couplerStrength = coupler.Break2N; }
+            }
             return couplerStrength;
         }
 
