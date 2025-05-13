@@ -539,7 +539,8 @@
     </Content>
     <Content Include="Content\TrainInfoSprites.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>    <Content Include="Content\TrainOperationsCoupler.png">
+    </Content>
+    <Content Include="Content\TrainOperationsCoupler.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\TrainOperations\TrainOperationsMap.png">
