@@ -1222,6 +1222,53 @@ in the .cvf header, that is the right side viewpoint.
 
 Note that in Open Rails you may have more than three cabviewpoints defined for 2D cabs.
 
+Advanced cab viewport positioning
+---------------------------------
+
+.. index::
+   single: ORTSShapeHierarchy
+
+In some unusual cases, it may be desired to have the cab view point move not with the main
+locomotive body, but with a sub object of the locomotive, such as a bogie. To do this, the
+parameter ``ORTSShapeHierarchy ( MATRIXNAME )`` can be added inside the .cvf file, once
+for each viewport. If this is used, the position of the viewport will no longer be measured
+relative to the locomotive itself, but relative to the sub object with the given name. As
+the sub object translates and rotates, the cab view will do the same in sync. Each viewport
+can be attached to a different sub object, though in many cases attaching all three to the
+same sub object will make the most sense::
+
+    Comment ( A hypothetical cab view where the cab is attached to the BOGIE1 sub object of the locomotive shape. )
+    Tr_CabViewFile (
+	    CabViewType ( 3 )
+	    CabViewFile ( Front.ace )
+	    CabViewWindow ( 0 0 640 400 )
+	    CabViewWindowFile ( "" )
+	    Position ( 1.265 3.44 6.24 )
+	    Direction ( 7 -20 1 )
+	    ORTSShapeHierarchy ( BOGIE1 )
+	    CabViewFile ( Rear.ace )
+	    CabViewWindow ( 0 0 640 480 )
+	    CabViewWindowFile ( "" )
+	    Position ( 1.26 3.44 6.24 )
+	    Direction ( 6 179 0 )
+	    ORTSShapeHierarchy ( BOGIE1 )
+	    CabViewFile ( Right.ace )
+	    CabViewWindow ( 0 0 640 480 )
+	    CabViewWindowFile ( "" )
+	    Position ( 1.26 3.44 6.24 )
+	    Direction ( 12 36 0 )
+	    ORTSShapeHierarchy ( BOGIE1 )
+
+Matrix names can be determined using shape viewing utilities. If the named matrix can't
+be found in the locomotive shape, a warning will be added to the log and the cab viewport
+will attach to the main shape object. ``ORTSShapeHierarchy`` is entirely optional, and if
+missing the cab viewport will be attached to the main shape object, same as in MSTS.
+
+Note that passenger views and 3D cabs also support ``ORTSShapeHierarchy`` but the
+:ref:`implementation is different<features-viewpoint-positioning>`, as it is not done
+inside the .cvf file.
+
+
 3D cabs
 =======
 
@@ -1271,40 +1318,48 @@ Development Rules
 - Within the Wagon section of the .eng file a block like the following one 
   has to be generated::
   
-    ORTS3DCab(
+    ORTS3DCab (
         ORTS3DCabFile ( Cab.s )
         ORTS3DCabHeadPos ( -0.9 2.4 5.2 )
         RotationLimit ( 40 60 0 )
         StartDirection ( 12 0 0 )
+        ORTSShapeOffset ( 0 0 0 )
+        ORTSShapeHierarchy ( MAIN )
     )
 
 - If also a rear cab is present, a second ``ORTS3DCab`` has to be added, 
   as follows::
 
-     ORTS3DCab(
+    ORTS3DCab (
         ORTS3DCabFile ( Cab.s )
         ORTS3DCabHeadPos ( 0.9 2.4 5.2 )
         RotationLimit ( 40 60 0 )
         StartDirection ( 12 180 0 )
+        ORTSShapeOffset ( 0 0 0 )
+        ORTSShapeHierarchy ( MAIN )
     )
+
+- Similarly to :ref:`passenger views<features-viewpoint-positioning>`,
+  ``ORTSShapeOffset`` and ``ORTSShapeHierarchy`` are optional and
+  give more control over the location of the cab shape and camera
+  location, but aren't needed for standard rolling stock.
 
 - Alternate 3D cab viewpoints may be added, as in the example here below::
 
-      ORTSAlternate3DCabViewPoints
-                         (
-        ORTSAlternate3DCabViewPoint(
-           ORTS3DCabFile ( Cab.s )
-           ORTS3DCabHeadPos ( 0.9 2.4 5.2 )
-           RotationLimit ( 40 60 0 )
-           StartDirection ( 12 0 0 )
-                        )
-        ORTSAlternate3DCabViewPoint(
-          ORTS3DCabFile ( Cab.s )
-          ORTS3DCabHeadPos ( -0.8 2.4 5.2 )
-          RotationLimit ( 40 60 0 )
-          StartDirection ( 12 30 0 )
-                        )
-                        )
+    ORTSAlternate3DCabViewPoints (
+        ORTSAlternate3DCabViewPoint (
+            ORTS3DCabFile ( Cab.s )
+            ORTS3DCabHeadPos ( 0.9 2.4 5.2 )
+            RotationLimit ( 40 60 0 )
+            StartDirection ( 12 0 0 )
+        )
+        ORTSAlternate3DCabViewPoint (
+            ORTS3DCabFile ( Cab.s )
+            ORTS3DCabHeadPos ( -0.8 2.4 5.2 )
+            RotationLimit ( 40 60 0 )
+            StartDirection ( 12 30 0 )
+        )
+    )
 
 
 -  To switch between alternate cab viewpoints ``Ctrl-Shift-1`` must be pressed.
