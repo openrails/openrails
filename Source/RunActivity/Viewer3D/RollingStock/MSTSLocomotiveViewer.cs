@@ -337,37 +337,36 @@ namespace Orts.Viewer3D.RollingStock
         }
 
         /// <summary>
-        /// We are about to display a video frame.  Calculate positions for 
-        /// animated objects, and add their primitives to the RenderFrame list.
+        /// We are about to display a video frame add primitives to the RenderFrame list.
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if (Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab)
+            if (ThreeDimentionCabViewer != null && Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab)
             {
-                if (ThreeDimentionCabViewer != null)
-                    ThreeDimentionCabViewer.PrepareFrame(frame, elapsedTime);
+                ThreeDimentionCabViewer.PrepareFrame(frame, elapsedTime);
             }
 
+            // Draw 2D CAB View - by GeorgeS
+            if (_CabRenderer != null && Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.Cab)
+            {
+                _CabRenderer.PrepareFrame(frame, elapsedTime);
+            }
+
+            base.PrepareFrame(frame, elapsedTime);
+        }
+
+        /// <summary>
+        /// Calculate positions for animated objects. Call before PrepareFrame.
+        /// </summary>
+        public override void UpdateAnimations(ElapsedTime elapsedTime)
+        {
             // Wipers and bell animation
             Wipers.UpdateLoop(Locomotive.Wiper, elapsedTime);
             Bell.UpdateLoop(Locomotive.Bell, elapsedTime, TrainCarShape.SharedShape.CustomAnimationFPS);
             Item1Continuous.UpdateLoop(Locomotive.GenericItem1, elapsedTime, TrainCarShape.SharedShape.CustomAnimationFPS);
             Item2Continuous.UpdateLoop(Locomotive.GenericItem2, elapsedTime, TrainCarShape.SharedShape.CustomAnimationFPS);
 
-            // Draw 2D CAB View - by GeorgeS
-            if (Viewer.Camera.AttachedCar == this.MSTSWagon &&
-                Viewer.Camera.Style == Camera.Styles.Cab)
-            {
-                if (_CabRenderer != null)
-                {
-                    // Locomotive's TrainCarShape.ResultMatrices won't be updated automatically, force manual update
-                    TrainCarShape.UpdateResultMatrices();
-
-                    _CabRenderer.PrepareFrame(frame, elapsedTime);
-                }
-            }
-
-            base.PrepareFrame(frame, elapsedTime);
+            base.UpdateAnimations(elapsedTime);
         }
 
         internal override void LoadForPlayer()
@@ -3758,15 +3757,17 @@ namespace Orts.Viewer3D.RollingStock
                 TrainCarShape.Location.TileX = Car.WorldPosition.TileX;
                 TrainCarShape.Location.TileZ = Car.WorldPosition.TileZ;
 
-                // Locomotive's TrainCarShape.ResultMatrices won't be updated automatically, force manual update
-                LocoViewer.TrainCarShape.UpdateResultMatrices();
-
                 TrainCarShape.XNAMatrices[0].Translation = Car.CabViewpoints[viewPoint].ShapeOffset;
-                if (Car.CabViewpoints[viewPoint].ShapeIndex < LocoViewer.TrainCarShape.ResultMatrices.Length)
+                if (Car.CabViewpoints[viewPoint].ShapeIndex >= 0 && Car.CabViewpoints[viewPoint].ShapeIndex < LocoViewer.TrainCarShape.ResultMatrices.Length)
                     TrainCarShape.Location.XNAMatrix = LocoViewer.TrainCarShape.ResultMatrices[Car.CabViewpoints[viewPoint].ShapeIndex] * TrainCarShape.Location.XNAMatrix;
 
                 TrainCarShape.ConditionallyPrepareFrame(frame, elapsedTime, MatrixVisible);
             }
+        }
+
+        public override void UpdateAnimations(ElapsedTime elapsedTime)
+        {
+            // 3D Cabs don't handle animations in the same way that other train car shapes do
         }
 
         internal void PrepareFrameForWindow(int windowIndex, AnimatedPartMultiState anim, ElapsedTime elapsedTime)
