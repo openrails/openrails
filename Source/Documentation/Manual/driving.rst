@@ -464,6 +464,60 @@ specified by the player:
 
 .. image:: images/driving-train-names-multiplayer.png
 
+Alt-F7 Train Forces
+-------------------
+
+Pressing ``<Alt+F7>`` opens the Train Forces window.
+It shows the forces along the player's train in bar-graph form.
+The window is sized to fit the train (graph), with a minimum size for short trains,
+and a maximum size for very long trains.
+Scrolling may be required to see the end of the train, or the end of the text line.
+
+.. image:: images/driving-trainforces.png
+  :align: center
+  :scale: 80%
+
+The train is shown as a white line; locomotives are shown in blue.
+The front of the train is to the left.
+
+``Coupler Force``
+'''''''''''''''''
+
+Shows the length-wise pull or push force at each coupling, as a colored bar graph.
+Up (positive) is pull, down (negative) is push.
+The scale is determined by the weakest coupler in the train.
+The steps are non-linear, to provide more sensitivity near the breaking point.
+
+Note: Because the graph is scaled by the weakest car,
+a red bar may not mean that the coupler will break.
+When the car has a higher coupler strength, it can tolerate higher forces than the weakest car.
+
+``Derail Force``
+''''''''''''''''
+
+Shows the sideway push or pull at the wheels as a colored bar graph.
+Up (positive) is pull to the inside (stringline), down (negative) is push to the outside (jackknife).
+The scale is determined by the car with the lowest axle-load (lowest vertical force).
+The steps are non-linear, to provide more sensitivity near the derailing point.
+But this is less effective for lateral forces, as the force is proportional to the curve radius,
+which changes in discrete steps (MSTS legacy).
+
+Note: Because the graph is scaled by the most susceptible car,
+a red bar may not mean that the car will derail.
+When the car has a higher vertical force, it can tolerate higher forces than the most susceptible car.
+
+
+``Brake Force``
+'''''''''''''''
+
+Shows the braking force of each car as a bar graph.
+The scale is determined by the car with the smallest brake force (generally lowest weight).
+The steps are non-linear, to provide more sensitivity near the small brake applications.
+As the weight (and thus brake force varies greatly between cars (and especially engines),
+the graph can be quite jagged, even though all brake cylinders have the same pressure.
+Locomotives will show a full bar long before the brakes are fully applied.
+Dynamic braking is shown in blue (unless there also is a greater force from the air-brakes).
+
 F8 Switch Monitor
 -----------------
 
