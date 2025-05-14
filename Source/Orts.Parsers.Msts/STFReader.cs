@@ -647,7 +647,7 @@ namespace Orts.Parsers.Msts
         /// </summary>
         // Additional entries because MSTS has multiple default units, e.g. some speeds in metres/sec and others in miles/hr
         [Flags]
-        public enum UNITS
+        public enum UNITS : ulong
         {
             /// <summary>No unit parsing is done on the {constant_item} - which is obviously fastest
             /// </summary>
@@ -829,7 +829,7 @@ namespace Orts.Parsers.Msts
             /// <summary>Valid Units: w/s, kw/s, hp/s
             /// <para>Scaled to watts per second.</para>
             /// </summary>
-            PowerRate = 1 << 31,
+            PowerRate = 1ul << 31,
 
             // "Any" is used where units cannot easily be specified, such as generic routines for interpolating continuous data from point values.
             // or interpreting locomotive cab attributes from the ORTSExtendedCVF experimental mechanism.
