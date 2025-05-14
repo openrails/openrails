@@ -18,15 +18,12 @@
 // This file is the responsibility of the 3D & Environment Team.
 
 #region Design Notes
-// This is a prototype to evaluate a train forces popup display. The
-// intent is to provide real-time train-handling feeback of the forces
+// The intent is to provide real-time train-handling feeback of the forces
 // within the train, particularly for long, heavy freight trains. The
 // Forces HUD, display or browser, is hard to read for long trains.
 // An alternative, better in the long-term, might be an external window
 // that provides both in-train and over time feedback, as seen on
-// professional train simulators. See the discussion in the Elvas tower
-// forum, at:
-// https://www.elvastower.com/forums/index.php?/topic/38056-proposal-for-train-forces-popup-display/
+// professional train simulators.
 //
 // Coupler Force (longitudinal):
 //   Shows the length-wise pull or push force at each coupling, as a colored bar graph. Up
@@ -103,7 +100,6 @@ namespace Orts.Viewer3D.Popups
         private float DerailForceScaleN;
 
         private static readonly float HighestRealisticBrakeForceN = 2.0e5f;  // 45k lbf, used for graph scale only
-        private float LimitForBrakeForceN = HighestRealisticBrakeForceN;
         private float BrakeForceScaleN;
 
         private Image[] CouplerForceBarGraph;
@@ -342,7 +338,6 @@ namespace Orts.Viewer3D.Popups
             LimitForDerailForceN = lowestDerailForceN;
             DerailForceScaleN = lowestDerailForceN * 1.1f;
 
-            LimitForBrakeForceN = lowestMaxBrakeForceN;
             BrakeForceScaleN = lowestMaxBrakeForceN * 1.5f;
         }
 
@@ -423,7 +418,7 @@ namespace Orts.Viewer3D.Popups
 
             if (absForceN > 1000f && BrakeForceScaleN > 1000f)  // exclude improbabl values
             {
-                // log scale, to be sensitve at small application:  1k lbf, 7%, 146%, 22%, 30%, 39%, 51%, 68%, 100%
+                // log scale, to be sensitve at small application:  1k lbf, 7%, 14%, 22%, 30%, 39%, 51%, 68%, 100%
                 var relForce = absForceN / BrakeForceScaleN;
                 var logForce = (1 / (1 + Math.Pow(10, -1.5f * relForce)) - 0.5f) * 17.05f + 1f;
                 idx = (int)Math.Floor(logForce);
