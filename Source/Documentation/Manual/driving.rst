@@ -510,7 +510,7 @@ which changes in discrete steps (MSTS legacy).
 
 Note: Because the graph is scaled by the most susceptible car,
 a red bar may not mean that the car will derail.
-When the car has a higher vertical force, it can tolerate higher forces than the most susceptible car.
+When the car has a higher vertical force, it can tolerate higher lateral forces than the most susceptible car.
 
 
 ``Brake Force``
@@ -522,7 +522,24 @@ The steps are non-linear, to provide more sensitivity near the small brake appli
 As the weight (and thus brake force varies greatly between cars (and especially engines),
 the graph can be quite jagged, even though all brake cylinders have the same pressure.
 Locomotives will show a full bar long before the brakes are fully applied.
+
 Dynamic braking is shown in blue (unless there also is a greater force from the air-brakes).
+
+``Text Line``
+'''''''''''''
+
+The text line at the bottom shows the following information.
+
+- Max Coupler: The current maximum coupler force within the train,
+  and the car (count from front, including locomotives) where the maximum force is.
+- Max Derail: The current maximum derail force within the train,
+  and the car (count from front, including locomotives) where the maximum force is.
+- Low Coupler: The lowest coupler strength within the train.
+- Low Derail: The lowest derail force within the train.
+  This is an estimate, based on the vertical force.
+  Dynamic factors also affect the force needed to derail.
+
+It may be necessary to scroll to see the rightmost parts of the line.
 
 F8 Switch Monitor
 -----------------
