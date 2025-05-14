@@ -417,11 +417,9 @@ namespace Orts.Viewer3D.Popups
             bool isDynamicBrakes = false;
 
             var absForceN = Math.Abs(car.BrakeForceN);  // using Math.Abs() for safety and consistency
-            if (car.WagonType == TrainCar.WagonTypes.Engine && Math.Abs(car.DynamicBrakeForceN) > absForceN)
-            {
-                absForceN = Math.Abs(car.DynamicBrakeForceN);
-                isDynamicBrakes = true;
-            }
+            var absDynForceN = Math.Abs(car.DynamicBrakeForceN);
+            if (absDynForceN > absForceN) { isDynamicBrakes = true; }
+            absForceN += absDynForceN;
 
             if (absForceN > 1000f && BrakeForceScaleN > 1000f)  // exclude improbabl values
             {
