@@ -4201,23 +4201,18 @@ namespace Orts.Simulation.RollingStocks
         /// whether it is used for cruise control or not
         /// </summary>
         /// <param name="intermediateValue">Whather asking for intermediate (for mouse operation) or notched (for displaying) value.</param>
-        /// <returns>Combined position into 0-1 range</returns>
-        public float GetThrottleHandleValue(float data)
+        /// <returns>Position into 0-1 range</returns>
+        public float GetThrottleHandleValue(bool intermediateValue)
         {
             if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedMaxAccelerationPercent != 0
                 && CruiseControl.HasIndependentThrottleDynamicBrakeLever)
-                return ThrottleController.CurrentValue;
+                return intermediateValue ? ThrottleController.CurrentValue : ThrottleController.IntermediateValue;
             if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.UseThrottleAsForceSelector)
                 return CruiseControl.SelectedMaxAccelerationPercent / 100;
             if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.UseThrottleAsSpeedSelector)
                 return CruiseControl.SelectedSpeedMpS / MaxSpeedMpS;
 
-
-            if (CruiseControl == null || CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Manual)
-                return data;
-            else
-                return ThrottleController.CurrentValue;
-
+            return intermediateValue ? ThrottleController.CurrentValue : ThrottleController.IntermediateValue;
         }
 
         #endregion
@@ -5691,7 +5686,7 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.THROTTLE:
                     {
                         if (CruiseControl != null && CruiseControl.SkipThrottleDisplay) break;
-                        data = GetThrottleHandleValue((Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || Train.Autopilot) ? ThrottlePercent / 100f : LocalThrottlePercent / 100f);
+                        data = GetThrottleHandleValue(false);
                         break;
                     }
                 case CABViewControlTypes.THROTTLE_DISPLAY:
@@ -5786,10 +5781,13 @@ namespace Orts.Simulation.RollingStocks
                         break;
                     }
                 case CABViewControlTypes.DYNAMIC_BRAKE:
-                case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
-                    //case CABViewControlTypes.CP_HANDLE:
                     {
-                        data = DynamicBrakePercent / 100f;
+                        data = DynamicBrakeController?.CurrentValue ?? 0;
+                        break;   
+                    }
+                case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
+                    {
+                        data = (Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || Train.Autopilot) ? DynamicBrakePercent / 100 : LocalDynamicBrakePercent / 100;
                         break;
                     }
                 case CABViewControlTypes.WIPERS:
