@@ -2022,7 +2022,7 @@ namespace Orts.Simulation.RollingStocks
         {
             // Local blending
             if (Math.Abs(SpeedMpS) > DynamicBrakeSpeed1MpS && airPipeSystem != null && airPipeSystem.AutoCylPressurePSI > 0.1f
-                && ThrottlePercent == 0 && !(DynamicBrakeController != null && DynamicBrakeBlendingOverride && DynamicBrakeController.CurrentValue > 0))
+                && ThrottlePercent == 0 && !(DynamicBrakeController != null && DynamicBrakeBlendingOverride && DynamicBrakeController.SavedValue > 0))
             {
                 float maxCylPressurePSI = airPipeSystem.GetMaxCylPressurePSI();
                 float target = airPipeSystem.AutoCylPressurePSI * airPipeSystem.RelayValveRatio / maxCylPressurePSI;
