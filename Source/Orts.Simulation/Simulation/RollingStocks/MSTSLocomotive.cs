@@ -2436,7 +2436,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 LocalDynamicBrakePercent = Math.Max(LocalDynamicBrakePercent, CruiseControl.DynamicBrakePercent.Value);
             }
-            if (DynamicBrakeController != null && DynamicBrakeController.CurrentValue > 0)
+            if (DynamicBrakeController != null && DynamicBrakeController.SavedValue > 0)
             {
                 LocalDynamicBrakePercent = Math.Max(LocalDynamicBrakePercent, DynamicBrakeController.SavedValue * 100);
             }
@@ -5038,7 +5038,7 @@ namespace Orts.Simulation.RollingStocks
         protected bool CanUseDynamicBrake()
         {
             return (DynamicBrakeController != null
-                && ThrottlePercent == 0);
+                && ThrottleController.CurrentValue == 0);
         }
 
         public override string GetDynamicBrakeStatus()
