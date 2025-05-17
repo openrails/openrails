@@ -2434,7 +2434,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 LocalDynamicBrakePercent = TrainBrakeController.TrainDynamicBrakeIntervention * 100;
             }
-            if (DynamicBrakeController != null && (DynamicBrakeController.CurrentValue > 0 || DynamicBrakeController.UpdateValue > 0))
+            if (DynamicBrakeController != null && (DynamicBrakeController.CurrentValue > 0 || DynamicBrakeController.UpdateValue > 0 || DynamicBrakeController.SavedValue > 0))
             {
                 float prevValue = DynamicBrakeController.CurrentValue;
 
