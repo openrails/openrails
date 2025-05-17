@@ -444,23 +444,26 @@ namespace Orts.Simulation.Signalling
 
                         //check if signalheads are on same or adjacent tile as signal itself - otherwise there is an invalid match
                         uint? BadSignal = null;
+                        string badSignalMsg = "";
                         foreach (var si in thisWorldObject.SignalUnits.Units)
                         {
                             if (this.trackDB.TrItemTable == null || si.TrItem >= this.trackDB.TrItemTable.Count())
                             {
                                 BadSignal = si.TrItem;
+                                badSignalMsg = "not present in .tdb file";
                                 break;
                             }
                             var item = this.trackDB.TrItemTable[si.TrItem];
                             if (Math.Abs(item.TileX - WFile.TileX) > 1 || Math.Abs(item.TileZ - WFile.TileZ) > 1)
                             {
                                 BadSignal = si.TrItem;
+                                badSignalMsg = String.Format("not matching .tdb tile location {0} {1}", item.TileX, item.TileZ);
                                 break;
                             }
                         }
                         if (BadSignal.HasValue)
                         {
-                            Trace.TraceWarning("Signal referenced in .w file {0} {1} as TrItem {2} not present in .tdb file ", WFile.TileX, WFile.TileZ, BadSignal.Value);
+                            Trace.TraceWarning("Signal referenced in .w file {0} {1} as TrItem {2} {3} ", WFile.TileX, WFile.TileZ, BadSignal.Value, badSignalMsg);
                             continue;
                         }
 
