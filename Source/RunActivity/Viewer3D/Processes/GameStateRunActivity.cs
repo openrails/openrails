@@ -52,7 +52,7 @@ namespace Orts.Viewer3D.Processes
 
         static Viewer Viewer { get { return Program.Viewer; } set { Program.Viewer = value; } }
         static ORTraceListener ORTraceListener { get { return Program.ORTraceListener; } set { Program.ORTraceListener = value; } }
-        static string logFileName { get { return Program.logFileName; } set { Program.logFileName = value; } }
+        static string logFilePath { get { return Program.logFileName; } set { Program.logFileName = value; } }
         static string EvaluationFilename { get { return Program.EvaluationFilename; } set { Program.EvaluationFilename = value; } }
 
         /// <summary>
@@ -811,13 +811,30 @@ namespace Orts.Viewer3D.Processes
                 {
                     fileName = settings.LoggingFilename;
                 }
-                logFileName = GetFilePath(settings, fileName);
+                logFilePath = GetFilePath(settings, fileName);
 
                 // Ensure we start with an empty file.
                 if (!appendLog)
-                    File.Delete(logFileName);
+                {
+                    if (File.Exists(logFilePath))
+                    {
+                        try
+                        {
+                            var logFileExtension = Path.GetExtension(logFilePath);
+                            var prevLogPath = Path.ChangeExtension(logFilePath, ".prev" + logFileExtension);
+                            if (File.Exists(prevLogPath)) { File.Delete(prevLogPath); }
+                            File.Move(logFilePath, prevLogPath);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine("Failed to move log file: " + e.Message);
+                            File.Delete(logFilePath);
+                        }
+                    }
+                }
+
                 // Make Console.Out go to the log file AND the output stream.
-                Console.SetOut(new FileTeeLogger(logFileName, Console.Out));
+                Console.SetOut(new FileTeeLogger(logFilePath, Console.Out));
                 // Make Console.Error go to the new Console.Out.
                 Console.SetError(Console.Out);
             }
@@ -836,8 +853,8 @@ namespace Orts.Viewer3D.Processes
                 LogSeparator();
                 Console.WriteLine("Version    = {0}", VersionInfo.Version.Length > 0 ? VersionInfo.Version : "<none>");
                 Console.WriteLine("Build      = {0}", VersionInfo.Build);
-                if (logFileName.Length > 0)
-                    Console.WriteLine("Logfile    = {0}", logFileName);
+                if (logFilePath.Length > 0)
+                    Console.WriteLine("Logfile    = {0}", logFilePath);
                 Console.WriteLine("Executable = {0}", Path.GetFileName(ApplicationInfo.ProcessFile));
                 foreach (var arg in args)
                     Console.WriteLine("Argument   = {0}", arg);
@@ -1045,8 +1062,8 @@ namespace Orts.Viewer3D.Processes
 
         static void CopyLog(string toFile)
         {
-            if (logFileName.Length == 0) return;
-            File.Copy(logFileName, toFile, true);
+            if (logFilePath.Length == 0) return;
+            File.Copy(logFilePath, toFile, true);
         }
 
         void InitSimulator(UserSettings settings, string[] args, string mode)
