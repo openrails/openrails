@@ -582,14 +582,7 @@ namespace Orts.Formats.Msts
         public int NumClearAhead_ORTS { get; private set; }
         /// <summary>Number of seconds to spend animating a semaphore signal.</summary>
         public float SemaphoreInfo { get; private set; }
-
-        /// <summary> approach control details
         public ApproachControlLimits ApproachControlDetails;
-
-        /// <summary> visibility distance for request stop pick up
-        public float? ReqStopVisDistance;
-        /// <summary> announce distance for request stop set down
-        public float? ReqStopAnnDistance;
 
         /// <summary> Glow value for daytime (optional).</summary>
         public float? DayGlow = null;
@@ -647,8 +640,6 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("signaldrawstates", ()=>{ DrawStates = ReadDrawStates(stf); }),
                 new STFReader.TokenProcessor("signalaspects", ()=>{ Aspects = ReadAspects(stf); }),
                 new STFReader.TokenProcessor("approachcontrolsettings", ()=>{ ApproachControlDetails = ReadApproachControlDetails(stf); }),
-                new STFReader.TokenProcessor("ortsreqstopvisdistance", ()=>{ReqStopVisDistance = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortsreqstopanndistance", ()=>{ReqStopAnnDistance = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("signalnumclearahead", ()=>{ numClearAhead = numClearAhead >= -1 ? numClearAhead : stf.ReadIntBlock(null); numdefs++;}),
                 new STFReader.TokenProcessor("semaphoreinfo", ()=>{ SemaphoreInfo = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("ortsdayglow", ()=>{ DayGlow = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),

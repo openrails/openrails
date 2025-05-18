@@ -1994,10 +1994,7 @@ namespace Orts.Simulation.AIs
 
             // Depart
             thisStation.Passed = true;
-            if (thisStation.ArrivalTime >= 0)
-            {
             Delay = TimeSpan.FromSeconds((presentTime - thisStation.DepartTime) % (24 * 3600));
-            }
             PreviousStop = thisStation.CreateCopy();
 
             if (thisStation.ActualStopType == StationStop.STOPTYPE.STATION_STOP
@@ -2063,6 +2060,7 @@ namespace Orts.Simulation.AIs
                     MovementState = AI_MOVEMENT_STATE.STOPPED_EXISTING;
                     if (TrainType != TRAINTYPE.AI_PLAYERHOSTING) AtStation = false;
                 }
+
                 Delay = TimeSpan.FromSeconds((presentTime - thisStation.DepartTime) % (24 * 3600));
             }
             if (Cars[0] is MSTSLocomotive) Cars[0].SignalEvent(Event.AITrainLeavingStation);
