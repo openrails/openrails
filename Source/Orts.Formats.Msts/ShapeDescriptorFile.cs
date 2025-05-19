@@ -90,6 +90,18 @@ namespace Orts.Formats.Msts
                     new STFReader.TokenProcessor("esd_ortsmatrixtranslation", ()=>{ ParseMatrixOverride(STFReader.UNITS.Distance, stf, ref ESD_MatrixTranslation); }),
                     new STFReader.TokenProcessor("esd_ortsmatrixscale", ()=>{ ParseMatrixOverride(STFReader.UNITS.None, stf, ref ESD_MatrixScale); }),
                     new STFReader.TokenProcessor("esd_ortsmatrixrotation", ()=>{ ParseMatrixOverride(STFReader.UNITS.Angle, stf, ref ESD_MatrixRotation); }),
+                    new STFReader.TokenProcessor("esd_ortslodoverride", ()=>{
+                        stf.MustMatch("(");
+                        // Allow for multiple pairs of replaced and replacement values
+                        while (!stf.EndOfBlock())
+                        {
+                            int replaced = stf.ReadInt(null);
+                            float replacement = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                            // Add pair of values so long as we haven't reached the end of block
+                            if (replacement != 0)
+                                ESD_LODOverride.Add(replaced, replacement);
+                        }
+                    }),
                 });
 
                 // Store set of all matrices that got modified
@@ -122,6 +134,8 @@ namespace Orts.Formats.Msts
             public Dictionary<string, Vector3> ESD_MatrixScale = new Dictionary<string, Vector3>();
             // Dictionary of <matrix name, matrix rotation x/y/z vector>
             public Dictionary<string, Vector3> ESD_MatrixRotation = new Dictionary<string, Vector3>();
+            // Dictionary of <LOD index, LOD distance>
+            public Dictionary<int, float> ESD_LODOverride = new Dictionary<int, float>();
 
             // Handle parameters concerning replacement of string values
             protected void ParseReplacementStrings(STFReader stf, ref Dictionary<string, string> renamePairs)
