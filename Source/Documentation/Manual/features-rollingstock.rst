@@ -529,6 +529,52 @@ matrix with the old name can be found, a warning will be produced and nothing wi
 that the matrix rename step occurs *after* the previously described matrix modifications, so
 the old matrix name must be used by any other .sd parameters that require a matrix name.
 
+LOD Distance Override
+'''''''''''''''''''''
+
+Shape files are generally products of the time they were created, and this includes the level of
+detail distances used. Even if the complexity of the shape is the same, modern shapes tend to
+use longer LOD distances than their legacy counterparts, which can lead to visual inconsistenty.
+The :ref:`"level of detail bias" option<options-lod-bias>` can be used to extend the LOD distance
+of *all* shapes, but this would not solve the inconsistency between shapes.
+
+.. index::
+   single: ESD_ORTSLODOverride
+
+To resolve this without editing shape files themsleves, the ``ESD_ORTSLODOverride ( LODindex LODdistance )``
+parameter can be used in the shape descriptor file to set the LOD distance of the LOD at ``LODindex`` to a value
+of ``LODdistance``, where LODindex is an integer specifying which LOD to edit (NOTE: LOD 0 is the closest LOD, LOD 1 is
+the second closest, and so on) and LODdistance is a decimal measured in units of distance (default meters) specifying
+the maximum view distance of the LOD. The number of LODs and their default distances can be seen in shape viewing programs.
+
+As an example, a shape from 2011 has LOD distances of 100m, 300m, 700m, and 2000m. Because the shape was already of high
+quality, a later product from 2020 used the same shape but with upgraded textures and LODs bumped to 300m, 750m, 1000m and 2000m.
+To upgrade the old shape LOD to match the new shape, the following shape descriptor could be used::
+
+    SIMISA@@@@@@@@@@JINX0t1t______
+
+    Shape ( 50ft_BOX_BNSF722974.s 
+        ESD_Detail_Level ( 0 ) 
+        ESD_Software_DLev ( 3 ) 
+        ESD_Alternative_Texture ( 0 ) 
+        ESD_Bounding_Box ( 
+            -1.539  0.61059 -8.08
+            1.549   3.54    8.08 ) 
+
+        Comment ( New addition: LOD improvement )
+        ESD_ORTSLODOverride (
+            0 300m
+            1 750m
+            2 1000m
+        )
+    ) 
+
+
+Observe how multiple LODs can be edited with a single parameter by specifying additional pairs of LOD indices and distances,
+and how not all LODs need to be present (LOD 3 is 2000m on both the old and new shape, so doesn't need to be changed).
+If a given shape does not have the LOD index specified (eg: LOD 4 does not exist on this shape, as the shape only has 4 LODs)
+then a warning is added to the log and the missing LOD is skipped.
+
 Automatic wagon size calculation
 --------------------------------
 

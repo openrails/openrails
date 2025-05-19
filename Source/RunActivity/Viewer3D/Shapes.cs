@@ -2224,6 +2224,56 @@ namespace Orts.Viewer3D
                         Trace.TraceWarning("Shape descriptor file {0} specifies matrix name {1} to be modified, " +
                             "but shape {2} does not contain this matrix.", (filePath + "d"), matName, filePath);
                 }
+
+                // Manipulate LOD settings as defined in the sd file
+                foreach (lod_control lodControl in sFile.shape.lod_controls)
+                {
+                    foreach (KeyValuePair<int, float> lodIndex in sdFile.shape.ESD_LODOverride)
+                    {
+                        if (lodIndex.Key >= 0 && lodIndex.Key < lodControl.distance_levels.Count)
+                        {
+                            lodControl.distance_levels[lodIndex.Key].distance_level_header.dlevel_selection = lodIndex.Value;
+                        }
+                        else // LOD index defined doesn't eist
+                        {
+                            Trace.TraceWarning("Shape descriptor file {0} specifies LOD index {1} to be modified, " +
+                                "but shape {2} does not have this many LODs.", (filePath + "d"), lodIndex.Key, filePath);
+                        }
+                    }
+                }
+            }
+
+            // Fix for LODs having a LOD distance of 0
+            // This may occur due to improper settings when exporting shape file
+            // To prevent missing scenery, force LOD distance to be something reasonable
+            foreach (lod_control lodControl in sFile.shape.lod_controls)
+            {
+                for (int dLevel = 0; dLevel < lodControl.distance_levels.Count; dLevel++)
+                {
+                    if (lodControl.distance_levels[dLevel].distance_level_header.dlevel_selection <= 0f)
+                    {
+                        // Estimate a reasonable LOD distance based on surrounding LODs
+                        // If there are no other LODs, use 2 km as the LOD distance
+                        float thisLODDistance = 2000f;
+                        float prevLODDistance = -1f;
+                        float nextLODDistance = -1f;
+
+                        if (dLevel + 1 < lodControl.distance_levels.Count)
+                            nextLODDistance = lodControl.distance_levels[dLevel + 1].distance_level_header.dlevel_selection;
+                        if (dLevel - 1 >= 0)
+                            prevLODDistance = lodControl.distance_levels[dLevel - 1].distance_level_header.dlevel_selection;
+
+                        // Both a previous and next LOD were found
+                        if (prevLODDistance >= 0f && nextLODDistance >= 0f)
+                            thisLODDistance = (prevLODDistance + nextLODDistance) / 2.0f;
+                        else if (prevLODDistance >= 0f) // Only a previous LOD was found
+                            thisLODDistance = prevLODDistance * 2.0f;
+                        else if (nextLODDistance >= 0f) // Only a subsequent LOD was found
+                            thisLODDistance = nextLODDistance / 2.0f;
+
+                        lodControl.distance_levels[dLevel].distance_level_header.dlevel_selection = thisLODDistance;
+                    }
+                }
             }
 
             var matrixCount = sFile.shape.matrices.Count;
