@@ -118,6 +118,7 @@ namespace Orts.Viewer3D.Popups
         private readonly int WindowWidthMin;
         private readonly int WindowWidthMax;
 
+        private bool IsMetric;
 
         /// <summary>
         /// Constructor. Initial window is wide enough for the two current forces in the
@@ -188,6 +189,7 @@ namespace Orts.Viewer3D.Popups
 
             if (PlayerTrain != null)
             {
+                if (PlayerTrain.LeadLocomotive != null) { IsMetric = PlayerTrain.LeadLocomotive.IsMetric; }
                 SetConsistProperties(PlayerTrain);
 
                 CouplerForceBarGraph = new Image[PlayerTrain.Cars.Count];
@@ -216,14 +218,14 @@ namespace Orts.Viewer3D.Popups
                 var textLine = vbox.AddLayoutHorizontalLineOfText();
 
                 textLine.Add(new Label(TextHight * 9, TextHight, Viewer.Catalog.GetString("Max Coupler") + ": ", LabelAlignment.Right));
-                textLine.Add(MaxCouplerForceForTextBox = new Label(TextHight * 7, TextHight, FormatStrings.FormatLargeForce(0f, false), LabelAlignment.Right));
+                textLine.Add(MaxCouplerForceForTextBox = new Label(TextHight * 7, TextHight, FormatStrings.FormatLargeForce(0f, IsMetric), LabelAlignment.Right));
                 textLine.Add(new Label(TextHight * 9, TextHight, Viewer.Catalog.GetString("Max Derail") + ": ", LabelAlignment.Right));
-                textLine.Add(MaxDerailForceForTextBox = new Label(TextHight * 7, TextHight, FormatStrings.FormatLargeForce(0f, false), LabelAlignment.Right));
+                textLine.Add(MaxDerailForceForTextBox = new Label(TextHight * 7, TextHight, FormatStrings.FormatLargeForce(0f, IsMetric), LabelAlignment.Right));
 
                 textLine.Add(new Label(TextHight * 8, TextHight, Viewer.Catalog.GetString("Low Coupler") + ": ", LabelAlignment.Right));
-                textLine.Add(new Label(TextHight * 5, TextHight, FormatStrings.FormatLargeForce(LimitForCouplerStrengthN, false), LabelAlignment.Right));
+                textLine.Add(new Label(TextHight * 5, TextHight, FormatStrings.FormatLargeForce(LimitForCouplerStrengthN, IsMetric), LabelAlignment.Right));
                 textLine.Add(new Label(TextHight * 8, TextHight, Viewer.Catalog.GetString("Low Derail") + ": ", LabelAlignment.Right));
-                textLine.Add(new Label(TextHight * 5, TextHight, FormatStrings.FormatLargeForce(LimitForDerailForceN, false), LabelAlignment.Right));
+                textLine.Add(new Label(TextHight * 5, TextHight, FormatStrings.FormatLargeForce(LimitForDerailForceN, IsMetric), LabelAlignment.Right));
 
                 // no text for brake force
             }
@@ -293,13 +295,13 @@ namespace Orts.Viewer3D.Popups
                 if (MaxCouplerForceForTextBox != null)
                 {
                     // TODO: smooth the downslope
-                    MaxCouplerForceForTextBox.Text = FormatStrings.FormatLargeForce(absMaxCouplerForceN * couplerForceSign, false) +
+                    MaxCouplerForceForTextBox.Text = FormatStrings.FormatLargeForce(absMaxCouplerForceN * couplerForceSign, IsMetric) +
                         string.Format(" ({0,3})", maxCouplerForceCarNum);
                 }
 
                 if (MaxDerailForceForTextBox != null)
                 {
-                    MaxDerailForceForTextBox.Text = FormatStrings.FormatLargeForce(absMaxDerailForceN * derailForceSign, false) +
+                    MaxDerailForceForTextBox.Text = FormatStrings.FormatLargeForce(absMaxDerailForceN * derailForceSign, IsMetric) +
                         string.Format(" ({0,3})", maxDerailForceCarNum);
                 }
             }
