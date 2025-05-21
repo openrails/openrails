@@ -2441,8 +2441,8 @@ namespace Orts.Simulation.RollingStocks
                 LocalDynamicBrakePercent = Math.Max(LocalDynamicBrakePercent, DynamicBrakeController.SavedValue * 100);
             }
 
-                var throttleCurrentNotch = ThrottleController.CurrentNotch;
-                ThrottleController.Update(elapsedClockSeconds);
+            var throttleCurrentNotch = ThrottleController.CurrentNotch;
+            ThrottleController.Update(elapsedClockSeconds);
             if (CruiseControl != null && CruiseControl.ThrottlePercent != null)
             {
                 LocalThrottlePercent = CruiseControl.ThrottlePercent.Value;
@@ -2678,29 +2678,29 @@ namespace Orts.Simulation.RollingStocks
             // With Simple adhesion apart from correction for rail adhesion, there is no further variation to the motive force. 
             // With Advanced adhesion the raw motive force is fed into the advanced (axle) adhesion model, and is corrected for wheel slip and rail adhesion
 
-                // For the advanced adhesion model, a rudimentary form of slip control is incorporated by using the wheel speed to calculate tractive effort.
-                // As wheel speed is increased tractive effort is decreased. Hence wheel slip is "controlled" to a certain extent.
-                // This doesn't cover all types of locomotives, for example if DC traction motors and no slip control, then the tractive effort shouldn't be reduced.
-                // This won't eliminate slip, but limits its impact. 
-                // More modern locomotive have a more sophisticated system that eliminates slip in the majority (if not all circumstances).
-                // Simple adhesion control does not have any slip control feature built into it.
-                // TODO - a full review of slip/no slip control.
+            // For the advanced adhesion model, a rudimentary form of slip control is incorporated by using the wheel speed to calculate tractive effort.
+            // As wheel speed is increased tractive effort is decreased. Hence wheel slip is "controlled" to a certain extent.
+            // This doesn't cover all types of locomotives, for example if DC traction motors and no slip control, then the tractive effort shouldn't be reduced.
+            // This won't eliminate slip, but limits its impact. 
+            // More modern locomotive have a more sophisticated system that eliminates slip in the majority (if not all circumstances).
+            // Simple adhesion control does not have any slip control feature built into it.
+            // TODO - a full review of slip/no slip control.
             PrevAbsTractionSpeedMpS = AbsTractionSpeedMpS;
-                if (TractionMotorType == TractionMotorTypes.AC)
+            if (TractionMotorType == TractionMotorTypes.AC)
+            {
+                AbsTractionSpeedMpS = AbsSpeedMpS;
+            }
+            else
+            {
+                if (WheelSlip && AdvancedAdhesionModel)
                 {
-                    AbsTractionSpeedMpS = AbsSpeedMpS;
+                    AbsTractionSpeedMpS = AbsWheelSpeedMpS;
                 }
                 else
                 {
-                    if (WheelSlip && AdvancedAdhesionModel)
-                    {
-                        AbsTractionSpeedMpS = AbsWheelSpeedMpS;
-                    }
-                    else
-                    {
-                        AbsTractionSpeedMpS = AbsSpeedMpS;
-                    }
+                    AbsTractionSpeedMpS = AbsSpeedMpS;
                 }
+            }
             UpdateTractionForce(elapsedClockSeconds);
 
             if (MaxForceN > 0 && MaxContinuousForceN > 0 && PowerReduction < 1)
@@ -5456,7 +5456,7 @@ namespace Orts.Simulation.RollingStocks
                         data = 0.0f;
                         if (TractionForceN > 0)
                         {
-                                data = TractiveForceN / MaxForceN * MaxCurrentA;
+                            data = TractiveForceN / MaxForceN * MaxCurrentA;
                             data = Math.Abs(data);
                         }
                         if (DynamicBrakeForceN > 0)
@@ -5474,7 +5474,7 @@ namespace Orts.Simulation.RollingStocks
                         if (cvc is CVCGauge && ((CVCGauge)cvc).Orientation == 0)
                             direction = ((CVCGauge)cvc).Direction;
                         data = 0.0f;
-                            data = TractiveForceN;
+                        data = TractiveForceN;
                         if (DynamicBrakeForceN > 0)
                         {
                             data = DynamicBrakeForceN;
@@ -5490,7 +5490,7 @@ namespace Orts.Simulation.RollingStocks
                                 if (TractionForceN > 0)
                                 {
                                     data = (data / MaxForceN) * MaxCurrentA;
-                                 }
+                                }
                                 if (DynamicBrakeForceN > 0)
                                 {
                                     data = (DynamicBrakeForceN / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
@@ -5519,7 +5519,7 @@ namespace Orts.Simulation.RollingStocks
                         if (cvc is CVCGauge && ((CVCGauge)cvc).Orientation == 0)
                             direction = ((CVCGauge)cvc).Direction;
                         data = 0.0f;
-                            data = Math.Abs(TractiveForceN);
+                        data = Math.Abs(TractiveForceN);
                         if (DynamicBrake && DynamicBrakePercent > 0)
                         {
                             data = -Math.Abs(DynamicBrakeForceN);

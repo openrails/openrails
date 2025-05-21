@@ -2146,8 +2146,8 @@ namespace Orts.Viewer3D.RollingStock
                     break;
                 case CABViewControlTypes.DYNAMIC_BRAKE:
                     if (Locomotive.DynamicBrakeController != null && !Locomotive.HasSmoothStruc)
-                            index = Locomotive.DynamicBrakeController.CurrentNotch;
-                        else
+                        index = Locomotive.DynamicBrakeController.CurrentNotch;
+                    else
                         index = PercentToIndex(data);
                     break;
                 case CABViewControlTypes.CPH_DISPLAY:
