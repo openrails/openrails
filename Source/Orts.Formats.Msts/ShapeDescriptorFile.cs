@@ -87,6 +87,7 @@ namespace Orts.Formats.Msts
                     new STFReader.TokenProcessor("esd_ortscustomanimationfps", ()=>{ ESD_CustomAnimationFPS = stf.ReadFloatBlock(STFReader.UNITS.Frequency, null); }),
                     new STFReader.TokenProcessor("esd_ortstexturereplacement", ()=>{ ParseReplacementStrings(stf, ref ESD_TextureReplacement); }),
                     new STFReader.TokenProcessor("esd_ortsmatrixrename", ()=>{ ParseReplacementStrings(stf, ref ESD_MatrixRename); }),
+                    new STFReader.TokenProcessor("esd_ortsmatrixparent", ()=>{ ParseReplacementStrings(stf, ref ESD_MatrixParent); }),
                     new STFReader.TokenProcessor("esd_ortsmatrixtranslation", ()=>{ ParseMatrixOverride(STFReader.UNITS.Distance, stf, ref ESD_MatrixTranslation); }),
                     new STFReader.TokenProcessor("esd_ortsmatrixscale", ()=>{ ParseMatrixOverride(STFReader.UNITS.None, stf, ref ESD_MatrixScale); }),
                     new STFReader.TokenProcessor("esd_ortsmatrixrotation", ()=>{ ParseMatrixOverride(STFReader.UNITS.Angle, stf, ref ESD_MatrixRotation); }),
@@ -107,6 +108,8 @@ namespace Orts.Formats.Msts
                 // Store set of all matrices that got modified
                 foreach (string mat in ESD_MatrixRename.Keys)
                     ESD_ModifiedMatrices.Add(mat);
+                foreach (string mat in ESD_MatrixParent.Keys)
+                    ESD_ModifiedMatrices.Add(mat);
                 foreach (string mat in ESD_MatrixTranslation.Keys)
                     ESD_ModifiedMatrices.Add(mat);
                 foreach (string mat in ESD_MatrixScale.Keys)
@@ -126,6 +129,8 @@ namespace Orts.Formats.Msts
             public Dictionary<string, string> ESD_TextureReplacement = new Dictionary<string, string>();
             // Dictionary of <original matrix name, replacement matrix name>
             public Dictionary<string, string> ESD_MatrixRename = new Dictionary<string, string>();
+            // Dictionary of <matrix name, new matrix parent name>
+            public Dictionary<string, string> ESD_MatrixParent = new Dictionary<string, string>();
             // Set of matrix names that are modified in some way or another
             public HashSet<string> ESD_ModifiedMatrices = new HashSet<string>();
             // Dictionary of <matrix name, matrix translation x/y/z vector>
