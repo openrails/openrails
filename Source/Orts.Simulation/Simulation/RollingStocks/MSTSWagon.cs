@@ -492,6 +492,9 @@ namespace Orts.Simulation.RollingStocks
                             // The 'actual' XNA matrix used to determine the vertex transformation
                             Matrix mat = Matrix.Identity;
 
+                            // How deep are we in the hierarchy? Set a limit to prevent infinite loops
+                            int depth = 0;
+
                             // Determine the overall transformation matrix from the root to the current matrix by following the hierarchy
                             do
                             {
@@ -523,8 +526,10 @@ namespace Orts.Simulation.RollingStocks
 
                                 // Determine the index of the next highest matrix in the hierarchy
                                 mIndex = wagShape.shape.lod_controls[0].distance_levels[0].distance_level_header.hierarchy[mIndex];
+
+                                depth++;
                             } // Keep calculating until we have calculated the root, or until a loop is encountered
-                            while (mIndex > -1 && mIndex != vState.imatrix && mIndex < wagShape.shape.matrices.Count);
+                            while (mIndex > -1 && mIndex != vState.imatrix && mIndex < wagShape.shape.matrices.Count && depth < 32);
 
                             // Determine position of every vertex in this set from point position and tranformed by the matrix
                             for (int i = vSet.StartVtxIdx; i < vSet.StartVtxIdx + vSet.VtxCount; i++)

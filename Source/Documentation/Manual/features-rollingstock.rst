@@ -518,6 +518,68 @@ transformation would be required on the lower-level sub object. It should also b
 changes made to matrices are not purely graphical and could have consequences with some simulation
 systems. Extreme settings may break simulation behavior.
 
+Shape Hierarchy Manipulation
+''''''''''''''''''''''''''''
+
+The hierarchy of a shape file is particularly important in representing the physical structure
+of the depicted object. Each sub object has a single parent sub object, except for the MAIN object which
+is ultimately the (grand)parent of all sub objects. When a sub object's parent moves or rotates,
+the sub object will move or rotate in exactly the same way (after which, its own motion or rotation
+may be added on), which represents some physical connection (such as a hinge or bearing) to the parent
+object. As such, improper hierarchy definition results in unusual or outright missing connections
+between components, such as connecting rod that doesn't move along with the wheels it is supposed to
+be attached to. The hierarchy of the shape can be determined using shape viewing utilities, and
+the correct hierarchy is described in various content creation tutorials for MSTS and OR.
+
+.. index::
+   single: ESD_ORTSMatrixParent
+
+To fix such broken hierarchies without editing the shape file, ``ESD_ORTSMatrixParent ( MATRIXNAME PARENTNAME )``
+can be added to the Shape ( block of the shape descriptor file. The hierarchy will be changed such that
+the matrix called "MATRIXNAME" will have its parent in the hierarchy changed to the matrix called
+"PARENTNAME". If either matrix name can't be found in the shape, a warning will be added to the log file and the
+hierarchy will remain unchanged. It's also possible to cause an infinite loop in the hierarchy where an
+object is its own parent or grandparent; each sub object should have only one chain of parents and grandparents
+that eventually leads back to the MAIN object. Should the configuration cause an infinite loop, a warning will
+be added to the log file. Note that OR won't be able to tell which specific change causes an invalid hierarchy
+as each hierarchy change can influence other hierarchy changes.
+
+As an example, this shape had a hierarchy where every sub object was a child of the main object, breaking
+bogie animations which require wheels to be children of the bogie, not of the main object. With some
+manipulation in the .sd file, the correct hierarchy could be implemented, fixing the bogie animation::
+
+    SIMISA@@@@@@@@@@JINX0t1t______
+
+    Shape ( RhB_Rew_8262.s
+        ESD_Detail_Level ( 0 )
+        ESD_Software_DLev ( 3 )
+        ESD_Alternative_Texture ( 0 )
+        ESD_Bounding_Box ( -1.32 0.1 -8.05 1.32 2.88 8.05 )
+	
+        Comment ( Correcting hierarchy so wheels are below bogies. )
+        ESD_ORTSMatrixParent (
+            WHEELS11 BOGIE1
+            WHEELS12 BOGIE1
+            WHEELS21 BOGIE2
+            WHEELS22 BOGIE2
+        )
+	
+        Comment ( Correcting position offset of wheels due to hierarchy change. )
+        ESD_ORTSMatrixTranslation ( WHEELS11 0m -0.426m -5.45m )
+        ESD_ORTSMatrixTranslation ( WHEELS12 0m -0.426m -5.45m )
+        ESD_ORTSMatrixTranslation ( WHEELS21 0m -0.426m  5.45m )
+        ESD_ORTSMatrixTranslation ( WHEELS22 0m -0.426m  5.45m )
+    )
+
+Note how multiple parent/child relationships can be changed at once by specifying additional pairs of
+matrix names, and that changing the hierarchy required adjusting the translation of many sub objects in order
+for them to appear in the intended locations. The location of a sub object is measured relative to its parent,
+so if the sub object parent is changed, it's position in the 3D world will change as well (unless corrected for,
+as was done here).
+
+Transformation Matrix Name Changes
+''''''''''''''''''''''''''''''''''
+
 .. index::
    single: ESD_ORTSMatrixRename
 
@@ -2551,7 +2613,7 @@ be loaded instead.
 ``ORTSTractionCutOffRelayClosingDelay`` refers to the delay between the closing command of the traction cut-off relay
 and the effective closing of the relay.
 
-.. _features-scripting-powerselectors
+.. _features-scripting-powerselectors:
 
 Pantograph, voltage and power limitation selectors
 --------------------------------------------------

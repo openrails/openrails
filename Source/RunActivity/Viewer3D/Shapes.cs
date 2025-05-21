@@ -362,7 +362,9 @@ namespace Orts.Viewer3D
                 int hIndex = Hierarchy[i];
 
                 // Transform the matrix repeatedly for all of its parents
-                while (hIndex > -1 && hIndex < Hierarchy.Length)
+                int depth = 0;
+
+                while (hIndex > -1 && hIndex < Hierarchy.Length && depth < 32)
                 {
                     // Can finish calculating sooner if we already have the result matrix for the next level up
                     if (resultCalculated[hIndex])
@@ -379,6 +381,8 @@ namespace Orts.Viewer3D
                         else
                             break;
                     }
+
+                    depth++;
                 }
 
                 ResultMatrices[i] = res;
@@ -2160,8 +2164,13 @@ namespace Orts.Viewer3D
 
                     if (!found)
                         Trace.TraceWarning("Shape descriptor file {0} specifies texture {1} to be replaced, " +
-                            "but shape {2} does not contain this texture.", (filePath + "d"), tex, filePath);
+                            "but shape {2} does not contain this texture.", DescriptorPath, tex, filePath);
                 }
+
+                int[] modifiedHierarchy = null;
+                // Prepare to consider hierarchy changes
+                if (sdFile.shape.ESD_MatrixParent.Count > 0)
+                    modifiedHierarchy = (int[])sFile.shape.lod_controls?.FirstOrDefault()?.distance_levels?.FirstOrDefault()?.distance_level_header.hierarchy.Clone();
 
                 // Manipulate matrices as defined in the sd file
                 foreach (string matName in sdFile.shape.ESD_ModifiedMatrices)
@@ -2210,10 +2219,32 @@ namespace Orts.Viewer3D
                                 sFile.shape.matrices[i] = MSTSMatrixFromXNA(newMatrix, sFile.shape.matrices[i].Name);
                             }
 
-                            // Finally, see if this matrix is to be renamed
-                            if (sdFile.shape.ESD_MatrixRename.TryGetValue(matName, out string newName))
+                            // See if this matrix should have its parent changed
+                            if (sdFile.shape.ESD_MatrixParent.TryGetValue(matName, out string newParent))
                             {
-                                sFile.shape.matrices[i].Name = newName;
+                                int thisIndex = i;
+                                int parentIndex = -1;
+
+                                for (int m = 0; m < sFile.shape.matrices.Count; m++)
+                                {
+                                    if (sFile.shape.matrices[m].Name.ToUpper() == newParent.ToUpper())
+                                    {
+                                        parentIndex = m;
+                                        break;
+                                    }
+                                }
+
+                                // Found the new parent matrix, update the temporary hierarchy list accordingly
+                                if (parentIndex >= 0) 
+                                {
+                                    if (modifiedHierarchy != null && thisIndex >= 0 && thisIndex < modifiedHierarchy.Length)
+                                        modifiedHierarchy[thisIndex] = parentIndex;
+                                }
+                                else // Couldn't find new parent matrix
+                                {
+                                    Trace.TraceWarning("Shape descriptor file {0} specifies matrix name {1} to be utilized, " +
+                                        "but shape {2} does not contain this matrix.", DescriptorPath, newParent, filePath);
+                                }
                             }
 
                             found = true;
@@ -2222,7 +2253,68 @@ namespace Orts.Viewer3D
 
                     if (!found)
                         Trace.TraceWarning("Shape descriptor file {0} specifies matrix name {1} to be modified, " +
-                            "but shape {2} does not contain this matrix.", (filePath + "d"), matName, filePath);
+                            "but shape {2} does not contain this matrix.", DescriptorPath, matName, filePath);
+                }
+
+                // Check that hierarchy changes make sense, then apply to shape file
+                if (modifiedHierarchy != null && sdFile.shape.ESD_MatrixParent.Count > 0)
+                {
+                    // Iterate through every hierarchy element to make sure it resolves back to the main object
+                    // If anything in the modified hierarchy fails, do not update the shape hierarchy
+                    bool valid = false;
+
+                    for (int hIndex = 0; hIndex < modifiedHierarchy.Length; hIndex++)
+                    {
+                        int nextIndex = modifiedHierarchy[hIndex];
+                        int depth = 0;
+
+                        while (nextIndex > -1 && nextIndex < modifiedHierarchy.Length && depth < 32)
+                        {
+                            if (nextIndex == hIndex)
+                                break; // We have reached an infinite loop
+                            nextIndex = modifiedHierarchy[nextIndex];
+
+                            depth++;
+                        }
+
+                        // The above calculation should produce a final index of -1
+                        // This means the hierarchy could be traced back to the main shape
+                        if (nextIndex == -1)
+                            valid = true;
+                        else
+                            break;
+                    }
+
+                    if (valid)
+                    {
+                        foreach (lod_control lodControl in sFile.shape.lod_controls)
+                        {
+                            foreach (distance_level distanceLevel in lodControl.distance_levels)
+                            {
+                                // Note: This assumes the hierarchy is the same for every LOD...is this always true?
+                                distanceLevel.distance_level_header.hierarchy = modifiedHierarchy;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Trace.TraceWarning("Hierarchy changes specified in shape descriptor file {0} " +
+                            "produce an invalid hierarchy when applied to shape {1}, hierarchy has not been updated.", DescriptorPath, filePath);
+                    }
+                }
+
+                // Guarantee that matrix renaming happens after all other operations
+                foreach (KeyValuePair<string, string> renamePair in sdFile.shape.ESD_MatrixRename)
+                {
+                    for (int i = 0; i < sFile.shape.matrices.Count; i++)
+                    {
+                        // Check if this matrix is to be renamed, and rename accordingly
+                        // Ignore case
+                        if (sFile.shape.matrices[i].Name.ToUpper() == renamePair.Key.ToUpper())
+                        {
+                            sFile.shape.matrices[i].Name = renamePair.Value;
+                        }
+                    }
                 }
 
                 // Manipulate LOD settings as defined in the sd file
@@ -2234,10 +2326,10 @@ namespace Orts.Viewer3D
                         {
                             lodControl.distance_levels[lodIndex.Key].distance_level_header.dlevel_selection = lodIndex.Value;
                         }
-                        else // LOD index defined doesn't eist
+                        else // LOD index defined doesn't exist
                         {
                             Trace.TraceWarning("Shape descriptor file {0} specifies LOD index {1} to be modified, " +
-                                "but shape {2} does not have this many LODs.", (filePath + "d"), lodIndex.Key, filePath);
+                                "but shape {2} does not have this many LODs.", DescriptorPath, lodIndex.Key, filePath);
                         }
                     }
                 }
