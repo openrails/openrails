@@ -3658,7 +3658,7 @@ namespace Orts.Simulation.AIs
             }
         }
 
-        public void AdjustControlsAccelMore(float reqAccelMpSS, float timeS, int stepSize)
+        public virtual void AdjustControlsAccelMore(float reqAccelMpSS, float timeS, int stepSize)
         {
             if (AITrainBrakePercent > 0)
             {
