@@ -101,7 +101,7 @@ A list of the available .eng file CC parameters follows here below.
    "SpeedDeltaToStopAccelerating", "Difference between train speed and set speed below which throttle is closed", "Float (speed)", "0"
    "SpeedDeltaToStopBraking", "Difference between train speed and set speed below which brakes are released", "Float (speed)", "0.5 m/s"
    "SpeedDeltaAcceleratingOffset", "Speed delta at which the demanded acceleration is 0", "Float (speed)", "0"
-   "SpeedDeltaBrakingOffset", "Speed delta at which the demanded deceleration is 0", "Float (speed)", "0.5 m/s"
+   "SpeedDeltaBrakingOffset", "Speed delta at which the demanded deceleration is 0", "Float (speed)", "0"
    "ForceRegulatorAutoWhenNonZeroSpeedSelected", "When a non zero speed is selected, the regulator is set to auto", "Boolean", "FALSE"
    "ForceRegulatorAutoWhenNonZeroSpeedSelectedAndThrottleAtZero", "Self explaining", "Boolean", "FALSE"
    "MaxForceKeepSelectedStepWhenManualModeSet", "Self explaining", "Boolean", "FALSE"

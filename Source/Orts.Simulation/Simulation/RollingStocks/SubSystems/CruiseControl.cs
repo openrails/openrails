@@ -131,7 +131,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float SpeedDeltaToStartAcceleratingMpS;
         public float SpeedDeltaToStopAcceleratingMpS;
         public float SpeedDeltaAcceleratingOffsetMpS;
-        public float SpeedDeltaBrakingOffsetMpS = -0.5f;
+        public float SpeedDeltaBrakingOffsetMpS = 0;
         public bool DynamicBrakePriority = false;
         public List<int> ForceStepsThrottleTable = new List<int>();
         public List<float> AccelerationTable = new List<float>();
