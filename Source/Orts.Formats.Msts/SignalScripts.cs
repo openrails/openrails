@@ -113,6 +113,7 @@ namespace Orts.Formats.Msts
             NEXT_SIG_HASNORMALSUBTYPE,
             ID_SIG_HASNORMALSUBTYPE,
             SWITCHSTAND,
+            TRAIN_HAS_REQUEST_STOP,
             DEBUG_HEADER,
             DEBUG_OUT,
             RETURN,

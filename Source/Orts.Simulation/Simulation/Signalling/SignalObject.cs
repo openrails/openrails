@@ -87,6 +87,9 @@ namespace Orts.Simulation.Signalling
 
         public List<int> JunctionsPassed = new List<int>();  // Junctions which are passed checking next signal //
 
+        public int? platformRef = null;         // platform reference, used for request stop
+        public float? visDistance = null;       // visibility distance for request stop
+
         public int thisRef;                     // This signal's reference.
         public int direction;                   // Direction facing on track
 
@@ -364,6 +367,30 @@ namespace Orts.Simulation.Signalling
                     if (thisSection.CircuitState.TrainReserved != null && thisSection.CircuitState.TrainReserved.Train.Number == number)
                     {
                         enabledTrain = thisSection.CircuitState.TrainReserved;
+                    }
+                    else if (thisSection.CircuitState.HasTrainsOccupying())
+                    {
+                        List<Train.TrainRouted> trainList = thisSection.CircuitState.TrainsOccupying();
+                        float? offsetInSection = null;
+
+                        foreach (var thisRouted in trainList)
+                        {
+                            var thisTrain = thisRouted.Train;
+                            var thisOffset = thisTrain.PresentPosition[0].TCOffset;
+                            if (!offsetInSection.HasValue || thisOffset > offsetInSection)
+                            {
+                                offsetInSection = thisOffset;
+                                if (thisTrain.Number == number)
+                                {
+                                    enabledTrain = thisRouted;
+                                    thisTrain.NextSignalObject[0] = this;
+                                }
+                                else
+                                {
+                                    enabledTrain = null;
+                                }
+                            }
+                        }
                     }
                     else
                     {
@@ -1250,6 +1277,67 @@ namespace Orts.Simulation.Signalling
             return aspect1;
         }
 
+
+        /// <summary>
+        /// trainhasrequeststop : link signal with platform and set state according to request stop pickup requirements
+        /// </summary>
+        public int trainRequestStop(int aspect1, int aspect2, string dumpfile)
+        {
+            int aspect = 0;
+
+            // set platform link if not yet set
+            if (!platformRef.HasValue)
+            {
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[TCReference];
+                foreach (int pfIndex in thisSection.PlatformIndex)
+                {
+                    PlatformDetails thisPlatform = signalRef.PlatformDetailsList[pfIndex];
+                    if (thisPlatform.TCOffset[0, TCDirection] < TCOffset && TCOffset < thisPlatform.TCOffset[1, TCDirection])
+                    {
+                        platformRef = pfIndex;
+                        continue;
+                    }
+                    else if (thisPlatform.TCOffset[1, TCDirection] < TCOffset && TCOffset < thisPlatform.TCOffset[0, TCDirection])
+                    {
+                        platformRef = pfIndex;
+                        continue;
+                    }
+                }
+            }
+
+            // if enabled, check if related station is next station for train
+
+            if (enabled && platformRef.HasValue)
+            {
+                if (enabledTrain.Train.StationStops != null && enabledTrain.Train.StationStops.Count > 0)
+                {
+                    if (enabledTrain.Train.StationStops[0].PlatformItem.Name == signalRef.PlatformDetailsList[platformRef.Value].Name)
+                    {
+                        if (enabledTrain.Train.StationStops[0].ReqStopDetails != null)
+                        {
+                            foreach (var sighead in SignalHeads)
+                            {
+                                if (sighead.ReqStopVisDistance.HasValue)
+                                {
+                                    enabledTrain.Train.StationStops[0].ReqStopDetails.visDistance = sighead.ReqStopVisDistance.Value;
+                                }
+                                if (sighead.ReqStopAnnDistance.HasValue)
+                                {
+                                    enabledTrain.Train.StationStops[0].ReqStopDetails.annDistance = sighead.ReqStopAnnDistance.Value;
+                                }
+                            }
+
+                            if (enabledTrain.Train.StationStops[0].ReqStopDetails.pickupSet)
+                            {
+                                aspect = 1;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return aspect;
+        }
 
         /// <summary>
         /// route_set : check if required route is set
