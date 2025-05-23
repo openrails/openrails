@@ -4483,7 +4483,7 @@ namespace Orts.Simulation.Physics
                     car.ComputePosition(traveller, false, 0, 0, SpeedMpS);
                 }
                 else
-                {
+                { 
                     // traveller is positioned at the front of the car
                     // advance to the first bogie 
                     traveller.Move((car.CarLengthM - car.CarBogieCentreLengthM) / 2.0f);
@@ -4521,7 +4521,7 @@ namespace Orts.Simulation.Physics
 
                     // Apply superelevation to car
                     if (roll != 0)
-                    car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
+                        car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
 
                     car.WorldPosition.TileX = traveller.TileX;
                     car.WorldPosition.TileZ = traveller.TileZ;
@@ -4640,7 +4640,7 @@ namespace Orts.Simulation.Physics
 
                     // Apply superelevation to car
                     if (roll != 0)
-                    car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
+                        car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
 
                     car.WorldPosition.TileX = traveller.TileX;
                     car.WorldPosition.TileZ = traveller.TileZ;
@@ -4719,7 +4719,7 @@ namespace Orts.Simulation.Physics
 
                 // Apply superelevation to car
                 if (roll != 0)
-                car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
+                    car.WorldPosition.XNAMatrix = Matrix.CreateRotationZ((car.Flipped ? -1.0f : 1.0f) * roll) * car.WorldPosition.XNAMatrix;
 
                 car.WorldPosition.TileX = traveller.TileX;
                 car.WorldPosition.TileZ = traveller.TileZ;
