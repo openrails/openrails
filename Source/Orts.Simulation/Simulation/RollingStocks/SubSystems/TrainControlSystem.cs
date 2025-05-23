@@ -673,7 +673,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     foreach (var head in trainSignal.SignalObject.SignalHeads)
                         if (head.Function == function)
                             functionHead = head;
-                    if (functionHead != null)
+                    if (functionHead == null)
                         goto Exit;
                     signalTypeName = functionHead.SignalTypeName;
                     if (functionHead?.signalType?.DrawStates != null)
