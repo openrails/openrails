@@ -2141,8 +2141,8 @@ namespace Orts.Viewer3D
                 SoundFileName = sdFile.shape.ESD_SoundFileName;
                 CustomAnimationFPS = sdFile.shape.ESD_CustomAnimationFPS;
 
-                // Replace textures as defined in the sd file
-                foreach (string tex in sdFile.shape.ESD_TextureReplacement.Keys)
+                // Replace textures as defined in the .sd file
+                foreach (KeyValuePair<string, string> texSwap in sdFile.shape.ESD_TextureReplacement)
                 {
                     bool found = false;
 
@@ -2151,16 +2151,30 @@ namespace Orts.Viewer3D
                         // Check if shape uses one of the textures we want to replace
                         // Ignore case, ignore file extension
                         if (Path.GetFileNameWithoutExtension(sFile.shape.images[i].ToLower()) ==
-                            Path.GetFileNameWithoutExtension(tex.ToLower()))
+                            Path.GetFileNameWithoutExtension(texSwap.Key.ToLower()))
                         {
-                            sFile.shape.images[i] = sdFile.shape.ESD_TextureReplacement[tex];
+                            sFile.shape.images[i] = texSwap.Value;
                             found = true;
                         }    
                     }
 
                     if (!found)
                         Trace.TraceWarning("Shape descriptor file {0} specifies texture {1} to be replaced, " +
-                            "but shape {2} does not contain this texture.", DescriptorPath, tex, filePath);
+                            "but shape {2} does not contain this texture.", DescriptorPath, texSwap.Key, filePath);
+                }
+
+                // Replace shaders as defined in the .sd file
+                foreach (KeyValuePair<int, string> shaderSwap in sdFile.shape.ESD_ShaderReplacement)
+                {
+                    if (shaderSwap.Key >= 0 && shaderSwap.Key < sFile.shape.shader_names.Count)
+                    {
+                        sFile.shape.shader_names[shaderSwap.Key] = shaderSwap.Value;
+                    }
+                    else
+                    {
+                        Trace.TraceWarning("Shape descriptor file {0} specifies shader index {1} to be replaced, " +
+                            "but shape {2} does not have this many shaders.", DescriptorPath, shaderSwap.Key, filePath);
+                    }
                 }
 
                 int[] modifiedHierarchy = null;
