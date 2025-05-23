@@ -86,6 +86,18 @@ namespace Orts.Formats.Msts
                     new STFReader.TokenProcessor("esd_ortsbellanimationfps", ()=>{ ESD_CustomAnimationFPS = stf.ReadFloatBlock(STFReader.UNITS.Frequency, null); }),
                     new STFReader.TokenProcessor("esd_ortscustomanimationfps", ()=>{ ESD_CustomAnimationFPS = stf.ReadFloatBlock(STFReader.UNITS.Frequency, null); }),
                     new STFReader.TokenProcessor("esd_ortstexturereplacement", ()=>{ ParseReplacementStrings(stf, ref ESD_TextureReplacement); }),
+                    new STFReader.TokenProcessor("esd_ortsshaderreplacement", ()=>{
+                        stf.MustMatch("(");
+                        // Allow for multiple pairs of replaced and replacement values
+                        while (!stf.EndOfBlock())
+                        {
+                            int replacedIdx = stf.ReadInt(-1);
+                            string replacement = stf.ReadString();
+                            // Add pair of values so long as we haven't reached the end of block
+                            if (!string.IsNullOrEmpty(replacement) && !ESD_ShaderReplacement.ContainsKey(replacedIdx))
+                                ESD_ShaderReplacement.Add(replacedIdx, replacement);
+                        }
+                    }),
                     new STFReader.TokenProcessor("esd_ortsmatrixrename", ()=>{ ParseReplacementStrings(stf, ref ESD_MatrixRename); }),
                     new STFReader.TokenProcessor("esd_ortsmatrixparent", ()=>{ ParseReplacementStrings(stf, ref ESD_MatrixParent); }),
                     new STFReader.TokenProcessor("esd_ortsmatrixtranslation", ()=>{ ParseMatrixOverride(STFReader.UNITS.Distance, stf, ref ESD_MatrixTranslation); }),
@@ -96,11 +108,11 @@ namespace Orts.Formats.Msts
                         // Allow for multiple pairs of replaced and replacement values
                         while (!stf.EndOfBlock())
                         {
-                            int replaced = stf.ReadInt(null);
+                            int replacedIdx = stf.ReadInt(null);
                             float replacement = stf.ReadFloat(STFReader.UNITS.Distance, null);
                             // Add pair of values so long as we haven't reached the end of block
-                            if (replacement != 0)
-                                ESD_LODOverride.Add(replaced, replacement);
+                            if (replacement != 0 && !ESD_LODOverride.ContainsKey(replacedIdx))
+                                ESD_LODOverride.Add(replacedIdx, replacement);
                         }
                     }),
                 });
@@ -127,6 +139,8 @@ namespace Orts.Formats.Msts
             public float ESD_CustomAnimationFPS = 8;
             // Dictionary of <original texture name, replacement texture name>
             public Dictionary<string, string> ESD_TextureReplacement = new Dictionary<string, string>();
+            // Dictionary of <shader index, shader name>
+            public Dictionary<int, string> ESD_ShaderReplacement = new Dictionary<int, string>();
             // Dictionary of <original matrix name, replacement matrix name>
             public Dictionary<string, string> ESD_MatrixRename = new Dictionary<string, string>();
             // Dictionary of <matrix name, new matrix parent name>
@@ -152,7 +166,7 @@ namespace Orts.Formats.Msts
                     string replaced = stf.ReadString();
                     string replacement = stf.ReadString();
                     // Add pair of values so long as we haven't reached the end of block
-                    if (replaced != ")" && replacement != ")")
+                    if (replaced != ")" && replacement != ")" && !renamePairs.ContainsKey(replaced))
                         renamePairs.Add(replaced, replacement);
                 }
             }
@@ -160,14 +174,15 @@ namespace Orts.Formats.Msts
             // Handle matrix adjustment parameters
             protected void ParseMatrixOverride(STFReader.UNITS units, STFReader stf, ref Dictionary<string, Vector3> matrixParams)
             {
-                Vector3 data = new Vector3(0);
+                Vector3 data = Vector3.Zero;
 
                 stf.MustMatch("(");
                 string matName = stf.ReadString();
                 data = stf.ReadVector3(units, Vector3.Zero);
                 stf.SkipRestOfBlock();
 
-                matrixParams.Add(matName, data);
+                if (!matrixParams.ContainsKey(matName))
+                    matrixParams.Add(matName, data);
             }
         }
 

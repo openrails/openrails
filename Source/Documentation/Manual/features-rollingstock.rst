@@ -480,6 +480,44 @@ method to provide different textures for different engines/wagons as only one co
 needed, reducing install size and simplifying installation as users don't need to move/copy/edit any
 shape files.
 
+.. index::
+   single: ESD_ORTSShaderReplacement
+
+Shader Replacement
+''''''''''''''''''
+
+Similarly, it may be desired to replace the shaders used by a shape file in order to, for example, allow
+transparency to be applied to the shape and "alpha out" certain components. To change the shaders, add
+``ESD_ORTSShaderReplacement ( id ShaderName )`` where "id" is the integer index of the shader, starting from
+0, and "ShaderName" is the name of the new shader to use at this index. If an invalid shader index is given
+(eg: a negative number, or a number bigger than the max index), then a warning will be added to the log
+and the missing index will be skipped. Determining the order of shaders generally requires decompressing the
+shape file and looking at the ``shader_names`` block near the top of the file. The ``named_shader`` at the
+top of the list has an index of 0, the next one down has an index of 1, and so on. The accepted shader names are
+``Tex`` (fullbright), ``TexDiff`` (diffuse lighting), ``BlendATex`` (fullbright with transparency), ``BlendATextDiff``
+(diffuse with transparency), ``AddATex`` (fullbright with x-ray transparency), ``AddATexDiff`` (diffuse with x-ray
+transparency), if an invalid shader name is given a warning will be added to the log.
+
+For example, the US2BSignal2.s shape included with Marias Pass uses one shader, the ``TexDiff`` shader. This
+disallows transparency. If, for any reason, transparency were desired on this shape, the shape descriptor file
+could be edited as follows::
+
+    SIMISA@@@@@@@@@@JINX0t1t______
+
+    shape ( US2BSignal2.s
+        ESD_Detail_Level ( 0 )
+        ESD_Alternative_Texture ( 0 )
+
+        Comment ( Change the first, and only, shader to allow for transparency. )
+        ESD_ORTSShaderReplacement ( 0 "BlendATexDiff" )
+    )
+
+
+Like replacing textures, if multiple shaders are to be modified, all can be added in a single ``ESD_ORTSShaderReplacement``
+parameter by specifying additional pairs of indices and shader names. Note that changing shaders in this manner will
+change the shader for *all* sub objects linked to that shader. Changing the shader of an individual sub object from
+inside the .sd file is impractical, so an alternate method may be required if additional specificity is desired.
+
 Translation Matrix Modification
 '''''''''''''''''''''''''''''''
 
