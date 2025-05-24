@@ -988,8 +988,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         }
         public bool Flipped = false;
         public bool[] Visibility = { true, false, false };
+        public bool ReplaceObject = false;
         public Vector3 Offset = new Vector3();
-        public int ShapeIndex = -1; // TODO: Allow user inputs to specify ShapeIndex as per lights
+        public int ShapeIndex = -1;
         public string ShapeHierarchy;
     }
 
@@ -1054,6 +1055,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 new STFReader.TokenProcessor("flip", ()=>{ Flipped = stf.ReadBoolBlock(true);}),
                 new STFReader.TokenProcessor("shapeindex", ()=>{ ShapeIndex = stf.ReadIntBlock(null);}),
                 new STFReader.TokenProcessor("shapehierarchy", ()=>{ ShapeHierarchy = stf.ReadStringBlock(null);}),
+                new STFReader.TokenProcessor("replaceobject", ()=>{ ReplaceObject = stf.ReadBoolBlock(true);}),
                 new STFReader.TokenProcessor("visibility", ()=>{
                     for (int index = 0; index < 3; index++)
                         Visibility[index] = false;
@@ -1183,6 +1185,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             new STFReader.TokenProcessor("flip", ()=>{ Flipped = stf.ReadBoolBlock(true);}),
             new STFReader.TokenProcessor("shapeindex", ()=>{ ShapeIndex = stf.ReadIntBlock(null);}),
             new STFReader.TokenProcessor("shapehierarchy", ()=>{ ShapeHierarchy = stf.ReadStringBlock(null);}),
+            new STFReader.TokenProcessor("replaceobject", ()=>{ ReplaceObject = stf.ReadBoolBlock(true);}),
             new STFReader.TokenProcessor("visibility", ()=>{
                 for (int index = 0; index < 3; index++)
                     Visibility[index] = false;

@@ -258,7 +258,7 @@ namespace Orts.Viewer3D
             }
             else
             {
-                if (EmitterData.ShapeHierarchy != null)
+                if (!string.IsNullOrEmpty(EmitterData.ShapeHierarchy))
                 {
                     if (CarViewer.TrainCarShape.SharedShape.MatrixNames.Contains(EmitterData.ShapeHierarchy))
                     {

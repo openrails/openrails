@@ -448,7 +448,7 @@ namespace Orts.Viewer3D.RollingStock
                 }
                 else
                 {
-                    if (view.ShapeHierarchy != null)
+                    if (!string.IsNullOrEmpty(view.ShapeHierarchy))
                     {
                         if (TrainCarShape.SharedShape.MatrixNames.Contains(view.ShapeHierarchy))
                         {
@@ -739,12 +739,23 @@ namespace Orts.Viewer3D.RollingStock
 
             if (FreightAnimations != null)
             {
-                foreach (var freightAnim in FreightAnimations.Animations)
+                foreach (FreightAnimationViewer freightAnim in FreightAnimations.Animations)
                 {
                     if (freightAnim.FreightShape?.DontRender == false)
                     {
                         // Display ORTS freight animation shape if cargo is loaded and visibility settings allow it to show
+                        // Disable rendering of original shape part if applicable
+                        if (freightAnim.Animation.ReplaceObject && TrainCarShape.Visibility[freightAnim.Animation.ShapeIndex])
+                            TrainCarShape.Visibility[freightAnim.Animation.ShapeIndex] = false;
+
                         freightAnim.FreightShape.PrepareFrame(frame, elapsedTime);
+                    }
+                    else
+                    {
+                        // Allow original shape parts to render if applicable
+                        if (freightAnim.Animation.ReplaceObject && !TrainCarShape.Visibility[freightAnim.Animation.ShapeIndex] &&
+                            TrainCarShape.SharedShape.Visibility[freightAnim.Animation.ShapeIndex])
+                            TrainCarShape.Visibility[freightAnim.Animation.ShapeIndex] = true;
                     }
                 }
             }

@@ -496,7 +496,7 @@ shape file and looking at the ``shader_names`` block near the top of the file. T
 top of the list has an index of 0, the next one down has an index of 1, and so on. The accepted shader names are
 ``Tex`` (fullbright), ``TexDiff`` (diffuse lighting), ``BlendATex`` (fullbright with transparency), ``BlendATextDiff``
 (diffuse with transparency), ``AddATex`` (fullbright with x-ray transparency), ``AddATexDiff`` (diffuse with x-ray
-transparency), if an invalid shader name is given a warning will be added to the log.
+transparency), and all are case-sensitive. If an invalid shader name is given a warning will be added to the log.
 
 For example, the US2BSignal2.s shape included with Marias Pass uses one shader, the ``TexDiff`` shader. This
 disallows transparency. If, for any reason, transparency were desired on this shape, the shape descriptor file
@@ -614,6 +614,56 @@ matrix names, and that changing the hierarchy required adjusting the translation
 for them to appear in the intended locations. The location of a sub object is measured relative to its parent,
 so if the sub object parent is changed, it's position in the 3D world will change as well (unless corrected for,
 as was done here).
+
+Hiding Sub Objects
+''''''''''''''''''
+
+.. index::
+   single: ESD_ORTSObjectVisibility
+
+In some cases, it may be desired to simply disable rendering of some shape sub objects (for example,
+preventing low-poly objects from being rendered so they can be replaced with higher-poly freight
+animations). To achieve this, ``ESD_ORTSObjectVisibility'' may be added to to the Shape ( block of the
+shape descriptor file. ``ESD_ORTSObjectVisibility ( MATRIXNAME 0/1 )`` will take rendering of all
+sub objects controlled by the matrix called "MATRIXNAME" and make them visible if the second input is not 0,
+or invisible if the second input is 0. Note that 1 (the object is visible) is the default setting for all objects.
+If an object is set to be invisible, data for that object will not be sent to the GPU, saving render time,
+but any CPU calculations such as animations will still be applied to the sub object(s) and ``ORTSShapeHierarchy``
+can still be used to attach lights, freight animations, sounds, particles, etc to the object while invisible.
+Similarly, anything attached to a different matrix (regardless if that matrix is above or below the one made
+invisible) will remain visible and simulated unless specified otherwise.
+
+As an example, we can hide all the (low poly) wheels of an old locomotive in order to replace the wheels with
+(high poly) freight animations using the ORTSShapeHierarchy feature of :ref:`ORTS freight animations<orts-freight-anims>`::
+
+    SIMISA@@@@@@@@@@JINX0t1t______
+
+    shape ( SF_FP45_93.s
+        ESD_Detail_Level ( 0 )
+        ESD_Software_DLev ( 2 )
+        ESD_Alternative_Texture ( 0 )
+        ESD_Bounding_Box ( -1.632 -0.095 -10.99 1.684 4.628 10.99 )
+	
+        Comment ( Disable rendering, but not simulation, of all wheels. )
+        ESD_ORTSObjectVisibility (
+            WHEELS11 0
+            WHEELS12 0
+            WHEELS13 0
+            WHEELS21 0
+            WHEELS22 0
+            WHEELS23 0
+        )
+    )
+
+Note that, similar to other parameters, multiple objects can be hidden in one parameter by adding additional
+pairs of matrix names and 1/0 values. If a matrix name can't be found, the missing matrix will be skipped and
+a warning will be added to the log.
+
+This feature can also be used by freight animations directly using the ``ReplaceObject`` parameter; an ORTS freight
+animation with this parameter will disable rendering of the original object to which it is attached whenever the
+freight animation is visible. When used in combination with the ``ShapeHierarchy`` ORTS freight animation parameter,
+the freight animation can be used to effectively replace specific components of the original model without editing
+the .sd file. Users are encouraged to experiment with whichever approach works best.
 
 Transformation Matrix Name Changes
 ''''''''''''''''''''''''''''''''''
@@ -826,6 +876,8 @@ Other Vehicles:
 OR specific freight animations and pickups
 ------------------------------------------
 
+.. _orts-freight-anims:
+
 General
 '''''''
 
@@ -889,6 +941,7 @@ the first line of the include file must be blank.::
                 MaxHeight ( 0.3 )
                 MinHeight ( -2.0 )
                 FreightWeightWhenFull ( 99t )
+                ReplaceObject ( 0 )
                 FullAtStart ( 0 )
             )
             FreightAnimContinuous (
@@ -902,6 +955,7 @@ the first line of the include file must be blank.::
                 MaxHeight ( 0.3 )
                 MinHeight ( -2.0 )
                 FreightWeightWhenFull ( 99t )
+                ReplaceObject ( 0 )
                 FullAtStart ( 0 )
             )
         )
@@ -1009,6 +1063,12 @@ moment. The parameters of the subblock are described below:
 - ``FreightWeightWhenFull`` defines the mass of the freight when the wagon is full; 
   the mass of the wagon is computed by adding the mass of the empty wagon to the 
   actual mass of the freight 
+- ``ReplaceObject`` if set to 1 (ignored if missing) will disable rendering of the wagon
+  sub object to which the freightanim is attached. This works best when combined with
+  ``ShapeHierarchy`` to disable rendering of specific sub objects, effectively replacing
+  the sub object graphic with that of the freightanim. The intended use of this setting 
+  is to "delete" original shape parts and replace them with higher quality shapes without
+  editing the original shape.
 - ``FullAtStart`` defines wether the wagon is fully loaded ( 1 ) or is empty at game 
   start; if there are more continuous OR freightanims that have ``FullAtStart`` 
   set to 1, only the first one is considered.
@@ -1095,6 +1155,7 @@ freightanims. The ``FreightAnimStatic`` subblock has the following format::
             Flip ()
             ShapeHierarchy ( MATRIXNAME )
             Visibility ( "Outside, Cab2D, Cab3D" )
+            ReplaceObject ()
         )
     )
 

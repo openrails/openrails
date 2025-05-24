@@ -94,7 +94,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
             }
             else
             {
-                if (Animation.ShapeHierarchy != null)
+                if (!string.IsNullOrEmpty(Animation.ShapeHierarchy))
                 {
                     if (wagonViewer.TrainCarShape.SharedShape.MatrixNames.Contains(Animation.ShapeHierarchy))
                     {
