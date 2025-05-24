@@ -103,6 +103,18 @@ namespace Orts.Formats.Msts
                     new STFReader.TokenProcessor("esd_ortsmatrixtranslation", ()=>{ ParseMatrixOverride(STFReader.UNITS.Distance, stf, ref ESD_MatrixTranslation); }),
                     new STFReader.TokenProcessor("esd_ortsmatrixscale", ()=>{ ParseMatrixOverride(STFReader.UNITS.None, stf, ref ESD_MatrixScale); }),
                     new STFReader.TokenProcessor("esd_ortsmatrixrotation", ()=>{ ParseMatrixOverride(STFReader.UNITS.Angle, stf, ref ESD_MatrixRotation); }),
+                    new STFReader.TokenProcessor("esd_ortsobjectvisibility", ()=>{
+                        stf.MustMatch("(");
+                        // Allow for multiple pairs of replaced and replacement values
+                        while (!stf.EndOfBlock())
+                        {
+                            string matName = stf.ReadString();
+                            bool setting = stf.ReadInt(1) != 0;
+                            // Add pair of values so long as we haven't reached the end of block
+                            if (!string.IsNullOrEmpty(matName) && !ESD_ObjectVisibility.ContainsKey(matName))
+                                ESD_ObjectVisibility.Add(matName, setting);
+                        }
+                    }),
                     new STFReader.TokenProcessor("esd_ortslodoverride", ()=>{
                         stf.MustMatch("(");
                         // Allow for multiple pairs of replaced and replacement values
@@ -127,6 +139,8 @@ namespace Orts.Formats.Msts
                 foreach (string mat in ESD_MatrixScale.Keys)
                     ESD_ModifiedMatrices.Add(mat);
                 foreach (string mat in ESD_MatrixRotation.Keys)
+                    ESD_ModifiedMatrices.Add(mat);
+                foreach (string mat in ESD_ObjectVisibility.Keys)
                     ESD_ModifiedMatrices.Add(mat);
             }
             public int ESD_Detail_Level;
@@ -153,6 +167,8 @@ namespace Orts.Formats.Msts
             public Dictionary<string, Vector3> ESD_MatrixScale = new Dictionary<string, Vector3>();
             // Dictionary of <matrix name, matrix rotation x/y/z vector>
             public Dictionary<string, Vector3> ESD_MatrixRotation = new Dictionary<string, Vector3>();
+            // Dictionary of <matrix name, true/false visibility>
+            public Dictionary<string, bool> ESD_ObjectVisibility = new Dictionary<string, bool>();
             // Dictionary of <LOD index, LOD distance>
             public Dictionary<int, float> ESD_LODOverride = new Dictionary<int, float>();
 

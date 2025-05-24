@@ -981,6 +981,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         }
         public bool Flipped = false;
         public bool[] Visibility = { true, false, false };
+        public bool ReplaceObject = false;
         public Vector3 Offset = new Vector3();
         public int ShapeHierarchy; // TODO: Allow user inputs to specify ShapeHierarchy as per lights
     }
@@ -1037,6 +1038,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     stf.MustMatch(")");
                 }),
                 new STFReader.TokenProcessor("flip", ()=>{ Flipped = stf.ReadBoolBlock(true);}),
+                new STFReader.TokenProcessor("replaceobject", ()=>{ ReplaceObject = stf.ReadBoolBlock(true);}),
                 new STFReader.TokenProcessor("visibility", ()=>{
                     for (int index = 0; index < 3; index++)
                         Visibility[index] = false;
@@ -1171,6 +1173,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 stf.MustMatch(")");
             }),
             new STFReader.TokenProcessor("flip", ()=>{ Flipped = stf.ReadBoolBlock(true);}),
+            new STFReader.TokenProcessor("replaceobject", ()=>{ ReplaceObject = stf.ReadBoolBlock(true);}),
             new STFReader.TokenProcessor("visibility", ()=>{
                 for (int index = 0; index < 3; index++)
                     Visibility[index] = false;

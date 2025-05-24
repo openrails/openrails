@@ -293,6 +293,9 @@ namespace Orts.Viewer3D
 
         public readonly int[] Hierarchy;
 
+        public bool DontRender; // Flag to be used by other processes to see if the entire shape should not be rendered
+        public bool[] Visibility; // Specific flags to see if individual matrices should be rendered (0: don't render, 1: do render)
+
         public PoseableShape(Viewer viewer, string path, string descriptor, WorldPosition initialPosition, ShapeFlags flags)
             : base(viewer, path, descriptor, initialPosition, flags)
         {
@@ -302,6 +305,7 @@ namespace Orts.Viewer3D
                 ResultMatrices = new Matrix[SharedShape.Matrices.Length];
                 for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                     XNAMatrices[iMatrix] = SharedShape.Matrices[iMatrix];
+                Visibility = SharedShape.Visibility;
             }
             else // If the shape file is missing or fails to load, we need some default data to prevent crashes
             {
@@ -370,7 +374,7 @@ namespace Orts.Viewer3D
                     {
                         res = res * XNAMatrices[hIndex];
                         // Prevent potential infinite loop due to faulty hierarchy definition
-                        if (hIndex != Hierarchy[hIndex])
+                        if (hIndex != Hierarchy[hIndex] && hIndex != Hierarchy[i])
                             hIndex = Hierarchy[hIndex];
                         else
                             break;
@@ -386,8 +390,7 @@ namespace Orts.Viewer3D
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            UpdateResultMatrices();
-            SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags);
+            SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags, Visibility);
         }
 
         public void ConditionallyPrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, bool[] matrixVisible = null)
@@ -2053,6 +2056,7 @@ namespace Orts.Viewer3D
         public List<string> MatrixNames = new List<string>();
         public List<string> ImageNames; // Names of textures without paths or file extensions
         public Matrix[] Matrices = new Matrix[0];  // the original natural pose for this shape - shared by all instances
+        public bool[] Visibility = new bool[0]; // one flag per matrix to indicate if that matrix should be rendered
         public animations Animations;
         public LodControl[] LodControls;
         public bool HasNightSubObj;
@@ -2128,6 +2132,10 @@ namespace Orts.Viewer3D
 
 
             var textureFlags = Helpers.TextureFlags.None;
+            Visibility = new bool[sFile.shape.matrices.Count];
+            for (int vis = 0; vis < Visibility.Length; vis++)
+                Visibility[vis] = true; // Assume all matrices should be rendered by default
+
             ShapeDescriptorFile sdFile = null;
             bool adjustMAIN = false; // Check to see if the 0th matrix is modified in any way
             if (File.Exists(DescriptorPath))
@@ -2255,6 +2263,12 @@ namespace Orts.Viewer3D
                                     Trace.TraceWarning("Shape descriptor file {0} specifies matrix name {1} to be utilized, " +
                                         "but shape {2} does not contain this matrix.", DescriptorPath, newParent, filePath);
                                 }
+                            }
+
+                            // See if the objects associated with this shape should be hidden during rendering
+                            if (sdFile.shape.ESD_ObjectVisibility.TryGetValue(matName, out bool visible))
+                            {
+                                Visibility[i] = visible;
                             }
 
                             found = true;

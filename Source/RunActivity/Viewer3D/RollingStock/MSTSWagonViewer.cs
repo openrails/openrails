@@ -712,6 +712,47 @@ namespace Orts.Viewer3D.RollingStock
             UpdateAnimation(frame, elapsedTime);
 
             var car = Car as MSTSWagon;
+
+            if ((MSTSWagon.Train?.IsPlayerDriven ?? false) && !Car.Simulator.Settings.SimpleControlPhysics)
+            {
+                UpdateCouplers(frame, elapsedTime);
+            }
+
+            if (FreightShape?.DontRender == false)
+            {
+                // Display freight animation shape if not in 3D cab             
+                FreightShape.PrepareFrame(frame, elapsedTime);
+            }
+
+            if (FreightAnimations != null)
+            {
+                foreach (FreightAnimationViewer freightAnim in FreightAnimations.Animations)
+                {
+                    if (freightAnim.FreightShape?.DontRender == false)
+                    {
+                        // Display ORTS freight animation shape if cargo is loaded and visibility settings allow it to show
+                        // Disable rendering of original shape part if applicable
+                        if (freightAnim.Animation.ReplaceObject && TrainCarShape.Visibility[freightAnim.Animation.ShapeIndex])
+                            TrainCarShape.Visibility[freightAnim.Animation.ShapeIndex] = false;
+
+                        freightAnim.FreightShape.PrepareFrame(frame, elapsedTime);
+                    }
+                    else
+                    {
+                        // Allow original shape parts to render if applicable
+                        if (freightAnim.Animation.ReplaceObject && !TrainCarShape.Visibility[freightAnim.Animation.ShapeIndex] &&
+                            TrainCarShape.SharedShape.Visibility[freightAnim.Animation.ShapeIndex])
+                            TrainCarShape.Visibility[freightAnim.Animation.ShapeIndex] = true;
+                    }
+                }
+            }
+
+            // Decide to render train car or interior
+            if (InteriorShape != null && Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.Passenger)
+                InteriorShape.PrepareFrame(frame, elapsedTime); // We are in the passenger cabin
+            else if (!(Viewer.Camera.AttachedCar == this.MSTSWagon && (Viewer.Camera.Style == Camera.Styles.Cab || Viewer.Camera.Style == Camera.Styles.ThreeDimCab)))
+                TrainCarShape.PrepareFrame(frame, elapsedTime); // Not inside any interior view, render main shape (cab rendering happens elsewhere)
+
             // Steam leak in heating hose
             foreach (var drawer in HeatingHose)
             {
