@@ -428,6 +428,8 @@ Special Rows
   The #dispose row presently does not affect the end of the run for the player 
   train.
   
+.. _timetable-train-speed:
+
 - ``#speed`` row
 
   This optional field defines maximum speed for trains, which may restrict the 
@@ -438,7 +440,7 @@ Special Rows
   If specified, only one ``#speed`` (m/s), ``#speedkph``, or ``#speedmph`` row 
   can be present in a single timetable file.
   
-  This row also accepts a number of :ref:`speed commands <timetable-speed>`.
+  This row also accepts a number of :ref:`speed commands <timetable-cmd-speed>`.
   
 - ``#restartdelay`` row
 
@@ -514,7 +516,7 @@ Gradient
     Syntax    
         ``$gradient /perc=n /speed=s``
         
-        The gradient command must be set in a ``#speed`` field of a train.
+        The gradient command must be set in the ``#speed`` :ref:`field of a train <timetable-train-speed>`.        
 
     Functionality    
         When gradient is set, forced acceleration is turned off if the leading engine of the train is on a 
@@ -1395,7 +1397,7 @@ A typical value for modern stock for the ``$dec`` command is 2 or 3.
     clear of the reverse position. This is useful when shunting in yards when 
     there is no need to fully exit the yard to reverse and the entry signal.
 
-.. _timetable-speed:
+.. _timetable-cmd-speed:
 
 Speed Commands
 ''''''''''''''

@@ -614,7 +614,7 @@ AE in the .srv file as "Efficiency".
 
 If the AI train makes station stops, its maxspeed depends from the "Performance" 
 parameter for every route section, as can be seen and defined in the AI train 
-timetable (that is maxspeed is the product of the first MAxVelocity parameter by 
+timetable (that is maxspeed is the product of the first MaxVelocity parameter by 
 the "Performance" parameter divided by 100).
 
 Such performance parameter list is written (divided by 100) by the AE in 
@@ -631,6 +631,8 @@ This corresponds to MSTS behaviour.
 
 Moreover the Efficiency parameter is used also to compute acceleration and 
 braking curves.
+
+.. _operation-speed:
 
 Calculation of Train Speed Limit
 --------------------------------
