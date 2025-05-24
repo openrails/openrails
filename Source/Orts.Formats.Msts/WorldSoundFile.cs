@@ -17,8 +17,8 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using Orts.Parsers.Msts;
+using ORTS.Common;
 
 namespace Orts.Formats.Msts
 {
@@ -33,7 +33,7 @@ namespace Orts.Formats.Msts
 
         public void Read(string wsfilename, TrItem[] trItems)
         {
-            if (File.Exists(wsfilename))
+            if (Vfs.FileExists(wsfilename))
             {
                 using (STFReader stf = new STFReader(wsfilename, false))
                 {

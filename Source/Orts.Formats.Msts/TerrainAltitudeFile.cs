@@ -18,6 +18,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using ORTS.Common;
 
 namespace Orts.Formats.Msts
 {
@@ -30,7 +31,7 @@ namespace Orts.Formats.Msts
             Elevation = new ushort[sampleCount, sampleCount];
             try
             {
-                using (var reader = new BinaryReader(File.OpenRead(fileName)))
+                using (var reader = new BinaryReader(Vfs.OpenRead(fileName)))
                     for (var z = 0; z < sampleCount; z++)
                         for (var x = 0; x < sampleCount; x++)
                             Elevation[x, z] = reader.ReadUInt16();

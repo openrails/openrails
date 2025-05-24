@@ -31,6 +31,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using ORTS.Common;
 
 namespace Orts.Formats.Msts
 {
@@ -259,7 +260,7 @@ namespace Orts.Formats.Msts
 #if !DEBUG_ALLOWCRASH
                 try
                 {
-                    using (StreamReader scrStream = new StreamReader(fullName, true))
+                    using (StreamReader scrStream = Vfs.StreamReader(fullName, true))
                     {
 #if DEBUG_PRINT_IN
                         File.AppendAllText(din_fileLoc + @"sigscr.txt", "Reading file : " + fullName + "\n\n");
@@ -273,7 +274,7 @@ namespace Orts.Formats.Msts
                 }
 #else
                 // for test purposes : without exception catch
-                StreamReader scrStream = new StreamReader(fullName, true);
+                StreamReader scrStream = Vfs.StreamReader(fullName, true);
                 sigscrRead(fullName, scrStream, SignalTypes, ref readLineNumber, signalFunctions, ORNormalSubtypes);
                 scrStream.Close();
 #endif

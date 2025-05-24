@@ -894,7 +894,7 @@ namespace Orts.Viewer3D.RollingStock
             var lightpath = Path.Combine(lightdirectory, Path.GetFileName(FileName));
             var lightTexture = viewer.TextureManager.Get(lightpath);
             LightTextures.Add(FileName, lightTexture);
-            return Directory.Exists(lightdirectory);
+            return Vfs.DirectoryExists(lightdirectory);
         }
 
         static Texture2D[] Disassemble(GraphicsDevice graphicsDevice, Texture2D texture, int frameCount, Point frameGrid, string fileName)
@@ -3883,7 +3883,7 @@ namespace Orts.Viewer3D.RollingStock
 
             if (String.IsNullOrEmpty(TrainCarShape.SharedShape.ReferencePath))
             {
-                if (!File.Exists(globalText + imageName))
+                if (!Vfs.FileExists(globalText + imageName))
                 {
                     Trace.TraceInformation("Ignored missing " + imageName + " using default. You can copy the " + imageName + " from OR\'s AddOns folder to " + globalText +
                         ", or place it under " + TrainCarShape.SharedShape.ReferencePath);
@@ -3892,7 +3892,7 @@ namespace Orts.Viewer3D.RollingStock
             }
             else
             {
-                if (!File.Exists(TrainCarShape.SharedShape.ReferencePath + @"\" + imageName))
+                if (!Vfs.FileExists(TrainCarShape.SharedShape.ReferencePath + @"\" + imageName))
                 {
                     Trace.TraceInformation("Ignored missing " + imageName + " using default. You can copy the " + imageName + " from OR\'s AddOns folder to " + globalText +
                         ", or place it under " + TrainCarShape.SharedShape.ReferencePath);

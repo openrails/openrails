@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using ORTS.Common;
 
 namespace Orts.Formats.Msts
 {
@@ -53,7 +54,7 @@ namespace Orts.Formats.Msts
                             string[] nameParts = s.Split('.');
                             string name1024 = nameParts[0] + "1024." + nameParts[1];
                             var tstFileName1024 = Path.Combine(path, name1024);
-                            if (File.Exists(tstFileName1024))
+                            if (Vfs.FileExists(tstFileName1024))
                                 name = name1024;
 
                             TwoDViews.Add(Path.Combine(path, name));

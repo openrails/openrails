@@ -29,6 +29,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using ORTS.Common;
 
 #region Original STFreader
 #if !NEW_READER
@@ -176,9 +177,9 @@ namespace Orts.Parsers.Msts
         public STFReader(string filename, bool useTree)
         {
             var path = Path.GetDirectoryName(filename);
-            if (Directory.Exists(path))
+            if (Vfs.DirectoryExists(path))
             {
-                streamSTF = new StreamReader(filename, true); // was System.Text.Encoding.Unicode ); but I found some ASCII files, ie GLOBAL\SHAPES\milemarker.s
+                streamSTF = Vfs.StreamReader(filename, true); // was System.Text.Encoding.Unicode ); but I found some ASCII files, ie GLOBAL\SHAPES\milemarker.s
                 FileName = filename;
                 SimisSignature = streamSTF.ReadLine();
                 LineNumber = 2;
@@ -1929,7 +1930,7 @@ namespace Orts.Parsers.Msts
                         if (purefilename == "[[samename]]")
                             filename = Path.GetDirectoryName(filename) + @"\" + Path.GetFileName(FileName);
                         var includeFileName = Path.GetDirectoryName(FileName) + @"\" + filename;
-                        if (!File.Exists(includeFileName))
+                        if (!Vfs.FileExists(includeFileName))
                             STFException.TraceWarning(this, string.Format("'{0}' not found", includeFileName));
                         includeReader = new STFReader(includeFileName, false);
                         return ReadItem(skip_mode, string_mode); // Which will recurse down when includeReader is tested
@@ -3907,12 +3908,12 @@ namespace Orts.Parsers.Msts
         public StreamReader GetStreamReader(string fileName, out string simisSignature)
         {
             string directory = Path.GetDirectoryName(fileName);
-            if (!Directory.Exists(directory))
+            if (!Vfs.DirectoryExists(directory))
             {
                 throw new DirectoryNotFoundException(directory);
             }
 
-            var stream = new StreamReader(fileName, true); // was System.Text.Encoding.Unicode ); but I found some ASCII files, ie GLOBAL\SHAPES\milemarker.s
+            var stream = Vfs.StreamReader(fileName, true); // was System.Text.Encoding.Unicode ); but I found some ASCII files, ie GLOBAL\SHAPES\milemarker.s
             simisSignature = stream.ReadLine();
             return stream;
         }

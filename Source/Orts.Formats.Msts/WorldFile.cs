@@ -41,6 +41,8 @@ namespace Orts.Formats.Msts
             {
                 // Parse the tile location out of the filename.
                 var p = filename.ToUpper().LastIndexOf("\\WORLD\\W");
+                if (p == -1)
+                    p = filename.ToUpper().LastIndexOf("/WORLD/W");
                 TileX = int.Parse(filename.Substring(p + 8, 7));
                 TileZ = int.Parse(filename.Substring(p + 15, 7));
 
