@@ -523,8 +523,9 @@ Gradient
         rising gradient which exceeds n percent.
         However, forced acceleration is turned on if the speed of the train drops below speed s. 
         This is to ensure the train will not stall, and also that the train will restart if it has come to a stop on a 
-        gradient, e.g. due to a signal. 
-        The dimension of the speed value depends on the definition of the speed field (see manual for details of speed fields).
+        gradient, e.g. due to a signal.
+
+        The units of speed (m/s, mph, kph) depend on the definition of :ref:`the speed field<timetable-train-speed>`.
 
 
 Station Commands
