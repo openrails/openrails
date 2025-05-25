@@ -420,6 +420,7 @@ namespace Orts.Simulation.RollingStocks
         public double? DynamicBrakeCommandStartTime;
         protected bool DynamicBrakeBlendingOverride; // true when DB lever >0% should always override the blending. When false, the bigger command is applied.
         protected bool DynamicBrakeBlendingForceMatch = true; // if true, dynamic brake blending tries to achieve the same braking force as the airbrake would have.
+        public float DynamicBrakeBlendingRetainedPressurePSI { get; private set; } = -1.0f; // the amount of pressure that will always be retained in the brake cylinders during blended braking
         protected bool DynamicBrakeControllerSetupLock; // if true if dynamic brake lever will lock until dynamic brake is available
 
         public float DynamicBrakeBlendingPercent { get; protected set; } = -1;
@@ -1177,6 +1178,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "engine(ortsdynamicblendingoverride": DynamicBrakeBlendingOverride = stf.ReadBoolBlock(false); break;
                 case "engine(ortsdynamicblendingforcematch": DynamicBrakeBlendingForceMatch = stf.ReadBoolBlock(false); break;
+                case "engine(ortsdynamicblendingretainedpressure": DynamicBrakeBlendingRetainedPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(vacuumbrakeshasvacuumpump": VacuumPumpFitted = stf.ReadBoolBlock(false); break;
                 case "engine(enginecontrollers(ortssteamheat": SteamHeatController.Parse(stf); break;
                 case "engine(name": stf.MustMatch("("); LocomotiveName = stf.ReadString(); break;
@@ -1334,6 +1336,7 @@ namespace Orts.Simulation.RollingStocks
             DynamicBrakeCommandStartTime = locoCopy.DynamicBrakeCommandStartTime;
             DynamicBrakeBlendingOverride = locoCopy.DynamicBrakeBlendingOverride;
             DynamicBrakeBlendingForceMatch = locoCopy.DynamicBrakeBlendingForceMatch;
+            DynamicBrakeBlendingRetainedPressurePSI = locoCopy.DynamicBrakeBlendingRetainedPressurePSI;
             DynamicBrakeControllerSetupLock = locoCopy.DynamicBrakeControllerSetupLock;
 
             MainPressureUnit = locoCopy.MainPressureUnit;
@@ -2014,6 +2017,15 @@ namespace Orts.Simulation.RollingStocks
                 (MaxDynamicBrakeForceN / MaxContinuousForceN < 0.3f && MaxDynamicBrakeForceN == 20000))
                     MaxDynamicBrakeForceN = Math.Min (MaxContinuousForceN * 0.5f, 150000); // 20000 is suggested as standard value in the MSTS documentation, but in general it is a too low value
             }
+
+            // Define blending retained pressure if it was left undefined
+            if (DynamicBrakeBlendingRetainedPressurePSI < 0)
+            {
+                if (BrakeSystem is AirSinglePipe airSystem)
+                    DynamicBrakeBlendingRetainedPressurePSI = 2.0f * airSystem.BrakeCylinderSpringPressurePSI;
+                else
+                    DynamicBrakeBlendingRetainedPressurePSI = 0.0f;
+            }
         }
 
         /// <summary>
@@ -2022,24 +2034,38 @@ namespace Orts.Simulation.RollingStocks
         public void DynamicBrakeBlending(float elapsedClockSeconds)
         {
             // Local blending
-            if (Math.Abs(SpeedMpS) > DynamicBrakeSpeed1MpS && airPipeSystem != null && airPipeSystem.AutoCylPressurePSI > 0.1f
+            float autoDemandedPressurePSI = airPipeSystem.AutoCylPressurePSI * airPipeSystem.RelayValveRatio;
+
+            if (Math.Abs(SpeedMpS) > DynamicBrakeSpeed1MpS && airPipeSystem != null && autoDemandedPressurePSI > DynamicBrakeBlendingRetainedPressurePSI
                 && ThrottlePercent == 0 && !(DynamicBrakeController != null && DynamicBrakeBlendingOverride && DynamicBrakeController.SavedValue > 0))
             {
-                float maxCylPressurePSI = airPipeSystem.GetMaxCylPressurePSI();
-                float target = airPipeSystem.AutoCylPressurePSI * airPipeSystem.RelayValveRatio / maxCylPressurePSI;
+                float target = (autoDemandedPressurePSI - DynamicBrakeBlendingRetainedPressurePSI) /
+                    (airPipeSystem.ReferencePressurePSI - DynamicBrakeBlendingRetainedPressurePSI);
 
                 if (DynamicBrakeBlendingForceMatch)
                 {
-                    float diff = target * FrictionBrakeBlendingMaxForceN - DynamicBrakeForceN;
-                    float threshold = 100;
-                    if (diff > threshold && DynamicBrakePercent < 100)
-                        DynamicBrakeBlendingPercent = Math.Min(DynamicBrakePercent + 100 * elapsedClockSeconds, 100);
-                    else if (diff < -threshold && DynamicBrakePercent > 1)
-                        DynamicBrakeBlendingPercent = Math.Max(DynamicBrakePercent - 100 * elapsedClockSeconds, 1);
+                    if (DynamicBrake)
+                    {
+                        float diff = target * FrictionBrakeBlendingMaxForceN - DynamicBrakeForceN;
+                        float normDiff = diff / MaxDynamicBrakeForceN;
+
+                        if (Math.Abs(diff) > 100.0f)
+                        {
+                            // Limit rate of change to reduce overshoots
+                            if (diff > 0 && DynamicBrakeForceRampUpNpS > 0)
+                                normDiff = Math.Min(normDiff, DynamicBrakeForceRampUpNpS / MaxDynamicBrakeForceN);
+                            if (diff < 0 && DynamicBrakeForceRampDownNpS > 0)
+                                normDiff = Math.Max(normDiff, -DynamicBrakeForceRampDownNpS / MaxDynamicBrakeForceN);
+
+                            DynamicBrakeBlendingPercent = MathHelper.Clamp(DynamicBrakePercent + 100.0f * normDiff * elapsedClockSeconds, 1f, 100f);
+                        }
+                    }
+                    else // Don't increase dynamic brake setting until set-up has completed
+                        DynamicBrakeBlendingPercent = 1.0f;
                 }
                 else
                 {
-                    DynamicBrakeBlendingPercent = target * 100;
+                    DynamicBrakeBlendingPercent = MathHelper.Clamp(target * 100, 1f, 100f);
                 }
             }
             else
