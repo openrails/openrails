@@ -800,7 +800,14 @@ namespace ORTS.Common
             var unit = isMetric ? kilo ? kN : n : kilo ? klbf : lbf;
             return String.Format(CultureInfo.CurrentCulture, kilo ? "{0:F1} {1}" : "{0:F0} {1}", force, unit);
         }
-
+          
+        public static string FormatLargeForce(float forceN, bool isMetric)
+        {
+            var force = isMetric ? forceN : N.ToLbf(forceN);
+            var unit = isMetric ? kN : klbf;
+            return String.Format(CultureInfo.CurrentCulture, "{0:F1} {1}", force * 1e-3f, unit);
+        }
+        
         public static string FormatLinearResistance(float resistanceNSpM, bool isMetric)
         {
             var resistance = isMetric ? resistanceNSpM : NSpM.ToLbfpMpH(resistanceNSpM);

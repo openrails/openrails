@@ -50,6 +50,9 @@ namespace Orts.Simulation.Signalling
         public float? ApproachControlLimitPositionM;
         public float? ApproachControlLimitSpeedMpS;
 
+        public float? ReqStopVisDistance;       // visibility for request stop for AI trains
+        public float? ReqStopAnnDistance;       // announce distance for request stop for player train
+
         public SignalFunction Function { get; protected set; } = SignalFunction.UNKNOWN;
 
         public int ORTSNormalSubtypeIndex;     // subtype index form sigcfg file
@@ -155,6 +158,11 @@ namespace Orts.Simulation.Signalling
                         ApproachControlLimitPositionM = null;
                         ApproachControlLimitSpeedMpS = null;
                     }
+
+                    // request stop visibility
+
+                    ReqStopVisDistance = signalType.ReqStopVisDistance;
+                    ReqStopAnnDistance = signalType.ReqStopAnnDistance;
                 }
                 else
                 {
@@ -242,6 +250,10 @@ namespace Orts.Simulation.Signalling
         {
             return mainSignal.opp_sig_id(function);
         }
+        public int opp_sig_id_trainpath(SignalFunction function)
+        {
+            return mainSignal.opp_sig_id_trainpath(function);
+        }
 
         public MstsSignalAspect id_sig_lr(int sigId, SignalFunction function)
         {
@@ -307,6 +319,11 @@ namespace Orts.Simulation.Signalling
                 return reqSignal.this_sig_hasnormalsubtype(reqSubtype);
             }
             return 0;
+        }
+
+        public int trainRequestStop(int aspect1, int aspect2, string dumpfile)
+        {
+            return mainSignal.trainRequestStop(aspect1, aspect2, dumpfile);
         }
 
         public int switchstand(int aspect1, int aspect2, string dumpfile)
