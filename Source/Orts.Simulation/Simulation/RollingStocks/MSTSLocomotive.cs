@@ -421,6 +421,7 @@ namespace Orts.Simulation.RollingStocks
         protected bool DynamicBrakeBlendingOverride; // true when DB lever >0% should always override the blending. When false, the bigger command is applied.
         protected bool DynamicBrakeBlendingForceMatch = true; // if true, dynamic brake blending tries to achieve the same braking force as the airbrake would have.
         public float DynamicBrakeBlendingRetainedPressurePSI { get; private set; } = -1.0f; // the amount of pressure that will always be retained in the brake cylinders during blended braking
+        public float DynamicBrakeBlendingMinSpeedMpS { get; private set; } = 2.25f; // below this speed, blended braking is disabled
         protected bool DynamicBrakeControllerSetupLock; // if true if dynamic brake lever will lock until dynamic brake is available
 
         public float DynamicBrakeBlendingPercent { get; protected set; } = -1;
@@ -1098,6 +1099,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsdynamicbrakeshaspartialbailoff": DynamicBrakePartialBailOff = stf.ReadBoolBlock(false); break;
                 case "engine(ortsdynamicbrakereplacementwithenginebrake": DynamicBrakeEngineBrakeReplacement = stf.ReadBoolBlock(false); break;
                 case "engine(ortsdynamicbrakereplacementwithenginebrakeatspeed": DynamicBrakeEngineBrakeReplacementSpeed = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
+                case "engine(ortsdynamicblendingminimumspeed": DynamicBrakeBlendingMinSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesdelaytimebeforeengaging": DynamicBrakeDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(dynamicbrakesresistorcurrentlimit": DynamicBrakeMaxCurrentA = stf.ReadFloatBlock(STFReader.UNITS.Current, null); break;
                 case "engine(numwheels": MSTSLocoNumDrvWheels = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (MSTSLocoNumDrvWheels < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
@@ -1265,6 +1267,7 @@ namespace Orts.Simulation.RollingStocks
             DynamicBrakePartialBailOff = locoCopy.DynamicBrakePartialBailOff;
             DynamicBrakeEngineBrakeReplacement = locoCopy.DynamicBrakeEngineBrakeReplacement;
             DynamicBrakeEngineBrakeReplacementSpeed = locoCopy.DynamicBrakeEngineBrakeReplacementSpeed;
+            DynamicBrakeBlendingMinSpeedMpS = locoCopy.DynamicBrakeBlendingMinSpeedMpS;
             DynamicBrakeMaxCurrentA = locoCopy.DynamicBrakeMaxCurrentA;
             DynamicBrakeSpeed1MpS = locoCopy.DynamicBrakeSpeed1MpS;
             DynamicBrakeSpeed2MpS = locoCopy.DynamicBrakeSpeed2MpS;
@@ -2034,9 +2037,14 @@ namespace Orts.Simulation.RollingStocks
         public void DynamicBrakeBlending(float elapsedClockSeconds)
         {
             // Local blending
+            if (airPipeSystem == null)
+            {
+                DynamicBrakeBlendingPercent = -1;
+                return;
+            }
             float autoDemandedPressurePSI = airPipeSystem.AutoCylPressurePSI * airPipeSystem.RelayValveRatio;
 
-            if (Math.Abs(SpeedMpS) > DynamicBrakeSpeed1MpS && airPipeSystem != null && autoDemandedPressurePSI > DynamicBrakeBlendingRetainedPressurePSI
+            if (Math.Abs(SpeedMpS) > DynamicBrakeBlendingMinSpeedMpS && autoDemandedPressurePSI > DynamicBrakeBlendingRetainedPressurePSI
                 && ThrottlePercent == 0 && !(DynamicBrakeController != null && DynamicBrakeBlendingOverride && DynamicBrakeController.SavedValue > 0))
             {
                 float target = (autoDemandedPressurePSI - DynamicBrakeBlendingRetainedPressurePSI) /

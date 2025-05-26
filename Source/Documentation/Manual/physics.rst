@@ -3344,6 +3344,7 @@ the following parameters will adjust the behaviour of air brakes:
    single: DynamicBrakeHasAutoBailOff
    single: ORTSDynamicBrakesHasPartialBailOff
    single: ORTSDynamicBlendingRetainedPressure
+   single: ORTSDynamicBlendingMinimumSpeed
    single: ORTSTrainDynamicBlendingTable
    single: ORTSDynamicBrakeReplacementWithEngineBrake 
    single: ORTSDynamicBrakeReplacementWithEngineBrakeAtSpeed
@@ -3358,6 +3359,9 @@ the following parameters will adjust the behaviour of air brakes:
   pressure which, when used in combination with ORTSDynamicBrakesHasPartialBailOff,
   will remain applied regardless of the blended dynamic brake force. This
   pressure is also the minimum pressure at which the blended braking system will activate.
+- ``Engine(ORTSDynamicBlendingMinimumSpeed`` -- Below the specified speed
+  (default units mph, default value 5 mph / 8 kph), local dynamic brake blending
+  will be disabled, allowing locomotive brakes to hold the train while stopped.
   
 Sometimes the train brake controller is capable to apply the dynamic
 brakes for the whole consist, usually as a first step before air brakes
