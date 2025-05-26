@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
@@ -180,8 +181,9 @@ namespace Orts.Formats.Msts
         public bool[] Weather;
         public int[] TimeInterval;
         public List<int[]> TimeIntervals;
-
-
+        public Vector3 Position;
+        public int ShapeIndex = -1;
+        public string ShapeHierarchy;
 
         public SMSStream(STFReader stf)
         {
@@ -192,6 +194,9 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("volumecurve", ()=>{ VolumeCurves.Add(new VolumeCurve(stf)); }),
                 new STFReader.TokenProcessor("frequencycurve", ()=>{ FrequencyCurve = new FrequencyCurve(stf); }),
                 new STFReader.TokenProcessor("volume", ()=>{ Volume = stf.ReadFloatBlock(STFReader.UNITS.None, Volume); }),
+                new STFReader.TokenProcessor("ortsposition", ()=>{ Position = stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero); Position.Z *= -1.0f; }),
+                new STFReader.TokenProcessor("ortsshapeindex", ()=>{ ShapeIndex = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("ortsshapehierarchy", ()=>{ ShapeHierarchy = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("ortstimeofday", ()=>{
                     if (TimeIntervals == null)
                         TimeIntervals = new List<int[]>();
