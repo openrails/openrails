@@ -873,6 +873,8 @@ namespace Orts.Simulation.RollingStocks
         // called when it's time to update the MotiveForce and FrictionForce
         public virtual void Update(float elapsedClockSeconds)
         {
+// Trace.TraceInformation("Car Distance - CarID {0}, Distance {1}", CarID, CarTrackControlledDistanceM);
+            
             // Initialize RigidWheelBaseM in first loop if not defined in ENG file, then ignore
             if (RigidWheelBaseM == 0 && !RigidWheelBaseInitialised)   // Calculate default values if no value in Wag File
             {

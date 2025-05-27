@@ -330,13 +330,6 @@ namespace Orts.Viewer3D
                         Car.TrackSoundLocation = new WorldLocation(Car.WorldPosition.WorldLocation);
                     _prevTType = _curTType;
                 }
-
-                if (SharedSMSFileManager.PlayDefaultTrackSoundsContinuous)
-                {
-                    // Calculate the distance from the car to the camera position. Used for track based sounds
-                    Car.CarTrackControlledDistanceM = (float)Math.Sqrt(WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, Viewer.Camera.CameraWorldLocation));
-                }
-
             }
         }
 
@@ -385,6 +378,11 @@ namespace Orts.Viewer3D
                         NeedsFrequentUpdate |= _activeOutSource.NeedsFrequentUpdate;
                     }
                 }
+
+                    // Calculate the distance from the car to the camera position. Used for track based sounds
+                    Car.CarTrackControlledDistanceM = (float)Math.Sqrt(WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, Viewer.Camera.CameraWorldLocation));
+             //       Trace.TraceInformation("Sounds - Car Camera - CarID {0} Distance {1}", Car.CarID, Car.CarTrackControlledDistanceM);
+
             }
             else // Legacy operation, plays track sounds when in relevant track sound region
             {
