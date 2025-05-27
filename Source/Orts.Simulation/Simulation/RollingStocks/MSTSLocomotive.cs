@@ -421,7 +421,7 @@ namespace Orts.Simulation.RollingStocks
         protected bool DynamicBrakeBlendingOverride; // true when DB lever >0% should always override the blending. When false, the bigger command is applied.
         protected bool DynamicBrakeBlendingForceMatch = true; // if true, dynamic brake blending tries to achieve the same braking force as the airbrake would have.
         public float DynamicBrakeBlendingRetainedPressurePSI { get; private set; } = -1.0f; // the amount of pressure that will always be retained in the brake cylinders during blended braking
-        public float DynamicBrakeBlendingMinSpeedMpS { get; private set; } = 2.25f; // below this speed, blended braking is disabled
+        public float DynamicBrakeBlendingMinSpeedMpS { get; private set; } = -1.0f; // below this speed, blended braking is disabled
         protected bool DynamicBrakeControllerSetupLock; // if true if dynamic brake lever will lock until dynamic brake is available
 
         public float DynamicBrakeBlendingPercent { get; protected set; } = -1;
@@ -1895,6 +1895,21 @@ namespace Orts.Simulation.RollingStocks
                 DynamicBrakeEngineBrakeReplacementSpeed = DynamicBrakeSpeed2MpS;
             }
 
+            // Define blending minimum speed if it was left undefined (use MSTS minimum dynamic brake speed)
+            if (DynamicBrakeBlendingMinSpeedMpS < 0)
+            {
+                DynamicBrakeBlendingMinSpeedMpS = DynamicBrakeSpeed1MpS;
+            }
+
+            // Define blending retained pressure if it was left undefined
+            if (DynamicBrakeBlendingRetainedPressurePSI < 0)
+            {
+                if (BrakeSystem is AirSinglePipe airSystem)
+                    DynamicBrakeBlendingRetainedPressurePSI = 2.0f * airSystem.BrakeCylinderSpringPressurePSI;
+                else
+                    DynamicBrakeBlendingRetainedPressurePSI = 0.0f;
+            }
+
             // Initialise track sanding parameters
             if (MaxTrackSandBoxCapacityM3 == 0)
             {
@@ -2019,15 +2034,6 @@ namespace Orts.Simulation.RollingStocks
                 if (MaxDynamicBrakeForceN > 0 && MaxContinuousForceN > 0 &&
                 (MaxDynamicBrakeForceN / MaxContinuousForceN < 0.3f && MaxDynamicBrakeForceN == 20000))
                     MaxDynamicBrakeForceN = Math.Min (MaxContinuousForceN * 0.5f, 150000); // 20000 is suggested as standard value in the MSTS documentation, but in general it is a too low value
-            }
-
-            // Define blending retained pressure if it was left undefined
-            if (DynamicBrakeBlendingRetainedPressurePSI < 0)
-            {
-                if (BrakeSystem is AirSinglePipe airSystem)
-                    DynamicBrakeBlendingRetainedPressurePSI = 2.0f * airSystem.BrakeCylinderSpringPressurePSI;
-                else
-                    DynamicBrakeBlendingRetainedPressurePSI = 0.0f;
             }
         }
 
