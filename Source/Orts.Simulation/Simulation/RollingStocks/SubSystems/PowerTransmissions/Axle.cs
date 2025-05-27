@@ -1292,8 +1292,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 var wheelRadiusMM = Axle.WheelRadiusM * 1000;
                 var wheelDistanceGaugeMM = Axle.WheelDistanceGaugeM * 1000;
                 var GNm2 = 8.40E+10;
-                wheelLoadN = Axle.AxleWeightN / (Axle.NumWheelsetAxles * 2); // Assume two wheels per axle, and thus wheel weight will be have the value - multiple axles????
-                var wheelLoadkN = Axle.AxleWeightN / (Axle.NumWheelsetAxles * 2 * 1000); // Assume two wheels per axle, and thus wheel weight will be have the value - multiple axles????
+                // Prevent wheel load from going negative, negative wheel load would indicate wheel has lifted off rail which otherwise leads to NaN errors
+                wheelLoadN = Math.Max(Axle.AxleWeightN / (Axle.NumWheelsetAxles * 2), 0.1); // Assume two wheels per axle, and thus wheel weight will be have the value - multiple axles????
+                var wheelLoadkN = wheelLoadN / 1000;
                 var Young_ModulusMPa = 207000;
 
                 // Calculate Hertzian values - assume 2b = 12mm.
