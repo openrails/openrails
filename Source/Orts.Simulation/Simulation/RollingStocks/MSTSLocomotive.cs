@@ -998,8 +998,6 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(enginecontrollers(throttle": ThrottleController = new MSTSNotchController(stf); break;
                 case "engine(enginecontrollers(regulator": ThrottleController = new MSTSNotchController(stf); break;
                 case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(stf); break;
-                case "engine(enginecontrollers(orts_force_selector": if (CruiseControl != null) CruiseControl.MaxForceSelectorController = new MSTSNotchController(stf); break;
-                case "engine(enginecontrollers(orts_speed_selector": if (CruiseControl != null) CruiseControl.SpeedSelectorController = new MSTSNotchController(stf); break;
                 case "engine(ortslocomotivedrivewheelonlybraking":
                     var wheelbraking = stf.ReadIntBlock(null);
                     if (wheelbraking == 1)
@@ -2250,9 +2248,7 @@ namespace Orts.Simulation.RollingStocks
                 case Train.TRAINTYPE.AI_PLAYERDRIVEN:
                 case Train.TRAINTYPE.REMOTE:
                     // For notched throttle controls (e.g. Dash 9 found on Marias Pass) UpdateValue is always 0.0
-                    if (ThrottleController.UpdateValue != 0.0 &&
-                        (CruiseControl == null || CruiseControl.SpeedRegMode != CruiseControl.SpeedRegulatorMode.Auto ||
-                            (!CruiseControl.UseThrottleAsForceSelector && !CruiseControl.UseThrottleAsSpeedSelector)))
+                    if (ThrottleController.UpdateValue != 0.0)
                     {
                         Simulator.Confirmer.UpdateWithPerCent(
                             this is MSTSSteamLocomotive ? CabControl.Regulator : CabControl.Throttle,
@@ -2623,7 +2619,7 @@ namespace Orts.Simulation.RollingStocks
                 if (forceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                     forceN = 0;
             }
-            if (forceN * AbsSpeedMpS > powerW) forceN = powerW / AbsSpeedMpS;
+            if (forceN * AbsTractionSpeedMpS > powerW) forceN = powerW / AbsTractionSpeedMpS;
             return forceN;
         }
         protected virtual void UpdateTractionForce(float elapsedClockSeconds)
@@ -2666,13 +2662,13 @@ namespace Orts.Simulation.RollingStocks
         public float GetAvailableDynamicBrakeForceN(float d)
         {
             float forceN = 0;
-            if (d > 0 && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
+            if (d > 0 && DynamicBrakeForceCurves != null && AbsTractionSpeedMpS > 0)
             {
-                forceN = DynamicBrakeForceCurves.Get(d, AbsSpeedMpS) * (1 - PowerReduction);
+                forceN = DynamicBrakeForceCurves.Get(d, AbsTractionSpeedMpS) * (1 - PowerReduction);
                 if (LocomotivePowerSupply.MaximumDynamicBrakePowerW > 0)
                 {
                     float powerW = LocomotivePowerSupply.MaximumDynamicBrakePowerW * (1 - PowerReduction);
-                    if (forceN * AbsSpeedMpS > powerW) forceN = powerW / AbsSpeedMpS;
+                    if (forceN * AbsTractionSpeedMpS > powerW) forceN = powerW / AbsTractionSpeedMpS;
                 }
             }
             return forceN;
@@ -2708,7 +2704,7 @@ namespace Orts.Simulation.RollingStocks
             if (dynamicLimited) d = maxdynamic;
             d = MathHelper.Clamp(d, 0, 1);
 
-            if (maxdynamic > 0 && AbsSpeedMpS > 0)
+            if (maxdynamic > 0 && AbsTractionSpeedMpS > 0)
             {
                 float limitForceN = GetAvailableDynamicBrakeForceN(maxdynamic);
                 float targetForceN = GetAvailableDynamicBrakeForceN(d);
@@ -2719,7 +2715,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0 position
             }
-            TractiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * DynamicBrakeForceN;
+            TractiveForceN -= Math.Sign(WheelSpeedMpS) * DynamicBrakeForceN;
         }
 
         /// <summary>
@@ -2734,29 +2730,15 @@ namespace Orts.Simulation.RollingStocks
             // With Simple adhesion apart from correction for rail adhesion, there is no further variation to the motive force. 
             // With Advanced adhesion the raw motive force is fed into the advanced (axle) adhesion model, and is corrected for wheel slip and rail adhesion
 
-            // For the advanced adhesion model, a rudimentary form of slip control is incorporated by using the wheel speed to calculate tractive effort.
-            // As wheel speed is increased tractive effort is decreased. Hence wheel slip is "controlled" to a certain extent.
-            // This doesn't cover all types of locomotives, for example if DC traction motors and no slip control, then the tractive effort shouldn't be reduced.
-            // This won't eliminate slip, but limits its impact. 
-            // More modern locomotive have a more sophisticated system that eliminates slip in the majority (if not all circumstances).
-            // Simple adhesion control does not have any slip control feature built into it.
-            // TODO - a full review of slip/no slip control.
+            // "AbsTractionSpeedMpS" is the reference speed used for all tractive effort/dynamic braking calculations
+            // This speed is an absolute value (Abs) and is measured in meters per second (MpS), and is set to the wheel speed of the locomotive.
+            // Why use wheel speed? The locomotive transmission (electric, hydraulic, mechanical, steam) is connected to the wheels of the locomotive,
+            // so the speed of the wheels is what will drive the transmission response (this is true whether the wheels are slipping or not;
+            // the traction motor/gearbox/steam piston does not "know" or "care" if the wheels are slipping or not, and behaves the same either way).
+            // For a locomotive to respond to ground speed or slippage, additional systems (such as wheel slip protection) are required, these are
+            // implemented elsewhere.
             PrevAbsTractionSpeedMpS = AbsTractionSpeedMpS;
-            if (TractionMotorType == TractionMotorTypes.AC)
-            {
-                AbsTractionSpeedMpS = AbsSpeedMpS;
-            }
-            else
-            {
-                if (WheelSlip && AdvancedAdhesionModel)
-                {
                     AbsTractionSpeedMpS = AbsWheelSpeedMpS;
-                }
-                else
-                {
-                    AbsTractionSpeedMpS = AbsSpeedMpS;
-                }
-            }
             UpdateTractionForce(elapsedClockSeconds);
 
             if (MaxForceN > 0 && MaxContinuousForceN > 0 && PowerReduction < 1)
@@ -3735,6 +3717,30 @@ namespace Orts.Simulation.RollingStocks
         #region ThrottleController
         public void StartThrottleIncrease(float? target)
         {
+            if (CruiseControl != null && target != null)
+            {
+                if (CruiseControl.DisableCruiseControlOnThrottleAndZeroSpeed && AbsSpeedMpS == 0 && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
+                {
+                    if (CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) CruiseControl.SetSpeed(0);
+                    CruiseControl.SpeedRegMode = CruiseControl.SpeedRegulatorMode.Manual;
+                }
+                if (CruiseControl.DisableCruiseControlOnThrottleAndZeroForce && CruiseControl.SelectedMaxAccelerationPercent == 0 && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
+                {
+                    if (CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) CruiseControl.SetSpeed(0);
+                    CruiseControl.SpeedRegMode = CruiseControl.SpeedRegulatorMode.Manual;
+                }
+                if (CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.UseThrottleAsSpeedSelector)
+                {
+                    CruiseControl.SpeedRegulatorSelectedSpeedStartIncrease();
+                    return;
+                }
+                if (CruiseControl.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed && CruiseControl.SelectedSpeedMpS == 0 &&
+                    CruiseControl.SelectedMaxAccelerationPercent == 0 && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
+                {
+                    if (CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) CruiseControl.SetSpeed(0);
+                    CruiseControl.SpeedRegMode = CruiseControl.SpeedRegulatorMode.Manual;
+                }
+            }
             if (ThrottleController.CurrentValue >= ThrottleController.MaximumValue)
                 return;
 
@@ -3748,12 +3754,22 @@ namespace Orts.Simulation.RollingStocks
 
         public void StartThrottleIncrease()
         {
+            if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedMaxAccelerationPercent != 0
+                && CruiseControl.HasIndependentThrottleDynamicBrakeLever)
+                return;
+            if ((CruiseControl?.SelectedMaxAccelerationPercent == 0 && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto) &&
+                (CruiseControl.DisableCruiseControlOnThrottleAndZeroForce || CruiseControl.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed && CruiseControl.SelectedSpeedMpS == 0))
+            {
+                if (CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) CruiseControl.SetSpeed(0);
+                if (ThrottleController.CurrentValue == 0)
+                {
+                    CruiseControl.SpeedRegMode = CruiseControl.SpeedRegulatorMode.Manual;
+                }
+                CruiseControl.SkipThrottleDisplay = false;
+            }
             var mpc = MultiPositionControllers.Where(x => x.controllerBinding == ControllerBinding.Throttle).FirstOrDefault();
             if (mpc != null)
             {
-                if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedMaxAccelerationPercent != 0
-                    && CruiseControl.HasIndependentThrottleDynamicBrakeLever)
-                    return;
                 if (!mpc.StateChanged)
                 {
                     mpc.StateChanged = true;
@@ -3761,7 +3777,31 @@ namespace Orts.Simulation.RollingStocks
                 }
                 return;
             }
-            if (DynamicBrakeController != null && DynamicBrakeController.CurrentValue > 0)
+            if (CruiseControl != null && (CombinedControlType == CombinedControl.None || CruiseControl.UseThrottleInCombinedControl))
+            {
+                if (CruiseControl.UseThrottleAsForceSelector && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && !CruiseControl.DynamicBrakePriority)
+                {
+                    CruiseControl.SpeedRegulatorMaxForceStartIncrease();
+                    return;
+                }
+                else
+                {
+                    if (CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && !CruiseControl.DynamicBrakePriority)
+                    {
+                        if (!CruiseControl.UseThrottleAsSpeedSelector)
+                            return;
+                    }
+                }
+            }
+            bool checkBraking = true;
+            if (CruiseControl != null)
+            {
+                if (CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.UseThrottleAsSpeedSelector)
+                {
+                    checkBraking = false;
+                }
+            }
+            if (DynamicBrakeController != null && DynamicBrakeController.CurrentValue > 0 && checkBraking)
             {
                 if (!(CombinedControlType == CombinedControl.ThrottleDynamic
                     || CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0))
@@ -3770,6 +3810,7 @@ namespace Orts.Simulation.RollingStocks
                     return;
                 }
             }
+
             if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrakeController.CurrentValue > 0)
                 StartDynamicBrakeDecrease(null);
             else if (CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0)
@@ -3790,6 +3831,23 @@ namespace Orts.Simulation.RollingStocks
                 }
                 return;
             }
+            if (CruiseControl != null)
+            {
+                if (CruiseControl.UseThrottleAsForceSelector && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto &&
+                    !(CruiseControl.UseThrottleInCombinedControl && CruiseControl.DynamicBrakePriority))
+                {
+                    CruiseControl.SpeedRegulatorMaxForceStopIncrease();
+                    return;
+                }
+                else
+                {
+                    if (CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.UseThrottleAsSpeedSelector && CruiseControl.SelectedSpeedMpS > 0)
+                    {
+                        CruiseControl.SpeedRegulatorSelectedSpeedStopIncrease();
+                        return;
+                    }
+                }
+            }
             AlerterReset(TCSEvent.ThrottleChanged);
             ThrottleController.StopIncrease();
 
@@ -3803,6 +3861,15 @@ namespace Orts.Simulation.RollingStocks
 
         public void StartThrottleDecrease(float? target)
         {
+            if (CruiseControl != null)
+            {
+                if (CruiseControl.UseThrottleAsSpeedSelector && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedSpeedMpS > 0)
+                {
+                    CruiseControl.SpeedRegulatorSelectedSpeedStartDecrease();
+                    return;
+                }
+            }
+
             if (ThrottleController.CurrentValue <= ThrottleController.MinimumValue)
                 return;
 
@@ -3813,20 +3880,54 @@ namespace Orts.Simulation.RollingStocks
             AlerterReset(TCSEvent.ThrottleChanged);
             CommandStartTime = Simulator.ClockTime;
         }
+
+        protected bool speedSelectorModeDecreasing = false;
         public void StartThrottleDecrease()
         {
-            var mpc = MultiPositionControllers.Where(x => x.controllerBinding == ControllerBinding.Throttle).FirstOrDefault();
-            if (mpc != null)
-            {
             if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedMaxAccelerationPercent != 0
                 && CruiseControl.HasIndependentThrottleDynamicBrakeLever)
                 return;
+            if ((CruiseControl?.SelectedMaxAccelerationPercent == 0 && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto) &&
+                (CruiseControl.DisableCruiseControlOnThrottleAndZeroForce || CruiseControl.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed && CruiseControl.SelectedSpeedMpS == 0))
+            {
+                if (CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) CruiseControl.SetSpeed(0);
+                if (ThrottleController.CurrentValue == 0)
+                {
+                    CruiseControl.SpeedRegMode = CruiseControl.SpeedRegulatorMode.Manual;
+                }
+                CruiseControl.SkipThrottleDisplay = false;
+            }
+            var mpc = MultiPositionControllers.Where(x => x.controllerBinding == ControllerBinding.Throttle).FirstOrDefault();
+            if (mpc != null)
+            {
                 if (!mpc.StateChanged)
                 {
                     mpc.StateChanged = true;
                      mpc.DoMovement(MultiPositionController.Movement.Aft);
                 }
                 return;
+            }
+            if (CruiseControl != null && (CombinedControlType == CombinedControl.None || CruiseControl.UseThrottleInCombinedControl))
+            {
+                if (CruiseControl.UseThrottleAsForceSelector && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && 
+                    !(CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl && (CruiseControl.DynamicBrakePriority ||
+                    CruiseControl.SelectedMaxAccelerationPercent == 0)))
+                {
+                    CruiseControl.SpeedRegulatorMaxForceStartDecrease();
+                    return;
+                }
+                else
+                {
+                    if (CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && !CruiseControl.UseThrottleAsSpeedSelector &&
+                    !(CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl && ThrottleController.CurrentValue <= 0))
+                    {
+                        return;
+                    }
+                }
+            }
+            if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedSpeedMpS > 0 && CruiseControl.UseThrottleAsSpeedSelector)
+            {
+                ThrottleController.CurrentValue = 1;
             }
             if (CombinedControlType == CombinedControl.ThrottleDynamic && ThrottleController.CurrentValue <= 0)
                 StartDynamicBrakeIncrease(null);
@@ -3847,6 +3948,30 @@ namespace Orts.Simulation.RollingStocks
                     mpc.DoMovement(MultiPositionController.Movement.Neutral);
                 }
                 return;
+            }
+            if (CruiseControl != null)
+            {
+                if (CruiseControl.UseThrottleAsSpeedSelector && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedSpeedMpS > 0)
+                {
+                    CruiseControl.SpeedRegulatorSelectedSpeedStopDecrease();
+                    return;
+                }
+                else
+                {
+                    if (CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedSpeedMpS > 0)
+                    {
+                        speedSelectorModeDecreasing = false;
+                    }
+                }
+                if (CombinedControlType == CombinedControl.None || CruiseControl.UseThrottleInCombinedControl)
+                {
+                    if (CruiseControl.UseThrottleAsForceSelector && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto
+                        && CruiseControl.SelectedMaxAccelerationPercent > 0)
+                    {
+                        CruiseControl.SpeedRegulatorMaxForceStopDecrease();
+                        return;
+                    }
+                }
             }
             AlerterReset(TCSEvent.ThrottleChanged);
             ThrottleController.StopDecrease();
@@ -3953,6 +4078,14 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public void ThrottleChangeTo(bool increase, float? target)
         {
+            if ((CruiseControl != null && target != 0 && CruiseControl.SelectedMaxAccelerationPercent <= 0
+                && ThrottleController.CurrentValue == 0 && DynamicBrakeController.CurrentValue == 0) && 
+                (CruiseControl.DisableCruiseControlOnThrottleAndZeroForce || CruiseControl.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed && CruiseControl.SelectedSpeedMpS == 0))
+            {
+                if (CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) CruiseControl.SetSpeed(0);
+                CruiseControl.SpeedRegMode = CruiseControl.SpeedRegulatorMode.Manual;
+            }
+
             if (increase)
             {
                 if (target > ThrottleController.CurrentValue)
@@ -3984,22 +4117,25 @@ namespace Orts.Simulation.RollingStocks
                 ThrottleController.StartDecrease();
                 ThrottleController.StopDecrease();
             }
-            if (CruiseControl != null && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.UseThrottleAsForceSelector)
-            {
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.MaxAcceleration, ThrottleController.CurrentValue * 100);
-            }
-            else if (CruiseControl != null && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.UseThrottleAsSpeedSelector)
-            {
-                CruiseControl.ConfirmSelectedSpeed();
-            }
-            else
-            {
             Simulator.Confirmer.ConfirmWithPerCent(CabControl.Throttle, ThrottleController.CurrentValue * 100);
-        }
         }
 
         public void SetThrottleValue(float value)
         {
+            if (CruiseControl != null)
+            {
+                if (CruiseControl.UseThrottleAsForceSelector && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
+                {
+                    CruiseControl.SetMaxForcePercent((float)Math.Round(value * 100, 0));
+                    if (!CruiseControl.UseThrottleInCombinedControl) ThrottleController.SetValue(value);
+                    return;
+                }
+                if (CruiseControl.UseThrottleAsSpeedSelector && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
+                {
+                    CruiseControl.SetSpeed((float)Math.Round((MpS.ToKpH(MaxSpeedMpS) / 100) * value * 100, 0));
+                    return;
+                }
+            }
             var controller = ThrottleController;
             var oldValue = controller.IntermediateValue;
             var change = controller.SetValue(value);
@@ -4010,33 +4146,28 @@ namespace Orts.Simulation.RollingStocks
                 AlerterReset(TCSEvent.ThrottleChanged);
             }
             if (oldValue != controller.IntermediateValue)
-            {
-                if (CruiseControl != null && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.UseThrottleAsForceSelector)
-                {
-                    Simulator.Confirmer.UpdateWithPerCent(
-                        CabControl.MaxAcceleration,
-                        oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease,
-                        controller.CurrentValue * 100);
-                }
-                else if (CruiseControl != null && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.UseThrottleAsSpeedSelector)
-                {
-                    if (CruiseControl.SpeedIsMph)
-                        Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetStringFmt("Selected speed changed to {0} mph", Math.Round(MpS.FromMpS(CruiseControl.SelectedSpeedMpS, false), 0, MidpointRounding.AwayFromZero).ToString()));
-                    else
-                        Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetStringFmt("Selected speed changed to {0} km/h", Math.Round(MpS.FromMpS(CruiseControl.SelectedSpeedMpS, true), 0, MidpointRounding.AwayFromZero).ToString()));
-                }
-                else
-                {
                 Simulator.Confirmer.UpdateWithPerCent(
                     this is MSTSSteamLocomotive ? CabControl.Regulator : CabControl.Throttle,
                     oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease,
                     controller.CurrentValue * 100);
         }
-            }
-        }
 
         public void SetThrottlePercent(float percent)
         {
+            if (CruiseControl != null)
+            {
+                if (CruiseControl.UseThrottleAsForceSelector && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
+                {
+                    CruiseControl.SetMaxForcePercent(percent);
+                    if (!CruiseControl.UseThrottleInCombinedControl) ThrottleController.SetPercent(percent);
+                    return;
+                }
+                else if (CruiseControl.UseThrottleAsSpeedSelector && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
+                    CruiseControl.SetSpeed(MpS.FromMpS(percent * MaxSpeedMpS / 100, !CruiseControl.SpeedIsMph));
+                else
+                    ThrottleController.SetPercent(percent);
+            }
+            else
                 ThrottleController.SetPercent(percent);
         }
 
@@ -4050,6 +4181,40 @@ namespace Orts.Simulation.RollingStocks
 
         public void ThrottleToZero()
         {
+            if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedMaxAccelerationPercent != 0
+                && CruiseControl.HasIndependentThrottleDynamicBrakeLever)
+                return;
+            if ((CruiseControl?.SelectedMaxAccelerationPercent == 0 && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto) &&
+                (CruiseControl.DisableCruiseControlOnThrottleAndZeroForce || CruiseControl.DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed && CruiseControl.SelectedSpeedMpS == 0))
+            {
+                if (CruiseControl.ZeroSelectedSpeedWhenPassingToThrottleMode) CruiseControl.SetSpeed(0);
+                if (ThrottleController.CurrentValue == 0)
+                {
+                    CruiseControl.SpeedRegMode = CruiseControl.SpeedRegulatorMode.Manual;
+                }
+                CruiseControl.SkipThrottleDisplay = false;
+            }
+            if (CruiseControl != null && (CombinedControlType == CombinedControl.None || CruiseControl.UseThrottleInCombinedControl))
+            {
+                if (CruiseControl.UseThrottleAsForceSelector && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto &&
+                    !(CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl && CruiseControl.DynamicBrakePriority))
+                {
+                    CruiseControl.SpeedRegulatorMaxForceStartDecrease();
+                    return;
+                }
+                else
+                {
+                    if (CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && !CruiseControl.UseThrottleAsSpeedSelector &&
+                    !(CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl && ThrottleController.CurrentValue <= 0))
+                    {
+                        return;
+                    }
+                }
+            }
+            if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedSpeedMpS > 0 && CruiseControl.UseThrottleAsSpeedSelector)
+            {
+                ThrottleController.CurrentValue = 1;
+            }
             if (CombinedControlType == CombinedControl.ThrottleDynamic && ThrottleController.CurrentValue <= 0)
                 StartDynamicBrakeIncrease(null);
             else if (CombinedControlType == CombinedControl.ThrottleAir && ThrottleController.CurrentValue <= 0)
@@ -4070,13 +4235,22 @@ namespace Orts.Simulation.RollingStocks
         }
 
         /// <summary>
-        /// Returns the position of the throttle handle
+        /// Returns the position of the throttle handle considering 
+        /// whether it is used for cruise control or not
         /// </summary>
         /// <param name="intermediateValue">Whather asking for intermediate (for mouse operation) or notched (for displaying) value.</param>
         /// <returns>Position into 0-1 range</returns>
         public float GetThrottleHandleValue(bool intermediateValue)
         {
-            return intermediateValue ? ThrottleController.IntermediateValue : ThrottleController.CurrentValue;
+            if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.SelectedMaxAccelerationPercent != 0
+                && CruiseControl.HasIndependentThrottleDynamicBrakeLever)
+                return intermediateValue ? ThrottleController.CurrentValue : ThrottleController.IntermediateValue;
+            if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.UseThrottleAsForceSelector)
+                return CruiseControl.SelectedMaxAccelerationPercent / 100;
+            if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.UseThrottleAsSpeedSelector)
+                return CruiseControl.SelectedSpeedMpS / MaxSpeedMpS;
+
+            return intermediateValue ? ThrottleController.CurrentValue : ThrottleController.IntermediateValue;
         }
 
         #endregion
@@ -4088,10 +4262,14 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public void SetCombinedHandleValue(float value)
         {
+            bool ccUseCombinedControl = CruiseControl != null && (CruiseControl.UseThrottleAsForceSelector || CruiseControl.UseThrottleAsSpeedSelector ) && CruiseControl.UseThrottleInCombinedControl;
             bool canBrake = ThrottleController.CurrentValue == 0;
+            if (ccUseCombinedControl && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
+                canBrake = (CruiseControl.UseThrottleAsForceSelector && CruiseControl.SelectedMaxAccelerationPercent == 0) || (CruiseControl.UseThrottleAsSpeedSelector && CruiseControl.SelectedSpeedMpS == 0);
 
             // Check if currently braking, update brake controllers accordingly
-            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrakeController.CurrentValue > 0)
+            if (CombinedControlType == CombinedControl.ThrottleDynamic && DynamicBrakeController.CurrentValue > 0 &&
+                !(ccUseCombinedControl && !CruiseControl.DynamicBrakePriority && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto))
             {
                 SetDynamicBrakeValue((MathHelper.Clamp(value, CombinedControlSplitPosition, 1) - CombinedControlSplitPosition) / (1 - CombinedControlSplitPosition));
             }
@@ -4111,7 +4289,8 @@ namespace Orts.Simulation.RollingStocks
                 ThrottleController.IntermediateValue = 0;
             }
             // Return to throttling
-            else if ((DynamicBrakeController?.CurrentValue ?? 0) <= 0)
+            else if ((DynamicBrakeController?.CurrentValue ?? 0) <= 0 ||
+                (CruiseControl != null && !CruiseControl.DynamicBrakePriority && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto))
             {
                 SetThrottleValue(1 - MathHelper.Clamp(value, 0, CombinedControlSplitPosition) / CombinedControlSplitPosition);
 
@@ -4134,12 +4313,40 @@ namespace Orts.Simulation.RollingStocks
             var dynamicsValue = intermediateValue ? DynamicBrakeController?.IntermediateValue : DynamicBrakeController?.CurrentValue;
             var brakesValue = intermediateValue ? TrainBrakeController?.IntermediateValue : TrainBrakeController?.CurrentValue;
 
+            if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto)
+            {
+                if (CruiseControl.SelectedMaxAccelerationPercent != 0 && CruiseControl.HasIndependentThrottleDynamicBrakeLever)
+                    return CombinedControlSplitPosition;
+                if (CruiseControl.UseThrottleAsForceSelector && CruiseControl.UseThrottleInCombinedControl && !CruiseControl.DynamicBrakePriority
+                    && CombinedControlType == CombinedControl.ThrottleDynamic)
+                    return CombinedControlSplitPosition * (1 - (CruiseControl.SelectedMaxAccelerationPercent / 100));
+                if (CruiseControl.UseThrottleAsSpeedSelector && CruiseControl.UseThrottleInCombinedControl)
+                {
+                    if (!CruiseControl.DynamicBrakePriority && CombinedControlType == CombinedControl.ThrottleDynamic
+                        || !CruiseControl.TrainBrakePriority && CombinedControlType == CombinedControl.ThrottleAir)
+                    return CombinedControlSplitPosition * (1 - (CruiseControl.SelectedSpeedMpS / MaxSpeedMpS));
+                }
+            }
+
             if (CombinedControlType == CombinedControl.ThrottleDynamic && throttleValue <= 0 && dynamicsValue > 0)
+            {
+                if (CruiseControl != null && CruiseControl.SkipThrottleDisplay && !CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl)
+                    return CombinedControlSplitPosition;
+                else
                     return CombinedControlSplitPosition + (1 - CombinedControlSplitPosition) * (dynamicsValue ?? 0);
+            }
             else if (CombinedControlType == CombinedControl.ThrottleAir && throttleValue <= 0 && brakesValue > 0)
                 return CombinedControlSplitPosition + (1 - CombinedControlSplitPosition) * (brakesValue ?? 0);
-            else
+            else if (CruiseControl == null)
                 return CombinedControlSplitPosition * (1 - (throttleValue ?? 0));
+            else if (CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Manual)
+                return CombinedControlSplitPosition * (1 - (throttleValue ?? 0));
+            else if (CruiseControl.UseThrottleAsSpeedSelector)
+                return CombinedControlSplitPosition * (1 - (CruiseControl.SelectedSpeedMpS / MaxSpeedMpS));
+            else if (CruiseControl.UseThrottleAsForceSelector && CruiseControl.UseThrottleInCombinedControl)
+                return CombinedControlSplitPosition * (1 - (CruiseControl.SelectedMaxAccelerationPercent / 100));
+            else
+                return CombinedControlSplitPosition;
 
         }
         #endregion
@@ -4699,6 +4906,12 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Confirmer.Warning(CabControl.DynamicBrake, CabSetting.Warn1);
                 return;
             }
+            if (CruiseControl != null && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && (CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl ||
+                (CruiseControl.DisableCruiseControlOnThrottleAndZeroForce && CruiseControl.SelectedMaxAccelerationPercent == 0)))
+            {
+                ThrottlePercent = 0;
+                CruiseControl.DynamicBrakePriority = true;
+            }
             if (!CanUseDynamicBrake())
                 return;
 
@@ -4798,6 +5011,8 @@ namespace Orts.Simulation.RollingStocks
                     return;
                 if (!DynamicBrake && DynamicBrakeControllerSetupLock && DynamicBrakeController.CurrentValue > 0)
                     return;
+                if (CruiseControl != null && CruiseControl.UseThrottleAsForceSelector && !CruiseControl.DynamicBrakePriority && !CruiseControl.UseThrottleInCombinedControl)
+                    return;
             }
 
             var oldValue = DynamicBrakeController.IntermediateValue;
@@ -4810,6 +5025,12 @@ namespace Orts.Simulation.RollingStocks
             }
             if (oldValue != DynamicBrakeController.IntermediateValue && !CheckDisableDynamicBrake())
                 Simulator.Confirmer.UpdateWithPerCent(CabControl.DynamicBrake, oldValue < DynamicBrakeController.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, DynamicBrakeController.CurrentValue * 100);
+
+            if (ThrottleController.CurrentValue <= 0 && DynamicBrakeController.CurrentValue > 0)
+            {
+                if (CruiseControl != null && CruiseControl.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.DynamicBrakeCommandHasPriorityOverCruiseControl)
+                    CruiseControl.DynamicBrakePriority = true;
+            }
         }
 
         public void SetDynamicBrakePercent(float percent)
@@ -5495,12 +5716,14 @@ namespace Orts.Simulation.RollingStocks
 
                 case CABViewControlTypes.THROTTLE:
                     {
+                        if (CruiseControl != null && CruiseControl.SkipThrottleDisplay) break;
                         data = GetThrottleHandleValue(false);
                         break;
                     }
                 case CABViewControlTypes.THROTTLE_DISPLAY:
                 case CABViewControlTypes.CPH_DISPLAY:
                     {
+                        if (CruiseControl != null && CruiseControl.SkipThrottleDisplay) break;
                         data = (Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || Train.Autopilot) ? ThrottlePercent / 100f : LocalThrottlePercent / 100f;
                         break;
                     }

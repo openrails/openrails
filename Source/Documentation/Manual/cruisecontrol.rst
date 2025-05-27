@@ -33,12 +33,14 @@ A paragraph is devoted to each of the above topics.
 Operation Modes
 ===============
 
-The CC Speed Regulator can be in two different states (or modes), that is:
+The CC Speed Regulator can be in 4 different states (or modes), that is:
 
 1) *Manual*, when the automatic cruise control is disabled and the driver 
    controls the speed through throttle and brakes as if there were no CC.
 2) *Auto*, when the automatic cruise control is enabled, and therefore 
    the speed is automatically controlled
+3) *Testing*, not implemented at the moment
+4) *AVV*, not implemented at the moment.
 
 Switching between Manual and Auto mode can be configured to occur either 
 by a specific cabview control (*ORTS_SELECTED_SPEED_REGULATOR_MODE*) or 
@@ -92,16 +94,10 @@ A list of the available .eng file CC parameters follows here below.
    "SpeedIsMpH", "KpH if missing", "Boolean", "FALSE"
    "MaxForceSteps", "Usually will be 100 meaning 100%, but some locos have limited force steps", "Integer", "0"
    "SpeedSelectorStepTimeSeconds", "How fast the selected speed lever adds speed", "Float", "0.1"
+   "DynamicBrakeMaxForceAtSelectorStep", "The brake will reach 100% at this step, the lower the step, the lower the max brake percent", "Integer", "1"
    "NominalSpeedStep", "When pressing Shift+A or Shift+D how many speed units should the selected speed change ", "Integer", "0"
-   "SpeedSelectorDelayTimeBeforeUpdating", "Time that the speed selector has to be kept unchanged before updating the set speed", "Seconds", "0"
    "StartReducingSpeedDelta", "The lower number, the sooner the regulator will decrease power", "Float", "1"
    "StartReducingSpeedDeltaDownwards", "If present and different from zero, overrides the above parameter for dynamic braking", "Float", "0"
-   "SpeedDeltaToStartAccelerating", "Difference between train speed and set speed before applying throttle", "Float (speed)", "0"
-   "SpeedDeltaToStartBraking", "Difference between train speed and set speed before applying brakes", "Float (speed)", "0.5 m/s"
-   "SpeedDeltaToStopAccelerating", "Difference between train speed and set speed below which throttle is closed", "Float (speed)", "0"
-   "SpeedDeltaToStopBraking", "Difference between train speed and set speed below which brakes are released", "Float (speed)", "0.5 m/s"
-   "SpeedDeltaAcceleratingOffset", "Speed delta at which the demanded acceleration is 0", "Float (speed)", "0"
-   "SpeedDeltaBrakingOffset", "Speed delta at which the demanded deceleration is 0", "Float (speed)", "0"
    "ForceRegulatorAutoWhenNonZeroSpeedSelected", "When a non zero speed is selected, the regulator is set to auto", "Boolean", "FALSE"
    "ForceRegulatorAutoWhenNonZeroSpeedSelectedAndThrottleAtZero", "Self explaining", "Boolean", "FALSE"
    "MaxForceKeepSelectedStepWhenManualModeSet", "Self explaining", "Boolean", "FALSE"
@@ -111,43 +107,43 @@ A list of the available .eng file CC parameters follows here below.
    "ThrottleFullRangeDecreaseTimeSeconds", "Time in seconds needed for the regulator to pass from 100 to 0% of power", "Seconds", "5"
    "DynamicBrakeFullRangeIncreaseTimeSeconds", "Same as above, but for dynamic braking", "Seconds", "5"
    "DynamicBrakeFullRangeDecreaseTimeSeconds", "Same as above, but for dynamic braking", "Seconds", "5"
-   "TrainBrakeFullRangeIncreaseTimeSeconds", "Same as above, but for train brakes", "Seconds", "6"
-   "TrainBrakeFullRangeDecreaseTimeSeconds", "Same as above, but for train brakes", "Seconds", "6"
-   "SpeedDeltaFunctionMode", "Algorithm used to convert speed delta to required acceleration. Recommended to use Linear mode, Sqrt mode is deprecated", "String", "Sqrt"
-   "ThrottlePID", "Proportional, Integral and Derivative coefficients used to convert demanded acceleration to throttle percent. Changing it is not recommended", "Floats", ""
-   "DynamicBrakePID", "Proportional, Integral and Derivative coefficients used to convert demanded deceleration to dynamic brake percent. Changing it is not recommended", "Floats", ""
-   "TrainBrakePID", "Proportional, Integral and Derivative coefficients used to convert demanded deceleration to train brake percent. Changing it is not recommended", "Floats", ""
+   "TrainBrakeFullRangeIncreaseTimeSeconds", "Same as above, but for train brakes", "Seconds", "10"
+   "TrainBrakeFullRangeDecreaseTimeSeconds", "Same as above, but for train brakes", "Seconds", "5"
    "DefaultForceStep", "When OR is started, this will be the selected force step, usually set at 0", "Integer", "1"
    "DisableCruiseControlOnThrottleAndZeroSpeed", "If train is stationary and throttle is increased and CC is still in auto, this will revert the mode to manual", "Boolean", "FALSE"
    "DisableCruiseControlOnThrottleAndZeroForce", "If train is moving and throttle is increased and CC is still in auto and selected force is zero, this will revert the mode to manual", "Boolean", "FALSE"
    "DynamicBrakeCommandHasPriorityOverCruiseControl", "When cruise control is in Auto, manually activating the dynamic brake has priority", "Boolean", "TRUE"
    "HasIndependentThrottleDynamicBrakeLever", "The cabview is equipped with a combined Throttle-Dynamic brake lever independent from the CC controls", "Boolean", "FALSE"
    "DoComputeNumberOfAxles", "Number of train axles automatically computed at game start", "Boolean", "FALSE"
+   "AntiWheelSpinEquipped", "Self explaining. Note: if there are multiple locos in the consist, the loco with most speed diff takes the decision to activate", "Boolean", "FALSE"
+   "AntiWheelSpinSpeedDiffThreshold", "The speed difference (MpS) between wheel speed and train speed that activates the anti spin system and reduces power", "Boolean", "FALSE"
    "ParkingBrakeEngageSpeed", "The speed when automatic parking brake will be engaged if present", "Float (speed)", "0"
    "ParkingBrakePercent", "To what engine brake percent should the parking brake be set if engaged", "Float", "0"
    "MaxPowerThreshold", "At this speed, no matter what max force was selected by the driver, the regulator will lineary reach force to 100%", "Float (speed)", "0"
    "SafeSpeedForAutomaticOperationMpS", "Some locos/systems need the 'confirm to drive' button to be held until the safe speed is reached. This is the speed above which the loco will continue delivering power.", "Float (speed)", "0"
    "ContinuousSpeedIncreasing", " ", "Logical", "FALSE"
+   "PowerBreakoutAmpers", "Some locos are unable to maintain power when current is lower than this value.  In that case, a breakout is generated and the power goes to 0", "Float(Amperes)", "100"
+   "PowerBreakoutSpeedDelta", "Obsolete", "Float", "100"
+   "PowerResumeSpeedDelta", "When breakout was activated, this is the speed hysteresis, when speed is reduced by this value the engine will resume power", "Float", "100"
    "PowerReductionDelayPaxTrain", "Time required for the loco to reach maximum percent of power set in PowerReductionValue until the whole train is in pull on its couplers for passenger trains", "Float (seconds)", "0"
    "PowerReductionDelayCargoTrain", "Time required for the loco to reach maximum percent of power set in PowerReductionValue until the whole train is in pull on its couplers for freight trains", "Float (seconds)", "0"
    "PowerReductionValue", "Maximum power in % to maintain until PowerReductionDelay is reached", "Float", "100"
    "DisableZeroForceStep", "Minimum force step is limited above zero", "Boolean", "FALSE"
-   "DisableZeroSelectedSpeedStep", "The minimum speed that can be selected is greater than 0", "Boolean", "FALSE"
    "UseThrottleAsSpeedSelector", "if ControllerCruiseControlLogic is set to SpeedOnly, throttle when in Auto mode will change the maximum CC speed", "Boolean", "FALSE"
    "UseThrottleAsForceSelector", "if ControllerCruiseControlLogic is set to None, throttle when in Auto mode will change the maximum CC Force", "Boolean", "FALSE"
+   "UseThrottleInCombinedControl", "Throttle is used as force selector or speed selector even if in combined control, to be used in conjunction of one of the two above parameters", "Boolean", "FALSE"
    "ControllerCruiseControlLogic", "Can have values 'None', 'SpeedOnly', 'Full'", "Enum", "Full"
    "HasProportionalSpeedSelector", "Speed selector is performed by a lever ranging from 0 to max speed", "Boolean", "FALSE"
-   "SpeedSelectorIsDiscrete", "Speed selected can have only values multiple of NominalSpeedStep", "Boolean", "FALSE"
+   "SpeedSelectorIsDiscrete", "Speed selected can have only values multiple of NominalSpeedStep, even if selection is through mouse", "Boolean", "FALSE"
    "ModeSwitchAllowedWithThrottleNotAtZero", "Switch from manual to auto and vice-versa can occur also when throttle lever is not at 0", "Boolean", "FALSE"
    "DisableManualSwitchToAutoWhenSetSpeedNotAtTop", "Manual Switch to Cruise Control Auto Mode can't occur when speed is not set at maximum value and at the same moment train speed is not 0", "Boolean", "FALSE"
    "UseTrainBrakeAndDynBrake", "CC uses train brake and dyn brake together", "Boolean", "FALSE"
    "UseDynBrake", "CC uses dyn brake", "Boolean", "TRUE"
    "TrainBrakeCommandHasPriorityOverCruiseControl", "A manual train braking inhibits Cruise Control to use both dynamic braking and tractive force", "Boolean", "TRUE"
    "TrainBrakeCommandHasPriorityOverAcceleratingCruiseControl", "A manual train braking inhibits Cruise Control to use tractive force", "Boolean", "TRUE"
-   "BrakeCommandHasPriorityOverASCBraking", "A manual train brake command inhibits the Automatic Speed Control braking, even if the latter is more restrictive", "Boolean", "FALSE"
-   "ASCSpeedTakesPriorityOverSpeedSelector", "Set speed demanded by the Automatic Speed Control system overrides the speed selected by the driver, even if the latter is lower", "Boolean", "FALSE"
    "SpeedDeltaToEnableTrainBrake", "This is the minimum speed delta between actual speed and desired speed for the CC to use also the train brake", "Float(speed)", "5m/s"
-   "TrainBrakeMinPercentValue", "This is the minimum train brake percent used by the CC. 0 means no braking, 100 means full service braking", "Float(percent)", "10"
+   "SpeedDeltaToEnableFullTrainBrake", "This is the minimum speed delta between actual speed and desired speed for the CC to use also the train brake with no reduced intensity", "Float(speed)", "10m/s"
+   "TrainBrakeMinPercentValue", "This is the minimum train brake percent used by the CC. 0 means no braking, 100 means full service braking", "Float(percent)", "30"
    "TrainBrakeMaxPercentValue", "As above for maximum value. It must not be too high to avoid that the brake is not fully released timely", "Float(percent)", "85"
    "ThrottleNeutralPosition", "The zero throttle position is neutral in auto mode, that is in such position the CC does not intervene", "Boolean", "FALSE"
    "MinimumSpeedForCCEffect", "Below this speed CC has no effect", "Float(speed)", "0"
@@ -166,7 +162,6 @@ found in the table here below.
    "RegulatorManual", 
    "RegulatorTest", 
    "EngageForceOnNonZeroSpeed", 
-   "EngageParkingOnZeroSpeed",
    "StartFromZero", "No need to confirm you want to drive. If speed is set above zero, the train starts to move"
    "SelectorNeutral", 
    "SelectorOn", 
@@ -185,41 +180,26 @@ block within the .eng file.
 
 Train brake usage occurs when the delta between the actual train speed and 
 the target speed is higher than parameter SpeedDeltaToEnableTrainBrake.
-Above this value, the train brake is continuously adjusted to achieve
-the target deceleration. If available, dynamic brake takes priority. Only when
-the requested dynamic brake percent exceeds MinDynamicBrakePercentToEnableTrainBrake,
-the train brake is activated to supplement dynamic brakes.
+Between this delta and SpeedDeltaToEnableFullTrainBrake the train brake is 
+set at TrainBrakeMinPercentValue. Above SpeedDeltaToEnableFullTrainBrake 
+the train brake is continuously adjusted to achieve a constant deceleration.
+In other words, when the speed delta is high, train braking is adjusted to
+obtain a constant deceleration when dynamic braking is not enough; when train decelerates 
+and delta reduces to SpeedDeltaToEnableFullTrainBrake the train brake is reduced to 
+TrainBrakeMinPercentValue. When train decelerates further and delta reduces to 
+SpeedDeltaToEnableTrainBrake the train brake is released. By adjusting these 
+parameters to the locomotive and a typical train it pulls, it can be made sure that 
+the brake pipe is fully recharged when the target speed is reached. Else the 
+train speed could be significantly reduced below the target speed.
 
-		UseTrainBrakeAndDynBrake ( True ) comment (** CC uses train brake and dyn brake together **)
-		SpeedDeltaToEnableTrainBrake ( 5km/h ) comment (** This is the minimum speed delta between actual speed and desired speed for the CC to use also the train brake **)
+An example of the relevant lines in the CruiseControl 
+block within the .eng file follows here::
+
+  	UseTrainBrakeAndDynBrake ( True ) comment (** CC uses train brake and dyn brake together **)
+		SpeedDeltaToEnableTrainBrake ( 15km/h ) comment (** This is the minimum speed delta between actual speed and desired speed for the CC to use also the train brake **)
+		SpeedDeltaToEnableFullTrainBrake ( 30km/h ) comment (** This is the minimum speed delta between actual speed and desired speed for the CC to use also the train brake with no reduced intensity **)		
 		TrainBrakeMinPercentValue ( 10 ) comment (** This is the minimum train brake percent used by the CC, where 0 means no braking and 100 full braking **)
 		TrainBrakeMaxPercentValue ( 60 ) comment (** As above for maximum value. It must not be too high to avoid that the brake is not fully released timely **)
-
-Speed and force selectors
--------------------------
-Speed and force selectors with custom notches can be defined in the ``EngineControllers`` block of the ENG file,
-using ``orts_speed_selector`` and ``orts_force_selector`` controller names. The range should be between 0 and 1,
-where 0 means zero force/speed and 1 means maximum force/speed.
-
-Example::
-
-  Engine (
-    EngineControllers (
-      ORTS_Speed_Selector ( 0 1 0.1 0
-        NumNotches ( 0 )
-        ORTSDelayTimeBeforeUpdating ( 0.5s )
-      )
-      ORTS_Force_Selector ( 0 1 0.1 0
-        NumNotches ( 4
-          Notch ( 0 0 )
-          Notch ( 0.25 0 )
-          Notch ( 0.5 0 )
-          Notch ( 1 0 )
-        )
-      )
-    )
-  )
-
 
 Multi Position Controller (MPC)
 -------------------------------
@@ -298,31 +278,6 @@ MPC is connected. Controllers linked may be either "Throttle" or
 
 The boolean parameter *CanControlTrainBrake*, which is false by 
 default, is optional.
-
-Automatic Speed Control
-=======================
-Cab signaling systems can be integrated with speed control systems to automatically
-respect speed restrictions and stop at signals and station stops. The
-:ref:`Train Control System scripts <features-scripting-tcs>` can request a setpoint
-speed for the cruise control system, eliminating the need for the driver to manually
-adjust the train speed. The interface consists of two variables available from
-the TCS script:
-.. code-block:: csharp
-
-    float? SetSpeedMpS
-
-This variable, if not null, instructs the cruise control system to adjust
-the train speed in order to reach the requested setpoint.
-
-.. code-block:: csharp
-
-    float SetSpeedAccelerationMpS
-
-This variable controls the requested acceleration when the train is at the set speed.
-When the set speed is constant because the TCS is supervising a ceiling speed,
-the requested acceleration should be 0. However, during a braking curve,
-as the set speed is decreasing, the requested acceleration should be negative,
-matching the deceleration of the braking curve.
 
 .. _cruisecontrol-cabviewcontrolstable:
 
