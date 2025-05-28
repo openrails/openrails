@@ -6271,9 +6271,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                         SteamEngines[numberofengine].RealTractiveForceN += N.FromLbf(tangentialWheelTreadForceLbf);
 
-                        if (SteamEngines[numberofengine].RealTractiveForceN < 0)
-                            Trace.WriteLine("why");
-
 #if DEBUG_STEAM_SLIP
                     if (SpeedMpS > 17.88 && SpeedMpS < 18.5 || SpeedMpS > 34.0 && throttle == 0)
                                         {
