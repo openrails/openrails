@@ -432,7 +432,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 {
                     if (Locomotive.Pantographs.State == PantographState.Up)
                     {
-                        Locomotive.LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.LowerPantograph);
+                        Locomotive.LocomotivePowerSupply.HandleEventFromTcs(PowerSupplyEvent.LowerPantograph);
                     }
                 };
                 Script.SetPantographUp = (pantoID) =>
@@ -442,7 +442,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         Trace.TraceError($"TCS script used bad pantograph ID {pantoID}");
                         return;
                     }
-                    Locomotive.LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.RaisePantograph, pantoID);
+                    Locomotive.LocomotivePowerSupply.HandleEventFromTcs(PowerSupplyEvent.RaisePantograph, pantoID);
                 };               
                 Script.SetPantographDown = (pantoID) =>
                 {
@@ -451,7 +451,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         Trace.TraceError($"TCS script used bad pantograph ID {pantoID}");
                         return;
                     }
-                    Locomotive.LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.LowerPantograph, pantoID);
+                    Locomotive.LocomotivePowerSupply.HandleEventFromTcs(PowerSupplyEvent.LowerPantograph, pantoID);
                 };
                 Script.SetPowerAuthorization = (value) => PowerAuthorization = value;
                 Script.SetCircuitBreakerClosingOrder = (value) => CircuitBreakerClosingOrder = value;
