@@ -3584,6 +3584,19 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            // First, update the position of the 3D cab shape
+            if (TrainCarShape != null)
+            {
+                int viewPoint = (Viewer.Camera as InsideThreeDimCamera).ActViewPoint;
+                // Update transform of entire interior
+                TrainCarShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
+                TrainCarShape.Location.TileX = Car.WorldPosition.TileX;
+                TrainCarShape.Location.TileZ = Car.WorldPosition.TileZ;
+
+                TrainCarShape.XNAMatrices[0].Translation = Car.CabViewpoints[viewPoint].ShapeOffset;
+                if (Car.CabViewpoints[viewPoint].ShapeIndex >= 0 && Car.CabViewpoints[viewPoint].ShapeIndex < LocoViewer.TrainCarShape.ResultMatrices.Length)
+                    TrainCarShape.Location.XNAMatrix = LocoViewer.TrainCarShape.ResultMatrices[Car.CabViewpoints[viewPoint].ShapeIndex] * TrainCarShape.Location.XNAMatrix;
+            }
 
             Locomotive.SoundHeardInternallyCorrection[0] = Locomotive.SoundHeardInternallyCorrection[1] = 0;
             foreach (var p in AnimateParts)
@@ -3733,27 +3746,16 @@ namespace Orts.Viewer3D.RollingStock
                 p.Value.PrepareFrame(frame, elapsedTime);
             }
 
-            if (ExternalWipers != null) ExternalWipers.UpdateLoop(Locomotive.Wiper, elapsedTime);
+            ExternalWipers?.UpdateLoop(Locomotive.Wiper, elapsedTime);
             /*
             foreach (var p in DigitParts)
             {
                 p.Value.PrepareFrame(frame, elapsedTime);
             }*/ //removed with 3D digits
 
-            if (TrainCarShape != null)
-            {
-                int viewPoint = (Viewer.Camera as InsideThreeDimCamera).ActViewPoint;
-                // Update transform of entire interior
-                TrainCarShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
-                TrainCarShape.Location.TileX = Car.WorldPosition.TileX;
-                TrainCarShape.Location.TileZ = Car.WorldPosition.TileZ;
 
-                TrainCarShape.XNAMatrices[0].Translation = Car.CabViewpoints[viewPoint].ShapeOffset;
-                if (Car.CabViewpoints[viewPoint].ShapeIndex >= 0 && Car.CabViewpoints[viewPoint].ShapeIndex < LocoViewer.TrainCarShape.ResultMatrices.Length)
-                    TrainCarShape.Location.XNAMatrix = LocoViewer.TrainCarShape.ResultMatrices[Car.CabViewpoints[viewPoint].ShapeIndex] * TrainCarShape.Location.XNAMatrix;
-
-                TrainCarShape.ConditionallyPrepareFrame(frame, elapsedTime, MatrixVisible);
-            }
+            // Finally, handle the 3D cab shape
+            TrainCarShape?.ConditionallyPrepareFrame(frame, elapsedTime, MatrixVisible);
         }
 
         public override void UpdateAnimations(ElapsedTime elapsedTime)
