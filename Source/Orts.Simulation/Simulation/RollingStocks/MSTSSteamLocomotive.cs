@@ -2848,8 +2848,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     ExhaustnormalisedCrankAngleRad[i] = normalisedCrankAngleRad;
                     ExhaustexhaustCrankAngleRad[i] = exhaustCrankAngleRadFor;
 
-                    
-                    if (absSpeedRefMpS > 0.001)
+                    if (Math.Abs(SteamEngines[0].AttachedAxle.AxleSpeedMpS) > 0.001)
                     {
                         if (i == 0 && ((normalisedCrankAngleRad >= exhaustCrankAngleRadFor && normalisedCrankAngleRad <= MathHelper.Pi) || (normalisedCrankAngleRad >= exhaustCrankAngleRadRev && normalisedCrankAngleRad < 2 * MathHelper.Pi )))
                         {
@@ -3080,7 +3079,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                             exhaustCrankAngleRadRev -= 2 * (float)Math.PI;
                         }
 
-                        if (absSpeedRefMpS > 0.001)
+                        if (Math.Abs(SteamEngines[1].AttachedAxle.AxleSpeedMpS) > 0.001)
                         {
                             if (i == 0 && ((normalisedCrankAngleRad >= exhaustCrankAngleRadFor && normalisedCrankAngleRad <= MathHelper.Pi) || (normalisedCrankAngleRad >= exhaustCrankAngleRadRev && normalisedCrankAngleRad < 2 * MathHelper.Pi)))
                             {
@@ -6417,8 +6416,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     // Calculate IHP
                     // IHP = (MEP x Speed (mph)) / 375.0) - this is per cylinder
 
-                    SteamEngines[numberofengine].HPIndicatedHorsePowerHP = (HPTractiveEffortLbsF * pS.TopH(Me.ToMi(AbsTractionSpeedMpS))) / 375.0f;
-                    SteamEngines[numberofengine].LPIndicatedHorsePowerHP = (LPTractiveEffortLbsF * pS.TopH(Me.ToMi(AbsTractionSpeedMpS))) / 375.0f;
+                    SteamEngines[numberofengine].HPIndicatedHorsePowerHP = (HPTractiveEffortLbsF * pS.TopH(Me.ToMi(Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS)))) / 375.0f;
+                    SteamEngines[numberofengine].LPIndicatedHorsePowerHP = (LPTractiveEffortLbsF * pS.TopH(Me.ToMi(Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS)))) / 375.0f;
 
                     // Average tractive force is calculated for display purposes as tractive force varies dramatically as the wheel rotates, and this is difficult to follow on HuD
                     SteamEngines[numberofengine].AverageTractiveForceN = AverageTractiveForce(elapsedClockSeconds, numberofengine, NumberofTractiveForceValues);
@@ -6453,7 +6452,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     // Average tractive force is calculated for display purposes as tractive force varies dramatically as the wheel rotates, and this is difficult to follow on HuD
                     SteamEngines[numberofengine].AverageTractiveForceN = AverageTractiveForce(elapsedClockSeconds, numberofengine, NumberofTractiveForceValues);
 
-                    SteamEngines[numberofengine].IndicatedHorsePowerHP = (N.ToLbf(SteamEngines[numberofengine].RealTractiveForceN) * pS.TopH(Me.ToMi(AbsTractionSpeedMpS))) / 375.0f;
+                    SteamEngines[numberofengine].IndicatedHorsePowerHP = (N.ToLbf(SteamEngines[numberofengine].RealTractiveForceN) * pS.TopH(Me.ToMi(Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS)))) / 375.0f;
                 }
 
                 // Calculate the elapse time for the steam performance monitoring
@@ -6470,12 +6469,12 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 }
 
                 // On starting allow maximum motive force to be used, unless gear is in neutral (normally only geared locomotive will be zero). Decrease force if steam pressure is not at maximum
-                if (AbsTractionSpeedMpS < 1.0f && cutoff > 0.70f && locomotivethrottle > 0.98f && MotiveForceGearRatio != 0)
+                if (Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS) < 1.0f && cutoff > 0.70f && locomotivethrottle > 0.98f && MotiveForceGearRatio != 0)
                 {
                     SteamEngines[numberofengine].RealTractiveForceN = MaxForceN * (BoilerPressurePSI / MaxBoilerPressurePSI);
                 }
 
-                if (AbsTractionSpeedMpS == 0 && cutoff < 0.05f) // If the reverser is set too low then not sufficient steam is admitted to the steam cylinders, and hence insufficient Motive Force will produced to move the train.
+                if (Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS) == 0 && cutoff < 0.05f) // If the reverser is set too low then not sufficient steam is admitted to the steam cylinders, and hence insufficient Motive Force will produced to move the train.
                     SteamEngines[numberofengine].RealTractiveForceN = 0;
 
                 WheelSlip = false;

@@ -1677,8 +1677,11 @@ namespace Orts.Simulation.RollingStocks
             {
                 foreach (var axle in LocomotiveAxles)
                 {
-                    InductionMotor motor = new InductionMotor(axle, this);
-                    TractionMotors.Add(motor);
+                    if (axle.DriveType != AxleDriveType.NotDriven)
+                    {
+                        InductionMotor motor = new InductionMotor(axle, this);
+                        TractionMotors.Add(motor);
+                    }
                 }
             }
 

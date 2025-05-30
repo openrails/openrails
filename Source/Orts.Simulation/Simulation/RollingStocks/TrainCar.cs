@@ -2130,8 +2130,8 @@ namespace Orts.Simulation.RollingStocks
                 String.Format("{0}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric)),
                 loco.DieselEngines[0].GearBox.HuDShaftRPM,
                 // For Locomotive HUD display shows "forward" motive power (& force) as a positive value, braking power (& force) will be shown as negative values.
-                FormatStrings.FormatPower(TractiveForceN * WheelSpeedMpS, IsMetric, false, false),
-                String.Format("{0}{1}", FormatStrings.FormatForce(TractiveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
+                FormatStrings.FormatPower(loco.LocomotiveAxles.DrivePowerW, IsMetric, false, false),
+                String.Format("{0}{1}", FormatStrings.FormatForce(loco.LocomotiveAxles.DriveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
                 Simulator.Catalog.GetString(locomotivetypetext)
                 );
             }
@@ -2145,8 +2145,8 @@ namespace Orts.Simulation.RollingStocks
                 ThrottlePercent,
                 String.Format("{0}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric)),
                 // For Locomotive HUD display shows "forward" motive power (& force) as a positive value, braking power (& force) will be shown as negative values.
-                FormatStrings.FormatPower(TractiveForceN * WheelSpeedMpS, IsMetric, false, false),
-                String.Format("{0}{1}", FormatStrings.FormatForce(TractiveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
+                FormatStrings.FormatPower(loco.LocomotiveAxles.DrivePowerW, IsMetric, false, false),
+                String.Format("{0}{1}", FormatStrings.FormatForce(loco.LocomotiveAxles.DriveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
                 Simulator.Catalog.GetString(locomotivetypetext)
                 );
             }

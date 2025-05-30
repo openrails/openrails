@@ -88,6 +88,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             }
         }
         /// <summary>
+        /// Get total axle out power with brake and friction substracted
+        /// </summary>
+        public float AxleMotivePowerW
+        {
+            get
+            {
+                float powerW = 0;
+                foreach (var axle in AxleList)
+                {
+                    powerW += axle.AxleMotivePowerW;
+                }
+                return powerW;
+            }
+        }
+        /// <summary>
         /// Get total axle out force due to braking
         /// </summary>
         public float AxleBrakeForceN
@@ -133,6 +148,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             }
         }
         /// <summary>
+        /// Get total axle out power
+        /// </summary>
+        public float AxlePowerW
+        {
+            get
+            {
+                float powerW = 0;
+                foreach (var axle in AxleList)
+                {
+                    powerW += axle.AxlePowerW;
+                }
+                return powerW;
+            }
+        }
+        /// <summary>
         /// Get total axle in force
         /// </summary>
         public float DriveForceN
@@ -145,6 +175,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     forceN += axle.DriveForceN;
                 }
                 return forceN;
+            }
+        }
+        /// <summary>
+        /// Get total axle in power
+        /// </summary>
+        public float DrivePowerW
+        {
+            get
+            {
+                float powerW = 0;
+                foreach (var axle in AxleList)
+                {
+                    powerW += axle.DrivePowerW;
+                }
+                return powerW;
             }
         }
         public bool IsWheelSlip
@@ -540,6 +585,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// Drive force used to pass the force directly to the axle without gearbox, in Newtons
         /// </summary>
         public float DriveForceN;
+        public float DrivePowerW => DriveForceN * (float)AxleSpeedMpS;
 
         /// <summary>
         /// Sum of inertia over all axle conected rotating mass, in kg.m^2
@@ -727,18 +773,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// Read only axle force value, in Newtons
         /// </summary>
         public float AxleForceN { get; private set; }
+        public float AxlePowerW => AxleForceN * (float)AxleSpeedMpS;
         /// <summary>
         /// Component of the total axle out force caused by motional forces (drive force and inertia)
         /// </summary>
         public float AxleMotiveForceN { get; protected set; }
+        public float AxleMotivePowerW => AxleMotiveForceN * (float)AxleSpeedMpS;
         /// <summary>
         /// Component of the total axle out force caused by brake force
         /// </summary>
         public float AxleBrakeForceN { get; protected set; }
+        public float AxleBrakePowerW => AxleBrakeForceN * (float)AxleSpeedMpS;
         /// <summary>
         /// Component of the total axle out force caused by rolling friction and heat dissipated at the wheel-rail interface
         /// </summary>
         public float AxleFrictionForceN { get; protected set; }
+        public float AxleFrictionPowerW => AxleFrictionForceN * (float)AxleSpeedMpS;
 
         /// <summary>
         /// Read/Write axle weight parameter in Newtons
