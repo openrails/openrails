@@ -31,6 +31,7 @@ using SharpDX.Direct2D1;
 using SharpDX.Direct3D9;
 using Orts.Formats.OR;
 using static Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions.Axle;
+using MonoGame.Framework.Utilities.Deflate;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 {
@@ -345,19 +346,32 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public void Initialize()
         {
             ResetTime = Car.Simulator.GameTime;
+            int numForce = 0;
+            int numMotor = 0;
             foreach (var axle in AxleList)
             {
-                if (Car is MSTSLocomotive locomotive)
+                if (!(Car is MSTSLocomotive)) axle.DriveType = AxleDriveType.NotDriven;
+                else if (axle.DriveType == AxleDriveType.ForceDriven) numForce++;
+                else if (axle.DriveType == AxleDriveType.MotorDriven) numMotor++;
+            }
+            foreach (var axle in AxleList)
+            {
+                if (numMotor > 0 && axle.DriveType == AxleDriveType.ForceDriven) axle.DriveType = AxleDriveType.NotDriven;
+                else if (axle.DriveType == AxleDriveType.ForceDriven) axle.TractiveForceFraction = 1.0f / numForce;
+                else if (axle.DriveType == AxleDriveType.MotorDriven) axle.TractiveForceFraction = 1.0f / numMotor;
+                int numDriven = numMotor > 0 ? numMotor : numForce;
+                int numNotDriven = AxleList.Count - numDriven;
+                var locomotive = Car as MSTSLocomotive;
+                if (locomotive != null)
                 {
-                    if (axle.InertiaKgm2 <= 0) axle.InertiaKgm2 = locomotive.AxleInertiaKgm2 / AxleList.Count;
-                    if (axle.WheelWeightKg <= 0) axle.WheelWeightKg = locomotive.DrvWheelWeightKg / AxleList.Count;
-                    if (axle.AxleWeightN <= 0) axle.AxleWeightN = 9.81f * axle.WheelWeightKg;  //remains fixed for diesel/electric locomotives, but varies for steam locomotives
-                    if (axle.NumWheelsetAxles <= 0) axle.NumWheelsetAxles = locomotive.LocoNumDrvAxles;
-                    if (axle.WheelRadiusM <= 0) axle.WheelRadiusM = locomotive.DriverWheelRadiusM;
-                    if (axle.WheelFlangeAngleRad <= 0) axle.WheelFlangeAngleRad = locomotive.MaximumWheelFlangeAngleRad;
-                    if (axle.DampingNs <= 0) axle.DampingNs = locomotive.MassKG / 1000.0f / AxleList.Count;
-                    if (axle.FrictionN <= 0) axle.FrictionN = locomotive.MassKG / 1000.0f / AxleList.Count;
-                    
+                    if (axle.DriveType != AxleDriveType.NotDriven)
+                    {
+                        axle.BrakeForceFraction = 1.0f / (locomotive.DriveWheelOnlyBrakes ? numDriven : AxleList.Count);
+                        if (axle.WheelWeightKg <= 0) axle.WheelWeightKg = locomotive.DrvWheelWeightKg / numDriven;
+                        if (axle.NumWheelsetAxles <= 0) axle.NumWheelsetAxles = locomotive.LocoNumDrvAxles / numDriven;
+                        if (axle.WheelRadiusM <= 0) axle.WheelRadiusM = locomotive.DriverWheelRadiusM;
+                    }
+
                     // set the wheel slip threshold times for different types of locomotives
                     // Because of the irregular force around the wheel for a steam engine during a revolution, "response" time for warnings needs to be lower
                     if (locomotive.EngineType == TrainCar.EngineTypes.Steam)
@@ -371,6 +385,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         axle.WheelSlipWarningThresholdTimeS = 1;
                     }
                 }
+                if (axle.DriveType == AxleDriveType.NotDriven)
+                {
+                    var wagon = Car as MSTSWagon;
+                    axle.BrakeForceFraction = locomotive != null && locomotive.DriveWheelOnlyBrakes ? 0 :1.0f / AxleList.Count;
+                    if (axle.WheelWeightKg <= 0)
+                    {
+                        if (locomotive != null) axle.WheelWeightKg = Math.Max((Car.MassKG - locomotive.DrvWheelWeightKg) / numNotDriven, 500);
+                        else axle.WheelWeightKg = Car.MassKG / numNotDriven;
+                    }
+                    if (axle.NumWheelsetAxles <= 0) axle.NumWheelsetAxles = Math.Max(Car.GetWagonNumAxles() / numNotDriven, 1);
+                    if (axle.WheelRadiusM <= 0) axle.WheelRadiusM = wagon.WheelRadiusM;
+                }
+                if (axle.InertiaKgm2 <= 0) axle.InertiaKgm2 = (Car as MSTSWagon).AxleInertiaKgm2 / AxleList.Count;
+                if (axle.WheelFlangeAngleRad <= 0) axle.WheelFlangeAngleRad = Car.MaximumWheelFlangeAngleRad;
+                if (axle.AxleWeightN <= 0) axle.AxleWeightN = 9.81f * axle.WheelWeightKg;  //remains fixed for diesel/electric locomotives, but varies for steam locomotives
+                if (axle.DampingNs <= 0) axle.DampingNs = axle.WheelWeightKg / 1000.0f;
+                if (axle.FrictionN <= 0) axle.FrictionN = axle.WheelWeightKg / 1000.0f;
                 axle.Initialize();
             }
         }
@@ -528,6 +559,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
     public class Axle : ISubSystem<Axle>
     {
         public int NumOfSubstepsPS { get; set; }
+
+        /// <summary>
+        /// Contribution of this axle to the total tractive force
+        /// </summary>
+        public float TractiveForceFraction;
+        /// <summary>
+        /// Contribution of this axle to the total brake force
+        /// </summary>
+        public float BrakeForceFraction;
 
         /// <summary>
         /// Positive only brake force to the individual axle, in Newtons
@@ -1261,6 +1301,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public virtual void Update(float elapsedSeconds)
         {
             bool advancedAdhesion = Car is MSTSLocomotive locomotive && locomotive.AdvancedAdhesionModel;
+            advancedAdhesion &= DriveType != AxleDriveType.NotDriven; // Skip integrator for undriven axles to save CPU
             forceToAccelerationFactor = WheelRadiusM * WheelRadiusM / totalInertiaKgm2;
             if (!advancedAdhesion)
             {
@@ -1390,8 +1431,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (Math.Abs(axleOutForceN) > maxAdhesionForceN)
             {
                 axleOutForceN = MathHelper.Clamp(axleOutForceN, -maxAdhesionForceN, maxAdhesionForceN);
-                if (Car is MSTSLocomotive locomotive && !locomotive.AntiSlip && locomotive.SlipControlSystem == MSTSLocomotive.SlipControlType.None) axleOutForceN *= locomotive.Adhesion1;
-                //else if (!(Car is MSTSLocomotive) && Car.Simulator.UseAdvancedAdhesion && !Car.Simulator.Settings.SimpleControlPhysics && Car.IsPlayerTrain) axleOutForceN = MathHelper.Clamp(axleOutForceN, -);
+                if (!Car.Simulator.UseAdvancedAdhesion || Car.Simulator.Settings.SimpleControlPhysics || !Car.Train.IsPlayerDriven)
+                {
+                    if (Car is MSTSLocomotive locomotive && !locomotive.AntiSlip) axleOutForceN *= locomotive.Adhesion1;
+                }
+                else
+                {
+                    float adhesionForceN;
+                    if ((TrainSpeedMpS > 0 && axleOutForceN < 0) || (TrainSpeedMpS < 0 && axleOutForceN > 0))
+                    {
+                        // Compute adhesion as if wheel is fully locked
+                        adhesionForceN = AxleWeightN * SlipCharacteristicsPacha(-TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionLimit);
+                    }
+                    else
+                    {
+                        // Get asymptotic (dynamic) adhesion coefficient
+                        adhesionForceN = AxleWeightN * SlipCharacteristicsPacha(1000.0f, Math.Abs(TrainSpeedMpS), AdhesionK, AdhesionLimit);
+                    }
+                    axleOutForceN = MathHelper.Clamp(axleOutForceN, -adhesionForceN, adhesionForceN);
+                }
 
                 HuDIsWheelSlip = HuDIsWheelSlipWarning = IsWheelSlip = IsWheelSlipWarning = true;
 
@@ -1418,7 +1476,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             }
             AxlePositionRad += AxleSpeedMpS / WheelRadiusM * elapsedClockSeconds;
 
-            if (Math.Abs(TrainSpeedMpS) < 0.001f && Math.Abs(axleInForceN) < frictionForceN)
+            if (Math.Abs(TrainSpeedMpS) < 0.001f && Math.Abs(axleInForceN) < totalFrictionForceN)
             {
                 axleOutForceN = 0;
             }

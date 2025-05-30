@@ -178,7 +178,7 @@ namespace Orts.Simulation.RollingStocks
                     var transmissionType = stf.ReadString();
                     try
                     {
-                        DieselTransmissionType = (DieselTransmissionTypes)Enum.Parse(typeof(DieselTransmissionTypes), transmissionType.First().ToString().ToUpper() + transmissionType.Substring(1));
+                        DieselTransmissionType = (DieselTransmissionTypes)Enum.Parse(typeof(DieselTransmissionTypes), transmissionType, true);
                     }
                     catch
                     {

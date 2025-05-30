@@ -2742,7 +2742,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (axle.DriveType == AxleDriveType.ForceDriven)
                 {
-                    axle.DriveForceN = TractiveForceN / LocomotiveAxles.Count;
+                    axle.DriveForceN = TractiveForceN * axle.TractiveForceFraction;
                     if (SlipControlSystem == SlipControlType.Full)
                     {
                         // Simple slip control
@@ -3112,7 +3112,7 @@ namespace Orts.Simulation.RollingStocks
 
             foreach (var axle in LocomotiveAxles)
             {
-                axle.BrakeRetardForceN = BrakeRetardForceN / LocomotiveAxles.Count;
+                axle.BrakeRetardForceN = BrakeRetardForceN * axle.BrakeForceFraction;
                 axle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
                 axle.WheelRadiusM = DriverWheelRadiusM;
                 axle.WheelDistanceGaugeM = TrackGaugeM;

@@ -1301,6 +1301,35 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
         public override void Initialize()
         {
+            bool notDrivenAxle = false;
+            for (int i = 0; i < LocomotiveAxles.Count; i++)
+            {
+                var axle = LocomotiveAxles[i];
+                bool driven = false;
+                if (SteamEngines.Count > 0)
+                {
+                    foreach (var engine in SteamEngines)
+                    {
+                        if (engine.AttachedAxle == axle)
+                        {
+                            driven = true;
+                        }
+                    }
+                }
+                else if (i == 0) driven = true;
+                if (!driven)
+                {
+                    axle.DriveType = AxleDriveType.NotDriven;
+                    notDrivenAxle = true;
+                }
+            }
+            if (!notDrivenAxle)
+            {
+                var axle = new Axle(this);
+                axle.DriveType = AxleDriveType.NotDriven;
+                LocomotiveAxles.Add(axle);
+            }
+
             base.Initialize();
 
             // Create a steam engine block if none exits, typically for a MSTS or BASIC configuration
@@ -6718,7 +6747,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             }
             foreach (var axle in LocomotiveAxles)
             {
-                axle.BrakeRetardForceN = BrakeRetardForceN / LocomotiveAxles.Count;
+                axle.BrakeRetardForceN = BrakeRetardForceN * axle.BrakeForceFraction;
                 axle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
                 axle.WheelDistanceGaugeM = TrackGaugeM;
                 axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
