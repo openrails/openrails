@@ -26,7 +26,6 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
-using MSTS;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Settings;
@@ -815,6 +814,18 @@ namespace Menu
                 (pbWebServerPort, new Control[] { labelWebServerPort }),
                 (pbPerformanceTuner, new Control[] { checkPerformanceTuner, labelPerformanceTunerTarget }),
 
+                // Simulation tab
+                (pbAdvancedAdhesionModel, new[] { checkUseAdvancedAdhesion }),
+                (pbBreakCouplers, new[] { checkBreakCouplers }),
+                (pbCurveDependentSpeedLimit, new[] { checkCurveSpeedDependent }),   
+                (pbAtGameStartSteamPreHeatBoiler, new[] { checkBoilerPreheated }),
+                (pbAtGameStartDieselRunEngines, new[] { checkDieselEnginesStarted }),
+                (pbAtGameStartElectricPowerConnected, new[] { checkElectricPowerConnected }),
+                (pbSimpleControlAndPhysics, new[] { checkSimpleControlsPhysics }),
+                (pbForcedRedAtStationStops, new[] { checkForcedRedAtStationStops }),
+                (pbOpenCloseDoorsOnAiTrains, new[] { checkDoorsAITrains }),
+                (pbLocationLinkedPassingPathProcessing, new[] { checkUseLocationPassingPaths }),
+
                 // Experimental tab
                 (pbSuperElevation, new[] { ElevationText }),
             };
@@ -982,6 +993,48 @@ namespace Menu
                 {
                     pbPerformanceTuner,
                     BaseDocumentationUrl + "/options.html#performance-tuner"
+                },
+
+                // Simulation tab
+                {
+                    pbAdvancedAdhesionModel,
+                    BaseDocumentationUrl + "/options.html#advanced-adhesion-model"
+                },
+                {
+                    pbBreakCouplers,
+                    BaseDocumentationUrl + "/options.html#break-couplers"
+                },
+                {
+                    pbCurveDependentSpeedLimit,
+                    BaseDocumentationUrl + "/options.html#curve-dependent-speed-limit"
+                },
+                {
+                    pbAtGameStartSteamPreHeatBoiler,
+                    BaseDocumentationUrl + "/options.html#at-game-start-steam-pre-heat-boiler"
+                },
+                {
+                    pbAtGameStartDieselRunEngines,
+                    BaseDocumentationUrl + "/options.html#at-game-start-diesel-run-engines"
+                },
+                {
+                    pbAtGameStartElectricPowerConnected,
+                    BaseDocumentationUrl + "/options.html#at-game-start-electric-power-connected"
+                },
+                {
+                    pbSimpleControlAndPhysics,
+                    BaseDocumentationUrl + "/options.html#simple-control-and-physics"
+                },
+                {
+                    pbForcedRedAtStationStops,
+                    BaseDocumentationUrl + "/options.html#forced-red-at-station-stops"
+                },
+{
+                    pbOpenCloseDoorsOnAiTrains,
+                    BaseDocumentationUrl + "/options.html#open-close-doors-on-ai-trains"
+                },
+                {
+                    pbLocationLinkedPassingPathProcessing,
+                    BaseDocumentationUrl + "/options.html#location-linked-passing-path-processing"
                 },
 
                 // Experimental tab
