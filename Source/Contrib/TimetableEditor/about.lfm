@@ -38,7 +38,7 @@ object Form2: TForm2
     Width = 97
     Alignment = taCenter
     AutoSize = True
-    Caption = 'Version: 1.6'
+    Caption = 'Version: 1.5.1'
     Font.CharSet = ANSI_CHARSET
     Font.Height = -16
     Font.Name = 'Arial'

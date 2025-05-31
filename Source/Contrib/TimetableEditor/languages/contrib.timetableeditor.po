@@ -187,7 +187,7 @@ msgid "Open Rails"
 msgstr ""
 
 #: tform2.statictext1.caption
-msgid "Version: 1.6"
+msgid "Version: 1.5"
 msgstr ""
 
 #: tform3.bitbtn2.caption
