@@ -6505,10 +6505,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 if (Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS) == 0 && cutoff < 0.05f) // If the reverser is set too low then not sufficient steam is admitted to the steam cylinders, and hence insufficient Motive Force will produced to move the train.
                     SteamEngines[numberofengine].RealTractiveForceN = 0;
-
-                WheelSlip = false;
-                WheelSpeedMpS = SpeedMpS;
-                DriveWheelSpeedMpS = SpeedMpS;
             }
 
             #endregion
