@@ -168,7 +168,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             pressureBar -= x * ApplyRateBarpS() * elapsedClockSeconds;
                             break;
                         case ControllerState.FullServ:
-                            epState = x;
+                            epState = 1;
                             EnforceMinimalReduction = true;
                             DecreasePressure(ref pressureBar, MaxPressureBar()-FullServReductionBar(), ApplyRateBarpS(), elapsedClockSeconds);
                             break;
@@ -193,21 +193,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             pressureBar = (1 - x) * MaxPressureBar();
                             epState = -1;
                             break;
-                        case ControllerState.EPApply:
                         case ControllerState.EPOnly:
                         case ControllerState.SMEOnly:
-                        case ControllerState.ContServ:
                         case ControllerState.EPFullServ:
                         case ControllerState.SMEFullServ:
                             epState = x;
-                            if (notch.Type == ControllerState.EPApply || notch.Type == ControllerState.ContServ)
-                            {
-                                EnforceMinimalReduction = true;
-                                x = MaxPressureBar() - MinReductionBar() * (1 - x) - FullServReductionBar() * x;
-                                DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
-                                if (ForceControllerReleaseGraduated || notch.Type == ControllerState.EPApply)
-                                    IncreasePressure(ref pressureBar, Math.Min(x, MainReservoirPressureBar()), ReleaseRateBarpS(), elapsedClockSeconds);
-                            }
+                            break;
+                        case ControllerState.EPApply:
+                        case ControllerState.ContServ:
+                            EnforceMinimalReduction = true;
+                            if (FullServReductionBar() > 0) x = MinReductionBar() / FullServReductionBar() * (1 - x) + x;
+                            epState = x;
+                            x = MaxPressureBar() - x * FullServReductionBar();
+                            DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
+                            if (ForceControllerReleaseGraduated || notch.Type == ControllerState.EPApply)
+                                IncreasePressure(ref pressureBar, Math.Min(x, MainReservoirPressureBar()), ReleaseRateBarpS(), elapsedClockSeconds);
                             break;
                         case ControllerState.GSelfLapH:
                         case ControllerState.Suppression:
@@ -237,8 +237,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             float ccdemand = CruiseControlBrakeDemand();
             if (ccdemand > 0)
             {
-                pressureBar = Math.Min(MaxPressureBar() - MinReductionBar() * (1 - ccdemand) - FullServReductionBar() * ccdemand, pressureBar);
-                epState = ccdemand;
+                if (FullServReductionBar() > 0) ccdemand = Math.Max(ccdemand, MinReductionBar() / FullServReductionBar());
+                pressureBar = Math.Min(MaxPressureBar() - FullServReductionBar() * ccdemand, pressureBar);
+                epState = Math.Max(ccdemand, epState);
             }
 
             if (pressureBar < 0)
@@ -296,11 +297,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         DecreasePressure(ref pressureBar, x, ReleaseRateBarpS(), elapsedClockSeconds);
                         break;
                 }
-                if (pressureBar > MaxPressureBar())
-                    pressureBar = MaxPressureBar();
-                if (pressureBar < 0)
-                    pressureBar = 0;
             }
+
+            float ccdemand = CruiseControlBrakeDemand();
+            if (ccdemand > 0)
+            {
+                pressureBar = Math.Max((MaxPressureBar() - FullServReductionBar()) * ccdemand, pressureBar);
+            }
+
+            if (pressureBar > MaxPressureBar())
+                pressureBar = MaxPressureBar();
+            if (pressureBar < 0)
+                pressureBar = 0;
         }
 
         public override void HandleEvent(BrakeControllerEvent evt)
