@@ -1106,7 +1106,7 @@ namespace Orts.Simulation.RollingStocks
 
         public virtual void UpdateBrakeSlideCalculation()
         {
-            if (this is MSTSLocomotive)
+            if (this is MSTSLocomotive locomotive)
             {
                 // If advanced adhesion model indicates wheel slip warning, then check other conditions (throttle and brake force) to determine whether it is a wheel slip or brake skid
                 if (WheelSlipWarning && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0)
@@ -1190,7 +1190,7 @@ namespace Orts.Simulation.RollingStocks
                 BrakeForceN = BrakeRetardForceN;
                 if (BrakeSkid) BrakeForceN = Math.Min(BrakeForceN, MassKG * GravitationalAccelerationMpS2 * SkidFriction);
             }
-            else  // set default values if simple adhesion model, or if diesel or electric locomotive is used, which doesn't check for brake skid.
+            else  // set default values if simple adhesion model
             {
                 BrakeSkid = false; 	// wagon wheel is not slipping
                 BrakeForceN = BrakeRetardForceN;
@@ -2141,8 +2141,8 @@ namespace Orts.Simulation.RollingStocks
                 ThrottlePercent,
                 String.Format("{0}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric)),
                 // For Locomotive HUD display shows "forward" motive power (& force) as a positive value, braking power (& force) will be shown as negative values.
-                FormatStrings.FormatPower(loco.LocomotiveAxles.DrivePowerW, IsMetric, false, false),
-                String.Format("{0}{1}", FormatStrings.FormatForce(loco.LocomotiveAxles.DriveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
+                FormatStrings.FormatPower((this as MSTSWagon).LocomotiveAxles.DrivePowerW, IsMetric, false, false),
+                String.Format("{0}{1}", FormatStrings.FormatForce((this as MSTSWagon).LocomotiveAxles.DriveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
                 Simulator.Catalog.GetString(locomotivetypetext)
                 );
             }

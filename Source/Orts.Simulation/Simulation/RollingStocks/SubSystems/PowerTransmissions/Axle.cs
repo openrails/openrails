@@ -937,6 +937,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
 
         /// <summary>
+        /// Percentage of wheelslip (different models use different observables to calculate it)
+        /// </summary>
+        public float SlipPercent;
+
+        /// <summary>
         /// Slip speed rate of change value, in metric (meters per second) per second
         /// </summary>
         protected float slipDerivationMpSS;
@@ -1097,7 +1102,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             double slipSpeedMpS = axleSpeedMpS - TrainSpeedMpS;
             // Compute force transmitted to rail according to adhesion curves
-            double axleOutForceN = 0;
+            double axleOutForceN;
             if (Axles.UsePolachAdhesion)
             {
                 axleOutForceN = Math.Sign(slipSpeedMpS) * AxleWeightN * SlipCharacteristicsPolach(slipSpeedMpS);
@@ -1361,51 +1366,52 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             if (advancedAdhesion)
             {
                 Integrate(elapsedSeconds);
-                if (SlipSpeedPercent > (Car is MSTSLocomotive loco && loco.SlipControlSystem == MSTSLocomotive.SlipControlType.Full ? (200 - SlipWarningTresholdPercent) : 100))
-                {
-                    // Wheel slip internally happens instantaneously, but may correct itself in a short period, so HuD indication has a small time delay to eliminate "false" indications
-                    IsWheelSlip = IsWheelSlipWarning = true;
 
-                    // Wait some time before indicating the HuD wheelslip to avoid false triggers
-                    // TODO: set an increased HUD wheelslip threshold if a slip control system is fitted, as it operates close to the wheelslip threshold
-                    if (WheelSlipTimeS > WheelSlipThresholdTimeS)
-                    {
-                        HuDIsWheelSlip = HuDIsWheelSlipWarning = true;
-                    }
-                    WheelSlipTimeS += elapsedSeconds;
-                }
-                else if (Math.Abs(SlipSpeedPercent) > SlipWarningTresholdPercent)
-                {
-                    // Wheel slip internally happens instantaneously, but may correct itself in a short period, so HuD indication has a small time delay to eliminate "false" indications
-                    IsWheelSlipWarning = true;
-                    IsWheelSlip = false;
+                SlipPercent = SlipSpeedPercent;
 
-                    // Wait some time before indicating wheelslip to avoid false triggers
-                    if (WheelSlipWarningTimeS > WheelSlipWarningThresholdTimeS) HuDIsWheelSlipWarning = true;
-                    HuDIsWheelSlip = false;
-                    WheelSlipWarningTimeS += elapsedSeconds;
-                }
-                else
+                if (elapsedSeconds > 0.0f)
                 {
-                    HuDIsWheelSlipWarning = false;
-                    HuDIsWheelSlip = false;
-                    IsWheelSlipWarning = false;
-                    IsWheelSlip = false;
-                    WheelSlipWarningTimeS = WheelSlipTimeS = 0;
+                    slipDerivationMpSS = (SlipSpeedMpS - previousSlipSpeedMpS) / elapsedSeconds;
+                    previousSlipSpeedMpS = SlipSpeedMpS;
+
+                    slipDerivationPercentpS = (SlipSpeedPercent - previousSlipPercent) / elapsedSeconds;
+                    previousSlipPercent = SlipSpeedPercent;
                 }
             }
             else
             {
                 UpdateSimpleAdhesion(elapsedSeconds);
             }
-
-            if (elapsedSeconds > 0.0f)
+            if (SlipPercent > (Car is MSTSLocomotive loco && loco.SlipControlSystem == MSTSLocomotive.SlipControlType.Full && Math.Abs(DriveForceN) > BrakeRetardForceN ? (200 - SlipWarningTresholdPercent) : 100))
             {
-                slipDerivationMpSS = (SlipSpeedMpS - previousSlipSpeedMpS) / elapsedSeconds;
-                previousSlipSpeedMpS = SlipSpeedMpS;
+                // Wheel slip internally happens instantaneously, but may correct itself in a short period, so HuD indication has a small time delay to eliminate "false" indications
+                IsWheelSlip = IsWheelSlipWarning = true;
 
-                slipDerivationPercentpS = (SlipSpeedPercent - previousSlipPercent) / elapsedSeconds;
-                previousSlipPercent = SlipSpeedPercent;
+                // Wait some time before indicating the HuD wheelslip to avoid false triggers
+                if (WheelSlipTimeS > WheelSlipThresholdTimeS)
+                {
+                    HuDIsWheelSlip = HuDIsWheelSlipWarning = true;
+                }
+                WheelSlipTimeS += elapsedSeconds;
+            }
+            else if (SlipPercent > SlipWarningTresholdPercent)
+            {
+                // Wheel slip internally happens instantaneously, but may correct itself in a short period, so HuD indication has a small time delay to eliminate "false" indications
+                IsWheelSlipWarning = true;
+                IsWheelSlip = false;
+
+                // Wait some time before indicating wheelslip to avoid false triggers
+                if (WheelSlipWarningTimeS > WheelSlipWarningThresholdTimeS) HuDIsWheelSlipWarning = true;
+                HuDIsWheelSlip = false;
+                WheelSlipWarningTimeS += elapsedSeconds;
+            }
+            else
+            {
+                HuDIsWheelSlipWarning = false;
+                HuDIsWheelSlip = false;
+                IsWheelSlipWarning = false;
+                IsWheelSlip = false;
+                WheelSlipWarningTimeS = WheelSlipTimeS = 0;
             }
         }
         
@@ -1427,56 +1433,45 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             AxleFrictionForceN = frictionForceN;
             AxleSpeedMpS = TrainSpeedMpS;
 
-            float maxAdhesionForceN = AxleWeightN * AdhesionLimit;
-            if (Math.Abs(axleOutForceN) > maxAdhesionForceN)
+            float adhesionForceN = AxleWeightN * AdhesionLimit;
+            SlipPercent = Math.Abs(axleOutForceN) / adhesionForceN * 100;
+            if (SlipPercent > 100)
             {
-                axleOutForceN = MathHelper.Clamp(axleOutForceN, -maxAdhesionForceN, maxAdhesionForceN);
-                if (!Car.Simulator.UseAdvancedAdhesion || Car.Simulator.Settings.SimpleControlPhysics || !Car.Train.IsPlayerDriven)
+                axleOutForceN = MathHelper.Clamp(axleOutForceN, -adhesionForceN, adhesionForceN);
+                // Simple adhesion, simple wheelslip conditions
+                if (Car is MSTSLocomotive locomotive && !locomotive.AdvancedAdhesionModel)
                 {
-                    if (Car is MSTSLocomotive locomotive && !locomotive.AntiSlip) axleOutForceN *= locomotive.Adhesion1;
+                    if (!locomotive.AntiSlip) axleOutForceN *= locomotive.Adhesion1;
+                    else SlipPercent = 100;
                 }
+                else if (!Car.Simulator.UseAdvancedAdhesion || Car.Simulator.Settings.SimpleControlPhysics || !Car.Train.IsPlayerDriven)
+                {
+                    // No wagon skid in simple adhesion
+                    SlipPercent = 100;
+                }
+                // Semi-advanced adhesion. Used in non-driven axles when advanced adhesion is enabled, to avoid running the integrator
                 else
                 {
-                    float adhesionForceN;
-                    if ((TrainSpeedMpS > 0 && axleOutForceN < 0) || (TrainSpeedMpS < 0 && axleOutForceN > 0))
-                    {
-                        // Compute adhesion as if wheel is fully locked
-                        adhesionForceN = AxleWeightN * SlipCharacteristicsPacha(-TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionLimit);
-                    }
-                    else
-                    {
-                        // Get asymptotic (dynamic) adhesion coefficient
-                        adhesionForceN = AxleWeightN * SlipCharacteristicsPacha(1000.0f, Math.Abs(TrainSpeedMpS), AdhesionK, AdhesionLimit);
-                    }
+                    // For non-driven axles, only brake skid is possible (no wheel slip). Consider wheels to be fully locked
+                    AxleSpeedMpS = 0;
+                    // Use the advanced adhesion coefficient
+                    adhesionForceN = AxleWeightN * SlipCharacteristicsPacha(SlipSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionLimit);
                     axleOutForceN = MathHelper.Clamp(axleOutForceN, -adhesionForceN, adhesionForceN);
                 }
-
-                HuDIsWheelSlip = HuDIsWheelSlipWarning = IsWheelSlip = IsWheelSlipWarning = true;
-
-                if ((TrainSpeedMpS > 0 && axleOutForceN < 0) || (TrainSpeedMpS < 0 && axleOutForceN > 0))
+                // In case of wheel skid, reduce indicated brake force
+                if (((TrainSpeedMpS > 0 && axleOutForceN < 0) || (TrainSpeedMpS < 0 && axleOutForceN > 0)) && Math.Abs(DriveForceN) < BrakeRetardForceN && Math.Sign(TrainSpeedMpS) * (-axleOutForceN + axleInForceN) - frictionForceN > 0)
                 {
-                    if (Math.Abs(axleInForceN) < BrakeRetardForceN && Math.Sign(TrainSpeedMpS) * (-axleOutForceN + axleInForceN) - frictionForceN > 0)
-                    {
-                        AxleBrakeForceN = Math.Sign(TrainSpeedMpS) * (-axleOutForceN + axleInForceN) - frictionForceN;
-                        AxleSpeedMpS = 0;
-                    }
-                    else
-                    {
-                        AxleMotiveForceN = axleOutForceN + Math.Sign(TrainSpeedMpS) * totalFrictionForceN;
-                    }
+                    AxleBrakeForceN = Math.Sign(TrainSpeedMpS) * (-axleOutForceN + axleInForceN) - frictionForceN;
                 }
+                // Otherwise, indicate that slip is reducing motive force
                 else
                 {
                     AxleMotiveForceN = axleOutForceN + Math.Sign(TrainSpeedMpS) * totalFrictionForceN;
                 }
             }
-            else
-            {
-                HuDIsWheelSlip = HuDIsWheelSlipWarning = IsWheelSlip = IsWheelSlipWarning = false;
-            }
             AxlePositionRad += AxleSpeedMpS / WheelRadiusM * elapsedClockSeconds;
 
-            if (Math.Abs(TrainSpeedMpS) < 0.001f && Math.Abs(axleInForceN) < totalFrictionForceN)
+            if (Math.Abs(TrainSpeedMpS) < 0.001f && Math.Abs(DriveForceN) < totalFrictionForceN)
             {
                 axleOutForceN = 0;
             }
