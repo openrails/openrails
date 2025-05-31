@@ -2071,7 +2071,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     if (DynamicBrake)
                     {
-                    float diff = target * FrictionBrakeBlendingMaxForceN - DynamicBrakeForceN;
+                        float diff = target * FrictionBrakeBlendingMaxForceN - DynamicBrakeForceN;
                         float normDiff = diff / MaxDynamicBrakeForceN;
 
                         if (Math.Abs(diff) > 100.0f)
