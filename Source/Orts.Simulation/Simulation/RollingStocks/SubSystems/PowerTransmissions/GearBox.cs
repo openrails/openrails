@@ -461,10 +461,7 @@ public Gear NextGear
         {
             get
             {
-                if(DieselEngine.Locomotive.Direction == Direction.Reverse)
-                    return -(DieselEngine.Locomotive.SpeedMpS);
-                else
-                    return (DieselEngine.Locomotive.SpeedMpS);
+                return DieselEngine.Locomotive.AbsTractionSpeedMpS;
             }
         }
 
@@ -512,7 +509,7 @@ public Gear NextGear
                         {
                             const float perSectoPerMin = 60;
                             var driveWheelCircumferenceM = 2 * Math.PI * Locomotive.DriverWheelRadiusM;
-                            var driveWheelRpm = Locomotive.AbsSpeedMpS * perSectoPerMin / driveWheelCircumferenceM;
+                            var driveWheelRpm = Locomotive.AbsTractionSpeedMpS * perSectoPerMin / driveWheelCircumferenceM;
                             var shaftRPM = driveWheelRpm * CurrentGear.Ratio;
                             return (float)(shaftRPM);
                         }
@@ -941,7 +938,7 @@ public Gear NextGear
                 switch (GearBoxOperation)
                 {
                     case GearBoxOperation.Manual:
-                        if (DieselEngine.Locomotive.ThrottlePercent == 0 && Locomotive.AbsSpeedMpS == 0)
+                        if (DieselEngine.Locomotive.ThrottlePercent == 0 && Locomotive.AbsTractionSpeedMpS == 0)
                         {
                             clutchOn = false;
                             ClutchPercent = 0f;

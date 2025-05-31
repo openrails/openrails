@@ -168,7 +168,7 @@ namespace Orts.Simulation.RollingStocks
         public float Curtius_KnifflerC = 0.161f;             //                                      speedMpS * 3.6 + B
         public float AdhesionK = 0.7f;   //slip characteristics slope
         public float AxleInertiaKgm2;    //axle inertia
-        public float WheelSpeedSlipMpS; // speed of wheel if locomotive is slipping
+        public float DriveWheelSpeedMpS; // wheel speed of steam loco drive wheels, allowing for drive wheels to spin different from idle wheels
         public float SlipWarningThresholdPercent = 70;
         public MSTSNotchController WeightLoadController; // Used to control freight loading in freight cars
 

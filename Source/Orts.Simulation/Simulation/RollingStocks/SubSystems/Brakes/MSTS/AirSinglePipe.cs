@@ -1773,7 +1773,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 }
                                 else
                                 {
-                                    var dynforce = loco.DynamicBrakeForceCurves.Get(1.0f, loco.AbsSpeedMpS);
+                                    var dynforce = loco.DynamicBrakeForceCurves.Get(1.0f, loco.AbsTractionSpeedMpS);
                                     if ((loco.MaxDynamicBrakeForceN == 0 && dynforce > 0) || dynforce > loco.MaxDynamicBrakeForceN * 0.6)
                                     {
                                         demandedPressurePSI = 0;

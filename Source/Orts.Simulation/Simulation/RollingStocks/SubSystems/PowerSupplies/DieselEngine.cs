@@ -1391,7 +1391,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 if (LoadPercent != 0)
                 {
-                    CurrentDieselOutputPowerW = GearBox.TractiveForceN * Locomotive.AbsSpeedMpS * 100.0f / LoadPercent;
+                    CurrentDieselOutputPowerW = GearBox.TractiveForceN * Locomotive.AbsTractionSpeedMpS * 100.0f / LoadPercent;
 
                     if (Locomotive.DieselEngines.NumOfActiveEngines > 0)
                     {
