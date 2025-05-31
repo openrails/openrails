@@ -377,11 +377,11 @@ namespace Orts.Viewer3D
 
             lod = new LODWire(800.0f); // Create LOD for railsides with specified CutoffRadius
             lodItem = new LODItemWire("Wire");
-            if (File.Exists(viewer.Simulator.RoutePath + "\\Textures\\overheadwire.ace"))
+            if (Vfs.FileExists(viewer.Simulator.RoutePath + "\\Textures\\overheadwire.ace"))
             {
                 lodItem.TexName = "overheadwire.ace";
             }
-            else if (File.Exists(viewer.Simulator.BasePath + "\\global\\textures\\overheadwire.ace"))
+            else if (Vfs.FileExists(viewer.Simulator.BasePath + "\\global\\textures\\overheadwire.ace"))
             {
                 lodItem.TexName = "..\\..\\..\\global\\textures\\overheadwire.ace";
             }

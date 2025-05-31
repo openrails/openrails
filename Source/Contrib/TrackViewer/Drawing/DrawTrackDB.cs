@@ -72,13 +72,13 @@ namespace ORTS.TrackViewer.Drawing
 
             messageDelegate(TrackViewer.catalog.GetString("Loading tsection.dat ..."));
             string BasePath = Path.GetDirectoryName(Path.GetDirectoryName(routePath));
-            if (Directory.Exists(routePath + @"\Openrails") && File.Exists(routePath + @"\Openrails\TSECTION.DAT"))
+            if (Vfs.DirectoryExists(routePath + @"\Openrails") && Vfs.FileExists(routePath + @"\Openrails\TSECTION.DAT"))
                 TsectionDat = new TrackSectionsFile(routePath + @"\Openrails\TSECTION.DAT");
-            else if (Directory.Exists(routePath + @"\GLOBAL") && File.Exists(routePath + @"\GLOBAL\TSECTION.DAT"))
+            else if (Vfs.DirectoryExists(routePath + @"\GLOBAL") && Vfs.FileExists(routePath + @"\GLOBAL\TSECTION.DAT"))
                 TsectionDat = new TrackSectionsFile(routePath + @"\GLOBAL\TSECTION.DAT");
             else
                 TsectionDat = new TrackSectionsFile(BasePath + @"\GLOBAL\TSECTION.DAT");
-            if (File.Exists(routePath + @"\TSECTION.DAT"))
+            if (Vfs.FileExists(routePath + @"\TSECTION.DAT"))
                 TsectionDat.AddRouteTSectionDatFile(routePath + @"\TSECTION.DAT");
 
             string roadTrackFileName = routePath + @"\" + TRK.Tr_RouteFile.FileName + ".rdb";
@@ -94,11 +94,11 @@ namespace ORTS.TrackViewer.Drawing
             }
 
             string ORfilepath = System.IO.Path.Combine(routePath, "OpenRails");
-            if (File.Exists(ORfilepath + @"\sigcfg.dat"))
+            if (Vfs.FileExists(ORfilepath + @"\sigcfg.dat"))
             {
                 SigcfgFile = new SignalConfigurationFile(ORfilepath + @"\sigcfg.dat", true);
             }
-            else if (File.Exists(routePath + @"\sigcfg.dat"))
+            else if (Vfs.FileExists(routePath + @"\sigcfg.dat"))
             {
                 SigcfgFile = new SignalConfigurationFile(routePath + @"\sigcfg.dat", false);
             }
@@ -193,7 +193,7 @@ namespace ORTS.TrackViewer.Drawing
                 string[] wfiles;
                 try
                 {
-                    wfiles = Directory.GetFiles(WFilePath, "*.w");
+                    wfiles = Vfs.GetFiles(WFilePath, "*.w");
                 }
                 catch
                 {

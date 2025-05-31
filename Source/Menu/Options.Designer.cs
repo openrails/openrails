@@ -205,6 +205,8 @@
             this.trackAdhesionFactorChange = new System.Windows.Forms.TrackBar();
             this.trackAdhesionFactor = new System.Windows.Forms.TrackBar();
             this.checkUseMSTSEnv = new System.Windows.Forms.CheckBox();
+            this.labelVfsLogLevel = new System.Windows.Forms.Label();
+            this.numericVfsLogLevel = new System.Windows.Forms.NumericUpDown();
             this.label8 = new System.Windows.Forms.Label();
             this.pbSuperElevation = new System.Windows.Forms.PictureBox();
             this.numericSuperElevationGauge = new System.Windows.Forms.NumericUpDown();
@@ -212,6 +214,7 @@
             this.checkUseSuperElevation = new System.Windows.Forms.CheckBox();
             this.ElevationText = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.checkVfsAutoMount = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -280,6 +283,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericActRandomizationLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactorChange)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericVfsLogLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbSuperElevation)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
             this.SuspendLayout();
@@ -2378,7 +2382,10 @@
             this.tabPageExperimental.Controls.Add(this.AdhesionLevelLabel);
             this.tabPageExperimental.Controls.Add(this.trackAdhesionFactorChange);
             this.tabPageExperimental.Controls.Add(this.trackAdhesionFactor);
+            this.tabPageExperimental.Controls.Add(this.checkVfsAutoMount);
             this.tabPageExperimental.Controls.Add(this.checkUseMSTSEnv);
+            this.tabPageExperimental.Controls.Add(this.labelVfsLogLevel);
+            this.tabPageExperimental.Controls.Add(this.numericVfsLogLevel);
             this.tabPageExperimental.Controls.Add(this.label8);
             this.tabPageExperimental.Controls.Add(this.pbSuperElevation);
             this.tabPageExperimental.Controls.Add(this.numericSuperElevationGauge);
@@ -2512,7 +2519,7 @@
             // checkShapeWarnings
             // 
             this.checkShapeWarnings.AutoSize = true;
-            this.checkShapeWarnings.Location = new System.Drawing.Point(6, 189);
+            this.checkShapeWarnings.Location = new System.Drawing.Point(6, 166);
             this.checkShapeWarnings.Name = "checkShapeWarnings";
             this.checkShapeWarnings.Size = new System.Drawing.Size(130, 17);
             this.checkShapeWarnings.TabIndex = 5;
@@ -2576,6 +2583,39 @@
             this.checkUseMSTSEnv.TabIndex = 13;
             this.checkUseMSTSEnv.Text = "MSTS environments";
             this.checkUseMSTSEnv.UseVisualStyleBackColor = true;
+            // 
+            // labelVfsLogLevel
+            // 
+            this.labelVfsLogLevel.AutoSize = true;
+            this.labelVfsLogLevel.Location = new System.Drawing.Point(70, 236);
+            this.labelVfsLogLevel.Margin = new System.Windows.Forms.Padding(3);
+            this.labelVfsLogLevel.Name = "labelVfsLogLevel";
+            this.labelVfsLogLevel.Size = new System.Drawing.Size(129, 13);
+            this.labelVfsLogLevel.TabIndex = 10;
+            this.labelVfsLogLevel.Text = "Virtual file system log level";
+            // 
+            // numericVfsLogLevel
+            // 
+            this.numericVfsLogLevel.Location = new System.Drawing.Point(10, 232);
+            this.numericVfsLogLevel.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
+            this.numericVfsLogLevel.Maximum = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
+            this.numericVfsLogLevel.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numericVfsLogLevel.Name = "numericVfsLogLevel";
+            this.numericVfsLogLevel.Size = new System.Drawing.Size(54, 20);
+            this.numericVfsLogLevel.TabIndex = 9;
+            this.numericVfsLogLevel.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
             // label8
             // 
@@ -2663,6 +2703,16 @@
             this.ElevationText.Size = new System.Drawing.Size(78, 13);
             this.ElevationText.TabIndex = 1;
             this.ElevationText.Text = "Superelevation";
+            // 
+            // checkVfsNoAutoMount
+            // 
+            this.checkVfsAutoMount.AutoSize = true;
+            this.checkVfsAutoMount.Location = new System.Drawing.Point(6, 212);
+            this.checkVfsAutoMount.Name = "checkVfsNoAutoMount";
+            this.checkVfsAutoMount.Size = new System.Drawing.Size(256, 17);
+            this.checkVfsAutoMount.TabIndex = 21;
+            this.checkVfsAutoMount.Text = "Enable virtual file system auto-mounting archives";
+            this.checkVfsAutoMount.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
@@ -2756,6 +2806,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericActRandomizationLevel)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactorChange)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericVfsLogLevel)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbSuperElevation)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
             this.ResumeLayout(false);
@@ -2900,6 +2951,10 @@
         private System.Windows.Forms.TrackBar trackAntiAliasing;
         private System.Windows.Forms.Label labelAntiAliasingValue;
         private System.Windows.Forms.Label labelAntiAliasing;
+        private System.Windows.Forms.Button buttonContentFile;
+        private System.Windows.Forms.Label labelVfsLogLevel;
+        private System.Windows.Forms.NumericUpDown numericVfsLogLevel;
+        private System.Windows.Forms.CheckBox checkVfsAutoMount;
         private System.Windows.Forms.PictureBox pbLanguage;
         private System.Windows.Forms.Label labelLanguage;
         private System.Windows.Forms.ComboBox comboLanguage;

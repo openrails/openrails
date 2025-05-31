@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using LibAE.Formats;
 using ActivityEditor.ActionProperties;
 using Orts.Formats.OR;
+using ORTS.Common;
 
 namespace ActivityEditor.Preference
 {
@@ -90,8 +91,29 @@ namespace ActivityEditor.Preference
                 string path = MSTSfolderBrowse.SelectedPath;
                 MSTSPath.Text = path;
                 Program.aePreference.MSTSPath = path;
-                string completeFileName = Path.Combine(path, "routes");
-                if (Directory.Exists(completeFileName))
+                Vfs.Initialize(path, Path.GetDirectoryName(Application.ExecutablePath));
+                string completeFileName = "/MSTS/ROUTES";
+                if (Vfs.DirectoryExists(completeFileName))
+                {
+                    Program.aePreference.RoutePaths.Add(completeFileName);
+                    ListRoutePaths.DataSource = null;
+                    ListRoutePaths.DataSource = Program.aePreference.RoutePaths;
+                    RemoveRoutePaths.Enabled = true;
+
+                }
+            }
+        }
+
+        private void browseFilePath_Click(object sender, EventArgs e)
+        {
+            if (VfsFileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                string path = VfsFileDialog.FileName;
+                MSTSPath.Text = path;
+                Program.aePreference.MSTSPath = path;
+                Vfs.Initialize(path, Path.GetDirectoryName(Application.ExecutablePath));
+                string completeFileName = "/MSTS/ROUTES";
+                if (Vfs.DirectoryExists(completeFileName))
                 {
                     Program.aePreference.RoutePaths.Add(completeFileName);
                     ListRoutePaths.DataSource = null;

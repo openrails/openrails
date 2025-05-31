@@ -259,7 +259,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     Path.Combine(Simulator.BasePath, "SOUND"),
                 };
                     var soundPath = ORTSPaths.GetFileFromFolders(soundPathArray, SoundFileName);
-                    if (File.Exists(soundPath))
+                    if (Vfs.FileExists(soundPath))
                         Sounds.Add(Script, soundPath);
                 }
 
@@ -913,10 +913,26 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             string buffer;
             int length;
 
-            if (File.Exists(TrainParametersFileName))
+            if (Vfs.FileExists(TrainParametersFileName))
             {
+                // FIXME: The native windows method GetPrivateProfileString() can read only from a real file.
+                // In NET 6 there will be a proper method available in the Microsoft.Extensions.Configuration namespace.
+                var realPath = Vfs.GetSystemPathForNativeWindowsMethodsIfRealFile_DontUse(TrainParametersFileName);
+                var tempFile = Path.GetTempFileName();
+                if (realPath == null)
+                {
+                    using (var reader = Vfs.OpenText(TrainParametersFileName))
+                    using (var writer = new StreamWriter(tempFile))
+                    {
+                        writer.Write(reader.ReadToEnd());
+                    }
+                }
+
                 buffer = new string('\0', 256);
-                length = NativeMethods.GetPrivateProfileString(sectionName, keyName, null, buffer, buffer.Length, TrainParametersFileName);
+                length = NativeMethods.GetPrivateProfileString(sectionName, keyName, null, buffer, buffer.Length, realPath ?? tempFile);
+
+                if (realPath == null)
+                    File.Delete(tempFile);
 
                 if (length > 0)
                 {
@@ -925,10 +941,26 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 }
             }
 
-            if (File.Exists(ParametersFileName))
+            if (Vfs.FileExists(ParametersFileName))
             {
+                // FIXME: The native windows method GetPrivateProfileString() can read only from a real file.
+                // In NET 6 there will be a proper method available in the Microsoft.Extensions.Configuration namespace.
+                var realPath = Vfs.GetSystemPathForNativeWindowsMethodsIfRealFile_DontUse(ParametersFileName);
+                var tempFile = Path.GetTempFileName();
+                if (realPath == null)
+                {
+                    using (var reader = Vfs.OpenText(ParametersFileName))
+                    using (var writer = new StreamWriter(tempFile))
+                    {
+                        writer.Write(reader.ReadToEnd());
+                    }
+                }
+
                 buffer = new string('\0', 256);
-                length = NativeMethods.GetPrivateProfileString(sectionName, keyName, null, buffer, buffer.Length, ParametersFileName);
+                length = NativeMethods.GetPrivateProfileString(sectionName, keyName, null, buffer, buffer.Length, realPath ?? tempFile);
+
+                if (realPath == null)
+                    File.Delete(tempFile);
 
                 if (length > 0)
                 {

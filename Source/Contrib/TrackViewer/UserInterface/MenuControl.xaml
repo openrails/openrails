@@ -8,6 +8,7 @@
                 <MenuItem Header="(Re)load route (ctrl-R)" Name="menuReloadRoute" Click="MenuReloadRoute_Click" />
                 <Separator/>
                 <MenuItem Header="Select install folder" Name="menuInstallFolder" Click="MenuInstallFolder_Click"/>
+                <MenuItem Header="Select VFS config file" Name="menuVfsConfigFile" Click="MenuVfsConfigFile_Click"/>
                 <MenuItem Header="Select route" Name="menuSelectRoute"/>
                 <MenuItem Header="Select activity" Name="menuSelectActivity"/>
                 <Separator/>

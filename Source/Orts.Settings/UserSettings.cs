@@ -270,6 +270,10 @@ namespace ORTS.Settings
         public int LODBias { get; set; }
         [Default(true)]
         public bool SuppressShapeWarnings { get; set; }
+        [Default(1)]
+        public int VfsLogLevel { get; set; }
+        [Default(false)]
+        public bool VfsAutoMount { get; set; }
         [Default(false)]
         public bool DoubleWire { get; set; }
         [Default(false)]

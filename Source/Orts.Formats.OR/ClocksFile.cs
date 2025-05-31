@@ -21,8 +21,8 @@ using Orts.Parsers.Msts;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
+using ORTS.Common;
 using JsonReader = Orts.Parsers.OR.JsonReader;
 
 namespace Orts.Formats.OR
@@ -86,7 +86,7 @@ namespace Orts.Formats.OR
                     ClockShape.Name = path;
                     if (string.IsNullOrEmpty(stringValue))
                         return false;
-                    if (File.Exists(path) == false)
+                    if (!Vfs.FileExists(path))
                         Trace.TraceWarning($"Non-existent shape file {path} referenced in animated.clocks-or");
                     break;
 
@@ -180,7 +180,7 @@ namespace Orts.Formats.OR
                         else
                         {
                             var dataItem = new ClockShape(stf, shapePath);
-                            if (File.Exists(shapePath + dataItem.Name))
+                            if (Vfs.FileExists(shapePath + dataItem.Name))
                                 clockDataItems.Add(dataItem);
                             else
                                 STFException.TraceWarning(stf, String.Format("Non-existent shape file {0} referenced", dataItem.Name));

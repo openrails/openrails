@@ -266,7 +266,7 @@ namespace Orts.Viewer3D
             var WFilePath = viewer.Simulator.RoutePath + @"\World\" + WFileName;
 
             // if there isn't a file, then return with an empty WorldFile object
-            if (!File.Exists(WFilePath))
+            if (!Vfs.FileExists(WFilePath))
             {
                 if (visible)
                     Trace.TraceWarning("World file missing - {0}", WFilePath);
@@ -279,7 +279,7 @@ namespace Orts.Viewer3D
             // check for existence of world file in OpenRails subfolder
 
             WFilePath = viewer.Simulator.RoutePath + @"\World\Openrails\" + WFileName;
-            if (File.Exists(WFilePath))
+            if (Vfs.FileExists(WFilePath))
             {
                 // We have an OR-specific addition to world file
                 WFile.InsertORSpecificData(WFilePath, null);
@@ -332,8 +332,7 @@ namespace Orts.Viewer3D
                 var shapeFilePath = fileNameIsNotShape || String.IsNullOrEmpty(worldObject.FileName) ? null : global ? viewer.Simulator.BasePath + @"\Global\Shapes\" + worldObject.FileName : viewer.Simulator.RoutePath + @"\Shapes\" + worldObject.FileName;
                 if (shapeFilePath != null)
                 {
-                    shapeFilePath = Path.GetFullPath(shapeFilePath);
-                    if (!File.Exists(shapeFilePath))
+                    if (!Vfs.FileExists(shapeFilePath))
                     {
                         Trace.TraceWarning("{0} scenery object {1} with StaticFlags {3:X8} references non-existent {2}", WFileName, worldObject.UID, shapeFilePath, worldObject.StaticFlags);
                         shapeFilePath = null;

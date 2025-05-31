@@ -59,7 +59,6 @@ namespace ActivityEditor
         public AESignals Signals { get { return mstsDataConfig.Signals; } protected set { } }
         public SignalConfigurationFile SIGCFG { get { return mstsDataConfig.SIGCFG; } protected set { } }
         public string RoutePath { get { return mstsDataConfig.RoutePath; } protected set { } }
-        public string mstsPath { get { return mstsDataConfig.MstsPath; } protected set { } }
         public AETraveller traveller { get { return orRouteConfig.traveller; } protected set { } }
         public TrackNode[] nodes { get; set; }
         public MSTSItems mstsItems { get; set; }
@@ -94,7 +93,7 @@ namespace ActivityEditor
         public void LoadRoute(string routePath, TypeEditor interfaceType)
         {
             Program.actEditor.DisplayStatusMessage("Simulator Loading...");
-            mstsDataConfig = new MSTSDataConfig(Program.aePreference.MSTSPath, routePath, interfaceType);
+            mstsDataConfig = new MSTSDataConfig(routePath, interfaceType);
             Program.actEditor.DisplayStatusMessage("Load route Metadata ...");
 
             orRouteConfig = ORRouteConfig.LoadConfig(TRK.Tr_RouteFile.FileName, routePath, interfaceType);

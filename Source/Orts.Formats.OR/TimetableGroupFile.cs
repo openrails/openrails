@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ORTS.Common;
 
 namespace Orts.Formats.OR
 {
@@ -38,7 +39,7 @@ namespace Orts.Formats.OR
             Description = String.Empty;
             try
             {
-                using (StreamReader scrStream = new StreamReader(filePath, true))
+                using (StreamReader scrStream = Vfs.StreamReader(filePath, true))
                 {
                     MultiTTFilePreliminaryRead(filePath, directory, scrStream);
                     if (String.IsNullOrEmpty(Description)) Description = filePath;
@@ -99,7 +100,7 @@ namespace Orts.Formats.OR
             Description = String.Empty;
             try
             {
-                using (StreamReader scrStream = new StreamReader(filePath, true))
+                using (StreamReader scrStream = Vfs.StreamReader(filePath, true))
                 {
                     MultiTTFileRead(filePath, directory, scrStream);
                     if (String.IsNullOrEmpty(Description)) Description = filePath;

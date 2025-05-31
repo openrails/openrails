@@ -17,6 +17,7 @@
 
 using Orts.Formats.Msts;
 using System.IO;
+using ORTS.Common;
 
 namespace Orts.Formats.OR
 {
@@ -27,12 +28,10 @@ namespace Orts.Formats.OR
         public TrackSectionsFile TSectionDat { get; protected set; }
         public SignalConfigurationFile SIGCFG { get; protected set; }
         public string RoutePath { get; set; }
-        public string MstsPath { get; set; }
         public AESignals Signals { get; protected set; }
 
-        public MSTSData (string mstsPath, string Route)
+        public MSTSData (string Route)
         {
-            MstsPath = mstsPath;
             RoutePath = Route;
             TRK = new RouteFile(MSTS.MSTSPath.GetTRKFileName(RoutePath));
             string routePath = Path.Combine(Route, TRK.Tr_RouteFile.FileName);
@@ -40,7 +39,7 @@ namespace Orts.Formats.OR
 
             string ORfilepath = System.IO.Path.Combine(RoutePath, "OpenRails");
 
-            if (File.Exists(ORfilepath + @"\sigcfg.dat"))
+            if (Vfs.FileExists(ORfilepath + @"\sigcfg.dat"))
             {
                 SIGCFG = new SignalConfigurationFile(ORfilepath + @"\sigcfg.dat", true);
             }
@@ -49,13 +48,13 @@ namespace Orts.Formats.OR
                 SIGCFG = new SignalConfigurationFile(RoutePath + @"\sigcfg.dat", false);
             }
 
-            if (Directory.Exists(RoutePath + @"\Openrails") && File.Exists(RoutePath + @"\Openrails\TSECTION.DAT"))
+            if (Vfs.DirectoryExists(RoutePath + @"\Openrails") && Vfs.FileExists(RoutePath + @"\Openrails\TSECTION.DAT"))
                 TSectionDat = new TrackSectionsFile(RoutePath + @"\Openrails\TSECTION.DAT");
-            else if (Directory.Exists(RoutePath + @"\GLOBAL") && File.Exists(RoutePath + @"\GLOBAL\TSECTION.DAT"))
+            else if (Vfs.DirectoryExists(RoutePath + @"\GLOBAL") && Vfs.FileExists(RoutePath + @"\GLOBAL\TSECTION.DAT"))
                 TSectionDat = new TrackSectionsFile(RoutePath + @"\GLOBAL\TSECTION.DAT");
             else
-                TSectionDat = new TrackSectionsFile(MstsPath + @"\GLOBAL\TSECTION.DAT");
-            if (File.Exists(RoutePath + @"\TSECTION.DAT"))
+                TSectionDat = new TrackSectionsFile("/MSTS/GLOBAL/TSECTION.DAT");
+            if (Vfs.FileExists(RoutePath + @"\TSECTION.DAT"))
                 TSectionDat.AddRouteTSectionDatFile(RoutePath + @"\TSECTION.DAT");
             Signals = new AESignals (this, SIGCFG);
         }

@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using ORTS.Common;
 
 namespace Orts.Parsers.Msts
 {
@@ -37,7 +38,7 @@ namespace Orts.Parsers.Msts
 
         public static SBR Open(string filename)
         {
-            Stream fb = new FileStream(filename, FileMode.Open, FileAccess.Read);
+            Stream fb = Vfs.OpenRead(filename);
 
             byte[] buffer = new byte[34];
             fb.Read(buffer, 0, 2);

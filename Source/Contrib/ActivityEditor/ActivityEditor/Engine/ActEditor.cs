@@ -104,6 +104,7 @@ namespace ActivityEditor
                 DisplayStatusMessage("Please, Configure your Path!");
                 return;
             }
+            Vfs.Initialize(Program.aePreference.MSTSPath, Path.GetDirectoryName(Application.ExecutablePath));
 
             DisplayStatusMessage("Create New Activity");
         }

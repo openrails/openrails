@@ -412,7 +412,7 @@ namespace Orts.Simulation.Signalling
 
             // loop through files, use only extention .w, skip w+1000000+1000000.w file
 
-            foreach (var fileName in Directory.GetFiles(WFilePath, "*.w"))
+            foreach (var fileName in Vfs.GetFiles(WFilePath, "*.w"))
             {
                 if (cancellation.IsCancellationRequested) return; // ping loader watchdog
                 // validate file name a little bit

@@ -17,6 +17,7 @@
 
 using System.Diagnostics;
 using System.IO;
+using ORTS.Common;
 
 
 namespace Orts.Common
@@ -61,7 +62,7 @@ namespace Orts.Common
                 if (path != null)
                 {
                     var fullPath = Path.Combine(path, branch);
-                    if (File.Exists(fullPath))
+                    if (Vfs.FileExists(fullPath))
                         return fullPath;
                 }
             }

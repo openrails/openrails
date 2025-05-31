@@ -34,6 +34,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using ORTS.Common;
 
 namespace Orts.Formats.OR
 {
@@ -61,7 +62,7 @@ namespace Orts.Formats.OR
             Separator = String.Empty;
             try
             {
-                using (StreamReader scrStream = new StreamReader(filePath, true))
+                using (StreamReader scrStream = Vfs.StreamReader(filePath, true))
                 {
                     TTFilePreliminaryRead(filePath, scrStream, Separator);
                 }

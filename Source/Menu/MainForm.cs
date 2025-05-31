@@ -148,7 +148,7 @@ namespace Menu
 
         void MainForm_Shown(object sender, EventArgs e)
         {
-            var options = Environment.GetCommandLineArgs().Where(a => (a.StartsWith("-") || a.StartsWith("/"))).Select(a => a.Substring(1));
+            var options = Environment.GetCommandLineArgs().Where(a => (a.StartsWith("-") || a.StartsWith("/") && !a.TrimStart('/').Contains("/"))).Select(a => a.Substring(1));
             Settings = new UserSettings(options);
             TelemetryManager = new TelemetryManager(Settings.Telemetry);
 
@@ -395,6 +395,20 @@ namespace Menu
         #region Folders
         void comboBoxFolder_SelectedIndexChanged(object sender, EventArgs e)
         {
+            Vfs.LogLevel = Settings.VfsLogLevel;
+            Vfs.AutoMount = Settings.VfsAutoMount;
+            try
+            {
+                Vfs.Initialize(SelectedFolder.Path, System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath));
+            }
+            catch (Exception ex)
+            {
+                // If the init JSON deserialization fails, need to display some debug information to the user.
+                ClearPanel();
+                AddDetail("VFS: Failed to initialize", ex.Message.Split('\n'));
+                FlowDetails();
+                return;
+            }
             LoadRouteList();
             LoadLocomotiveList();
             ShowDetails();
@@ -501,7 +515,7 @@ namespace Menu
         void comboBoxTimetableTrain_SelectedIndexChanged(object sender, EventArgs e)
         {
             var selectedTrain = comboBoxTimetableTrain.SelectedItem as TimetableFileLite.TrainInformation;
-            SelectedTimetableConsist = Consist.GetConsist(SelectedFolder, selectedTrain.LeadingConsist, selectedTrain.ReverseConsist);
+            SelectedTimetableConsist = Consist.GetConsist(selectedTrain.LeadingConsist, selectedTrain.ReverseConsist);
             SelectedTimetablePath = Path.GetPath(SelectedRoute, selectedTrain.Path, false);
             ShowDetails();
         }
@@ -826,8 +840,7 @@ namespace Menu
             ShowStartAtList();
             ShowHeadToList();
 
-            var selectedFolder = SelectedFolder;
-            RouteLoader = new Task<List<Route>>(this, () => Route.GetRoutes(selectedFolder).OrderBy(r => r.ToString()).ToList(), (routes) =>
+            RouteLoader = new Task<List<Route>>(this, () => Route.GetRoutes().OrderBy(r => r.ToString()).ToList(), (routes) =>
             {
                 Routes = routes;
                 ShowRouteList();
@@ -862,9 +875,8 @@ namespace Menu
             Activities.Clear();
             ShowActivityList();
 
-            var selectedFolder = SelectedFolder;
             var selectedRoute = SelectedRoute;
-            ActivityLoader = new Task<List<Activity>>(this, () => Activity.GetActivities(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (activities) =>
+            ActivityLoader = new Task<List<Activity>>(this, () => Activity.GetActivities(selectedRoute).OrderBy(a => a.ToString()).ToList(), (activities) =>
             {
                 Activities = activities;
                 ShowActivityList();
@@ -904,8 +916,7 @@ namespace Menu
             ShowLocomotiveList();
             ShowConsistList();
 
-            var selectedFolder = SelectedFolder;
-            ConsistLoader = new Task<List<Consist>>(this, () => Consist.GetConsists(selectedFolder).OrderBy(a => a.ToString()).ToList(), (consists) =>
+            ConsistLoader = new Task<List<Consist>>(this, () => Consist.GetConsists().OrderBy(a => a.ToString()).ToList(), (consists) =>
             {
                 Consists = consists;
                 if (SelectedActivity == null || SelectedActivity is ExploreActivity)
@@ -1060,16 +1071,14 @@ namespace Menu
 
             TimetableSets.Clear();
             ShowTimetableSetList();
-
-            var selectedFolder = SelectedFolder;
             var selectedRoute = SelectedRoute;
-            TimetableSetLoader = new Task<List<TimetableInfo>>(this, () => TimetableInfo.GetTimetableInfo(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableSets) =>
+            TimetableSetLoader = new Task<List<TimetableInfo>>(this, () => TimetableInfo.GetTimetableInfo(selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableSets) =>
             {
                 TimetableSets = timetableSets;
                 ShowTimetableSetList();
             });
 
-            TimetableWeatherFileLoader = new Task<List<WeatherFileInfo>>(this, () => WeatherFileInfo.GetTimetableWeatherFiles(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableWeatherFileSet) =>
+            TimetableWeatherFileLoader = new Task<List<WeatherFileInfo>>(this, () => WeatherFileInfo.GetTimetableWeatherFiles(selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableWeatherFileSet) =>
             {
                 TimetableWeatherFileSet = timetableWeatherFileSet;
                 ShowTimetableWeatherSet();

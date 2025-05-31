@@ -22,6 +22,7 @@ using System.IO.Compression;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.IO;
+using ORTS.Common;
 
 namespace Orts.Formats.Msts
 {
@@ -33,7 +34,7 @@ namespace Orts.Formats.Msts
     {
         public static Texture2D Texture2DFromFile(GraphicsDevice graphicsDevice, string fileName)
         {
-            using (var stream = File.OpenRead(fileName))
+            using (var stream = Vfs.OpenRead(fileName))
                 return Texture2DFromStream(graphicsDevice, stream);
         }
 
