@@ -1049,6 +1049,12 @@ namespace Menu
                     BaseDocumentationUrl + "/options.html#raildriver-options"
                 },
 
+                // Data Logger Options
+                {
+                    pbDataLoggerOptions,
+                    BaseDocumentationUrl + "/options.html#data-logger-options"
+                },                
+
                 // Experimental tab
                 {
                     pbSuperElevation,

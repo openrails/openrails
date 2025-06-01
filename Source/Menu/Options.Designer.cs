@@ -224,6 +224,7 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.pbKeyboardOptions = new System.Windows.Forms.PictureBox();
+            this.pbDataLoggerOptions = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -280,6 +281,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbLocationLinkedPassingPathProcessing)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOpenCloseDoorsOnAiTrains)).BeginInit();
             this.tabPageKeyboard.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbKeyboardOptions)).BeginInit();
             this.tabPageRailDriver.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbRailDriverOptions)).BeginInit();
             this.panelRDSettings.SuspendLayout();
@@ -305,7 +307,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbSuperElevation)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbKeyboardOptions)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbDataLoggerOptions)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -1648,18 +1650,6 @@
             this.pbForcedRedAtStationStops.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.pbForcedRedAtStationStops.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
-            // pbOpenCloseDoorsOnAiTrains
-            // 
-            this.pbOpenCloseDoorsOnAiTrains.Image = global::Menu.Properties.Resources.info_18;
-            this.pbOpenCloseDoorsOnAiTrains.Location = new System.Drawing.Point(8, 44);
-            this.pbOpenCloseDoorsOnAiTrains.Name = "pbOpenCloseDoorsOnAiTrains";
-            this.pbOpenCloseDoorsOnAiTrains.Size = new System.Drawing.Size(18, 18);
-            this.pbOpenCloseDoorsOnAiTrains.TabIndex = 48;
-            this.pbOpenCloseDoorsOnAiTrains.TabStop = false;
-            this.pbOpenCloseDoorsOnAiTrains.Click += new System.EventHandler(this.HelpIcon_Click);
-            this.pbOpenCloseDoorsOnAiTrains.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.pbOpenCloseDoorsOnAiTrains.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
-            // 
             // pbLocationLinkedPassingPathProcessing
             // 
             this.pbLocationLinkedPassingPathProcessing.Image = global::Menu.Properties.Resources.info_18;
@@ -1671,6 +1661,18 @@
             this.pbLocationLinkedPassingPathProcessing.Click += new System.EventHandler(this.HelpIcon_Click);
             this.pbLocationLinkedPassingPathProcessing.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.pbLocationLinkedPassingPathProcessing.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbOpenCloseDoorsOnAiTrains
+            // 
+            this.pbOpenCloseDoorsOnAiTrains.Image = global::Menu.Properties.Resources.info_18;
+            this.pbOpenCloseDoorsOnAiTrains.Location = new System.Drawing.Point(8, 44);
+            this.pbOpenCloseDoorsOnAiTrains.Name = "pbOpenCloseDoorsOnAiTrains";
+            this.pbOpenCloseDoorsOnAiTrains.Size = new System.Drawing.Size(18, 18);
+            this.pbOpenCloseDoorsOnAiTrains.TabIndex = 48;
+            this.pbOpenCloseDoorsOnAiTrains.TabStop = false;
+            this.pbOpenCloseDoorsOnAiTrains.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbOpenCloseDoorsOnAiTrains.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbOpenCloseDoorsOnAiTrains.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // checkUseLocationPassingPaths
             // 
@@ -1786,6 +1788,16 @@
             this.tabPageKeyboard.TabIndex = 1;
             this.tabPageKeyboard.Text = "Keyboard";
             this.tabPageKeyboard.UseVisualStyleBackColor = true;
+            // 
+            // pbKeyboardOptions
+            // 
+            this.pbKeyboardOptions.Image = global::Menu.Properties.Resources.info_18_hover;
+            this.pbKeyboardOptions.Location = new System.Drawing.Point(180, 378);
+            this.pbKeyboardOptions.Name = "pbKeyboardOptions";
+            this.pbKeyboardOptions.Size = new System.Drawing.Size(18, 18);
+            this.pbKeyboardOptions.TabIndex = 21;
+            this.pbKeyboardOptions.TabStop = false;
+            this.pbKeyboardOptions.Click += new System.EventHandler(this.HelpIcon_Click);
             // 
             // buttonExport
             // 
@@ -2025,6 +2037,7 @@
             // 
             // tabPageDataLogger
             // 
+            this.tabPageDataLogger.Controls.Add(this.pbDataLoggerOptions);
             this.tabPageDataLogger.Controls.Add(this.comboDataLogSpeedUnits);
             this.tabPageDataLogger.Controls.Add(this.comboDataLoggerSeparator);
             this.tabPageDataLogger.Controls.Add(this.label19);
@@ -2852,15 +2865,15 @@
             this.ElevationText.TabIndex = 1;
             this.ElevationText.Text = "Superelevation";
             // 
-            // pbKeyboard
+            // pbDataLoggerOptions
             // 
-            this.pbKeyboardOptions.Image = global::Menu.Properties.Resources.info_18_hover;
-            this.pbKeyboardOptions.Location = new System.Drawing.Point(180, 378);
-            this.pbKeyboardOptions.Name = "pbKeyboard";
-            this.pbKeyboardOptions.Size = new System.Drawing.Size(18, 18);
-            this.pbKeyboardOptions.TabIndex = 21;
-            this.pbKeyboardOptions.TabStop = false;
-            this.pbKeyboardOptions.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbDataLoggerOptions.Image = global::Menu.Properties.Resources.info_18_hover;
+            this.pbDataLoggerOptions.Location = new System.Drawing.Point(578, 6);
+            this.pbDataLoggerOptions.Name = "pbDataLoggerOptions";
+            this.pbDataLoggerOptions.Size = new System.Drawing.Size(18, 18);
+            this.pbDataLoggerOptions.TabIndex = 23;
+            this.pbDataLoggerOptions.TabStop = false;
+            this.pbDataLoggerOptions.Click += new System.EventHandler(this.HelpIcon_Click);
             // 
             // OptionsForm
             // 
@@ -2938,6 +2951,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbLocationLinkedPassingPathProcessing)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOpenCloseDoorsOnAiTrains)).EndInit();
             this.tabPageKeyboard.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pbKeyboardOptions)).EndInit();
             this.tabPageRailDriver.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pbRailDriverOptions)).EndInit();
             this.panelRDSettings.ResumeLayout(false);
@@ -2967,7 +2981,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbSuperElevation)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbKeyboardOptions)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbDataLoggerOptions)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -3169,5 +3183,6 @@
         private System.Windows.Forms.PictureBox pbSimpleControlAndPhysics;
         private System.Windows.Forms.PictureBox pbKeyboardOptions;
         private System.Windows.Forms.PictureBox pbRailDriverOptions;
+        private System.Windows.Forms.PictureBox pbDataLoggerOptions;
     }
 }
