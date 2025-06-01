@@ -4891,7 +4891,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         private void UpdateCylinders(float elapsedClockSeconds, float throttle, float cutoff, float absSpeedMpS, int numberofengine)
         {
             // Calculate speed of locomotive in wheel rpm - used to determine changes in performance based upon speed.
-            SteamEngines[numberofengine].DriveWheelRevRpS = absSpeedMpS / (2.0f * MathHelper.Pi * SteamEngines[numberofengine].AttachedAxle.WheelRadiusM);
+            SteamEngines[numberofengine].DriveWheelRevRpS = (float)Math.Abs(SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS) / (2.0f * MathHelper.Pi * SteamEngines[numberofengine].AttachedAxle.WheelRadiusM);
 
             DrvWheelRevRpS = SteamEngines[0].DriveWheelRevRpS; // set as one of the main engines
 
