@@ -827,7 +827,14 @@ namespace Menu
                 (pbLocationLinkedPassingPathProcessing, new[] { checkUseLocationPassingPaths }),
 
                 // Experimental tab
-                (pbSuperElevation, new[] { ElevationText }),
+                (pbSuperElevation, new Control [] { ElevationText, checkUseSuperElevation, label8}),
+                (pbShowShapeWarnings, new[] { checkShapeWarnings }),
+                (pbCorrectQuestionableBrakingParameters, new[] { checkCorrectQuestionableBrakingParams }),
+                (pbActivityRandomization, new Control [] { label13, label12 }),
+                (pbActivityWeatherRandomization, new Control [] { label26, label27 }),
+                (pbMstsEnvironments, new[] { checkUseMSTSEnv }),
+                (pbAdhesionFactorCorrection, new Control [] { label9,  trackAdhesionFactor}),
+                (pbAdhesionFactorRandomChange, new Control [] { label16, trackAdhesionFactorChange}),
             };
             foreach ((PictureBox pb, Control[] controls) in helpIconControls)
             {
@@ -1058,8 +1065,36 @@ namespace Menu
                 // Experimental tab
                 {
                     pbSuperElevation,
-                    BaseDocumentationUrl + "/options.html#super-elevation"
+                    BaseDocumentationUrl + "/options.html#superelevation"
                 },
+                {
+                    pbShowShapeWarnings,
+                    BaseDocumentationUrl + "/options.html#show-shape-warnings"
+                },
+                {
+                    pbCorrectQuestionableBrakingParameters,
+                    BaseDocumentationUrl + "/options.html#correct-questionable-braking-parameters"
+                },
+                {
+                    pbActivityRandomization,
+                    BaseDocumentationUrl + "/options.html#activity-randomization"
+                },
+                {
+                    pbActivityWeatherRandomization,
+                    BaseDocumentationUrl + "/options.html#activity-weather-randomization"
+                },
+                {
+                    pbMstsEnvironments,
+                    BaseDocumentationUrl + "/options.html#msts-environments"
+                },
+                {
+                    pbAdhesionFactorCorrection,
+                    BaseDocumentationUrl + "/options.html#adhesion-factor-correction"
+                },
+                {
+                    pbAdhesionFactorRandomChange,
+                    BaseDocumentationUrl + "/options.html#adhesion-factor-random-change"
+                }
             };
             if (urls.TryGetValue(sender, out var url))
             {
