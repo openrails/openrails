@@ -222,6 +222,7 @@
             this.checkUseSuperElevation = new System.Windows.Forms.CheckBox();
             this.ElevationText = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.pbKeyboardOptions = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -302,6 +303,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbSuperElevation)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbKeyboardOptions)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -1770,6 +1772,7 @@
             // tabPageKeyboard
             // 
             this.tabPageKeyboard.AutoScroll = true;
+            this.tabPageKeyboard.Controls.Add(this.pbKeyboardOptions);
             this.tabPageKeyboard.Controls.Add(this.buttonExport);
             this.tabPageKeyboard.Controls.Add(this.buttonDefaultKeys);
             this.tabPageKeyboard.Controls.Add(this.buttonCheckKeys);
@@ -2836,6 +2839,16 @@
             this.ElevationText.TabIndex = 1;
             this.ElevationText.Text = "Superelevation";
             // 
+            // pbKeyboard
+            // 
+            this.pbKeyboardOptions.Image = global::Menu.Properties.Resources.info_18_hover;
+            this.pbKeyboardOptions.Location = new System.Drawing.Point(180, 378);
+            this.pbKeyboardOptions.Name = "pbKeyboard";
+            this.pbKeyboardOptions.Size = new System.Drawing.Size(18, 18);
+            this.pbKeyboardOptions.TabIndex = 21;
+            this.pbKeyboardOptions.TabStop = false;
+            this.pbKeyboardOptions.Click += new System.EventHandler(this.HelpIcon_Click);
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -2940,6 +2953,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackAdhesionFactor)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbSuperElevation)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbKeyboardOptions)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -3141,5 +3155,6 @@
         private System.Windows.Forms.PictureBox pbOpenCloseDoorsOnAiTrains;
         private System.Windows.Forms.PictureBox pbSimpleControlsAndPhysics;
         private System.Windows.Forms.PictureBox pbSimpleControlAndPhysics;
+        private System.Windows.Forms.PictureBox pbKeyboardOptions;
     }
 }

@@ -1037,6 +1037,12 @@ namespace Menu
                     BaseDocumentationUrl + "/options.html#location-linked-passing-path-processing"
                 },
 
+                // Keyboard tab
+                {
+                    pbKeyboardOptions,
+                    BaseDocumentationUrl + "/options.html#keyboard-options"
+                },
+
                 // Experimental tab
                 {
                     pbSuperElevation,
