@@ -3006,7 +3006,6 @@
         private System.Windows.Forms.NumericUpDown numericWorldObjectDensity;
         private System.Windows.Forms.CheckBox checkDynamicShadows;
         private System.Windows.Forms.CheckBox checkWire;
-        private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.NumericUpDown numericSuperElevationGauge;
         private System.Windows.Forms.Label labelFOVHelp;
@@ -3167,7 +3166,6 @@
         private System.Windows.Forms.PictureBox pbBreakCouplers;
         private System.Windows.Forms.PictureBox pbLocationLinkedPassingPathProcessing;
         private System.Windows.Forms.PictureBox pbOpenCloseDoorsOnAiTrains;
-        private System.Windows.Forms.PictureBox pbSimpleControlsAndPhysics;
         private System.Windows.Forms.PictureBox pbSimpleControlAndPhysics;
         private System.Windows.Forms.PictureBox pbKeyboardOptions;
         private System.Windows.Forms.PictureBox pbRailDriverOptions;
