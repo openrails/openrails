@@ -673,13 +673,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     foreach (var head in trainSignal.SignalObject.SignalHeads)
                         if (head.Function == function)
                             functionHead = head;
+                    if (functionHead == null)
+                        goto Exit;
                     signalTypeName = functionHead.SignalTypeName;
-                    foreach (var key in functionHead.signalType.DrawStates.Keys)
+                    if (functionHead?.signalType?.DrawStates != null)
                     {
-                        if (functionHead.signalType.DrawStates[key].Index == functionHead.draw_state)
+                        foreach (var key in functionHead.signalType.DrawStates.Keys)
                         {
-                            drawStateName = functionHead.signalType.DrawStates[key].Name;
-                            break;
+                            if (functionHead.signalType.DrawStates[key].Index == functionHead.draw_state)
+                            {
+                                drawStateName = functionHead.signalType.DrawStates[key].Name;
+                                break;
+                            }
                         }
                     }
                     textAspect = functionHead?.TextSignalAspect ?? "";

@@ -850,7 +850,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             : base(simulator, wagFile)
         {
             SteamEngines = new SteamEngines(this);
-            PowerSupply = new SteamPowerSupply(this);
+            PowerSupply = new ScriptedSteamPowerSupply(this);
 
             RefillTenderWithFuel();
             RefillTenderWithWater();
@@ -2764,7 +2764,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             }
 
-            UpdateTractiveForce(elapsedClockSeconds, ThrottlePercent / 100f, AbsSpeedMpS, AbsWheelSpeedMpS);
+            UpdateTractiveForce(elapsedClockSeconds);
 
             #endregion
 
@@ -6518,8 +6518,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         /// <summary>
         /// Averages the tractive force for the steam locomotive as tractive force varies throught the full wheel revolution
         /// </summary>
-        protected override void UpdateTractiveForce(float elapsedClockSeconds, float locomotivethrottle, float AbsSpeedMpS, float AbsWheelSpeedMpS)
+        protected override void UpdateTractiveForce(float elapsedClockSeconds)
         {
+            float locomotivethrottle = ThrottlePercent / 100;
             TractiveForceN = 0; // reset tractiveforceN in preparation to calculating a new value
             if (!Simulator.UseAdvancedAdhesion && Simulator.Settings.SimpleControlPhysics)
             {
@@ -6532,6 +6533,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             MaxForceN = 0;
             DisplayTractiveForceN = 0;
 
+            PrevAbsTractionSpeedMpS = AbsTractionSpeedMpS;
             if (WheelSlip && AdvancedAdhesionModel)
             {
                 AbsTractionSpeedMpS = AbsWheelSpeedMpS;

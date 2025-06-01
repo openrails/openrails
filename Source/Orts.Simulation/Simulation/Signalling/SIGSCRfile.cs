@@ -858,6 +858,43 @@ namespace Orts.Simulation.Signalling
 
                     break;
 
+                // opp_sig_id_trainpath
+
+                case SignalScripts.SCRExternalFunctions.OPP_SIG_ID_TRAINPATH:
+                    return_value = (int)thisHead.opp_sig_id_trainpath(function1);
+#if DEBUG_PRINT_ENABLED
+                    if (thisHead.mainSignal.enabledTrain != null)
+                    {
+                        File.AppendAllText(dpe_fileLoc + @"printproc.txt",
+                                " OPP_SIG_LR : Located signal : " + return_value + "\n");
+                    }
+#endif
+#if DEBUG_PRINT_PROCESS
+                    if (TDB_debug_ref.Contains(thisHead.TDBIndex) || OBJ_debug_ref.Contains(thisHead.mainSignal.thisRef))
+                    {
+                        var sob = new StringBuilder();
+                        sob.AppendFormat(" OPP_SIG_LR : Located signal : {0}", return_value.ToString());
+
+                        if (return_value > 0)
+                        {
+                            SignalObject otherSignal = thisHead.mainSignal.signalRef.SignalObjects[return_value];
+                            sob.AppendFormat(" (");
+
+                            foreach (SignalHead otherHead in otherSignal.SignalHeads)
+                            {
+                                sob.AppendFormat(" {0} ", otherHead.TDBIndex);
+                            }
+
+                            sob.AppendFormat(") ");
+                        }
+                        sob.AppendFormat("\n");
+
+                        File.AppendAllText(dpr_fileLoc + @"printproc.txt", sob.ToString());
+                    }
+#endif
+
+                    break;
+
                 // id_sig_enabled
 
                 case SignalScripts.SCRExternalFunctions.ID_SIG_ENABLED:
@@ -1401,6 +1438,18 @@ namespace Orts.Simulation.Signalling
 
                 case SignalScripts.SCRExternalFunctions.ID_SIG_HASNORMALSUBTYPE:
                     return_value = thisHead.id_sig_hasnormalsubtype(parameter1_value, parameter2_value);
+                    break;
+
+                // request stop
+
+                case SignalScripts.SCRExternalFunctions.TRAIN_HAS_REQUEST_STOP:
+#if DEBUG_PRINT_PROCESS
+                    if (TDB_debug_ref.Contains(thisHead.TDBIndex) || OBJ_debug_ref.Contains(thisHead.mainSignal.thisRef))
+                    {
+                        dumpfile = String.Concat(dpr_fileLoc, "printproc.txt");
+                    }
+#endif
+                    return_value = thisHead.trainRequestStop(parameter1_value, parameter2_value, dumpfile);
                     break;
 
                 // switchstand
