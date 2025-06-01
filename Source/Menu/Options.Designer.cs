@@ -143,6 +143,7 @@
             this.buttonCheckKeys = new System.Windows.Forms.Button();
             this.panelKeys = new System.Windows.Forms.Panel();
             this.tabPageRailDriver = new System.Windows.Forms.TabPage();
+            this.pbRailDriverOptions = new System.Windows.Forms.PictureBox();
             this.btnRDSettingsExport = new System.Windows.Forms.Button();
             this.btnCheck = new System.Windows.Forms.Button();
             this.btnRDReset = new System.Windows.Forms.Button();
@@ -280,6 +281,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbOpenCloseDoorsOnAiTrains)).BeginInit();
             this.tabPageKeyboard.SuspendLayout();
             this.tabPageRailDriver.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbRailDriverOptions)).BeginInit();
             this.panelRDSettings.SuspendLayout();
             this.panelRDOptions.SuspendLayout();
             this.groupBoxReverseRDLevers.SuspendLayout();
@@ -1835,6 +1837,7 @@
             // 
             // tabPageRailDriver
             // 
+            this.tabPageRailDriver.Controls.Add(this.pbRailDriverOptions);
             this.tabPageRailDriver.Controls.Add(this.btnRDSettingsExport);
             this.tabPageRailDriver.Controls.Add(this.btnCheck);
             this.tabPageRailDriver.Controls.Add(this.btnRDReset);
@@ -1847,6 +1850,16 @@
             this.tabPageRailDriver.TabIndex = 10;
             this.tabPageRailDriver.Text = "RailDriver";
             this.tabPageRailDriver.UseVisualStyleBackColor = true;
+            // 
+            // pbRailDriverOptions
+            // 
+            this.pbRailDriverOptions.Image = global::Menu.Properties.Resources.info_18_hover;
+            this.pbRailDriverOptions.Location = new System.Drawing.Point(338, 377);
+            this.pbRailDriverOptions.Name = "pbRailDriverOptions";
+            this.pbRailDriverOptions.Size = new System.Drawing.Size(18, 18);
+            this.pbRailDriverOptions.TabIndex = 22;
+            this.pbRailDriverOptions.TabStop = false;
+            this.pbRailDriverOptions.Click += new System.EventHandler(this.HelpIcon_Click);
             // 
             // btnRDSettingsExport
             // 
@@ -2926,6 +2939,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbOpenCloseDoorsOnAiTrains)).EndInit();
             this.tabPageKeyboard.ResumeLayout(false);
             this.tabPageRailDriver.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pbRailDriverOptions)).EndInit();
             this.panelRDSettings.ResumeLayout(false);
             this.panelRDOptions.ResumeLayout(false);
             this.groupBoxReverseRDLevers.ResumeLayout(false);
@@ -3156,5 +3170,6 @@
         private System.Windows.Forms.PictureBox pbSimpleControlsAndPhysics;
         private System.Windows.Forms.PictureBox pbSimpleControlAndPhysics;
         private System.Windows.Forms.PictureBox pbKeyboardOptions;
+        private System.Windows.Forms.PictureBox pbRailDriverOptions;
     }
 }

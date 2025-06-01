@@ -1043,6 +1043,12 @@ namespace Menu
                     BaseDocumentationUrl + "/options.html#keyboard-options"
                 },
 
+                // Raildriver tab
+                {
+                    pbRailDriverOptions,
+                    BaseDocumentationUrl + "/options.html#raildriver-options"
+                },
+
                 // Experimental tab
                 {
                     pbSuperElevation,
