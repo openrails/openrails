@@ -820,30 +820,34 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             CCIsUsingTrainBrake = inf.ReadBoolean();
         }
 
+        public bool prevZeroThrottle;
+        public bool prevZeroForce;
         public void UpdateSpeedRegulatorModeChanges()
         {
             var prevMode = SpeedRegMode;
-            float throttle = Locomotive.ThrottleController.CurrentValue;
-            float dynamic = (Locomotive.DynamicBrakeController?.CurrentValue ?? 0);
+            bool zeroThrottle = Locomotive.ThrottleController.CurrentValue == 0;
+            bool zeroDynamic = (Locomotive.DynamicBrakeController?.CurrentValue ?? 0) == 0;
             bool zeroForce = MaxForceSelectorController.CurrentValue == 0 && MaxForceSelectorController.SavedValue == 0;
             bool zeroSelectedSpeed = SpeedSelectorController.CurrentValue == 0 && SpeedSelectorController.SavedValue == 0;
+            bool throttleFromZero = !zeroThrottle && prevZeroThrottle;
+            bool forceFromZero = !zeroForce && prevZeroForce;
             if (DisableCruiseControlOnThrottleAndZeroSpeed)
             {
-                if (throttle > 0 && Locomotive.AbsSpeedMpS == 0)
+                if (throttleFromZero && Locomotive.AbsSpeedMpS == 0)
                 {
                     SpeedRegMode = SpeedRegulatorMode.Manual;
                 }
             }
             if (DisableCruiseControlOnThrottleAndZeroForce)
             {
-                if ((throttle > 0 || UseThrottleAsForceSelector) && zeroForce)
+                if ((throttleFromZero || UseThrottleAsForceSelector) && zeroForce)
                 {
                     SpeedRegMode = SpeedRegulatorMode.Manual;
                 }
             }
             if (DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed)
             {
-                if ((throttle > 0 || UseThrottleAsForceSelector) && zeroForce && zeroSelectedSpeed)
+                if ((throttleFromZero || UseThrottleAsForceSelector) && zeroForce && zeroSelectedSpeed)
                 {
                     SpeedRegMode = SpeedRegulatorMode.Manual;
                 }
@@ -861,7 +865,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
             if (ForceRegulatorAutoWhenNonZeroSpeedSelectedAndThrottleAtZero)
             {
-                if (SelectedSpeedMpS > 0 && throttle == 0 && dynamic == 0 &&
+                if (SelectedSpeedMpS > 0 && zeroThrottle && zeroDynamic &&
                     zeroForce && DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed)
                 {
                     SpeedRegMode = SpeedRegulatorMode.Auto;
@@ -869,11 +873,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
             if (ForceRegulatorAutoWhenNonZeroForceSelected)
             {
-                if (SelectedMaxAccelerationPercent > 0 && DisableCruiseControlOnThrottleAndZeroForce && (throttle == 0 || UseThrottleAsForceSelector) && dynamic == 0)
+                if (forceFromZero && DisableCruiseControlOnThrottleAndZeroForce && (zeroThrottle || UseThrottleAsForceSelector) && zeroDynamic)
                 {
                     SpeedRegMode = SpeedRegulatorMode.Auto;
                 }
             }
+            prevZeroForce = zeroForce;
+            prevZeroThrottle = zeroThrottle;
             if (prevMode != SpeedRegMode)
             {
                 if (ZeroSelectedSpeedWhenPassingToThrottleMode && SpeedRegMode == SpeedRegulatorMode.Manual) SelectedSpeedMpS = 0;
