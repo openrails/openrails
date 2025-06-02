@@ -26,9 +26,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using Orts.Simulation.RollingStocks;
-using Orts.Viewer3D.RollingStock;
-using System.Diagnostics;
-using System.Linq;
 
 namespace Orts.Viewer3D
 {
@@ -57,11 +54,11 @@ namespace Orts.Viewer3D
         int InputCycle;
 #endif
 
-        public ParticleEmitterViewer(Viewer viewer, ParticleEmitterData data, MSTSWagonViewer car, WorldPosition worldPosition)
+        public ParticleEmitterViewer(Viewer viewer, ParticleEmitterData data, WorldPosition worldPosition)
         {
             Viewer = viewer;
             EmissionHoleM2 = (MathHelper.Pi * ((data.NozzleWidth / 2f) * (data.NozzleWidth / 2f)));
-            Emitter = new ParticleEmitterPrimitive(viewer, data, car, worldPosition);
+            Emitter = new ParticleEmitterPrimitive(viewer, data, worldPosition);
 #if DEBUG_EMITTER_INPUT
             EmitterID = ++EmitterIDIndex;
             InputCycle = Viewer.Random.Next(InputCycleLimit);
@@ -197,8 +194,6 @@ namespace Orts.Viewer3D
         internal WorldPosition WorldPosition;
         internal WorldPosition LastWorldPosition;
 
-        internal MSTSWagonViewer CarViewer;
-
         // Particle buffer goes like this:
         //   +--active>-----new>--+
         //   |                    |
@@ -215,7 +210,7 @@ namespace Orts.Viewer3D
         Viewer viewer;
         GraphicsDevice graphicsDevice;
 
-        public ParticleEmitterPrimitive(Viewer viewer, ParticleEmitterData data, MSTSWagonViewer car, WorldPosition worldPosition)
+        public ParticleEmitterPrimitive(Viewer viewer, ParticleEmitterData data, WorldPosition worldPosition)
         {
             this.viewer = viewer;
             this.graphicsDevice = viewer.GraphicsDevice;
@@ -233,7 +228,6 @@ namespace Orts.Viewer3D
             ParticleDuration = 3;
             ParticleColor = Color.White;
 
-            CarViewer = car;
             WorldPosition = worldPosition;
             LastWorldPosition = new WorldPosition(worldPosition);
 
@@ -245,35 +239,6 @@ namespace Orts.Viewer3D
                 (float)Viewer.Random.NextDouble() * 30000f,
                 (float)Viewer.Random.NextDouble() * 30000f,
             };
-
-            // Initialization step for emitter shape attachment
-            if (EmitterData.ShapeIndex != -1)
-            {
-                if (EmitterData.ShapeIndex < 0 || EmitterData.ShapeIndex >= CarViewer.TrainCarShape.ResultMatrices.Count())
-                {
-                    Trace.TraceWarning("Particle emitter in car {0} has invalid shape index defined, shape index {1} does not exist",
-                        (CarViewer.Car as MSTSWagon).WagFilePath, EmitterData.ShapeIndex);
-                    EmitterData.ShapeIndex = 0;
-                }
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(EmitterData.ShapeHierarchy))
-                {
-                    if (CarViewer.TrainCarShape.SharedShape.MatrixNames.Contains(EmitterData.ShapeHierarchy))
-                    {
-                        EmitterData.ShapeIndex = CarViewer.TrainCarShape.SharedShape.MatrixNames.IndexOf(EmitterData.ShapeHierarchy);
-                    }
-                    else
-                    {
-                        Trace.TraceWarning("Particle emitter in car {0} has invalid shape index defined, matrix name {1} does not exist",
-                            (CarViewer.Car as MSTSWagon).WagFilePath, EmitterData.ShapeHierarchy);
-                        EmitterData.ShapeIndex = 0;
-                    }
-                }
-                else
-                    EmitterData.ShapeIndex = 0;
-            }
         }
 
         void VertexBuffer_ContentLost()
@@ -372,21 +337,13 @@ namespace Orts.Viewer3D
 
             if (numToEmit > 0)
             {
-                Matrix rotation = WorldPosition.XNAMatrix;
-                rotation.Translation = Vector3.Zero; // Only want rotation data for this step
-                rotation = CarViewer.TrainCarShape.ResultMatrices[EmitterData.ShapeIndex] * rotation;
+                var rotation = WorldPosition.XNAMatrix;
+                rotation.Translation = Vector3.Zero;
 
                 var position = Vector3.Transform(EmitterData.XNALocation, rotation) + WorldPosition.XNAMatrix.Translation;
-                rotation.Translation = Vector3.Zero; // Last step needed translation, next step does not
                 var globalInitialVelocity = Vector3.Transform(XNAInitialVelocity, rotation) + velocity;
-                // FUTURE: Allow target velocities in directions other than straight upward, for now it's just 0, 1, 0
-                // Target velocity should rotate with the attached train car, but only about the Y axis
-                //rotation.Decompose(out _, out Quaternion rot, out _);
-                //rot.X = 0;
-                //rot.Z = 0;
-                //rot.Normalize();
-                //var globalTargetVelocity = Vector3.Transform(XNATargetVelocity, rot);
-                Vector3 globalTargetVelocity = XNATargetVelocity;
+                // TODO: This should only be rotated about the Y axis and not get fully rotated.
+                var globalTargetVelocity = Vector3.Transform(XNATargetVelocity, rotation);
 
                 var time = TimeParticlesLastEmitted;
 

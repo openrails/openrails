@@ -61,8 +61,6 @@ namespace Orts.Simulation.RollingStocks
         public Vector3 Location;
         public Vector3 StartDirection;
         public Vector3 RotationLimit;
-        public int ShapeIndex = -1;
-        public string ShapeHierarchy;
 
         public ViewPoint()
         {
@@ -78,8 +76,6 @@ namespace Orts.Simulation.RollingStocks
             Location = copy.Location;
             StartDirection = copy.StartDirection;
             RotationLimit = copy.RotationLimit;
-            ShapeIndex = copy.ShapeIndex;
-            ShapeHierarchy = copy.ShapeHierarchy;
             if (rotate)
             {
                 Location.X *= -1;
@@ -95,7 +91,6 @@ namespace Orts.Simulation.RollingStocks
         // Remember direction of passenger camera and apply when user returns to it.
         public float RotationXRadians;
         public float RotationYRadians;
-        public Vector3 ShapeOffset;
     }
 
     public abstract class TrainCar
@@ -192,12 +187,6 @@ namespace Orts.Simulation.RollingStocks
         public float CarWidthM = 2.5f;
         public float CarLengthM = 40;       // derived classes must overwrite these defaults
         public float CarHeightM = 4;        // derived classes must overwrite these defaults
-        public bool AutoSize = false;       // Are the dimensions of this wagon to be calculated automatically from the shape file?
-        public float AutoWidthOffsetM;
-        public float AutoLengthOffsetM;
-        public float AutoHeightOffsetM;
-        public int FrontArticulation = -1;  // -1: Determine front articulation automatically, 0: Force no front articulation, 1: Force front articulation
-        public int RearArticulation = -1;   // -1: Determine rear articulation automatically, 0: Force no rear articulation, 1: Force rear articulation
         public float MassKG = 10000;        // Mass in KG at runtime; coincides with InitialMassKG if there is no load and no ORTS freight anim
         public float InitialMassKG = 10000;
         public bool IsDriveable;
@@ -665,14 +654,13 @@ namespace Orts.Simulation.RollingStocks
 
         // For use by cameras, initialized in MSTSWagon class and its derived classes
         public List<PassengerViewPoint> PassengerViewpoints = new List<PassengerViewPoint>();
-        public List<PassengerViewPoint> CabViewpoints = new List<PassengerViewPoint>(); //three dimensional cab view point
+        public List<PassengerViewPoint> CabViewpoints; //three dimensional cab view point
         public List<ViewPoint> HeadOutViewpoints = new List<ViewPoint>();
 
         // Used by Curve Speed Method
         protected float TrackGaugeM;  // Track gauge - read in MSTSWagon, otherwise uses value given by the route
         protected Vector3 InitialCentreOfGravityM = new Vector3(0, 1.8f, 0); // get centre of gravity - read in MSTSWagon
         public Vector3 CentreOfGravityM = new Vector3(0, 1.8f, 0); // get centre of gravity after adjusted for freight animation
-        protected bool AutoCenter = false; // Should CentreOfGravityM.Z be set automatically to center the wagon?
         public float SuperElevationM; // Super elevation on the curve
         protected float MaxUnbalancedSuperElevationM;  // Maximum comfortable cant deficiency, read from MSTS Wagon File
         public float SuperElevationAngleRad;
@@ -2743,36 +2731,34 @@ namespace Orts.Simulation.RollingStocks
             // Decided to control what is sent to SetUpWheelsArticulation()by using
             // WheelAxlesLoaded as a flag.  This way, wagons that have to be processed are included
             // and the rest left out.
-
-            // Force articulation if stock is configured as such
-            // Otherwise, use default behavior which gives articulation if there are no axles forward/reareward on the mode,
-            // disables articulation on engines, and only allows articulation with 3 or fewer axles, but not 1 axle
-            bool articulatedFront = (FrontArticulation == 1 ||
-                (FrontArticulation == -1 && !WheelAxles.Any(a => a.OffsetM.Z < 0) && WagonType != WagonTypes.Engine && WheelAxles.Count != 1 && WheelAxles.Count <= 3));
-            bool articulatedRear = (RearArticulation == 1 ||
-                (RearArticulation == -1 && !WheelAxles.Any(a => a.OffsetM.Z > 0) && WagonType != WagonTypes.Engine && WheelAxles.Count != 1 && WheelAxles.Count <= 3));
-
-            if (articulatedFront || articulatedRear)
-            {
-                WheelAxlesLoaded = true;
-                SetUpWheelsArticulation(articulatedFront, articulatedRear);
-            }
+            bool articulatedFront = !WheelAxles.Any(a => a.OffsetM.Z < 0);
+            bool articulatedRear = !WheelAxles.Any(a => a.OffsetM.Z > 0);
+            var carIndex = Train.Cars.IndexOf(this);
+            //Certain locomotives are testing as articulated wagons for some reason.
+            if (WagonType != WagonTypes.Engine)
+                if (WheelAxles.Count != 1 && (articulatedFront || articulatedRear))
+                {
+                    WheelAxlesLoaded = true;
+                    SetUpWheelsArticulation(carIndex);
+                }
         } // end SetUpWheels()
 
-        protected void SetUpWheelsArticulation(bool front, bool rear)
+        protected void SetUpWheelsArticulation(int carIndex)
         {
             // If there are no forward wheels, this car is articulated (joined
             // to the car in front) at the front. Likewise for the rear.
+            bool articulatedFront = !WheelAxles.Any(a => a.OffsetM.Z < 0);
+            bool articulatedRear = !WheelAxles.Any(a => a.OffsetM.Z > 0);
             // Original process originally used caused too many issues.
             // The original process did include the below process of just using WheelAxles.Add
             //  if the initial test did not work.  Since the below process is working without issues the
             //  original process was stripped down to what is below
-            if (front || rear)
+            if (articulatedFront || articulatedRear)
             {
-                if (front)
+                if (articulatedFront && WheelAxles.Count <= 3)
                     WheelAxles.Add(new WheelAxle(new Vector3(0.0f, BogiePivotHeightM, -CarLengthM / 2.0f), 0, 0) { Part = Parts[0] });
 
-                if (rear)
+                if (articulatedRear && WheelAxles.Count <= 3)
                     WheelAxles.Add(new WheelAxle(new Vector3(0.0f, BogiePivotHeightM, CarLengthM / 2.0f), 0, 0) { Part = Parts[0] });
 
                 WheelAxles.Sort(WheelAxles[0]);
@@ -2859,8 +2845,6 @@ namespace Orts.Simulation.RollingStocks
             // Check if null (0-length) vector
             if (!(fwd.X == 0 && fwd.Y == 0 && fwd.Z == 0))
                 fwd.Normalize();
-            else // If calculation fails, force set forward vector to prevent NaN errors
-                fwd.X = 1; 
             Vector3 side = Vector3.Cross(Vector3.Up, fwd);
             // Check if null (0-length) vector
             if (!(side.X == 0 && side.Y == 0 && side.Z == 0))

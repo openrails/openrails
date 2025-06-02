@@ -64,7 +64,6 @@ namespace Orts.Simulation
 
         public string Name;
         public string ShapeFileName;
-        public string ShapeDescriptor;
         public string BaseShapeFileFolderSlash;
         public float MassKG = 2000;
         public float EmptyMassKG;
@@ -116,7 +115,6 @@ namespace Orts.Simulation
             Name = containerCopy.Name;
             BaseShapeFileFolderSlash = containerCopy.BaseShapeFileFolderSlash;
             ShapeFileName = containerCopy.ShapeFileName;
-            ShapeDescriptor = containerCopy.ShapeDescriptor;
             IntrinsicShapeOffset = containerCopy.IntrinsicShapeOffset;
             ContainerType = containerCopy.ContainerType;
             ComputeDimensions();
@@ -133,7 +131,6 @@ namespace Orts.Simulation
             Name = inf.ReadString();
             BaseShapeFileFolderSlash = inf.ReadString();
             ShapeFileName = inf.ReadString();
-            ShapeDescriptor = inf.ReadString();
             LoadFilePath = inf.ReadString();
             IntrinsicShapeOffset.X = inf.ReadSingle();
             IntrinsicShapeOffset.Y = inf.ReadSingle();
@@ -234,7 +231,6 @@ namespace Orts.Simulation
             outf.Write(Name);
             outf.Write(BaseShapeFileFolderSlash);
             outf.Write(ShapeFileName);
-            outf.Write(ShapeDescriptor);
             outf.Write(LoadFilePath);
             outf.Write(IntrinsicShapeOffset.X);
             outf.Write(IntrinsicShapeOffset.Y);
@@ -257,9 +253,8 @@ namespace Orts.Simulation
             var containerFile = new ContainerFile(loadFilePath);
             var containerParameters = containerFile.ContainerParameters;
             Name = containerParameters.Name;
-
+           
             ShapeFileName = @"..\" + containerParameters.ShapeFileName;
-            ShapeDescriptor = @"..\" + containerParameters.ShapeDescriptor;
             var workingString = containerParameters.ShapeFileName.Replace(@"\" , @"/");
             var root  = workingString.Substring(0, workingString.IndexOf(@"/"));
             BaseShapeFileFolderSlash = baseFolder + root + @"\";

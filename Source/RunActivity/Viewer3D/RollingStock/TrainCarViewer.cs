@@ -47,7 +47,6 @@ namespace Orts.Viewer3D.RollingStock
         /// Executes in the UpdaterThread
         /// </summary>
         public abstract void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime);
-        public abstract void UpdateAnimations(ElapsedTime elapsedTime);
 
         [CallOnThread("Loader")]
         public virtual void Unload() { }
@@ -60,7 +59,7 @@ namespace Orts.Viewer3D.RollingStock
 
 
         public float[] Velocity = new float[] { 0, 0, 0 };
-        public WorldLocation SoundLocation;
+        WorldLocation SoundLocation;
 
         public void UpdateSoundPosition()
         {
@@ -83,8 +82,47 @@ namespace Orts.Viewer3D.RollingStock
             else
                 Velocity = new float[] { 0, 0, 0 };
 
+            // TODO This entire block of code (down to TODO END) should be inside the SoundProcess, not here.
             SoundLocation = new WorldLocation(Car.WorldPosition.WorldLocation);
             SoundLocation.NormalizeTo(Camera.SoundBaseTile.X, Camera.SoundBaseTile.Y);
+            float[] position = new float[] {
+                SoundLocation.Location.X,
+                SoundLocation.Location.Y,
+                SoundLocation.Location.Z};
+
+            // make a copy of SoundSourceIDs, but check that it didn't change during the copy; if it changed, try again up to 5 times.
+            var sSIDsFinalCount = -1;
+            var sSIDsInitCount = -2;
+            int[] soundSourceIDs = { 0 };
+            int trialCount = 0;
+            try
+            {
+                while (sSIDsInitCount != sSIDsFinalCount && trialCount < 5)
+                {
+                    sSIDsInitCount = Car.SoundSourceIDs.Count;
+                    soundSourceIDs = Car.SoundSourceIDs.ToArray();
+                    sSIDsFinalCount = Car.SoundSourceIDs.Count;
+                    trialCount++;
+                }
+            }
+            catch
+            {
+                Trace.TraceInformation("Skipped update of position and speed of sound sources");
+                return;
+            }
+            if (trialCount >= 5)
+                return;
+            foreach (var soundSourceID in soundSourceIDs)
+            {
+                Viewer.Simulator.updaterWorking = true;
+                if (OpenAL.alIsSource(soundSourceID))
+                {
+                    OpenAL.alSourcefv(soundSourceID, OpenAL.AL_POSITION, position);
+                    OpenAL.alSourcefv(soundSourceID, OpenAL.AL_VELOCITY, Velocity);
+                }
+                Viewer.Simulator.updaterWorking = false;
+            }
+            // TODO END
         }
     }
 }
