@@ -331,7 +331,7 @@ namespace Orts.Simulation.RollingStocks
         float[,] TractiveForceAverageN = new float[5, 37];
         float AverageTractiveForceN;
 
-        public Orts.Simulation.Simulation.RollingStocks.SubSystems.PowerSupplies.SteamEngines SteamEngines;
+        public SteamEngines SteamEngines;
 
         // steam performance reporting
         public float SteamPerformanceTimeS = 0.0f; // Records the time since starting movement
@@ -664,7 +664,6 @@ namespace Orts.Simulation.RollingStocks
         float MaxIndicatedHorsePowerHP; // IHP @ max performance for the locomotive
         float DisplayMaxIndicatedHorsePowerHP; // Display value for HUD of IHP @ max performance for the geared locomotive
         float RetainedGearedMaxMaxIndicatedHorsePowerHP; // Retrains maximum IHP value for steam locomotives.
-        float absSpeedMpS;
         float CombFrictionN;  // Temporary parameter to store combined friction values of locomotive and tender
         float CombGravityN;   // Temporary parameter to store combined Gravity values of locomotive and tender
         float CombTunnelN;    // Temporary parameter to store combined Tunnel values of locomotive and tender
@@ -2601,9 +2600,11 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             {
                 var enginethrottle = 0.0f;
 
+                float absSpeedRefMpS = Simulator.UseAdvancedAdhesion ? Math.Abs((float)SteamEngines[i].AttachedAxle.AxleSpeedMpS) : AbsTractionSpeedMpS;
+
                 if (SteamEngines[i].AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
                 {
-                    UpdateCylinders(elapsedClockSeconds, throttle, cutoff, Math.Abs((float)SteamEngines[i].AttachedAxle.AxleSpeedMpS), i);
+                    UpdateCylinders(elapsedClockSeconds, throttle, cutoff, absSpeedRefMpS, i);
                 }
                 else if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)  // Booster Engine
                 {
@@ -2725,7 +2726,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         BoosterEngineSpeedRpM = 0.0f;
                     }
 
-                    UpdateCylinders(elapsedClockSeconds, enginethrottle, BoosterCylinderExhaustOpenFactor, Math.Abs((float)SteamEngines[i].AttachedAxle.AxleSpeedMpS), i);
+                    UpdateCylinders(elapsedClockSeconds, enginethrottle, BoosterCylinderExhaustOpenFactor, absSpeedRefMpS, i);
 
                     // Update Booster steam consumption
                     if (SteamBoosterIdleMode)
@@ -2885,6 +2886,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             {
                 var TotalNumberCyindersEng1 = 0;
 
+                float absSpeedRefMpS = Simulator.UseAdvancedAdhesion ? Math.Abs((float)SteamEngines[0].AttachedAxle.AxleSpeedMpS) : AbsTractionSpeedMpS;
+
                 if (SteamEngineType == SteamEngineTypes.Compound)
                 {
                     TotalNumberCyindersEng1 = SteamEngines[0].NumberCylinders + SteamEngines[0].LPNumberCylinders;
@@ -2931,8 +2934,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     ExhaustnormalisedCrankAngleRad[i] = normalisedCrankAngleRad;
                     ExhaustexhaustCrankAngleRad[i] = exhaustCrankAngleRadFor;
 
-
-                    if (AbsTractionSpeedMpS > 0.001)
+                    
+                    if (absSpeedRefMpS > 0.001)
                     {
                         if (i == 0 && ((normalisedCrankAngleRad >= exhaustCrankAngleRadFor && normalisedCrankAngleRad <= MathHelper.Pi) || (normalisedCrankAngleRad >= exhaustCrankAngleRadRev && normalisedCrankAngleRad < 2 * MathHelper.Pi )))
                         {
@@ -3131,6 +3134,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 {
                     var TotalNumberCyindersEng2 = SteamEngines[1].NumberCylinders; // currently assume 2nd engine is non-compound
 
+                    absSpeedRefMpS = Simulator.UseAdvancedAdhesion ? Math.Abs((float)SteamEngines[1].AttachedAxle.AxleSpeedMpS) : AbsTractionSpeedMpS;
          // Engine #2
                     for (int i = 0; i < TotalNumberCyindersEng2; i++)
                     {
@@ -3162,7 +3166,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                             exhaustCrankAngleRadRev -= 2 * (float)Math.PI;
                         }
 
-                        if (AbsTractionSpeedMpS > 0.001)
+                        if (absSpeedRefMpS > 0.001)
                         {
                             if (i == 0 && ((normalisedCrankAngleRad >= exhaustCrankAngleRadFor && normalisedCrankAngleRad <= MathHelper.Pi) || (normalisedCrankAngleRad >= exhaustCrankAngleRadRev && normalisedCrankAngleRad < 2 * MathHelper.Pi)))
                             {
@@ -3464,29 +3468,29 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             GeneratorSteamVelocityMpS = 50.0f;
             GeneratorSteamVolumeM3pS = 4.0f * SteamEffectsFactor;
             GeneratorParticleDurationS = 1.0f;
-            GeneratorParticleDurationS = MathHelper.Clamp(GeneratorParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
+            GeneratorParticleDurationS = MathHelper.Clamp(GeneratorParticleDurationS / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
 
             // Injector Steam Effects
             Injector1SteamVolumeM3pS = (Injector1IsOn ? (5.0f * SteamEffectsFactor) : 0);
             Injector1SteamVelocityMpS = 10.0f;
             Injector1ParticleDurationS = 1.0f;
-            Injector1ParticleDurationS = MathHelper.Clamp(Injector1ParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
+            Injector1ParticleDurationS = MathHelper.Clamp(Injector1ParticleDurationS / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
 
             Injector2SteamVolumeM3pS = (Injector2IsOn ? (5.0f * SteamEffectsFactor) : 0);
             Injector2SteamVelocityMpS = 10.0f;
             Injector2ParticleDurationS = 1.0f;
-            Injector2ParticleDurationS = MathHelper.Clamp(Injector2ParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
+            Injector2ParticleDurationS = MathHelper.Clamp(Injector2ParticleDurationS / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
 
             // Ejector Steam Effects
             SmallEjectorSteamVolumeM3pS = (SmallSteamEjectorIsOn ? (1.5f * SteamEffectsFactor) : 0);
             SmallEjectorSteamVelocityMpS = 10.0f;
             SmallEjectorParticleDurationS = 1.0f;
-            SmallEjectorParticleDurationS = MathHelper.Clamp(SmallEjectorParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
+            SmallEjectorParticleDurationS = MathHelper.Clamp(SmallEjectorParticleDurationS / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
 
             LargeEjectorSteamVolumeM3pS = (LargeSteamEjectorIsOn ? (1.5f * SteamEffectsFactor) : 0);
             LargeEjectorSteamVelocityMpS = 10.0f;
             LargeEjectorParticleDurationS = 1.0f;
-            LargeEjectorParticleDurationS = MathHelper.Clamp(LargeEjectorParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
+            LargeEjectorParticleDurationS = MathHelper.Clamp(LargeEjectorParticleDurationS / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
 
             // Compressor Steam Effects
             // Only show compressor steam effects if it is not a vacuum controlled steam engine
@@ -3495,14 +3499,14 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 CompressorSteamVelocityMpS = 10.0f;
                 CompressorSteamVolumeM3pS = (CompressorIsOn ? (1.5f * SteamEffectsFactor) : 0);
                 CompressorParticleDurationS = 1.0f;
-                CompressorParticleDurationS = MathHelper.Clamp(CompressorParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
+                CompressorParticleDurationS = MathHelper.Clamp(CompressorParticleDurationS / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
             }
 
             // Whistle Steam Effects
             WhistleSteamVelocityMpS = 10.0f;
             WhistleSteamVolumeM3pS = (Horn ? (5.0f * SteamEffectsFactor) : 0);
             WhistleParticleDurationS = 3.0f;
-            WhistleParticleDurationS = MathHelper.Clamp(WhistleParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 3.0f);
+            WhistleParticleDurationS = MathHelper.Clamp(WhistleParticleDurationS / (AbsSpeedMpS / 4.0f), 0.1f, 3.0f);
 
             // Safety Valves Steam Effects
 
@@ -3510,7 +3514,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             //SafetyValvesSteamVolumeM3pS = SafetyIsOn ? Kg.FromLb(SafetyValveUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
             SafetyValvesSteamVolumeM3pS = SafetyIsOn ? 5.0f : 0;
             SafetyValvesParticleDurationS = 3.0f;
-            SafetyValvesParticleDurationS = MathHelper.Clamp(SafetyValvesParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 3.0f);
+            SafetyValvesParticleDurationS = MathHelper.Clamp(SafetyValvesParticleDurationS / (AbsSpeedMpS / 4.0f), 0.1f, 3.0f);
 
             // Smoke Stack Smoke Effects
             // Colur for smoke is determined by the amount of air flowing through the fire (ie damper ).
@@ -3523,7 +3527,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             }
             else
             {
-                SmokeColorDamper = absSpeedMpS * DamperFactorManual; // Damper value for manual firing - related to increased speed, and airflow through fire
+                SmokeColorDamper = AbsSpeedMpS * DamperFactorManual; // Damper value for manual firing - related to increased speed, and airflow through fire
             }
 
             SmokeColorDamper = MathHelper.Clamp(SmokeColorDamper, 0.0f, TheoreticalMaxSteamOutputLBpS); // set damper maximum to the max generation rate
@@ -3550,12 +3554,12 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 }
                 else // when not exhausting
                 {
-                    if (absSpeedMpS < 10)
+                    if (AbsSpeedMpS < 10)
                     {
                         float smokeRestVelocityVariationFactor = 2 * cutoff; // adjust smoke velocity based upon throttle and cutoff settings
                         float smokeRestVolumeVariationFactor = 1 * cutoff; // adjust smoke volume based upon throttle and cutoff settings
 
-                        float velocityRate = (absSpeedMpS < 1 ? 1.0f : 1.0f / AbsSpeedMpS);
+                        float velocityRate = Math.Min(1.0f, 1.0f / AbsSpeedMpS);
                         StackSteamVelocityMpS.Update(elapsedClockSeconds, velocityRate);
                         StackSteamVolumeM3pS = Kg.FromLb(BlowerSteamUsageLBpS + RadiationSteamLossLBpS + CompSteamUsageLBpS + GeneratorSteamUsageLBpS) * smokeRestVolumeVariationFactor * SteamVaporSpecVolumeAt100DegC1BarM3pKG;
                         StackSteamVolumeM3pS = StackSteamVolumeM3pS / StackCount + FireRatio;
@@ -3824,7 +3828,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 float HeatLossNoWindBTUph = (1- AreaExposedtoWindMovementFraction) * HeatTransferCoefficientBtuphft2F * AssumedSurfaceAreaFt2 * HeatDiff;
 
                 // To compensate for the train movement we need to add a wind factor
-                float WindCoeff = -0.0074f * absSpeedMpS * absSpeedMpS + 0.3817f * absSpeedMpS + 1f;
+                float WindCoeff = -0.0074f * AbsSpeedMpS * AbsSpeedMpS + 0.3817f * AbsSpeedMpS + 1f;
                 WindCoeff = MathHelper.Clamp(WindCoeff, 1.0f, 5.78f); // Wind speed effect will not cause any more impact once over about 25 m/s
 
                 float HeatLossWindBTUph = (1 - AreaExposedtoWindMovementFraction) * HeatTransferCoefficientBtuphft2F * AssumedSurfaceAreaFt2 * HeatDiff * WindCoeff;
@@ -3957,7 +3961,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             Trace.TraceInformation(" Water Percent {0} AuxTenderCoupled {1} SteamAuxTenderCoupled {2}", TenderWaterPercent, Train.IsAuxTenderCoupled, SteamIsAuxTenderCoupled);
             Trace.TraceInformation("Water Controller Current Value {0} Previous Value {1}", WaterController.CurrentValue, PreviousTenderWaterVolumeUKG);
 #endif
-            if (absSpeedMpS > 0.5) // Indicates train has moved, and therefore game started
+            if (AbsSpeedMpS > 0.5) // Indicates train has moved, and therefore game started
             {
                 AuxTenderMoveFlag = true;
             }
@@ -4291,8 +4295,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
         private void UpdateBoiler(float elapsedClockSeconds)
         {
-            absSpeedMpS = Math.Abs(Train.SpeedMpS);
-
             #region Safety valves - determine number and size
 
             // Determine number and size of safety valves
@@ -4762,14 +4764,14 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             float HighSpeedMpS = 20.0f;
             float KcMinSpeed = 10.45f - LowSpeedMpS + (10.0f * (float)Math.Pow(LowSpeedMpS, 0.5)); // Minimum speed of 2m/s
             float KcMaxSpeed = 10.45f - HighSpeedMpS + (10.0f * (float)Math.Pow(HighSpeedMpS, 0.5)); // Maximum speed of 20m/s
-            float KcActualSpeed = 10.45f - absSpeedMpS + (10.0f * (float)Math.Pow(absSpeedMpS, 0.5));
+            float KcActualSpeed = 10.45f - AbsSpeedMpS + (10.0f * (float)Math.Pow(AbsSpeedMpS, 0.5));
             float KcMovementFraction = 0;
 
-            if (absSpeedMpS > 2 && absSpeedMpS < 20.0f)
+            if (AbsSpeedMpS > 2 && AbsSpeedMpS < 20.0f)
             {
                 KcMovementFraction = KcActualSpeed / KcMinSpeed; // Calculate fraction only between 2 and 20
             }
-            else if (absSpeedMpS < 2)
+            else if (AbsSpeedMpS < 2)
             {
                 KcMovementFraction = 1.0f; // If speed less then 2m/s then set fracftion to give stationary Kc value 
             }
@@ -6688,7 +6690,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             DrawBarPullLbsF = N.ToLbf(Math.Abs(DisplayTractiveForceN) - LocoTenderFrictionForceN); // Locomotive drawbar pull is equal to motive force of locomotive (+ tender) - friction forces of locomotive (+ tender)
             DrawBarPullLbsF = MathHelper.Clamp(DrawBarPullLbsF, 0, DrawBarPullLbsF); // clamp value so it doesn't go negative
 
-            DrawbarHorsePowerHP = (DrawBarPullLbsF * MpS.ToMpH(absSpeedMpS)) / 375.0f;  // TE in this instance is a maximum, and not at the wheel???
+            DrawbarHorsePowerHP = (DrawBarPullLbsF * MpS.ToMpH(AbsSpeedMpS)) / 375.0f;  // TE in this instance is a maximum, and not at the wheel???
             DrawbarHorsePowerHP = MathHelper.Clamp(DrawbarHorsePowerHP, 0, DrawbarHorsePowerHP); // clamp value so it doesn't go negative
 
             // Set Max Velocity of locomotive
@@ -7216,18 +7218,18 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             {
                MaximumWaterMotionPumpFlowRateLBpS = (1.2f * EvaporationLBpS) / 2.0f; // Assume two pumps and that they can pump a fraction more water the the maximum steam production
 
-                if (WaterMotionPump1IsOn && absSpeedMpS > 0)
+                if (WaterMotionPump1IsOn && AbsTractionSpeedMpS > 0)
                 {
-                    WaterMotionPump1FlowRateLBpS = MaximumWaterMotionPumpFlowRateLBpS * absSpeedMpS / MpS.FromMpH(MaxLocoSpeedMpH);
+                    WaterMotionPump1FlowRateLBpS = MaximumWaterMotionPumpFlowRateLBpS * AbsTractionSpeedMpS / MpS.FromMpH(MaxLocoSpeedMpH);
                 }
                 else
                 {
                     WaterMotionPump1FlowRateLBpS = 0;
                 }
 
-                if (WaterMotionPump2IsOn && absSpeedMpS > 0)
+                if (WaterMotionPump2IsOn && AbsTractionSpeedMpS > 0)
                 {
-                    WaterMotionPump2FlowRateLBpS = MaximumWaterMotionPumpFlowRateLBpS * absSpeedMpS / MpS.FromMpH(MaxLocoSpeedMpH);
+                    WaterMotionPump2FlowRateLBpS = MaximumWaterMotionPumpFlowRateLBpS * AbsTractionSpeedMpS / MpS.FromMpH(MaxLocoSpeedMpH);
                 }
                 else
                 {
