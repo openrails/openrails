@@ -139,8 +139,7 @@ namespace Orts.Viewer3D.Popups
             }
 
             foreach (var message in Messages)
-                if (message.LabelShadow != null && message.LabelText != null) // It seems LabelShadow and LabelText aren't guaranteed to be initialized, causing rare crashes
-                    message.LabelShadow.Color.A = message.LabelText.Color.A = (byte)MathHelper.Lerp(255, 0, MathHelper.Clamp((float)((Owner.Viewer.RealTime - message.EndTime) / FadeTime), 0, 1));
+                message.LabelShadow.Color.A = message.LabelText.Color.A = (byte)MathHelper.Lerp(255, 0, MathHelper.Clamp((float)((Owner.Viewer.Simulator.GameTime - message.EndTime) / FadeTime), 0, 1));
         }
 
         class Message
@@ -185,7 +184,7 @@ namespace Orts.Viewer3D.Popups
         public void AddMessage(string key, string text, double duration)
         {
             var clockTime = Owner.Viewer.Simulator.ClockTime;
-            var realTime = Owner.Viewer.RealTime;
+            var gameTime = Owner.Viewer.Simulator.GameTime;
             while (true)
             {
                 // Store the original list and make a clone for replacing it thread-safely.
@@ -197,18 +196,18 @@ namespace Orts.Viewer3D.Popups
 
                 // Clean out any existing duplicate key and expired messages.
                 newMessages = (from m in newMessages
-                               where (String.IsNullOrEmpty(key) || m.Key != key) && m.EndTime + FadeTime > realTime
+                               where (String.IsNullOrEmpty(key) || m.Key != key) && m.EndTime + FadeTime > Owner.Viewer.Simulator.GameTime
                                select m).ToList();
 
                 // Add the new message.
-                newMessages.Add(new Message(key, String.Format("{0} {1}", FormatStrings.FormatTime(clockTime), text), existingMessage != null ? existingMessage.StartTime : realTime, realTime + duration));
+                newMessages.Add(new Message(key, String.Format("{0} {1}", FormatStrings.FormatTime(clockTime), text), existingMessage != null ? existingMessage.StartTime : gameTime, gameTime + duration));
 
                 // Sort the messages.
                 newMessages = (from m in newMessages
                                orderby m.StartTime descending
                                select m).ToList();
 
-                // Thread-safely switch from the old list to the new list; we've only succeeded if the previous (return) value is the old list.
+                // Thread-safely switch from the old list to the new list; we've only suceeded if the previous (return) value is the old list.
                 if (Interlocked.CompareExchange(ref Messages, newMessages, oldMessages) == oldMessages)
                     break;
             }
