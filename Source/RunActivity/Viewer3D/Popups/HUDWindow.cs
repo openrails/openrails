@@ -223,13 +223,13 @@ namespace Orts.Viewer3D.Popups
                 if (locoE != null)
                 {
                     LocomotiveGraphsInputPower.AddSample(loco.ThrottlePercent * 0.01f);
-                    LocomotiveGraphsOutputPower.AddSample((loco.MotiveForceN / loco.MaxPowerW) * loco.SpeedMpS);
+                    LocomotiveGraphsOutputPower.AddSample((Math.Abs(loco.MotiveForceN) / loco.MaxPowerW) * loco.AbsTractionSpeedMpS);
                 }
                 //TODO: plot correct values
                 if (locoS != null)
                 {
                     LocomotiveGraphsInputPower.AddSample(loco.ThrottlePercent * 0.01f);
-                    LocomotiveGraphsOutputPower.AddSample((loco.MotiveForceN / loco.MaxPowerW) * loco.SpeedMpS);
+                    LocomotiveGraphsOutputPower.AddSample((Math.Abs(loco.MotiveForceN) / loco.MaxPowerW) * loco.AbsTractionSpeedMpS);
                 }
 
                 LocomotiveGraphs.PrepareFrame(frame);
