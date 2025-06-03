@@ -2575,14 +2575,14 @@ namespace Orts.Simulation.RollingStocks
             if (TractiveForceCurves == null)
             {
                 powerW = Math.Min(powerW, MaxPowerW * t * t * (1 - PowerReduction));
-
-                if (AbsTractionSpeedMpS > MaxSpeedMpS - 0.05f)
-                {
-                    forceN = 20 * (MaxSpeedMpS - AbsTractionSpeedMpS) * MaxForceN * (1 - PowerReduction);
-                }
-                else if (AbsTractionSpeedMpS > MaxSpeedMpS)
+                
+                if (AbsTractionSpeedMpS > MaxSpeedMpS)
                 {
                     forceN = 0;
+                }
+                else if (AbsTractionSpeedMpS > MaxSpeedMpS - 0.05f)
+                {
+                    forceN = 20 * (MaxSpeedMpS - AbsTractionSpeedMpS) * MaxForceN * (1 - PowerReduction);
                 }
                 else
                 {
