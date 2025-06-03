@@ -2726,7 +2726,7 @@ namespace Orts.Simulation.RollingStocks
             // For a locomotive to respond to ground speed or slippage, additional systems (such as wheel slip protection) are required, these are
             // implemented elsewhere.
             PrevAbsTractionSpeedMpS = AbsTractionSpeedMpS;
-                    AbsTractionSpeedMpS = AbsWheelSpeedMpS;
+            AbsTractionSpeedMpS = AbsWheelSpeedMpS;
             UpdateTractionForce(elapsedClockSeconds);
 
             if (MaxForceN > 0 && MaxContinuousForceN > 0 && PowerReduction < 1)
