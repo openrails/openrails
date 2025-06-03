@@ -102,12 +102,14 @@ namespace Orts.Viewer3D
         public CarOperationsWindow CarOperationsWindow { get; private set; } // F9 sub-window for car operations
         public TrainDpuWindow TrainDpuWindow { get; private set; } // Shift + F9 train distributed power window
         public NextStationWindow NextStationWindow { get; private set; } // F10 window
+        public TrainForcesWindow TrainForcesWindow { get; private set; } // Alt-F7 window
         public CompassWindow CompassWindow { get; private set; } // 0 window
         public TracksDebugWindow TracksDebugWindow { get; private set; } // Control-Alt-F6
         public SignallingDebugWindow SignallingDebugWindow { get; private set; } // Control-Alt-F11 window
         public ComposeMessage ComposeMessageWindow { get; private set; } // ??? window
         public TrainListWindow TrainListWindow { get; private set; } // for switching driven train
         public TTDetachWindow TTDetachWindow { get; private set; } // for detaching player train in timetable mode
+        public TTRequestStopWindow TTRequestStopWindow { get; private set; } // for request stop message in timetable mode
         public EOTListWindow EOTListWindow { get; private set; } // to select EOT
         public ControlRectangle ControlRectangle { get; private set; } // to display the control rectangles
         private OutOfFocusWindow OutOfFocusWindow; // to show colored rectangle around the main window when not in focus
@@ -360,6 +362,7 @@ namespace Orts.Viewer3D
             Simulator.PlayerLocomotiveChanged += PlayerLocomotiveChanged;
             Simulator.PlayerTrainChanged += PlayerTrainChanged;
             Simulator.RequestTTDetachWindow += RequestTTDetachWindow;
+            Simulator.TTRequestStopMessageWindow += TTRequestStopMessageWindow;
 
             // The speedpost.dat file is needed only to derive the shape names for the temporary speed restriction zones,
             // so it is opened only in activity mode
@@ -510,12 +513,14 @@ namespace Orts.Viewer3D
             CarOperationsWindow = new CarOperationsWindow(WindowManager);
             TrainDpuWindow = new TrainDpuWindow(WindowManager);
             NextStationWindow = new NextStationWindow(WindowManager);
+            TrainForcesWindow = new TrainForcesWindow(WindowManager);
             CompassWindow = new CompassWindow(WindowManager);
             TracksDebugWindow = new TracksDebugWindow(WindowManager);
             SignallingDebugWindow = new SignallingDebugWindow(WindowManager);
             ComposeMessageWindow = new ComposeMessage(WindowManager);
             TrainListWindow = new TrainListWindow(WindowManager);
             TTDetachWindow = new TTDetachWindow(WindowManager);
+            TTRequestStopWindow = new TTRequestStopWindow(WindowManager);
             EOTListWindow = new EOTListWindow(WindowManager);
             ControlRectangle = new ControlRectangle(WindowManager, this);
             if (Settings.SuppressConfirmations < (int)ConfirmLevel.Error)
@@ -1057,6 +1062,7 @@ namespace Orts.Viewer3D
 
             if (UserInput.IsPressed(UserCommand.DisplayNextStationWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) NextStationWindow.TabAction(); else NextStationWindow.Visible = !NextStationWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayCompassWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) CompassWindow.TabAction(); else CompassWindow.Visible = !CompassWindow.Visible;
+            if (UserInput.IsPressed(UserCommand.DisplayTrainForcesWindow)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TrainForcesWindow.TabAction(); else TrainForcesWindow.Visible = !TrainForcesWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DebugTracks)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) TracksDebugWindow.TabAction(); else TracksDebugWindow.Visible = !TracksDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DebugSignalling)) if (UserInput.IsDown(UserCommand.DisplayNextWindowTab)) SignallingDebugWindow.TabAction(); else SignallingDebugWindow.Visible = !SignallingDebugWindow.Visible;
             if (UserInput.IsPressed(UserCommand.DisplayTrainListWindow)) TrainListWindow.Visible = !TrainListWindow.Visible;
@@ -1155,6 +1161,18 @@ namespace Orts.Viewer3D
                 Settings.SuppressConfirmations = suppressConfirmationsEntry;
                 Settings.Save();
             }
+
+            //ALT-F10 : display request stop info for player train - to be restored later when user setting can be defined
+            //if (UserInput.IsPressed(UserCommand.DebugRequestStopInformation))
+            //{
+            //    if (PlayerTrain != null)
+            //    {
+            //        if (PlayerTrain.StationStops != null && PlayerTrain.StationStops.Count > 0 && PlayerTrain.StationStops[0].ReqStopDetails != null)
+            //        {
+            //            PlayerTrain.StationStops[0].ReqStopDetails.displayRQSInfo = true;
+            //        }
+            //    }
+            //}
 
             //hit 9 key, get back to player train
             if (UserInput.IsPressed(UserCommand.CameraJumpBackPlayer))
@@ -1508,7 +1526,7 @@ namespace Orts.Viewer3D
             if (UserInput.IsMouseMoved || RenderProcess.IsMouseVisible && UserInput.IsMouseWheelChanged)
                 MouseVisibleTillRealTime = RealTime + 1;
 
-            RenderProcess.IsMouseVisible = ForceMouseVisible || RealTime < MouseVisibleTillRealTime;
+            RenderProcess.IsMouseVisible = ForceMouseVisible || RealTime < MouseVisibleTillRealTime || !Game.IsActive;
 
             UserInput.Handled();
         }
@@ -1602,6 +1620,12 @@ namespace Orts.Viewer3D
         void RequestTTDetachWindow(object sender, EventArgs e)
         {
             TTDetachWindow.Visible = true;
+        }
+
+        // display window for Timetable Player Request stop message - create window as size is flexible
+        void TTRequestStopMessageWindow(object sender, EventArgs e)
+        {
+            TTRequestStopWindow.Visible = true;
         }
 
         // Finds the Turntable or Transfertable nearest to the viewing point

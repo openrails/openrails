@@ -3146,7 +3146,7 @@ Brake Shoe Force - This is the current change being implemented. The following c
 
 ``ORTSBrakeShoeType`` - this defines a number of different brake shoe types and curves. To provide a more realistic representation of the braking force the default CoF curves are 2D, ie 
 they are impacted by both the speed and Brake Shoe Force.  Typically ``ORTSBrakeShoeType`` will have one of the following keywords included - 
-``Cast_Iron_P6`` - older cast iron brake shoes, 2D as above, ``Cast_Iron_P10`` - newer cast iron brake shoes with increased phosphorous, 2D as above, ``Hi_Friction_Composite`` 
+``Cast_Iron_P6`` - older cast iron brake shoes, 2D as above, ``Cast_Iron_P10`` - newer cast iron brake shoes with increased phosphorous, 2D as above, ``High_Friction_Composite`` 
 - high friction composite shoe, 2D as above, ``Disc_Pads`` - brakes with disc pads, 2D as above, ``User_Defined`` - is a user defined curve 
 using the ORTSBrakeShoeFriction parameter, 1D (ie, speed only, see above section for the parameter format).
 
@@ -3343,6 +3343,8 @@ the following parameters will adjust the behaviour of air brakes:
 .. index::
    single: DynamicBrakeHasAutoBailOff
    single: ORTSDynamicBrakesHasPartialBailOff
+   single: ORTSDynamicBlendingRetainedPressure
+   single: ORTSDynamicBlendingMinimumSpeed
    single: ORTSTrainDynamicBlendingTable
    single: ORTSDynamicBrakeReplacementWithEngineBrake 
    single: ORTSDynamicBrakeReplacementWithEngineBrakeAtSpeed
@@ -3353,6 +3355,13 @@ the following parameters will adjust the behaviour of air brakes:
   air brakes are released while dynamic brakes satisfy the train brake demand.
   If dynamic braking is not sufficient, air brakes will be partially applied
   so the combination air+dynamic provides the required brake demand.
+- ``Engine(ORTSDynamicBlendingRetainedPressure`` -- Sets the brake cylinder
+  pressure which, when used in combination with ORTSDynamicBrakesHasPartialBailOff,
+  will remain applied regardless of the blended dynamic brake force. This
+  pressure is also the minimum pressure at which the blended braking system will activate.
+- ``Engine(ORTSDynamicBlendingMinimumSpeed`` -- Below the specified speed
+  (default units mph, default value 5 mph / 8 kph), local dynamic brake blending
+  will be disabled, allowing locomotive brakes to hold the train while stopped.
   
 Sometimes the train brake controller is capable to apply the dynamic
 brakes for the whole consist, usually as a first step before air brakes
