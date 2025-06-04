@@ -307,6 +307,7 @@ respect speed restrictions and stop at signals and station stops. The
 speed for the cruise control system, eliminating the need for the driver to manually
 adjust the train speed. The interface consists of two variables available from
 the TCS script:
+
 .. code-block:: csharp
 
     float? SetSpeedMpS
