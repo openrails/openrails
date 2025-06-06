@@ -351,8 +351,8 @@ namespace Orts.Viewer3D
                 {
                     time += 1 / ParticlesPerSecond;
 
-                    var particle = (FirstFreeParticle + 1) % MaxParticles;
-                    var vertex = particle * VerticiesPerParticle;
+                    var nextFreeParticle = (FirstFreeParticle + 1) % MaxParticles;
+                    var vertex = FirstFreeParticle * VerticiesPerParticle;
                     var texture = Viewer.Random.Next(16); // Randomizes emissions.
                     var color_Random = new Color((float)ParticleColor.R / 255f, (float)ParticleColor.G / 255f, (float)ParticleColor.B / 255f, (float)Viewer.Random.NextDouble());
 
@@ -383,7 +383,7 @@ namespace Orts.Viewer3D
                         Vertices[vertex + j].Color_Random = color_Random;
                     }
 
-                    FirstFreeParticle = particle;
+                    FirstFreeParticle = nextFreeParticle;
                 }
 
                 TimeParticlesLastEmitted = time;
