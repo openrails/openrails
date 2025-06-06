@@ -865,15 +865,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
             if (ForceRegulatorAutoWhenNonZeroSpeedSelectedAndThrottleAtZero)
             {
-                if (SelectedSpeedMpS > 0 && zeroThrottle && zeroDynamic &&
-                    zeroForce && DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed)
+                if (SelectedSpeedMpS > 0 && zeroThrottle && zeroDynamic && zeroForce)
                 {
                     SpeedRegMode = SpeedRegulatorMode.Auto;
                 }
             }
             if (ForceRegulatorAutoWhenNonZeroForceSelected)
             {
-                if (forceFromZero && DisableCruiseControlOnThrottleAndZeroForce && (zeroThrottle || UseThrottleAsForceSelector) && zeroDynamic)
+                if (forceFromZero && (zeroThrottle || UseThrottleAsForceSelector) && zeroDynamic)
                 {
                     SpeedRegMode = SpeedRegulatorMode.Auto;
                 }
