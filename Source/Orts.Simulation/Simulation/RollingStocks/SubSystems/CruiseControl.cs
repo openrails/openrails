@@ -75,7 +75,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             {
                 if (UseThrottleAsSpeedSelector && SpeedRegMode != SpeedRegulatorMode.Auto) return;
                 float val = 0;
-                if (value >= MinimumSpeedForCCEffectMpS)
+                if (value >= MinimumSpeedForCCEffectMpS && value > 0)
                 {
                     float min = MinimumSpeedForCCEffectMpS;
                     float max = Locomotive.MaxSpeedMpS;
@@ -840,14 +840,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
             if (DisableCruiseControlOnThrottleAndZeroForce)
             {
-                if ((throttleFromZero || UseThrottleAsForceSelector) && zeroForce)
+                if (throttleFromZero && (zeroForce || UseThrottleAsForceSelector))
                 {
                     SpeedRegMode = SpeedRegulatorMode.Manual;
                 }
             }
             if (DisableCruiseControlOnThrottleAndZeroForceAndZeroSpeed)
             {
-                if ((throttleFromZero || UseThrottleAsForceSelector) && zeroForce && zeroSelectedSpeed)
+                if (throttleFromZero && (zeroForce || UseThrottleAsForceSelector) && zeroSelectedSpeed)
                 {
                     SpeedRegMode = SpeedRegulatorMode.Manual;
                 }
@@ -872,7 +872,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
             if (ForceRegulatorAutoWhenNonZeroForceSelected)
             {
-                if (forceFromZero && (zeroThrottle || UseThrottleAsForceSelector) && zeroDynamic)
+                if (forceFromZero && DisableCruiseControlOnThrottleAndZeroForce && (zeroThrottle || UseThrottleAsForceSelector) && zeroDynamic)
                 {
                     SpeedRegMode = SpeedRegulatorMode.Auto;
                 }
