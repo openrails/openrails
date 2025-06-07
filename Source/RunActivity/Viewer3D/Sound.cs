@@ -1040,8 +1040,8 @@ namespace Orts.Viewer3D
             {
                 foreach (SoundStream stream in SoundStreams)
                 {
-                    // For train cars, calculate the position and velocity of the sound
-                    if (CarViewer != null)
+                    // For train cars, calculate the position and velocity of exterior sounds
+                    if (CarViewer != null && !Ignore3D)
                     {
                         // Convert position offset into train-car space offset
                         Vector3 pos = stream.MSTSStream.Position;
@@ -1060,7 +1060,7 @@ namespace Orts.Viewer3D
 
                         stream.Update(position, CarViewer.Velocity);
                     }
-                    else // Don't try to update position if CarViewer is missing
+                    else // Interior sounds ignore 3D position, do not try to update 3D position
                         stream.Update();
                     needsFrequentUpdate |= stream.NeedsFrequentUpdate;
                 }
