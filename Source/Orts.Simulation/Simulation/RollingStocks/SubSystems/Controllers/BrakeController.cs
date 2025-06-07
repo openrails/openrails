@@ -152,6 +152,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         public float FullServReductionPSI { get; private set; }
         public float MinReductionPSI { get; private set; }
         public float TrainDynamicBrakeIntervention { get; set; } = -1;
+        public float CruiseControlBrakeDemand
+        { 
+            get
+            {
+                if (Locomotive.CruiseControl == null) return 0;
+                if (this == Locomotive.EngineBrakeController) return Locomotive.CruiseControl.EngineBrakePercent / 100;
+                else return Locomotive.CruiseControl.TrainBrakePercent / 100;
+            }
+        }
         InterpolatorDiesel2D DynamicBrakeBlendingTable;
 
         /// <summary>
