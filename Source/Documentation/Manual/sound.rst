@@ -715,3 +715,136 @@ In the example shown, the sound is played if all conditions are met, that is sea
 is spring or winter and weather is rain and time of day is within one of the two 
 intervals 7-12 or 13-20. There may be as many TimeOfDay lines as wanted, 
 but the granularity is one hour.
+
+3D sound positioning
+====================
+
+By default, each sound source has a 3D position calculated (for purposes of determining
+stereo output and distance-based volume falloff) assuming the sound is emitted from
+the center of the engine/wagon the sound is attached to. While this is generally
+acceptable, when listened to up close it may become obvious that sounds aren't coming from
+the appropriate location. The bell may be on the front of the locomotive, but the sound
+comes from the center. Brake squeal should come from the wheels, but also comes from the
+center of the wagon. And so on; many noises trains make shouldn't come from the middle.
+
+.. index::
+   single: ORTSPosition
+
+To improve upon this, OR now supports the ability to define a custom location for each
+sound stream relative to the center of the engine/wagon shape. Inside each `Stream` of
+a .sms file, the ``ORTSPosition ( x y z )`` parameter can be added to specify where the
+sound should come from. The ``x y z`` values representing the right/left, up/down, and
+front/back position respectively, measured in units of distance (default is meters).
+For example, here is a horn stream adjusted so the audio comes from the location of the
+horn on the roof of the locomotive 3D model::
+
+    Stream (
+        Skip ( **** This stream allows the horn to be played at the same time  	**** )
+        Priority ( 6 )
+        Volume ( 2.0 )
+        Skip ( Horn is on the left side of the locomotive roof, toward the front. )
+        ORTSPosition ( -0.635 4.716 7.398 )
+        Triggers ( 2
+            Discrete_Trigger ( 8	StartLoopRelease ( 1	File ( "x_P5.wav" -1 )	SelectionMethod ( SequentialSelection )	)	)
+            Discrete_Trigger ( 9	ReleaseLoopReleaseWithJump ()	)
+        )
+        FrequencyCurve(
+            SpeedControlled
+            CurvePoints ( 3
+                -100           44100
+                0              44100
+                100            44100
+            )
+            Granularity ( 0 )
+        )
+    )
+
+.. index::
+   single: ORTSShapeHierarchy
+
+An additional new capability is the option to attach sound streams to specific sub
+objects of the engine/wagon. Using ``ORTSShapeHierarchy ( MATRIXNAME )``, the sound
+can be attached to the shape sub object called "MATRIXNAME". The names of matrices
+used on an engine/wagon shape can be found in shape viewing programs. Attaching a
+sound to a sub object causes the position of the sound to be measured relative to
+that sub object, which may be easier than calculating ``ORTSPosition``, and causes
+the sound to move in sync with the sub object as it moves and rotates around.
+A good example of this is attaching traction motor sounds to the locomotive bogies::
+
+    Stream (
+        Priority ( 5 )
+        Skip ( Traction motor sound for front bogie. )
+        ORTSShapeHierarchy ( "BOGIE1" )
+        Triggers ( 1
+            Skip ( **** Traction-Motor **** )
+            Initial_Trigger  ( StartLoop   ( 1 File ( "x_GEACtraction.wav" -1 )   SelectionMethod ( SequentialSelection ) ) )		
+        )
+        FrequencyCurve(
+            SpeedControlled
+            CurvePoints ( 5
+                -36           98400
+                -18           44100
+                0             10100
+                18            44100
+                36            98400
+            )
+            Granularity ( 25 )
+        )
+        VolumeCurve(
+            SpeedControlled
+            CurvePoints ( 5
+                -25           0.8
+                -5            0.5
+                0             0.0
+                5             0.5
+                25            0.8
+            )
+            Granularity ( 0.001 )
+        )
+    )
+    Stream (
+        Priority ( 5 )
+        Skip ( Traction motor sound for rear bogie. )
+        ORTSShapeHierarchy ( "BOGIE2" )
+        Triggers ( 1
+            Skip ( **** Traction-Motor **** )
+            Initial_Trigger  ( StartLoop   ( 1 File ( "x_GEACtraction.wav" -1 )   SelectionMethod ( SequentialSelection ) ) )	
+        )
+        FrequencyCurve(
+            SpeedControlled
+            CurvePoints ( 5
+                -36           98400
+                -18           44100
+                0             10100
+                18            44100
+                36            98400
+            )
+            Granularity ( 25 )
+        )
+        VolumeCurve(
+            SpeedControlled
+            CurvePoints ( 5
+                -25           0.8
+                -5            0.5
+                0             0.0
+                5             0.5
+                25            0.8
+            )
+            Granularity ( 0.001 )
+        )
+    )
+
+Observe how the stream has to be included twice, once for each bogie. A sound stream
+can only emit sounds from one location, so additional streams are required if a sound
+is to come from multiple locations. Care should be taken to keep the number of streams
+to a reasonable level. (You may also wish to lower the volume of each individual
+stream so the total volume remains somewhat constant.) Also, ``ORTSPosition`` is not used
+in this case, as the sound is automatically moved to the position of the bogie it is attached to.
+``ORTSPosition`` and ``ORTSShapeHierarchy`` can be used together if the position needed
+to be fine tuned, but that's not needed in this specific case.
+
+If the given "MATRIXNAME" cannot be found in the 3D model the sounds are attached to,
+a warning will be logged and the sound will attach to the main body of the shape instead.
+Be careful when using the same .sms for multiple different engines/wagons, as matrix names
+aren't identical between every piece of content.
+If ``ORTSShapeHierarchy`` is not included, the sound will attach to the main body by default.
