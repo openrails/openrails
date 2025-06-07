@@ -738,12 +738,20 @@ INI File and User Settings
 ==========================
 
 By default, Open Rails keeps the user's settings and options in the Windows Registry.
+The settings in the registry are shared by all Open Rails installations.
 
 If you want to have a set of alternative settings which bypass the settings kept in the Registry,
 then you can use an INI text file for this.
+The INI file, named "OpenRails.ini", must be in the same directory as the main executable (OpenRails.exe),
+and will only be used by that installation of Open Rails.
 
-Create an empty file OpenRails.ini in the same folder as OpenRails.exe and start Open Rails.
+Use the contributed "Settings Exporter" to copy the existing settings from the registry to the INI file.
+The Settings Exporter is accessible from the "Tools" button in the main window.
+The Settings Exporter may also be used to create a backup of the settings, or to copy the settings from
+the INI file back into the registry.
+
+Alternatively, create an empty file "OpenRails.ini" in the same folder as "OpenRails.exe" and start Open Rails.
 The program will attempt to load settings from the file, using default values for settings that 
 cannot be found and populates the INI file with these settings.
 
-If you change the settings and options, then these will be saved automatically to the INI file.
+Once an "OpenRails.ini" file exists, any changes to the settings and options will be saved to the INI file (not the registry).
