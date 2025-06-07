@@ -830,6 +830,9 @@ namespace Orts.Simulation.RollingStocks
                 viewPoint.Location = cvfFile.Locations[i];
                 viewPoint.StartDirection = cvfFile.Directions[i];
                 viewPoint.RotationLimit = new Vector3(0, 0, 0);  // cab views have a fixed head position
+                // Shape index and shape hierarchy are optional, so check for element at or default
+                viewPoint.ShapeIndex = i >= 0 && i < cvfFile.ShapeIndices.Count ? cvfFile.ShapeIndices[i] : -1;
+                viewPoint.ShapeHierarchy = i >= 0 && i < cvfFile.ShapeHierarchies.Count ? cvfFile.ShapeHierarchies[i] : string.Empty;
                 viewPointList.Add(viewPoint);
             }
             var cabViewType = new CabViewType();
@@ -837,33 +840,33 @@ namespace Orts.Simulation.RollingStocks
                 || (viewPointList[0].StartDirection.Y <= -90 && viewPointList[0].StartDirection.Y >= -270)) ? CabViewType.Rear : CabViewType.Front;
             var wag = this as MSTSWagon;
             var wagFolderSlash = Path.GetDirectoryName(wag.WagFilePath) + @"\";
-            string shapeFilePath;
+            string shapeDescriptorPath;
             bool boundingLimitsFound = false;
-            ShapeDescriptorFile shapeFile = new ShapeDescriptorFile();
-            if (wag.FreightShapeFileName != null)
+            ShapeDescriptorFile shapeDescriptorFile = new ShapeDescriptorFile();
+            if (wag.FreightShapeDescriptor != null)
             {
-                shapeFilePath = wagFolderSlash + wag.FreightShapeFileName;
-                if (shapeFilePath != null && File.Exists(shapeFilePath + "d"))
+                shapeDescriptorPath = wagFolderSlash + wag.FreightShapeDescriptor;
+                if (shapeDescriptorPath != null && File.Exists(shapeDescriptorPath))
                 {
-                    shapeFile = new ShapeDescriptorFile(shapeFilePath + "d");
-                    if (shapeFile.shape.ESD_Bounding_Box != null) boundingLimitsFound = true;
+                    shapeDescriptorFile = new ShapeDescriptorFile(shapeDescriptorPath);
+                    if (shapeDescriptorFile.shape.ESD_Bounding_Box != null) boundingLimitsFound = true;
                 }
             }
             if (!boundingLimitsFound)
             {
-                shapeFilePath = wagFolderSlash + wag.MainShapeFileName;
-                if (shapeFilePath != null && File.Exists(shapeFilePath + "d"))
+                shapeDescriptorPath = wagFolderSlash + wag.MainShapeDescriptor;
+                if (shapeDescriptorPath != null && File.Exists(shapeDescriptorPath))
                 {
-                    shapeFile = new ShapeDescriptorFile(shapeFilePath + "d");
-                    if (shapeFile.shape.ESD_Bounding_Box != null) boundingLimitsFound = true;
+                    shapeDescriptorFile = new ShapeDescriptorFile(shapeDescriptorPath);
+                    if (shapeDescriptorFile.shape.ESD_Bounding_Box != null) boundingLimitsFound = true;
                 }
             }
             if (boundingLimitsFound)
             {
                 if (cabViewType == CabViewType.Front)
-                    noseAhead = (viewPointList[0].Location.Z + 0.5f < shapeFile.shape.ESD_Bounding_Box.Max.Z) ? true : false;
+                    noseAhead = (viewPointList[0].Location.Z + 0.5f < shapeDescriptorFile.shape.ESD_Bounding_Box.Max.Z) ? true : false;
                 else if (cabViewType == CabViewType.Rear)
-                    noseAhead = (viewPointList[0].Location.Z - 0.5f > shapeFile.shape.ESD_Bounding_Box.Min.Z) ? true : false;
+                    noseAhead = (viewPointList[0].Location.Z - 0.5f > shapeDescriptorFile.shape.ESD_Bounding_Box.Min.Z) ? true : false;
             }
             if (!(this is MSTSSteamLocomotive))
             {
@@ -882,6 +885,7 @@ namespace Orts.Simulation.RollingStocks
 
             var cab3dBasePath = Path.Combine(Path.GetDirectoryName(WagFilePath), "CABVIEW3D");
             var shapeFilePath = Path.Combine(cab3dBasePath, Cab3DShapeFileName);
+            var shapeDescriptorPath = Path.Combine(cab3dBasePath, Cab3DShapeDescriptor);
             if (!File.Exists(shapeFilePath))
                 return null;
 
@@ -909,7 +913,7 @@ namespace Orts.Simulation.RollingStocks
             if (CabViewpoints.Count == 1 && cabViewType == CabViewType.Rear)
                 CabViewpoints.Insert(0, new PassengerViewPoint());
 
-            return new CabView3D(cvfFile, CabViewpoints, extendedCVF, cabViewType, noseAhead, shapeFilePath);
+            return new CabView3D(cvfFile, CabViewpoints, extendedCVF, cabViewType, noseAhead, shapeFilePath, shapeDescriptorPath);
         }
 
         /// <summary>
@@ -1109,8 +1113,16 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsdrivewheelweight": InitialDrvWheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(engineoperatingprocedures": EngineOperatingProcedures = stf.ReadStringBlock(""); break;
                 case "engine(headout":
-                    HeadOutViewpoints.Add(new ViewPoint(stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero)));
-                    HeadOutViewpoints.Add(new ViewPoint(HeadOutViewpoints[0], true));
+                    stf.MustMatch("(");
+                    Vector3 pos = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
+                    ViewPoint headOut = new ViewPoint(pos);
+                    stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("ortsshapeindex", ()=>{ headOut.ShapeIndex = stf.ReadIntBlock(null); }),
+                        new STFReader.TokenProcessor("ortsshapehierarchy", ()=>{ headOut.ShapeHierarchy = stf.ReadStringBlock(null); }),
+                    });
+                    // Add the original head out view and a reversed duplicate of it
+                    HeadOutViewpoints.Add(headOut);
+                    HeadOutViewpoints.Add(new ViewPoint(headOut, true));
                     break;
                 case "engine(sanding": SanderSpeedOfMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, 30.0f); break;
                 case "engine(ortsdoesvacuumbrakecutpower": DoesVacuumBrakeCutPower = stf.ReadBoolBlock(false); break;
@@ -4945,7 +4957,6 @@ namespace Orts.Simulation.RollingStocks
         public void ToggleWipers(bool newState)
         {
             SignalEvent(newState ? Event.WiperOn : Event.WiperOff);
-            if (ConsistGenerator.GltfVisualTestRun) Train.SignalEvent(newState ? Event.WiperOn : Event.WiperOff);
         }
 
         public void SetBailOff(bool bailOff)
@@ -5009,14 +5020,12 @@ namespace Orts.Simulation.RollingStocks
         {
             GenericItem1 = !GenericItem1;
             SignalEvent(GenericItem1? Event.GenericItem1On : Event.GenericItem1Off); // hook for sound trigger
-            if (ConsistGenerator.GltfVisualTestRun) Train.SignalEvent(GenericItem1 ? Event.GenericItem1On : Event.GenericItem1Off);
         }
 
         public void GenericItem2Toggle()
         {
             GenericItem2 = !GenericItem2;
             SignalEvent(GenericItem2 ? Event.GenericItem2On : Event.GenericItem2Off); // hook for sound trigger
-            if (ConsistGenerator.GltfVisualTestRun) Train.SignalEvent(GenericItem2 ? Event.GenericItem2On : Event.GenericItem2Off);
         }
 
         public override bool GetCabFlipped()
@@ -5099,10 +5108,6 @@ namespace Orts.Simulation.RollingStocks
                         }
                         break;
                     }
-                case Event.GenericItem1On: if (ConsistGenerator.GltfVisualTestRun) GenericItem1 = true; break;
-                case Event.GenericItem1Off: if (ConsistGenerator.GltfVisualTestRun) GenericItem1 = false; break;
-                case Event.GenericItem2On: if (ConsistGenerator.GltfVisualTestRun) GenericItem2 = true; break;
-                case Event.GenericItem2Off: if (ConsistGenerator.GltfVisualTestRun) GenericItem2 = false; break;
             }
 
             base.SignalEvent(evt);
@@ -6080,11 +6085,13 @@ namespace Orts.Simulation.RollingStocks
     public class CabView3D : CabView
     {
         public string ShapeFilePath;
+        public string ShapeDescriptorPath;
 
-        public CabView3D(CabViewFile cvfFile, List<PassengerViewPoint> cabViewpoints, ExtendedCVF extendedCVF, CabViewType cabViewType, bool noseAhead, string shapeFilePath)
+        public CabView3D(CabViewFile cvfFile, List<PassengerViewPoint> cabViewpoints, ExtendedCVF extendedCVF, CabViewType cabViewType, bool noseAhead, string shapeFilePath, string shapeDescriptorPath)
             : base(cvfFile, new List<ViewPoint>(), extendedCVF, cabViewType, noseAhead)
         {
             ShapeFilePath = shapeFilePath;
+            ShapeDescriptorPath = shapeDescriptorPath;
             if (cabViewpoints != null)
                 foreach (var point in cabViewpoints)
                     ViewPointList.Add(point);
