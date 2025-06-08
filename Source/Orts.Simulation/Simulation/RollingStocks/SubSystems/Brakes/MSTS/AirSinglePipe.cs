@@ -622,7 +622,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
 
                 if (brakeLine3Init) // Sync loco brakes with lead brake system
-                lead.EngineBrakeController?.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
+                    lead.EngineBrakeController?.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
                 else // Release loco brakes
                     BrakeLine3PressurePSI = 0.0f;
             }
