@@ -474,96 +474,71 @@ namespace Orts.Simulation.RollingStocks
                     // But my hubris has decided we can use for the shape for things other than graphics - Phillip
                     ShapeFile wagShape = new ShapeFile(wagonFolderSlash + MainShapeFileName, true);
 
-                    Vector3 mins = new Vector3(float.PositiveInfinity);
-                    Vector3 maxes = new Vector3(float.NegativeInfinity);
+                    (Vector3 mainMins, Vector3 mainMaxes) = wagShape.GetBoundingLimits();
 
-                    // Determine size specifically for LOD0's (nearest LOD) sub objects
-                    foreach (sub_object subObj in wagShape.shape.lod_controls[0].distance_levels[0].sub_objects)
+                    bool mstsFreightAnim = true;
+
+                    // And also repeat for ORTS freight animations
+                    if (FreightAnimations != null)
                     {
-                        // Use vertex sets in the sub object to determine which vertices to check
-                        foreach (vertex_set vSet in subObj.vertex_sets)
+                        if (!FreightAnimations.MSTSFreightAnimEnabled)
+                            mstsFreightAnim = false;
+
+                        foreach (var freightAnim in FreightAnimations.Animations)
                         {
-                            // Use the vertex state used by this vertex set to determine the matrix used
-                            vtx_state vState = wagShape.shape.vtx_states[vSet.VtxStateIdx];
-
-                            // The index of the matrix used by this vertex state
-                            int mIndex = vState.imatrix;
-
-                            // The 'actual' XNA matrix used to determine the vertex transformation
-                            Matrix mat = Matrix.Identity;
-
-                            // How deep are we in the hierarchy? Set a limit to prevent infinite loops
-                            int depth = 0;
-
-                            // Determine the overall transformation matrix from the root to the current matrix by following the hierarchy
-                            do
+                            // We will ignore freight animations not attached to the main shape object for simplicity
+                            if (!string.IsNullOrEmpty(freightAnim.ShapeFileName) && freightAnim.ShapeIndex <= 0 && string.IsNullOrEmpty(freightAnim.ShapeHierarchy))
                             {
-                                matrix m = wagShape.shape.matrices[mIndex];
+                                ShapeFile ortsFreightShape = new ShapeFile(wagonFolderSlash + freightAnim.ShapeFileName, true);
 
-                                // Convert the shape file matrix to an XNA matrix
-                                Matrix matTransform = new Matrix
+                                (Vector3 ortsFreightMins, Vector3 ortsFreightMaxes) = ortsFreightShape.GetBoundingLimits();
+
+                                // Account for flipped freight animation by inverting x and z components
+                                if (freightAnim.Flipped)
                                 {
-                                    M11 = m.AX,
-                                    M12 = m.AY,
-                                    M13 = m.AZ, //
-                                    M14 = 0,
-                                    M21 = m.BX,
-                                    M22 = m.BY,
-                                    M23 = m.BZ, //
-                                    M24 = 0,
-                                    M31 = m.CX, //
-                                    M32 = m.CY, //
-                                    M33 = m.CZ,
-                                    M34 = 0,
-                                    M41 = m.DX,
-                                    M42 = m.DY,
-                                    M43 = m.DZ, //
-                                    M44 = 1.0f
-                                };
+                                    Vector3 temp = ortsFreightMins;
+                                    temp.X *= -1;
+                                    temp.Y = ortsFreightMaxes.Y;
+                                    temp.Z *= -1;
 
-                                // Add the effect of this transformation to the overall transformation 
-                                mat = mat * matTransform;
+                                    ortsFreightMaxes.X *= -1;
+                                    ortsFreightMaxes.Y = ortsFreightMins.Y;
+                                    ortsFreightMaxes.Z *= -1;
 
-                                // Determine the index of the next highest matrix in the hierarchy
-                                mIndex = wagShape.shape.lod_controls[0].distance_levels[0].distance_level_header.hierarchy[mIndex];
+                                    ortsFreightMins = ortsFreightMaxes;
+                                    ortsFreightMaxes = temp;
+                                }
 
-                                depth++;
-                            } // Keep calculating until we have calculated the root, or until a loop is encountered
-                            while (mIndex > -1 && mIndex != vState.imatrix && mIndex < wagShape.shape.matrices.Count && depth < 32);
+                                // Account for offsets
+                                // Z-axis offset is inverted to match MSTS coordinate system
+                                Vector3 modOffset = new Vector3(freightAnim.Offset.X, freightAnim.Offset.Y, -freightAnim.Offset.Z);
+                                ortsFreightMins += modOffset;
+                                ortsFreightMaxes += modOffset;
 
-                            // Determine position of every vertex in this set from point position and tranformed by the matrix
-                            for (int i = vSet.StartVtxIdx; i < vSet.StartVtxIdx + vSet.VtxCount; i++)
-                            {
-                                // Determine vertex position from vertex index and point index
-                                point p = wagShape.shape.points[subObj.vertices[i].ipoint];
-                                Vector3 pPos = new Vector3(p.X, p.Y, p.Z);
-
-                                pPos = Vector3.Transform(pPos, mat);
-
-                                if (pPos.X < mins.X)
-                                    mins.X = pPos.X;
-                                if (pPos.X > maxes.X)
-                                    maxes.X = pPos.X;
-
-                                if (pPos.Y < mins.Y)
-                                    mins.Y = pPos.Y;
-                                if (pPos.Y > maxes.Y)
-                                    maxes.Y = pPos.Y;
-
-                                if (pPos.Z < mins.Z)
-                                    mins.Z = pPos.Z;
-                                if (pPos.Z > maxes.Z)
-                                    maxes.Z = pPos.Z;
+                                mainMins = Vector3.Min(mainMins, ortsFreightMins);
+                                mainMaxes = Vector3.Max(mainMaxes, ortsFreightMaxes);
                             }
                         }
+                    }
+
+                    // And also repeat for MSTS freight animation bounds (if enabled)
+                    if (mstsFreightAnim && !string.IsNullOrEmpty(FreightShapeFileName))
+                    {
+                        ShapeFile freightShape = new ShapeFile(wagonFolderSlash + FreightShapeFileName, true);
+
+                        (Vector3 freightMins, Vector3 freightMaxes) = freightShape.GetBoundingLimits();
+
+                        // MSTS freight animations don't have offsets, so can be simply compared
+                        mainMins = Vector3.Min(mainMins, freightMins);
+                        mainMaxes = Vector3.Max(mainMaxes, freightMaxes);
                     }
 
                     // Set dimensions of wagon if configured as such
                     if (AutoSize)
                     {
-                        CarWidthM = Math.Max((maxes.X - mins.X) + AutoWidthOffsetM, 0.1f);
-                        CarHeightM = Math.Max((maxes.Y - mins.Y) + AutoHeightOffsetM, 0.1f);
-                        CarLengthM = Math.Max((maxes.Z - mins.Z) + AutoLengthOffsetM, 0.1f);
+                        CarWidthM = Math.Max((mainMaxes.X - mainMins.X) + AutoWidthOffsetM, 0.1f);
+                        CarHeightM = Math.Max((mainMaxes.Y - mainMins.Y) + AutoHeightOffsetM, 0.1f);
+                        CarLengthM = Math.Max((mainMaxes.Z - mainMins.Z) + AutoLengthOffsetM, 0.1f);
 
                         if (Simulator.Settings.VerboseConfigurationMessages)
                         {
@@ -573,9 +548,9 @@ namespace Orts.Simulation.RollingStocks
                                 FormatStrings.FormatVeryShortDistanceDisplay(AutoLengthOffsetM, IsMetric));
                             Trace.TraceInformation("Main shape file {0} calculated to be {1} wide, {2} tall, and {3} long. " +
                                 "Resulting Size ( ) is {4} wide, {5} tall, and {6} long.\n", MainShapeFileName,
-                                FormatStrings.FormatVeryShortDistanceDisplay((maxes.X - mins.X), IsMetric),
-                                FormatStrings.FormatVeryShortDistanceDisplay((maxes.Y - mins.Y), IsMetric),
-                                FormatStrings.FormatVeryShortDistanceDisplay((maxes.Z - mins.Z), IsMetric),
+                                FormatStrings.FormatVeryShortDistanceDisplay((mainMaxes.X - mainMins.X), IsMetric),
+                                FormatStrings.FormatVeryShortDistanceDisplay((mainMaxes.Y - mainMins.Y), IsMetric),
+                                FormatStrings.FormatVeryShortDistanceDisplay((mainMaxes.Z - mainMins.Z), IsMetric),
                                 FormatStrings.FormatVeryShortDistanceDisplay(CarWidthM, IsMetric),
                                 FormatStrings.FormatVeryShortDistanceDisplay(CarHeightM, IsMetric),
                                 FormatStrings.FormatVeryShortDistanceDisplay(CarLengthM, IsMetric));
@@ -585,7 +560,7 @@ namespace Orts.Simulation.RollingStocks
                     // Automatically determine the center of gravity offset required to perfectly center the shape (lengthwise)
                     if (AutoCenter)
                     {
-                        InitialCentreOfGravityM.Z = (maxes.Z + mins.Z) / 2.0f;
+                        InitialCentreOfGravityM.Z = (mainMaxes.Z + mainMins.Z) / 2.0f;
 
                         if (Simulator.Settings.VerboseConfigurationMessages)
                         {
@@ -593,13 +568,13 @@ namespace Orts.Simulation.RollingStocks
                             if (Math.Abs(InitialCentreOfGravityM.Z) < 0.0001f)
                                 Trace.TraceInformation("Main shape file {0} bounds calculated to be {1} to {2}. Shape is already centered, CoG offset reset to zero.\n",
                                     MainShapeFileName,
-                                    FormatStrings.FormatVeryShortDistanceDisplay(mins.Z, IsMetric),
-                                    FormatStrings.FormatVeryShortDistanceDisplay(maxes.Z, IsMetric));
+                                    FormatStrings.FormatVeryShortDistanceDisplay(mainMins.Z, IsMetric),
+                                    FormatStrings.FormatVeryShortDistanceDisplay(mainMaxes.Z, IsMetric));
                             else
                                 Trace.TraceInformation("Main shape file {0} bounds calculated to be {1} to {2}. CoG offset used to center shape is {0}.\n",
                                     MainShapeFileName,
-                                    FormatStrings.FormatVeryShortDistanceDisplay(mins.Z, IsMetric),
-                                    FormatStrings.FormatVeryShortDistanceDisplay(maxes.Z, IsMetric),
+                                    FormatStrings.FormatVeryShortDistanceDisplay(mainMins.Z, IsMetric),
+                                    FormatStrings.FormatVeryShortDistanceDisplay(mainMaxes.Z, IsMetric),
                                     FormatStrings.FormatVeryShortDistanceDisplay(InitialCentreOfGravityM.Z, IsMetric));
                         }
                     }
@@ -1490,7 +1465,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortscenterofgravity_z":
                 case "wagon(ortscentreofgravity_z": InitialCentreOfGravityM.Z = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsautocentre":
-                case "wagon(ortsautocenter": AutoCenter = stf.ReadBoolBlock(false); break;
+                case "wagon(ortsautocenter": AutoCenter = stf.ReadBoolBlock(true); break;
                 case "wagon(ortsunbalancedsuperelevation": MaxUnbalancedSuperElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsrigidwheelbase":
                     stf.MustMatch("(");
