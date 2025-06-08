@@ -252,7 +252,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             SpeedRegulatorOptions = other.SpeedRegulatorOptions;
             CruiseControlLogic = other.CruiseControlLogic;
             SpeedDeltaFunctionMode = other.SpeedDeltaFunctionMode;
-            SpeedRegulatorNominalSpeedStepMpS = other.SpeedRegulatorNominalSpeedStepMpS;
+            SelectedSpeedPrecisionMpS = other.SelectedSpeedPrecisionMpS;
             MaxAccelerationMpSS = other.MaxAccelerationMpSS;
             MaxDecelerationMpSS = other.MaxDecelerationMpSS;
             StartReducingSpeedDelta = other.StartReducingSpeedDelta;
@@ -1541,7 +1541,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 return 0;
             float min = MinimumSpeedForCCEffectMpS;
             float max = Locomotive.MaxSpeedMpS;
-            return val * (max - min) + min;
+            float speed = val * (max - min) + min;
+            if (SpeedSelectorIsDiscrete && SpeedRegulatorNominalSpeedStepMpS > 0)
+            {
+                speed = (int)(speed / SpeedRegulatorNominalSpeedStepMpS) * SpeedRegulatorNominalSpeedStepMpS;
+            }
+            return speed;
         }
 
         public string GetCruiseControlStatus()
