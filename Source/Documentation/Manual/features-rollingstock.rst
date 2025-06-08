@@ -741,9 +741,7 @@ To simplify this process, and produce more reasonable dimensions for rolling sto
 automatically calculate the dimensions of rolling stock based on the shape file used. Enter
 ``ORTSAutoSize`` in the Wagon section of an engine or wagon to allow OR to determine
 the width, height, and length of the rolling stock based on the dimensions of the main shape file,
-ignoring any values entered manually in the MSTS Size parameter. Note that this process is
-not aware of any :ref:`shape descriptor overrides <features-shape-manipulation>` so any changes made
-to the shape there will not be reflected in the automatically calculated size.
+ignoring any values entered manually in the MSTS Size parameter.
 
 ``ORTSAutoSize`` accepts 3 (optional) arguments, default units in meters, corresponding to offsets from the
 shape's width, height, and length respectively. For example, ``ORTSAutoSize ( 0.1m, -0.2m, -0.18m )``
@@ -754,11 +752,12 @@ arguments can be set to 0, and the length argument adjusted to produce the desir
 no arguments are specified (ie: ``ORTSAutoSize ()`` was entered in the Wagon section) then all three
 offsets are assumed to be 0 meters.
 
-Note that automatic sizing uses the nearest LOD of the main shape file. LODs for further distances
-and freight animation shape files have no effect on the automatic sizing. This method also works best for rolling
-stock with standard buffers/couplers on each end. Automatic sizing generally can't produce reasonable results
-for articulated rolling stock. And should something go wrong with the shape file causing automatic sizing to fail,
-OR will revert to the values entered in the ``Size`` parameter.
+Note that automatic sizing uses the nearest LOD of the main shape file and attached freight animations. LODs for further
+distances have no effect on the automatic sizing. :ref:`Shape descriptor overrides <features-shape-manipulation>`
+are also not considered at this phase, so if any changes are made in the .sd file, this feature may not provide
+good results. This method also works best for rolling stock with standard buffers/couplers on each end.
+Automatic sizing generally can't produce reasonable results for articulated rolling stock. And should something go
+wrong with the shape file causing automatic sizing to fail, OR will revert to the values entered in the ``Size`` parameter.
 
 Improved wagon alignment tools
 ------------------------------
@@ -800,9 +799,9 @@ not change the X or Y components. Should no re-centering be required, none will 
 Some rolling stock will not align correctly when auto-centered. As with ``ORTSAutoSize``, this
 feature should be employed on rolling stock with standard buffers or couplers, and will
 not produce suitable results for articulated rolling stock or stock with different coupler
-types at each end. Only the highest detail LOD of the main shape is used to auto-center the
-rolling stock, other LODs and freight animations are ignored. If the process fails, a warning
-will be written to the log and the automatic calculation will be skipped.
+types at each end. Only the highest detail LOD of the main shape and freight animations are
+used, the .sd file is not checked. If the process fails, a warning will be written to the
+log and the automatic calculation will be skipped.
 
 Advanced articulation control
 -----------------------------
