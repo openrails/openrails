@@ -252,7 +252,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             SpeedRegulatorOptions = other.SpeedRegulatorOptions;
             CruiseControlLogic = other.CruiseControlLogic;
             SpeedDeltaFunctionMode = other.SpeedDeltaFunctionMode;
-            SelectedSpeedPrecisionMpS = other.SelectedSpeedPrecisionMpS;
             MaxAccelerationMpSS = other.MaxAccelerationMpSS;
             MaxDecelerationMpSS = other.MaxDecelerationMpSS;
             StartReducingSpeedDelta = other.StartReducingSpeedDelta;
