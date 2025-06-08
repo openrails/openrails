@@ -753,7 +753,8 @@ no arguments are specified (ie: ``ORTSAutoSize ()`` was entered in the Wagon sec
 offsets are assumed to be 0 meters.
 
 Note that automatic sizing uses the nearest LOD of the main shape file and attached freight animations. LODs for further
-distances have no effect on the automatic sizing. :ref:`Shape descriptor overrides <features-shape-manipulation>`
+distances have no effect on the automatic sizing. Freight animations using the ``ShapeHierarchy`` feature are also
+skipped due to potential unintended behaviors. :ref:`Shape descriptor overrides <features-shape-manipulation>`
 are also not considered at this phase, so if any changes are made in the .sd file, this feature may not provide
 good results. This method also works best for rolling stock with standard buffers/couplers on each end.
 Automatic sizing generally can't produce reasonable results for articulated rolling stock. And should something go
