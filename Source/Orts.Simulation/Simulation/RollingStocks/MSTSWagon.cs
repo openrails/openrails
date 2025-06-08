@@ -460,21 +460,14 @@ namespace Orts.Simulation.RollingStocks
 
                     (Vector3 mainMins, Vector3 mainMaxes) = wagShape.GetBoundingLimits();
 
-                    // Repeat for MSTS freight animation bounds
-                    if (!string.IsNullOrEmpty(FreightShapeFileName))
-                    {
-                        ShapeFile freightShape = new ShapeFile(wagonFolderSlash + FreightShapeFileName, true);
-
-                        (Vector3 freightMins, Vector3 freightMaxes) = freightShape.GetBoundingLimits();
-
-                        // MSTS freight animations don't have offsets, so can be simply compared
-                        mainMins = Vector3.Min(mainMins, freightMins);
-                        mainMaxes = Vector3.Max(mainMaxes, freightMaxes);
-                    }
+                    bool mstsFreightAnim = true;
 
                     // And also repeat for ORTS freight animations
                     if (FreightAnimations != null)
                     {
+                        if (!FreightAnimations.MSTSFreightAnimEnabled)
+                            mstsFreightAnim = false;
+
                         foreach (var freightAnim in FreightAnimations.Animations)
                         {
                             // We will ignore freight animations not attached to the main shape object for simplicity
@@ -510,6 +503,18 @@ namespace Orts.Simulation.RollingStocks
                                 mainMaxes = Vector3.Max(mainMaxes, ortsFreightMaxes);
                             }
                         }
+                    }
+
+                    // And also repeat for MSTS freight animation bounds (if enabled)
+                    if (mstsFreightAnim && !string.IsNullOrEmpty(FreightShapeFileName))
+                    {
+                        ShapeFile freightShape = new ShapeFile(wagonFolderSlash + FreightShapeFileName, true);
+
+                        (Vector3 freightMins, Vector3 freightMaxes) = freightShape.GetBoundingLimits();
+
+                        // MSTS freight animations don't have offsets, so can be simply compared
+                        mainMins = Vector3.Min(mainMins, freightMins);
+                        mainMaxes = Vector3.Max(mainMaxes, freightMaxes);
                     }
 
                     // Set dimensions of wagon if configured as such
