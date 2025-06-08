@@ -594,38 +594,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)
         {
-            MSTSLocomotive loco = Car as MSTSLocomotive;
-
             BrakeLine1PressurePSI = Car.Train.EqualReservoirPressurePSIorInHg;
             BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
-            // Initialize locomotive brakes
-            if (loco != null && Car.Train.LeadLocomotive is MSTSLocomotive lead)
-            {
-                bool brakeLine3Init = false;
-
-                if (loco == lead) // Always initialize loco brakes on lead loco
-                    brakeLine3Init = true;
-                else
-                {
-                    foreach (List<TrainCar> group in Car.Train.LocoGroups)
-                    {
-                        if (group.Contains(loco))
-                        {
-                            if (group.Contains(lead))
-                                brakeLine3Init = true; // Always initialize loco brakes on locos in same group as lead loco
-                            else if (loco.DPSyncIndependent && lead.DPSyncIndependent)
-                                brakeLine3Init = true; // Otherwise, only initialize loco brakes if synchronized by DP system
-
-                            break;
-                        }
-                    }
-                }
-
-                if (brakeLine3Init) // Sync loco brakes with lead brake system
+            if (Car is MSTSLocomotive && Car.Train.LeadLocomotive is MSTSLocomotive lead)
                 lead.EngineBrakeController?.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, 1000);
-                else // Release loco brakes
-                    BrakeLine3PressurePSI = 0.0f;
-            }
             if (maxPressurePSI > 0)
                 ControlResPressurePSI = maxPressurePSI;
 
@@ -651,7 +623,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             IsolationValve = ValveState.Release;
             HandbrakePercent = handbrakeOn & HandBrakePresent ? 100 : 0;
             SetRetainer(RetainerSetting.Exhaust);
-            if (loco != null) 
+            if (Car is MSTSLocomotive loco) 
                 loco.MainResPressurePSI = loco.MaxMainResPressurePSI;
 
             // Prevent initialization triggering emergency vent valves
