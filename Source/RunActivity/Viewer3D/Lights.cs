@@ -300,7 +300,7 @@ namespace Orts.Viewer3D
 			Debug.Assert(Viewer.PlayerTrain.LeadLocomotive == Viewer.PlayerLocomotive ||Viewer.PlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING || Viewer.PlayerTrain.Autopilot ||
                 Viewer.PlayerTrain.TrainType == Train.TRAINTYPE.REMOTE || Viewer.PlayerTrain.TrainType == Train.TRAINTYPE.STATIC, "PlayerTrain.LeadLocomotive must be PlayerLocomotive.");
 			var leadLocomotiveCar = Car.Train?.LeadLocomotive; // Note: Will return null for AI trains, this is intended behavior
-			var leadLocomotive = leadLocomotiveCar as MSTSLocomotive;
+            var leadLocomotive = leadLocomotiveCar as MSTSLocomotive;
 
             // There are a lot of conditions now! IgnoredConditions[] stores which conditions are ignored, allowing shortcutting of many of these calculations
             // Should prevent some unneeded computation, but is a little messy. May revise in the future
@@ -318,7 +318,7 @@ namespace Orts.Viewer3D
                 && leadLocomotive != null && leadLocomotive.TrainBrakeController.EmergencyBraking;
             // Control
             bool newCarIsPlayer = !Car.Lights.IgnoredConditions[3] && Car.Train != null && (Car.Train == Viewer.PlayerTrain || Car.Train.TrainType == Train.TRAINTYPE.REMOTE);
-            // Service - if a player or AI train, then will considered to be in servie, loose consists will not be considered to be in service.
+            // Service - if a player or AI train, then will considered to be in service, loose consists will not be considered to be in service.
             bool newCarInService = !Car.Lights.IgnoredConditions[4] && Car.Train != null
                 && (Car.Train == Viewer.PlayerTrain || Car.Train.TrainType == Train.TRAINTYPE.REMOTE || Car.Train.TrainType == Train.TRAINTYPE.AI);
             // Time of day
@@ -346,6 +346,15 @@ namespace Orts.Viewer3D
             // Passenger doors
             bool newLeftDoorOpen = !Car.Lights.IgnoredConditions[11] && Car.Train?.DoorState(DoorSide.Left) != DoorState.Closed;
             bool newRightDoorOpen = !Car.Lights.IgnoredConditions[11] && Car.Train?.DoorState(DoorSide.Right) != DoorState.Closed;
+            // AI trains don't have a lead locomotive, but the upcoming lighting calculations want a lead locomotive, try to determine a lead locomotive to use
+            if (leadLocomotive == null)
+            {
+                // If first car is flipped, the 'lead' vehicle is actually at the rear
+                if (Car.Train.FirstCar.Flipped && Car.Train.LastCar is MSTSLocomotive)
+                    leadLocomotive = Car.Train.LastCar as MSTSLocomotive;
+                else if (Car.Train.FirstCar is MSTSLocomotive)
+                    leadLocomotive = Car.Train.FirstCar as MSTSLocomotive;
+            }
             // Horn and bell (for flashing ditch lights)
             bool newHornOn = !Car.Lights.IgnoredConditions[12] && leadLocomotive != null && leadLocomotive.HornRecent;
             bool newBellOn = !Car.Lights.IgnoredConditions[13] && leadLocomotive != null && leadLocomotive.BellRecent;
