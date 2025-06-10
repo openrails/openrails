@@ -171,6 +171,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool HasIndependentThrottleDynamicBrakeLever = false;
         public bool HasProportionalSpeedSelector = false;
         public bool SpeedSelectorIsDiscrete = false;
+        private bool speedSelectorIsDiscreteSet = false;
         public bool DoComputeNumberOfAxles = false;
         public bool DisableManualSwitchToAutoWhenSetSpeedNotAtTop = false;
         public bool EnableSelectedSpeedSelectionWhenManualModeSet = false;
@@ -301,6 +302,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             DisableManualSwitchToAutoWhenSetSpeedNotAtTop = other.DisableManualSwitchToAutoWhenSetSpeedNotAtTop;
             EnableSelectedSpeedSelectionWhenManualModeSet = other.EnableSelectedSpeedSelectionWhenManualModeSet;
             SpeedSelectorIsDiscrete = other.SpeedSelectorIsDiscrete;
+            speedSelectorIsDiscreteSet = other.SpeedSelectorIsDiscrete;
             DoComputeNumberOfAxles = other.DoComputeNumberOfAxles;
             UseTrainBrakeAndDynBrake = other.UseTrainBrakeAndDynBrake;
             UseDynBrake = other.UseDynBrake;
@@ -392,7 +394,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     case "ascspeedtakespriorityoverspeedselector": ASCSpeedTakesPriorityOverSpeedSelector = stf.ReadBoolBlock(false); break;
                     case "hasindependentthrottledynamicbrakelever": HasIndependentThrottleDynamicBrakeLever = stf.ReadBoolBlock(false); break;
                     case "hasproportionalspeedselector": HasProportionalSpeedSelector = stf.ReadBoolBlock(false); break;
-                    case "speedselectorisdiscrete": SpeedSelectorIsDiscrete = stf.ReadBoolBlock(false); break;
+                    case "speedselectorisdiscrete": speedSelectorIsDiscreteSet = true; SpeedSelectorIsDiscrete = stf.ReadBoolBlock(false); break;
                     case "usetrainbrakeanddynbrake": UseTrainBrakeAndDynBrake = stf.ReadBoolBlock(false); break;
                     case "usedynbrake": UseDynBrake = stf.ReadBoolBlock(false); break;
                     case "speeddeltatoenabletrainbrake": SpeedDeltaToEnableTrainBrake = stf.ReadFloatBlock(STFReader.UNITS.Speed, 5f); break;
@@ -506,6 +508,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (SpeedDeltaFunctionMode == SpeedDeltaMode.Sqrt) StartReducingSpeedDeltaDownwards /= 3;
 
             if (StartInAutoMode) SpeedRegMode = SpeedRegulatorMode.Auto;
+
+            if (!speedSelectorIsDiscreteSet)
+            {
+                var mpc = Locomotive.MultiPositionControllers.Where(x => x.controllerBinding == ControllerBinding.SelectedSpeed).FirstOrDefault();
+                SpeedSelectorIsDiscrete = mpc == null;
+            }
+            if (SpeedSelectorIsDiscrete && SpeedRegulatorNominalSpeedStepMpS <= 0) SpeedRegulatorNominalSpeedStepMpS = MpS.FromMpS(1.0f, !SpeedIsMph);
 
             if (UseThrottleAsForceSelector)
             {
