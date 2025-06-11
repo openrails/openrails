@@ -137,7 +137,7 @@ A list of the available .eng file CC parameters follows here below.
    "UseThrottleAsForceSelector", "if ControllerCruiseControlLogic is set to None, throttle when in Auto mode will change the maximum CC Force", "Boolean", "FALSE"
    "ControllerCruiseControlLogic", "Can have values 'None', 'SpeedOnly', 'Full'", "Enum", "Full"
    "HasProportionalSpeedSelector", "Speed selector is performed by a lever ranging from 0 to max speed", "Boolean", "FALSE"
-   "SpeedSelectorIsDiscrete", "Speed selected can have only values multiple of NominalSpeedStep", "Boolean", "FALSE"
+   "SpeedSelectorIsDiscrete", "Speed selected can have only values multiple of NominalSpeedStep", "Boolean", "TRUE"
    "ModeSwitchAllowedWithThrottleNotAtZero", "Switch from manual to auto and vice-versa can occur also when throttle lever is not at 0", "Boolean", "FALSE"
    "DisableManualSwitchToAutoWhenSetSpeedNotAtTop", "Manual Switch to Cruise Control Auto Mode can't occur when speed is not set at maximum value and at the same moment train speed is not 0", "Boolean", "FALSE"
    "UseTrainBrakeAndDynBrake", "CC uses train brake and dyn brake together", "Boolean", "FALSE"

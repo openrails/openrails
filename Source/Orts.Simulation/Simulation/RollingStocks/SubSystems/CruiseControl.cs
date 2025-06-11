@@ -170,7 +170,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool BrakeCommandHasPriorityOverASCBraking = false;
         public bool HasIndependentThrottleDynamicBrakeLever = false;
         public bool HasProportionalSpeedSelector = false;
-        public bool SpeedSelectorIsDiscrete = false;
+        public bool SpeedSelectorIsDiscrete = true;
         public bool DoComputeNumberOfAxles = false;
         public bool DisableManualSwitchToAutoWhenSetSpeedNotAtTop = false;
         public bool EnableSelectedSpeedSelectionWhenManualModeSet = false;
