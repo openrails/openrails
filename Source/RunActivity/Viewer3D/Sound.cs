@@ -743,7 +743,7 @@ namespace Orts.Viewer3D
 
                 foreach (SMSStream mstsStream in mstsScalabiltyGroup.Streams)
                 {
-                    // Initialization step for light shape attachment, can't do this step in LightCollection
+                    // Initialization step for sound stream shape attachment
                     if (CarViewer != null && Car != null)
                     {
                         if (mstsStream.ShapeIndex != -1)
