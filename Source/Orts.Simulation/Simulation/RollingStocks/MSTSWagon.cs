@@ -1415,10 +1415,12 @@ namespace Orts.Simulation.RollingStocks
                     FrontCoupler.Closed.ShapeFileName = stf.ReadString();
                     FrontCoupler.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     if (!stf.EndOfBlock())
+                    {
                         FrontCoupler.Closed.ShapeDescriptor = stf.ReadString();
+                        stf.SkipRestOfBlock();
+                    }
                     else
                         FrontCoupler.Closed.ShapeDescriptor = FrontCoupler.Closed.ShapeFileName + "d";
-                    stf.SkipRestOfBlock();
                     break;
 
                 case "wagon(coupling(frontairhoseanim":
@@ -1426,10 +1428,12 @@ namespace Orts.Simulation.RollingStocks
                     FrontAirHose.Connected.ShapeFileName = stf.ReadString();
                     FrontAirHose.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     if (!stf.EndOfBlock())
+                    {
                         FrontAirHose.Connected.ShapeDescriptor = stf.ReadString();
+                        stf.SkipRestOfBlock();
+                    }
                     else
                         FrontAirHose.Connected.ShapeDescriptor = FrontAirHose.Connected.ShapeFileName + "d";
-                    stf.SkipRestOfBlock();
                     break;
 
                 case "wagon(coupling(rearcoupleranim":
@@ -1437,10 +1441,12 @@ namespace Orts.Simulation.RollingStocks
                     RearCoupler.Closed.ShapeFileName = stf.ReadString();
                     RearCoupler.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     if (!stf.EndOfBlock())
+                    {
                         RearCoupler.Closed.ShapeDescriptor = stf.ReadString();
+                        stf.SkipRestOfBlock();
+                    }
                     else
                         RearCoupler.Closed.ShapeDescriptor = RearCoupler.Closed.ShapeFileName + "d";
-                    stf.SkipRestOfBlock();
                     break;
 
                 case "wagon(coupling(rearairhoseanim":
@@ -1448,10 +1454,12 @@ namespace Orts.Simulation.RollingStocks
                     RearAirHose.Connected.ShapeFileName = stf.ReadString();
                     RearAirHose.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     if (!stf.EndOfBlock())
+                    {
                         RearAirHose.Connected.ShapeDescriptor = stf.ReadString();
+                        stf.SkipRestOfBlock();
+                    }
                     else
                         RearAirHose.Connected.ShapeDescriptor = RearAirHose.Connected.ShapeFileName + "d";
-                    stf.SkipRestOfBlock();
                     break;
 
                 case "wagon(coupling(spring(ortstensionstiffness":
@@ -1466,10 +1474,12 @@ namespace Orts.Simulation.RollingStocks
                     // NOTE: Skip storing the size as it is unused:
                     stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     if (!stf.EndOfBlock())
+                    {
                         FrontCoupler.Open.ShapeDescriptor = stf.ReadString();
+                        stf.SkipRestOfBlock();
+                    }
                     else
                         FrontCoupler.Open.ShapeDescriptor = FrontCoupler.Open.ShapeFileName + "d";
-                    stf.SkipRestOfBlock();
                     break;
                     
                case "wagon(coupling(rearcoupleropenanim":
@@ -1478,10 +1488,12 @@ namespace Orts.Simulation.RollingStocks
                     // NOTE: Skip storing the size as it is unused:
                     stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     if (!stf.EndOfBlock())
+                    {
                         RearCoupler.Open.ShapeDescriptor = stf.ReadString();
+                        stf.SkipRestOfBlock();
+                    }
                     else
                         RearCoupler.Open.ShapeDescriptor = RearCoupler.Open.ShapeFileName + "d";
-                    stf.SkipRestOfBlock();
                     break;
 
                 case "wagon(coupling(frontairhosediconnectedanim":
@@ -1490,10 +1502,12 @@ namespace Orts.Simulation.RollingStocks
                     // NOTE: Skip storing the size as it is unused:
                     stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     if (!stf.EndOfBlock())
+                    {
                         FrontAirHose.Disconnected.ShapeDescriptor = stf.ReadString();
+                        stf.SkipRestOfBlock();
+                    }
                     else
                         FrontAirHose.Disconnected.ShapeDescriptor = FrontAirHose.Disconnected.ShapeFileName + "d";
-                    stf.SkipRestOfBlock();
                     break;
                     
                 case "wagon(coupling(rearairhosediconnectedanim":
@@ -1502,10 +1516,12 @@ namespace Orts.Simulation.RollingStocks
                     // NOTE: Skip storing the size as it is unused:
                     stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     if (!stf.EndOfBlock())
+                    {
                         RearAirHose.Disconnected.ShapeDescriptor = stf.ReadString();
+                        stf.SkipRestOfBlock();
+                    }
                     else
                         RearAirHose.Disconnected.ShapeDescriptor = RearAirHose.Disconnected.ShapeFileName + "d";
-                    stf.SkipRestOfBlock();
                     break;
 
 
