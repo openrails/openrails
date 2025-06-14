@@ -1149,7 +1149,7 @@ junction somewhere beyond that station.
         This function will return 'true' if approaching train is to stop at the request stop in order to set down
         passengers, otherwise it returns 'false'.
         Using this function, the state of the signal can be set as required. The signal can be visualized as an
-        actual signal, but also, for instance, a passenger figure can be animated to be visual on the plaƞorm
+        actual signal, but also, for instance, a passenger figure can be animated to be visual on the platform
         if the train is to stop, and otherwise not be visual.
 
         Apart from this function, the signal must set two variables :
@@ -1201,7 +1201,7 @@ junction somewhere beyond that station.
                     A 'spoiler' indication which shows if the stop is required to set down or pick up, can be shown if the
                     Next Station Window is displayed (normally using key F10), by pressing keys ALT+F10.
 
-                    When ALT+F10 is pressed, and the next station is a request stop, a line is displayed at the boƩom of
+                    When ALT+F10 is pressed, and the next station is a request stop, a line is displayed at the bottom of
                     the window showing if stop is required or not.
 
                     NOTE : this spoiler function is not yet available and will be included later.
