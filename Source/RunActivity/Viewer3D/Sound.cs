@@ -1259,6 +1259,69 @@ namespace Orts.Viewer3D
                     {
                         Triggers.Add(new ORTSDistanceTravelledTrigger(this, (Orts.Formats.Msts.Dist_Travelled_Trigger)trigger));
                     }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Joint_Trigger_2) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSJoint2AxleTrigger(this, (Orts.Formats.Msts.Joint_Trigger_2)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Joint_Trigger_3) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSJoint3AxleTrigger(this, (Orts.Formats.Msts.Joint_Trigger_3)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Joint_Trigger_4) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSJoint4AxleTrigger(this, (Orts.Formats.Msts.Joint_Trigger_4)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Joint_Trigger_6) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSJoint6AxleTrigger(this, (Orts.Formats.Msts.Joint_Trigger_6)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Joint_Trigger_8) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSJoint8AxleTrigger(this, (Orts.Formats.Msts.Joint_Trigger_8)trigger));
+                    }
+
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Switch_Trigger_2) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSSwitch2AxleTrigger(this, (Orts.Formats.Msts.Switch_Trigger_2)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Switch_Trigger_3) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSSwitch3AxleTrigger(this, (Orts.Formats.Msts.Switch_Trigger_3)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Switch_Trigger_4) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSSwitch4AxleTrigger(this, (Orts.Formats.Msts.Switch_Trigger_4)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Switch_Trigger_6) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSSwitch6AxleTrigger(this, (Orts.Formats.Msts.Switch_Trigger_6)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Switch_Trigger_8) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSSwitch8AxleTrigger(this, (Orts.Formats.Msts.Switch_Trigger_8)trigger));
+                    }
+
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Xover_Trigger_2) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSXover2AxleTrigger(this, (Orts.Formats.Msts.Xover_Trigger_2)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Xover_Trigger_3) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSXover3AxleTrigger(this, (Orts.Formats.Msts.Xover_Trigger_3)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Xover_Trigger_4) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSXover4AxleTrigger(this, (Orts.Formats.Msts.Xover_Trigger_4)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Xover_Trigger_6) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSXover6AxleTrigger(this, (Orts.Formats.Msts.Xover_Trigger_6)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Xover_Trigger_8) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSXover8AxleTrigger(this, (Orts.Formats.Msts.Xover_Trigger_8)trigger));
+                    }
+
                     else if (trigger.GetType() == typeof(Orts.Formats.Msts.Initial_Trigger))
                     {
                         _InitialTrigger = new ORTSInitialTrigger(this, (Orts.Formats.Msts.Initial_Trigger)trigger);
@@ -1780,7 +1843,7 @@ namespace Orts.Viewer3D
             SoundStream = soundStream;
             car = soundStream.SoundSource.Car;
             SMS = smsData;
-            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream );
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
             Initialize();
         }
 
@@ -1814,6 +1877,7 @@ namespace Orts.Viewer3D
             }
         }
 
+
         /// <summary>
         /// Calculate a new random distance to travel till the next trigger action
         /// </summary>
@@ -1828,8 +1892,718 @@ namespace Orts.Viewer3D
                 triggerDistance = car.DistanceM + ((float)Viewer.Random.NextDouble() * (SMS.Dist_Min) + SMS.Dist_Min);
             }
         }
+    }
 
-    } // class ORTSDistanceTravelledTrigger
+    /// <summary>
+    /// Play this sound controlled by the distance a TrainCar has travelled
+    /// </summary>
+    public sealed class ORTSJoint2AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Joint_Trigger_2 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSJoint2AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Joint_Trigger_2 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+            
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 2)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+                
+#if DEBUGSCR
+                Console.WriteLine("({0})DistanceTravelledTrigger: Current:{1}, Next:{2}", SoundStream.ALSoundSource.SoundSourceID, car.DistanceM, triggerDistance);
+#endif
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSJoint2AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled by the distance a TrainCar has travelled
+    /// </summary>
+    public sealed class ORTSJoint3AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Joint_Trigger_3 SMS;
+        //    float triggerDistance;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSJoint3AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Joint_Trigger_3 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+           
+
+        }
+        public override void TryTrigger()
+        {
+            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 8)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+                
+#if DEBUGSCR
+                Console.WriteLine("({0})DistanceTravelledTrigger: Current:{1}, Next:{2}", SoundStream.ALSoundSource.SoundSourceID, car.DistanceM, triggerDistance);
+#endif
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSJoint3AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled by the distance a TrainCar has travelled
+    /// </summary>
+    public sealed class ORTSJoint4AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Joint_Trigger_4 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSJoint4AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Joint_Trigger_4 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+           // UpdateTriggerDistance();
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 4)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+            
+#if DEBUGSCR
+                Console.WriteLine("({0})DistanceTravelledTrigger: Current:{1}, Next:{2}", SoundStream.ALSoundSource.SoundSourceID, car.DistanceM, triggerDistance);
+#endif
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSJoint4AxleTrigger
+
+
+    /// <summary>
+    /// Play this sound controlled by the distance a TrainCar has travelled
+    /// </summary>
+    public sealed class ORTSJoint6AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Joint_Trigger_6 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSJoint6AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Joint_Trigger_6 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+            
+
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 6)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+#if DEBUGSCR
+                Console.WriteLine("({0})DistanceTravelledTrigger: Current:{1}, Next:{2}", SoundStream.ALSoundSource.SoundSourceID, car.DistanceM, triggerDistance);
+#endif
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSJoint6AxleTrigger
+
+
+    /// <summary>
+    /// Play this sound controlled by the distance a TrainCar has travelled
+    /// </summary>
+    public sealed class ORTSJoint8AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Joint_Trigger_8 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSJoint8AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Joint_Trigger_8 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+            
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 8)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+#if DEBUGSCR
+                Console.WriteLine("({0})DistanceTravelledTrigger: Current:{1}, Next:{2}", SoundStream.ALSoundSource.SoundSourceID, car.DistanceM, triggerDistance);
+#endif
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSJoint8AxleTrigger
+
+
+    /// <summary>
+    /// Play this sound controlled by the distance a TrainCar has travelled
+    /// </summary>
+    public sealed class ORTSSwitch2AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Switch_Trigger_2 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSSwitch2AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Switch_Trigger_2 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 2)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+
+#if DEBUGSCR
+                Console.WriteLine("({0})DistanceTravelledTrigger: Current:{1}, Next:{2}", SoundStream.ALSoundSource.SoundSourceID, car.DistanceM, triggerDistance);
+#endif
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSSwitch2AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled by the distance a TrainCar has travelled
+    /// </summary>
+    public sealed class ORTSSwitch3AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Switch_Trigger_3 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSSwitch3AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Switch_Trigger_3 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 3)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+
+#if DEBUGSCR
+                Console.WriteLine("({0})DistanceTravelledTrigger: Current:{1}, Next:{2}", SoundStream.ALSoundSource.SoundSourceID, car.DistanceM, triggerDistance);
+#endif
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSSwitch3AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled by the distance a TrainCar has travelled
+    /// </summary>
+    public sealed class ORTSSwitch4AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Switch_Trigger_4 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSSwitch4AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Switch_Trigger_4 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 4)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+
+#if DEBUGSCR
+                Console.WriteLine("({0})DistanceTravelledTrigger: Current:{1}, Next:{2}", SoundStream.ALSoundSource.SoundSourceID, car.DistanceM, triggerDistance);
+#endif
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSSwitch4AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled by the distance a TrainCar has travelled
+    /// </summary>
+    public sealed class ORTSSwitch6AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Switch_Trigger_6 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSSwitch6AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Switch_Trigger_6 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 6)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+
+#if DEBUGSCR
+                Console.WriteLine("({0})DistanceTravelledTrigger: Current:{1}, Next:{2}", SoundStream.ALSoundSource.SoundSourceID, car.DistanceM, triggerDistance);
+#endif
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSSwitch6AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled by the distance a TrainCar has travelled
+    /// </summary>
+    public sealed class ORTSSwitch8AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Switch_Trigger_8 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSSwitch8AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Switch_Trigger_8 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 8)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+
+#if DEBUGSCR
+                Console.WriteLine("({0})DistanceTravelledTrigger: Current:{1}, Next:{2}", SoundStream.ALSoundSource.SoundSourceID, car.DistanceM, triggerDistance);
+#endif
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSSwitch8AxleTrigger
+
+
+    /// <summary>
+    /// Play this sound controlled by the distance a TrainCar has travelled
+    /// </summary>
+    public sealed class ORTSXover2AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Xover_Trigger_2 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSXover2AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Xover_Trigger_2 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 2)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+
+#if DEBUGSCR
+                Console.WriteLine("({0})DistanceTravelledTrigger: Current:{1}, Next:{2}", SoundStream.ALSoundSource.SoundSourceID, car.DistanceM, triggerDistance);
+#endif
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSXover2AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled by the distance a TrainCar has travelled
+    /// </summary>
+    public sealed class ORTSXover3AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Xover_Trigger_3 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSXover3AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Xover_Trigger_3 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 3)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+
+#if DEBUGSCR
+                Console.WriteLine("({0})DistanceTravelledTrigger: Current:{1}, Next:{2}", SoundStream.ALSoundSource.SoundSourceID, car.DistanceM, triggerDistance);
+#endif
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSXover3AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled by the distance a TrainCar has travelled
+    /// </summary>
+    public sealed class ORTSXover4AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Xover_Trigger_4 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSXover4AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Xover_Trigger_4 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 4)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+
+#if DEBUGSCR
+                Console.WriteLine("({0})DistanceTravelledTrigger: Current:{1}, Next:{2}", SoundStream.ALSoundSource.SoundSourceID, car.DistanceM, triggerDistance);
+#endif
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSXover4AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled by the distance a TrainCar has travelled
+    /// </summary>
+    public sealed class ORTSXover6AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Xover_Trigger_6 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSXover6AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Xover_Trigger_6 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 6)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+
+#if DEBUGSCR
+                Console.WriteLine("({0})DistanceTravelledTrigger: Current:{1}, Next:{2}", SoundStream.ALSoundSource.SoundSourceID, car.DistanceM, triggerDistance);
+#endif
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSXover6AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled by the distance a TrainCar has travelled
+    /// </summary>
+    public sealed class ORTSXover8AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Xover_Trigger_8 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSXover8AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Xover_Trigger_8 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+            Initialize();
+        }
+
+        public override void Initialize()
+        {
+
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 2)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+
+#if DEBUGSCR
+                Console.WriteLine("({0})DistanceTravelledTrigger: Current:{1}, Next:{2}", SoundStream.ALSoundSource.SoundSourceID, car.DistanceM, triggerDistance);
+#endif
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSXover2AxleTrigger
+
+
 
     /// <summary>
     /// Play this sound immediately when this SoundSource becomes active, or in case no other VariableTriggers are active

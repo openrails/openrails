@@ -312,6 +312,21 @@ namespace Orts.Formats.Msts
             int count = stf.ReadInt(null);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("dist_travelled_trigger", ()=>{ Add(new Dist_Travelled_Trigger(stf)); }),
+                new STFReader.TokenProcessor("joint_2axle_trigger", ()=>{ Add(new Joint_Trigger_2(stf)); }),
+                new STFReader.TokenProcessor("joint_3axle_trigger", ()=>{ Add(new Joint_Trigger_3(stf)); }),
+                new STFReader.TokenProcessor("joint_4axle_trigger", ()=>{ Add(new Joint_Trigger_4(stf)); }),
+                new STFReader.TokenProcessor("joint_6axle_trigger", ()=>{ Add(new Joint_Trigger_6(stf)); }),
+                new STFReader.TokenProcessor("joint_8axle_trigger", ()=>{ Add(new Joint_Trigger_8(stf)); }),
+                new STFReader.TokenProcessor("switch_2axle_trigger", ()=>{ Add(new Switch_Trigger_2(stf)); }),
+                new STFReader.TokenProcessor("switch_3axle_trigger", ()=>{ Add(new Switch_Trigger_3(stf)); }),
+                new STFReader.TokenProcessor("switch_4axle_trigger", ()=>{ Add(new Switch_Trigger_4(stf)); }),
+                new STFReader.TokenProcessor("switch_6axle_trigger", ()=>{ Add(new Switch_Trigger_6(stf)); }),
+                new STFReader.TokenProcessor("switch_8axle_trigger", ()=>{ Add(new Switch_Trigger_8(stf)); }),
+                new STFReader.TokenProcessor("xover_2axle_trigger", ()=>{ Add(new Xover_Trigger_2(stf)); }),
+                new STFReader.TokenProcessor("xover_3axle_trigger", ()=>{ Add(new Xover_Trigger_3(stf)); }),
+                new STFReader.TokenProcessor("xover_4axle_trigger", ()=>{ Add(new Xover_Trigger_4(stf)); }),
+                new STFReader.TokenProcessor("xover_6axle_trigger", ()=>{ Add(new Xover_Trigger_6(stf)); }),
+                new STFReader.TokenProcessor("xover_8axle_trigger", ()=>{ Add(new Xover_Trigger_8(stf)); }),
                 new STFReader.TokenProcessor("discrete_trigger", ()=>{ Add(new Discrete_Trigger(stf)); }),
                 new STFReader.TokenProcessor("random_trigger", ()=>{ Add(new Random_Trigger(stf)); }),
                 new STFReader.TokenProcessor("variable_trigger", ()=>{ Add(new Variable_Trigger(stf)); }),
@@ -476,6 +491,7 @@ namespace Orts.Formats.Msts
 
         public Dist_Travelled_Trigger(STFReader f)
         {
+           
             f.MustMatch("(");
             while (!f.EndOfBlock())
             {
@@ -484,6 +500,325 @@ namespace Orts.Formats.Msts
                 {
                     case "dist_min_max": f.MustMatch("("); Dist_Min = f.ReadFloat(STFReader.UNITS.Distance, null); Dist_Max = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
                     case "volume_min_max": f.MustMatch("("); Volume_Min = f.ReadFloat(STFReader.UNITS.None, null); Volume_Max = f.ReadFloat(STFReader.UNITS.None, null); f.SkipRestOfBlock(); break;
+                    default: ParsePlayCommand(f, lowtok); break;
+                }
+            }
+        }
+    }
+
+    public class Joint_Trigger_2 : Trigger
+    {
+        public float Car_Camera_DistM = 80;
+        public float Volume_Min = 0.9f;
+        public float Volume_Max = 1.0f;
+
+        public Joint_Trigger_2(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+            {
+                string lowtok = f.ReadString().ToLower();
+                switch (lowtok)
+                {
+                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    //      case "volume_min_max": f.MustMatch("("); Volume_Min = f.ReadFloat(STFReader.UNITS.None, null); Volume_Max = f.ReadFloat(STFReader.UNITS.None, null); f.SkipRestOfBlock(); break;
+                    default: ParsePlayCommand(f, lowtok); break;
+                }
+            }
+        }
+    }
+
+    public class Joint_Trigger_3 : Trigger
+    {
+        public float Car_Camera_DistM = 80;
+        public float Volume_Min = 0.9f;
+        public float Volume_Max = 1.0f;
+
+        public Joint_Trigger_3(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+            {
+                string lowtok = f.ReadString().ToLower();
+                switch (lowtok)
+                {
+                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    //      case "volume_min_max": f.MustMatch("("); Volume_Min = f.ReadFloat(STFReader.UNITS.None, null); Volume_Max = f.ReadFloat(STFReader.UNITS.None, null); f.SkipRestOfBlock(); break;
+                    default: ParsePlayCommand(f, lowtok); break;
+                }
+            }
+        }
+    }
+    public class Joint_Trigger_4 : Trigger
+    {
+        public float Car_Camera_DistM = 80;
+        public float Volume_Min = 0.9f;
+        public float Volume_Max = 1.0f;
+
+        public Joint_Trigger_4(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+            {
+                string lowtok = f.ReadString().ToLower();
+                switch (lowtok)
+                {
+                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+              //      case "volume_min_max": f.MustMatch("("); Volume_Min = f.ReadFloat(STFReader.UNITS.None, null); Volume_Max = f.ReadFloat(STFReader.UNITS.None, null); f.SkipRestOfBlock(); break;
+                    default: ParsePlayCommand(f, lowtok); break;
+                }
+            }
+        }
+    }
+
+    public class Joint_Trigger_6 : Trigger
+    {
+        public float Car_Camera_DistM = 80;
+        public float Volume_Min = 0.9f;
+        public float Volume_Max = 1.0f;
+
+        public Joint_Trigger_6(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+            {
+                string lowtok = f.ReadString().ToLower();
+                switch (lowtok)
+                {
+                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    //      case "volume_min_max": f.MustMatch("("); Volume_Min = f.ReadFloat(STFReader.UNITS.None, null); Volume_Max = f.ReadFloat(STFReader.UNITS.None, null); f.SkipRestOfBlock(); break;
+                    default: ParsePlayCommand(f, lowtok); break;
+                }
+            }
+        }
+    }
+
+    public class Joint_Trigger_8 : Trigger
+    {
+        public float Car_Camera_DistM = 80;
+        public float Volume_Min = 0.9f;
+        public float Volume_Max = 1.0f;
+
+        public Joint_Trigger_8(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+            {
+                string lowtok = f.ReadString().ToLower();
+                switch (lowtok)
+                {
+                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    //      case "volume_min_max": f.MustMatch("("); Volume_Min = f.ReadFloat(STFReader.UNITS.None, null); Volume_Max = f.ReadFloat(STFReader.UNITS.None, null); f.SkipRestOfBlock(); break;
+                    default: ParsePlayCommand(f, lowtok); break;
+                }
+            }
+        }
+    }
+
+    public class Switch_Trigger_2 : Trigger
+    {
+        public float Car_Camera_DistM = 80;
+        public float Volume_Min = 0.9f;
+        public float Volume_Max = 1.0f;
+
+        public Switch_Trigger_2(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+            {
+                string lowtok = f.ReadString().ToLower();
+                switch (lowtok)
+                {
+                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    default: ParsePlayCommand(f, lowtok); break;
+                }
+            }
+        }
+    }
+
+    public class Switch_Trigger_3 : Trigger
+    {
+        public float Car_Camera_DistM = 80;
+        public float Volume_Min = 0.9f;
+        public float Volume_Max = 1.0f;
+
+        public Switch_Trigger_3(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+            {
+                string lowtok = f.ReadString().ToLower();
+                switch (lowtok)
+                {
+                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    default: ParsePlayCommand(f, lowtok); break;
+                }
+            }
+        }
+    }
+
+    public class Switch_Trigger_4 : Trigger
+    {
+        public float Car_Camera_DistM = 80;
+        public float Volume_Min = 0.9f;
+        public float Volume_Max = 1.0f;
+
+        public Switch_Trigger_4(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+            {
+                string lowtok = f.ReadString().ToLower();
+                switch (lowtok)
+                {
+                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    default: ParsePlayCommand(f, lowtok); break;
+                }
+            }
+        }
+    }
+
+    public class Switch_Trigger_6 : Trigger
+    {
+        public float Car_Camera_DistM = 80;
+        public float Volume_Min = 0.9f;
+        public float Volume_Max = 1.0f;
+
+        public Switch_Trigger_6(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+            {
+                string lowtok = f.ReadString().ToLower();
+                switch (lowtok)
+                {
+                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    default: ParsePlayCommand(f, lowtok); break;
+                }
+            }
+        }
+    }
+
+    public class Switch_Trigger_8 : Trigger
+    {
+        public float Car_Camera_DistM = 80;
+        public float Volume_Min = 0.9f;
+        public float Volume_Max = 1.0f;
+
+        public Switch_Trigger_8(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+            {
+                string lowtok = f.ReadString().ToLower();
+                switch (lowtok)
+                {
+                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    default: ParsePlayCommand(f, lowtok); break;
+                }
+            }
+        }
+    }
+
+    public class Xover_Trigger_2 : Trigger
+    {
+        public float Car_Camera_DistM = 80;
+        public float Volume_Min = 0.9f;
+        public float Volume_Max = 1.0f;
+
+        public Xover_Trigger_2(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+            {
+                string lowtok = f.ReadString().ToLower();
+                switch (lowtok)
+                {
+                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    default: ParsePlayCommand(f, lowtok); break;
+                }
+            }
+        }
+    }
+
+    public class Xover_Trigger_3 : Trigger
+    {
+        public float Car_Camera_DistM = 80;
+        public float Volume_Min = 0.9f;
+        public float Volume_Max = 1.0f;
+
+        public Xover_Trigger_3(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+            {
+                string lowtok = f.ReadString().ToLower();
+                switch (lowtok)
+                {
+                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    default: ParsePlayCommand(f, lowtok); break;
+                }
+            }
+        }
+    }
+
+    public class Xover_Trigger_4 : Trigger
+    {
+        public float Car_Camera_DistM = 80;
+        public float Volume_Min = 0.9f;
+        public float Volume_Max = 1.0f;
+
+        public Xover_Trigger_4(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+            {
+                string lowtok = f.ReadString().ToLower();
+                switch (lowtok)
+                {
+                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    default: ParsePlayCommand(f, lowtok); break;
+                }
+            }
+        }
+    }
+
+    public class Xover_Trigger_6 : Trigger
+    {
+        public float Car_Camera_DistM = 80;
+        public float Volume_Min = 0.9f;
+        public float Volume_Max = 1.0f;
+
+        public Xover_Trigger_6(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+            {
+                string lowtok = f.ReadString().ToLower();
+                switch (lowtok)
+                {
+                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    default: ParsePlayCommand(f, lowtok); break;
+                }
+            }
+        }
+    }
+
+    public class Xover_Trigger_8 : Trigger
+    {
+        public float Car_Camera_DistM = 80;
+        public float Volume_Min = 0.9f;
+        public float Volume_Max = 1.0f;
+
+        public Xover_Trigger_8(STFReader f)
+        {
+            f.MustMatch("(");
+            while (!f.EndOfBlock())
+            {
+                string lowtok = f.ReadString().ToLower();
+                switch (lowtok)
+                {
+                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
                     default: ParsePlayCommand(f, lowtok); break;
                 }
             }
