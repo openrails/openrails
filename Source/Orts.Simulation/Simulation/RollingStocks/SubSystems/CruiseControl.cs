@@ -1543,7 +1543,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             float speed = val * (max - min) + min;
             if (SpeedSelectorIsDiscrete && SpeedRegulatorNominalSpeedStepMpS > 0)
             {
-                speed = (int)(speed / SpeedRegulatorNominalSpeedStepMpS) * SpeedRegulatorNominalSpeedStepMpS;
+                speed = (float)Math.Round(speed / SpeedRegulatorNominalSpeedStepMpS) * SpeedRegulatorNominalSpeedStepMpS;
             }
             return speed;
         }
