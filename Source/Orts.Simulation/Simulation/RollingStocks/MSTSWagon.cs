@@ -1633,7 +1633,7 @@ namespace Orts.Simulation.RollingStocks
                     if (!stf.EndOfBlock())
                     {
                         FrontCoupler.Closed.ShapeDescriptor = stf.ReadString();
-                    stf.SkipRestOfBlock();
+                        stf.SkipRestOfBlock();
                     }
                     else
                         FrontCoupler.Closed.ShapeDescriptor = FrontCoupler.Closed.ShapeFileName + "d";
@@ -1646,7 +1646,7 @@ namespace Orts.Simulation.RollingStocks
                     if (!stf.EndOfBlock())
                     {
                         FrontAirHose.Connected.ShapeDescriptor = stf.ReadString();
-                    stf.SkipRestOfBlock();
+                        stf.SkipRestOfBlock();
                     }
                     else
                         FrontAirHose.Connected.ShapeDescriptor = FrontAirHose.Connected.ShapeFileName + "d";
@@ -1659,7 +1659,7 @@ namespace Orts.Simulation.RollingStocks
                     if (!stf.EndOfBlock())
                     {
                         RearCoupler.Closed.ShapeDescriptor = stf.ReadString();
-                    stf.SkipRestOfBlock();
+                        stf.SkipRestOfBlock();
                     }
                     else
                         RearCoupler.Closed.ShapeDescriptor = RearCoupler.Closed.ShapeFileName + "d";
@@ -1672,7 +1672,7 @@ namespace Orts.Simulation.RollingStocks
                     if (!stf.EndOfBlock())
                     {
                         RearAirHose.Connected.ShapeDescriptor = stf.ReadString();
-                    stf.SkipRestOfBlock();
+                        stf.SkipRestOfBlock();
                     }
                     else
                         RearAirHose.Connected.ShapeDescriptor = RearAirHose.Connected.ShapeFileName + "d";
@@ -1692,7 +1692,7 @@ namespace Orts.Simulation.RollingStocks
                     if (!stf.EndOfBlock())
                     {
                         FrontCoupler.Open.ShapeDescriptor = stf.ReadString();
-                    stf.SkipRestOfBlock();
+                        stf.SkipRestOfBlock();
                     }
                     else
                         FrontCoupler.Open.ShapeDescriptor = FrontCoupler.Open.ShapeFileName + "d";
@@ -1706,7 +1706,7 @@ namespace Orts.Simulation.RollingStocks
                     if (!stf.EndOfBlock())
                     {
                         RearCoupler.Open.ShapeDescriptor = stf.ReadString();
-                    stf.SkipRestOfBlock();
+                        stf.SkipRestOfBlock();
                     }
                     else
                         RearCoupler.Open.ShapeDescriptor = RearCoupler.Open.ShapeFileName + "d";
@@ -1720,7 +1720,7 @@ namespace Orts.Simulation.RollingStocks
                     if (!stf.EndOfBlock())
                     {
                         FrontAirHose.Disconnected.ShapeDescriptor = stf.ReadString();
-                    stf.SkipRestOfBlock();
+                        stf.SkipRestOfBlock();
                     }
                     else
                         FrontAirHose.Disconnected.ShapeDescriptor = FrontAirHose.Disconnected.ShapeFileName + "d";
@@ -1734,7 +1734,7 @@ namespace Orts.Simulation.RollingStocks
                     if (!stf.EndOfBlock())
                     {
                         RearAirHose.Disconnected.ShapeDescriptor = stf.ReadString();
-                    stf.SkipRestOfBlock();
+                        stf.SkipRestOfBlock();
                     }
                     else
                         RearAirHose.Disconnected.ShapeDescriptor = RearAirHose.Disconnected.ShapeFileName + "d";
@@ -2665,7 +2665,7 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-            private void UpdateTrainBaseResistance()
+        private void UpdateTrainBaseResistance()
         {
             IsBelowMergeSpeed = AbsSpeedMpS < MergeSpeedMpS;
             IsStandStill = AbsSpeedMpS < 0.1f;
@@ -2902,7 +2902,7 @@ namespace Orts.Simulation.RollingStocks
         {
             // Dtermine the starting friction factor based upon the type of bearing
             float StartFrictionLoadN = StandstillFrictionN;  // Starting friction
-
+            
             // Determine the starting resistance due to wheel bearing temperature
             // Note reference values in lbf and US tons - converted to metric values as appropriate
             // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
@@ -3036,22 +3036,22 @@ namespace Orts.Simulation.RollingStocks
             }
 
             if (WheelBearingTemperatureDegC < LowTemperature)
-                {
-                    // Set to snowing (frozen value)
+            {
+                // Set to snowing (frozen value)
                 StartFrictionInternalFactorN = LowTemperatureResistanceN;
-                }
+            }
             else if (WheelBearingTemperatureDegC > HighTemeprature)
-                {
-                    // Set to normal temperature value
+            {
+                // Set to normal temperature value
                 StartFrictionInternalFactorN = HighTemperatureResistanceN;
-                }
-                else
-                {
-                    // Set to variable value as bearing heats and cools
+            }
+            else
+            {
+                // Set to variable value as bearing heats and cools
                 float LowGrad = (LowTemperatureResistanceN - HighTemperatureResistanceN) / (LowTemperature - HighTemeprature);
                 float LowIntersect = LowTemperatureResistanceN - (LowGrad * LowTemperature);
-                    StartFrictionInternalFactorN = LowGrad * WheelBearingTemperatureDegC + LowIntersect;
-                }
+                StartFrictionInternalFactorN = LowGrad * WheelBearingTemperatureDegC + LowIntersect;
+            }
 
             // Determine the track starting resistance, based upon the axle loading of the wagon
             float LowLoadGrade = 800.0f;
