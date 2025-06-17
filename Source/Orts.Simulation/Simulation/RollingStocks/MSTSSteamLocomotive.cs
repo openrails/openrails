@@ -1325,6 +1325,35 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
         public override void Initialize()
         {
+            bool notDrivenAxle = false;
+            for (int i = 0; i < LocomotiveAxles.Count; i++)
+            {
+                var axle = LocomotiveAxles[i];
+                bool driven = false;
+                if (SteamEngines.Count > 0)
+                {
+                    foreach (var engine in SteamEngines)
+                    {
+                        if (engine.AttachedAxle == axle)
+                        {
+                            driven = true;
+                        }
+                    }
+                }
+                else if (i == 0) driven = true;
+                if (!driven)
+                {
+                    axle.DriveType = AxleDriveType.NotDriven;
+                    notDrivenAxle = true;
+                }
+            }
+            if (!notDrivenAxle)
+            {
+                var axle = new Axle(this);
+                axle.DriveType = AxleDriveType.NotDriven;
+                LocomotiveAxles.Add(axle);
+            }
+
             base.Initialize();
 
             // Create a steam engine block if none exits, typically for a MSTS or BASIC configuration
@@ -2934,8 +2963,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     ExhaustnormalisedCrankAngleRad[i] = normalisedCrankAngleRad;
                     ExhaustexhaustCrankAngleRad[i] = exhaustCrankAngleRadFor;
 
-                    
-                    if (absSpeedRefMpS > 0.001)
+                    if (Math.Abs(SteamEngines[0].AttachedAxle.AxleSpeedMpS) > 0.001)
                     {
                         if (i == 0 && ((normalisedCrankAngleRad >= exhaustCrankAngleRadFor && normalisedCrankAngleRad <= MathHelper.Pi) || (normalisedCrankAngleRad >= exhaustCrankAngleRadRev && normalisedCrankAngleRad < 2 * MathHelper.Pi )))
                         {
@@ -3166,7 +3194,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                             exhaustCrankAngleRadRev -= 2 * (float)Math.PI;
                         }
 
-                        if (absSpeedRefMpS > 0.001)
+                        if (Math.Abs(SteamEngines[1].AttachedAxle.AxleSpeedMpS) > 0.001)
                         {
                             if (i == 0 && ((normalisedCrankAngleRad >= exhaustCrankAngleRadFor && normalisedCrankAngleRad <= MathHelper.Pi) || (normalisedCrankAngleRad >= exhaustCrankAngleRadRev && normalisedCrankAngleRad < 2 * MathHelper.Pi)))
                             {
@@ -3585,28 +3613,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             for (int i = 0; i < SteamEngines.Count; i++)
             {
-
-                variable[i] = 0;
-
                 // Variable is proportional to angular speed, value of 10 means 1 rotation/second.
-                // If wheel is not slipping then use normal wheel speed, this reduces oscillations in variable1 which causes issues with sounds.
-
-                if (((Train.TrainType == Train.TRAINTYPE.PLAYER && !Train.Autopilot) || Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN) && (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics))
-                {
-                        variable[i] = Math.Abs((float)SteamEngines[i].AttachedAxle.AxleSpeedMpS / SteamEngines[i].AttachedAxle.WheelRadiusM / MathHelper.Pi * 5);
-                }
-                else 
-                // Axle code is not executed if it is an AI train, on Autopilot, or Simple adhesion or simple physics is selected. Hence must use wheelspeed in these instances
-                {
-                    if (WheelSlip)
-                        variable[i] = Math.Abs(DriveWheelSpeedMpS / SteamEngines[0].AttachedAxle.WheelRadiusM / MathHelper.Pi * 5);
-                    else
-                    {
-                        variable[i] = Math.Abs(WheelSpeedMpS / SteamEngines[0].AttachedAxle.WheelRadiusM / MathHelper.Pi * 5);
-                    }
-                }
-
-                variable[i] = ThrottlePercent == 0 ? 0 : variable[i];
+                variable[i] = ThrottlePercent == 0 ? 0 : Math.Abs((float)SteamEngines[i].AttachedAxle.AxleSpeedMpS / SteamEngines[i].AttachedAxle.WheelRadiusM / MathHelper.Pi * 5);
 
                 // overwrite Booster variable if in Idle or Run mode - gears not engaged
                 if (SteamEngines[i].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
@@ -4969,7 +4977,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         private void UpdateCylinders(float elapsedClockSeconds, float throttle, float cutoff, float absSpeedMpS, int numberofengine)
         {
             // Calculate speed of locomotive in wheel rpm - used to determine changes in performance based upon speed.
-            SteamEngines[numberofengine].DriveWheelRevRpS = absSpeedMpS / (2.0f * MathHelper.Pi * SteamEngines[numberofengine].AttachedAxle.WheelRadiusM);
+            SteamEngines[numberofengine].DriveWheelRevRpS = (float)Math.Abs(SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS) / (2.0f * MathHelper.Pi * SteamEngines[numberofengine].AttachedAxle.WheelRadiusM);
 
             DrvWheelRevRpS = SteamEngines[0].DriveWheelRevRpS; // set as one of the main engines
 
@@ -6523,8 +6531,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     // Calculate IHP
                     // IHP = (MEP x Speed (mph)) / 375.0) - this is per cylinder
 
-                    SteamEngines[numberofengine].HPIndicatedHorsePowerHP = (HPTractiveEffortLbsF * pS.TopH(Me.ToMi(AbsTractionSpeedMpS))) / 375.0f;
-                    SteamEngines[numberofengine].LPIndicatedHorsePowerHP = (LPTractiveEffortLbsF * pS.TopH(Me.ToMi(AbsTractionSpeedMpS))) / 375.0f;
+                    SteamEngines[numberofengine].HPIndicatedHorsePowerHP = (HPTractiveEffortLbsF * pS.TopH(Me.ToMi(Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS)))) / 375.0f;
+                    SteamEngines[numberofengine].LPIndicatedHorsePowerHP = (LPTractiveEffortLbsF * pS.TopH(Me.ToMi(Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS)))) / 375.0f;
 
                     // Average tractive force is calculated for display purposes as tractive force varies dramatically as the wheel rotates, and this is difficult to follow on HuD
                     SteamEngines[numberofengine].AverageTractiveForceN = AverageTractiveForce(elapsedClockSeconds, numberofengine, NumberofTractiveForceValues);
@@ -6559,7 +6567,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     // Average tractive force is calculated for display purposes as tractive force varies dramatically as the wheel rotates, and this is difficult to follow on HuD
                     SteamEngines[numberofengine].AverageTractiveForceN = AverageTractiveForce(elapsedClockSeconds, numberofengine, NumberofTractiveForceValues);
 
-                    SteamEngines[numberofengine].IndicatedHorsePowerHP = (N.ToLbf(SteamEngines[numberofengine].RealTractiveForceN) * pS.TopH(Me.ToMi(AbsTractionSpeedMpS))) / 375.0f;
+                    SteamEngines[numberofengine].IndicatedHorsePowerHP = (N.ToLbf(SteamEngines[numberofengine].RealTractiveForceN) * pS.TopH(Me.ToMi(Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS)))) / 375.0f;
                 }
 
                 // Calculate the elapse time for the steam performance monitoring
@@ -6576,17 +6584,13 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 }
 
                 // On starting allow maximum motive force to be used, unless gear is in neutral (normally only geared locomotive will be zero). Decrease force if steam pressure is not at maximum
-                if (AbsTractionSpeedMpS < 1.0f && cutoff > 0.70f && locomotivethrottle > 0.98f && MotiveForceGearRatio != 0)
+                if (Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS) < 1.0f && cutoff > 0.70f && locomotivethrottle > 0.98f && MotiveForceGearRatio != 0)
                 {
                     SteamEngines[numberofengine].RealTractiveForceN = MaxForceN * (BoilerPressurePSI / MaxBoilerPressurePSI);
                 }
 
-                if (AbsTractionSpeedMpS == 0 && cutoff < 0.05f) // If the reverser is set too low then not sufficient steam is admitted to the steam cylinders, and hence insufficient Motive Force will produced to move the train.
+                if (Math.Abs((float)SteamEngines[numberofengine].AttachedAxle.AxleSpeedMpS) == 0 && cutoff < 0.05f) // If the reverser is set too low then not sufficient steam is admitted to the steam cylinders, and hence insufficient Motive Force will produced to move the train.
                     SteamEngines[numberofengine].RealTractiveForceN = 0;
-
-                WheelSlip = false;
-                WheelSpeedMpS = SpeedMpS;
-                DriveWheelSpeedMpS = SpeedMpS;
             }
 
             #endregion
@@ -6621,11 +6625,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         {
             float locomotivethrottle = ThrottlePercent / 100;
             TractiveForceN = 0; // reset tractiveforceN in preparation to calculating a new value
-            if (!Simulator.UseAdvancedAdhesion && Simulator.Settings.SimpleControlPhysics)
-            {
-                // Simple adhesion
-                MotiveForceN = 0;
-            }
             IndicatedHorsePowerHP = 0;
             PistonSpeedFtpMin = 0;
             MaxPowerW = 0;
@@ -6639,42 +6638,32 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             AbsTractionSpeedMpS = Math.Abs(DriveWheelSpeedMpS);
 
             // Update tractive effort across all steam engines
-            for (int i = 0; i < SteamEngines.Count; i++)
+            foreach (var engine in SteamEngines)
             {
-                ApplyDirectionToTractiveForce(ref SteamEngines[i].RealTractiveForceN, i);
 
-                TractiveForceN += SteamEngines[i].RealTractiveForceN;
-
-                if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics)
+                // If booster engine tractive force will only ever be in the forward (+ve) direction
+                if (engine.AuxiliarySteamEngineType != SteamEngine.AuxiliarySteamEngineTypes.Booster)
                 {
-                    SteamEngines[i].AttachedAxle.DriveForceN = SteamEngines[i].RealTractiveForceN;
-                    UpdateAxleDriveForce();
-
-                    SteamEngines[i].DisplayTractiveForceN = SteamEngines[i].AverageTractiveForceN;
-                    DisplayTractiveForceN += SteamEngines[i].AverageTractiveForceN;
-
+                    ApplyDirectionToTractiveForce(ref engine.RealTractiveForceN);
                 }
-                else // Simple adhesion
-                {
-                    SteamEngines[i].DisplayTractiveForceN = SteamEngines[i].RealTractiveForceN;
-                    MotiveForceN += SteamEngines[i].RealTractiveForceN;
-                    DisplayTractiveForceN += SteamEngines[i].RealTractiveForceN;
 
-                }
+                TractiveForceN += engine.RealTractiveForceN;
+
+                engine.AttachedAxle.DriveForceN = engine.RealTractiveForceN;
+                engine.DisplayTractiveForceN = engine.AverageTractiveForceN;
+                DisplayTractiveForceN += engine.AverageTractiveForceN;
 
                 // Set Max Power equal to max IHP
-                MaxPowerW += W.FromHp(SteamEngines[i].MaxIndicatedHorsePowerHP);
+                MaxPowerW += W.FromHp(engine.MaxIndicatedHorsePowerHP);
 
                 // Set maximum force for the locomotive
-                MaxForceN += N.FromLbf(SteamEngines[i].MaxTractiveEffortLbf * CylinderEfficiencyRate);
+                MaxForceN += N.FromLbf(engine.MaxTractiveEffortLbf * CylinderEfficiencyRate);
 
-                IndicatedHorsePowerHP += SteamEngines[i].IndicatedHorsePowerHP;
+                IndicatedHorsePowerHP += engine.IndicatedHorsePowerHP;
                 IndicatedHorsePowerHP = MathHelper.Clamp(IndicatedHorsePowerHP, 0, IndicatedHorsePowerHP);
-
+            }
                 //TODO - identify the maximum value for display?? 
                 PistonSpeedFtpMin = SteamEngines[0].PistonSpeedFtpMin;
-
-            }
 
             // Find the maximum TE for debug i.e. @ start and full throttle
             if (AbsTractionSpeedMpS < 1.0)
@@ -6701,45 +6690,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             {
                 TractiveForceN = 0;
             }
-        }
-
-
-        /// <summary>
-        /// This function applies a sign to the motive force as a function of the direction of the train.
-        /// </summary>
-        protected override void ApplyDirectionToTractiveForce(ref float tractiveForceN, int numberofengine)
-        {
-            if (Train.IsPlayerDriven)
-            {
-                // If booster engine tractive force will only ever be in the forward (+ve) direction
-                if (SteamEngines[numberofengine].AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
-                    return;
-
-                switch (Direction)
-                {
-                    case Direction.Forward:
-                        //tractiveForceN *= 1;     //Not necessary
-                        break;
-                    case Direction.Reverse:
-                        tractiveForceN *= -1;
-                        break;
-                    case Direction.N:
-                    default:
-                        tractiveForceN *= 0;
-                        break;
-                }
-            }
-            else // for AI locomotives
-            {
-                switch (Direction)
-                {
-                    case Direction.Reverse:
-                        tractiveForceN *= -1;
-                        break;
-                    default:
-                        break;
-                }
-            }// end AI locomotive            
         }
 
 
@@ -6809,7 +6759,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         /// </summary>
         private float NormalisedCrankAngle(int enginenumber, int cylinderNumber, float crankAngleRad)
         {
-            float normalisedCrankAngleRad = (float)MathHelper.WrapAngle((float)LocomotiveAxles[enginenumber].AxlePositionRad + crankAngleRad);
+            float normalisedCrankAngleRad = (float)MathHelper.WrapAngle((float)SteamEngines[enginenumber].AttachedAxle.AxlePositionRad + crankAngleRad);
 
             if (normalisedCrankAngleRad < 0)
             {
@@ -6819,43 +6769,26 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         }
 
 
-        protected override void UpdateAxleDriveForce()
+        protected override void UpdateAxles(float elapsedClockSeconds)
         {
-            // No updates are done to Axle Drive Force in steam locomotives, unless a future slip control device is added.
-        }
-
-
-        public override void AdvancedAdhesion(float elapsedClockSeconds)
-        { 
-
-            foreach (var axle in LocomotiveAxles)
-            {
-                SteamEngine linkedEngine = null;
                 foreach (var engine in SteamEngines)
                 {
-                    if (engine.AttachedAxle == axle)
-                    {
-                        linkedEngine = engine;
-                        break;
-                    }
-                }
-                if (linkedEngine == null) continue;
-
-                if (SteamEngineType == SteamEngineTypes.Geared || linkedEngine.AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
+                var axle = engine.AttachedAxle;
+                if (SteamEngineType == SteamEngineTypes.Geared || engine.AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
                 // geared locomotive or booster locomotive
                 {
                     // Moment of Inertia (Wheel and axle) = (Mass x Radius^2) / 2.0
                     float wheelMassKG = Kg.FromLb(6000.0f);
                     float AxleMassKG = Kg.FromLb(1000.0f);
                     float AxleRadiusM = Me.FromIn(8.0f / 2.0f);
-                    float WheelMomentInertia = (wheelMassKG * linkedEngine.AttachedAxle.WheelRadiusM * linkedEngine.AttachedAxle.WheelRadiusM) / 2.0f;
+                    float WheelMomentInertia = (wheelMassKG * axle.WheelRadiusM * axle.WheelRadiusM) / 2.0f;
                     float AxleMomentInertia = (AxleMassKG * AxleRadiusM * AxleRadiusM) / 2.0f;
                     float TotalWheelMomentofInertia = WheelMomentInertia + AxleMomentInertia; // Total MoI for generic wheelset
                     float TotalMomentInertia = TotalWheelMomentofInertia;
                     axle.InertiaKgm2 = TotalMomentInertia;
  
                     // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches) - This should reduce wheel force
-                    axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersStrokeM) / (Me.ToIn(linkedEngine.AttachedAxle.WheelRadiusM * 2.0f)));
+                    axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(engine.CylindersDiameterM) * Me.ToIn(engine.CylindersDiameterM) * Me.ToIn(engine.CylindersStrokeM) / (Me.ToIn(axle.WheelRadiusM * 2.0f)));
                 }
 
                 else // normal locomotive
@@ -6869,19 +6802,19 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     float wheelMassKG = Kg.FromLb(6000.0f);
                     float AxleMassKG = Kg.FromLb(1000.0f);
                     float AxleRadiusM = Me.FromIn(8.0f / 2.0f);
-                    float WheelMomentInertia = (wheelMassKG * linkedEngine.AttachedAxle.WheelRadiusM * linkedEngine.AttachedAxle.WheelRadiusM) / 2.0f;
+                    float WheelMomentInertia = (wheelMassKG * axle.WheelRadiusM * axle.WheelRadiusM) / 2.0f;
                     float AxleMomentInertia = (AxleMassKG * AxleRadiusM * AxleRadiusM) / 2.0f;
                     float TotalWheelMomentofInertia = WheelMomentInertia + AxleMomentInertia; // Total MoI for generic wheelset
                     
                     // The moment of inertia needs to be increased by the number of wheels in each set
-                    TotalWheelMomentofInertia *= linkedEngine.AttachedAxle.NumWheelsetAxles;
+                    TotalWheelMomentofInertia *= engine.AttachedAxle.NumWheelsetAxles;
 
                     // the inertia of the coupling rods can also be added
                     // Assume rods weigh approx 1500 lbs
                     // MoI = rod weight x stroke radius^2 (ie stroke / 2)
                     float RodWeightKG = Kg.FromLb(1500.0f);
                     // ???? For both compound and simple??????
-                    float RodStrokeM = linkedEngine.CylindersStrokeM / 2.0f;
+                    float RodStrokeM = engine.CylindersStrokeM / 2.0f;
                     float RodMomentInertia = 0;
 
                     RodMomentInertia = RodWeightKG * RodStrokeM * RodStrokeM;
@@ -6891,22 +6824,23 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                     axle.DampingNs = axle.AxleWeightN / 200;
                     // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches) - This should reduce wheel force
-                    axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersDiameterM) * Me.ToIn(linkedEngine.CylindersStrokeM) / (Me.ToIn(linkedEngine.AttachedAxle.WheelRadiusM * 2.0f)));
+                    axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(engine.CylindersDiameterM) * Me.ToIn(engine.CylindersDiameterM) * Me.ToIn(engine.CylindersStrokeM) / (Me.ToIn(axle.WheelRadiusM * 2.0f)));
                 }
-
-                axle.BrakeRetardForceN = BrakeRetardForceN / LocomotiveAxles.Count;
+            }
+            foreach (var axle in LocomotiveAxles)
+            {
+                axle.BrakeRetardForceN = BrakeRetardForceN * axle.BrakeForceFraction;
                 axle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
-                axle.WheelRadiusM = linkedEngine.AttachedAxle.WheelRadiusM;
                 axle.WheelDistanceGaugeM = TrackGaugeM;
                 axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
                 axle.BogieRigidWheelBaseM = RigidWheelBaseM;
-                axle.CurtiusKnifflerZeroSpeed = ZeroSpeedAdhesionBase;
-                
             }
             
             LocomotiveAxles.Update(elapsedClockSeconds);
 
-            MotiveForceN = LocomotiveAxles.CompensatedForceN;
+            TractiveForceN = LocomotiveAxles.DriveForceN;
+            MotiveForceN = LocomotiveAxles.AxleMotiveForceN;
+            BrakeForceN = LocomotiveAxles.AxleBrakeForceN;
 
             if (LocoNumDrvAxles <= 0)
             {
@@ -6923,7 +6857,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             }
 
             // This enables steam locomotives to have different speeds for driven and non-driven wheels.
-            if (SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)
+            if (SteamEngineType != SteamEngineTypes.Geared)
             {
                 DriveWheelSpeedMpS = (float)LocomotiveAxles[0].AxleSpeedMpS;
                 WheelSpeedMpS = SpeedMpS;
@@ -8847,7 +8781,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         Simulator.Catalog.GetString("Eng#:"),
                         i + 1,
                         Simulator.Catalog.GetString("AForceN"),
-                        FormatStrings.FormatForce(SteamEngines[i].AttachedAxle.CompensatedAxleForceN, IsMetric),
+                        FormatStrings.FormatForce(SteamEngines[i].AttachedAxle.AxleMotiveForceN, IsMetric),
                         Simulator.Catalog.GetString("Tang(t)"),
                         FormatStrings.FormatForce(SteamEngines[i].RealTractiveForceN, IsMetric),
                         Simulator.Catalog.GetString("Static"),

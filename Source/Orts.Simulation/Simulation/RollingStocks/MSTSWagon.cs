@@ -172,7 +172,7 @@ namespace Orts.Simulation.RollingStocks
         public float SlipWarningThresholdPercent = 70;
         public MSTSNotchController WeightLoadController; // Used to control freight loading in freight cars
 
-        public Axles LocomotiveAxles; // Only used at locomotives for efficiency
+        public Axles LocomotiveAxles;
 
         // Colours for smoke and steam effects
         public Color ExhaustTransientColor = Color.Black;
@@ -395,9 +395,7 @@ namespace Orts.Simulation.RollingStocks
             if (File.Exists(orFile))
                 wagFilePath = orFile;
 
-            using (STFReader stf = ConsistGenerator.IsWagonRecognized(wagFilePath)
-                ? new STFReader(ConsistGenerator.GetWagon(wagFilePath), wagFilePath, System.Text.Encoding.UTF8, true)
-                : new STFReader(wagFilePath, true))
+            using (STFReader stf = new STFReader(wagFilePath, true))
             {
                 while (!stf.Eof)
                 {
