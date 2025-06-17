@@ -100,20 +100,20 @@ itself moves, the approach has proven insufficient for more complicated rail
 vehicles such as articulated steam locomotives.
 
 .. index::
-   single: ORTSShapeHierarchy
+   single: ShapeHierarchy
 
 To facilitate lighting on such locomotives and wagons, Open Rails now allows
 for attachment of lights to any sub-object of the shape file. With the
-``ORTSShapeHierarchy`` token placed in a ``Light ()`` block, the object the light
-will rotate and translate with can be defined using the matrix name of said
-object. Tools such as Shape Viewer can be used to determine the matrix name
+``ShapeHierarchy`` token placed in a ``Light ()`` block, the object the light
+will rotate and translate with can be defined using the hierarchy name of said
+object. Tools such as Shape Viewer can be used to determine the hierarchy name
 of a particular object in the shape file. For example, *"BOGIE1"* is the standard
 name for the frontmost bogie. A light attached to this bogie could be created
 like so::
 
 	Light	(
 		comment( CNDR Side Front Truck Light )
-		ORTSShapeHierarchy ( "BOGIE1" )
+		ShapeHierarchy ( "BOGIE1" )
 		States	(	1
 			State	(
 				LightColour ( 91fedf91 )
@@ -127,11 +127,11 @@ like so::
 Be aware that the ``Position`` of a light is measured relative to the center of
 the object to which the light is attached, not to the center of the locomotive
 itself. Furthermore, the naming of shape parts is not consistent between all
-shape files. If the shape name entered in ``ORTSShapeHierarchy`` is invalid, a
+shape files. If the shape name entered in ``ShapeHierarchy`` is invalid, a
 warning will be produced in the log file and the light will attach to the
 main body of the locomotive or wagon.
 
-If ``ORTSShapeHierarchy`` is not specified in a light, the light will attach
+If ``ShapeHierarchy`` is not specified in a light, the light will attach
 to the main body of the locomotive or wagon by default.
 
 .. _features-light-conditions:
@@ -403,436 +403,6 @@ OR supports tilting trains. A train tilts when its .con file name contains the
 
 .. image:: images/features-tilting.png
 
-Features to assist content creation
-===================================
-
-OR now includes some features that don't change the functionality of rolling stock, but simplify
-some steps of the content creation process or allow more control over content than was previously
-possible. The goal of these features is to save content creators' time, give additional power to
-creators, and to simplify the installation process for end users.
-
-Runtime shape manipulation
---------------------------
-
-.. _features-shape-manipulation:
-
-MSTS shape files can be clunky to work with due to the proprietary nature of the file format
-and the limitations of the tools available to manipulate them. Even when a shape has been
-manipulated, it's often not appropriate to redistribute those changes (unless the end user
-is to replicate the manipulation themselves) to avoid plagarism. To improve this, OR now
-supports additional ways to manipulate shape file data in memory without editing the original
-shape.
-
-Customizable Shape Descriptors
-''''''''''''''''''''''''''''''
-
-These features use the shape descriptor (.sd) file to provide the information needed to change
-the shape file data at runtime. The .sd file can be edited in plain text in standard text editors,
-and there is no risk of plagarism when including .sd files in a download, so changes can be
-made and distributed easily. However, it may be desired to use a different .sd file than the
-default one (the .sd default file has the same name as the .s file) out of a desire to not overwrite
-the original, or to re-use the same shape file repeatedly with different data, saving file space.
-To facilitate this, most places in wagons and engines where a .s file can be specified now accept 
-an additional input to *specify a different .sd file than the default*.
-
-For example, ``WagonShape ( "dash9.s" "dash9_reskin.sd" )`` would load the dash9 shape, but
-instead of loading dash9.sd, would load dash9_reskin.sd and apply any settings in that alternate .sd file.
-Similar can be applied to ORTS freight animations (not MSTS freight animations), passenger views,
-3D cabs, and animated couplers. Note that both the .s and .sd file specified can be
-in a different folder from the .eng or .wag by using relative file paths. If only the .s file is
-given, OR will assume the .sd file has the same name as the given .s file, just like MSTS. OR does
-not require .sd files to function, so if the .sd file is missing OR will continue with default settings.
-
-While .sd file replacement is currently unique to engines and wagons, the new features inside .sd files
-can be applied to any .sd file, including scenery.
-
-.. index::
-   single: ESD_ORTSTextureReplacement
-
-Texture Replacement
-'''''''''''''''''''
-
-Perhaps one of the most useful additional shape descriptor features is the ability to replace the
-textures used by a shape without editing, copying, or even moving the shape file. To achieve this,
-add the ``ESD_ORTSTextureReplacement`` parameter to the .sd file, and enter texture names in the
-format ``ESD_ORTSTextureReplacement ( OriginalTexture.ace ReplacementTexture.ace )``. Any
-OriginalTexture not specified won't be changed, and if the shape doesn't have a texture specified,
-then a warning message is produced. This works with both .ace and .dds textures. Multiple
-textures can be replaced in one go by adding additional pairs of textures::
-
-    SIMISA@@@@@@@@@@JINX0t1t______
-
-    shape ( BNSF_C44_9W_4614.s
-        ESD_Detail_Level ( 0 )
-        ESD_Alternative_Texture ( 0 )
-        ESD_Bounding_Box ( -1.632 -0.095 -11.05 1.684 4.628 11.05 )
-        ESD_ORTSTextureReplacement (
-            "BNSF_C449W_4410a.dds"    "BNSF_C449W_4614a.dds"
-            "BNSF_C449W_4410b.dds"    "BNSF_C449W_4614b.dds"
-        )
-    )
-
-This would reskin BNSF 4410 into BNSF 4614 *without any need to edit the original shape*. Remember
-to reference the original .s file, but with a custom .sd file ``WagonShape ( "..\\BNSF_MULLAN_GE_ENGINES\\BNSF_C44_9W_4410.s" 
-"BNSF_C44_9W_4614.sd" )`` so that the original shape file doesn't need to be copied. It is recommended
-that content creators making multiple skins of a new model, or reskinning an existing model, use this
-method to provide different textures for different engines/wagons as only one copy of the shape file is
-needed, reducing install size and simplifying installation as users don't need to move/copy/edit any
-shape files.
-
-.. index::
-   single: ESD_ORTSShaderReplacement
-
-Shader Replacement
-''''''''''''''''''
-
-Similarly, it may be desired to replace the shaders used by a shape file in order to, for example, allow
-transparency to be applied to the shape and "alpha out" certain components. To change the shaders, add
-``ESD_ORTSShaderReplacement ( id ShaderName )`` where "id" is the integer index of the shader, starting from
-0, and "ShaderName" is the name of the new shader to use at this index. If an invalid shader index is given
-(eg: a negative number, or a number bigger than the max index), then a warning will be added to the log
-and the missing index will be skipped. Determining the order of shaders generally requires decompressing the
-shape file and looking at the ``shader_names`` block near the top of the file. The ``named_shader`` at the
-top of the list has an index of 0, the next one down has an index of 1, and so on. The accepted shader names are
-``Tex`` (fullbright), ``TexDiff`` (diffuse lighting), ``BlendATex`` (fullbright with transparency), ``BlendATextDiff``
-(diffuse with transparency), ``AddATex`` (fullbright with x-ray transparency), ``AddATexDiff`` (diffuse with x-ray
-transparency), and all are case-sensitive. If an invalid shader name is given a warning will be added to the log.
-
-For example, the US2BSignal2.s shape included with Marias Pass uses one shader, the ``TexDiff`` shader. This
-disallows transparency. If, for any reason, transparency were desired on this shape, the shape descriptor file
-could be edited as follows::
-
-    SIMISA@@@@@@@@@@JINX0t1t______
-
-    shape ( US2BSignal2.s
-        ESD_Detail_Level ( 0 )
-        ESD_Alternative_Texture ( 0 )
-
-        Comment ( Change the first, and only, shader to allow for transparency. )
-        ESD_ORTSShaderReplacement ( 0 "BlendATexDiff" )
-    )
-
-
-Like replacing textures, if multiple shaders are to be modified, all can be added in a single ``ESD_ORTSShaderReplacement``
-parameter by specifying additional pairs of indices and shader names. Note that changing shaders in this manner will
-change the shader for *all* sub objects linked to that shader. Changing the shader of an individual sub object from
-inside the .sd file is impractical, so an alternate method may be required if additional specificity is desired.
-
-Translation Matrix Modification
-'''''''''''''''''''''''''''''''
-
-All shape files are organized into one or more *sub objects*, where each sub object is positioned/scaled/rotated
-relative to the other sub objects using a *transformation matrix*, which are the named parts of the
-shape that can be seen in shape viewing utilities. A consequence of this is that the
-position/scale/rotation of a sub object can be changed without changing any of the 3D data used
-to draw the sub object. This can be useful to correct errors in the position/scale/rotation
-of the whole, or part of, a model without changing a tremendous amount of data.
-
-.. index::
-   single: ESD_ORTSMatrixTranslation
-   single: ESD_ORTSMatrixScale
-   single: ESD_ORTSMatrixRotation
-
-- To change the position of a sub object, use ``ESD_ORTSMatrixTranslation ( MATRIX x y z )`` where
-  ``MATRIX`` is the name of the matrix and ``x y z`` are respectively the +right/-left, +up/-down,
-  and +front/-back offsets from the original position, measured in units of distance (meters by default).
-- To change the scale (size) of a sub object, use ``ESD_ORTSMatrixScale ( MATRIX x y z )`` where
-  ``MATRIX`` is the name of the matrix and ``x y z`` are the horizontal, vertical, and lengthwise
-  scale factors from the original scale. Scale factors larger than 1 increase size in that dimension,
-  between 0 and 1 reduce size, and negative scale factor mirrors the object in that dimension.
-- To change the rotation of a sub object, use ``ESD_ORTSMatrixRotation ( MATRIX y p r )`` where
-  ``MATRIX`` is the name of the matrix and ``y p r`` are the yaw (+left/-right), pitch (+up/-down)
-  and roll (+ccw/-cw) angle change from the original rotation, measured in radians by default. The ``deg``
-  unit suffix can be used to give angles in degrees.
-
-Only one of each type of parameter can be provided for each matrix. If all 3 transformations are
-applied to a matrix, they will be applied in the order of *translation, scale, then rotation*.
-An important consideration when manipulating these properties of transformation matrices is that
-the transformation will also be applied to any sub objects *below* the current matrix in the hierarchy.
-The transformation also affects 3D interiors, particle emitters, lights, and sounds attached to any
-affected sub objects.
-Should the transformation be desired only for something higher in the hierarchy, an equal but opposite
-transformation would be required on the lower-level sub object. It should also be considered that
-changes made to matrices are not purely graphical and could have consequences with some simulation
-systems. Extreme settings may break simulation behavior.
-
-Shape Hierarchy Manipulation
-''''''''''''''''''''''''''''
-
-The hierarchy of a shape file is particularly important in representing the physical structure
-of the depicted object. Each sub object has a single parent sub object, except for the MAIN object which
-is ultimately the (grand)parent of all sub objects. When a sub object's parent moves or rotates,
-the sub object will move or rotate in exactly the same way (after which, its own motion or rotation
-may be added on), which represents some physical connection (such as a hinge or bearing) to the parent
-object. As such, improper hierarchy definition results in unusual or outright missing connections
-between components, such as connecting rod that doesn't move along with the wheels it is supposed to
-be attached to. The hierarchy of the shape can be determined using shape viewing utilities, and
-the correct hierarchy is described in various content creation tutorials for MSTS and OR.
-
-.. index::
-   single: ESD_ORTSMatrixParent
-
-To fix such broken hierarchies without editing the shape file, ``ESD_ORTSMatrixParent ( MATRIXNAME PARENTNAME )``
-can be added to the Shape ( block of the shape descriptor file. The hierarchy will be changed such that
-the matrix called "MATRIXNAME" will have its parent in the hierarchy changed to the matrix called
-"PARENTNAME". If either matrix name can't be found in the shape, a warning will be added to the log file and the
-hierarchy will remain unchanged. It's also possible to cause an infinite loop in the hierarchy where an
-object is its own parent or grandparent; each sub object should have only one chain of parents and grandparents
-that eventually leads back to the MAIN object. Should the configuration cause an infinite loop, a warning will
-be added to the log file. Note that OR won't be able to tell which specific change causes an invalid hierarchy
-as each hierarchy change can influence other hierarchy changes.
-
-As an example, this shape had a hierarchy where every sub object was a child of the main object, breaking
-bogie animations which require wheels to be children of the bogie, not of the main object. With some
-manipulation in the .sd file, the correct hierarchy could be implemented, fixing the bogie animation::
-
-    SIMISA@@@@@@@@@@JINX0t1t______
-
-    Shape ( RhB_Rew_8262.s
-        ESD_Detail_Level ( 0 )
-        ESD_Software_DLev ( 3 )
-        ESD_Alternative_Texture ( 0 )
-        ESD_Bounding_Box ( -1.32 0.1 -8.05 1.32 2.88 8.05 )
-	
-        Comment ( Correcting hierarchy so wheels are below bogies. )
-        ESD_ORTSMatrixParent (
-            WHEELS11 BOGIE1
-            WHEELS12 BOGIE1
-            WHEELS21 BOGIE2
-            WHEELS22 BOGIE2
-        )
-	
-        Comment ( Correcting position offset of wheels due to hierarchy change. )
-        ESD_ORTSMatrixTranslation ( WHEELS11 0m -0.426m -5.45m )
-        ESD_ORTSMatrixTranslation ( WHEELS12 0m -0.426m -5.45m )
-        ESD_ORTSMatrixTranslation ( WHEELS21 0m -0.426m  5.45m )
-        ESD_ORTSMatrixTranslation ( WHEELS22 0m -0.426m  5.45m )
-    )
-
-Note how multiple parent/child relationships can be changed at once by specifying additional pairs of
-matrix names, and that changing the hierarchy required adjusting the translation of many sub objects in order
-for them to appear in the intended locations. The location of a sub object is measured relative to its parent,
-so if the sub object parent is changed, it's position in the 3D world will change as well (unless corrected for,
-as was done here).
-
-Hiding Sub Objects
-''''''''''''''''''
-
-.. index::
-   single: ESD_ORTSObjectVisibility
-
-In some cases, it may be desired to simply disable rendering of some shape sub objects (for example,
-preventing low-poly objects from being rendered so they can be replaced with higher-poly freight
-animations). To achieve this, ``ESD_ORTSObjectVisibility'' may be added to to the Shape ( block of the
-shape descriptor file. ``ESD_ORTSObjectVisibility ( MATRIXNAME 0/1 )`` will take rendering of all
-sub objects controlled by the matrix called "MATRIXNAME" and make them visible if the second input is not 0,
-or invisible if the second input is 0. Note that 1 (the object is visible) is the default setting for all objects.
-If an object is set to be invisible, data for that object will not be sent to the GPU, saving render time,
-but any CPU calculations such as animations will still be applied to the sub object(s) and ``ORTSShapeHierarchy``
-can still be used to attach lights, freight animations, sounds, particles, etc to the object while invisible.
-Similarly, anything attached to a different matrix (regardless if that matrix is above or below the one made
-invisible) will remain visible and simulated unless specified otherwise.
-
-As an example, we can hide all the (low poly) wheels of an old locomotive in order to replace the wheels with
-(high poly) freight animations using the ORTSShapeHierarchy feature of :ref:`ORTS freight animations<orts-freight-anims>`::
-
-    SIMISA@@@@@@@@@@JINX0t1t______
-
-    shape ( SF_FP45_93.s
-        ESD_Detail_Level ( 0 )
-        ESD_Software_DLev ( 2 )
-        ESD_Alternative_Texture ( 0 )
-        ESD_Bounding_Box ( -1.632 -0.095 -10.99 1.684 4.628 10.99 )
-	
-        Comment ( Disable rendering, but not simulation, of all wheels. )
-        ESD_ORTSObjectVisibility (
-            WHEELS11 0
-            WHEELS12 0
-            WHEELS13 0
-            WHEELS21 0
-            WHEELS22 0
-            WHEELS23 0
-        )
-    )
-
-Note that, similar to other parameters, multiple objects can be hidden in one parameter by adding additional
-pairs of matrix names and 1/0 values. If a matrix name can't be found, the missing matrix will be skipped and
-a warning will be added to the log.
-
-This feature can also be used by freight animations directly using the ``ReplaceObject`` parameter; an ORTS freight
-animation with this parameter will disable rendering of the original object to which it is attached whenever the
-freight animation is visible. When used in combination with the ``ShapeHierarchy`` ORTS freight animation parameter,
-the freight animation can be used to effectively replace specific components of the original model without editing
-the .sd file. Users are encouraged to experiment with whichever approach works best.
-
-Transformation Matrix Name Changes
-''''''''''''''''''''''''''''''''''
-
-.. index::
-   single: ESD_ORTSMatrixRename
-
-The name of the transformation matrix is itself important for simulator behaviors, particularly
-animations and determining the structure of rolling stock. Should a matrix be named incorrectly,
-or a change in behavior be desired, a matrix can be renamed using ``ESD_ORTSMatrixReanme ( OLDNAME NEWNAME )``
-in the .sd file. OR will scan for any matrix "OLDNAME" and change the name to "NEWNAME". If no
-matrix with the old name can be found, a warning will be produced and nothing will change. Note
-that the matrix rename step occurs *after* the previously described matrix modifications, so
-the old matrix name must be used by any other .sd parameters that require a matrix name.
-
-LOD Distance Override
-'''''''''''''''''''''
-
-Shape files are generally products of the time they were created, and this includes the level of
-detail distances used. Even if the complexity of the shape is the same, modern shapes tend to
-use longer LOD distances than their legacy counterparts, which can lead to visual inconsistenty.
-The :ref:`"level of detail bias" option<options-lod-bias>` can be used to extend the LOD distance
-of *all* shapes, but this would not solve the inconsistency between shapes.
-
-.. index::
-   single: ESD_ORTSLODOverride
-
-To resolve this without editing shape files themsleves, the ``ESD_ORTSLODOverride ( LODindex LODdistance )``
-parameter can be used in the shape descriptor file to set the LOD distance of the LOD at ``LODindex`` to a value
-of ``LODdistance``, where LODindex is an integer specifying which LOD to edit (NOTE: LOD 0 is the closest LOD, LOD 1 is
-the second closest, and so on) and LODdistance is a decimal measured in units of distance (default meters) specifying
-the maximum view distance of the LOD. The number of LODs and their default distances can be seen in shape viewing programs.
-
-As an example, a shape from 2011 has LOD distances of 100m, 300m, 700m, and 2000m. Because the shape was already of high
-quality, a later product from 2020 used the same shape but with upgraded textures and LODs bumped to 300m, 750m, 1000m and 2000m.
-To upgrade the old shape LOD to match the new shape, the following shape descriptor could be used::
-
-    SIMISA@@@@@@@@@@JINX0t1t______
-
-    Shape ( 50ft_BOX_BNSF722974.s 
-        ESD_Detail_Level ( 0 ) 
-        ESD_Software_DLev ( 3 ) 
-        ESD_Alternative_Texture ( 0 ) 
-        ESD_Bounding_Box ( 
-            -1.539  0.61059 -8.08
-            1.549   3.54    8.08 ) 
-
-        Comment ( New addition: LOD improvement )
-        ESD_ORTSLODOverride (
-            0 300m
-            1 750m
-            2 1000m
-        )
-    ) 
-
-
-Observe how multiple LODs can be edited with a single parameter by specifying additional pairs of LOD indices and distances,
-and how not all LODs need to be present (LOD 3 is 2000m on both the old and new shape, so doesn't need to be changed).
-If a given shape does not have the LOD index specified (eg: LOD 4 does not exist on this shape, as the shape only has 4 LODs)
-then a warning is added to the log and the missing LOD is skipped.
-
-Automatic wagon size calculation
---------------------------------
-
-Determining the appropriate values to enter in the ``Size ( w, h, l )`` parameter of an engine or
-wagon can be tedious, as reasonable settings for the simulated width, height, and length of rolling
-stock depend on measurements of the 3D model used. Many content creators have entered largely
-arbitrary values of width and height into the size parameter, only adjusting the length value to
-give correct coupler alignement.
-
-.. index::
-   single: ORTSAutoSize
-
-To simplify this process, and produce more reasonable dimensions for rolling stock, OR can now
-automatically calculate the dimensions of rolling stock based on the shape file used. Enter
-``ORTSAutoSize`` in the Wagon section of an engine or wagon to allow OR to determine
-the width, height, and length of the rolling stock based on the dimensions of the main shape file,
-ignoring any values entered manually in the MSTS Size parameter.
-
-``ORTSAutoSize`` accepts 3 (optional) arguments, default units in meters, corresponding to offsets from the
-shape's width, height, and length respectively. For example, ``ORTSAutoSize ( 0.1m, -0.2m, -0.18m )``
-would tell OR to automatically determine the wagon's dimensions from the shape file, then subsequently
-add 0.1 meters to the width, subtract 0.2 meters from the height, and subtract 0.18 meters from the length,
-using the resulting values to set the simulated size of the wagon. In most cases, the width and height
-arguments can be set to 0, and the length argument adjusted to produce the desired coupler spacing. If
-no arguments are specified (ie: ``ORTSAutoSize ()`` was entered in the Wagon section) then all three
-offsets are assumed to be 0 meters.
-
-Note that automatic sizing uses the nearest LOD of the main shape file and attached freight animations. LODs for further
-distances have no effect on the automatic sizing. Freight animations using the ``ShapeHierarchy`` feature are also
-skipped due to potential unintended behaviors. :ref:`Shape descriptor overrides <features-shape-manipulation>`
-are also not considered at this phase, so if any changes are made in the .sd file, this feature may not provide
-good results. This method also works best for rolling stock with standard buffers/couplers on each end.
-Automatic sizing generally can't produce reasonable results for articulated rolling stock. And should something go
-wrong with the shape file causing automatic sizing to fail, OR will revert to the values entered in the ``Size`` parameter.
-
-Improved wagon alignment tools
-------------------------------
-
-Many MSTS and OR creators have encountered rolling stock shapes that were not correctly aligned,
-resulting in couplers/buffers clipping at one end of the wagon and separating at the other end.
-Normally, this would require inspecting the 3D model to determine exactly how off-center it was
-and carefully setting the Z value of ``CentreOfGravity ( x, y, z )`` to re-center the model.
-
-.. index::
-   single: ORTSCentreOfGravity_X
-   single: ORTSCentreOfGravity_Y
-   single: ORTSCentreOfGravity_Z
-
-In some cases, this approach could still be insufficient as the Z offset is limited to 2 meters in
-order to prevent unusual behaviors with some MSTS models that used unreasonably large Z offsets.
-To facilitate models that need large offsets without introducing errors, OR now has parameters
-to define the CoG dimensions individually without any artifical limits added afterward.
-To set the horizontal, vertical, and lengthwise CoG offset ``ORTSCentreOfGravity_X``, ``ORTSCentreOfGravity_Y``,
-and ``ORTSCentreOfGravity_Z`` respectively can be entered in the Wagon section of an engine or wagon.
-
-If placed later in the file than the original ``CentreOfGravity`` parameter, the data entered in the X/Y/Z
-parameters will overwrite the original data, but only for the specific X/Y/Z component provided. For
-example, if ``ORTSCentreOfGravity_Z ( -1m )`` is placed after ``CentreOfGravity ( 0m 2.5m 0.5m )`` the
-resulting CoG offset will actually be 0m, 2.5m, -1m, overwriting the original 0.5m Z offset while
-leaving the X and Y components unchanged.
-
-.. index::
-   single: ORTSAutoCenter
-
-However, in many cases it is desireable to simply center the 3D model lengthwise such that the
-couplers/buffers are equidistant from the centerpoint of the model. To make this specific case
-easier, OR now includes the ``ORTSAutoCenter`` parameter. When ``ORTSAutoCenter ( 1 )``
-is included in the Wagon section of an engine or wagon, OR will inspect the main shape file used by
-the wagon to determine the exact Z value of CentreOfGravity required to re-center the shape in the
-simulation. This will overwrite the manually entered Z component of ``CentreOfGravity`` but will
-not change the X or Y components. Should no re-centering be required, none will be applied.
-
-Some rolling stock will not align correctly when auto-centered. As with ``ORTSAutoSize``, this
-feature should be employed on rolling stock with standard buffers or couplers, and will
-not produce suitable results for articulated rolling stock or stock with different coupler
-types at each end. Only the highest detail LOD of the main shape and freight animations are
-used, the .sd file is not checked. If the process fails, a warning will be written to the
-log and the automatic calculation will be skipped.
-
-Advanced articulation control
------------------------------
-
-A wide variety of modern rolling stock uses articulation, in which multiple rail vehicles
-share a single "Jacobs Bogie". Open Rails offers partial support for such passenger and
-freight units by allowing one wagon to include a bogie in its 3D model while the next
-wagon removes the bogie from its 3D model. Ideally, OR will then add an invisible bogie
-to the end of the wagon without the bogie to emulate "sharing" the bogie with the previous
-wagon.
-
-However, this automatic system is limited. OR will check for wheels in the wagon's 3D
-model and will assume the wagon is articulated at one end if there are no wheels towards
-that end of the 3D model. This approach will only be used on 3D models with 3, 2, or 0 axles
-(the 1-axle case is excluded for compatibility reasons) and won't be used on locomotives.
-In some cases, this approach will result in false negative or false positive detection
-of articulation. Should the automatic articulation method not produce the expected track
-following behavior, it is now possible to manually define whether a wagon or engine
-should use the articulation behavior.
-
-.. index::
-   single: ORTSFrontArticulation
-   single: ORTSRearArticulation
-
-To forcibly enable the articulation behavior at the front of the rail vehicle, use
-``ORTSFrontArticulation ( 1 )`` and at the rear use ``ORTSRearArticulation ( 1 )``.
-Conversely, use ``ORTSFrontArticulation ( 0 )`` or ``ORTSRearArticulation ( 0 )`` to
-force disable articulation behavior. Entering a value of -1 provides the default
-automatic behavior.
-
 Freight animations and pickups
 ==============================
 
@@ -876,8 +446,6 @@ Other Vehicles:
 OR specific freight animations and pickups
 ------------------------------------------
 
-.. _orts-freight-anims:
-
 General
 '''''''
 
@@ -892,71 +460,58 @@ Following are the native features Open Rails offers:
 
 - two types of OR freightanims: continuous and static
 - continuous OR freightanims are related to commodity loads, like coal, or 
-  stones: the visual load level in the trainset varies accordingly to the amount of load
-- static OR freightanims are additional shapes that can be attached to the main
-  trainset shape. Such shapes can represent any 3D items desired as additions to the
-  main shape, not just commodity loads. Such shapes may also include an animation (independent 
-  from train behaviour)
+  stones: the load level in the trainset varies accordingly to the amount of load
+- static OR freightanims are in fact additional shapes that can be attached to 
+  the main trainset shape. Such shapes may also include an animation (independent 
+  from train behaviour);
 - both types of OR freightanims can be present in the same trainset, and can 
   coexist with original MSTS freight animations
-- both types of OR freightanims can be attached simultaneously, and can be used
-  on locomotives or wagons
+- both types of OR freightanims can be related to locomotives or wagons
 - more than one static OR freightanim can be present in a single trainset
-- a wagon can be loaded with different commodities, represented by different
-  continuous freightanims, but only one can be active at a given moment
+- a wagon can be loaded with different commodities in different moments
 - commodities can be loaded (in pickup stations) and unloaded (in unloading 
-  stations)
+  stations).
 - wagons supporting continuous OR freightanims may be provided with a physical 
   animation that is triggered when unloading the wagon (like opening its bottom or 
   fully rotating)
 - OR freightanims are defined with an ``ORTSFreightAnims ()`` block within the .wag 
-  or within the wagon section of an .eng file. If applied to a pre-existing locomotive
-  or wagon, is suggested that this block be defined within an include file as
-  described :ref:`here <physics-inclusions>`.
+  or within the wagon section of an .eng file. It is suggested that this block 
+  be defined within an include file as described :ref:`here <physics-inclusions>`.
 
 Continuous OR Freightanims
 ''''''''''''''''''''''''''
 
 A description of this feature is best achieved by showing an example of an 
-include file, (in this case modifying an existing wagon named ``AECX1636.wag``
-with the .inc file located in an Openrails subfolder within the wagon's folder). Note that
-the first line of the include file must be blank.:: 
+include file, (in this case named ``AECX1636.wag`` and located in an Openrails 
+subfolder within the wagon's folder). Note that the first line of the file must 
+be blank.:: 
 
     include ( ../AECX1636.wag )
 
     Wagon (
-        ORTSFreightAnims (
-            MSTSFreightAnimEnabled ( 0 )
-            WagonEmptyWeight ( 22t )
-            IsGondola ( 1 )
-            UnloadingStartDelay ( 7 )
-            FreightAnimContinuous (
-                SubType ( Default )
+        ORTSFreightAnims
+        (
+            MSTSFreightAnimEnabled (0)
+            WagonEmptyWeight(22t)
+            IsGondola(1)
+            UnloadingStartDelay (7)
+            FreightAnimContinuous
+            (
                 IntakePoint ( 0.0 6.0 FreightCoal )
-                Shape ( Coal.s )
-                Offset ( 0 0 0 )
-                Flip ( 0 )
-                ShapeHierarchy ( "MAIN" )
-                Visibility ( "Outside" )
-                MaxHeight ( 0.3 )
-                MinHeight ( -2.0 )
-                FreightWeightWhenFull ( 99t )
-                ReplaceObject ( 0 )
-                FullAtStart ( 0 )
+                Shape(Coal.s)
+                MaxHeight(0.3)
+                MinHeight(-2.0)
+                FreightWeightWhenFull(99t)
+                FullAtStart(0)
             )
-            FreightAnimContinuous (
-                SubType ( Default )
+            FreightAnimContinuous
+            (
                 IntakePoint ( 0.0 6.0 FuelCoal )
-                Shape ( Coal.s )
-                Offset ( 0 0 0 )
-                Flip ( 0 )
-                ShapeHierarchy ( "MAIN" )
-                Visibility ( "Outside" )
-                MaxHeight ( 0.3 )
-                MinHeight ( -2.0 )
-                FreightWeightWhenFull ( 99t )
-                ReplaceObject ( 0 )
-                FullAtStart ( 0 )
+                Shape(Coal.s)
+                MaxHeight(0.3)
+                MinHeight(-2.0)
+                FreightWeightWhenFull(99t)
+                FullAtStart(0)
             )
         )
     )
@@ -974,102 +529,60 @@ followed by the description of the OR freightanims. Here below the general
 parameters are described:
 
 - ``MSTSFreightAnimEnabled`` specifies if eventual MSTS freight animations within 
-  the trainset are enabled ( 1 ) or not ( 0 ). This is useful if one wants to use a 
+  the trainset are enabled (1) or not (0). This is useful if one wants to use a 
   wagon where the load is already shown with a (static) MSTS freight animation. In 
-  such a case the MSTS freight animation must be disabled in order to use the OR 
-  freightanim to adjust vertical position of the freight shape. 
+  such a case the MSTS freight animation must be disabled, to use the OR 
+  freightanim, that allows to modify the vertical position of the freight shape. 
 - ``WagonEmptyWeight`` defines the mass of the wagon when empty. If the parameter 
   is missing, the weight of the load is not considered and the weight of the 
-  wagon is always the value present in the root .eng/.wag file.
-- ``IsGondola`` when set to ( 1 ) specifies the load has to be rotated 
+  wagon is always the value present in the root .eng file.
+- ``IsGondola`` specifies (in case it is set to 1) if the load has to be rotated 
   during unloading, as happens in a gondola wagon. If absent the parameter is set 
   to 0.
 - ``UnloadingStartDelay`` specifies, if present, after how many seconds after 
   pressing of the T key the unloading starts. This is due to the fact that some 
-  time may be needed before the wagon is in position to unload. For 
+  seconds may be needed before the wagon is set in a unloading layout. For 
   example, a gondola must rotate more than a certain number of degrees before the 
   load begins to fall down.
 
 There may be more than one ``FreightAnimContinuous`` subblock, one for each 
-possible load type, though only one continuous load can be present at any given
-moment. The parameters of the subblock are described below:
+possible load type. The parameters of the subblock are described below:
 
 .. index::
-    single: SubType
-    single: IntakePoint
-    single: FreightGrain
-    single: FreightCoal
-    single: FreightGravel
-    single: FreightSand
-    single: FuelWater
-    single: FuelCoal
-    single: FuelDiesel
-    single: FuelWood
-    single: FuelSand
-    single: FreightGeneral
-    single: FreightLivestock
-    single: FreightFuel
-    single: FreightMilk
-    single: SpecialMail
-    single: Shape
-    single: Offset
-    single: Flip
-    single: ShapeHierarchy
-    single: Visibility
-    single: MaxHeight
-    single: MinHeight
-    single: FreightWeightWhenFull
-    single: FullAtStart
+   single: IntakePoint
+   single: FreightGrain
+   single: FreightCoal
+   single: FreightGravel
+   single: FreightSand
+   single: FuelWater
+   single: FuelCoal
+   single: FuelDiesel
+   single: FuelWood
+   single: FuelSand
+   single: FreightGeneral
+   single: FreightLivestock
+   single: FreightFuel
+   single: FreightMilk
+   single: SpecialMail
+   single: Shape
+   single: MaxHeight
+   single: MinHeight
+   single: FreightWeightWhenFull
+   single: FullAtStart
 
-- ``SubType`` is used to indicate if a freightanim is a ``container`` to be manged
-  by the :ref:`container system<features-containers>` or a standard ``default``
-  freightanim. If not defined, the type is assumed to be default.
 - ``IntakePoint`` has the same format and the same meaning of the IntakePoint 
   line within the standard MSTS freight animations. Following types of loads are 
   accepted: FreightGrain, FreightCoal, FreightGravel, FreightSand, FuelWater, 
   FuelCoal, FuelDiesel, FuelWood, FuelSand, FreightGeneral, FreightLivestock, 
   FreightFuel, FreightMilk, SpecialMail. All these types of loads can be defined. 
   Some of the pickup types (to right of FuelDiesel) need to be coded in W text files. 
-- ``Shape`` defines the file path and name of the shape to be displayed for the load
-- ``Offset`` specifies the x (left/right), y (up/down), and z (back/front) offsets in
-  units of length (default meters) of the freight shape file from its origin position.
-  This may be needed to precisely position the shape, but is optional.
-- ``Flip`` determines if the freight shape should be flipped 180 degrees. If Flip
-  isn't entered, or is given a value of ( 0 ), no flip will occur.
-- ``ShapeHierarchy`` can be used to determine which sub object of the locomotive/wagon
-  shape the freight shape should be attached to, determined by specifying the name
-  of the sub object matrix. Note that the position of the freight shape is measured
-  relative to the origin of the sub object it is attached to, and the freight shape
-  will move in sync with whatever sub object it is attached to. The matrix names used
-  by the rolling stock can be determined using shape viewing utilities. If this
-  parameter isn't included or the given matrix name can't be found, the freight shape
-  will attach to the main locomotive/wagon shape object.
-- ``Visibility`` if present, changes which camera views the freight shape will be
-  visible from. If the parameter is missing, the freightanim will be visible only
-  from outside cameras and from any inside camera of locomotives different from
-  the one hosting the freight animation. The same behavior occurs if the substring
-  ``"Outside"`` is entered in the ``Visibility`` parameter. However, in some cases
-  it may be desired to show the freightanim while inside the cab view, in which
-  case ``"Cab2D"`` and/or ``"Cab3D"`` substrings can be added. ``Cab2D`` allows the
-  freightanim to be seen while inside the 2D cabview of the attached locomotive,
-  and ``Cab3D`` does the same for 3D cab views. Any combination of settings
-  can be applied, so long as all settings are contained within the same quotation marks
-  and commas are present to separate individual settings. For example, ``Visibility ( "Cab2D, Cab3D" )``
-  would make the freightanim visible from either style of cab view, but *not* from outside.
-- ``MaxHeight`` defines the height of the shape over its default position at full load
-  (after accounting for any y displacement entered in ``Offset``)
-- ``MinHeight`` defines the height of the shape over its default position at zero load
-  (after accounting for any y displacement entered in ``Offset``)
+- ``Shape`` defines the path of the shape to be displayed for the load
+- ``MaxHeight`` defines the height of the shape over its 0 position at full load
+- ``MinHeight`` defines the height of the shape over its 0 position at zero load
 - ``FreightWeightWhenFull`` defines the mass of the freight when the wagon is full; 
   the mass of the wagon is computed by adding the mass of the empty wagon to the 
   actual mass of the freight 
-- ``ReplaceObject`` if set to 1 (ignored if missing) will disable rendering of the wagon
-  sub object to which the freightanim is attached. This works best when combined with
-  ``ShapeHierarchy`` to disable rendering of specific sub objects, effectively replacing
-  the sub object graphic with that of the freightanim. The intended use of this setting 
-  is to "delete" original shape parts and replace them with higher quality shapes without
-  editing the original shape.
-- ``FullAtStart`` defines wether the wagon is fully loaded ( 1 ) or is empty at game 
+- ``FullAtStart`` defines wether the wagon is fully loaded (1) or is empty at game 
   start; if there are more continuous OR freightanims that have ``FullAtStart`` 
   set to 1, only the first one is considered.
 
@@ -1137,38 +650,60 @@ Static OR Freightanims
 ''''''''''''''''''''''
 
 .. index::
+   single: MSTSFreightAnimEnabled
+   single: WagonEmptyWeight
+   single: ORTSFreightAnims
    single: FreightAnimStatic
+   single: SubType
+   single: Shape
    single: FreightWeight
+   single: Flip
+   single: Visibility
 
-Static OR freightanims are defined similarly to continuous OR freightanims,
-but only some of the previously described parameters are useful for static
-freightanims. The ``FreightAnimStatic`` subblock has the following format::
+Only the two general parameters shown below are used for static OR freightanims::
 
-    ORTSFreightAnims (
-        MSTSFreightAnimEnabled ( 0 )
-        WagonEmptyWeight ( 22t )
-        FreightAnimStatic (
-            SubType ( Default )
-            Shape ( xxshape.s )
-            Offset ( XOffset, YOffset, ZOffset )
-            FreightWeight ( weight )
-            Flip ()
-            ShapeHierarchy ( MATRIXNAME )
-            Visibility ( "Outside, Cab2D, Cab3D" )
-            ReplaceObject ()
-        )
+    MSTSFreightAnimEnabled (0)
+    WagonEmptyWeight(22t)
+
+The subblock (to be inserted within the ``ORTSFreightAnims`` block) has the 
+following format::
+
+    FreightAnimStatic
+    (
+        SubType(Default)
+        Shape(xxshape.s)
+        Offset(XOffset, YOffset, ZOffset)
+        FreightWeight(weight)
+        Flip()
+        Visibility ( "Outside,Cab2D,Cab3D" )
     )
 
-The only new parameter is ``FreightWeight``, which behaves analogously to ``FreightWeightWhenFull``
-on a continuous freightanim except this weight is *always* added to the ``WagonEmptyWeight`` value
-(if present) to provide the total weight of the wagon. If more static OR freightanims are present,
-each of their weights is added to define the total weight of the wagon.
+Where:
 
-Note that there is no hard limit to the number of static OR freightanims which can be defined
-for a wagon, and these can even be combined with continuous OR freightanims. This allows for a
-wide variety of possible configurations when attaching shapes to a locomotive or wagon. Users
-are encouraged to experiment with attaching custom objects, not just cargo, to their rolling stock.
+- ``SubType`` is not currently used
+- ``Shape`` is the path of the shape file.
+- ``XOffset``, ``YOffset`` and ``ZOffset`` are the offsets of the shape with 
+  respect to its zero position, and are useful to place the shape precisely. 
+- ``FreightWeight`` is the weight of the specific load. This weight is added to 
+  the ``WagonEmptyWeight`` value (if present) to provide the total weight of the 
+  wagon. If more static OR freightanims are present, each of their weights is 
+  added to define the total weight of the wagon.
+- ``Flip()``, if present, flips the shape around its pivot point.
+- ``Visibility``, if present, changes the default visibility of the static 
+  freightanim. Default is visible only from outside cameras and from any inside 
+  camera of locomotives different from the one hosting the static freightanim. 
+  If substring ``Outside`` is present, the static freightanim is visible from outside 
+  cameras and from any inside camera of locomotives different from the one 
+  hosting the static freightanim; if ``Cab2D`` is present, the static freightanim 
+  is visible from the 2D cabview camera of loco hosting the freightanim; 
+  if ``Cab3D`` is present, the static freightanim is visible from the 3D cabview camera
+  of loco hosting the freightanim. 1, 2 or 3 of such substrings 
+  may be inserted in the ``Visibility`` line allowing for any combination of visibility.  
 
+Because more static OR freightanims may be defined for a wagon, in the case of a 
+container wagon that is able to carry more than one container, even as a double 
+stack, it is possible to use a static OR freightanim for each 
+container, defining its position within the wagon. 
 
 Physics Variation with Loads
 ----------------------------
@@ -1227,9 +762,9 @@ and the state of these parameters when the wagon or locomotive is full.
    single: FullBrakeRelayValveInshot
 
 To configure the stock correctly the following empty and full parameters need to be 
-included in the ``ORTSFreightAnims`` block. Empty values are included in the first block, 
-and full values are included in the ``FreightAnimContinuous`` or ``FreightAnimStatic``
-sub-block. A sample code block is shown below::
+included in the ORTSFreightAnims file. Empty values are included in the first block, 
+and full values are included in the second code block. A sample code block is shown 
+below::
 
     ORTSFreightAnims
     (
@@ -1264,12 +799,6 @@ sub-block. A sample code block is shown below::
       FullCentreOfGravity_Y ( 1.8 ) 
      )
   )
-
-Any parameters not included will use the equivalent value specified outside
-the ORTSFreightAnims block. If the Davis A, B, and C values are not given
-they will be determined automatically using other properties of the rolling
-stock and either the 1926 Davis formula or 1992 CN formula, depending on the
-ORTSBearingType specified in the Wagon section.
 
 For some rolling stock, it may be more realistic to handle variations in load/empty
 brake force by changing the brake cylinder pressure developed, rather than changing
@@ -1508,7 +1037,6 @@ Here below a sample of a ``.load-or`` file::
   	{
 	  	"Name" : "triton",
 	  	"Shape" : "COMMON_Container_3d\\Cont_40ftHC\\container-40ftHC_Triton.s",
-	  	"ShapeDescriptor" : "COMMON_Container_3d\\Cont_40ftHC\\container-40ftHC_Triton.sd",
 	  	"ContainerType" : "C40ftHC",
 	  	"IntrinsicShapeOffset": [0,1.175,0],
    		"EmptyMassKG": 2100.,
@@ -1519,10 +1047,7 @@ Here below a sample of a ``.load-or`` file::
 - "Container" is a fixed keyword.
 - "Name" has as value a string used by Open Rails when the container must be indentified in a message 
   to the player.
-- "Shape" has as value the path of the container shape (.s) file, having ``Trainset`` as base.
-- "ShapeDescriptor" has the path of the container shape descriptor (.sd) file,
-  having ``Trainset`` as base. This is optional; if missing OR assumes the shape
-  descriptor is in the same location with the same name as the shape file.
+- "Shape" has as value the path of the container shape, having ``Trainset`` as base.
 - "ContainerType" identifies the container type, which may be one of the following ones::
 
   * C20ft
@@ -2030,18 +1555,12 @@ containers of same length).
 
 .. _features-passengerviewpoints:
 
-Camera viewpoint improvements
+Multiple passenger viewpoints
 =============================
 
-Open Rails expands on the capabilities of camera viewpoints, which allows for a wider range
-of configurations and customization on interior (passenger) views and head out views
-than was possible in MSTS.
-
-Multiple passenger viewpoints
------------------------------
-
 Additional passenger viewpoints may be added within a carriage or 
-locomotive that is provided with passenger viewpoint shape.
+locomotive that 
+is provided with passenger viewpoint.
 
 .. index::
    single: ORTSAlternatePassengerViewPoints
@@ -2051,109 +1570,37 @@ locomotive that is provided with passenger viewpoint shape.
    single: StartDirection
 
 Such additional passenger viewpoints may be defined within an include file 
-to expand on the views of a preexisting locomotive or wagon, with the
-format shown in following example for the legacy oebarcar.wag
-(located in the 380 folder) MSTS wagon::
+with the format shown in 
+following example for the legacy oebarcar.wag (located in the 380 folder) 
+MSTS wagon::
      
   include ( ../oebarcar.wag )
   
-    Wagon (
+  Wagon (
         ORTSAlternatePassengerViewPoints (
-            ORTSAlternatePassengerViewPoint (
-                PassengerCabinHeadPos ( -0.0 2.85801 -6.091 )
-                RotationLimit ( 50 270 0 )
-                StartDirection ( 0 0 0 )      
-            )  
-            ORTSAlternatePassengerViewPoint (
-                PassengerCabinHeadPos ( -0.5 2.35801 -1.791 )
-                RotationLimit ( 50 270 0 )
-                StartDirection ( 0 0 0 )      
-            ) 	
-            ORTSAlternatePassengerViewPoint (
-                PassengerCabinHeadPos ( 0.9 2.35801 -1.791 )
-                RotationLimit ( 50 270 0 )
-                StartDirection ( -5 -90 0 )      
-            ) 				
+                ORTSAlternatePassengerViewPoint (
+                        PassengerCabinHeadPos ( -0.0 2.85801 -6.091 )
+                        RotationLimit ( 50 270 0 )
+                        StartDirection ( 0 0 0 )      
+                )  
+                ORTSAlternatePassengerViewPoint (
+                        PassengerCabinHeadPos ( -0.5 2.35801 -1.791 )
+                        RotationLimit ( 50 270 0 )
+                        StartDirection ( 0 0 0 )      
+                ) 	
+                ORTSAlternatePassengerViewPoint (
+                        PassengerCabinHeadPos ( 0.9 2.35801 -1.791 )
+                        RotationLimit ( 50 270 0 )
+                        StartDirection ( -5 -90 0 )      
+                ) 				
         )
-    )
+  )
 
 If the passenger viewpoints are defined in the base .wag or .eng file, they 
 must be defined below the Inside () block.
 
 At runtime, when in passenger view, the player may pass from one viewpoint to 
 the other by pressing Shift-5.
-
-.. _features-viewpoint-positioning:
-
-Advanced viewpoint positioning
-------------------------------
-
-Viewpoints (head out view, inside view, and 3D cabs) can be modified with
-new OR-only paramters to change how the view is positioned.
-
-.. index::
-   single: ORTSShapeHierarchy
-
-The ``ORTSShapeHierarchy ( MATRIXNAME )`` parameter can be added inside
-``HeadOut``, ``Inside``, ``ORTSAlternatePassengerViewPoint``, ``ORTS3DCab`` and
-``ORTSAlternate3DCabViewPoint`` blocks to attach the camera and the view
-shape (in the case of interior shapes and 3D cabs) to a different
-sub object of the locomotive or wagon than the main sub object. The
-viewpoint will attach to whichever shape sub object has the given
-"MATRIXNAME", allowing the viewpoint to move in sync with the rotation
-and translation of that sub object, which can be useful for articulated
-units or interesting camera angles::
-
-    Comment ( Head out view attached to steam loco connecting rod. )
-    Comment ( Camera will move with connecting rod, as if a portable camera has been mounted there. )
-    HeadOut (
-        1.5 0.1 -2
-        ORTSShapeHierarchy ( ROD1 )
-    )
-    Comment ( ORTSShapeHierarchy must be added AFTER the x y z position of the head out view! )
-
-
-    Comment ( Hypothetical example of articulated locomotive where the cab is on a bogie object. )
-    Comment ( Cab view will move with the "bogie" instead. )
-    ORTS3DCab (
-        ORTS3DCabFile ( Cab.s )
-        ORTS3DCabHeadPos ( 1.265 3.44 6.24 )
-        RotationLimit ( 40 60 0 )
-        StartDirection ( 12 0 0 )
-        ORTSShapeHierarchy ( BOGIE1 )
-    )
-
-If matrix names are not known, they can be found using
-shape viewing programs. Note that any position measurements the viewpoint uses will
-no longer be measured relative to the center train car shape, but rather to
-the center of whichever sub object is specified, so double check all position
-measurements. If the given matrix name cannot be found in the attached train car
-shape, a warning will be logged and the viewpoint will attach to the main shape object.
-Likewise, if ``ORTSShapeHierarchy`` isn't included, the viewpoint will also attach to
-the main object.
-
-Another feature, applicable only to viewpoints with 3D interiors (passenger views
-and 3D cabs), is ``ORTSShapeOffset ( x y z )`` where ``x y z`` respectively measure
-a right/left, up/down, and front/back offset applied to the interior/3D cab shape itself.
-The default units are meters, but other units of length are accepted as well. This can be useful
-if the construction of the shape file doesn't place the shape exactly where it's needed
-relative to the locomotive or wagon it is attached to. Note that this offset does not
-move the camera location, that should be changed using the existing ``ORTS3DCabHeadPos``
-and ``PassengerCabinHeadPos`` parameters. ``ORTSShapeOffset`` can be inserted into
-any ``Inside``, ``ORTSAlternatePassengerViewPoint``, ``ORTS3DCab`` or ``ORTSAlternate3DCabViewPoint``
-block::
-
-    Comment ( Moving passenger view to a different compartment on the coach. )
-    Comment ( Original PassengerCabinHeadPos ( 1.046 2.14 4.506 ), pos moved to account for ShapeOffset. )
-    Inside (
-        PassengerCabinFile ( PassengerCam.s )
-        PassengerCabinHeadPos ( 1.046 2.14 -7.544 )
-        RotationLimit ( 20 80 0 )
-        StartDirection ( 0 0 0 )
-        Sound ( "FSPas.sms" )
-        ORTSShapeOffset ( 0 0 -12.05 )
-    )
-
 
 Bell animation
 ==============
@@ -2712,7 +2159,7 @@ be loaded instead.
 ``ORTSTractionCutOffRelayClosingDelay`` refers to the delay between the closing command of the traction cut-off relay
 and the effective closing of the relay.
 
-.. _features-scripting-powerselectors:
+.. _features-scripting-powerselectors
 
 Pantograph, voltage and power limitation selectors
 --------------------------------------------------

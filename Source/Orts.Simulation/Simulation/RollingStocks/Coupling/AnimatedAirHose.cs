@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2022 by the Open Rails project.
+// COPYRIGHT 2022 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -32,6 +32,5 @@ namespace Orts.Simulation.RollingStocks.Coupling
     public struct AnimatedAirHoseState
     {
         public string ShapeFileName;
-        public string ShapeDescriptor;
     }
 }

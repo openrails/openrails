@@ -352,8 +352,6 @@ In more modern routes, content may be assigned to categories between 0 and 49.
 Content builders are advised to reserve values 50 to 99 for objects used in building the route.
 
 
-.. _options-lod-bias:
-
 Level of detail bias
 --------------------
 

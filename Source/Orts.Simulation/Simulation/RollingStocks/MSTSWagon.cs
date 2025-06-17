@@ -93,15 +93,10 @@ namespace Orts.Simulation.RollingStocks
         public bool MirrorOpen;
         public bool UnloadingPartsOpen;
         public bool WaitForAnimationReady; // delay counter to start loading/unliading is on;
-        public enum BearingTypes
-        {
-            Default,    // MSTS friction
-            Grease,     // Plain bearings with grease lubricant
-            Friction,   // Plain bearings with oil lubricant
-            Roller,     // Traditional roller bearings
-            Low,        // Modern roller bearings
-        }
-        public BearingTypes BearingType = BearingTypes.Default;
+        public bool IsRollerBearing = false; // Has roller bearings
+        public bool IsLowTorqueRollerBearing = false; // Has low torque roller bearings
+        public bool IsFrictionBearing = false; //Has oil based friction (or solid bearings)
+        public bool IsGreaseFrictionBearing = false; // Has grease based friction (or solid bearings)
         public bool IsStandStill = true;  // Used for MSTS type friction
         public bool IsDavisFriction = true; // Default to new Davis type friction
         public bool IsBelowMergeSpeed = true; // set indicator for low speed operation as per given speed
@@ -125,17 +120,12 @@ namespace Orts.Simulation.RollingStocks
 
         // wag file data
         public string MainShapeFileName;
-        public string MainShapeDescriptor;
-        public string WagonName;
         public string FreightShapeFileName;
-        public string FreightShapeDescriptor;
         public float FreightAnimMaxLevelM;
         public float FreightAnimMinLevelM;
         public float FreightAnimFlag = 1;   // if absent or >= 0 causes the freightanim to drop in tenders
         public string Cab3DShapeFileName; // 3DCab view shape file name
-        public string Cab3DShapeDescriptor;
         public string InteriorShapeFileName; // passenger view shape file name
-        public string InteriorShapeDescriptor;
         public string MainSoundFileName;
         public string InteriorSoundFileName;
         public string Cab3DSoundFileName;
@@ -405,10 +395,9 @@ namespace Orts.Simulation.RollingStocks
             if (File.Exists(orFile))
                 wagFilePath = orFile;
 
-            // Get the path starting at the TRAINS folder, in order to produce a shorter, more legible, path
-            string shortPath = wagFilePath.Remove(0, Simulator.BasePath.Length);
-
-            using (STFReader stf = new STFReader(wagFilePath, true))
+            using (STFReader stf = ConsistGenerator.IsWagonRecognized(wagFilePath)
+                ? new STFReader(ConsistGenerator.GetWagon(wagFilePath), wagFilePath, System.Text.Encoding.UTF8, true)
+                : new STFReader(wagFilePath, true))
             {
                 while (!stf.Eof)
                 {
@@ -420,169 +409,42 @@ namespace Orts.Simulation.RollingStocks
             var wagonFolderSlash = Path.GetDirectoryName(WagFilePath) + @"\";
             if (MainShapeFileName != null && !File.Exists(wagonFolderSlash + MainShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + MainShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + MainShapeFileName);
                 MainShapeFileName = string.Empty;
-                MainShapeDescriptor = string.Empty;
             }
             if (FreightShapeFileName != null && !File.Exists(wagonFolderSlash + FreightShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + FreightShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FreightShapeFileName);
                 FreightShapeFileName = null;
-                FreightShapeDescriptor = null;
             }
             if (InteriorShapeFileName != null && !File.Exists(wagonFolderSlash + InteriorShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + InteriorShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + InteriorShapeFileName);
                 InteriorShapeFileName = null;
-                InteriorShapeDescriptor = null;
             }
 
             if (FrontCoupler.Closed.ShapeFileName != null && !File.Exists(wagonFolderSlash + FrontCoupler.Closed.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + FrontCoupler.Closed.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontCoupler.Closed.ShapeFileName);
                 FrontCoupler.Closed.ShapeFileName = null;
-                FrontCoupler.Closed.ShapeDescriptor = null;
             }
 
             if (RearCoupler.Closed.ShapeFileName != null && !File.Exists(wagonFolderSlash + RearCoupler.Closed.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + RearCoupler.Closed.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearCoupler.Closed.ShapeFileName);
                 RearCoupler.Closed.ShapeFileName = null;
-                RearCoupler.Closed.ShapeDescriptor = null;
             }
 
             if (FrontAirHose.Connected.ShapeFileName != null && !File.Exists(wagonFolderSlash + FrontAirHose.Connected.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + FrontAirHose.Connected.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontAirHose.Connected.ShapeFileName);
                 FrontAirHose.Connected.ShapeFileName = null;
-                FrontAirHose.Connected.ShapeDescriptor = null;
             }
 
             if (RearAirHose.Connected.ShapeFileName != null && !File.Exists(wagonFolderSlash + RearAirHose.Connected.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + RearAirHose.Connected.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearAirHose.Connected.ShapeFileName);
                 RearAirHose.Connected.ShapeFileName = null;
-                RearAirHose.Connected.ShapeDescriptor = null;
-            }
-
-            // If requested, use the shape file to determine the size of the wagon
-            if ((AutoSize || AutoCenter) && !string.IsNullOrEmpty(MainShapeFileName))
-            {
-                try // Shape file discrepancies might cause errors, we don't want to cause a crash here
-                {
-                    // This might be a bad idea, usually we wait to deal with shape files until within viewing range
-                    // But my hubris has decided we can use for the shape for things other than graphics - Phillip
-                    ShapeFile wagShape = new ShapeFile(wagonFolderSlash + MainShapeFileName, true);
-
-                    (Vector3 mainMins, Vector3 mainMaxes) = wagShape.GetBoundingLimits();
-
-                    bool mstsFreightAnim = true;
-
-                    // And also repeat for ORTS freight animations
-                    if (FreightAnimations != null)
-                    {
-                        if (!FreightAnimations.MSTSFreightAnimEnabled)
-                            mstsFreightAnim = false;
-
-                        foreach (var freightAnim in FreightAnimations.Animations)
-                        {
-                            // We will ignore freight animations not attached to the main shape object for simplicity
-                            if (!string.IsNullOrEmpty(freightAnim.ShapeFileName) && freightAnim.ShapeIndex <= 0 && string.IsNullOrEmpty(freightAnim.ShapeHierarchy))
-                            {
-                                ShapeFile ortsFreightShape = new ShapeFile(wagonFolderSlash + freightAnim.ShapeFileName, true);
-
-                                (Vector3 ortsFreightMins, Vector3 ortsFreightMaxes) = ortsFreightShape.GetBoundingLimits();
-
-                                // Account for flipped freight animation by inverting x and z components
-                                if (freightAnim.Flipped)
-                                {
-                                    Vector3 temp = ortsFreightMins;
-                                    temp.X *= -1;
-                                    temp.Y = ortsFreightMaxes.Y;
-                                    temp.Z *= -1;
-
-                                    ortsFreightMaxes.X *= -1;
-                                    ortsFreightMaxes.Y = ortsFreightMins.Y;
-                                    ortsFreightMaxes.Z *= -1;
-
-                                    ortsFreightMins = ortsFreightMaxes;
-                                    ortsFreightMaxes = temp;
-                                }
-
-                                // Account for offsets
-                                // Z-axis offset is inverted to match MSTS coordinate system
-                                Vector3 modOffset = new Vector3(freightAnim.Offset.X, freightAnim.Offset.Y, -freightAnim.Offset.Z);
-                                ortsFreightMins += modOffset;
-                                ortsFreightMaxes += modOffset;
-
-                                mainMins = Vector3.Min(mainMins, ortsFreightMins);
-                                mainMaxes = Vector3.Max(mainMaxes, ortsFreightMaxes);
-                            }
-                        }
-                    }
-
-                    // And also repeat for MSTS freight animation bounds (if enabled)
-                    if (mstsFreightAnim && !string.IsNullOrEmpty(FreightShapeFileName))
-                    {
-                        ShapeFile freightShape = new ShapeFile(wagonFolderSlash + FreightShapeFileName, true);
-
-                        (Vector3 freightMins, Vector3 freightMaxes) = freightShape.GetBoundingLimits();
-
-                        // MSTS freight animations don't have offsets, so can be simply compared
-                        mainMins = Vector3.Min(mainMins, freightMins);
-                        mainMaxes = Vector3.Max(mainMaxes, freightMaxes);
-                    }
-
-                    // Set dimensions of wagon if configured as such
-                    if (AutoSize)
-                    {
-                        CarWidthM = Math.Max((mainMaxes.X - mainMins.X) + AutoWidthOffsetM, 0.1f);
-                        CarHeightM = Math.Max((mainMaxes.Y - mainMins.Y) + AutoHeightOffsetM, 0.1f);
-                        CarLengthM = Math.Max((mainMaxes.Z - mainMins.Z) + AutoLengthOffsetM, 0.1f);
-
-                        if (Simulator.Settings.VerboseConfigurationMessages)
-                        {
-                            Trace.TraceInformation("Rolling stock {0} size automatically calculated using ORTSAutoSize ( {1}, {2}, {3} ).", shortPath,
-                                FormatStrings.FormatVeryShortDistanceDisplay(AutoWidthOffsetM, IsMetric),
-                                FormatStrings.FormatVeryShortDistanceDisplay(AutoHeightOffsetM, IsMetric),
-                                FormatStrings.FormatVeryShortDistanceDisplay(AutoLengthOffsetM, IsMetric));
-                            Trace.TraceInformation("Main shape file {0} calculated to be {1} wide, {2} tall, and {3} long. " +
-                                "Resulting Size ( ) is {4} wide, {5} tall, and {6} long.\n", MainShapeFileName,
-                                FormatStrings.FormatVeryShortDistanceDisplay((mainMaxes.X - mainMins.X), IsMetric),
-                                FormatStrings.FormatVeryShortDistanceDisplay((mainMaxes.Y - mainMins.Y), IsMetric),
-                                FormatStrings.FormatVeryShortDistanceDisplay((mainMaxes.Z - mainMins.Z), IsMetric),
-                                FormatStrings.FormatVeryShortDistanceDisplay(CarWidthM, IsMetric),
-                                FormatStrings.FormatVeryShortDistanceDisplay(CarHeightM, IsMetric),
-                                FormatStrings.FormatVeryShortDistanceDisplay(CarLengthM, IsMetric));
-                        }
-                    }
-
-                    // Automatically determine the center of gravity offset required to perfectly center the shape (lengthwise)
-                    if (AutoCenter)
-                    {
-                        InitialCentreOfGravityM.Z = (mainMaxes.Z + mainMins.Z) / 2.0f;
-
-                        if (Simulator.Settings.VerboseConfigurationMessages)
-                        {
-                            Trace.TraceInformation("Rolling stock {0} CoG z-value automatically calculated using ORTSAutoCenter.", shortPath);
-                            if (Math.Abs(InitialCentreOfGravityM.Z) < 0.0001f)
-                                Trace.TraceInformation("Main shape file {0} bounds calculated to be {1} to {2}. Shape is already centered, CoG offset reset to zero.\n",
-                                    MainShapeFileName,
-                                    FormatStrings.FormatVeryShortDistanceDisplay(mainMins.Z, IsMetric),
-                                    FormatStrings.FormatVeryShortDistanceDisplay(mainMaxes.Z, IsMetric));
-                            else
-                                Trace.TraceInformation("Main shape file {0} bounds calculated to be {1} to {2}. CoG offset used to center shape is {0}.\n",
-                                    MainShapeFileName,
-                                    FormatStrings.FormatVeryShortDistanceDisplay(mainMins.Z, IsMetric),
-                                    FormatStrings.FormatVeryShortDistanceDisplay(mainMaxes.Z, IsMetric),
-                                    FormatStrings.FormatVeryShortDistanceDisplay(InitialCentreOfGravityM.Z, IsMetric));
-                        }
-                    }
-                }
-                catch
-                {
-                    Trace.TraceWarning("Could not automatically determine size of shape {0} in wagon {1}, there may be an error in the shape.", MainShapeFileName, shortPath);
-                }
             }
 
             // If trailing loco resistance constant has not been  defined in WAG/ENG file then assign default value based upon orig Davis values
@@ -642,7 +504,7 @@ namespace Orts.Simulation.RollingStocks
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("Derailment Coefficient set to false for Wagon {0}", shortPath);
+                    Trace.TraceInformation("Derailment Coefficient set to false for Wagon {0}", WagFilePath);
                 }
             }
 
@@ -660,7 +522,7 @@ namespace Orts.Simulation.RollingStocks
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("Number of Wagon Axles set to default value of {0} on Wagon {1}", WagonNumAxles, shortPath);
+                    Trace.TraceInformation("Number of Wagon Axles set to default value of {0} on Wagon {1}", WagonNumAxles, WagFilePath);
                 }
             }
             else
@@ -707,39 +569,6 @@ namespace Orts.Simulation.RollingStocks
                 CurrentCarSteamHeatBoilerWaterCapacityL = L.FromGUK(800.0f);
             }
 
-            MassKG = InitialMassKG;
-
-            // If Davis A value is not defined, but bearing type is, estimate Davis A based on the bearing and wagon parameters
-            if (BearingType != BearingTypes.Default && DavisAN <= 0)
-            {
-                DavisAN = CalcDavisAValue(BearingType, MassKG, (WagonNumAxles + LocoNumDrvAxles));
-
-                // Add some extra resistance to steam locomotives for running gear drag
-                if (this is MSTSLocomotive loco && loco.EngineType == EngineTypes.Steam)
-                        DavisAN += N.FromLbf(20.0f * Kg.ToTUS(loco.InitialDrvWheelWeightKg)); // 20 pounds per us ton of driven weight
-                // Note: at this point, loco.DrvWheelWeightKg hasn't been determined, so we use the InitialDrvWheelWeightKg as an estimate
-
-                if (Simulator.Settings.VerboseConfigurationMessages)
-                {
-                    Trace.TraceInformation("Rolling stock {0} defines ORTSBearingType ( {1} ) but does not define a value for ORTSDavis_A.", shortPath, BearingType);
-                    Trace.TraceInformation("Davis A value automatically calculated to be {0}, given {1} bearings, mass of {2}, and {3} axles.\n",
-                        FormatStrings.FormatForce(DavisAN, IsMetric), BearingType, FormatStrings.FormatLargeMass(MassKG, IsMetric, IsUK), (WagonNumAxles + LocoNumDrvAxles));
-                }
-            }
-
-            // If Davis B value is not defined, but bearing type is, estimate Davis B based on the bearing and wagon parameters
-            if (BearingType != BearingTypes.Default && DavisBNSpM <= 0)
-            {
-                DavisBNSpM = CalcDavisBValue(BearingType, MassKG, (WagonNumAxles + LocoNumDrvAxles), WagonType);
-
-                if (Simulator.Settings.VerboseConfigurationMessages)
-                {
-                    Trace.TraceInformation("Rolling stock {0} defines ORTSBearingType ( {1} ) but does not define a value for ORTSDavis_B.", shortPath, BearingType);
-                    Trace.TraceInformation("Davis B value automatically calculated to be {0}, given {1} bearings, mass of {2}, and wagon type {3}.\n",
-                        FormatStrings.FormatLinearResistance(DavisBNSpM, IsMetric), BearingType, FormatStrings.FormatLargeMass(MassKG, IsMetric, IsUK), WagonType);
-                }
-            }
-
             // If Drag constant not defined in WAG/ENG file then assign default value based upon orig Davis values
             if (DavisDragConstant == 0)
             {
@@ -772,21 +601,9 @@ namespace Orts.Simulation.RollingStocks
                 WagonFrontalAreaM2 = CarWidthM * CarHeightM;
             }
 
-            // If Davis C value is not defined, determine it from the drag constant and area
-            if (BearingType != BearingTypes.Default && DavisCNSSpMM <= 0)
-            {
-                // Note: Davis drag constant is intended to be used with area in ft^2
-                DavisCNSSpMM = NSSpMM.FromLbfpMpH2(Me2.ToFt2(WagonFrontalAreaM2) * DavisDragConstant);
-
-                if (Simulator.Settings.VerboseConfigurationMessages)
-                {
-                    Trace.TraceInformation("Rolling stock {0} does not define a value for ORTSDavis_C.", shortPath);
-                    Trace.TraceInformation("Davis C value automatically calculated to be {0}, given frontal area of {1} and Davis drag constant of {2:F5}.\n",
-                        FormatStrings.FormatQuadraticResistance(DavisCNSSpMM, IsMetric), FormatStrings.FormatArea(WagonFrontalAreaM2, IsMetric), DavisDragConstant);
-                }
-            }
-
             // Initialise key wagon parameters
+            MassKG = InitialMassKG;
+
             MaxHandbrakeForceN = InitialMaxHandbrakeForceN;
 
             FrictionBrakeBlendingMaxForceN = InitialMaxBrakeForceN; // set the value of braking when blended with dynamic brakes
@@ -842,7 +659,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     if (ortsFreightAnim.ShapeFileName != null && !File.Exists(wagonFolderSlash + ortsFreightAnim.ShapeFileName))
                     {
-                        Trace.TraceWarning("ORTS FreightAnim in trainset {0} references non-existent shape {1}", file, wagonFolderSlash + ortsFreightAnim.ShapeFileName);
+                        Trace.TraceWarning("ORTS FreightAnim in trainset {0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + ortsFreightAnim.ShapeFileName);
                         ortsFreightAnim.ShapeFileName = null;
                     }
 
@@ -864,10 +681,8 @@ namespace Orts.Simulation.RollingStocks
                 {
                     LoadEmptyORTSDavis_A = FreightAnimations.EmptyORTSDavis_A;
                 }
-                else if (BearingType == BearingTypes.Default)
+                else
                 {
-                    // Use default if bearing type isn't given
-                    // If bearing type is given, we will calculate the Davis value later
                     LoadEmptyORTSDavis_A = DavisAN;
                 }
 
@@ -875,11 +690,18 @@ namespace Orts.Simulation.RollingStocks
                 {
                     LoadEmptyORTSDavis_B = FreightAnimations.EmptyORTSDavis_B;
                 }
-                else if (BearingType == BearingTypes.Default)
+                else
                 {
-                    // Use default if bearing type isn't given
-                    // If bearing type is given, we will calculate the Davis value later
                     LoadEmptyORTSDavis_B = DavisBNSpM;
+                }
+
+                if (FreightAnimations.EmptyORTSDavis_C > 0)
+                {
+                    LoadEmptyORTSDavis_C = FreightAnimations.EmptyORTSDavis_C;
+                }
+                else
+                {
+                    LoadEmptyORTSDavis_C = DavisCNSSpMM;
                 }
 
                 if (FreightAnimations.EmptyORTSDavisDragConstant > 0)
@@ -898,15 +720,6 @@ namespace Orts.Simulation.RollingStocks
                 else
                 {
                     LoadEmptyWagonFrontalAreaM2 = WagonFrontalAreaM2;
-                }
-
-                if (FreightAnimations.EmptyORTSDavis_C > 0)
-                {
-                    LoadEmptyORTSDavis_C = FreightAnimations.EmptyORTSDavis_C;
-                }
-                else
-                {
-                    LoadEmptyORTSDavis_C = NSSpMM.FromLbfpMpH2(Me2.ToFt2(LoadEmptyWagonFrontalAreaM2) * LoadEmptyDavisDragConstant);
                 }
 
                 if (FreightAnimations.EmptyMaxBrakeShoeForceN > 0)
@@ -966,10 +779,8 @@ namespace Orts.Simulation.RollingStocks
                     {
                         LoadFullORTSDavis_A = FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_A;
                     }
-                    else if (BearingType == BearingTypes.Default)
+                    else
                     {
-                        // Use default if bearing type isn't given
-                        // If bearing type is given, we will calculate the Davis value later
                         LoadFullORTSDavis_A = DavisAN;
                     }
 
@@ -977,11 +788,18 @@ namespace Orts.Simulation.RollingStocks
                     {
                         LoadFullORTSDavis_B = FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_B;
                     }
-                    else if (BearingType == BearingTypes.Default)
+                    else
                     {
-                        // Use default if bearing type isn't given
-                        // If bearing type is given, we will calculate the Davis value later
                         LoadFullORTSDavis_B = DavisBNSpM;
+                    }
+
+                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_C > 0)
+                    {
+                        LoadFullORTSDavis_C = FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_C;
+                    }
+                    else
+                    {
+                        LoadFullORTSDavis_C = DavisCNSSpMM;
                     }
 
                     if (FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavisDragConstant > 0)
@@ -1000,15 +818,6 @@ namespace Orts.Simulation.RollingStocks
                     else
                     {
                         LoadFullWagonFrontalAreaM2 = WagonFrontalAreaM2;
-                    }
-
-                    if (FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_C > 0)
-                    {
-                        LoadFullORTSDavis_C = FreightAnimations.FullPhysicsStaticOne.FullStaticORTSDavis_C;
-                    }
-                    else
-                    {
-                        LoadFullORTSDavis_C = NSSpMM.FromLbfpMpH2(Me2.ToFt2(LoadFullWagonFrontalAreaM2) * LoadFullDavisDragConstant);
                     }
 
                     if (FreightAnimations.FullPhysicsStaticOne.FullStaticMaxBrakeShoeForceN > 0)
@@ -1078,10 +887,8 @@ namespace Orts.Simulation.RollingStocks
                     {
                         LoadFullORTSDavis_A = FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_A;
                     }
-                    else if (BearingType == BearingTypes.Default)
+                    else
                     {
-                        // Use default if bearing type isn't given
-                        // If bearing type is given, we will calculate the Davis value later
                         LoadFullORTSDavis_A = DavisAN;
                     }
 
@@ -1089,11 +896,18 @@ namespace Orts.Simulation.RollingStocks
                     {
                         LoadFullORTSDavis_B = FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_B;
                     }
-                    else if (BearingType == BearingTypes.Default)
+                    else
                     {
-                        // Use default if bearing type isn't given
-                        // If bearing type is given, we will calculate the Davis value later
                         LoadFullORTSDavis_B = DavisBNSpM;
+                    }
+
+                    if (FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_C > 0)
+                    {
+                        LoadFullORTSDavis_C = FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_C;
+                    }
+                    else
+                    {
+                        LoadFullORTSDavis_C = DavisCNSSpMM;
                     }
 
                     if (FreightAnimations.FullPhysicsContinuousOne.FullORTSDavisDragConstant > 0)
@@ -1112,15 +926,6 @@ namespace Orts.Simulation.RollingStocks
                     else
                     {
                         LoadFullWagonFrontalAreaM2 = WagonFrontalAreaM2;
-                    }
-
-                    if (FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_C > 0)
-                    {
-                        LoadFullORTSDavis_C = FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_C;
-                    }
-                    else
-                    {
-                        LoadFullORTSDavis_C = NSSpMM.FromLbfpMpH2(Me2.ToFt2(LoadFullWagonFrontalAreaM2) * LoadFullDavisDragConstant);
                     }
 
                     if (FreightAnimations.FullPhysicsContinuousOne.FullMaxBrakeShoeForceN > 0)
@@ -1187,16 +992,6 @@ namespace Orts.Simulation.RollingStocks
                             }
                     }
                     CalculateTotalMass(totalContainerMassKG);
-
-                    // If Davis values are still missing, calculate them
-                    if (LoadEmptyORTSDavis_A <= 0 && BearingType != BearingTypes.Default)
-                        LoadEmptyORTSDavis_A = CalcDavisAValue(BearingType, LoadEmptyMassKg, (WagonNumAxles + LocoNumDrvAxles));
-                    if (LoadEmptyORTSDavis_B <= 0 && BearingType != BearingTypes.Default)
-                        LoadEmptyORTSDavis_B = CalcDavisBValue(BearingType, LoadEmptyMassKg, (WagonNumAxles + LocoNumDrvAxles), WagonType);
-                    if (LoadFullORTSDavis_A <= 0 && BearingType != BearingTypes.Default)
-                        LoadFullORTSDavis_A = CalcDavisAValue(BearingType, MassKG, (WagonNumAxles + LocoNumDrvAxles));
-                    if (LoadFullORTSDavis_B <= 0 && BearingType != BearingTypes.Default)
-                        LoadFullORTSDavis_B = CalcDavisBValue(BearingType, MassKG, (WagonNumAxles + LocoNumDrvAxles), WagonType);
 
                     if (FreightAnimations.StaticFreightAnimationsPresent) // If it is static freight animation, set wagon physics to full wagon value
                     {
@@ -1365,17 +1160,7 @@ namespace Orts.Simulation.RollingStocks
         {
             switch (lowercasetoken)
             {
-                case "wagon(wagonshape":
-                    stf.MustMatch("(");
-                    MainShapeFileName = stf.ReadString();
-                    if (!stf.EndOfBlock())
-                    {
-                        MainShapeDescriptor = stf.ReadString();
-                        stf.SkipRestOfBlock();
-                    }
-                    else
-                        MainShapeDescriptor = MainShapeFileName + "d";
-                    break;
+                case "wagon(wagonshape": MainShapeFileName = stf.ReadStringBlock(null); break;
                 case "wagon(type":
                     stf.MustMatch("(");
                     var wagonType = stf.ReadString();
@@ -1388,7 +1173,6 @@ namespace Orts.Simulation.RollingStocks
                         STFException.TraceWarning(stf, "Skipped unknown wagon type " + wagonType);
                     }
                     break;
-                case "wagon(name": WagonName = stf.ReadStringBlock(null); break;
                 case "wagon(ortswagonspecialtype":
                     stf.MustMatch("(");
                     var wagonspecialType = stf.ReadString();
@@ -1404,7 +1188,6 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(freightanim":
                     stf.MustMatch("(");
                     FreightShapeFileName = stf.ReadString();
-                    FreightShapeDescriptor = FreightShapeFileName + "d";
                     FreightAnimMaxLevelM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     FreightAnimMinLevelM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     // Flags are optional and we want to avoid a warning.
@@ -1422,16 +1205,6 @@ namespace Orts.Simulation.RollingStocks
                     CarLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     stf.SkipRestOfBlock();
                     break;
-                case "wagon(ortsautosize":
-                    AutoSize = true;
-                    stf.MustMatch("(");
-                    AutoWidthOffsetM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    AutoHeightOffsetM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    AutoLengthOffsetM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    stf.SkipRestOfBlock();
-                    break;
-                case "wagon(ortsfrontarticulation": FrontArticulation = stf.ReadIntBlock(null); break;
-                case "wagon(ortsreararticulation": RearArticulation = stf.ReadIntBlock(null); break;
                 case "wagon(ortslengthbogiecentre": CarBogieCentreLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthcarbody": CarBodyLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortslengthairhose": CarAirHoseLengthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
@@ -1449,23 +1222,18 @@ namespace Orts.Simulation.RollingStocks
                         stf.SkipRestOfBlock();
                     }
                     break;
-                case "wagon(centerofgravity":
                 case "wagon(centreofgravity":
-                    InitialCentreOfGravityM = stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero);
+                    stf.MustMatch("(");
+                    InitialCentreOfGravityM.X = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    InitialCentreOfGravityM.Y = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    InitialCentreOfGravityM.Z = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     if (Math.Abs(InitialCentreOfGravityM.Z) > 2)
                     {
                         STFException.TraceWarning(stf, string.Format("CentreOfGravity Z set to zero because value {0} outside range -2 to +2", InitialCentreOfGravityM.Z));
                         InitialCentreOfGravityM.Z = 0;
                     }
+                    stf.SkipRestOfBlock();
                     break;
-                case "wagon(ortscenterofgravity_x":
-                case "wagon(ortscentreofgravity_x": InitialCentreOfGravityM.X = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                case "wagon(ortscenterofgravity_y":
-                case "wagon(ortscentreofgravity_y": InitialCentreOfGravityM.Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                case "wagon(ortscenterofgravity_z":
-                case "wagon(ortscentreofgravity_z": InitialCentreOfGravityM.Z = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                case "wagon(ortsautocentre":
-                case "wagon(ortsautocenter": AutoCenter = stf.ReadBoolBlock(true); break;
                 case "wagon(ortsunbalancedsuperelevation": MaxUnbalancedSuperElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsrigidwheelbase":
                     stf.MustMatch("(");
@@ -1550,15 +1318,11 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(effects(specialeffects": ParseEffects(lowercasetoken, stf); break;
                 case "wagon(ortsbearingtype":
                     stf.MustMatch("(");
-                    string bearingType = stf.ReadString().ToLower();
-                    try
-                    {
-                        BearingType = (BearingTypes)Enum.Parse(typeof(BearingTypes), bearingType, true);
-                    }
-                    catch
-                    {
-                        STFException.TraceWarning(stf, "Unknown wheel bearing type " + bearingType);
-                    }
+                    string typeString2 = stf.ReadString();
+                    IsRollerBearing = String.Compare(typeString2, "Roller") == 0;
+                    IsLowTorqueRollerBearing = String.Compare(typeString2, "Low") == 0;
+                    IsFrictionBearing = String.Compare(typeString2, "Friction") == 0;
+                    IsGreaseFrictionBearing = String.Compare(typeString2, "Grease") == 0;
                     break;
                 case "wagon(friction":
                     stf.MustMatch("(");
@@ -1630,52 +1394,28 @@ namespace Orts.Simulation.RollingStocks
                     stf.MustMatch("(");
                     FrontCoupler.Closed.ShapeFileName = stf.ReadString();
                     FrontCoupler.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                    if (!stf.EndOfBlock())
-                    {
-                        FrontCoupler.Closed.ShapeDescriptor = stf.ReadString();
-                        stf.SkipRestOfBlock();
-                    }
-                    else
-                        FrontCoupler.Closed.ShapeDescriptor = FrontCoupler.Closed.ShapeFileName + "d";
+                    stf.SkipRestOfBlock();
                     break;
 
                 case "wagon(coupling(frontairhoseanim":
                     stf.MustMatch("(");
                     FrontAirHose.Connected.ShapeFileName = stf.ReadString();
                     FrontAirHose.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                    if (!stf.EndOfBlock())
-                    {
-                        FrontAirHose.Connected.ShapeDescriptor = stf.ReadString();
-                        stf.SkipRestOfBlock();
-                    }
-                    else
-                        FrontAirHose.Connected.ShapeDescriptor = FrontAirHose.Connected.ShapeFileName + "d";
+                    stf.SkipRestOfBlock();
                     break;
 
                 case "wagon(coupling(rearcoupleranim":
                     stf.MustMatch("(");
                     RearCoupler.Closed.ShapeFileName = stf.ReadString();
                     RearCoupler.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                    if (!stf.EndOfBlock())
-                    {
-                        RearCoupler.Closed.ShapeDescriptor = stf.ReadString();
-                        stf.SkipRestOfBlock();
-                    }
-                    else
-                        RearCoupler.Closed.ShapeDescriptor = RearCoupler.Closed.ShapeFileName + "d";
+                    stf.SkipRestOfBlock();
                     break;
 
                 case "wagon(coupling(rearairhoseanim":
                     stf.MustMatch("(");
                     RearAirHose.Connected.ShapeFileName = stf.ReadString();
                     RearAirHose.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                    if (!stf.EndOfBlock())
-                    {
-                        RearAirHose.Connected.ShapeDescriptor = stf.ReadString();
-                        stf.SkipRestOfBlock();
-                    }
-                    else
-                        RearAirHose.Connected.ShapeDescriptor = RearAirHose.Connected.ShapeFileName + "d";
+                    stf.SkipRestOfBlock();
                     break;
 
                 case "wagon(coupling(spring(ortstensionstiffness":
@@ -1687,57 +1427,29 @@ namespace Orts.Simulation.RollingStocks
                case "wagon(coupling(frontcoupleropenanim":
                     stf.MustMatch("(");
                     FrontCoupler.Open.ShapeFileName = stf.ReadString();
-                    // NOTE: Skip storing the size as it is unused:
-                    stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                    if (!stf.EndOfBlock())
-                    {
-                        FrontCoupler.Open.ShapeDescriptor = stf.ReadString();
-                        stf.SkipRestOfBlock();
-                    }
-                    else
-                        FrontCoupler.Open.ShapeDescriptor = FrontCoupler.Open.ShapeFileName + "d";
+                    // NOTE: Skip reading the size as it is unused: stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
+                    stf.SkipRestOfBlock();
                     break;
                     
                case "wagon(coupling(rearcoupleropenanim":
                     stf.MustMatch("(");
                     RearCoupler.Open.ShapeFileName = stf.ReadString();
-                    // NOTE: Skip storing the size as it is unused:
-                    stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                    if (!stf.EndOfBlock())
-                    {
-                        RearCoupler.Open.ShapeDescriptor = stf.ReadString();
-                        stf.SkipRestOfBlock();
-                    }
-                    else
-                        RearCoupler.Open.ShapeDescriptor = RearCoupler.Open.ShapeFileName + "d";
+                    // NOTE: Skip reading the size as it is unused: stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
+                    stf.SkipRestOfBlock();
                     break;
 
                 case "wagon(coupling(frontairhosediconnectedanim":
                     stf.MustMatch("(");
                     FrontAirHose.Disconnected.ShapeFileName = stf.ReadString();
-                    // NOTE: Skip storing the size as it is unused:
-                    stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                    if (!stf.EndOfBlock())
-                    {
-                        FrontAirHose.Disconnected.ShapeDescriptor = stf.ReadString();
-                        stf.SkipRestOfBlock();
-                    }
-                    else
-                        FrontAirHose.Disconnected.ShapeDescriptor = FrontAirHose.Disconnected.ShapeFileName + "d";
+                    // NOTE: Skip reading the size as it is unused: stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
+                    stf.SkipRestOfBlock();
                     break;
                     
                 case "wagon(coupling(rearairhosediconnectedanim":
                     stf.MustMatch("(");
                     RearAirHose.Disconnected.ShapeFileName = stf.ReadString();
-                    // NOTE: Skip storing the size as it is unused:
-                    stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                    if (!stf.EndOfBlock())
-                    {
-                        RearAirHose.Disconnected.ShapeDescriptor = stf.ReadString();
-                        stf.SkipRestOfBlock();
-                    }
-                    else
-                        RearAirHose.Disconnected.ShapeDescriptor = RearAirHose.Disconnected.ShapeFileName + "d";
+                    // NOTE: Skip reading the size as it is unused: stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
+                    stf.SkipRestOfBlock();
                     break;
 
 
@@ -1886,13 +1598,11 @@ namespace Orts.Simulation.RollingStocks
         public virtual void Copy(MSTSWagon copy)
         {
             MainShapeFileName = copy.MainShapeFileName;
-            MainShapeDescriptor = copy.MainShapeDescriptor;
             HasPassengerCapacity = copy.HasPassengerCapacity;
             WagonType = copy.WagonType;
             WagonSpecialType = copy.WagonSpecialType;
             BrakeShoeType = copy.BrakeShoeType;
             FreightShapeFileName = copy.FreightShapeFileName;
-            FreightShapeDescriptor = copy.FreightShapeDescriptor;
             FreightAnimMaxLevelM = copy.FreightAnimMaxLevelM;
             FreightAnimMinLevelM = copy.FreightAnimMinLevelM;
             FreightAnimFlag = copy.FreightAnimFlag;
@@ -1906,6 +1616,7 @@ namespace Orts.Simulation.RollingStocks
             CarLengthM = copy.CarLengthM;
             TrackGaugeM = copy.TrackGaugeM;
             CentreOfGravityM = copy.CentreOfGravityM;
+            InitialCentreOfGravityM = copy.InitialCentreOfGravityM;
             MaxUnbalancedSuperElevationM = copy.MaxUnbalancedSuperElevationM;
             RigidWheelBaseM = copy.RigidWheelBaseM;
             CarBogieCentreLengthM = copy.CarBogieCentreLengthM;
@@ -1967,14 +1678,15 @@ namespace Orts.Simulation.RollingStocks
             MergeSpeedFrictionN = copy.MergeSpeedFrictionN;
             MergeSpeedMpS = copy.MergeSpeedMpS;
             IsDavisFriction = copy.IsDavisFriction;
-            BearingType = copy.BearingType;
+            IsRollerBearing = copy.IsRollerBearing;
+            IsLowTorqueRollerBearing = copy.IsLowTorqueRollerBearing;
+            IsFrictionBearing = copy.IsFrictionBearing;
+            IsGreaseFrictionBearing = copy.IsGreaseFrictionBearing;
             CarBrakeSystemType = copy.CarBrakeSystemType;
             BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
             InteriorShapeFileName = copy.InteriorShapeFileName;
-            InteriorShapeDescriptor = copy.InteriorShapeDescriptor;
             InteriorSoundFileName = copy.InteriorSoundFileName;
             Cab3DShapeFileName = copy.Cab3DShapeFileName;
-            Cab3DShapeDescriptor = copy.Cab3DShapeDescriptor;
             Cab3DSoundFileName = copy.Cab3DSoundFileName;
             Adhesion1 = copy.Adhesion1;
             Adhesion2 = copy.Adhesion2;
@@ -2074,60 +1786,32 @@ namespace Orts.Simulation.RollingStocks
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("sound", ()=>{ InteriorSoundFileName = stf.ReadStringBlock(null); }),
-                new STFReader.TokenProcessor("passengercabinfile", ()=>{
-                    stf.MustMatch("(");
-                    InteriorShapeFileName = stf.ReadString();
-                    if (!stf.EndOfBlock())
-                    {
-                        InteriorShapeDescriptor = stf.ReadString();
-                        stf.SkipRestOfBlock();
-                    }
-                    else
-                        InteriorShapeDescriptor = InteriorShapeFileName + "d";
-                }),
+                new STFReader.TokenProcessor("passengercabinfile", ()=>{ InteriorShapeFileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("passengercabinheadpos", ()=>{ passengerViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
                 new STFReader.TokenProcessor("rotationlimit", ()=>{ passengerViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
                 new STFReader.TokenProcessor("startdirection", ()=>{ passengerViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
-                new STFReader.TokenProcessor("ortsshapeoffset", ()=>{ passengerViewPoint.ShapeOffset = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
-                new STFReader.TokenProcessor("ortsshapeindex", ()=>{ passengerViewPoint.ShapeIndex = stf.ReadIntBlock(null); }),
-                new STFReader.TokenProcessor("ortsshapehierarchy", ()=>{ passengerViewPoint.ShapeHierarchy = stf.ReadStringBlock(null); }),
             });
             // Set initial direction
             passengerViewPoint.RotationXRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.X);
             passengerViewPoint.RotationYRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.Y);
-            passengerViewPoint.ShapeOffset.Z *= -1; // Convert to MSTS coordinate system
             PassengerViewpoints.Add(passengerViewPoint);
         }
         protected void Parse3DCab(STFReader stf)
         {
-            PassengerViewPoint cabViewPoint = new PassengerViewPoint();
+            PassengerViewPoint passengerViewPoint = new PassengerViewPoint();
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("sound", ()=>{ Cab3DSoundFileName = stf.ReadStringBlock(null); }),
-                new STFReader.TokenProcessor("orts3dcabfile", ()=>{
-                    stf.MustMatch("(");
-                    Cab3DShapeFileName = stf.ReadString();
-                    if (!stf.EndOfBlock())
-                    {
-                        Cab3DShapeDescriptor = stf.ReadString();
-                        stf.SkipRestOfBlock();
-                    }
-                    else
-                        Cab3DShapeDescriptor = Cab3DShapeFileName + "d";
-                }),
-                new STFReader.TokenProcessor("orts3dcabheadpos", ()=>{ cabViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
-                new STFReader.TokenProcessor("ortsshapeoffset", ()=>{ cabViewPoint.ShapeOffset = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
-                new STFReader.TokenProcessor("ortsshapeindex", ()=>{ cabViewPoint.ShapeIndex = stf.ReadIntBlock(null); }),
-                new STFReader.TokenProcessor("ortsshapehierarchy", ()=>{ cabViewPoint.ShapeHierarchy = stf.ReadStringBlock(null); }),
-                new STFReader.TokenProcessor("rotationlimit", ()=>{ cabViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
-                new STFReader.TokenProcessor("startdirection", ()=>{ cabViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
+                new STFReader.TokenProcessor("orts3dcabfile", ()=>{ Cab3DShapeFileName = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("orts3dcabheadpos", ()=>{ passengerViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
+                new STFReader.TokenProcessor("rotationlimit", ()=>{ passengerViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
+                new STFReader.TokenProcessor("startdirection", ()=>{ passengerViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
             });
             // Set initial direction
-            cabViewPoint.RotationXRadians = MathHelper.ToRadians(cabViewPoint.StartDirection.X);
-            cabViewPoint.RotationYRadians = MathHelper.ToRadians(cabViewPoint.StartDirection.Y);
-            cabViewPoint.ShapeOffset.Z *= -1; // Convert to MSTS coordinate system
-            if (CabViewpoints == null) CabViewpoints = new List<PassengerViewPoint>();
-            CabViewpoints.Add(cabViewPoint);
+            passengerViewPoint.RotationXRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.X);
+            passengerViewPoint.RotationYRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.Y);
+            if (this.CabViewpoints == null) CabViewpoints = new List<PassengerViewPoint>();
+            CabViewpoints.Add(passengerViewPoint);
         }
 
         // parses additional passenger viewpoints, if any
@@ -2665,7 +2349,7 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        private void UpdateTrainBaseResistance()
+            private void UpdateTrainBaseResistance()
         {
             IsBelowMergeSpeed = AbsSpeedMpS < MergeSpeedMpS;
             IsStandStill = AbsSpeedMpS < 0.1f;
@@ -2700,10 +2384,17 @@ namespace Orts.Simulation.RollingStocks
         {
             if (FrictionV2 < 0 || FrictionV2 > 4.4407f) // > 10 mph
             {   // not fcalc ignore friction and use default davis equation
-                // Assume plain bearings and calculate resistance per original Davis equation
-                DavisAN = CalcDavisAValue(BearingTypes.Friction, MassKG, (WagonNumAxles + LocoNumDrvAxles));
-                DavisBNSpM = CalcDavisBValue(BearingTypes.Friction, MassKG, (WagonNumAxles + LocoNumDrvAxles), WagonType);
-                DavisCNSSpMM = NSSpMM.FromLbfpMpH2(Me2.ToFt2(WagonFrontalAreaM2) * DavisDragConstant);
+                // Starting Friction 
+                //
+                //                      Above Freezing   Below Freezing
+                //    Journal Bearing      25 lb/ton        35 lb/ton   (short ton)
+                //     Roller Bearing       5 lb/ton        15 lb/ton
+                //
+                // [2009-10-25 from http://www.arema.org/publications/pgre/ ]
+                //Friction0N = MassKG * 30f /* lb/ton */ * 4.84e-3f;  // convert lbs/short-ton to N/kg 
+                DavisAN = 6.3743f * MassKG / 1000 + 128.998f * 4;
+                DavisBNSpM = .49358f * MassKG / 1000;
+                DavisCNSSpMM = .11979f * 100 / 10.76f;
                 Friction0N = DavisAN * 2.0f;            //More firendly to high load trains and the new physics
             }
             else
@@ -2785,114 +2476,6 @@ namespace Orts.Simulation.RollingStocks
         }
 
         /// <summary>
-        /// Calculate an estimate for the Davis A value of a wagon using the davis formula and variations on it.
-        /// </summary>
-        /// <param name="bearings">BearingType we want to calculate the resistance for.</param>
-        /// <param name="mass">kg weight of the rail vehicle.</param>
-        /// <param name="axles">Total number of axles on the rail vehicle.</param>
-        /// <returns>An estimate for the Davis A value of the wagon in newtons.</returns>
-        public static float CalcDavisAValue(BearingTypes bearings, float mass, int axles)
-        {
-            float cT = 1.5f; // Resistance component in pounds per US ton
-            float cN = 20f; // Resistance component in pounds per axle
-
-            // Calculations based on Davis studies, with some estimation where data isn't availble
-            switch (bearings)
-            {
-                case BearingTypes.Grease:
-                case BearingTypes.Friction: // 1926 Davis
-                    if (Kg.ToTUS(mass) / axles < 5.0f) // Alternate Davis formula for light vehicles
-                    {
-                        cT = 9.4f * (float)Math.Sqrt(Kg.ToTUS(mass));
-                        cN = 12.5f;
-                    }
-                    else
-                    {
-                        cT = 1.3f;
-                        cN = 29f;
-                    }
-                    break;
-                case BearingTypes.Roller: // 1992 Canadian National
-                    cT = 1.5f;
-                    cN = 18f;
-                    break;
-                case BearingTypes.Low: // Estimate from CN method and tests on new bearings
-                    cT = 1.5f;
-                    cN = 11f;
-                    break;
-            }
-            // Davis uses imperial, convert to metric afterward
-            return N.FromLbf(cT * Kg.ToTUS(mass) + cN * axles);
-        }
-
-        /// <summary>
-        /// Calculate an estimate for the Davis B value of a wagon using the davis formula and variations on it.
-        /// </summary>
-        /// <param name="bearings">BearingType we want to calculate the resistance for.</param>
-        /// <param name="mass">kg weight of the rail vehicle.</param>
-        /// <param name="axles">Total number of axles on the rail vehicle.</param>
-        /// <param name="type">WagonType we want to calculate the resistance for.</param>
-        /// <returns>An estimate for the Davis B value of the wagon in newtons per meter per second.</returns>
-        public static float CalcDavisBValue(BearingTypes bearings, float mass, int axles, WagonTypes type = WagonTypes.Freight)
-        {
-            float cT = 0.03f; // Resistance component in pounds per US ton
-
-            // Calculations based on Davis studies, with some estimation where data isn't availble
-            switch (bearings)
-            {
-                case BearingTypes.Grease:
-                case BearingTypes.Friction: // 1926 Davis
-                    if (Kg.ToTUS(mass) / axles < 5.0f) // Alternate Davis formula for light vehicles
-                    {
-                        cT = 0.009f;
-                    }
-                    else
-                    {
-                        switch (type)
-                        {
-                            case WagonTypes.Tender:
-                            case WagonTypes.Freight:
-                                cT = 0.045f;
-                                break;
-                            case WagonTypes.Engine:
-                            case WagonTypes.Passenger:
-                                cT = 0.03f;
-                                break;
-                        }
-                    }
-                    break;
-                case BearingTypes.Roller: // 1992 Canadian National
-                    switch (type)
-                    {
-                        case WagonTypes.Tender:
-                        case WagonTypes.Freight:
-                            cT = 0.03f;
-                            break;
-                        case WagonTypes.Engine:     // Estimate from CN method and Davis study
-                        case WagonTypes.Passenger:
-                            cT = 0.02f;
-                            break;
-                    }
-                    break;
-                case BearingTypes.Low: // Estimate from CN method and tests on new bearings
-                    switch (type)
-                    {
-                        case WagonTypes.Tender:
-                        case WagonTypes.Freight:
-                            cT = 0.02f;
-                            break;
-                        case WagonTypes.Engine:
-                        case WagonTypes.Passenger:
-                            cT = 0.015f;
-                            break;
-                    }
-                    break;
-            }
-            // Davis uses imperial, convert to metric afterward
-            return NSpM.FromLbfpMpH(cT * Kg.ToTUS(mass));
-        }
-
-        /// <summary>
         /// Update train base resistance with a manually specified starting friction.
         /// </summary>
         /// <remarks>
@@ -2902,7 +2485,7 @@ namespace Orts.Simulation.RollingStocks
         {
             // Dtermine the starting friction factor based upon the type of bearing
             float StartFrictionLoadN = StandstillFrictionN;  // Starting friction
-            
+
             // Determine the starting resistance due to wheel bearing temperature
             // Note reference values in lbf and US tons - converted to metric values as appropriate
             // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
@@ -2987,70 +2570,144 @@ namespace Orts.Simulation.RollingStocks
             float StartFrictionTrackN = 0.0f;
             float AxleLoadKg = 0;
             float ResistanceGrade = 0;
-            float ReferenceWheelRadiusM = Me.FromIn(37.0f / 2.0f);
-            float wheelVariationFactor = 1.0f;
+            float ReferenceWheelDiameterIn = 37.0f;
+            float wheelvariationfactor = 1;
 
             // Find the variation in journal resistance due to wheel size. Steam locomotive don't have any variation at this time.
             if (WagonType == WagonTypes.Engine)
             {
                 if (EngineType != EngineTypes.Steam)
                 {
-                    wheelVariationFactor = DriverWheelRadiusM / ReferenceWheelRadiusM;
+                    float wheeldiamM = 2.0f * DriverWheelRadiusM;
+                    wheelvariationfactor = Me.ToIn(wheeldiamM) / ReferenceWheelDiameterIn;
                 }
             }
             else
             {
-                wheelVariationFactor = WheelRadiusM / ReferenceWheelRadiusM;
+                float wheeldiamM = 2.0f * WheelRadiusM;
+                wheelvariationfactor = Me.ToIn(wheeldiamM) / ReferenceWheelDiameterIn;
             }
 
-            float LowTemperature = -10.0f;
-            float HighTemeprature = 25.0f;
-
-            float LowTemperatureResistanceN;
-            float HighTemperatureResistanceN;
-
-            switch (BearingType)
+            if (IsRollerBearing)
             {
                 // Determine the starting resistance due to wheel bearing temperature
                 // Note reference values in lbf and US tons - converted to metric values as appropriate
                 // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
                 // Assume a linear relationship between the two sets of points above and plot a straight line relationship.
-                case BearingTypes.Low:
-                    LowTemperatureResistanceN = N.FromLbf(7.5f) * wheelVariationFactor;
-                    HighTemperatureResistanceN = N.FromLbf(2.5f) * wheelVariationFactor;
-                    break;
-                case BearingTypes.Roller:
-                    LowTemperatureResistanceN = N.FromLbf(12.0f) * wheelVariationFactor;
-                    HighTemperatureResistanceN = N.FromLbf(4.5f) * wheelVariationFactor;
-                    break;
-                case BearingTypes.Grease:
-                    LowTemperatureResistanceN = N.FromLbf(45.0f) * wheelVariationFactor;
-                    HighTemperatureResistanceN = N.FromLbf(30.0f) * wheelVariationFactor;
-                    break;
-                case BearingTypes.Friction:
-                default:
-                    LowTemperatureResistanceN = N.FromLbf(30.0f) * wheelVariationFactor;
-                    HighTemperatureResistanceN = N.FromLbf(20.0f) * wheelVariationFactor;
-                    break;
+                float LowTemperature = -10.0f;
+                float HighTemeprature = 25.0f;
+                float LowTemperatureResistanceN = N.FromLbf( 12.0f ) * wheelvariationfactor;
+                float HighTemperatureResistanceN = N.FromLbf( 4.5f) * wheelvariationfactor;
 
-            }
-
-            if (WheelBearingTemperatureDegC < LowTemperature)
-            {
-                // Set to snowing (frozen value)
-                StartFrictionInternalFactorN = LowTemperatureResistanceN;
-            }
-            else if (WheelBearingTemperatureDegC > HighTemeprature)
-            {
-                // Set to normal temperature value
-                StartFrictionInternalFactorN = HighTemperatureResistanceN;
-            }
-            else
-            {
-                // Set to variable value as bearing heats and cools
                 float LowGrad = (LowTemperatureResistanceN - HighTemperatureResistanceN) / (LowTemperature - HighTemeprature);
                 float LowIntersect = LowTemperatureResistanceN - (LowGrad * LowTemperature);
-                StartFrictionInternalFactorN = LowGrad * WheelBearingTemperatureDegC + LowIntersect;
+
+                if (WheelBearingTemperatureDegC < -10)
+                {
+                    // Set to snowing (frozen value)
+                    StartFrictionInternalFactorN = LowTemperatureResistanceN;  // Starting friction for car with standard roller bearings, snowing
+                }
+                else if (WheelBearingTemperatureDegC > 25)
+                {
+                    // Set to normal temperature value
+                    StartFrictionInternalFactorN = HighTemperatureResistanceN;  // Starting friction for car with standard roller bearings, not snowing
+                }
+                else
+                {
+                    // Set to variable value as bearing heats and cools
+                    StartFrictionInternalFactorN = LowGrad * WheelBearingTemperatureDegC + LowIntersect;
+                }
+            }
+            else if (IsLowTorqueRollerBearing)
+            {
+                // Determine the starting resistance due to wheel bearing temperature
+                // Note reference values in lbf and US tons - converted to metric values as appropriate
+                // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
+                // Assume a linear relationship between the two sets of points above and plot a straight line relationship.
+                float LowTemperature = -10.0f;
+                float HighTemeprature = 25.0f;
+                float LowTemperatureResistanceN = N.FromLbf(7.5f) * wheelvariationfactor;
+                float HighTemperatureResistanceN = N.FromLbf(2.5f) * wheelvariationfactor;
+
+                float LowGrad = (LowTemperatureResistanceN - HighTemperatureResistanceN) / (LowTemperature - HighTemeprature);
+                float LowIntersect = LowTemperatureResistanceN - (LowGrad * LowTemperature);
+
+                if (WheelBearingTemperatureDegC < -10)
+                {
+                    // Set to snowing (frozen value)
+                    StartFrictionInternalFactorN = LowTemperatureResistanceN;  // Starting friction for car with Low torque bearings, snowing
+                }
+                else if (WheelBearingTemperatureDegC > 25)
+                {
+                    // Set to normal temperature value
+                    StartFrictionInternalFactorN = HighTemperatureResistanceN;  // Starting friction for car with Low troque bearings, not snowing
+                }
+                else
+                {
+                    // Set to variable value as bearing heats and cools
+                    StartFrictionInternalFactorN = LowGrad * WheelBearingTemperatureDegC + LowIntersect;
+                }
+            }
+            else if (IsGreaseFrictionBearing)
+            {
+                // Determine the starting resistance due to wheel bearing temperature
+                // Note reference values in lbf and US tons - converted to metric values as appropriate
+                // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
+                // Assume a linear relationship between the two sets of points above and plot a straight line relationship.
+                float LowTemperature = -10.0f;
+                float HighTemeprature = 25.0f;
+                float LowTemperatureResistanceN = N.FromLbf(45.0f) * wheelvariationfactor;
+                float HighTemperatureResistanceN = N.FromLbf(30.0f) * wheelvariationfactor;
+
+                float LowGrad = (LowTemperatureResistanceN - HighTemperatureResistanceN) / (LowTemperature - HighTemeprature);
+                float LowIntersect = LowTemperatureResistanceN - (LowGrad * LowTemperature);
+
+                if (WheelBearingTemperatureDegC < -10)
+                {
+                    // Set to snowing (frozen value)
+                    StartFrictionInternalFactorN = LowTemperatureResistanceN;  // Starting friction car with Low torque bearings, snowing
+                }
+                else if (WheelBearingTemperatureDegC > 25)
+                {
+                    // Set to normal temperature value
+                    StartFrictionInternalFactorN = HighTemperatureResistanceN;  // Starting friction for car with Low troque bearings, not snowing
+                }
+                else
+                {
+                    // Set to variable value as bearing heats and cools
+                    StartFrictionInternalFactorN = LowGrad * WheelBearingTemperatureDegC + LowIntersect;
+                }
+            }
+            else  // default to friction (solid - oil journal) bearing
+            {
+
+                // Determine the starting resistance due to wheel bearing temperature
+                // Note reference values in lbf and US tons - converted to metric values as appropriate
+                // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
+                // Assume a linear relationship between the two sets of points above and plot a straight line relationship.
+                float LowTemperature = -10.0f;
+                float HighTemeprature = 25.0f;
+                float LowTemperatureResistanceN = N.FromLbf(30.0f) * wheelvariationfactor;
+                float HighTemperatureResistanceN = N.FromLbf(20.0f) * wheelvariationfactor;
+
+                float LowGrad = (LowTemperatureResistanceN - HighTemperatureResistanceN) / (LowTemperature - HighTemeprature);
+                float LowIntersect = LowTemperatureResistanceN - (LowGrad * LowTemperature);
+
+                if (WheelBearingTemperatureDegC < -10)
+                {
+                    // Set to snowing (frozen value)
+                    StartFrictionInternalFactorN = LowTemperatureResistanceN; // Starting friction for car with friction (journal) bearings - ton (US), snowing
+                }
+                else if (WheelBearingTemperatureDegC > 25)
+                {
+                    // Set to normal temperature value
+                    StartFrictionInternalFactorN = HighTemperatureResistanceN; // Starting friction for car with friction (journal) bearings - ton (US), not snowing
+                }
+                else
+                {
+                    // Set to variable value as bearing heats and cools
+                    StartFrictionInternalFactorN = LowGrad * WheelBearingTemperatureDegC + LowIntersect;
+                }
             }
 
             // Determine the track starting resistance, based upon the axle loading of the wagon
@@ -3080,7 +2737,7 @@ namespace Orts.Simulation.RollingStocks
             // Calculate the track gradient based on wagon axle loading
             ResistanceGrade = TrackGrad * AxleLoadKg + TrackIntersect;
 
-            ResistanceGrade = Math.Max(ResistanceGrade, 100); // Clamp gradient so it doesn't go below 1 in 100
+            ResistanceGrade = MathHelper.Clamp(ResistanceGrade, 100, ResistanceGrade); // Clamp gradient so it doesn't go below 1 in 100
 
             const float trackfactor = 1120.0f;
             StartFrictionTrackN = N.FromLbf(trackfactor * (1 / ResistanceGrade) * Kg.ToTUK(AxleLoadKg));
@@ -3098,12 +2755,15 @@ namespace Orts.Simulation.RollingStocks
             float MotionLowTemperatureResistance = 1.3f;
             float MotionHighTemperatureResistance = 1.0f;
 
-            if (WheelBearingTemperatureDegC < MotionLowTemperature)
+            float RunGrad = (MotionLowTemperatureResistance - MotionHighTemperatureResistance) / (MotionLowTemperature - MotionHighTemeprature);
+            float RunIntersect = MotionLowTemperatureResistance - (RunGrad * MotionLowTemperature);
+
+            if (WheelBearingTemperatureDegC < -10)
             {
                 // Set to snowing (frozen value)
                 WheelBearingTemperatureResistanceFactor = 1.3f;
             }
-            else if (WheelBearingTemperatureDegC > MotionHighTemeprature)
+            else if (WheelBearingTemperatureDegC > 25)
             {
                 // Set to normal temperature value
                 WheelBearingTemperatureResistanceFactor = 1.0f;
@@ -3111,12 +2771,12 @@ namespace Orts.Simulation.RollingStocks
             else
             {
                 // Set to variable value as bearing heats and cools
-                float RunGrad = (MotionLowTemperatureResistance - MotionHighTemperatureResistance) / (MotionLowTemperature - MotionHighTemeprature);
-                float RunIntersect = MotionLowTemperatureResistance - (RunGrad * MotionLowTemperature);
                 WheelBearingTemperatureResistanceFactor = RunGrad * WheelBearingTemperatureDegC + RunIntersect;
+
             }
 
-            Friction0N = (Kg.ToTUK(MassKG) * StartFrictionInternalFactorN) + StartFrictionTrackN; // Static friction is journal or roller bearing friction x weight + track resistance. Mass value must be in tons uk to match reference used for starting resistance
+
+            Friction0N = ( Kg.ToTonne(MassKG) * StartFrictionInternalFactorN) + StartFrictionTrackN; // Static friction is journal or roller bearing friction x weight + track resistance. Mass value must be in tons uk to match reference used for starting resistance
 
             float Friction0DavisN = DavisAN * WheelBearingTemperatureResistanceFactor; // Calculate the starting firction if Davis formula was extended to zero
 
@@ -3192,16 +2852,13 @@ namespace Orts.Simulation.RollingStocks
                 WheelBearingTemperatureResistanceFactor = 2.0f;
             }
 
+            FrictionForceN = DavisAN * WheelBearingTemperatureResistanceFactor + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * DavisCNSSpMM); // for normal speed operation
 
-            // if this car is a locomotive, but not the lead one then calculate the resistance with lower value as drag will not be as high on trailing locomotives
+            // if this car is a locomotive, but not the lead one then recalculate the resistance with lower value as drag will not be as high on trailing locomotives
             // Only the drag (C) factor changes if a trailing locomotive, so only running resistance, and not starting resistance needs to be corrected
             if (WagonType == WagonTypes.Engine && Train.LeadLocomotive != this)
             {
                 FrictionForceN = DavisAN * WheelBearingTemperatureResistanceFactor + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * (TrailLocoResistanceFactor * DavisCNSSpMM));
-            }
-            else
-            {
-                FrictionForceN = DavisAN * WheelBearingTemperatureResistanceFactor + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * DavisCNSSpMM); // for normal speed operation
             }
 
             // Test to identify whether a tender is attached to the leading engine, if not then the resistance should also be derated as for the locomotive
@@ -4972,28 +4629,24 @@ public void SetTensionStiffness(float a, float b)
         public static Dictionary<string, MSTSWagon> LoadedCars = new Dictionary<string, MSTSWagon>();
     }
 
-    public class ParticleEmitterData
+    public struct ParticleEmitterData
     {
-        public Vector3 XNALocation;
-        public Vector3 XNADirection;
-        public float NozzleWidth;
-        public int ShapeIndex = -1;
-        public string ShapeHierarchy;
+        public readonly Vector3 XNALocation;
+        public readonly Vector3 XNADirection;
+        public readonly float NozzleWidth;
 
         public ParticleEmitterData(STFReader stf)
         {
             stf.MustMatch("(");
-            XNALocation = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-            XNALocation.Z *= -1; // Convert to MSTS coordinate system
-            XNADirection = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-            XNADirection.Z *= -1; // Convert to MSTS coordinate system
+            XNALocation.X = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNALocation.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNALocation.Z = -stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNADirection.X = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNADirection.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
+            XNADirection.Z = -stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
             XNADirection.Normalize();
             NozzleWidth = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            // Parse new parameters after all MSTS parameters, otherwise it's ambiguous which data is which
-            stf.ParseBlock(new STFReader.TokenProcessor[] {
-                    new STFReader.TokenProcessor("ortsshapeindex", ()=>{ ShapeIndex = stf.ReadIntBlock(null); }),
-                    new STFReader.TokenProcessor("ortsshapehierarchy", ()=>{ ShapeHierarchy = stf.ReadStringBlock(null); }),
-            });
+            stf.SkipRestOfBlock();
         }
     }
 }
