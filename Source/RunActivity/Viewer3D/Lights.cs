@@ -347,7 +347,7 @@ namespace Orts.Viewer3D
             bool newLeftDoorOpen = !Car.Lights.IgnoredConditions[11] && Car.Train?.DoorState(DoorSide.Left) != DoorState.Closed;
             bool newRightDoorOpen = !Car.Lights.IgnoredConditions[11] && Car.Train?.DoorState(DoorSide.Right) != DoorState.Closed;
             // AI trains don't have a lead locomotive, but the upcoming lighting calculations want a lead locomotive, try to determine a lead locomotive to use
-            if (leadLocomotive == null)
+            if (leadLocomotive == null && Car.Train != null)
             {
                 // If first car is flipped, the 'lead' vehicle is actually at the rear
                 if (Car.Train.FirstCar.Flipped && Car.Train.LastCar is MSTSLocomotive)
