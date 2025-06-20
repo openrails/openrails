@@ -1435,7 +1435,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
             float adhesionForceN = AxleWeightN * AdhesionLimit;
             SlipPercent = Math.Abs(axleOutForceN) / adhesionForceN * 100;
-            if (SlipPercent > 100)
+            if (Car is MSTSSteamLocomotive steam && !steam.AdvancedAdhesionModel)
+            {
+                // Do not allow wheelslip on steam locomotives if simple adhesion is selected
+                SlipPercent = 0;
+            }
+            else if (SlipPercent > 100)
             {
                 axleOutForceN = MathHelper.Clamp(axleOutForceN, -adhesionForceN, adhesionForceN);
                 // Simple adhesion, simple wheelslip conditions
