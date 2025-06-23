@@ -1198,7 +1198,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (time >= selectedSpeedLeverHoldTime && time < selectedSpeedLeverHoldTime + SpeedSelectorStepTimeSeconds) return;
             selectedSpeedLeverHoldTime = time;
 
-            if (SpeedSelectorIsDiscrete)
+            if (SpeedSelectorController.NotchCount() > 0)
             {
                 SpeedSelectorController.StartIncrease();
                 SpeedSelectorController.StopIncrease();
@@ -1222,7 +1222,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             selectedSpeedLeverHoldTime = time;
 
             float speed = ControllerValueToSelectedSpeedMpS(SpeedSelectorController.CurrentValue) - SpeedRegulatorNominalSpeedStepMpS;
-            if (SpeedSelectorIsDiscrete)
+            if (SpeedSelectorController.NotchCount() > 0)
             {
                 SpeedSelectorController.StartDecrease();
                 SpeedSelectorController.StopDecrease();
