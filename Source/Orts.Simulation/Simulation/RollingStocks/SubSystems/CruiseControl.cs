@@ -20,13 +20,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using ORTS.Common;
 using ORTS.Scripting.Api;
-using static Orts.Simulation.RollingStocks.TrainCar;
 namespace Orts.Simulation.RollingStocks.SubSystems
 {
     public class CruiseControl
@@ -1559,82 +1557,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             None,
             Full,
             SpeedOnly
-        }
-    }
-    public class AccelerationController
-    {
-        public float Percent { get; private set; }
-        public float PPercent { get; private set; }
-        public float IPercent { get; private set; }
-        public float DPercent { get; private set; }
-        private float TotalError;
-        private float LastTarget;
-        private float LastError;
-        private bool active;
-        private readonly float[] Coefficients;
-        private float ProportionalFactor;
-        private float IntegralFactor;
-        private float DerivativeFactor;
-        public float Tolerance;
-        public bool Active
-        {
-            set
-            {
-                if (active != value)
-                {
-                    LastTarget = 0;
-                    LastError = 0;
-                    TotalError = 0;
-                    Percent = 0;
-                    active = value;
-                }
-            }
-            get
-            {
-                return active;
-            }
-        }
-        public AccelerationController(float p, float i, float d=0)
-        {
-            Coefficients = new float[] {100*p, 100*i, 100*d};
-        }
-        protected AccelerationController(AccelerationController o)
-        {
-            Coefficients = o.Coefficients;
-        }
-        public AccelerationController Clone()
-        {
-            return new AccelerationController(this);
-        }
-        public void Adjust(float maxAccelerationMpSS)
-        {
-            ProportionalFactor = Coefficients[0] / maxAccelerationMpSS;
-            IntegralFactor = Coefficients[1] / maxAccelerationMpSS;
-            DerivativeFactor = Coefficients[2] / maxAccelerationMpSS;
-        }
-        public void Update(float elapsedClockSeconds, float targetAccelerationMpSS, float currentAccelerationMpSS, float minPercent = 0, float maxPercent = 100)
-        {
-            if (!Active) Active = true;
-            float error = targetAccelerationMpSS - currentAccelerationMpSS;
-            TotalError += (error + LastError) * elapsedClockSeconds / 2;
-            PPercent = ProportionalFactor * targetAccelerationMpSS;
-            IPercent = IntegralFactor * TotalError;
-            DPercent = elapsedClockSeconds > 0 && DerivativeFactor > 0 ? DerivativeFactor * (error - LastError) / elapsedClockSeconds : 0;
-            Percent = PPercent + IPercent + DPercent;
-            if (Percent <= minPercent)
-            {
-                if (PPercent > minPercent && IntegralFactor > 0) TotalError = (minPercent - PPercent) / IntegralFactor;
-                else if (TotalError < 0) TotalError = 0;
-                Percent = minPercent;
-            }
-            if (Percent >= maxPercent)
-            {
-                if (PPercent < maxPercent && IntegralFactor > 0) TotalError = (maxPercent - PPercent) / IntegralFactor;
-                else if (TotalError > 0) TotalError = 0;
-                Percent = maxPercent;
-            }
-            LastTarget = targetAccelerationMpSS;
-            LastError = error;
         }
     }
 }
