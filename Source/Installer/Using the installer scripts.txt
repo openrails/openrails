@@ -1,8 +1,11 @@
 Using the installer scripts.txt
-Last updated: 2022-08-21 by Chris Jakeman
+Last updated: 2025-06-21 by Chris Jakeman
 
-1. If you wish to update the version name from "1.5", then edit the line
-     #define MyAppVersion "1.5"
+Compiling the scripts and data files on your own PC and testing them there or on a virtual machine
+==================================================================================================
+
+1. If you wish to update the version name from "1.6", then edit the line
+     #define MyAppVersion "1.6"
 	 in the file 
    Source\Installer\Version.iss
      and update the Release number and date in:
@@ -10,10 +13,12 @@ Last updated: 2022-08-21 by Chris Jakeman
      and in
    Source\RunActivity\Prerequisites.txt
    
+   The text in these documents is shown by the Installer to the user, so check this is still up to date.
+   
 2. Download and install Inno Setup from http://www.jrsoftware.org/isdl.php
-Initial trials (Apr 2014) used v5.5.4. Open Rails v1.5 uses 6.1.2
+Initial trials (Apr 2014) used v5.5.4. Open Rails v1.6 uses 6.4.3
 
-3. Download Microsoft .NET Framework 4.7.2 web installer for Windows from:
+3. Download Microsoft .NET Framework 4.7.2 web installer package for Windows from:
     https://support.microsoft.com/en-us/topic/microsoft-net-framework-4-7-2-web-installer-for-windows-dda5cddc-b85e-545d-8d4a-d213349b7775
    and save in
   <A>\.NET Framework 4.7.2 web installer\ndp472-kb4054531-web.exe
@@ -23,28 +28,31 @@ Initial trials (Apr 2014) used v5.5.4. Open Rails v1.5 uses 6.1.2
    From Source\Installer, copy OpenRails.iss and Version.iss into <A>\Temp\Installer
   
 5. Repeat the following as often as required:
-  A. Download OR zip file from https://github.com/openrails/openrails/releases, choose the latest (i.e. pre-release) version, open the Assets concertina and pick OpenRails-Stable.zip
+  A. Download OR zip file from https://github.com/openrails/openrails/releases, choose the latest (i.e. pre-release) version, open the Assets concertina and pick Open Rails <version>.zip where <version> is something like "1.6-rc2"
 
   B. Unzip into folder 
-    <A>\Open Rails\Program\
+    <A>\Program\
 
   C. Remove 
-    <A>\Open Rails\Program\Updater.ini 
+    <A>\Program\Updater.ini 
   as James Ross advises because the updater cannot update an installed version yet.
 
-  D. Download source from https://github.com/openrails/openrails/releases, choose the latest (i.e. pre-release) version, open the Assets concertina and pick Source code (openrails-1.5-rc1.zip) and extract the folder Source\Documentation.
+  D. Download source from https://github.com/openrails/openrails/releases, choose the latest (i.e. pre-release) version, open the Assets concertina and pick Source code Open Rails <version> Source.zip where <version> is something like "1.6-rc2" and extract the folder Source\Documentation.
 
   E. Copy contents into folder
-    <A>\Open Rails\Program\Documentation\
+    <A>\Program\Documentation\
+	
+  F. If you made changes to Source\RunActivity\Readme.txt or Source\RunActivity\Prerequisites.txt in Step 1, then
+  copy them to <A>\Program\ to overwrite the downloaded files.
 
-  F. Use Inno Setup > Build > Compile to compile the installer script
+  G. Use Inno Setup Compiler > Build > Compile to compile the installer script
     <A>\Temp\Installer\Installer.iss
 	and generate the Open Rails Installer
   
-  G. The generated file will be found in <A>\Temp\Installer\Output\OpenRailsSetup.exe
+  H. The generated file will be found in <A>\Temp\Installer\Output\OpenRailsSetup.exe
  
 6. Test the installer by building Virtual Machines with a fresh copy of Windows.
-Open Rails v1.5 is compatible with Windows from 7 (SP1) to 11 and, hopefully, beyond.
+Open Rails v1.6 is compatible with Windows from 7 (SP1) to 11 and, hopefully, beyond.
 
 Arrange for the VM to have Internet access and a shared folder.
 Copy OpenRailsSetup.exe to the shared folder.
