@@ -250,7 +250,6 @@ namespace Orts.Simulation.RollingStocks
         public float SteamStaticWheelForce;
         public float SteamTangentialWheelForce;
         public float SteamDrvWheelWeightLbs;  // Weight on each drive axle
-        public float PreviousThrottleSetting = 0.0f;  // Holds the value of the previous throttle setting for calculating the correct antislip speed
         float DebugTimer; // Used for debugging adhesion coefficient
         bool DebugSpeedReached = false; // Used for debugging adhesion coefficient
         float DebugSpeedIncrement = 1; // Used for debugging adhesion coefficient
@@ -2267,24 +2266,6 @@ namespace Orts.Simulation.RollingStocks
                     UpdateAxles(elapsedClockSeconds);
 
                     UpdateTrackSander(elapsedClockSeconds);
-
-                    if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)  // Antislip and throttle down should only work on diesel or electric locomotives.
-                    {
-
-                        // If wheel slip waring activated, and antislip is set in ENG file then reduce throttle setting to a value below warning power
-                        if (WheelSlipWarning && AntiSlip)
-                        {
-                            ThrottleController.SetValue(PreviousThrottleSetting);
-                        }
-
-
-                        PreviousThrottleSetting = (ThrottlePercent / 100.0f) - 0.005f;
-                        PreviousThrottleSetting = MathHelper.Clamp(PreviousThrottleSetting, 0.0f, 1.0f); // Prevents parameter going outside of bounds 
-
-                        // If wheels slip and WheelslipCausesThrottleDown is set in engine file reduce throttle to 0 setting
-                        if (WheelslipCausesThrottleDown && WheelSlip)
-                            ThrottleController.SetValue(0.0f);
-                    }
                     break;
                 default:
                     break;
@@ -2745,6 +2726,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (axle.DriveType == AxleDriveType.ForceDriven)
                 {
+                    float prevForceN = axle.DriveForceN;
                     axle.DriveForceN = TractiveForceN * axle.TractiveForceFraction;
                     if (SlipControlSystem == SlipControlType.Full)
                     {
@@ -2752,10 +2734,25 @@ namespace Orts.Simulation.RollingStocks
                         // Motive force is reduced to the maximum adhesive force
                         // In wheelslip situations, motive force is set to zero
                         float adhesionLimit;
-                        if (axle.SlipSpeedPercent > 115) adhesionLimit = 0;
-                        else if (axle.SlipSpeedPercent > 95) adhesionLimit = axle.MaximumWheelAdhesion * (115 - axle.SlipSpeedPercent) / 20;
+                        if (axle.SlipPercent > 115) adhesionLimit = 0;
+                        else if (axle.SlipPercent > 95) adhesionLimit = axle.MaximumWheelAdhesion * (115 - axle.SlipSpeedPercent) / 20;
                         else adhesionLimit = axle.MaximumWheelAdhesion;
                         axle.DriveForceN = Math.Sign(axle.DriveForceN) * Math.Min(adhesionLimit * axle.AxleWeightN, Math.Abs(axle.DriveForceN));
+                    }
+                    else if (TractionForceN > 0) // only for traction (not for dynamic brake)
+                    {
+                        if (WheelslipCausesThrottleDown && WheelSlip)
+                        {
+                            // Disable traction in the axle if slipping
+                            axle.DriveForceN = 0;
+                        }
+                        else if (AntiSlip && AdvancedAdhesionModel && WheelSlipWarning)
+                        {
+                            // Reduce tractive force to 0 in 3 seconds until wheel slip warning ends
+                            float newForceN = Math.Max(Math.Abs(prevForceN) - TractiveForceN * axle.TractiveForceFraction * elapsedClockSeconds / 3, 0);
+                            if (axle.DriveForceN > 0 && prevForceN >= 0) axle.DriveForceN = newForceN;
+                            else if (axle.DriveForceN < 0 && prevForceN <= 0) axle.DriveForceN = -newForceN;
+                        }
                     }
                 }
             }
