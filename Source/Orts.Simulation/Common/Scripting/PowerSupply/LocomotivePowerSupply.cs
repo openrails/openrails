@@ -208,6 +208,25 @@ namespace ORTS.Scripting.Api
         protected float ElectricTrainSupplyPowerW => LpsHost.ElectricTrainSupplyPowerW;
 
         /// <summary>
+        /// Number of cars that require energy from the electric train supply
+        /// </summary>
+        protected int NumberOfElectricTrainSupplyConnectedCars
+        {
+            get
+            {
+                int count = 0;
+                foreach (var car in Train.Cars)
+                {
+                    if (car == null) continue;
+                    if (!(car is MSTSWagon wagon)) continue;
+                    if (!(wagon.PassengerCarPowerSupply?.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive) ?? false)) continue;
+                    count++;
+                }
+                return count;
+            }
+        }
+
+        /// <summary>
         /// Returns the index of the current locomotive in the train (taking into account only locomotives)
         /// </summary>
         public int IndexOfLocomotive()
