@@ -241,10 +241,14 @@ namespace Orts.Simulation.RollingStocks
         // Adhesion parameters
         public enum SlipControlType
         {
+            Unknown,
             None,
+            CutPower,
+            ReduceForce,
             Full
         }
         public SlipControlType SlipControlSystem;
+        public bool[] SlipControlActive;
         float BaseFrictionCoefficientFactor;  // Factor used to adjust Curtius formula depending upon weather conditions
         float SlipFrictionCoefficientFactor;
         public float SteamStaticWheelForce;
@@ -929,10 +933,10 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsunloadingspeed": UnloadingSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(ortsslipcontrolsystem":
                     stf.MustMatch("(");
-                    string slipControlType = stf.ReadString().ToLowerInvariant();
+                    string slipControlType = stf.ReadString();
                     try
                     {
-                        SlipControlSystem = (SlipControlType)Enum.Parse(typeof(SlipControlType), slipControlType.First().ToString().ToUpper() + slipControlType.Substring(1));
+                        SlipControlSystem = (SlipControlType)Enum.Parse(typeof(SlipControlType), slipControlType, true);
                     }
                     catch
                     {
@@ -1682,6 +1686,13 @@ namespace Orts.Simulation.RollingStocks
                         TractionMotors.Add(motor);
                     }
                 }
+            }
+            SlipControlActive = new bool[LocomotiveAxles.Count];
+            if (SlipControlSystem == SlipControlType.Unknown)
+            {
+                if (AntiSlip) SlipControlSystem = SlipControlType.ReduceForce;
+                else if (WheelslipCausesThrottleDown) SlipControlSystem = SlipControlType.CutPower;
+                else SlipControlSystem = SlipControlType.None;
             }
 
             // Calculate minimum speed to pickup water
@@ -2719,8 +2730,9 @@ namespace Orts.Simulation.RollingStocks
             UpdateDynamicBrakeForce(elapsedClockSeconds);
             TractiveForceN -= Math.Sign(WheelSpeedMpS) * DynamicBrakeForceN;
 
-            foreach (var axle in LocomotiveAxles)
+            for (int i=0; i<LocomotiveAxles.Count; i++)
             {
+                var axle = LocomotiveAxles[i];
                 if (axle.DriveType == AxleDriveType.ForceDriven)
                 {
                     float prevForceN = axle.DriveForceN;
@@ -2736,17 +2748,46 @@ namespace Orts.Simulation.RollingStocks
                         else adhesionLimit = axle.MaximumWheelAdhesion;
                         axle.DriveForceN = Math.Sign(axle.DriveForceN) * Math.Min(adhesionLimit * axle.AxleWeightN, Math.Abs(axle.DriveForceN));
                     }
-                    else if (TractionForceN > 0) // only for traction (not for dynamic brake)
+                    else if (SlipControlSystem == SlipControlType.CutPower)
                     {
-                        if (WheelslipCausesThrottleDown && WheelSlip)
+                        if (TractionForceN > 0)
                         {
-                            // Disable traction in the axle if slipping
-                            axle.DriveForceN = 0;
+                            if (axle.HuDIsWheelSlip) SlipControlActive[i] = true;
                         }
-                        else if (AntiSlip && AdvancedAdhesionModel && WheelSlipWarning)
+                        else
                         {
-                            // Reduce tractive force to 0 in 3 seconds until wheel slip warning ends
-                            float newForceN = Math.Max(Math.Abs(prevForceN) - TractiveForceN * axle.TractiveForceFraction * elapsedClockSeconds / 3, 0);
+                            // Only restore traction when throttle is set to 0
+                            SlipControlActive[i] = false;
+                        }
+                        // Disable traction in the axle if slipping
+                        if (SlipControlActive[i]) axle.DriveForceN = 0;
+                    }
+                    else if (SlipControlSystem == SlipControlType.ReduceForce)
+                    {
+                        if (TractionForceN > 0 && axle.DriveForceN != 0 && AdvancedAdhesionModel)
+                        {
+                            if (axle.SlipPercent > axle.SlipWarningTresholdPercent) SlipControlActive[i] = true;
+                        }
+                        else
+                        {
+                            SlipControlActive[i] = false;
+                        }
+                        if (SlipControlActive[i])
+                        {
+                            float absForceN = Math.Abs(axle.DriveForceN);
+                            float newForceN;
+                            if (axle.SlipPercent < axle.SlipWarningTresholdPercent * 0.9f)
+                            {
+                                // If well below slip threshold, restore full power in 10 seconds
+                                newForceN = Math.Min(Math.Abs(prevForceN) + absForceN * elapsedClockSeconds / 10, absForceN);
+
+                                // If full force is restored, disengage slip control
+                                if (newForceN / absForceN > 0.95f) SlipControlActive[i] = false;
+                            }
+                            else
+                            {
+                                newForceN = Math.Max(Math.Abs(prevForceN) - absForceN * elapsedClockSeconds / 3, 0);
+                            }
                             if (axle.DriveForceN > 0 && prevForceN >= 0) axle.DriveForceN = newForceN;
                             else if (axle.DriveForceN < 0 && prevForceN <= 0) axle.DriveForceN = -newForceN;
                         }
