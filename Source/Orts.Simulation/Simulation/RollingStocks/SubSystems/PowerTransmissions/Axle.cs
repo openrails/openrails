@@ -1446,7 +1446,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 // Simple adhesion, simple wheelslip conditions
                 if (Car is MSTSLocomotive locomotive && !locomotive.AdvancedAdhesionModel)
                 {
-                    if (!locomotive.AntiSlip) axleOutForceN *= locomotive.Adhesion1;
+                    if (!locomotive.AntiSlip && locomotive.SlipControlSystem != MSTSLocomotive.SlipControlType.Full) axleOutForceN *= locomotive.Adhesion1;
                     else SlipPercent = 100;
                 }
                 else if (!Car.Simulator.UseAdvancedAdhesion || Car.Simulator.Settings.SimpleControlPhysics || !Car.Train.IsPlayerDriven)
