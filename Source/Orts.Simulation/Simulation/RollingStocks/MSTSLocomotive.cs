@@ -2753,7 +2753,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     else if (SlipControlSystem == SlipControlType.CutPower)
                     {
-                        if (!DynamicBrake)
+                        if (axle.DriveForceN != 0)
                         {
                             if (axle.HuDIsWheelSlip) SlipControlActive[i] = true;
                         }
@@ -2767,7 +2767,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     else if (SlipControlSystem == SlipControlType.ReduceForce)
                     {
-                        if (!DynamicBrake && axle.DriveForceN != 0 && AdvancedAdhesionModel)
+                        if (axle.DriveForceN != 0 && (AdvancedAdhesionModel || !AntiSlip))
                         {
                             if (axle.SlipPercent > axle.SlipWarningTresholdPercent) SlipControlActive[i] = true;
                         }
