@@ -771,7 +771,7 @@ namespace Orts.Viewer3D.Popups
                 {
                     FirstCol = Viewer.Catalog.GetString(locomotive is MSTSSteamLocomotive ? "Regulator" : "Throttle"),
                     LastCol = $"{Round(locomotive.ThrottlePercent)}%" +
-                        (locomotive is MSTSDieselLocomotive && train.DPMode == 1 ? $" | {Round(train.DPThrottlePercent)}%" : ""),
+                    (locomotive is MSTSDieselLocomotive && train.DPMode == 1 ? $"({Round(train.DPThrottlePercent)}%)" : ""),
                     KeyPressed = throttleKey,
                     SymbolCol = ""//throttleKey,
                 });
@@ -1048,28 +1048,24 @@ namespace Orts.Viewer3D.Popups
 
             if (dynamicBrakeStatus != null && locomotive.IsLeadLocomotive())
             {
-                var dynBrakeString = "";
-                var dynBrakeColor = "";
-
-                if (locomotive.DynamicBrakePercent < 0)
-                    dynBrakeString = Viewer.Catalog.GetString("Off");
-                else if (!locomotive.DynamicBrake)
+                if (locomotive.DynamicBrakePercent >= 0)
                 {
-                    dynBrakeString = Viewer.Catalog.GetString("Setup");
-                    dynBrakeColor = ColorCode[Color.Cyan];
-                }
-                else
-                    dynBrakeString = dynamicBrakeStatus;
-
-                if (locomotive is MSTSDieselLocomotive && train.DPMode == -1)
-                    dynBrakeString += string.Format(" | {0:F0}%", train.DPDynamicBrakePercent);
-
                     AddLabel(new ListLabel
                     {
                         FirstCol = Viewer.Catalog.GetString("Dynamic brake"),
-                    LastCol = dynBrakeString + dynBrakeColor,
+                        LastCol = locomotive.DynamicBrake ? dynamicBrakeStatus : Viewer.Catalog.GetString("Setup") + ColorCode[Color.Cyan] +
+                         (locomotive is MSTSDieselLocomotive && train.DPMode == -1 ? string.Format("({0:F0}%)", train.DPDynamicBrakePercent) : string.Empty),
                     });
                 }
+                else
+                {
+                    AddLabel(new ListLabel
+                    {
+                        FirstCol = Viewer.Catalog.GetString("Dynamic brake"),
+                        LastCol = Viewer.Catalog.GetString("Off") + (locomotive is MSTSDieselLocomotive && train.DPMode == -1 ? string.Format("({0:F0}%)", train.DPDynamicBrakePercent) : string.Empty),
+                    });
+                }
+            }
 
             AddSeparator();
 
