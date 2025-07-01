@@ -1683,10 +1683,10 @@ namespace Orts.Simulation.RollingStocks
                 {
                     if (axle.DriveType != AxleDriveType.NotDriven)
                     {
-                        InductionMotor motor = new InductionMotor(axle, this);
-                        TractionMotors.Add(motor);
-                    }
+                    InductionMotor motor = new InductionMotor(axle, this);
+                    TractionMotors.Add(motor);
                 }
+            }
             }
             SlipControlActive = new bool[LocomotiveAxles.Count];
             if (SlipControlSystem == SlipControlType.Unknown)
@@ -2579,14 +2579,14 @@ namespace Orts.Simulation.RollingStocks
             if (TractiveForceCurves == null)
             {
                 powerW = Math.Min(powerW, MaxPowerW * t * t * (1 - PowerReduction));
-
-                if (AbsTractionSpeedMpS > MaxSpeedMpS - 0.05f)
-                {
-                    forceN = 20 * (MaxSpeedMpS - AbsTractionSpeedMpS) * MaxForceN * (1 - PowerReduction);
-                }
-                else if (AbsTractionSpeedMpS > MaxSpeedMpS)
+                
+                if (AbsTractionSpeedMpS > MaxSpeedMpS)
                 {
                     forceN = 0;
+                }
+                else if (AbsTractionSpeedMpS > MaxSpeedMpS - 0.05f)
+                {
+                    forceN = 20 * (MaxSpeedMpS - AbsTractionSpeedMpS) * MaxForceN * (1 - PowerReduction);
                 }
                 else
                 {
@@ -5060,7 +5060,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 case CABViewControlTypes.SPEEDOMETER:
                     {
-                        data = WheelSpeedMpS;
+                            data = WheelSpeedMpS;
 
                         if (cvc.Units == CABViewControlUnits.KM_PER_HOUR)
                             data *= 3.6f;
