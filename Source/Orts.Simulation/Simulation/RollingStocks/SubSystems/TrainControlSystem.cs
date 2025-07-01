@@ -432,7 +432,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 {
                     if (Locomotive.Pantographs.State == PantographState.Up)
                     {
-                        Locomotive.LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.LowerPantograph);
+                        Locomotive.LocomotivePowerSupply.HandleEventFromTcs(PowerSupplyEvent.LowerPantograph);
                     }
                 };
                 Script.SetPantographUp = (pantoID) =>
@@ -442,7 +442,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         Trace.TraceError($"TCS script used bad pantograph ID {pantoID}");
                         return;
                     }
-                    Locomotive.LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.RaisePantograph, pantoID);
+                    Locomotive.LocomotivePowerSupply.HandleEventFromTcs(PowerSupplyEvent.RaisePantograph, pantoID);
                 };               
                 Script.SetPantographDown = (pantoID) =>
                 {
@@ -451,7 +451,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         Trace.TraceError($"TCS script used bad pantograph ID {pantoID}");
                         return;
                     }
-                    Locomotive.LocomotivePowerSupply.HandleEvent(PowerSupplyEvent.LowerPantograph, pantoID);
+                    Locomotive.LocomotivePowerSupply.HandleEventFromTcs(PowerSupplyEvent.LowerPantograph, pantoID);
                 };
                 Script.SetPowerAuthorization = (value) => PowerAuthorization = value;
                 Script.SetCircuitBreakerClosingOrder = (value) => CircuitBreakerClosingOrder = value;
@@ -673,13 +673,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     foreach (var head in trainSignal.SignalObject.SignalHeads)
                         if (head.Function == function)
                             functionHead = head;
+                    if (functionHead == null)
+                        goto Exit;
                     signalTypeName = functionHead.SignalTypeName;
-                    foreach (var key in functionHead.signalType.DrawStates.Keys)
+                    if (functionHead?.signalType?.DrawStates != null)
                     {
-                        if (functionHead.signalType.DrawStates[key].Index == functionHead.draw_state)
+                        foreach (var key in functionHead.signalType.DrawStates.Keys)
                         {
-                            drawStateName = functionHead.signalType.DrawStates[key].Name;
-                            break;
+                            if (functionHead.signalType.DrawStates[key].Index == functionHead.draw_state)
+                            {
+                                drawStateName = functionHead.signalType.DrawStates[key].Name;
+                                break;
+                            }
                         }
                     }
                     textAspect = functionHead?.TextSignalAspect ?? "";

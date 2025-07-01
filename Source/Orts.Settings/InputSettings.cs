@@ -62,6 +62,8 @@ namespace ORTS.Settings
     /// </remarks>
     public class InputSettings : SettingsBase
     {
+        public static readonly string SectionName = "Keys";
+
         static GettextResourceManager commonCatalog = new GettextResourceManager("ORTS.Common");
         static GettextResourceManager settingsCatalog = new GettextResourceManager("ORTS.Settings");
 
@@ -79,7 +81,7 @@ namespace ORTS.Settings
         /// </summary>
         /// <param name="options">The list of one-time options to override persisted settings, if any.</param>
         public InputSettings(IEnumerable<string> options)
-        : base(SettingsStore.GetSettingStore(UserSettings.SettingsFilePath, UserSettings.RegistryKey, "Keys"))
+        : base(SettingsStore.GetSettingStore(SettingsBase.SettingsFilePath, SettingsBase.RegistryKey, SectionName))
         {
             InitializeCommands(Commands);
             Load(options);
@@ -516,6 +518,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.DisplayTrainOperationsWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommand.DisplayTrainDpuWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Shift);
             Commands[(int)UserCommand.DisplayEOTListWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Control);
+            Commands[(int)UserCommand.DisplayTrainForcesWindow] = new UserCommandKeyInput(0x41, KeyModifiers.Alt);
             Commands[(int)UserCommand.DisplayControlRectangle] = new UserCommandKeyInput(0x3F, KeyModifiers.Control);
 
             Commands[(int)UserCommand.GameAutopilotMode] = new UserCommandKeyInput(0x1E, KeyModifiers.Alt);

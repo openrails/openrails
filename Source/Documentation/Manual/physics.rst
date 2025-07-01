@@ -425,6 +425,7 @@ locomotive (regardless of transmission type) are as follows:
    single: MaxPower
    single: MaxForce
    single: MaxContinuousForce
+   single: ORTSTractiveForceIsPowerLimited
 
 ``ORTSDieselEngineMaxPower`` ==> sets the maximum power output at the 
 shaft of the diesel engine (or prime mover).
@@ -437,6 +438,9 @@ wheels when starting.
 ``MaxContinuousForce`` ==> is the maximum force that the locomotive can 
 continuously supply to the wheels without exceeding the design specifications. 
 Typically this is linked to a particular speed (see next parameter).
+
+``ORTSTractiveForceIsPowerLimited`` ==> determines if tractive force curves
+shall be limited to the available output power from the diesel engine.
 
 .. index::
    single: ORTSSpeedOfMaxContinuousForce
@@ -1141,6 +1145,67 @@ with the ``ORTSTractionMotorType ( AC ) `` parameter, to be inserted in the Engi
 section of the ENG file. The use of this motor will have an impact on wheel slip,
 because the wheel speed never exceeds the frequency of the rotating magnetic field.
 
+Traction force retardation
+''''''''''''''''''''''''''
+
+.. index::
+    single: ORTSTractiveForceRampUpRate
+    single: ORTSTractiveForceRampDownRate
+    single: ORTSTractiveForceRampDownToZeroRate
+    single: ORTSTractivePowerRampUpRate
+    single: ORTSTractivePowerRampDownRate
+    single: ORTSTractivePowerRampDownToZeroRate
+    single: ORTSDynamicBrakeForceRampUpRate
+    single: ORTSDynamicBrakeForceRampDownRate
+    single: ORTSDynamicBrakeForceRampDownToZeroRate
+    single: ORTSDynamicBrakePowerRampUpRate
+    single: ORTSDynamicBrakePowerRampDownRate
+    single: ORTSDynamicBrakePowerRampDownToZeroRate
+    single: ORTSDelayTimeBeforeUpdating
+
+When the driver sets full throttle, the control electronics may not apply the full
+tractive force instantly, but it will instead linearly apply force until reaching
+the target demand. This can be tuned both for traction and dynamic braking by inserting
+``ORTSTractiveForceRampUpRate``, ``ORTSTractiveForceRampDownRate``,
+``ORTSTractiveForceRampDownToZeroRate``, ``ORTSDynamicBrakeForceRampUpRate``,
+``ORTSDynamicBrakeForceRampDownRate`` and ``ORTSDynamicBrakeForceRampDownToZeroRate``
+in the .eng file. The value of each parameter determines the force increase/decrease
+rate. To include ramp up/down times also for power, use the equivalent
+``ORTSTractivePowerRampUpRate``, ``ORTSTractivePowerRampDownRate``,
+``ORTSTractivePowerRampDownToZeroRate``, ``ORTSDynamicBrakePowerRampUpRate``,
+``ORTSDynamicBrakePowerRampDownRate`` and ``ORTSDynamicBrakePowerRampDownToZeroRate``
+parameters.
+
+Example::
+
+  Engine (
+    ORTSTractiveForceRampUpRate ( 50kN/s )
+    ORTSTractiveForceRampDownRate ( 50kN/s )
+    ORTSTractiveForceRampDownToZeroRate ( 100kN/s )
+    ORTSDynamicBrakePowerRampUpRate ( 1000kW/s )
+    ORTSDynamicBrakeForceRampDownRate ( 50kN/s )
+  )
+
+Another possibility to avoid sudden variations in tractive force while the driver
+is moving the throttle, is to only update the throttle/brake demand when the lever
+has not been moved for a defined amount of time. This can be implemented using the
+``ORTSDelayTimeBeforeUpdating``, which has to be inserted for the desired
+controller in the ``EngineControllers`` block.
+
+Example::
+
+  Engine (
+    EngineControllers (
+      Throttle ( 0 1 0.1 0
+        NumNotches ( 0 )
+        ORTSDelayTimeBeforeUpdating ( 0.5s )
+      )
+      Brake_Dynamic ( 0 1 0.1 0
+        NumNotches ( 0 )
+        ORTSDelayTimeBeforeUpdating ( 1s )
+      )
+    )
+  )
 
 Steam Locomotives
 -----------------
@@ -2419,7 +2484,7 @@ To allow the auxiliary tender to be filled at a water fuelling point, a water fr
 Unpowered Control Car
 ---------------------
 
-This module simulates the control cab of a DMU set of cars. The cab typically would be located in an unpowered 
+This module simulates the control cab of a MU set of cars. The cab typically would be located in an unpowered 
 trailer car which is attached to a powered car for the provision of its motive force to drive the train forward.
 
 Apart from producing motive force the car (and cabin controls) should behave exactly the same as a locomotive.
@@ -3121,7 +3186,7 @@ Brake Shoe Force - This is the current change being implemented. The following c
 
 ``ORTSBrakeShoeType`` - this defines a number of different brake shoe types and curves. To provide a more realistic representation of the braking force the default CoF curves are 2D, ie 
 they are impacted by both the speed and Brake Shoe Force.  Typically ``ORTSBrakeShoeType`` will have one of the following keywords included - 
-``Cast_Iron_P6`` - older cast iron brake shoes, 2D as above, ``Cast_Iron_P10`` - newer cast iron brake shoes with increased phosphorous, 2D as above, ``Hi_Friction_Composite`` 
+``Cast_Iron_P6`` - older cast iron brake shoes, 2D as above, ``Cast_Iron_P10`` - newer cast iron brake shoes with increased phosphorous, 2D as above, ``High_Friction_Composite`` 
 - high friction composite shoe, 2D as above, ``Disc_Pads`` - brakes with disc pads, 2D as above, ``User_Defined`` - is a user defined curve 
 using the ORTSBrakeShoeFriction parameter, 1D (ie, speed only, see above section for the parameter format).
 
@@ -3345,6 +3410,8 @@ the following parameters will adjust the behaviour of air brakes:
 .. index::
    single: DynamicBrakeHasAutoBailOff
    single: ORTSDynamicBrakesHasPartialBailOff
+   single: ORTSDynamicBlendingRetainedPressure
+   single: ORTSDynamicBlendingMinimumSpeed
    single: ORTSTrainDynamicBlendingTable
    single: ORTSDynamicBrakeReplacementWithEngineBrake 
    single: ORTSDynamicBrakeReplacementWithEngineBrakeAtSpeed
@@ -3355,6 +3422,13 @@ the following parameters will adjust the behaviour of air brakes:
   air brakes are released while dynamic brakes satisfy the train brake demand.
   If dynamic braking is not sufficient, air brakes will be partially applied
   so the combination air+dynamic provides the required brake demand.
+- ``Engine(ORTSDynamicBlendingRetainedPressure`` -- Sets the brake cylinder
+  pressure which, when used in combination with ORTSDynamicBrakesHasPartialBailOff,
+  will remain applied regardless of the blended dynamic brake force. This
+  pressure is also the minimum pressure at which the blended braking system will activate.
+- ``Engine(ORTSDynamicBlendingMinimumSpeed`` -- Below the specified speed
+  (default units mph, default value 5 mph / 8 kph), local dynamic brake blending
+  will be disabled, allowing locomotive brakes to hold the train while stopped.
   
 Sometimes the train brake controller is capable to apply the dynamic
 brakes for the whole consist, usually as a first step before air brakes

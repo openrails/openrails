@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+﻿// COPYRIGHT 2009 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -15,27 +15,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-/* DIESEL LOCOMOTIVE CLASSES
- * 
- * The Locomotive is represented by two classes:
- *  MSTSDieselLocomotiveSimulator - defines the behaviour, ie physics, motion, power generated etc
- *  MSTSDieselLocomotiveViewer - defines the appearance in a 3D viewer.  The viewer doesn't
- *  get attached to the car until it comes into viewing range.
- *  
- * Both these classes derive from corresponding classes for a basic locomotive
- *  LocomotiveSimulator - provides for movement, basic controls etc
- *  LocomotiveViewer - provides basic animation for running gear, wipers, etc
- * 
- */
-
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
+using ORTS.Common;
 
 namespace Orts.Simulation.RollingStocks
 {
@@ -49,15 +38,12 @@ namespace Orts.Simulation.RollingStocks
         int ControlGearIndication;
         TypesGearBox ControlGearBoxType;
 
+        private bool controlTrailerBrakeSystemSet = false;
+
         public MSTSControlTrailerCar(Simulator simulator, string wagFile)
             : base(simulator, wagFile)
         {
             PowerSupply = new ScriptedControlCarPowerSupply(this);
-        }
-
-        public override void LoadFromWagFile(string wagFilePath)
-        {
-            base.LoadFromWagFile(wagFilePath);
         }
 
         public override void Initialize()
@@ -83,18 +69,12 @@ namespace Orts.Simulation.RollingStocks
         {
             switch (lowercasetoken)
             {
-                case "engine(ortspowerondelay":
-                case "engine(ortsauxpowerondelay":
                 case "engine(ortspowersupply":
                 case "engine(ortspowersupplyparameters":
-                case "engine(ortstractioncutoffrelay":
-                case "engine(ortstractioncutoffrelayclosingdelay":
                 case "engine(ortsbattery":
                 case "engine(ortsmasterkey(mode":
                 case "engine(ortsmasterkey(delayoff":
                 case "engine(ortsmasterkey(headlightcontrol":
-                case "engine(ortselectrictrainsupply(mode":
-                case "engine(ortselectrictrainsupply(dieselengineminrpm":
                     LocomotivePowerSupply.Parse(lowercasetoken, stf);
                     break;
 
@@ -161,6 +141,31 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
+            FindControlActiveLocomotive();
+            // A control car typically doesn't have its own compressor and relies on the attached power car. However OR uses the lead locomotive as the reference car for compressor calculations.
+            // Hence whilst users are encouraged to leave these parameters out of the ENG file, they need to be setup for OR to work correctly.
+            // Some parameters need to be split across the unpowered and powered car for correct timing and volume calculations.
+            // This setup loop is only processed the first time that update is run.
+            if (!controlTrailerBrakeSystemSet)
+            {
+                if (ControlActiveLocomotive != null)
+                {
+                    // Split reservoir volume across the power car and the active locomotive
+                    MainResVolumeM3 = ControlActiveLocomotive.MainResVolumeM3 / 2;
+                    ControlActiveLocomotive.MainResVolumeM3 = MainResVolumeM3;
+
+                    MaxMainResPressurePSI = ControlActiveLocomotive.MaxMainResPressurePSI;
+                    MainResPressurePSI = MaxMainResPressurePSI;
+                    ControlActiveLocomotive.MainResPressurePSI = MainResPressurePSI;
+                    controlTrailerBrakeSystemSet = true; // Ensure this loop is only processes the first time update routine run
+                    MaximumMainReservoirPipePressurePSI = ControlActiveLocomotive.MaximumMainReservoirPipePressurePSI;
+                    CompressorRestartPressurePSI = ControlActiveLocomotive.CompressorRestartPressurePSI;
+                    MainResChargingRatePSIpS = ControlActiveLocomotive.MainResChargingRatePSIpS;
+                    BrakePipeChargingRatePSIorInHgpS = ControlActiveLocomotive.BrakePipeChargingRatePSIorInHgpS;
+                    TrainBrakePipeLeakPSIorInHgpS = ControlActiveLocomotive.TrainBrakePipeLeakPSIorInHgpS;
+                }
+            }
+
             base.Update(elapsedClockSeconds);
             WheelSpeedMpS = SpeedMpS; // Set wheel speed for control car, required to make wheels go around.
 
@@ -213,18 +218,52 @@ namespace Orts.Simulation.RollingStocks
         public override string GetStatus()
         {
             var status = new StringBuilder();
-            if (HasGearController)
-                status.AppendFormat("{0} = {1}\n", Simulator.Catalog.GetString("Gear"),
-                ControlGearIndex < 0 ? Simulator.Catalog.GetParticularString("Gear", "N") : (ControlGearIndication).ToString());
-            status.AppendLine();
-
+            status.AppendFormat("{0} = {1}\n",
+                Simulator.Catalog.GetString("Battery switch"),
+                LocomotivePowerSupply.BatterySwitch.On ? Simulator.Catalog.GetString("On") : Simulator.Catalog.GetString("Off"));
+            status.AppendFormat("{0} = {1}\n",
+                Simulator.Catalog.GetString("Master key"),
+                LocomotivePowerSupply.MasterKey.On ? Simulator.Catalog.GetString("On") : Simulator.Catalog.GetString("Off"));
+            if (ControlActiveLocomotive != null)
+            {
+                status.AppendLine();
+                if (ControlActiveLocomotive is MSTSElectricLocomotive electric)
+                {
+                    status.AppendFormat("{0} = ", Simulator.Catalog.GetString("Pantographs"));
+                    foreach (var pantograph in electric.Pantographs.List)
+                        status.AppendFormat("{0} ", Simulator.Catalog.GetParticularString("Pantograph", GetStringAttribute.GetPrettyName(pantograph.State)));
+                    status.AppendLine();
+                    status.AppendFormat("{0} = {1}\n",
+                        Simulator.Catalog.GetString("Circuit breaker"),
+                        Simulator.Catalog.GetParticularString("CircuitBreaker", GetStringAttribute.GetPrettyName(electric.ElectricPowerSupply.CircuitBreaker.State)));
+                }
+                else if (ControlActiveLocomotive is MSTSDieselLocomotive diesel)
+                {
+                    status.AppendLine();
+                    status.AppendFormat("{0} = {1}\n", Simulator.Catalog.GetString("Engine"),
+                        Simulator.Catalog.GetParticularString("Engine", GetStringAttribute.GetPrettyName(diesel.DieselEngines[0].State)));
+                    if (HasGearController)
+                        status.AppendFormat("{0} = {1}\n", Simulator.Catalog.GetString("Gear"),
+                        ControlGearIndex < 0 ? Simulator.Catalog.GetParticularString("Gear", "N") : (ControlGearIndication).ToString());
+                    status.AppendFormat("{0} = {1}\n",
+                        Simulator.Catalog.GetString("Traction cut-off relay"),
+                        Simulator.Catalog.GetParticularString("TractionCutOffRelay", GetStringAttribute.GetPrettyName(diesel.DieselPowerSupply.TractionCutOffRelay.State)));
+                }
+                status.AppendFormat("{0} = {1}\n",
+                    Simulator.Catalog.GetString("Electric train supply"),
+                    ControlActiveLocomotive.LocomotivePowerSupply.ElectricTrainSupplySwitch.On ? Simulator.Catalog.GetString("On") : Simulator.Catalog.GetString("Off"));
+                status.AppendLine();
+                status.AppendFormat("{0} = {1}",
+                    Simulator.Catalog.GetParticularString("PowerSupply", "Power"),
+                    Simulator.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(ControlActiveLocomotive.LocomotivePowerSupply.MainPowerSupplyState)));
+            }
             return status.ToString();
         }
 
         /// <summary>
         /// This function updates periodically the locomotive's motive force.
         /// </summary>
-        protected override void UpdateTractiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS)
+        protected override void UpdateTractiveForce(float elapsedClockSeconds)
         {
         }
 
@@ -295,6 +334,70 @@ namespace Orts.Simulation.RollingStocks
 
             ControlGearUp = false;
             ControlGearDown = true;
+        }
+        public override float GetDataOf(CabViewControl cvc)
+        {
+            float data;
+            switch (cvc.ControlType.Type)
+            {
+                // Locomotive controls
+                case CABViewControlTypes.AMMETER:
+                case CABViewControlTypes.AMMETER_ABS:
+                case CABViewControlTypes.DYNAMIC_BRAKE_FORCE:
+                case CABViewControlTypes.LOAD_METER:
+                case CABViewControlTypes.ORTS_SIGNED_TRACTION_BRAKING:
+                case CABViewControlTypes.ORTS_SIGNED_TRACTION_TOTAL_BRAKING:
+                case CABViewControlTypes.TRACTION_BRAKING:
+                case CABViewControlTypes.WHEELSLIP:
+                    data = ControlActiveLocomotive?.GetDataOf(cvc) ?? 0;
+                    break;
+                // Diesel locomotive controls
+                case CABViewControlTypes.FUEL_GAUGE:
+                case CABViewControlTypes.ORTS_DIESEL_TEMPERATURE:
+                case CABViewControlTypes.ORTS_OIL_PRESSURE:
+                case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE:
+                case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_AUTHORIZED:
+                case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_CLOSED:
+                case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_DRIVER_CLOSING_AUTHORIZATION:
+                case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_DRIVER_CLOSING_ORDER:
+                case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_DRIVER_OPENING_ORDER:
+                case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_OPEN:
+                case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_OPEN_AND_AUTHORIZED:
+                case CABViewControlTypes.ORTS_TRACTION_CUT_OFF_RELAY_STATE:
+                case CABViewControlTypes.RPM:
+                case CABViewControlTypes.RPM_2:
+                    data = (ControlActiveLocomotive as MSTSDieselLocomotive)?.GetDataOf(cvc) ?? 0;
+                    break;
+                // Electric locomotive controls
+                case CABViewControlTypes.LINE_VOLTAGE:
+                case CABViewControlTypes.ORTS_PANTOGRAPH_VOLTAGE_AC:
+                case CABViewControlTypes.ORTS_PANTOGRAPH_VOLTAGE_DC:
+                case CABViewControlTypes.PANTO_DISPLAY:
+                case CABViewControlTypes.PANTOGRAPH:
+                case CABViewControlTypes.PANTOGRAPH2:
+                case CABViewControlTypes.ORTS_PANTOGRAPH3:
+                case CABViewControlTypes.ORTS_PANTOGRAPH4:
+                case CABViewControlTypes.PANTOGRAPHS_4:
+                case CABViewControlTypes.PANTOGRAPHS_4C:
+                case CABViewControlTypes.PANTOGRAPHS_5:
+                case CABViewControlTypes.ORTS_VOLTAGE_SELECTOR:
+                case CABViewControlTypes.ORTS_PANTOGRAPH_SELECTOR:
+                case CABViewControlTypes.ORTS_POWER_LIMITATION_SELECTOR:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_OPENING_ORDER:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_AUTHORIZATION:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_STATE:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_CLOSED:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_OPEN:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_AUTHORIZED:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_OPEN_AND_AUTHORIZED:
+                    data = (ControlActiveLocomotive as MSTSElectricLocomotive)?.GetDataOf(cvc) ?? 0;
+                    break;
+                default:
+                    data = base.GetDataOf(cvc);
+                    break;
+            }
+            return data;
         }
     }
 }

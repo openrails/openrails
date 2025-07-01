@@ -237,6 +237,15 @@ final location).
 If both arrival and departure time are to be defined, these must be separated by 
 '-'.
 
+A request stop is set in a timetable by placing a 'x' between hours and minutes, e.g. 13x21, or by just
+setting an 'x' in the station departure field.
+For a request stop to work properly, details for this stop must be specified using :ref:`the '$req' command <timetable-cmd-request-stop>`.
+
+In a timetable, it is indicated that a :ref:`train is allowed to depart early <timetable-depart-early>` by placing a '*'' between hours and
+minutes, e.g. 17*23, or by setting just a '*' in the station departure field.
+
+A :ref:`passing time <timetable-passing-time>` can be defined by placing a 'P' between hours and minutes, e.g. 14P53
+
 Additional :ref:`timing commands <timetable-timing>` can be included. Such 
 commands can also be set for locations where the train does not stop and 
 therefore has no timing details, but the train must pass through that location 
@@ -419,6 +428,8 @@ Special Rows
   The #dispose row presently does not affect the end of the run for the player 
   train.
   
+.. _timetable-train-speed:
+
 - ``#speed`` row
 
   This optional field defines maximum speed for trains, which may restrict the 
@@ -429,7 +440,7 @@ Special Rows
   If specified, only one ``#speed`` (m/s), ``#speedkph``, or ``#speedmph`` row 
   can be present in a single timetable file.
   
-  This row also accepts a number of :ref:`speed commands <timetable-speed>`.
+  This row also accepts a number of :ref:`speed commands <timetable-cmd-speed>`.
   
 - ``#restartdelay`` row
 
@@ -495,6 +506,27 @@ If the target train is in a separate timetable of the same timetable group, the
 reference is in the form of ``train name:timetable description``, where the 
 description is the text at the intersection of the first ``#comment`` row and 
 ``#comment`` column in the other timetable file.
+
+Train Commands
+''''''''''''''
+
+Gradient
+    To provide a realistic behaviour on gradients, the gradient command has been introduced.
+
+    Syntax    
+        ``$gradient /perc=n /speed=s``
+        
+        The gradient command must be set in the ``#speed`` :ref:`field of a train <timetable-train-speed>`.        
+
+    Functionality    
+        When gradient is set, forced acceleration is turned off if the leading engine of the train is on a 
+        rising gradient which exceeds n percent.
+        However, forced acceleration is turned on if the speed of the train drops below speed s. 
+        This is to ensure the train will not stall, and also that the train will restart if it has come to a stop on a 
+        gradient, e.g. due to a signal.
+
+        The units of speed (m/s, mph, kph) depend on the definition of :ref:`the speed field<timetable-train-speed>`.
+
 
 Station Commands
 ''''''''''''''''
@@ -1077,6 +1109,151 @@ junction somewhere beyond that station.
     Will activate the train as indicated, either when the train starts, when the 
     train is at the indicated stop or when it is terminated.
 
+.. _timetable-cmd-request-stop:
+
+``$req`` 
+
+    A request stop is set in a timetable by placing an 'x' between hours and minutes, e.g. 13x21, or by just
+    setting an 'x' in the station departure field.
+    For a request stop to work properly, details for this stop must be specified using the ``$req`` command.
+    This command can be set as command for the station, or as command for each individual train. If set
+    for both station and train, the setting for the train will overrule the setting for the station for that
+    particular train.
+    Also, a special signal is required to set further required details, and also to visualize the requirement
+    to stop to pick up passengers for the player train.
+
+    Definition for ``$req`` command : $req /pu=n /pd=n [/laststop | /approach] [/message | /sound]
+
+    Details
+        ``/pu=n`` : probability that stop is required to pick up passengers, n is percentage, 0 <= n <= 99.
+
+        ``/pd=n`` : probability that stop is required to set down passengers, n is percentage, 0 <= n <= 99.
+
+        ``/laststop`` : message is displayed at last fixed stop, indicating if stop at request stop is required
+        to set down passengers. Note that message is always displayed, indicating that stop is required, or not.
+
+        ``/approach`` : message is displayed, or sound is played, at preset fixed distance from stop if
+        request stop is required to set down passengers. Note that no indication if given if stop is not required.
+
+        ``/message`` : message is displayed on approach if stop is required. Only valid if ``/approach`` is set.
+
+        ``/sound`` : sound is played on approach if stop is required. Only valid if ``/approach`` is set.
+
+
+    Definition for special signal
+        Signals must be placed next to the platform. This signal may be any type of signal except NORMAL.
+        At least one signal is required for each direction.
+
+        A special function must be used for this signal in the related script : TRAIN_HAS_REQUEST_STOP()
+
+        This function will return 'true' if approaching train is to stop at the request stop in order to set down
+        passengers, otherwise it returns 'false'.
+        Using this function, the state of the signal can be set as required. The signal can be visualized as an
+        actual signal, but also, for instance, a passenger figure can be animated to be visual on the platform
+        if the train is to stop, and otherwise not be visual.
+
+        Apart from this function, the signal must set two variables :
+
+            ``ORTSReqStopVisDistance`` : distance from station at which AI train is assumed to be able to
+            'see' if stop is required to pick up passengers.
+
+            ``ORTSReqStopAnnDistance`` : distance from station at which message is displayed or sound is
+            played if ``/approach`` is set in ``$req`` command. 
+
+        Functionality
+            Based on the values of ``/pu`` and ``/pd``, it is determined if a request stop is required, either to set down
+            or to pick up passengers.
+
+            If the train is stopped and a departure time is set, the train will depart at the defined departure time
+            or after the defined station dwell time has passed, whichever is the latest time.
+
+            If the train is stopped and no departure time is set, the train will depart after the station dwell time
+            has passed.
+
+            Note that if a stop is not required, the train may pass through the station without stopping even if it
+            passes before the defined departure time.
+
+            Player train
+                Set down
+                    If ``/laststop`` is set, a message is shown at the moment of departure from the last fixed stop before
+                    one or more request stops, which indicate, per stop, if the stop is required to set down passengers.
+                    Note that the message is always shown.
+
+                    If ``/approach`` is set, a message is shown or a sound is played when the train has reached the distance
+                    from the request stop as defined in the signal definition using the ``ORTSReqStopAnnDistance``
+                    variable. Note that in this situation, the message is displayed or the sound is played only if the
+                    request stop is required.
+
+                Pick Up
+                    If a stop is required to pick up, this is visualized by the state of the special signal. It is up to the player
+                    to approach the station at such a speed that a proper stop can be made in time if required. There is
+                    no other indication of the state of this signal than the visualization, the state is not shown if the Track
+                    Monitor window or otherwise.
+
+                    Display in Next Station Window
+                    A request stop will be shown in the next station window with an 'x' displayed in the arrival and
+                    departure times. When the stop was required, normal arrival and departure times are shown for
+                    previous stop. If the stop was not required and the train passed through the station, then when the
+                    train has indeed cleared the station, that station is shown as previous stop but no arrival time is
+                    shown, and the departure time is set to 'skipped'.
+
+                Spoiler
+                    A 'spoiler' indication which shows if the stop is required to set down or pick up, can be shown if the
+                    Next Station Window is displayed (normally using key F10), by pressing keys ALT+F10.
+
+                    When ALT+F10 is pressed, and the next station is a request stop, a line is displayed at the bottom of
+                    the window showing if stop is required or not.
+
+                    NOTE : this spoiler function is not yet available and will be included later.
+
+                Sound
+                    When a sound is to be played on approach, as defined in the ``$req`` command, the definition for this
+                    sound must be included in the .sms sound file for the cab for the locomotive on the player train.
+
+                    The trigger for this sound is trigger 270.
+
+            AI Train
+                An AI train will approach the station as any normal station. When the stop is required, the train will 
+                stop as normal. When no stop is required at all, the train will cease to slow down for the approach
+                when it has reached the distance from the station as defined in the signal variable
+                ``ORTSReqStopVisDistance``, and will then start to accelerate again to regain to normal speed.
+
+.. _timetable-depart-early: 
+
+    Allow Depart Early
+        In a timetable, it is indicated that a train is allowed to depart early by placing a '*' between hours and
+        minutes, e.g. 17*23, or by setting just a '*' in the station departure field.
+
+    Functionality
+        Player Train
+            When a player train is allowed to depart early, the normal departure indication is given as soon as
+            the train has been stopped at the station for the normal required stop time as set for that station,
+            and the route ahead is clear.
+
+        Display in Next Station Window
+            When “allow depart early” has been set for a station, a '*' is shown in the departure time. When the
+            train has departed, the '*' is also shown in the departure time for previous station stop.
+
+        AI Train
+            When an AI train is allowed to depart early, the train will depart as soon as the train has been
+            stopped at the station for the normal required stop time as set for that station, and the route ahead
+            is clear.
+
+.. _timetable-passing-time:
+
+Passing Time
+    Passing time can be defined by placing a 'P' between hours and minutes, e.g. 14P53.
+
+    Functionality
+        Player Train
+            When a passing time is set, the station will be shown in the NextStationWindow as a normal stop,
+            but showing a departure time only. When the station is passed, the actual passing time is also shown
+            as normal, but also a departure time only.
+
+        AI Train
+            There is no processing of passing time for AI trains. 
+
+
 .. _timetable-start:
 
 Start Commands
@@ -1221,7 +1398,7 @@ A typical value for modern stock for the ``$dec`` command is 2 or 3.
     clear of the reverse position. This is useful when shunting in yards when 
     there is no need to fully exit the yard to reverse and the entry signal.
 
-.. _timetable-speed:
+.. _timetable-cmd-speed:
 
 Speed Commands
 ''''''''''''''
