@@ -1,6 +1,7 @@
-﻿Open Rails software Prerequisites.txt - Release v1.6 June 2025
+﻿Open Rails software Prerequisites.txt - Release v1.5
+September 2022
 
-Visit our web-page at https://openrails.org for details and links.
+Visit our web-page at http://openrails.org for details and links.
 
 Please note the distribution and use of Open Rails software is governed by the GNU License - see file Copying.txt. 
 Source code can be downloaded from https://github.com/openrails/openrails

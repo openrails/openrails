@@ -1628,7 +1628,6 @@ namespace Orts.Simulation.Physics
             if (LeadLocomotive == null || (LeadLocomotive as MSTSLocomotive).DPDynamicBrakeController == null)
                 return;
             int idToMove = -1;
-            bool stillHasRemotes = false;
             for (var i = 0; i < Cars.Count; i++)
             {
                 if (!(Cars[i] is MSTSLocomotive))
@@ -1642,12 +1641,7 @@ namespace Orts.Simulation.Physics
                     Cars[i].RemoteControlGroup = 0;
                 else if (idToMove > -1 && Cars[i].RemoteControlGroup == 0)
                     Cars[i].RemoteControlGroup = 1;
-
-                if (Cars[i].RemoteControlGroup == 1)
-                    stillHasRemotes = true;
             }
-            if (!stillHasRemotes)
-                DPMode = 0;
         }
 
         /// <summary>
@@ -1662,7 +1656,6 @@ namespace Orts.Simulation.Physics
             var dpDynamicBrakeCurrentNotch = MathHelper.Clamp((LeadLocomotive as MSTSLocomotive).DPDynamicBrakeController.GetNotch(dpDynamicBrakePercent/100), 0, 8);
             var dpThrottleCurrentNotch = (LeadLocomotive as MSTSLocomotive).ThrottleController.CurrentNotch;
             int idToMove = -1;
-            bool alreadyHasRemotes = false;
             int idLead = LeadLocomotive != null ? (Cars[LeadLocomotiveIndex] as MSTSLocomotive).DPUnitID : -1;
             for (var i = Cars.Count - 1; i >= 0; i--)
             {
@@ -1674,7 +1667,6 @@ namespace Orts.Simulation.Physics
                     dpThrottlePercent = DPThrottlePercent;
                     dpDynamicBrakeCurrentNotch = (LeadLocomotive as MSTSLocomotive).DPDynamicBrakeController.CurrentNotch;
                     dpThrottleCurrentNotch = (LeadLocomotive as MSTSLocomotive).DPThrottleController.CurrentNotch;
-                    alreadyHasRemotes = true;
                     continue;
                 }
                 if (idToMove == -1 && Cars[i].RemoteControlGroup == 0)
@@ -1693,13 +1685,6 @@ namespace Orts.Simulation.Physics
                 }
                 else if (idToMove > -1 && Cars[i].RemoteControlGroup == 1)
                     Cars[i].RemoteControlGroup = 0;
-            }
-            if (!alreadyHasRemotes)
-            {
-                if (LeadLocomotive.ThrottlePercent > 0)
-                    DPMode = 1;
-                else if (LeadLocomotive.DynamicBrakePercent >= 0)  // off is -1
-                    DPMode = -1;
             }
         }
 

@@ -884,8 +884,6 @@ namespace Orts.Simulation
                         double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime))
                                                 - ActArrive).Value.TotalSeconds;
                         BoardingEndS -= sinceActArriveS;
-
-                        ldbfevaldepartbeforeboarding = false; // reset flag. Debrief Eval
                     }
                     else
                     {
@@ -902,30 +900,29 @@ namespace Orts.Simulation
                         if (BoardingS > 0 || ((double)(SchDepart - SchArrive).TotalSeconds > 0 &&
                             MyPlayerTrain.PassengerCarsNumber == 1 && MyPlayerTrain.Cars.Count > 10 ))
                         {
-                            // accepted station stop because either freight train or passenger train or fake passenger train with passenger car on platform or fake passenger train
+                        // accepted station stop because either freight train or passenger train or fake passenger train with passenger car on platform or fake passenger train
                             // with Scheduled Depart > Scheduled Arrive
-                            // ActArrive is usually same as ClockTime
-                            BoardingEndS = Simulator.ClockTime + BoardingS;
+                                // ActArrive is usually same as ClockTime
+                                BoardingEndS = Simulator.ClockTime + BoardingS;
 
-                            if (ActArrive == null)
-                            {
-                                ActArrive = new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime));
+                                if (ActArrive == null)
+                                {
+                                    ActArrive = new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime));
+                                }
+
+                                arrived = true;
+                                // But not if game starts after scheduled arrival. In which case actual arrival is assumed to be same as schedule arrival.
+                                double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime))
+                                                        - ActArrive).Value.TotalSeconds;
+                                BoardingEndS -= sinceActArriveS;
+                                double SchDepartS = SchDepart.Subtract(new DateTime()).TotalSeconds;
+                                BoardingEndS = CompareTimes.LatestTime((int)SchDepartS, (int)BoardingEndS);
+
                             }
-
-                            arrived = true;
-                            // But not if game starts after scheduled arrival. In which case actual arrival is assumed to be same as schedule arrival.
-                            double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime))
-                                                    - ActArrive).Value.TotalSeconds;
-                            BoardingEndS -= sinceActArriveS;
-                            double SchDepartS = SchDepart.Subtract(new DateTime()).TotalSeconds;
-                            BoardingEndS = CompareTimes.LatestTime((int)SchDepartS, (int)BoardingEndS);
-
                         }
-
-                        ldbfevaldepartbeforeboarding = false; // reset flag. Debrief Eval
-                    }
                     if  (MyPlayerTrain.NextSignalObject[0] != null)
                            distanceToNextSignal =  MyPlayerTrain.NextSignalObject[0].DistanceTo(MyPlayerTrain.FrontTDBTraveller);
+
                 }
             }
             else if (EventType == ActivityEventType.TrainStart)
@@ -939,15 +936,6 @@ namespace Orts.Simulation
                     IsCompleted = maydepart;
                     if (MyPlayerTrain.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
                        MyPlayerTrain.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId, true);
-
-                    // Debrief Eval: departure before boarding completed
-                    if (!maydepart && !ldbfevaldepartbeforeboarding)
-                    {
-                        var train = Simulator.PlayerLocomotive.Train;
-                        ldbfevaldepartbeforeboarding = true;
-                        DbfEvalDepartBeforeBoarding.Add(PlatformEnd1.Station);
-                        train.DbfEvalValueChanged = true;
-                    }
 
                     if (LogStationStops)
                     {
@@ -993,6 +981,15 @@ namespace Orts.Simulation
                     {
                         DisplayMessage = Simulator.Catalog.GetStringFmt("Passenger boarding completes in {0:D2}:{1:D2}",
                             remaining / 60, remaining % 60);
+
+                        //Debrief Eval
+                        if (Simulator.PlayerLocomotive.SpeedMpS > 0 && !ldbfevaldepartbeforeboarding)
+                        {
+                            var train = Simulator.PlayerLocomotive.Train;
+                            ldbfevaldepartbeforeboarding = true;
+                            DbfEvalDepartBeforeBoarding.Add(PlatformEnd1.Station);
+                            train.DbfEvalValueChanged = true;
+                        }
                     }
                     // May depart
                     else if (!maydepart)
@@ -1010,6 +1007,8 @@ namespace Orts.Simulation
                             DisplayMessage = Simulator.Catalog.GetString("Passenger boarding completed. You may depart now.");
                             if (MyPlayerTrain.IsActualPlayerTrain) Simulator.SoundNotify = Event.PermissionToDepart;
                         }
+
+                        ldbfevaldepartbeforeboarding = false;//reset flag. Debrief Eval
 
                         // if last task, show closure window
                         // also set times in logfile
