@@ -289,7 +289,7 @@ Example::
    single: ORTS_PLAYER_DIESEL_ENGINE_STATE
 
 ORTS_PLAYER_DIESEL_ENGINE_STATE: this control respectively selects frames 0, 
-1, 2, 3 for the player locomotive engine states Stopped, Stopping, Starting and Running and. It is a display-only control.
+1, 2, 3 for the player locomotive engine states Stopped, Stopping, Starting and Running. It is a display-only control.
 
 Example::
 
