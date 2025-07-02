@@ -313,122 +313,126 @@ namespace Orts.Viewer3D.RollingStock
             car.StackCount = Stack.Count;
 
             foreach (var drawer in Cylinders)
-                drawer.SetOutput(car.Cylinders1SteamVelocityMpS, car.Cylinders1SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
+                drawer.SetOutputVolumetric(car.Cylinders1SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
 
              foreach (var drawer in Cylinders2)
-                drawer.SetOutput(car.Cylinders2SteamVelocityMpS, car.Cylinders2SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
+                drawer.SetOutputVolumetric(car.Cylinders2SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
 
             foreach (var drawer in Cylinders11)
-                drawer.SetOutput(car.Cylinders1SteamVelocityMpS, car.Cylinders11SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
+                drawer.SetOutputVolumetric(car.Cylinders11SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
 
             foreach (var drawer in Cylinders12)
-                drawer.SetOutput(car.Cylinders2SteamVelocityMpS, car.Cylinders12SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
+                drawer.SetOutputVolumetric(car.Cylinders12SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
 
             foreach (var drawer in Cylinders21)
-                drawer.SetOutput(car.Cylinders1SteamVelocityMpS, car.Cylinders21SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
+                drawer.SetOutputVolumetric(car.Cylinders21SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
 
             foreach (var drawer in Cylinders22)
-                drawer.SetOutput(car.Cylinders2SteamVelocityMpS, car.Cylinders22SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
+                drawer.SetOutputVolumetric(car.Cylinders22SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
 
             foreach (var drawer in Cylinders31)
-                drawer.SetOutput(car.Cylinders1SteamVelocityMpS, car.Cylinders31SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
+                drawer.SetOutputVolumetric(car.Cylinders31SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
 
             foreach (var drawer in Cylinders32)
-                drawer.SetOutput(car.Cylinders2SteamVelocityMpS, car.Cylinders32SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
+                drawer.SetOutputVolumetric(car.Cylinders32SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
 
             foreach (var drawer in Cylinders41)
-                drawer.SetOutput(car.Cylinders1SteamVelocityMpS, car.Cylinders41SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
+                drawer.SetOutputVolumetric(car.Cylinders41SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
 
             foreach (var drawer in Cylinders42)
-                drawer.SetOutput(car.Cylinders2SteamVelocityMpS, car.Cylinders42SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
+                drawer.SetOutputVolumetric(car.Cylinders42SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
 
             foreach (var drawer in CylinderSteamExhaust1)
-                drawer.SetOutput(car.CylinderSteamExhaustSteamVelocityMpS, car.CylinderSteamExhaust1SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
+                drawer.SetOutputVolumetric(car.CylinderSteamExhaust1SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
 
             foreach (var drawer in CylinderSteamExhaust2)
-                drawer.SetOutput(car.CylinderSteamExhaustSteamVelocityMpS, car.CylinderSteamExhaust2SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
+                drawer.SetOutputVolumetric(car.CylinderSteamExhaust2SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
 
             foreach (var drawer in CylinderSteamExhaust3)
-                drawer.SetOutput(car.CylinderSteamExhaustSteamVelocityMpS, car.CylinderSteamExhaust3SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
+                drawer.SetOutputVolumetric(car.CylinderSteamExhaust3SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
 
             foreach (var drawer in SanderSteamExhaustForward)
-                drawer.SetOutput(car.SanderSteamExhaustVelocityMpS, car.SanderSteamExhaustForwardVolumeM3pS, car.SanderSteamExhaustParticleDurationS);
+                drawer.SetOutputVelocity(car.SanderSteamExhaustForwardVelocityMpS, car.SanderSteamExhaustParticleDurationS);
 
             foreach (var drawer in SanderSteamExhaustReverse)
-                drawer.SetOutput(car.SanderSteamExhaustVelocityMpS, car.SanderSteamExhaustReverseVolumeM3pS, car.SanderSteamExhaustParticleDurationS);
+                drawer.SetOutputVelocity(car.SanderSteamExhaustReverseVelocityMpS, car.SanderSteamExhaustParticleDurationS);
 
             foreach (var drawer in BoosterCylinderSteamExhaust01)
-                drawer.SetOutput(car.BoosterCylinderSteamExhaust01SteamVelocityMpS, car.BoosterCylinderSteamExhaust01SteamVolumeM3pS, car.BoosterCylinderCockParticleDurationS);
+                drawer.SetOutputVolumetric(car.BoosterCylinderSteamExhaust01SteamVolumeM3pS, car.BoosterCylinderCockParticleDurationS);
 
             foreach (var drawer in BoosterCylinderSteamExhaust02)
-                drawer.SetOutput(car.BoosterCylinderSteamExhaust02SteamVelocityMpS, car.BoosterCylinderSteamExhaust02SteamVolumeM3pS, car.BoosterCylinderCockParticleDurationS);
+                drawer.SetOutputVolumetric(car.BoosterCylinderSteamExhaust02SteamVolumeM3pS, car.BoosterCylinderCockParticleDurationS);
                 
             foreach (var drawer in BoosterCylinders11)
-                drawer.SetOutput(car.BoosterCylinderCock11SteamVelocityMpS, car.BoosterCylinderCockSteam11VolumeMpS, car.BoosterCylinderCockParticleDurationS);
+                drawer.SetOutputVolumetric(car.BoosterCylinderCockSteam11VolumeMpS, car.BoosterCylinderCockParticleDurationS);
 
             foreach (var drawer in BoosterCylinders12)
-                drawer.SetOutput(car.BoosterCylinderCock12SteamVelocityMpS, car.BoosterCylinderCockSteam12VolumeMpS, car.BoosterCylinderCockParticleDurationS);
+                drawer.SetOutputVolumetric(car.BoosterCylinderCockSteam12VolumeMpS, car.BoosterCylinderCockParticleDurationS);
 
             foreach (var drawer in BoosterCylinders21)
-                drawer.SetOutput(car.BoosterCylinderCock21SteamVelocityMpS, car.BoosterCylinderCockSteam21VolumeMpS, car.BoosterCylinderCockParticleDurationS);
+                drawer.SetOutputVolumetric(car.BoosterCylinderCockSteam21VolumeMpS, car.BoosterCylinderCockParticleDurationS);
 
             foreach (var drawer in BoosterCylinders22)
-                drawer.SetOutput(car.BoosterCylinderCock22SteamVelocityMpS, car.BoosterCylinderCockSteam22VolumeMpS, car.BoosterCylinderCockParticleDurationS);
+                drawer.SetOutputVolumetric(car.BoosterCylinderCockSteam22VolumeMpS, car.BoosterCylinderCockParticleDurationS);
 
             foreach (var drawer in CylinderSteamExhaust2_1)
-                drawer.SetOutput(car.CylinderSteamExhaustSteamVelocityMpS, car.CylinderSteamExhaust2_1SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
+                drawer.SetOutputVolumetric(car.CylinderSteamExhaust2_1SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
 
             foreach (var drawer in CylinderSteamExhaust2_2)
-                drawer.SetOutput(car.CylinderSteamExhaustSteamVelocityMpS, car.CylinderSteamExhaust2_2SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
+                drawer.SetOutputVolumetric(car.CylinderSteamExhaust2_2SteamVolumeM3pS, car.CylinderSteamExhaustParticleDurationS);
 
             foreach (var drawer in Cylinders2_11)
-                drawer.SetOutput(car.Cylinders1SteamVelocityMpS, car.Cylinders2_11SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
+                drawer.SetOutputVolumetric(car.Cylinders2_11SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
 
             foreach (var drawer in Cylinders2_12)
-                drawer.SetOutput(car.Cylinders2SteamVelocityMpS, car.Cylinders2_12SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
+                drawer.SetOutputVolumetric(car.Cylinders2_12SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
 
             foreach (var drawer in Cylinders2_21)
-                drawer.SetOutput(car.Cylinders1SteamVelocityMpS, car.Cylinders2_21SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
+                drawer.SetOutputVolumetric(car.Cylinders2_21SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
 
             foreach (var drawer in Cylinders2_22)
-                drawer.SetOutput(car.Cylinders2SteamVelocityMpS, car.Cylinders2_22SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
+                drawer.SetOutputVolumetric(car.Cylinders2_22SteamVolumeM3pS, car.Cylinder1ParticleDurationS);
+
+            float volumePerBlowdown = car.BlowdownSteamVolumeM3pS / Blowdown.Count;
 
             foreach (var drawer in Blowdown)
-                drawer.SetOutput(car.BlowdownSteamVelocityMpS, car.BlowdownSteamVolumeM3pS, car.BlowdownParticleDurationS);
+                drawer.SetOutputVolumetric(volumePerBlowdown, car.BlowdownParticleDurationS);
             
             // TODO: Drainpipe - Not used in either MSTS or OR - currently disabled by zero values set in SteamLocomotive file
              foreach (var drawer in Drainpipe)
-                drawer.SetOutput(car.DrainpipeSteamVelocityMpS, car.DrainpipeSteamVolumeM3pS, car.DrainpipeParticleDurationS);
+                drawer.SetOutputVelocity(car.DrainpipeSteamVelocityMpS, car.DrainpipeParticleDurationS);
 
              foreach (var drawer in Injectors1)
-                drawer.SetOutput(car.Injector1SteamVelocityMpS, car.Injector1SteamVolumeM3pS, car.Injector1ParticleDurationS);
+                drawer.SetOutputVelocity(car.Injector1SteamVelocityMpS, car.Injector1ParticleDurationS);
 
              foreach (var drawer in Injectors2)
-                 drawer.SetOutput(car.Injector2SteamVelocityMpS, car.Injector2SteamVolumeM3pS, car.Injector2ParticleDurationS);
+                 drawer.SetOutputVelocity(car.Injector2SteamVelocityMpS, car.Injector2ParticleDurationS);
 
             foreach (var drawer in SmallEjector)
-                drawer.SetOutput(car.SmallEjectorSteamVelocityMpS, car.SmallEjectorSteamVolumeM3pS, car.SmallEjectorParticleDurationS);
+                drawer.SetOutputVelocity(car.SmallEjectorSteamVelocityMpS, car.SmallEjectorParticleDurationS);
 
             foreach (var drawer in LargeEjector)
-                drawer.SetOutput(car.LargeEjectorSteamVelocityMpS, car.LargeEjectorSteamVolumeM3pS, car.LargeEjectorParticleDurationS);
+                drawer.SetOutputVelocity(car.LargeEjectorSteamVelocityMpS, car.LargeEjectorParticleDurationS);
 
             foreach (var drawer in Compressor)
-                drawer.SetOutput(car.CompressorSteamVelocityMpS, car.CompressorSteamVolumeM3pS, car.CompressorParticleDurationS );
+                drawer.SetOutputVelocity(car.CompressorSteamVelocityMpS, car.CompressorParticleDurationS );
 
             foreach (var drawer in Generator)
-                drawer.SetOutput(car.GeneratorSteamVelocityMpS, car.GeneratorSteamVolumeM3pS, car.GeneratorParticleDurationS);
-            
+                drawer.SetOutputVelocity(car.GeneratorSteamVelocityMpS, car.GeneratorParticleDurationS);
+
+            float volumePerSafetyValve = car.SafetyValvesSteamVolumeM3pS / SafetyValves.Count;
+
             foreach (var drawer in SafetyValves)
-                drawer.SetOutput(car.SafetyValvesSteamVelocityMpS, car.SafetyValvesSteamVolumeM3pS, car.SafetyValvesParticleDurationS);
+                drawer.SetOutputVolumetric(volumePerSafetyValve, car.SafetyValvesParticleDurationS);
             
             foreach (var drawer in Stack)
             {
                 Color_Value = car.SmokeColor.SmoothedValue;
-                drawer.SetOutput(car.StackSteamVelocityMpS.SmoothedValue, car.StackSteamVolumeM3pS, car.StackParticleDurationS, new Color(Color_Value, Color_Value, Color_Value));
+                drawer.SetOutputVolumetric(car.StackSteamVolumeM3pS, car.StackParticleDurationS, new Color(Color_Value, Color_Value, Color_Value));
             }
 
             foreach (var drawer in Whistle)
-                drawer.SetOutput(car.WhistleSteamVelocityMpS, car.WhistleSteamVolumeM3pS, car.WhistleParticleDurationS);
+                drawer.SetOutputVelocity(car.WhistleSteamVelocityMpS, car.WhistleParticleDurationS);
 
             base.PrepareFrame(frame, elapsedTime);
         }
