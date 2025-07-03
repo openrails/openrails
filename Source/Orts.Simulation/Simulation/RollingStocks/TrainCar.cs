@@ -112,6 +112,7 @@ namespace Orts.Simulation.RollingStocks
 
         // sound related variables
         public bool IsPartOfActiveTrain = true;
+        public List<int> SoundSourceIDs = new List<int>();
 
         public IPowerSupply PowerSupply;
 
