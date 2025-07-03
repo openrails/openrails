@@ -410,41 +410,41 @@ namespace Orts.Simulation.RollingStocks
             var wagonFolderSlash = Path.GetDirectoryName(WagFilePath) + @"\";
             if (MainShapeFileName != null && !File.Exists(wagonFolderSlash + MainShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", wagFilePath, wagonFolderSlash + MainShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + MainShapeFileName);
                 MainShapeFileName = string.Empty;
             }
             if (FreightShapeFileName != null && !File.Exists(wagonFolderSlash + FreightShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", wagFilePath, wagonFolderSlash + FreightShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FreightShapeFileName);
                 FreightShapeFileName = null;
             }
             if (InteriorShapeFileName != null && !File.Exists(wagonFolderSlash + InteriorShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", wagFilePath, wagonFolderSlash + InteriorShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + InteriorShapeFileName);
                 InteriorShapeFileName = null;
             }
 
             if (FrontCoupler.Closed.ShapeFileName != null && !File.Exists(wagonFolderSlash + FrontCoupler.Closed.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", wagFilePath, wagonFolderSlash + FrontCoupler.Closed.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontCoupler.Closed.ShapeFileName);
                 FrontCoupler.Closed.ShapeFileName = null;
             }
 
             if (RearCoupler.Closed.ShapeFileName != null && !File.Exists(wagonFolderSlash + RearCoupler.Closed.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", wagFilePath, wagonFolderSlash + RearCoupler.Closed.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearCoupler.Closed.ShapeFileName);
                 RearCoupler.Closed.ShapeFileName = null;
             }
 
             if (FrontAirHose.Connected.ShapeFileName != null && !File.Exists(wagonFolderSlash + FrontAirHose.Connected.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", wagFilePath, wagonFolderSlash + FrontAirHose.Connected.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontAirHose.Connected.ShapeFileName);
                 FrontAirHose.Connected.ShapeFileName = null;
             }
 
             if (RearAirHose.Connected.ShapeFileName != null && !File.Exists(wagonFolderSlash + RearAirHose.Connected.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", wagFilePath, wagonFolderSlash + RearAirHose.Connected.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearAirHose.Connected.ShapeFileName);
                 RearAirHose.Connected.ShapeFileName = null;
             }
 
@@ -780,7 +780,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     if (ortsFreightAnim.ShapeFileName != null && !File.Exists(wagonFolderSlash + ortsFreightAnim.ShapeFileName))
                     {
-                        Trace.TraceWarning("ORTS FreightAnim in trainset {0} references non-existent shape {1}", wagFilePath, wagonFolderSlash + ortsFreightAnim.ShapeFileName);
+                        Trace.TraceWarning("ORTS FreightAnim in trainset {0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + ortsFreightAnim.ShapeFileName);
                         ortsFreightAnim.ShapeFileName = null;
                     }
 
