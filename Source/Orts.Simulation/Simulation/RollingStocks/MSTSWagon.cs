@@ -120,7 +120,6 @@ namespace Orts.Simulation.RollingStocks
 
         // wag file data
         public string MainShapeFileName;
-        public string WagonName;
         public string FreightShapeFileName;
         public float FreightAnimMaxLevelM;
         public float FreightAnimMinLevelM;
@@ -411,41 +410,41 @@ namespace Orts.Simulation.RollingStocks
             var wagonFolderSlash = Path.GetDirectoryName(WagFilePath) + @"\";
             if (MainShapeFileName != null && !File.Exists(wagonFolderSlash + MainShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + MainShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + MainShapeFileName);
                 MainShapeFileName = string.Empty;
             }
             if (FreightShapeFileName != null && !File.Exists(wagonFolderSlash + FreightShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + FreightShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FreightShapeFileName);
                 FreightShapeFileName = null;
             }
             if (InteriorShapeFileName != null && !File.Exists(wagonFolderSlash + InteriorShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + InteriorShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + InteriorShapeFileName);
                 InteriorShapeFileName = null;
             }
 
             if (FrontCoupler.Closed.ShapeFileName != null && !File.Exists(wagonFolderSlash + FrontCoupler.Closed.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + FrontCoupler.Closed.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontCoupler.Closed.ShapeFileName);
                 FrontCoupler.Closed.ShapeFileName = null;
             }
 
             if (RearCoupler.Closed.ShapeFileName != null && !File.Exists(wagonFolderSlash + RearCoupler.Closed.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + RearCoupler.Closed.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearCoupler.Closed.ShapeFileName);
                 RearCoupler.Closed.ShapeFileName = null;
             }
 
             if (FrontAirHose.Connected.ShapeFileName != null && !File.Exists(wagonFolderSlash + FrontAirHose.Connected.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + FrontAirHose.Connected.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontAirHose.Connected.ShapeFileName);
                 FrontAirHose.Connected.ShapeFileName = null;
             }
 
             if (RearAirHose.Connected.ShapeFileName != null && !File.Exists(wagonFolderSlash + RearAirHose.Connected.ShapeFileName))
             {
-                Trace.TraceWarning("{0} references non-existent shape {1}", shortPath, wagonFolderSlash + RearAirHose.Connected.ShapeFileName);
+                Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearAirHose.Connected.ShapeFileName);
                 RearAirHose.Connected.ShapeFileName = null;
             }
 
@@ -555,7 +554,7 @@ namespace Orts.Simulation.RollingStocks
                                     FormatStrings.FormatVeryShortDistanceDisplay(mainMins.Z, IsMetric),
                                     FormatStrings.FormatVeryShortDistanceDisplay(mainMaxes.Z, IsMetric));
                             else
-                                Trace.TraceInformation("Main shape file {0} bounds calculated to be {1} to {2}. CoG offset used to center shape is {0}.\n",
+                                Trace.TraceInformation("Main shape file {0} bounds calculated to be {1} to {2}. CoG offset used to center shape is {3}.\n",
                                     MainShapeFileName,
                                     FormatStrings.FormatVeryShortDistanceDisplay(mainMins.Z, IsMetric),
                                     FormatStrings.FormatVeryShortDistanceDisplay(mainMaxes.Z, IsMetric),
@@ -626,7 +625,7 @@ namespace Orts.Simulation.RollingStocks
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("Derailment Coefficient set to false for Wagon {0}", shortPath);
+                    Trace.TraceInformation("Derailment Coefficient set to false for Wagon {0}", WagFilePath);
                 }
             }
 
@@ -644,7 +643,7 @@ namespace Orts.Simulation.RollingStocks
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("Number of Wagon Axles set to default value of {0} on Wagon {1}", WagonNumAxles, shortPath);
+                    Trace.TraceInformation("Number of Wagon Axles set to default value of {0} on Wagon {1}", WagonNumAxles, WagFilePath);
                 }
             }
             else
@@ -781,7 +780,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     if (ortsFreightAnim.ShapeFileName != null && !File.Exists(wagonFolderSlash + ortsFreightAnim.ShapeFileName))
                     {
-                        Trace.TraceWarning("ORTS FreightAnim in trainset {0} references non-existent shape {1}", file, wagonFolderSlash + ortsFreightAnim.ShapeFileName);
+                        Trace.TraceWarning("ORTS FreightAnim in trainset {0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + ortsFreightAnim.ShapeFileName);
                         ortsFreightAnim.ShapeFileName = null;
                     }
 
@@ -1295,7 +1294,6 @@ namespace Orts.Simulation.RollingStocks
                         STFException.TraceWarning(stf, "Skipped unknown wagon type " + wagonType);
                     }
                     break;
-                case "wagon(name": WagonName = stf.ReadStringBlock(null); break;
                 case "wagon(ortswagonspecialtype":
                     stf.MustMatch("(");
                     var wagonspecialType = stf.ReadString();
@@ -1355,16 +1353,12 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "wagon(centerofgravity":
                 case "wagon(centreofgravity":
-                    stf.MustMatch("(");
-                    InitialCentreOfGravityM.X = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    InitialCentreOfGravityM.Y = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    InitialCentreOfGravityM.Z = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    InitialCentreOfGravityM = stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero);
                     if (Math.Abs(InitialCentreOfGravityM.Z) > 2)
                     {
                         STFException.TraceWarning(stf, string.Format("CentreOfGravity Z set to zero because value {0} outside range -2 to +2", InitialCentreOfGravityM.Z));
                         InitialCentreOfGravityM.Z = 0;
                     }
-                    stf.SkipRestOfBlock();
                     break;
                 case "wagon(ortscenterofgravity_x":
                 case "wagon(ortscentreofgravity_x": InitialCentreOfGravityM.X = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
