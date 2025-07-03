@@ -403,6 +403,14 @@ OR supports tilting trains. A train tilts when its .con file name contains the
 
 .. image:: images/features-tilting.png
 
+Features to assist content creation
+===================================
+
+OR now includes some features that don't change the functionality of rolling stock, but simplify
+some steps of the content creation process or allow more control over content than was previously
+possible. The goal of these features is to save content creators' time, give additional power to
+creators, and to simplify the installation process for end users.
+
 Advanced articulation control
 -----------------------------
 
