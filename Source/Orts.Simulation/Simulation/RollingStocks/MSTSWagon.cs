@@ -125,7 +125,6 @@ namespace Orts.Simulation.RollingStocks
 
         // wag file data
         public string MainShapeFileName;
-        public string WagonName;
         public string FreightShapeFileName;
         public float FreightAnimMaxLevelM;
         public float FreightAnimMinLevelM;
@@ -1247,7 +1246,6 @@ namespace Orts.Simulation.RollingStocks
                         STFException.TraceWarning(stf, "Skipped unknown wagon type " + wagonType);
                     }
                     break;
-                case "wagon(name": WagonName = stf.ReadStringBlock(null); break;
                 case "wagon(ortswagonspecialtype":
                     stf.MustMatch("(");
                     var wagonspecialType = stf.ReadString();
