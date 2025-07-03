@@ -51,11 +51,11 @@ namespace ORTS.Scripting.Api
         protected override void SetCurrentDynamicBrakeAvailability(bool avail) {}
         public void SignalEventToControlActiveLocomotive(PowerSupplyEvent evt)
         {
-            ControlActiveLocomotive.LocomotivePowerSupply.HandleEvent(evt);
+            ControlActiveLocomotive?.LocomotivePowerSupply.HandleEvent(evt);
         }
         public void SignalEventToControlActiveLocomotive(PowerSupplyEvent evt, int id)
         {
-            ControlActiveLocomotive.LocomotivePowerSupply.HandleEvent(evt, id);
+            ControlActiveLocomotive?.LocomotivePowerSupply.HandleEvent(evt, id);
         }
     }
 }
