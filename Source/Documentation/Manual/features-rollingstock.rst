@@ -403,6 +403,35 @@ OR supports tilting trains. A train tilts when its .con file name contains the
 
 .. image:: images/features-tilting.png
 
+Advanced articulation control
+-----------------------------
+
+A wide variety of modern rolling stock uses articulation, in which multiple rail vehicles
+share a single "Jacobs Bogie". Open Rails offers partial support for such passenger and
+freight units by allowing one wagon to include a bogie in its 3D model while the next
+wagon removes the bogie from its 3D model. Ideally, OR will then add an invisible bogie
+to the end of the wagon without the bogie to emulate "sharing" the bogie with the previous
+wagon.
+
+However, this automatic system is limited. OR will check for wheels in the wagon's 3D
+model and will assume the wagon is articulated at one end if there are no wheels towards
+that end of the 3D model. This approach will only be used on 3D models with 3, 2, or 0 axles
+(the 1-axle case is excluded for compatibility reasons) and won't be used on locomotives.
+In some cases, this approach will result in false negative or false positive detection
+of articulation. Should the automatic articulation method not produce the expected track
+following behavior, it is now possible to manually define whether a wagon or engine
+should use the articulation behavior.
+
+.. index::
+   single: ORTSFrontArticulation
+   single: ORTSRearArticulation
+
+To forcibly enable the articulation behavior at the front of the rail vehicle, use
+``ORTSFrontArticulation ( 1 )`` and at the rear use ``ORTSRearArticulation ( 1 )``.
+Conversely, use ``ORTSFrontArticulation ( 0 )`` or ``ORTSRearArticulation ( 0 )`` to
+force disable articulation behavior. Entering a value of -1 provides the default
+automatic behavior.
+
 Freight animations and pickups
 ==============================
 
