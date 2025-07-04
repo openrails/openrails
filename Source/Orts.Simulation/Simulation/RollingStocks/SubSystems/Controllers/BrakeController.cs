@@ -367,7 +367,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         {
             if (!Activated)
             {
-                if (ScriptName != null && ScriptName != "MSTS")
+                if (ScriptName == "PBL2") Script = new PBL2BrakeController();
+                else if (ScriptName != null && ScriptName != "MSTS")
                 {
                     var pathArray = new string[] { Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script") };
                     Script = Simulator.ScriptManager.Load(pathArray, ScriptName) as BrakeController;
