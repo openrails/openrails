@@ -5505,6 +5505,16 @@ namespace Orts.Simulation.RollingStocks
                         }
                         break;
                     }
+                case CABViewControlTypes.ORTS_NEUTRAL_MODE_COMMAND_SWITCH:
+                    {
+                        data = (TrainBrakeController == null || !TrainBrakeController.NeutralModeCommandSwitchOn) ? 0 : 1;
+                        break;
+                    }
+                case CABViewControlTypes.ORTS_NEUTRAL_MODE_ON:
+                    {
+                        data = (TrainBrakeController == null || !TrainBrakeController.NeutralModeOn) ? 0 : 1;
+                        break;
+                    }
                 case CABViewControlTypes.FRICTION_BRAKING:
                     {
                         data = (BrakeSystem == null) ? 0.0f : BrakeSystem.GetCylPressurePSI();

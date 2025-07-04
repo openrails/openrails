@@ -2227,6 +2227,8 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_BAILOFF:
                 case CABViewControlTypes.ORTS_QUICKRELEASE:
                 case CABViewControlTypes.ORTS_OVERCHARGE:
+                case CABViewControlTypes.ORTS_NEUTRAL_MODE_COMMAND_SWITCH:
+                case CABViewControlTypes.ORTS_NEUTRAL_MODE_ON:
                 case CABViewControlTypes.DOORS_DISPLAY:
                 case CABViewControlTypes.CYL_COCKS:
                 case CABViewControlTypes.ORTS_BLOWDOWN_VALVE:
@@ -2504,6 +2506,7 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_BAILOFF: new BailOffCommand(Viewer.Log, ChangedValue(Locomotive.BailOff ? 1 : 0) > 0); break;
                 case CABViewControlTypes.ORTS_QUICKRELEASE: new QuickReleaseCommand(Viewer.Log, ChangedValue(Locomotive.TrainBrakeController.QuickReleaseButtonPressed ? 1 : 0) > 0); break;
                 case CABViewControlTypes.ORTS_OVERCHARGE: new BrakeOverchargeCommand(Viewer.Log, ChangedValue(Locomotive.TrainBrakeController.OverchargeButtonPressed ? 1 : 0) > 0); break;
+                case CABViewControlTypes.ORTS_NEUTRAL_MODE_COMMAND_SWITCH: new BrakeNeutralModeCommand(Viewer.Log, ChangedValue(Locomotive.TrainBrakeController.NeutralModeCommandSwitchOn ? 1 : 0) > 0); break;
                 case CABViewControlTypes.RESET: new AlerterCommand(Viewer.Log, ChangedValue(Locomotive.TrainControlSystem.AlerterButtonPressed ? 1 : 0) > 0); break;
                 case CABViewControlTypes.CP_HANDLE:
                     Locomotive.SetCombinedHandleValue(ChangedValue(Locomotive.GetCombinedHandleValue(true)));
