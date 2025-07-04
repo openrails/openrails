@@ -1061,7 +1061,6 @@ Here below a sample of a ``.load-or`` file::
   	{
 	  	"Name" : "triton",
 	  	"Shape" : "COMMON_Container_3d\\Cont_40ftHC\\container-40ftHC_Triton.s",
-	  	"ShapeDescriptor" : "COMMON_Container_3d\\Cont_40ftHC\\container-40ftHC_Triton.sd",
 	  	"ContainerType" : "C40ftHC",
 	  	"IntrinsicShapeOffset": [0,1.175,0],
    		"EmptyMassKG": 2100.,
@@ -1073,9 +1072,6 @@ Here below a sample of a ``.load-or`` file::
 - "Name" has as value a string used by Open Rails when the container must be indentified in a message 
   to the player.
 - "Shape" has as value the path of the container shape (.s) file, having ``Trainset`` as base.
-- "ShapeDescriptor" has the path of the container shape descriptor (.sd) file,
-  having ``Trainset`` as base. This is optional; if missing OR assumes the shape
-  descriptor is in the same location with the same name as the shape file.
 - "ContainerType" identifies the container type, which may be one of the following ones::
 
   * C20ft

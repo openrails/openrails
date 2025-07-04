@@ -3420,7 +3420,7 @@ namespace Orts.Viewer3D.RollingStock
             if (car.CabView3D != null)
             {
                 var shapePath = car.CabView3D.ShapeFilePath;
-                TrainCarShape = new PoseableShape(viewer, shapePath + '\0' + Path.GetDirectoryName(shapePath), car.CabView3D.ShapeDescriptorPath, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster | ShapeFlags.Interior);
+                TrainCarShape = new PoseableShape(viewer, shapePath + '\0' + Path.GetDirectoryName(shapePath), new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster | ShapeFlags.Interior);
                 locoViewer.ThreeDimentionCabRenderer = new CabRenderer(viewer, car, car.CabView3D.CVFFile);
             }
             else locoViewer.ThreeDimentionCabRenderer = locoViewer._CabRenderer;

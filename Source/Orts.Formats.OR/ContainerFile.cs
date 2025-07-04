@@ -63,7 +63,6 @@ namespace Orts.Formats.OR
     {
         public string Name;
         public string ShapeFileName;
-        public string ShapeDescriptor;
         public string ContainerType;  
         public Vector3 IntrinsicShapeOffset = new Vector3(0f, 1.17f, 0f);
         public float EmptyMassKG = -1;
@@ -79,12 +78,7 @@ namespace Orts.Formats.OR
             switch (item.Path)
             {
                 case "Name": Name = item.AsString(""); break;
-                case "Shape":
-                    ShapeFileName = item.AsString(ShapeFileName);
-                    if (string.IsNullOrEmpty(ShapeDescriptor))
-                        ShapeDescriptor = ShapeFileName + "d";
-                    break;
-                case "ShapeDescriptor": ShapeDescriptor = item.AsString(ShapeDescriptor); break;
+                case "Shape": ShapeFileName = item.AsString(ShapeFileName); break;
                 case "ContainerType": ContainerType = item.AsString("40ftHC"); break;
                 case "IntrinsicShapeOffset[]": IntrinsicShapeOffset = item.AsVector3(Vector3.Zero); break;
                 case "EmptyMassKG": EmptyMassKG = item.AsFloat(-1); break;

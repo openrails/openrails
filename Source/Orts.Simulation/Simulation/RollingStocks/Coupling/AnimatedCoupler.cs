@@ -30,6 +30,5 @@ namespace Orts.Simulation.RollingStocks.Coupling
     public struct AnimatedCouplerState
     {
         public string ShapeFileName;
-        public string ShapeDescriptor;
     }
 }

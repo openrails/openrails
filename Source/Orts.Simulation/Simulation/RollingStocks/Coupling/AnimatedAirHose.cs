@@ -32,6 +32,5 @@ namespace Orts.Simulation.RollingStocks.Coupling
     public struct AnimatedAirHoseState
     {
         public string ShapeFileName;
-        public string ShapeDescriptor;
     }
 }

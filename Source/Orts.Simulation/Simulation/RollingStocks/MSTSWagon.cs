@@ -120,16 +120,12 @@ namespace Orts.Simulation.RollingStocks
 
         // wag file data
         public string MainShapeFileName;
-        public string MainShapeDescriptor;
         public string FreightShapeFileName;
-        public string FreightShapeDescriptor;
         public float FreightAnimMaxLevelM;
         public float FreightAnimMinLevelM;
         public float FreightAnimFlag = 1;   // if absent or >= 0 causes the freightanim to drop in tenders
         public string Cab3DShapeFileName; // 3DCab view shape file name
-        public string Cab3DShapeDescriptor;
         public string InteriorShapeFileName; // passenger view shape file name
-        public string InteriorShapeDescriptor;
         public string MainSoundFileName;
         public string InteriorSoundFileName;
         public string Cab3DSoundFileName;
@@ -413,47 +409,40 @@ namespace Orts.Simulation.RollingStocks
             {
                 Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + MainShapeFileName);
                 MainShapeFileName = string.Empty;
-                MainShapeDescriptor = string.Empty;
             }
             if (FreightShapeFileName != null && !File.Exists(wagonFolderSlash + FreightShapeFileName))
             {
                 Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FreightShapeFileName);
                 FreightShapeFileName = null;
-                FreightShapeDescriptor = null;
             }
             if (InteriorShapeFileName != null && !File.Exists(wagonFolderSlash + InteriorShapeFileName))
             {
                 Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + InteriorShapeFileName);
                 InteriorShapeFileName = null;
-                InteriorShapeDescriptor = null;
             }
 
             if (FrontCoupler.Closed.ShapeFileName != null && !File.Exists(wagonFolderSlash + FrontCoupler.Closed.ShapeFileName))
             {
                 Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontCoupler.Closed.ShapeFileName);
                 FrontCoupler.Closed.ShapeFileName = null;
-                FrontCoupler.Closed.ShapeDescriptor = null;
             }
 
             if (RearCoupler.Closed.ShapeFileName != null && !File.Exists(wagonFolderSlash + RearCoupler.Closed.ShapeFileName))
             {
                 Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearCoupler.Closed.ShapeFileName);
                 RearCoupler.Closed.ShapeFileName = null;
-                RearCoupler.Closed.ShapeDescriptor = null;
             }
 
             if (FrontAirHose.Connected.ShapeFileName != null && !File.Exists(wagonFolderSlash + FrontAirHose.Connected.ShapeFileName))
             {
                 Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + FrontAirHose.Connected.ShapeFileName);
                 FrontAirHose.Connected.ShapeFileName = null;
-                FrontAirHose.Connected.ShapeDescriptor = null;
             }
 
             if (RearAirHose.Connected.ShapeFileName != null && !File.Exists(wagonFolderSlash + RearAirHose.Connected.ShapeFileName))
             {
                 Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + RearAirHose.Connected.ShapeFileName);
                 RearAirHose.Connected.ShapeFileName = null;
-                RearAirHose.Connected.ShapeDescriptor = null;
             }
 
             // If trailing loco resistance constant has not been  defined in WAG/ENG file then assign default value based upon orig Davis values
@@ -1169,17 +1158,7 @@ namespace Orts.Simulation.RollingStocks
         {
             switch (lowercasetoken)
             {
-                case "wagon(wagonshape":
-                    stf.MustMatch("(");
-                    MainShapeFileName = stf.ReadString();
-                    if (!stf.EndOfBlock())
-                    {
-                        MainShapeDescriptor = stf.ReadString();
-                        stf.SkipRestOfBlock();
-                    }
-                    else
-                        MainShapeDescriptor = MainShapeFileName + "d";
-                    break;
+                case "wagon(wagonshape": MainShapeFileName = stf.ReadStringBlock(null); break;
                 case "wagon(type":
                     stf.MustMatch("(");
                     var wagonType = stf.ReadString();
@@ -1207,7 +1186,6 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(freightanim":
                     stf.MustMatch("(");
                     FreightShapeFileName = stf.ReadString();
-                    FreightShapeDescriptor = FreightShapeFileName + "d";
                     FreightAnimMaxLevelM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     FreightAnimMinLevelM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     // Flags are optional and we want to avoid a warning.
@@ -1243,12 +1221,16 @@ namespace Orts.Simulation.RollingStocks
                     }
                     break;
                 case "wagon(centreofgravity":
-                    InitialCentreOfGravityM = stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero);
+                    stf.MustMatch("(");
+                    InitialCentreOfGravityM.X = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    InitialCentreOfGravityM.Y = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    InitialCentreOfGravityM.Z = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     if (Math.Abs(InitialCentreOfGravityM.Z) > 2)
                     {
                         STFException.TraceWarning(stf, string.Format("CentreOfGravity Z set to zero because value {0} outside range -2 to +2", InitialCentreOfGravityM.Z));
                         InitialCentreOfGravityM.Z = 0;
                     }
+                    stf.SkipRestOfBlock();
                     break;
                 case "wagon(ortsunbalancedsuperelevation": MaxUnbalancedSuperElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsrigidwheelbase":
@@ -1410,10 +1392,6 @@ namespace Orts.Simulation.RollingStocks
                     stf.MustMatch("(");
                     FrontCoupler.Closed.ShapeFileName = stf.ReadString();
                     FrontCoupler.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                    if (!stf.EndOfBlock())
-                        FrontCoupler.Closed.ShapeDescriptor = stf.ReadString();
-                    else
-                        FrontCoupler.Closed.ShapeDescriptor = FrontCoupler.Closed.ShapeFileName + "d";
                     stf.SkipRestOfBlock();
                     break;
 
@@ -1421,10 +1399,6 @@ namespace Orts.Simulation.RollingStocks
                     stf.MustMatch("(");
                     FrontAirHose.Connected.ShapeFileName = stf.ReadString();
                     FrontAirHose.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                    if (!stf.EndOfBlock())
-                        FrontAirHose.Connected.ShapeDescriptor = stf.ReadString();
-                    else
-                        FrontAirHose.Connected.ShapeDescriptor = FrontAirHose.Connected.ShapeFileName + "d";
                     stf.SkipRestOfBlock();
                     break;
 
@@ -1432,10 +1406,6 @@ namespace Orts.Simulation.RollingStocks
                     stf.MustMatch("(");
                     RearCoupler.Closed.ShapeFileName = stf.ReadString();
                     RearCoupler.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                    if (!stf.EndOfBlock())
-                        RearCoupler.Closed.ShapeDescriptor = stf.ReadString();
-                    else
-                        RearCoupler.Closed.ShapeDescriptor = RearCoupler.Closed.ShapeFileName + "d";
                     stf.SkipRestOfBlock();
                     break;
 
@@ -1443,10 +1413,6 @@ namespace Orts.Simulation.RollingStocks
                     stf.MustMatch("(");
                     RearAirHose.Connected.ShapeFileName = stf.ReadString();
                     RearAirHose.Size = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                    if (!stf.EndOfBlock())
-                        RearAirHose.Connected.ShapeDescriptor = stf.ReadString();
-                    else
-                        RearAirHose.Connected.ShapeDescriptor = RearAirHose.Connected.ShapeFileName + "d";
                     stf.SkipRestOfBlock();
                     break;
 
@@ -1459,48 +1425,28 @@ namespace Orts.Simulation.RollingStocks
                case "wagon(coupling(frontcoupleropenanim":
                     stf.MustMatch("(");
                     FrontCoupler.Open.ShapeFileName = stf.ReadString();
-                    // NOTE: Skip storing the size as it is unused:
-                    stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                    if (!stf.EndOfBlock())
-                        FrontCoupler.Open.ShapeDescriptor = stf.ReadString();
-                    else
-                        FrontCoupler.Open.ShapeDescriptor = FrontCoupler.Open.ShapeFileName + "d";
+                    // NOTE: Skip reading the size as it is unused: stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
                     
                case "wagon(coupling(rearcoupleropenanim":
                     stf.MustMatch("(");
                     RearCoupler.Open.ShapeFileName = stf.ReadString();
-                    // NOTE: Skip storing the size as it is unused:
-                    stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                    if (!stf.EndOfBlock())
-                        RearCoupler.Open.ShapeDescriptor = stf.ReadString();
-                    else
-                        RearCoupler.Open.ShapeDescriptor = RearCoupler.Open.ShapeFileName + "d";
+                    // NOTE: Skip reading the size as it is unused: stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
 
                 case "wagon(coupling(frontairhosediconnectedanim":
                     stf.MustMatch("(");
                     FrontAirHose.Disconnected.ShapeFileName = stf.ReadString();
-                    // NOTE: Skip storing the size as it is unused:
-                    stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                    if (!stf.EndOfBlock())
-                        FrontAirHose.Disconnected.ShapeDescriptor = stf.ReadString();
-                    else
-                        FrontAirHose.Disconnected.ShapeDescriptor = FrontAirHose.Disconnected.ShapeFileName + "d";
+                    // NOTE: Skip reading the size as it is unused: stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
                     
                 case "wagon(coupling(rearairhosediconnectedanim":
                     stf.MustMatch("(");
                     RearAirHose.Disconnected.ShapeFileName = stf.ReadString();
-                    // NOTE: Skip storing the size as it is unused:
-                    stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                    if (!stf.EndOfBlock())
-                        RearAirHose.Disconnected.ShapeDescriptor = stf.ReadString();
-                    else
-                        RearAirHose.Disconnected.ShapeDescriptor = RearAirHose.Disconnected.ShapeFileName + "d";
+                    // NOTE: Skip reading the size as it is unused: stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
                     stf.SkipRestOfBlock();
                     break;
 
@@ -1650,13 +1596,11 @@ namespace Orts.Simulation.RollingStocks
         public virtual void Copy(MSTSWagon copy)
         {
             MainShapeFileName = copy.MainShapeFileName;
-            MainShapeDescriptor = copy.MainShapeDescriptor;
             HasPassengerCapacity = copy.HasPassengerCapacity;
             WagonType = copy.WagonType;
             WagonSpecialType = copy.WagonSpecialType;
             BrakeShoeType = copy.BrakeShoeType;
             FreightShapeFileName = copy.FreightShapeFileName;
-            FreightShapeDescriptor = copy.FreightShapeDescriptor;
             FreightAnimMaxLevelM = copy.FreightAnimMaxLevelM;
             FreightAnimMinLevelM = copy.FreightAnimMinLevelM;
             FreightAnimFlag = copy.FreightAnimFlag;
@@ -1739,10 +1683,8 @@ namespace Orts.Simulation.RollingStocks
             CarBrakeSystemType = copy.CarBrakeSystemType;
             BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
             InteriorShapeFileName = copy.InteriorShapeFileName;
-            InteriorShapeDescriptor = copy.InteriorShapeDescriptor;
             InteriorSoundFileName = copy.InteriorSoundFileName;
             Cab3DShapeFileName = copy.Cab3DShapeFileName;
-            Cab3DShapeDescriptor = copy.Cab3DShapeDescriptor;
             Cab3DSoundFileName = copy.Cab3DSoundFileName;
             Adhesion1 = copy.Adhesion1;
             Adhesion2 = copy.Adhesion2;
@@ -1842,17 +1784,7 @@ namespace Orts.Simulation.RollingStocks
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("sound", ()=>{ InteriorSoundFileName = stf.ReadStringBlock(null); }),
-                new STFReader.TokenProcessor("passengercabinfile", ()=>{
-                    stf.MustMatch("(");
-                    InteriorShapeFileName = stf.ReadString();
-                    if (!stf.EndOfBlock())
-                    {
-                        InteriorShapeDescriptor = stf.ReadString();
-                        stf.SkipRestOfBlock();
-                    }
-                    else
-                        InteriorShapeDescriptor = InteriorShapeFileName + "d";
-                }),
+                new STFReader.TokenProcessor("passengercabinfile", ()=>{ InteriorShapeFileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("passengercabinheadpos", ()=>{ passengerViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
                 new STFReader.TokenProcessor("rotationlimit", ()=>{ passengerViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
                 new STFReader.TokenProcessor("startdirection", ()=>{ passengerViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
@@ -1872,17 +1804,7 @@ namespace Orts.Simulation.RollingStocks
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("sound", ()=>{ Cab3DSoundFileName = stf.ReadStringBlock(null); }),
-                new STFReader.TokenProcessor("orts3dcabfile", ()=>{
-                    stf.MustMatch("(");
-                    Cab3DShapeFileName = stf.ReadString();
-                    if (!stf.EndOfBlock())
-                    {
-                        Cab3DShapeDescriptor = stf.ReadString();
-                        stf.SkipRestOfBlock();
-                    }
-                    else
-                        Cab3DShapeDescriptor = Cab3DShapeFileName + "d";
-                }),
+                new STFReader.TokenProcessor("orts3dcabfile", ()=>{ Cab3DShapeFileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("orts3dcabheadpos", ()=>{ cabViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
                 new STFReader.TokenProcessor("ortsshapeoffset", ()=>{ cabViewPoint.ShapeOffset = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
                 new STFReader.TokenProcessor("ortsshapeindex", ()=>{ cabViewPoint.ShapeIndex = stf.ReadIntBlock(null); }),
@@ -4728,7 +4650,6 @@ public void SetTensionStiffness(float a, float b)
             XNALocation.Z *= -1; // Convert to MSTS coordinate system
             XNADirection = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
             XNADirection.Z *= -1; // Convert to MSTS coordinate system
-            XNADirection.Normalize();
             NozzleWidth = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
             // Parse new parameters after all MSTS parameters, otherwise it's ambiguous which data is which
             stf.ParseBlock(new STFReader.TokenProcessor[] {

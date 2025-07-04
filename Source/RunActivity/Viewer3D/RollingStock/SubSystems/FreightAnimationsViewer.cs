@@ -55,7 +55,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
         public FreightAnimationViewer(Viewer viewer, MSTSWagonViewer wagonViewer, string wagonFolderSlash, FreightAnimation animation)
         {
             Animation = animation;
-            FreightShape = new AnimatedShape(viewer, wagonFolderSlash + animation.ShapeFileName + '\0' + wagonFolderSlash, wagonFolderSlash + animation.ShapeDescriptor, new WorldPosition(wagonViewer.Car.WorldPosition), ShapeFlags.ShadowCaster);
+            FreightShape = new AnimatedShape(viewer, wagonFolderSlash + animation.ShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(wagonViewer.Car.WorldPosition), ShapeFlags.ShadowCaster);
             if (FreightShape.SharedShape.LodControls.Length > 0)
             {
                 foreach (var lodControl in FreightShape.SharedShape.LodControls)
