@@ -117,8 +117,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float MaxDecelerationMpSS = 2;
         public float? ThrottlePercent { get; private set;}
         public float? DynamicBrakePercent { get; private set;}
-        public float TrainBrakePercent { get; private set; }
-        public float EngineBrakePercent { get; private set; }
+        public float? TrainBrakePercent { get; private set; }
+        public float? EngineBrakePercent { get; private set; }
         protected float trainLength = 0;
         public int TrainLengthMeters = 0;
         OdoMeter RestrictedRegionOdometer;
@@ -588,8 +588,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 CCThrottleOrDynBrakePercent = 0;
                 ThrottlePercent = null;
                 DynamicBrakePercent = null;
-                TrainBrakePercent = 0;
-                EngineBrakePercent = 0;
+                TrainBrakePercent = null;
+                EngineBrakePercent = null;
                 return;
             }
             if (firstIteration) // if this is executed the first time, let's check all other than player engines in the consist, and record them for further throttle manipulation
@@ -643,8 +643,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 CCThrottleOrDynBrakePercent = 0;
                 ThrottlePercent = null;
                 DynamicBrakePercent = null;
-                TrainBrakePercent = 0;
-                EngineBrakePercent = 0;
+                TrainBrakePercent = null;
+                EngineBrakePercent = null;
             }
             else if (SpeedRegMode == SpeedRegulatorMode.Auto)
             {
@@ -755,14 +755,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     if (CCThrottleOrDynBrakePercent > 0 && !tractionAllowed) CCThrottleOrDynBrakePercent = 0;
                     if (AbsWheelSpeedMpS == 0 && CCThrottleOrDynBrakePercent < 0) CCThrottleOrDynBrakePercent = 0;
                     CCThrottleOrDynBrakePercent = MathHelper.Clamp(CCThrottleOrDynBrakePercent, -100, 100);
-                    TrainBrakePercent = MathHelper.Clamp(TrainBrakePercent, 0, 100);
+                    TrainBrakePercent = MathHelper.Clamp(TrainBrakePercent.Value, 0, 100);
 
                     if (TrainBrakePercent > 0) CCIsUsingTrainBrake = true;
                 }
                 else
                 {
                     CCThrottleOrDynBrakePercent = 0;
-                    TrainBrakePercent = 0;
+                    TrainBrakePercent = null;
                     ThrottlePID.Active = false;
                     DynamicBrakePID.Active = false;
                     TrainBrakePID.Active = false;
@@ -772,7 +772,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 if (DynamicBrakePriority) DynamicBrakePercent = null;
                 else if (CCThrottleOrDynBrakePercent < 0) DynamicBrakePercent = -CCThrottleOrDynBrakePercent;
                 else DynamicBrakePercent = -1;
-                if (SpeedSelMode == SpeedSelectorMode.Parking && !EngineBrakePriority)
+                if (EngineBrakePriority) EngineBrakePercent = null;
+                else if (SpeedSelMode == SpeedSelectorMode.Parking)
                 {
                     if (Locomotive.AbsWheelSpeedMpS <= ParkingBrakeEngageSpeedMpS)
                         EngineBrakePercent = ParkingBrakePercent;
@@ -795,7 +796,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             outf.Write(DynamicBrakePriority);
             outf.Write((int)SpeedRegMode);
             outf.Write((int)SpeedSelMode);
-            outf.Write(TrainBrakePercent);
+            outf.Write(TrainBrakePercent ?? -1);
             outf.Write(TrainLengthMeters);
             outf.Write(CCIsUsingTrainBrake);
         }
@@ -813,6 +814,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             SpeedRegMode = (SpeedRegulatorMode)inf.ReadInt32();
             SpeedSelMode = (SpeedSelectorMode)inf.ReadInt32();
             TrainBrakePercent = inf.ReadSingle();
+            if (TrainBrakePercent < 0) TrainBrakePercent = null;
             TrainLengthMeters = inf.ReadInt32();
             CCIsUsingTrainBrake = inf.ReadBoolean();
         }
@@ -1380,14 +1382,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
             float target = TrainBrakePID.Percent;
 
+            if (TrainBrakePercent == null) TrainBrakePercent = 0;
+
             if (target > TrainBrakePercent && target >= TrainBrakeMinPercentValue)
             {
                 if (TrainBrakePercent < TrainBrakeMinPercentValue) TrainBrakePercent = TrainBrakeMinPercentValue;
-                TrainBrakePercent = Math.Min(target, TrainBrakePercent + 100 / TrainBrakeFullRangeIncreaseTimeSeconds * elapsedClockSeconds);
+                TrainBrakePercent = Math.Min(target, TrainBrakePercent.Value + 100 / TrainBrakeFullRangeIncreaseTimeSeconds * elapsedClockSeconds);
             }
             else if (target < TrainBrakePercent)
             {
-                TrainBrakePercent = Math.Max(target, TrainBrakePercent - 100 / TrainBrakeFullRangeDecreaseTimeSeconds * elapsedClockSeconds);
+                TrainBrakePercent = Math.Max(target, TrainBrakePercent.Value - 100 / TrainBrakeFullRangeDecreaseTimeSeconds * elapsedClockSeconds);
                 if (TrainBrakePercent <= TrainBrakeMinPercentValue)
                 {
                     if (target == 0) TrainBrakePercent = 0;
