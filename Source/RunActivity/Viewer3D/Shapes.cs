@@ -2576,28 +2576,6 @@ namespace Orts.Viewer3D
 
             return XNAMatrix;
         }
-        static matrix MSTSMatrixFromXNA(Matrix XNAMatrix, string name = "")
-        {
-            var MSTSMatrix = new matrix
-            {
-                AX = XNAMatrix.M11,
-                AY = XNAMatrix.M12,
-                AZ = -XNAMatrix.M13,
-                BX = XNAMatrix.M21,
-                BY = XNAMatrix.M22,
-                BZ = -XNAMatrix.M23,
-                CX = -XNAMatrix.M31,
-                CY = -XNAMatrix.M32,
-                CZ = XNAMatrix.M33,
-                DX = XNAMatrix.M41,
-                DY = XNAMatrix.M42,
-                DZ = -XNAMatrix.M43,
-
-                Name = name
-            };
-
-            return MSTSMatrix;
-        }
 
         public void PrepareFrame(RenderFrame frame, WorldPosition location, ShapeFlags flags)
         {
