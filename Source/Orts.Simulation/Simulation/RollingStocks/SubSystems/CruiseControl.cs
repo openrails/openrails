@@ -796,7 +796,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             outf.Write(DynamicBrakePriority);
             outf.Write((int)SpeedRegMode);
             outf.Write((int)SpeedSelMode);
-            outf.Write(TrainBrakePercent);
+            outf.Write(TrainBrakePercent ?? -1);
             outf.Write(TrainLengthMeters);
             outf.Write(CCIsUsingTrainBrake);
         }
@@ -814,6 +814,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             SpeedRegMode = (SpeedRegulatorMode)inf.ReadInt32();
             SpeedSelMode = (SpeedSelectorMode)inf.ReadInt32();
             TrainBrakePercent = inf.ReadSingle();
+            if (TrainBrakePercent < 0) TrainBrakePercent = null;
             TrainLengthMeters = inf.ReadInt32();
             CCIsUsingTrainBrake = inf.ReadBoolean();
         }
