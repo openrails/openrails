@@ -91,9 +91,6 @@ namespace Orts.Simulation.RollingStocks
         // Remember direction of passenger camera and apply when user returns to it.
         public float RotationXRadians;
         public float RotationYRadians;
-        // TODO: Add user inputs for these, similar to what's capable elsewhere
-        public Vector3 ShapeOffset;
-        public int ShapeHierarchy;
     }
 
     public abstract class TrainCar

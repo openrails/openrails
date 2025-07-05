@@ -72,7 +72,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
                     }
                 }
             }
-            if (FreightShape.XNAMatrices.Length > 0 && animation.Flipped)
+            if (FreightShape.XNAMatrices.Length > 0 && animation is FreightAnimationStatic && (animation as FreightAnimationStatic).Flipped)
             {
                 var flipper = Matrix.Identity;
                 flipper.M11 = -1;

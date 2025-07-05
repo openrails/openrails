@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
 using Orts.Parsers.Msts;
 
 namespace Orts.Formats.Msts
@@ -181,8 +180,6 @@ namespace Orts.Formats.Msts
         public bool[] Weather;
         public int[] TimeInterval;
         public List<int[]> TimeIntervals;
-        public Vector3 Position; // TODO: Implement user inputs for positional offset and shape hierarchy
-        public int ShapeHierarchy;
 
 
 

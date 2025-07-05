@@ -288,8 +288,7 @@ namespace Orts.Viewer3D
     {
         protected static Dictionary<string, bool> SeenShapeAnimationError = new Dictionary<string, bool>();
 
-        public Matrix[] XNAMatrices = new Matrix[0]; // The relative positions of the subobjects
-        public Matrix[] ResultMatrices = new Matrix[0]; // the absolute positions of the subobjects
+        public Matrix[] XNAMatrices = new Matrix[0];  // the positions of the subobjects
 
         public readonly int[] Hierarchy;
 
@@ -302,7 +301,6 @@ namespace Orts.Viewer3D
             if (SharedShape.Matrices.Length > 0)
             {
                 XNAMatrices = new Matrix[SharedShape.Matrices.Length];
-                ResultMatrices = new Matrix[SharedShape.Matrices.Length];
                 for (int iMatrix = 0; iMatrix < SharedShape.Matrices.Length; ++iMatrix)
                     XNAMatrices[iMatrix] = SharedShape.Matrices[iMatrix];
                 Visibility = SharedShape.Visibility;
@@ -317,22 +315,15 @@ namespace Orts.Viewer3D
 
                     Trace.TraceWarning("Couldn't load shape {0} file may be corrupt", location);
                 }
-                // Add default identity matrix
+                // The 0th matrix should always be the identity matrix
                 XNAMatrices = new Matrix[1];
                 XNAMatrices[0] = Matrix.Identity;
-                ResultMatrices = new Matrix[1];
-                ResultMatrices[0] = Matrix.Identity;
             }
 
-            if (SharedShape.LodControls?.FirstOrDefault().DistanceLevels?.FirstOrDefault().SubObjects?.FirstOrDefault().ShapePrimitives?.Length > 0)
+            if (SharedShape.LodControls.Length > 0 && SharedShape.LodControls[0].DistanceLevels.Length > 0 && SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length > 0 && SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0)
                 Hierarchy = SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy;
             else
                 Hierarchy = new int[0];
-
-            // Initialize resulting matrices, will need to be recalculated when original matrices change
-            // Doing this calculation for all matrices here saves from duplicating the process
-            // every time an absolute position is needed by some other system
-            UpdateResultMatrices();
         }
 
         public PoseableShape(Viewer viewer, string path, WorldPosition initialPosition, ShapeFlags flags)
@@ -345,49 +336,6 @@ namespace Orts.Viewer3D
         {
         }
 
-        public void UpdateResultMatrices()
-        {
-            // Determine the absolute position and orientation of each matrix
-            // Using the relative position and orientation combined with the hierarchy
-
-            // Array indicating which results have already been calculated,
-            // which can be used to shortcut some calculating
-            bool[] resultCalculated = new bool[Hierarchy.Length];
-
-            for (int i = 0; i < Hierarchy.Length; i++)
-            {
-                Matrix res = XNAMatrices[i];
-                int hIndex = Hierarchy[i];
-
-                // Transform the matrix repeatedly for all of its parents
-                int depth = 0;
-
-                while (hIndex > -1 && hIndex < Hierarchy.Length && depth < 32)
-                {
-                    // Can finish calculating sooner if we already have the result matrix for the next level up
-                    if (resultCalculated[hIndex])
-                    {
-                        res = res * ResultMatrices[hIndex];
-                        break;
-                    }
-                    else
-                    {
-                        res = res * XNAMatrices[hIndex];
-                        // Prevent potential infinite loop due to faulty hierarchy definition
-                        if (hIndex != Hierarchy[hIndex] && hIndex != Hierarchy[i])
-                            hIndex = Hierarchy[hIndex];
-                        else
-                            break;
-                    }
-
-                    depth++;
-                }
-
-                ResultMatrices[i] = res;
-                resultCalculated[i] = true;
-            }
-        }
-
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags, Visibility);
@@ -395,7 +343,6 @@ namespace Orts.Viewer3D
 
         public void ConditionallyPrepareFrame(RenderFrame frame, ElapsedTime elapsedTime, bool[] matrixVisible = null)
         {
-            UpdateResultMatrices();
             SharedShape.PrepareFrame(frame, Location, XNAMatrices, Flags, matrixVisible);
         }
 
@@ -2065,6 +2012,10 @@ namespace Orts.Viewer3D
         public string SoundFileName = "";
         public float CustomAnimationFPS = 8;
 
+        /// <summary>
+        /// Store for matrixes needed to be reused in later calculations, e.g. for 3d cabview mouse control
+        /// </summary>
+        public readonly Dictionary<int, Matrix> StoredResultMatrixes = new Dictionary<int, Matrix>();
         // Structure to store both a shape file path and the path of the associated shape descriptor
         public readonly struct ShapeAndDescriptor
         {
@@ -2982,6 +2933,9 @@ namespace Orts.Viewer3D
                             hi = shapePrimitive.Hierarchy[hi];
                         }
                         Matrix.Multiply(ref xnaMatrix, ref xnaDTileTranslation, out xnaMatrix);
+
+                        if (StoredResultMatrixes.ContainsKey(shapePrimitive.HierarchyIndex))
+                            StoredResultMatrixes[shapePrimitive.HierarchyIndex] = xnaMatrix;
 
                         // TODO make shadows depend on shape overrides
 

@@ -60,11 +60,16 @@ namespace Orts.Viewer3D
 
         void UpdateMaxFrame(int matrix)
         {
-            if (PoseableShape.SharedShape.Animations?.FirstOrDefault().anim_nodes?.ElementAtOrDefault(matrix).controllers?.FirstOrDefault()?.Count > 0)
+            if (PoseableShape.SharedShape.Animations != null
+                && PoseableShape.SharedShape.Animations.Count > 0
+                && PoseableShape.SharedShape.Animations[0].anim_nodes.Count > matrix
+                && PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers.Count > 0
+                && PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[0].Count > 0)
             {
                 MaxFrame = Math.Max(MaxFrame, PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[0].ToArray().Cast<KeyPosition>().Last().Frame);
                 // Sometimes there are more frames in the second controller than in the first
-                if (PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers.ElementAtOrDefault(1)?.Count > 0)
+                if (PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers.Count > 1
+                && PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[1].Count > 0)
                     MaxFrame = Math.Max(MaxFrame, PoseableShape.SharedShape.Animations[0].anim_nodes[matrix].controllers[1].ToArray().Cast<KeyPosition>().Last().Frame);
             }
             for (var i = 0; i < PoseableShape.Hierarchy.Length; i++)

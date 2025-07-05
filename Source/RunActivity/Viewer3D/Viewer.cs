@@ -1482,11 +1482,12 @@ namespace Orts.Viewer3D
                         {
                             foreach (var targetNode in animatedPart.MatrixIndexes)
                             {
-                                if (targetNode > trainCarShape.ResultMatrices.Length)
+                                if (!trainCarShape.SharedShape.StoredResultMatrixes.TryGetValue(targetNode, out var matrix))
                                     continue;
                                 var matrixWorldLocation = trainCarShape.Location.WorldLocation;
-                                matrixWorldLocation.Location = (trainCarShape.ResultMatrices[targetNode] * trainCarShape.Location.XNAMatrix).Translation;
-                                matrixWorldLocation.Location.Z *= -1;
+                                matrixWorldLocation.Location.X = matrix.Translation.X;
+                                matrixWorldLocation.Location.Y = matrix.Translation.Y;
+                                matrixWorldLocation.Location.Z = -matrix.Translation.Z;
                                 Vector3 xnaCenter = Camera.XnaLocation(matrixWorldLocation);
                                 float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, NearPoint, FarPoint);
                                 if (bestD > d)

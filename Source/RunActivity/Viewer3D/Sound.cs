@@ -39,14 +39,13 @@
 
 //#define DEBUGSCR
 
-using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Simulation;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
-using Orts.Viewer3D.RollingStock;
+using Orts.Simulation.Signalling;
 using ORTS.Common;
 using ORTS.Settings;
 using System;
@@ -80,10 +79,6 @@ namespace Orts.Viewer3D
         /// The sound may be from a train car
         /// </summary>
         public MSTSWagon Car;
-        /// <summary>
-        /// The viewer of the connected train car (if any)
-        /// </summary>
-        public MSTSWagonViewer CarViewer;
         /// <summary>
         /// The listener is connected to this viewer
         /// </summary>
@@ -120,11 +115,10 @@ namespace Orts.Viewer3D
         private bool CarOnCurve = false;
 
 
-        public TrackSoundSource(MSTSWagonViewer carViewer, Viewer viewer)
+        public TrackSoundSource(MSTSWagon car, Viewer viewer)
         {
             TrackSound = true;
-            CarViewer = carViewer;
-            Car = (carViewer.Car as MSTSWagon);
+            Car = car;
             Viewer = viewer;
             _inSources = new List<SoundSource>();
             _outSources = new List<SoundSource>();
@@ -156,11 +150,11 @@ namespace Orts.Viewer3D
             }
             if (isInside)
             {
-                _inSources.Add(new SoundSource(Viewer, CarViewer, fullPath));
+                _inSources.Add(new SoundSource(Viewer, Car, fullPath));
                 _inSources.Last().IsInternalTrackSound = true;
             }
             else
-                _outSources.Add(new SoundSource(Viewer, CarViewer, fullPath));
+                _outSources.Add(new SoundSource(Viewer, Car, fullPath));
         }
 
         public override void Uninitialize()
@@ -526,19 +520,6 @@ namespace Orts.Viewer3D
         public bool IsUnattenuated = false;
 
         /// <summary>
-        /// Construct a SoundSource attached to a train car viewer.
-        /// </summary>
-        /// <param name="viewer"></param>
-        /// <param name="carViewer"></param>
-        /// <param name="smsFilePath"></param>
-        public SoundSource(Viewer viewer, MSTSWagonViewer carViewer, string smsFilePath)
-        {
-            CarViewer = carViewer;
-            Car = (carViewer.Car as MSTSWagon);
-            Initialize(viewer, Car.WorldPosition.WorldLocation, Events.Source.MSTSCar, smsFilePath);
-        }
-
-        /// <summary>
         /// Construct a SoundSource attached to a train car.
         /// </summary>
         /// <param name="viewer"></param>
@@ -547,8 +528,6 @@ namespace Orts.Viewer3D
         public SoundSource(Viewer viewer, MSTSWagon car, string smsFilePath)
         {
             Car = car;
-            viewer.World.Trains.Cars.TryGetValue(car, out TrainCarViewer carViewer);
-            CarViewer = carViewer as MSTSWagonViewer;
             Initialize(viewer, Car.WorldPosition.WorldLocation, Events.Source.MSTSCar, smsFilePath);
         }
 
@@ -717,7 +696,7 @@ namespace Orts.Viewer3D
 
             SMSFolder = Path.GetDirectoryName(smsFilePath);
             SMSFileName = Path.GetFileName(smsFilePath);
-            SoundManagmentFile smsFile = SharedSMSFileManager.Get(smsFilePath);
+            Orts.Formats.Msts.SoundManagmentFile smsFile = Orts.Formats.Msts.SharedSMSFileManager.Get(smsFilePath);
 
 
             // find correct ScalabiltyGroup
@@ -730,7 +709,7 @@ namespace Orts.Viewer3D
             }
             if (iSG < smsFile.Tr_SMS.ScalabiltyGroups.Count && smsFile.Tr_SMS.ScalabiltyGroups[iSG].Streams != null)  // else we want less sound so don't provide any
             {
-                ScalabiltyGroup mstsScalabiltyGroup = smsFile.Tr_SMS.ScalabiltyGroups[iSG];
+                Orts.Formats.Msts.ScalabiltyGroup mstsScalabiltyGroup = smsFile.Tr_SMS.ScalabiltyGroups[iSG];
 
                 ActivationConditions = mstsScalabiltyGroup.Activation;
                 DeactivationConditions = mstsScalabiltyGroup.Deactivation;
@@ -1008,28 +987,7 @@ namespace Orts.Viewer3D
             {
                 foreach (SoundStream stream in SoundStreams)
                 {
-                    // For train cars, calculate the position and velocity of the sound
-                    if (CarViewer != null)
-                    {
-                        // Convert position offset into train-car space offset
-                        Vector3 pos = stream.MSTSStream.Position;
-                        int shapeHierarchy = MathHelper.Clamp(stream.MSTSStream.ShapeHierarchy, 0, CarViewer.TrainCarShape.ResultMatrices.Count() - 1);
-                        Matrix mat = CarViewer.TrainCarShape.ResultMatrices[shapeHierarchy];
-                        pos = Vector3.Transform(pos, mat);
-
-                        // Convert position offset into global space offset
-                        mat = Car.WorldPosition.XNAMatrix;
-                        mat.Translation = Vector3.Zero;
-                        pos = Vector3.Transform(pos, mat);
-                        pos.Z *= -1; // Invert Z coordinate to match WorldLocation system
-                        pos += CarViewer.SoundLocation.Location;
-
-                        float[] position = new float[] { pos.X, pos.Y, pos.Z};
-
-                        stream.Update(position, CarViewer.Velocity);
-                    }
-                    else // Don't try to update position if CarViewer is missing
-                        stream.Update();
+                    stream.Update();
                     needsFrequentUpdate |= stream.NeedsFrequentUpdate;
                 }
             }
@@ -1212,7 +1170,7 @@ namespace Orts.Viewer3D
         /// <summary>
         /// A stream as is represented in sms file
         /// </summary>
-        public SMSStream MSTSStream;
+        protected Orts.Formats.Msts.SMSStream MSTSStream;
         /// <summary>
         /// Each stream can contain only one initial trigger, which should be audible
         /// in case the SoundSource is in scope, and no other variable trigger is active
@@ -1246,7 +1204,7 @@ namespace Orts.Viewer3D
         /// </summary>
         IEnumerable<ORTSTrigger> TriggersList;
 
-        public SoundStream(SMSStream mstsStream, Events.Source eventSource, SoundSource soundSource, UserSettings settings)
+        public SoundStream(Orts.Formats.Msts.SMSStream mstsStream, Events.Source eventSource, SoundSource soundSource, UserSettings settings)
         {
             SoundSource = soundSource;
             MSTSStream = mstsStream;
@@ -1255,7 +1213,7 @@ namespace Orts.Viewer3D
             ALSoundSource = new ALSoundSource(soundSource.IsEnvSound, soundSource.RolloffFactor);
 
             if (mstsStream.Triggers != null)
-                foreach (Trigger trigger in mstsStream.Triggers)
+                foreach (Orts.Formats.Msts.Trigger trigger in mstsStream.Triggers)
                 {
                     if (trigger.SoundCommand == null) // ignore improperly formed SMS files
                     {
@@ -1345,19 +1303,6 @@ namespace Orts.Viewer3D
         public void Update(float[] position)
         {
             OpenAL.alSourcefv(ALSoundSource.SoundSourceID, OpenAL.AL_POSITION, position);
-            Update();
-        }
-
-        /// <summary>
-        /// Update OpenAL sound source position and velocity, then calls the main <see cref="Update()"/> function
-        /// Position is relative to camera tile's center
-        /// </summary>
-        /// <param name="position"></param>
-        /// <param name="velocity"></param>
-        public void Update(float[] position, float[] velocity)
-        {
-            OpenAL.alSourcefv(ALSoundSource.SoundSourceID, OpenAL.AL_POSITION, position);
-            OpenAL.alSourcefv(ALSoundSource.SoundSourceID, OpenAL.AL_VELOCITY, velocity);
             Update();
         }
 

@@ -820,30 +820,20 @@ be blank.::
             FreightAnimContinuous
             (
                 IntakePoint ( 0.0 6.0 FreightCoal )
-                Shape ( Coal.s )
-                Offset ( 0 0 0 )
-                Flip ( 0 )
-                ShapeHierarchy ( "MAIN" )
-                Visibility ( "Outside" )
-                MaxHeight ( 0.3 )
-                MinHeight ( -2.0 )
-                FreightWeightWhenFull ( 99t )
-                ReplaceObject ( 0 )
-                FullAtStart ( 0 )
+                Shape(Coal.s)
+                MaxHeight(0.3)
+                MinHeight(-2.0)
+                FreightWeightWhenFull(99t)
+                FullAtStart(0)
             )
             FreightAnimContinuous
             (
                 IntakePoint ( 0.0 6.0 FuelCoal )
-                Shape ( Coal.s )
-                Offset ( 0 0 0 )
-                Flip ( 0 )
-                ShapeHierarchy ( "MAIN" )
-                Visibility ( "Outside" )
-                MaxHeight ( 0.3 )
-                MinHeight ( -2.0 )
-                FreightWeightWhenFull ( 99t )
-                ReplaceObject ( 0 )
-                FullAtStart ( 0 )
+                Shape(Coal.s)
+                MaxHeight(0.3)
+                MinHeight(-2.0)
+                FreightWeightWhenFull(99t)
+                FullAtStart(0)
             )
         )
     )
@@ -1006,19 +996,14 @@ Only the two general parameters shown below are used for static OR freightanims:
 The subblock (to be inserted within the ``ORTSFreightAnims`` block) has the 
 following format::
 
-    ORTSFreightAnims (
-        MSTSFreightAnimEnabled ( 0 )
-        WagonEmptyWeight ( 22t )
-        FreightAnimStatic (
-            SubType ( Default )
-            Shape ( xxshape.s )
-            Offset ( XOffset, YOffset, ZOffset )
-            FreightWeight ( weight )
-            Flip ()
-            ShapeHierarchy ( MATRIXNAME )
-            Visibility ( "Outside, Cab2D, Cab3D" )
-            ReplaceObject ()
-        )
+    FreightAnimStatic
+    (
+        SubType(Default)
+        Shape(xxshape.s)
+        Offset(XOffset, YOffset, ZOffset)
+        FreightWeight(weight)
+        Flip()
+        Visibility ( "Outside,Cab2D,Cab3D" )
     )
 
 Where:
