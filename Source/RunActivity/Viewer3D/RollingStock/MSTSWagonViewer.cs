@@ -252,6 +252,7 @@ namespace Orts.Viewer3D.RollingStock
             // This insection initialises the MSTS style freight animation - can either be for a coal load, which will adjust with usage, or a static animation, such as additional shape.
             if (car.FreightShapeFileName != null)
             {
+
                 car.HasFreightAnim = true;
                 FreightShape = new AnimatedShape(viewer, wagonFolderSlash + car.FreightShapeFileName + '\0' + wagonFolderSlash, wagonFolderSlash + car.FreightShapeDescriptor, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
 
@@ -260,6 +261,7 @@ namespace Orts.Viewer3D.RollingStock
 
                 if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || MSTSWagon is MSTSSteamLocomotive)
                 {
+
                     var NonTenderSteamLocomotive = MSTSWagon as MSTSSteamLocomotive;
 
                     if ((MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || MSTSWagon is MSTSLocomotive && (MSTSWagon.EngineType == TrainCar.EngineTypes.Steam && NonTenderSteamLocomotive.IsTenderRequired == 0.0)) && MSTSWagon.FreightAnimMaxLevelM != 0 && MSTSWagon.FreightAnimFlag > 0 && MSTSWagon.FreightAnimMaxLevelM > MSTSWagon.FreightAnimMinLevelM)
@@ -712,7 +714,6 @@ namespace Orts.Viewer3D.RollingStock
             UpdateAnimation(frame, elapsedTime);
 
             var car = Car as MSTSWagon;
-
             // Steam leak in heating hose
             foreach (var drawer in HeatingHose)
             {
@@ -946,10 +947,12 @@ namespace Orts.Viewer3D.RollingStock
                 // For coal load variation on locomotives determine the current fuel level - and whether locomotive is a tender or tank type locomotive.
                 if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || MSTSWagon is MSTSSteamLocomotive)
                 {
+
                     var NonTenderSteamLocomotive = MSTSWagon as MSTSSteamLocomotive;
 
                     if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || MSTSWagon is MSTSLocomotive && (MSTSWagon.EngineType == TrainCar.EngineTypes.Steam && NonTenderSteamLocomotive.IsTenderRequired == 0.0))
                     {
+
                         if (MSTSWagon.TendersSteamLocomotive == null)
                             MSTSWagon.FindTendersSteamLocomotive();
 

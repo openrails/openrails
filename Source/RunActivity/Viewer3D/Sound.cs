@@ -528,7 +528,7 @@ namespace Orts.Viewer3D
         public SoundSource(Viewer viewer, MSTSWagon car, string smsFilePath)
         {
             Car = car;
-            Initialize(viewer, Car.WorldPosition.WorldLocation, Events.Source.MSTSCar, smsFilePath);
+            Initialize(viewer, car.WorldPosition.WorldLocation, Events.Source.MSTSCar, smsFilePath);
         }
 
         /// <summary>

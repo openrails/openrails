@@ -3714,9 +3714,7 @@ namespace Orts.Viewer3D.RollingStock
             }*/ //removed with 3D digits
 
             if (TrainCarShape != null)
-            {
                 TrainCarShape.ConditionallyPrepareFrame(frame, elapsedTime, MatrixVisible);
-            }
         }
 
         internal void PrepareFrameForWindow(int windowIndex, AnimatedPartMultiState anim, ElapsedTime elapsedTime)
