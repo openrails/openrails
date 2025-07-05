@@ -2087,8 +2087,15 @@ or::
       ORTSEngineBrakeController ( "YourBrakes.cs" )
   )
 
-The .cs extension is optional. "MSTS" loads the default MSTS-compatible 
-implementation, so do `not` use this name for your own script.
+The .cs extension is optional. Alternatively, there are several built-in
+brake controllers:
+- "MSTS": default implementation for a notched brake controller. Each notch
+  behaves as defined in the :ref:`Train Brake Controller Positions <physics-brake-controller>` section.
+- "PBL2": a brake controller widely used in Europe. It has a stable Hold position which keeps brake
+  pipe pressure, and two unstable positions that apply or release the brakes when pressed. The controller
+  also generates the electrical Release and Apply signals required for the UIC EP brake.
+
+Do `not` use these names for your own script.
 
 .. _features-scripting-cb:
 
