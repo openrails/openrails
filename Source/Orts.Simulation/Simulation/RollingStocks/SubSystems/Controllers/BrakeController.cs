@@ -180,9 +180,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         { 
             get
             {
-                if (Locomotive.CruiseControl == null) return 0;
-                if (this == Locomotive.EngineBrakeController) return Locomotive.CruiseControl.EngineBrakePercent / 100;
-                else return Locomotive.CruiseControl.TrainBrakePercent / 100;
+                if (Locomotive.CruiseControl == null) return -1;
+                if (this == Locomotive.EngineBrakeController) return Locomotive.CruiseControl.EngineBrakePercent / 100 ?? -1;
+                else return Locomotive.CruiseControl.TrainBrakePercent / 100 ?? -1;
             }
         }
         InterpolatorDiesel2D DynamicBrakeBlendingTable;
