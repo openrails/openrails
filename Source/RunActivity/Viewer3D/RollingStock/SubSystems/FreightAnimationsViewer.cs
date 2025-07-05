@@ -15,13 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
 using ORTS.Common;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 
 namespace Orts.Viewer3D.RollingStock.SubSystems
 {
@@ -94,7 +95,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
             }
             else
             {
-                if (Animation.ShapeHierarchy != null)
+                if (!String.IsNullOrEmpty(Animation.ShapeHierarchy))
                 {
                     if (wagonViewer.TrainCarShape.SharedShape.MatrixNames.Contains(Animation.ShapeHierarchy))
                     {

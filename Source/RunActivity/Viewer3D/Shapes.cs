@@ -2131,10 +2131,12 @@ namespace Orts.Viewer3D
             else if (LodControls[0].DistanceLevels.Length > 0 && LodControls[0].DistanceLevels[0].SubObjects.Length > 0)
             {
                 // Zero the position offset of the root matrix for compatibility with MSTS, unless modified thru SD file
-                if (!adjustMAIN && LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0 &&
+                if (LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0 &&
                     LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy[0] == -1)
                 {
-                    Matrices[0].Translation = Vector3.Zero;
+                    Matrices[0].M41 = 0;
+                    Matrices[0].M42 = 0;
+                    Matrices[0].M43 = 0;
                 }
                 // Look for root subobject, it is not necessarily the first (see ProTrain signal)
                 for (int soIndex = 0; soIndex <= LodControls[0].DistanceLevels[0].SubObjects.Length - 1; soIndex++)

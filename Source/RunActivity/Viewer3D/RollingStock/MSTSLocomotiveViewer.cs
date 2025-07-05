@@ -1358,7 +1358,7 @@ namespace Orts.Viewer3D.RollingStock
                     }
                     else
                     {
-                        if (view.ShapeHierarchy != null)
+                        if (!String.IsNullOrEmpty(view.ShapeHierarchy))
                         {
                             if (carViewer.TrainCarShape.SharedShape.MatrixNames.Contains(view.ShapeHierarchy))
                             {

@@ -125,7 +125,7 @@ namespace Orts.Viewer3D
                     }
                     else
                     {
-                        if (light.ShapeHierarchy != null)
+                        if (!String.IsNullOrEmpty(light.ShapeHierarchy))
                         {
                             if ((CarViewer as MSTSWagonViewer).TrainCarShape.SharedShape.MatrixNames.Contains(light.ShapeHierarchy))
                             {

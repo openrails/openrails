@@ -1041,7 +1041,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 }),
                 new STFReader.TokenProcessor("flip", ()=>{ Flipped = stf.ReadBoolBlock(true);}),
                 new STFReader.TokenProcessor("shapeindex", ()=>{ ShapeIndex = stf.ReadIntBlock(null);}),
+                new STFReader.TokenProcessor("ortsshapeindex", ()=>{ ShapeIndex = stf.ReadIntBlock(null);}),
                 new STFReader.TokenProcessor("shapehierarchy", ()=>{ ShapeHierarchy = stf.ReadStringBlock(null);}),
+                new STFReader.TokenProcessor("ortsshapehierarchy", ()=>{ ShapeHierarchy = stf.ReadStringBlock(null);}),
                 new STFReader.TokenProcessor("visibility", ()=>{
                     for (int index = 0; index < 3; index++)
                         Visibility[index] = false;
@@ -1158,7 +1160,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }),
             new STFReader.TokenProcessor("flip", ()=>{ Flipped = stf.ReadBoolBlock(true);}),
             new STFReader.TokenProcessor("shapeindex", ()=>{ ShapeIndex = stf.ReadIntBlock(null);}),
+            new STFReader.TokenProcessor("ortsshapeindex", ()=>{ ShapeIndex = stf.ReadIntBlock(null);}),
             new STFReader.TokenProcessor("shapehierarchy", ()=>{ ShapeHierarchy = stf.ReadStringBlock(null);}),
+            new STFReader.TokenProcessor("ortsshapehierarchy", ()=>{ ShapeHierarchy = stf.ReadStringBlock(null);}),
             new STFReader.TokenProcessor("visibility", ()=>{
                 for (int index = 0; index < 3; index++)
                     Visibility[index] = false;
