@@ -53,7 +53,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         private Timer ResetTimer { get; set; }
 
         // brake controller values
-        private float FirstDepressureBar = 0.5f;
         private float BrakeReleasedDepressureBar = 0.2f;
         private float EpActivationThresholdBar = 0.15f;
 
@@ -151,9 +150,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 return;
             }
 
-            if (!FirstDepression && CurrentPosition == ControllerPosition.Apply && pressureBar > Math.Max(MaxPressureBar() - FirstDepressureBar, 0))
+            if (!FirstDepression && CurrentPosition == ControllerPosition.Apply && pressureBar > Math.Max(MaxPressureBar() - MinReductionBar(), 0))
                 FirstDepression = true;
-            else if (FirstDepression && pressureBar <= Math.Max(MaxPressureBar() - FirstDepressureBar, 0))
+            else if (FirstDepression && pressureBar <= Math.Max(MaxPressureBar() - MinReductionBar(), 0))
                 FirstDepression = false;
 
             if (QuickReleaseButtonPressed())
@@ -179,7 +178,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 CurrentState = State.Apply;
             else if (
                 CurrentPosition == ControllerPosition.Apply && pressureBar > MaxPressureBar() - FullServReductionBar()
-                || FirstDepression && CurrentPosition != ControllerPosition.Release && !QuickRelease && pressureBar > MaxPressureBar() - FirstDepressureBar
+                || FirstDepression && CurrentPosition != ControllerPosition.Release && !QuickRelease && pressureBar > MaxPressureBar() - MinReductionBar()
                 )
                 CurrentState = State.Apply;
             else if (OverchargeElimination && pressureBar > MaxPressureBar())
@@ -199,7 +198,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             else
                 CurrentState = State.Hold;
 
-            float targetPressureBar = pressureBar;
             switch (CurrentState)
             {
                 case State.Overcharge:
@@ -286,6 +284,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
             if (QuickRelease && pressureBar >= Math.Min(MaxPressureBar(), MainReservoirPressureBar()))
                 QuickRelease = false;
+
+            if (OverchargeElimination && pressureBar <= MaxPressureBar())
+                OverchargeElimination = false;
         }
 
         public override void UpdateEngineBrakePressure(ref float pressureBar, float elapsedClockSeconds)
