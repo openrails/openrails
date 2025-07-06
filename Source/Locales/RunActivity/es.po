@@ -1717,7 +1717,7 @@ msgstr "Sangrado"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1116
 msgid "MRPipe"
-msgstr "MRTuvo"
+msgstr "MRTubo"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1143
 msgid "FORCE INFORMATION"
