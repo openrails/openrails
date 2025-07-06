@@ -2236,7 +2236,7 @@ namespace Orts.Viewer3D
                 {
                     // Iterate through every hierarchy element to make sure it resolves back to the main object
                     // If anything in the modified hierarchy fails, do not update the shape hierarchy
-                    bool valid = false;
+                    bool valid = true;
 
                     for (int hIndex = 0; hIndex < modifiedHierarchy.Length; hIndex++)
                     {
@@ -2254,10 +2254,11 @@ namespace Orts.Viewer3D
 
                         // The above calculation should produce a final index of -1
                         // This means the hierarchy could be traced back to the main shape
-                        if (nextIndex == -1)
-                            valid = true;
-                        else
+                        if (nextIndex != -1)
+                        {
+                            valid = false;
                             break;
+                        }
                     }
 
                     if (valid)
