@@ -949,16 +949,11 @@ namespace Orts.Viewer3D.RollingStock
             // Bogie angle animation
             Matrix inverseLocation = Matrix.Invert(Car.WorldPosition.XNAMatrix);
 
-            foreach (TrainCarPart p in Car.Parts)
+            foreach (var p in Car.Parts)
             {
-                if (p.iMatrix <= 0 || p.iMatrix >= TrainCarShape.SharedShape.Matrices.Count())
+                if (p.iMatrix <= 0)
                     continue;
 
-                // Seperate the rotation and translation of the part matrix to reconstruct later
-                Matrix partMat = TrainCarShape.SharedShape.Matrices[p.iMatrix];
-                partMat.Translation = Vector3.Zero;
-
-                // Determine orientation of bogie in absolute space
                 Matrix m = Matrix.Identity;
 
                 // Bogie rotation calculation doesn't work on turntables
@@ -973,34 +968,20 @@ namespace Orts.Viewer3D.RollingStock
                         fwd.Normalize();
                         Vector3 side = Vector3.Cross(Vector3.Up, fwd);
                         if (!(side.X == 0 && side.Y == 0 && side.Z == 0))
-                        side.Normalize();
+                            side.Normalize();
                         Vector3 up = Vector3.Cross(fwd, side);
                         m.Right = side;
                         m.Up = up;
                         m.Backward = fwd;
-                      
-                        // Convert absolute rotation into rotation relative to train car
-                        m *= inverseLocation;
-                      
-                        // Roll the bogie for superelevation about the bogie's 0,0,0
-                        m.Translation = Vector3.Zero;
-                        m = Matrix.CreateRotationZ(p.Roll) * m;
-                        // Reset translation to offset given by shape file
-                        m.Translation = TrainCarShape.SharedShape.Matrices[p.iMatrix].Translation;
-                        // Incorporate scale and rotation from shape file last to reduce distortions
-                        m = partMat * m;
-                    }
-                    else // Position wasn't calculated, set default
-                    {
-                        m = TrainCarShape.SharedShape.Matrices[p.iMatrix];
-                    }
-                }
-                else // On a turntable, set default
-                {
-                    m = TrainCarShape.SharedShape.Matrices[p.iMatrix];
-                }
 
-                // Finally, cancel out any vibrations
+                        // Convert absolute rotation into rotation relative to train car
+                        m = Matrix.CreateRotationZ(p.Roll) * m * inverseLocation;
+                    }
+                }
+                // Insert correct translation (previous step likely introduced garbage data)
+                m.Translation = TrainCarShape.SharedShape.Matrices[p.iMatrix].Translation;
+
+                // To cancel out any vibration, apply the inverse here. If no vibration is present, this matrix will be Matrix.Identity.
                 TrainCarShape.XNAMatrices[p.iMatrix] = Car.VibrationInverseMatrix * m;
             }
 
