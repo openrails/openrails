@@ -2766,7 +2766,7 @@ namespace Orts.Simulation.RollingStocks
                     {
                         if (axle.DriveForceN != 0 && (AdvancedAdhesionModel || !AntiSlip))
                         {
-                            if (axle.SlipPercent > axle.SlipWarningTresholdPercent) SlipControlActive[i] = true;
+                            if (axle.HuDIsWheelSlipWarning) SlipControlActive[i] = true;
                         }
                         else
                         {
@@ -2776,7 +2776,7 @@ namespace Orts.Simulation.RollingStocks
                         {
                             float absForceN = Math.Abs(axle.DriveForceN);
                             float newForceN;
-                            if (axle.SlipPercent < axle.SlipWarningTresholdPercent * 0.9f)
+                            if (!axle.HuDIsWheelSlipWarning)
                             {
                                 // If well below slip threshold, restore full power in 10 seconds
                                 newForceN = Math.Min(Math.Abs(prevForceN) + absForceN * elapsedClockSeconds / 10, absForceN);
@@ -2784,9 +2784,13 @@ namespace Orts.Simulation.RollingStocks
                                 // If full force is restored, disengage slip control
                                 if (newForceN / absForceN > 0.95f) SlipControlActive[i] = false;
                             }
-                            else
+                            else if (axle.IsWheelSlipWarning)
                             {
                                 newForceN = Math.Max(Math.Abs(prevForceN) - absForceN * elapsedClockSeconds / 3, 0);
+                            }
+                            else
+                            {
+                                newForceN = absForceN;
                             }
                             if (axle.DriveForceN > 0 && prevForceN >= 0) axle.DriveForceN = newForceN;
                             else if (axle.DriveForceN < 0 && prevForceN <= 0) axle.DriveForceN = -newForceN;
