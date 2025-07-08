@@ -522,24 +522,18 @@ namespace Orts.Parsers.Msts
 
     public class SBRException : Exception
     {
-        static long GetPosition(BinaryBlockReader sbr)
-        {
-            if (sbr.InputStream.BaseStream is DeflateStream) return -1;
-            return sbr.InputStream.BaseStream.Position;
-        }
-
         public static void TraceWarning(BinaryBlockReader sbr, string message)
         {
-            Trace.TraceWarning("{2} in {0}:byte {1}", sbr.Filename, GetPosition(sbr), message);
+            Trace.TraceWarning("{2} in {0}:byte {1}", sbr.Filename, sbr.InputStream.BaseStream.Position, message);
         }
 
         public static void TraceInformation(BinaryBlockReader sbr, string message)
         {
-            Trace.TraceInformation("{2} in {0}:byte {1}", sbr.Filename, GetPosition(sbr), message);
+            Trace.TraceInformation("{2} in {0}:byte {1}", sbr.Filename, sbr.InputStream.BaseStream.Position, message);
         }
 
         public SBRException(BinaryBlockReader sbr, string message)
-            : base(String.Format("{2} in {0}:byte {1}\n", sbr.Filename, GetPosition(sbr), message))
+            : base(String.Format("{2} in {0}:byte {1}\n", sbr.Filename, sbr.InputStream.BaseStream.Position, message))
         {
         }
     }
