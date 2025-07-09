@@ -875,7 +875,7 @@ checked:
 - the maximum brake cylinder pressure will be reduced to the maximum pressure
   possible from a full service train brake application if it was set above this
   amount
-- any brake pipe leakage specified by ``TrainPipeLeakRate`` is disabled
+- any brake pipe leakage specified by ``TrainPipeLeakRate`` is limited to 2.5 psi/minute
 - the dynamic brake delay on electric locomotives is reduced to 2 seconds
   if it was defined to be above 4 seconds
 - dynamic brake force left at the default value of 20kN will be increased to

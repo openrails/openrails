@@ -1887,21 +1887,6 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-            // Initialise Train Pipe Leak Rate
-            if (TrainBrakePipeLeakPSIorInHgpS == 0) // Check to see if TrainBrakePipeLeakPSIorInHgpS has been set in the ENG file.
-            {
-                // Set Default Train Brake Pipe Leak depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
-                // Default currently set to zero - means that by default function is off, and a value must be entered into the ENG file to get it to work
-                if ((BrakeSystem is VacuumSinglePipe))
-                {
-                    TrainBrakePipeLeakPSIorInHgpS = 0.0f; // Vacuum brakes
-                }
-                else
-                {
-                    TrainBrakePipeLeakPSIorInHgpS = 0.0f; // Air brakes
-                }
-            }
-
             if (DynamicBrakeEngineBrakeReplacement && DynamicBrakeEngineBrakeReplacementSpeed == 0)
             {
                 DynamicBrakeEngineBrakeReplacementSpeed = DynamicBrakeSpeed2MpS;
@@ -2023,9 +2008,9 @@ namespace Orts.Simulation.RollingStocks
                     // correct questionable MaxCylPressurePSI
                     BrakeSystem.CorrectMaxCylPressurePSI(this);
                 }
-                // Disable brake pipe leak to prevent stuck brakes
-                if (TrainBrakePipeLeakPSIorInHgpS > 0)
-                    TrainBrakePipeLeakPSIorInHgpS = 0;
+                // Limit brake pipe leak to 2.5 psi/min (~ 1 bar every 6 minutes) to prevent stuck brakes
+                if (TrainBrakePipeLeakPSIorInHgpS > 2.5f / 60f)
+                    TrainBrakePipeLeakPSIorInHgpS = 2.5f / 60f;
             }
             // No OR compressor speed defined, use MSTS compressor speed or 0.025 m^3/s (whichever is higher)
             if (MainResChargingRatePSIpS < 0) 
