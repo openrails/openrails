@@ -2735,11 +2735,27 @@ namespace Orts.Simulation.RollingStocks
                         // Simple slip control
                         // Motive force is reduced to the maximum adhesive force
                         // In wheelslip situations, motive force is set to zero
-                        float adhesionLimit;
-                        if (axle.SlipPercent > 115) adhesionLimit = 0;
-                        else if (axle.SlipPercent > 95) adhesionLimit = axle.MaximumWheelAdhesion * (115 - axle.SlipSpeedPercent) / 20;
-                        else adhesionLimit = axle.MaximumWheelAdhesion;
-                        axle.DriveForceN = Math.Sign(axle.DriveForceN) * Math.Min(adhesionLimit * axle.AxleWeightN, Math.Abs(axle.DriveForceN));
+                        float absForceN = Math.Min(Math.Abs(axle.DriveForceN), axle.MaximumWheelAdhesion * axle.AxleWeightN);
+                        float newForceN;
+                        if (axle.HuDIsWheelSlip)
+                        {
+                            newForceN = 0;
+                        }
+                        else if (!axle.HuDIsWheelSlipWarning)
+                        {
+                            // If well below slip threshold, restore full power in 10 seconds
+                            newForceN = Math.Min(Math.Abs(prevForceN) + absForceN * elapsedClockSeconds / 10, absForceN);
+                        }
+                        else if (axle.IsWheelSlip)
+                        {
+                            newForceN = Math.Max(Math.Abs(prevForceN) - absForceN * elapsedClockSeconds / 3, 0);
+                        }
+                        else
+                        {
+                            newForceN = absForceN;
+                        }
+                        if (axle.DriveForceN > 0 && prevForceN >= 0) axle.DriveForceN = newForceN;
+                        else if (axle.DriveForceN < 0 && prevForceN <= 0) axle.DriveForceN = -newForceN;
                     }
                     else if (SlipControlSystem == SlipControlType.CutPower)
                     {
