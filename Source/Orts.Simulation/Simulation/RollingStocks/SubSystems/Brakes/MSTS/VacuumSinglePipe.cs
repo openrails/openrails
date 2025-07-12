@@ -35,6 +35,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
     {
         protected readonly static float OneAtmospherePSI = Bar.ToPSI(1);
         protected float MaxForcePressurePSI = KPa.ToPSI(KPa.FromInHg(21));    // relative pressure difference for max brake force
+        protected TrainCar Car;
         protected float HandbrakePercent;
         protected float CylPressurePSIA;
         // Commented out as never used
@@ -81,66 +82,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             return HandbrakePercent > 0;
         }
 
-        public override void InitializeFromCopy(BrakeSystem copy, bool diff)
+        public override void InitializeFromCopy(BrakeSystem copy)
         {
-            base.InitializeFromCopy(copy, diff);
+            base.InitializeFromCopy(copy);
             VacuumSinglePipe thiscopy = (VacuumSinglePipe)copy;
-            MaxForcePressurePSI = diff && thiscopy.MaxForcePressurePSI == default ? MaxForcePressurePSI : thiscopy.MaxForcePressurePSI;
-            MaxReleaseRatePSIpS = diff && thiscopy.MaxReleaseRatePSIpS == default ? MaxReleaseRatePSIpS :thiscopy.MaxReleaseRatePSIpS;
-            MaxApplicationRatePSIpS = diff && thiscopy.MaxApplicationRatePSIpS == default ? MaxApplicationRatePSIpS : thiscopy.MaxApplicationRatePSIpS;
-            CylCount = diff && thiscopy.CylCount == default ? CylCount : thiscopy.CylCount;
-            CylDiameterM = diff && thiscopy.CylDiameterM == default ? CylDiameterM : thiscopy.CylDiameterM;
-            CylStrokeM = diff && thiscopy.CylStrokeM == default ? CylStrokeM : thiscopy.CylStrokeM;
-            CylVolumeM3 = diff && thiscopy.CylVolumeM3 == default ? CylVolumeM3 : thiscopy.CylVolumeM3;
-            TotalCylVolumeM3 = diff && thiscopy.TotalCylVolumeM3 == default ? TotalCylVolumeM3 : thiscopy.TotalCylVolumeM3;
-            BrakePipeVolumeM3 = diff && thiscopy.BrakePipeVolumeM3 == default ? BrakePipeVolumeM3 : thiscopy.BrakePipeVolumeM3;
-            VacResVolM3 = diff && thiscopy.VacResVolM3 == default ? VacResVolM3 : thiscopy.VacResVolM3;
-            HasDirectAdmissionValue = diff && thiscopy.HasDirectAdmissionValue == default ? HasDirectAdmissionValue : thiscopy.HasDirectAdmissionValue;
-            BrakeMode = diff && thiscopy.BrakeMode == default ? BrakeMode : thiscopy.BrakeMode;
-            MaxBrakeShoeForceN = diff && thiscopy.MaxBrakeShoeForceN == default ? MaxBrakeShoeForceN : thiscopy.MaxBrakeShoeForceN;
-            InitialMaxHandbrakeForceN = diff && thiscopy.InitialMaxHandbrakeForceN == default ? InitialMaxHandbrakeForceN : thiscopy.InitialMaxHandbrakeForceN;
-            InitialMaxBrakeForceN = diff && thiscopy.InitialMaxBrakeForceN == default ? InitialMaxBrakeForceN : thiscopy.InitialMaxBrakeForceN;
-            LoadStageMinMassKg = diff && thiscopy.LoadStageMinMassKg == default ? LoadStageMinMassKg : thiscopy.LoadStageMinMassKg;
+            MaxForcePressurePSI = thiscopy.MaxForcePressurePSI;
+            MaxReleaseRatePSIpS = thiscopy.MaxReleaseRatePSIpS;
+            MaxApplicationRatePSIpS = thiscopy.MaxApplicationRatePSIpS;
+            CylCount = thiscopy.CylCount;
+            CylDiameterM = thiscopy.CylDiameterM;
+            CylStrokeM = thiscopy.CylStrokeM;
+            CylVolumeM3 = thiscopy.CylVolumeM3;
+            TotalCylVolumeM3 = thiscopy.TotalCylVolumeM3;
+            BrakePipeVolumeM3 = thiscopy.BrakePipeVolumeM3;
+            VacResVolM3 = thiscopy.VacResVolM3;
+            HasDirectAdmissionValue = thiscopy.HasDirectAdmissionValue;
         }
 
-        public override BrakeSystem InitializeDefault()
-        {
-            BrakePipeVolumeM3 = default;
-            MaxForcePressurePSI = default;
-            HandbrakePercent = default;
-            CylPressurePSIA = default;
-            VacResPressurePSIA = default;
-            CylCount = default;
-            CylDiameterM = default;
-            CylStrokeM = default;
-            CylVolumeM3 = default;
-            TotalCylVolumeM3 = default;
-            VacResVolM3 = default;
-            HasDirectAdmissionValue = default;
-            DirectAdmissionValve = default;
-            MaxReleaseRatePSIpS = default;
-            MaxApplicationRatePSIpS = default;
-            LargeEjectorChargingRate = default;
-            TrainBrakePressureChanging = default;
-            BrakePipePressureChanging = default;
-            SoundTriggerCounter = default;
-            prevCylPressurePSIA = default;
-            prevBrakePipePressurePSI = default;
-            LocomotiveSteamBrakeFitted = default;
-            SteamBrakeCylinderPressurePSI = default;
-            SteamBrakeCompensation = default;
-            SteamBrakingCurrentFraction = default;
-            BrakeMode = default;
-            MaxBrakeShoeForceN = default;
-            InitialMaxHandbrakeForceN = default;
-            InitialMaxBrakeForceN = default;
-            LoadStageMinMassKg = default;
-
-            return base.InitializeDefault();
-        }
-
-        public override (float maxPressurePSI, float fullServPressurePSI) GetDefaultPressures() => (21, 16);
-        
         // return vacuum reservior pressure adjusted for piston movement
         // this section works out from the brake cylinder movement the amount of volume change in the reservoir, and hence the drop in vacuum in the reservoir. 
         // Normally the reservoir is a closed space during brake application, and thus vacuum is not lost, but simply varied with volume change
@@ -199,9 +157,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (LocomotiveSteamBrakeFitted)
             {
                 return new string[] {
-                "S" + (BrakeMode == BrakeModes.Undefined ? "" : "-" + BrakeMode),
+                "S",
                 string.Format("{0:F0}", FormatStrings.FormatPressure(SteamBrakeCylinderPressurePSI, PressureUnit.PSI,  PressureUnit.PSI, true)),
-                string.Empty,
                 string.Empty,
                 string.Empty,
                 string.Empty,
@@ -220,11 +177,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
 
                 return new string[] {
-                "1V" + (BrakeMode == BrakeModes.Undefined ? "" : "-" + BrakeMode),
+                "1V",
                 FormatStrings.FormatPressure(Vac.FromPress(CylPressurePSIA), PressureUnit.InHg, PressureUnit.InHg, true),
                 FormatStrings.FormatPressure(Vac.FromPress(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, true),
                 FormatStrings.FormatPressure(Vac.FromPress(VacResPressureAdjPSIA()), PressureUnit.InHg, PressureUnit.InHg, true),
-                string.Empty,
                 string.Empty,
                 string.Empty,
                 string.Empty,
@@ -307,9 +263,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 case "wagon(ortsbrakecylinderdiameter": CylDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsbrakecylinderpistontravel": CylStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsnumberbrakecylinders": CylCount = stf.ReadIntBlock(null); break;
-                case "wagon(maxbrakeforce": InitialMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "wagon(maxhandbrakeforce": InitialMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "wagon(ortsmaxbrakeshoeforce": MaxBrakeShoeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
             }
         }
 
@@ -325,11 +278,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             outf.Write(AngleCockAOpen);
             outf.Write(AngleCockBOpen);
             outf.Write(BleedOffValveOpen);
-            outf.Write((int)BrakeMode);
-            outf.Write(MaxBrakeShoeForceN);
-            outf.Write(InitialMaxHandbrakeForceN);
-            outf.Write(InitialMaxBrakeForceN);
-            outf.Write(LoadStageMinMassKg);
         }
 
         public override void Restore(BinaryReader inf)
@@ -344,11 +292,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             AngleCockAOpen = inf.ReadBoolean();
             AngleCockBOpen = inf.ReadBoolean();
             BleedOffValveOpen = inf.ReadBoolean();
-            BrakeMode = (BrakeModes)inf.ReadInt32();
-            MaxBrakeShoeForceN = inf.ReadSingle();
-            InitialMaxHandbrakeForceN = inf.ReadSingle();
-            InitialMaxBrakeForceN = inf.ReadSingle();
-            LoadStageMinMassKg = inf.ReadSingle();
         }
 
         public override void Initialize(bool handbrakeOn, float maxVacuumInHg, float fullServVacuumInHg, bool immediateRelease)

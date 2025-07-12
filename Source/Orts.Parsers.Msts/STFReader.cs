@@ -609,10 +609,11 @@ namespace Orts.Parsers.Msts
             // However, some values (mostly "time" ones) may be followed by text. Therefore that approach cannot be used consistently 
             // and has been abandoned. </CJComment> 
 
+            float val;
+            double scale = ParseUnitSuffix(ref item, validUnits);
             if (item.Length == 0) return 0.0f;
             if (item[item.Length - 1] == ',') item = item.TrimEnd(',');
-            double scale = ParseUnitSuffix(ref item, validUnits); // must be after TrimEnd(','), otherwise the unit parsed becomes invalid
-            if (float.TryParse(item, parseNum, parseNFI, out float val)) return (scale == 1) ? val : (float)(scale * val);
+            if (float.TryParse(item, parseNum, parseNFI, out val)) return (scale == 1) ? val : (float)(scale * val);
             STFException.TraceWarning(this, "Cannot parse the constant number " + item);
             if (item == ")") StepBackOneItem();
             return defaultValue.GetValueOrDefault(0);
@@ -1075,7 +1076,7 @@ namespace Orts.Parsers.Msts
                     case "": return 1.0;
                     case "n/m/s": return 1;
                     case "ns/m": return 1;
-                    case "lbf/mph": return 10.0264321;  // 1 lbf = 4.4822162, 1 mph = 0.44704 mps => 4.4822162 / 0.44704 = 10.0264321
+                    case "lbf/mph": return 9.9503884;  // 1 lbf = 4.4482216, 1 mph = 0.44704 mps => 4.4482216 / 0.44704 = 9.9503884
                 }
             if ((validUnits & UNITS.PressureDefaultPSI) > 0)
                 switch (suffix)
@@ -1145,7 +1146,7 @@ namespace Orts.Parsers.Msts
                 {
                     case "": return 1.0;
                     case "Nm/s^2": return 1;
-                    case "lbf/mph^2": return 22.42849;  // 1 lbf = 4.4822162, 1 mph = 0.44704 mps +> 4.4822162 / (0.44704 * 0.44704) = 22.42849
+                    case "lbf/mph^2": return 22.2583849;  // 1 lbf = 4.4482216, 1 mph = 0.44704 mps +> 4.4482216 / (0.44704 * 0.44704) = 22.2583849
                 }
             if ((validUnits & UNITS.Temperature) > 0)
             {
@@ -3390,10 +3391,10 @@ namespace Orts.Parsers.Msts
             if ((validUnits & UNITS.Resistance) > 0)
                 switch (suffix)
                 {
-                    case "": return 1.0f;
+                    case "": return 1.0;
                     case "n/m/s": return 1;
                     case "ns/m": return 1;
-                    case "lbf/mph": return 10.0264321f;  // 1 lbf = 4.4822162, 1 mph = 0.44704 mps => 4.4822162 / 0.44704 = 10.0264321
+                    case "lbf/mph": return 9.9503884;  // 1 lbf = 4.4482216, 1 mph = 0.44704 mps => 4.4482216 / 0.44704 = 9.9503884
                 }
             if ((validUnits & UNITS.PressureDefaultPSI) > 0)
                 switch (suffix)
@@ -3458,9 +3459,9 @@ namespace Orts.Parsers.Msts
             if ((validUnits & UNITS.ResistanceDavisC) > 0)
                 switch (suffix)
                 {
-                    case "": return 1.0f;
+                    case "": return 1.0;
                     case "Nm/s^2": return 1;
-                    case "lbf/mph^2": return 22.42849f;  // 1 lbf = 4.4822162, 1 mph = 0.44704 mps +> 4.4822162 / (0.44704 * 0.44704) = 22.42849
+                    case "lbf/mph^2": return 22.2583849;  // 1 lbf = 4.4482216, 1 mph = 0.44704 mps +> 4.4482216 / (0.44704 * 0.44704) = 22.2583849
                 }
 
             STFException.TraceWarning(tokenForWarnings, "Found a suffix '" + suffix + "' which could not be parsed as a " + validUnits.ToString() + " unit");

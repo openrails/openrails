@@ -79,17 +79,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override string[] GetDebugStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
             return new string[] {
-                DebugType + (BrakeMode == BrakeModes.Undefined ? "" : "-" + BrakeMode),
+                DebugType,
                 string.Format("{0}{1}",FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true), (Car as MSTSWagon).WheelBrakeSlideProtectionActive ? "???" : ""),
                 FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true),
                 FormatStrings.FormatPressure(AuxResPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.AuxiliaryReservoir], true),
                 EmergencyReservoirPresent ? FormatStrings.FormatPressure(EmergResPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.EmergencyReservoir], true) : string.Empty,
                 TwoPipes ? FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.MainPipe], true) : string.Empty,
                 BrakeValve == BrakeValveType.Distributor ? FormatStrings.FormatPressure(ControlResPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.AuxiliaryReservoir], true) : string.Empty,
-                RetainerPositions <= 0 ? string.Empty : RetainerDebugState,
+                RetainerPositions == 0 ? string.Empty : RetainerDebugState,
                 Simulator.Catalog.GetString(GetStringAttribute.GetPrettyName(TripleValveState)),
                 string.Empty, // Spacer because the state above needs 2 columns.
-                string.Empty,
                 HandBrakePresent ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
                 FrontBrakeHoseConnected ? "I" : "T",
                 string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),

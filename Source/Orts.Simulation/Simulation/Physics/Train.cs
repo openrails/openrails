@@ -4059,14 +4059,33 @@ namespace Orts.Simulation.Physics
                 MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
                 if (lead.TrainBrakeController != null)
                 {
-                    foreach (var car in Cars)
+                    foreach (MSTSWagon car in Cars)
                     {
-                        if (lead.BrakeSystem.GetType() != car.BrakeSystem.GetType())
+                        if (lead.CarBrakeSystemType != car.CarBrakeSystemType) // Test to see if car brake system is the same as the locomotive
                         {
-                            car.BrakeSystem = BrakeSystem.CreateNewLike(lead.BrakeSystem, car);
-                            car.BrakeSystem.InitializeFromCopy(lead.BrakeSystem, false);
-                            if (car.BrakeSystem is AirSinglePipe carAir && lead.BrakeSystem is AirSinglePipe leadAir)
-                                carAir.EmergencyReservoirPresent = leadAir.EmergencyReservoirPresent;
+                            // If not, change so that they are compatible
+                            car.CarBrakeSystemType = lead.CarBrakeSystemType;
+                            if (lead.BrakeSystem is VacuumSinglePipe)
+                                car.MSTSBrakeSystem = new VacuumSinglePipe(car);
+                            else if (lead.BrakeSystem is AirTwinPipe)
+                                car.MSTSBrakeSystem = new AirTwinPipe(car);
+                            else if (lead.BrakeSystem is AirSinglePipe leadAir)
+                            {
+                                car.MSTSBrakeSystem = new AirSinglePipe(car);
+                                // if emergency reservoir has been set on lead locomotive then also set on trailing cars
+                                if (leadAir.EmergencyReservoirPresent)
+                                {
+                                    (car.BrakeSystem as AirSinglePipe).EmergencyReservoirPresent = leadAir.EmergencyReservoirPresent;
+                                }
+                            }
+                            else if (lead.BrakeSystem is EPBrakeSystem ep)
+                                car.MSTSBrakeSystem = new EPBrakeSystem(car, ep.TwoPipes);
+                            else if (lead.BrakeSystem is SingleTransferPipe)
+                                car.MSTSBrakeSystem = new SingleTransferPipe(car);
+                            else
+                                throw new Exception("Unknown brake type");
+
+                            car.MSTSBrakeSystem.InitializeFromCopy(lead.BrakeSystem);
                             Trace.TraceInformation("Car and Locomotive Brake System Types Incompatible on Car {0} - Car brakesystem type changed to {1}", car.CarID, car.CarBrakeSystemType);
                         }
                     }
@@ -4075,8 +4094,6 @@ namespace Orts.Simulation.Physics
 
             if (Simulator.Confirmer != null && IsActualPlayerTrain) // As Confirmer may not be created until after a restore.
                 Simulator.Confirmer.Confirm(CabControl.InitializeBrakes, CabSetting.Off);
-
-            SetInitialBrakeModes();
 
             float maxPressurePSI = 90;
             float fullServPressurePSI = 64;
@@ -4560,38 +4577,6 @@ namespace Orts.Simulation.Physics
             }
             if (TrainType == TRAINTYPE.AI_INCORPORATED && IncorporatingTrainNo > -1) IsPlayable = true;
         } // CheckFreight
-
-
-        public void SetInitialBrakeModes()
-        {
-            var lead = LeadLocomotive ?? Cars?.FirstOrDefault();
-            if (lead == null) return;
-
-            // Check if lead is vacuum-braked
-            if (lead.BrakeSystem is VacuumSinglePipe || (lead.BrakeSystems?.Any(b => b.Value is VacuumSinglePipe) ?? false) &&
-                Cars.Count(c => c.BrakeSystem is VacuumSinglePipe || c.BrakeSystem is ManualBraking ||
-                (c.BrakeSystems?.Any(b => b.Value is VacuumSinglePipe || b.Value is ManualBraking) ?? false)) > Cars.Count / 3)
-            {
-                foreach (var car in Cars.Cast<MSTSWagon>())
-                {
-                    if (car.BrakeSystems?.ContainsKey((BrakeModes.VP, 0)) ?? false) car.SetBrakeSystemMode(BrakeModes.VP, car.MassKG);
-                    else if (car.BrakeSystems?.ContainsKey((BrakeModes.VB, 0)) ?? false) car.SetBrakeSystemMode(BrakeModes.VB, car.MassKG);
-                    else if (car.BrakeSystems?.ContainsKey((BrakeModes.VU, 0)) ?? false) car.SetBrakeSystemMode(BrakeModes.VU, car.MassKG);
-                }
-            }
-            else
-            {
-                foreach (var car in Cars.Cast<MSTSWagon>())
-                {
-                    if (car.BrakeSystems?.ContainsKey((BrakeModes.R_MG, 0)) ?? false) car.SetBrakeSystemMode(BrakeModes.R_MG, car.MassKG);
-                    else if (car.BrakeSystems?.ContainsKey((BrakeModes.R, 0)) ?? false) car.SetBrakeSystemMode(BrakeModes.R, car.MassKG);
-                    else if (car.BrakeSystems?.ContainsKey((BrakeModes.P, 0)) ?? false) car.SetBrakeSystemMode(BrakeModes.P, car.MassKG);
-                    else if (car.BrakeSystems?.ContainsKey((BrakeModes.AP, 0)) ?? false) car.SetBrakeSystemMode(BrakeModes.AP, car.MassKG);
-                    else if (car.BrakeSystems?.ContainsKey((BrakeModes.G, 0)) ?? false) car.SetBrakeSystemMode(BrakeModes.G, car.MassKG);
-                    else if (car.BrakeSystems?.ContainsKey((BrakeModes.AG, 0)) ?? false) car.SetBrakeSystemMode(BrakeModes.AG, car.MassKG);
-                }
-            }
-        }
 
         public void CalculatePositionOfCars()
         {

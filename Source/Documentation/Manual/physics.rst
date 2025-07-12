@@ -39,50 +39,75 @@ the WAG / ENG file is discussed.
 Resistive Forces
 ----------------
 
-Open Rails physics calculates resistance based on real world physics:
-gravity, mass, rolling resistance and optionally curve resistance. This is
-calculated individually for each car in the train. The program calculates
-rolling resistance, or friction, based on the Friction parameters in the
-Wagon section of .wag/.eng file. Open Rails identifies whether the .wag
-file uses the *FCalc* utility or other friction data. If *FCalc* was used to
-determine the Friction variables within the .wag file, Open Rails compares
-that data to the Open Rails Davis equations to identify the closest match
-with the Open Rails Davis equation. If no-FCalc Friction parameters are
-used in the .wag file, Open Rails ignores those values, substituting its
-actual Davis equation values for the train car.
+Open Rails physics calculates resistance based on real world principles:
+gravity, mass, rolling resistance, and curve resistance. This is calculated
+individually for each car in the train.
+
+The program supports a few methods for determining rolling resistance.
+The oldest method, intended only to support legacy content, uses the
+``Friction`` parameters in the Wagon section of .wag/.eng file.
+Open Rails identifies whether the .wag file used the *FCalc* utility or
+other friction data. If *FCalc* was used to determine the Friction variables
+within the .wag file, Open Rails attempts to determine the Davis coefficients
+originally used to derive the Friction parameters. If no FCalc Friction
+parameters are used in the .wag file, Open Rails ignores those values,
+substituting resistance calculated by the original 1923 Davis equation.
 
 .. index::
    single: ORTSDavis_A
    single: ORTSDavis_B
    single: ORTSDavis_C
+   single: ORTSBearingType
    
-A basic (simplified) Davis formula is used in the following form:
+For new content, it is preferred to not use the ``Friction`` parameters,
+and instead enter the Davis coefficients directly as this is more
+prototypical. In the Wagon section, the parameters ``ORTSDavis_A``,
+``ORTSDavis_B``, and ``ORTSDavis_C`` can be used to provide these values.
+When using this method, the wagon section should also specify the type of
+wheel bearings used with the ``ORTSBearingType`` parameter.
+These values are then used in a generic form of the Davis formula:
 
 F\ :sub:`res` = ORTSDavis_A + speedMpS * (ORTSDavis_B + ORTSDavis_C * speedMpS\ :sup:`2`\ )
 
-Where F\ :sub:`res` is the friction force of the car. The rolling resistance
-can be defined either by *FCalc* or ORTSDavis_A, _B and _C components. If
-one of the *ORTSDavis* components is zero, *FCalc* is used. Therefore, e.g.
-if the data doesn't contain the B part of the Davis formula, a very small
-number should be used instead of zero.
+Where F\ :sub:`res` is the friction force of the car when travelling at a
+speed of *speedMpS*. Note that in this formula, unlike the empirical Davis
+formula, the weight of the rolling stock and the number of axles are not
+considered by this equation; the ORTSDavis values must be set already
+accounting for the weight and number of axles. Accepted units of measure
+for ORTSDavis parameters and the list of bearing types can be found in the
+:ref:`required parameters table <required-params>`.
+
+In the case that ORTSDavis coefficients are not known or prove awkward to calculate,
+Open Rails can automatically calculate rolling resistance using other data
+in combination with the 1926 Davis equation (for grease and friction bearings)
+or the 1992 CN equation (for roller and low bearings). If given a supported
+``ORTSBearingType``, missing A and B coefficients will be found from the rail
+vehicle weight and number of axles. Likewise, if the C coefficient is missing it
+is automatically calculated from the ``ORTSWagonFrontalArea`` and
+``ORTSDavisDragConstant`` values (or defaults, if those are missing).
+While the auto-calculated results will be reasonable for standard rolling stock,
+manual entry of ORTSDavis coefficients is still preferred for more complicated
+rolling stock such as steam locomotives, multiple units, high speed trains,
+articulated units, and anything studied in experiments other than Davis.
 
 .. index::
    single: ORTSMergeSpeed
    single: ORTSStandstillFriction
 
-When a train is initially started, additional force is needed to overcome
-the initial higher bearing torque (forces) and track resistance.  Starting resistance is calculated 
-automatically by Open Rails based upon empirical prototypical data at low speeds. 
-By selecting different values for ``ORTSBearingType`` different values of starting 
-resistance will be applied. The Open Rails calculation for starting resistance takes 
-into account different conditions, such as weather (for example, snowing or clear), 
-wagon (axle) load, wheel bearing temperature and wheel diameter. Hence when using the OR calculation 
-the correct values should be inserted in ``ORTSNumberAxles`` parameter in the wagon section, and 
-``ORTSNumberDriveAxles`` in the engine section. The ``WheelRadius`` value should also be 
-inserted in both sections as appropriate.
+The various forms of Davis equation are only accurate above 5 mph or so. They
+prove inaccurate at low speeds as additional force is needed to overcome
+the initial higher bearing torque (forces) and track resistance. Starting resistance
+is calculated automatically by Open Rails based upon environmental conditions
+and the setting of ``ORTSBearingType``. Each bearing type has a different starting
+resistance profile based on empirical prototypical data, including consideration
+for the temperature of the bearing, wagon (axle) load, and wheel diameter. Hence
+when using the OR calculation  the correct values should be inserted in ``ORTSNumberAxles``
+parameter in the wagon section, and ``ORTSNumberDriveAxles`` in the engine section. The
+``WheelRadius`` value should also be inserted in both sections as appropriate.
 
-Alternatively the low-speed friction force can be manually specified by the user by setting 
-``ORTSStandstillFriction`` and ``ORTSMergeSpeed``.
+Alternatively the low-speed friction force can be manually specified by the user by
+setting the zero-speed force in ``ORTSStandstillFriction`` and the speed at which the
+regular Davis equation takes over with ``ORTSMergeSpeed``.
 
 .. index::
    single: ORTSTrackGauge
@@ -2161,6 +2186,8 @@ iii. `Testing Resources for Open Rails Steam Locomotives
 .. |-| unicode:: U+00AD .. soft hyphen
   :trim:
 
+.. _required-params:
+
 +-----------------------------------------------------------+-------------------+-------------------+-------------------+
 |Parameter                                                  |Description        |Recommended Units  |Typical Examples   |
 +===========================================================+===================+===================+===================+
@@ -2273,9 +2300,10 @@ iii. `Testing Resources for Open Rails Steam Locomotives
 |                                                           |friction           |lbf/mph^2          |(1.43lbf/mph^2)    |
 |                                                           |                   |Use FCalc          |                   |
 +-----------------------------------------------------------+-------------------+-------------------+-------------------+
-|ORTS |-| Bearing |-| Type ( x )                            |Bearing type,      || Roller,          |( Roller )         |
-|                                                           |defaults to        || Friction,        |                   |
-|                                                           |Friction           || Low              |                   |
+|ORTS |-| Bearing |-| Type ( x )                            |Bearing type used  || Grease,          |( Roller )         |
+|                                                           |to determine       || Friction,        |                   |
+|                                                           |rolling resistance || Roller           |                   |
+|                                                           |                   || Low              |                   |
 |                                                           |                   |                   |                   |
 +-----------------------------------------------------------+-------------------+-------------------+-------------------+
 |**Friction (Engine section)**                                                                                          |
@@ -2743,46 +2771,6 @@ For EP brakes, two variants are available:
   actuating the cylinders. This system is sometimes called "UIC EP brake". It is typically the system
   used in high speed trains.
 
-Defining Multiple Brake Systems
--------------------------------
-
-It is possible to define multiple systems within ``OrtsBrakeMode`` sections::
-
-    ORTSBrakeMode (
-        ORTSBrakeModeName ( AG )
-        BrakeSystemType( Air_single_pipe )
-        Comment ( All brake parameters are available in such a section )
-    )
-    ORTSBrakeMode (
-        ORTSBrakeModeName ( VB )
-        BrakeSystemType( Vacuum_single_pipe )
-        Comment ( All brake parameters are available in such a section )
-    )
-
-These sections can be used to either define dual vacuum/air rolling stock, or 
-can be used to define the brake modes of the UIC stock in the following form::
-
-    BrakeSystemType( Air_twin_pipe )
-    ORTSBrakeMode (
-        ORTSBrakeModeName ( G )
-        ORTSBrakeMass ( 67t )
-        Comment ( All brake parameters are available in such a section )
-    )
-    ORTSBrakeMode (
-        ORTSBrakeModeName ( P )
-        ORTSBrakeMass ( 83t )
-        BrakeSystemType( Vacuum_single_pipe )
-        Comment ( All brake parameters are available in such a section )
-    )
-
-Available brake mode names to be used are: GG, G, PP, P, RR, R, R_MG, AG, AP, AU, VB, VP, VU. 
-With the ``ORTSBrakeModeNames`` keyword the used brake modes can be filtered, 
-for being able to define them in an include file, and using only the needed 
-ones. It can be used e.g. in the following form::
-
-    ORTSBrakeModeNames ( "P, R" )
-
-
 .. _physics-brake-controller:
 
 Train Brake Controller Positions
@@ -3192,13 +3180,6 @@ using the ORTSBrakeShoeFriction parameter, 1D (ie, speed only, see above section
 
 ``ORTSNumberCarBrakeShoes`` - to facilitate the operation of the default 2D curves above it is necessary to configure the number of brake shoes for each car.
 
-``ORTSBrakeMass`` - Railways part of the UIC organisation instead of NBR 
-provide brake masses, measured in tonnes, which is a virtual value to define 
-the brake efficiency. Openrails uses this value as an alternative to setting 
-the max brake shoe force directly, and recalculates this to that force using 
-approximating formulas to the published UIC brake curves. This parameter is 
-ignored if the ``ORTSMaxBrakeShoeForce`` also set.
-
 Whilst OR will attempt to set some defaults if parameters are left out, the most realistic operation will be achieved by using all the relevant parameters.
 
 The following two legacy arrangements can be used as an alternative to the above method,
@@ -3206,26 +3187,6 @@ The following two legacy arrangements can be used as an alternative to the above
 -  Legacy #1 - legacy arrangements using MaxBrakeForce on its own will remain unchanged. This in effect is an old MSTS file.
 
 - Legacy #2 - where MaxBrakeForce and ORTSBrakeShoeFriction have been set, legacy operation will remain unchanged.
-
-Load Compensation
------------------
-
-Load compensation stages can be defined in the following way::
-
-    OrtsLoadStage (
-        OrtsBrakeMass ( 28t )
-        Comment ( All brake parameters are available in such a section )
-    )
-    OrtsLoadStage (
-        OrtsBrakeMass ( 37t )
-        OrtsLoadStageMinMass ( 34t )
-        Comment ( All brake parameters are available in such a section )
-    )
-
-The ``OrtsLoadStageMinMass`` parameter defines the minimum car mass (together 
-with the load) where the stage can be activated without risking the brake lock. 
-For the lowest stage this keyword should be omitted. In OpenRails the switching 
-between stages is automatic.
 
 
 Train Brake Pipe Losses
@@ -3738,11 +3699,10 @@ The retainers of a car will only be available if either the General Option
 :ref:`Retainer valve on all cars <options-retainers>` is checked, or the car's
 .wag file contains a retainer valve declaration. To declare a retainer the line
 ``BrakeEquipmentType (  )`` in the .wag file must include either the item
-``Retainer_4_Position``, ``Retainer_3_Position`` or ``UIC_mountain``. A 4 position
+``Retainer_4_Position`` or  the item ``Retainer_3_Position``. A 4 position
 retainer includes four states: exhaust, low pressure (10 psi), high pressure
 (20 psi), and slow direct (gradual drop to zero). A 3 position retainer does
-not include the low pressure position. The UIC plain-mountain switch has only 
-2 positions. The use and display of the retainers is 
+not include the low pressure position. The use and display of the retainers is
 described in :ref:`Extended HUD for Brake Information <physics-hud-brake>`.
 
 The setting of the retained pressure and the number of retainers is
@@ -4837,10 +4797,7 @@ impact due to the wind will be zero.
 
 **Wind Lateral Force Resistance**  - When the wind blows from the side of the
 train, the train will be pushed against the outside track rail, thus increasing
-the amount of resistance experienced by the train.
-
-To activate calculation of wind resistance, select the tickbox for "Wind dependent
-resistance" in the Simulation TAB of the options menu. As wind only becomes
+the amount of resistance experienced by the train. As wind only becomes
 significant at higher train speeds, the wind resistance calculation only commences
 once the train speed exceeds 5 mph.
 
@@ -4876,9 +4833,9 @@ parameters can be inputted via the WAG file or section.
 ``ORTSWagonFrontalArea`` -- The frontal cross sectional area of the wagon. The default units
 are in ft^2, so if entering metres, include the Units of Measure.
 
-``ORTSDavisDragConstant`` -- OR by default uses the standard Davis Drag constants. If alternate
-drag constants are used in calculating the still air resistance, then it might be worthwhile
-inputting these values.
+``ORTSDavisDragConstant`` -- OR assigns a default drag constant based on the type of
+rolling stock. For more specifity or for less typical types of rolling stock, the drag
+coefficient can be entered manually. Typical values are unitless in the range of 0.0002 - 0.0024.
 
 
 .. _physics-track-sanding:
@@ -4973,7 +4930,7 @@ However for those who like to customise, the following parameter can be inputted
    single: ORTSTrailLocomotiveResistanceFactor
 
 ``ORTSTrailLocomotiveResistanceFactor`` -- The constant value by which the leading locomotive resistance
-needs to be decreased for trailing operation.
+needs to be multiplied for trailing operation (eg: 0.5 halves resistance, default 0.2083).
 
 For steam locomotive tenders it may be necessary to enter this value depending upon the Drag constant used
 to calculate the tender resistance.
