@@ -2471,7 +2471,6 @@ the one shown below::
         ORTSMaxParticles ( 2500 )
         ORTSRateMultiplier ( 1.0 )
         ORTSUseChaoticRandomization ( false )
-        ORTSShapeHierarchy ( "MAIN" )
     )
 
 The code block consists of the following elements:
@@ -2500,7 +2499,6 @@ The code block consists of the following elements:
    single: ORTSMaxParticles
    single: ORTSRateMultiplier
    single: ORTSUseChaoticRandomization
-   single: ORTSShapeHierarchy
 
 After including these settings, additional *optional* parameters unique to OR can
 be included to further customize effect emitters:
@@ -2604,14 +2602,6 @@ be included to further customize effect emitters:
   randomziation algorithm changes the random values by a small amount for each iteration. The "chaotic"
   algorithm tends to make exhaust that is more spread out and discontinuous, which may be desireable in
   some cases.
-- ``ORTSShapeHierarchy ( MATRIXNAME )`` -- Selects the sub object of the engine/wagon
-  shape the emitter should be attached to using the name of the sub object matrix.
-  The x, y, z location given earlier will then be measured relative to the sub object,
-  and the emitter will move as the sub object moves in real time.
-  Matrix names can be determined using shape viewing programs. If the given name
-  cannot be found, a warning is produced in the log and the emitter will be attached
-  to the main shape object. Similarly, if ``ORTSShapeHierarchy`` isn't defined, the emitter
-  will be attached to the main object, similar to the MSTS behavior.
 
   
 .. index::
