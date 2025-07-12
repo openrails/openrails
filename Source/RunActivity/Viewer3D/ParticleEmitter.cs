@@ -26,6 +26,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
 using Orts.Simulation.RollingStocks;
+using Orts.Viewer3D.RollingStock;
 
 namespace Orts.Viewer3D
 {
@@ -47,7 +48,7 @@ namespace Orts.Viewer3D
         int InputCycle;
 #endif
 
-        public ParticleEmitterViewer(Viewer viewer, ParticleEmitterData data, WorldPosition worldPosition)
+        public ParticleEmitterViewer(Viewer viewer, ParticleEmitterData data, MSTSWagonViewer car, WorldPosition worldPosition)
         {
             Viewer = viewer;
             EmitterData = data;
@@ -338,6 +339,8 @@ namespace Orts.Viewer3D
 
         internal WorldPosition WorldPosition;
 
+        internal MSTSWagonViewer CarViewer;
+
         // Particle buffer goes like this:
         //   +--active>-----new>--+
         //   |                    |
@@ -370,6 +373,7 @@ namespace Orts.Viewer3D
             ParticleDuration = 3;
             ParticleColor = Color.White;
 
+            CarViewer = car;
             WorldPosition = worldPosition;
 
             // Initialize the particle accumulator to a random value to de-sync particle emitters from eachother
@@ -412,35 +416,6 @@ namespace Orts.Viewer3D
                     0.9f + (float)Viewer.Random.NextDouble() * 0.2f,
                     0.9f + (float)Viewer.Random.NextDouble() * 0.2f,
                 };
-            }
-
-            // Initialization step for emitter shape attachment
-            if (EmitterData.ShapeIndex != -1)
-            {
-                if (EmitterData.ShapeIndex < 0 || EmitterData.ShapeIndex >= CarViewer.TrainCarShape.ResultMatrices.Count())
-                {
-                    Trace.TraceWarning("Particle emitter in car {0} has invalid shape index defined, shape index {1} does not exist",
-                        (CarViewer.Car as MSTSWagon).WagFilePath, EmitterData.ShapeIndex);
-                    EmitterData.ShapeIndex = 0;
-                }
-            }
-            else
-            {
-                if (!String.IsNullOrEmpty(EmitterData.ShapeHierarchy))
-                {
-                    if (CarViewer.TrainCarShape.SharedShape.MatrixNames.Contains(EmitterData.ShapeHierarchy))
-                    {
-                        EmitterData.ShapeIndex = CarViewer.TrainCarShape.SharedShape.MatrixNames.IndexOf(EmitterData.ShapeHierarchy);
-                    }
-                    else
-                    {
-                        Trace.TraceWarning("Particle emitter in car {0} has invalid shape index defined, matrix name {1} does not exist",
-                            (CarViewer.Car as MSTSWagon).WagFilePath, EmitterData.ShapeHierarchy);
-                        EmitterData.ShapeIndex = 0;
-                    }
-                }
-                else
-                    EmitterData.ShapeIndex = 0;
             }
         }
 
@@ -561,7 +536,7 @@ namespace Orts.Viewer3D
                 {
                     Matrix transform = WorldPosition.XNAMatrix;
                     transform.Translation = Vector3.Zero; // Only want rotation data for this step
-                    transform = CarViewer.TrainCarShape.ResultMatrices[EmitterData.ShapeIndex] * transform;
+                    // rotation = CarViewer.TrainCarShape.ResultMatrices[EmitterData.ShapeIndex] * rotation; // Future: ShapeHierarchy goes here
 
                     Matrix rotation = transform;
                     rotation.Translation = Vector3.Zero; // Last step needed translational effects, next step does not

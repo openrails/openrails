@@ -4597,7 +4597,7 @@ public void SetTensionStiffness(float a, float b)
         public static Dictionary<string, MSTSWagon> LoadedCars = new Dictionary<string, MSTSWagon>();
     }
 
-    public struct ParticleEmitterData
+    public class ParticleEmitterData
     {
         public Vector3 PositionM;
         public Vector3 PositionVariationM = Vector3.Zero;
@@ -4627,9 +4627,6 @@ public void SetTensionStiffness(float a, float b)
         public int MaxParticles = 2500;
 
         public bool ChaoticRandomization = false; // Changes the style of RNG used for particle motion
-
-        public int ShapeIndex = -1;
-        public string ShapeHierarchy;
 
         public ParticleEmitterData(STFReader stf)
         {
@@ -4677,8 +4674,6 @@ public void SetTensionStiffness(float a, float b)
                 new STFReader.TokenProcessor("ortsmaxparticles", ()=>{ MaxParticles = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("ortsratemultiplier", ()=>{ RateFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("ortsusechaoticrandomization", ()=>{ ChaoticRandomization = stf.ReadBoolBlock(true); }),
-                new STFReader.TokenProcessor("ortsshapeindex", ()=>{ ShapeIndex = stf.ReadIntBlock(null); }),
-                new STFReader.TokenProcessor("ortsshapehierarchy", ()=>{ ShapeHierarchy = stf.ReadStringBlock(null); }),
             });
         }
     }
