@@ -2740,27 +2740,43 @@ namespace Orts.Simulation.RollingStocks
                     if (SlipControlSystem == SlipControlType.Full)
                     {
                         // Simple slip control
-                        // Motive force is reduced to the maximum adhesive force
-                        // In wheelslip situations, motive force is set to zero
+                        // Motive force is limited to the maximum adhesive force
+                        // In wheelslip situations, motive force is reduced to zero
                         float absForceN = Math.Min(Math.Abs(axle.DriveForceN), axle.MaximumWheelAdhesion * axle.AxleWeightN);
                         float newForceN;
-                        if (axle.HuDIsWheelSlip)
+                        if (axle.DriveForceN != 0)
                         {
-                            newForceN = 0;
+                            if (axle.HuDIsWheelSlip) SlipControlActive[i] = true;
                         }
-                        else if (!axle.HuDIsWheelSlipWarning)
+                        else
                         {
-                            // If well below slip threshold, restore full power in 10 seconds
-                            newForceN = Math.Min(Math.Abs(prevForceN) + absForceN * elapsedClockSeconds / 10, absForceN);
+                            SlipControlActive[i] = false;
                         }
-                        else if (axle.IsWheelSlip)
+
+                        if (SlipControlActive[i])
                         {
-                            newForceN = Math.Max(Math.Abs(prevForceN) - absForceN * elapsedClockSeconds / 3, 0);
+                            if (!axle.HuDIsWheelSlip)
+                            {
+                                // If well below slip threshold, restore full power in 10 seconds
+                                newForceN = Math.Min(Math.Abs(prevForceN) + absForceN * elapsedClockSeconds / 10, absForceN);
+
+                                // If full force is restored, disengage slip control (but limiting force to max adhesion)
+                                if (newForceN / absForceN > 0.95f) SlipControlActive[i] = false;
+                            }
+                            else if (axle.IsWheelSlip)
+                            {
+                                newForceN = Math.Max(Math.Abs(prevForceN) - absForceN * elapsedClockSeconds / 3, 0);
+                            }
+                            else
+                            {
+                                newForceN = Math.Min(Math.Abs(prevForceN), absForceN);
+                            }
                         }
                         else
                         {
                             newForceN = absForceN;
                         }
+
                         if (axle.DriveForceN > 0 && prevForceN >= 0) axle.DriveForceN = newForceN;
                         else if (axle.DriveForceN < 0 && prevForceN <= 0) axle.DriveForceN = -newForceN;
                     }
@@ -2806,7 +2822,7 @@ namespace Orts.Simulation.RollingStocks
                             }
                             else
                             {
-                                newForceN = absForceN;
+                                newForceN = Math.Min(Math.Abs(prevForceN), absForceN);
                             }
                             if (axle.DriveForceN > 0 && prevForceN >= 0) axle.DriveForceN = newForceN;
                             else if (axle.DriveForceN < 0 && prevForceN <= 0) axle.DriveForceN = -newForceN;
