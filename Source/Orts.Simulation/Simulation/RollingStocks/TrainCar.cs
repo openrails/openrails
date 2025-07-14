@@ -59,6 +59,8 @@ namespace Orts.Simulation.RollingStocks
         public Vector3 Location;
         public Vector3 StartDirection;
         public Vector3 RotationLimit;
+        public int ShapeIndex = -1;
+        public string ShapeHierarchy;
 
         public ViewPoint()
         {
@@ -74,6 +76,8 @@ namespace Orts.Simulation.RollingStocks
             Location = copy.Location;
             StartDirection = copy.StartDirection;
             RotationLimit = copy.RotationLimit;
+            ShapeIndex = copy.ShapeIndex;
+            ShapeHierarchy = copy.ShapeHierarchy;
             if (rotate)
             {
                 Location.X *= -1;
@@ -89,6 +93,7 @@ namespace Orts.Simulation.RollingStocks
         // Remember direction of passenger camera and apply when user returns to it.
         public float RotationXRadians;
         public float RotationYRadians;
+        public Vector3 ShapeOffset;
     }
 
     public abstract class TrainCar
@@ -110,7 +115,6 @@ namespace Orts.Simulation.RollingStocks
 
         // sound related variables
         public bool IsPartOfActiveTrain = true;
-        public List<int> SoundSourceIDs = new List<int>();
 
         public IPowerSupply PowerSupply;
 
@@ -273,6 +277,7 @@ namespace Orts.Simulation.RollingStocks
         public bool BrakeSkidWarning = false;
         public bool HUDBrakeSkid = false;
 
+        float BrakeWheelTreadForceN; // The retarding force apparent on the tread of the wheel
         float WagonBrakeAdhesiveForceN; // The adhesive force existing on the wheels of the wagon
         public float SkidFriction = 0.08f; // Friction if wheel starts skidding - based upon wheel dynamic friction of approx 0.08
         public float HuDBrakeShoeFriction;
@@ -653,7 +658,7 @@ namespace Orts.Simulation.RollingStocks
 
         // For use by cameras, initialized in MSTSWagon class and its derived classes
         public List<PassengerViewPoint> PassengerViewpoints = new List<PassengerViewPoint>();
-        public List<PassengerViewPoint> CabViewpoints; //three dimensional cab view point
+        public List<PassengerViewPoint> CabViewpoints = new List<PassengerViewPoint>(); //three dimensional cab view point
         public List<ViewPoint> HeadOutViewpoints = new List<ViewPoint>();
 
         // Used by Curve Speed Method
@@ -1106,94 +1111,108 @@ namespace Orts.Simulation.RollingStocks
 
         public virtual void UpdateBrakeSlideCalculation()
         {
-            if (this is MSTSLocomotive locomotive)
-            {
-                // If advanced adhesion model indicates wheel slip warning, then check other conditions (throttle and brake force) to determine whether it is a wheel slip or brake skid
-                if (WheelSlipWarning && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0)
-                {
-                    BrakeSkidWarning = true;  // set brake skid flag true
-                }
-                else
-                {
-                    BrakeSkidWarning = false;
-                }
 
-                // If advanced adhesion model indicates wheel slip, then check other conditions (throttle and brake force) to determine whether it is a wheel slip or brake skid
-                if (WheelSlip && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0)
-                {
-                    BrakeSkid = true;  // set brake skid flag true
-                }
-                else
-                {
-                    BrakeSkid = false;
-                }
-            }
             // Only apply slide, and advanced brake friction, if advanced adhesion is selected, simplecontrolphysics is not set, and it is a Player train
-            else if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain)
+            if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain)
             {
-                // Determine whether car is experiencing a wheel slip during braking
-                if (!BrakeSkidWarning && AbsSpeedMpS > 0.01)
-                {
-                    var wagonbrakeadhesiveforcen = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction; // Adhesive force wheel normal 
 
-                    if (BrakeRetardForceN > 0.80f * WagonBrakeAdhesiveForceN && ThrottlePercent > 0.01)
+                // ************  Check if diesel or electric - assumed already be cover by advanced adhesion model *********
+
+                if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)
+                {
+                    // If advanced adhesion model indicates wheel slip warning, then check other conditions (throttle and brake force) to determine whether it is a wheel slip or brake skid
+                    if (WheelSlipWarning && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0) 
                     {
-                        BrakeSkidWarning = true; 	// wagon wheel is about to slip
+                        BrakeSkidWarning = true;  // set brake skid flag true
+                    }
+                    else
+                    {
+                        BrakeSkidWarning = false;
+                    }
+
+                    // If advanced adhesion model indicates wheel slip, then check other conditions (throttle and brake force) to determine whether it is a wheel slip or brake skid
+                    if (WheelSlip && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0)
+                    {
+                        BrakeSkid = true;  // set brake skid flag true
+                    }
+                    else
+                    {
+                        BrakeSkid = false;
                     }
                 }
-                else if (BrakeRetardForceN < 0.75f * WagonBrakeAdhesiveForceN)
-                {
-                    BrakeSkidWarning = false; 	// wagon wheel is back to normal
-                }
 
-                // Reset WSP dump valve lockout
-                if (WheelBrakeSlideProtectionFitted && WheelBrakeSlideProtectionDumpValveLockout && (ThrottlePercent > 0.01 || AbsSpeedMpS <= 0.002))
+                else if (!(this is MSTSDieselLocomotive) || !(this is MSTSElectricLocomotive))
                 {
-                    WheelBrakeSlideProtectionTimerS = wheelBrakeSlideTimerResetValueS;
-                    WheelBrakeSlideProtectionDumpValveLockout = false;
 
-                }       
+                    // Calculate tread force on wheel - use the retard force as this is related to brakeshoe coefficient, and doesn't vary with skid.
+                    BrakeWheelTreadForceN = BrakeRetardForceN;
 
-                // Calculate adhesive force based upon whether in skid or not
-                if (BrakeSkid)
-                {
-                    WagonBrakeAdhesiveForceN = MassKG * GravitationalAccelerationMpS2 * SkidFriction;  // Adhesive force if wheel skidding
-                }
-                else
-                {
-                    WagonBrakeAdhesiveForceN = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction; // Adhesive force wheel normal
-                }
+                    // Determine whether car is experiencing a wheel slip during braking
+                    if (!BrakeSkidWarning && AbsSpeedMpS > 0.01)
+                    {
+                        var wagonbrakeadhesiveforcen = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction; // Adhesive force wheel normal 
+
+                        if (BrakeWheelTreadForceN > 0.80f * WagonBrakeAdhesiveForceN && ThrottlePercent > 0.01)
+                        {
+                            BrakeSkidWarning = true; 	// wagon wheel is about to slip
+                        }
+                    }
+                    else if ( BrakeWheelTreadForceN < 0.75f * WagonBrakeAdhesiveForceN)
+                    {
+                        BrakeSkidWarning = false; 	// wagon wheel is back to normal
+                    }
+
+                    // Reset WSP dump valve lockout
+                    if (WheelBrakeSlideProtectionFitted && WheelBrakeSlideProtectionDumpValveLockout && (ThrottlePercent > 0.01 || AbsSpeedMpS <= 0.002))
+                    {
+                        WheelBrakeSlideProtectionTimerS = wheelBrakeSlideTimerResetValueS;
+                        WheelBrakeSlideProtectionDumpValveLockout = false;
+
+                    }       
+
+                    // Calculate adhesive force based upon whether in skid or not
+                    if (BrakeSkid)
+                    {
+                        WagonBrakeAdhesiveForceN = MassKG * GravitationalAccelerationMpS2 * SkidFriction;  // Adhesive force if wheel skidding
+                    }
+                    else
+                    {
+                        WagonBrakeAdhesiveForceN = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction; // Adhesive force wheel normal
+                    }
                                    
 
-                // Test if wheel forces are high enough to induce a slip. Set slip flag if slip occuring 
-                if (!BrakeSkid && AbsSpeedMpS > 0.01)  // Train must be moving forward to experience skid
-                {
-                    if (BrakeRetardForceN > WagonBrakeAdhesiveForceN)
+                    // Test if wheel forces are high enough to induce a slip. Set slip flag if slip occuring 
+                    if (!BrakeSkid && AbsSpeedMpS > 0.01)  // Train must be moving forward to experience skid
                     {
-                        BrakeSkid = true; 	// wagon wheel is slipping
-                        var message = "Car ID: " + CarID + " - experiencing braking force wheel skid.";
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, message);
+                        if (BrakeWheelTreadForceN > WagonBrakeAdhesiveForceN)
+                        {
+                            BrakeSkid = true; 	// wagon wheel is slipping
+                            var message = "Car ID: " + CarID + " - experiencing braking force wheel skid.";
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, message);
+                        }
                     }
-                }
-                else if (BrakeSkid && AbsSpeedMpS > 0.01)
-                {
-                    if (BrakeRetardForceN < WagonBrakeAdhesiveForceN || BrakeForceN == 0.0f)
+                    else if (BrakeSkid && AbsSpeedMpS > 0.01)
+                    {
+                        if (BrakeWheelTreadForceN < WagonBrakeAdhesiveForceN || BrakeForceN == 0.0f)
+                        {
+                            BrakeSkid = false; 	// wagon wheel is not slipping
+                        }
+                        
+                    }
+                    else
                     {
                         BrakeSkid = false; 	// wagon wheel is not slipping
+
                     }
-                        
                 }
                 else
                 {
-                    BrakeSkid = false;  // wagon wheel is not slipping
+                    BrakeSkid = false; 	// wagon wheel is not slipping
                 }
-                BrakeForceN = BrakeRetardForceN;
-                if (BrakeSkid) BrakeForceN = Math.Min(BrakeForceN, MassKG * GravitationalAccelerationMpS2 * SkidFriction);
             }
-            else  // set default values if simple adhesion model
+            else  // set default values if simple adhesion model, or if diesel or electric locomotive is used, which doesn't check for brake skid.
             {
                 BrakeSkid = false; 	// wagon wheel is not slipping
-                BrakeForceN = BrakeRetardForceN;
             }
 
 #if DEBUG_BRAKE_SLIDE
@@ -2125,8 +2144,8 @@ namespace Orts.Simulation.RollingStocks
                 String.Format("{0}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric)),
                 loco.DieselEngines[0].GearBox.HuDShaftRPM,
                 // For Locomotive HUD display shows "forward" motive power (& force) as a positive value, braking power (& force) will be shown as negative values.
-                FormatStrings.FormatPower(loco.LocomotiveAxles.DrivePowerW, IsMetric, false, false),
-                String.Format("{0}{1}", FormatStrings.FormatForce(loco.LocomotiveAxles.DriveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
+                FormatStrings.FormatPower(TractiveForceN * WheelSpeedMpS, IsMetric, false, false),
+                String.Format("{0}{1}", FormatStrings.FormatForce(TractiveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
                 Simulator.Catalog.GetString(locomotivetypetext)
                 );
             }
@@ -2140,8 +2159,8 @@ namespace Orts.Simulation.RollingStocks
                 ThrottlePercent,
                 String.Format("{0}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric)),
                 // For Locomotive HUD display shows "forward" motive power (& force) as a positive value, braking power (& force) will be shown as negative values.
-                FormatStrings.FormatPower((this as MSTSWagon).LocomotiveAxles.DrivePowerW, IsMetric, false, false),
-                String.Format("{0}{1}", FormatStrings.FormatForce((this as MSTSWagon).LocomotiveAxles.DriveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
+                FormatStrings.FormatPower(TractiveForceN * WheelSpeedMpS, IsMetric, false, false),
+                String.Format("{0}{1}", FormatStrings.FormatForce(TractiveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""),
                 Simulator.Catalog.GetString(locomotivetypetext)
                 );
             }
@@ -2725,10 +2744,10 @@ namespace Orts.Simulation.RollingStocks
                 (RearArticulation == -1 && !WheelAxles.Any(a => a.OffsetM.Z > 0) && WagonType != WagonTypes.Engine && WheelAxles.Count != 1 && WheelAxles.Count <= 3));
 
             if (articulatedFront || articulatedRear)
-                {
-                    WheelAxlesLoaded = true;
+            {
+                WheelAxlesLoaded = true;
                 SetUpWheelsArticulation(articulatedFront, articulatedRear);
-                }
+            }
         } // end SetUpWheels()
 
         protected void SetUpWheelsArticulation(bool front, bool rear)
@@ -2831,6 +2850,8 @@ namespace Orts.Simulation.RollingStocks
             // Check if null (0-length) vector
             if (!(fwd.X == 0 && fwd.Y == 0 && fwd.Z == 0))
                 fwd.Normalize();
+            else // If calculation fails, force set forward vector to prevent NaN errors
+                fwd.X = 1; 
             Vector3 side = Vector3.Cross(Vector3.Up, fwd);
             // Check if null (0-length) vector
             if (!(side.X == 0 && side.Y == 0 && side.Z == 0))

@@ -65,14 +65,12 @@ namespace Orts.Viewer3D
                 return defaultTexture;
 
             path = path.ToLowerInvariant();
-            var ext = Path.GetExtension(path);
-
             if (!Textures.ContainsKey(path))
             {
                 try
                 {
                     Texture2D texture;
-                    if (ext == ".dds")
+                    if (Path.GetExtension(path) == ".dds")
                     {
                         if (File.Exists(path))
                         {
@@ -91,10 +89,10 @@ namespace Orts.Viewer3D
                             else return defaultTexture;
                         }
                     }
-                    else if (ext == ".ace")
+                    else if (Path.GetExtension(path) == ".ace")
                     {
                         var alternativeTexture = Path.ChangeExtension(path, ".dds");
-
+                        
                         if (File.Exists(alternativeTexture))
                         {
                             DDSLib.DDSFromFile(alternativeTexture, GraphicsDevice, true, out texture);
@@ -147,30 +145,7 @@ namespace Orts.Viewer3D
                         }
                     }
                     else
-                    {
-                        using (var stream = File.OpenRead(path))
-                        {
-                            if (ext == ".gif" || ext == ".jpg" || ext == ".png")
-                                texture = Texture2D.FromStream(GraphicsDevice, stream);
-                            else if (ext == ".bmp")
-                            {
-                                using (var image = System.Drawing.Image.FromStream(stream))
-                                {
-                                    using (var memoryStream = new MemoryStream())
-                                    {
-                                        image.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
-                                        memoryStream.Seek(0, SeekOrigin.Begin);
-                                        texture = Texture2D.FromStream(GraphicsDevice, memoryStream);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                Trace.TraceWarning("Unsupported texture format: {0}", path);
-                                return defaultTexture;
-                            }
-                        }
-                    }
+                        return defaultTexture;
 
                     Textures.Add(path, texture);
                     return texture;
