@@ -105,6 +105,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 {
                     PreviousNotchPosition = NotchController.GetCurrentNotch();
                     BrakeControllerInitialised = true;
+                    if (PreviousNotchPosition != null)
+                    {
+                        var type = PreviousNotchPosition.Type;
+                        if (type == ControllerState.Lap || type == ControllerState.MinimalReduction) EnforceMinimalReduction = true;
+                    }
                 }
                 if (notch == null)
                 {
