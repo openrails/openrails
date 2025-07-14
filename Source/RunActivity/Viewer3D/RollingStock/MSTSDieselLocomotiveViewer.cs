@@ -41,7 +41,7 @@ namespace Orts.Viewer3D.RollingStock
             // Now all the particle drawers have been setup, assign them textures based
             // on what emitters we know about.
 
-            string dieselTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\dieselsmoke.ace";
+            string dieselTexture = "dieselsmoke.ace";
 
 
             // Diesel Exhaust

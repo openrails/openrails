@@ -80,7 +80,7 @@ namespace Orts.Viewer3D.RollingStock
         {
             // Now all the particle drawers have been setup, assign them textures based
             // on what emitters we know about.
-            string steamTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\smokemain.ace";
+            string steamTexture = "smokemain.ace";
 
             foreach (var emitter in ParticleDrawers)
             {

@@ -115,8 +115,8 @@ namespace Orts.Viewer3D.RollingStock
             : base(viewer, car)
         {
             
-            string steamTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\smokemain.ace";
-            string dieselTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\dieselsmoke.ace";
+            string steamTexture = "smokemain.ace";
+            string dieselTexture = "dieselsmoke.ace";
 
             // Particle Drawers called in Wagon so that wagons can also have steam effects.
             ParticleDrawers = (

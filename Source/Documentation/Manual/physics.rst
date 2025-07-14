@@ -2499,6 +2499,9 @@ the one shown below::
         ORTSMaxParticles ( 2500 )
         ORTSRateMultiplier ( 1.0 )
         ORTSUseChaoticRandomization ( false )
+
+        ORTSGraphic ( "smokemain.ace" )
+        ORTSGraphicAtlasLayout ( 4 4 )
     )
 
 The code block consists of the following elements:
@@ -2527,6 +2530,8 @@ The code block consists of the following elements:
    single: ORTSMaxParticles
    single: ORTSRateMultiplier
    single: ORTSUseChaoticRandomization
+   single: ORTSGraphic
+   single: ORTSGraphicAtlasLayout
 
 After including these settings, additional *optional* parameters unique to OR can
 be included to further customize effect emitters:
@@ -2535,7 +2540,7 @@ be included to further customize effect emitters:
   in the right/left, up/down, and front/back emission location of a particle (default units
   are meters). Useful for non-circular exhaust ports, as it allows one particle emitter
   to be used to spawn particles from an area, rather than a single point. Note that
-  ``ORTSPositionVariation ( 1m 0m 0m )`` would allow particles to emit 1 meter right and
+  ``ORTSPositionVariation ( x y z )`` would allow particles to emit 1 meter right and
   1 meter left of the initial position, for a total variation of 2 meters. Similar is
   true of all other parameters related to randomness, the total variation is double what's
   specified. Feature is disabled by default.
@@ -2630,6 +2635,21 @@ be included to further customize effect emitters:
   randomziation algorithm changes the random values by a small amount for each iteration. The "chaotic"
   algorithm tends to make exhaust that is more spread out and discontinuous, which may be desireable in
   some cases.
+- ``ORTSGraphic ( "tex" )`` -- Gives the name and path to the texture that should be used to render
+  particles from this emitter. The default texture is "smokemain.ace" for steam-type emitters and
+  "dieselsmoke.ace" for diesel-type emitters. If the texture cannot be found from the engine's/wagon's
+  folder, then the ``GLOBAL\TEXTURES`` folder is checked, and if the texture is not there the ``Content``
+  folder included with OR is checked. Allowed texture formats are ``.png, .jpg, .bmp, .gif, .ace, or .dds``.
+  A path to a texture can also be used, such as ``ORTSGraphic ( "..\\SmokeTextures\\steam.dds" )``, to search
+  for textures not in the same folder as the engine or wagon.
+- ``ORTSGraphicAtlasLayout ( w h )`` -- Particle textures generally include multiple sprites in a single file
+  to allow for randomization of each particle's appearance. In MSTS, this was a sprite atlas 4 wide and 4 high,
+  for a total of 16 variations on the particle graphic. When using custom particle textures, it may be desired
+  to use a custom sprite sheet that is not 4x4, in which case the atlas layout can be set by ``ORTSGraphicAtlasLayout``.
+  For example, a sprite sheet with 4 variations on the particle texture all in a row (4x1) can be represented by
+  ``ORTSGraphicAtlasLayout ( 4 1 )``. Note that each sprite should be a perfect square as each particle is
+  rendered as a square. Rectangular textures will be stretched/squished. Do not change the atlas setting unless you
+  are certain of the texture used, as improper settings will be very aesthetically unpleasing.
 
   
 .. index::
@@ -2649,7 +2669,7 @@ matter:
     )
 
 - ``ORTSPosition ( x y z )`` -- defines the width, height, length location of the emitter (in meters by default)
-- ``ORTSInitialVelocity ( x y z )`` -- defines the right, up, forward components of emission direction
+- ``ORTSInitialVelocity ( x y z )`` -- defines the (+/-) right/left, up/down, forward/backward components of emission direction
   (unitless, the particle speed is multiplied by this vector to determine the 3D velocity of particles.
   Speed can be divided by inserting values less than 1, or multiplied by inserting values greater than 1.)
 - And ``ORTSParticleDiameter ( d )`` -- gives the nozzle width (in meters by default), which sets the initial

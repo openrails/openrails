@@ -33,13 +33,14 @@ float emitSize;
 float2 cameraTileXY;
 float currentTime;
 
-static float2 texCoords[4] = { float2(0, 0), float2(0.25f, 0), float2(0.25f, 0.25f), float2(0, 0.25f) };
+static float2 texCoords[4] = { float2(0, 0), float2(1.0f, 0), float2(1.0f, 1.0f), float2(0, 1.0f) };
 static float3 offsets[4] = { float3(-0.5f, 0.5f, 0), float3(0.5f, 0.5f, 0), float3(0.5f, -0.5f, 0), float3(-0.5f, -0.5f, 0) };
 
 float4 Fog;
 
 // Textures
 texture particle_Tex;
+float2 texAtlasSize;
 
 // Texture settings
 sampler ParticleSamp = sampler_state
@@ -142,9 +143,11 @@ VERTEX_OUTPUT VSParticles(in VERTEX_INPUT In)
 	
 	Out.TexCoord = texCoords[vertIdx];
 	float texAtlasPosition = In.TileXY_Vertex_ID.w;
-	int atlasX = texAtlasPosition % 4;
-	int atlasY = texAtlasPosition / 4;
-	Out.TexCoord += float2(0.25f * atlasX, 0.25f * atlasY);
+	int atlasX = texAtlasPosition % texAtlasSize.x;
+	int atlasY = texAtlasPosition / texAtlasSize.y;
+    Out.TexCoord.x /= texAtlasSize.x;
+    Out.TexCoord.y /= texAtlasSize.y;
+	Out.TexCoord += float2(atlasX / texAtlasSize.x, atlasY / texAtlasSize.y);
 
 	Out.Color_Age.rgb = In.Color_Random.rgb;
 
