@@ -3186,6 +3186,8 @@ namespace Orts.Simulation.RollingStocks
 
             foreach (var axle in LocomotiveAxles)
             {
+                /*axle.FrictionN = DavisAN * axle.WheelWeightKg / MassKG;
+                axle.DampingNs = DavisBNSpM * axle.WheelWeightKg / MassKG;*/
                 axle.BrakeRetardForceN = BrakeRetardForceN * axle.BrakeForceFraction;
                 axle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
                 axle.WheelRadiusM = DriverWheelRadiusM;
@@ -3203,6 +3205,7 @@ namespace Orts.Simulation.RollingStocks
             else TractionForceN = Math.Abs(TractiveForceN);
             MotiveForceN = LocomotiveAxles.AxleMotiveForceN;
             BrakeForceN = LocomotiveAxles.AxleBrakeForceN;
+            RollingFrictionForceN = LocomotiveAxles.AxleFrictionForceN;
 
             if (elapsedClockSeconds > 0)
             {

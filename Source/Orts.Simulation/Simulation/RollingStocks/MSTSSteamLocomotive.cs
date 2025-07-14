@@ -6684,7 +6684,17 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
 
         protected override void UpdateAxles(float elapsedClockSeconds)
-        { 
+        {
+            foreach (var axle in LocomotiveAxles)
+            {
+                /*axle.FrictionN = DavisAN * axle.WheelWeightKg / MassKG;
+                axle.DampingNs = DavisBNSpM * axle.WheelWeightKg / MassKG;*/
+                axle.BrakeRetardForceN = BrakeRetardForceN * axle.BrakeForceFraction;
+                axle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
+                axle.WheelDistanceGaugeM = TrackGaugeM;
+                axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
+                axle.BogieRigidWheelBaseM = RigidWheelBaseM;
+            }
             foreach (var engine in SteamEngines)
             {
                 var axle = engine.AttachedAxle;
@@ -6741,20 +6751,13 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(engine.CylindersDiameterM) * Me.ToIn(engine.CylindersDiameterM) * Me.ToIn(engine.CylindersStrokeM) / (Me.ToIn(axle.WheelRadiusM * 2.0f)));
                 }
             }
-            foreach (var axle in LocomotiveAxles)
-            {
-                axle.BrakeRetardForceN = BrakeRetardForceN * axle.BrakeForceFraction;
-                axle.TrainSpeedMpS = SpeedMpS;                //Set the train speed of the axle mod
-                axle.WheelDistanceGaugeM = TrackGaugeM;
-                axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
-                axle.BogieRigidWheelBaseM = RigidWheelBaseM;
-            }
             
             LocomotiveAxles.Update(elapsedClockSeconds);
 
             TractiveForceN = LocomotiveAxles.DriveForceN;
             MotiveForceN = LocomotiveAxles.AxleMotiveForceN;
             BrakeForceN = LocomotiveAxles.AxleBrakeForceN;
+            RollingFrictionForceN = LocomotiveAxles.AxleFrictionForceN;
 
             if (LocoNumDrvAxles <= 0)
             {
