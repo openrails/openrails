@@ -4610,7 +4610,7 @@ public void SetTensionStiffness(float a, float b)
 
         public float SpeedLimitMpS = 150.0f;
 
-        public float NozzleDiameterM;
+        public float NozzleDiameterM = 0.1f;
         public float NozzleAreaM2 = -1; // If left at -1, will be initialized later
 
         public float RateFactor = 1.0f;
@@ -4627,6 +4627,10 @@ public void SetTensionStiffness(float a, float b)
         public int MaxParticles = 2500;
 
         public bool ChaoticRandomization = false; // Changes the style of RNG used for particle motion
+
+        public string Graphic;
+        public int AtlasWidth = 4;
+        public int AtlasHeight = 4;
 
         public ParticleEmitterData(STFReader stf)
         {
@@ -4674,6 +4678,13 @@ public void SetTensionStiffness(float a, float b)
                 new STFReader.TokenProcessor("ortsmaxparticles", ()=>{ MaxParticles = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("ortsratemultiplier", ()=>{ RateFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("ortsusechaoticrandomization", ()=>{ ChaoticRandomization = stf.ReadBoolBlock(true); }),
+                new STFReader.TokenProcessor("ortsgraphic", ()=>{ Graphic = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("ortsgraphicatlaslayout", ()=>{
+                    stf.MustMatch("(");
+                    AtlasWidth = Math.Max(stf.ReadInt(null), 1);
+                    AtlasHeight = Math.Max(stf.ReadInt(null), 1);
+                    stf.SkipRestOfBlock();
+                }),
             });
         }
     }

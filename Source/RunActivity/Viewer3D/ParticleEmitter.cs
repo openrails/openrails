@@ -22,11 +22,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using ORTS.Common;
 using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.RollingStock;
+using ORTS.Common;
 
 namespace Orts.Viewer3D
 {
@@ -39,6 +41,7 @@ namespace Orts.Viewer3D
         public readonly float ParticleVolumeM3 = 0.001f;
         public readonly ParticleEmitterPrimitive Emitter;
 
+        public string TexturePath;
         ParticleEmitterMaterial Material;
 
 #if DEBUG_EMITTER_INPUT
@@ -66,15 +69,40 @@ namespace Orts.Viewer3D
             // Particles expand over time, this is just the initial volume, useful for calculating initial velocity
             ParticleVolumeM3 = 4.0f / 3.0f * MathHelper.Pi * ((EmitterData.NozzleDiameterM * EmitterData.NozzleDiameterM * EmitterData.NozzleDiameterM) / 8.0f);
             Emitter = new ParticleEmitterPrimitive(this, data, car, worldPosition);
+
+            if (!String.IsNullOrEmpty(EmitterData.Graphic))
+                TexturePath = EmitterData.Graphic;
 #if DEBUG_EMITTER_INPUT
             EmitterID = ++EmitterIDIndex;
             InputCycle = Viewer.Random.Next(InputCycleLimit);
 #endif
-        }
+            }
 
-        public void Initialize(string textureName)
+        public void Initialize(string defaultTextureName)
         {
-            Material = (ParticleEmitterMaterial)Viewer.MaterialManager.Load("ParticleEmitter", textureName);
+            bool customTexture = false;
+
+            if (!String.IsNullOrEmpty(TexturePath))
+                customTexture = true;
+            else
+                TexturePath = defaultTextureName;
+
+            // Texture location preference is eng/wag folder -> MSTS GLOBAL\TEXTURES folder -> OR CONTENT folder
+            if (File.Exists(Path.Combine(Path.GetDirectoryName(Emitter.CarViewer.Car.WagFilePath), TexturePath)))
+                TexturePath = Path.Combine(Path.GetDirectoryName(Emitter.CarViewer.Car.WagFilePath), TexturePath);
+            else if (File.Exists(Path.Combine(Viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\", TexturePath)))
+                TexturePath = Path.Combine(Viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\", TexturePath);
+            else if (customTexture && File.Exists(Path.Combine(Viewer.ContentPath, TexturePath)))
+                TexturePath = Path.Combine(Viewer.ContentPath, TexturePath);
+            else // Fall back to default texture in CONTENT folder
+            {
+                TexturePath = Path.Combine(Viewer.ContentPath, defaultTextureName);
+
+                if (customTexture)
+                    Trace.TraceWarning("Could not find particle graphic {0} at {1}", TexturePath, Path.Combine(Path.GetDirectoryName(Emitter.CarViewer.Car.WagFilePath), TexturePath));
+            }
+
+            Material = (ParticleEmitterMaterial)Viewer.MaterialManager.Load("ParticleEmitter", TexturePath);
         }
 
         /// <summary>
@@ -335,6 +363,8 @@ namespace Orts.Viewer3D
         internal float ParticleDuration;
         internal Color ParticleColor;
 
+        internal int SpriteCount;
+
         internal float CompressionFactor = 1.0f;
 
         internal WorldPosition WorldPosition;
@@ -372,6 +402,8 @@ namespace Orts.Viewer3D
             ParticlesPerSecond = 0;
             ParticleDuration = 3;
             ParticleColor = Color.White;
+
+            SpriteCount = EmitterData.AtlasWidth * EmitterData.AtlasHeight;
 
             CarViewer = car;
             WorldPosition = worldPosition;
@@ -548,6 +580,7 @@ namespace Orts.Viewer3D
                     rotY.Normalize();
 
                     float initialSpeed = XNAInitialVelocity.Length();
+                    Vector3 carVelocity = new Vector3(CarViewer.Velocity[0], CarViewer.Velocity[1], -CarViewer.Velocity[2]);
 
                     float time = currentTime - elapsedTime.ClockSeconds;
 
@@ -559,12 +592,11 @@ namespace Orts.Viewer3D
 
                         int nextFreeParticle = (FirstFreeParticle + 1) % EmitterData.MaxParticles;
                         int vertex = FirstFreeParticle * VerticesPerParticle;
-                        int texture = Viewer.Random.Next(16); // Randomizes emissions.
+                        int texture = Viewer.Random.Next(SpriteCount); // Randomizes particle texture to any texture on the sheet.
                                                               // Alpha value of color is just a random number, not used (maybe allow for alpha changes?)
                         Color color_Random = new Color(ParticleColor.R, ParticleColor.G, ParticleColor.B, (int)((float)Viewer.Random.NextDouble() * 255f));
 
                         Vector3 position = EmitterData.PositionM;
-                        Vector3 carVelocity = new Vector3(CarViewer.Velocity[0], CarViewer.Velocity[1], -CarViewer.Velocity[2]);
 
                         Vector3 initialVelocity = XNAInitialVelocity;
                         Vector3 finalVelocity = XNAFinalVelocity;
@@ -764,6 +796,7 @@ namespace Orts.Viewer3D
                     var emitter = (ParticleEmitterPrimitive)item.RenderPrimitive;
                     shader.EmitSize = emitter.EmitSize;
                     shader.Texture = Texture;
+                    shader.TextureAtlasSizeXY = new Vector2(emitter.EmitterData.AtlasWidth, emitter.EmitterData.AtlasHeight);
                     shader.SetMatrix(Matrix.Identity, ref XNAViewMatrix, ref XNAProjectionMatrix);
                     ShaderPasses.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
