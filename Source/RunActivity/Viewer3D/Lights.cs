@@ -70,7 +70,7 @@ namespace Orts.Viewer3D
         public int MU;
 
         // Caching for shape object world coordinate matricies
-        public Dictionary<int, Matrix> ShapeResultTranslations = new Dictionary<int, Matrix>();
+        public Dictionary<int, Matrix> ShapeXNATranslations = new Dictionary<int, Matrix>();
 
         public bool IsLightConeActive { get { return ActiveLightCone != null; } }
         List<LightPrimitive> LightPrimitives = new List<LightPrimitive>();
@@ -116,7 +116,7 @@ namespace Orts.Viewer3D
                     // Initialization step for light shape attachment, can't do this step in LightCollection
                     if (light.ShapeIndex != -1)
                     {
-                        if (light.ShapeIndex < 0 || light.ShapeIndex >= (CarViewer as MSTSWagonViewer).TrainCarShape.ResultMatrices.Count())
+                        if (light.ShapeIndex < 0 || light.ShapeIndex >= (CarViewer as MSTSWagonViewer).TrainCarShape.XNAMatrices.Count())
                         {
                             Trace.TraceWarning("Light in car {0} has invalid shape index defined, shape index {1} does not exist",
                                 (Car as MSTSWagon).WagFilePath, light.ShapeIndex);
@@ -125,7 +125,7 @@ namespace Orts.Viewer3D
                     }
                     else
                     {
-                        if (!String.IsNullOrEmpty(light.ShapeHierarchy))
+                        if (light.ShapeHierarchy != null)
                         {
                             if ((CarViewer as MSTSWagonViewer).TrainCarShape.SharedShape.MatrixNames.Contains(light.ShapeHierarchy))
                             {
@@ -133,7 +133,7 @@ namespace Orts.Viewer3D
                             }
                             else
                             {
-                                Trace.TraceWarning("Light in car {0} has invalid shape index defined, matrix name {1} does not exist",
+                                Trace.TraceWarning("Light in car {0} has invalid shape index defined, shape name {1} does not exist",
                                     (Car as MSTSWagon).WagFilePath, light.ShapeHierarchy);
                                 light.ShapeIndex = 0;
                             }
@@ -142,8 +142,8 @@ namespace Orts.Viewer3D
                             light.ShapeIndex = 0;
                     }
 
-                    if (!ShapeResultTranslations.ContainsKey(light.ShapeIndex))
-                        ShapeResultTranslations.Add(light.ShapeIndex, Matrix.Identity);
+                    if (!ShapeXNATranslations.ContainsKey(light.ShapeIndex))
+                        ShapeXNATranslations.Add(light.ShapeIndex, Matrix.Identity);
                 }
             }
             HasLightCone = LightPrimitives.Any(lm => lm is LightConePrimitive);
@@ -226,8 +226,8 @@ namespace Orts.Viewer3D
 
             // Calculate XNA matrix for shape file objects by offsetting from car's location
             // The new List<int> is intentional, this allows the dictionary to be changed while iterating
-            foreach (int index in new List<int>(ShapeResultTranslations.Keys))
-                ShapeResultTranslations[index] = trainCarShape.ResultMatrices[index] * xnaDTileTranslation;
+            foreach (int index in new List<int>(ShapeXNATranslations.Keys))
+                ShapeXNATranslations[index] = trainCarShape.XNAMatrices[index] * xnaDTileTranslation;
 
             float objectRadius = 20; // Even more arbitrary.
             float objectViewingDistance = Viewer.Settings.ViewingDistance; // Arbitrary.
@@ -235,7 +235,7 @@ namespace Orts.Viewer3D
                 foreach (var lightPrimitive in LightPrimitives)
                     if ((lightPrimitive.Enabled || lightPrimitive.FadeOut) && lightPrimitive is LightGlowPrimitive)
                     {
-                        if (ShapeResultTranslations.TryGetValue(lightPrimitive.Light.ShapeIndex, out Matrix lightMatrix))
+                        if (ShapeXNATranslations.TryGetValue(lightPrimitive.Light.ShapeIndex, out Matrix lightMatrix))
                             frame.AddPrimitive((lightPrimitive as LightGlowPrimitive).SpecificGlowMaterial, lightPrimitive, RenderPrimitiveGroup.Lights, ref lightMatrix);
                         else
                             frame.AddPrimitive((lightPrimitive as LightGlowPrimitive).SpecificGlowMaterial, lightPrimitive, RenderPrimitiveGroup.Lights, ref xnaDTileTranslation);
@@ -253,9 +253,9 @@ namespace Orts.Viewer3D
             {
                 int coneIndex = ActiveLightCone.Light.ShapeIndex;
 
-                LightConePosition = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Position1, ActiveLightCone.Position2, ActiveLightCone.Fade.Y), ShapeResultTranslations[coneIndex]);
-                LightConeDirection = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Direction1, ActiveLightCone.Direction2, ActiveLightCone.Fade.Y), ShapeResultTranslations[coneIndex]);
-                LightConeDirection -= ShapeResultTranslations[coneIndex].Translation;
+                LightConePosition = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Position1, ActiveLightCone.Position2, ActiveLightCone.Fade.Y), ShapeXNATranslations[coneIndex]);
+                LightConeDirection = Vector3.Transform(Vector3.Lerp(ActiveLightCone.Direction1, ActiveLightCone.Direction2, ActiveLightCone.Fade.Y), ShapeXNATranslations[coneIndex]);
+                LightConeDirection -= ShapeXNATranslations[coneIndex].Translation;
                 LightConeDirection.Normalize();
                 LightConeDistance = MathHelper.Lerp(ActiveLightCone.Distance1, ActiveLightCone.Distance2, ActiveLightCone.Fade.Y);
                 LightConeMinDotProduct = (float)Math.Cos(MathHelper.Lerp(ActiveLightCone.Angle1, ActiveLightCone.Angle2, ActiveLightCone.Fade.Y));

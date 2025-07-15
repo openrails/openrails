@@ -2397,7 +2397,7 @@ iii. `Testing Resources for Open Rails Steam Locomotives
 Steam exhausts on a steam locomotive, and other special visual effects can be modelled in OR by defining
 appropriate visual effects in the ``SteamSpecialEffects`` section of the steam locomotive ENG file, the
 ``DieselSpecialEffects`` section of the diesel locomotive ENG file, or the ``SpecialEffects`` section
-of a relevant wagon (also including diesel, steam or electric locomotives).
+of a relevant wagon (including diesel, steam or electric locomotives.
 
 OR supports the following special visual effects in a steam locomotive:
 
@@ -2477,7 +2477,31 @@ the one shown below::
         -1.0485 1.0 2.8
         -1  0  0
         0.1
-        ORTSShapeHierarchy ( "MAIN" )
+
+        Comment ( ORTS parameters come after MSTS data! )
+        ORTSPositionVariation ( 0m 0m 0m )
+        ORTSInitialVelocityVariation ( 0.1 0.1 0.1 )
+        ORTSEmissionSpeedLimit ( 150m/s )
+        ORTSFinalVelocity ( 0 1m/s 0 )
+        ORTSFinalVelocityVariation ( 0.75m/s 0.75m/s 0.75m/s )
+
+        ORTSLifespanMultiplier ( 1.0 )
+        ORTSLifespanVariation ( 0.5 )
+        ORTSMomentumMultiplier ( 1.0 )
+        ORTSMomentumVariation ( 0.1 )
+
+        ORTSInititalExpansion ( 1.0 )
+        ORTSExpansionSpeed ( 4.0 )
+        ORTSRotationVariation ( 0.25 )
+        ORTSWindMultiplier ( 1.0 )
+        
+        ORTSPipeArea ( 0.03m^2 )
+        ORTSMaxParticles ( 2500 )
+        ORTSRateMultiplier ( 1.0 )
+        ORTSUseChaoticRandomization ( false )
+
+        ORTSGraphic ( "smokemain.ace" )
+        ORTSGraphicAtlasLayout ( 4 4 )
     )
 
 The code block consists of the following elements:
@@ -2489,19 +2513,167 @@ The code block consists of the following elements:
 - Effect nozzle width (in metres)
 
 .. index::
-   single: ORTSShapeHierarchy
+   single: ORTSPositionVariation
+   single: ORTSInitialVelocityVariation
+   single: ORTSEmissionSpeedLimit
+   single: ORTSFinalVelocity
+   single: ORTSFinalVelocityVariation
+   single: ORTSLifespanMultiplier
+   single: ORTSLifespanVariation
+   single: ORTSMomentumMultiplier
+   single: ORTSMomentumVariation
+   single: ORTSInititalExpansion
+   single: ORTSExpansionSpeed
+   single: ORTSRotationVariation
+   single: ORTSWindMultiplier
+   single: ORTSPipeArea
+   single: ORTSMaxParticles
+   single: ORTSRateMultiplier
+   single: ORTSUseChaoticRandomization
+   single: ORTSGraphic
+   single: ORTSGraphicAtlasLayout
 
 After including these settings, additional *optional* parameters unique to OR can
 be included to further customize effect emitters:
 
-- ``ORTSShapeHierarchy ( MATRIXNAME )`` -- Selects the sub object of the engine/wagon
-  shape the emitter should be attached to using the name of the sub object matrix.
-  The x, y, z location given earlier will then be measured relative to the sub object,
-  and the emitter will move as the sub object moves in real time.
-  Matrix names can be determined using shape viewing programs. If the given name
-  cannot be found, a warning is produced in the log and the emitter will be attached
-  to the main shape object. Similarly, if ``ORTSShapeHierarchy`` isn't defined, the emitter
-  will be attached to the main object, similar to the MSTS behavior.
+- ``ORTSPositionVariation ( x y z )`` -- Specifies the amplitude of random variation
+  in the right/left, up/down, and front/back emission location of a particle (default units
+  are meters). Useful for non-circular exhaust ports, as it allows one particle emitter
+  to be used to spawn particles from an area, rather than a single point. Note that
+  ``ORTSPositionVariation ( x y z )`` would allow particles to emit 1 meter right and
+  1 meter left of the initial position, for a total variation of 2 meters. Similar is
+  true of all other parameters related to randomness, the total variation is double what's
+  specified. Feature is disabled by default.
+- ``ORTSInitialVelocityVariation ( x y z )`` -- Defines the randomization of initial particle
+  velocity in the right/left, up/down, and front/back directions, as a function of the
+  particle's initial speed (values are unitless). The default value is ( 0.1 0.1 0.1 ),
+  meaning the speed in each direction can be increased or decreased by 10% of the initial
+  particle speed. Larger values make the particle exhaust seem less directed and more diffuse.
+- ``ORTSEmissionSpeedLimit ( v )`` -- Some particle emitters are driven by the simulated flow
+  rate of exhaust, which has to make some assumptions about the pressure and volume of exhaust.
+  This can lead to unrealistically high speed particles being emitted, so a speed limit can be
+  set (default units are meters per second) to keep particle speed reasonable. This is not a hard
+  limit, it is gradually enforced as the simulation calculates higher and higher exhaust speed.
+  The limit is also applied before considering the emitter velocity factor, so actual exhaust speed
+  will vary depending on other settings.
+  By default, the limit is 150 meters per second, which will be suitable in most cases.
+- ``ORTSFinalVelocity ( x y z )`` -- Determines the final right/left, up/down, and front/back
+  velocity of particles after they have settled (default units of meters per second). The default
+  is 1 m/s directly upward, and can be changed to fine tune the appearance of the particle trail
+  produced. Note that wind velocity is added to this value afterward.
+- ``ORTSFinalVelocityVariation ( x y z )`` -- Unlike initial velocity variation, final velocity
+  variation determines the amplitude of random variation of final velocity in absolute terms
+  (default units of meters per second). The default setting is +/- 0.75 m/s in all directions, but
+  changing this can adjust the amount of and shape of particle trail spread. Larger variations
+  make for exhaust that seems more chaotic and diffuse.
+- ``ORTSLifespanMultiplier ( x )`` -- Multiplies the lifetime of particles emitted from this
+  emitter by the given (unitless) value. Particle lifetime varies depending on simulation
+  data, but if particles seem to last too long a value less than 1 can be entered here, or a
+  value greater than 1 entered if particles don't seem to last long enough. The default value
+  is 1, producing particles that last as long as the simulation specifies.
+- ``ORTSLifespanVariation ( x )`` -- Sets the random variation of the particle lifetime multiplier
+  (unitless). Values greater than 1 can cause particles to randomly generate with a lifetime of
+  0 seconds, which will prevent those particles from being rendered.
+  The default is +/- 0.5 times the lifespan.
+- ``ORTSMomentumMultiplier ( x )`` -- Changes how long it takes for a particle to transition from
+  its initial velocity to its final velocity (unitless). Values above 1 make particles
+  have more momentum and move more smoothly, though also travel further from the emitter point before
+  being caught by the wind. Values below 1 give more sudden deceleration and prevent particles from
+  travelling very far before decelerating to their final speed.
+  The default setting is 1x.
+- ``ORTSMomentumVariation ( x )`` -- Similar to ORTSLifespanVariation, gives the amplitude of
+  random variation in the momentum multiplier (unitless). Larger values increase the
+  final spread of particles, which works well in combination with ORTSFinalVelocityVariation.
+  The default setting is +/- 0.1x.
+- ``ORTSInititalExpansion ( x )`` -- When particles are emitted at high speed, they expand
+  substantially as the exhaust pressure equalizes with the surrounding air. The (unitless)
+  value given here multiplies the amount of expansion that occurs in this initial phase.
+  Entering 0 disables this component of particle expansion, any value greater than 0 progressively
+  increases the amount particles expand by. The default setting is 1.
+- ``ORTSExpansionSpeed ( x )`` -- Every particle expands in diameter at a constant rate the longer
+  since it was emitted, making exhaust seem more spread out as it mixes with the air. The
+  (unitless) value entered in this parameter specifies how much the size of a particle increases
+  every second, relative to the original particle size (ie: the nozzle width). The default value is 4.0,
+  meaning every particle will expand by 4x the original width for every second its in the air. Entering
+  0 would disable expansion over time, and negative values would cause particles to shrink over time
+  (particles are not allowed to have a negative size, instead they disappear).
+- ``ORTSRotationVariation ( x )`` -- Particles rotate randomly to create some visual interest, this
+  parameter determines the max rotation speed (in radians per second) a particle is allowed to have,
+  either clockwise or counterclockwise. Higher speeds make for more chaotic looking effects. The
+  default setting allows for random rotation speeds between -0.25 and 0.25 radians per second.
+- ``ORTSWindMultiplier ( x )`` -- Affects how strongly wind changes the final velocity of
+  these particles (unitless). Values greater than 1 increase wind strength, values less than 1
+  decrease wind strength, with 0 completely disabling the wind effect from changing final velocity.
+  A value of 1 is used by default, such that the wind speed used by the simulation is used directly.
+  This can be adjusted to prevent particles that shouldn't be influenced by the wind (eg: cylinder
+  cocks close to ground level) from flying off in whatever direction the wind is going.
+- ``ORTSPipeArea ( a )`` -- Niche parameter to adjust the area of the exhaust pipe used by
+  the simulation (default units square feet). By default, the area is assumed to be a circle with
+  the same diameter as the exhaust particles. However, for non-circular exhausts this can be combined
+  with ORTSPositionVariation to give more believable results. Larger areas result in lower exhaust
+  speed without changing the number of particles emitted per second, which also allows this to
+  be used as a speed multiplier, though ORTSinitialVelocity is preferred for that purpose.
+- ``ORTSMaxParticles ( n )`` -- Override for the maximum number of particles this emitter should
+  have in the world simultaneously (unitless integer). The default value is 2500 particles, which works
+  in many cases but may not be appropriate in some unusual circumstances. The limit can be reduced
+  on less extreme particle emitters to reduce memory use, or can be increased for more extreme emitters
+  to prevent particles disappearing and/or the reduction in particle emission rate caused by reaching
+  the particle limit. Do NOT increase the limit if particles are already overlapping; it is often
+  better to simply reduce the number of particles emitted using ORTSRateMultiplier and/or other
+  parameters listed here.
+- ``ORTSRateMultiplier ( x )`` -- Multiplies the number of particles emitted per second by the given
+  value (unitless). Values less than 1 reduce the rate of particle emission, while values greater than
+  1 increase the rate of particle emission. The particle rate is determined by the simulation, but may
+  not produce aesthetically pleasing results in some cases due to particles overlapping (emitted too
+  quickly) or spreading out (emitted too slowly), so some fine-tuning can be done using this parameter.
+  This is set to 1 by default, producing the exact number of particles estimated by the simulation.
+- ``ORTSUseChaoticRandomization ( 0/1 )`` -- Changes the randomization algorithm used for positions,
+  velocities, durations, and so on to be "chaotic" if given a true or 1 value. Default is false or 0,
+  giving "smooth" randomization. With the "chaotic" randomization algorithm, the random changes in
+  position/velocity/time are entirely random and do not depend on the random values generated for the
+  previous particle, resulting in sudden dramatic changes. In comparison, the default "smooth"
+  randomziation algorithm changes the random values by a small amount for each iteration. The "chaotic"
+  algorithm tends to make exhaust that is more spread out and discontinuous, which may be desireable in
+  some cases.
+- ``ORTSGraphic ( "tex" )`` -- Gives the name and path to the texture that should be used to render
+  particles from this emitter. The default texture is "smokemain.ace" for steam-type emitters and
+  "dieselsmoke.ace" for diesel-type emitters. If the texture cannot be found from the engine's/wagon's
+  folder, then the ``GLOBAL\TEXTURES`` folder is checked, and if the texture is not there the ``Content``
+  folder included with OR is checked. Allowed texture formats are ``.png, .jpg, .bmp, .gif, .ace, or .dds``.
+  A path to a texture can also be used, such as ``ORTSGraphic ( "..\\SmokeTextures\\steam.dds" )``, to search
+  for textures not in the same folder as the engine or wagon.
+- ``ORTSGraphicAtlasLayout ( w h )`` -- Particle textures generally include multiple sprites in a single file
+  to allow for randomization of each particle's appearance. In MSTS, this was a sprite atlas 4 wide and 4 high,
+  for a total of 16 variations on the particle graphic. When using custom particle textures, it may be desired
+  to use a custom sprite sheet that is not 4x4, in which case the atlas layout can be set by ``ORTSGraphicAtlasLayout``.
+  For example, a sprite sheet with 4 variations on the particle texture all in a row (4x1) can be represented by
+  ``ORTSGraphicAtlasLayout ( 4 1 )``. Note that each sprite should be a perfect square as each particle is
+  rendered as a square. Rectangular textures will be stretched/squished. Do not change the atlas setting unless you
+  are certain of the texture used, as improper settings will be very aesthetically unpleasing.
+
+  
+.. index::
+   single: ORTSPosition
+   single: ORTSInitialVelocity
+   single: ORTSParticleDiameter
+
+Alternatively, the legacy MSTS data can be skipped entirely and replaced with
+equivalent OR specific parameters. In this case, order of data entry does not
+matter:
+
+    FXName (
+        ORTSPosition ( -1.0485m 1.0m 2.8m )
+        ORTSInitialVelocity ( -1  0  0 )
+        ORTSParticleDiameter ( 0.1m )
+        Comment ( Insert other ORTS parameters as desired, but skip MSTS data! )
+    )
+
+- ``ORTSPosition ( x y z )`` -- defines the width, height, length location of the emitter (in meters by default)
+- ``ORTSInitialVelocity ( x y z )`` -- defines the (+/-) right/left, up/down, forward/backward components of emission direction
+  (unitless, the particle speed is multiplied by this vector to determine the 3D velocity of particles.
+  Speed can be divided by inserting values less than 1, or multiplied by inserting values greater than 1.)
+- And ``ORTSParticleDiameter ( d )`` -- gives the nozzle width (in meters by default), which sets the initial
+  size of each particle
 
 Auxiliary Water Tenders
 '''''''''''''''''''''''

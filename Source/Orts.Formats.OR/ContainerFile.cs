@@ -62,7 +62,7 @@ namespace Orts.Formats.OR
     public class ContainerParameters
     {
         public string Name;
-        public string ShapeFileName;
+        public string ShapeFileName;  
         public string ContainerType;  
         public Vector3 IntrinsicShapeOffset = new Vector3(0f, 1.17f, 0f);
         public float EmptyMassKG = -1;

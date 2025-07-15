@@ -650,6 +650,9 @@ namespace Orts.Viewer3D
             {
                 OpenAL.alSourcei(SoundSourceID, OpenAL.AL_SOURCE_RELATIVE, OpenAL.AL_FALSE);
                 OpenAL.alSourcef(SoundSourceID, OpenAL.AL_DOPPLER_FACTOR, 1);
+
+                if (Car != null && !Car.SoundSourceIDs.Contains(SoundSourceID))
+                    Car.SoundSourceIDs.Add(SoundSourceID);
             }
         }
 
@@ -673,6 +676,9 @@ namespace Orts.Viewer3D
         {
             if (SoundSourceID != -1)
             {
+                if (Car != null)
+                    Car.SoundSourceIDs.Remove(SoundSourceID);
+
                 Stop();
                 OpenAL.alDeleteSources(1, ref SoundSourceID);
                 SoundSourceID = -1;

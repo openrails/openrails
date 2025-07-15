@@ -253,7 +253,7 @@ namespace Orts.Simulation
             var containerFile = new ContainerFile(loadFilePath);
             var containerParameters = containerFile.ContainerParameters;
             Name = containerParameters.Name;
-
+           
             ShapeFileName = @"..\" + containerParameters.ShapeFileName;
             var workingString = containerParameters.ShapeFileName.Replace(@"\" , @"/");
             var root  = workingString.Substring(0, workingString.IndexOf(@"/"));
