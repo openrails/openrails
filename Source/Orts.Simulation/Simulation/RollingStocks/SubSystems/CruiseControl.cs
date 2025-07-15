@@ -1046,7 +1046,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 return;
 
             MaxForceSelectorController.StartDecrease(target, true);
-            if (MaxForceSelectorController.NotchCount() <= 0) Locomotive.SignalEvent(Common.Event.CruiseControlMaxForce);
+            if (MaxForceSelectorController.NotchCount() <= 1) Locomotive.SignalEvent(Common.Event.CruiseControlMaxForce);
         }
         public void SpeedRegulatorMaxForceChangeByMouse(float value)
         {
@@ -1198,7 +1198,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (time >= selectedSpeedLeverHoldTime && time < selectedSpeedLeverHoldTime + SpeedSelectorStepTimeSeconds) return;
             selectedSpeedLeverHoldTime = time;
 
-            if (SpeedSelectorController.NotchCount() > 0)
+            if (SpeedSelectorController.NotchCount() > 1)
             {
                 SpeedSelectorController.StartIncrease();
                 SpeedSelectorController.StopIncrease();
@@ -1222,7 +1222,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             selectedSpeedLeverHoldTime = time;
 
             float speed = ControllerValueToSelectedSpeedMpS(SpeedSelectorController.CurrentValue) - SpeedRegulatorNominalSpeedStepMpS;
-            if (SpeedSelectorController.NotchCount() > 0)
+            if (SpeedSelectorController.NotchCount() > 1)
             {
                 SpeedSelectorController.StartDecrease();
                 SpeedSelectorController.StopDecrease();
