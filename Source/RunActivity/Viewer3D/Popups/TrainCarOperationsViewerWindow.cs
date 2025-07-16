@@ -512,9 +512,9 @@ namespace Orts.Viewer3D.Popups
                 }
                 // Updates power supply status
                 else if (isElectricDieselLocomotive &&
-                     (PowerSupplyStatus != null && PowerSupplyStatus != Owner.Viewer.PlayerTrain.Cars[CarPosition].GetStatus()
+                      (PowerSupplyStatus != null && PowerSupplyStatus != Owner.Viewer.PlayerTrain.Cars[CarPosition].GetStatus()
                       || (BatteryStatus != null && BatteryStatus != Owner.Viewer.PlayerTrain.Cars[CarPosition].GetStatus())
-                      || (CircuitBreakerState != null && CircuitBreakerState != (trainCar as MSTSElectricLocomotive).ElectricPowerSupply.CircuitBreaker.State.ToString())))
+                      || (CircuitBreakerState != null && (trainCar is MSTSElectricLocomotive) && CircuitBreakerState != (trainCar as MSTSElectricLocomotive).ElectricPowerSupply.CircuitBreaker.State.ToString())))
                 {
                     Layout();
                     UpdateWindowSize();
