@@ -800,6 +800,9 @@ namespace Orts.Viewer3D.Popups
             TrainCar.LabelTop = TrainCar.LabelPositionTop[TrainCar.SelectedCarPosition];
             Viewer.FrontCamera.IsCameraFront = Viewer.FrontCamera.AttachedCar != null;
             TrainCar.Layout();
+            // Calculates the top car position visible
+            TrainCar.LastRowVisible = false;
+            TrainCar.topCarPositionVisible();
             TrainCar.localScrollLayout(TrainCar.SelectedCarPosition);
             TrainCar.updateLayoutSize();
 
