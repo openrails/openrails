@@ -15,11 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
 using ORTS.Common;
-using System.Collections.Generic;
 
 namespace Orts.Viewer3D.RollingStock.SubSystems
 {
@@ -27,12 +30,12 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
     {
         public List<FreightAnimationViewer> Animations = new List<FreightAnimationViewer>();
 
-        public FreightAnimationsViewer(Viewer viewer, MSTSWagon wagon, string wagonFolderSlash)
+        public FreightAnimationsViewer(Viewer viewer, MSTSWagonViewer wagonViewer, string wagonFolderSlash)
         {
-            foreach (var animation in wagon.FreightAnimations.Animations)
+            foreach (var animation in wagonViewer.Car.FreightAnimations.Animations)
             {
                 if (animation.ShapeFileName != null)
-                    Animations.Add(new FreightAnimationViewer(viewer, wagon, wagonFolderSlash, animation));
+                    Animations.Add(new FreightAnimationViewer(viewer, wagonViewer, wagonFolderSlash, animation));
             }
         }
 
@@ -50,10 +53,10 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
         public FreightAnimation Animation;
         public AnimatedShape FreightShape;
 
-        public FreightAnimationViewer(Viewer viewer, MSTSWagon wagon, string wagonFolderSlash, FreightAnimation animation)
+        public FreightAnimationViewer(Viewer viewer, MSTSWagonViewer wagonViewer, string wagonFolderSlash, FreightAnimation animation)
         {
             Animation = animation;
-            FreightShape = new AnimatedShape(viewer, wagonFolderSlash + animation.ShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(wagon.WorldPosition), ShapeFlags.ShadowCaster);
+            FreightShape = new AnimatedShape(viewer, wagonFolderSlash + animation.ShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(wagonViewer.Car.WorldPosition), ShapeFlags.ShadowCaster);
             if (FreightShape.SharedShape.LodControls.Length > 0)
             {
                 foreach (var lodControl in FreightShape.SharedShape.LodControls)
@@ -72,12 +75,41 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
                     }
                 }
             }
-            if (FreightShape.XNAMatrices.Length > 0 && animation is FreightAnimationStatic && (animation as FreightAnimationStatic).Flipped)
+            if (FreightShape.XNAMatrices.Length > 0 && animation.Flipped)
             {
                 var flipper = Matrix.Identity;
                 flipper.M11 = -1;
                 flipper.M33 = -1;
                 FreightShape.XNAMatrices[0] *= flipper;
+            }
+
+            // Initialization step for freight shape attachment
+            if (Animation.ShapeIndex != -1)
+            {
+                if (Animation.ShapeIndex < 0 || Animation.ShapeIndex >= wagonViewer.TrainCarShape.ResultMatrices.Count())
+                {
+                    Trace.TraceWarning("Freight animation in car {0} has invalid shape index defined, shape index {1} does not exist",
+                        wagonViewer.Car.WagFilePath, Animation.ShapeIndex);
+                    Animation.ShapeIndex = 0;
+                }
+            }
+            else
+            {
+                if (!String.IsNullOrEmpty(Animation.ShapeHierarchy))
+                {
+                    if (wagonViewer.TrainCarShape.SharedShape.MatrixNames.Contains(Animation.ShapeHierarchy))
+                    {
+                        Animation.ShapeIndex = wagonViewer.TrainCarShape.SharedShape.MatrixNames.IndexOf(Animation.ShapeHierarchy);
+                    }
+                    else
+                    {
+                        Trace.TraceWarning("Freight animation in car {0} has invalid shape index defined, matrix name {1} does not exist",
+                            wagonViewer.Car.WagFilePath, Animation.ShapeHierarchy);
+                        Animation.ShapeIndex = 0;
+                    }
+                }
+                else
+                    Animation.ShapeIndex = 0;
             }
         }
 
