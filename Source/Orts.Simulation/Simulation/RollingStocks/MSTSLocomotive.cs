@@ -3156,13 +3156,8 @@ namespace Orts.Simulation.RollingStocks
         public void SimpleAdhesion()
         {
             MotiveForceN = TractiveForceN;
+            WheelSpeedMpS = AbsSpeedMpS;
             // Check if the following few lines are required???
-            if (LocoNumDrvAxles <= 0)
-            {
-                WheelSpeedMpS = AbsSpeedMpS;
-                return;
-            }
-            
             if (LocoNumDrvAxles <= 0)
                 return;
 
