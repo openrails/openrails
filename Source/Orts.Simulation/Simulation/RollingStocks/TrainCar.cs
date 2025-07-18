@@ -868,6 +868,12 @@ namespace Orts.Simulation.RollingStocks
 #endif
             SoundAxleCount = (LocoNumDrvAxles + WagonNumAxles);
 
+            // make sure that axle count does not exceed maximum possible trigger
+            if (SoundAxleCount > 8)
+            {
+                SoundAxleCount = 8f;
+            }
+
         }
 
         // called when it's time to update the MotiveForce and FrictionForce
