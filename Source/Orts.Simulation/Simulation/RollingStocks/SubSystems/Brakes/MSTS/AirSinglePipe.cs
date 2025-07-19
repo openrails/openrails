@@ -1990,14 +1990,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             Car.HuDBrakeShoeFriction = Car.GetBrakeShoeFrictionCoefficientHuD();
 
             Car.BrakeRetardForceN = Car.BrakeShoeForceN * brakeShoeFriction; // calculates value of force applied to wheel, independent of wheel skid
-            if (Car.BrakeSkid) // Test to see if wheels are skiding to excessive brake force
-            {
-                Car.BrakeForceN = Car.BrakeShoeForceN * Car.SkidFriction;   // if excessive brakeforce, wheel skids, and loses adhesion
-            }
-            else
-            {
-                Car.BrakeForceN = Car.BrakeShoeForceN * brakeShoeFriction; // In advanced adhesion model brake shoe coefficient varies with speed, in simple model constant force applied as per value in WAG file, will vary with wheel skid.
-            }
 
             // sound trigger checking runs every half second, to avoid the problems caused by the jumping BrakeLine1PressurePSI value, and also saves cpu time :)
             if (SoundTriggerCounter >= 0.5f)
