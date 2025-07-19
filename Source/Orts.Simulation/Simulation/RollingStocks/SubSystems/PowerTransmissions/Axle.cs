@@ -1305,6 +1305,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="elapsedSeconds"></param>
         public virtual void Update(float elapsedSeconds)
         {
+            if (float.IsNaN(TrainSpeedMpS)) TrainSpeedMpS = 0;
+            if (double.IsNaN(AxleSpeedMpS)) AxleSpeedMpS = 0;
+
             bool advancedAdhesion = Car is MSTSLocomotive locomotive && locomotive.AdvancedAdhesionModel;
             advancedAdhesion &= DriveType != AxleDriveType.NotDriven; // Skip integrator for undriven axles to save CPU
             forceToAccelerationFactor = WheelRadiusM * WheelRadiusM / totalInertiaKgm2;
