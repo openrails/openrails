@@ -4201,7 +4201,7 @@ namespace Orts.Simulation.RollingStocks
         /// Returns the position of the throttle handle considering 
         /// whether it is used for cruise control or not
         /// </summary>
-        /// <param name="intermediateValue">Whather asking for intermediate (for mouse operation) or notched (for displaying) value.</param>
+        /// <param name="intermediateValue">Whether asking for intermediate (for mouse operation) or notched (for displaying) value.</param>
         /// <returns>Position into 0-1 range</returns>
         public float GetThrottleHandleValue(bool intermediateValue)
         {
@@ -4213,7 +4213,7 @@ namespace Orts.Simulation.RollingStocks
             if (CruiseControl?.SpeedRegMode == CruiseControl.SpeedRegulatorMode.Auto && CruiseControl.UseThrottleAsSpeedSelector)
                 return CruiseControl.SelectedSpeedMpS / MaxSpeedMpS;
 
-            return intermediateValue ? ThrottleController.CurrentValue : ThrottleController.IntermediateValue;
+            return intermediateValue ? ThrottleController.IntermediateValue : ThrottleController.CurrentValue;
         }
 
         #endregion
