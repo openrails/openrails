@@ -1089,10 +1089,14 @@ namespace Orts.Viewer3D
                 oldCarPosition = oldCarPosition == 0 && carPosition == 0 ? -1 : oldCarPosition;
             }
 
-            if (attachedCar != null && !isVisibleTrainCarViewerOrWebpage && !Front)
-            {// Reset behaviour of camera 3, after closing F9-window and F9-web.
+            if (attachedCar != null && !isVisibleTrainCarViewerOrWebpage)
+            {   // Reset behaviour of camera 2 and camera 3, after closing F9-window and F9-web.
                 var attachedCarPosition = attachedCar.Train.Cars.TakeWhile(x => x.CarID != attachedCar.CarID).Count();
-                if (attachedCarPosition == carPosition)
+                if (Front && attachedCarPosition == carPosition)
+                {
+                    attachedCar = trainCars.First();
+                }
+                if (!Front && attachedCarPosition == carPosition)
                 {
                     attachedCar = trainCars.Last();
                 }
