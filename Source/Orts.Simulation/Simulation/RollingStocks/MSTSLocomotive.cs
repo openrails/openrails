@@ -389,7 +389,7 @@ namespace Orts.Simulation.RollingStocks
         public float CompressorRestartPressurePSI = 110;
         public float CompressorChargingRateM3pS = 0.075f;
         public bool CompressorIsMUControlled = false;
-        public float MainResChargingRatePSIpS = -1.0f;
+        public float MainResChargingRatePSIpS = 0.4f;
         public float EngineBrakeReleaseRatePSIpS = 12.5f;
         public float EngineBrakeApplyRatePSIpS = 12.5f;
         public float BrakePipeTimeFactorS = 0.0015f;
@@ -1887,6 +1887,21 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
+            // Initialise Train Pipe Leak Rate
+            if (TrainBrakePipeLeakPSIorInHgpS == 0) // Check to see if TrainBrakePipeLeakPSIorInHgpS has been set in the ENG file.
+            {
+                // Set Default Train Brake Pipe Leak depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
+                // Default currently set to zero - means that by default function is off, and a value must be entered into the ENG file to get it to work
+                if ((BrakeSystem is VacuumSinglePipe))
+                {
+                    TrainBrakePipeLeakPSIorInHgpS = 0.0f; // Vacuum brakes
+                }
+                else
+                {
+                    TrainBrakePipeLeakPSIorInHgpS = 0.0f; // Air brakes
+                }
+            }
+
             if (DynamicBrakeEngineBrakeReplacement && DynamicBrakeEngineBrakeReplacementSpeed == 0)
             {
                 DynamicBrakeEngineBrakeReplacementSpeed = DynamicBrakeSpeed2MpS;
@@ -2008,18 +2023,16 @@ namespace Orts.Simulation.RollingStocks
                     // correct questionable MaxCylPressurePSI
                     BrakeSystem.CorrectMaxCylPressurePSI(this);
                 }
-                // Limit brake pipe leak to 2.5 psi/min (~ 1 bar every 6 minutes) to prevent stuck brakes
-                if (TrainBrakePipeLeakPSIorInHgpS > 2.5f / 60f)
-                    TrainBrakePipeLeakPSIorInHgpS = 2.5f / 60f;
-            }
-            // No OR compressor speed defined, use MSTS compressor speed or 0.025 m^3/s (whichever is higher)
-            if (MainResChargingRatePSIpS < 0) 
+                if (MainResChargingRatePSIpS <= 0)
                 {
-                MainResChargingRatePSIpS = Math.Max(0.025f, CompressorChargingRateM3pS) * OneAtmospherePSI / MainResVolumeM3;
+                    MainResChargingRatePSIpS = Math.Max(0.5f, (CompressorChargingRateM3pS * Bar.ToPSI(1)) / MainResVolumeM3);
                 }
+            }
+            else if (MainResChargingRatePSIpS <= 0) MainResChargingRatePSIpS = 0.4f;
 
             // Corrections for dynamic braking parameters
 
+            if (this is MSTSElectricLocomotive && DynamicBrakeDelayS > 4) DynamicBrakeDelayS = 2; // Electric locomotives have short engaging delays
             if (DynamicBrakeSpeed2MpS > 0 && DynamicBrakeSpeed3MpS > 0 && DynamicBrakeSpeed2MpS > DynamicBrakeSpeed3MpS)
             {
                 // also exchanging DynamicBrakesMaximumEffectiveSpeed with DynamicBrakesFadingSpeed is a frequent error that upsets operation of
@@ -2030,9 +2043,6 @@ namespace Orts.Simulation.RollingStocks
             }
             if (Simulator.Settings.CorrectQuestionableBrakingParams)
             {
-                if (this is MSTSElectricLocomotive && DynamicBrakeDelayS > 4)
-                    DynamicBrakeDelayS = 2; // Electric locomotives have short engaging delays
-
                 if (MaxDynamicBrakeForceN > 0 && MaxContinuousForceN > 0 &&
                 (MaxDynamicBrakeForceN / MaxContinuousForceN < 0.3f && MaxDynamicBrakeForceN == 20000))
                     MaxDynamicBrakeForceN = Math.Min (MaxContinuousForceN * 0.5f, 150000); // 20000 is suggested as standard value in the MSTS documentation, but in general it is a too low value
