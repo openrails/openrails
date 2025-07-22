@@ -1152,9 +1152,10 @@ namespace Orts.Formats.Msts
                         if (Positions.Count > 0 && Positions[0] > Positions[Positions.Count - 1])
                         {
                             Reversed ^= true;
+                            int maxPos = Positions.Max();
                             // Recalculate positions in reverse
                             for (int i = 0; i < Positions.Count; i++)
-                                Positions[i] = (FramesCount - 1) - Positions[i];
+                                Positions[i] = maxPos - Positions[i];
                         }
 
                         // Check if eligible for filling

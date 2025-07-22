@@ -37,14 +37,12 @@ using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
-using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks.Coupling;
 using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.Signalling;
-using Orts.Simulation.Timetables;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;
@@ -1110,89 +1108,89 @@ namespace Orts.Simulation.RollingStocks
         public virtual void UpdateBrakeSlideCalculation()
         {
             if (this is MSTSLocomotive locomotive)
-            {
-                // If advanced adhesion model indicates wheel slip warning, then check other conditions (throttle and brake force) to determine whether it is a wheel slip or brake skid
-                if (WheelSlipWarning && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0)
                 {
-                    BrakeSkidWarning = true;  // set brake skid flag true
-                }
-                else
-                {
-                    BrakeSkidWarning = false;
-                }
+                    // If advanced adhesion model indicates wheel slip warning, then check other conditions (throttle and brake force) to determine whether it is a wheel slip or brake skid
+                    if (WheelSlipWarning && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0) 
+                    {
+                        BrakeSkidWarning = true;  // set brake skid flag true
+                    }
+                    else
+                    {
+                        BrakeSkidWarning = false;
+                    }
 
-                // If advanced adhesion model indicates wheel slip, then check other conditions (throttle and brake force) to determine whether it is a wheel slip or brake skid
-                if (WheelSlip && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0)
-                {
-                    BrakeSkid = true;  // set brake skid flag true
+                    // If advanced adhesion model indicates wheel slip, then check other conditions (throttle and brake force) to determine whether it is a wheel slip or brake skid
+                    if (WheelSlip && ThrottlePercent < 0.1f && BrakeRetardForceN > 25.0)
+                    {
+                        BrakeSkid = true;  // set brake skid flag true
+                    }
+                    else
+                    {
+                        BrakeSkid = false;
+                    }
                 }
-                else
-                {
-                    BrakeSkid = false;
-                }
-            }
             // Only apply slide, and advanced brake friction, if advanced adhesion is selected, simplecontrolphysics is not set, and it is a Player train
             else if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && IsPlayerTrain)
-            {
-                // Determine whether car is experiencing a wheel slip during braking
-                if (!BrakeSkidWarning && AbsSpeedMpS > 0.01)
                 {
-                    var wagonbrakeadhesiveforcen = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction; // Adhesive force wheel normal 
+                    // Determine whether car is experiencing a wheel slip during braking
+                    if (!BrakeSkidWarning && AbsSpeedMpS > 0.01)
+                    {
+                        var wagonbrakeadhesiveforcen = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction; // Adhesive force wheel normal 
 
                     if (BrakeRetardForceN > 0.80f * WagonBrakeAdhesiveForceN && ThrottlePercent > 0.01)
-                    {
-                        BrakeSkidWarning = true; 	// wagon wheel is about to slip
+                        {
+                            BrakeSkidWarning = true; 	// wagon wheel is about to slip
+                        }
                     }
-                }
                 else if (BrakeRetardForceN < 0.75f * WagonBrakeAdhesiveForceN)
-                {
-                    BrakeSkidWarning = false; 	// wagon wheel is back to normal
-                }
+                    {
+                        BrakeSkidWarning = false; 	// wagon wheel is back to normal
+                    }
 
-                // Reset WSP dump valve lockout
-                if (WheelBrakeSlideProtectionFitted && WheelBrakeSlideProtectionDumpValveLockout && (ThrottlePercent > 0.01 || AbsSpeedMpS <= 0.002))
-                {
-                    WheelBrakeSlideProtectionTimerS = wheelBrakeSlideTimerResetValueS;
-                    WheelBrakeSlideProtectionDumpValveLockout = false;
+                    // Reset WSP dump valve lockout
+                    if (WheelBrakeSlideProtectionFitted && WheelBrakeSlideProtectionDumpValveLockout && (ThrottlePercent > 0.01 || AbsSpeedMpS <= 0.002))
+                    {
+                        WheelBrakeSlideProtectionTimerS = wheelBrakeSlideTimerResetValueS;
+                        WheelBrakeSlideProtectionDumpValveLockout = false;
 
-                }       
+                    }       
 
-                // Calculate adhesive force based upon whether in skid or not
-                if (BrakeSkid)
-                {
-                    WagonBrakeAdhesiveForceN = MassKG * GravitationalAccelerationMpS2 * SkidFriction;  // Adhesive force if wheel skidding
-                }
-                else
-                {
-                    WagonBrakeAdhesiveForceN = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction; // Adhesive force wheel normal
-                }
+                    // Calculate adhesive force based upon whether in skid or not
+                    if (BrakeSkid)
+                    {
+                        WagonBrakeAdhesiveForceN = MassKG * GravitationalAccelerationMpS2 * SkidFriction;  // Adhesive force if wheel skidding
+                    }
+                    else
+                    {
+                        WagonBrakeAdhesiveForceN = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction; // Adhesive force wheel normal
+                    }
                                    
 
-                // Test if wheel forces are high enough to induce a slip. Set slip flag if slip occuring 
-                if (!BrakeSkid && AbsSpeedMpS > 0.01)  // Train must be moving forward to experience skid
-                {
-                    if (BrakeRetardForceN > WagonBrakeAdhesiveForceN)
+                    // Test if wheel forces are high enough to induce a slip. Set slip flag if slip occuring 
+                    if (!BrakeSkid && AbsSpeedMpS > 0.01)  // Train must be moving forward to experience skid
                     {
-                        BrakeSkid = true; 	// wagon wheel is slipping
-                        var message = "Car ID: " + CarID + " - experiencing braking force wheel skid.";
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, message);
+                    if (BrakeRetardForceN > WagonBrakeAdhesiveForceN)
+                        {
+                            BrakeSkid = true; 	// wagon wheel is slipping
+                            var message = "Car ID: " + CarID + " - experiencing braking force wheel skid.";
+                            Simulator.Confirmer.Message(ConfirmLevel.Warning, message);
+                        }
                     }
-                }
-                else if (BrakeSkid && AbsSpeedMpS > 0.01)
-                {
+                    else if (BrakeSkid && AbsSpeedMpS > 0.01)
+                    {
                     if (BrakeRetardForceN < WagonBrakeAdhesiveForceN || BrakeForceN == 0.0f)
+                        {
+                            BrakeSkid = false; 	// wagon wheel is not slipping
+                        }
+                        
+                    }
+                    else
                     {
                         BrakeSkid = false; 	// wagon wheel is not slipping
                     }
-                        
-                }
-                else
-                {
-                    BrakeSkid = false;  // wagon wheel is not slipping
-                }
                 BrakeForceN = BrakeRetardForceN;
                 if (BrakeSkid) BrakeForceN = Math.Min(BrakeForceN, MassKG * GravitationalAccelerationMpS2 * SkidFriction);
-            }
+                }
             else  // set default values if simple adhesion model
             {
                 BrakeSkid = false; 	// wagon wheel is not slipping
@@ -2077,14 +2075,13 @@ namespace Orts.Simulation.RollingStocks
                 // Base Curve Resistance (from refernce i)) = (Vehicle mass x Coeff Friction) * (Track Gauge + Vehicle Fixed Wheelbase) / (2 * curve radius)
                 // Vehicle Fixed Wheel base is the distance between the wheels, ie bogie or fixed wheels
 
-                var rBaseWagonN = 9.81f * MassKG * Train.WagonCoefficientFriction * (TrackGaugeM + RigidWheelBaseM) / (2.0f * CurrentCurveRadiusM);
+                float rBaseWagonN = GravitationalAccelerationMpS2 * MassKG * Train.WagonCoefficientFriction * (TrackGaugeM + RigidWheelBaseM) / (2.0f * CurrentCurveRadiusM);
 
                 // Speed Curve Resistance (from reference ii) - second term only) = ((Speed^2 / Curve Radius) - (Superelevation / Track Gauge) * Gravitational acceleration) * Constant
 
-                var speedConstant = 1.5f;
-                var MToMM = 1000;
-                var rspeedKgpTonne = speedConstant * Math.Abs((SpeedMpS * SpeedMpS / CurrentCurveRadiusM) - ((MToMM * SuperElevationM / MToMM * TrackGaugeM) * GravitationalAccelerationMpS2));
-                var rSpeedWagonN = GravitationalAccelerationMpS2 * (Kg.ToTonne(MassKG) * rspeedKgpTonne);
+                float speedConstant = 1.5f;
+                float rspeedKgpTonne = speedConstant * Math.Abs((SpeedMpS * SpeedMpS / CurrentCurveRadiusM) - (GravitationalAccelerationMpS2 * SuperElevationM / TrackGaugeM));
+                float rSpeedWagonN = GravitationalAccelerationMpS2 * (Kg.ToTonne(MassKG) * rspeedKgpTonne);
 
                 CurveForceN = rBaseWagonN + rSpeedWagonN;
             }
