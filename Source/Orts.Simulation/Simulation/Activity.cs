@@ -1377,7 +1377,7 @@ namespace Orts.Simulation
             return null;
         }
         /// <summary>
-        /// Finds the train that contains exactly the wagons (and maybe loco) in the list. Exact order is not required.
+        /// Finds the train that contains exactly the wagons in the list. Exact order is not required.
         /// </summary>
         /// <param name="wagonIdList"></param>
         /// <returns>train or null</returns>
@@ -1385,25 +1385,20 @@ namespace Orts.Simulation
         {
             foreach (var trainItem in Simulator.Trains)
             {
-                int nCars = 0;//all cars other than WagonIdList.
-                int nWagonListCars = 0;//individual wagon drop.
+                int nWagonListCars = 0;
                 foreach (var item in trainItem.Cars)
                 {
-                    if (!wagonIdList.Contains(item.CarID)) nCars++;
-                    if (wagonIdList.Contains(item.CarID)) nWagonListCars++;
-                }
-                // Compare two lists to make sure wagons are present.
-                bool listsMatch = true;
-                //support individual wagonIdList drop
-                if (trainItem.Cars.Count - nCars == (wagonIdList.Count == nWagonListCars ? wagonIdList.Count : nWagonListCars))
+                    if (wagonIdList.Contains(item.CarID))
                 {
-                    if (excludesWagons(trainItem, wagonIdList)) listsMatch = false;//all wagons dropped
-                    
-                    if (listsMatch) return trainItem;
-                    
+                        nWagonListCars++;
+                    }
+                    if (nWagonListCars == trainItem.Cars.Count)
+                    {
+                        return trainItem;
+                    }
+                }
                 }
                
-            }
             return null;
         }
         /// <summary>
