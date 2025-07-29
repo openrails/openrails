@@ -197,9 +197,9 @@ namespace ORTS.Scripting.Api
         public List<MSTSNotch> Notches() => Host.Notches;
 
         /// <summary>
-        /// Fraction of train brake demanded by cruise control
+        /// Fraction of train brake demanded by cruise control. Returns -1 if CC is inactive
         /// </summary>
-        public float CruiseControlBrakeDemand() => Locomotive.CruiseControl != null ? Locomotive.CruiseControl.TrainBrakePercent / 100 : 0;
+        public float CruiseControlBrakeDemand() => Host.CruiseControlBrakeDemand;
 
         /// <summary>
         /// Current notch of the brake controller
