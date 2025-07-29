@@ -43,6 +43,15 @@ namespace Orts.Viewer3D.Processes
         {
             Game = game;
             Thread = new Thread(WebServerThread);
+
+            // Once the content has been loaded and the simulator is simulating, an exception will cause the web server process
+            // to terminate itself.
+            // However, an exception during loading will not terminate the web server process, so the application Open Rails Activity Runner
+            // will persist until it is removed by the user.
+            // A workaround to avoid this behaviour is to push the thread into the background.
+
+            // This thread is pushed into the background, so it will be terminated automatically when the main thread exits.
+            Thread.IsBackground = true;
         }
 
         public void Start()

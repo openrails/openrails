@@ -20,7 +20,7 @@
 
 #define DotNETName "Microsoft .NET Framework 4.7.2"
 
-#define MyAppURL "http://openrails.org" ; Not yet HTTPS
+#define MyAppURL "https://openrails.org"
 #define MyAppSourceURL "http://openrails.org/download/source/"
 #define MyAppSupportURL "https://launchpad.net/or"
 
@@ -31,7 +31,7 @@
 #define MyAppDocPath "..\..\Program\Documentation"
 
 #define NetRedistPath "..\..\.NET Framework 4.7.2 web installer"
-#define NetRedist "NDP472-KB4054531-Web.exe"
+#define NetRedist "ndp472-kb4054531-web.exe" ; Has to be lower-case to match download
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -50,20 +50,26 @@ DefaultDirName  ={commonpf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 AllowNoIcons    =yes
 LicenseFile     ={#MyAppProgPath}\Copying.txt
-InfoBeforeFile   ={#MyAppProgPath}\Prerequisites.txt
+InfoBeforeFile  ={#MyAppProgPath}\Prerequisites.txt
 InfoAfterFile   ={#MyAppProgPath}\Readme.txt
 
-; Remove the following line to run in administrative install mode (install for all users.)
-; PrivilegesRequired=lowest ; Cannot create the directory C:\Program Files\Open Rails
+; Prompt for a destination folder
+DisableDirPage  =no
+; 32-bit is the default, installing in "Program Files (x86)" on 64-bit Windows. "x64compatible" uses Program Files on 64-bit Windows
+ArchitecturesInstallIn64BitMode =x64compatible
+
+; Default is admin install mode.
+; Comment in the following line to run in non-administrative install mode, but that cannot create the directory C:\Program Files\Open Rails
+; PrivilegesRequired=lowest
 
 Compression     =lzma
 SolidCompression=yes
-WizardStyle=modern
+WizardStyle     =modern
 Uninstallable   =yes
-UninstallDisplayIcon={app}\{#MyAppExeName}
-OutputBaseFilename=OpenRailsSetup
+UninstallDisplayIcon ={app}\{#MyAppExeName}
+OutputBaseFilename =OpenRailsSetup
 
-; Windows 7 SP1
+; Windows 7 SP1 Correct value, so ignore final warning message from Build > Compile
 MinVersion      =6.1sp1
 
 [Languages]
@@ -79,7 +85,7 @@ Name: "finnish"; MessagesFile: "compiler:Languages\Finnish.isl"
 Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 Name: "german"; MessagesFile: "compiler:Languages\German.isl"
 Name: "hebrew"; MessagesFile: "compiler:Languages\Hebrew.isl"
-Name: "icelandic"; MessagesFile: "compiler:Languages\Icelandic.isl"
+;Name: "icelandic"; MessagesFile: "compiler:Languages\Icelandic.isl"
 Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"
 Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 Name: "norwegian"; MessagesFile: "compiler:Languages\Norwegian.isl"
