@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2025-07-22 20:55:06+0100\n"
-"PO-Revision-Date: 2025-07-25 18:32+0200\n"
+"POT-Creation-Date: 2024-11-29 18:45:08+0000\n"
+"PO-Revision-Date: 2024-12-02 18:17+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -12,22 +12,22 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.5\n"
 
-#: ../../ORTS.Settings/InputSettings.cs:572
+#: ../../ORTS.Settings/InputSettings.cs:569
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
 msgstr "{0} requiere y es modificado con Mayus"
 
-#: ../../ORTS.Settings/InputSettings.cs:574
+#: ../../ORTS.Settings/InputSettings.cs:571
 #, csharp-format
 msgid "{0} requires and is modified by Control"
 msgstr "{0} requiere y es modificado con Control"
 
-#: ../../ORTS.Settings/InputSettings.cs:576
+#: ../../ORTS.Settings/InputSettings.cs:573
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr "{0} requiere y es modificado con Alt"
 
-#: ../../ORTS.Settings/InputSettings.cs:607
+#: ../../ORTS.Settings/InputSettings.cs:604
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr "{0} y {1} ambos coinciden {2}"
@@ -144,7 +144,7 @@ msgstr "Rango completo regulador"
 msgid "Cut Off Delta"
 msgstr "Delta de corte"
 
-#: ../../ORTS.Settings/RailDriverSettings.cs:227
+#: ../../ORTS.Settings/RailDriverSettings.cs:225
 #, csharp-format
 msgid ""
 "Button {0} is assigned to \r\n"

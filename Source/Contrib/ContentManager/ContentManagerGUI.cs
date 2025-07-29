@@ -286,8 +286,7 @@ namespace ORTS.ContentManager
                         finds.Add(new SearchResult(content, path));
 
                     foreach (var child in ((ContentType[])Enum.GetValues(typeof(ContentType))).SelectMany(ct => content.Get(ct)))
-                        if (!pending.ContainsKey(path + " / " + child.Name))
-                            pending.Add(path + " / " + child.Name, child);
+                        pending.Add(path + " / " + child.Name, child);
 
                     foreach (var child in ContentLink.Matches(ContentInfo.GetText(content)).Cast<Match>().Select(linkMatch => content.Get(linkMatch.Groups[1].Value, (ContentType)Enum.Parse(typeof(ContentType), linkMatch.Groups[2].Value))).Where(linkContent => linkContent != null))
                         if (!pending.ContainsKey(path + " -> " + child.Name))
