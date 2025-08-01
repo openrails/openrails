@@ -33,7 +33,7 @@ msgstr "Attivo"
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:384
 msgid "EPApply"
-msgstr ""
+msgstr "EPAttivo"
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:385
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:144
@@ -68,23 +68,23 @@ msgstr "Pieno servizio"
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:393
 msgid "Minimum Reduction"
-msgstr ""
+msgstr "Riduzione Minima"
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:394
 msgid "Hold"
-msgstr ""
+msgstr "Tieni"
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:395
 msgid "Str. Brk. Release On:"
-msgstr ""
+msgstr "Dir. Frn. Rilascio Acceso:"
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:396
 msgid "Str. Brk. Release Off:"
-msgstr ""
+msgstr "Dir. Frn. Rilascio Spento:"
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:397
 msgid "Str. Brk. Release:"
-msgstr ""
+msgstr "Dir. Frn. Rilascio:"
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:398
 msgid "Str. Brk. Lap:"
@@ -92,15 +92,15 @@ msgstr ""
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:399
 msgid "Str. Brk. Apply:"
-msgstr ""
+msgstr "Dir. Frn. Attivo:"
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:400
 msgid "Str. Brk. Apply All:"
-msgstr ""
+msgstr "Dir. Frn. Attiva Tutto:"
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:401
 msgid "Str. Brk. Emerg:"
-msgstr ""
+msgstr "Dir. Frn. Emerg."
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:402
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:245
@@ -145,7 +145,7 @@ msgstr "EP in pieno servizio"
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:412
 msgid "Slow service"
-msgstr ""
+msgstr "Servizio Lento"
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:413
 msgid "SME Service"
@@ -208,7 +208,7 @@ msgstr "Chiuso"
 #: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:154
 msgctxt "PowerSupply"
 msgid "Steam"
-msgstr ""
+msgstr "Vapore"
 
 #. Context: PowerSupply
 #: ../../Orts.Simulation/Common/Scripting/PowerSupply/PowerSupply.cs:155
@@ -646,11 +646,11 @@ msgstr "Circuit Breaker autorizzazione alla chiusura"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:201
 msgid "remove"
-msgstr ""
+msgstr "rimuovi"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:201
 msgid "give"
-msgstr ""
+msgstr "dai"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:203
 msgid "Player Diesel Power"
@@ -777,7 +777,7 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:223
 msgid "idle"
-msgstr ""
+msgstr "fermo"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:223
 msgid "run"
@@ -821,7 +821,7 @@ msgstr "normale"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:228
 msgid "fast"
-msgstr ""
+msgstr "veloce"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:229
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:230
@@ -1055,7 +1055,7 @@ msgstr "Contachilometri"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:257
 msgid "Battery"
-msgstr ""
+msgstr "Batteria"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:258
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:965
@@ -1065,11 +1065,11 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:260
 msgid "Max acceleration"
-msgstr ""
+msgstr "Accelerazione Massima"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:261
 msgid "Restricted speed zone"
-msgstr ""
+msgstr "Zona velocità limitata"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:263
 msgid "Doors Left"
@@ -1093,7 +1093,7 @@ msgstr "in fuori"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:266
 msgid "Window Left"
-msgstr ""
+msgstr "Finestrino a sinistra"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:266
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:267
@@ -1349,7 +1349,7 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/Turntables.cs:213
 msgid "transfertable"
-msgstr ""
+msgstr "trasferibile"
 
 #: ../../Orts.Simulation/Simulation/Turntables.cs:232
 #: ../../Orts.Simulation/Simulation/Turntables.cs:273
@@ -1784,7 +1784,7 @@ msgstr "Sforzo di trazione"
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:429
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/SteamEngine.cs:217
 msgid "Load"
-msgstr ""
+msgstr "Carica"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:1263
 msgid "ER"
@@ -2082,7 +2082,7 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:7886
 msgid "Heat:"
-msgstr ""
+msgstr "Calore"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:7887
 msgid "In"
@@ -2105,7 +2105,7 @@ msgstr ""
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:8342
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:8355
 msgid "Max"
-msgstr ""
+msgstr "Massimo"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:7897
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:8152
@@ -2302,7 +2302,7 @@ msgstr ""
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:8121
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:8142
 msgid "Back"
-msgstr ""
+msgstr "Indietro"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:8105
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:8123
@@ -2646,11 +2646,11 @@ msgstr ""
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:8397
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:455
 msgid "Oil"
-msgstr ""
+msgstr "Olio"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:8413
 msgid "Wood"
-msgstr ""
+msgstr "Legno"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:8447
 msgid "OilOut"
@@ -2942,7 +2942,7 @@ msgstr "Velocità:"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:8802
 msgid "Wheel:"
-msgstr ""
+msgstr "Ruota:"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:8803
 msgid "TangSp"
@@ -3234,12 +3234,12 @@ msgstr ""
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:401
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/SteamEngine.cs:220
 msgid "Temperature"
-msgstr ""
+msgstr "Temperature"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:402
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/SteamEngine.cs:221
 msgid "Oil Pressure"
-msgstr ""
+msgstr "Pressione Olio"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:416
 msgid " "
