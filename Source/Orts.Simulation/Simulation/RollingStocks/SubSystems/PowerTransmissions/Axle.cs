@@ -1100,6 +1100,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// </summary>
         public (double accelMpSS, double angSpeedRadpS, double driveForceN, double axleMotiveForceN, double axleBrakeForceN, double axleFrictionForceN) GetAxleMotionVariation(double axleSpeedMpS, double elapsedClockSeconds)
         {
+            if (double.IsNaN(axleSpeedMpS)) axleSpeedMpS = 0;
             double slipSpeedMpS = axleSpeedMpS - TrainSpeedMpS;
             // Compute force transmitted to rail according to adhesion curves
             double axleOutForceN;
@@ -1325,12 +1326,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 WheelAdhesion = (float)SlipCharacteristicsPolach(SlipSpeedMpS);
                 MaximumWheelAdhesion = (float)SlipCharacteristicsPolach(WheelSlipThresholdMpS);
 
+#if DEBUG_ADHESION
                 if (count < 6 && count++ == 5)
                 {
                     TrainSpeedMpS = 10 / 3.6f;
                     Polach.Update();
                     axleStaticForceN = AxleWeightN * SlipCharacteristicsPolach(0);
                 }
+#endif
             }
             else
             {
