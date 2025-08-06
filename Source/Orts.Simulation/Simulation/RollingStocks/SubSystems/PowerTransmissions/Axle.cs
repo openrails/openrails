@@ -1100,7 +1100,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// </summary>
         public (double accelMpSS, double angSpeedRadpS, double driveForceN, double axleMotiveForceN, double axleBrakeForceN, double axleFrictionForceN) GetAxleMotionVariation(double axleSpeedMpS, double elapsedClockSeconds)
         {
-            if (double.IsNaN(axleSpeedMpS)) axleSpeedMpS = 0;
+            if (double.IsNaN(axleSpeedMpS)) axleSpeedMpS = 0; // TODO: axleSpeedMpS should always be a number, find the cause of the NaN
             double slipSpeedMpS = axleSpeedMpS - TrainSpeedMpS;
             // Compute force transmitted to rail according to adhesion curves
             double axleOutForceN;
@@ -1306,8 +1306,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="elapsedSeconds"></param>
         public virtual void Update(float elapsedSeconds)
         {
-            if (float.IsNaN(TrainSpeedMpS)) TrainSpeedMpS = 0;
-            if (double.IsNaN(AxleSpeedMpS)) AxleSpeedMpS = 0;
+            if (float.IsNaN(TrainSpeedMpS)) TrainSpeedMpS = 0; // TODO: TrainSpeedMpS should always be a number, find the cause of the NaN
+            if (double.IsNaN(AxleSpeedMpS)) AxleSpeedMpS = 0; // TODO: AxleSpeedMpS should always be a number, find the cause of the NaN
 
             bool advancedAdhesion = Car is MSTSLocomotive locomotive && locomotive.AdvancedAdhesionModel;
             advancedAdhesion &= DriveType != AxleDriveType.NotDriven; // Skip integrator for undriven axles to save CPU
