@@ -2171,7 +2171,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                     float supplyPressure = locoAirSystem.SupplyReservoirPresent ? locoAirSystem.SupplyResPressurePSI : loco.MainResPressurePSI; // Pressure of reservoir used for brake pipe charging
 
                                     if (supplyPressure - locoAirSystem.BrakeLine1PressurePSI < 15.0f) // Reduce recharge rate if near MR pressure as per reality
-                                        PressureDiffEqualToPipePSI *= MathHelper.Lerp(0, 1.0f, (supplyPressure - train.EqualReservoirPressurePSIorInHg) / 15.0f);
+                                        PressureDiffEqualToPipePSI *= MathHelper.Lerp(0, 1.0f, (supplyPressure - locoAirSystem.BrakeLine1PressurePSI) / 15.0f);
                                     if (train.EqualReservoirPressurePSIorInHg - locoAirSystem.BrakeLine1PressurePSI < chargeSlowdown) // Reduce recharge rate if near EQ to simulate feed valve behavior
                                         PressureDiffEqualToPipePSI *= (float)Math.Pow((train.EqualReservoirPressurePSIorInHg - locoAirSystem.BrakeLine1PressurePSI) / chargeSlowdown,
                                             1.0f/3.0f);
