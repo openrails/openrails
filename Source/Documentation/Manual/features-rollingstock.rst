@@ -345,7 +345,7 @@ Detailed spec
    no changes are done to the .eng file.
 2) In such folder there is also an ``ORTSLightGlow.png``, which is maybe more realistic.
 3) adding a line within the .eng file it is possible to select either ORTSLightGlow.png or any other picture
-   with extension ``.png, .jpg, bmp, .gif, .ace, or .dds``.
+   with extension ``.ace`` or ``.dds``.
    
 
    Here an example for the legacy Acela loco::
@@ -357,13 +357,13 @@ Detailed spec
 			      Type	( 1 )
 			      Conditions	(...
 
-  The code first searches for the .png file by building its directory starting from the directory of 
+  The code first searches for the file by building its directory starting from the directory of 
   the .eng file; in this case the line could be e.g.::
 
-           ORTSGraphic ( "ORTSAcelaLightGlow.png" )
+           ORTSGraphic ( "ORTSAcelaLightGlow.dds" )
 
 4) The ``ORTSGraphic`` line can be added also for one or more ``Light()`` blocks. In that case the 
-   .png file is used only for the related Light block. Here an example::
+   file is used only for the related Light block. Here an example::
 
     Light	(
 			comment( Head light outer right bright )
@@ -386,7 +386,7 @@ Detailed spec
 					Elevation ( -50 -50 -50 )
 					)
 				)
-			ORTSGraphic (BigLightGlow.png)
+			ORTSGraphic (BigLightGlow.dds)
     )
 
   OR searches for the file as it does for the general file for all lights, as explained above.
