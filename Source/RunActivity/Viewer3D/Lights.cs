@@ -988,7 +988,7 @@ namespace Orts.Viewer3D
             : base(viewer, textureName)
         {
             // TODO: This should happen on the loader thread.
-            LightGlowTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, textureName);
+            LightGlowTexture = textureName.StartsWith(Viewer.ContentPath, StringComparison.OrdinalIgnoreCase) ? SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, textureName) : Viewer.TextureManager.Get(textureName);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
