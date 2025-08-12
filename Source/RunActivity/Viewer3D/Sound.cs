@@ -1606,7 +1606,8 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.VolumeCurve.Controls.AngleofAttackControlled: return car.CurveSquealAoAmRadFiltered;
                 case Orts.Formats.Msts.VolumeCurve.Controls.CarFrictionControlled: return car.Train.WagonCoefficientFriction;
                 case Orts.Formats.Msts.VolumeCurve.Controls.WheelRpMControlled: var wheelRpM = pS.TopM((float)(car.AbsSpeedMpS / (2 * Math.PI * car.WheelRadiusM))); return wheelRpM;
-                case Orts.Formats.Msts.VolumeCurve.Controls.CarDistanceTrackControlled: return car.CarTrackControlledDistanceM;   
+                case Orts.Formats.Msts.VolumeCurve.Controls.CarDistanceTrackControlled: return car.CarTrackControlledDistanceM;
+                case Orts.Formats.Msts.VolumeCurve.Controls.CarTunnelDistanceControlled: return car.CarTunnelDistanceM;
                 default: return 0;
             }
         }
@@ -1919,7 +1920,7 @@ namespace Orts.Viewer3D
 
         public override void TryTrigger()
         {
-            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 2)
+            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Joint_Camera_DistM && car.SoundAxleCount == 2)
             {
                 Signaled = true;
                 if (Enabled)
@@ -1967,7 +1968,7 @@ namespace Orts.Viewer3D
         }
         public override void TryTrigger()
         {
-            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 8)
+            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Joint_Camera_DistM && car.SoundAxleCount == 8)
             {
                 Signaled = true;
                 if (Enabled)
@@ -2014,7 +2015,7 @@ namespace Orts.Viewer3D
 
         public override void TryTrigger()
         {
-            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 4)
+            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Joint_Camera_DistM && car.SoundAxleCount == 4)
             {
                 Signaled = true;
                 if (Enabled)
@@ -2063,7 +2064,7 @@ namespace Orts.Viewer3D
 
         public override void TryTrigger()
         {
-            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 6)
+            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Joint_Camera_DistM && car.SoundAxleCount == 6)
             {
                 Signaled = true;
                 if (Enabled)
@@ -2110,7 +2111,7 @@ namespace Orts.Viewer3D
 
         public override void TryTrigger()
         {
-            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 8)
+            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Joint_Camera_DistM && car.SoundAxleCount == 8)
             {
                 Signaled = true;
                 if (Enabled)
@@ -2157,7 +2158,7 @@ namespace Orts.Viewer3D
 
         public override void TryTrigger()
         {
-            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 2)
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Switch_Camera_DistM && car.SoundAxleCount == 2)
             {
                 Signaled = true;
                 if (Enabled)
@@ -2204,7 +2205,7 @@ namespace Orts.Viewer3D
 
         public override void TryTrigger()
         {
-            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 3)
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Switch_Camera_DistM && car.SoundAxleCount == 3)
             {
                 Signaled = true;
                 if (Enabled)
@@ -2251,7 +2252,7 @@ namespace Orts.Viewer3D
 
         public override void TryTrigger()
         {
-            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 4)
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Switch_Camera_DistM && car.SoundAxleCount == 4)
             {
                 Signaled = true;
                 if (Enabled)
@@ -2298,7 +2299,7 @@ namespace Orts.Viewer3D
 
         public override void TryTrigger()
         {
-            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 6)
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Switch_Camera_DistM && car.SoundAxleCount == 6)
             {
                 Signaled = true;
                 if (Enabled)
@@ -2345,7 +2346,7 @@ namespace Orts.Viewer3D
 
         public override void TryTrigger()
         {
-            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 8)
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Switch_Camera_DistM && car.SoundAxleCount == 8)
             {
                 Signaled = true;
                 if (Enabled)
@@ -2393,7 +2394,7 @@ namespace Orts.Viewer3D
 
         public override void TryTrigger()
         {
-            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 2)
+            if (car.TrackXoverSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Xover_Camera_DistM && car.SoundAxleCount == 2)
             {
                 Signaled = true;
                 if (Enabled)
@@ -2440,7 +2441,7 @@ namespace Orts.Viewer3D
 
         public override void TryTrigger()
         {
-            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 3)
+            if (car.TrackXoverSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Xover_Camera_DistM && car.SoundAxleCount == 3)
             {
                 Signaled = true;
                 if (Enabled)
@@ -2487,7 +2488,7 @@ namespace Orts.Viewer3D
 
         public override void TryTrigger()
         {
-            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 4)
+            if (car.TrackXoverSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Xover_Camera_DistM && car.SoundAxleCount == 4)
             {
                 Signaled = true;
                 if (Enabled)
@@ -2534,7 +2535,7 @@ namespace Orts.Viewer3D
 
         public override void TryTrigger()
         {
-            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 6)
+            if (car.TrackXoverSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Xover_Camera_DistM && car.SoundAxleCount == 6)
             {
                 Signaled = true;
                 if (Enabled)
@@ -2581,7 +2582,7 @@ namespace Orts.Viewer3D
 
         public override void TryTrigger()
         {
-            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Camera_DistM && car.SoundAxleCount == 2)
+            if (car.TrackXoverSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Xover_Camera_DistM && car.SoundAxleCount == 2)
             {
                 Signaled = true;
                 if (Enabled)

@@ -243,7 +243,7 @@ namespace Orts.Formats.Msts
 
     public class VolumeCurve
     {
-        public enum Controls { None, DistanceControlled, SpeedControlled, Variable1Controlled, Variable1_2Controlled, Variable1_3Controlled, Variable1_4Controlled, Variable2Controlled, Variable2BoosterControlled, Variable3Controlled, BrakeCylControlled, CurveForceControlled, AngleofAttackControlled, CarFrictionControlled, WheelRpMControlled, CarDistanceTrackControlled };
+        public enum Controls { None, DistanceControlled, SpeedControlled, Variable1Controlled, Variable1_2Controlled, Variable1_3Controlled, Variable1_4Controlled, Variable2Controlled, Variable2BoosterControlled, Variable3Controlled, BrakeCylControlled, CurveForceControlled, AngleofAttackControlled, CarFrictionControlled, WheelRpMControlled, CarDistanceTrackControlled, CarTunnelDistanceControlled };
 
         public Controls Control = Controls.None;
         public float Granularity = 1.0f;
@@ -271,6 +271,7 @@ namespace Orts.Formats.Msts
                 case "carfrictioncontrolled": Control = Controls.CarFrictionControlled; break;
                 case "wheelrpmcontrolled": Control = Controls.WheelRpMControlled; break;
                 case "cardistancetrackcontrolled": Control = Controls.CarDistanceTrackControlled; break;
+                case "cartunneldistancecontrolled": Control = Controls.CarTunnelDistanceControlled; break;
                 default: STFException.TraceWarning(stf, "Crash expected: Skipped unknown VolumeCurve/Frequencycurve type " + type); stf.SkipRestOfBlock(); return;
             }
             stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -508,7 +509,7 @@ namespace Orts.Formats.Msts
 
     public class Joint_Trigger_2 : Trigger
     {
-        public float Car_Camera_DistM = 80;
+        public float Car_Joint_Camera_DistM = 80;
         public float Volume_Min = 0.9f;
         public float Volume_Max = 1.0f;
 
@@ -520,7 +521,7 @@ namespace Orts.Formats.Msts
                 string lowtok = f.ReadString().ToLower();
                 switch (lowtok)
                 {
-                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    case "car_camera_dist": f.MustMatch("("); Car_Joint_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
                     //      case "volume_min_max": f.MustMatch("("); Volume_Min = f.ReadFloat(STFReader.UNITS.None, null); Volume_Max = f.ReadFloat(STFReader.UNITS.None, null); f.SkipRestOfBlock(); break;
                     default: ParsePlayCommand(f, lowtok); break;
                 }
@@ -530,7 +531,7 @@ namespace Orts.Formats.Msts
 
     public class Joint_Trigger_3 : Trigger
     {
-        public float Car_Camera_DistM = 80;
+        public float Car_Joint_Camera_DistM = 80;
         public float Volume_Min = 0.9f;
         public float Volume_Max = 1.0f;
 
@@ -542,7 +543,7 @@ namespace Orts.Formats.Msts
                 string lowtok = f.ReadString().ToLower();
                 switch (lowtok)
                 {
-                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    case "car_camera_dist": f.MustMatch("("); Car_Joint_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
                     //      case "volume_min_max": f.MustMatch("("); Volume_Min = f.ReadFloat(STFReader.UNITS.None, null); Volume_Max = f.ReadFloat(STFReader.UNITS.None, null); f.SkipRestOfBlock(); break;
                     default: ParsePlayCommand(f, lowtok); break;
                 }
@@ -551,7 +552,7 @@ namespace Orts.Formats.Msts
     }
     public class Joint_Trigger_4 : Trigger
     {
-        public float Car_Camera_DistM = 80;
+        public float Car_Joint_Camera_DistM = 80;
         public float Volume_Min = 0.9f;
         public float Volume_Max = 1.0f;
 
@@ -563,7 +564,7 @@ namespace Orts.Formats.Msts
                 string lowtok = f.ReadString().ToLower();
                 switch (lowtok)
                 {
-                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    case "car_camera_dist": f.MustMatch("("); Car_Joint_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
               //      case "volume_min_max": f.MustMatch("("); Volume_Min = f.ReadFloat(STFReader.UNITS.None, null); Volume_Max = f.ReadFloat(STFReader.UNITS.None, null); f.SkipRestOfBlock(); break;
                     default: ParsePlayCommand(f, lowtok); break;
                 }
@@ -573,7 +574,7 @@ namespace Orts.Formats.Msts
 
     public class Joint_Trigger_6 : Trigger
     {
-        public float Car_Camera_DistM = 80;
+        public float Car_Joint_Camera_DistM = 80;
         public float Volume_Min = 0.9f;
         public float Volume_Max = 1.0f;
 
@@ -585,7 +586,7 @@ namespace Orts.Formats.Msts
                 string lowtok = f.ReadString().ToLower();
                 switch (lowtok)
                 {
-                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    case "car_camera_dist": f.MustMatch("("); Car_Joint_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
                     //      case "volume_min_max": f.MustMatch("("); Volume_Min = f.ReadFloat(STFReader.UNITS.None, null); Volume_Max = f.ReadFloat(STFReader.UNITS.None, null); f.SkipRestOfBlock(); break;
                     default: ParsePlayCommand(f, lowtok); break;
                 }
@@ -595,7 +596,7 @@ namespace Orts.Formats.Msts
 
     public class Joint_Trigger_8 : Trigger
     {
-        public float Car_Camera_DistM = 80;
+        public float Car_Joint_Camera_DistM = 80;
         public float Volume_Min = 0.9f;
         public float Volume_Max = 1.0f;
 
@@ -607,7 +608,7 @@ namespace Orts.Formats.Msts
                 string lowtok = f.ReadString().ToLower();
                 switch (lowtok)
                 {
-                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    case "car_camera_dist": f.MustMatch("("); Car_Joint_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
                     //      case "volume_min_max": f.MustMatch("("); Volume_Min = f.ReadFloat(STFReader.UNITS.None, null); Volume_Max = f.ReadFloat(STFReader.UNITS.None, null); f.SkipRestOfBlock(); break;
                     default: ParsePlayCommand(f, lowtok); break;
                 }
@@ -617,7 +618,7 @@ namespace Orts.Formats.Msts
 
     public class Switch_Trigger_2 : Trigger
     {
-        public float Car_Camera_DistM = 80;
+        public float Car_Switch_Camera_DistM = 80;
         public float Volume_Min = 0.9f;
         public float Volume_Max = 1.0f;
 
@@ -629,7 +630,7 @@ namespace Orts.Formats.Msts
                 string lowtok = f.ReadString().ToLower();
                 switch (lowtok)
                 {
-                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    case "car_camera_dist": f.MustMatch("("); Car_Switch_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
                     default: ParsePlayCommand(f, lowtok); break;
                 }
             }
@@ -638,7 +639,7 @@ namespace Orts.Formats.Msts
 
     public class Switch_Trigger_3 : Trigger
     {
-        public float Car_Camera_DistM = 80;
+        public float Car_Switch_Camera_DistM = 80;
         public float Volume_Min = 0.9f;
         public float Volume_Max = 1.0f;
 
@@ -650,7 +651,7 @@ namespace Orts.Formats.Msts
                 string lowtok = f.ReadString().ToLower();
                 switch (lowtok)
                 {
-                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    case "car_camera_dist": f.MustMatch("("); Car_Switch_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
                     default: ParsePlayCommand(f, lowtok); break;
                 }
             }
@@ -659,7 +660,7 @@ namespace Orts.Formats.Msts
 
     public class Switch_Trigger_4 : Trigger
     {
-        public float Car_Camera_DistM = 80;
+        public float Car_Switch_Camera_DistM = 80;
         public float Volume_Min = 0.9f;
         public float Volume_Max = 1.0f;
 
@@ -671,7 +672,7 @@ namespace Orts.Formats.Msts
                 string lowtok = f.ReadString().ToLower();
                 switch (lowtok)
                 {
-                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    case "car_camera_dist": f.MustMatch("("); Car_Switch_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
                     default: ParsePlayCommand(f, lowtok); break;
                 }
             }
@@ -680,7 +681,7 @@ namespace Orts.Formats.Msts
 
     public class Switch_Trigger_6 : Trigger
     {
-        public float Car_Camera_DistM = 80;
+        public float Car_Switch_Camera_DistM = 80;
         public float Volume_Min = 0.9f;
         public float Volume_Max = 1.0f;
 
@@ -692,7 +693,7 @@ namespace Orts.Formats.Msts
                 string lowtok = f.ReadString().ToLower();
                 switch (lowtok)
                 {
-                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    case "car_camera_dist": f.MustMatch("("); Car_Switch_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
                     default: ParsePlayCommand(f, lowtok); break;
                 }
             }
@@ -701,7 +702,7 @@ namespace Orts.Formats.Msts
 
     public class Switch_Trigger_8 : Trigger
     {
-        public float Car_Camera_DistM = 80;
+        public float Car_Switch_Camera_DistM = 80;
         public float Volume_Min = 0.9f;
         public float Volume_Max = 1.0f;
 
@@ -713,7 +714,7 @@ namespace Orts.Formats.Msts
                 string lowtok = f.ReadString().ToLower();
                 switch (lowtok)
                 {
-                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    case "car_camera_dist": f.MustMatch("("); Car_Switch_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
                     default: ParsePlayCommand(f, lowtok); break;
                 }
             }
@@ -722,7 +723,7 @@ namespace Orts.Formats.Msts
 
     public class Xover_Trigger_2 : Trigger
     {
-        public float Car_Camera_DistM = 80;
+        public float Car_Xover_Camera_DistM = 80;
         public float Volume_Min = 0.9f;
         public float Volume_Max = 1.0f;
 
@@ -734,7 +735,7 @@ namespace Orts.Formats.Msts
                 string lowtok = f.ReadString().ToLower();
                 switch (lowtok)
                 {
-                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    case "car_camera_dist": f.MustMatch("("); Car_Xover_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
                     default: ParsePlayCommand(f, lowtok); break;
                 }
             }
@@ -743,7 +744,7 @@ namespace Orts.Formats.Msts
 
     public class Xover_Trigger_3 : Trigger
     {
-        public float Car_Camera_DistM = 80;
+        public float Car_Xover_Camera_DistM = 80;
         public float Volume_Min = 0.9f;
         public float Volume_Max = 1.0f;
 
@@ -755,7 +756,7 @@ namespace Orts.Formats.Msts
                 string lowtok = f.ReadString().ToLower();
                 switch (lowtok)
                 {
-                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    case "car_camera_dist": f.MustMatch("("); Car_Xover_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
                     default: ParsePlayCommand(f, lowtok); break;
                 }
             }
@@ -764,7 +765,7 @@ namespace Orts.Formats.Msts
 
     public class Xover_Trigger_4 : Trigger
     {
-        public float Car_Camera_DistM = 80;
+        public float Car_Xover_Camera_DistM = 80;
         public float Volume_Min = 0.9f;
         public float Volume_Max = 1.0f;
 
@@ -776,7 +777,7 @@ namespace Orts.Formats.Msts
                 string lowtok = f.ReadString().ToLower();
                 switch (lowtok)
                 {
-                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    case "car_camera_dist": f.MustMatch("("); Car_Xover_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
                     default: ParsePlayCommand(f, lowtok); break;
                 }
             }
@@ -785,7 +786,7 @@ namespace Orts.Formats.Msts
 
     public class Xover_Trigger_6 : Trigger
     {
-        public float Car_Camera_DistM = 80;
+        public float Car_Xover_Camera_DistM = 80;
         public float Volume_Min = 0.9f;
         public float Volume_Max = 1.0f;
 
@@ -797,7 +798,7 @@ namespace Orts.Formats.Msts
                 string lowtok = f.ReadString().ToLower();
                 switch (lowtok)
                 {
-                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    case "car_camera_dist": f.MustMatch("("); Car_Xover_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
                     default: ParsePlayCommand(f, lowtok); break;
                 }
             }
@@ -806,7 +807,7 @@ namespace Orts.Formats.Msts
 
     public class Xover_Trigger_8 : Trigger
     {
-        public float Car_Camera_DistM = 80;
+        public float Car_Xover_Camera_DistM = 80;
         public float Volume_Min = 0.9f;
         public float Volume_Max = 1.0f;
 
@@ -818,7 +819,7 @@ namespace Orts.Formats.Msts
                 string lowtok = f.ReadString().ToLower();
                 switch (lowtok)
                 {
-                    case "car_camera_dist": f.MustMatch("("); Car_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
+                    case "car_camera_dist": f.MustMatch("("); Car_Xover_Camera_DistM = f.ReadFloat(STFReader.UNITS.Distance, null); f.SkipRestOfBlock(); break;
                     default: ParsePlayCommand(f, lowtok); break;
                 }
             }

@@ -600,6 +600,7 @@ namespace Orts.Simulation.RollingStocks
         float jointSpeedMpS;
         public float SoundAxleCount;
         public float CarTrackControlledDistanceM = 0;
+        public float CarTunnelDistanceM;
 
         // Track sound effects - switch / crossover
         public float TrackSwitchSoundTriggered;
@@ -610,6 +611,7 @@ namespace Orts.Simulation.RollingStocks
         public float TrackXoverSoundTriggered;
 
         public float TrackSoundInTunnelTriggered;
+        bool CarInTunnel = false;
 
         public float TunnelForceN;  // Resistive force due to tunnel, in Newtons
         public float FrictionForceN; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
@@ -1039,6 +1041,34 @@ namespace Orts.Simulation.RollingStocks
             UpdateBrakeSlideCalculation();
             UpdateTrainDerailmentRisk(elapsedClockSeconds);
 
+            // Update tunnel track sounds allows tunnel sound to increase in volume when train enters tunnel, and decrease in volume when train leaves tunnel
+            // Maximum distance set to 25 meters
+            if (CarInTunnel)
+            {
+                TrackSoundInTunnelTriggered = 1; // set rigger for sound to turn on
+                if (CarTunnelDistanceM < 25) // calculate distance
+                {
+                    CarTunnelDistanceM += elapsedClockSeconds * AbsSpeedMpS;
+                }
+                else
+                {
+                    CarTunnelDistanceM = 25;
+                }
+            }
+            else if (!CarInTunnel)
+            {
+                // Count down sound volume, then reset tunnel trigger
+                if (CarTunnelDistanceM > 0)
+                {
+                    CarTunnelDistanceM -= elapsedClockSeconds * AbsSpeedMpS;
+                }
+                else
+                {
+                    CarTunnelDistanceM = 0;
+                    TrackSoundInTunnelTriggered = 0;
+                }
+            }
+
             // acceleration
             if (elapsedClockSeconds > 0.0f)
             {
@@ -1309,13 +1339,14 @@ namespace Orts.Simulation.RollingStocks
 
                     TunnelForceN = UnitAerodynamicDrag * Kg.ToTonne(MassKG) * AbsSpeedMpS * AbsSpeedMpS;
 
-                    TrackSoundInTunnelTriggered = 1;
+                    CarInTunnel = true;
+                                        
                 }
                 else
                 {
                     TunnelForceN = 0.0f; // Reset tunnel force to zero when train is no longer in the tunnel
 
-                    TrackSoundInTunnelTriggered = 0;
+                    CarInTunnel = false;
                 }
             }
         }
