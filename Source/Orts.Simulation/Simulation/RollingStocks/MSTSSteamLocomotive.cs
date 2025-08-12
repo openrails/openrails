@@ -2420,7 +2420,7 @@ namespace Orts.Simulation.RollingStocks
 
             ApplyBoilerPressure();
 
-            if (Simulator.Settings.DataLogSteamPerformance)
+            if (Simulator.Settings.DataLogExclusiveSteamPerformance)
             {
                 Trace.TraceInformation("============================================= Steam Locomotive Performance - Locomotive Details =========================================================");
                 Trace.TraceInformation("Version - {0}", VersionInfo.VersionOrBuild);
@@ -6514,7 +6514,7 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 // Calculate the elapse time for the steam performance monitoring
-                if (Simulator.Settings.DataLogSteamPerformance)
+                if (Simulator.Settings.DataLogExclusiveSteamPerformance)
                 {
                     if (SpeedMpS > 0.05)
                     {
