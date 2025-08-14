@@ -708,15 +708,11 @@ namespace Orts.Simulation.RollingStocks
 
 #region Variables for visual effects (steam, smoke)
 
-public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         public float StackSteamVolumeM3pS;
         public float StackParticleDurationS;
         public float StackCount;
-        public float Cylinders1SteamVelocityMpS;
         public float Cylinders1SteamVolumeM3pS;
-        public float Cylinders2SteamVelocityMpS;
         public float Cylinders2SteamVolumeM3pS;
-        public float SafetyValvesSteamVelocityMpS;
         public float SafetyValvesSteamVolumeM3pS;
         public float Cylinders11SteamVolumeM3pS;
         public float Cylinders12SteamVolumeM3pS;
@@ -727,9 +723,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         public float Cylinders41SteamVolumeM3pS;
         public float Cylinders42SteamVolumeM3pS;
 
-        public float SanderSteamExhaustForwardVolumeM3pS;
-        public float SanderSteamExhaustReverseVolumeM3pS;
-        public float SanderSteamExhaustVelocityMpS;
+        public float SanderSteamExhaustForwardVelocityMpS;
+        public float SanderSteamExhaustReverseVelocityMpS;
         public float SanderSteamExhaustParticleDurationS;
 
         public float Cylinders2_11SteamVolumeM3pS;
@@ -748,7 +743,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         bool CylinderCock2_21On = true;
         bool CylinderCock2_22On = false;
 
-        public float CylinderSteamExhaustSteamVelocityMpS;
         public float CylinderSteamExhaust1SteamVolumeM3pS;
         public float CylinderSteamExhaust2SteamVolumeM3pS;
         public float CylinderSteamExhaust3SteamVolumeM3pS;
@@ -759,9 +753,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         bool CylinderSteamExhaust4On = false;
 
         bool BoosterCylinderSteamExhaustOn = false;
-        public float BoosterCylinderSteamExhaust01SteamVelocityMpS;
         public float BoosterCylinderSteamExhaust01SteamVolumeM3pS;
-        public float BoosterCylinderSteamExhaust02SteamVelocityMpS;
         public float BoosterCylinderSteamExhaust02SteamVolumeM3pS;
 
         float SteamExhaustDebugTimerS;
@@ -777,10 +769,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         bool BoosterCylinderCock21On = true;
         bool BoosterCylinderCock22On = false;
 
-        public float BoosterCylinderCock11SteamVelocityMpS;
-        public float BoosterCylinderCock12SteamVelocityMpS;
-        public float BoosterCylinderCock21SteamVelocityMpS;
-        public float BoosterCylinderCock22SteamVelocityMpS;
         public float BoosterCylinderCockSteam11VolumeMpS;
         public float BoosterCylinderCockSteam12VolumeMpS;
         public float BoosterCylinderCockSteam21VolumeMpS;
@@ -792,29 +780,20 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
         bool BoosterCylinderCocksOn = false;
 
         public float BlowdownSteamVolumeM3pS;
-        public float BlowdownSteamVelocityMpS;
         public float BlowdownParticleDurationS = 3.0f;
 
-        public float DrainpipeSteamVolumeM3pS;
         public float DrainpipeSteamVelocityMpS;
-        public float Injector1SteamVolumeM3pS;
         public float Injector1SteamVelocityMpS;
-        public float Injector2SteamVolumeM3pS;
         public float Injector2SteamVelocityMpS;
 
-        public float SmallEjectorSteamVolumeM3pS;
         public float SmallEjectorSteamVelocityMpS;
         public float SmallEjectorParticleDurationS = 3.0f;
 
-        public float LargeEjectorSteamVolumeM3pS;
         public float LargeEjectorSteamVelocityMpS;
         public float LargeEjectorParticleDurationS = 3.0f;
 
-        public float CompressorSteamVolumeM3pS;
         public float CompressorSteamVelocityMpS;
-        public float GeneratorSteamVolumeM3pS;
         public float GeneratorSteamVelocityMpS;
-        public float WhistleSteamVolumeM3pS;
         public float WhistleSteamVelocityMpS;
         float CylinderCockTimerS = 0.0f;
         float CylinderCockOpenTimeS = 0.0f;
@@ -3277,25 +3256,21 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             float SteamEffectsFactor = MathHelper.Clamp(BoilerPressurePSI / MaxBoilerPressurePSI, 0.1f, 1.0f);  // Factor to allow for drops in boiler pressure reducing steam effects
 
-            SanderSteamExhaustForwardVolumeM3pS = Sander && SandingSystemType == SandingSystemTypes.Steam && (Direction == Direction.Forward || Direction == Direction.N) ? (10.0f * SteamEffectsFactor) : 0.0f;
-            SanderSteamExhaustReverseVolumeM3pS = Sander && SandingSystemType == SandingSystemTypes.Steam && Direction == Direction.Reverse ? (10.0f * SteamEffectsFactor) : 0.0f;
+            SanderSteamExhaustForwardVelocityMpS = Sander && SandingSystemType == SandingSystemTypes.Steam && (Direction == Direction.Forward || Direction == Direction.N) ? (1.0f * SteamEffectsFactor) : 0.0f;
+            SanderSteamExhaustReverseVelocityMpS = Sander && SandingSystemType == SandingSystemTypes.Steam && Direction == Direction.Reverse ? (1.0f * SteamEffectsFactor) : 0.0f;
             SanderSteamExhaustParticleDurationS = 1.0f;
-            SanderSteamExhaustVelocityMpS = 100.0f;
 
-            // Bernoulli formula for future reference - steam velocity = SQRT ( 2 * dynamic pressure (pascals) / fluid density)
-            Cylinders1SteamVelocityMpS = 100.0f;
-            Cylinders2SteamVelocityMpS = 100.0f;
-            Cylinders1SteamVolumeM3pS = CylinderCock1On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f;
-            Cylinders2SteamVolumeM3pS = CylinderCock2On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f;
+            Cylinders1SteamVolumeM3pS = CylinderCock1On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (1.00f * SteamEffectsFactor) : 0.0f;
+            Cylinders2SteamVolumeM3pS = CylinderCock2On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (1.00f * SteamEffectsFactor) : 0.0f;
 
-            Cylinders11SteamVolumeM3pS = CylinderCock11On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f;
-            Cylinders12SteamVolumeM3pS = CylinderCock12On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f;
-            Cylinders21SteamVolumeM3pS = CylinderCock21On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f;
-            Cylinders22SteamVolumeM3pS = CylinderCock22On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f;
-            Cylinders31SteamVolumeM3pS = CylinderCock31On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f;
-            Cylinders32SteamVolumeM3pS = CylinderCock32On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f;
-            Cylinders41SteamVolumeM3pS = CylinderCock41On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f;
-            Cylinders42SteamVolumeM3pS = CylinderCock42On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f;
+            Cylinders11SteamVolumeM3pS = CylinderCock11On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (1.00f * SteamEffectsFactor) : 0.0f;
+            Cylinders12SteamVolumeM3pS = CylinderCock12On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (1.00f * SteamEffectsFactor) : 0.0f;
+            Cylinders21SteamVolumeM3pS = CylinderCock21On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (1.00f * SteamEffectsFactor) : 0.0f;
+            Cylinders22SteamVolumeM3pS = CylinderCock22On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (1.00f * SteamEffectsFactor) : 0.0f;
+            Cylinders31SteamVolumeM3pS = CylinderCock31On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (1.00f * SteamEffectsFactor) : 0.0f;
+            Cylinders32SteamVolumeM3pS = CylinderCock32On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (1.00f * SteamEffectsFactor) : 0.0f;
+            Cylinders41SteamVolumeM3pS = CylinderCock41On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (1.00f * SteamEffectsFactor) : 0.0f;
+            Cylinders42SteamVolumeM3pS = CylinderCock42On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (1.00f * SteamEffectsFactor) : 0.0f;
 
             Cylinder1ParticleDurationS = 1.0f;
             Cylinder2ParticleDurationS = 1.0f;
@@ -3305,36 +3280,29 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             CylinderSteamExhaust2SteamVolumeM3pS = throttle > 0.0 && CylinderSteamExhaust2On ? (cutoff * 10.0f * SteamEffectsFactor) : 0.0f;
             CylinderSteamExhaust3SteamVolumeM3pS = throttle > 0.0 && CylinderSteamExhaust3On ? (cutoff * 10.0f * SteamEffectsFactor) : 0.0f;
             CylinderSteamExhaust4SteamVolumeM3pS = throttle > 0.0 && CylinderSteamExhaust4On ? (cutoff * 10.0f * SteamEffectsFactor) : 0.0f;
-            CylinderSteamExhaustSteamVelocityMpS = 100.0f;
             CylinderSteamExhaustParticleDurationS = 1.0f;
 
             CylinderSteamExhaust2_1SteamVolumeM3pS = throttle > 0.0 && CylinderSteamExhaust2_1On ? (cutoff * 10.0f * SteamEffectsFactor) : 0.0f;
             CylinderSteamExhaust2_2SteamVolumeM3pS = throttle > 0.0 && CylinderSteamExhaust2_2On ? (cutoff * 10.0f * SteamEffectsFactor) : 0.0f;
 
-            Cylinders2_11SteamVolumeM3pS = CylinderCock2_11On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f;
-            Cylinders2_12SteamVolumeM3pS = CylinderCock2_12On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f;
-            Cylinders2_21SteamVolumeM3pS = CylinderCock2_21On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f;
-            Cylinders2_22SteamVolumeM3pS = CylinderCock2_22On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f;
+            Cylinders2_11SteamVolumeM3pS = CylinderCock2_11On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (1.00f * SteamEffectsFactor) : 0.0f;
+            Cylinders2_12SteamVolumeM3pS = CylinderCock2_12On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (1.00f * SteamEffectsFactor) : 0.0f;
+            Cylinders2_21SteamVolumeM3pS = CylinderCock2_21On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (1.00f * SteamEffectsFactor) : 0.0f;
+            Cylinders2_22SteamVolumeM3pS = CylinderCock2_22On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (1.00f * SteamEffectsFactor) : 0.0f;
 
             // Booster Cylinder Steam Exhausts (automatic)
-            BoosterCylinderSteamExhaust01SteamVolumeM3pS = BoosterCylinderSteamExhaustOn && BoosterCylinderSteamExhaust01On ? (10.0f * BoosterSteamFraction) : 0.0f;
-            BoosterCylinderSteamExhaust01SteamVelocityMpS = 100.0f;
+            BoosterCylinderSteamExhaust01SteamVolumeM3pS = BoosterCylinderSteamExhaustOn && BoosterCylinderSteamExhaust01On ? (1.0f * BoosterSteamFraction) : 0.0f;
 
-            BoosterCylinderSteamExhaust02SteamVolumeM3pS = BoosterCylinderSteamExhaustOn && BoosterCylinderSteamExhaust02On ? (10.0f * BoosterSteamFraction) : 0.0f;
-            BoosterCylinderSteamExhaust02SteamVelocityMpS = 100.0f;
+            BoosterCylinderSteamExhaust02SteamVolumeM3pS = BoosterCylinderSteamExhaustOn && BoosterCylinderSteamExhaust02On ? (1.0f * BoosterSteamFraction) : 0.0f;
 
             // Booster Cylinder Steam Cylinder Cocks (automatic)
-            BoosterCylinderCockSteam11VolumeMpS = BoosterCylinderCocksOn && BoosterCylinderCock11On ? (10.0f * BoosterSteamFraction) : 0.0f;
-            BoosterCylinderCock11SteamVelocityMpS = 100.0f;
+            BoosterCylinderCockSteam11VolumeMpS = BoosterCylinderCocksOn && BoosterCylinderCock11On ? (1.0f * BoosterSteamFraction) : 0.0f;
 
-            BoosterCylinderCockSteam12VolumeMpS = BoosterCylinderCocksOn && BoosterCylinderCock12On ? (10.0f * BoosterSteamFraction) : 0.0f;
-            BoosterCylinderCock11SteamVelocityMpS = 100.0f;
+            BoosterCylinderCockSteam12VolumeMpS = BoosterCylinderCocksOn && BoosterCylinderCock12On ? (1.0f * BoosterSteamFraction) : 0.0f;
 
-            BoosterCylinderCockSteam21VolumeMpS = BoosterCylinderCocksOn && BoosterCylinderCock21On ? (10.0f * BoosterSteamFraction) : 0.0f;
-            BoosterCylinderCock11SteamVelocityMpS = 100.0f;
+            BoosterCylinderCockSteam21VolumeMpS = BoosterCylinderCocksOn && BoosterCylinderCock21On ? (1.0f * BoosterSteamFraction) : 0.0f;
 
-            BoosterCylinderCockSteam22VolumeMpS = BoosterCylinderCocksOn && BoosterCylinderCock22On ? (10.0f * BoosterSteamFraction) : 0.0f;
-            BoosterCylinderCock11SteamVelocityMpS = 100.0f;
+            BoosterCylinderCockSteam22VolumeMpS = BoosterCylinderCocksOn && BoosterCylinderCock22On ? (1.0f * BoosterSteamFraction) : 0.0f;
 
             BoosterCylinderCockParticleDurationS = 1.0f;
 
@@ -3369,69 +3337,50 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
 
             // Blowdown Steam Effects
-            BlowdownSteamVolumeM3pS = (BlowdownValveOpen && BlowdownSteamUsageLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f);
-            BlowdownSteamVelocityMpS = 350.0f;
+            BlowdownSteamVolumeM3pS = (BlowdownValveOpen && BlowdownSteamUsageLBpS > 0.0) ? Kg.FromLb(BlowdownSteamUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
             BlowdownParticleDurationS = 2.0f;
 
             // Drainpipe Steam Effects
-            DrainpipeSteamVolumeM3pS = 0.0f;  // Turn Drainpipe permanently "off"
             DrainpipeSteamVelocityMpS = 0.0f;
             DrainpipeParticleDurationS = 1.0f;
 
             // Generator Steam Effects
-            GeneratorSteamVelocityMpS = 50.0f;
-            GeneratorSteamVolumeM3pS = 4.0f * SteamEffectsFactor;
-            GeneratorParticleDurationS = 1.0f;
-            GeneratorParticleDurationS = MathHelper.Clamp(GeneratorParticleDurationS / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
+            GeneratorSteamVelocityMpS = 0.5f * SteamEffectsFactor;
+            GeneratorParticleDurationS = MathHelper.Clamp(1.0f / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
 
             // Injector Steam Effects
-            Injector1SteamVolumeM3pS = (Injector1IsOn ? (5.0f * SteamEffectsFactor) : 0);
-            Injector1SteamVelocityMpS = 10.0f;
-            Injector1ParticleDurationS = 1.0f;
-            Injector1ParticleDurationS = MathHelper.Clamp(Injector1ParticleDurationS / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
+            Injector1SteamVelocityMpS = (Injector1IsOn ? (0.1f * SteamEffectsFactor) : 0);
+            Injector1ParticleDurationS = MathHelper.Clamp(1.0f / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
 
-            Injector2SteamVolumeM3pS = (Injector2IsOn ? (5.0f * SteamEffectsFactor) : 0);
-            Injector2SteamVelocityMpS = 10.0f;
-            Injector2ParticleDurationS = 1.0f;
-            Injector2ParticleDurationS = MathHelper.Clamp(Injector2ParticleDurationS / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
+            Injector2SteamVelocityMpS = (Injector2IsOn ? (0.1f * SteamEffectsFactor) : 0);
+            Injector2ParticleDurationS = MathHelper.Clamp(1.0f / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
 
             // Ejector Steam Effects
-            SmallEjectorSteamVolumeM3pS = (SmallSteamEjectorIsOn ? (1.5f * SteamEffectsFactor) : 0);
-            SmallEjectorSteamVelocityMpS = 10.0f;
-            SmallEjectorParticleDurationS = 1.0f;
-            SmallEjectorParticleDurationS = MathHelper.Clamp(SmallEjectorParticleDurationS / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
+            SmallEjectorSteamVelocityMpS = (SmallSteamEjectorIsOn ? (0.1f * SteamEffectsFactor) : 0);
+            SmallEjectorParticleDurationS = MathHelper.Clamp(1.0f / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
 
-            LargeEjectorSteamVolumeM3pS = (LargeSteamEjectorIsOn ? (1.5f * SteamEffectsFactor) : 0);
-            LargeEjectorSteamVelocityMpS = 10.0f;
-            LargeEjectorParticleDurationS = 1.0f;
-            LargeEjectorParticleDurationS = MathHelper.Clamp(LargeEjectorParticleDurationS / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
+            LargeEjectorSteamVelocityMpS = (LargeSteamEjectorIsOn ? (0.1f * SteamEffectsFactor) : 0);
+            LargeEjectorParticleDurationS = MathHelper.Clamp(1.0f / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
 
             // Compressor Steam Effects
             // Only show compressor steam effects if it is not a vacuum controlled steam engine
-            if (!(BrakeSystem is Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS.VacuumSinglePipe))
+            if (!(BrakeSystem is VacuumSinglePipe))
             {
-                CompressorSteamVelocityMpS = 10.0f;
-                CompressorSteamVolumeM3pS = (CompressorIsOn ? (1.5f * SteamEffectsFactor) : 0);
-                CompressorParticleDurationS = 1.0f;
-                CompressorParticleDurationS = MathHelper.Clamp(CompressorParticleDurationS / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
+                CompressorSteamVelocityMpS = (CompressorIsOn ? (0.1f * SteamEffectsFactor) : 0);
+                CompressorParticleDurationS = MathHelper.Clamp(1.0f / (AbsSpeedMpS / 4.0f), 0.1f, 1.0f);
             }
 
             // Whistle Steam Effects
-            WhistleSteamVelocityMpS = 10.0f;
-            WhistleSteamVolumeM3pS = (Horn ? (5.0f * SteamEffectsFactor) : 0);
-            WhistleParticleDurationS = 3.0f;
-            WhistleParticleDurationS = MathHelper.Clamp(WhistleParticleDurationS / (AbsSpeedMpS / 4.0f), 0.1f, 3.0f);
+            WhistleSteamVelocityMpS = (Horn ? (10.0f * SteamEffectsFactor) : 0);
+            WhistleParticleDurationS = MathHelper.Clamp(3.0f / (AbsSpeedMpS / 4.0f), 0.1f, 3.0f);
 
             // Safety Valves Steam Effects
 
-            SafetyValvesSteamVelocityMpS = (float)Math.Sqrt(KPa.FromPSI(MaxBoilerPressurePSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3);
-            //SafetyValvesSteamVolumeM3pS = SafetyIsOn ? Kg.FromLb(SafetyValveUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
-            SafetyValvesSteamVolumeM3pS = SafetyIsOn ? 5.0f : 0;
-            SafetyValvesParticleDurationS = 3.0f;
-            SafetyValvesParticleDurationS = MathHelper.Clamp(SafetyValvesParticleDurationS / (AbsSpeedMpS / 4.0f), 0.1f, 3.0f);
+            SafetyValvesSteamVolumeM3pS = SafetyIsOn ? Kg.FromLb(SafetyValveUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG : 0;
+            SafetyValvesParticleDurationS = MathHelper.Clamp(3.0f / (AbsSpeedMpS / 4.0f), 0.1f, 3.0f);
 
             // Smoke Stack Smoke Effects
-            // Colur for smoke is determined by the amount of air flowing through the fire (ie damper ).
+            // Color for smoke is determined by the amount of air flowing through the fire (ie damper ).
 
             // Damper - to determine smoke color
             float SmokeColorDamper = 0.0f;
@@ -3458,25 +3407,20 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 if (CylinderSteamExhaust1On || CylinderSteamExhaust2On || CylinderSteamExhaust3On || CylinderSteamExhaust4On)
                 {
-                    float smokeVelocityVariationFactor = 5 * cutoff; // adjust smoke velocity based upon throttle and cutoff settings
-                    float smokeVolumeVariationFactor = 1.5f * cutoff; // adjust smoke volume based upon throttle and cutoff settings
+                    float smokeVolumeVariationFactor = 1.0f * cutoff; // adjust smoke volume based upon throttle and cutoff settings
 
-                    StackSteamVelocityMpS.Update(elapsedClockSeconds, (float)Math.Sqrt(KPa.FromPSI(SteamReleasePressure_AtmPSI) * 1000 * smokeVelocityVariationFactor / WaterDensityAt100DegC1BarKGpM3));
                     StackSteamVolumeM3pS = Kg.FromLb(CylinderSteamUsageLBpS + BlowerSteamUsageLBpS + RadiationSteamLossLBpS + CompSteamUsageLBpS + GeneratorSteamUsageLBpS) * smokeVolumeVariationFactor * SteamVaporSpecVolumeAt100DegC1BarM3pKG;
-                    StackSteamVolumeM3pS = StackSteamVolumeM3pS / StackCount;
+                    StackSteamVolumeM3pS = (StackSteamVolumeM3pS) / StackCount;
                     StackParticleDurationS = Throttlepercent + FireRatio;
                 }
                 else // when not exhausting
                 {
                     if (AbsSpeedMpS < 10)
                     {
-                        float smokeRestVelocityVariationFactor = 2 * cutoff; // adjust smoke velocity based upon throttle and cutoff settings
-                        float smokeRestVolumeVariationFactor = 1 * cutoff; // adjust smoke volume based upon throttle and cutoff settings
+                        float smokeRestVolumeVariationFactor = 1.0f * cutoff; // adjust smoke volume based upon throttle and cutoff settings
 
-                        float velocityRate = Math.Min(1.0f, 1.0f / AbsSpeedMpS);
-                        StackSteamVelocityMpS.Update(elapsedClockSeconds, velocityRate);
                         StackSteamVolumeM3pS = Kg.FromLb(BlowerSteamUsageLBpS + RadiationSteamLossLBpS + CompSteamUsageLBpS + GeneratorSteamUsageLBpS) * smokeRestVolumeVariationFactor * SteamVaporSpecVolumeAt100DegC1BarM3pKG;
-                        StackSteamVolumeM3pS = StackSteamVolumeM3pS / StackCount + FireRatio;
+                        StackSteamVolumeM3pS = (StackSteamVolumeM3pS) / StackCount;
                         StackParticleDurationS = Throttlepercent + FireRatio;
                     }
                 }
@@ -3485,9 +3429,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             else // Legacy smoke implementation
             {
                 float velocityRate = (float)Math.Sqrt(KPa.FromPSI(SteamReleasePressure_AtmPSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3);
-                StackSteamVelocityMpS.Update(elapsedClockSeconds, (float)Math.Sqrt(KPa.FromPSI(SteamReleasePressure_AtmPSI) * 1000 * 2 / WaterDensityAt100DegC1BarKGpM3));
                 StackSteamVolumeM3pS = Kg.FromLb(CylinderSteamUsageLBpS + BlowerSteamUsageLBpS + RadiationSteamLossLBpS + CompSteamUsageLBpS + GeneratorSteamUsageLBpS) * SteamVaporSpecVolumeAt100DegC1BarM3pKG;
-                StackSteamVolumeM3pS = StackSteamVolumeM3pS / StackCount + FireRatio;
+                StackSteamVolumeM3pS = (StackSteamVolumeM3pS) / StackCount;
                 StackParticleDurationS = Throttlepercent + FireRatio;
             }
 
