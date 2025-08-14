@@ -2639,7 +2639,8 @@ be included to further customize effect emitters:
   particles from this emitter. The default texture is "smokemain.ace" for steam-type emitters and
   "dieselsmoke.ace" for diesel-type emitters. If the texture cannot be found from the engine's/wagon's
   folder, then the ``GLOBAL\TEXTURES`` folder is checked, and if the texture is not there the ``Content``
-  folder included with OR is checked. Allowed texture formats are ``.png, .jpg, .bmp, .gif, .ace, or .dds``.
+  folder included with OR is checked. OR will search for any ``.ace`` or ``.dds`` textures with the name
+  specified, though .dds is preferred over .ace.
   A path to a texture can also be used, such as ``ORTSGraphic ( "..\\SmokeTextures\\steam.dds" )``, to search
   for textures not in the same folder as the engine or wagon.
 - ``ORTSGraphicAtlasLayout ( w h )`` -- Particle textures generally include multiple sprites in a single file

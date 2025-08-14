@@ -87,13 +87,21 @@ namespace Orts.Viewer3D
             else
                 TexturePath = defaultTextureName;
 
+            string noExtension = Path.ChangeExtension(TexturePath, null);
+
+            string wagPath = Path.Combine(Path.GetDirectoryName(Emitter.CarViewer.Car.WagFilePath), noExtension);
+            string globalPath = Path.Combine(Viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\", noExtension);
+            string contentPath = Path.Combine(Viewer.ContentPath, noExtension);
+
             // Texture location preference is eng/wag folder -> MSTS GLOBAL\TEXTURES folder -> OR CONTENT folder
-            if (File.Exists(Path.Combine(Path.GetDirectoryName(Emitter.CarViewer.Car.WagFilePath), TexturePath)))
-                TexturePath = Path.Combine(Path.GetDirectoryName(Emitter.CarViewer.Car.WagFilePath), TexturePath);
-            else if (File.Exists(Path.Combine(Viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\", TexturePath)))
-                TexturePath = Path.Combine(Viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\", TexturePath);
-            else if (customTexture && File.Exists(Path.Combine(Viewer.ContentPath, TexturePath)))
-                TexturePath = Path.Combine(Viewer.ContentPath, TexturePath);
+            // File type agnostic: We should detect a match if a .ace OR .dds is present, regardless of the specific file type requested
+            // We give the material manager the path to the .dds file, but it will automatically load the .ace file if the .dds is missing
+            if (File.Exists(wagPath + ".dds") || File.Exists(wagPath + ".ace"))
+                TexturePath = wagPath + ".dds";
+            else if (File.Exists(globalPath + ".dds") || File.Exists(globalPath + ".ace"))
+                TexturePath = globalPath + ".dds";
+            else if (File.Exists(contentPath + ".dds") || File.Exists(contentPath + ".ace"))
+                TexturePath = contentPath + ".dds";
             else // Fall back to default texture in CONTENT folder
             {
                 TexturePath = Path.Combine(Viewer.ContentPath, defaultTextureName);
