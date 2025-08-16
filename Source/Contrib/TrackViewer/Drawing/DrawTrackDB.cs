@@ -137,7 +137,8 @@ namespace ORTS.TrackViewer.Drawing
                 }
 
                 // adding
-                uint index = 0;
+                int index = TrackDB.TrItemTable.Length;
+                List<TrItem> eventItems = new List<TrItem>();
                 foreach (var file in Directory.GetFiles(directory, "*.act"))
                 {
                     try
@@ -157,8 +158,8 @@ namespace ORTS.TrackViewer.Drawing
                                         eventCategoryLocation.Outcomes.DisplayMessage,
                                         eventCategoryLocation.TileX, eventCategoryLocation.TileZ,
                                         eventCategoryLocation.X, 0, eventCategoryLocation.Z,
-                                        index);
-                                    TrackDB.TrItemTable[index] = eventItem;
+                                        (uint)index);
+                                    eventItems.Add(eventItem);
                                     index++;
                                     found = true;
                                 }
@@ -171,6 +172,12 @@ namespace ORTS.TrackViewer.Drawing
                     catch { }
                 }
 
+                // extend the track items array and append the event items
+                int oldSize = TrackDB.TrItemTable.Length;
+                Array.Resize<TrItem>(ref TrackDB.TrItemTable, index);
+                int newSize = TrackDB.TrItemTable.Length;
+                int eventSize = eventItems.Count;
+                for (int toIdx = oldSize, fromIdx = 0; toIdx < newSize && fromIdx < eventSize; toIdx++, fromIdx++) { TrackDB.TrItemTable[toIdx] = eventItems[fromIdx]; }
             }
         }
 
