@@ -1376,7 +1376,9 @@ namespace Orts.Simulation
             return null;
         }
         /// <summary>
-        /// Finds the train that contains exactly the wagons in the list. Exact order is not required.
+        /// Finds the train that contains the wagons in the list. 
+        /// Exact order is not required.
+        /// Some lists may only contain the first and last wagon.
         /// </summary>
         /// <param name="wagonIdList"></param>
         /// <returns>train or null</returns>
@@ -1391,10 +1393,10 @@ namespace Orts.Simulation
                     {
                         nWagonListCars++;
                     }
-                }
-                if (nWagonListCars == trainItem.Cars.Count)
-                {
-                    return trainItem;
+                    if (nWagonListCars == trainItem.Cars.Count)
+                    {
+                        return trainItem;
+                    }
                 }
             }
 
