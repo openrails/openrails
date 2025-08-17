@@ -2762,6 +2762,8 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.ConcreteSleepers_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CarCameraDistance_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.Wind_Speed_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.Rain_Intensity_Dec_Past:
                     if (newValue < SMS.Threshold)
                     {
                         Signaled = true;
@@ -2788,6 +2790,8 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.ConcreteSleepers_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CarCameraDistance_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.Wind_Speed_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.Rain_Intensity_Inc_Past:
                     if (newValue > SMS.Threshold)
                     {
                         Signaled = true;
@@ -2902,7 +2906,12 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.CarCameraDistance_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CarCameraDistance_Inc_Past:
                     return car.CarTrackControlledDistanceM;
-
+                case Orts.Formats.Msts.Variable_Trigger.Events.Wind_Speed_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.Wind_Speed_Inc_Past:
+                    return car.Train.Simulator.Weather.WindInstantaneousSpeedMpS;
+                case Orts.Formats.Msts.Variable_Trigger.Events.Rain_Intensity_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.Rain_Intensity_Inc_Past:
+                    return car.Train.Simulator.Weather.PrecipitationIntensityPPSPM2;
                 default:
                     return 0;
             }
