@@ -107,36 +107,12 @@ namespace ORTS.TrackViewer.Drawing
                 //sigcfgFile = null; // default initialization
             }
 
-            // read the activity location events and store them in the TrackDB.TrItemTable
+            // read the activity location events and add them to the TrackDB.TrItemTable
 
             ActivityNames.Clear();
             var directory = System.IO.Path.Combine(routePath, "ACTIVITIES");
             if (System.IO.Directory.Exists(directory))
             {
-                // counting
-                int cnt = 0;
-
-                foreach (var file in Directory.GetFiles(directory, "*.act"))
-                {
-                    try
-                    {
-                        var activityFile = new ActivityFile(file);
-                        Events events = activityFile.Tr_Activity.Tr_Activity_File.Events;
-                        if (events != null)
-                        {
-                            for (int i = 0; i < events.EventList.Count; i++)
-                            {
-                                if (events.EventList[i].GetType() == typeof(EventCategoryLocation))
-                                {
-                                    cnt++;
-                                }
-                            }
-                        }
-                    }
-                    catch { }
-                }
-
-                // adding
                 int index = TrackDB.TrItemTable.Length;
                 List<TrItem> eventItems = new List<TrItem>();
                 foreach (var file in Directory.GetFiles(directory, "*.act"))
@@ -169,15 +145,18 @@ namespace ORTS.TrackViewer.Drawing
                             ActivityNames.Add(activityFile.Tr_Activity.Tr_Activity_Header.Name);
                         }
                     }
-                    catch { }
+                    catch { /* just ignore activity files with problems */ }
                 }
 
                 // extend the track items array and append the event items
-                int oldSize = TrackDB.TrItemTable.Length;
-                Array.Resize<TrItem>(ref TrackDB.TrItemTable, index);
-                int newSize = TrackDB.TrItemTable.Length;
-                int eventSize = eventItems.Count;
-                for (int toIdx = oldSize, fromIdx = 0; toIdx < newSize && fromIdx < eventSize; toIdx++, fromIdx++) { TrackDB.TrItemTable[toIdx] = eventItems[fromIdx]; }
+                if (eventItems.Count > 0)
+                {
+                    int oldSize = TrackDB.TrItemTable.Length;
+                    Array.Resize<TrItem>(ref TrackDB.TrItemTable, index);
+                    int newSize = TrackDB.TrItemTable.Length;
+                    int eventSize = eventItems.Count;
+                    for (int toIdx = oldSize, fromIdx = 0; toIdx < newSize && fromIdx < eventSize; toIdx++, fromIdx++) { TrackDB.TrItemTable[toIdx] = eventItems[fromIdx]; }
+                }
             }
         }
 
