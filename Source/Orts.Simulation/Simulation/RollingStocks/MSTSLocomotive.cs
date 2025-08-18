@@ -3521,6 +3521,17 @@ namespace Orts.Simulation.RollingStocks
                     axle.CurtiusKnifflerZeroSpeed = ZeroBaseuMax;
                 }
             }
+            else
+            {
+                foreach (var axle in LocomotiveAxles)
+                {
+                    if (axle.AdhesionLimit == 0)
+                    {
+                        axle.AdhesionLimit = BaseFrictionCoefficientFactor * AdhesionMultiplier;
+                        axle.CurtiusKnifflerZeroSpeed = ZeroBaseuMax;
+                    }
+                }
+            }
 
            // Set adhesion conditions for other steam locomotives
             if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared)  // ToDo explore adhesion factors
