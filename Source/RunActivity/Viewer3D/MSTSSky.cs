@@ -543,8 +543,8 @@ namespace Orts.Viewer3D
                 string mstsSkySunTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskysatellitetexture[0].TextureName.ToString();
                 string mstsSkyMoonTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskysatellitetexture[1].TextureName.ToString();
 
-                MSTSSkySunTexture = Viewer.TextureManager.Get(mstsSkySunTexture);
-                MSTSSkyMoonTexture = Viewer.TextureManager.Get(mstsSkyMoonTexture);
+                MSTSSkySunTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, mstsSkySunTexture);
+                MSTSSkyMoonTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, mstsSkyMoonTexture);
             }
             else
                 MSTSSkyMoonTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "MoonMap.png"));
