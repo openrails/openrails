@@ -144,7 +144,7 @@ namespace ORTS.Settings
         public bool DisableTCSScripts { get; set; }
         [Default(false)]
         public bool AutoSaveActive { get; set; }
-        [Default (15)]
+        [Default(15)]
         public int AutoSaveInterval { get; set; }
 
         // Audio settings:
@@ -215,9 +215,9 @@ namespace ORTS.Settings
         [Default(false)]
         public bool DataLogPhysics { get; set; }
         [Default(false)]
-        public bool DataLogMisc { get; set; }
+        public bool DataLogExclusiveSteamPerformance { get; set; }
         [Default(false)]
-        public bool DataLogSteamPerformance { get; set; }
+        public bool DataLogExclusiveSteamPowerCurve { get; set; }
         [Default(false)]
         public bool VerboseConfigurationMessages { get; set; }
 
