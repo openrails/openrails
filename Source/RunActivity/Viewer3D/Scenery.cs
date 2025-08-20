@@ -332,7 +332,16 @@ namespace Orts.Viewer3D
                 var shapeFilePath = fileNameIsNotShape || String.IsNullOrEmpty(worldObject.FileName) ? null : global ? viewer.Simulator.BasePath + @"\Global\Shapes\" + worldObject.FileName : viewer.Simulator.RoutePath + @"\Shapes\" + worldObject.FileName;
                 if (shapeFilePath != null)
                 {
-                    shapeFilePath = Path.GetFullPath(shapeFilePath);
+                    try
+                    {
+                        shapeFilePath = Path.GetFullPath(shapeFilePath);
+                    }
+                    catch (Exception e)
+                    {
+                        Trace.TraceWarning("Invalid reference in World file {0} to scenery file {1} for {2}: {3}", WFilePath, shapeFilePath, worldObject.FileName, e.Message);
+                        Trace.TraceInformation("Illegal characters in a file path are: \\ / : * ? \" < > |");
+                        shapeFilePath = null;
+                    }
                     if (!File.Exists(shapeFilePath))
                     {
                         Trace.TraceWarning("{0} scenery object {1} with StaticFlags {3:X8} references non-existent {2}", WFileName, worldObject.UID, shapeFilePath, worldObject.StaticFlags);
