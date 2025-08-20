@@ -1419,6 +1419,18 @@ namespace Orts.Viewer3D.Popups
 
         protected override ControlLayout Layout(ControlLayout layout)
         {
+            int scrollPosition = 0;
+            if (Tabs[ActiveTab].Vbox != null)
+            {
+                foreach (var control in Tabs[ActiveTab].Vbox.Controls)
+                {
+                    if (control is ControlLayoutScrollboxVertical controlLayoutScrollboxVertical)
+                    {
+                        scrollPosition = controlLayoutScrollboxVertical.GetScrollPosition();
+                    }
+                }
+            }
+
             var vbox = base.Layout(layout).AddLayoutVertical();
 
             if (Tabs.Count > 0)
@@ -1434,8 +1446,17 @@ namespace Orts.Viewer3D.Popups
                 }
                 vbox.AddHorizontalSeparator();
                 Tabs[ActiveTab].Layout(vbox);
+
+                foreach (var control in vbox.Controls)
+                {
+                    if (control is ControlLayoutScrollboxVertical controlLayoutScrollboxVertical)
+                    {
+                        controlLayoutScrollboxVertical.SetScrollPosition(scrollPosition);
+                    }
+                }
             }
 
+            Tabs[ActiveTab].Vbox = vbox;
             return vbox;
         }
 
@@ -1462,12 +1483,14 @@ namespace Orts.Viewer3D.Popups
             public readonly Tab Tab;
             public readonly string TabLabel;
             public readonly Action<ControlLayout> Layout;
+            public Orts.Viewer3D.Popups.ControlLayoutVertical Vbox;
 
             public TabData(Tab tab, string tabLabel, Action<ControlLayout> layout)
             {
                 Tab = tab;
                 TabLabel = tabLabel;
                 Layout = layout;
+                Vbox = null;
             }
         }
 
