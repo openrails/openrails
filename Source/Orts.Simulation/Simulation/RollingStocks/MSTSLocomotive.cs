@@ -2676,7 +2676,7 @@ namespace Orts.Simulation.RollingStocks
                 DynamicBrake = false;
                 DynamicBrakeCommandStartTime = null;
             }
-            float maxdynamic = DynamicBrake ? 1 : 0;
+            float maxdynamic = DynamicBrake ? MaxDynamicBrakePercent / 100 : 0;
             float d = DynamicBrakePercent / 100;
             bool dynamicLimited = d > maxdynamic;
             if (dynamicLimited) d = maxdynamic;
