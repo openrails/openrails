@@ -5073,6 +5073,33 @@ namespace Orts.Simulation.RollingStocks
                 return string.Format("{0:F0}% {1}", DynamicBrakePercent, dpStatus);
             return string.Format("{0} {1}", DynamicBrakeController.GetStatus(), dpStatus);
         }
+
+        public override string GetMultipleUnitsConfiguration()
+        {
+            if (Train == null)
+                return base.GetMultipleUnitsConfiguration();
+            var numberOfLocomotives = 0;
+            var group = 0;
+            var configuration = "";
+
+            var remoteControlGroup = 0;
+            for (var i = 0; i < Train.Cars.Count; i++)
+            {
+                if (Train.Cars[i] is MSTSLocomotive)
+                {
+                    if (remoteControlGroup != (remoteControlGroup = Train.Cars[i].RemoteControlGroup) && i != 0)
+                    {
+                        configuration += string.Format("{0} | ", group);
+                        group = 0;
+                    }
+                    group++;
+                    numberOfLocomotives++;
+                }
+            }
+            if (group > 0)
+                configuration += string.Format("{0}", group);
+            return numberOfLocomotives > 0 ? configuration : null;
+        }
         #endregion
 
         public override void SignalEvent(TCSEvent evt)
