@@ -490,6 +490,7 @@ namespace Orts.Viewer3D.Popups
                                         line.Add(new buttonToggleMU(0, 0, SymbolSize, Owner.Viewer, carPosition));
                                         AddSpace();
                                     }
+
                                     line.Add(new buttonTogglePower(0, 0, SymbolSize, Owner.Viewer, carPosition));
                                     AddSpace();
 
@@ -1097,7 +1098,6 @@ namespace Orts.Viewer3D.Popups
         {
             Viewer = viewer;
             TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
-            var First = car == viewer.PlayerTrain.Cars.First();
             var CurrentCar = Viewer.PlayerTrain.Cars[carPosition];
 
             if (CurrentCar.BrakeSystem is VacuumSinglePipe)
@@ -1108,15 +1108,14 @@ namespace Orts.Viewer3D.Popups
             {
                 var carAngleCockAOpenAmount = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockAOpenAmount;
                 var carAngleCockAOpen = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockAOpen;
-                Texture = !TrainCarViewer.TrainCarOperationsChanged && First ? FrontAngleCockClosed
-                    : carAngleCockAOpenAmount > 0 && carAngleCockAOpenAmount < 1 ? FrontAngleCockPartial
+                Texture = carAngleCockAOpenAmount > 0 && carAngleCockAOpenAmount < 1 ? FrontAngleCockPartial
                     : carAngleCockAOpen ? FrontAngleCockOpened
                     : FrontAngleCockClosed;
             }
             Source = new Rectangle(0, 0, size, size);
 
             var trainCarOperations = Viewer.TrainCarOperationsWindow;
-            if (!First && !trainCarOperations.WarningCarPosition[carPosition])
+            if (!trainCarOperations.WarningCarPosition[carPosition])
             {
                 trainCarOperations.updateWarningCarPosition(carPosition, Texture, FrontAngleCockClosed);
                 trainCarOperations.updateWarningCarPosition(carPosition, Texture, FrontAngleCockPartial);
@@ -1130,7 +1129,6 @@ namespace Orts.Viewer3D.Popups
             : base(x, y, size, size)
         {
             Viewer = viewer;
-            var Last = car == viewer.PlayerTrain.Cars.Last();
             var CurrentCar = Viewer.PlayerTrain.Cars[carPosition];
 
             if (CurrentCar.BrakeSystem is VacuumSinglePipe)
@@ -1141,15 +1139,14 @@ namespace Orts.Viewer3D.Popups
             {
                 var carAngleCockBOpenAmount = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockBOpenAmount;
                 var carAngleCockBOpen = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockBOpen;
-                Texture = Last ? RearAngleCockClosed
-                    : carAngleCockBOpenAmount > 0 && carAngleCockBOpenAmount < 1 ? RearAngleCockPartial
+                Texture = carAngleCockBOpenAmount > 0 && carAngleCockBOpenAmount < 1 ? RearAngleCockPartial
                     : carAngleCockBOpen ? RearAngleCockOpened
                     : RearAngleCockClosed;
             }
             Source = new Rectangle(0, 0, size, size);
 
             var trainCarOperations = Viewer.TrainCarOperationsWindow;
-            if (!Last && !trainCarOperations.WarningCarPosition[carPosition])
+            if (!trainCarOperations.WarningCarPosition[carPosition])
             {
                 trainCarOperations.updateWarningCarPosition(carPosition, Texture, RearAngleCockClosed);
                 trainCarOperations.updateWarningCarPosition(carPosition, Texture, RearAngleCockPartial);
@@ -1266,7 +1263,7 @@ namespace Orts.Viewer3D.Popups
             CarPosition = carPosition;
 
             var multipleUnitsConfiguration = Viewer.PlayerLocomotive.GetMultipleUnitsConfiguration();
-            if ((Viewer.PlayerTrain.Cars[CarPosition] is MSTSDieselLocomotive) && multipleUnitsConfiguration != null)
+            if ((Viewer.PlayerTrain.Cars[CarPosition] is MSTSLocomotive) && multipleUnitsConfiguration != null)
             {
                 Texture = (Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).RemoteControlGroup == 0 && multipleUnitsConfiguration != "1" ? MUconnected : MUdisconnected;
             }

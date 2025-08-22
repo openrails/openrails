@@ -442,6 +442,7 @@ namespace Orts.Viewer3D.Popups
                             line.Add(new buttonToggleMU(0, 0, textHeight, Owner.Viewer, CarPosition));
                             AddSpace(false);
                         }
+
                         line.Add(new buttonTogglePower(0, 0, textHeight, Owner.Viewer, CarPosition));
                         AddSpace(false);
                         if ((wagon != null) && (wagon.PowerSupply is IPowerSupply))
@@ -894,7 +895,6 @@ namespace Orts.Viewer3D.Popups
                 Viewer = viewer;
                 TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
                 CurrentCar = Viewer.PlayerTrain.Cars[carPosition];
-                var first = car == Viewer.PlayerTrain.Cars.First();
 
                 if (CurrentCar.BrakeSystem is VacuumSinglePipe)
                 {
@@ -904,15 +904,11 @@ namespace Orts.Viewer3D.Popups
                 {
                     var carAngleCockAOpenAmount = CurrentCar.BrakeSystem.AngleCockAOpenAmount;
                     var carAngleCockAOpen = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockAOpen;
-                    Texture = !TrainCarViewer.TrainCarOperationsChanged && first ? FrontAngleCockClosed
-                        : carAngleCockAOpenAmount > 0 && carAngleCockAOpenAmount < 1 ? FrontAngleCockPartial
+                    Texture = carAngleCockAOpenAmount > 0 && carAngleCockAOpenAmount < 1 ? FrontAngleCockPartial
                         : carAngleCockAOpen ? FrontAngleCockOpened
                         : FrontAngleCockClosed;
 
-                    if (!first)
-                    {
-                        Click += new Action<Control, Point>(buttonFrontAngleCock_Click);
-                    }
+                    Click += new Action<Control, Point>(buttonFrontAngleCock_Click);
                 }
                 Source = new Rectangle(0, 0, size, size);
             }
@@ -945,7 +941,6 @@ namespace Orts.Viewer3D.Popups
                 Viewer = viewer;
                 TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
                 CurrentCar = Viewer.PlayerTrain.Cars[carPosition];
-                var last = car == Viewer.PlayerTrain.Cars.Last();
 
                 if (CurrentCar.BrakeSystem is VacuumSinglePipe)
                 {
@@ -955,15 +950,11 @@ namespace Orts.Viewer3D.Popups
                 {
                     var carAngleCockBOpenAmount = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockBOpenAmount;
                     var carAngleCockBOpen = (CurrentCar as MSTSWagon).BrakeSystem.AngleCockBOpen;
-                    Texture = last ? RearAngleCockClosed
-                        : carAngleCockBOpenAmount > 0 && carAngleCockBOpenAmount < 1 ? RearAngleCockPartial
+                    Texture = carAngleCockBOpenAmount > 0 && carAngleCockBOpenAmount < 1 ? RearAngleCockPartial
                         : carAngleCockBOpen ? RearAngleCockOpened
                         : RearAngleCockClosed;
 
-                    if (!last)
-                    {
-                        Click += new Action<Control, Point>(buttonRearAngleCock_Click);
-                    }
+                    Click += new Action<Control, Point>(buttonRearAngleCock_Click);
                 }
                 Source = new Rectangle(0, 0, size, size);
             }
@@ -1099,7 +1090,7 @@ namespace Orts.Viewer3D.Popups
                 CurrentCar = Viewer.PlayerTrain.Cars[carPosition];
 
                 MultipleUnitsConfiguration = Viewer.PlayerLocomotive.GetMultipleUnitsConfiguration();
-                if (CurrentCar is MSTSDieselLocomotive && MultipleUnitsConfiguration != null)
+                if (CurrentCar is MSTSLocomotive && MultipleUnitsConfiguration != null)
                 {
                     Texture = Viewer.TrainCarOperationsWindow.ModifiedSetting || ((CurrentCar as MSTSLocomotive).RemoteControlGroup == 0 && MultipleUnitsConfiguration != "1") ? MUconnected : MUdisconnected;
                 }
@@ -1112,7 +1103,7 @@ namespace Orts.Viewer3D.Popups
             }
             void buttonToggleMU_Click(Control arg1, Point arg2)
             {
-                if (CurrentCar is MSTSDieselLocomotive)
+                if (CurrentCar is MSTSLocomotive)
                 {
                     MSTSLocomotive locomotive = CurrentCar as MSTSLocomotive;
 
