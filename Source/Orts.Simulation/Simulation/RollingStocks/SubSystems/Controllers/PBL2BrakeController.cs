@@ -136,7 +136,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     break;
             }
 
-            NeutralModeOn = NeutralModeCommandSwitchOn || EmergencyBrakingPushButton() || TCSEmergencyBraking();
+            NeutralModeOn = NeutralModeCommandSwitchOn || EmergencyBrakingPushButton() || TCSEmergencyBraking() || !IsAuxiliaryPowerSupplyOn();
 
             return CurrentValue();
         }
@@ -266,18 +266,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         break;
                     }
                 case State.Emergency:
-                    SetUpdateValue(1);
+                    {
+                        SetUpdateValue(1);
 
-                    pressureBar -= EmergencyRateBarpS() * elapsedClockSeconds;
-
-                    if (pressureBar < 0)
-                        pressureBar = 0;
-                    break;
+                        float dp =  EmergencyRateBarpS() * elapsedClockSeconds;
+                        if (pressureBar - dp < MaxPressureBar() - FullServReductionBar())
+                            dp = Math.Max(pressureBar - (MaxPressureBar() - FullServReductionBar()), 0);
+                        pressureBar -= dp;
+                        break;
+                    }
             }
 
             if (BrakePipePressureBar() > Math.Max(MaxPressureBar() - FullServReductionBar(), pressureBar) + EpActivationThresholdBar)
                 epPressureBar = 1; // EP application wire
-            else if (CurrentState != State.Emergency && BrakePipePressureBar() >= MaxPressureBar() - FullServReductionBar() && BrakePipePressureBar() < Math.Min(MaxPressureBar(), pressureBar) - EpActivationThresholdBar)
+            else if (!NeutralModeOn && BrakePipePressureBar() >= MaxPressureBar() - FullServReductionBar() && BrakePipePressureBar() < Math.Min(MaxPressureBar(), pressureBar) - EpActivationThresholdBar)
                 epPressureBar = 0; // EP release wire
             else
                 epPressureBar = -1;
@@ -391,8 +393,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
         public override ControllerState GetState()
         {
-            if (CurrentState != State.Emergency && NeutralModeOn)
-                return ControllerState.Neutral;
+            if (NeutralModeOn)
+            {
+                switch (CurrentState)
+                {
+                    case State.Emergency:
+                        return ControllerState.Emergency;
+                    default:
+                        return ControllerState.Lap;
+                }
+            }
             switch (CurrentState)
             {
                 case State.Overcharge:
