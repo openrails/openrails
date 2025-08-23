@@ -1842,7 +1842,7 @@ namespace Orts.Simulation
 
             train.UncoupledFrom = train2;
             train2.UncoupledFrom = train;
-
+            
             train2.SpeedMpS = train.SpeedMpS;
 
             train.Cars[0].BrakeSystem.FrontBrakeHoseConnected = false;
