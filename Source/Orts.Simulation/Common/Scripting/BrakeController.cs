@@ -87,11 +87,6 @@ namespace ORTS.Scripting.Api
         public bool IsCabPowerSupplyOn() => LocomotivePowerSupply.CabPowerSupplyOn;
 
         /// <summary>
-        /// True if auxiliary power supply is switched on.
-        /// </summary>
-        public bool IsAuxiliaryPowerSupplyOn() => LocomotivePowerSupply.AuxiliaryPowerSupplyOn;
-
-        /// <summary>
         /// Brake pipe pressure
         /// </summary>
         public float BrakePipePressureBar() => Bar.FromPSI(Host.Locomotive.BrakeSystem.BrakeLine1PressurePSI);

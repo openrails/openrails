@@ -136,7 +136,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     break;
             }
 
-            NeutralModeOn = NeutralModeCommandSwitchOn || EmergencyBrakingPushButton() || TCSEmergencyBraking() || !IsAuxiliaryPowerSupplyOn();
+            NeutralModeOn = NeutralModeCommandSwitchOn || EmergencyBrakingPushButton() || TCSEmergencyBraking();
 
             return CurrentValue();
         }
