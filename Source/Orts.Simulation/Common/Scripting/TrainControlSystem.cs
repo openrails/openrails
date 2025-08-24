@@ -249,6 +249,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> TractionAuthorization;
         /// <summary>
+        /// True if dynamic braking is authorized.
+        /// </summary>
+        public Func<bool> DynamicBrakingAuthorization;
+        /// <summary>
         /// Train brake pipe pressure. Returns float.MaxValue if no data is available.
         /// </summary>
         public Func<float> BrakePipePressureBar;
@@ -264,6 +268,10 @@ namespace ORTS.Scripting.Api
         /// Train brake pressure value which triggers the power cut-off.
         /// </summary>
         public Func<float> BrakeCutsPowerAtBrakeCylinderPressureBar;
+        /// <summary>
+        /// True if dynamic brake must be cut if the emergency brake is applied.
+        /// </summary>
+        public bool EmergencyBrakeCutsDynamicBrake => Locomotive.EmergencyBrakeCutsDynamicBrake;
         /// <summary>
         /// State of the train brake controller.
         /// </summary>
@@ -386,6 +394,10 @@ namespace ORTS.Scripting.Api
         /// Set the traction authorization.
         /// </summary>
         public Action<bool> SetTractionAuthorization;
+        /// <summary>
+        /// Set the dynamic braking authorization.
+        /// </summary>
+        public Action<bool> SetDynamicBrakingAuthorization;
         /// <summary>
         /// Set the maximum throttle percent
         /// Range: 0 to 100

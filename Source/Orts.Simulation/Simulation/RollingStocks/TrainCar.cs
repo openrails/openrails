@@ -500,6 +500,21 @@ namespace Orts.Simulation.RollingStocks
         }
 
         public float LocalDynamicBrakePercent = -1;
+        public float MaxDynamicBrakePercent
+        {
+            get
+            {
+                float percent = 100;
+                if (RemoteControlGroup == 0 && Train != null && Train.LeadLocomotive is MSTSLocomotive locomotive)
+                {
+                    if (!locomotive.TrainControlSystem.DynamicBrakingAuthorization)
+                    {
+                        percent = 0;
+                    }
+                }
+                return percent;
+            }
+        }
         public float DynamicBrakePercent
         {
             get
