@@ -1199,6 +1199,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 }
 
                 SetTractionAuthorization(!DoesBrakeCutPower() || LocomotiveBrakeCylinderPressureBar() < BrakeCutsPowerAtBrakeCylinderPressureBar());
+                SetDynamicBrakingAuthorization(!EmergencyBrakeCutsDynamicBrake || !IsBrakeEmergency());
 
                 SetEmergencyBrake(EmergencyBrake);
                 SetFullBrake(FullBrake);

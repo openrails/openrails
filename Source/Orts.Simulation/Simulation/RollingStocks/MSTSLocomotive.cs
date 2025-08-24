@@ -463,6 +463,7 @@ namespace Orts.Simulation.RollingStocks
         public float BrakeCutsPowerAtBrakePipePressurePSI;
         public bool DoesVacuumBrakeCutPower { get; private set; }
         public bool DoesBrakeCutPower { get; private set; }
+        public bool EmergencyBrakeCutsDynamicBrake { get; private set; }
         public float BrakeCutsPowerAtBrakeCylinderPressurePSI { get; private set; }
         public bool DoesHornTriggerBell { get; private set; }
         public bool DPSyncTrainApplication { get; private set; }
@@ -1117,6 +1118,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(brakecutspoweratbrakecylinderpressure": BrakeCutsPowerAtBrakeCylinderPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(ortsbrakecutspoweratbrakepipepressure": BrakeCutsPowerAtBrakePipePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(ortsbrakerestorespoweratbrakepipepressure": BrakeRestoresPowerAtBrakePipePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "engine(ortsemergencybrakecutsdynamicbrake": EmergencyBrakeCutsDynamicBrake = stf.ReadBoolBlock(false); break;
                 case "engine(doeshorntriggerbell": DoesHornTriggerBell = stf.ReadBoolBlock(false); break;
                 case "engine(ortshornlightstimer": HornTimerS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(ortsbelllightstimer": BellTimerS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
@@ -1336,6 +1338,7 @@ namespace Orts.Simulation.RollingStocks
             BrakeCutsPowerAtBrakeCylinderPressurePSI = locoCopy.BrakeCutsPowerAtBrakeCylinderPressurePSI;
             BrakeCutsPowerAtBrakePipePressurePSI = locoCopy.BrakeCutsPowerAtBrakePipePressurePSI;
             BrakeRestoresPowerAtBrakePipePressurePSI = locoCopy.BrakeRestoresPowerAtBrakePipePressurePSI;
+            EmergencyBrakeCutsDynamicBrake = locoCopy.EmergencyBrakeCutsDynamicBrake;
             DynamicBrakeCommandStartTime = locoCopy.DynamicBrakeCommandStartTime;
             DynamicBrakeBlendingOverride = locoCopy.DynamicBrakeBlendingOverride;
             DynamicBrakeBlendingForceMatch = locoCopy.DynamicBrakeBlendingForceMatch;

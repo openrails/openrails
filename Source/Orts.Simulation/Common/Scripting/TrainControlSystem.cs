@@ -269,6 +269,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> BrakeCutsPowerAtBrakeCylinderPressureBar;
         /// <summary>
+        /// True if dynamic brake must be cut if the emergency brake is applied.
+        /// </summary>
+        public bool EmergencyBrakeCutsDynamicBrake => Locomotive.EmergencyBrakeCutsDynamicBrake;
+        /// <summary>
         /// State of the train brake controller.
         /// </summary>
         public Func<ControllerState> TrainBrakeControllerState;
