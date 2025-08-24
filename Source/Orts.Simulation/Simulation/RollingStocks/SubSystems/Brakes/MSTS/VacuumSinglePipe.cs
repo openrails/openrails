@@ -453,19 +453,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 float BrakeCutoffPressurePSI = OneAtmospherePSI - lead.BrakeCutsPowerAtBrakePipePressurePSI;
                 float BrakeRestorePressurePSI = OneAtmospherePSI - lead.BrakeRestoresPowerAtBrakePipePressurePSI;
 
-                if (Car is MSTSLocomotive locomotive && locomotive.DoesVacuumBrakeCutPower)
+                if (lead.DoesVacuumBrakeCutPower)
                 {
+
                     // There are three zones of operation - (note logic reversed - O InHg = 14.73psi, and eg 21 InHg = 4.189psi)
                     // Cutoff - exceeds set value, eg 12.5InHg (= 8.5psi)
                     // Between cutoff and restore levels - only if cutoff has triggerd
                     // Restore - when value exceeds set value, eg 17InHg (= 6.36 psi) - resets throttle
                     if (BrakeLine1PressurePSI < BrakeRestorePressurePSI)
                     {
-                        locomotive.TrainControlSystem.BrakeSystemTractionAuthorization = true;
+                        lead.VacuumBrakeCutoffActivated = false;
                     }
                     else if (BrakeLine1PressurePSI > BrakeCutoffPressurePSI)
                     {
-                        locomotive.TrainControlSystem.BrakeSystemTractionAuthorization = false;
+                        lead.MotiveForceN = 0.0f;  // ToDO - This is not a good way to do it, better to be added to MotiveForce Update in MSTSLocomotive(s) when PRs Added
+                        lead.VacuumBrakeCutoffActivated = true;
+                    }
+                    else if (lead.VacuumBrakeCutoffActivated)
+                    {
+                        lead.MotiveForceN = 0.0f; // ToDO - This is not a good way to do it, better to be added to MotiveForce Update in MSTSLocomotive(s) when PRs Added
                     }
                 }
             }
