@@ -790,7 +790,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             outf.Write(currentSelectedSpeedMpS);
             outf.Write(RestrictedRegionOdometer.Started);
             outf.Write(RestrictedRegionOdometer.RemainingValue);
-            MaxForceSelectorController.Save(outf);
+            ControllerFactory.Save(MaxForceSelectorController, outf);
             outf.Write(SelectedNumberOfAxles);
             outf.Write(SelectedSpeedMpS);
             outf.Write(DynamicBrakePriority);
@@ -807,7 +807,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             bool started = inf.ReadBoolean();
             RestrictedRegionOdometer.Setup(inf.ReadSingle());
             if (started) RestrictedRegionOdometer.Start();
-            MaxForceSelectorController.Restore(inf);
+            ControllerFactory.Restore(MaxForceSelectorController, inf);
             SelectedNumberOfAxles = inf.ReadInt32();
             SelectedSpeedMpS = inf.ReadSingle();
             DynamicBrakePriority = inf.ReadBoolean();
