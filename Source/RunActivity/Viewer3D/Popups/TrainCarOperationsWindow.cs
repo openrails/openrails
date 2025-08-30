@@ -485,11 +485,8 @@ namespace Orts.Viewer3D.Popups
                                 }
                                 if (isElectricDieselLocomotive)
                                 {
-                                    if (locomotive.GetMultipleUnitsConfiguration() != null)
-                                    {
-                                        line.Add(new buttonToggleMU(0, 0, SymbolSize, Owner.Viewer, carPosition));
-                                        AddSpace();
-                                    }
+                                    line.Add(new buttonToggleMU(0, 0, SymbolSize, Owner.Viewer, carPosition));
+                                    AddSpace();
 
                                     line.Add(new buttonTogglePower(0, 0, SymbolSize, Owner.Viewer, carPosition));
                                     AddSpace();
@@ -1262,10 +1259,9 @@ namespace Orts.Viewer3D.Popups
             Viewer = viewer;
             CarPosition = carPosition;
 
-            var multipleUnitsConfiguration = Viewer.PlayerLocomotive.GetMultipleUnitsConfiguration();
-            if ((Viewer.PlayerTrain.Cars[CarPosition] is MSTSLocomotive) && multipleUnitsConfiguration != null)
+            if (Viewer.PlayerTrain.Cars[CarPosition] is MSTSLocomotive)
             {
-                Texture = (Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).RemoteControlGroup == 0 && multipleUnitsConfiguration != "1" ? MUconnected : MUdisconnected;
+                Texture = (Viewer.PlayerTrain.Cars[CarPosition] as MSTSLocomotive).RemoteControlGroup == 0 ? MUconnected : MUdisconnected;
             }
             else
             {

@@ -437,11 +437,8 @@ namespace Orts.Viewer3D.Popups
                     }
                     if (isElectricDieselLocomotive)
                     {
-                        if (locomotive.GetMultipleUnitsConfiguration() != null)
-                        {
-                            line.Add(new buttonToggleMU(0, 0, textHeight, Owner.Viewer, CarPosition));
-                            AddSpace(false);
-                        }
+                        line.Add(new buttonToggleMU(0, 0, textHeight, Owner.Viewer, CarPosition));
+                        AddSpace(false);
 
                         line.Add(new buttonTogglePower(0, 0, textHeight, Owner.Viewer, CarPosition));
                         AddSpace(false);
@@ -1081,7 +1078,6 @@ namespace Orts.Viewer3D.Popups
             readonly Viewer Viewer;
             readonly TrainCarOperationsViewerWindow TrainCarViewer;
             readonly TrainCar CurrentCar;
-            readonly string MultipleUnitsConfiguration;
             public buttonToggleMU(int x, int y, int size, Viewer viewer, int carPosition)
                 : base(x, y, size, size)
             {
@@ -1089,10 +1085,9 @@ namespace Orts.Viewer3D.Popups
                 TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
                 CurrentCar = Viewer.PlayerTrain.Cars[carPosition];
 
-                MultipleUnitsConfiguration = Viewer.PlayerLocomotive.GetMultipleUnitsConfiguration();
-                if (CurrentCar is MSTSLocomotive && MultipleUnitsConfiguration != null)
+                if (CurrentCar is MSTSLocomotive)
                 {
-                    Texture = Viewer.TrainCarOperationsWindow.ModifiedSetting || ((CurrentCar as MSTSLocomotive).RemoteControlGroup == 0 && MultipleUnitsConfiguration != "1") ? MUconnected : MUdisconnected;
+                    Texture = Viewer.TrainCarOperationsWindow.ModifiedSetting || ((CurrentCar as MSTSLocomotive).RemoteControlGroup == 0) ? MUconnected : MUdisconnected;
                 }
                 else
                 {
@@ -1108,7 +1103,7 @@ namespace Orts.Viewer3D.Popups
                     MSTSLocomotive locomotive = CurrentCar as MSTSLocomotive;
 
                     new ToggleMUCommand(Viewer.Log, locomotive, locomotive.RemoteControlGroup < 0);
-                    if (locomotive.RemoteControlGroup == 0 && MultipleUnitsConfiguration != "1")
+                    if (locomotive.RemoteControlGroup == 0)
                     {
                         Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("MU signal connected"));
                         Texture = MUconnected;
