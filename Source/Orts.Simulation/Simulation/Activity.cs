@@ -1328,9 +1328,12 @@ namespace Orts.Simulation
                         consistTrain = matchesConsistNoOrder(ChangeWagonIdList);
                     if (consistTrain != null)
                     {
-                        if (atSiding(consistTrain.FrontTDBTraveller, consistTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
+                        if (consistTrain.TrainType == Train.TRAINTYPE.STATIC)
                         {
-                            triggered = true;
+                            if (atSiding(consistTrain.FrontTDBTraveller, consistTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
+                            {
+                                triggered = true;
+                            }
                         }
                     }
                     break;
@@ -1379,7 +1382,7 @@ namespace Orts.Simulation
         /// <summary>
         /// Finds the train that contains the wagons in the list. 
         /// Exact order is not required.
-        /// Some lists may only contain the first and last wagon.
+        /// Some lists may only contain the first and last wagon. Check that first and last wagon match with those two wagons in the activity list.
         /// </summary>
         /// <param name="wagonIdList"></param>
         /// <returns>train or null</returns>
@@ -1394,9 +1397,13 @@ namespace Orts.Simulation
                 {
                         nWagonListCars++;
                     }
-                    if (nWagonListCars == trainItem.Cars.Count)
+                    if (nWagonListCars == wagonIdList.Count)
                     {
-                        return trainItem;
+                        if (((wagonIdList[0] == trainItem.Cars[0].CarID) && (wagonIdList[wagonIdList.Count - 1] == trainItem.Cars[trainItem.Cars.Count - 1].CarID)) || 
+                            ((wagonIdList[0] == trainItem.Cars[trainItem.Cars.Count - 1].CarID) && (wagonIdList[wagonIdList.Count - 1] == trainItem.Cars[0].CarID)))
+                        {
+                            return trainItem;
+                        }
                     }
                 }
                 }
