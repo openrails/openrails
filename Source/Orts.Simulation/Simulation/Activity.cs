@@ -1398,11 +1398,7 @@ namespace Orts.Simulation
                     }
                     if (nWagonListCars == wagonIdList.Count)
                     {
-                        if (((wagonIdList[0] == trainItem.Cars[0].CarID) && (wagonIdList[wagonIdList.Count - 1] == trainItem.Cars[trainItem.Cars.Count - 1].CarID)) || 
-                            ((wagonIdList[0] == trainItem.Cars[trainItem.Cars.Count - 1].CarID) && (wagonIdList[wagonIdList.Count - 1] == trainItem.Cars[0].CarID)))
-                        {
-                            return trainItem;
-                        }
+                        return trainItem;
                     }
                 }
             }
