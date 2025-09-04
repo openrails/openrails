@@ -354,6 +354,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 else if (axle.DriveType == AxleDriveType.ForceDriven) numForce++;
                 else if (axle.DriveType == AxleDriveType.MotorDriven) numMotor++;
             }
+            float totalDriveWheelWeightKg = 0;
+            float totalWheelWeightKg = 0;
             foreach (var axle in AxleList)
             {
                 if (numMotor > 0 && axle.DriveType == AxleDriveType.ForceDriven) axle.DriveType = AxleDriveType.NotDriven;
@@ -366,7 +368,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 {
                     if (axle.DriveType != AxleDriveType.NotDriven)
                     {
-                        axle.BrakeForceFraction = 1.0f / (locomotive.DriveWheelOnlyBrakes ? numDriven : AxleList.Count);
                         if (axle.WheelWeightKg <= 0) axle.WheelWeightKg = locomotive.DrvWheelWeightKg / numDriven;
                         if (axle.NumWheelsetAxles <= 0) axle.NumWheelsetAxles = locomotive.LocoNumDrvAxles / numDriven;
                         if (axle.WheelRadiusM <= 0) axle.WheelRadiusM = locomotive.DriverWheelRadiusM;
@@ -388,7 +389,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 if (axle.DriveType == AxleDriveType.NotDriven)
                 {
                     var wagon = Car as MSTSWagon;
-                    axle.BrakeForceFraction = locomotive != null && locomotive.DriveWheelOnlyBrakes ? 0 :1.0f / AxleList.Count;
                     if (axle.WheelWeightKg <= 0)
                     {
                         if (locomotive != null) axle.WheelWeightKg = Math.Max((Car.MassKG - locomotive.DrvWheelWeightKg) / numNotDriven, 500);
@@ -402,6 +402,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 if (axle.AxleWeightN <= 0) axle.AxleWeightN = 9.81f * axle.WheelWeightKg;  //remains fixed for diesel/electric locomotives, but varies for steam locomotives
                 if (axle.DampingNs <= 0) axle.DampingNs = axle.WheelWeightKg / 1000.0f;
                 if (axle.FrictionN <= 0) axle.FrictionN = axle.WheelWeightKg / 1000.0f;
+
+                if (axle.DriveType != AxleDriveType.NotDriven) totalDriveWheelWeightKg += axle.WheelWeightKg;
+                totalWheelWeightKg += axle.WheelWeightKg;
+            }
+            foreach (var axle in AxleList)
+            {
+                var locomotive = Car as MSTSLocomotive;
+                if (axle.DriveType == AxleDriveType.NotDriven)
+                {
+                    axle.BrakeForceFraction = locomotive == null || !locomotive.DriveWheelOnlyBrakes ? axle.WheelWeightKg / totalWheelWeightKg : 0;
+                }
+                else
+                {
+                    axle.BrakeForceFraction = axle.WheelWeightKg / (locomotive != null && locomotive.DriveWheelOnlyBrakes ? totalDriveWheelWeightKg : totalWheelWeightKg);
+                }
                 axle.Initialize();
             }
         }

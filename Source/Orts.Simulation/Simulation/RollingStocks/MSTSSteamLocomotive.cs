@@ -6605,8 +6605,8 @@ namespace Orts.Simulation.RollingStocks
                 IndicatedHorsePowerHP += engine.IndicatedHorsePowerHP;
                 IndicatedHorsePowerHP = MathHelper.Clamp(IndicatedHorsePowerHP, 0, IndicatedHorsePowerHP);
             }
-                //TODO - identify the maximum value for display?? 
-                PistonSpeedFtpMin = SteamEngines[0].PistonSpeedFtpMin;
+            //TODO - identify the maximum value for display?? 
+            PistonSpeedFtpMin = SteamEngines[0].PistonSpeedFtpMin;
 
             // Find the maximum TE for debug i.e. @ start and full throttle
             if (AbsTractionSpeedMpS < 1.0)
@@ -6724,8 +6724,8 @@ namespace Orts.Simulation.RollingStocks
                 axle.CurrentCurveRadiusM = CurrentCurveRadiusM;
                 axle.BogieRigidWheelBaseM = RigidWheelBaseM;
             }
-                foreach (var engine in SteamEngines)
-                {
+            foreach (var engine in SteamEngines)
+            {
                 var axle = engine.AttachedAxle;
                 if (SteamEngineType == SteamEngineTypes.Geared || engine.AuxiliarySteamEngineType == SteamEngine.AuxiliarySteamEngineTypes.Booster)
                 // geared locomotive or booster locomotive
@@ -6739,7 +6739,7 @@ namespace Orts.Simulation.RollingStocks
                     float TotalWheelMomentofInertia = WheelMomentInertia + AxleMomentInertia; // Total MoI for generic wheelset
                     float TotalMomentInertia = TotalWheelMomentofInertia;
                     axle.InertiaKgm2 = TotalMomentInertia;
- 
+
                     // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches) - This should reduce wheel force
                     axle.FrictionN = N.FromLbf(3.8f * Me.ToIn(engine.CylindersDiameterM) * Me.ToIn(engine.CylindersDiameterM) * Me.ToIn(engine.CylindersStrokeM) / (Me.ToIn(axle.WheelRadiusM * 2.0f)));
                 }
@@ -6758,7 +6758,7 @@ namespace Orts.Simulation.RollingStocks
                     float WheelMomentInertia = (wheelMassKG * axle.WheelRadiusM * axle.WheelRadiusM) / 2.0f;
                     float AxleMomentInertia = (AxleMassKG * AxleRadiusM * AxleRadiusM) / 2.0f;
                     float TotalWheelMomentofInertia = WheelMomentInertia + AxleMomentInertia; // Total MoI for generic wheelset
-                    
+
                     // The moment of inertia needs to be increased by the number of wheels in each set
                     TotalWheelMomentofInertia *= engine.AttachedAxle.NumWheelsetAxles;
 
