@@ -1325,7 +1325,7 @@ namespace Orts.Simulation
                     }
                     break;
                 case EventType.DropOffWagonsAtLocation:
-                        consistTrain = matchesConsistNoOrder(ChangeWagonIdList);
+                    consistTrain = matchesConsistNoOrder(ChangeWagonIdList);
                     if (consistTrain != null)
                     {
                         if (consistTrain.TrainType == Train.TRAINTYPE.STATIC)
@@ -1394,7 +1394,7 @@ namespace Orts.Simulation
                 foreach (var item in trainItem.Cars)
                 {
                     if (wagonIdList.Contains(item.CarID))
-                {
+                    {
                         nWagonListCars++;
                     }
                     if (nWagonListCars == wagonIdList.Count)
@@ -1402,8 +1402,8 @@ namespace Orts.Simulation
                         return trainItem;
                     }
                 }
-                }
-               
+            }
+
             return null;
         }
         /// <summary>
