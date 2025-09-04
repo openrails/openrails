@@ -2326,7 +2326,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             ApplyBoilerPressure();
 
-            if (Simulator.Settings.DataLogSteamPerformance)
+            if (Simulator.Settings.DataLogExclusiveSteamPerformance)
             {
                 Trace.TraceInformation("============================================= Steam Locomotive Performance - Locomotive Details =========================================================");
                 Trace.TraceInformation("Version - {0}", VersionInfo.VersionOrBuild);
@@ -6477,7 +6477,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 }
 
                 // Calculate the elapse time for the steam performance monitoring
-                if (Simulator.Settings.DataLogSteamPerformance)
+                if (Simulator.Settings.DataLogExclusiveSteamPerformance)
                 {
                     if (SpeedMpS > 0.05)
                     {
