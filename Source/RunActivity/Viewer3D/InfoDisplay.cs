@@ -80,9 +80,9 @@ namespace Orts.Viewer3D
                 LastUpdateRealTime = Viewer.RealTime;
                 Profile(elapsedRealSeconds);
             }
-                        
-                if (Viewer.Settings.DataLogger)
-                {
+
+            if (Viewer.Settings.DataLogger)
+            {
                 DataLoggerLog();
             }
         }
@@ -154,36 +154,36 @@ namespace Orts.Viewer3D
                 }
             }
             else
-                    {
-                        Logger.Data(VersionInfo.Version);
-                        Logger.Data(FrameNumber.ToString("F0"));
+            {
+                Logger.Data(VersionInfo.Version);
+                Logger.Data(FrameNumber.ToString("F0"));
                 Logger.Data(FormatStrings.FormatPreciseTime(Viewer.Simulator.ClockTime));
                 if (Viewer.Settings.DataLogPerformance)
                 {
                     Logger.Data(Viewer.Game.HostProcess.CPUMemoryWorkingSet.ToString("F0"));
-                        Logger.Data(GC.GetTotalMemory(false).ToString("F0"));
-                        Logger.Data(GC.CollectionCount(0).ToString("F0"));
-                        Logger.Data(GC.CollectionCount(1).ToString("F0"));
-                        Logger.Data(GC.CollectionCount(2).ToString("F0"));
-                        Logger.Data(ProcessorCount.ToString("F0"));
-                        Logger.Data(Viewer.RenderProcess.FrameRate.Value.ToString("F0"));
-                        Logger.Data(Viewer.RenderProcess.FrameTime.Value.ToString("F6"));
-                        Logger.Data(Viewer.RenderProcess.ShadowPrimitivePerFrame.Sum().ToString("F0"));
-                        Logger.Data(Viewer.RenderProcess.PrimitivePerFrame.Sum().ToString("F0"));
-                        Logger.Data(Viewer.RenderProcess.Profiler.Wall.Value.ToString("F0"));
-                        Logger.Data(Viewer.UpdaterProcess.Profiler.Wall.Value.ToString("F0"));
-                        Logger.Data(Viewer.LoaderProcess.Profiler.Wall.Value.ToString("F0"));
-                        Logger.Data(Viewer.SoundProcess.Profiler.Wall.Value.ToString("F0"));
-                    }
-                    if (Viewer.Settings.DataLogPhysics)
-                    {
-                        Logger.Data(Viewer.PlayerLocomotive.Direction.ToString());
-                        Logger.Data(Viewer.PlayerTrain.MUReverserPercent.ToString("F0"));
-                        Logger.Data(Viewer.PlayerLocomotive.ThrottlePercent.ToString("F0"));
-                        Logger.Data(Viewer.PlayerLocomotive.MotiveForceN.ToString("F0"));
-                        Logger.Data(Viewer.PlayerLocomotive.BrakeForceN.ToString("F0"));
+                    Logger.Data(GC.GetTotalMemory(false).ToString("F0"));
+                    Logger.Data(GC.CollectionCount(0).ToString("F0"));
+                    Logger.Data(GC.CollectionCount(1).ToString("F0"));
+                    Logger.Data(GC.CollectionCount(2).ToString("F0"));
+                    Logger.Data(ProcessorCount.ToString("F0"));
+                    Logger.Data(Viewer.RenderProcess.FrameRate.Value.ToString("F0"));
+                    Logger.Data(Viewer.RenderProcess.FrameTime.Value.ToString("F6"));
+                    Logger.Data(Viewer.RenderProcess.ShadowPrimitivePerFrame.Sum().ToString("F0"));
+                    Logger.Data(Viewer.RenderProcess.PrimitivePerFrame.Sum().ToString("F0"));
+                    Logger.Data(Viewer.RenderProcess.Profiler.Wall.Value.ToString("F0"));
+                    Logger.Data(Viewer.UpdaterProcess.Profiler.Wall.Value.ToString("F0"));
+                    Logger.Data(Viewer.LoaderProcess.Profiler.Wall.Value.ToString("F0"));
+                    Logger.Data(Viewer.SoundProcess.Profiler.Wall.Value.ToString("F0"));
+                }
+                if (Viewer.Settings.DataLogPhysics)
+                {
+                    Logger.Data(Viewer.PlayerLocomotive.Direction.ToString());
+                    Logger.Data(Viewer.PlayerTrain.MUReverserPercent.ToString("F0"));
+                    Logger.Data(Viewer.PlayerLocomotive.ThrottlePercent.ToString("F0"));
+                    Logger.Data(Viewer.PlayerLocomotive.MotiveForceN.ToString("F0"));
+                    Logger.Data(Viewer.PlayerLocomotive.BrakeForceN.ToString("F0"));
                         Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxles.AxleMotiveForceN.ToString("F2"));
-                        Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxles.SlipSpeedPercent.ToString("F1"));
+                    Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxles.SlipSpeedPercent.ToString("F1"));
                     DataLoggerLogSpeed(Viewer.PlayerLocomotive.SpeedMpS);
                     DataLoggerLogSpeed(Viewer.PlayerTrain.AllowedMaxSpeedMpS);
                     Logger.Data((Viewer.PlayerLocomotive.DistanceM.ToString("F0")));
@@ -253,35 +253,35 @@ namespace Orts.Viewer3D
         }
 
         void DataLoggerLogSpeed(float speedMpS)
-                        {
-                            string result;
-                            switch (Viewer.Settings.DataLogSpeedUnits)
-                            {
-                                case "route":
-                                    result = FormatStrings.FormatSpeed(speedMpS, Viewer.MilepostUnitsMetric);
-                                    break;
-                                case "mps":
-                                    result = speedMpS.ToString("F1");
-                                    break;
-                                case "mph":
-                                    result = MpS.FromMpS(speedMpS, false).ToString("F1");
-                                    break;
-                                case "kmph":
-                                    result = MpS.FromMpS(speedMpS, true).ToString("F1");
-                                    break;
-                                default:
-                                    result = FormatStrings.FormatSpeed(speedMpS, Viewer.MilepostUnitsMetric);
-                                    break;
-                            }
-                            Logger.Data(result);
-                        }
+        {
+            string result;
+            switch (Viewer.Settings.DataLogSpeedUnits)
+            {
+                case "route":
+                    result = FormatStrings.FormatSpeed(speedMpS, Viewer.MilepostUnitsMetric);
+                    break;
+                case "mps":
+                    result = speedMpS.ToString("F1");
+                    break;
+                case "mph":
+                    result = MpS.FromMpS(speedMpS, false).ToString("F1");
+                    break;
+                case "kmph":
+                    result = MpS.FromMpS(speedMpS, true).ToString("F1");
+                    break;
+                default:
+                    result = FormatStrings.FormatSpeed(speedMpS, Viewer.MilepostUnitsMetric);
+                    break;
+            }
+            Logger.Data(result);
+        }
 
         void DataLoggerStart()
-                        {
+        {
             // NOTE: Conditions and data here MUST match similar code in DataLoggerLog
             // Failure to update both places will result in mismatched columns or worse
             if (Viewer.Settings.DataLogExclusiveSteamPerformance)
-                            {
+            {
                 Logger.Data("Speed (mph)");
                 Logger.Data("Time (M)");
                 Logger.Data("Throttle (%)");
@@ -323,14 +323,14 @@ namespace Orts.Viewer3D
                 Logger.Data("Power (hp)");
                 Logger.Data("Throttle (%)");
                 Logger.Data("Cut-off (%)");
-                            }
-                            else
-                            {
+            }
+            else
+            {
                 Logger.Data("Version");
                 Logger.Data("Frame");
                 Logger.Data("Time");
                 if (Viewer.Settings.DataLogPerformance)
-                        {
+                {
                     Logger.Data("Memory");
                     Logger.Data("Memory (Managed)");
                     Logger.Data("Gen 0 GC");
@@ -345,9 +345,9 @@ namespace Orts.Viewer3D
                     Logger.Data("Updater Process");
                     Logger.Data("Loader Process");
                     Logger.Data("Sound Process");
-                        }
+                }
                 if (Viewer.Settings.DataLogPhysics)
-                        {
+                {
                     Logger.Data("Player Direction");
                     Logger.Data("Player Reverser [%]");
                     Logger.Data("Player Throttle [%]");
@@ -376,9 +376,9 @@ namespace Orts.Viewer3D
                     Logger.Data("D:null / E:null / S:Firing Rate");
                     Logger.Data("D:null / E:null / S:Injector 1");
                     Logger.Data("D:null / E:null / S:Injector 2");
-                        }
-                    }
-                Logger.End();
+                }
+            }
+            Logger.End();
         }
 
         void DataLoggerStop()
