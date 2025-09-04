@@ -31,8 +31,6 @@ using Orts.Common;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using ORTS.Scripting.Api;
 using System.IO;
-using Orts.Simulation.Physics;
-using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 
 namespace Orts.Viewer3D.WebServices
 {
@@ -710,6 +708,7 @@ namespace Orts.Viewer3D.WebServices
                 TrainCarViewer.NewCarPosition = carPosition - 1;
                 if (Viewer.CarOperationsWindow.CarPosition > carPosition - 1)
                     Viewer.CarOperationsWindow.Visible = false;
+                Viewer.TrainCarOperationsWindow.SelectedCarPosition = 0;
             }
         }
 
@@ -808,6 +807,7 @@ namespace Orts.Viewer3D.WebServices
                 TrainCarViewer.CouplerChanged = true;
                 if (Viewer.CarOperationsWindow.CarPosition > carPosition)
                     Viewer.CarOperationsWindow.Visible = false;
+                Viewer.TrainCarOperationsWindow.SelectedCarPosition = 0;
             }
         }
 

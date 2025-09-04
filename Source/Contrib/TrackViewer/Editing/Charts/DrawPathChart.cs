@@ -54,6 +54,9 @@ namespace ORTS.TrackViewer.Editing.Charts
 
         private bool ChartWindowIsOpen { get { return chartWindow.Visibility == Visibility.Visible; } }
 
+        // save window title from properies, so that the window's title can be changed when the selected path is changed
+        private readonly String WindowTitle;
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -64,6 +67,7 @@ namespace ORTS.TrackViewer.Editing.Charts
                 OnJsonSaveClick = OnJsonSave
             };
             TrackViewer.Localize(chartWindow);
+            if (WindowTitle == null) WindowTitle = chartWindow.Title;
         }
 
         /// <summary>
@@ -113,6 +117,7 @@ namespace ORTS.TrackViewer.Editing.Charts
             {   // it path is broken, OnPathChanged performed a close
                 return;
             }
+            chartWindow.Title = String.Format("{0}: {1}", WindowTitle, pathEditor.CurrentTrainPath.PathName);
             chartWindow.Show();
 
         }
@@ -160,6 +165,7 @@ namespace ORTS.TrackViewer.Editing.Charts
                 return;
             }
             pathData.Update(trainpath);
+            chartWindow.Title = String.Format("{0}: {1}", WindowTitle, pathEditor.CurrentTrainPath.PathName);
             chartWindow.Draw();
         }
         
