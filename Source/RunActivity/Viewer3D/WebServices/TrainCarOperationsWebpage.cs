@@ -233,6 +233,12 @@ namespace Orts.Viewer3D.WebServices
         public void Save(BinaryWriter outf) 
         {
             outf.Write(TrainCarSelected);
+            // rwf-rr: temporary fix for bug 2121985
+            if (TrainCarSelectedPosition >= Viewer.PlayerTrain.Cars.Count)
+            {
+                Trace.TraceWarning("TrainCarOperationsWebpage.TrainCarSelectedPosition {0} out of range [0..{1}]", TrainCarSelectedPosition, Viewer.PlayerTrain.Cars.Count - 1);
+                TrainCarSelectedPosition = Viewer.PlayerTrain.Cars.Count - 1;
+            }
             outf.Write(TrainCarSelectedPosition);
         }
 
@@ -371,6 +377,9 @@ namespace Orts.Viewer3D.WebServices
 
                 carPosition++;
             }
+
+            // rwf-rr: part of debugging bug 2121985
+            // System.Diagnostics.Debug.Assert(TrainCarSelectedPosition < Viewer.PlayerTrain.Cars.Count, "Web TrainCarSelectedPosition (index) out of range");
         }
 
         private string getCarId(TrainCar trainCar, int carPosition)
