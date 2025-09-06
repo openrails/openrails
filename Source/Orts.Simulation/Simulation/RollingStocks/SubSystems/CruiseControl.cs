@@ -402,8 +402,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     case "modeswitchallowedwiththrottlenotatzero": ModeSwitchAllowedWithThrottleNotAtZero = stf.ReadBoolBlock(false); break;
                     case "docomputenumberofaxles": DoComputeNumberOfAxles = stf.ReadBoolBlock(false); break;
                     case "speeddeltafunctionmode":
-                        stf.MustMatch("(");
-                        var speedDeltaMode = stf.ReadString();
+                        var speedDeltaMode = stf.ReadStringBlock("");
                         try
                         {
                             SpeedDeltaFunctionMode = (SpeedDeltaMode)Enum.Parse(typeof(SpeedDeltaMode), speedDeltaMode, true);
@@ -853,7 +852,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
             if (ForceRegulatorAutoWhenNonZeroSpeedSelected)
             {
-                if (zeroSelectedSpeed && (!ASCSpeedTakesPriorityOverSpeedSelector || !ASCSetSpeedMpS.HasValue))
+                if (ASCSpeedTakesPriorityOverSpeedSelector && ASCSetSpeedMpS.HasValue)
+                {
+                    SpeedRegMode = SpeedRegulatorMode.Auto;
+                }
+                else if (zeroSelectedSpeed)
                 {
                     SpeedRegMode = SpeedRegulatorMode.Manual;
                 }
