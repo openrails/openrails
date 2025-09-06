@@ -376,7 +376,7 @@ namespace ORTS.Scripting.Api
         /// </summary>
         protected void SignalEventToOtherTrainVehiclesWithId(PowerSupplyEvent evt, int id)
         {
-            if (Locomotive == Train.LeadLocomotive)
+            if (Locomotive == Train.LeadLocomotive || (Train.LeadLocomotive == null && IndexOfLocomotive() == 0))
             {
                 foreach (TrainCar car in Train.Cars)
                 {
