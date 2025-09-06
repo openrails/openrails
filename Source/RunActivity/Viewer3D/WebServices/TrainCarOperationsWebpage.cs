@@ -377,9 +377,6 @@ namespace Orts.Viewer3D.WebServices
 
                 carPosition++;
             }
-
-            // rwf-rr: part of debugging bug 2121985
-            // System.Diagnostics.Debug.Assert(TrainCarSelectedPosition < Viewer.PlayerTrain.Cars.Count, "Web TrainCarSelectedPosition (index) out of range");
         }
 
         private string getCarId(TrainCar trainCar, int carPosition)

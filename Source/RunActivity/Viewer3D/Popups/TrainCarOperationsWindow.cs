@@ -768,11 +768,6 @@ namespace Orts.Viewer3D.Popups
                     FontToBold = !FontToBold;
                     UpdateWindowSize();
                 }
-
-                // rwf-rr: part of debugging bug 2121985
-                // System.Diagnostics.Debug.Assert(SelectedCarPosition < Owner.Viewer.PlayerTrain.Cars.Count, "Window SelectedCarPosition (index) out of range");
-                // System.Diagnostics.Debug.Assert(CarPosition < Owner.Viewer.PlayerTrain.Cars.Count, "Window SelectedCar (index) out of range");
-                // System.Diagnostics.Debug.Assert(CurrentCarPosition < Owner.Viewer.PlayerTrain.Cars.Count, "Window CurrentCarPosition (index) out of range");
             }
         }
 

@@ -581,9 +581,6 @@ namespace Orts.Viewer3D.Popups
 
                 //required by traincarwindow to ModifyWindowSize()
                 windowHeight = Vbox != null ? Vbox.Position.Height : 0;
-
-                // rwf-rr: part of debugging bug 2121985
-                // System.Diagnostics.Debug.Assert(CarPosition < PlayerTrain.Cars.Count, "Viewer SelectedCar (index) out of range");
             }
         }
 
