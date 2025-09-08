@@ -750,6 +750,9 @@ The Settings Exporter is accessible from the "Tools" button in the main window.
 The Settings Exporter may also be used to create a backup of the settings, or to copy the settings from
 the INI file back into the registry.
 
+Important: Close all OpenRails instances before exporting the settings.
+Otherwise the exported settings may be stale.
+
 Alternatively, create an empty file "OpenRails.ini" in the same folder as "OpenRails.exe" and start Open Rails.
 The program will attempt to load settings from the file, using default values for settings that 
 cannot be found and populates the INI file with these settings.

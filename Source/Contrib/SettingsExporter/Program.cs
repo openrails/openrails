@@ -67,7 +67,7 @@ namespace ORTS.SettingsExporter
             // determine where to load from
             if (fromArg.Equals("INI")) { loadFilePath = SettingsBase.DefaultSettingsFileName; }
             else if (fromArg.Equals("REG")) { loadRegistryKey = SettingsBase.DefaultRegistryKey; }
-            else if (fromArg.EndsWith(".ini")) { loadFilePath = fromArg; }
+            else if (fromArg.Contains(".ini")) { loadFilePath = fromArg; }
             else { loadRegistryKey = fromArg; }
 
             // check that source exists
@@ -211,6 +211,8 @@ namespace ORTS.SettingsExporter
             Console.WriteLine("               key  : a specific registry key, relative to the HKEY_CURRENT_USER key. Must start with \"SOFTWARE\".");
             Console.WriteLine("  <to>       Specify the destination to save the settings to. Similar to <from>.");
             Console.WriteLine("  /h, /help  Show this help.");
+            Console.WriteLine();
+            Console.WriteLine("Important: Close all OpenRails instances before exporting the settings. Otherwise the exported settings may be stale.");
             Console.WriteLine();
             Console.WriteLine("This utility reads the Settings (Options) from one location, and exports them to another location.");
             Console.WriteLine("It creates a backup of any settings that will be overwritten. Example:");
