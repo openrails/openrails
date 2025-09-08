@@ -1331,7 +1331,7 @@ namespace Orts.Viewer3D.Popups
                 string[] parts = data.Split(new string[] { " = " }, 2, StringSplitOptions.None);
                 string keyPart = parts[0];
                 string valuePart = parts?[1];
-                if (keyPart.Contains(Viewer.Catalog.GetString("Battery")))
+                if (keyPart.Contains(Viewer.Catalog.GetString("Battery switch")))
                 {
                     Viewer.TrainCarOperationsWindow.BatteryStatus = locomotiveStatus;
                     Texture = valuePart.Contains(Viewer.Catalog.GetString("On")) ? BattOn : BattOff;
