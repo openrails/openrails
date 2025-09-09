@@ -39,6 +39,11 @@
 
 //#define DEBUGSCR
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Simulation;
@@ -48,11 +53,7 @@ using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
 using ORTS.Settings;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
+using SharpDX.Multimedia;
 using Event = Orts.Common.Event;
 using Events = Orts.Common.Events;
 
@@ -1360,6 +1361,7 @@ namespace Orts.Viewer3D
                         if (SoundSource.SMSFileName != "ingame.sms") Trace.TraceWarning("Trigger type of trigger number {2} in stream number {1} in file {0} is not existent or not applicable",
                             SoundSource.SMSFileName, SoundSource.SoundStreams.Count, Triggers.Count-1);
                     }
+
                     IsReleasedWithJump |= (Triggers.Last().SoundCommand is ORTSReleaseLoopReleaseWithJump);
                 }  // for each mstsStream.Trigger
 
@@ -1608,6 +1610,8 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.VolumeCurve.Controls.WheelRpMControlled: var wheelRpM = pS.TopM((float)(car.AbsSpeedMpS / (2 * Math.PI * car.WheelRadiusM))); return wheelRpM;
                 case Orts.Formats.Msts.VolumeCurve.Controls.CarDistanceTrackControlled: return car.CarTrackControlledDistanceM;
                 case Orts.Formats.Msts.VolumeCurve.Controls.CarTunnelDistanceControlled: return car.CarTunnelDistanceM;
+                case Orts.Formats.Msts.VolumeCurve.Controls.WindSpeedControlled: return car.Train.Simulator.Weather.WindInstantaneousSpeedMpS;
+                case Orts.Formats.Msts.VolumeCurve.Controls.RainIntensityControlled: return car.Train.Simulator.Weather.PrecipitationIntensityPPSPM2;
                 default: return 0;
             }
         }
