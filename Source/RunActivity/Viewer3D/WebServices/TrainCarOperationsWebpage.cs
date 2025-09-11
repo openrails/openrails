@@ -276,7 +276,7 @@ namespace Orts.Viewer3D.WebServices
 
         private void fillStatus(OperationsStatus operationStatus)
         {
-            // Apply reveral point when TrainCarOperations/Viewer windows are not visible
+            // Apply reveral point when TrainCarOperations/Viewer windows are not visibles
             // Makes this Webpage version, more autonoumus
             if (!Viewer.TrainCarOperationsWindow.Visible && !Viewer.TrainCarOperationsViewerWindow.Visible && Viewer.IsFormationReversed)
             {
@@ -689,7 +689,6 @@ namespace Orts.Viewer3D.WebServices
 
         public void buttonCouplerFrontClick(int carPosition)
         {
-            TrainCarOperationsWindow TrainCar = Viewer.TrainCarOperationsWindow;
             TrainCarOperationsViewerWindow TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
 
             if (Viewer.Simulator.TimetableMode)
@@ -705,7 +704,7 @@ namespace Orts.Viewer3D.WebServices
 
                 new UncoupleCommand(Viewer.Log, carPosition - 1);
 
-                TrainCarViewer.CouplerChanged = TrainCar.CouplerClicked = true;
+                TrainCarViewer.CouplerChanged = true;
                 TrainCarViewer.NewCarPosition = carPosition - 1;
                 if (Viewer.CarOperationsWindow.CarPosition > carPosition - 1)
                     Viewer.CarOperationsWindow.Visible = false;
@@ -734,8 +733,8 @@ namespace Orts.Viewer3D.WebServices
 
         public void buttonLocoClick(int carPosition)
         {
-            TrainCarOperationsWindow TrainCar = Viewer.TrainCarOperationsWindow;
             TrainCarOperationsViewerWindow TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
+            TrainCarOperationsWindow TrainCar = Viewer.TrainCarOperationsWindow;
 
             if (TrainCarSelected)
             {
@@ -790,7 +789,6 @@ namespace Orts.Viewer3D.WebServices
 
         public void buttonCouplerRearClick(int carPosition)
         {
-            TrainCarOperationsWindow TrainCar = Viewer.TrainCarOperationsWindow;
             TrainCarOperationsViewerWindow TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
 
             if (Viewer.Simulator.TimetableMode)
@@ -806,7 +804,7 @@ namespace Orts.Viewer3D.WebServices
 
                 new UncoupleCommand(Viewer.Log, carPosition);
 
-                TrainCarViewer.CouplerChanged = TrainCar.CouplerClicked = true;
+                TrainCarViewer.CouplerChanged = true;
                 if (Viewer.CarOperationsWindow.CarPosition > carPosition)
                     Viewer.CarOperationsWindow.Visible = false;
                 Viewer.TrainCarOperationsWindow.SelectedCarPosition = 0;
