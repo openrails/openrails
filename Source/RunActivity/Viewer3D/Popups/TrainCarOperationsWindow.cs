@@ -1091,6 +1091,7 @@ namespace Orts.Viewer3D.Popups
             Viewer = viewer;
             TrainCarViewer = Viewer.TrainCarOperationsViewerWindow;
             var CurrentCar = Viewer.PlayerTrain.Cars[carPosition];
+            var First = car == viewer.PlayerTrain.Cars.First();
 
             if (CurrentCar.BrakeSystem is VacuumSinglePipe)
             {
@@ -1109,7 +1110,7 @@ namespace Orts.Viewer3D.Popups
             var trainCarOperations = Viewer.TrainCarOperationsWindow;
             if (!trainCarOperations.WarningCarPosition[carPosition])
             {
-                trainCarOperations.updateWarningCarPosition(carPosition, Texture, FrontAngleCockClosed);
+                trainCarOperations.updateWarningCarPosition(carPosition, Texture, First ? FrontAngleCockOpened : FrontAngleCockClosed);
                 trainCarOperations.updateWarningCarPosition(carPosition, Texture, FrontAngleCockPartial);
             }
         }
@@ -1122,6 +1123,7 @@ namespace Orts.Viewer3D.Popups
         {
             Viewer = viewer;
             var CurrentCar = Viewer.PlayerTrain.Cars[carPosition];
+            var Last = car == viewer.PlayerTrain.Cars.Last();
 
             if (CurrentCar.BrakeSystem is VacuumSinglePipe)
             {
@@ -1140,7 +1142,7 @@ namespace Orts.Viewer3D.Popups
             var trainCarOperations = Viewer.TrainCarOperationsWindow;
             if (!trainCarOperations.WarningCarPosition[carPosition])
             {
-                trainCarOperations.updateWarningCarPosition(carPosition, Texture, RearAngleCockClosed);
+                trainCarOperations.updateWarningCarPosition(carPosition, Texture, Last ? RearAngleCockOpened: RearAngleCockClosed);
                 trainCarOperations.updateWarningCarPosition(carPosition, Texture, RearAngleCockPartial);
             }
         }
