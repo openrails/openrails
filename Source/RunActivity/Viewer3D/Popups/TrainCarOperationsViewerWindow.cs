@@ -1189,6 +1189,7 @@ namespace Orts.Viewer3D.Popups
                     if (wagon.PowerSupply.BatterySwitch.Mode == BatterySwitch.ModeType.AlwaysOn)
                     {
                         Texture = BattAlwaysOn32;
+                        TrainCarViewer.BatterySwitchOn = wagon.PowerSupply.BatterySwitch.On;
                     }
                     else
                     {
