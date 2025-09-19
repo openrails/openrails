@@ -578,6 +578,10 @@ namespace Orts.Viewer3D
             // MUST be after loading is done! (Or we try and load shapes on the main thread.)
             PlayerLocomotiveViewer = World.Trains.GetViewer(PlayerLocomotive);
 
+            // Camera loaded before car viewers did, make sure camera has an up to date car viewer
+            if (Camera is AttachedCamera atCam)
+                atCam.RefreshCarViewer();
+
             SetCommandReceivers();
             InitReplay();
         }
@@ -812,10 +816,12 @@ namespace Orts.Viewer3D
 
             UserInput.RDState.ShowSpeed(MpS.FromMpS(PlayerLocomotive.SpeedMpS, PlayerLocomotive.IsMetric));
 
-            // This has to be done also for stopped trains
-            var cars = World.Trains.Cars;
-            foreach (var car in cars)
-                car.Value.UpdateSoundPosition();
+            // Update animations and sound for all train cars before proceeding
+            foreach (TrainCarViewer car in World.Trains.Cars.Values)
+            {
+                car.UpdateAnimations(elapsedTime);
+                car.UpdateSoundPosition();
+            }
 
             if (Simulator.ReplayCommandList != null)
             {
@@ -1482,12 +1488,11 @@ namespace Orts.Viewer3D
                         {
                             foreach (var targetNode in animatedPart.MatrixIndexes)
                             {
-                                if (!trainCarShape.SharedShape.StoredResultMatrixes.TryGetValue(targetNode, out var matrix))
+                                if (targetNode > trainCarShape.ResultMatrices.Length)
                                     continue;
                                 var matrixWorldLocation = trainCarShape.Location.WorldLocation;
-                                matrixWorldLocation.Location.X = matrix.Translation.X;
-                                matrixWorldLocation.Location.Y = matrix.Translation.Y;
-                                matrixWorldLocation.Location.Z = -matrix.Translation.Z;
+                                matrixWorldLocation.Location = (trainCarShape.ResultMatrices[targetNode] * trainCarShape.Location.XNAMatrix).Translation;
+                                matrixWorldLocation.Location.Z *= -1;
                                 Vector3 xnaCenter = Camera.XnaLocation(matrixWorldLocation);
                                 float d = ORTSMath.LineSegmentDistanceSq(xnaCenter, NearPoint, FarPoint);
                                 if (bestD > d)

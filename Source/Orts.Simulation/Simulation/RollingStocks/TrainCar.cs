@@ -59,6 +59,8 @@ namespace Orts.Simulation.RollingStocks
         public Vector3 Location;
         public Vector3 StartDirection;
         public Vector3 RotationLimit;
+        public int ShapeIndex = -1;
+        public string ShapeHierarchy;
 
         public ViewPoint()
         {
@@ -74,6 +76,8 @@ namespace Orts.Simulation.RollingStocks
             Location = copy.Location;
             StartDirection = copy.StartDirection;
             RotationLimit = copy.RotationLimit;
+            ShapeIndex = copy.ShapeIndex;
+            ShapeHierarchy = copy.ShapeHierarchy;
             if (rotate)
             {
                 Location.X *= -1;
@@ -89,6 +93,7 @@ namespace Orts.Simulation.RollingStocks
         // Remember direction of passenger camera and apply when user returns to it.
         public float RotationXRadians;
         public float RotationYRadians;
+        public Vector3 ShapeOffset;
     }
 
     public abstract class TrainCar
@@ -110,7 +115,6 @@ namespace Orts.Simulation.RollingStocks
 
         // sound related variables
         public bool IsPartOfActiveTrain = true;
-        public List<int> SoundSourceIDs = new List<int>();
 
         public IPowerSupply PowerSupply;
 
@@ -669,7 +673,7 @@ namespace Orts.Simulation.RollingStocks
 
         // For use by cameras, initialized in MSTSWagon class and its derived classes
         public List<PassengerViewPoint> PassengerViewpoints = new List<PassengerViewPoint>();
-        public List<PassengerViewPoint> CabViewpoints; //three dimensional cab view point
+        public List<PassengerViewPoint> CabViewpoints = new List<PassengerViewPoint>(); //three dimensional cab view point
         public List<ViewPoint> HeadOutViewpoints = new List<ViewPoint>();
 
         // Used by Curve Speed Method
@@ -2847,6 +2851,8 @@ namespace Orts.Simulation.RollingStocks
             // Check if null (0-length) vector
             if (!(fwd.X == 0 && fwd.Y == 0 && fwd.Z == 0))
                 fwd.Normalize();
+            else // If calculation fails, force set forward vector to prevent NaN errors
+                fwd.X = 1; 
             Vector3 side = Vector3.Cross(Vector3.Up, fwd);
             // Check if null (0-length) vector
             if (!(side.X == 0 && side.Y == 0 && side.Z == 0))

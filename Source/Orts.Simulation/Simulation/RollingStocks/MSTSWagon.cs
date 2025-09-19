@@ -187,26 +187,32 @@ namespace Orts.Simulation.RollingStocks
         // Wagon steam leaks
         public float HeatingHoseParticleDurationS;
         public float HeatingHoseSteamVelocityMpS;
+        public float HeatingHoseSteamVolumeM3pS;
 
         // Wagon heating compartment steamtrap leaks
         public float HeatingCompartmentSteamTrapParticleDurationS;
         public float HeatingCompartmentSteamTrapVelocityMpS;
+        public float HeatingCompartmentSteamTrapVolumeM3pS;
 
         // Wagon heating steamtrap leaks
         public float HeatingMainPipeSteamTrapDurationS;
         public float HeatingMainPipeSteamTrapVelocityMpS;
+        public float HeatingMainPipeSteamTrapVolumeM3pS;
 
         // Steam Brake leaks
         public float SteamBrakeLeaksDurationS;
         public float SteamBrakeLeaksVelocityMpS;
+        public float SteamBrakeLeaksVolumeM3pS;
 
         // Water Scoop Spray
         public float WaterScoopParticleDurationS;
         public float WaterScoopWaterVelocityMpS;
+        public float WaterScoopWaterVolumeM3pS;
 
         // Tender Water overflow
         public float TenderWaterOverflowParticleDurationS;
         public float TenderWaterOverflowVelocityMpS;
+        public float TenderWaterOverflowVolumeM3pS;
 
         // Wagon Power Generator
         public float WagonGeneratorDurationS = 1.5f;
@@ -220,17 +226,20 @@ namespace Orts.Simulation.RollingStocks
         public bool HeatingBoilerSet = false;
 
         // Wagon Smoke
+        public float WagonSmokeVolumeM3pS;
+        float InitialWagonSmokeVolumeM3pS = 3.0f;
         public float WagonSmokeDurationS;
         float InitialWagonSmokeDurationS = 1.0f;
-        public float WagonSmokeVelocityMpS = 1.5f;
+        public float WagonSmokeVelocityMpS = 15.0f;
         public Color WagonSmokeSteadyColor = Color.Gray;
 
         float TrueCouplerCount = 0;
         int CouplerCountLocation;
 
         // Bearing Hot Box Smoke
+        public float BearingHotBoxSmokeVolumeM3pS;
         public float BearingHotBoxSmokeDurationS;
-        public float BearingHotBoxSmokeVelocityMpS = 1.5f;
+        public float BearingHotBoxSmokeVelocityMpS = 15.0f;
         public Color BearingHotBoxSmokeSteadyColor = Color.Gray;
         List<string> BrakeEquipment = new List<string>();
 
@@ -1857,28 +1866,36 @@ namespace Orts.Simulation.RollingStocks
                 new STFReader.TokenProcessor("passengercabinheadpos", ()=>{ passengerViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
                 new STFReader.TokenProcessor("rotationlimit", ()=>{ passengerViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
                 new STFReader.TokenProcessor("startdirection", ()=>{ passengerViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
+                new STFReader.TokenProcessor("ortsshapeoffset", ()=>{ passengerViewPoint.ShapeOffset = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
+                new STFReader.TokenProcessor("ortsshapeindex", ()=>{ passengerViewPoint.ShapeIndex = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("ortsshapehierarchy", ()=>{ passengerViewPoint.ShapeHierarchy = stf.ReadStringBlock(null); }),
             });
             // Set initial direction
             passengerViewPoint.RotationXRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.X);
             passengerViewPoint.RotationYRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.Y);
+            passengerViewPoint.ShapeOffset.Z *= -1; // Convert to MSTS coordinate system
             PassengerViewpoints.Add(passengerViewPoint);
         }
         protected void Parse3DCab(STFReader stf)
         {
-            PassengerViewPoint passengerViewPoint = new PassengerViewPoint();
+            PassengerViewPoint cabViewPoint = new PassengerViewPoint();
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("sound", ()=>{ Cab3DSoundFileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("orts3dcabfile", ()=>{ Cab3DShapeFileName = stf.ReadStringBlock(null); }),
-                new STFReader.TokenProcessor("orts3dcabheadpos", ()=>{ passengerViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
-                new STFReader.TokenProcessor("rotationlimit", ()=>{ passengerViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
-                new STFReader.TokenProcessor("startdirection", ()=>{ passengerViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
+                new STFReader.TokenProcessor("orts3dcabheadpos", ()=>{ cabViewPoint.Location = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
+                new STFReader.TokenProcessor("ortsshapeoffset", ()=>{ cabViewPoint.ShapeOffset = stf.ReadVector3Block(STFReader.UNITS.Distance, new Vector3()); }),
+                new STFReader.TokenProcessor("ortsshapeindex", ()=>{ cabViewPoint.ShapeIndex = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("ortsshapehierarchy", ()=>{ cabViewPoint.ShapeHierarchy = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("rotationlimit", ()=>{ cabViewPoint.RotationLimit = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
+                new STFReader.TokenProcessor("startdirection", ()=>{ cabViewPoint.StartDirection = stf.ReadVector3Block(STFReader.UNITS.None, new Vector3()); }),
             });
             // Set initial direction
-            passengerViewPoint.RotationXRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.X);
-            passengerViewPoint.RotationYRadians = MathHelper.ToRadians(passengerViewPoint.StartDirection.Y);
-            if (this.CabViewpoints == null) CabViewpoints = new List<PassengerViewPoint>();
-            CabViewpoints.Add(passengerViewPoint);
+            cabViewPoint.RotationXRadians = MathHelper.ToRadians(cabViewPoint.StartDirection.X);
+            cabViewPoint.RotationYRadians = MathHelper.ToRadians(cabViewPoint.StartDirection.Y);
+            cabViewPoint.ShapeOffset.Z *= -1; // Convert to MSTS coordinate system
+            if (CabViewpoints == null) CabViewpoints = new List<PassengerViewPoint>();
+            CabViewpoints.Add(cabViewPoint);
         }
 
         // parses additional passenger viewpoints, if any
@@ -3183,12 +3200,14 @@ namespace Orts.Simulation.RollingStocks
                 // Turn on smoke effects for bearing hot box
                 BearingHotBoxSmokeDurationS = 1;
                 BearingHotBoxSmokeVelocityMpS = 10.0f;
+                BearingHotBoxSmokeVolumeM3pS = 1.5f;
             }
             else if (WheelBearingTemperatureDegC < 50)
             {
                 // Turn off smoke effects for hot boxs
                 BearingHotBoxSmokeDurationS = 0;
                 BearingHotBoxSmokeVelocityMpS = 0;
+                BearingHotBoxSmokeVolumeM3pS = 0;
             }
 
         }
@@ -3464,13 +3483,15 @@ namespace Orts.Simulation.RollingStocks
                 {
                     // Turn wagon steam leaks on 
                     HeatingHoseParticleDurationS = 0.75f;
-                    HeatingHoseSteamVelocityMpS = 3.0f * SteamHoseLeakRateRandom;
+                    HeatingHoseSteamVelocityMpS = 15.0f;
+                    HeatingHoseSteamVolumeM3pS = 4.0f * SteamHoseLeakRateRandom;
                 }
                 else
                 {
                     // Turn wagon steam leaks off 
                     HeatingHoseParticleDurationS = 0.0f;
                     HeatingHoseSteamVelocityMpS = 0.0f;
+                    HeatingHoseSteamVolumeM3pS = 0.0f;
                 }
 
                 // Update Heating main pipe steam trap leaks Information
@@ -3478,13 +3499,15 @@ namespace Orts.Simulation.RollingStocks
                 {
                     // Turn wagon steam leaks on 
                     HeatingMainPipeSteamTrapDurationS = 0.75f;
-                    HeatingMainPipeSteamTrapVelocityMpS = 3.0f;
+                    HeatingMainPipeSteamTrapVelocityMpS = 15.0f;
+                    HeatingMainPipeSteamTrapVolumeM3pS = 8.0f;
                 }
                 else
                 {
                     // Turn wagon steam leaks off 
                     HeatingMainPipeSteamTrapDurationS = 0.0f;
                     HeatingMainPipeSteamTrapVelocityMpS = 0.0f;
+                    HeatingMainPipeSteamTrapVolumeM3pS = 0.0f;
                 }
 
                 // Update Heating compartment steam trap leaks Information
@@ -3492,13 +3515,15 @@ namespace Orts.Simulation.RollingStocks
                 {
                     // Turn wagon steam leaks on 
                     HeatingCompartmentSteamTrapParticleDurationS = 0.75f;
-                    HeatingCompartmentSteamTrapVelocityMpS = 3.0f;
+                    HeatingCompartmentSteamTrapVelocityMpS = 15.0f;
+                    HeatingCompartmentSteamTrapVolumeM3pS = 4.0f;
                 }
                 else
                 {
                     // Turn wagon steam leaks off 
                     HeatingCompartmentSteamTrapParticleDurationS = 0.0f;
                     HeatingCompartmentSteamTrapVelocityMpS = 0.0f;
+                    HeatingCompartmentSteamTrapVolumeM3pS = 0.0f;
                 }
 
                 // Update Water Scoop Spray Information when scoop is down and filling from trough
@@ -3538,10 +3563,12 @@ namespace Orts.Simulation.RollingStocks
                         {
                             float InitialTenderWaterOverflowParticleDurationS = 1.25f;
                             float InitialTenderWaterOverflowVelocityMpS = 50.0f;
+                            float InitialTenderWaterOverflowVolumeM3pS = 10.0f;
 
                             // Turn tender water overflow on - changes due to speed of train
                             TenderWaterOverflowParticleDurationS = InitialTenderWaterOverflowParticleDurationS * SpeedRatio;
                             TenderWaterOverflowVelocityMpS = InitialTenderWaterOverflowVelocityMpS * SpeedRatio;
+                            TenderWaterOverflowVolumeM3pS = InitialTenderWaterOverflowVolumeM3pS * SpeedRatio;
                         }
                     }
                     else
@@ -3549,6 +3576,7 @@ namespace Orts.Simulation.RollingStocks
                         // Turn tender water overflow off 
                         TenderWaterOverflowParticleDurationS = 0.0f;
                         TenderWaterOverflowVelocityMpS = 0.0f;
+                        TenderWaterOverflowVolumeM3pS = 0.0f;
                     }
 
                     // Water scoop spray effects control - always on when scoop over trough, regardless of whether above minimum speed or not
@@ -3558,6 +3586,7 @@ namespace Orts.Simulation.RollingStocks
 
                         float InitialWaterScoopParticleDurationS = 1.25f;
                         float InitialWaterScoopWaterVelocityMpS = 50.0f;
+                        float InitialWaterScoopWaterVolumeM3pS = 10.0f;
 
                         // Turn water scoop spray effects on
                         if (AbsSpeedMpS <= MpS.FromMpH(10))
@@ -3566,6 +3595,7 @@ namespace Orts.Simulation.RollingStocks
                             SpeedRatio = (SprayDecay * AbsSpeedMpS) / MpS.FromMpH(100); // Decrease the water scoop spray effect to minimum level of visibility
                             WaterScoopParticleDurationS = InitialWaterScoopParticleDurationS * SpeedRatio;
                             WaterScoopWaterVelocityMpS = InitialWaterScoopWaterVelocityMpS * SpeedRatio;
+                            WaterScoopWaterVolumeM3pS = InitialWaterScoopWaterVolumeM3pS * SpeedRatio;
 
                         }
                         // Below 25mph effect does not vary, above 25mph effect varies according to speed
@@ -3574,12 +3604,14 @@ namespace Orts.Simulation.RollingStocks
                             SpeedRatio = MpS.FromMpH(25) / MpS.FromMpH(100); // Hold the water scoop spray effect to a minimum level of visibility
                             WaterScoopParticleDurationS = InitialWaterScoopParticleDurationS * SpeedRatio;
                             WaterScoopWaterVelocityMpS = InitialWaterScoopWaterVelocityMpS * SpeedRatio;
+                            WaterScoopWaterVolumeM3pS = InitialWaterScoopWaterVolumeM3pS * SpeedRatio;
                         }
                         else
                         {
                             // Allow water sccop spray effect to vary with speed
                             WaterScoopParticleDurationS = InitialWaterScoopParticleDurationS * SpeedRatio;
                             WaterScoopWaterVelocityMpS = InitialWaterScoopWaterVelocityMpS * SpeedRatio;
+                            WaterScoopWaterVolumeM3pS = InitialWaterScoopWaterVolumeM3pS * SpeedRatio;
                         }
                     }
                     else
@@ -3587,6 +3619,7 @@ namespace Orts.Simulation.RollingStocks
                         // Turn water scoop spray effects off 
                         WaterScoopParticleDurationS = 0.0f;
                         WaterScoopWaterVelocityMpS = 0.0f;
+                        WaterScoopWaterVolumeM3pS = 0.0f;
 
                     }
 
@@ -3600,13 +3633,15 @@ namespace Orts.Simulation.RollingStocks
                         {
                             // Turn steam brake leaks on 
                             SteamBrakeLeaksDurationS = 0.75f;
-                            SteamBrakeLeaksVelocityMpS = 3.0f * SteamBrakeLeakRate;
+                            SteamBrakeLeaksVelocityMpS = 15.0f;
+                            SteamBrakeLeaksVolumeM3pS = 4.0f * SteamBrakeLeakRate;
                         }
                         else
                         {
                             // Turn steam brake leaks off 
                             SteamBrakeLeaksDurationS = 0.0f;
                             SteamBrakeLeaksVelocityMpS = 0.0f;
+                            SteamBrakeLeaksVolumeM3pS = 0.0f;
                         }
 
                         if (WagonType == WagonTypes.Tender)
@@ -3619,13 +3654,15 @@ namespace Orts.Simulation.RollingStocks
                             {
                                 // Turn steam brake leaks on 
                                 SteamBrakeLeaksDurationS = 0.75f;
-                                SteamBrakeLeaksVelocityMpS = 3.0f * SteamBrakeLeakRate;
+                                SteamBrakeLeaksVelocityMpS = 15.0f;
+                                SteamBrakeLeaksVolumeM3pS = 4.0f * SteamBrakeLeakRate;
                             }
                             else
                             {
                                 // Turn steam brake leaks off 
                                 SteamBrakeLeaksDurationS = 0.0f;
                                 SteamBrakeLeaksVelocityMpS = 0.0f;
+                                SteamBrakeLeaksVolumeM3pS = 0.0f;
                             }
                         }
                     }
@@ -3633,6 +3670,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             WagonSmokeDurationS = InitialWagonSmokeDurationS;
+            WagonSmokeVolumeM3pS = InitialWagonSmokeVolumeM3pS;
         }
 
         public override void SignalEvent(Event evt)
@@ -4712,92 +4750,24 @@ public void SetTensionStiffness(float a, float b)
 
     public class ParticleEmitterData
     {
-        public Vector3 PositionM;
-        public Vector3 PositionVariationM = Vector3.Zero;
-
-        public Vector3 InitialVelocityFactor; // Note: Not a measure of the initial velocity, actually just a multiplication factor
-        public Vector3 InitialVelocityVariationFactor = new Vector3(0.1f); // Randomization of initial velocity is relative to initial speed
-
-        public Vector3 FinalVelocityMpS = Vector3.Up; // Default final velocity is 1 m/s upward
-        public Vector3 FinalVelocityVariationMpS = new Vector3(0.75f);
-
-        public float SpeedLimitMpS = 150.0f;
-
-        public float NozzleDiameterM = 0.1f;
-        public float NozzleAreaM2 = -1; // If left at -1, will be initialized later
-
-        public float RateFactor = 1.0f;
-        public float LifetimeFactor = 1.0f;
-        public float LifetimeVariationFactor = 0.5f;
-        public float SettlingFactor = 1.0f;
-        public float SettlingVariationFactor = 0.1f;
-        public float ExpansionSpeed = 4.0f;
-        public float InitialExpansionFactor = 1.0f;
-
-        public float RotationVariation = 0.25f;
-
-        public float WindEffect = 1.0f;
-        public int MaxParticles = 2500;
-
-        public bool ChaoticRandomization = false; // Changes the style of RNG used for particle motion
-
-        public string Graphic;
-        public int AtlasWidth = 4;
-        public int AtlasHeight = 4;
+        public Vector3 XNALocation;
+        public Vector3 XNADirection;
+        public float NozzleWidth;
+        public int ShapeIndex = -1;
+        public string ShapeHierarchy;
 
         public ParticleEmitterData(STFReader stf)
         {
             stf.MustMatch("(");
-            // See if the first value is a number, if it isn't then skip parsing MSTS syntax
-            if (float.TryParse(stf.ReadItem(), out _))
-            {
-                stf.StepBackOneItem();
-                PositionM = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                PositionM.Z *= -1; // Convert to MSTS coordinate system
-                InitialVelocityFactor = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
-                InitialVelocityFactor.Z *= -1; // Convert to MSTS coordinate system
-                NozzleDiameterM = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            }
-            else
-                stf.StepBackOneItem();
+            XNALocation = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
+            XNALocation.Z *= -1; // Convert to MSTS coordinate system
+            XNADirection = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
+            XNADirection.Z *= -1; // Convert to MSTS coordinate system
+            NozzleWidth = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
             // Parse new parameters after all MSTS parameters, otherwise it's ambiguous which data is which
             stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("ortsposition", ()=>{
-                    PositionM = stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero);
-                    PositionM.Z *= -1; // Convert to MSTS coordinate system
-                }),
-                new STFReader.TokenProcessor("ortspositionvariation", ()=>{ PositionVariationM = stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero); }),
-                new STFReader.TokenProcessor("ortsinitialvelocity", ()=>{
-                    InitialVelocityFactor = stf.ReadVector3Block(STFReader.UNITS.Speed, Vector3.Zero);
-                    InitialVelocityFactor.Z *= -1; // Convert to MSTS coordinate system
-                }),
-                new STFReader.TokenProcessor("ortsinitialvelocityvariation", ()=>{ InitialVelocityVariationFactor = stf.ReadVector3Block(STFReader.UNITS.Speed, Vector3.Zero); }),
-                new STFReader.TokenProcessor("ortsfinalvelocity", ()=>{
-                    FinalVelocityMpS = stf.ReadVector3Block(STFReader.UNITS.Speed, Vector3.Zero);
-                    FinalVelocityMpS.Z *= -1; // Convert to MSTS coordinate system
-                }),
-                new STFReader.TokenProcessor("ortsfinalvelocityvariation", ()=>{ FinalVelocityVariationMpS = stf.ReadVector3Block(STFReader.UNITS.Speed, Vector3.Zero); }),
-                new STFReader.TokenProcessor("ortsemissionspeedlimit", ()=>{ SpeedLimitMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); }),
-                new STFReader.TokenProcessor("ortsparticlediameter", ()=>{ NozzleDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
-                new STFReader.TokenProcessor("ortslifespanmultiplier", ()=>{ LifetimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortslifespanvariation", ()=>{ LifetimeVariationFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortsmomentummultiplier", ()=>{ SettlingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortsmomentumvariation", ()=>{ SettlingVariationFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortswindmultiplier", ()=>{ WindEffect = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortsinititalexpansion", ()=>{ InitialExpansionFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortsexpansionspeed", ()=>{ ExpansionSpeed = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortsrotationvariation", ()=>{ RotationVariation = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortspipearea", ()=>{ NozzleAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); }),
-                new STFReader.TokenProcessor("ortsmaxparticles", ()=>{ MaxParticles = stf.ReadIntBlock(null); }),
-                new STFReader.TokenProcessor("ortsratemultiplier", ()=>{ RateFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortsusechaoticrandomization", ()=>{ ChaoticRandomization = stf.ReadBoolBlock(true); }),
-                new STFReader.TokenProcessor("ortsgraphic", ()=>{ Graphic = stf.ReadStringBlock(null); }),
-                new STFReader.TokenProcessor("ortsgraphicatlaslayout", ()=>{
-                    stf.MustMatch("(");
-                    AtlasWidth = Math.Max(stf.ReadInt(null), 1);
-                    AtlasHeight = Math.Max(stf.ReadInt(null), 1);
-            stf.SkipRestOfBlock();
-                }),
+                    new STFReader.TokenProcessor("ortsshapeindex", ()=>{ ShapeIndex = stf.ReadIntBlock(null); }),
+                    new STFReader.TokenProcessor("ortsshapehierarchy", ()=>{ ShapeHierarchy = stf.ReadStringBlock(null); }),
             });
         }
     }

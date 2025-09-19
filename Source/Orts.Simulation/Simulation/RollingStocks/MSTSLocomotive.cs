@@ -833,6 +833,9 @@ namespace Orts.Simulation.RollingStocks
                 viewPoint.Location = cvfFile.Locations[i];
                 viewPoint.StartDirection = cvfFile.Directions[i];
                 viewPoint.RotationLimit = new Vector3(0, 0, 0);  // cab views have a fixed head position
+                // Shape index and shape hierarchy are optional, so check for element at or default
+                viewPoint.ShapeIndex = i >= 0 && i < cvfFile.ShapeIndices.Count ? cvfFile.ShapeIndices[i] : -1;
+                viewPoint.ShapeHierarchy = i >= 0 && i < cvfFile.ShapeHierarchies.Count ? cvfFile.ShapeHierarchies[i] : string.Empty;
                 viewPointList.Add(viewPoint);
             }
             var cabViewType = new CabViewType();
@@ -1112,8 +1115,16 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsdrivewheelweight": InitialDrvWheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(engineoperatingprocedures": EngineOperatingProcedures = stf.ReadStringBlock(""); break;
                 case "engine(headout":
-                    HeadOutViewpoints.Add(new ViewPoint(stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero)));
-                    HeadOutViewpoints.Add(new ViewPoint(HeadOutViewpoints[0], true));
+                    stf.MustMatch("(");
+                    Vector3 pos = stf.ReadVector3(STFReader.UNITS.Distance, Vector3.Zero);
+                    ViewPoint headOut = new ViewPoint(pos);
+                    stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("ortsshapeindex", ()=>{ headOut.ShapeIndex = stf.ReadIntBlock(null); }),
+                        new STFReader.TokenProcessor("ortsshapehierarchy", ()=>{ headOut.ShapeHierarchy = stf.ReadStringBlock(null); }),
+                    });
+                    // Add the original head out view and a reversed duplicate of it
+                    HeadOutViewpoints.Add(headOut);
+                    HeadOutViewpoints.Add(new ViewPoint(headOut, true));
                     break;
                 case "engine(sanding": SanderSpeedOfMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, 30.0f); break;
                 case "engine(ortsdoesvacuumbrakecutpower": DoesVacuumBrakeCutPower = stf.ReadBoolBlock(false); break;
