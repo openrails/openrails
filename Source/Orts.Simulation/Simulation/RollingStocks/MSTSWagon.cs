@@ -172,7 +172,7 @@ namespace Orts.Simulation.RollingStocks
         public float SlipWarningThresholdPercent = 70;
         public MSTSNotchController WeightLoadController; // Used to control freight loading in freight cars
 
-        public Axles LocomotiveAxles; // Only used at locomotives for efficiency
+        public Axles LocomotiveAxles;
 
         // Colours for smoke and steam effects
         public Color ExhaustTransientColor = Color.Black;
@@ -2378,6 +2378,14 @@ namespace Orts.Simulation.RollingStocks
             {
                 UpdateTrainBaseResistance_ORTS();
             }
+
+            // TODO: the Davis A and B parameters already include rolling friction. Thus, there is an over-estimation
+            // of the rolling friction forces, due to a small amount of friction being inserted to the axle module.
+            // This needs to be fixed by inserting the Davis A and B parameters to the axle, to the 'friction' and
+            // 'damping' axle parameters respectively, and their calculation must be removed from UpdateTrainBaseResistance_ methods
+            // This means that low/high speed friction has to be calculated and passed to the axle module elsewhere
+            // Davis C is related to air speed and must be calculated here and not inside the axle module
+            FrictionForceN += RollingFrictionForceN;
         }
 
         /// <summary>
