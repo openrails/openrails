@@ -40,10 +40,6 @@
 //#define DEBUGSCR
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Simulation;
@@ -51,9 +47,12 @@ using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
-using Orts.Viewer3D;
 using ORTS.Common;
 using ORTS.Settings;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Event = Orts.Common.Event;
 using Events = Orts.Common.Events;
 
