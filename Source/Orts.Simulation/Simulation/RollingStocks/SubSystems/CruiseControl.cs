@@ -511,7 +511,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             else if (MaxForceSelectorController == null)
             {
                 var notches = new List<MSTSNotch>();
-                if (MaxForceSelectorIsDiscrete)
+                if (MaxForceSelectorIsDiscrete && SpeedRegulatorMaxForceSteps > 0)
                 {
                     float numNotches = SpeedRegulatorMaxForceSteps;
                     for (int i=DisableZeroForceStep ? 1 : 0; i<=numNotches; i++)
@@ -538,7 +538,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             else if (SpeedSelectorController == null)
             {
                 var notches = new List<MSTSNotch>();
-                if (SpeedSelectorIsDiscrete)
+                if (SpeedSelectorIsDiscrete && SpeedRegulatorNominalSpeedStepMpS > 0)
                 {
                     if (!DisableZeroSelectedSpeedStep) notches.Add(new MSTSNotch(0, false, 0));
                     if (MinimumSpeedForCCEffectMpS > 0) notches.Add(new MSTSNotch(float.Epsilon, false, 0));
