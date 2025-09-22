@@ -39,17 +39,16 @@
 
 //#define DEBUGSCR
 
-using Microsoft.Xna.Framework;
+using System;
 using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Simulation;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
-using Orts.Viewer3D.RollingStock;
+using Orts.Simulation.Signalling;
 using ORTS.Common;
 using ORTS.Settings;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -80,10 +79,6 @@ namespace Orts.Viewer3D
         /// The sound may be from a train car
         /// </summary>
         public MSTSWagon Car;
-        /// <summary>
-        /// The viewer of the connected train car (if any)
-        /// </summary>
-        public MSTSWagonViewer CarViewer;
         /// <summary>
         /// The listener is connected to this viewer
         /// </summary>
@@ -120,16 +115,15 @@ namespace Orts.Viewer3D
         private bool CarOnCurve = false;
 
 
-        public TrackSoundSource(MSTSWagonViewer carViewer, Viewer viewer)
+        public TrackSoundSource(MSTSWagon car, Viewer viewer)
         {
             TrackSound = true;
-            CarViewer = carViewer;
-            Car = (carViewer.Car as MSTSWagon);
+            Car = car;
             Viewer = viewer;
             _inSources = new List<SoundSource>();
             _outSources = new List<SoundSource>();
 
-            foreach (TrackTypesFile.TrackType ttdf in viewer.TrackTypes)
+            foreach (Orts.Formats.Msts.TrackTypesFile.TrackType ttdf in viewer.TrackTypes)
             {
                 MSTSLocomotive loco = Car as MSTSLocomotive;
 
@@ -156,11 +150,11 @@ namespace Orts.Viewer3D
             }
             if (isInside)
             {
-                _inSources.Add(new SoundSource(Viewer, CarViewer, fullPath));
+                _inSources.Add(new SoundSource(Viewer, Car, fullPath));
                 _inSources.Last().IsInternalTrackSound = true;
             }
             else
-                _outSources.Add(new SoundSource(Viewer, CarViewer, fullPath));
+                _outSources.Add(new SoundSource(Viewer, Car, fullPath));
         }
 
         public override void Uninitialize()
@@ -343,27 +337,66 @@ namespace Orts.Viewer3D
         {
             bool stateChange = false;
             if (SharedSMSFileManager.AutoTrackSound) stateChange = UpdateCarOnSwitchAndCurve();
-//            if (stateChange) Trace.TraceInformation("Time {4} TrainName {5} carNo {0} IsOnSwitch {1} IsOnCurve {6} TracksoundType {2} _CurTType {3} Radius {7} Before",
-//                Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name, CarOnCurve, Car.CurrentCurveRadius);
+            //            if (stateChange) Trace.TraceInformation("Time {4} TrainName {5} carNo {0} IsOnSwitch {1} IsOnCurve {6} TracksoundType {2} _CurTType {3} Radius {7} Before",
+            //                Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name, CarOnCurve, Car.CurrentCurveRadius);
             if ((!CarOnSwitch && !CarOnCurve) || !SharedSMSFileManager.AutoTrackSound)
                 UpdateTType(stateChange);
-//            if (stateChange) Trace.TraceInformation("Time {4} TrainName {5} carNo {0} IsOnSwitch {1} IsOnCurve {6} TracksoundType {2} _CurTType {3} Radius {7} After",
-//                Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name, CarOnCurve, Car.CurrentCurveRadius);
+            //            if (stateChange) Trace.TraceInformation("Time {4} TrainName {5} carNo {0} IsOnSwitch {1} IsOnCurve {6} TracksoundType {2} _CurTType {3} Radius {7} After",
+            //                Car.Train.Cars.IndexOf(Car), CarOnSwitch, Car.TrackSoundType, _curTType, Viewer.Simulator.GameTime, Car.Train.Name, CarOnCurve, Car.CurrentCurveRadius);
             bool retval = true;
             NeedsFrequentUpdate = false;
 
-            if (_activeInSource != null)
+            // Plays the default sound region continuously, and then overlays other regions as they are triggered.
+            if (SharedSMSFileManager.PlayDefaultTrackSoundsContinuous)
             {
-                retval &= _activeInSource.Update();
-                NeedsFrequentUpdate |= _activeInSource.NeedsFrequentUpdate;
-            }
+                // Play base (default, ie TType=1 SMS file) sound continuously
+                if (_activeInSource != null)
+                {
+                    _activeInSource = _inSources[0];
+                    retval &= _activeInSource.Update();
+                    NeedsFrequentUpdate |= _activeInSource.NeedsFrequentUpdate;
+                    _activeInSource = _inSources[_curTType];
+                }
+                if (_activeOutSource != null)
+                {
+                    _activeOutSource = _outSources[0];
+                    retval &= _activeOutSource.Update();
+                    NeedsFrequentUpdate |= _activeOutSource.NeedsFrequentUpdate;
+                    _activeOutSource = _outSources[_curTType];
+                }
 
-            if (_activeOutSource != null)
+                if (_curTType != 0) // if base sound is not being played, then play additional relevant track region sound
+                {
+                    if (_activeInSource != null)
+                    {
+                        retval &= _activeInSource.Update();
+                        NeedsFrequentUpdate |= _activeInSource.NeedsFrequentUpdate;
+                    }
+
+                    if (_activeOutSource != null)
+                    {
+                        retval &= _activeOutSource.Update();
+                        NeedsFrequentUpdate |= _activeOutSource.NeedsFrequentUpdate;
+                    }
+                }
+                // Calculate the distance from the car to the camera position. Used for track based sounds
+                Car.CarTrackControlledDistanceM = (float)Math.Sqrt(WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, Viewer.Camera.CameraWorldLocation));
+            }
+            else // Legacy operation, plays track sounds when in relevant track sound region
             {
-                retval &= _activeOutSource.Update();
-                NeedsFrequentUpdate |= _activeOutSource.NeedsFrequentUpdate;
-            }
+                if (_activeInSource != null)
+                {
+                    retval &= _activeInSource.Update();
+                    NeedsFrequentUpdate |= _activeInSource.NeedsFrequentUpdate;
+                }
 
+                if (_activeOutSource != null)
+                {
+                    retval &= _activeOutSource.Update();
+                    NeedsFrequentUpdate |= _activeOutSource.NeedsFrequentUpdate;
+                }
+
+            }
             return retval;
         }
 
@@ -385,7 +418,7 @@ namespace Orts.Viewer3D
         }
 
         //Checks whether car on switch or on curve or both and selects related .sms file;
-        // returns true if state has changed
+        // returns true if state has changed (legacy operation)
 
         public bool UpdateCarOnSwitchAndCurve()
         {
@@ -526,19 +559,6 @@ namespace Orts.Viewer3D
         public bool IsUnattenuated = false;
 
         /// <summary>
-        /// Construct a SoundSource attached to a train car viewer.
-        /// </summary>
-        /// <param name="viewer"></param>
-        /// <param name="carViewer"></param>
-        /// <param name="smsFilePath"></param>
-        public SoundSource(Viewer viewer, MSTSWagonViewer carViewer, string smsFilePath)
-        {
-            CarViewer = carViewer;
-            Car = (carViewer.Car as MSTSWagon);
-            Initialize(viewer, Car.WorldPosition.WorldLocation, Events.Source.MSTSCar, smsFilePath);
-        }
-
-        /// <summary>
         /// Construct a SoundSource attached to a train car.
         /// </summary>
         /// <param name="viewer"></param>
@@ -547,9 +567,7 @@ namespace Orts.Viewer3D
         public SoundSource(Viewer viewer, MSTSWagon car, string smsFilePath)
         {
             Car = car;
-            viewer.World.Trains.Cars.TryGetValue(car, out TrainCarViewer carViewer);
-            CarViewer = carViewer as MSTSWagonViewer;
-            Initialize(viewer, Car.WorldPosition.WorldLocation, Events.Source.MSTSCar, smsFilePath);
+            Initialize(viewer, car.WorldPosition.WorldLocation, Events.Source.MSTSCar, smsFilePath);
         }
 
         /// <summary>
@@ -670,8 +688,8 @@ namespace Orts.Viewer3D
         public string WavFolder;
         public string WavFileName;
         public bool Active;
-        private Activation ActivationConditions;
-        private Deactivation DeactivationConditions;
+        private Orts.Formats.Msts.Activation ActivationConditions;
+        private Orts.Formats.Msts.Deactivation DeactivationConditions;
         public bool IsEnvSound;
         public bool IsExternal = true;
         public bool IsInternalTrackSound = false;
@@ -717,7 +735,7 @@ namespace Orts.Viewer3D
 
             SMSFolder = Path.GetDirectoryName(smsFilePath);
             SMSFileName = Path.GetFileName(smsFilePath);
-            SoundManagmentFile smsFile = SharedSMSFileManager.Get(smsFilePath);
+            Orts.Formats.Msts.SoundManagmentFile smsFile = Orts.Formats.Msts.SharedSMSFileManager.Get(smsFilePath);
 
 
             // find correct ScalabiltyGroup
@@ -730,7 +748,7 @@ namespace Orts.Viewer3D
             }
             if (iSG < smsFile.Tr_SMS.ScalabiltyGroups.Count && smsFile.Tr_SMS.ScalabiltyGroups[iSG].Streams != null)  // else we want less sound so don't provide any
             {
-                ScalabiltyGroup mstsScalabiltyGroup = smsFile.Tr_SMS.ScalabiltyGroups[iSG];
+                Orts.Formats.Msts.ScalabiltyGroup mstsScalabiltyGroup = smsFile.Tr_SMS.ScalabiltyGroups[iSG];
 
                 ActivationConditions = mstsScalabiltyGroup.Activation;
                 DeactivationConditions = mstsScalabiltyGroup.Deactivation;
@@ -741,40 +759,8 @@ namespace Orts.Viewer3D
 
                 SetRolloffFactor();
 
-                foreach (SMSStream mstsStream in mstsScalabiltyGroup.Streams)
+                foreach (Orts.Formats.Msts.SMSStream mstsStream in mstsScalabiltyGroup.Streams)
                 {
-                    // Initialization step for sound stream shape attachment
-                    if (CarViewer != null && Car != null)
-                    {
-                        if (mstsStream.ShapeIndex != -1)
-                        {
-                            if (mstsStream.ShapeIndex < 0 || mstsStream.ShapeIndex >= CarViewer.TrainCarShape.ResultMatrices.Count())
-                            {
-                                Trace.TraceWarning("Sound stream in car {0} has invalid shape index defined, shape index {1} does not exist",
-                                    Car.WagFilePath, mstsStream.ShapeIndex);
-                                mstsStream.ShapeIndex = 0;
-                            }
-                        }
-                        else
-                        {
-                            if (!String.IsNullOrEmpty(mstsStream.ShapeHierarchy))
-                            {
-                                if (CarViewer.TrainCarShape.SharedShape.MatrixNames.Contains(mstsStream.ShapeHierarchy))
-                                {
-                                    mstsStream.ShapeIndex = CarViewer.TrainCarShape.SharedShape.MatrixNames.IndexOf(mstsStream.ShapeHierarchy);
-                                }
-                                else
-                                {
-                                    Trace.TraceWarning("Sound stream in car {0} has invalid shape index defined, matrix name {1} does not exist",
-                                        Car.WagFilePath, mstsStream.ShapeHierarchy);
-                                    mstsStream.ShapeIndex = 0;
-                                }
-                            }
-                            else
-                                mstsStream.ShapeIndex = 0;
-                        }
-                    }
-
                     SoundStreams.Add(new SoundStream(mstsStream, eventSource, this, Viewer.Settings));
                 }
             }
@@ -1040,28 +1026,7 @@ namespace Orts.Viewer3D
             {
                 foreach (SoundStream stream in SoundStreams)
                 {
-                    // For train cars, calculate the position and velocity of exterior sounds
-                    if (CarViewer != null && !Ignore3D)
-                    {
-                        // Convert position offset into train-car space offset
-                        Vector3 pos = stream.MSTSStream.Position;
-                        int shapeHierarchy = MathHelper.Clamp(stream.MSTSStream.ShapeIndex, 0, CarViewer.TrainCarShape.ResultMatrices.Count() - 1);
-                        Matrix mat = CarViewer.TrainCarShape.ResultMatrices[shapeHierarchy];
-                        pos = Vector3.Transform(pos, mat);
-
-                        // Convert position offset into global space offset
-                        mat = Car.WorldPosition.XNAMatrix;
-                        mat.Translation = Vector3.Zero;
-                        pos = Vector3.Transform(pos, mat);
-                        pos.Z *= -1; // Invert Z coordinate to match WorldLocation system
-                        pos += CarViewer.SoundLocation.Location;
-
-                        float[] position = new float[] { pos.X, pos.Y, pos.Z};
-
-                        stream.Update(position, CarViewer.Velocity);
-                    }
-                    else // Interior sounds ignore 3D position, do not try to update 3D position
-                        stream.Update();
+                    stream.Update();
                     needsFrequentUpdate |= stream.NeedsFrequentUpdate;
                 }
             }
@@ -1244,7 +1209,7 @@ namespace Orts.Viewer3D
         /// <summary>
         /// A stream as is represented in sms file
         /// </summary>
-        public SMSStream MSTSStream;
+        protected Orts.Formats.Msts.SMSStream MSTSStream;
         /// <summary>
         /// Each stream can contain only one initial trigger, which should be audible
         /// in case the SoundSource is in scope, and no other variable trigger is active
@@ -1278,7 +1243,7 @@ namespace Orts.Viewer3D
         /// </summary>
         IEnumerable<ORTSTrigger> TriggersList;
 
-        public SoundStream(SMSStream mstsStream, Events.Source eventSource, SoundSource soundSource, UserSettings settings)
+        public SoundStream(Orts.Formats.Msts.SMSStream mstsStream, Events.Source eventSource, SoundSource soundSource, UserSettings settings)
         {
             SoundSource = soundSource;
             MSTSStream = mstsStream;
@@ -1287,7 +1252,7 @@ namespace Orts.Viewer3D
             ALSoundSource = new ALSoundSource(soundSource.IsEnvSound, soundSource.RolloffFactor);
 
             if (mstsStream.Triggers != null)
-                foreach (Trigger trigger in mstsStream.Triggers)
+                foreach (Orts.Formats.Msts.Trigger trigger in mstsStream.Triggers)
                 {
                     if (trigger.SoundCommand == null) // ignore improperly formed SMS files
                     {
@@ -1296,6 +1261,68 @@ namespace Orts.Viewer3D
                     else if (trigger.GetType() == typeof(Orts.Formats.Msts.Dist_Travelled_Trigger) && soundSource.Car != null)
                     {
                         Triggers.Add(new ORTSDistanceTravelledTrigger(this, (Orts.Formats.Msts.Dist_Travelled_Trigger)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Joint_Trigger_2) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSJoint2AxleTrigger(this, (Orts.Formats.Msts.Joint_Trigger_2)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Joint_Trigger_3) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSJoint3AxleTrigger(this, (Orts.Formats.Msts.Joint_Trigger_3)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Joint_Trigger_4) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSJoint4AxleTrigger(this, (Orts.Formats.Msts.Joint_Trigger_4)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Joint_Trigger_6) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSJoint6AxleTrigger(this, (Orts.Formats.Msts.Joint_Trigger_6)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Joint_Trigger_8) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSJoint8AxleTrigger(this, (Orts.Formats.Msts.Joint_Trigger_8)trigger));
+                    }
+
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Switch_Trigger_2) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSSwitch2AxleTrigger(this, (Orts.Formats.Msts.Switch_Trigger_2)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Switch_Trigger_3) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSSwitch3AxleTrigger(this, (Orts.Formats.Msts.Switch_Trigger_3)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Switch_Trigger_4) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSSwitch4AxleTrigger(this, (Orts.Formats.Msts.Switch_Trigger_4)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Switch_Trigger_6) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSSwitch6AxleTrigger(this, (Orts.Formats.Msts.Switch_Trigger_6)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Switch_Trigger_8) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSSwitch8AxleTrigger(this, (Orts.Formats.Msts.Switch_Trigger_8)trigger));
+                    }
+
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Xover_Trigger_2) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSXover2AxleTrigger(this, (Orts.Formats.Msts.Xover_Trigger_2)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Xover_Trigger_3) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSXover3AxleTrigger(this, (Orts.Formats.Msts.Xover_Trigger_3)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Xover_Trigger_4) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSXover4AxleTrigger(this, (Orts.Formats.Msts.Xover_Trigger_4)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Xover_Trigger_6) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSXover6AxleTrigger(this, (Orts.Formats.Msts.Xover_Trigger_6)trigger));
+                    }
+                    else if (trigger.GetType() == typeof(Orts.Formats.Msts.Xover_Trigger_8) && soundSource.Car != null)
+                    {
+                        Triggers.Add(new ORTSXover8AxleTrigger(this, (Orts.Formats.Msts.Xover_Trigger_8)trigger));
                     }
                     else if (trigger.GetType() == typeof(Orts.Formats.Msts.Initial_Trigger))
                     {
@@ -1328,12 +1355,12 @@ namespace Orts.Viewer3D
                         ORTSDiscreteTrigger ortsTrigger = new ORTSDiscreteTrigger(this, eventSource, (Orts.Formats.Msts.Discrete_Trigger)trigger, settings);
                         Triggers.Add(ortsTrigger);  // list them here so we can enable and disable 
                     }
-                        // unapplicable trigger type
+                    // unapplicable trigger type
                     else
                     {
                         Triggers.Add(new ORTSTrigger()); // null trigger
                         if (SoundSource.SMSFileName != "ingame.sms") Trace.TraceWarning("Trigger type of trigger number {2} in stream number {1} in file {0} is not existent or not applicable",
-                            SoundSource.SMSFileName, SoundSource.SoundStreams.Count, Triggers.Count-1);
+                            SoundSource.SMSFileName, SoundSource.SoundStreams.Count, Triggers.Count - 1);
                     }
                     IsReleasedWithJump |= (Triggers.Last().SoundCommand is ORTSReleaseLoopReleaseWithJump);
                 }  // for each mstsStream.Trigger
@@ -1377,19 +1404,6 @@ namespace Orts.Viewer3D
         public void Update(float[] position)
         {
             OpenAL.alSourcefv(ALSoundSource.SoundSourceID, OpenAL.AL_POSITION, position);
-            Update();
-        }
-
-        /// <summary>
-        /// Update OpenAL sound source position and velocity, then calls the main <see cref="Update()"/> function
-        /// Position is relative to camera tile's center
-        /// </summary>
-        /// <param name="position"></param>
-        /// <param name="velocity"></param>
-        public void Update(float[] position, float[] velocity)
-        {
-            OpenAL.alSourcefv(ALSoundSource.SoundSourceID, OpenAL.AL_POSITION, position);
-            OpenAL.alSourcefv(ALSoundSource.SoundSourceID, OpenAL.AL_VELOCITY, velocity);
             Update();
         }
 
@@ -1545,6 +1559,13 @@ namespace Orts.Viewer3D
         /// <returns></returns>
         static float Interpolate(float x, Orts.Formats.Msts.VolumeCurve Curve)
         {
+            if (Curve.CurvePoints == null)
+            {
+                Trace.TraceInformation("Interpolation fault: CurvePoints is null, set y value to 1.0");
+                return 1.0f;
+            }
+                
+
             if (Curve.CurvePoints.Count() < 2)
                 return Curve.CurvePoints[0].Y;
 
@@ -1591,6 +1612,11 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.VolumeCurve.Controls.Variable3Controlled: return car.Variable3;
                 case Orts.Formats.Msts.VolumeCurve.Controls.BrakeCylControlled: return car.BrakeSystem.GetCylPressurePSI();
                 case Orts.Formats.Msts.VolumeCurve.Controls.CurveForceControlled: return car.CurveForceNFiltered;
+                case Orts.Formats.Msts.VolumeCurve.Controls.AngleofAttackControlled: return car.CurveSquealAoAmRadFiltered;
+                case Orts.Formats.Msts.VolumeCurve.Controls.CarFrictionControlled: return car.Train.WagonCoefficientFriction;
+                case Orts.Formats.Msts.VolumeCurve.Controls.WheelRpMControlled: var wheelRpM = pS.TopM((float)(car.AbsSpeedMpS / (2 * Math.PI * car.WheelRadiusM))); return wheelRpM;
+                case Orts.Formats.Msts.VolumeCurve.Controls.CarDistanceTrackControlled: return car.CarTrackControlledDistanceM;
+                case Orts.Formats.Msts.VolumeCurve.Controls.CarTunnelDistanceControlled: return car.CarTunnelDistanceM;
                 default: return 0;
             }
         }
@@ -1875,9 +1901,557 @@ namespace Orts.Viewer3D
                 triggerDistance = car.DistanceM + ((float)Viewer.Random.NextDouble() * (SMS.Dist_Min) + SMS.Dist_Min);
             }
         }
-
     } // class ORTSDistanceTravelledTrigger
 
+    /// <summary>
+    /// Play this sound controlled for 2 axle wagons when striking a joint
+    /// </summary>
+    public sealed class ORTSJoint2AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Joint_Trigger_2 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSJoint2AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Joint_Trigger_2 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Joint_Camera_DistM && car.SoundAxleCount == 2)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSJoint2AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled for 3 axle wagons when striking a joint
+    /// </summary>
+    public sealed class ORTSJoint3AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Joint_Trigger_3 SMS;
+        //    float triggerDistance;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSJoint3AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Joint_Trigger_3 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Joint_Camera_DistM && car.SoundAxleCount == 3)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSJoint3AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled for 4 axle wagons when striking a joint
+    /// </summary>
+    public sealed class ORTSJoint4AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Joint_Trigger_4 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSJoint4AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Joint_Trigger_4 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Joint_Camera_DistM && car.SoundAxleCount == 4)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSJoint4AxleTrigger
+
+
+    /// <summary>
+    /// Play this sound controlled for 6 axle wagons when striking a joint
+    /// </summary>
+    public sealed class ORTSJoint6AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Joint_Trigger_6 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSJoint6AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Joint_Trigger_6 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Joint_Camera_DistM && car.SoundAxleCount == 6)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSJoint6AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled for 8 axle wagons when striking a joint
+    /// </summary>
+    public sealed class ORTSJoint8AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Joint_Trigger_8 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSJoint8AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Joint_Trigger_8 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackJointSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Joint_Camera_DistM && car.SoundAxleCount == 8)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSJoint8AxleTrigger
+
+
+    /// <summary>
+    /// Play this sound controlled for 2 axle wagons when striking a switch
+    /// </summary>
+    public sealed class ORTSSwitch2AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Switch_Trigger_2 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSSwitch2AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Switch_Trigger_2 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Switch_Camera_DistM && car.SoundAxleCount == 2)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSSwitch2AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled for 3 axle wagons when striking a switch
+    /// </summary>
+    public sealed class ORTSSwitch3AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Switch_Trigger_3 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSSwitch3AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Switch_Trigger_3 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Switch_Camera_DistM && car.SoundAxleCount == 3)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSSwitch3AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled for 4 axle wagons when striking a switch
+    /// </summary>
+    public sealed class ORTSSwitch4AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Switch_Trigger_4 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSSwitch4AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Switch_Trigger_4 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Switch_Camera_DistM && car.SoundAxleCount == 4)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSSwitch4AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled for 6 axle wagons when striking a switch
+    /// </summary>
+    public sealed class ORTSSwitch6AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Switch_Trigger_6 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSSwitch6AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Switch_Trigger_6 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Switch_Camera_DistM && car.SoundAxleCount == 6)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSSwitch6AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled for 8 axle wagons when striking a switch
+    /// </summary>
+    public sealed class ORTSSwitch8AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Switch_Trigger_8 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSSwitch8AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Switch_Trigger_8 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Switch_Camera_DistM && car.SoundAxleCount == 8)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSSwitch8AxleTrigger
+
+
+    /// <summary>
+    /// Play this sound controlled for 2 axle wagons when striking a Xover
+    /// </summary>
+    public sealed class ORTSXover2AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Xover_Trigger_2 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSXover2AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Xover_Trigger_2 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Xover_Camera_DistM && car.SoundAxleCount == 2)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSXover2AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled for 3 axle wagons when striking a Xover
+    /// </summary>
+    public sealed class ORTSXover3AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Xover_Trigger_3 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSXover3AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Xover_Trigger_3 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+        }
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Xover_Camera_DistM && car.SoundAxleCount == 3)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSXover3AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled for 4 axle wagons when striking a Xover
+    /// </summary>
+    public sealed class ORTSXover4AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Xover_Trigger_4 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSXover4AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Xover_Trigger_4 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Xover_Camera_DistM && car.SoundAxleCount == 4)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSXover4AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled for 6 axle wagons when striking a Xover
+    /// </summary>
+    public sealed class ORTSXover6AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Xover_Trigger_6 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSXover6AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Xover_Trigger_6 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Xover_Camera_DistM && car.SoundAxleCount == 6)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSXover6AxleTrigger
+
+    /// <summary>
+    /// Play this sound controlled for 8 axle wagons when striking a Xover
+    /// </summary>
+    public sealed class ORTSXover8AxleTrigger : ORTSTrigger
+    {
+        Orts.Formats.Msts.Xover_Trigger_8 SMS;
+        TrainCar car;
+        SoundStream SoundStream;
+
+        public ORTSXover8AxleTrigger(SoundStream soundStream, Orts.Formats.Msts.Xover_Trigger_8 smsData)
+        {
+            SoundStream = soundStream;
+            car = soundStream.SoundSource.Car;
+            SMS = smsData;
+            SoundCommand = ORTSSoundCommand.FromMSTS(SMS.SoundCommand, soundStream);
+        }
+
+        public override void TryTrigger()
+        {
+            if (car.TrackSwitchSoundTriggered > 0.5 && car.CarTrackControlledDistanceM < SMS.Car_Xover_Camera_DistM && car.SoundAxleCount == 8)
+            {
+                Signaled = true;
+                if (Enabled)
+                {
+                    SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
+                    SoundCommand.Run();
+                    SoundStream.LastTriggered = this;
+                }
+            }
+            else
+            {
+                Signaled = false;
+            }
+        }
+    } // class ORTSXover8AxleTrigger
+
+    
     /// <summary>
     /// Play this sound immediately when this SoundSource becomes active, or in case no other VariableTriggers are active
     /// </summary>
@@ -2025,6 +2599,7 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarCameraDistance_Dec_Past:
                     if (newValue < SMS.Threshold)
                     {
                         Signaled = true;
@@ -2042,6 +2617,15 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.AngleofAttack_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.WheelRPM_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.TrackJoints_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.WagonAxles_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarOnSwitch_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarOnXover_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.ConcreteSleepers_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarCameraDistance_Inc_Past:
                     if (newValue > SMS.Threshold)
                     {
                         Signaled = true;
@@ -2125,6 +2709,35 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Inc_Past:
                     return car.CurveForceNFiltered;
+                case Orts.Formats.Msts.Variable_Trigger.Events.AngleofAttack_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.AngleofAttack_Inc_Past:
+                    return car.CurveSquealAoAmRadFiltered;
+                case Orts.Formats.Msts.Variable_Trigger.Events.WheelRpM_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.WheelRPM_Inc_Past:
+                    var wheelRpM = pS.TopM((float)(car.AbsSpeedMpS /
+                    (2 * Math.PI * car.WheelRadiusM)));
+                    return wheelRpM;
+                case Orts.Formats.Msts.Variable_Trigger.Events.TrackJoints_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.TrackJoints_Inc_Past:
+                    return car.TrackJointSoundTriggered;
+                case Orts.Formats.Msts.Variable_Trigger.Events.WagonAxles_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.WagonAxles_Inc_Past:
+                    return car.SoundAxleCount;
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarOnSwitch_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarOnSwitch_Inc_Past:
+                    return car.TrackSwitchSoundTriggered;
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarOnXover_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarOnXover_Inc_Past:
+                    return car.TrackXoverSoundTriggered;
+                case Orts.Formats.Msts.Variable_Trigger.Events.ConcreteSleepers_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.ConcreteSleepers_Inc_Past:
+                    return SharedSMSFileManager.ConcreteSleepers;
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Inc_Past:
+                    return car.TrackSoundInTunnelTriggered;
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarCameraDistance_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarCameraDistance_Inc_Past:
+                    return car.CarTrackControlledDistanceM;
                 default:
                     return 0;
             }
