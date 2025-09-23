@@ -2599,8 +2599,7 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable2_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.Variable3_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.BrakeCyl_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.CarCameraDistance_Dec_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Dec_Past:                
                     if (newValue < SMS.Threshold)
                     {
                         Signaled = true;
@@ -2620,13 +2619,8 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.Variable_Trigger.Events.CurveForce_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.AngleofAttack_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.WheelRPM_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.TrackJoints_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.WagonAxles_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.CarOnSwitch_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.CarOnXover_Inc_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.ConcreteSleepers_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Inc_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.CarCameraDistance_Inc_Past:
+                case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Inc_Past:                
                     if (newValue > SMS.Threshold)
                     {
                         Signaled = true;
@@ -2718,27 +2712,12 @@ namespace Orts.Viewer3D
                     var wheelRpM = pS.TopM((float)(car.AbsSpeedMpS /
                     (2 * Math.PI * car.WheelRadiusM)));
                     return wheelRpM;
-                case Orts.Formats.Msts.Variable_Trigger.Events.TrackJoints_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.TrackJoints_Inc_Past:
-                    return car.TrackJointSoundTriggered;
-                case Orts.Formats.Msts.Variable_Trigger.Events.WagonAxles_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.WagonAxles_Inc_Past:
-                    return car.SoundAxleCount;
-                case Orts.Formats.Msts.Variable_Trigger.Events.CarOnSwitch_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.CarOnSwitch_Inc_Past:
-                    return car.TrackSwitchSoundTriggered;
-                case Orts.Formats.Msts.Variable_Trigger.Events.CarOnXover_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.CarOnXover_Inc_Past:
-                    return car.TrackXoverSoundTriggered;
                 case Orts.Formats.Msts.Variable_Trigger.Events.ConcreteSleepers_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.ConcreteSleepers_Inc_Past:
                     return SharedSMSFileManager.ConcreteSleepers;
                 case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Dec_Past:
                 case Orts.Formats.Msts.Variable_Trigger.Events.CarInTunnel_Inc_Past:
                     return car.TrackSoundInTunnelTriggered;
-                case Orts.Formats.Msts.Variable_Trigger.Events.CarCameraDistance_Dec_Past:
-                case Orts.Formats.Msts.Variable_Trigger.Events.CarCameraDistance_Inc_Past:
-                    return car.CarTrackControlledDistanceM;
                 default:
                     return 0;
             }

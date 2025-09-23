@@ -409,7 +409,7 @@ namespace Orts.Formats.Msts
     public class Variable_Trigger : Trigger
     {
         public enum Events { Speed_Inc_Past, Speed_Dec_Past, Distance_Inc_Past, Distance_Dec_Past,
-            Variable1_Inc_Past, Variable1_2_Inc_Past, Variable1_3_Inc_Past, Variable1_4_Inc_Past, Variable1_Dec_Past, Variable1_2_Dec_Past, Variable1_3_Dec_Past, Variable1_4_Dec_Past, Variable2_Inc_Past, Variable2_Dec_Past, Variable3_Inc_Past, Variable3_Dec_Past, BrakeCyl_Inc_Past, BrakeCyl_Dec_Past, CurveForce_Inc_Past, CurveForce_Dec_Past, AngleofAttack_Inc_Past, AngleofAttack_Dec_Past, WheelRpM_Dec_Past, WheelRPM_Inc_Past, TrackJoints_Inc_Past, TrackJoints_Dec_Past, CarOnSwitch_Inc_Past, CarOnSwitch_Dec_Past, CarOnXover_Inc_Past, CarOnXover_Dec_Past, WagonAxles_Inc_Past, WagonAxles_Dec_Past, ConcreteSleepers_Inc_Past, ConcreteSleepers_Dec_Past, CarInTunnel_Inc_Past, CarInTunnel_Dec_Past, CarCameraDistance_Inc_Past, CarCameraDistance_Dec_Past
+            Variable1_Inc_Past, Variable1_2_Inc_Past, Variable1_3_Inc_Past, Variable1_4_Inc_Past, Variable1_Dec_Past, Variable1_2_Dec_Past, Variable1_3_Dec_Past, Variable1_4_Dec_Past, Variable2_Inc_Past, Variable2_Dec_Past, Variable3_Inc_Past, Variable3_Dec_Past, BrakeCyl_Inc_Past, BrakeCyl_Dec_Past, CurveForce_Inc_Past, CurveForce_Dec_Past, AngleofAttack_Inc_Past, AngleofAttack_Dec_Past, WheelRpM_Dec_Past, WheelRPM_Inc_Past, ConcreteSleepers_Inc_Past, ConcreteSleepers_Dec_Past, CarInTunnel_Inc_Past, CarInTunnel_Dec_Past
         };
 
         public Events Event;
@@ -459,20 +459,10 @@ namespace Orts.Formats.Msts
                 case "angleofattack_dec_past": Event = Events.AngleofAttack_Dec_Past; break;
                 case "wheelrpm_inc_past": Event = Events.WheelRPM_Inc_Past; break;
                 case "wheelrpm_dec_past": Event = Events.WheelRpM_Dec_Past; break;
-                case "trackjoints_inc_past": Event = Events.TrackJoints_Inc_Past; break;
-                case "trackjoints_dec_past": Event = Events.TrackJoints_Dec_Past; break;
-                case "wagonaxles_inc_past": Event = Events.WagonAxles_Inc_Past; break;
-                case "wagonaxles_dec_past": Event = Events.WagonAxles_Dec_Past; break;
-                case "caronswitch_inc_past": Event = Events.CarOnSwitch_Inc_Past; break;
-                case "caronswitch_dec_past": Event = Events.CarOnSwitch_Dec_Past; break;
-                case "caronxover_inc_past": Event = Events.CarOnXover_Inc_Past; break;
-                case "caronxover_dec_past": Event = Events.CarOnXover_Dec_Past; break;
                 case "concretesleepers_inc_past": Event = Events.ConcreteSleepers_Inc_Past; break;
                 case "concretesleepers_dec_past": Event = Events.ConcreteSleepers_Dec_Past; break;
                 case "carintunnel_inc_past": Event = Events.CarInTunnel_Inc_Past; break;
                 case "carintunnel_dec_past": Event = Events.CarInTunnel_Dec_Past; break;
-                case "carcameradistance_inc_past": Event = Events.CarCameraDistance_Inc_Past; break;
-                case "carcameradistance_dec_past": Event = Events.CarCameraDistance_Dec_Past; break;
             }
 
             while (!f.EndOfBlock())

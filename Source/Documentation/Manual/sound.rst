@@ -457,7 +457,7 @@ This approach relies on use of the Track Region sounds configured in the TType.d
 continuously and contains all track related sounds that need to be played despite the region that the train is in. Further track region SMS files can be created for 
 different track type regions, such as different bridge types (such as wood, concrete or steel).
 
-To enable this approach the following parameters need to be set accordingly in the route TRK file.
+To enable this approach in OR, the following parameters need to be set accordingly in the route TRK file.
 
 ``ORTSPlayTrackSoundsBaseContinuous`` - this causes the first SMS file in the TType file to be played continuously. Set to 1 for continuous play or 0 for legacy operation.
 
@@ -467,11 +467,11 @@ To enable this approach the following parameters need to be set accordingly in t
 
 The following control parameters can be used in the relevant track region SMS files to vary a frequency or volume curve for the sound being played:
 
-``AngleofAttackControlled`` - Varies as the Angle of Attack of a car on a curve varies.
+``AngleofAttackControlled`` - Varies as the Angle of Attack of a car on a curve varies, in Milliradian (mRad).
 
 ``CarFrictionControlled`` - Varies as friction of car changes, typically between 0 and 1.
 
-``WheelRPMControlled`` - Varies as RPM of wheel changes.
+``WheelRPMControlled`` - Varies as RPM of wheel changes, in RPM.
 
 ``CarDistanceTrackControlled`` - Distance that the car is from the camera in metres.
 
@@ -488,9 +488,9 @@ passes over a switch, and can be varied in accordance with the number of axles d
 ``Xover_2Axle_Trigger``, ``Xover_3Axle_Trigger``, ``Xover_4Axle_Trigger``, ``Xover_6Axle_Trigger``, ``Xover_8Axle_Trigger`` - these triggers are operated when the car passes 
 over a Cross over, and can be varied in accordance with the number of axles defined in the WAG file. Note that the cross over needs to have been defined within the route editor.
 
-``AngleofAttack_inc_past``, ``Angleofattack_dec_past`` - Varies as the Angle of Attack of a car on a curve varies.
+``AngleofAttack_inc_past``, ``Angleofattack_dec_past`` - Varies as the Angle of Attack of a car on a curve varies, in Milliradian (mRad).
 
-``WheelRPM_inc_past``, ``WheelRPM_dec_past`` - Varies as RPM of wheel changes.
+``WheelRPM_inc_past``, ``WheelRPM_dec_past`` - Varies as RPM of wheel changes, in RPM.
 
 ``ConcreteSleepers_inc_past``, ``ConcreteSleepers_dec_past`` - 0 = wood sleepers, 1 = concrete sleepers
 
