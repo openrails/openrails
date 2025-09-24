@@ -37,6 +37,27 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         readonly MSTSLocomotive Locomotive;
         public bool CommandSwitch { get; protected set; } = false;
         public bool On { get; protected set; } = false;
+        public bool QuickPowerOn = false;
+        private bool firstUpdate = true;
+
+        /// <summary>
+        /// Number of cars that require energy from the electric train supply
+        /// </summary>
+        protected int NumberOfElectricTrainSupplyConnectedCars
+        {
+            get
+            {
+                int count = 0;
+                foreach (var car in Locomotive.Train.Cars)
+                {
+                    if (car == null) continue;
+                    if (!(car is MSTSWagon wagon)) continue;
+                    if (!(wagon.PassengerCarPowerSupply?.ElectricTrainSupplyConnectedLocomotives.Contains(Locomotive) ?? false)) continue;
+                    count++;
+                }
+                return count;
+            }
+        }
 
         public ElectricTrainSupplySwitch(MSTSLocomotive locomotive, ModeType defaultMode = ModeType.Automatic)
         {
@@ -122,7 +143,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 case ModeType.Automatic:
                     if (On)
                     {
-                        if (!Locomotive.LocomotivePowerSupply.AuxiliaryPowerSupplyOn)
+                        if (!Locomotive.LocomotivePowerSupply.AuxiliaryPowerSupplyOn || NumberOfElectricTrainSupplyConnectedCars == 0)
                         {
                             On = false;
                             Locomotive.SignalEvent(Event.ElectricTrainSupplyOff);
@@ -130,7 +151,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                     else
                     {
-                        if (Locomotive.LocomotivePowerSupply.AuxiliaryPowerSupplyOn)
+                        if (Locomotive.LocomotivePowerSupply.AuxiliaryPowerSupplyOn && NumberOfElectricTrainSupplyConnectedCars > 0)
                         {
                             On = true;
                             Locomotive.SignalEvent(Event.ElectricTrainSupplyOn);
@@ -139,6 +160,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     break;
 
                 case ModeType.Switch:
+                    if (QuickPowerOn && !firstUpdate)
+                    {
+                        if (NumberOfElectricTrainSupplyConnectedCars == 0 || CommandSwitch)
+                        {
+                            QuickPowerOn = false;
+                        }
+                        else if (Locomotive.LocomotivePowerSupply.AuxiliaryPowerSupplyOn)
+                        {
+                            QuickPowerOn = false;
+                            CommandSwitch = true;
+                            Locomotive.SignalEvent(Event.ElectricTrainSupplyCommandOn);
+                        }
+                    }
                     if (On)
                     {
                         if (!CommandSwitch || !Locomotive.LocomotivePowerSupply.AuxiliaryPowerSupplyOn)
@@ -157,12 +191,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     }
                     break;
             }
+            firstUpdate = false;
         }
 
         public virtual void HandleEvent(PowerSupplyEvent evt)
         {
             switch (evt)
             {
+                case PowerSupplyEvent.QuickPowerOn:
+                    if (Mode == ModeType.Switch)
+                    {
+                        QuickPowerOn = true;
+                    }
+                    break;
                 case PowerSupplyEvent.SwitchOnElectricTrainSupply:
                     if (Mode == ModeType.Switch)
                     {
@@ -172,6 +213,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     break;
 
                 case PowerSupplyEvent.SwitchOffElectricTrainSupply:
+                case PowerSupplyEvent.QuickPowerOff:
+                    QuickPowerOn = false;
                     if (Mode == ModeType.Switch)
                     {
                         CommandSwitch = false;
