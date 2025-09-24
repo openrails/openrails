@@ -150,7 +150,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </remarks>
         private DieselEngineState PreviousSecondEngineState;
 
-        private (bool CloseTractionCutOffRelay, bool SwitchOnElectricTrainSupply) QuickPowerOn = (false, false);
+        private bool QuickPowerOn = false;
 
         public override void Initialize()
         {
@@ -197,9 +197,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     {
                         case TractionCutOffRelayState.Open:
                             // If traction cut-off relay is open, then it must be closed to finish the quick power-on sequence
-                            if (QuickPowerOn.CloseTractionCutOffRelay)
+                            if (QuickPowerOn)
                             {
-                                QuickPowerOn.CloseTractionCutOffRelay = false;
+                                QuickPowerOn = false;
                                 SignalEventToTractionCutOffRelay(PowerSupplyEvent.CloseTractionCutOffRelay);
                             }
 
@@ -215,7 +215,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                         case TractionCutOffRelayState.Closed:
                             // If traction cut-off relay is closed, quick power-on sequence has finished
-                            if (QuickPowerOn.CloseTractionCutOffRelay) QuickPowerOn.CloseTractionCutOffRelay = false;
+                            QuickPowerOn = false;
 
                             if (!PowerOnTimer.Started)
                                 PowerOnTimer.Start();
@@ -235,12 +235,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     {
                         SignalEvent(Event.PowerConverterOn);
                         SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOn);
-
-                        if (QuickPowerOn.SwitchOnElectricTrainSupply)
-                        {
-                            QuickPowerOn.SwitchOnElectricTrainSupply = false;
-                            if (NumberOfElectricTrainSupplyConnectedCars > 0) SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.SwitchOnElectricTrainSupply);
-                        }
                     }
                     break;
             }
@@ -313,16 +307,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             switch (evt)
             {
                 case PowerSupplyEvent.QuickPowerOn:
-                    QuickPowerOn = (true, true);
+                    QuickPowerOn = true;
                     SignalEventToBatterySwitch(PowerSupplyEvent.QuickPowerOn);
                     SignalEventToMasterKey(PowerSupplyEvent.TurnOnMasterKey);
                     SignalEventToDieselEngines(PowerSupplyEvent.StartEngine);
+                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.QuickPowerOn);
                     break;
 
                 case PowerSupplyEvent.QuickPowerOff:
-                    QuickPowerOn = (false, false);
-                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.SwitchOffElectricTrainSupply);
-                    SignalEventToTractionCutOffRelay(PowerSupplyEvent.OpenTractionCutOffRelay);
+                    QuickPowerOn = false;
+                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.QuickPowerOff);
+                    SignalEventToTractionCutOffRelay(PowerSupplyEvent.QuickPowerOff);
                     SignalEventToDieselEngines(PowerSupplyEvent.StopEngine);
                     SignalEventToMasterKey(PowerSupplyEvent.TurnOffMasterKey);
                     SignalEventToBatterySwitch(PowerSupplyEvent.QuickPowerOff);

@@ -176,7 +176,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         private Timer PowerOnTimer;
         private Timer AuxPowerOnTimer;
 
-        private (bool CloseCircuitBreaker, bool SwitchOnElectricTrainSupply) QuickPowerOn;
+        private bool QuickPowerOn = false;
 
         public override void Initialize()
         {
@@ -227,9 +227,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     {
                         case CircuitBreakerState.Open:
                             // If circuit breaker is open, then it must be closed to finish the quick power-on sequence
-                            if (QuickPowerOn.CloseCircuitBreaker)
+                            if (QuickPowerOn)
                             {
-                                QuickPowerOn.CloseCircuitBreaker = false;
+                                QuickPowerOn = false;
                                 SignalEventToCircuitBreaker(PowerSupplyEvent.QuickPowerOn);
                             }
 
@@ -253,7 +253,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                         case CircuitBreakerState.Closed:
                             // If circuit breaker is closed, quick power-on sequence has finished
-                            if (QuickPowerOn.CloseCircuitBreaker) QuickPowerOn.CloseCircuitBreaker = false;
+                            QuickPowerOn = false;
 
                             if (!PowerOnTimer.Started)
                                 PowerOnTimer.Start();
@@ -269,12 +269,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             {
                                 SignalEvent(Event.PowerConverterOn);
                                 SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOn);
-
-                                if (QuickPowerOn.SwitchOnElectricTrainSupply)
-                                {
-                                    QuickPowerOn.SwitchOnElectricTrainSupply = false;
-                                    if (NumberOfElectricTrainSupplyConnectedCars > 0) SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.SwitchOnElectricTrainSupply);
-                                }
                             }
                             SetFilterVoltageV(VoltageFilter.Filter(PantographVoltageV(), elapsedClockSeconds));
                             break;
@@ -310,16 +304,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             switch (evt)
             {
                 case PowerSupplyEvent.QuickPowerOn:
-                    QuickPowerOn = (true, true);
+                    QuickPowerOn = true;
                     SignalEventToBatterySwitch(PowerSupplyEvent.QuickPowerOn);
                     SignalEventToMasterKey(PowerSupplyEvent.TurnOnMasterKey);
                     SignalEventToPantograph(PowerSupplyEvent.RaisePantograph, 1);
                     SignalEventToOtherTrainVehiclesWithId(PowerSupplyEvent.RaisePantograph, 1);
+                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.QuickPowerOn);
                     break;
 
                 case PowerSupplyEvent.QuickPowerOff:
-                    QuickPowerOn = (false, false);
-                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.SwitchOffElectricTrainSupply);
+                    QuickPowerOn = false;
+                    SignalEventToElectricTrainSupplySwitch(PowerSupplyEvent.QuickPowerOff);
                     SignalEventToCircuitBreaker(PowerSupplyEvent.QuickPowerOff);
                     SignalEventToPantographs(PowerSupplyEvent.LowerPantograph);
                     SignalEventToOtherTrainVehicles(PowerSupplyEvent.LowerPantograph);
