@@ -1921,33 +1921,33 @@ namespace Orts.Simulation.RollingStocks
         ///
         public float GetTrackSwitchTrigger(float elapsedClockSeconds)
         {
-    
-                // Timer to hold trigger on for a period of time
-                if (carOnSwitchTriggered)
-                    {
-        switchTriggerDelayedS -= elapsedClockSeconds;
-                        if (switchTriggerDelayedS < 0)
-            switchTriggerDelayedS = 0;
-                    }
-    
-                if (IsOverSwitch && !carOnSwitchTriggered)
-                    {
-        carOnSwitchTriggered = true;
-                        return 1; // Set trigger for car on switch
-                    }
-                else if (!IsOverSwitch && switchTriggerDelayedS == 0 && carOnSwitchTriggered)
-                    {
-        carOnSwitchTriggered = false;
-        switchTriggerDelayedS = 0.1f;
-                        return 0; // Reset trigger when off
-                    }
-                else if (carOnSwitchTriggered && switchTriggerDelayedS > 0)
-                    {
-                        return 1; // ensure trigger stays on until time out
-                    }
-    
-                return 0; // default if no result found
+
+            // Timer to hold trigger on for a period of time
+            if (carOnSwitchTriggered)
+            {
+                switchTriggerDelayedS -= elapsedClockSeconds;
+                if (switchTriggerDelayedS < 0)
+                    switchTriggerDelayedS = 0;
             }
+
+            if (IsOverSwitch && !carOnSwitchTriggered)
+            {
+                carOnSwitchTriggered = true;
+                return 1; // Set trigger for car on switch
+            }
+            else if (!IsOverSwitch && switchTriggerDelayedS == 0 && carOnSwitchTriggered)
+            {
+                carOnSwitchTriggered = false;
+                switchTriggerDelayedS = 0.1f;
+                return 0; // Reset trigger when off
+            }
+            else if (carOnSwitchTriggered && switchTriggerDelayedS > 0)
+            {
+                return 1; // ensure trigger stays on until time out
+            }
+
+            return 0; // default if no result found
+        }
 
         /// <summary>
         /// Get the track joint trigger for a car as it goes over a joint
@@ -1956,49 +1956,49 @@ namespace Orts.Simulation.RollingStocks
         ///
         public float GetTrackJointPosition(float elapsedClockSeconds)
         {
-                if ((float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM == 0)
-                    {
-                        return 0; // Rail joints have not been selected
-                    }
+            if ((float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM == 0)
+            {
+                return 0; // Rail joints have not been selected
+            }
+            else
+            {
+                // Calculate remaining distance beween track joints
+                realTimeTrackJointDistanceM -= AbsSpeedMpS * elapsedClockSeconds;
+                if (realTimeTrackJointDistanceM < 0)
+                    realTimeTrackJointDistanceM = 0;
+                if (realTimeTrackJointDistanceM == 0)
+                {
+                    jointTrigger = 1;
+                    carOnJointTriggered = true;
+                    jointTriggerDelayedS -= elapsedClockSeconds;
+                    if (jointTriggerDelayedS < 0)
+                        jointTriggerDelayedS = 0;
+                }
                 else
+                {
+                    jointTrigger = 0;
+                }
+                if (jointTrigger == 1 && jointTriggerDelayedS == 0)
+                {
+                    jointTriggerDelayedS = 0.1f; // Ensure enough delay to trigger sound
+                    jointTrigger = 0;
+                    // To ensure that track joints are never closer then 1 sec apart set to speedmps when distance traveled in 1 sec is greater then the joint distance.
+                    if (AbsSpeedMpS > (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM)
                     {
-                        // Calculate remaining distance beween track joints
-        realTimeTrackJointDistanceM -= AbsSpeedMpS * elapsedClockSeconds;
-                        if (realTimeTrackJointDistanceM < 0)
-            realTimeTrackJointDistanceM = 0;
-                        if (realTimeTrackJointDistanceM == 0)
-                            {
-            jointTrigger = 1;
-            carOnJointTriggered = true;
-            jointTriggerDelayedS -= elapsedClockSeconds;
-                                if (jointTriggerDelayedS < 0)
-                jointTriggerDelayedS = 0;
-                            }
-                        else
-                            {
-            jointTrigger = 0;
-                            }
-                        if (jointTrigger == 1 && jointTriggerDelayedS == 0)
-                            {
-            jointTriggerDelayedS = 0.1f; // Ensure enough delay to trigger sound
-            jointTrigger = 0;
-                                // To ensure that track joints are never closer then 1 sec apart set to speedmps when distance traveled in 1 sec is greater then the joint distance.
-                                if (AbsSpeedMpS > (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM)
-                                    {
-                realTimeTrackJointDistanceM = AbsSpeedMpS;
-                jointSpeedMpS = AbsSpeedMpS;
-                                    }
-                                else
-                                    {
-                realTimeTrackJointDistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM; // Reset for next pass
-                jointSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
-                                    }
-            carOnJointTriggered = false;
-                            }
-        
-                        return jointTrigger;
+                        realTimeTrackJointDistanceM = AbsSpeedMpS;
+                        jointSpeedMpS = AbsSpeedMpS;
                     }
-          }
+                    else
+                    {
+                        realTimeTrackJointDistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM; // Reset for next pass
+                        jointSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
+                    }
+                    carOnJointTriggered = false;
+                }
+
+                return jointTrigger;
+            }
+        }
 
 
 /// <summary>
@@ -2903,7 +2903,7 @@ public string GetCurveDirection()
                 }
             }
             // Using WheelAxles.Count test to control WheelAxlesLoaded flag.
-            if (WheelAxles.Count > 2)
+            if (WheelAxles.Count >= 2) // Some cars only have two axles.
             {
                 WheelAxles.Sort(WheelAxles[0]);
                 WheelAxlesLoaded = true;
