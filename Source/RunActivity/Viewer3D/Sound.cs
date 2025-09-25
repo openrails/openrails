@@ -1283,7 +1283,6 @@ namespace Orts.Viewer3D
                     {
                         Triggers.Add(new ORTSJoint8AxleTrigger(this, (Orts.Formats.Msts.Joint_Trigger_8)trigger));
                     }
-
                     else if (trigger.GetType() == typeof(Orts.Formats.Msts.Switch_Trigger_2) && soundSource.Car != null)
                     {
                         Triggers.Add(new ORTSSwitch2AxleTrigger(this, (Orts.Formats.Msts.Switch_Trigger_2)trigger));
