@@ -24,7 +24,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Viewer3D.Common;
@@ -173,40 +172,37 @@ namespace Orts.Viewer3D
             }
         }
 
+        // Internal callers expect a new `Texture2D` for every load so we must also provide a new missing texture for each.
+        internal static Texture2D GetInternalMissingTexture(GraphicsDevice graphicsDevice)
+        {
+            var texture = new Texture2D(graphicsDevice, 1, 1);
+            texture.SetData(new[] { Color.Magenta });
+            return texture;
+        }
+
+        /// <summary>
+        /// Loads an internal texture file; DO NOT use with game data, use <see cref="Get(string, bool)"/> instead.
+        /// </summary>
+        /// <returns>The <see cref="Texture2D"/> created from the given <paramref name="path"/> or a missing placeholder.</returns>
         public static Texture2D LoadInternal(GraphicsDevice graphicsDevice, string path)
         {
-            if (path == null || path == "")
-                return SharedMaterialManager.MissingTexture;
-
-            path = path.ToLowerInvariant();
-            var ext = Path.GetExtension(path);
-
-            if (ext == ".ace")
-                return Orts.Formats.Msts.AceFile.Texture2DFromFile(graphicsDevice, path);
-            else if (ext == ".dds" && File.Exists(path))
+            if (!File.Exists(path))
             {
-                Texture2D ddsTexture;
-                DDSLib.DDSFromFile(path, graphicsDevice, true, out ddsTexture);
-                return ddsTexture;
+                Trace.TraceError("Missing internal file: {0}", path);
+                return GetInternalMissingTexture(graphicsDevice);
             }
 
-            using (var stream = File.OpenRead(path))
+            // DO NOT add additional formats here without explicit approval
+            // - BMP is used for ETCS/DMI
+            // - PNG is used for everything else
+            switch (Path.GetExtension(path))
             {
-                if (ext == ".gif" || ext == ".jpg" || ext == ".png")
-                    return Texture2D.FromStream(graphicsDevice, stream);
-                else if (ext == ".bmp")
-                    using (var image = System.Drawing.Image.FromStream(stream))
-                    {
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            image.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
-                            memoryStream.Seek(0, SeekOrigin.Begin);
-                            return Texture2D.FromStream(graphicsDevice, memoryStream);
-                        }
-                    }
-                else
-                    Trace.TraceWarning("Unsupported texture format: {0}", path);
-                return SharedMaterialManager.MissingTexture;
+                case ".bmp":
+                case ".png":
+                    return Texture2D.FromFile(graphicsDevice, path);
+                default:
+                    Trace.TraceError("Unsupported internal file: {0}", path);
+                    return GetInternalMissingTexture(graphicsDevice);
             }
         }
 
@@ -337,8 +333,7 @@ namespace Orts.Viewer3D
             DebugShader = new DebugShader(viewer.RenderProcess.GraphicsDevice);
             CabShader = new CabShader(viewer.RenderProcess.GraphicsDevice, Vector4.One, Vector4.One, Vector3.One, Vector3.One);
 
-            // TODO: This should happen on the loader thread.
-            MissingTexture = SharedTextureManager.LoadInternal(viewer.RenderProcess.GraphicsDevice, Path.Combine(viewer.ContentPath, "blank.bmp"));
+            MissingTexture = SharedTextureManager.GetInternalMissingTexture(viewer.RenderProcess.GraphicsDevice);
 
             // Managing default snow textures
             var defaultSnowTexturePath = viewer.Simulator.RoutePath + @"\TERRTEX\SNOW\ORTSDefaultSnow.ace";
