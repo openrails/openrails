@@ -173,7 +173,7 @@ namespace Orts.Viewer3D
             }
         }
 
-        public static Texture2D Get(GraphicsDevice graphicsDevice, string path)
+        public static Texture2D LoadInternal(GraphicsDevice graphicsDevice, string path)
         {
             if (path == null || path == "")
                 return SharedMaterialManager.MissingTexture;
@@ -210,7 +210,7 @@ namespace Orts.Viewer3D
             }
         }
 
-        public static Texture2D Get(GraphicsDevice graphicsDevice, string path, Microsoft.Xna.Framework.Rectangle MapRectangle)
+        public static Texture2D LoadInternal(GraphicsDevice graphicsDevice, string path, Microsoft.Xna.Framework.Rectangle MapRectangle)
         {
             if (path == null || path == "")
                 return SharedMaterialManager.MissingTexture;
@@ -338,7 +338,7 @@ namespace Orts.Viewer3D
             CabShader = new CabShader(viewer.RenderProcess.GraphicsDevice, Vector4.One, Vector4.One, Vector3.One, Vector3.One);
 
             // TODO: This should happen on the loader thread.
-            MissingTexture = SharedTextureManager.Get(viewer.RenderProcess.GraphicsDevice, Path.Combine(viewer.ContentPath, "blank.bmp"));
+            MissingTexture = SharedTextureManager.LoadInternal(viewer.RenderProcess.GraphicsDevice, Path.Combine(viewer.ContentPath, "blank.bmp"));
 
             // Managing default snow textures
             var defaultSnowTexturePath = viewer.Simulator.RoutePath + @"\TERRTEX\SNOW\ORTSDefaultSnow.ace";

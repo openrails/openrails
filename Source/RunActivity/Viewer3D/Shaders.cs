@@ -611,7 +611,7 @@ namespace Orts.Viewer3D
             screenSize = Parameters["ScreenSize"];
             screenTexture = Parameters["ScreenTexture"];
             // TODO: This should happen on the loader thread.
-            Parameters["WindowTexture"].SetValue(SharedTextureManager.Get(graphicsDevice, System.IO.Path.Combine(viewer.ContentPath, "Window.png")));
+            Parameters["WindowTexture"].SetValue(SharedTextureManager.LoadInternal(graphicsDevice, System.IO.Path.Combine(viewer.ContentPath, "Window.png")));
         }
     }
 

@@ -142,7 +142,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 path = System.IO.Path.Combine(Viewer.ContentPath, "ETCS", "mipmap-2", name);
             else
                 path = System.IO.Path.Combine(Viewer.ContentPath, "ETCS", name);
-            return SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, path);
+            return SharedTextureManager.LoadInternal(Viewer.RenderProcess.GraphicsDevice, path);
         }
         public void PrepareFrame(float elapsedSeconds)
         {
