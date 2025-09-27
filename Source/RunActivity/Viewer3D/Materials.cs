@@ -81,13 +81,13 @@ namespace Orts.Viewer3D
 
             if (string.IsNullOrEmpty(path)) return defaultTexture;
 
-            path = path.ToLowerInvariant();
-            if (Textures.ContainsKey(path)) return Textures[path];
+            var textureKey = path.ToLowerInvariant();
+            if (Textures.ContainsKey(textureKey)) return Textures[textureKey];
 
             // DO NOT add additional formats here without explicit approval
             // - DDS is used for newer, Open Rails-specific content
             // - ACE is used for older, MSTS-specific content
-            switch (Path.GetExtension(path))
+            switch (Path.GetExtension(textureKey))
             {
                 case ".dds":
                 case ".ace":
@@ -101,11 +101,11 @@ namespace Orts.Viewer3D
                             if (File.Exists(dds))
                             {
                                 DDSLib.DDSFromFile(dds, GraphicsDevice, true, out Texture2D texture);
-                                return Textures[path] = texture;
+                                return Textures[textureKey] = texture;
                             }
                             if (File.Exists(ace))
                             {
-                                return Textures[path] = Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, ace);
+                                return Textures[textureKey] = Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, ace);
                             }
                             // When a texture is not found, and it is in a selector directory (e.g. "Snow"), we
                             // go up a level and try again. This repeats a fixed number of times, or until we run
@@ -303,10 +303,7 @@ namespace Orts.Viewer3D
 
         public Material Load(string materialName, string textureName = null, int options = 0, float mipMapBias = 0f, Effect effect = null)
         {
-            if (textureName != null)
-                textureName = textureName.ToLower();
-
-            var materialKey = (materialName, textureName, options, mipMapBias, effect);
+            var materialKey = (materialName, textureName?.ToLowerInvariant(), options, mipMapBias, effect);
             if (!Materials.ContainsKey(materialKey))
             {
                 switch (materialName)
@@ -746,7 +743,7 @@ namespace Orts.Viewer3D
             {
                 var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, texturePath);
                 if (!String.IsNullOrEmpty(nightTexturePath))
-                    NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
+                    NightTexture = Viewer.TextureManager.Get(nightTexturePath);
                 Texture = Viewer.TextureManager.Get(texturePath, true);
             }
             else if ((Options & SceneryMaterialOptions.NightTexture) != 0 && viewer.IsDaytime)
@@ -759,7 +756,7 @@ namespace Orts.Viewer3D
             {
                 var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, texturePath);
                 if (!String.IsNullOrEmpty(nightTexturePath))
-                    NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
+                    NightTexture = Viewer.TextureManager.Get(nightTexturePath);
                 if (NightTexture != SharedMaterialManager.MissingTexture)
                 {
                     viewer.DayTexturesNotLoaded = true;
@@ -786,7 +783,7 @@ namespace Orts.Viewer3D
                 var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, TexturePath);
                 if (!String.IsNullOrEmpty(nightTexturePath))
                 {
-                    NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
+                    NightTexture = Viewer.TextureManager.Get(nightTexturePath);
                     oneMore = true;
                 }
             }
@@ -798,7 +795,7 @@ namespace Orts.Viewer3D
             bool oneMore = false;
             if (Texture == SharedMaterialManager.MissingTexture && !String.IsNullOrEmpty(TexturePath))
             {
-                Texture = Viewer.TextureManager.Get(TexturePath.ToLower());
+                Texture = Viewer.TextureManager.Get(TexturePath);
                 oneMore = true;
             }
             return oneMore;
