@@ -128,6 +128,34 @@ namespace ORTS.Scripting.Api
         /// </summary>
         protected void SetFilterVoltageV(float voltage) => EpsHost.FilterVoltageV = voltage;
 
+        public override PowerSupplyState GetPowerStatus()
+        {
+            var status = base.GetPowerStatus();
+            PowerSupplyState electricStatus;
+            switch (CurrentPantographState())
+            {
+                case PantographState.Up:
+                    switch (CurrentCircuitBreakerState())
+                    {
+                        case CircuitBreakerState.Closed:
+                            electricStatus = PowerSupplyState.PowerOn;
+                            break;
+                        default:
+                            electricStatus = PowerSupplyState.PowerOnOngoing;
+                            break;
+                    }
+                    break;
+                case PantographState.Raising:
+                    electricStatus = PowerSupplyState.PowerOnOngoing;
+                    break;
+                default:
+                    electricStatus = PowerSupplyState.PowerOff;
+                    break;
+            }
+            if (status == electricStatus) return status;
+            return PowerSupplyState.PowerOnOngoing;
+        }
+
         /// <summary>
         /// Sends an event to the circuit breaker
         /// </summary>
