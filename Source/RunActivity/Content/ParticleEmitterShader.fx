@@ -33,13 +33,14 @@ float emitSize;
 float2 cameraTileXY;
 float currentTime;
 
-static float2 texCoords[4] = { float2(0, 0), float2(0.25f, 0), float2(0.25f, 0.25f), float2(0, 0.25f) };
+static float2 texCoords[4] = { float2(0, 0), float2(1.0f, 0), float2(1.0f, 1.0f), float2(0, 1.0f) };
 static float3 offsets[4] = { float3(-0.5f, 0.5f, 0), float3(0.5f, 0.5f, 0), float3(0.5f, -0.5f, 0), float3(-0.5f, -0.5f, 0) };
 
 float4 Fog;
 
 // Textures
 texture particle_Tex;
+float2 texAtlasSize;
 
 // Texture settings
 sampler ParticleSamp = sampler_state
@@ -60,7 +61,8 @@ struct VERTEX_INPUT
 	float4 InitialVelocity_EndTime : POSITION1;
 	float4 TargetVelocity_TargetTime : POSITION2;
 	float4 TileXY_Vertex_ID : POSITION3;
-	float4 Color_Random : POSITION4;
+    float4 Expansion_Rotation : POSITION4;
+	float4 Color_Random : POSITION5;
 };
 
 ////////////////////    V E R T E X   O U T P U T S    /////////////////////////
@@ -80,10 +82,10 @@ struct PIXEL_INPUT
 
 ////////////////////    V E R T E X   S H A D E R S    /////////////////////////
 
-float2x2 GetRotationMatrix(float age, float random)
+float2x2 GetRotationMatrix(float age, float init, float rate)
 {
-	random = (random * 2) - 1;
-	age *= random * 0.25f;
+    // "age" here represents the rotation angle in radians
+	age = init + age * rate;
 	float c, s;
 	sincos(age, c, s);
 	return float2x2(c, -s, s, c);
@@ -102,19 +104,36 @@ VERTEX_OUTPUT VSParticles(in VERTEX_INPUT In)
 	float2 offset = diff * float2(-2048, 2048);
 	In.StartPosition_StartTime.xz += offset;
 	
+    // Calculate age of particle limited between 0 and the TargetTime
 	float velocityAge = clamp(age, 0, In.TargetVelocity_TargetTime.w);
-	In.StartPosition_StartTime.xyz += In.InitialVelocity_EndTime.xyz * velocityAge;
-	In.StartPosition_StartTime.xyz += (In.TargetVelocity_TargetTime.xyz - In.InitialVelocity_EndTime.xyz) / In.TargetVelocity_TargetTime.w * velocityAge * velocityAge / 2;
-	In.StartPosition_StartTime.xyz += In.TargetVelocity_TargetTime.xyz * clamp(age - In.TargetVelocity_TargetTime.w, 0, age);
+
+    // Modification of velocityAge such that it still goes from 0 to TargetTime, but follows a cubic polynomial curve rather than linear
+    float velocityAgeReverse = velocityAge - In.TargetVelocity_TargetTime.w;
+	float velocityAgeCubic = (velocityAgeReverse * velocityAgeReverse * velocityAgeReverse) / (In.TargetVelocity_TargetTime.w * In.TargetVelocity_TargetTime.w) + In.TargetVelocity_TargetTime.w;
+
+    // Assuming acceleration decreases linearly over the duration of the TargetTime, then...
+    // P(t) = dA/dt * t^3 / 6 + A(0) * t^2 / 2 + V(0) * t + P(0)    -when-  t > 0 and t < TargetTime
+    // A(0) = 2 * (FinalVelocity - InitialVelocity) / TargetTime    -and-   dA/dt = - A(0) / TargetTime
+    float3 accelFactor = (In.TargetVelocity_TargetTime.xyz - In.InitialVelocity_EndTime.xyz) / In.TargetVelocity_TargetTime.w * velocityAge; // This is A(0) * t / 2
+
+	In.StartPosition_StartTime.xyz += velocityAge *
+                                      (In.InitialVelocity_EndTime.xyz +                                                         // Initial velocity contribution
+                                      accelFactor +                                                                             // Initial acceleration contribution
+                                      (- accelFactor / In.TargetVelocity_TargetTime.w) * velocityAge / 3) +                     // Linear acceleration contribution
+                                      In.TargetVelocity_TargetTime.xyz * clamp(age - In.TargetVelocity_TargetTime.w, 0, age);   // Final velocity contribution
 	
-	float particleSize = (emitSize * 2) * (1 + age * 4);  // Start off at emitSize and increases in size.
+    // Start off at emitSize and increases in size, with a rapid parabolic increase from 0 to target time, then slower increase with overall age
+	float particleSize = max(0, (emitSize * 2) * (1 + velocityAgeCubic / In.TargetVelocity_TargetTime.w * In.Expansion_Rotation.x + age * In.Expansion_Rotation.y));
+
+    // Increase height of particles as they expand to avoid clipping through ground
+    In.StartPosition_StartTime.y += particleSize / 2 - emitSize;
 	
 	int vertIdx = (int)In.TileXY_Vertex_ID.z;
 	
 	float3 right = invView[0].xyz;
 	float3 up = invView[1].xyz;
 	
-	float2x2 rotMatrix = GetRotationMatrix(age, In.Color_Random.a);	
+	float2x2 rotMatrix = GetRotationMatrix(age, In.Expansion_Rotation.z, In.Expansion_Rotation.w);	
 	float3 vertOffset = offsets[vertIdx] * particleSize;
 	vertOffset.xy = mul(vertOffset.xy, rotMatrix);
 	In.StartPosition_StartTime.xyz += right * vertOffset.x;
@@ -124,9 +143,11 @@ VERTEX_OUTPUT VSParticles(in VERTEX_INPUT In)
 	
 	Out.TexCoord = texCoords[vertIdx];
 	float texAtlasPosition = In.TileXY_Vertex_ID.w;
-	int atlasX = texAtlasPosition % 4;
-	int atlasY = texAtlasPosition / 4;
-	Out.TexCoord += float2(0.25f * atlasX, 0.25f * atlasY);
+	int atlasX = texAtlasPosition % texAtlasSize.x;
+	int atlasY = texAtlasPosition / texAtlasSize.y;
+    Out.TexCoord.x /= texAtlasSize.x;
+    Out.TexCoord.y /= texAtlasSize.y;
+	Out.TexCoord += float2(atlasX / texAtlasSize.x, atlasY / texAtlasSize.y);
 
 	Out.Color_Age.rgb = In.Color_Random.rgb;
 
