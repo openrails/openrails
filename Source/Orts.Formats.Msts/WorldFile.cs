@@ -82,6 +82,7 @@ namespace Orts.Formats.Msts
         {
             TokenID.VDbIdCount,
             TokenID.ViewDbSphere,
+            TokenID.Ruler,
         };
 
         public Tr_Worldfile(SBR block, string filename, List<TokenID> allowedTokens)
