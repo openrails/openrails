@@ -38,6 +38,17 @@ namespace Orts.Viewer3D
     [CallOnThread("Loader")]
     public class SharedTextureManager
     {
+        const int SelectorDirectoryMaxDepth = 5;
+        readonly HashSet<string> SelectorDirectoryNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+            "Autumn",
+            "AutumnSnow",
+            "Snow",
+            "Spring",
+            "SpringSnow",
+            "Winter",
+            "WinterSnow",
+        };
+
         readonly Viewer Viewer;
         readonly GraphicsDevice GraphicsDevice;
         Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
@@ -50,125 +61,69 @@ namespace Orts.Viewer3D
             GraphicsDevice = graphicsDevice;
         }
 
+        /// <summary>
+        /// Loads a game texture file; DO NOT use with internal data, use <see cref="LoadInternal(GraphicsDevice, string)"/> instead.
+        /// </summary>
+        /// <returns>The <see cref="Texture2D"/> created from the given <paramref name="path"/> or a missing placeholder.</returns>
         public Texture2D Get(string path, bool required = false)
         {
-            return (Get(path, SharedMaterialManager.MissingTexture, required));
+            return Get(path, SharedMaterialManager.MissingTexture, required);
         }
 
+        /// <summary>
+        /// Loads a game texture file; DO NOT use with internal data, use <see cref="LoadInternal(GraphicsDevice, string)"/> instead.
+        /// </summary>
+        /// <returns>The <see cref="Texture2D"/> created from the given <paramref name="path"/> or a missing placeholder.</returns>
         public Texture2D Get(string path, Texture2D defaultTexture, bool required = false)
         {
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("SharedTextureManager.Get incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
 
-            if (path == null || path == "")
-                return defaultTexture;
+            if (string.IsNullOrEmpty(path)) return defaultTexture;
 
             path = path.ToLowerInvariant();
-            if (!Textures.ContainsKey(path))
+            if (Textures.ContainsKey(path)) return Textures[path];
+
+            // DO NOT add additional formats here without explicit approval
+            // - DDS is used for newer, Open Rails-specific content
+            // - ACE is used for older, MSTS-specific content
+            switch (Path.GetExtension(path))
             {
-                try
-                {
-                    Texture2D texture;
-                    if (Path.GetExtension(path) == ".dds")
+                case ".dds":
+                case ".ace":
+                    try
                     {
-                        if (File.Exists(path))
+                        var depthPath = path;
+                        for (var depth = 0; depth < SelectorDirectoryMaxDepth; depth++)
                         {
-                            DDSLib.DDSFromFile(path, GraphicsDevice, true, out texture);
-                        }
-                        else
-                        // This solves the case where the global shapes have been overwritten and point to .dds textures
-                        // therefore avoiding that routes providing .ace textures show blank global shapes
-                        {
-                            var aceTexture = Path.ChangeExtension(path, ".ace");
-                            if (File.Exists(aceTexture))
+                            var dds = Path.ChangeExtension(depthPath, ".dds");
+                            var ace = Path.ChangeExtension(depthPath, ".ace");
+                            if (File.Exists(dds))
                             {
-                                texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, aceTexture);
-                                Trace.TraceWarning("Required texture {0} not existing; using existing texture {1}", path, aceTexture);
+                                DDSLib.DDSFromFile(dds, GraphicsDevice, true, out Texture2D texture);
+                                return Textures[path] = texture;
                             }
-                            else return defaultTexture;
+                            if (File.Exists(ace))
+                            {
+                                return Textures[path] = Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, ace);
+                            }
+                            // When a texture is not found, and it is in a selector directory (e.g. "Snow"), we
+                            // go up a level and try again. This repeats a fixed number of times, or until we run
+                            // out of known selector directories.
+                            var directory = Path.GetDirectoryName(depthPath);
+                            if (string.IsNullOrEmpty(directory) || !SelectorDirectoryNames.Contains(Path.GetFileName(directory))) break;
+                            depthPath = Path.Combine(Path.GetDirectoryName(directory), Path.GetFileName(depthPath));
                         }
+                        if (required) Trace.TraceWarning("Ignored missing texture file: {0}", path);
                     }
-                    else if (Path.GetExtension(path) == ".ace")
+                    catch (Exception error)
                     {
-                        var alternativeTexture = Path.ChangeExtension(path, ".dds");
-
-                        if (File.Exists(alternativeTexture))
-                        {
-                            DDSLib.DDSFromFile(alternativeTexture, GraphicsDevice, true, out texture);
-                        }
-                        else if (File.Exists(path))
-                        {
-                            texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, path);
-                        }
-                        else
-                        {
-                            Texture2D missing()
-                            {
-                                if (required)
-                                    Trace.TraceWarning("Missing texture {0} replaced with default texture", path);
-                                return defaultTexture;
-                            }
-                            Texture2D invalid()
-                            {
-                                if (required)
-                                    Trace.TraceWarning("Invalid texture {0} replaced with default texture", path);
-                                return defaultTexture;
-                            }
-                            //in case of no texture in wintersnow etc, go up one level
-                            DirectoryInfo currentDir;
-                            string searchPath;
-                            try
-                            {
-                                currentDir = Directory.GetParent(path);//returns the current level of dir
-                                searchPath = $"{Directory.GetParent(currentDir.FullName).FullName}\\{Path.GetFileName(path)}";
-                            }
-                            catch
-                            {
-                                return missing();
-                            }
-                            if (File.Exists(searchPath) && searchPath.ToLower().Contains("texture")) //in texture and exists
-                            {
-                                try
-                                {
-                                    texture = Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, searchPath);
-                                }
-                                catch
-                                {
-                                    return invalid();
-                                }
-                            }
-                            else
-                            {
-                                return missing();
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Trace.TraceWarning("Unsupported texture format: {0}", path);
-                        return defaultTexture;
-                    }
-
-                    Textures.Add(path, texture);
-                    return texture;
-                }
-                catch (InvalidDataException error)
-                {
-                    Trace.TraceWarning("Skipped texture with error: {1} in {0}", path, error.Message);
-                    return defaultTexture;
-                }
-                catch (Exception error)
-                {
-                    if (File.Exists(path))
                         Trace.WriteLine(new FileLoadException(path, error));
-                    else
-                        Trace.TraceWarning("Ignored missing texture file {0}", path);
+                    }
                     return defaultTexture;
-                }
-            }
-            else
-            {
-                return Textures[path];
+                default:
+                    Trace.TraceWarning("Ignored unsupported texture file: {0}", path);
+                    return defaultTexture;
             }
         }
 
