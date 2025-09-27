@@ -163,6 +163,8 @@ namespace Orts.Simulation.Physics
         public bool HuDIsWheelSlip;
         public bool IsBrakeSkid;
 
+        public bool TrackJointSoundSetUpInitialise = true;
+
         public bool HotBoxSetOnTrain = false;
         public int ActivityDurationS
         {
@@ -2007,6 +2009,84 @@ namespace Orts.Simulation.Physics
             if (DatalogTrainSpeed)
             {
                 LogTrainSpeed(Simulator.ClockTime);
+            }
+
+            // Initialise track joint trigger points. Sets the trigger point for the track joint reletative to other cars.
+            // This is then reset every time a track joint is triggered, and positioned the same distance apart, hence reletative positions are maintained.
+            // Only runs once at start up.
+            if (TrackJointSoundSetUpInitialise && (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM > 0 && Simulator.TRK.Tr_RouteFile.TrackSoundDefaultContinuousPlay)
+            {
+                var trackjointdistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
+                var trainLengthM = 0.0f;
+                var cummulativeTrackJointDistanceM = 0.0f;
+                var remainDistanceM = (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM;
+
+                foreach (var car in Cars)
+                {
+                    // Initialise from the next track joint
+
+                    // if remain distance has gone negative then car has moved over the next track joint
+                    if (trackjointdistanceM > car.CarLengthM)
+                    {
+
+                        car.realTimeTrackJointDistanceM = cummulativeTrackJointDistanceM;
+                        trainLengthM += car.CarLengthM;
+                        cummulativeTrackJointDistanceM += car.CarLengthM;
+                        remainDistanceM -= car.CarLengthM;
+
+                        // Set values for printing values initially applied
+                        bool concretesleepers = false;
+
+                        if ((float)Simulator.TRK.Tr_RouteFile.ConcreteSleepers == 1)
+                        {
+                            concretesleepers = true;
+                        }
+
+                        if (Simulator.Settings.VerboseConfigurationMessages && Simulator.TRK.Tr_RouteFile.TrackSoundDefaultContinuousPlay)
+                        {
+                            Trace.TraceInformation("======================================================================================================================");
+                            Trace.TraceInformation("TType Track Sounds Initialisation - Concrete Sleepers = {0}, Track Joint Distance = {1} m", concretesleepers, (float)Simulator.TRK.Tr_RouteFile.DistanceBetweenTrackJointsM);
+                        }
+
+                        // the next track joint has been reached reset all parameters in preparation for the next pass
+                        if (remainDistanceM < 0.0f)
+                        {
+                            cummulativeTrackJointDistanceM = Math.Abs(remainDistanceM);
+                            remainDistanceM = trackjointdistanceM - cummulativeTrackJointDistanceM;
+                        }
+
+                    }
+                    // Trackjoint less then Car length 
+                    else if (trackjointdistanceM < car.CarLengthM)
+                    {
+                        car.realTimeTrackJointDistanceM = cummulativeTrackJointDistanceM;
+                        trainLengthM += car.CarLengthM;
+                        cummulativeTrackJointDistanceM += trackjointdistanceM;
+                        remainDistanceM -= car.CarLengthM;
+
+                        if (remainDistanceM < 0.0f)
+                        {
+
+                            while (Math.Abs(remainDistanceM) > trackjointdistanceM)
+                            {
+                                remainDistanceM += trackjointdistanceM;
+                            }
+
+                            cummulativeTrackJointDistanceM = Math.Abs(remainDistanceM);
+                            remainDistanceM = trackjointdistanceM - cummulativeTrackJointDistanceM;
+                        }
+                    }
+
+                    if (Simulator.Settings.VerboseConfigurationMessages && Simulator.TRK.Tr_RouteFile.TrackSoundDefaultContinuousPlay)
+                    {
+                        Trace.TraceInformation("CarID {0}, Dist from Joint = {1} m, Car Length = {2} m, Train Length = {3} m, Axle Count = {4}", car.CarID, car.realTimeTrackJointDistanceM, car.CarLengthM, trainLengthM, car.SoundAxleCount);
+                    }
+
+                }
+
+                Trace.TraceInformation("======================================================================================================================");
+
+                TrackJointSoundSetUpInitialise = false;
             }
 
         } // end Update
