@@ -553,7 +553,9 @@ namespace Orts.Viewer3D.Popups
         {
             base.PrepareFrame(elapsedTime, updateFull);
 
-            if (UserInput.IsPressed(UserCommand.CameraCarNext) || UserInput.IsPressed(UserCommand.CameraCarPrevious) || UserInput.IsPressed(UserCommand.CameraCarFirst) || UserInput.IsPressed(UserCommand.CameraCarLast))
+            if (UserInput.IsPressed(UserCommand.CameraCarNext) || UserInput.IsPressed(UserCommand.CameraCarPrevious)
+                || UserInput.IsPressed(UserCommand.CameraCarFirst) || UserInput.IsPressed(UserCommand.CameraCarLast)
+                || UserInput.IsDown(UserCommand.CameraOutsideFront) || UserInput.IsDown(UserCommand.CameraOutsideRear))
                 CarPositionChanged = true;
 
             if (OldLocation != Location)
@@ -573,6 +575,32 @@ namespace Orts.Viewer3D.Popups
                 if (CarIdClicked && !CabCameraEnabled && !trainCarViewer.Visible && (!FrontActive || !BackActive))
                 {
                     SetCameraView();
+                }
+
+                if (!Owner.Viewer.FirstLoop || Owner.Viewer.IsCameraPositionUpdated)
+                {
+                    Owner.Viewer.CameraF9Reference = Owner.Viewer.FrontCamera.IsCameraFront;
+                    var currentCameraCarID = Owner.Viewer.Camera.AttachedCar.CarID;
+                    var currentCameraPosition = 0;
+                    if (PlayerTrain != null)
+                    {
+                        currentCameraPosition = PlayerTrain.Cars.TakeWhile(x => x.CarID != currentCameraCarID).Count();
+                    }
+
+                    Owner.Viewer.FirstLoop = true;
+                    if (Owner.Viewer.CameraF9Reference)
+                    {
+                        SelectedCarPosition = SelectedCarPosition == 0 ? Owner.Viewer.CameraOutsideFrontPosition
+                            : SelectedCarPosition != 0 ? SelectedCarPosition
+                            : currentCameraPosition;
+                    }
+                    else
+                    {
+                        SelectedCarPosition = Owner.Viewer.CameraOutsideRearPosition;
+                    }
+                    CarPositionChanged = true;
+                    trainCarViewer.CouplerChanged = false;
+                    Owner.Viewer.IsCameraPositionUpdated = false;
                 }
 
                 // Allows interaction with <Alt>+<PageDown> and <Alt>+<PageUP>.
@@ -741,7 +769,7 @@ namespace Orts.Viewer3D.Popups
                 BackActive = false;
                 FrontActive = true;
             }
-            if (Owner.Viewer.BackCamera.AttachedCar != null)
+            else if (Owner.Viewer.BackCamera.AttachedCar != null)
             {
                 Owner.Viewer.BackCamera.Activate();
                 BackActive = true;
