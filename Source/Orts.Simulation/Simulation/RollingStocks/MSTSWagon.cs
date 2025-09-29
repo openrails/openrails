@@ -176,8 +176,8 @@ namespace Orts.Simulation.RollingStocks
 
         // Colours for smoke and steam effects
         public Color ExhaustTransientColor = Color.Black;
-        public Color ExhaustDecelColor = Color.WhiteSmoke;
-        public Color ExhaustSteadyColor = Color.Gray;
+        public Color ExhaustDecelColor = new Color(Color.WhiteSmoke, 63);
+        public Color ExhaustSteadyColor = new Color(Color.Gray, 127);
 
         // Wagon steam leaks
         public float HeatingHoseParticleDurationS;
@@ -4628,6 +4628,7 @@ public void SetTensionStiffness(float a, float b)
 
         public bool ChaoticRandomization = false; // Changes the style of RNG used for particle motion
 
+        public float Opacity = 1.0f;
         public string Graphic;
         public int AtlasWidth = 4;
         public int AtlasHeight = 4;
@@ -4653,17 +4654,56 @@ public void SetTensionStiffness(float a, float b)
                     PositionM = stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero);
                     PositionM.Z *= -1; // Convert to MSTS coordinate system
                 }),
-                new STFReader.TokenProcessor("ortspositionvariation", ()=>{ PositionVariationM = stf.ReadVector3Block(STFReader.UNITS.Distance, Vector3.Zero); }),
+                new STFReader.TokenProcessor("ortspositionvariation", ()=>{
+                    stf.MustMatch("(");
+                    PositionVariationM.X = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                    if (!stf.EndOfBlock()) // User has entered a 3-d vector
+                    {
+                        PositionVariationM.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                        PositionVariationM.Z = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                        stf.SkipRestOfBlock();
+                    }
+                    else // User has entered a single value, set all vector components equal to this value
+                    {
+                        PositionVariationM.Z = PositionVariationM.Y = PositionVariationM.X;
+                    }
+                }),
                 new STFReader.TokenProcessor("ortsinitialvelocity", ()=>{
                     InitialVelocityFactor = stf.ReadVector3Block(STFReader.UNITS.Speed, Vector3.Zero);
                     InitialVelocityFactor.Z *= -1; // Convert to MSTS coordinate system
                 }),
-                new STFReader.TokenProcessor("ortsinitialvelocityvariation", ()=>{ InitialVelocityVariationFactor = stf.ReadVector3Block(STFReader.UNITS.Speed, Vector3.Zero); }),
+                new STFReader.TokenProcessor("ortsinitialvelocityvariation", ()=>{
+                    stf.MustMatch("(");
+                    InitialVelocityVariationFactor.X = stf.ReadFloat(STFReader.UNITS.None, 0);
+                    if (!stf.EndOfBlock()) // User has entered a 3-d vector
+                    {
+                        InitialVelocityVariationFactor.Y = stf.ReadFloat(STFReader.UNITS.None, 0);
+                        InitialVelocityVariationFactor.Z = stf.ReadFloat(STFReader.UNITS.None, 0);
+                        stf.SkipRestOfBlock();
+                    }
+                    else // User has entered a single value, set all vector components equal to this value
+                    {
+                        InitialVelocityVariationFactor.Z = InitialVelocityVariationFactor.Y = InitialVelocityVariationFactor.X;
+                    }
+                }),
                 new STFReader.TokenProcessor("ortsfinalvelocity", ()=>{
                     FinalVelocityMpS = stf.ReadVector3Block(STFReader.UNITS.Speed, Vector3.Zero);
                     FinalVelocityMpS.Z *= -1; // Convert to MSTS coordinate system
                 }),
-                new STFReader.TokenProcessor("ortsfinalvelocityvariation", ()=>{ FinalVelocityVariationMpS = stf.ReadVector3Block(STFReader.UNITS.Speed, Vector3.Zero); }),
+                new STFReader.TokenProcessor("ortsfinalvelocityvariation", ()=>{
+                    stf.MustMatch("(");
+                    FinalVelocityVariationMpS.X = stf.ReadFloat(STFReader.UNITS.Speed, 0);
+                    if (!stf.EndOfBlock()) // User has entered a 3-d vector
+                    {
+                        FinalVelocityVariationMpS.Y = stf.ReadFloat(STFReader.UNITS.Speed, 0);
+                        FinalVelocityVariationMpS.Z = stf.ReadFloat(STFReader.UNITS.Speed, 0);
+                        stf.SkipRestOfBlock();
+                    }
+                    else // User has entered a single value, set all vector components equal to this value
+                    {
+                        FinalVelocityVariationMpS.Z = FinalVelocityVariationMpS.Y = FinalVelocityVariationMpS.X;
+                    }
+                }),
                 new STFReader.TokenProcessor("ortsemissionspeedlimit", ()=>{ SpeedLimitMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); }),
                 new STFReader.TokenProcessor("ortsparticlediameter", ()=>{ NozzleDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 new STFReader.TokenProcessor("ortslifespanmultiplier", ()=>{ LifetimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
@@ -4677,6 +4717,7 @@ public void SetTensionStiffness(float a, float b)
                 new STFReader.TokenProcessor("ortspipearea", ()=>{ NozzleAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); }),
                 new STFReader.TokenProcessor("ortsmaxparticles", ()=>{ MaxParticles = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("ortsratemultiplier", ()=>{ RateFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
+                new STFReader.TokenProcessor("ortsparticleopacity", ()=>{ Opacity = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("ortsusechaoticrandomization", ()=>{ ChaoticRandomization = stf.ReadBoolBlock(true); }),
                 new STFReader.TokenProcessor("ortsgraphic", ()=>{ Graphic = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("ortsgraphicatlaslayout", ()=>{

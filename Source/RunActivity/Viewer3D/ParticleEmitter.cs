@@ -177,6 +177,7 @@ namespace Orts.Viewer3D
             SetOutputRate(particlespS);
             Emitter.ParticleDuration = durationS * EmitterData.LifetimeFactor;
             Emitter.ParticleColor = color;
+            Emitter.ParticleColor.A = (byte)(Emitter.ParticleColor.A * EmitterData.Opacity);
         }
 
         /// <summary>
@@ -192,6 +193,7 @@ namespace Orts.Viewer3D
             SetOutputVolumetric(volumeM3pS);
             Emitter.ParticleDuration = durationS * EmitterData.LifetimeFactor;
             Emitter.ParticleColor = color;
+            Emitter.ParticleColor.A = (byte)(Emitter.ParticleColor.A * EmitterData.Opacity);
 
 #if DEBUG_EMITTER_INPUT
             if (InputCycle == 0)
@@ -248,6 +250,7 @@ namespace Orts.Viewer3D
             SetOutputVelocity(initialVelocityMpS);
             Emitter.ParticleDuration = EmitterData.LifetimeFactor * durationS;
             Emitter.ParticleColor = color;
+            Emitter.ParticleColor.A = (byte)(Emitter.ParticleColor.A * EmitterData.Opacity);
 
 #if DEBUG_EMITTER_INPUT
             if (InputCycle == 0)
@@ -292,6 +295,7 @@ namespace Orts.Viewer3D
             Emitter.ParticlesPerSecond = EmitterData.RateFactor * volumeM3pS / ParticleVolumeM3;
             Emitter.ParticleDuration = EmitterData.LifetimeFactor * durationS;
             Emitter.ParticleColor = color;
+            Emitter.ParticleColor.A = (byte)(Emitter.ParticleColor.A * EmitterData.Opacity);
 
 #if DEBUG_EMITTER_INPUT
             if (InputCycle == 0)
@@ -348,7 +352,7 @@ namespace Orts.Viewer3D
             public Vector4 TargetVelocity_TargetTime;
             public Vector4 TileXY_Vertex_ID;
             public Vector4 Size_Rotation;
-            public Color Color_Random;
+            public Color Color;
 
             public static readonly VertexElement[] VertexElements =
             {
@@ -434,18 +438,12 @@ namespace Orts.Viewer3D
                     (float)Viewer.Random.NextDouble() * 30000f,
                     (float)Viewer.Random.NextDouble() * 30000f,
                     (float)Viewer.Random.NextDouble() * 30000f,
-                    (float)Viewer.Random.NextDouble() * 30000f,
-                    (float)Viewer.Random.NextDouble() * 30000f,
-                    (float)Viewer.Random.NextDouble() * 30000f,
                 };
 
                 // Determine random, but fixed, speed multiplier for perlin noise generation
                 // This should make the noise feel less regular/repeatable
                 // Range from 0.90 to 1.1
                 PerlinFrequency = new float[] {
-                    0.9f + (float)Viewer.Random.NextDouble() * 0.2f,
-                    0.9f + (float)Viewer.Random.NextDouble() * 0.2f,
-                    0.9f + (float)Viewer.Random.NextDouble() * 0.2f,
                     0.9f + (float)Viewer.Random.NextDouble() * 0.2f,
                     0.9f + (float)Viewer.Random.NextDouble() * 0.2f,
                     0.9f + (float)Viewer.Random.NextDouble() * 0.2f,
@@ -559,18 +557,18 @@ namespace Orts.Viewer3D
 
                 AccumulatedParticles += elapsedTime.ClockSeconds * effectiveParticlesPerSecond;
 
-                int numToBeEmitted = (int)Math.Floor(AccumulatedParticles);
-
-                int targetFreeParticles = GetCountFreeParticles() - (int)(EmitterData.MaxParticles * 0.025f);
+                int maxNewParticles = GetCountFreeParticles() - (int)(EmitterData.MaxParticles * 0.025f);
 
                 // We are low on free particles, always try to leave a free buffer of about 2.5% of the total
-                if (numToBeEmitted > targetFreeParticles)
-                    ForceRetireParticles(numToBeEmitted);
+                if (AccumulatedParticles > maxNewParticles)
+                    ForceRetireParticles((int)AccumulatedParticles);
                 else // Otherwise, only clear out expired particles
                     RetireActiveParticles(currentTime);
                 FreeRetiredParticles();
 
-                numToBeEmitted = Math.Min(numToBeEmitted, GetCountFreeParticles());
+                AccumulatedParticles = Math.Min(AccumulatedParticles, GetCountFreeParticles());
+
+                int numToBeEmitted = (int)Math.Floor(AccumulatedParticles);
 
                 if (numToBeEmitted > 0)
                 {
@@ -590,19 +588,17 @@ namespace Orts.Viewer3D
                     float initialSpeed = XNAInitialVelocity.Length();
                     Vector3 carVelocity = new Vector3(CarViewer.Velocity[0], CarViewer.Velocity[1], -CarViewer.Velocity[2]);
 
-                    float time = currentTime - elapsedTime.ClockSeconds;
+                    float emitTime = currentTime - elapsedTime.ClockSeconds;
 
-                    float deltaTime = elapsedTime.ClockSeconds / numToBeEmitted;
+                    float deltaTime = elapsedTime.ClockSeconds / AccumulatedParticles;
 
                     for (int i = 0; i < numToBeEmitted; i++)
                     {
-                        time += deltaTime;
+                        emitTime += deltaTime;
 
                         int nextFreeParticle = (FirstFreeParticle + 1) % EmitterData.MaxParticles;
                         int vertex = FirstFreeParticle * VerticesPerParticle;
                         int texture = Viewer.Random.Next(SpriteCount); // Randomizes particle texture to any texture on the sheet.
-                                                              // Alpha value of color is just a random number, not used (maybe allow for alpha changes?)
-                        Color color_Random = new Color(ParticleColor.R, ParticleColor.G, ParticleColor.B, (int)((float)Viewer.Random.NextDouble() * 255f));
 
                         Vector3 position = EmitterData.PositionM;
 
@@ -616,13 +612,13 @@ namespace Orts.Viewer3D
 
                         float settling = EmitterData.SettlingFactor;
 
+                        position.X += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.PositionVariationM.X;
+                        position.Y += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.PositionVariationM.Y;
+                        position.Z += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.PositionVariationM.Z;
+
                         if (EmitterData.ChaoticRandomization)
                         {
                             // "Chaotic" randomization: Uses random output directly, making for sudden changes
-                            position.X += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.PositionVariationM.X;
-                            position.Y += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.PositionVariationM.Y;
-                            position.Z += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.PositionVariationM.Z;
-
                             initialVelocity.X += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.InitialVelocityVariationFactor.X * initialSpeed;
                             initialVelocity.Y += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.InitialVelocityVariationFactor.Y * initialSpeed;
                             initialVelocity.Z += ((float)Viewer.Random.NextDouble() - 0.5f) * 2.0f * EmitterData.InitialVelocityVariationFactor.Z * initialSpeed;
@@ -640,56 +636,50 @@ namespace Orts.Viewer3D
                         else
                         {
                             // "Smoothed" randomization: Uses perlin noise for smooth changes in the random value
-                            position.X += Noise.Generate(time * PerlinFrequency[0] + PerlinOffset[0]) * EmitterData.PositionVariationM.X;
-                            position.Y += Noise.Generate(time * PerlinFrequency[1] + PerlinOffset[1]) * EmitterData.PositionVariationM.Y;
-                            position.Z += Noise.Generate(time * PerlinFrequency[2] + PerlinOffset[2]) * EmitterData.PositionVariationM.Z;
+                            initialVelocity.X += Noise.Generate(emitTime * PerlinFrequency[0] + PerlinOffset[0]) * EmitterData.InitialVelocityVariationFactor.X * initialSpeed;
+                            initialVelocity.Y += Noise.Generate(emitTime * PerlinFrequency[1] + PerlinOffset[1]) * EmitterData.InitialVelocityVariationFactor.Y * initialSpeed;
+                            initialVelocity.Z += Noise.Generate(emitTime * PerlinFrequency[2] + PerlinOffset[2]) * EmitterData.InitialVelocityVariationFactor.Z * initialSpeed;
 
-                            initialVelocity.X += Noise.Generate(time * PerlinFrequency[3] + PerlinOffset[3]) * EmitterData.InitialVelocityVariationFactor.X * initialSpeed;
-                            initialVelocity.Y += Noise.Generate(time * PerlinFrequency[4] + PerlinOffset[4]) * EmitterData.InitialVelocityVariationFactor.Y * initialSpeed;
-                            initialVelocity.Z += Noise.Generate(time * PerlinFrequency[5] + PerlinOffset[5]) * EmitterData.InitialVelocityVariationFactor.Z * initialSpeed;
+                            finalVelocity.X += Noise.Generate(emitTime * PerlinFrequency[3] + PerlinOffset[3]) * EmitterData.FinalVelocityVariationMpS.X;
+                            finalVelocity.Y += Noise.Generate(emitTime * PerlinFrequency[4] + PerlinOffset[4]) * EmitterData.FinalVelocityVariationMpS.Y;
+                            finalVelocity.Z += Noise.Generate(emitTime * PerlinFrequency[5] + PerlinOffset[5]) * EmitterData.FinalVelocityVariationMpS.Z;
 
-                            finalVelocity.X += Noise.Generate(time * PerlinFrequency[6] + PerlinOffset[6]) * EmitterData.FinalVelocityVariationMpS.X;
-                            finalVelocity.Y += Noise.Generate(time * PerlinFrequency[7] + PerlinOffset[7]) * EmitterData.FinalVelocityVariationMpS.Y;
-                            finalVelocity.Z += Noise.Generate(time * PerlinFrequency[8] + PerlinOffset[8]) * EmitterData.FinalVelocityVariationMpS.Z;
+                            rotSpeed *= Noise.Generate(emitTime * PerlinFrequency[6] + PerlinOffset[6]);
 
-                            rotSpeed *= Noise.Generate(time * PerlinFrequency[8] + PerlinOffset[8]);
+                            duration *= 1 + Noise.Generate(emitTime * PerlinFrequency[7] + PerlinOffset[7]) * EmitterData.LifetimeVariationFactor;
 
-                            duration *= 1 + Noise.Generate(time * PerlinFrequency[10] + PerlinOffset[10]) * EmitterData.LifetimeVariationFactor;
-
-                            settling += Noise.Generate(time * PerlinFrequency[11] + PerlinOffset[11]) * EmitterData.SettlingVariationFactor;
+                            settling += Noise.Generate(emitTime * PerlinFrequency[8] + PerlinOffset[8]) * EmitterData.SettlingVariationFactor;
                         }
 
                         position = Vector3.Transform(position, transform) + WorldPosition.XNAMatrix.Translation;
 
-                        // If multiple particles are emitted in one frame, we need to interploate where the particle should have spawned from "in between" frames
-                        if (numToBeEmitted > 1 && i + 1 < numToBeEmitted)
-                            position -= carVelocity * (numToBeEmitted - (i + 1)) * deltaTime;
+                        // Interpolate the position of the particle in-between frames
+                        position -= carVelocity * (currentTime - emitTime);
 
                         initialVelocity = Vector3.Transform(initialVelocity, rotation);
                         finalVelocity = Vector3.Transform(finalVelocity, rotY);
 
-                        float finalSpeed = finalVelocity.Length();
-                        // Amount by which particles initially expand depends on change in particle speed; faster particles expand more due to 'high pressure' at exhaust
-                        float speedDeltaRatio = (float)Math.Sqrt(Math.Max(initialSpeed * CompressionFactor - finalSpeed, 0.0f) / Math.Max(finalSpeed, 0.01f));
-                        float initialExpansion = speedDeltaRatio * EmitterData.InitialExpansionFactor;
-                        // Speed at which particles slow down depends on change in particle speed; faster particles slow down faster due to 'drag' from speed difference
-                        settling /= speedDeltaRatio / 5.0f + 1.0f; // Note: The / 5 is largely arbitrary, chosen to give results that look good
+                        // Add on velocity of attached train car
+                        initialVelocity += carVelocity;
 
                         // Add wind speed (not randomized here)
                         finalVelocity.X += ParticleViewer.Viewer.Simulator.Weather.WindInstantaneousSpeedMpS * ParticleViewer.Viewer.Simulator.Weather.WindInstantaneousDirection.X * EmitterData.WindEffect;
                         finalVelocity.Z += ParticleViewer.Viewer.Simulator.Weather.WindInstantaneousSpeedMpS * ParticleViewer.Viewer.Simulator.Weather.WindInstantaneousDirection.Y * EmitterData.WindEffect;
 
-                        // Add on velocity of attached train car
-                        initialVelocity += carVelocity;
+                        // Amount by which particles initially expand depends on change in particle speed; faster particles expand more due to 'high pressure' at exhaust
+                        float speedDeltaRatio = (float)Math.Sqrt(initialSpeed * CompressionFactor);
+                        float initialExpansion = speedDeltaRatio * EmitterData.InitialExpansionFactor;
+                        // Speed at which particles slow down depends on change in particle speed; faster particles slow down faster due to 'drag' from speed difference
+                        settling /= speedDeltaRatio / 5.0f + 1.0f; // Note: The / 5 is largely arbitrary, chosen to give results that look good
 
                         for (var j = 0; j < VerticesPerParticle; j++)
                         {
-                            Vertices[vertex + j].StartPosition_StartTime = new Vector4(position, time);
-                            Vertices[vertex + j].InitialVelocity_EndTime = new Vector4(initialVelocity, time + duration);
+                            Vertices[vertex + j].StartPosition_StartTime = new Vector4(position, emitTime);
+                            Vertices[vertex + j].InitialVelocity_EndTime = new Vector4(initialVelocity, emitTime + duration);
                             Vertices[vertex + j].TargetVelocity_TargetTime = new Vector4(finalVelocity, settling);
                             Vertices[vertex + j].TileXY_Vertex_ID = new Vector4(WorldPosition.TileX, WorldPosition.TileZ, j, texture);
                             Vertices[vertex + j].Size_Rotation = new Vector4(initialExpansion, EmitterData.ExpansionSpeed, initialRot, rotSpeed);
-                            Vertices[vertex + j].Color_Random = color_Random;
+                            Vertices[vertex + j].Color = ParticleColor;
                         }
 
                         FirstFreeParticle = nextFreeParticle;
