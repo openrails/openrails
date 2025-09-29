@@ -415,7 +415,7 @@ namespace Orts.Viewer3D.RollingStock
                 drawer.SetOutputVelocity(car.LargeEjectorSteamVelocityMpS, car.LargeEjectorParticleDurationS);
 
             foreach (var drawer in Compressor)
-                drawer.SetOutputVelocity(car.CompressorSteamVelocityMpS, car.CompressorParticleDurationS );
+                drawer.SetOutputVelocity(car.CompressorSteamVelocityMpS, car.CompressorParticleDurationS);
 
             foreach (var drawer in Generator)
                 drawer.SetOutputVelocity(car.GeneratorSteamVelocityMpS, car.GeneratorParticleDurationS);

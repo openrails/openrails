@@ -62,7 +62,7 @@ struct VERTEX_INPUT
 	float4 TargetVelocity_TargetTime : POSITION2;
 	float4 TileXY_Vertex_ID : POSITION3;
     float4 Expansion_Rotation : POSITION4;
-	float4 Color_Random : POSITION5;
+	float4 Color : POSITION5;
 };
 
 ////////////////////    V E R T E X   O U T P U T S    /////////////////////////
@@ -71,13 +71,13 @@ struct VERTEX_OUTPUT
 {
 	float4 Position	: POSITION;
 	float2 TexCoord : TEXCOORD0;
-	float4 Color_Age : TEXCOORD1;
+	float4 Color : TEXCOORD1;
 };
 
 struct PIXEL_INPUT
 {
 	float2 TexCoord : TEXCOORD0;
-	float4 Color_Age : TEXCOORD1;
+	float4 Color : TEXCOORD1;
 };
 
 ////////////////////    V E R T E X   S H A D E R S    /////////////////////////
@@ -97,7 +97,9 @@ VERTEX_OUTPUT VSParticles(in VERTEX_INPUT In)
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 
 	float age = (currentTime - In.StartPosition_StartTime.w);
-	Out.Color_Age.a = age / (In.InitialVelocity_EndTime.w - In.StartPosition_StartTime.w);
+
+    // Reduce particle opacity over time
+	Out.Color.a = (In.Color.a) * (1 - (age / (In.InitialVelocity_EndTime.w - In.StartPosition_StartTime.w)));
 	
 	float2 tileXY = In.TileXY_Vertex_ID.xy;
 	float2 diff = cameraTileXY - tileXY;
@@ -149,7 +151,7 @@ VERTEX_OUTPUT VSParticles(in VERTEX_INPUT In)
     Out.TexCoord.y /= texAtlasSize.y;
 	Out.TexCoord += float2(atlasX / texAtlasSize.x, atlasY / texAtlasSize.y);
 
-	Out.Color_Age.rgb = In.Color_Random.rgb;
+	Out.Color.rgb = In.Color.rgb;
 
 	return Out;
 }
@@ -186,13 +188,13 @@ void _PSApplyDay2Night(inout float3 Color)
 
 float4 PSParticles(in VERTEX_OUTPUT In) : COLOR0
 {
-	clip(In.Color_Age.a);
+    // Don't render any pixel if calculated alpha is greater than 1 (indicates particle spawned too soon)
+    clip(1 - In.Color.a);
 	
-	float alpha = (1 - In.Color_Age.a);
 	float4 tex = tex2D(ParticleSamp, In.TexCoord);
-	tex.rgb *= In.Color_Age.rgb;
+	tex.rgb *= In.Color.rgb;
 	_PSApplyDay2Night(tex.rgb);
-	tex.a *= alpha;
+	tex.a *= In.Color.a;
 	return tex;
 }
 
