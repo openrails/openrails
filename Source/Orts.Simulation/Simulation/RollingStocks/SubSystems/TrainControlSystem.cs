@@ -920,7 +920,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
                 if (length > 0)
                 {
-                    buffer.Trim();
+                    buffer = buffer.Trim('\0').Trim();
                     return (T)Convert.ChangeType(buffer, typeof(T), System.Globalization.CultureInfo.InvariantCulture);
                 }
             }
@@ -932,7 +932,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
                 if (length > 0)
                 {
-                    buffer.Trim();
+                    buffer = buffer.Trim('\0').Trim();
                     return (T)Convert.ChangeType(buffer, typeof(T), System.Globalization.CultureInfo.InvariantCulture);
                 }
             }
