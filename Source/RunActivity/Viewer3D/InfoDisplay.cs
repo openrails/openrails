@@ -182,7 +182,7 @@ namespace Orts.Viewer3D
                     Logger.Data(Viewer.PlayerLocomotive.ThrottlePercent.ToString("F0"));
                     Logger.Data(Viewer.PlayerLocomotive.MotiveForceN.ToString("F0"));
                     Logger.Data(Viewer.PlayerLocomotive.BrakeForceN.ToString("F0"));
-                    Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxles.CompensatedForceN.ToString("F2"));
+                    Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxles.AxleMotiveForceN.ToString("F2"));
                     Logger.Data((Viewer.PlayerLocomotive as MSTSLocomotive).LocomotiveAxles.SlipSpeedPercent.ToString("F1"));
                     DataLoggerLogSpeed(Viewer.PlayerLocomotive.SpeedMpS);
                     DataLoggerLogSpeed(Viewer.PlayerTrain.AllowedMaxSpeedMpS);
