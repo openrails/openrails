@@ -1521,6 +1521,8 @@ will be determined by a number of factors, and principal amongst them are the fo
 ``ORTSBoilerCrownHeight`` - Height of boiler crown above centre line of the boiler (UoM Distance)
 ``ORTSBoilerCrownCoverageHeight`` - Amount of water required to cover the crown (UoM Distance)
 
+To display the changing water level in the Cab, use ``BOILER_WATER_GRADE``.
+
 
 Locomotive Types
 ................
