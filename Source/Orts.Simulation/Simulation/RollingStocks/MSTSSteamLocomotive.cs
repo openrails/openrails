@@ -264,7 +264,7 @@ namespace Orts.Simulation.RollingStocks
         float BoilerDiameterM;
         float BoilerCrownCoverageHeightM;
         float BoilerCrownHeightM;
-        public float GradientBoilerLevelPercent;
+        public float GradientBoilerLevelFraction;
         public int MSTSNumCylinders = 2;       // Number of Cylinders
         public float MSTSCylinderStrokeM;      // High pressure cylinders
         public float MSTSCylinderDiameterM;    // High pressure cylinders
@@ -450,22 +450,20 @@ namespace Orts.Simulation.RollingStocks
         float HeatMaterialThicknessFactor = 1.0f;   // Material thickness for convection heat transfer
         float TheoreticalMaxSteamOutputLBpS;        // Max boiler output based upon Output = EvapArea x 15 ( lbs steam per evap area)
 
-        // Water model - locomotive boilers require water level to be maintained above the firebox crown sheet
-        // This model is a crude representation of a water gauge based on a generic boiler and 8" water gauge
-        // Based on a scaled drawing following water fraction levels have been used - crown sheet = 0.7, min water level = 0.73, max water level = 0.89
-        float WaterFraction;        // fraction of boiler volume occupied by water
+        // Boiler water parameters
+        float referenceBoilerLevelFraction;
+        float BoilerWaterFractionAbs;        // current fraction of boiler volume occupied by water
         float WaterMinLevel = 0.7f;         // min level before we blow the fusible plug
         float WaterMinLevelSafe = 0.75f;    // min level which you would normally want for safety
         float WaterMaxLevel = 0.91f;        // max level above which we start priming
         float WaterMaxLevelSafe = 0.90f;    // max level below which we stop priming
-        float WaterGlassMaxLevel = 0.89f;   // max height of water gauge as a fraction of boiler level
+        float WaterGlassMaxLevel = 0.9f;   // max height of water gauge as a fraction of boiler level
         float WaterGlassMinLevel = 0.73f;   // min height of water gauge as a fraction of boiler level
-        float WaterGlassLengthIN = 8.0f;    // nominal length of water gauge
         float WaterGlassLevelIN;            // Water glass level in inches
         float ORSteamGaugeGlassHeightM;
         float MSTSSteamGaugeGlassHeightM;
         float WaterGlassLengthM;
-        float waterGlassPercent;            // Water glass level in percent
+        float waterGlassFractionLevel;            // Water glass level as a fraction
         bool WaterGlassLevelGradientEnabled = false;
         float MEPFactor = 0.7f;             // Factor to determine the MEP
         float GrateAreaDesignFactor = 500.0f;   // Design factor for determining Grate Area
@@ -1216,7 +1214,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             outf.Write(WaterMotionPumpLockOutTimeS);
             outf.Write(WaterTempNewK);
             outf.Write(BkW_Diff);
-            outf.Write(WaterFraction);
+            outf.Write(BoilerWaterFractionAbs);
             outf.Write(BoilerSteamHeatBTUpLB);
             outf.Write(BoilerWaterHeatBTUpLB);
             outf.Write(BoilerWaterDensityLBpFT3);
@@ -1281,7 +1279,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             WaterMotionPumpLockOutTimeS = inf.ReadSingle();
             WaterTempNewK = inf.ReadSingle();
             BkW_Diff = inf.ReadSingle();
-            WaterFraction = inf.ReadSingle();
+            BoilerWaterFractionAbs = inf.ReadSingle();
             BoilerSteamHeatBTUpLB = inf.ReadSingle();
             BoilerWaterHeatBTUpLB = inf.ReadSingle();
             BoilerWaterDensityLBpFT3 = inf.ReadSingle();
@@ -1462,9 +1460,119 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             }
 
             CylinderSteamUsageLBpS = 1.0f;  // Set to 1 to ensure that there are no divide by zero errors
-            WaterFraction = 0.9f;  // Initialise boiler water level at 90%
 
-            float MaxWaterFraction = 0.9f; // Initialise the max water fraction when the boiler starts
+            // Set up boiler water defaults
+
+            // Water Gauge Length - always use OR entered value as first preference
+            WaterGlassLengthM = ORSteamGaugeGlassHeightM;
+
+            // Boiler Length - always use OR entered value as first preference
+            BoilerLengthM = ORBoilerLengthM;
+
+            if (WaterGlassLengthM > 0 && ORBoilerLengthM > 0 && BoilerCrownHeightM > 0 && BoilerCrownCoverageHeightM > 0)
+            {
+                WaterGlassLevelGradientEnabled = true;
+            }
+
+            // Water model - locomotive boilers require water level to be maintained above the firebox crown sheet
+            // This model is a crude representation of a water gauge based on a generic boiler and 8" water gauge
+            // Based on a scaled drawing following water fraction levels have been used - crown sheet = 0.7, min water level = 0.73, max water level = 0.89
+
+            // Set default boiler crown height and coverage if not present in ENG file
+            if (BoilerCrownHeightM == 0)
+            {
+                BoilerCrownHeightM = Me.FromIn(17.0f); // Set default crown height to 17"
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceWarning("Boiler Crown Height not found in ENG file and has been set to {0}", FormatStrings.FormatShortDistanceDisplay(BoilerCrownHeightM, IsMetric)); // Advise player that Boiler Crown Height is missing from ENG file
+            }
+
+            if (BoilerCrownCoverageHeightM == 0)
+            {
+                BoilerCrownCoverageHeightM = Me.FromIn(3.0f); // Set default crown coverage height to 3"
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceWarning("Boiler Crown Coverage Height not found in ENG file and has been set to {0}", FormatStrings.FormatVeryShortDistanceDisplay(BoilerCrownCoverageHeightM, IsMetric)); // Advise player that Boiler Crown Coverage Height is missing from ENG file
+            }
+
+            if (BoilerDiameterM == 0)
+            {
+                BoilerDiameterM = Me.FromFt(6.0f); // Set default boiler diameter to 6 ft
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceWarning("Boiler Diameter not found in ENG file and has been set to {0}", FormatStrings.FormatDistance(BoilerDiameterM, IsMetric)); // Advise player that Boiler Diameter is missing from ENG file
+            }
+
+            // Initialise Boiler parameters
+
+            // If OR value hasn't been set, then use MSTS value if present
+            if (BoilerLengthM == 0 && MSTSBoilerLengthM > 0) 
+            {
+                if (MSTSBoilerLengthM > 0.4f * CarLengthM && MSTSBoilerLengthM < CarLengthM)
+                {
+                    BoilerLengthM = MSTSBoilerLengthM;                                       
+                }
+                else
+                {
+                    BoilerLengthM = Me.FromFt(20.0f); // Set default boiler length to 20 ft
+                }
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Boiler Length set as per MSTS default = {0}", FormatStrings.FormatDistance(BoilerLengthM, IsMetric));
+                }
+            }
+            else if (BoilerLengthM == 0 && MSTSBoilerLengthM == 0)
+            {
+                BoilerLengthM = Me.FromFt(20.0f); // Set default boiler length to 20 ft
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Boiler Length set to default = {0}", FormatStrings.FormatDistance(BoilerLengthM, IsMetric));
+                }
+            }
+
+            // If OR value hasn't been set, then use MSTS value if present
+            if (WaterGlassLengthM == 0 && MSTSSteamGaugeGlassHeightM > 0 && MSTSSteamGaugeGlassHeightM < Me.FromIn(12))
+            {
+                WaterGlassLengthM = MSTSSteamGaugeGlassHeightM;
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Water Glass Length set as per MSTS default = {0}", FormatStrings.FormatVeryShortDistanceDisplay(WaterGlassLengthM, IsMetric));
+                }
+            }
+            else if (WaterGlassLengthM == 0)
+            {
+                WaterGlassLengthM = Me.FromIn(8.0f); // Set default water glass length to 8"
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Water Glass Length set to default = {0}", FormatStrings.FormatVeryShortDistanceDisplay(WaterGlassLengthM, IsMetric));
+                }
+            }
+
+            if (ORBoilerLengthM > 0 && ORSteamGaugeGlassHeightM > 0 && BoilerDiameterM == 0)
+            {
+                BoilerDiameterM = 2.0f;
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Boiler diameter set to default = {0}", FormatStrings.FormatDistance(BoilerCrownCoverageHeightM, IsMetric));
+                }
+            }
+
+            // Calculate "ideal" water level on level gradient
+            referenceBoilerLevelFraction = (BoilerCrownCoverageHeightM + BoilerCrownHeightM + (BoilerDiameterM / 2.0f)) / BoilerDiameterM;
+
+            // Set absolute min and max water control levels
+            // Bottom of water gauge to be set level with top of crown sheet + Safety margin (typically 3")
+            WaterMinLevel = ((BoilerCrownCoverageHeightM + BoilerCrownHeightM) + (BoilerDiameterM / 2.0f)) / BoilerDiameterM;     // min level before we blow the fusible plug
+            WaterMinLevelSafe = referenceBoilerLevelFraction;    // min level which you would normally want for safety
+            WaterMaxLevel = 0.96f;        // max level above which we start priming
+            WaterMaxLevelSafe = 0.95f;    // max level below which we stop priming
+            WaterGlassMaxLevel = ((WaterGlassLengthM + BoilerCrownCoverageHeightM + BoilerCrownHeightM) + (BoilerDiameterM / 2.0f)) / BoilerDiameterM;   // max height of water gauge as a fraction of boiler level
+            WaterGlassMinLevel = referenceBoilerLevelFraction;   // min height of water gauge as a fraction of boiler level
+
+            BoilerWaterFractionAbs = (WaterMinLevel + WaterMaxLevel) / 2;  // Initialise current boiler water level
+
+            float MaxWaterFraction = BoilerWaterFractionAbs; // Initialise the max water fraction when the boiler starts
 
 
             if (BoilerEvapRateLbspFt2 == 0) // If boiler evaporation rate is not in ENG file then set a default value
@@ -1484,68 +1592,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             }
             BoilerEvapRateLbspFt2 = MathHelper.Clamp(BoilerEvapRateLbspFt2, 7.5f, 30.0f); // Clamp BoilerEvap Rate to between 7.5 & 30 - some modern locomotives can go as high as 30, but majority are around 15.
             TheoreticalMaxSteamOutputLBpS = pS.FrompH(Me2.ToFt2(EvaporationAreaM2) * BoilerEvapRateLbspFt2); // set max boiler theoretical steam output
-
-            // Initialise Boiler parameters
-
-            // Boiler Length - always use OR entered value as first preference
-            BoilerLengthM = ORBoilerLengthM;
-
-            /*
-            // If OR value hasn't been set, then use MSTS value if present
-            if (BoilerLengthM == 0 && MSTSBoilerLengthM > 0) 
-            {
-                if (MSTSBoilerLengthM > 0.4f * CarLengthM && MSTSBoilerLengthM < CarLengthM)
-                {
-                    BoilerLengthM = MSTSBoilerLengthM;
-
-                    if (Simulator.Settings.VerboseConfigurationMessages)
-                    {
-                        Trace.TraceInformation("Boiler Length set as per MSTS default = {0}", FormatStrings.FormatDistance(BoilerLengthM, IsMetric));
-                    }
-                }
-            }
-            */
-
-            // Water Gauge Length - always use OR entered value as first preference
-            WaterGlassLengthM = ORSteamGaugeGlassHeightM;
-
-            /*
-            // If OR value hasn't been set, then use MSTS value if present
-            if (WaterGlassLengthM == 0 && MSTSSteamGaugeGlassHeightM > 0)
-            {
-                var defaultGlassLength = Me.FromIn(12);
-
-                if (MSTSSteamGaugeGlassHeightM < defaultGlassLength)
-                {
-                    WaterGlassLengthM = MSTSSteamGaugeGlassHeightM;
-                    WaterGlassLengthIN = Me.ToIn(WaterGlassLengthM);
-
-                    if (Simulator.Settings.VerboseConfigurationMessages)
-                    {
-                        Trace.TraceInformation("Water Glass Length set as per MSTS default = {0}", FormatStrings.FormatDistance(WaterGlassLengthM, IsMetric));
-                    }
-                }
-            }
-            */
-
-            if (ORBoilerLengthM > 0 && ORSteamGaugeGlassHeightM > 0 && BoilerDiameterM == 0)
-            {
-                BoilerDiameterM = 2.0f;
-
-                if (Simulator.Settings.VerboseConfigurationMessages)
-                {
-                    Trace.TraceInformation("Boiler diameter set to default = {0}", FormatStrings.FormatDistance(BoilerCrownCoverageHeightM, IsMetric));
-                }
-            }
-
-            if (WaterGlassLengthM > 0 && BoilerLengthM > 0 && ORBoilerLengthM > 0 && BoilerCrownHeightM > 0 && BoilerCrownCoverageHeightM >0)
-            {
-                WaterGlassLevelGradientEnabled = true;
-            }
-
-            Trace.TraceInformation("Boiler - CrownHeight {0} CrownCoverage {1}", BoilerCrownHeightM, BoilerCrownCoverageHeightM);
-
-    //       Trace.TraceInformation("Boiler Water Level - MSTSLength {0} ORLength {1} MSTSGlass {2} OR Glass {3} Enabled {4}, WaterGlass {5} BoilerLength {6}", MSTSBoilerLengthM, ORBoilerLengthM, MSTSSteamGaugeGlassHeightM, ORSteamGaugeGlassHeightM, WaterGlassLevelGradientEnabled, WaterGlassLengthM, BoilerLengthM);
 
             float BoilerVolumeCheck = Me2.ToFt2(EvaporationAreaM2) / BoilerVolumeFT3;    //Calculate the Boiler Volume Check value.
             if (BoilerVolumeCheck > 15) // If boiler volume is not in ENG file or less then a viable figure (ie high ratio figure), then set to a default value
@@ -2357,8 +2403,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 baseStartTempK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]));
                 BoilerStartkW = Kg.FromLb((BoilerPressurePSI / MaxBoilerPressurePSI) * TheoreticalMaxSteamOutputLBpS) * W.ToKW(W.FromBTUpS(SteamHeatPSItoBTUpLB[BoilerPressurePSI])); // Given pressure is slightly less then max, this figure should be slightly less, ie reduce TheoreticalMaxSteamOutputLBpS, for the time being assume a ratio of bp to MaxBP
                 FlueTempK = (BoilerStartkW / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 * HeatMaterialThicknessFactor)) + baseStartTempK;
-                BoilerMassLB = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI];
-                BoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] * WaterHeatPSItoBTUpLB[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI] * SteamHeatPSItoBTUpLB[BoilerPressurePSI];
+                BoilerMassLB = BoilerWaterFractionAbs * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] + (1 - BoilerWaterFractionAbs) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI];
+                BoilerHeatBTU = BoilerWaterFractionAbs * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] * WaterHeatPSItoBTUpLB[BoilerPressurePSI] + (1 - BoilerWaterFractionAbs) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI] * SteamHeatPSItoBTUpLB[BoilerPressurePSI];
                 StartBoilerHeatBTU = BoilerHeatBTU;
             }
             else
@@ -2368,8 +2414,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 baseStartTempK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI]));
                 BoilerStartkW = Kg.FromLb((BoilerPressurePSI / MaxBoilerPressurePSI) * TheoreticalMaxSteamOutputLBpS) * W.ToKW(W.FromBTUpS(SteamHeatPSItoBTUpLB[BoilerPressurePSI]));
                 FlueTempK = (BoilerStartkW / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 * HeatMaterialThicknessFactor)) + baseStartTempK;
-                BoilerMassLB = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI];
-                BoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] * WaterHeatPSItoBTUpLB[BoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI] * SteamHeatPSItoBTUpLB[BoilerPressurePSI];
+                BoilerMassLB = BoilerWaterFractionAbs * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] + (1 - BoilerWaterFractionAbs) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI];
+                BoilerHeatBTU = BoilerWaterFractionAbs * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[BoilerPressurePSI] * WaterHeatPSItoBTUpLB[BoilerPressurePSI] + (1 - BoilerWaterFractionAbs) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[BoilerPressurePSI] * SteamHeatPSItoBTUpLB[BoilerPressurePSI];
             }
 
             WaterTempNewK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI])); // Initialise new boiler pressure
@@ -4801,8 +4847,8 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // If density Dx = Mx/Vx, we can write:
             //             Vw/Vb = (Mb/Vb - Ds)/Dw - Ds)
 
-            WaterFraction = ((BoilerMassLB / BoilerVolumeFT3) - BoilerSteamDensityLBpFT3) / (BoilerWaterDensityLBpFT3 - BoilerSteamDensityLBpFT3);
-            WaterFraction = MathHelper.Clamp(WaterFraction, 0.0f, 1.01f); // set water fraction limits so that it doesn't go below zero or exceed full boiler volume
+            BoilerWaterFractionAbs = ((BoilerMassLB / BoilerVolumeFT3) - BoilerSteamDensityLBpFT3) / (BoilerWaterDensityLBpFT3 - BoilerSteamDensityLBpFT3);
+            BoilerWaterFractionAbs = MathHelper.Clamp(BoilerWaterFractionAbs, 0.0f, 1.01f); // set water fraction limits so that it doesn't go below zero or exceed full boiler volume
 
             // Update Boiler Heat based upon current Evaporation rate
             // Based on formula - BoilerCapacity (btu/h) = (SteamEnthalpy (btu/lb) - EnthalpyCondensate (btu/lb) ) x SteamEvaporated (lb/h) ?????
@@ -4812,11 +4858,11 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             BoilerHeatSmoothedBTU = MathHelper.Clamp(BoilerHeatSmoothBTU.SmoothedValue, 0.0f, (MaxBoilerSafetyPressHeatBTU * 1.05f));
 
-            WaterHeatBTUpFT3 = (BoilerHeatSmoothedBTU / BoilerVolumeFT3 - (1 - WaterFraction) * BoilerSteamDensityLBpFT3 * BoilerSteamHeatBTUpLB) / (WaterFraction * BoilerWaterDensityLBpFT3);
+            WaterHeatBTUpFT3 = (BoilerHeatSmoothedBTU / BoilerVolumeFT3 - (1 - BoilerWaterFractionAbs) * BoilerSteamDensityLBpFT3 * BoilerSteamHeatBTUpLB) / (BoilerWaterFractionAbs * BoilerWaterDensityLBpFT3);
 
             #region Boiler Pressure calculation
             // works on the principle that boiler pressure will go up or down based on the change in water temperature, which is impacted by the heat gain or loss to the boiler
-            WaterVolL = WaterFraction * BoilerVolumeFT3 * 28.31f;   // idealy should be equal to water flow in and out. 1ft3 = 28.31 litres of water
+            WaterVolL = BoilerWaterFractionAbs * BoilerVolumeFT3 * 28.31f;   // idealy should be equal to water flow in and out. 1ft3 = 28.31 litres of water
             // Calculate difference in boiler rating, ie heat in - heat out - 1 BTU = 0.0002931 kWh, divide by 3600????
             if (PreviousBoilerHeatSmoothedBTU != 0.0)
             {
@@ -7117,82 +7163,72 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
         private void UpdateWaterGauge()
         {
+            // Following calculations are for an "absolute" water glass level, ie not affected by gradient
+            waterGlassFractionLevel = (BoilerWaterFractionAbs - WaterGlassMinLevel) / (WaterGlassMaxLevel - WaterGlassMinLevel); // Calculate water glass level fraction
+
+            Trace.TraceInformation("GlassFraction - {0}, Min {1} Max {2} WaterFraction {3}", waterGlassFractionLevel, WaterGlassMinLevel, WaterGlassMaxLevel, BoilerWaterFractionAbs);
+
+            WaterGlassLevelIN = waterGlassFractionLevel * Me.ToIn(WaterGlassLengthM);
+            WaterGlassLevelIN = MathHelper.Clamp(WaterGlassLevelIN, 0, Me.ToIn(WaterGlassLengthM));
+
+
             // Calculate water glass level when on gradient
-            if (WaterGlassLevelGradientEnabled)
+
+            var boilerangleRad = Math.Atan(CurrentElevationPercent / 100);
+
+            // water variation is calculated as the side of a triangle with half the boiler length as the hypotenuse
+            var waterVariationLevelM = (float)Math.Sin(boilerangleRad) * BoilerLengthM / 2.0f;
+
+            float glassLevelGradientM = 0;
+
+            // Downslope - CurrentElevationPercent = +ve, level variation will be -ve 
+            // Uphill  - CurrentElevationPercent = -ve, level variation will be +ve
+            // So, for example, if the loco is on a 1 in 100 down slope, the water level at the front of the boiler will be lower than at the
+            // back by 0.5% of the boiler length
+
+            // gradient variation due to slope needs to be reversed
+            glassLevelGradientM = waterVariationLevelM * -1.0f;
+
+            // Assume that reference glass height is 50% of glass 
+            var maxWaterVariationIN = Me.ToIn(WaterGlassLengthM) / 2.0f;
+
+            float currentglasslevelfraction = 0;
+            float glasslevelM = 0;
+
+            // Convert reference point to a reading on glass
+            if (BoilerWaterFractionAbs > referenceBoilerLevelFraction)
             {
-                var boilerangleRad = Math.Atan(CurrentElevationPercent / 100);
-                var waterVariationLevelM = (float)Math.Sin(boilerangleRad) * BoilerLengthM / 2.0f;
-
-                float glassLevelGradientM = 0;
-
-                // Downslope - CurrentElevationPercent = +ve, level variation will be -ve 
-                // Uphill  - CurrentElevationPercent = -ve, level variation will be +ve
-                // gradient variation due to slope needs to be reversed
-
-                    glassLevelGradientM = waterVariationLevelM * -1.0f;
-
-                // Assume that reference glass height is 50% of glass 
-                var maxWaterVariationIN = Me.ToIn(WaterGlassLengthM) / 2.0f;
-
-                float glasslevelfraction = 0;
-                float glasslevelM = 0;
-
-                // Calculate water level on level gradient
-                var referenceLevelFraction = (BoilerCrownCoverageHeightM + BoilerCrownHeightM + (BoilerDiameterM / 2.0f))/BoilerDiameterM;
-
-                // Convert reference point to reading on glass
-                if (WaterFraction > referenceLevelFraction)
-                {
-                    glasslevelfraction = WaterFraction - referenceLevelFraction;
-
-                }
-                else if (WaterFraction < referenceLevelFraction)
-                {
-                    glasslevelfraction = -1.0f  * (referenceLevelFraction - WaterFraction);
-                }
-
-                glasslevelM = glasslevelfraction * BoilerDiameterM;
-
-
-                var totalglassLevelM = glasslevelM + glassLevelGradientM;
-
-                GradientBoilerLevelPercent = totalglassLevelM * 100;
-
-            //    Trace.TraceInformation("Boiler - refLevel {0} GlassLevel {1} GlassLevelM {2} GradientLevel {3} TotalLevel {4} % {5} WaterFraction {6}", referenceLevelFraction, glasslevelfraction, glasslevelM, glassLevelGradientM, totalglassLevelM, GradientBoilerLevelPercent, WaterFraction);
+                currentglasslevelfraction = waterGlassFractionLevel;
 
             }
+            else if (BoilerWaterFractionAbs < referenceBoilerLevelFraction)
+            {
+                currentglasslevelfraction = -1.0f * waterGlassFractionLevel;
+            }
 
+            glasslevelM = currentglasslevelfraction * BoilerDiameterM;
 
+            GradientBoilerLevelFraction = currentglasslevelfraction + (glassLevelGradientM / BoilerDiameterM);
 
-
-            WaterGlassLevelIN = ((WaterFraction - WaterGlassMinLevel) / (WaterGlassMaxLevel - WaterGlassMinLevel)) * WaterGlassLengthIN;
-            WaterGlassLevelIN = MathHelper.Clamp(WaterGlassLevelIN, 0, WaterGlassLengthIN);
-
-            waterGlassPercent = (WaterFraction - WaterMinLevel) / (WaterMaxLevel - WaterMinLevel);
-            waterGlassPercent = MathHelper.Clamp(waterGlassPercent, 0.0f, 1.0f);
-
-            if (WaterFraction < WaterMinLevel)  // Blow fusible plugs if absolute boiler water drops below 70%
+            if (BoilerWaterFractionAbs < WaterMinLevel)  // Blow fusible plugs if absolute boiler water drops below minimum level
             {
                 if (!FusiblePlugIsBlown)
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Water level dropped too far. Plug has fused and loco has failed."));
                 FusiblePlugIsBlown = true; // if water level has dropped, then fusible plug will blow , see "water model"
             }
             // Check for priming            
-            if (WaterFraction >= WaterMaxLevel) // Priming occurs if water level exceeds 91%
+            if (BoilerWaterFractionAbs >= WaterMaxLevel) // Priming occurs if water level exceeds 91%
             {
                 if (!BoilerIsPriming)
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Boiler overfull and priming."));
                 BoilerIsPriming = true;
             }
-            else if (WaterFraction < WaterMaxLevelSafe)
+            else if (BoilerWaterFractionAbs < WaterMaxLevelSafe)
             {
                 if (BoilerIsPriming)
                     Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Boiler no longer priming."));
                 BoilerIsPriming = false;
             }
-
-
-
 
         }
 
@@ -7452,21 +7488,21 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 if (SteamLocomotiveFeedWaterType == SteamLocomotiveFeedWaterSystemTypes.MotionPump && !WaterIsExhausted)
                 {
                     
-                    if (WaterGlassLevelIN > 7.99)        // turn pumps off if water level in boiler greater then 8.0, to stop cycling
+                    if (waterGlassFractionLevel > 0.79)        // turn pumps off if water level in boiler greater then 0.8, to stop cycling
                     {
                         WaterMotionPump1IsOn = false;
                         WaterMotionPump2IsOn = false;
                         StopMotionPump1Sound();
                         StopMotionPump2Sound();
                     }
-                    else if (WaterGlassLevelIN <= 7.0 && WaterGlassLevelIN > 5.75 && !WaterMotionPumpLockedOut)  // turn water pump #1 on if water level in boiler drops below 7.0 and is above 
+                    else if (waterGlassFractionLevel <= 0.7 && waterGlassFractionLevel > 0.575 && !WaterMotionPumpLockedOut)  // turn water pump #1 on if water level in boiler drops below 0.7 and is above 0.575
                     {
                         WaterMotionPump1IsOn = true;
                         WaterMotionPump2IsOn = false;
                         WaterMotionPumpLockedOut = true;
                         PlayMotionPump1SoundIfStarting();
                     }
-                    else if (WaterGlassLevelIN <= 5.75 && WaterGlassLevelIN > 4.5 && !WaterMotionPumpLockedOut)  // turn water pump #2 on as well if water level in boiler drops below 5.75 and is above 
+                    else if (waterGlassFractionLevel <= 0.575 && !WaterMotionPumpLockedOut)  // turn water pump #2 on as well if water level in boiler drops below 5.75 
                     {
                         WaterMotionPump1IsOn = true;
                         WaterMotionPump2IsOn = true;
@@ -7479,7 +7515,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     // Injectors
                     // Injectors normally not on when stationary?
                     // Injector water delivery heat decreases with the capacity of the injectors, ideally one injector would be used as appropriate to match steam consumption. @nd one only used if required.
-                    if (WaterGlassLevelIN > 7.99)        // turn injectors off if water level in boiler greater then 8.0, to stop cycling
+                    if (waterGlassFractionLevel > 0.799)        // turn injectors off if water level in boiler greater then 0.79, to stop cycling
                     {
                         Injector1IsOn = false;
                         Injector1Fraction = 0.0f;
@@ -7488,7 +7524,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         StopInjector1Sound();
                         StopInjector2Sound();
                     }
-                    else if (WaterGlassLevelIN <= 7.0 && WaterGlassLevelIN > 6.875 && !InjectorLockedOut)  // turn injector 1 on 20% if water level in boiler drops below 7.0
+                    else if (waterGlassFractionLevel <= 0.7 && waterGlassFractionLevel > 0.6875 && !InjectorLockedOut)  // turn injector 1 on 20% if water level in boiler drops below 0.7
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.1f;
@@ -7497,7 +7533,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         InjectorLockedOut = true;
                         PlayInjector1SoundIfStarting();
                     }
-                    else if (WaterGlassLevelIN <= 6.875 && WaterGlassLevelIN > 6.75 && !InjectorLockedOut)  // turn injector 1 on 20% if water level in boiler drops below 7.0
+                    else if (waterGlassFractionLevel <= 0.6875 && waterGlassFractionLevel > 0.675 && !InjectorLockedOut)  // turn injector 1 on 20% if water level in boiler drops below 0.6875
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.2f;
@@ -7506,7 +7542,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         InjectorLockedOut = true;
                         PlayInjector1SoundIfStarting();
                     }
-                    else if (WaterGlassLevelIN <= 6.75 && WaterGlassLevelIN > 6.675 && !InjectorLockedOut)  // turn injector 1 on 20% if water level in boiler drops below 7.0
+                    else if (waterGlassFractionLevel <= 0.675 && waterGlassFractionLevel > 0.6675 && !InjectorLockedOut)  // turn injector 1 on 20% if water level in boiler drops below 0.6675
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.3f;
@@ -7515,7 +7551,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         InjectorLockedOut = true;
                         PlayInjector1SoundIfStarting();
                     }
-                    else if (WaterGlassLevelIN <= 6.675 && WaterGlassLevelIN > 6.5 && !InjectorLockedOut)
+                    else if (waterGlassFractionLevel <= 0.6675 && waterGlassFractionLevel > 0.65 && !InjectorLockedOut)
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.4f;
@@ -7524,7 +7560,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         InjectorLockedOut = true;
                         PlayInjector1SoundIfStarting();
                     }
-                    else if (WaterGlassLevelIN <= 6.5 && WaterGlassLevelIN > 6.375 && !InjectorLockedOut)
+                    else if (waterGlassFractionLevel <= 0.65 && waterGlassFractionLevel > 0.6375 && !InjectorLockedOut)
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.5f;
@@ -7533,7 +7569,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         InjectorLockedOut = true;
                         PlayInjector1SoundIfStarting();
                     }
-                    else if (WaterGlassLevelIN <= 6.375 && WaterGlassLevelIN > 6.25 && !InjectorLockedOut)
+                    else if (waterGlassFractionLevel <= 0.6375 && waterGlassFractionLevel > 0.625 && !InjectorLockedOut)
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.6f;
@@ -7542,7 +7578,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         InjectorLockedOut = true;
                         PlayInjector1SoundIfStarting();
                     }
-                    else if (WaterGlassLevelIN <= 6.25 && WaterGlassLevelIN > 6.125 && !InjectorLockedOut)
+                    else if (waterGlassFractionLevel <= 0.625 && waterGlassFractionLevel > 0.6125 && !InjectorLockedOut)
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.7f;
@@ -7551,7 +7587,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         InjectorLockedOut = true;
                         PlayInjector1SoundIfStarting();
                     }
-                    else if (WaterGlassLevelIN <= 6.125 && WaterGlassLevelIN > 6.0 && !InjectorLockedOut)
+                    else if (waterGlassFractionLevel <= 0.6125 && waterGlassFractionLevel > 0.60 && !InjectorLockedOut)
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.8f;
@@ -7560,7 +7596,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         InjectorLockedOut = true;
                         PlayInjector1SoundIfStarting();
                     }
-                    else if (WaterGlassLevelIN <= 6.0 && WaterGlassLevelIN > 5.875 && !InjectorLockedOut)
+                    else if (waterGlassFractionLevel <= 0.60 && waterGlassFractionLevel > 0.5875 && !InjectorLockedOut)
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.9f;
@@ -7569,7 +7605,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         InjectorLockedOut = true;
                         PlayInjector1SoundIfStarting();
                     }
-                    else if (WaterGlassLevelIN <= 5.875 && WaterGlassLevelIN > 5.75 && !InjectorLockedOut)
+                    else if (waterGlassFractionLevel <= 0.5875 && waterGlassFractionLevel > 0.575 && !InjectorLockedOut)
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 1.0f;
@@ -7578,73 +7614,94 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                         InjectorLockedOut = true;
                         PlayInjector1SoundIfStarting();
                     }
-                    else if (BoilerPressurePSI > (MaxBoilerPressurePSI - 100.0))  // If boiler pressure is not too low then turn on injector 2
+                    else if (BoilerPressurePSI > (MaxBoilerPressurePSI - 100.0))  // If boiler pressure is not too low then turn on injector 2 as well
                     {
-                        if (WaterGlassLevelIN <= 5.75 && WaterGlassLevelIN > 5.675 && !InjectorLockedOut)
+                        if (waterGlassFractionLevel <= 0.575 && waterGlassFractionLevel > 0.5675 && !InjectorLockedOut)
                         {
+
+                            Injector1IsOn = true;
+                            Injector1Fraction = 1.0f; 
                             Injector2IsOn = true;
                             Injector2Fraction = 0.1f;
                             InjectorLockedOut = true;
                             PlayInjector2SoundIfStarting();
                         }
-                        else if (WaterGlassLevelIN <= 5.675 && WaterGlassLevelIN > 5.5 && !InjectorLockedOut)
+                        else if (waterGlassFractionLevel <= 0.5675 && waterGlassFractionLevel > 0.55 && !InjectorLockedOut)
                         {
+                            Injector1IsOn = true;
+                            Injector1Fraction = 1.0f;
                             Injector2IsOn = true;
                             Injector2Fraction = 0.2f;
                             InjectorLockedOut = true;
                             PlayInjector2SoundIfStarting();
                         }
-                        else if (WaterGlassLevelIN <= 5.5 && WaterGlassLevelIN > 5.325 && !InjectorLockedOut)
+                        else if (waterGlassFractionLevel <= 0.55 && waterGlassFractionLevel > 0.5325 && !InjectorLockedOut)
                         {
+                            Injector1IsOn = true;
+                            Injector1Fraction = 1.0f;
                             Injector2IsOn = true;
                             Injector2Fraction = 0.3f;
                             InjectorLockedOut = true;
                             PlayInjector2SoundIfStarting();
                         }
-                        else if (WaterGlassLevelIN <= 5.325 && WaterGlassLevelIN > 5.25 && !InjectorLockedOut)
+                        else if (waterGlassFractionLevel <= 0.5325 && waterGlassFractionLevel > 0.525 && !InjectorLockedOut)
                         {
+                            Injector1IsOn = true;
+                            Injector1Fraction = 1.0f;
                             Injector2IsOn = true;
                             Injector2Fraction = 0.4f;
                             InjectorLockedOut = true;
                             PlayInjector2SoundIfStarting();
                         }
-                        else if (WaterGlassLevelIN <= 5.25 && WaterGlassLevelIN > 5.125 && !InjectorLockedOut)
+                        else if (waterGlassFractionLevel <= 0.525 && waterGlassFractionLevel > 0.5125 && !InjectorLockedOut)
                         {
+                            Injector1IsOn = true;
+                            Injector1Fraction = 1.0f;
                             Injector2IsOn = true;
                             Injector2Fraction = 0.5f;
                             InjectorLockedOut = true;
                             PlayInjector2SoundIfStarting();
                         }
-                        else if (WaterGlassLevelIN <= 5.125 && WaterGlassLevelIN > 5.0 && !InjectorLockedOut)
+                        else if (waterGlassFractionLevel <= 0.5125 && waterGlassFractionLevel > 0.50 && !InjectorLockedOut)
                         {
+                            Injector1IsOn = true;
+                            Injector1Fraction = 1.0f;
                             Injector2IsOn = true;
                             Injector2Fraction = 0.6f;
                             InjectorLockedOut = true;
                             PlayInjector2SoundIfStarting();
                         }
-                        else if (WaterGlassLevelIN <= 5.0 && WaterGlassLevelIN > 4.875 && !InjectorLockedOut)
+                        else if (waterGlassFractionLevel <= 0.5 && waterGlassFractionLevel > 0.4875 && !InjectorLockedOut)
                         {
+                            Injector1IsOn = true;
+                            Injector1Fraction = 1.0f;
                             Injector2IsOn = true;
                             Injector2Fraction = 0.7f;
                             InjectorLockedOut = true;
                             PlayInjector2SoundIfStarting();
                         }
-                        else if (WaterGlassLevelIN <= 4.875 && WaterGlassLevelIN > 4.75 && !InjectorLockedOut)
+                        else if (waterGlassFractionLevel <= 0.4875 && waterGlassFractionLevel > 0.475 && !InjectorLockedOut)
                         {
+                            Injector1IsOn = true;
+                            Injector1Fraction = 1.0f;
                             Injector2IsOn = true;
                             Injector2Fraction = 0.8f;
                             InjectorLockedOut = true;
                             PlayInjector2SoundIfStarting();
                         }
-                        else if (WaterGlassLevelIN <= 4.75 && WaterGlassLevelIN > 4.625 && !InjectorLockedOut)
+                        else if (waterGlassFractionLevel <= 0.475 && waterGlassFractionLevel > 0.4625 && !InjectorLockedOut)
                         {
+                            Injector1IsOn = true;
+                            Injector1Fraction = 1.0f;
                             Injector2IsOn = true;
                             Injector2Fraction = 0.9f;
                             InjectorLockedOut = true;
                             PlayInjector2SoundIfStarting();
                         }
-                        else if (WaterGlassLevelIN <= 4.625 && WaterGlassLevelIN > 4.5 && !InjectorLockedOut)
+                        else if (waterGlassFractionLevel <= 0.4625 && waterGlassFractionLevel > 0.45 && !InjectorLockedOut)
                         {
+                            Injector1IsOn = true;
+                            Injector1Fraction = 1.0f;
                             Injector2IsOn = true;
                             Injector2Fraction = 1.0f;
                             InjectorLockedOut = true;
@@ -7852,7 +7909,10 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     data = ThrottlePercent / 100f;
                     break;
                 case CABViewControlTypes.BOILER_WATER:
-                    data = waterGlassPercent; // Shows the level in the water glass
+                    data = waterGlassFractionLevel; // Shows the level in the water glass
+                    break;
+                case CABViewControlTypes.BOILER_WATER_GRADE:
+                    data = GradientBoilerLevelFraction; // Shows the level in the water glass varies as gradient varies
                     break;
                 case CABViewControlTypes.TENDER_WATER:
                     data = CombinedTenderWaterVolumeUKG; // Looks like default locomotives need an absolute UK gallons value
@@ -7951,7 +8011,7 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             {
                 boilerPressureSafety = boilerPressurePercent <= 0.25 ? "!!!" : boilerPressurePercent <= 0.5 ? "???" : "";
             }
-            var boilerWaterSafety = WaterFraction < WaterMinLevel || WaterFraction > WaterMaxLevel ? "!!!" : WaterFraction < WaterMinLevelSafe || WaterFraction > WaterMaxLevelSafe ? "???" : "";
+            var boilerWaterSafety = BoilerWaterFractionAbs < WaterMinLevel || BoilerWaterFractionAbs > WaterMaxLevel ? "!!!" : BoilerWaterFractionAbs < WaterMinLevelSafe || BoilerWaterFractionAbs > WaterMaxLevelSafe ? "???" : "";
             var coalPercent = TenderFuelMassKG / MaxTenderFuelMassKG;
             var waterPercent = CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG;
             var fuelSafety = CoalIsExhausted || WaterIsExhausted ? "!!!" : coalPercent <= 0.105 || waterPercent <= 0.105 ? "???" : "";
@@ -7966,18 +8026,16 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     SteamGearRatio, SteamGearPosition == 0 ? Simulator.Catalog.GetParticularString("Gear", "N") : SteamGearPosition.ToString());
             status.AppendFormat("{0}{2} = {1}/{3}{2}\n", Simulator.Catalog.GetString("Steam usage"), FormatStrings.FormatMass(pS.TopH(Kg.FromLb(PreviousTotalSteamUsageLBpS)), MainPressureUnit != PressureUnit.PSI), steamusagesafety, FormatStrings.h);
             status.AppendFormat("{0}{2} = {1}{2}\n", Simulator.Catalog.GetString("Boiler pressure"), FormatStrings.FormatPressure(BoilerPressurePSI, PressureUnit.PSI, MainPressureUnit, true), boilerPressureSafety);
-            status.AppendFormat("{0}{2} = {1:F0}% {3}{2}\n", Simulator.Catalog.GetString("Boiler water glass"), 100 * waterGlassPercent, boilerWaterSafety, FiringIsManual ? Simulator.Catalog.GetString("(safe range)") : "");
+            status.AppendFormat("{0}{2} = {1:F0}% {3}{2}\n", Simulator.Catalog.GetString("Boiler water glass"), 100 * waterGlassFractionLevel, boilerWaterSafety, FiringIsManual ? Simulator.Catalog.GetString("(safe range)") : "");
 
             if (WaterGlassLevelGradientEnabled)
             {
-                status.AppendFormat("{0} = {1:F0}%\n", Simulator.Catalog.GetString("Boiler water grad"), GradientBoilerLevelPercent);
-            }
-
-           
+                status.AppendFormat("{0} = {1:F0}%\n", Simulator.Catalog.GetString("Boiler water grad"), GradientBoilerLevelFraction * 100);
+            }           
 
             if (FiringIsManual)
             {
-                status.AppendFormat("{0}{3} = {2:F0}% {1}{3}\n", Simulator.Catalog.GetString("Boiler water level"), Simulator.Catalog.GetString("(absolute)"), WaterFraction * 100, boilerWaterSafety);
+                status.AppendFormat("{0}{3} = {2:F0}% {1}{3}\n", Simulator.Catalog.GetString("Boiler water level"), Simulator.Catalog.GetString("(absolute)"), BoilerWaterFractionAbs * 100, boilerWaterSafety);
                 if (IdealFireMassKG > 0)
                     status.AppendFormat("{0} = {1:F0}%\n", Simulator.Catalog.GetString("Fire mass"), FireMassKG / IdealFireMassKG * 100);
                 else
