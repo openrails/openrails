@@ -464,7 +464,7 @@ namespace Orts.Simulation.RollingStocks
         float MSTSSteamGaugeGlassHeightM;
         float WaterGlassLengthM;
         float waterGlassFractionLevel;            // Water glass level as a fraction
-      //  bool WaterGlassLevelGradientEnabled = false;
+
         float MEPFactor = 0.7f;             // Factor to determine the MEP
         float GrateAreaDesignFactor = 500.0f;   // Design factor for determining Grate Area
         float EvapAreaDesignFactor = 10.0f;     // Design factor for determining Evaporation Area
@@ -1565,10 +1565,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             WaterGlassMaxLevel = ((WaterGlassLengthM + BoilerCrownCoverageHeightM + BoilerCrownHeightM) + (BoilerDiameterM / 2.0f)) / BoilerDiameterM;   // max height of water gauge as a fraction of boiler level
             WaterGlassMinLevel = referenceBoilerLevelFraction;   // min height of water gauge as a fraction of boiler level
 
-            BoilerWaterFractionAbs = (WaterMinLevel + WaterMaxLevel) / 2;  // Initialise current boiler water level
+            BoilerWaterFractionAbs = (WaterGlassMinLevel + WaterGlassMaxLevel) / 2;  // Initialise current boiler water level to halfway up glass
 
             float MaxWaterFraction = BoilerWaterFractionAbs; // Initialise the max water fraction when the boiler starts
-
 
             if (BoilerEvapRateLbspFt2 == 0) // If boiler evaporation rate is not in ENG file then set a default value
             {
@@ -7482,10 +7481,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
               //  var CurrentWaterGaugeFraction = GradientBoilerLevelFraction;
 
-
                 if (SteamLocomotiveFeedWaterType == SteamLocomotiveFeedWaterSystemTypes.MotionPump && !WaterIsExhausted)
                 {
-                    
+
                     if (CurrentWaterGaugeFraction > 0.55)        // turn pumps off if water level in boiler greater then 0.55 water gauge, to stop cycling
                     {
                         WaterMotionPump1IsOn = false;
