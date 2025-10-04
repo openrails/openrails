@@ -7177,22 +7177,16 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             // water variation is calculated as the opposite side of a triangle with half the boiler length as the reference length (Adjacent side)
             var waterVariationLevelM = (float)Math.Tan(boilerangleRad) * (BoilerLengthM / 2.0f);
 
-            float glassLevelGradientM = 0;
-
             // Downslope - CurrentElevationPercent = +ve, level variation will be -ve 
             // Uphill  - CurrentElevationPercent = -ve, level variation will be +ve
             // So, for example, if the loco is on a 1 in 100 down slope, the water level at the front of the boiler will be lower than at the
             // back by 0.5% of the boiler length
 
             // gradient variation due to slope needs to be reversed
-            glassLevelGradientM = waterVariationLevelM * -1.0f;
-
-            // Assume that reference glass height is 50% of glass 
-            var maxWaterVariationIN = Me.ToIn(WaterGlassLengthM) / 2.0f;
+            waterVariationLevelM *= -1.0f;
 
             float currentglasslevelfraction = 0;
-            float glasslevelM = 0;
-
+            
             // Convert reference point to a reading on glass
             if (BoilerWaterFractionAbs > referenceBoilerLevelFraction)
             {
@@ -7204,9 +7198,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                 currentglasslevelfraction = -1.0f * waterGlassFractionLevel;
             }
 
-            glasslevelM = currentglasslevelfraction * BoilerDiameterM;
+            GradientBoilerLevelFraction = ((BoilerWaterFractionAbs + waterVariationLevelM / BoilerDiameterM) - WaterGlassMinLevel) / (WaterGlassMaxLevel - WaterGlassMinLevel); // Calculate water glass grade fraction
 
-            GradientBoilerLevelFraction = currentglasslevelfraction + (glassLevelGradientM / BoilerDiameterM);
+            GradientBoilerLevelFraction = MathHelper.Clamp(GradientBoilerLevelFraction, 0.0f, 1.0f);
 
             if (BoilerWaterFractionAbs < WaterMinLevel)  // Blow fusible plugs if absolute boiler water drops below minimum level
             {
