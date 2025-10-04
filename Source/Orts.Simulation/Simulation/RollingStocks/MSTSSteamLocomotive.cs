@@ -1488,7 +1488,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
                     Trace.TraceWarning("Boiler Volume not found in ENG file, or doesn't appear to be a valid figure, and has been set to {0} Ft^3", BoilerVolumeFT3);
             }
 
-
             // Set up boiler water defaults
 
             // Water Gauge Length - always use OR entered value as first preference
@@ -7171,13 +7170,12 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
             WaterGlassLevelIN = waterGlassFractionLevel * Me.ToIn(WaterGlassLengthM);
             WaterGlassLevelIN = MathHelper.Clamp(WaterGlassLevelIN, 0, Me.ToIn(WaterGlassLengthM));
 
-
             // Calculate water glass level when on gradient
 
             var boilerangleRad = Math.Atan(CurrentElevationPercent / 100);
 
-            // water variation is calculated as the side of a triangle with half the boiler length as the hypotenuse
-            var waterVariationLevelM = (float)Math.Sin(boilerangleRad) * BoilerLengthM / 2.0f;
+            // water variation is calculated as the opposite side of a triangle with half the boiler length as the reference length (Adjacent side)
+            var waterVariationLevelM = (float)Math.Tan(boilerangleRad) * (BoilerLengthM / 2.0f);
 
             float glassLevelGradientM = 0;
 
