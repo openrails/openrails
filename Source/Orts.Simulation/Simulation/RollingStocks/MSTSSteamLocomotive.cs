@@ -1468,6 +1468,34 @@ namespace Orts.Simulation.RollingStocks
 
             CylinderSteamUsageLBpS = 1.0f;  // Set to 1 to ensure that there are no divide by zero errors
 
+            if (BoilerEvapRateLbspFt2 == 0) // If boiler evaporation rate is not in ENG file then set a default value
+            {
+                if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
+                {
+                    BoilerEvapRateLbspFt2 = 11.5f; // Default rate for evaporation rate. Assume a default rate of 12 lbs/sqft of evaporation area
+                }
+                else if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
+                {
+                    BoilerEvapRateLbspFt2 = 18.0f; // Default rate for evaporation rate. Assume a default rate of 18 lbs/sqft of evaporation area
+                }
+                else
+                {
+                    BoilerEvapRateLbspFt2 = 15.0f; // Default rate for evaporation rate. Assume a default rate of 15 lbs/sqft of evaporation area
+                }
+            }
+            BoilerEvapRateLbspFt2 = MathHelper.Clamp(BoilerEvapRateLbspFt2, 7.5f, 30.0f); // Clamp BoilerEvap Rate to between 7.5 & 30 - some modern locomotives can go as high as 30, but majority are around 15.
+            TheoreticalMaxSteamOutputLBpS = pS.FrompH(Me2.ToFt2(EvaporationAreaM2) * BoilerEvapRateLbspFt2); // set max boiler theoretical steam output
+
+            float BoilerVolumeCheck = Me2.ToFt2(EvaporationAreaM2) / BoilerVolumeFT3;    //Calculate the Boiler Volume Check value.
+            if (BoilerVolumeCheck > 15) // If boiler volume is not in ENG file or less then a viable figure (ie high ratio figure), then set to a default value
+            {
+                BoilerVolumeFT3 = Me2.ToFt2(EvaporationAreaM2) / 8.3f; // Default rate for evaporation rate. Assume a default ratio of evaporation area * 1/8.3
+                // Advise player that Boiler Volume is missing from or incorrect in ENG file
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                    Trace.TraceWarning("Boiler Volume not found in ENG file, or doesn't appear to be a valid figure, and has been set to {0} Ft^3", BoilerVolumeFT3);
+            }
+
+
             // Set up boiler water defaults
 
             // Water Gauge Length - always use OR entered value as first preference
@@ -1476,11 +1504,46 @@ namespace Orts.Simulation.RollingStocks
             // Boiler Length - always use OR entered value as first preference
             BoilerLengthM = ORBoilerLengthM;
 
+            // If OR value hasn't been set, then use MSTS value if present
+            if (BoilerLengthM == 0 && MSTSBoilerLengthM > 0)
+            {
+                if (MSTSBoilerLengthM > 0.4f * CarLengthM && MSTSBoilerLengthM < CarLengthM) // Check validity of MSTS value
+                {
+                    BoilerLengthM = MSTSBoilerLengthM;
+                }
+                else
+                {
+                    BoilerLengthM = Me.FromFt(20.0f); // limit default boiler length to 20 ft
+                }
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Boiler Length set as per MSTS default = {0}", FormatStrings.FormatDistance(BoilerLengthM, IsMetric));
+                }
+            }
+            else if (BoilerLengthM == 0 && MSTSBoilerLengthM == 0)
+            {
+                if (HasTenderCoupled)
+                {
+                    BoilerLengthM = 0.48f * CarLengthM; // Set default boiler length for tank locomotives
+                }
+                else
+                {
+                    BoilerLengthM = 0.6f * CarLengthM; // Set default boiler length for tender locomotives
+                }              
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("Boiler Length set to default = {0}", FormatStrings.FormatDistance(BoilerLengthM, IsMetric));
+                }
+            }
+
             if (BoilerDiameterM == 0)
             {
-                BoilerDiameterM = Me.FromFt(6.0f); // Set default boiler diameter to 6 ft
+                BoilerDiameterM = 3.3f * (float)Math.Sqrt(Me3.FromFt3(BoilerVolumeFT3) / (float)(Math.PI * BoilerLengthM)); // Set default boiler diameter based upon boiler volume and length
+
                 if (Simulator.Settings.VerboseConfigurationMessages)
-                    Trace.TraceWarning("Boiler Diameter not found in ENG file and has been set to {0}", FormatStrings.FormatDistance(BoilerDiameterM, IsMetric)); // Advise player that Boiler Diameter is missing from ENG file
+                    Trace.TraceWarning("Boiler Diameter not found in ENG file and has been set to {0}", FormatStrings.FormatDistance(BoilerDiameterM, IsMetric));
             }
 
             // Water model - locomotive boilers require water level to be maintained above the firebox crown sheet
@@ -1499,37 +1562,10 @@ namespace Orts.Simulation.RollingStocks
             {
                 BoilerCrownCoverageHeightM = Me.FromIn(3.0f); // Set default crown coverage height to 3"
                 if (Simulator.Settings.VerboseConfigurationMessages)
-                    Trace.TraceWarning("Boiler Crown Coverage Height not found in ENG file and has been set to {0}", FormatStrings.FormatVeryShortDistanceDisplay(BoilerCrownCoverageHeightM, IsMetric)); // Advise player that Boiler Crown Coverage Height is missing from ENG file
+                    Trace.TraceWarning("Boiler Crown Coverage Height not found in ENG file and has been set to {0}", FormatStrings.FormatVeryShortDistanceDisplay(BoilerCrownCoverageHeightM, IsMetric)); 
             }
 
-            // Initialise Boiler parameters
-
-            // If OR value hasn't been set, then use MSTS value if present
-            if (BoilerLengthM == 0 && MSTSBoilerLengthM > 0) 
-            {
-                if (MSTSBoilerLengthM > 0.4f * CarLengthM && MSTSBoilerLengthM < CarLengthM)
-                {
-                    BoilerLengthM = MSTSBoilerLengthM;                                       
-                }
-                else
-                {
-                    BoilerLengthM = Me.FromFt(20.0f); // Set default boiler length to 20 ft
-                }
-
-                if (Simulator.Settings.VerboseConfigurationMessages)
-                {
-                    Trace.TraceInformation("Boiler Length set as per MSTS default = {0}", FormatStrings.FormatDistance(BoilerLengthM, IsMetric));
-                }
-            }
-            else if (BoilerLengthM == 0 && MSTSBoilerLengthM == 0)
-            {
-                BoilerLengthM = Me.FromFt(20.0f); // Set default boiler length to 20 ft
-
-                if (Simulator.Settings.VerboseConfigurationMessages)
-                {
-                    Trace.TraceInformation("Boiler Length set to default = {0}", FormatStrings.FormatDistance(BoilerLengthM, IsMetric));
-                }
-            }
+            // Initialise Boiler parameters, if not found in Eng file
 
             // If OR value hasn't been set, then use MSTS value if present
             if (WaterGlassLengthM == 0 && MSTSSteamGaugeGlassHeightM > 0 && MSTSSteamGaugeGlassHeightM < Me.FromIn(12))
@@ -1575,34 +1611,6 @@ namespace Orts.Simulation.RollingStocks
             BoilerWaterFractionAbs = (WaterGlassMinLevel + WaterGlassMaxLevel) / 2;  // Initialise current boiler water level to halfway up glass
 
             float MaxWaterFraction = BoilerWaterFractionAbs; // Initialise the max water fraction when the boiler starts
-
-            if (BoilerEvapRateLbspFt2 == 0) // If boiler evaporation rate is not in ENG file then set a default value
-            {
-                if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Wood)
-                {
-                    BoilerEvapRateLbspFt2 = 11.5f; // Default rate for evaporation rate. Assume a default rate of 12 lbs/sqft of evaporation area
-                }
-                else if (SteamLocomotiveFuelType == SteamLocomotiveFuelTypes.Oil)
-                {
-                    BoilerEvapRateLbspFt2 = 18.0f; // Default rate for evaporation rate. Assume a default rate of 18 lbs/sqft of evaporation area
-                }
-                else
-                {
-                    BoilerEvapRateLbspFt2 = 15.0f; // Default rate for evaporation rate. Assume a default rate of 15 lbs/sqft of evaporation area
-                }
-            }
-            BoilerEvapRateLbspFt2 = MathHelper.Clamp(BoilerEvapRateLbspFt2, 7.5f, 30.0f); // Clamp BoilerEvap Rate to between 7.5 & 30 - some modern locomotives can go as high as 30, but majority are around 15.
-            TheoreticalMaxSteamOutputLBpS = pS.FrompH(Me2.ToFt2(EvaporationAreaM2) * BoilerEvapRateLbspFt2); // set max boiler theoretical steam output
-
-            float BoilerVolumeCheck = Me2.ToFt2(EvaporationAreaM2) / BoilerVolumeFT3;    //Calculate the Boiler Volume Check value.
-            if (BoilerVolumeCheck > 15) // If boiler volume is not in ENG file or less then a viable figure (ie high ratio figure), then set to a default value
-            {
-                BoilerVolumeFT3 = Me2.ToFt2(EvaporationAreaM2) / 8.3f; // Default rate for evaporation rate. Assume a default ratio of evaporation area * 1/8.3
-                // Advise player that Boiler Volume is missing from or incorrect in ENG file
-                if (Simulator.Settings.VerboseConfigurationMessages)
-                    Trace.TraceWarning("Boiler Volume not found in ENG file, or doesn't appear to be a valid figure, and has been set to {0} Ft^3", BoilerVolumeFT3);
-            }
-
 
             // Assign default steam table values if table not in ENG file
             if (BoilerEfficiencyGrateAreaLBpFT2toX == null)
@@ -7163,7 +7171,7 @@ namespace Orts.Simulation.RollingStocks
                 BoilerHeatOutBTUpS += WaterMotionPumpHeatLossBTU; // Total loss of boiler heat due to water injection - inject steam and water Heat
 
                 // Update pump lockout timer
-                if (WaterMotionPump1IsOn || WaterMotionPump2IsOn)
+                if (WaterMotionPump1IsOn || WaterMotionPump2IsOn || WaterMotionPumpLockedOut)
                 {
                     if (WaterMotionPumpLockedOut)
                     {
@@ -7305,12 +7313,13 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 // Update injector lockout timer
-                if (Injector1IsOn || Injector2IsOn)
+                if (Injector1IsOn || Injector2IsOn || InjectorLockedOut)
                 {
                     if (InjectorLockedOut)
                     {
                         InjectorLockOutTimeS += elapsedClockSeconds;
                     }
+
                     if (InjectorLockOutTimeS > InjectorLockOutResetTimeS)
                     {
                         InjectorLockedOut = false;
@@ -7414,7 +7423,7 @@ namespace Orts.Simulation.RollingStocks
                         StopInjector1Sound();
                         StopInjector2Sound();
                     }
-                    else if (CurrentWaterGaugeFraction <= 0.55 && CurrentWaterGaugeFraction > 0.50 && !InjectorLockedOut)  // turn injector 1 on 25% if water level in boiler drops between 0.5 and 0.55 water gauge
+                    else if (CurrentWaterGaugeFraction <= 0.55 && CurrentWaterGaugeFraction > 0.525 && !InjectorLockedOut)  
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.25f;
@@ -7423,7 +7432,7 @@ namespace Orts.Simulation.RollingStocks
                         InjectorLockedOut = true;
                         PlayInjector1SoundIfStarting();
                     }
-                    else if (CurrentWaterGaugeFraction <= 0.50 && CurrentWaterGaugeFraction > 0.45 && !InjectorLockedOut)  // turn injector 1 on 50% if water level in boiler drops between 0.5 and 0.45
+                    else if (CurrentWaterGaugeFraction <= 0.525 && CurrentWaterGaugeFraction > 0.5 && !InjectorLockedOut)  
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 0.5f;
@@ -7432,7 +7441,7 @@ namespace Orts.Simulation.RollingStocks
                         InjectorLockedOut = true;
                         PlayInjector1SoundIfStarting();
                     }
-                    else if (CurrentWaterGaugeFraction <= 0.45 && CurrentWaterGaugeFraction > 0.40 && !InjectorLockedOut)  // turn injector 1 on 100% if water level in boiler drops between 0.4 and 0.45
+                    else if (CurrentWaterGaugeFraction <= 0.5 && CurrentWaterGaugeFraction > 0.475 && !InjectorLockedOut)  
                     {
                         Injector1IsOn = true;
                         Injector1Fraction = 1.0f;
@@ -7443,7 +7452,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     else if (BoilerPressurePSI > (MaxBoilerPressurePSI - 100.0))  // If boiler pressure is not too low then turn on injector 2 as well
                     {
-                        if (CurrentWaterGaugeFraction <= 0.40 && CurrentWaterGaugeFraction > 0.35 && !InjectorLockedOut)
+                        if (CurrentWaterGaugeFraction <= 0.475 && CurrentWaterGaugeFraction > 0.45 && !InjectorLockedOut)
                         {
 
                             Injector1IsOn = true;
@@ -7453,7 +7462,7 @@ namespace Orts.Simulation.RollingStocks
                             InjectorLockedOut = true;
                             PlayInjector2SoundIfStarting();
                         }
-                        else if (CurrentWaterGaugeFraction <= 0.35 && CurrentWaterGaugeFraction > 0.30 && !InjectorLockedOut)
+                        else if (CurrentWaterGaugeFraction <= 0.45 && CurrentWaterGaugeFraction > 0.425 && !InjectorLockedOut)
                         {
                             Injector1IsOn = true;
                             Injector1Fraction = 1.0f;
@@ -7462,21 +7471,12 @@ namespace Orts.Simulation.RollingStocks
                             InjectorLockedOut = true;
                             PlayInjector2SoundIfStarting();
                         }
-                        else if (CurrentWaterGaugeFraction <= 0.55 && CurrentWaterGaugeFraction > 0.5325 && !InjectorLockedOut)
+                        else if (CurrentWaterGaugeFraction <= 0.425 && !InjectorLockedOut)
                         {
                             Injector1IsOn = true;
                             Injector1Fraction = 1.0f;
                             Injector2IsOn = true;
-                            Injector2Fraction = 0.3f;
-                            InjectorLockedOut = true;
-                            PlayInjector2SoundIfStarting();
-                        }
-                        else if (CurrentWaterGaugeFraction <= 0.5325 && CurrentWaterGaugeFraction > 0.525 && !InjectorLockedOut)
-                        {
-                            Injector1IsOn = true;
-                            Injector1Fraction = 1.0f;
-                            Injector2IsOn = true;
-                            Injector2Fraction = 0.4f;
+                            Injector2Fraction = 1.0f;
                             InjectorLockedOut = true;
                             PlayInjector2SoundIfStarting();
                         }
