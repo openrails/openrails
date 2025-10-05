@@ -1491,9 +1491,6 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             // Set up boiler water defaults
 
-            // Water Gauge Length - always use OR entered value as first preference
-            WaterGlassLengthM = ORSteamGaugeGlassHeightM;
-
             // Boiler Length - always use OR entered value as first preference
             BoilerLengthM = ORBoilerLengthM;
 
@@ -1560,6 +1557,9 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
             // Initialise Boiler parameters, if not found in Eng file
 
+            // Water Gauge Length - always use OR entered value as first preference
+            WaterGlassLengthM = ORSteamGaugeGlassHeightM;
+
             // If OR value hasn't been set, then use MSTS value if present
             if (WaterGlassLengthM == 0 && MSTSSteamGaugeGlassHeightM > 0 && MSTSSteamGaugeGlassHeightM < Me.FromIn(12))
             {
@@ -1567,15 +1567,31 @@ public readonly SmoothedData StackSteamVelocityMpS = new SmoothedData(2);
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("Water Glass Length set as per MSTS default = {0}", FormatStrings.FormatVeryShortDistanceDisplay(WaterGlassLengthM, IsMetric));
+                    Trace.TraceInformation("Water Glass Length set as per MSTS default value = {0}", FormatStrings.FormatVeryShortDistanceDisplay(WaterGlassLengthM, IsMetric));
                 }
             }
             else if (WaterGlassLengthM == 0)
             {
-                WaterGlassLengthM = Me.FromIn(8.0f); // Set default water glass length to 8"
+                if (BoilerLengthM <= Me.FromFt(10.0f))
+                {
+                    WaterGlassLengthM = Me.FromIn(6.0f); // Set default water glass length to 6" for short boilers
+                }
+                else if (BoilerLengthM > Me.FromFt(10.0f) && BoilerLengthM <= Me.FromFt(15.0f))
+                {
+                    WaterGlassLengthM = Me.FromIn(8.0f); // Set default water glass length to 8"
+                }
+                else if (BoilerLengthM > Me.FromFt(15.0f) && BoilerLengthM <= Me.FromFt(20.0f))
+                {
+                    WaterGlassLengthM = Me.FromIn(10.0f); // Set default water glass length to 8"
+                }
+                else
+                {
+                    WaterGlassLengthM = Me.FromIn(12.0f); // Set default water glass length to 12" for long boilers
+                }
+
                 if (Simulator.Settings.VerboseConfigurationMessages)
                 {
-                    Trace.TraceInformation("Water Glass Length set to default = {0}", FormatStrings.FormatVeryShortDistanceDisplay(WaterGlassLengthM, IsMetric));
+                    Trace.TraceInformation("Water Glass Length set to basic default = {0}", FormatStrings.FormatVeryShortDistanceDisplay(WaterGlassLengthM, IsMetric));
                 }
             }
 
