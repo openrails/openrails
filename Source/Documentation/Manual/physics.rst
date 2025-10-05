@@ -2521,7 +2521,6 @@ the one shown below::
         
         Comment ( Advanced optional parameters. )
         ORTSMaxParticles ( 2500 )
-        ORTSEmissionSpeedLimit ( 150m/s )
         ORTSGraphic ( "smokemain.ace" )
         ORTSGraphicAtlasLayout ( 4 4 )
     )
@@ -2532,7 +2531,6 @@ the one shown below::
    single: ORTSParticleDiameter
    single: ORTSPositionVariation
    single: ORTSInitialVelocityVariation
-   single: ORTSEmissionSpeedLimit
    single: ORTSFinalVelocity
    single: ORTSFinalVelocityVariation
    single: ORTSLifespanMultiplier
@@ -2671,13 +2669,6 @@ and poor framerates:
   the particle limit. Do NOT increase the limit if particles are already overlapping; it is often
   better to simply reduce the number of particles emitted using ORTSRateMultiplier and/or other
   parameters listed here.
-- ``ORTSEmissionSpeedLimit ( v )`` -- Some particle emitters are driven by the simulated flow
-  rate of exhaust, which has to make some assumptions about the pressure and volume of exhaust.
-  This can lead to unrealistically high speed particles being emitted, so a speed limit can be
-  set (default units are meters per second) to keep particle speed reasonable. This is not a hard
-  limit, it is gradually enforced as the simulation calculates higher and higher exhaust speed.
-  The limit is also applied before considering the emitter velocity factor, so actual exhaust speed
-  will vary depending on other settings.
   By default, the limit is 150 meters per second, which will be suitable in most cases.
 - ``ORTSGraphic ( "tex" )`` -- Gives the name and path to the texture that should be used to render
   particles from this emitter. The default texture is "smokemain.ace" for steam-type emitters and
